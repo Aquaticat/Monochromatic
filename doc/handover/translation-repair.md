@@ -17894,3 +17894,18 @@ almost nothing, zero flips says the checkers agree, not that width is irrelevant
 report is that the experiment could not have answered the question at this sample size. The 7 of 310
 unresolved rate suggests the ceiling will be low, so this is the likely outcome and is written down
 BEFORE the data arrives rather than after.
+
+### Two working hazards checked while the wide runs were in flight
+
+REBUILDING `dist/` DURING A LIVE PASS IS SAFE, and it was worth checking rather than assuming: this
+session rebuilt the bundle roughly a dozen times while two multi-hour verification passes were
+executing out of it. Every `import(` in `src/` is a TSDoc `{@link import('...')}` reference, so the
+package has no runtime dynamic import and a running pass holds every module it will ever need from
+startup. A rebuild that renames hashed chunks therefore cannot reach it.
+
+`mise run //package/module/translation-repair:test:unit` DOES NOT BUILD. The package declares two
+tasks with that name, and the bare one runs the suite against whatever `dist/` already holds. A
+source change followed by `test:unit` alone reports on the previous build, which looks exactly like a
+change that had no effect. Run `build` first, always. This session read "the new log line never
+appears" off a stale bundle before a positive control on a neighbouring line from the same function
+exposed it.
