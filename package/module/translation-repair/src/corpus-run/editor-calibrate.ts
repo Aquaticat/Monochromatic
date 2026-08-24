@@ -6,6 +6,7 @@ import {
   standingLine,
 } from '../producer-standing-report.ts';
 import { repairChunk, } from '../repair-chunk.ts';
+import { settleRefinedSlice, } from '../refine-slice-settle.ts';
 import {
   EDITOR_ROUND_STAGES,
   REFINER_ROUND_STAGES,
@@ -55,9 +56,21 @@ import {
 // asked. What self-certification can move is how many rounds happen, not who
 // won the ones that did.
 //
-// IT REPORTS THE REFINER STANDING TOO, off the same spend. The refine rounds
-// are recorded beside the editor's and belong to a different seat, so throwing
-// them away would mean buying them twice.
+// IT RUNS THE NATURALNESS LANE TOO, so the refiner seat is measured rather
+// than assumed. `repairChunk` does NOT reach it: it takes `refinerModelIds`
+// only to compute the union of models it must seat, sets `refined: false`, and
+// returns. Refinement is a separate stage the document driver runs afterwards.
+// This was found live, by a nine-slice run reporting zero refiner rounds and no
+// refine activity in its log at all, against a module note here claiming the
+// refiner standing came off the same spend. It did not; it now does.
+//
+// THE REFINER SEAT WAS RESEATED ON THE SAME WRITING EVIDENCE the editor seat
+// was, so it is exactly as unmeasured, and leaving it that way while measuring
+// the seat beside it would answer half the question this runner exists for.
+//
+// EMPTY DEFINITIONS, honestly. A drawn slice has no document-level glossary
+// block behind it, so there is nothing to pass; that is a real value here, not
+// an absence dressed as one.
 //
 // SPENDS QUOTA, and more per slice than the writer calibration does: a whole
 // repair lane rather than one stage. Point `TRANSLATION_REPAIR_RUNS_DIR` at a
@@ -84,6 +97,17 @@ type SliceRounds = {
    * Rounds the refiners' candidates were judged in.
    */
   readonly refiner: readonly SelectionRound[];
+
+  /**
+   * Whether the naturalness lane found anything on this slice eligible to
+   * rewrite at all.
+   *
+   * THE REFINER STANDING'S DENOMINATOR. A paragraph under the eligibility
+   * floor is never offered to a rewriter, so a slice can run the whole lane
+   * and reach no refiner. Without this, an empty refiner standing cannot be
+   * told from a rewriter roster that answered nothing.
+   */
+  readonly refineAsked: boolean;
 
   /**
    * Models that wrote the text this slice actually shipped.
@@ -147,41 +171,76 @@ async function runOne(
   const l = tagged({ tag: `editor-calibrate-${slice.entryId}-${String(slice.index,)}`, },);
 
   /**
-   * Everything the lane decided about this passage.
+   * Client both stages share, so one slice is one budget conversation.
+   */
+  const client = createRunClient();
+
+  /**
+   * Abort signal for the whole slice.
+   */
+  const { signal, } = new AbortController();
+
+  /**
+   * Every seat filled by every model, matching the module note.
+   */
+  const models = {
+    criticModelIds: RUN_ROSTER,
+    panelModelIds: RUN_ROSTER,
+    editorModelIds: RUN_ROSTER,
+    judgeModelIds: RUN_ROSTER,
+    refinerModelIds: RUN_ROSTER,
+    checkerModelIds: RUN_ROSTER,
+    // See the module note: a full editor roster leaves nobody independent,
+    // and checking runs after the ballots a standing reads.
+    checkerSelfCertificationPermitted: true,
+  };
+
+  /**
+   * Everything the accuracy lane decided about this passage.
    */
   const outcome = await repairChunk({
-    client: createRunClient(),
+    client,
     chunkIndex: slice.index,
     sourceText: slice.sourceText,
     targetText: slice.incumbentText,
     lineStructured: slice.lineStructured,
-    models: {
-      criticModelIds: RUN_ROSTER,
-      panelModelIds: RUN_ROSTER,
-      editorModelIds: RUN_ROSTER,
-      judgeModelIds: RUN_ROSTER,
-      refinerModelIds: RUN_ROSTER,
-      checkerModelIds: RUN_ROSTER,
-      // See the module note: a full editor roster leaves nobody independent,
-      // and checking runs after the ballots a standing reads.
-      checkerSelfCertificationPermitted: true,
-    },
+    models,
     declaredNames: [],
-    signal: new AbortController().signal,
+    signal,
+    perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+    l,
+  },);
+
+  /**
+   * Same slice after the naturalness lane, whose rounds land on the outcome
+   * beside the accuracy lane's own.
+   */
+  const refined = await settleRefinedSlice({
+    client,
+    outcome,
+    sourceText: slice.sourceText,
+    incumbentText: slice.incumbentText,
+    // See the module note: a drawn slice carries no document glossary.
+    definitions: '',
+    models,
+    refinerModelIds: RUN_ROSTER,
+    declaredNames: [],
+    signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
   },);
 
   return {
     editor: selectionRoundsFor({
-      rounds: outcome.rounds,
+      rounds: refined.outcome.rounds,
       stages: EDITOR_ROUND_STAGES,
     },),
     refiner: selectionRoundsFor({
-      rounds: outcome.rounds,
+      rounds: refined.outcome.rounds,
       stages: REFINER_ROUND_STAGES,
     },),
-    shipped: shippedAuthors({ authorship: outcome.authorship, },),
+    refineAsked: refined.asked,
+    shipped: shippedAuthors({ authorship: refined.outcome.authorship, },),
   };
 }
 
@@ -272,6 +331,39 @@ function reportSeat(
         + 'Neither is a poor showing.',
     );
   }
+}
+
+/**
+ * Prints how many slices the naturalness lane could reach at all.
+ *
+ * THE REFINER STANDING'S DENOMINATOR, and it is not the slice count. A
+ * paragraph under the eligibility floor is never offered to a rewriter, so a
+ * slice can buy the whole accuracy lane and reach no refiner. Without this an
+ * empty refiner standing reads as a rewriter roster that answered nothing,
+ * which is a different and much worse fact.
+ *
+ * @param perSlice - what every slice produced
+ *
+ * @example
+ * ```ts
+ * reportRefineReach({ perSlice, },);
+ * ```
+ */
+function reportRefineReach(
+  { perSlice, }: { readonly perSlice: readonly SliceRounds[]; },
+): void {
+  /**
+   * Slices carrying a paragraph the lane was willing to offer a rewriter.
+   */
+  const asked = perSlice.filter(function eligible(slice,): boolean {
+    return slice.refineAsked;
+  },);
+
+  console.log(
+    `  reached a rewriter on ${String(asked.length,)} of ${String(perSlice.length,)} slices; `
+      + 'the rest carried no paragraph over the eligibility floor, so no refiner was asked '
+      + 'and their silence is not evidence about any model',
+  );
 }
 
 /**
@@ -422,7 +514,8 @@ async function main(): Promise<void> {
       `  slice ${String(perSlice.length,)} of ${String(sample.length,)} `
         + `(${slice.entryId} chunk ${String(slice.index,)}): `
         + `${String(editorCount,)} editor rounds, `
-        + `${String(refinerCount,)} refiner rounds, `
+        + `${String(refinerCount,)} refiner rounds`
+        + `${rounds.refineAsked ? '' : ' (nothing eligible to rewrite)'}, `
         + `${String(rounds.shipped.length,)} shipping authors`,
     );
   }
@@ -440,6 +533,8 @@ async function main(): Promise<void> {
       return rounds.refiner;
     },),
   },);
+
+  reportRefineReach({ perSlice, },);
 
   reportShipped({ perSlice, },);
 }
