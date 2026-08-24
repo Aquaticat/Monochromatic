@@ -17774,3 +17774,39 @@ test already catches a reversal, so no near-duplicate case was added; this is th
 count the new slicing really produces was exercised.
 
 Suite 565 PASS, exit 0. Lint 0 warnings 0 errors. Types clean.
+
+## The equal-count fast path is safe, and this time the null was taken with an instrument that can disagree
+
+`#98` held that `alignDocumentSections` takes a fast path whenever the two sides have equal section
+counts, so a document that omits one section and gains an unrelated one later is index-paired
+straight through and reports nothing. Its own fix order said not to route that path through the
+deterministic aligner just to route it, and to wait until heading scoring had a signal for
+handle-free headings. `#189` built that signal, so the question could be put.
+
+Every entry the fast path serves that has a choice to get wrong was asked. Of 92 complete pairs, 90
+have equal counts; 34 of those are single-section documents, which pair the only way they can. The
+other 56 each went to the production roster of six.
+
+```text
+entries asked                             56
+agreed with INDEX ORDER on every pair     56
+disagreed anywhere                         0
+paired EVERY section                      56
+rounds with fewer than two usable voices   0
+usable voices                     335 of 335 heard
+```
+
+### Why this null counts and the earlier one did not
+
+The 2026-08-15 measurement ran the deterministic aligner over the same entries and also found
+nothing. That was worthless as evidence, because `headingAffinity` is token overlap and reads 0.00
+on handle-free cross-language headings, so agreeing with position is the only thing it could do.
+
+This one used a roster that reads both documents, and the SAME roster answers non-identity when the
+documents warrant it: on `XIEPT2` it returned `0-1 1-2 ... 7-8`, putting the extra English section
+at the front, and on `XingZ60` it paired 13 of 15 and left two originals unpaired. The positive
+control was already in hand rather than constructed for the occasion.
+
+The fast path therefore stays. Removing it would buy 336 more calls per pass to reproduce an answer
+measured identical on every entry it serves. What changed is that the risk is measured at zero
+rather than unobserved. The probe is rerunnable on any new corpus at `~/temp/agent/fastpath-ask.mjs`.
