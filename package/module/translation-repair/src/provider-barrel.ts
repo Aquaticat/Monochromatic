@@ -12,6 +12,14 @@
 // only remedy that works against an exhausted budget.
 
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
+export {
+  answerToolDefinition,
+  answerToolName,
+  type AnthropicToolDefinition,
+  type ReadableResponseFormat,
+  renderToolSystemPrompt,
+  UnnameableToolError,
+} from './anthropic-tool.ts';
 export { scanAnthropicDeltas, } from './anthropic-delta-scan.ts';
 export {
   answerCeilingFor,
