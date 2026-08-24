@@ -146,7 +146,7 @@ export async function runWidthSlice(
 
   return {
     entryId: input.entryId,
-    chunkIndex: input.chunkIndex,
+    sliceIndex: input.sliceIndex,
     acceptedIssues,
     comparison,
     heardNarrow: narrow.heard,

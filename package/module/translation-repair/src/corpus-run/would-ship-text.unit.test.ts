@@ -67,7 +67,7 @@ const CONSOLIDATED_NAP = 'The cat is napping on the windowsill.';
  */
 function rowWith(over: Record<string, unknown> = {},): Record<string, unknown> {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
     repairText: REPAIR_NAP,
@@ -107,7 +107,7 @@ function keptStanding(
   { terminal, }: { readonly terminal: string; },
 ): Record<string, unknown> {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     terminal,
     shipped: { kind: 'unchanged', },
     rewrapped: false,
@@ -133,7 +133,7 @@ function contestedWith(
   { verdict, }: { readonly verdict: Record<string, unknown>; },
 ): Record<string, unknown> {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     verdict,
     ballots: [],
     usable: 3,
@@ -519,9 +519,9 @@ await describe({
     fn: async () => {
       const source = {
         comparison: [
-          rowWith({ chunkIndex: 0, },),
+          rowWith({ sliceIndex: 0, },),
           rowWith({
-            chunkIndex: 1,
+            sliceIndex: 1,
             repairText: TRANSLATE_NAP,
             laneRelation: 'both-agree',
           },),
@@ -554,10 +554,10 @@ await describe({
        */
       const agreedSlice = nonNullishOrThrow(slices[1],);
 
-      expect(contestedSlice.chunkIndex,).toBe(0,);
+      expect(contestedSlice.sliceIndex,).toBe(0,);
       expect(contestedSlice.reading.kind === 'wording' ? contestedSlice.reading.decidedBy : '',)
         .toBe('contest',);
-      expect(agreedSlice.chunkIndex,).toBe(1,);
+      expect(agreedSlice.sliceIndex,).toBe(1,);
       expect(agreedSlice.reading.kind === 'wording' ? agreedSlice.reading.decidedBy : '',)
         .toBe('lanes-agreed',);
     },

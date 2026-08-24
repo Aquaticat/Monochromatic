@@ -73,34 +73,34 @@ const ROSTER = [
  *
  * @param text - original-side text this slice covers
  *
- * @param chunkIndex - position of this slice in its document
+ * @param sliceIndex - position of this slice in its document
  *
  * @returns Pair whose original side carries that text
  *
  * @example
  * ```ts
- * const pair = sliceOf({ text: '## 简介\n', chunkIndex: 0, },);
+ * const pair = sliceOf({ text: '## 简介\n', sliceIndex: 0, },);
  * ```
  */
 function sliceOf(
   {
     text,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly text: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: text.length,
       text,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
@@ -118,11 +118,11 @@ const SLICES: readonly ChunkPair[] = [
   '傍晚她回到炉火旁。\n',
 ].map(function toSlice(
   text,
-  chunkIndex,
+  sliceIndex,
 ) {
   return sliceOf({
     text,
-    chunkIndex,
+    sliceIndex,
   },);
 },);
 
@@ -166,7 +166,7 @@ await describe({
         expect(neighbouringSource({
           slices: [sliceOf({
             text: '小猫在窗台上睡觉。\n',
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           slicePosition: 0,
         },),).toBe('',);
@@ -194,18 +194,18 @@ await describe({
          * Two slices of one section, stamped with the document-wide indices they
          * would carry in an entry whose earlier sections were not sliced.
          *
-         * Passing `chunkIndex` here rather than the array position is the whole
+         * Passing `sliceIndex` here rather than the array position is the whole
          * hazard: `11` and `12` are ordinary stamps, and both are outside a
          * two-element array.
          */
         const stamped: readonly ChunkPair[] = [
           sliceOf({
             text: '小猫在窗台上睡觉。\n',
-            chunkIndex: 11,
+            sliceIndex: 11,
           },),
           sliceOf({
             text: '她看着外面的鸟。\n',
-            chunkIndex: 12,
+            sliceIndex: 12,
           },),
         ];
         /**
@@ -215,7 +215,7 @@ await describe({
           return neighbouringSource({
             slices: stamped,
             slicePosition: stamped[0]?.source
-              .chunkIndex ?? 0,
+              .sliceIndex ?? 0,
           },);
         },);
 
@@ -446,36 +446,36 @@ await describe({
  *
  * @param wording - archive English of this slice
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @returns Pair with both sides populated
  *
  * @example
  * ```ts
- * const pair = pairOf({ text: '猫。', wording: 'A cat.', chunkIndex: 0, },);
+ * const pair = pairOf({ text: '猫。', wording: 'A cat.', sliceIndex: 0, },);
  * ```
  */
 function pairOf(
   {
     text,
     wording,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly text: string;
     readonly wording: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: text.length,
       text,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: wording.length,
@@ -502,12 +502,12 @@ const TRANSLATED: readonly ChunkPair[] = [
   },
 ].map(function toPair(
   { text, wording, },
-  chunkIndex,
+  sliceIndex,
 ): ChunkPair {
   return pairOf({
     text,
     wording,
-    chunkIndex,
+    sliceIndex,
   },);
 },);
 

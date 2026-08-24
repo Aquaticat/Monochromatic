@@ -233,7 +233,7 @@ async function runOne(
    */
   const outcome = await repairChunk({
     client,
-    chunkIndex: slice.index,
+    sliceIndex: slice.index,
     sourceText: slice.sourceText,
     targetText: slice.incumbentText,
     lineStructured: slice.lineStructured,

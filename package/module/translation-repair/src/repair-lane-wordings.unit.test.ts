@@ -57,26 +57,26 @@ function alternatingSlices(): readonly ChunkPair[] {
     1,
     2,
     3,
-  ].map(function toPair(chunkIndex,): ChunkPair {
+  ].map(function toPair(sliceIndex,): ChunkPair {
     /**
      * Archive wording here, absent at every anchor.
      */
-    const incumbentText = INCUMBENTS[chunkIndex];
+    const incumbentText = INCUMBENTS[sliceIndex];
     return {
       source: {
-        chunkIndex,
+        sliceIndex,
         nodes: [],
         startOffset: 0,
         endOffset: 1,
-        text: `source of slice ${String(chunkIndex,)}`,
+        text: `source of slice ${String(sliceIndex,)}`,
       },
       target: (incumbentText === undefined)
         ? makeInsertionChunk({
-          chunkIndex,
+          sliceIndex,
           offset: 0,
         },)
         : {
-          chunkIndex,
+          sliceIndex,
           nodes: [],
           startOffset: 0,
           endOffset: incumbentText.length,
@@ -94,7 +94,7 @@ function alternatingSlices(): readonly ChunkPair[] {
  * fixture that left it implicit would stop testing the distinction the moment
  * the default changed.
  *
- * @param chunkIndex - slice this settled
+ * @param sliceIndex - slice this settled
  *
  * @param repairedText - wording the lane settled on
  *
@@ -102,20 +102,20 @@ function alternatingSlices(): readonly ChunkPair[] {
  *
  * @example
  * ```ts
- * const outcome = heard({ chunkIndex: 0, repairedText: 'The cat naps.', },);
+ * const outcome = heard({ sliceIndex: 0, repairedText: 'The cat naps.', },);
  * ```
  */
 function heard(
   {
-    chunkIndex,
+    sliceIndex,
     repairedText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairedText: string;
   },
 ): RepairVoiceRecord {
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed: false,
     heardCriticIds: ['hf:openai/gpt-oss-120b',],
@@ -126,7 +126,7 @@ function heard(
 /**
  * One settled slice no stage spoke about, which leaves the archive standing.
  *
- * @param chunkIndex - slice this settled
+ * @param sliceIndex - slice this settled
  *
  * @param repairedText - wording the lane settled on, which for a silent slice
  * has to be the archive's own
@@ -135,20 +135,20 @@ function heard(
  *
  * @example
  * ```ts
- * const outcome = unheard({ chunkIndex: 0, repairedText: ARCHIVE_NAP, },);
+ * const outcome = unheard({ sliceIndex: 0, repairedText: ARCHIVE_NAP, },);
  * ```
  */
 function unheard(
   {
-    chunkIndex,
+    sliceIndex,
     repairedText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairedText: string;
   },
 ): RepairVoiceRecord {
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed: false,
     heardCriticIds: [],
@@ -173,10 +173,10 @@ await describe({
           slices: alternatingSlices(),
           undecided: 'refuse',
           outcomes: [
-            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
-            heard({ chunkIndex: 1, repairedText: '', },),
-            heard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
-            heard({ chunkIndex: 3, repairedText: '', },),
+            heard({ sliceIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ sliceIndex: 1, repairedText: '', },),
+            heard({ sliceIndex: 2, repairedText: 'The bowl is full.', },),
+            heard({ sliceIndex: 3, repairedText: '', },),
           ],
         },);
         expect(wordings.map(function toOutcome(one,): string {
@@ -215,9 +215,9 @@ await describe({
           slices: alternatingSlices(),
           undecided: 'not-evaluated',
           outcomes: [
-            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
-            heard({ chunkIndex: 1, repairedText: '', },),
-            heard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
+            heard({ sliceIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ sliceIndex: 1, repairedText: '', },),
+            heard({ sliceIndex: 2, repairedText: 'The bowl is full.', },),
           ],
         },);
         expect(wordings.map(function toOutcome(one,): string {
@@ -245,10 +245,10 @@ await describe({
           slices: alternatingSlices(),
           undecided: 'refuse',
           outcomes: [
-            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
-            heard({ chunkIndex: 1, repairedText: '', },),
-            unheard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
-            heard({ chunkIndex: 3, repairedText: '', },),
+            heard({ sliceIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ sliceIndex: 1, repairedText: '', },),
+            unheard({ sliceIndex: 2, repairedText: 'The bowl is full.', },),
+            heard({ sliceIndex: 3, repairedText: '', },),
           ],
         },);
         expect(wordings.map(function toOutcome(one,): string {
@@ -275,10 +275,10 @@ await describe({
           slices: alternatingSlices(),
           undecided: 'refuse',
           outcomes: [
-            heard({ chunkIndex: 0, repairedText: 'The cat sleeps on the sill.', },),
-            heard({ chunkIndex: 1, repairedText: '', },),
-            heard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
-            heard({ chunkIndex: 3, repairedText: '', },),
+            heard({ sliceIndex: 0, repairedText: 'The cat sleeps on the sill.', },),
+            heard({ sliceIndex: 1, repairedText: '', },),
+            heard({ sliceIndex: 2, repairedText: 'The bowl is full.', },),
+            heard({ sliceIndex: 3, repairedText: '', },),
           ],
         },);
         expect(wordings[0]?.outcome
@@ -301,10 +301,10 @@ await describe({
             slices: alternatingSlices(),
             undecided: 'refuse',
             outcomes: [
-              heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
-              heard({ chunkIndex: 1, repairedText: '', },),
-              unheard({ chunkIndex: 2, repairedText: 'The bowl is overflowing.', },),
-              heard({ chunkIndex: 3, repairedText: '', },),
+              heard({ sliceIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+              heard({ sliceIndex: 1, repairedText: '', },),
+              unheard({ sliceIndex: 2, repairedText: 'The bowl is overflowing.', },),
+              heard({ sliceIndex: 3, repairedText: '', },),
             ],
           },);
         },);
@@ -326,14 +326,14 @@ await describe({
           slices: alternatingSlices(),
           undecided: 'refuse',
           outcomes: [
-            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
-            heard({ chunkIndex: 1, repairedText: '', },),
+            heard({ sliceIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ sliceIndex: 1, repairedText: '', },),
             {
-              ...unheard({ chunkIndex: 2, repairedText: 'The bowl is brimming.', },),
+              ...unheard({ sliceIndex: 2, repairedText: 'The bowl is brimming.', },),
               refined: true,
               changed: true,
             },
-            heard({ chunkIndex: 3, repairedText: '', },),
+            heard({ sliceIndex: 3, repairedText: '', },),
           ],
         },);
         expect(wordings[2]?.outcome

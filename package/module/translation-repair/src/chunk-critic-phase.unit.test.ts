@@ -183,7 +183,7 @@ async function runPhase(
     sourceText: SOURCE_TEXT,
     targetText: TARGET_TEXT,
     documents: DOCUMENTS,
-    chunkIndex: 0,
+    sliceIndex: 0,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
     l,

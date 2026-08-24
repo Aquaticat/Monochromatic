@@ -61,24 +61,24 @@ const HEX = 16;
  *
  * @param entryId - entry the slice belongs to
  *
- * @param chunkIndex - slice position within that entry
+ * @param sliceIndex - slice position within that entry
  *
  * @returns All three arms, once each, in buying order
  *
  * @example
  * ```ts
- * const order = armOrderFor({ protocol, entryId: 'Mittens', chunkIndex: 7, },);
+ * const order = armOrderFor({ protocol, entryId: 'Mittens', sliceIndex: 7, },);
  * ```
  */
 export function armOrderFor(
   {
     protocol,
     entryId,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly protocol: string;
     readonly entryId: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): readonly string[] {
   /**
@@ -89,7 +89,7 @@ export function armOrderFor(
       content: JSON.stringify([
         protocol,
         entryId,
-        chunkIndex,
+        sliceIndex,
       ],),
     },)
       .slice(

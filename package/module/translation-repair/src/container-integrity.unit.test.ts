@@ -135,14 +135,14 @@ function rangeOf(
 ): ChunkPair {
   return {
     source: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
       text: '猫猫在窗台上睡觉。',
     },
     target: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       nodes: TARGET_NODES.filter(function inRange(node,): boolean {
         return (node.startOffset >= startOffset)
           && (node.endOffset <= endOffset);
@@ -325,14 +325,14 @@ await describe({
             slices: [
               {
                 source: {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 0,
                   text: '猫猫也喜欢晒太阳。',
                 },
                 target: makeInsertionChunk({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   offset: nonNullishOrThrow(onlyContainer()
                     .openerEndOffset,),
                 },),

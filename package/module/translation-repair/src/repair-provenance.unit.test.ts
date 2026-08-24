@@ -271,7 +271,7 @@ function settledOutcome(
   { accuracyPatchSelected, }: { readonly accuracyPatchSelected: boolean; },
 ): ChunkRepairOutcome {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     repairedText: accuracyPatchSelected ? PATCHED_TEXT : TARGET_TEXT,
     changed: accuracyPatchSelected,
     issues: [ISSUE,],

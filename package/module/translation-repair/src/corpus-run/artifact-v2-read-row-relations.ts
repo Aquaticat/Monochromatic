@@ -22,7 +22,7 @@ import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
 // describe the same run, so a reader that took either on trust could report a
 // slice the other contradicts.
 //
-// BY POSITION, never joined on `chunkIndex`. Both lists are in document order
+// BY POSITION, never joined on `sliceIndex`. Both lists are in document order
 // by contract, so position is the join, and joining on the index instead would
 // accept a result whose rows are in some other order while reporting that
 // everything matched.
@@ -120,25 +120,25 @@ export function assertEvidenceMatchesLedger(
         reason: 'a row wherever the raw result has one',
       },);
     }
-    if (mine.chunkIndex !== theirs.chunkIndex) {
+    if (mine.sliceIndex !== theirs.sliceIndex) {
       throw new ArtifactParseError({
-        path: `${path}.delivery[${String(position,)}].chunkIndex`,
-        reason: `slice ${String(mine.chunkIndex,)}, which the raw result names at this position, `
-          + `rather than slice ${String(theirs.chunkIndex,)}`,
+        path: `${path}.delivery[${String(position,)}].sliceIndex`,
+        reason: `slice ${String(mine.sliceIndex,)}, which the raw result names at this position, `
+          + `rather than slice ${String(theirs.sliceIndex,)}`,
       },);
     }
     if (mine.incumbentKind !== theirs.incumbentKind) {
       throw new ArtifactParseError({
         path: `${path}.delivery[${String(position,)}].incumbentKind`,
         reason: `${mine.incumbentKind}, as the raw result says of slice ${
-          String(mine.chunkIndex,)
+          String(mine.sliceIndex,)
         }, rather than ${theirs.incumbentKind}`,
       },);
     }
     if (mine.incumbentText !== theirs.incumbentText) {
       throw new ArtifactParseError({
         path: `${path}.delivery[${String(position,)}].incumbentText`,
-        reason: `the archive wording the raw result records for slice ${String(mine.chunkIndex,)}`,
+        reason: `the archive wording the raw result records for slice ${String(mine.sliceIndex,)}`,
       },);
     }
     if (!outcomesEqualV2({
@@ -158,7 +158,7 @@ export function assertEvidenceMatchesLedger(
       throw new ArtifactParseError({
         path: `${path}.delivery[${String(position,)}].outcome`,
         reason: `the outcome the raw result records for slice ${
-          String(mine.chunkIndex,)
+          String(mine.sliceIndex,)
         }, which is ${disagreement}`,
       },);
     }
@@ -218,16 +218,16 @@ export function assertSlicesOrdered(
     if (previous === undefined)
       continue;
 
-    if (row.chunkIndex <= previous.chunkIndex) {
+    if (row.sliceIndex <= previous.sliceIndex) {
       throw new ArtifactParseError({
-        path: `${path}.delivery[${String(position,)}].chunkIndex`,
+        path: `${path}.delivery[${String(position,)}].sliceIndex`,
         reason: `a slice after ${
-          String(previous.chunkIndex,)
+          String(previous.sliceIndex,)
         }, which the row before this one names, since a ledger is stated in document order and every `
           + `check here joins by position; this row names ${
-            String(row.chunkIndex,)
+            String(row.sliceIndex,)
           }, so the rows are ${
-            (row.chunkIndex === previous.chunkIndex) ? 'a repeat' : 'out of order'
+            (row.sliceIndex === previous.sliceIndex) ? 'a repeat' : 'out of order'
           }`,
       },);
     }

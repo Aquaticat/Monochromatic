@@ -135,7 +135,7 @@ export type TranslateSliceRecord = {
   /**
    * Global slice index, as preparation stamped it.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Everything the stage decided, including the slate, every ballot and its
@@ -184,14 +184,14 @@ export type TranslateSliceRecord = {
  *
  * @example
  * ```ts
- * const unfilled: UnfilledSlice = { chunkIndex: 4, reason: 'no-candidate', findings, };
+ * const unfilled: UnfilledSlice = { sliceIndex: 4, reason: 'no-candidate', findings, };
  * ```
  */
 export type UnfilledSlice = {
   /**
    * Slice the archive has no translation for.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Why this run produced none either.

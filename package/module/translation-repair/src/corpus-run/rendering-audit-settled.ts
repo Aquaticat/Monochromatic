@@ -91,7 +91,7 @@ async function auditOne(
   /**
    * Logger tagged for this slice, so a long run's stream says where it is.
    */
-  const l = tagged({ tag: `${PROBE_NAME}:${subject.entryId}:${String(subject.chunkIndex,)}`, },);
+  const l = tagged({ tag: `${PROBE_NAME}:${subject.entryId}:${String(subject.sliceIndex,)}`, },);
 
   /**
    * Everything the reader put in front of the audit for this slice.
@@ -99,7 +99,7 @@ async function auditOne(
   const {
     runSet,
     entryId,
-    chunkIndex,
+    sliceIndex,
     deliveryKind,
     auditsArchiveText,
     pageRelation,
@@ -133,7 +133,7 @@ async function auditOne(
   return {
     runSet,
     entryId,
-    chunkIndex,
+    sliceIndex,
     deliveryKind,
     auditsArchiveText,
     pageRelation,
@@ -309,7 +309,7 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
   const {
     runSet,
     entryId,
-    chunkIndex,
+    sliceIndex,
     auditsArchiveText,
     report,
   } = row;
@@ -357,7 +357,7 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
   );
 
   console.log(
-    `${runSet}/${entryId}#${String(chunkIndex,)} ${
+    `${runSet}/${entryId}#${String(sliceIndex,)} ${
       auditsArchiveText ? 'ARCHIVE' : 'FRESH  '
     } ${pageRelationLabel({ relation, },)} claimed=${String(claimed,)} corroborated=${
       String(corroborated.length,)

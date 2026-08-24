@@ -86,7 +86,7 @@ export type DamageLane = typeof DAMAGE_LANES[number];
  * const region: ShippedRegionV2 = {
  *   entryId: 'Tabby',
  *   lane: 'repair',
- *   chunkIndex: 2,
+ *   sliceIndex: 2,
  *   regionId: 'repair#2',
  *   sourceText: '猫',
  *   incumbentText: 'the cat',
@@ -109,7 +109,7 @@ export type ShippedRegionV2 = {
   /**
    * Slice within the preparation both lanes ran over.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Stable identity within an entry, which the draw digests and the sheet
@@ -182,25 +182,25 @@ export type ShippedRegionCensus = {
  *
  * @param lane - lane that shipped it
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @returns Identity, stable across runs of one pipeline
  *
  * @example
  * ```ts
- * const id = regionIdOf({ lane: 'translate', chunkIndex: 4, },);
+ * const id = regionIdOf({ lane: 'translate', sliceIndex: 4, },);
  * ```
  */
 export function regionIdOf(
   {
     lane,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly lane: DamageLane;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): string {
-  return `${lane}#${String(chunkIndex,)}`;
+  return `${lane}#${String(sliceIndex,)}`;
 }
 
 /**
@@ -275,19 +275,19 @@ export function regionsOfLane(
        * row names is a contradiction, and dropping it would shrink the draw
        * population for a reason nobody would see.
        */
-      const reading = readings.get(row.chunkIndex,);
+      const reading = readings.get(row.sliceIndex,);
       if (reading === undefined)
         throw new DamageRegionV2Error({
-          message: `slice ${row.chunkIndex} shipped in the ${lane} lane and is named by no comparison row`,
+          message: `slice ${row.sliceIndex} shipped in the ${lane} lane and is named by no comparison row`,
         },);
 
       return {
         entryId,
         lane,
-        chunkIndex: row.chunkIndex,
+        sliceIndex: row.sliceIndex,
         regionId: regionIdOf({
           lane,
-          chunkIndex: row.chunkIndex,
+          sliceIndex: row.sliceIndex,
         },),
         sourceText: row.sourceText,
         incumbentText: row.incumbentText,
@@ -372,7 +372,7 @@ export async function collectShippedRegionsV2(
           WouldShipReading,
         ] {
           return [
-            slice.chunkIndex,
+            slice.sliceIndex,
             slice.reading,
           ];
         },),

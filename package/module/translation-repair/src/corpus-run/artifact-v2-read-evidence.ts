@@ -143,6 +143,7 @@ export function parseRepairEvidenceV2(
         return parseEvidenceRowV2({
           value: row,
           path: `${path}.sliceTexts[${String(position,)}]`,
+          keys,
         },);
       },),
   };
@@ -227,6 +228,7 @@ export function parseTranslateEvidenceV2(
         return parseEvidenceRowV2({
           value: row,
           path: `${path}.sliceTexts[${String(position,)}]`,
+          keys,
         },);
       },),
   };

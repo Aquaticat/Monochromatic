@@ -49,14 +49,14 @@ function pairOf(
   },
 ): {
   readonly source: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
     readonly text: string;
   };
   readonly target: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
@@ -65,14 +65,14 @@ function pairOf(
 } {
   return {
     source: {
-      chunkIndex: index,
+      sliceIndex: index,
       nodes: [],
       startOffset: 0,
       endOffset: 1,
       text: 'source of the nap',
     },
     target: {
-      chunkIndex: index,
+      sliceIndex: index,
       nodes: [],
       startOffset: 0,
       endOffset: target.length,
@@ -84,7 +84,7 @@ function pairOf(
 /**
  * Builds one settled record with the parts this builder reads.
  *
- * @param chunkIndex - slice this record settles
+ * @param sliceIndex - slice this record settles
  *
  * @param outputText - what the driver accepted for assembly, which for an
  * unheard slice is the archive's own wording rather than anything produced
@@ -96,16 +96,16 @@ function pairOf(
  *
  * @example
  * ```ts
- * const record = recordFor({ chunkIndex: 0, outputText: 'The cat naps.', heardTranslators: 2, },);
+ * const record = recordFor({ sliceIndex: 0, outputText: 'The cat naps.', heardTranslators: 2, },);
  * ```
  */
 function recordFor(
   {
-    chunkIndex,
+    sliceIndex,
     outputText,
     heardTranslators,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly outputText: string;
     readonly heardTranslators: number;
   },
@@ -113,7 +113,7 @@ function recordFor(
   return {
     kind: 'translate-slice',
     schemaVersion: 1,
-    chunkIndex,
+    sliceIndex,
     outputText,
     changed: false,
     disposition: 'stage-result',
@@ -166,12 +166,12 @@ await describe({
           unfilledChunkIndices: [],
           settled: [
             recordFor({
-              chunkIndex: 0,
+              sliceIndex: 0,
               outputText: 'The cat is asleep on the windowsill.',
               heardTranslators: 2,
             },),
             recordFor({
-              chunkIndex: 1,
+              sliceIndex: 1,
               outputText: 'The bowl is full.',
               heardTranslators: 0,
             },),
@@ -203,12 +203,12 @@ await describe({
           unfilledChunkIndices: [],
           settled: [
             recordFor({
-              chunkIndex: 0,
+              sliceIndex: 0,
               outputText: 'The cat sleeps on the sill.',
               heardTranslators: 0,
             },),
             recordFor({
-              chunkIndex: 1,
+              sliceIndex: 1,
               outputText: 'The bowl is full.',
               heardTranslators: 0,
             },),
@@ -243,14 +243,14 @@ await describe({
           },),
           {
             source: {
-              chunkIndex: 1,
+              sliceIndex: 1,
               nodes: [],
               startOffset: 0,
               endOffset: 0,
               text: 'source of the bowl',
             },
             target: makeInsertionChunk({
-              chunkIndex: 1,
+              sliceIndex: 1,
               offset: 0,
             },),
           },
@@ -265,7 +265,7 @@ await describe({
           unfilledChunkIndices: [1,],
           settled: [
             recordFor({
-              chunkIndex: 0,
+              sliceIndex: 0,
               outputText: 'The cat sleeps on the sill.',
               heardTranslators: 0,
             },),
@@ -298,7 +298,7 @@ await describe({
             unfilledChunkIndices: [],
             settled: [
               recordFor({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 outputText: 'The cat is asleep on the windowsill.',
                 heardTranslators: 2,
               },),

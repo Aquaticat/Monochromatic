@@ -64,7 +64,7 @@ export function dropsQuotedPassage(
  * whichever guard kept the archive, and so a corpus-wide count can separate
  * them.
  *
- * @param chunkIndex - slice refused
+ * @param sliceIndex - slice refused
  *
  * @param incumbentText - archive wording that was kept
  *
@@ -74,21 +74,21 @@ export function dropsQuotedPassage(
  *
  * @example
  * ```ts
- * const finding = quoteLossRefusalFinding({ chunkIndex, incumbentText, shippedText, },);
+ * const finding = quoteLossRefusalFinding({ sliceIndex, incumbentText, shippedText, },);
  * ```
  */
 export function quoteLossRefusalFinding(
   {
-    chunkIndex,
+    sliceIndex,
     incumbentText,
     shippedText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly incumbentText: string;
     readonly shippedText: string;
   },
 ): string {
-  return `translate-refused-quote-loss (slice ${String(chunkIndex,)}: archive carries ${
+  return `translate-refused-quote-loss (slice ${String(sliceIndex,)}: archive carries ${
     String(quoteBlockCount({ text: incumbentText, },),)
   } quoted passages, replacement carries ${
     String(quoteBlockCount({ text: shippedText, },),)

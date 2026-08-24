@@ -248,7 +248,7 @@ export async function translateDocument(
     /**
      * Global index of this slice, which every record and replacement names.
      */
-    const { chunkIndex, } = slice.target;
+    const { sliceIndex, } = slice.target;
 
     if (isInsertionChunk(slice.target,) && (!admitted.has(slicePosition,))) {
       // NOTHING IS BOUGHT HERE. The pairing says this original went unrendered,
@@ -256,16 +256,16 @@ export async function translateDocument(
       // the likelier reading is that the passage was merged into a neighbour and
       // writing it in would put a second rendering of it into the document.
       tl.warn(
-        `slice ${String(chunkIndex,)}: an original with no translation beside it, but the page `
+        `slice ${String(sliceIndex,)}: an original with no translation beside it, but the page `
           + 'has no room to be missing it; nothing was bought and the passage stays as it is',
       );
       unfilled.push({
-        chunkIndex,
+        sliceIndex,
         reason: 'not-corroborated',
         findings: [],
       },);
       unfilledFindings.push(
-        `${absenceFinding({ reason: 'not-corroborated', },)} chunk ${String(chunkIndex,)}`,
+        `${absenceFinding({ reason: 'not-corroborated', },)} chunk ${String(sliceIndex,)}`,
       );
       continue;
     }
@@ -276,7 +276,7 @@ export async function translateDocument(
     using cost = armSliceCost({
       l: tl,
       lane: 'translate',
-      chunkIndex,
+      sliceIndex,
       sourceChars: slice.source
         .text
         .length,
@@ -351,7 +351,7 @@ export async function translateDocument(
         .text,
       incumbentKind,
       lineStructured: prepared.lineStructuredSliceIndices
-        .has(chunkIndex,),
+        .has(sliceIndex,),
       neighbouringIncumbentText,
       neighbouringSourceText,
       pictureContext: pictures.context,
@@ -384,7 +384,7 @@ export async function translateDocument(
         /**
          * Why this slice is being asked again rather than resumed.
          */
-        const unheard = unheardCacheDiscardFinding({ chunkIndex, },);
+        const unheard = unheardCacheDiscardFinding({ sliceIndex, },);
         tl.warn(unheard,);
         refusedCacheFindings.push(unheard,);
       }
@@ -403,7 +403,7 @@ export async function translateDocument(
         // the wrong slice in every replacement and issue record built from it.
         settled.push({
           ...resumed,
-          chunkIndex,
+          sliceIndex,
         },);
         cost.left({ exit: 'resumed', },);
         continue;
@@ -414,7 +414,7 @@ export async function translateDocument(
        */
       const discarded = resumedSliceDiscardFinding({
         lane: 'translate',
-        chunkIndex,
+        sliceIndex,
         changed: resumed.changed,
       },);
       tl.warn(discarded,);
@@ -457,18 +457,18 @@ export async function translateDocument(
       // worth what it cost, and the next run asks again, because nothing is
       // cached for a slice that produced nothing.
       tl.warn(
-        `slice ${String(chunkIndex,)}: no translation in the archive and none produced (${
+        `slice ${String(sliceIndex,)}: no translation in the archive and none produced (${
           attempt.reason
         }); the passage stays missing and the slice is NOT cached`,
       );
       unfilled.push({
-        chunkIndex,
+        sliceIndex,
         reason: attempt.reason,
         findings: attempt.findings,
       },);
       unfilledFindings.push(
         ...attempt.findings,
-        `${absenceFinding({ reason: attempt.reason, },)} chunk ${String(chunkIndex,)}`,
+        `${absenceFinding({ reason: attempt.reason, },)} chunk ${String(sliceIndex,)}`,
       );
       cost.left({ exit: 'unfilled', },);
       continue;
@@ -486,7 +486,7 @@ export async function translateDocument(
     // keeps doing so.
     assertSettledRecordAgrees({
       lane: 'translate',
-      chunkIndex,
+      sliceIndex,
       changed: record.changed,
       decidedText: record.outputText,
       incumbentText: slice.target
@@ -496,14 +496,14 @@ export async function translateDocument(
     // branch below rests on it, and so does every wording built from this
     // record afterwards.
     assertUnheardKeptIncumbent({
-      chunkIndex,
+      sliceIndex,
       record,
       incumbentText: slice.target
         .text,
     },);
     if (heardNobody({ record, },)) {
       tl.warn(
-        `slice ${String(chunkIndex,)}: no translator was heard, so the incumbent `
+        `slice ${String(sliceIndex,)}: no translator was heard, so the incumbent `
           + 'stands for this run and the slice is NOT cached',
       );
     }

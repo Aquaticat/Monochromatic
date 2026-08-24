@@ -245,7 +245,7 @@ export function chunkByHeadings(
 
   return groups.map(function toChunk(
     nodes: readonly DocumentNode[],
-    chunkIndex,
+    sliceIndex,
   ): ContentChunk {
     /**
      * First node of the group, guaranteed by construction.
@@ -258,7 +258,7 @@ export function chunkByHeadings(
     if ((first === undefined) || (last === undefined))
       throw new Error('unreachable: every chunk group carries at least one node',);
     return {
-      chunkIndex,
+      sliceIndex,
       nodes,
       startOffset: first.startOffset,
       endOffset: last.endOffset,
@@ -549,7 +549,7 @@ export function alignDocumentSections(
         return [{
           source: sourceChunk,
           target: makeInsertionChunk({
-            chunkIndex: step.sourceIndex,
+            sliceIndex: step.sourceIndex,
             offset: placement.offset,
           },),
         },];

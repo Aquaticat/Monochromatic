@@ -50,7 +50,7 @@ function chunkWith(
   { claims, }: { readonly claims: readonly (readonly [string, readonly string[],])[]; },
 ) {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     heardCriticIds: [...ROSTER,],
     claimAttributions: claims.map(function toAttribution([claimId, proposers,],) {
       return {

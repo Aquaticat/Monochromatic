@@ -47,7 +47,7 @@ import {
  */
 function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
   return isJsonRecord(value,)
-    && ((typeof value.chunkIndex) === 'number')
+    && ((typeof value.sliceIndex) === 'number')
     && ((typeof value.repairedText) === 'string')
     && ((typeof value.changed) === 'boolean')
     && ((typeof value.nonTranslationStanding) === 'boolean')
@@ -88,7 +88,7 @@ function isTranslateSliceRecord(
   return isJsonRecord(value,)
     && (value.kind === 'translate-slice')
     && (value.schemaVersion === TRANSLATE_SLICE_CACHE_VERSION)
-    && ((typeof value.chunkIndex) === 'number')
+    && ((typeof value.sliceIndex) === 'number')
     && ((typeof value.outputText) === 'string')
     && ((typeof value.changed) === 'boolean')
     && ((value.disposition === 'stage-result')

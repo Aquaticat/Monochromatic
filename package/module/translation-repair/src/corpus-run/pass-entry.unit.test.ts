@@ -27,6 +27,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -460,7 +461,7 @@ await describe({
   children: [
     it({
       name:
-        'settles an entry into ONE artifact at schema version 3 carrying BOTH lanes over ONE '
+        'settles an entry into ONE artifact at schema version 4 carrying BOTH lanes over ONE '
         + 'preparation, which is what the whole two-lane generation is for: the two documents differ '
         + 'by lane rather than by two runs of the aligner',
       fn: async () => {
@@ -497,7 +498,7 @@ await describe({
         // Read structurally rather than through the writer's own types, since
         // what is under test is the FILE: a reader holding only this has to
         // find both lanes nested and no lane at the top level.
-        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(3,);
+        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(4,);
         expect(Object.keys((artifact as { lanes: object; }).lanes,)
           .toSorted(),).toEqual([
           'repair',
@@ -505,10 +506,10 @@ await describe({
         ],);
 
         // THE STAMP AND THE SPELLING, checked together on the bytes. A writer
-        // that stamped generation 3 and wrote generation 2's keys would satisfy
-        // the assertion above and produce a file its own reader refuses, and
-        // every fixture in this package would still pass: they are built by
-        // hand from the same names the writer uses.
+        // that stamped generation 4 and wrote an earlier generation's keys
+        // would satisfy the assertion above and produce a file its own reader
+        // refuses, and every fixture in this package would still pass: they are
+        // built by hand from the same names the writer uses.
         /**
          * Repair lane's result as the file records it.
          */
@@ -531,6 +532,34 @@ await describe({
             absent,
           ),).toBe(false,);
         }
+
+        // THE INDEX IS THE HALF GENERATION 3 DID NOT CARRY, and it is spelled
+        // on the ledger rows rather than beside those arrays. An artifact
+        // stamped 4 whose rows still say `chunkIndex` is exactly generation 3,
+        // and every assertion above it here would pass.
+        /**
+         * Repair lane's first ledger row as the file records it.
+         */
+        const [firstRow,] = (artifact as {
+          lanes: { repair: { delivery: readonly Record<string, unknown>[]; }; };
+        })
+          .lanes
+          .repair
+          .delivery;
+
+        /**
+         * That row, present because this entry settled slices.
+         */
+        const repairRow = nonNullishOrThrow(firstRow,);
+
+        expect(Object.hasOwn(
+          repairRow,
+          'sliceIndex',
+        ),).toBe(true,);
+        expect(Object.hasOwn(
+          repairRow,
+          'chunkIndex',
+        ),).toBe(false,);
         // A CONTEST THAT RAN AND DECIDED, end to end through the pass. The two
         // lanes disagree at one slice by construction, so exactly one is worth
         // asking about, and the scripted roster backs the translate candidate.

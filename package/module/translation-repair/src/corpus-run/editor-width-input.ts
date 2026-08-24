@@ -27,7 +27,7 @@ import {
 //
 // The cheap route reads issues out of a settled artifact. It was rejected: the
 // artifacts were written by earlier slicings, `#157` and `#159` both moved
-// where slice boundaries fall, and `#99` is the standing record of chunkIndex
+// where slice boundaries fall, and `#99` is the standing record of sliceIndex
 // meaning different things to different stamps. Issues carrying offsets into a
 // target that today's slicer cuts differently would place envelopes over the
 // wrong words, and the probe would be measuring editors handed nonsense.
@@ -48,7 +48,7 @@ export type WidthProbeInput = {
   /**
    * Position within that entry.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Original passage.
@@ -94,7 +94,7 @@ export type WidthInputOutcome =
     readonly kind: 'skipped';
     readonly refusal: WidthInputRefusal;
     readonly entryId: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   };
 
 /**
@@ -154,7 +154,7 @@ export async function gatherWidthInput(
     sourceText: slice.sourceText,
     targetText: slice.incumbentText,
     documents,
-    chunkIndex: slice.index,
+    sliceIndex: slice.index,
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
@@ -170,7 +170,7 @@ export async function gatherWidthInput(
       kind: 'skipped',
       refusal: 'no-claims',
       entryId: slice.entryId,
-      chunkIndex: slice.index,
+      sliceIndex: slice.index,
     };
 
   /**
@@ -212,7 +212,7 @@ export async function gatherWidthInput(
       kind: 'skipped',
       refusal: 'no-accepted-issues',
       entryId: slice.entryId,
-      chunkIndex: slice.index,
+      sliceIndex: slice.index,
     };
 
   /**
@@ -228,14 +228,14 @@ export async function gatherWidthInput(
       kind: 'skipped',
       refusal: 'no-envelopes',
       entryId: slice.entryId,
-      chunkIndex: slice.index,
+      sliceIndex: slice.index,
     };
 
   return {
     kind: 'ready',
     input: {
       entryId: slice.entryId,
-      chunkIndex: slice.index,
+      sliceIndex: slice.index,
       sourceText: slice.sourceText,
       targetText: slice.incumbentText,
       issues: deduped.issues,

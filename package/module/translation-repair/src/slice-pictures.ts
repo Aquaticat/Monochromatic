@@ -53,7 +53,7 @@ export type SlicePictures = {
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param slicePosition - POSITION IN `slices`, never a stamped `chunkIndex`
+ * @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
  *
  * @returns Asset names in document order, each once
  *
@@ -206,7 +206,7 @@ export function slicePictures(
  * TWO INDEX SPACES MEET HERE, which is the whole reason this exists.
  * {@link slicePictures} takes a POSITION, because a window is defined by who sits
  * either side in the array. A stage downstream of preparation holds no array: it
- * holds rows stamped with `chunkIndex`, and `#99` is the record of what happens
+ * holds rows stamped with `sliceIndex`, and `#99` is the record of what happens
  * when those two are assumed equal by someone holding neither.
  *
  * THEY ARE EQUAL, AND ENFORCED SO. `assertSliceIndexing` refuses any preparation
@@ -266,7 +266,7 @@ export function slicePictureContexts(
 
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       rendered.context,
     ];
   },);

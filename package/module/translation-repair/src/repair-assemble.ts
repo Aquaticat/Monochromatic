@@ -137,7 +137,7 @@ export function assembleRepair(
        * This slice's index and the wording the archive had there.
        */
       const {
-        chunkIndex,
+        sliceIndex,
         text: incumbentText,
       } = slice.target;
 
@@ -147,10 +147,10 @@ export function assembleRepair(
       const replacement = guarded
         .replacements
         .find(function atSlice(candidate,): boolean {
-          return candidate.chunkIndex === chunkIndex;
+          return candidate.sliceIndex === sliceIndex;
         },);
       return {
-        chunkIndex,
+        sliceIndex,
         text: (replacement === undefined)
           ? incumbentText
           : replacement.replacementText,

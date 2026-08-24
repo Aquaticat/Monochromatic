@@ -29,7 +29,7 @@ import {
 /**
  * Builds one delivery row.
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @param kind - what the lane did with the slice
  *
@@ -39,16 +39,16 @@ import {
  *
  * @example
  * ```ts
- * const row = rowOf({ chunkIndex: 0, kind: 'replacement-shipped', },);
+ * const row = rowOf({ sliceIndex: 0, kind: 'replacement-shipped', },);
  * ```
  */
 function rowOf(
   {
-    chunkIndex,
+    sliceIndex,
     kind,
     incumbentKind = 'present',
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly kind: 'replacement-shipped' | 'replacement-withdrawn' | 'incumbent-retained';
     readonly incumbentKind?: 'present' | 'absent';
   },
@@ -64,14 +64,14 @@ function rowOf(
     : { kind, };
 
   return {
-    chunkIndex,
-    sourceText: `窗台上有第${String(chunkIndex,)}只猫。`,
+    sliceIndex,
+    sourceText: `窗台上有第${String(sliceIndex,)}只猫。`,
     incumbentKind,
     incumbentText: (incumbentKind === 'present')
-      ? `Cat ${String(chunkIndex,)} sits on the sill.`
+      ? `Cat ${String(sliceIndex,)} sits on the sill.`
       : '',
     outcome: { kind: 'decided', },
-    shippedText: `Cat ${String(chunkIndex,)} is perched on the windowsill.`,
+    shippedText: `Cat ${String(sliceIndex,)} is perched on the windowsill.`,
     delivery,
   } as Parameters<typeof regionsOfLane>[0]['rows'][number];
 }
@@ -125,15 +125,15 @@ function readingsOf(
   return new Map(
     Array.from(
       { length: COVERED_SLICES, },
-      function perSlice(_unused, chunkIndex,): readonly [
+      function perSlice(_unused, sliceIndex,): readonly [
         number,
         unknown,
       ] {
         return [
-          chunkIndex,
+          sliceIndex,
           {
             kind: 'wording',
-            text: text ?? `Cat ${String(chunkIndex,)} is perched on the windowsill.`,
+            text: text ?? `Cat ${String(sliceIndex,)} is perched on the windowsill.`,
             decidedBy,
           },
         ];
@@ -166,22 +166,22 @@ await describe({
           lane: 'repair',
           rows: [
             rowOf({
-              chunkIndex: 0,
+              sliceIndex: 0,
               kind: 'replacement-shipped',
             },),
             rowOf({
-              chunkIndex: 1,
+              sliceIndex: 1,
               kind: 'replacement-withdrawn',
             },),
             rowOf({
-              chunkIndex: 2,
+              sliceIndex: 2,
               kind: 'incumbent-retained',
             },),
           ],
         },);
 
         expect(census.regions.length,).toBe(1,);
-        expect(census.regions[0]?.chunkIndex,).toBe(0,);
+        expect(census.regions[0]?.sliceIndex,).toBe(0,);
         expect(census.filledWithoutIncumbent,).toBe(0,);
       },
     },),
@@ -198,11 +198,11 @@ await describe({
           lane: 'translate',
           rows: [
             rowOf({
-              chunkIndex: 0,
+              sliceIndex: 0,
               kind: 'replacement-shipped',
             },),
             rowOf({
-              chunkIndex: 1,
+              sliceIndex: 1,
               kind: 'replacement-shipped',
               incumbentKind: 'absent',
             },),
@@ -228,7 +228,7 @@ await describe({
           readings: SURVIVING,
           lane: 'repair',
           rows: [rowOf({
-            chunkIndex: 3,
+            sliceIndex: 3,
             kind: 'replacement-shipped',
           },),],
         },);
@@ -238,7 +238,7 @@ await describe({
           readings: SURVIVING,
           lane: 'translate',
           rows: [rowOf({
-            chunkIndex: 3,
+            sliceIndex: 3,
             kind: 'replacement-shipped',
           },),],
         },);
@@ -262,7 +262,7 @@ await describe({
           readings: SURVIVING,
           lane: 'repair',
           rows: [rowOf({
-            chunkIndex: 5,
+            sliceIndex: 5,
             kind: 'replacement-shipped',
           },),],
         },);
@@ -291,7 +291,7 @@ await describe({
           readings: readingsOf({ text: 'The third rendering says something else.', },),
           lane: 'repair',
           rows: [rowOf({
-            chunkIndex: 4,
+            sliceIndex: 4,
             kind: 'replacement-shipped',
           },),],
         },);
@@ -320,7 +320,7 @@ await describe({
           },),
           lane: 'translate',
           rows: [rowOf({
-            chunkIndex: 6,
+            sliceIndex: 6,
             kind: 'replacement-shipped',
           },),],
         },);
@@ -345,7 +345,7 @@ await describe({
             readings: new Map() as Parameters<typeof regionsOfLane>[0]['readings'],
             lane: 'repair',
             rows: [rowOf({
-              chunkIndex: 7,
+              sliceIndex: 7,
               kind: 'replacement-shipped',
             },),],
           },);
@@ -384,18 +384,18 @@ await describe({
       fn: async () => {
         expect(regionIdOf({
           lane: 'repair',
-          chunkIndex: 0,
+          sliceIndex: 0,
         },),).toBe('repair#0',);
         expect(regionIdOf({
           lane: 'translate',
-          chunkIndex: 12,
+          sliceIndex: 12,
         },),).toBe('translate#12',);
         expect(regionIdOf({
           lane: 'repair',
-          chunkIndex: 12,
+          sliceIndex: 12,
         },),).not.toBe(regionIdOf({
           lane: 'translate',
-          chunkIndex: 12,
+          sliceIndex: 12,
         },),);
       },
     },),

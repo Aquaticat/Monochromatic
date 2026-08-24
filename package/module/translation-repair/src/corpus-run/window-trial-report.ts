@@ -368,7 +368,7 @@ function groupBySlice(
     /**
      * This slice's identity across entries.
      */
-    const key = `${row.entryId} ${String(row.chunkIndex,)}`;
+    const key = `${row.entryId} ${String(row.sliceIndex,)}`;
 
     /**
      * Arms recorded for it so far.

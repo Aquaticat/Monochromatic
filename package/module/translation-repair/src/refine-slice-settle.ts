@@ -192,7 +192,7 @@ export async function settleRefinedSlice(
     definitions,
     ...(identityContext === undefined ? {} : { identityContext, }),
     declaredNames,
-    chunkIndex: outcome.chunkIndex,
+    sliceIndex: outcome.sliceIndex,
     signal,
     perCallTimeoutMs,
     l,
@@ -287,7 +287,7 @@ export async function settleRefinedSlice(
     baselineText: outcome.repairedText,
     regions: [
       {
-        envelopeId: `refinement/${String(outcome.chunkIndex,)}`,
+        envelopeId: `refinement/${String(outcome.sliceIndex,)}`,
         issueIds: outcome.issues
           .map(function toId(issue,) {
             return issue.issueId;

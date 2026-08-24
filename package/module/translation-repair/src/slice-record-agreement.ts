@@ -115,7 +115,7 @@ export function sliceRecordAgrees(
  *
  * @param lane - which lane settled the record
  *
- * @param chunkIndex - slice it was settled for
+ * @param sliceIndex - slice it was settled for
  *
  * @param changed - what the record claims about itself
  *
@@ -128,19 +128,19 @@ export function sliceRecordAgrees(
  *
  * @example
  * ```ts
- * assertSettledRecordAgrees({ lane: 'repair', chunkIndex, changed, decidedText, incumbentText, },);
+ * assertSettledRecordAgrees({ lane: 'repair', sliceIndex, changed, decidedText, incumbentText, },);
  * ```
  */
 export function assertSettledRecordAgrees(
   {
     lane,
-    chunkIndex,
+    sliceIndex,
     changed,
     decidedText,
     incumbentText,
   }: {
     readonly lane: SliceRecordLane;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly changed: boolean;
     readonly decidedText: string;
     readonly incumbentText: string;
@@ -153,7 +153,7 @@ export function assertSettledRecordAgrees(
   },))
     return;
   throw new SliceRecordContradictionError({
-    message: `${lane} slice ${String(chunkIndex,)} settled with changed=${
+    message: `${lane} slice ${String(sliceIndex,)} settled with changed=${
       String(changed,)
     } and carries the ${
       changed ? 'archive wording' : 'wording of a change'
@@ -171,7 +171,7 @@ export function assertSettledRecordAgrees(
  *
  * @param lane - which lane's cache the record came from
  *
- * @param chunkIndex - slice it was resumed for
+ * @param sliceIndex - slice it was resumed for
  *
  * @param changed - what the record claimed, which the wording explains
  *
@@ -179,22 +179,22 @@ export function assertSettledRecordAgrees(
  *
  * @example
  * ```ts
- * findings.push(resumedSliceDiscardFinding({ lane: 'translate', chunkIndex, changed, },),);
+ * findings.push(resumedSliceDiscardFinding({ lane: 'translate', sliceIndex, changed, },),);
  * ```
  */
 export function resumedSliceDiscardFinding(
   {
     lane,
-    chunkIndex,
+    sliceIndex,
     changed,
   }: {
     readonly lane: SliceRecordLane;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly changed: boolean;
   },
 ): string {
   return `${lane}-discarded-contradictory-slice chunk ${
-    String(chunkIndex,)
+    String(sliceIndex,)
   }; cached record claims changed=${String(changed,)} and carries the ${
     changed ? 'archive wording' : 'wording of a change'
   }, so it was recomputed`;

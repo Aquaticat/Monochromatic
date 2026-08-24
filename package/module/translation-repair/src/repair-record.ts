@@ -127,7 +127,7 @@ export type IssueProbeReading = {
  * @example
  * ```ts
  * const record: RepairIssueRecord = {
- *   chunkIndex: 0,
+ *   sliceIndex: 0,
  *   issue,
  *   resolved: false,
  *   repairRegions: [],
@@ -140,7 +140,7 @@ export type RepairIssueRecord = {
   /**
    * Chunk the issue belongs to.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Adjudicated issue exactly as the panel decided it.
@@ -356,7 +356,7 @@ export function buildIssueRecords(
      */
     const replacementShipped = (!blocked)
       && outcome.changed
-      && (!withdrawn.has(outcome.chunkIndex,));
+      && (!withdrawn.has(outcome.sliceIndex,));
     return outcome.issues
       .map(function toRecord(issue,): RepairIssueRecord {
         /**
@@ -392,7 +392,7 @@ export function buildIssueRecords(
         const recheck = outcome.recheckReadings[issue.issueId];
 
         return {
-          chunkIndex: outcome.chunkIndex,
+          sliceIndex: outcome.sliceIndex,
           issue,
           resolved: replacementShipped
             && outcome.resolvedIssueIds

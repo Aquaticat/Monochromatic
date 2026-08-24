@@ -7,7 +7,7 @@ import type { ArtifactConsolidationV2, } from './artifact-v2-consolidate.ts';
 import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import { projectLanesV2, } from './artifact-v2-derive.ts';
 import {
-  ARTIFACT_SCHEMA_VERSION_V3,
+  ARTIFACT_SCHEMA_VERSION_V4,
   type ArtifactJsonValue,
   type SettledArtifactV2,
 } from './artifact-v2-contract.ts';
@@ -210,7 +210,7 @@ export function buildSettledArtifactV2(
       },),
   },);
   return {
-    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V3,
+    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V4,
     id: entryId,
     tip,
     pipelineDigest,

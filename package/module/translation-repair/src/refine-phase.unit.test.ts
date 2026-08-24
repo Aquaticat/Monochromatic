@@ -93,14 +93,14 @@ const MODELS: RepairModels = {
 const SLICES: readonly ChunkPair[] = [
   {
     source: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       text: SOURCE_TEXT,
       startOffset: 0,
       endOffset: SOURCE_TEXT.length,
       nodes: [],
     },
     target: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       text: REPAIRED_TEXT,
       startOffset: 0,
       endOffset: REPAIRED_TEXT.length,
@@ -143,7 +143,7 @@ function settledOutcome(
   },
 ): ChunkRepairOutcome {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     repairedText: REPAIRED_TEXT,
     changed: false,
     issues: resolvedIssueIds.map(function toIssue(issueId,) {
@@ -588,14 +588,14 @@ await describe({
         const archiveSlices: readonly ChunkPair[] = [
           {
             source: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               text: SOURCE_TEXT,
               startOffset: 0,
               endOffset: SOURCE_TEXT.length,
               nodes: [],
             },
             target: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               text: SMOOTH_TEXT,
               startOffset: 0,
               endOffset: SMOOTH_TEXT.length,

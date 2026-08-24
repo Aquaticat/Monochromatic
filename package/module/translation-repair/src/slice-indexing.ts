@@ -9,7 +9,7 @@ import type { ChunkPair, } from './chunk-document.ts';
 // produces it. `chunkByHeadings` stamps a SECTION index, `alignDocumentSections`
 // pairs sections whose two indices need not match, and only `subdivideChunkPair`
 // restamps both sides from a running counter. Three stampings with three
-// meanings reach one field called `chunkIndex`, so which one a given chunk
+// meanings reach one field called `sliceIndex`, so which one a given chunk
 // carries depends on where it came from. `#99` reshapes that; this checks the
 // invariant the reshape has to preserve, and would catch the reshape breaking it.
 
@@ -73,11 +73,11 @@ export function reindexSlicePair(
   return {
     source: {
       ...slice.source,
-      chunkIndex: slicePosition,
+      sliceIndex: slicePosition,
     },
     target: {
       ...slice.target,
-      chunkIndex: slicePosition,
+      sliceIndex: slicePosition,
     },
   };
 }
@@ -127,14 +127,14 @@ export function assertSliceIndexing(
      * Index the original side carries.
      */
     const sourceIndex = slice.source
-      .chunkIndex;
+      .sliceIndex;
 
     /**
      * Index the translation side carries, which is the one every consumer
      * reads.
      */
     const targetIndex = slice.target
-      .chunkIndex;
+      .sliceIndex;
     if (sourceIndex !== targetIndex) {
       throw new SliceIndexingError({
         message: `slice at position ${String(position,)} carries source index ${

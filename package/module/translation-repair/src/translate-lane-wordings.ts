@@ -75,14 +75,14 @@ export function translateLaneWordings(
         return heardNobody({ record, },);
       },)
       .map(function toIndex(record,): number {
-        return record.chunkIndex;
+        return record.sliceIndex;
       },),
     decided: heard.map(function toDecision(record,): {
-      readonly chunkIndex: number;
+      readonly sliceIndex: number;
       readonly text: string;
     } {
       return {
-        chunkIndex: record.chunkIndex,
+        sliceIndex: record.sliceIndex,
         text: record.outputText,
       };
     },),

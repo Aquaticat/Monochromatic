@@ -247,7 +247,7 @@ async function main(): Promise<void> {
     if (outcome.kind === 'skipped') {
       skipped[outcome.refusal] = (skipped[outcome.refusal] ?? 0) + 1;
       console.log(
-        `WIDTH ${outcome.entryId} slice ${String(outcome.chunkIndex,)}: ${outcome.refusal}`,
+        `WIDTH ${outcome.entryId} slice ${String(outcome.sliceIndex,)}: ${outcome.refusal}`,
       );
       // oxlint-disable-next-line eslint/no-await-in-loop -- the republish is the durability of this run: it must land before the next slice starts, which is exactly what awaiting it here means
       await publish();
@@ -270,7 +270,7 @@ async function main(): Promise<void> {
 
     rows.push(row,);
     console.log(
-      `WIDTH ${row.entryId} slice ${String(row.chunkIndex,)}: ${row.comparison}, repeat ${
+      `WIDTH ${row.entryId} slice ${String(row.sliceIndex,)}: ${row.comparison}, repeat ${
         row.narrowRepeatAgreed ? 'agreed' : 'FLIPPED'
       }, ${row.verdict}`,
     );

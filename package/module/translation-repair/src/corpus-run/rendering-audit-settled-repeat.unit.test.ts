@@ -38,7 +38,7 @@ import {
  *
  * @param entryId - corpus entry
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @param claims - how many claims anchored, over one voice
  *
@@ -48,20 +48,20 @@ import {
  *
  * @example
  * ```ts
- * const row = rowFor({ runSet: 'first', entryId: 'mittens', chunkIndex: 0, claims: 1, },);
+ * const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, claims: 1, },);
  * ```
  */
 function rowFor(
   {
     runSet,
     entryId,
-    chunkIndex,
+    sliceIndex,
     claims,
     texts,
   }: {
     readonly runSet: string;
     readonly entryId: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly claims: number;
     readonly texts?: {
       readonly sourceText: string;
@@ -72,7 +72,7 @@ function rowFor(
   return {
     runSet,
     entryId,
-    chunkIndex,
+    sliceIndex,
     deliveryKind: 'replacement-shipped',
     auditsArchiveText: false,
     artifactDigest: 'sha256-tree-v1:cafef00d',
@@ -175,7 +175,7 @@ await describe({
           row: rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             claims: 1,
           },),
         },).kind,).toBe('unrecorded',);
@@ -198,7 +198,7 @@ await describe({
         const left = rowFor({
           runSet: 'first',
           entryId: 'mittens',
-          chunkIndex: 0,
+          sliceIndex: 0,
           claims: 1,
         },);
 
@@ -208,7 +208,7 @@ await describe({
         const right = rowFor({
           runSet: 'second',
           entryId: 'mittens',
-          chunkIndex: 0,
+          sliceIndex: 0,
           claims: 4,
         },);
 
@@ -236,14 +236,14 @@ await describe({
             rowFor({
               runSet: 'first',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 1,
               texts: SAME_TEXTS,
             },),
             rowFor({
               runSet: 'second',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 4,
               texts: SAME_TEXTS,
             },),
@@ -267,14 +267,14 @@ await describe({
             rowFor({
               runSet: 'first',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 1,
               texts: SAME_TEXTS,
             },),
             rowFor({
               runSet: 'second',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 4,
               texts: OTHER_TEXTS,
             },),
@@ -292,14 +292,14 @@ await describe({
             rowFor({
               runSet: 'first',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 1,
               texts: SAME_TEXTS,
             },),
             rowFor({
               runSet: 'first',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 4,
               texts: SAME_TEXTS,
             },),
@@ -317,13 +317,13 @@ await describe({
             rowFor({
               runSet: 'first',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 1,
             },),
             rowFor({
               runSet: 'second',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 4,
             },),
           ],
@@ -350,14 +350,14 @@ await describe({
           first: [rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             claims: 1,
             texts: SAME_TEXTS,
           },),],
           second: [rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             claims: 5,
             texts: SAME_TEXTS,
           },),],
@@ -384,14 +384,14 @@ await describe({
           first: [rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 3,
+            sliceIndex: 3,
             claims: 1,
             texts: SAME_TEXTS,
           },),],
           second: [rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 3,
+            sliceIndex: 3,
             claims: 5,
             texts: OTHER_TEXTS,
           },),],
@@ -419,13 +419,13 @@ await describe({
           first: [rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 2,
+            sliceIndex: 2,
             claims: 1,
           },),],
           second: [rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 2,
+            sliceIndex: 2,
             claims: 5,
             texts: SAME_TEXTS,
           },),],
@@ -446,14 +446,14 @@ await describe({
             rowFor({
               runSet: 'first',
               entryId: 'mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               claims: 1,
               texts: SAME_TEXTS,
             },),
             rowFor({
               runSet: 'first',
               entryId: 'mittens',
-              chunkIndex: 1,
+              sliceIndex: 1,
               claims: 2,
               texts: SAME_TEXTS,
             },),
@@ -461,7 +461,7 @@ await describe({
           second: [rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             claims: 3,
             texts: SAME_TEXTS,
           },),],
@@ -497,28 +497,28 @@ await describe({
               rowFor({
                 runSet: 'first',
                 entryId: 'mittens',
-                chunkIndex: 0,
+                sliceIndex: 0,
                 claims: 1,
                 texts: SAME_TEXTS,
               },),
               rowFor({
                 runSet: 'second',
                 entryId: 'mittens',
-                chunkIndex: 0,
+                sliceIndex: 0,
                 claims: 5,
                 texts: SAME_TEXTS,
               },),
               rowFor({
                 runSet: 'first',
                 entryId: 'mittens',
-                chunkIndex: 1,
+                sliceIndex: 1,
                 claims: 3,
                 texts: OTHER_TEXTS,
               },),
               rowFor({
                 runSet: 'second',
                 entryId: 'mittens',
-                chunkIndex: 1,
+                sliceIndex: 1,
                 claims: 1,
                 texts: OTHER_TEXTS,
               },),
@@ -547,28 +547,28 @@ await describe({
               rowFor({
                 runSet: 'first',
                 entryId: 'mittens',
-                chunkIndex: 0,
+                sliceIndex: 0,
                 claims: 0,
                 texts: SAME_TEXTS,
               },),
               rowFor({
                 runSet: 'second',
                 entryId: 'mittens',
-                chunkIndex: 0,
+                sliceIndex: 0,
                 claims: 2,
                 texts: SAME_TEXTS,
               },),
               rowFor({
                 runSet: 'first',
                 entryId: 'mittens',
-                chunkIndex: 1,
+                sliceIndex: 1,
                 claims: 2,
                 texts: OTHER_TEXTS,
               },),
               rowFor({
                 runSet: 'second',
                 entryId: 'mittens',
-                chunkIndex: 1,
+                sliceIndex: 1,
                 claims: 2,
                 texts: OTHER_TEXTS,
               },),

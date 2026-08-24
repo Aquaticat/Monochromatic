@@ -58,14 +58,14 @@ export class SliceSpliceError extends Error {
  *
  * @example
  * ```ts
- * const replacement: SliceReplacement = { chunkIndex: 4, replacementText: 'The cat naps.', };
+ * const replacement: SliceReplacement = { sliceIndex: 4, replacementText: 'The cat naps.', };
  * ```
  */
 export type SliceReplacement = {
   /**
    * Global slice index, as `prepareDocumentPair` stamped it.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Text that replaces that slice's target span.
@@ -203,7 +203,7 @@ function plannedEdits(
         endOffset: entry.span
           .endOffset,
         orderIndex: entry.replacement
-          .chunkIndex,
+          .sliceIndex,
         text: entry.replacement
           .replacementText,
       };
@@ -242,13 +242,13 @@ function plannedEdits(
        * Slice the left replacement names.
        */
       const leftIndex = left.replacement
-        .chunkIndex;
+        .sliceIndex;
 
       /**
        * Slice the right one names.
        */
       const rightIndex = right.replacement
-        .chunkIndex;
+        .sliceIndex;
       return leftIndex - rightIndex;
     },);
 
@@ -263,7 +263,7 @@ function plannedEdits(
       startOffset: offset,
       endOffset: offset,
       orderIndex: first.replacement
-        .chunkIndex,
+        .sliceIndex,
       fragments: inOrder.map(function toText(anchored,): string {
         return anchored.replacement
           .replacementText;
@@ -331,7 +331,7 @@ export function spliceSlices(
   const spans = new Map(slices.map(function toSpan(slice,) {
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       slice,
     ] as const;
   },),);
@@ -373,10 +373,10 @@ export function spliceSlices(
     /**
      * Span this replacement names.
      */
-    const slice = spans.get(replacement.chunkIndex,);
+    const slice = spans.get(replacement.sliceIndex,);
     if (slice === undefined) {
       throw new SliceSpliceError({
-        message: `no slice ${String(replacement.chunkIndex,)} to write into: `
+        message: `no slice ${String(replacement.sliceIndex,)} to write into: `
         + `the document was sliced into ${String(slices.length,)} slices`,
       },);
     }
@@ -411,7 +411,7 @@ export function spliceSlices(
       && writesNothing
       && sourceSaysSomething) {
       throw new SliceSpliceError({
-        message: `slice ${String(replacement.chunkIndex,)} has no translation and writes none: an anchor is `
+        message: `slice ${String(replacement.sliceIndex,)} has no translation and writes none: an anchor is `
           + 'where a rendering belongs, so blank text there leaves the passage missing while the run '
           + 'reports it delivered',
       },);
@@ -423,7 +423,7 @@ export function spliceSlices(
   },);
   if (new Set(placed.map(function toIndex(entry,): number {
     return entry.replacement
-      .chunkIndex;
+      .sliceIndex;
   },),).size !== placed.length) {
     throw new SliceSpliceError({
       message: 'two replacements name one slice: whichever applied second would '

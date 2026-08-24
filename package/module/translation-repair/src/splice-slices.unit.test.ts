@@ -40,7 +40,7 @@ const TARGET_TEXT = 'The cat sleeps.\n\nShe chases butterflies in the garden all
 /**
  * Builds one target-side chunk covering a span of {@link TARGET_TEXT}.
  *
- * @param chunkIndex - position of this chunk
+ * @param sliceIndex - position of this chunk
  *
  * @param startOffset - absolute start in target text
  *
@@ -50,29 +50,29 @@ const TARGET_TEXT = 'The cat sleeps.\n\nShe chases butterflies in the garden all
  *
  * @example
  * ```ts
- * const pair = chunkAt({ chunkIndex: 0, startOffset: 0, endOffset: 15, },);
+ * const pair = chunkAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);
  * ```
  */
 function chunkAt(
   {
-    chunkIndex,
+    sliceIndex,
     startOffset,
     endOffset,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly startOffset: number;
     readonly endOffset: number;
   },
 ): {
   readonly source: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
     readonly text: string;
   };
   readonly target: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
@@ -92,7 +92,7 @@ function chunkAt(
    * Shared shape for both sides; only the target side is read by splicing.
    */
   const side = {
-    chunkIndex,
+    sliceIndex,
     nodes: [],
     startOffset,
     endOffset,
@@ -114,7 +114,7 @@ function chunkAt(
  * no text and a place where text is missing look identical from their offsets
  * alone, and only one of them may be written into.
  *
- * @param chunkIndex - position of this slice
+ * @param sliceIndex - position of this slice
  *
  * @param offset - boundary in {@link TARGET_TEXT} new text is written at
  *
@@ -122,29 +122,29 @@ function chunkAt(
  *
  * @example
  * ```ts
- * const pair = anchorAt({ chunkIndex: 2, offset: FINAL_START, },);
+ * const pair = anchorAt({ sliceIndex: 2, offset: FINAL_START, },);
  * ```
  */
 function anchorAt(
   {
-    chunkIndex,
+    sliceIndex,
     offset,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly offset: number;
   },
 ) {
   return {
     // Never read by splicing, which writes into the target side only.
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
       text: '猫',
     },
     target: makeInsertionChunk({
-      chunkIndex,
+      sliceIndex,
       offset,
     },),
   };
@@ -165,14 +165,14 @@ const PARAGRAPH_BREAK = '\n\n';
 const SLICES = TARGET_TEXT.split(PARAGRAPH_BREAK,)
   .map(function toSlice(
     paragraph,
-    chunkIndex,
+    sliceIndex,
   ) {
     /**
      * Absolute start of this paragraph, unique because the three differ.
      */
     const startOffset = TARGET_TEXT.indexOf(paragraph,);
     return chunkAt({
-      chunkIndex,
+      sliceIndex,
       startOffset,
       endOffset: startOffset + paragraph.length,
     },);
@@ -187,7 +187,7 @@ const FINAL_START = TARGET_TEXT.indexOf('She purrs.',);
 /**
  * Builds one replacement.
  *
- * @param chunkIndex - slice to write into
+ * @param sliceIndex - slice to write into
  *
  * @param replacementText - text to write there
  *
@@ -195,20 +195,20 @@ const FINAL_START = TARGET_TEXT.indexOf('She purrs.',);
  *
  * @example
  * ```ts
- * const replacement = write({ chunkIndex: 0, replacementText: 'The cat naps.', },);
+ * const replacement = write({ sliceIndex: 0, replacementText: 'The cat naps.', },);
  * ```
  */
 function write(
   {
-    chunkIndex,
+    sliceIndex,
     replacementText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly replacementText: string;
   },
 ): SliceReplacement {
   return {
-    chunkIndex,
+    sliceIndex,
     replacementText,
   };
 }
@@ -216,7 +216,7 @@ function write(
 /**
  * Builds one repair outcome, for the mapping that feeds splicing.
  *
- * @param chunkIndex - slice this outcome is for
+ * @param sliceIndex - slice this outcome is for
  *
  * @param repairedText - winning text for that slice
  *
@@ -226,22 +226,22 @@ function write(
  *
  * @example
  * ```ts
- * const outcome = outcomeFor({ chunkIndex: 0, repairedText: 'The cat naps.', changed: true, },);
+ * const outcome = outcomeFor({ sliceIndex: 0, repairedText: 'The cat naps.', changed: true, },);
  * ```
  */
 function outcomeFor(
   {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairedText: string;
     readonly changed: boolean;
   },
 ): ChunkRepairOutcome {
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed,
     issues: [],
@@ -251,7 +251,7 @@ function outcomeFor(
     checkerReadings: {},
     recheckReadings: {},
     repairRegions: [],
-    // The mapping reads only chunkIndex, repairedText, and changed. The rest
+    // The mapping reads only sliceIndex, repairedText, and changed. The rest
     // are filled to satisfy the contract, deliberately at their inert values so
     // nothing here can look like a repair that happened.
     accuracyPatchSelected: false,
@@ -300,7 +300,7 @@ await describe({
             slices: SLICES,
             replacements: [
               write({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 replacementText: 'She chases butterflies all afternoon.',
               },),
             ],
@@ -326,15 +326,15 @@ await describe({
               // would read the third slice's offsets against a text that had
               // already shrunk by 36 characters.
               write({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 replacementText: 'She chases butterflies.',
               },),
               write({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 replacementText: 'She purrs loudly and at length.',
               },),
               write({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 replacementText: 'The cat naps.',
               },),
             ],
@@ -353,7 +353,7 @@ await describe({
          * Replacement for the first slice, spliced twice in opposite orders.
          */
         const first = write({
-          chunkIndex: 0,
+          sliceIndex: 0,
           replacementText: 'The cat naps.',
         },);
 
@@ -361,7 +361,7 @@ await describe({
          * Replacement for the final slice.
          */
         const last = write({
-          chunkIndex: 2,
+          sliceIndex: 2,
           replacementText: 'She purrs loudly.',
         },);
 
@@ -397,7 +397,7 @@ await describe({
             slices: SLICES,
             replacements: [
               write({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 replacementText: '',
               },),
             ],
@@ -422,13 +422,13 @@ await describe({
                 2,
               ),
               anchorAt({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 offset: FINAL_START,
               },),
             ],
             replacements: [
               write({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 replacementText: 'She dozes in the sun. ',
               },),
             ],
@@ -455,21 +455,21 @@ await describe({
                 2,
               ),
               anchorAt({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 offset: FINAL_START,
               },),
               anchorAt({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 offset: FINAL_START,
               },),
             ],
             replacements: [
               write({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 replacementText: 'Then she stretches. ',
               },),
               write({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 replacementText: 'She dozes in the sun. ',
               },),
             ],
@@ -495,7 +495,7 @@ await describe({
             slices: SLICES,
             replacements: [
               write({
-                chunkIndex: 9,
+                sliceIndex: 9,
                 replacementText: 'The dog barks.',
               },),
             ],
@@ -523,13 +523,13 @@ await describe({
             slices: [
               ...SLICES,
               anchorAt({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 offset: FINAL_START,
               },),
             ],
             replacements: [
               write({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 replacementText: 'The cat naps.',
               },),
             ],
@@ -556,11 +556,11 @@ await describe({
             slices: SLICES,
             replacements: [
               write({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 replacementText: 'She chases butterflies.',
               },),
               write({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 replacementText: 'She chases moths.',
               },),
             ],
@@ -586,22 +586,22 @@ await describe({
                 2,
               ),
               anchorAt({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 offset: FINAL_START,
               },),
               chunkAt({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 startOffset: FINAL_START,
                 endOffset: TARGET_TEXT.length,
               },),
             ],
             replacements: [
               write({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 replacementText: 'She purrs loudly.',
               },),
               write({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 replacementText: 'Then she yawns. ',
               },),
             ],
@@ -623,13 +623,13 @@ await describe({
             slices: [
               ...SLICES,
               anchorAt({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 offset: TARGET_TEXT.length,
               },),
             ],
             replacements: [
               write({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 replacementText: '\n\nShe sleeps again.',
               },),
             ],
@@ -652,21 +652,21 @@ await describe({
             slices: [
               ...SLICES,
               anchorAt({
-                chunkIndex: 4,
+                sliceIndex: 4,
                 offset: TARGET_TEXT.length,
               },),
               anchorAt({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 offset: TARGET_TEXT.length,
               },),
             ],
             replacements: [
               write({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 replacementText: 'B',
               },),
               write({
-                chunkIndex: 4,
+                sliceIndex: 4,
                 replacementText: 'A',
               },),
             ],
@@ -692,13 +692,13 @@ await describe({
             slices: [
               ...SLICES,
               anchorAt({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 offset: TARGET_TEXT.length,
               },),
             ],
             replacements: [
               write({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 replacementText: '   \n',
               },),
             ],
@@ -722,18 +722,18 @@ await describe({
       fn: async () => {
         expect(repairReplacements({ outcomes: [
           outcomeFor({
-            chunkIndex: 0,
+            sliceIndex: 0,
             repairedText: 'The cat naps.',
             changed: false,
           },),
           outcomeFor({
-            chunkIndex: 2,
+            sliceIndex: 2,
             repairedText: 'She rumbles.',
             changed: true,
           },),
         ], },),).toEqual([
           {
-            chunkIndex: 2,
+            sliceIndex: 2,
             replacementText: 'She rumbles.',
           },
         ],);
@@ -746,7 +746,7 @@ await describe({
       fn: async () => {
         expect(repairReplacements({ outcomes: [
           outcomeFor({
-            chunkIndex: 1,
+            sliceIndex: 1,
             repairedText: '',
             changed: true,
           },),

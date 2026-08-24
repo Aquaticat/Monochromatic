@@ -124,7 +124,7 @@ function catOutcome(
   },
 ): ChunkRepairOutcome {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     repairedText: 'purr',
     changed: false,
     issues,

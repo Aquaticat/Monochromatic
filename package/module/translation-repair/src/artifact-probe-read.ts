@@ -168,7 +168,7 @@ export type ArtifactProbeReading = {
    *
    * Kept as a flat list rather than deduplicated here, because every issue of a
    * rewritten slice carries the same report and the region ids are per slice
-   * (`refinement/<chunkIndex>`). `summarizeProbeTelemetry` already collapses by
+   * (`refinement/<sliceIndex>`). `summarizeProbeTelemetry` already collapses by
    * envelope id, so passing this list through it counts each rewrite once
    * rather than once per issue the slice happened to contain.
    */

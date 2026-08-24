@@ -119,7 +119,7 @@ export async function runPick(
       rows: await runSliceArms({
         client,
         slices,
-        chunkIndex: pick.chunkIndex,
+        sliceIndex: pick.sliceIndex,
         sliceClass: pick.sliceClass,
         entryId,
         protocol,
@@ -134,7 +134,7 @@ export async function runPick(
   }
   catch (error) {
     l.warn(
-      `${entryId}/${String(pick.chunkIndex,)} (${pick.sliceClass}): refused, ${
+      `${entryId}/${String(pick.sliceIndex,)} (${pick.sliceClass}): refused, ${
         String(error,)
       }`,
     );

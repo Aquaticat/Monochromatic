@@ -62,7 +62,7 @@ function artifactShipping(
   return {
     comparison: [
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'present',
         incumbentText: ARCHIVE_MIDDLE,
         repairText: ARCHIVE_MIDDLE,
@@ -89,7 +89,7 @@ function artifactShipping(
       kind: 'contested',
       slices: [
         {
-          chunkIndex: 1,
+          sliceIndex: 1,
           verdict: {
             kind: 'lane-won',
             lane: 'translate',
@@ -128,7 +128,7 @@ function artifactWithAnUnfilledAnchor(): WouldShipSource {
   return {
     comparison: [
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'absent',
         incumbentText: '',
         repairText: '',
@@ -149,7 +149,7 @@ function artifactWithAnUnfilledAnchor(): WouldShipSource {
       kind: 'contested',
       slices: [
         {
-          chunkIndex: 1,
+          sliceIndex: 1,
           verdict: { kind: 'settled-neither', },
           ballots: [],
           usable: 3,
@@ -178,7 +178,7 @@ function artifactWhoseLanesRemovedTheWording(): WouldShipSource {
   return {
     comparison: [
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'present',
         incumbentText: ARCHIVE_MIDDLE,
         repairText: '',
@@ -251,7 +251,7 @@ await describe({
       fn: async () => {
         expect(shippableReplacements({ artifact: artifactWhoseLanesRemovedTheWording(), },),).toEqual([
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             replacementText: '',
           },
         ],);
@@ -268,7 +268,7 @@ await describe({
           artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
         },),).toEqual([
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             replacementText: DECIDED_MIDDLE,
           },
         ],);

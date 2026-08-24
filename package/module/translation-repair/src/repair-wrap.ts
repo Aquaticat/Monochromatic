@@ -78,7 +78,7 @@ export function wrapRepairOutcomes(
   ] {
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       slice.target
         .text,
     ];
@@ -103,7 +103,7 @@ export function wrapRepairOutcomes(
     // LEFT EXACTLY AS PRODUCED, like an outcome that changed nothing. The
     // line-structure rule made this slice's line breaks the producer's to set,
     // and this function only ever adds more.
-    if (lineStructuredSlices.has(outcome.chunkIndex,)) {
+    if (lineStructuredSlices.has(outcome.sliceIndex,)) {
       counted.governed += 1;
       return outcome;
     }
@@ -119,7 +119,7 @@ export function wrapRepairOutcomes(
     /**
      * Archive wording here, absent when the slice is not in the pair list.
      */
-    const incumbentText = incumbentByIndex.get(outcome.chunkIndex,);
+    const incumbentText = incumbentByIndex.get(outcome.sliceIndex,);
 
     /**
      * Whether anything but the wrapping still separates the two.

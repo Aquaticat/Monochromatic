@@ -110,7 +110,7 @@ await describe({
         },);
         expect(flagged.length,).toBe(3,);
         expect(flagged.map(function toIndex(slice,) {
-          return slice.chunkIndex;
+          return slice.sliceIndex;
         },),).toEqual([1,
           2,
           3,],);
@@ -135,7 +135,7 @@ await describe({
          * Slice 1, which the screen flagged both ways.
          */
         const both = flagged.find(function isOne(slice,) {
-          return slice.chunkIndex === 1;
+          return slice.sliceIndex === 1;
         },);
         expect(both?.sliceClass,).toBe(RELOCATION_CLASSES.low,);
         // And it appears once, not twice.
@@ -178,7 +178,7 @@ await describe({
           },),
         },);
         expect(flagged.map(function toIndex(slice,) {
-          return slice.chunkIndex;
+          return slice.sliceIndex;
         },),).toEqual([2,
           5,
           7,],);
@@ -207,7 +207,7 @@ await describe({
         for (const control of controls) {
           expect([0,
             1,
-            2,].includes(control.chunkIndex,),).toBe(false,);
+            2,].includes(control.sliceIndex,),).toBe(false,);
         }
         expect(controls.every(function labelled(control,) {
           return control.sliceClass === CONTROL_CLASS;
@@ -225,7 +225,7 @@ await describe({
           wanted: 3,
         },);
         expect(controls.map(function toIndex(control,) {
-          return control.chunkIndex;
+          return control.sliceIndex;
         },),).toEqual([2,
           6,
           10,],);
@@ -243,7 +243,7 @@ await describe({
           wanted: 1,
         },);
         expect(controls.map(function toIndex(control,) {
-          return control.chunkIndex;
+          return control.sliceIndex;
         },),).toEqual([4,],);
       },
     },),
@@ -261,7 +261,7 @@ await describe({
           wanted: 5,
         },);
         expect(controls.length,).toBe(1,);
-        expect(controls[0]?.chunkIndex,).toBe(2,);
+        expect(controls[0]?.sliceIndex,).toBe(2,);
       },
     },),
     it({

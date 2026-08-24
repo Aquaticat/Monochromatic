@@ -122,7 +122,7 @@ export const SLICE_COST_MARKER = 'SLICE-COST';
  *
  * @example
  * ```ts
- * using span: SliceCostSpan = armSliceCost({ l, lane: 'repair', chunkIndex, sourceChars, },);
+ * using span: SliceCostSpan = armSliceCost({ l, lane: 'repair', sliceIndex, sourceChars, },);
  * ```
  */
 export type SliceCostSpan = {
@@ -153,7 +153,7 @@ export type SliceCostSpan = {
  *
  * @param lane - which lane is paying
  *
- * @param chunkIndex - slice this measures, named as every record names it
+ * @param sliceIndex - slice this measures, named as every record names it
  *
  * @param sourceChars - size of what was translated, so cost can be read against
  * it
@@ -165,20 +165,20 @@ export type SliceCostSpan = {
  *
  * @example
  * ```ts
- * using span = armSliceCost({ l: rl, lane: 'repair', chunkIndex: 3, sourceChars: 812, signal, },);
+ * using span = armSliceCost({ l: rl, lane: 'repair', sliceIndex: 3, sourceChars: 812, signal, },);
  * ```
  */
 export function armSliceCost(
   {
     l,
     lane,
-    chunkIndex,
+    sliceIndex,
     sourceChars,
     signal,
   }: {
     readonly l: Logger;
     readonly lane: SliceCostLane;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly sourceChars: number;
     readonly signal: AbortSignal;
   },
@@ -214,7 +214,7 @@ export function armSliceCost(
         : taken.exit;
 
       l.info(
-        `${SLICE_COST_MARKER} lane=${lane} chunk=${String(chunkIndex,)} sourceChars=${
+        `${SLICE_COST_MARKER} lane=${lane} chunk=${String(sliceIndex,)} sourceChars=${
           String(sourceChars,)
         } ms=${String(Date.now() - startedAt,)} exit=${exit}`,
       );

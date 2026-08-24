@@ -166,7 +166,7 @@ function artifactWith(
     chunkCritics: sliceCritics,
     issues: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         issue: {
           status: 'accepted',
           claims: [{ claimId: NAP, },],
@@ -191,7 +191,7 @@ await describe({
           artifacts: {
             'Whiskers.json': artifactWith({
               sliceCritics: [{
-                chunkIndex: 3,
+                sliceIndex: 3,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
                   claimId: NAP,
@@ -212,7 +212,7 @@ await describe({
          */
         const record = entries[0]?.sliceCritics?.[0];
 
-        expect(record?.chunkIndex,).toBe(3,);
+        expect(record?.sliceIndex,).toBe(3,);
         expect(record?.heardCriticIds,).toStrictEqual([TABBY,],);
         expect(record?.claimAttributions[0]?.claimId,).toBe(NAP,);
         expect(record?.claimAttributions[0]?.proposers,)
@@ -261,7 +261,7 @@ await describe({
           artifacts: {
             'Whiskers.json': artifactWith({
               sliceCritics: [{
-                chunkIndex: 0,
+                sliceIndex: 0,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [],
               },],
@@ -319,7 +319,7 @@ await describe({
         + 'count, it silently shrinks it, and a smaller denominator raises every '
         + 'rate above it while looking entirely ordinary',
       fn: async () => {
-        await Promise.all(['one', -1, 1.5, undefined,].map(async function rejectsIt(chunkIndex,) {
+        await Promise.all(['one', -1, 1.5, undefined,].map(async function rejectsIt(sliceIndex,) {
           /**
            * Artifact carrying one unusable chunk index.
            */
@@ -327,7 +327,7 @@ await describe({
             artifacts: {
               'Whiskers.json': artifactWith({
                 sliceCritics: [{
-                  chunkIndex,
+                  sliceIndex,
                   heardCriticIds: [TABBY,],
                   claimAttributions: [],
                 },],
@@ -338,7 +338,7 @@ await describe({
           expect(
             (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
               ?.reason,
-          ).toContain('chunkIndex',);
+          ).toContain('sliceIndex',);
         },),);
       },
     },),
@@ -356,7 +356,7 @@ await describe({
           artifacts: {
             'Whiskers.json': artifactWith({
               sliceCritics: [{
-                chunkIndex: 0,
+                sliceIndex: 0,
                 heardCriticIds: [TABBY, TABBY,],
                 claimAttributions: [],
               },],
@@ -375,8 +375,8 @@ await describe({
           artifacts: {
             'Whiskers.json': artifactWith({
               sliceCritics: [
-                { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
-                { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
+                { sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
+                { sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
               ],
             },),
           },
@@ -393,7 +393,7 @@ await describe({
           artifacts: {
             'Whiskers.json': artifactWith({
               sliceCritics: [{
-                chunkIndex: 0,
+                sliceIndex: 0,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
                   claimId: NAP,
@@ -425,7 +425,7 @@ await describe({
           artifacts: {
             'Whiskers.json': artifactWith({
               sliceCritics: [{
-                chunkIndex: 0,
+                sliceIndex: 0,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
                   claimId: NAP,
@@ -463,7 +463,7 @@ await describe({
               artifactSchemaVersion: 3,
               id: 'Whiskers',
               sliceCritics: [{
-                chunkIndex: 9,
+                sliceIndex: 9,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
                   claimId: 'decoy-must-not-be-read',
@@ -475,7 +475,7 @@ await describe({
                 repair: {
                   result: {
                     sliceCritics: [{
-                      chunkIndex: 3,
+                      sliceIndex: 3,
                       heardCriticIds: [TABBY,],
                       claimAttributions: [{
                         claimId: NAP,
@@ -484,7 +484,7 @@ await describe({
                     },],
                     issues: [
                       {
-                        chunkIndex: 0,
+                        sliceIndex: 0,
                         issue: {
                           status: 'accepted',
                           claims: [{ claimId: NAP, },],
@@ -513,7 +513,7 @@ await describe({
          */
         const record = entries[0]?.sliceCritics?.[0];
 
-        expect(record?.chunkIndex,).toBe(3,);
+        expect(record?.sliceIndex,).toBe(3,);
         expect(record?.claimAttributions[0]?.claimId,).toBe(NAP,);
         expect(entries[0]?.issues,)
           .toStrictEqual([{ status: 'accepted', claimIds: [NAP,], },],);
@@ -540,7 +540,7 @@ await describe({
                 repair: {
                   result: {
                     chunkCritics: [{
-                      chunkIndex: 3,
+                      sliceIndex: 3,
                       heardCriticIds: [TABBY,],
                       claimAttributions: [{
                         claimId: NAP,
@@ -549,7 +549,7 @@ await describe({
                     },],
                     issues: [
                       {
-                        chunkIndex: 0,
+                        sliceIndex: 0,
                         issue: {
                           status: 'accepted',
                           claims: [{ claimId: NAP, },],
@@ -575,7 +575,7 @@ await describe({
          */
         const record = entries[0]?.sliceCritics?.[0];
 
-        expect(record?.chunkIndex,).toBe(3,);
+        expect(record?.sliceIndex,).toBe(3,);
         expect(record?.claimAttributions[0]?.claimId,).toBe(NAP,);
         expect(entries[0]?.issues,)
           .toStrictEqual([{ status: 'accepted', claimIds: [NAP,], },],);

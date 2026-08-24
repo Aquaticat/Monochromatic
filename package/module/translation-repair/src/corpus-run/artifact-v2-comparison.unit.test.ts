@@ -48,7 +48,7 @@ const SOURCE_NAP = '猫猫在窗台上睡觉。';
 /**
  * Builds one delivery row, defaulting everything a case does not care about.
  *
- * @param chunkIndex - slice this row is for
+ * @param sliceIndex - slice this row is for
  *
  * @param incumbentKind - whether the archive holds wording here
  *
@@ -64,19 +64,19 @@ const SOURCE_NAP = '猫猫在窗台上睡觉。';
  *
  * @example
  * ```ts
- * const row = row({ chunkIndex: 0, shippedText: ARCHIVE_NAP, },);
+ * const row = row({ sliceIndex: 0, shippedText: ARCHIVE_NAP, },);
  * ```
  */
 function deliveryRow(
   {
-    chunkIndex,
+    sliceIndex,
     incumbentKind,
     incumbentText,
     shippedText,
     outcome,
     delivery,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly incumbentKind: 'present' | 'absent';
     readonly incumbentText: string;
     readonly shippedText: string;
@@ -85,7 +85,7 @@ function deliveryRow(
   },
 ): ArtifactDeliveryRowV2 {
   return {
-    chunkIndex,
+    sliceIndex,
     sourceText: SOURCE_NAP,
     incumbentKind,
     incumbentText,
@@ -98,18 +98,18 @@ function deliveryRow(
 /**
  * One row where the lane kept the archive's wording after examining it.
  *
- * @param chunkIndex - slice this row is for
+ * @param sliceIndex - slice this row is for
  *
  * @returns Row carrying a decision that matches the archive
  *
  * @example
  * ```ts
- * const kept = keptArchive({ chunkIndex: 0, },);
+ * const kept = keptArchive({ sliceIndex: 0, },);
  * ```
  */
-function keptArchive({ chunkIndex, }: { readonly chunkIndex: number; },): ArtifactDeliveryRowV2 {
+function keptArchive({ sliceIndex, }: { readonly sliceIndex: number; },): ArtifactDeliveryRowV2 {
   return deliveryRow({
-    chunkIndex,
+    sliceIndex,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
     shippedText: ARCHIVE_NAP,
@@ -124,7 +124,7 @@ function keptArchive({ chunkIndex, }: { readonly chunkIndex: number; },): Artifa
 /**
  * One row where the lane shipped a replacement.
  *
- * @param chunkIndex - slice this row is for
+ * @param sliceIndex - slice this row is for
  *
  * @param text - wording it shipped
  *
@@ -132,20 +132,20 @@ function keptArchive({ chunkIndex, }: { readonly chunkIndex: number; },): Artifa
  *
  * @example
  * ```ts
- * const shipped = shippedText({ chunkIndex: 0, text: 'The cat naps.', },);
+ * const shipped = shippedText({ sliceIndex: 0, text: 'The cat naps.', },);
  * ```
  */
 function shipped(
   {
-    chunkIndex,
+    sliceIndex,
     text,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly text: string;
   },
 ): ArtifactDeliveryRowV2 {
   return deliveryRow({
-    chunkIndex,
+    sliceIndex,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
     shippedText: text,
@@ -181,16 +181,16 @@ await describe({
          */
         const rows = compareLanesV2({
           repair: [
-            keptArchive({ chunkIndex: 0, },),
-            shipped({ chunkIndex: 1, text: mended, },),
-            shipped({ chunkIndex: 2, text: fresh, },),
-            shipped({ chunkIndex: 3, text: mended, },),
+            keptArchive({ sliceIndex: 0, },),
+            shipped({ sliceIndex: 1, text: mended, },),
+            shipped({ sliceIndex: 2, text: fresh, },),
+            shipped({ sliceIndex: 3, text: mended, },),
           ],
           translate: [
-            keptArchive({ chunkIndex: 0, },),
-            keptArchive({ chunkIndex: 1, },),
-            shipped({ chunkIndex: 2, text: fresh, },),
-            shipped({ chunkIndex: 3, text: fresh, },),
+            keptArchive({ sliceIndex: 0, },),
+            keptArchive({ sliceIndex: 1, },),
+            shipped({ sliceIndex: 2, text: fresh, },),
+            shipped({ sliceIndex: 3, text: fresh, },),
           ],
         },);
         expect(rows.map(function toVerdict(one,): string {
@@ -216,7 +216,7 @@ await describe({
         const rows = compareLanesV2({
           repair: [
             deliveryRow({
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'absent',
               incumbentText: '',
               shippedText: '',
@@ -224,7 +224,7 @@ await describe({
               delivery: { kind: 'gap-remains', },
             },),
             deliveryRow({
-              chunkIndex: 1,
+              sliceIndex: 1,
               incumbentKind: 'present',
               incumbentText: '',
               shippedText: '',
@@ -237,7 +237,7 @@ await describe({
           ],
           translate: [
             deliveryRow({
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'absent',
               incumbentText: '',
               shippedText: '',
@@ -245,7 +245,7 @@ await describe({
               delivery: { kind: 'gap-remains', },
             },),
             deliveryRow({
-              chunkIndex: 1,
+              sliceIndex: 1,
               incumbentKind: 'present',
               incumbentText: '',
               shippedText: '',
@@ -276,7 +276,7 @@ await describe({
         const rows = compareLanesV2({
           repair: [
             deliveryRow({
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'present',
               incumbentText: ARCHIVE_NAP,
               shippedText: ARCHIVE_NAP,
@@ -284,7 +284,7 @@ await describe({
               delivery: { kind: 'incumbent-retained', },
             },),
           ],
-          translate: [keptArchive({ chunkIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
         },);
         expect(rows[0]?.decisionComparison,).toEqual({
           kind: 'not-comparable',
@@ -308,10 +308,10 @@ await describe({
         const refusalOfLengthsDiffer = caught(function lengthsDiffer() {
           compareLanesV2({
             repair: [
-              keptArchive({ chunkIndex: 0, },),
-              keptArchive({ chunkIndex: 1, },),
+              keptArchive({ sliceIndex: 0, },),
+              keptArchive({ sliceIndex: 1, },),
             ],
-            translate: [keptArchive({ chunkIndex: 0, },),],
+            translate: [keptArchive({ sliceIndex: 0, },),],
           },);
         },);
 
@@ -324,12 +324,12 @@ await describe({
         const refusalOfPositionsDisagree = caught(function positionsDisagree() {
           compareLanesV2({
             repair: [
-              keptArchive({ chunkIndex: 0, },),
-              keptArchive({ chunkIndex: 1, },),
+              keptArchive({ sliceIndex: 0, },),
+              keptArchive({ sliceIndex: 1, },),
             ],
             translate: [
-              keptArchive({ chunkIndex: 1, },),
-              keptArchive({ chunkIndex: 0, },),
+              keptArchive({ sliceIndex: 1, },),
+              keptArchive({ sliceIndex: 0, },),
             ],
           },);
         },);
@@ -349,10 +349,10 @@ await describe({
          */
         const refusalOfSourcesDisagree = caught(function sourcesDisagree() {
           compareLanesV2({
-            repair: [keptArchive({ chunkIndex: 0, },),],
+            repair: [keptArchive({ sliceIndex: 0, },),],
             translate: [
               {
-                ...keptArchive({ chunkIndex: 0, },),
+                ...keptArchive({ sliceIndex: 0, },),
                 sourceText: '猫猫在门口等着。',
               },
             ],
@@ -375,7 +375,7 @@ await describe({
           compareLanesV2({
             repair: [
               deliveryRow({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 incumbentKind: 'present',
                 incumbentText: '',
                 shippedText: '',
@@ -388,7 +388,7 @@ await describe({
             ],
             translate: [
               deliveryRow({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 incumbentKind: 'absent',
                 incumbentText: '',
                 shippedText: '',
@@ -418,8 +418,8 @@ await describe({
          * One comparison, derived once.
          */
         const rows = compareLanesV2({
-          repair: [keptArchive({ chunkIndex: 0, },),],
-          translate: [keptArchive({ chunkIndex: 0, },),],
+          repair: [keptArchive({ sliceIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
         },);
         assertDerivationsAgree({
           frozen: rows,
@@ -437,8 +437,8 @@ await describe({
          * What version 2's rules say about one kept slice.
          */
         const frozen = compareLanesV2({
-          repair: [keptArchive({ chunkIndex: 0, },),],
-          translate: [keptArchive({ chunkIndex: 0, },),],
+          repair: [keptArchive({ sliceIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
         },);
 
         /**
@@ -475,8 +475,8 @@ await describe({
          * One comparison, derived once.
          */
         const frozen = compareLanesV2({
-          repair: [keptArchive({ chunkIndex: 0, },),],
-          translate: [keptArchive({ chunkIndex: 0, },),],
+          repair: [keptArchive({ sliceIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
         },);
 
         /**
@@ -510,8 +510,8 @@ await describe({
          * One row, against nothing.
          */
         const frozen = compareLanesV2({
-          repair: [keptArchive({ chunkIndex: 0, },),],
-          translate: [keptArchive({ chunkIndex: 0, },),],
+          repair: [keptArchive({ sliceIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
         },);
         /**
          * What lengthsDiffer raised, read for its class as well as its wording.
@@ -634,8 +634,8 @@ await describe({
          * One row every case below changes exactly one field of.
          */
         const [row,] = compareLanesV2({
-          repair: [shipped({ chunkIndex: 0, text: 'The cat naps.', },),],
-          translate: [keptArchive({ chunkIndex: 0, },),],
+          repair: [shipped({ sliceIndex: 0, text: 'The cat naps.', },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
         },);
         if (row === undefined)
           throw new Error('the comparison produced no rows to vary',);
@@ -651,7 +651,7 @@ await describe({
         const variants: readonly ArtifactComparisonRowV2[] = [
           {
             ...row,
-            chunkIndex: 1,
+            sliceIndex: 1,
           },
           {
             ...row,

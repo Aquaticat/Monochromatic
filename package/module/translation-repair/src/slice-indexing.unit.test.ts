@@ -42,14 +42,14 @@ function sliceAt(
   },
 ): {
   readonly source: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
     readonly text: string;
   };
   readonly target: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
@@ -58,14 +58,14 @@ function sliceAt(
 } {
   return {
     source: {
-      chunkIndex: sourceIndex,
+      sliceIndex: sourceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 6,
       text: '猫在睡觉。',
     },
     target: {
-      chunkIndex: targetIndex,
+      sliceIndex: targetIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 16,
@@ -95,7 +95,7 @@ await describe({
         expect(prepared.slices
           .map(function toIndex(slice,): number {
             return slice.target
-              .chunkIndex;
+              .sliceIndex;
           },),).toEqual(prepared.slices
           .map(function toPosition(
             _slice,
@@ -200,9 +200,9 @@ await describe({
           slicePosition: 0,
         },);
         expect(stamped.source
-          .chunkIndex,).toBe(0,);
+          .sliceIndex,).toBe(0,);
         expect(stamped.target
-          .chunkIndex,).toBe(0,);
+          .sliceIndex,).toBe(0,);
         expect(stamped.target
           .text,).toBe(disagreeing.target
           .text,);

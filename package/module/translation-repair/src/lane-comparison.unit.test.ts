@@ -111,7 +111,7 @@ function laneOf(
    */
   const moved = acceptedText !== ARCHIVE_NAP;
   return ledgerOf({ records: [{
-    chunkIndex: 0,
+    sliceIndex: 0,
     sourceText: SOURCE_NAP,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
@@ -159,7 +159,7 @@ function undecidedLaneOf(
    */
   const incumbentText = (incumbentKind === 'absent') ? '' : ARCHIVE_NAP;
   return ledgerOf({ records: [{
-    chunkIndex: 0,
+    sliceIndex: 0,
     sourceText: SOURCE_NAP,
     incumbentKind,
     incumbentText,
@@ -308,7 +308,7 @@ await describe({
           compareDocumentLanes({
             repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
             translate: ledgerOf({ records: [{
-              chunkIndex: 0,
+              sliceIndex: 0,
               sourceText: SOURCE_NAP,
               incumbentKind: 'present',
               incumbentText: 'A different archive sentence entirely.',
@@ -341,7 +341,7 @@ await describe({
         try {
           compareDocumentLanes({
             repair: ledgerOf({ records: [{
-              chunkIndex: 0,
+              sliceIndex: 0,
               sourceText: SOURCE_NAP,
               incumbentKind: 'present',
               incumbentText: '',
@@ -463,7 +463,7 @@ await describe({
             incumbentKind: 'absent',
           },),
           translate: ledgerOf({ records: [{
-            chunkIndex: 0,
+            sliceIndex: 0,
             sourceText: SOURCE_NAP,
             incumbentKind: 'absent',
             incumbentText: '',
@@ -600,7 +600,7 @@ await describe({
             repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
             translate: ledgerOf({
               records: [{
-                chunkIndex: 0,
+                sliceIndex: 0,
                 sourceText: '猫猫在吃饭。',
                 incumbentKind: 'present',
                 incumbentText: ARCHIVE_NAP,
@@ -635,7 +635,7 @@ await describe({
           compareDocumentLanes({
             repair: ledgerOf({
               records: [{
-                chunkIndex: 0,
+                sliceIndex: 0,
                 sourceText: SOURCE_NAP,
                 incumbentKind: 'present',
                 incumbentText: ARCHIVE_NAP,

@@ -323,7 +323,7 @@ function assertNoSliceCutsATag(
           },));
         if (cuts)
           throw new ContainerIntegrityError({
-            message: `slice ${String(span.chunkIndex,)} ends part way through the ${tag.label} tag of `
+            message: `slice ${String(span.sliceIndex,)} ends part way through the ${tag.label} tag of `
               + `${nameOf({ container, },)}, so assembly would replace half of it and leave the `
               + 'rest beside text written without it',
           },);

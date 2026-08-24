@@ -433,7 +433,7 @@ async function main(): Promise<void> {
         }
       }
       l.info(
-        `${entryId}/${String(pick.chunkIndex,)} (${pick.sliceClass}): ${
+        `${entryId}/${String(pick.sliceIndex,)} (${pick.sliceClass}): ${
           rows.map(function toOutcome(row,) {
             return `${row.arm}=${row.shipped ? 'replaced' : 'kept'}`;
           },)

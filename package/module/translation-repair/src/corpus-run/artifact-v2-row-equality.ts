@@ -162,7 +162,7 @@ export function comparisonRowsEqualV2(
     readonly right: ArtifactComparisonRowV2;
   },
 ): boolean {
-  return (left.chunkIndex === right.chunkIndex)
+  return (left.sliceIndex === right.sliceIndex)
     && (left.incumbentKind === right.incumbentKind)
     && (left.incumbentText === right.incumbentText)
     && (left.repairText === right.repairText)

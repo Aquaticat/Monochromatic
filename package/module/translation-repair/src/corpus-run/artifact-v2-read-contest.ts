@@ -19,6 +19,7 @@ import {
 } from './artifact-v2-contest.ts';
 import { parseContestBallotV2, } from './artifact-v2-read-contest-ballot.ts';
 import type { ArtifactComparisonRowV2, } from './artifact-v2-vocabulary.ts';
+import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 //region Lane contest reading
 // Reading the recorded contest, and refusing one that disagrees with either the
@@ -224,6 +225,9 @@ function assertVerdictMatches(
  *
  * @param path - dotted path of that slice
  *
+ * @param keys - field spellings this artifact's generation uses, so an older
+ * file is read by its own names rather than by today's
+ *
  * @returns Slice record, proven to agree with the ballots it carries
  *
  * @throws {@link ArtifactParseError} when a field is unreadable, when the usable
@@ -239,9 +243,11 @@ function parseContestSliceV2(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactContestSliceV2 {
   /**
@@ -254,7 +260,7 @@ function parseContestSliceV2(
   requireExactKeys({
     record: slice,
     allowed: [
-      'chunkIndex',
+      keys.sliceIndex,
       'verdict',
       'ballots',
       'usable',
@@ -299,9 +305,9 @@ function parseContestSliceV2(
    * Verdict the stored ballots settle on under the stage`s own rule.
    */
   const derived = describeContestSlice({
-    chunkIndex: requireCount({
-      value: slice.chunkIndex,
-      path: `${path}.chunkIndex`,
+    sliceIndex: requireCount({
+      value: slice[keys.sliceIndex],
+      path: `${path}.${keys.sliceIndex}`,
     },),
     outcome: {
       choice: settleLaneContestBallots({ ballots, },),
@@ -366,7 +372,7 @@ function assertContestCoversEligible(
    */
   const answered = slices
     .map(function nameIt(slice,): number {
-      return slice.chunkIndex;
+      return slice.sliceIndex;
     },)
     .join(',',);
   if (answered !== eligible) {
@@ -387,6 +393,9 @@ function assertContestCoversEligible(
  *
  * @param path - dotted path of the recorded selection
  *
+ * @param keys - field spellings this artifact's generation uses, so an older
+ * file is read by its own names rather than by today's
+ *
  * @returns Selection, proven to agree with the ballots and the comparison
  *
  * @throws {@link ArtifactParseError} when the kind is unknown, when any slice is
@@ -394,7 +403,7 @@ function assertContestCoversEligible(
  *
  * @example
  * ```ts
- * const selection = parseLaneSelectionV2({ value, comparison, path, },);
+ * const selection = parseLaneSelectionV2({ value, comparison, path, keys, },);
  * ```
  */
 export function parseLaneSelectionV2(
@@ -402,10 +411,12 @@ export function parseLaneSelectionV2(
     value,
     comparison,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly comparison: readonly ArtifactComparisonRowV2[];
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactLaneSelectionV2 {
   /**
@@ -458,6 +469,7 @@ export function parseLaneSelectionV2(
       return parseContestSliceV2({
         value: one,
         path: `${path}.slices[${String(position,)}]`,
+        keys,
       },);
     },);
   assertContestCoversEligible({

@@ -48,7 +48,7 @@ const PROTOCOL = 'protocol-one';
  *
  * @param arm - which arm this row is
  *
- * @param chunkIndex - slice position
+ * @param sliceIndex - slice position
  *
  * @param protocol - digest it was bought under
  *
@@ -56,24 +56,24 @@ const PROTOCOL = 'protocol-one';
  *
  * @example
  * ```ts
- * const row = rowFor({ arm: 'wide', chunkIndex: 3, },);
+ * const row = rowFor({ arm: 'wide', sliceIndex: 3, },);
  * ```
  */
 function rowFor(
   {
     arm,
-    chunkIndex,
+    sliceIndex,
     protocol = PROTOCOL,
   }: {
     readonly arm: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly protocol?: string;
   },
 ): WindowTrialRow {
   return {
     protocol,
     entryId: 'Mittens',
-    chunkIndex,
+    sliceIndex,
     arm,
     sliceClass: 'relocation',
     shipped: arm === 'wide',
@@ -125,7 +125,7 @@ await describe({
             path,
             row: rowFor({
               arm,
-              chunkIndex: 3,
+              sliceIndex: 3,
             },),
           },);
         }
@@ -156,7 +156,7 @@ await describe({
           path,
           row: rowFor({
             arm: 'narrow-a',
-            chunkIndex: 1,
+            sliceIndex: 1,
           },),
         },);
         // A kill in the middle of the second append.
@@ -164,7 +164,7 @@ await describe({
           path,
           row: rowFor({
             arm: 'narrow-b',
-            chunkIndex: 1,
+            sliceIndex: 1,
           },),
         },);
         const whole = await readTrialLedger({ path, },);
@@ -175,7 +175,7 @@ await describe({
          */
         const torn = `${JSON.stringify(rowFor({
           arm: 'narrow-a',
-          chunkIndex: 1,
+          sliceIndex: 1,
         },),)}\n{"protocol":"protocol-one","entr`;
         await writeFile(
           path,
@@ -203,7 +203,7 @@ await describe({
           path,
           `{"protocol":"protocol-one","entr\n${JSON.stringify(rowFor({
             arm: 'wide',
-            chunkIndex: 1,
+            sliceIndex: 1,
           },),)}\n`,
         );
 
@@ -224,14 +224,14 @@ await describe({
           path,
           row: rowFor({
             arm: 'wide',
-            chunkIndex: 5,
+            sliceIndex: 5,
           },),
         },);
         await appendTrialRow({
           path,
           row: rowFor({
             arm: 'wide',
-            chunkIndex: 6,
+            sliceIndex: 6,
             protocol: 'protocol-two',
           },),
         },);
@@ -251,7 +251,7 @@ await describe({
         const ownKey = trialKey({
           row: rowFor({
             arm: 'wide',
-            chunkIndex: 5,
+            sliceIndex: 5,
           },),
         },);
 
@@ -261,7 +261,7 @@ await describe({
         const otherKey = trialKey({
           row: rowFor({
             arm: 'wide',
-            chunkIndex: 6,
+            sliceIndex: 6,
             protocol: 'protocol-two',
           },),
         },);
@@ -279,13 +279,13 @@ await describe({
         expect(trialKey({
           row: rowFor({
             arm: 'narrow-a',
-            chunkIndex: 2,
+            sliceIndex: 2,
           },),
         },),).not
           .toBe(trialKey({
             row: rowFor({
               arm: 'narrow-b',
-              chunkIndex: 2,
+              sliceIndex: 2,
             },),
           },),);
       },

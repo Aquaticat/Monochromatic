@@ -36,7 +36,7 @@ const l = tagged({ tag: 'translate-wrap-test', },);
 /**
  * Builds one prepared pair carrying the archive's wording at an index.
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @param incumbentText - archive wording there
  *
@@ -44,28 +44,28 @@ const l = tagged({ tag: 'translate-wrap-test', },);
  *
  * @example
  * ```ts
- * const pair = pairOf({ chunkIndex: 0, incumbentText: 'The cat naps.', },);
+ * const pair = pairOf({ sliceIndex: 0, incumbentText: 'The cat naps.', },);
  * ```
  */
 function pairOf(
   {
-    chunkIndex,
+    sliceIndex,
     incumbentText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly incumbentText: string;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 1,
-      text: `source of slice ${String(chunkIndex,)}`,
+      text: `source of slice ${String(sliceIndex,)}`,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: incumbentText.length,
@@ -81,7 +81,7 @@ function pairOf(
  * untouched, so a fixture carrying the whole contract would test the spread
  * rather than the decision.
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @param outputText - wording this lane settled on
  *
@@ -91,16 +91,16 @@ function pairOf(
  *
  * @example
  * ```ts
- * const record = recordOf({ chunkIndex: 0, outputText: 'It naps.', changed: true, },);
+ * const record = recordOf({ sliceIndex: 0, outputText: 'It naps.', changed: true, },);
  * ```
  */
 function recordOf(
   {
-    chunkIndex,
+    sliceIndex,
     outputText,
     changed,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly outputText: string;
     readonly changed: boolean;
   },
@@ -108,7 +108,7 @@ function recordOf(
   return {
     kind: 'translate-slice',
     schemaVersion: 2,
-    chunkIndex,
+    sliceIndex,
     outputText,
     changed,
     disposition: 'shipped',
@@ -129,11 +129,11 @@ await describe({
       fn: async () => {
         const wrapped = wrapTranslateRecords({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText: 'The cat sleeps on the sill.',
           },),],
           settled: [recordOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             outputText: 'The tabby naps on the sill. It wakes at dusk.',
             changed: true,
           },),],
@@ -158,11 +158,11 @@ await describe({
 
         const wrapped = wrapTranslateRecords({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText,
           },),],
           settled: [recordOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             outputText: incumbentText,
             changed: false,
           },),],
@@ -186,11 +186,11 @@ await describe({
 
         const wrapped = wrapTranslateRecords({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText,
           },),],
           settled: [recordOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             outputText: 'It naps. It wakes.',
             changed: true,
           },),],
@@ -210,22 +210,22 @@ await describe({
         const wrapped = wrapTranslateRecords({
           slices: [
             pairOf({
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentText: 'One.',
             },),
             pairOf({
-              chunkIndex: 1,
+              sliceIndex: 1,
               incumbentText: 'Two.',
             },),
           ],
           settled: [
             recordOf({
-              chunkIndex: 0,
+              sliceIndex: 0,
               outputText: 'A tabby naps. A tabby wakes.',
               changed: true,
             },),
             recordOf({
-              chunkIndex: 1,
+              sliceIndex: 1,
               outputText: 'A bowl fills. A bowl empties.',
               changed: true,
             },),
@@ -259,11 +259,11 @@ await describe({
       fn: async () => {
         const wrapped = wrapTranslateRecords({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText: 'The cat sleeps on the sill.',
           },),],
           settled: [recordOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             outputText: GOVERNED_PRODUCED,
             changed: true,
           },),],

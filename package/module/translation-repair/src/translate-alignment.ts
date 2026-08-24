@@ -161,7 +161,7 @@ export function assessSliceAlignment(
 /**
  * Names a refusal in scorecard-stable wording.
  *
- * @param chunkIndex - slice refused
+ * @param sliceIndex - slice refused
  *
  * @param assessment - measurements behind it
  *
@@ -169,19 +169,19 @@ export function assessSliceAlignment(
  *
  * @example
  * ```ts
- * const finding = alignmentRefusalFinding({ chunkIndex, assessment, },);
+ * const finding = alignmentRefusalFinding({ sliceIndex, assessment, },);
  * ```
  */
 export function alignmentRefusalFinding(
   {
-    chunkIndex,
+    sliceIndex,
     assessment,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly assessment: SliceAlignmentAssessment;
   },
 ): string {
-  return `translate-refused-alignment (slice ${String(chunkIndex,)}: source ${
+  return `translate-refused-alignment (slice ${String(sliceIndex,)}: source ${
     String(assessment.sourceCodePoints,)
   } code points, incumbent ${String(assessment.incumbentCodePoints,)}, floor ${
     String(assessment.minProtectedIncumbent,)

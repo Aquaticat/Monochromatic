@@ -157,7 +157,7 @@ export function assertDeliveryCoherent(
   /**
    * Slice being checked, named in every message so a failure points at a row.
    */
-  const at = `slice ${String(record.chunkIndex,)}`;
+  const at = `slice ${String(record.sliceIndex,)}`;
 
   /**
    * What the document ended up with here.

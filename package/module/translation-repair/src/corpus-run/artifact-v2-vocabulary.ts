@@ -126,14 +126,14 @@ export type ArtifactSliceDeliveryV2 = {
  *
  * @example
  * ```ts
- * const row: ArtifactDeliveryRowV2 = { chunkIndex: 0, sourceText: '猫', ... };
+ * const row: ArtifactDeliveryRowV2 = { sliceIndex: 0, sourceText: '猫', ... };
  * ```
  */
 export type ArtifactDeliveryRowV2 = {
   /**
    * Global slice index, which every join uses.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Original this slice was translated from.
@@ -218,14 +218,14 @@ export type ArtifactLaneRelationV2 =
  *
  * @example
  * ```ts
- * const row: ArtifactComparisonRowV2 = { chunkIndex: 0, laneRelation: 'both-differ', ... };
+ * const row: ArtifactComparisonRowV2 = { sliceIndex: 0, laneRelation: 'both-differ', ... };
  * ```
  */
 export type ArtifactComparisonRowV2 = {
   /**
    * Slice both lanes name it by.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Whether the archive holds any wording here.

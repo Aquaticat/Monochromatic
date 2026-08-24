@@ -188,14 +188,14 @@ function prepare(
 
       return {
         source: {
-          chunkIndex: index,
+          sliceIndex: index,
           text: sourceText,
           startOffset: 0,
           endOffset: sourceText.length,
           nodes: [],
         },
         target: {
-          chunkIndex: index,
+          sliceIndex: index,
           text: targetText,
           startOffset,
           endOffset: startOffset + targetText.length,
@@ -209,7 +209,7 @@ function prepare(
 /**
  * Builds one settled accuracy outcome for a slice.
  *
- * @param chunkIndex - slice this outcome belongs to
+ * @param sliceIndex - slice this outcome belongs to
  *
  * @param repairedText - what the accuracy pass settled, which the lane rewrites
  *
@@ -217,20 +217,20 @@ function prepare(
  *
  * @example
  * ```ts
- * const outcome = settledOutcome({ chunkIndex: 0, repairedText, },);
+ * const outcome = settledOutcome({ sliceIndex: 0, repairedText, },);
  * ```
  */
 function settledOutcome(
   {
-    chunkIndex,
+    sliceIndex,
     repairedText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairedText: string;
   },
 ): ChunkRepairOutcome {
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed: false,
     issues: [],
@@ -389,8 +389,8 @@ async function probeSheets(
     slices,
     outcomes: slices.map(function toOutcome(slice,): ChunkRepairOutcome {
       return settledOutcome({
-        chunkIndex: slice.target
-          .chunkIndex,
+        sliceIndex: slice.target
+          .sliceIndex,
         repairedText: slice.target
           .text,
       },);

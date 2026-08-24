@@ -42,7 +42,7 @@ import type {
  *
  * @example
  * ```ts
- * const chunkIndex = readCount({ value, path: 'Kitten sliceCritics[0].chunkIndex', minimum: 0, },);
+ * const sliceIndex = readCount({ value, path: 'Kitten sliceCritics[0].sliceIndex', minimum: 0, },);
  * ```
  */
 export function readCount(
@@ -294,9 +294,9 @@ export function decodeChunkRecord(
   }
 
   return {
-    chunkIndex: readCount({
-      value: value.chunkIndex,
-      path: `${path}.chunkIndex`,
+    sliceIndex: readCount({
+      value: value.sliceIndex,
+      path: `${path}.sliceIndex`,
       minimum: 0,
     },),
     heardCriticIds: readDistinctStrings({
@@ -359,7 +359,7 @@ export function decodeSliceCritics(
   },);
 
   if ((new Set(records.map(function toIndex(record,) {
-    return record.chunkIndex;
+    return record.sliceIndex;
   },),)).size !== records.length) {
     throw new ArtifactParseError({
       path: `${entryId} ${criticsKey}`,

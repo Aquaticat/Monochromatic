@@ -115,7 +115,7 @@ function rowCarrying(
   return {
     runSet: 'kittens',
     entryId: 'Tabby',
-    chunkIndex: 0,
+    sliceIndex: 0,
     deliveryKind: 'replacement-shipped',
     auditsArchiveText: false,
     ...((pageRelation === undefined) ? {} : { pageRelation, }),

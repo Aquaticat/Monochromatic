@@ -168,7 +168,7 @@ export async function attemptTranslateSlice(
     if (signal.aborted) {
       l.warn(
         `slice ${String(slice.target
-          .chunkIndex,)}: abandoned by the caller's abort (${String(error,)})`,
+          .sliceIndex,)}: abandoned by the caller's abort (${String(error,)})`,
       );
       throw signal.reason;
     }

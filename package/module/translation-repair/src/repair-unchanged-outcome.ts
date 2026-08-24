@@ -15,7 +15,7 @@ import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
  * empty record. Nothing was repaired, but the votes, the contradiction screen
  * and the attributions were all paid for and are read by later calibration.
  *
- * @param chunkIndex - position of this chunk in the document
+ * @param sliceIndex - position of this chunk in the document
  *
  * @param targetText - translation as it stood, which is what ships
  *
@@ -25,22 +25,22 @@ import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
  *
  * @example
  * ```ts
- * const unchangedOutcome = unchangedChunkOutcome({ chunkIndex, targetText, critic, },);
+ * const unchangedOutcome = unchangedChunkOutcome({ sliceIndex, targetText, critic, },);
  * ```
  */
 export function unchangedChunkOutcome(
   {
-    chunkIndex,
+    sliceIndex,
     targetText,
     critic,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly targetText: string;
     readonly critic: ChunkCriticPhase;
   },
 ): Omit<ChunkRepairOutcome, 'issues' | 'findings'> {
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText: targetText,
     changed: false,
     resolvedIssueIds: [],

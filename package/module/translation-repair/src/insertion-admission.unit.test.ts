@@ -38,7 +38,7 @@ const SOURCE = '橘猫在窗台上睡了整个下午，阳光把它的毛烤得�
 /**
  * Builds a slice whose translation side is a place rather than text.
  *
- * @param chunkIndex - position this slice holds
+ * @param sliceIndex - position this slice holds
  *
  * @param sourceText - original with no translation beside it
  *
@@ -46,29 +46,29 @@ const SOURCE = '橘猫在窗台上睡了整个下午，阳光把它的毛烤得�
  *
  * @example
  * ```ts
- * const slice = anchoredSlice({ chunkIndex: 1, sourceText: '第一只猫。', },);
+ * const slice = anchoredSlice({ sliceIndex: 1, sourceText: '第一只猫。', },);
  * ```
  */
 function anchoredSlice(
   {
-    chunkIndex,
+    sliceIndex,
     sourceText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly sourceText: string;
   },
 ): ChunkPair {
   return {
     source: {
       kind: 'content',
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: sourceText.length,
       text: sourceText,
     },
     target: makeInsertionChunk({
-      chunkIndex,
+      sliceIndex,
       offset: 0,
     },),
   };
@@ -77,20 +77,20 @@ function anchoredSlice(
 /**
  * Builds a slice both sides of which carry text, which the gate never weighs.
  *
- * @param chunkIndex - position this slice holds
+ * @param sliceIndex - position this slice holds
  *
  * @returns Ordinary paired slice
  *
  * @example
  * ```ts
- * const slice = pairedSlice({ chunkIndex: 0, },);
+ * const slice = pairedSlice({ sliceIndex: 0, },);
  * ```
  */
-function pairedSlice({ chunkIndex, }: { readonly chunkIndex: number; },): ChunkPair {
+function pairedSlice({ sliceIndex, }: { readonly sliceIndex: number; },): ChunkPair {
   return {
     source: {
       kind: 'content',
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 1,
@@ -98,7 +98,7 @@ function pairedSlice({ chunkIndex, }: { readonly chunkIndex: number; },): ChunkP
     },
     target: {
       kind: 'content',
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 3,
@@ -116,9 +116,9 @@ await describe({
       fn: async () => {
         expect([...admitInsertions({
           slices: [
-            pairedSlice({ chunkIndex: 0, },),
+            pairedSlice({ sliceIndex: 0, },),
             anchoredSlice({
-              chunkIndex: 1,
+              sliceIndex: 1,
               sourceText: '第一只猫。',
             },),
           ],
@@ -135,9 +135,9 @@ await describe({
       fn: async () => {
         expect([...admitInsertions({
           slices: [
-            pairedSlice({ chunkIndex: 0, },),
+            pairedSlice({ sliceIndex: 0, },),
             anchoredSlice({
-              chunkIndex: 1,
+              sliceIndex: 1,
               sourceText: '第一只猫。',
             },),
           ],
@@ -161,15 +161,15 @@ await describe({
         expect([...admitInsertions({
           slices: [
             anchoredSlice({
-              chunkIndex: 0,
+              sliceIndex: 0,
               sourceText: '第一只猫在这里。',
             },),
             anchoredSlice({
-              chunkIndex: 1,
+              sliceIndex: 1,
               sourceText: '第二只猫在那里。',
             },),
             anchoredSlice({
-              chunkIndex: 2,
+              sliceIndex: 2,
               sourceText: '第三只猫在门口。',
             },),
           ],
@@ -186,9 +186,9 @@ await describe({
       fn: async () => {
         expect([...admitInsertions({
           slices: [
-            pairedSlice({ chunkIndex: 40, },),
+            pairedSlice({ sliceIndex: 40, },),
             anchoredSlice({
-              chunkIndex: 41,
+              sliceIndex: 41,
               sourceText: '第一只猫。',
             },),
           ],
@@ -205,8 +205,8 @@ await describe({
       fn: async () => {
         expect([...admitInsertions({
           slices: [
-            pairedSlice({ chunkIndex: 0, },),
-            pairedSlice({ chunkIndex: 1, },),
+            pairedSlice({ sliceIndex: 0, },),
+            pairedSlice({ sliceIndex: 1, },),
           ],
           sourceText: SOURCE,
           targetText: '',

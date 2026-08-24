@@ -46,11 +46,11 @@ await describe({
           archiveText: `A kitten dozed. ${PASSAGE}. The end.`,
           shippedSlices: [
             {
-              chunkIndex: 2,
+              sliceIndex: 2,
               text: `A kitten dozed, and ${PASSAGE}.`,
             },
             {
-              chunkIndex: 3,
+              sliceIndex: 3,
               text: `${PASSAGE}, as it always had.`,
             },
           ],
@@ -68,11 +68,11 @@ await describe({
           archiveText: 'A kitten dozed by the stove. The end.',
           shippedSlices: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               text: `Well, ${PASSAGE}.`,
             },
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               text: `${PASSAGE} once more.`,
             },
           ],
@@ -88,11 +88,11 @@ await describe({
           archiveText: `A kitten dozed, ${SHORT_WORDED}. The end.`,
           shippedSlices: [
             {
-              chunkIndex: 2,
+              sliceIndex: 2,
               text: `A kitten dozed, ${SHORT_WORDED}.`,
             },
             {
-              chunkIndex: 3,
+              sliceIndex: 3,
               text: `${SHORT_WORDED}, said the tabby.`,
             },
           ],
@@ -113,11 +113,11 @@ await describe({
           archiveText: `${PASSAGE}. A kitten dozed. ${PASSAGE}. The end.`,
           shippedSlices: [
             {
-              chunkIndex: 2,
+              sliceIndex: 2,
               text: `${PASSAGE}.`,
             },
             {
-              chunkIndex: 3,
+              sliceIndex: 3,
               text: `${PASSAGE}.`,
             },
           ],
@@ -132,15 +132,15 @@ await describe({
           archiveText: `A kitten dozed. ${PASSAGE}. The end.`,
           shippedSlices: [
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               text: `${PASSAGE}.`,
             },
             {
-              chunkIndex: 2,
+              sliceIndex: 2,
               text: 'A kitten dozed by the stove.',
             },
             {
-              chunkIndex: 3,
+              sliceIndex: 3,
               text: `${PASSAGE}.`,
             },
           ],
@@ -155,11 +155,11 @@ await describe({
           archiveText: 'A kitten dozed. The end.',
           shippedSlices: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               text: 'The tabby sat by the stove.',
             },
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               text: 'A kitten dozed by the window.',
             },
           ],
@@ -174,11 +174,11 @@ await describe({
           archiveText: 'A kitten dozed. The end.',
           shippedSlices: [
             {
-              chunkIndex: 4,
+              sliceIndex: 4,
               text: `Look: ${PASSAGE} and dozed.`,
             },
             {
-              chunkIndex: 5,
+              sliceIndex: 5,
               text: `${PASSAGE} and dozed, again.`,
             },
           ],
@@ -193,7 +193,7 @@ await describe({
           archiveText: 'A kitten dozed. The end.',
           shippedSlices: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               text: `${PASSAGE}. ${PASSAGE}.`,
             },
           ],
@@ -214,11 +214,11 @@ await describe({
           archiveText: `A kitten dozed. ${PASSAGE}. The end.`,
           shippedSlices: [
             {
-              chunkIndex: 2,
+              sliceIndex: 2,
               text: `A kitten dozed, and ${PASSAGE}.`,
             },
             {
-              chunkIndex: 3,
+              sliceIndex: 3,
               text: `${PASSAGE}, as it always had.`,
             },
           ],
@@ -239,11 +239,11 @@ await describe({
           archiveText: 'A kitten dozed. The end.',
           shippedSlices: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               text: 'The tabby sat by the stove.',
             },
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               text: 'A kitten dozed by the window.',
             },
           ],

@@ -253,15 +253,15 @@ export async function repairPreparedDocument(
      * names. NOT part of the cache key since version 26: a key says what the
      * stages are asked, and where a slice sits is not part of that question.
      */
-    const { chunkIndex, } = slice.target;
+    const { sliceIndex, } = slice.target;
 
     /**
      * Original of the passages either side, and the archive English of the same
      * two, which is the half a relocation shows: the Chinese says each thing
      * once in its own place while the English says it next door.
      *
-     * ITERATED BY POSITION RATHER THAN READ FROM `chunkIndex`, which is the trap
-     * `#99` named and {@link neighbouringSource} throws on. `chunkIndex` is
+     * ITERATED BY POSITION RATHER THAN READ FROM `sliceIndex`, which is the trap
+     * `#99` named and {@link neighbouringSource} throws on. `sliceIndex` is
      * STAMPED, so on any entry where the two spaces differ it would either throw
      * or, worse, address someone else's neighbours.
      *
@@ -289,7 +289,7 @@ export async function repairPreparedDocument(
     using cost = armSliceCost({
       l: rl,
       lane: 'repair',
-      chunkIndex,
+      sliceIndex,
       sourceChars: slice.source
         .text
         .length,
@@ -307,10 +307,10 @@ export async function repairPreparedDocument(
       // anchoring evidence, which is exactly what a missing entry contributes.
       // The verdict would be the one the previous slice already produced.
       rl.info(
-        `chunk ${String(chunkIndex,)}: no translation to repair; `
+        `chunk ${String(sliceIndex,)}: no translation to repair; `
           + 'the translate lane owns this passage',
       );
-      outcomes.push(notApplicableRepair({ chunkIndex, },),);
+      outcomes.push(notApplicableRepair({ sliceIndex, },),);
       cost.left({ exit: 'no-translation', },);
       continue;
     }
@@ -324,7 +324,7 @@ export async function repairPreparedDocument(
         .text,
       targetText: slice.target
         .text,
-      lineStructured: lineStructuredSlices.has(chunkIndex,),
+      lineStructured: lineStructuredSlices.has(sliceIndex,),
       neighbouringIncumbentText,
       neighbouringSourceText,
     },);
@@ -347,7 +347,7 @@ export async function repairPreparedDocument(
      */
     const cached = (stored === undefined) ? undefined : {
       ...stored,
-      chunkIndex,
+      sliceIndex,
     };
 
     /**
@@ -370,7 +370,7 @@ export async function repairPreparedDocument(
        */
       const discarded = resumedSliceDiscardFinding({
         lane: 'repair',
-        chunkIndex,
+        sliceIndex,
         changed: cached.changed,
       },);
       rl.warn(discarded,);
@@ -404,12 +404,12 @@ export async function repairPreparedDocument(
       try {
         return await repairChunk({
           client,
-          chunkIndex,
+          sliceIndex,
           sourceText: slice.source
             .text,
           targetText: slice.target
             .text,
-          lineStructured: lineStructuredSlices.has(chunkIndex,),
+          lineStructured: lineStructuredSlices.has(sliceIndex,),
           declaredNames: prepared.declaredNames,
           neighbouringIncumbentText,
           neighbouringSourceText,
@@ -428,7 +428,7 @@ export async function repairPreparedDocument(
         if (!signal.aborted)
           throw error;
         rl.warn(
-          `chunk ${String(chunkIndex,)}: abandoned by the caller's abort (${String(error,)})`,
+          `chunk ${String(sliceIndex,)}: abandoned by the caller's abort (${String(error,)})`,
         );
         throw signal.reason;
       }
@@ -444,7 +444,7 @@ export async function repairPreparedDocument(
       // hold in place.
       assertSettledRecordAgrees({
         lane: 'repair',
-        chunkIndex,
+        sliceIndex,
         changed: outcome.changed,
         decidedText: outcome.repairedText,
         incumbentText: slice.target
@@ -452,7 +452,7 @@ export async function repairPreparedDocument(
       },);
       if (outcome.heardCritics === 0) {
         rl.warn(
-          `chunk ${String(chunkIndex,)}: no critic was heard, so the slice ships `
+          `chunk ${String(sliceIndex,)}: no critic was heard, so the slice ships `
             + 'unchanged and is NOT cached',
         );
       }

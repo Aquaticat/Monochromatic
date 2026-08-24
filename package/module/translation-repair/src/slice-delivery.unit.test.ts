@@ -42,14 +42,14 @@ const SOURCES = [
  */
 function preparedSlices(): readonly {
   readonly source: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
     readonly text: string;
   };
   readonly target: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
@@ -58,22 +58,22 @@ function preparedSlices(): readonly {
 }[] {
   return INCUMBENTS.map(function toSlice(
     incumbentText,
-    chunkIndex,
+    sliceIndex,
   ) {
     /**
      * Original of this slice, present for every fixture index.
      */
-    const sourceText = SOURCES[chunkIndex] ?? '';
+    const sourceText = SOURCES[sliceIndex] ?? '';
     return {
       source: {
-        chunkIndex,
+        sliceIndex,
         nodes: [],
         startOffset: 0,
         endOffset: sourceText.length,
         text: sourceText,
       },
       target: {
-        chunkIndex,
+        sliceIndex,
         nodes: [],
         startOffset: 0,
         endOffset: incumbentText.length,
@@ -101,14 +101,14 @@ function laneWordings(
 ): readonly LaneSliceText[] {
   return INCUMBENTS.map(function toWording(
     incumbentText,
-    chunkIndex,
+    sliceIndex,
   ): LaneSliceText {
     /**
      * What this case says the lane decided here.
      */
-    const accepted = decided.get(chunkIndex,);
+    const accepted = decided.get(sliceIndex,);
     return {
-      chunkIndex,
+      sliceIndex,
       incumbentKind: 'present',
       incumbentText,
       outcome: (accepted === undefined)
@@ -134,10 +134,10 @@ function laneWordings(
 function everySliceUnchanged(): ReadonlyMap<number, string> {
   return new Map(INCUMBENTS.map(function toEntry(
     incumbentText,
-    chunkIndex,
+    sliceIndex,
   ): readonly [number, string,] {
     return [
-      chunkIndex,
+      sliceIndex,
       incumbentText,
     ];
   },),);
@@ -156,13 +156,13 @@ function everySliceUnchanged(): ReadonlyMap<number, string> {
 function anchoredSlices(): readonly ChunkPair[] {
   return preparedSlices().map(function toAnchored(
     slice,
-    chunkIndex,
+    sliceIndex,
   ): ChunkPair {
-    return (chunkIndex === 1)
+    return (sliceIndex === 1)
       ? {
         source: slice.source,
         target: makeInsertionChunk({
-          chunkIndex,
+          sliceIndex,
           offset: 0,
         },),
       }
@@ -189,7 +189,7 @@ function anchoredWordings(
 ): readonly LaneSliceText[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       incumbentKind: 'present',
       incumbentText: INCUMBENTS[0],
       outcome: {
@@ -198,7 +198,7 @@ function anchoredWordings(
       },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       incumbentKind: 'absent',
       incumbentText: '',
       // The two honest things a lane can say about a passage the archive never
@@ -210,7 +210,7 @@ function anchoredWordings(
         : { kind: 'unfilled', },
     },
     {
-      chunkIndex: 2,
+      sliceIndex: 2,
       incumbentKind: 'present',
       incumbentText: INCUMBENTS[2],
       outcome: {

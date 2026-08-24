@@ -30,14 +30,14 @@ import type { DocumentNode, } from './document-node.ts';
  *
  * @example
  * ```ts
- * const position: ChunkPosition = { chunkIndex: 0, startOffset: 0, endOffset: 12, };
+ * const position: ChunkPosition = { sliceIndex: 0, startOffset: 0, endOffset: 12, };
  * ```
  */
 type ChunkPosition = {
   /**
    * Position of this chunk within its document, from zero.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Absolute start of the half-open document range this chunk represents.
@@ -79,7 +79,7 @@ type ChunkPosition = {
  *
  * @example
  * ```ts
- * const chunk: ContentChunk = { chunkIndex: 0, nodes, startOffset: 0, endOffset: 12, text: '## 简介\n', };
+ * const chunk: ContentChunk = { sliceIndex: 0, nodes, startOffset: 0, endOffset: 12, text: '## 简介\n', };
  * ```
  */
 export type ContentChunk = ChunkPosition & {
@@ -117,7 +117,7 @@ export type ContentChunk = ChunkPosition & {
  *
  * @example
  * ```ts
- * const anchor: InsertionChunk = makeInsertionChunk({ chunkIndex: 4, offset: 1_280, },);
+ * const anchor: InsertionChunk = makeInsertionChunk({ sliceIndex: 4, offset: 1_280, },);
  * ```
  */
 export type InsertionChunk = ChunkPosition & {
@@ -149,7 +149,7 @@ export type InsertionChunk = ChunkPosition & {
 /**
  * One side of a pair: existing content, or the place content is missing from.
  *
- * Both members carry `chunkIndex`, `nodes`, `text` and both offsets, so a
+ * Both members carry `sliceIndex`, `nodes`, `text` and both offsets, so a
  * reader that only needs the text of a side needs no narrowing. A consumer
  * that would be WRONG about an insertion asks for {@link ContentChunk}
  * instead, and the compiler stops the union there.
@@ -170,7 +170,7 @@ export type DocumentChunk = ContentChunk | InsertionChunk;
  * document is not here; `#101` validates bounds and ordering at assembly,
  * where the target text is in hand and every placement is visible at once.
  *
- * @param chunkIndex - position this anchor holds among the slices
+ * @param sliceIndex - position this anchor holds among the slices
  *
  * @param offset - boundary in the target document new text is written at
  *
@@ -178,21 +178,21 @@ export type DocumentChunk = ContentChunk | InsertionChunk;
  *
  * @example
  * ```ts
- * const anchor = makeInsertionChunk({ chunkIndex: 4, offset: 1_280, },);
+ * const anchor = makeInsertionChunk({ sliceIndex: 4, offset: 1_280, },);
  * ```
  */
 export function makeInsertionChunk(
   {
-    chunkIndex,
+    sliceIndex,
     offset,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly offset: number;
   },
 ): InsertionChunk {
   return {
     kind: 'insertion',
-    chunkIndex,
+    sliceIndex,
     nodes: [],
     startOffset: offset,
     endOffset: offset,

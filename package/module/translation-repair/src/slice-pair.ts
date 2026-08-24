@@ -43,24 +43,24 @@ export { groupNodes, } from './group-nodes.ts';
  *
  * @param documentText - owning document's text for byte-exact slicing
  *
- * @param chunkIndex - global slice index stamped onto both sides
+ * @param sliceIndex - global slice index stamped onto both sides
  *
  * @returns Chunk spanning exactly this run's offsets
  *
  * @example
  * ```ts
- * const chunk = runToChunk({ run, documentText, chunkIndex: 3, },);
+ * const chunk = runToChunk({ run, documentText, sliceIndex: 3, },);
  * ```
  */
 function runToChunk(
   {
     run,
     documentText,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly run: readonly DocumentNode[];
     readonly documentText: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): ContentChunk {
   /**
@@ -75,7 +75,7 @@ function runToChunk(
   if ((first === undefined) || (last === undefined))
     throw new Error('unreachable: node runs always carry at least one node',);
   return {
-    chunkIndex,
+    sliceIndex,
     nodes: run,
     startOffset: first.startOffset,
     endOffset: last.endOffset,
@@ -253,7 +253,7 @@ export function subdivideChunkPair(
         const source = runToChunk({
           run: run.sourceRun,
           documentText: sourceText,
-          chunkIndex: baseIndex + sliceOffset,
+          sliceIndex: baseIndex + sliceOffset,
         },);
 
         // `#100` landing 4: a run of originals nothing rendered gets a PLACE on
@@ -264,7 +264,7 @@ export function subdivideChunkPair(
           return {
             source,
             target: makeInsertionChunk({
-              chunkIndex: baseIndex + sliceOffset,
+              sliceIndex: baseIndex + sliceOffset,
               offset: run.targetOffset,
             },),
           };
@@ -274,7 +274,7 @@ export function subdivideChunkPair(
           target: runToChunk({
             run: run.targetRun,
             documentText: targetText,
-            chunkIndex: baseIndex + sliceOffset,
+            sliceIndex: baseIndex + sliceOffset,
           },),
         };
       },);
@@ -319,14 +319,14 @@ export function subdivideChunkPair(
         source: runToChunk({
           run,
           documentText: sourceText,
-          chunkIndex: baseIndex + sliceOffset,
+          sliceIndex: baseIndex + sliceOffset,
         },),
 
         // EVERY SLICE AT THE SAME BOUNDARY, in slice order, which is the shape
         // `spliceSlices` orders. The section has one place to be written, and
         // its slices go there one after another.
         target: makeInsertionChunk({
-          chunkIndex: baseIndex + sliceOffset,
+          sliceIndex: baseIndex + sliceOffset,
           offset: pair.target
             .startOffset,
         },),
@@ -347,11 +347,11 @@ export function subdivideChunkPair(
       {
         source: {
           ...pair.source,
-          chunkIndex: baseIndex,
+          sliceIndex: baseIndex,
         },
         target: {
           ...pair.target,
-          chunkIndex: baseIndex,
+          sliceIndex: baseIndex,
         },
       },
     ];
@@ -445,7 +445,7 @@ export function subdivideChunkPair(
     const frameChunk = runToChunk({
       run: frameRun,
       documentText: sourceIsFrame ? sourceText : targetText,
-      chunkIndex: baseIndex + sliceOffset,
+      sliceIndex: baseIndex + sliceOffset,
     },);
 
     /**
@@ -454,7 +454,7 @@ export function subdivideChunkPair(
     const wideChunk = runToChunk({
       run: wideNodes,
       documentText: sourceIsFrame ? targetText : sourceText,
-      chunkIndex: baseIndex + sliceOffset,
+      sliceIndex: baseIndex + sliceOffset,
     },);
     slices.push(
       sourceIsFrame

@@ -100,34 +100,34 @@ function photoElement({ assetNames, }: { readonly assetNames: readonly string[];
  *
  * @param text - original-side text this slice covers
  *
- * @param chunkIndex - position of this slice in its document
+ * @param sliceIndex - position of this slice in its document
  *
  * @returns Pair whose original side carries that text
  *
  * @example
  * ```ts
- * const pair = sliceOf({ text: 'Tabby naps.\n', chunkIndex: 0, },);
+ * const pair = sliceOf({ text: 'Tabby naps.\n', sliceIndex: 0, },);
  * ```
  */
 function sliceOf(
   {
     text,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly text: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: text.length,
       text,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
@@ -147,11 +147,11 @@ const ORDERED_SLICES: readonly ChunkPair[] = [
   `Then she naps by the door.\n\n${photoElement({ assetNames: ['nap.webp',], },)}\n`,
 ].map(function toSlice(
   text,
-  chunkIndex,
+  sliceIndex,
 ) {
   return sliceOf({
     text,
-    chunkIndex,
+    sliceIndex,
   },);
 },);
 
@@ -166,11 +166,11 @@ const DUPING_SLICES: readonly ChunkPair[] = [
   `By evening she returns to the sill.\n\n${photoElement({ assetNames: ['perch.webp',], },)}\n`,
 ].map(function toSlice(
   text,
-  chunkIndex,
+  sliceIndex,
 ) {
   return sliceOf({
     text,
-    chunkIndex,
+    sliceIndex,
   },);
 },);
 
@@ -185,11 +185,11 @@ const MULTI_PICTURE_SLICES: readonly ChunkPair[] = [
   `Then she settles for a nap.\n\n${photoElement({ assetNames: ['nap.webp',], },)}\n`,
 ].map(function toSlice(
   text,
-  chunkIndex,
+  sliceIndex,
 ) {
   return sliceOf({
     text,
-    chunkIndex,
+    sliceIndex,
   },);
 },);
 
@@ -417,7 +417,7 @@ await describe({
           slices: [sliceOf({
             text: `A shadow startles her off the sill.\n\n`
               + `${photoElement({ assetNames: ['startled.webp',], },)}\n`,
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           slicePosition: 0,
           readings: UNAVAILABLE_READINGS,
@@ -441,7 +441,7 @@ await describe({
           slices: [sliceOf({
             text: `She hides behind a plant pot.\n\n`
               + `${photoElement({ assetNames: ['shadow.webp',], },)}\n`,
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           slicePosition: 0,
           readings: new Map<string, PairedReading>(),
@@ -463,7 +463,7 @@ await describe({
         const rendered = slicePictures({
           slices: [sliceOf({
             text: 'Tabby sleeps through the whole afternoon.\n',
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           slicePosition: 0,
           readings: new Map<string, PairedReading>(),
@@ -515,7 +515,7 @@ await describe({
         },);
 
         for (const [slicePosition, slice,] of MULTI_PICTURE_SLICES.entries()) {
-          expect(contexts.get(slice.target.chunkIndex,),).toBe(
+          expect(contexts.get(slice.target.sliceIndex,),).toBe(
             slicePictures({
               slices: MULTI_PICTURE_SLICES,
               slicePosition,
@@ -555,11 +555,11 @@ await describe({
             slices: [
               sliceOf({
                 text: 'Tabby sleeps through the afternoon.\n',
-                chunkIndex: 0,
+                sliceIndex: 0,
               },),
               sliceOf({
                 text: 'Then she sleeps through the evening.\n',
-                chunkIndex: 0,
+                sliceIndex: 0,
               },),
             ],
             readings: new Map<string, PairedReading>(),

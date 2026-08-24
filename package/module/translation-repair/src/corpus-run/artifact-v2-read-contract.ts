@@ -68,14 +68,14 @@ export type ArtifactTranslateStatusV2 =
  *
  * @example
  * ```ts
- * const row: ArtifactEvidenceRowV2 = { chunkIndex: 0, incumbentKind: 'present', ... };
+ * const row: ArtifactEvidenceRowV2 = { sliceIndex: 0, incumbentKind: 'present', ... };
  * ```
  */
 export type ArtifactEvidenceRowV2 = {
   /**
    * Global slice index this row is for.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Whether the archive holds any wording at this slice.

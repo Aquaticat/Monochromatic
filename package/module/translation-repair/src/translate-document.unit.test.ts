@@ -449,7 +449,7 @@ async function runDriver(
       ...sliced.slices,
       {
         source: {
-          chunkIndex: sliced.slices
+          sliceIndex: sliced.slices
             .length,
           nodes: [],
           startOffset: 0,
@@ -457,7 +457,7 @@ async function runDriver(
           text: anchorSource,
         },
         target: makeInsertionChunk({
-          chunkIndex: sliced.slices
+          sliceIndex: sliced.slices
             .length,
           offset: targetText.length,
         },),
@@ -682,7 +682,7 @@ await describe({
               key,
               {
                 ...record,
-                chunkIndex: record.chunkIndex + 1,
+                sliceIndex: record.sliceIndex + 1,
               },
             ] as const;
           },),
@@ -697,10 +697,10 @@ await describe({
         expect(restamped.result
           .slices
           .map(function toIndex(record,): number {
-            return record.chunkIndex;
+            return record.sliceIndex;
           },),).toEqual(firstRun.slices
           .map(function toIndex(record,): number {
-            return record.chunkIndex;
+            return record.sliceIndex;
           },),);
       },
     },),
@@ -746,7 +746,7 @@ await describe({
         expect(twins.result
           .slices
           .map(function toIndex(record,): number {
-            return record.chunkIndex;
+            return record.sliceIndex;
           },),).toEqual([
           0,
           1,
@@ -831,7 +831,7 @@ await describe({
             .slices
             .map(function toEntry(slice,): readonly [number, string,] {
               return [
-                slice.target.chunkIndex,
+                slice.target.sliceIndex,
                 slice.target.text,
               ] as const;
             },),
@@ -847,7 +847,7 @@ await describe({
               key,
               {
                 ...record,
-                outputText: incumbentByIndex.get(record.chunkIndex,)
+                outputText: incumbentByIndex.get(record.sliceIndex,)
                   ?? record.outputText,
               },
             ] as const;
@@ -865,7 +865,7 @@ await describe({
         const overClaimingPoisoned = [...overClaiming.values(),]
           .filter(function wasPoisoned(record,): boolean {
             return record.changed
-              && (record.outputText === incumbentByIndex.get(record.chunkIndex,));
+              && (record.outputText === incumbentByIndex.get(record.sliceIndex,));
           },)
           .length;
         expect(overClaimingPoisoned,).toBeGreaterThan(0,);
@@ -908,7 +908,7 @@ await describe({
          */
         const underClaimingPoisoned = [...underClaiming.values(),]
           .filter(function wasPoisoned(record,): boolean {
-            return record.outputText !== incumbentByIndex.get(record.chunkIndex,);
+            return record.outputText !== incumbentByIndex.get(record.sliceIndex,);
           },)
           .length;
         expect(underClaimingPoisoned,).toBeGreaterThan(0,);
@@ -1070,9 +1070,9 @@ On the windowsill there is being a bird.
           .length,).toBe(result.withdrawnSliceCount,);
         expect(result.changedSliceIndices
           .length,).toBe(result.changedSliceCount,);
-        for (const chunkIndex of result.withdrawnSliceIndices) {
+        for (const sliceIndex of result.withdrawnSliceIndices) {
           expect(result.changedSliceIndices
-            .includes(chunkIndex,),).toBe(false,);
+            .includes(sliceIndex,),).toBe(false,);
         }
         expect(result.changedSliceIndices
           .toSorted(function ascending(
@@ -1251,7 +1251,7 @@ The cat is doing the sleeping on the windowsill.
         expect(result.status,).toBe('unfilled',);
         expect(result.unfilled
           .map(function toIndex(passage,): number {
-            return passage.chunkIndex;
+            return passage.sliceIndex;
           },),).toEqual([anchorIndex,],);
         expect(result.unfilled[0]
           ?.reason,).toBe('no-voice-heard',);
@@ -1314,7 +1314,7 @@ The cat is doing the sleeping on the windowsill.
         expect(anchored.result
           .unfilled
           .map(function toIndex(passage,): number {
-            return passage.chunkIndex;
+            return passage.sliceIndex;
           },),).toEqual([anchorIndex,],);
         expect(anchored.result
           .unfilled[0]

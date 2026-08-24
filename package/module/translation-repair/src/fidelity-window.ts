@@ -40,14 +40,14 @@ import type { ChunkPair, } from './chunk-document.ts';
  * that means NO WINDOW. The wide arm would then send the narrow arm's sheet, the
  * comparison would report the window as making no difference, and that null
  * would be indistinguishable from a real one. The risk is live rather than
- * theoretical: `#99` recorded that `chunkIndex` names three different things
+ * theoretical: `#99` recorded that `sliceIndex` names three different things
  * depending on who stamped it, and a caller passing a stamped index where a
  * slice position belongs is the exact mistake this catches. Empty may therefore
  * mean ONE thing only, a lone slice with no neighbours.
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param slicePosition - POSITION IN `slices`, never a stamped `chunkIndex`
+ * @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
  *
  * @returns Neighbouring source text, empty when the slice stands alone
  *
@@ -130,7 +130,7 @@ export function neighbouringSource(
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param slicePosition - POSITION IN `slices`, never a stamped `chunkIndex`
+ * @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
  *
  * @returns Neighbouring archive text, empty when the slice stands alone
  *
@@ -218,7 +218,7 @@ export type SliceNeighbourContext = {
  * exactly such a consumer, which is why it is handed this rather than the slices.
  *
  * KEYED BY THE STAMPED INDEX, NOT THE POSITION, matching
- * `slicePictureContexts`. `#99` recorded that `chunkIndex` names three different
+ * `slicePictureContexts`. `#99` recorded that `sliceIndex` names three different
  * things depending on who stamped it, and a consumer looking a slice up by its
  * own stamp must find the window computed for that same slice.
  *
@@ -244,7 +244,7 @@ export function sliceNeighbourContexts(
   ] {
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       {
         sourceText: neighbouringSource({
           slices,

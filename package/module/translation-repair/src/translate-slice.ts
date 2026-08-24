@@ -117,7 +117,7 @@ export async function settleTranslateSlice(
   /**
    * Global slice index every record and replacement names.
    */
-  const { chunkIndex, } = slice.target;
+  const { sliceIndex, } = slice.target;
 
   /**
    * Translation already in the archive for this slice, whole.
@@ -157,7 +157,7 @@ export async function settleTranslateSlice(
 
   if (protectedText !== '')
     l.info(
-      `translate slice ${String(chunkIndex,)}: holding ${
+      `translate slice ${String(sliceIndex,)}: holding ${
         String(protectedText.length,)
       } characters of target-only English out of translation, `
       + `judging ${String(incumbentText.length,)} of ${String(archiveText.length,)}`,
@@ -199,7 +199,7 @@ export async function settleTranslateSlice(
       ? {}
       : { pictureContext, }),
     lineStructured: prepared.lineStructuredSliceIndices
-      .has(chunkIndex,),
+      .has(sliceIndex,),
     signal,
     perCallTimeoutMs,
     l,
@@ -270,7 +270,7 @@ export async function settleTranslateSlice(
   if (losesQuote) {
     l.warn(
       quoteLossRefusalFinding({
-        chunkIndex,
+        sliceIndex,
         incumbentText,
         shippedText: stageResult.text,
       },),
@@ -278,7 +278,7 @@ export async function settleTranslateSlice(
     return {
       kind: 'translate-slice',
       schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
-      chunkIndex,
+      sliceIndex,
       stageResult,
       // The whole archive, for the reason the alignment refusal gives.
       outputText: archiveText,
@@ -314,14 +314,14 @@ export async function settleTranslateSlice(
   if (droppedDeclaredNames.length > 0) {
     l.warn(
       declaredNameRefusalFinding({
-        chunkIndex,
+        sliceIndex,
         dropped: droppedDeclaredNames,
       },),
     );
     return {
       kind: 'translate-slice',
       schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
-      chunkIndex,
+      sliceIndex,
       stageResult,
       // The whole archive, for the reason the alignment refusal gives.
       outputText: archiveText,
@@ -334,14 +334,14 @@ export async function settleTranslateSlice(
   }
   if (refused) {
     l.warn(
-      `translate slice ${String(chunkIndex,)}: keeping the archive text, `
+      `translate slice ${String(sliceIndex,)}: keeping the archive text, `
         + `${String(alignment.incumbentCodePoints,)} code points against a `
         + `source of ${String(alignment.sourceCodePoints,)}`,
     );
     return {
       kind: 'translate-slice',
       schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
-      chunkIndex,
+      sliceIndex,
       stageResult,
       // THE WHOLE ARCHIVE, protected run included, rather than the judged part.
       // A retention has to leave the document byte-identical, and the judged
@@ -392,7 +392,7 @@ export async function settleTranslateSlice(
   return {
     kind: 'translate-slice',
     schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
-    chunkIndex,
+    sliceIndex,
     stageResult,
     outputText,
     changed: wantsReplacement,

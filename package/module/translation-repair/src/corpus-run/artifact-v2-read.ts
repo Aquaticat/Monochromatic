@@ -17,6 +17,7 @@ import {
 import {
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V3,
+  ARTIFACT_SCHEMA_VERSION_V4,
 } from './artifact-v2-contract.ts';
 import {
   keyVocabularyOf,
@@ -265,13 +266,26 @@ function parsePreparationV2(
 }
 
 /**
- * Reads one two-lane artifact, of either generation that wrote the shape.
+ * Generations carrying the two-lane shape this reader describes.
  *
- * NAMED FOR THE FAMILY, not for one integer. Generations 2 and 3 record the
+ * NAMED ONE BY ONE RATHER THAN AS A RANGE, because a generation belongs here
+ * once someone has checked that `artifact-key-vocabulary.ts` spells it, not
+ * because its number falls between two others.
+ */
+const TWO_LANE_GENERATIONS: readonly number[] = [
+  ARTIFACT_SCHEMA_VERSION_V2,
+  ARTIFACT_SCHEMA_VERSION_V3,
+  ARTIFACT_SCHEMA_VERSION_V4,
+];
+
+/**
+ * Reads one two-lane artifact, of any generation that wrote the shape.
+ *
+ * NAMED FOR THE FAMILY, not for one integer. Generations 2, 3 and 4 record the
  * same two lanes, the same comparison and the same lane selection, and differ
- * only in how three keys are spelled; `artifact-key-vocabulary.ts` holds that
- * difference and the recorded version picks the spelling, so no artifact is
- * ever tried under both.
+ * only in how the slice-index and change-set keys are spelled;
+ * `artifact-key-vocabulary.ts` holds that difference and the recorded version
+ * picks the spelling, so no artifact is ever tried under another's names.
  *
  * IT REFUSES EVERY OTHER GENERATION INCLUDING VERSION 1: generic dispatch has
  * already happened by the time this is called, so a version 1 artifact arriving
@@ -282,7 +296,7 @@ function parsePreparationV2(
  *
  * @returns Everything the artifact records, with its comparison recomputed
  *
- * @throws {@link ArtifactParseError} when the artifact belongs to neither
+ * @throws {@link ArtifactParseError} when the artifact belongs to no
  * generation of this shape, when any field is missing or the wrong shape, when
  * it carries a key this shape does not name, or when any two of its parts
  * contradict each other
@@ -311,14 +325,13 @@ export function parseSettledArtifactV2(
     value: artifact.artifactSchemaVersion,
     path: 'artifact.artifactSchemaVersion',
   },);
-  if (
-    (version !== ARTIFACT_SCHEMA_VERSION_V2)
-    && (version !== ARTIFACT_SCHEMA_VERSION_V3)
-  ) {
+  if (!TWO_LANE_GENERATIONS.includes(version,)) {
     throw new ArtifactParseError({
       path: 'artifact.artifactSchemaVersion',
-      reason: `${String(ARTIFACT_SCHEMA_VERSION_V2,)} or ${
-        String(ARTIFACT_SCHEMA_VERSION_V3,)
+      reason: `${
+        TWO_LANE_GENERATIONS
+          .map(String,)
+          .join(', ',)
       }, since this reader describes that two-lane shape only and dispatch has already chosen it`,
     },);
   }
@@ -391,6 +404,7 @@ export function parseSettledArtifactV2(
         return parseComparisonRowV2({
           value: row,
           path: `${id}.comparison[${String(position,)}]`,
+          keys,
         },);
       },),
     repair: lanes.repair
@@ -436,6 +450,7 @@ export function parseSettledArtifactV2(
       value: artifact.laneSelection,
       comparison,
       path: `${id}.laneSelection`,
+      keys,
     },),
 
     // WHAT THE THIRD RENDERING SETTLED, absent on every artifact written before
@@ -445,6 +460,7 @@ export function parseSettledArtifactV2(
     consolidation: parseConsolidationV2({
       value: artifact.consolidation,
       path: `${id}.consolidation`,
+      keys,
     },),
   };
 }

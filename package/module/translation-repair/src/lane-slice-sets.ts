@@ -132,25 +132,25 @@ function assertNamesLegalSlices(
     readonly decidedIndices: ReadonlySet<number>;
   },
 ): void {
-  for (const chunkIndex of indices) {
+  for (const sliceIndex of indices) {
     /**
      * Pair this index names, absent when the two were built from different
      * preparations.
      */
     const named = slices.find(function isNamed(slice,): boolean {
       return slice.target
-        .chunkIndex
-        === chunkIndex;
+        .sliceIndex
+        === sliceIndex;
     },);
     if (named === undefined) {
       throw new LaneSliceCoverageError({
-        message: `lane reports slice ${String(chunkIndex,)} ${set.label}, `
+        message: `lane reports slice ${String(sliceIndex,)} ${set.label}, `
           + 'which this preparation never produced',
       },);
     }
-    if (decidedIndices.has(chunkIndex,)) {
+    if (decidedIndices.has(sliceIndex,)) {
       throw new LaneSliceCoverageError({
-        message: `lane reports slice ${String(chunkIndex,)} as ${set.label} and decided at once, ${set.decidedClause}`,
+        message: `lane reports slice ${String(sliceIndex,)} as ${set.label} and decided at once, ${set.decidedClause}`,
       },);
     }
   }
@@ -188,15 +188,15 @@ function assertArchiveAllows(
     readonly slices: readonly ChunkPair[];
   },
 ): void {
-  for (const chunkIndex of indices) {
+  for (const sliceIndex of indices) {
     /**
      * Pair this index names, which {@link assertNamesLegalSlices} proved is
      * there.
      */
     const named = slices.find(function isNamed(slice,): boolean {
       return slice.target
-        .chunkIndex
-        === chunkIndex;
+        .sliceIndex
+        === sliceIndex;
     },);
 
     /**
@@ -205,7 +205,7 @@ function assertArchiveAllows(
     const absent = (named !== undefined) && isInsertionChunk(named.target,);
     if ((named !== undefined) && (absent !== (set.incumbent === 'absent'))) {
       throw new LaneSliceCoverageError({
-        message: `lane reports slice ${String(chunkIndex,)} ${set.label}, ${set.incumbentClause}`,
+        message: `lane reports slice ${String(sliceIndex,)} ${set.label}, ${set.incumbentClause}`,
       },);
     }
   }
@@ -283,12 +283,12 @@ export function validateNamedSets(
       /**
        * Slices both name, which is a contradiction whichever two lists they are.
        */
-      const both = [...mine,].filter(function inOther(chunkIndex,): boolean {
-        return theirs.has(chunkIndex,);
+      const both = [...mine,].filter(function inOther(sliceIndex,): boolean {
+        return theirs.has(sliceIndex,);
       },);
-      for (const chunkIndex of both) {
+      for (const sliceIndex of both) {
         throw new LaneSliceCoverageError({
-          message: `lane reports slice ${String(chunkIndex,)} as ${set.label} and ${other.label} `
+          message: `lane reports slice ${String(sliceIndex,)} as ${set.label} and ${other.label} `
             + 'at once, so what it did there is stated twice and differently',
         },);
       }

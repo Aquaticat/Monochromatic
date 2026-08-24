@@ -158,7 +158,7 @@ async function runFixture(client: SyntheticClient,) {
   const slice = fixtureSlice();
   return runRefineStage({
     declaredNames: [],
-    chunkIndex: 0,
+    sliceIndex: 0,
     client,
     refinerModelIds: REFINERS,
     judgeModelIds: JUDGES,
@@ -254,7 +254,7 @@ await describe({
         /** Run whose rewrite silently drops the age. */
         const result = await runRefineStage({
           declaredNames: [],
-          chunkIndex: 0,
+          sliceIndex: 0,
           client: scriptedRefiner({
             newText: `${SMOOTH_TEXT} She was young that year.`,
             ballot: 1,
@@ -292,7 +292,7 @@ await describe({
         /** Run whose rewrite reads better and drops the alias. */
         const result = await runRefineStage({
           declaredNames: ['Dumpling',],
-          chunkIndex: 0,
+          sliceIndex: 0,
           client: scriptedRefiner({
             newText: `${SMOOTH_TEXT} Everyone called her that.`,
             ballot: 1,
@@ -339,7 +339,7 @@ await describe({
         /** Run whose rewrite reads better and drops an undeclared word. */
         const result = await runRefineStage({
           declaredNames: [],
-          chunkIndex: 0,
+          sliceIndex: 0,
           client: scriptedRefiner({
             newText: `${SMOOTH_TEXT} Everyone called her that.`,
             ballot: 1,
@@ -368,7 +368,7 @@ await describe({
         await expect(
           runRefineStage({
             declaredNames: [],
-            chunkIndex: 0,
+            sliceIndex: 0,
             client: scriptedRefiner({ ballot: 1, },),
             refinerModelIds: [
               'hf:zai-org/GLM-5.2',

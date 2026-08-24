@@ -71,7 +71,7 @@ const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 /**
  * Builds one ledger row, which is where the driver reads the original.
  *
- * @param chunkIndex - slice this row names
+ * @param sliceIndex - slice this row names
  *
  * @param shippedText - wording this lane`s document carries
  *
@@ -79,20 +79,20 @@ const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
  *
  * @example
  * ```ts
- * const row = catLedgerRow({ chunkIndex: 0, shippedText: REPAIR_NAP, },);
+ * const row = catLedgerRow({ sliceIndex: 0, shippedText: REPAIR_NAP, },);
  * ```
  */
 function catLedgerRow(
   {
-    chunkIndex,
+    sliceIndex,
     shippedText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly shippedText: string;
   },
 ): ArtifactDeliveryRowV2 {
   return {
-    chunkIndex,
+    sliceIndex,
     sourceText: SOURCE_NAP,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
@@ -108,7 +108,7 @@ function catLedgerRow(
 /**
  * Builds one comparison row carrying the two lane wordings.
  *
- * @param chunkIndex - slice this row names
+ * @param sliceIndex - slice this row names
  *
  * @param repairText - wording the repair document carries
  *
@@ -118,22 +118,22 @@ function catLedgerRow(
  *
  * @example
  * ```ts
- * const row = catComparisonRow({ chunkIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ * const row = catComparisonRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
  * ```
  */
 function catComparisonRow(
   {
-    chunkIndex,
+    sliceIndex,
     repairText,
     translateText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairText: string;
     readonly translateText: string;
   },
 ): ArtifactComparisonRowV2 {
   return {
-    chunkIndex,
+    sliceIndex,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
     repairText,
@@ -182,29 +182,29 @@ function catProjection(
     delivery: {
       repair: pairs.map(function toRepairRow(
         pair,
-        chunkIndex,
+        sliceIndex,
       ): ArtifactDeliveryRowV2 {
         return catLedgerRow({
-          chunkIndex,
+          sliceIndex,
           shippedText: pair[0],
         },);
       },),
       translate: pairs.map(function toTranslateRow(
         pair,
-        chunkIndex,
+        sliceIndex,
       ): ArtifactDeliveryRowV2 {
         return catLedgerRow({
-          chunkIndex,
+          sliceIndex,
           shippedText: pair[1],
         },);
       },),
     },
     comparison: pairs.map(function toComparisonRow(
       pair,
-      chunkIndex,
+      sliceIndex,
     ): ArtifactComparisonRowV2 {
       return catComparisonRow({
-        chunkIndex,
+        sliceIndex,
         repairText: pair[0],
         translateText: pair[1],
       },);
@@ -230,7 +230,7 @@ type CatRig = {
    * Records the driver produced.
    */
   readonly slices: readonly {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly verdict: { readonly kind: string; };
   }[];
 };
@@ -395,7 +395,7 @@ await describe({
           .length,).toBe(ROSTER.length,);
         expect(rig.slices
           .map(function nameSlice(slice,): number {
-            return slice.chunkIndex;
+            return slice.sliceIndex;
           },),).toEqual([1,],);
         expect(rig.slices
           .at(0,)

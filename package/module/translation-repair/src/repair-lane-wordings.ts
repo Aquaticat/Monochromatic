@@ -81,7 +81,7 @@ export function repairLaneWordings(
     },)
     .map(function toIndex(slice,): number {
       return slice.target
-        .chunkIndex;
+        .sliceIndex;
     },),);
 
   /**
@@ -93,7 +93,7 @@ export function repairLaneWordings(
   ] {
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       slice.target
         .text,
     ];
@@ -104,7 +104,7 @@ export function repairLaneWordings(
    * that can be a decision or a fallback: an anchor is neither.
    */
   const mendable = outcomes.filter(function hadSomethingToRepair(outcome,): boolean {
-    return !anchored.has(outcome.chunkIndex,);
+    return !anchored.has(outcome.sliceIndex,);
   },);
 
   // CHECKED BEFORE CLASSIFYING, so a contradiction is refused rather than
@@ -114,7 +114,7 @@ export function repairLaneWordings(
   for (const outcome of mendable) {
     assertUnheardKeptArchive({
       outcome,
-      incumbentText: incumbents.get(outcome.chunkIndex,) ?? '',
+      incumbentText: incumbents.get(outcome.sliceIndex,) ?? '',
     },);
   }
 
@@ -128,28 +128,28 @@ export function repairLaneWordings(
     undecided,
     notApplicableChunkIndices: outcomes
       .filter(function atAnAnchor(outcome,): boolean {
-        return anchored.has(outcome.chunkIndex,);
+        return anchored.has(outcome.sliceIndex,);
       },)
       .map(function toIndex(outcome,): number {
-        return outcome.chunkIndex;
+        return outcome.sliceIndex;
       },),
     unheardChunkIndices: mendable
       .filter(function nobodySpoke(outcome,): boolean {
         return heardNobodyAbout({ outcome, },);
       },)
       .map(function toIndex(outcome,): number {
-        return outcome.chunkIndex;
+        return outcome.sliceIndex;
       },),
     decided: mendable
       .filter(function somebodySpoke(outcome,): boolean {
         return !heardNobodyAbout({ outcome, },);
       },)
       .map(function toDecision(outcome,): {
-        readonly chunkIndex: number;
+        readonly sliceIndex: number;
         readonly text: string;
       } {
         return {
-          chunkIndex: outcome.chunkIndex,
+          sliceIndex: outcome.sliceIndex,
           text: outcome.repairedText,
         };
       },),

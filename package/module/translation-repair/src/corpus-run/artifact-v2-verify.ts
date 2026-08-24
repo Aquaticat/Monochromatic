@@ -141,14 +141,14 @@ export function assertLedgerDescribesPreparation(
      * What the preparation says this position holds.
      */
     const {
-      chunkIndex,
+      sliceIndex,
       text: incumbentText,
     } = slice.target;
-    if (record.chunkIndex !== chunkIndex) {
+    if (record.sliceIndex !== sliceIndex) {
       throw new ArtifactPreparationMismatchError({
-        message: `${lane} ledger names slice ${String(record.chunkIndex,)} at position ${
+        message: `${lane} ledger names slice ${String(record.sliceIndex,)} at position ${
           String(position,)
-        }, where the preparation has slice ${String(chunkIndex,)}`,
+        }, where the preparation has slice ${String(sliceIndex,)}`,
       },);
     }
 
@@ -159,7 +159,7 @@ export function assertLedgerDescribesPreparation(
     if (record.sourceText !== sourceText) {
       throw new ArtifactPreparationMismatchError({
         message: `${lane} ledger's slice ${
-          String(record.chunkIndex,)
+          String(record.sliceIndex,)
         } renders an original the preparation does not carry there`,
       },);
     }
@@ -170,7 +170,7 @@ export function assertLedgerDescribesPreparation(
     const incumbentKind = isInsertionChunk(slice.target,) ? 'absent' : 'present';
     if (record.incumbentKind !== incumbentKind) {
       throw new ArtifactPreparationMismatchError({
-        message: `${lane} ledger's slice ${String(record.chunkIndex,)} calls the archive wording ${
+        message: `${lane} ledger's slice ${String(record.sliceIndex,)} calls the archive wording ${
           record.incumbentKind
         } where the preparation calls it ${incumbentKind}`,
       },);
@@ -178,7 +178,7 @@ export function assertLedgerDescribesPreparation(
     if (record.incumbentText !== incumbentText) {
       throw new ArtifactPreparationMismatchError({
         message: `${lane} ledger's slice ${
-          String(record.chunkIndex,)
+          String(record.sliceIndex,)
         } carries archive wording the preparation does not have there`,
       },);
     }

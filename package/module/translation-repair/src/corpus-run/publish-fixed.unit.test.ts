@@ -123,7 +123,7 @@ const DECIDED_MIDDLE = '\nShe slept on the counter beside the till, in the sun.\
  *
  * @example
  * ```ts
- * const pair = pairOver({ target: { chunkIndex: 0, ... }, },);
+ * const pair = pairOver({ target: { sliceIndex: 0, ... }, },);
  * ```
  */
 function pairOver(
@@ -131,7 +131,7 @@ function pairOver(
 ): ChunkPair {
   return {
     source: {
-      chunkIndex: target.chunkIndex,
+      sliceIndex: target.sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
@@ -161,7 +161,7 @@ function documentSlices(): readonly ChunkPair[] {
   return [
     pairOver({
       target: {
-        chunkIndex: 0,
+        sliceIndex: 0,
         nodes: [],
         startOffset: 0,
         endOffset: MIDDLE_START,
@@ -170,7 +170,7 @@ function documentSlices(): readonly ChunkPair[] {
     },),
     pairOver({
       target: {
-        chunkIndex: 1,
+        sliceIndex: 1,
         nodes: [],
         startOffset: MIDDLE_START,
         endOffset: MIDDLE_END,
@@ -179,7 +179,7 @@ function documentSlices(): readonly ChunkPair[] {
     },),
     pairOver({
       target: {
-        chunkIndex: 2,
+        sliceIndex: 2,
         nodes: [],
         startOffset: MIDDLE_END,
         endOffset: ARCHIVE.length,
@@ -208,7 +208,7 @@ function documentSlicesWithAGap(): readonly ChunkPair[] {
   return [
     pairOver({
       target: {
-        chunkIndex: 0,
+        sliceIndex: 0,
         nodes: [],
         startOffset: 0,
         endOffset: MIDDLE_START,
@@ -218,7 +218,7 @@ function documentSlicesWithAGap(): readonly ChunkPair[] {
     pairOver({
       target: {
         kind: 'insertion',
-        chunkIndex: 1,
+        sliceIndex: 1,
         nodes: [],
         startOffset: MIDDLE_START,
         endOffset: MIDDLE_START,
@@ -259,7 +259,7 @@ function artifactShipping(
   return {
     comparison: [
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind,
         incumbentText: (incumbentKind === 'present') ? ARCHIVE_MIDDLE : '',
         repairText: ARCHIVE_MIDDLE,
@@ -286,7 +286,7 @@ function artifactShipping(
       kind: 'contested',
       slices: [
         {
-          chunkIndex: 1,
+          sliceIndex: 1,
           verdict: {
             kind: 'lane-won',
             lane: 'translate',
@@ -319,7 +319,7 @@ function artifactWithAnUnfilledAnchor(): WouldShipSource {
   return {
     comparison: [
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'absent',
         incumbentText: '',
         repairText: '',
@@ -340,7 +340,7 @@ function artifactWithAnUnfilledAnchor(): WouldShipSource {
       kind: 'contested',
       slices: [
         {
-          chunkIndex: 1,
+          sliceIndex: 1,
           verdict: { kind: 'settled-neither', },
           ballots: [],
           usable: 3,
@@ -640,7 +640,7 @@ await describe({
           slices: documentSlicesWithAGap(),
           replacements: [
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               replacementText: '',
             },
           ],

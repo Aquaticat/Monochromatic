@@ -31,7 +31,7 @@ import { isJsonRecord, } from '../json-guard.ts';
  *
  * @example
  * ```ts
- * const row: WindowTrialRow = { protocol: 'abc123', entryId: 'Mittens', chunkIndex: 7, arm: 'wide', sliceClass: 'relocation', shipped: true, decision: 'judged', winnerText: '...', judgesHeard: 6, judgesSeated: 6, position: 2, };
+ * const row: WindowTrialRow = { protocol: 'abc123', entryId: 'Mittens', sliceIndex: 7, arm: 'wide', sliceClass: 'relocation', shipped: true, decision: 'judged', winnerText: '...', judgesHeard: 6, judgesSeated: 6, position: 2, };
  * ```
  */
 export type WindowTrialRow = {
@@ -53,7 +53,7 @@ export type WindowTrialRow = {
   /**
    * Slice position within that entry's preparation.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Which arm this row is: the two narrow runs are what the run-to-run band is
@@ -138,13 +138,13 @@ export type WindowTrialRow = {
  */
 export function trialKey(
   { row, }: {
-    readonly row: Pick<WindowTrialRow, 'protocol' | 'entryId' | 'chunkIndex' | 'arm'>;
+    readonly row: Pick<WindowTrialRow, 'protocol' | 'entryId' | 'sliceIndex' | 'arm'>;
   },
 ): string {
   return JSON.stringify([
     row.protocol,
     row.entryId,
-    row.chunkIndex,
+    row.sliceIndex,
     row.arm,
   ],);
 }
@@ -165,7 +165,7 @@ function isWindowTrialRow(value: unknown,): value is WindowTrialRow {
   return isJsonRecord(value,)
     && ((typeof value.protocol) === 'string')
     && ((typeof value.entryId) === 'string')
-    && ((typeof value.chunkIndex) === 'number')
+    && ((typeof value.sliceIndex) === 'number')
     && ((typeof value.arm) === 'string')
     && ((typeof value.sliceClass) === 'string')
     && ((typeof value.shipped) === 'boolean')

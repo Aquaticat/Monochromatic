@@ -29,7 +29,7 @@ function catRecord(
   },
 ): unknown {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     resolved: false,
     issue: {
       issueId,
@@ -272,7 +272,7 @@ await describe({
         let caught: unknown;
         try {
           parseSettledArtifact({
-            value: catArtifact({ issues: [{ chunkIndex: 0, issue: {}, resolved: false, },], },),
+            value: catArtifact({ issues: [{ sliceIndex: 0, issue: {}, resolved: false, },], },),
           },);
         }
         catch (error) {

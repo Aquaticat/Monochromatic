@@ -19,8 +19,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactComparisonRowV2,
+type ArtifactComparisonRowV2,
   ArtifactParseError,
+  SLICE_SPELLED_KEYS,
   parseLaneSelectionV2,
 } from '../../dist/final/node/index.mjs';
 
@@ -86,7 +87,7 @@ const FOR_NEITHER = {
 /**
  * Builds a comparison row carrying the two lane wordings a test needs.
  *
- * @param chunkIndex - slice this names
+ * @param sliceIndex - slice this names
  *
  * @param repairText - wording the repair document carries
  *
@@ -96,22 +97,22 @@ const FOR_NEITHER = {
  *
  * @example
  * ```ts
- * const row = catRow({ chunkIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ * const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
  * ```
  */
 function catRow(
   {
-    chunkIndex,
+    sliceIndex,
     repairText,
     translateText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairText: string;
     readonly translateText: string;
   },
 ): ArtifactComparisonRowV2 {
   return {
-    chunkIndex,
+    sliceIndex,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
     repairText,
@@ -138,7 +139,7 @@ function catRow(
  * Slice both lanes worded differently, which a contest may answer.
  */
 const CONTESTED_ROW = catRow({
-  chunkIndex: 0,
+  sliceIndex: 0,
   repairText: REPAIR_NAP,
   translateText: TRANSLATE_NAP,
 },);
@@ -150,12 +151,12 @@ const CONTESTED_ROW = catRow({
 const MIXED: readonly ArtifactComparisonRowV2[] = [
   CONTESTED_ROW,
   catRow({
-    chunkIndex: 1,
+    sliceIndex: 1,
     repairText: ARCHIVE_NAP,
     translateText: ARCHIVE_NAP,
   },),
   catRow({
-    chunkIndex: 2,
+    sliceIndex: 2,
     repairText: REPAIR_NAP,
     translateText: ARCHIVE_NAP,
   },),
@@ -178,6 +179,7 @@ await describe({
           value: { kind: 'pending-human-decision', },
           comparison: MIXED,
           path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
         },),).toEqual({ kind: 'pending-human-decision', },);
       },
     },),
@@ -194,7 +196,7 @@ await describe({
             kind: 'contested',
             slices: [
               {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 verdict: {
                   kind: 'lane-won',
                   lane: 'repair',
@@ -207,7 +209,7 @@ await describe({
                 usable: 3,
               },
               {
-                chunkIndex: 2,
+                sliceIndex: 2,
                 verdict: { kind: 'settled-neither', },
                 ballots: [
                   FOR_NEITHER,
@@ -219,6 +221,7 @@ await describe({
           },
           comparison: MIXED,
           path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
         },);
         if (selection.kind !== 'contested')
           throw new Error('reader returned a pending selection for a contested one',);
@@ -243,7 +246,7 @@ await describe({
             kind: 'contested',
             slices: [
               {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 verdict: { kind: 'quorum-not-met', },
                 ballots: [FOR_REPAIR,],
                 usable: 1,
@@ -252,6 +255,7 @@ await describe({
           },
           comparison: ONE_CONTESTED,
           path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
         },);
         if (selection.kind !== 'contested')
           throw new Error('reader returned a pending selection for a contested one',);
@@ -271,6 +275,7 @@ await describe({
             value: { kind: 'shipped-repair', },
             comparison: MIXED,
             path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
           },);
         },);
 
@@ -291,6 +296,7 @@ await describe({
             },
             comparison: MIXED,
             path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
           },);
         },).toThrow(SELECTION_PATH,);
       },

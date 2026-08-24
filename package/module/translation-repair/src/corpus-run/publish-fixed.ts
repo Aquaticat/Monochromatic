@@ -149,7 +149,7 @@ export function shippableReplacements(
 
       if (reading.kind === 'wording')
         return [{
-          chunkIndex: slice.chunkIndex,
+          sliceIndex: slice.sliceIndex,
           replacementText: reading.text,
         },];
 
@@ -160,7 +160,7 @@ export function shippableReplacements(
         return [];
 
       return [{
-        chunkIndex: slice.chunkIndex,
+        sliceIndex: slice.sliceIndex,
         replacementText: '',
       },];
     },);

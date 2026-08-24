@@ -99,7 +99,7 @@ function sliceCarrying(
   }: {
     readonly slices: readonly {
       readonly target: {
-        readonly chunkIndex: number;
+        readonly sliceIndex: number;
         readonly text: string;
       };
     }[];
@@ -117,7 +117,7 @@ function sliceCarrying(
   if (found === undefined)
     throw new Error(`no slice carries ${needle}`,);
   return found.target
-    .chunkIndex;
+    .sliceIndex;
 }
 
 /**
@@ -249,16 +249,16 @@ await describe({
          */
         const replacements = [
           {
-            chunkIndex: first.target
-              .chunkIndex,
+            sliceIndex: first.target
+              .sliceIndex,
             replacementText: `${
               first.target
                 .text
             }\n\n${String(moved,)}`,
           },
           {
-            chunkIndex: second.target
-              .chunkIndex,
+            sliceIndex: second.target
+              .sliceIndex,
             replacementText: kept.join('\n\n',),
           },
         ];
@@ -268,7 +268,7 @@ await describe({
            */
           const slice = slices.find(function names(candidate,): boolean {
             return candidate.target
-              .chunkIndex === replacement.chunkIndex;
+              .sliceIndex === replacement.sliceIndex;
           },);
           expect(replacement.replacementText,).not
             .toBe(slice?.target.text,);
@@ -285,9 +285,9 @@ await describe({
         expect(guarded.replacements,).toEqual([],);
         expect(byIndex({ indices: guarded.revertedChunkIndices, },),).toEqual([
           first.target
-            .chunkIndex,
+            .sliceIndex,
           second.target
-            .chunkIndex,
+            .sliceIndex,
         ],);
         expect(guarded.findings
           .some(function isCanonicalized(finding,): boolean {
@@ -333,7 +333,7 @@ await describe({
           slices,
           replacements: [
             {
-              chunkIndex: sliceCarrying({
+              sliceIndex: sliceCarrying({
                 slices,
                 needle: 'doing the sleeping',
               },),
@@ -373,7 +373,7 @@ await describe({
           slices,
           replacements: [
             {
-              chunkIndex: referring,
+              sliceIndex: referring,
               replacementText: 'The cat naps on the windowsill.',
             },
           ],
@@ -423,11 +423,11 @@ await describe({
           slices,
           replacements: [
             {
-              chunkIndex: referring,
+              sliceIndex: referring,
               replacementText: 'The cat naps on the windowsill[^2].',
             },
             {
-              chunkIndex: bird,
+              sliceIndex: bird,
               replacementText: 'A bird sits on the windowsill.\n\n'
                 + '[^2]: That is its favourite spot.',
             },
@@ -468,7 +468,7 @@ await describe({
           slices,
           replacements: [
             {
-              chunkIndex: bird,
+              sliceIndex: bird,
               replacementText: 'A bird sits on the windowsill[^2].\n\n'
                 + '[^2]: A sparrow, most mornings.',
             },
@@ -500,7 +500,7 @@ await describe({
           slices,
           replacements: [
             {
-              chunkIndex: sliceCarrying({
+              sliceIndex: sliceCarrying({
                 slices,
                 needle: 'there is being a bird',
               },),
@@ -554,14 +554,14 @@ await describe({
           slices,
           replacements: [
             {
-              chunkIndex: sliceCarrying({
+              sliceIndex: sliceCarrying({
                 slices,
                 needle: 'doing the sleeping',
               },),
               replacementText: 'The cat naps on the windowsill.',
             },
             {
-              chunkIndex: sliceCarrying({
+              sliceIndex: sliceCarrying({
                 slices,
                 needle: 'there is being a bird',
               },),
@@ -634,7 +634,7 @@ On the windowsill there is being a bird.
           slices,
           replacements: [
             {
-              chunkIndex: sliceCarrying({
+              sliceIndex: sliceCarrying({
                 slices,
                 needle: 'doing the sleeping',
               },),
@@ -680,8 +680,8 @@ On the windowsill there is being a bird.
             targetText: TARGET_TEXT,
             slices,
             replacements: [{
-              chunkIndex: repeated.target
-                .chunkIndex,
+              sliceIndex: repeated.target
+                .sliceIndex,
               replacementText: repeated.target
                 .text,
             },],
@@ -720,7 +720,7 @@ On the windowsill there is being a bird.
           targetText: TARGET_TEXT,
           slices,
           replacements: [{
-            chunkIndex: sliceCarrying({
+            sliceIndex: sliceCarrying({
               slices,
               needle: 'doing the sleeping',
             },),

@@ -61,7 +61,7 @@ export type AuditedTextIdentity = {
  *
  * @example
  * ```ts
- * const row: SettledAuditRow = { runSet, entryId, chunkIndex, report, ... };
+ * const row: SettledAuditRow = { runSet, entryId, sliceIndex, report, ... };
  * ```
  */
 export type SettledAuditRow = {
@@ -79,7 +79,7 @@ export type SettledAuditRow = {
   /**
    * Global slice index.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * What the lane's document carries here.

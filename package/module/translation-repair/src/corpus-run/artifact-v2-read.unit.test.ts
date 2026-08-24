@@ -82,7 +82,7 @@ const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 function repairLedger(): readonly ArtifactDeliveryRowV2[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       sourceText: SOURCE_NAP,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
@@ -94,7 +94,7 @@ function repairLedger(): readonly ArtifactDeliveryRowV2[] {
       delivery: { kind: 'incumbent-retained', },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       sourceText: SOURCE_BIRD,
       incumbentKind: 'absent',
       incumbentText: '',
@@ -119,7 +119,7 @@ function repairLedger(): readonly ArtifactDeliveryRowV2[] {
 function translateLedger(): readonly ArtifactDeliveryRowV2[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       sourceText: SOURCE_NAP,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
@@ -131,7 +131,7 @@ function translateLedger(): readonly ArtifactDeliveryRowV2[] {
       delivery: { kind: 'replacement-shipped', },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       sourceText: SOURCE_BIRD,
       incumbentKind: 'absent',
       incumbentText: '',
@@ -161,7 +161,7 @@ function repairResult(): Record<string, unknown> {
     findings: ['stage-quorum-unmet (critic 0/6)',],
     sliceCritics: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         heardCriticIds: [],
         claimAttributions: [],
       },
@@ -171,7 +171,7 @@ function repairResult(): Record<string, unknown> {
     withdrawnSliceIndices: [],
     sliceTexts: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         incumbentKind: 'present',
         incumbentText: ARCHIVE_NAP,
         outcome: {
@@ -180,7 +180,7 @@ function repairResult(): Record<string, unknown> {
         },
       },
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'absent',
         incumbentText: '',
         outcome: { kind: 'not-applicable', },
@@ -210,13 +210,13 @@ function translateResult(): Record<string, unknown> {
     withdrawnSliceIndices: [],
     resumedSliceCount: 0,
     status: 'unfilled',
-    unfilled: [{ chunkIndex: 1, },],
+    unfilled: [{ sliceIndex: 1, },],
     slices: [],
     sliceSelections: [],
     findings: [],
     sliceTexts: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         incumbentKind: 'present',
         incumbentText: ARCHIVE_NAP,
         outcome: {
@@ -225,7 +225,7 @@ function translateResult(): Record<string, unknown> {
         },
       },
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'absent',
         incumbentText: '',
         outcome: { kind: 'unfilled', },
@@ -282,7 +282,7 @@ function artifactWith(
   } = {},
 ): Record<string, unknown> {
   return {
-    artifactSchemaVersion: 3,
+    artifactSchemaVersion: 4,
     id: 'CatEntry1',
     tip: 'a'.repeat(40,),
     pipelineDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,
@@ -374,7 +374,7 @@ const MENDED_NAP = 'The cat is asleep on the sill.';
 function repairDecidedRows(): readonly Record<string, unknown>[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
       outcome: {
@@ -383,7 +383,7 @@ function repairDecidedRows(): readonly Record<string, unknown>[] {
       },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       incumbentKind: 'absent',
       incumbentText: '',
       outcome: { kind: 'not-applicable', },
@@ -409,7 +409,7 @@ function allNamingSliceZero(
   return rows.map(function nameZero(row,): ArtifactDeliveryRowV2 {
     return {
       ...row,
-      chunkIndex: 0,
+      sliceIndex: 0,
     };
   },);
 }
@@ -433,7 +433,7 @@ function evidenceNamingSliceZero(
   return rows.map(function nameZero(row,): Record<string, unknown> {
     return {
       ...row,
-      chunkIndex: 0,
+      sliceIndex: 0,
     };
   },);
 }
@@ -566,7 +566,7 @@ await describe({
               kind: 'contested',
               slices: [
                 {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   verdict: {
                     kind: 'lane-won',
                     lane: 'translate',
@@ -587,7 +587,7 @@ await describe({
         expect(parsed.laneSelection
           .slices
           .map(function nameSlice(slice,): number {
-            return slice.chunkIndex;
+            return slice.sliceIndex;
           },),).toEqual([0,],);
       },
     },),
@@ -606,7 +606,7 @@ await describe({
                 kind: 'contested',
                 slices: [
                   {
-                    chunkIndex: 1,
+                    sliceIndex: 1,
                     verdict: { kind: 'quorum-not-met', },
                     ballots: [],
                     usable: 0,
@@ -716,7 +716,7 @@ await describe({
         },);
 
         expect(refusalOfRowsOutOfOrder,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfRowsOutOfOrder as Error).message,).toContain('lanes.repair.delivery[0].chunkIndex',);
+        expect((refusalOfRowsOutOfOrder as Error).message,).toContain('lanes.repair.delivery[0].sliceIndex',);
       },
     },),
     it({
@@ -730,7 +730,7 @@ await describe({
         const shifted = translateLedger().map(function renumber(row,): ArtifactDeliveryRowV2 {
           return {
             ...row,
-            chunkIndex: row.chunkIndex + 1,
+            sliceIndex: row.sliceIndex + 1,
           };
         },);
 
@@ -753,7 +753,7 @@ await describe({
                   .map(function renumber(row,): Record<string, unknown> {
                     return {
                       ...row,
-                      chunkIndex: (row.chunkIndex as number) + 1,
+                      sliceIndex: (row.sliceIndex as number) + 1,
                     };
                   },),
               },
@@ -1227,7 +1227,7 @@ await describe({
     },),
     it({
       name:
-        'REFUSES every generation but the two that wrote this shape, including a MISSING one and a '
+        'REFUSES every generation but the three that wrote this shape, including a MISSING one and a '
         + 'version spelled as text: dispatch has already chosen this reader by the time it is called, '
         + 'so a file arriving here under another version is a caller reading the wrong file',
       fn: async () => {
@@ -1236,7 +1236,7 @@ await describe({
           null,
           '3',
           1,
-          4,
+          5,
         ].map(function refuses(version,): string {
           try {
             parseSettledArtifactV2({ value: artifactWith({ artifactSchemaVersion: version, },), },);
@@ -1405,7 +1405,7 @@ await describe({
             ...repairResult(),
             chunks: [
               {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 rounds: [round,],
                 droppedDeclaredNames: ['Mittens the Cat',],
               },
@@ -1426,7 +1426,7 @@ await describe({
           .repair;
         expect(raw.chunks,).toEqual([
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             rounds: [round,],
             droppedDeclaredNames: ['Mittens the Cat',],
           },

@@ -161,7 +161,7 @@ export function auditRelocationPairs(
        * Slices next door, either side.
        */
       const neighbours = inDocument.filter(function isAdjacent(other,): boolean {
-        return Math.abs(other.chunkIndex - row.chunkIndex,) === ADJACENT;
+        return Math.abs(other.sliceIndex - row.sliceIndex,) === ADJACENT;
       },);
 
       return neighbours.flatMap(function against(neighbour,): readonly AuditRelocationPair[] {
@@ -178,8 +178,8 @@ export function auditRelocationPairs(
             return {
               runSet: row.runSet,
               entryId: row.entryId,
-              omissionAt: row.chunkIndex,
-              additionAt: neighbour.chunkIndex,
+              omissionAt: row.sliceIndex,
+              additionAt: neighbour.sliceIndex,
               omissionReason: gone.reason,
               additionReason: extra.reason,
             };

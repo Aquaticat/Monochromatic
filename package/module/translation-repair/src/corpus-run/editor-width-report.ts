@@ -53,7 +53,7 @@ function reportName(draw: WidthDraw,): string {
  */
 function renderRow(row: WidthRow,): string {
   return [
-    `-   \`${row.entryId}\` slice ${String(row.chunkIndex,)}`,
+    `-   \`${row.entryId}\` slice ${String(row.sliceIndex,)}`,
     `issues ${String(row.acceptedIssues,)}`,
     `heard ${String(row.heardNarrow,)}/${String(row.heardWide,)}`,
     `shipped ${row.narrowShipped ? 'y' : 'n'}/${row.wideShipped ? 'y' : 'n'}`,

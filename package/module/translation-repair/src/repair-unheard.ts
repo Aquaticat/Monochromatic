@@ -59,14 +59,14 @@ export class RepairUnheardError extends Error {
  *
  * @example
  * ```ts
- * const outcome: RepairVoiceRecord = { chunkIndex: 0, repairedText, changed: false, ... };
+ * const outcome: RepairVoiceRecord = { sliceIndex: 0, repairedText, changed: false, ... };
  * ```
  */
 export type RepairVoiceRecord = {
   /**
    * Slice this settled.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Wording the lane settled on.
@@ -153,7 +153,7 @@ export function assertUnheardKeptArchive(
   /**
    * Where the contradiction is, for a message that names one slice.
    */
-  const at = `slice ${String(outcome.chunkIndex,)}`;
+  const at = `slice ${String(outcome.sliceIndex,)}`;
   if (outcome.repairedText !== incumbentText) {
     throw new RepairUnheardError({
       message: `${at} heard no critic and was never refined, and carries a wording that is not the `

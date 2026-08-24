@@ -45,7 +45,7 @@ await describe({
          */
         const coherent = [
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
             outcome: {
@@ -54,33 +54,33 @@ await describe({
             },
           },
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
             outcome: { kind: 'not-evaluated', },
           },
           {
-            chunkIndex: 2,
+            sliceIndex: 2,
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
             outcome: { kind: 'incumbent-fallback', },
           },
           {
-            chunkIndex: 3,
+            sliceIndex: 3,
             incumbentKind: 'absent',
             incumbentText: '',
             outcome: { kind: 'unfilled', },
           },
           // An anchor nobody reached is still just an anchor nobody reached.
           {
-            chunkIndex: 4,
+            sliceIndex: 4,
             incumbentKind: 'absent',
             incumbentText: '',
             outcome: { kind: 'not-evaluated', },
           },
           // And an anchor a lane FILLED is the point of anchors existing.
           {
-            chunkIndex: 5,
+            sliceIndex: 5,
             incumbentKind: 'absent',
             incumbentText: '',
             outcome: {
@@ -102,7 +102,7 @@ await describe({
         expect(function fellBackOnNothing() {
           assertWordingCoherent({
             wording: {
-              chunkIndex: 2,
+              sliceIndex: 2,
               incumbentKind: 'absent',
               incumbentText: '',
               outcome: { kind: 'incumbent-fallback', },
@@ -122,7 +122,7 @@ await describe({
         const refusalOfMissingWhatExists = caught(function missingWhatExists() {
           assertWordingCoherent({
             wording: {
-              chunkIndex: 3,
+              sliceIndex: 3,
               incumbentKind: 'present',
               incumbentText: ARCHIVE_NAP,
               outcome: { kind: 'unfilled', },
@@ -143,7 +143,7 @@ await describe({
         expect(function decidedNothing() {
           assertWordingCoherent({
             wording: {
-              chunkIndex: 4,
+              sliceIndex: 4,
               incumbentKind: 'absent',
               incumbentText: '',
               outcome: {
@@ -162,7 +162,7 @@ await describe({
       fn: async () => {
         assertWordingCoherent({
           wording: {
-            chunkIndex: 5,
+            sliceIndex: 5,
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
             outcome: {

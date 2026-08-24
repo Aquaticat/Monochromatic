@@ -68,14 +68,14 @@ function spanOf(
 ): ChunkPair {
   return {
     source: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
       text: '猫猫在窗台上睡觉。',
     },
     target: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       nodes,
       startOffset,
       endOffset,
@@ -185,14 +185,14 @@ await describe({
             slices: [
               {
                 source: {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 0,
                   text: '猫猫也喜欢晒太阳。',
                 },
                 target: makeInsertionChunk({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   offset: TARGET_TEXT.length,
                 },),
               },
@@ -242,14 +242,14 @@ await describe({
             slices: [
               {
                 source: {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 0,
                   text: '猫猫在窗台上睡觉。',
                 },
                 target: makeInsertionChunk({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   offset: first.startOffset + 4,
                 },),
               },
@@ -275,27 +275,27 @@ await describe({
             slices: [
               {
                 source: {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 0,
                   text: '猫猫在窗台上睡觉。',
                 },
                 target: makeInsertionChunk({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   offset: middle.startOffset,
                 },),
               },
               {
                 source: {
-                  chunkIndex: 1,
+                  sliceIndex: 1,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 0,
                   text: '她在看鸟。',
                 },
                 target: makeInsertionChunk({
-                  chunkIndex: 1,
+                  sliceIndex: 1,
                   offset: last.endOffset,
                 },),
               },

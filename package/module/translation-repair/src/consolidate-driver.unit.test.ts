@@ -235,13 +235,13 @@ function twoSliceDocument(): ProjectedLanesV2 {
   /**
    * One comparison row per slice, both lanes wording them differently.
    */
-  const comparison = [0, 1,].map(function toRow(chunkIndex,) {
+  const comparison = [0, 1,].map(function toRow(sliceIndex,) {
     return {
-      chunkIndex,
+      sliceIndex,
       incumbentKind: 'present',
-      incumbentText: `archive wording for slice ${String(chunkIndex,)}`,
-      repairText: `repair wording for slice ${String(chunkIndex,)}`,
-      translateText: `translate wording for slice ${String(chunkIndex,)}`,
+      incumbentText: `archive wording for slice ${String(sliceIndex,)}`,
+      repairText: `repair wording for slice ${String(sliceIndex,)}`,
+      translateText: `translate wording for slice ${String(sliceIndex,)}`,
     };
   },);
 
@@ -250,8 +250,8 @@ function twoSliceDocument(): ProjectedLanesV2 {
     delivery: {
       repair: comparison.map(function toDelivery(row,) {
         return {
-          chunkIndex: row.chunkIndex,
-          sourceText: `原文${String(row.chunkIndex,)}`,
+          sliceIndex: row.sliceIndex,
+          sourceText: `原文${String(row.sliceIndex,)}`,
         };
       },),
       translate: [],
@@ -262,7 +262,7 @@ function twoSliceDocument(): ProjectedLanesV2 {
 /**
  * Builds one contest record, as the contest wrote it for the artifact.
  *
- * @param chunkIndex - slice this answers
+ * @param sliceIndex - slice this answers
  *
  * @param lane - lane the contest backed
  *
@@ -270,20 +270,20 @@ function twoSliceDocument(): ProjectedLanesV2 {
  *
  * @example
  * ```ts
- * const record = contestSettling({ chunkIndex: 0, lane: 'repair', },);
+ * const record = contestSettling({ sliceIndex: 0, lane: 'repair', },);
  * ```
  */
 function contestSettling(
   {
-    chunkIndex,
+    sliceIndex,
     lane,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly lane: 'repair' | 'translate';
   },
 ): ArtifactContestSliceV2 {
   return {
-    chunkIndex,
+    sliceIndex,
     verdict: {
       kind: 'lane-won',
       lane,
@@ -418,7 +418,7 @@ await describe({
         let raised: unknown;
         try {
           await driveWith({
-            contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           },);
         } catch (error: unknown) {
           raised = error;
@@ -451,7 +451,7 @@ await describe({
         let raised: unknown;
         try {
           await driveWith({
-            contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
             projected: gapped,
           },);
         } catch (error: unknown) {
@@ -480,15 +480,15 @@ await describe({
 
         const { slices, written, } = await driveWith({
           contests: [
-            contestSettling({ chunkIndex: 0, lane: 'repair', },),
-            contestSettling({ chunkIndex: 1, lane: 'translate', },),
+            contestSettling({ sliceIndex: 0, lane: 'repair', },),
+            contestSettling({ sliceIndex: 1, lane: 'translate', },),
           ],
           resumed: everyKey as unknown as ReadonlyMap<string, ConsolidationSettlement>,
         },);
 
         expect(slices.length,).toBe(2,);
-        expect(slices[0]?.chunkIndex,).toBe(0,);
-        expect(slices[1]?.chunkIndex,).toBe(1,);
+        expect(slices[0]?.sliceIndex,).toBe(0,);
+        expect(slices[1]?.sliceIndex,).toBe(1,);
         expect(slices[0]?.terminal,).toBe('incumbent-only',);
         expect(slices[0]?.gate.kind,).toBe('not-asked',);
         expect(written.length,).toBe(0,);
@@ -505,7 +505,7 @@ await describe({
 
         await driveWith({
           client,
-          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           lineStructuredSlices: new Set([0,],),
         },);
 
@@ -525,7 +525,7 @@ await describe({
 
         await driveWith({
           client,
-          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           lineStructuredSlices: new Set(),
         },);
 
@@ -546,7 +546,7 @@ await describe({
 
         await driveWith({
           client,
-          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           pictureContextBySlice: new Map([[0, 'the photograph shows a tabby asleep on a stack of library books',],],),
         },);
 
@@ -568,7 +568,7 @@ await describe({
 
         await driveWith({
           client,
-          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           pictureContextBySlice: new Map([[1, 'the photograph shows a tabby asleep on a stack of library books',],],),
         },);
 
@@ -590,7 +590,7 @@ await describe({
 
         await driveWith({
           client,
-          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           pictureContextBySlice: new Map([[0, 'The photograph shows a tortoiseshell asleep in a sunlit doorway.',],],),
         },);
 
@@ -613,7 +613,7 @@ await describe({
 
         await driveWith({
           client,
-          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           neighbourContextBySlice: new Map([[
             0,
             {
@@ -643,7 +643,7 @@ await describe({
 
         await driveWith({
           client,
-          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
         },);
 
         expect(judgeSheets.length,).toBeGreaterThan(0,);

@@ -52,6 +52,8 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
  *
  * @param path - dotted path of the lane
  *
+ * @param keys - spelling the artifact's own generation gave the renamed keys
+ *
  * @returns Raw record and parsed ledger rows
  *
  * @throws {@link ArtifactParseError} when the lane carries a key this version
@@ -59,16 +61,18 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
  *
  * @example
  * ```ts
- * const { raw, delivery, } = parseLaneEnvelope({ value, path: 'lanes.repair', },);
+ * const { raw, delivery, } = parseLaneEnvelope({ value, path: 'lanes.repair', keys, },);
  * ```
  */
 function parseLaneEnvelope(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): {
   readonly raw: Readonly<Record<string, unknown>>;
@@ -109,6 +113,7 @@ function parseLaneEnvelope(
         return parseDeliveryRowV2({
           value: row,
           path: `${path}.delivery[${String(position,)}]`,
+          keys,
         },);
       },),
   };
@@ -211,6 +216,7 @@ export function parseLanesV2(
   const repairEnvelope = parseLaneEnvelope({
     value: lanes.repair,
     path: `${path}.repair`,
+    keys,
   },);
 
   /**
@@ -219,6 +225,7 @@ export function parseLanesV2(
   const translateEnvelope = parseLaneEnvelope({
     value: lanes.translate,
     path: `${path}.translate`,
+    keys,
   },);
 
   /**

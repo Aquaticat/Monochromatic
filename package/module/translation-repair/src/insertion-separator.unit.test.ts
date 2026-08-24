@@ -174,21 +174,21 @@ She purrs.
           slices: [
             {
               source: {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 nodes: [],
                 startOffset: 0,
                 endOffset: 0,
                 text: '## 白天\n\n猫猫晒太阳。',
               },
               target: makeInsertionChunk({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 offset,
               },),
             },
           ],
           replacements: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               replacementText: '## Daytime\n\nThe cat suns herself.',
             },
           ],
@@ -231,14 +231,14 @@ She purrs.
           slices: [
             {
               source: {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 nodes: [],
                 startOffset: 0,
                 endOffset: 0,
                 text: '猫猫睡着了。',
               },
               target: {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 nodes: [],
                 startOffset,
                 endOffset,
@@ -247,25 +247,25 @@ She purrs.
             },
             {
               source: {
-                chunkIndex: 1,
+                sliceIndex: 1,
                 nodes: [],
                 startOffset: 0,
                 endOffset: 0,
                 text: '她伸了个懒腰。',
               },
               target: makeInsertionChunk({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 offset: endOffset,
               },),
             },
           ],
           replacements: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               replacementText: 'The cat dozes.',
             },
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               replacementText: 'She stretches.',
             },
           ],

@@ -277,7 +277,7 @@ export async function consolidateDocument(
       string,
     ] {
       return [
-        row.chunkIndex,
+        row.sliceIndex,
         row.sourceText,
       ];
     },),);
@@ -290,7 +290,7 @@ export async function consolidateDocument(
     ArtifactContestSliceV2,
   ] {
     return [
-      slice.chunkIndex,
+      slice.sliceIndex,
       slice,
     ];
   },),);
@@ -313,17 +313,17 @@ export async function consolidateDocument(
     /**
      * What the contest settled here, absent where it never ran.
      */
-    const contest = contestBySlice.get(row.chunkIndex,);
+    const contest = contestBySlice.get(row.sliceIndex,);
     if (contest === undefined)
       continue;
 
     /**
      * Original of this slice, which every ledger row carries.
      */
-    const sourceText = sourceTexts.get(row.chunkIndex,);
+    const sourceText = sourceTexts.get(row.sliceIndex,);
     if (sourceText === undefined) {
       throw new Error(
-        `consolidation: slice ${String(row.chunkIndex,)} was contested and does not appear in the repair ledger`,
+        `consolidation: slice ${String(row.sliceIndex,)} was contested and does not appear in the repair ledger`,
       );
     }
 
@@ -344,7 +344,7 @@ export async function consolidateDocument(
      * the settlement resumes under, and the wrap. Asking the set four times
      * is how four answers drift into three.
      */
-    const lineStructured = lineStructuredSlices.has(row.chunkIndex,);
+    const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
 
     /**
      * What the pictures near this slice were read to say, empty where none
@@ -356,14 +356,14 @@ export async function consolidateDocument(
      * them would only let the sheet and the key disagree about which spelling
      * the caller happened to use.
      */
-    const pictureContext = pictureContextBySlice.get(row.chunkIndex,) ?? '';
+    const pictureContext = pictureContextBySlice.get(row.sliceIndex,) ?? '';
 
     /**
      * Passages either side of this slice, folded the same way and for the same
      * reason: a lone slice has an empty window and a slice the map never
      * mentions is a slice in exactly that position.
      */
-    const neighbours = neighbourContextBySlice.get(row.chunkIndex,)
+    const neighbours = neighbourContextBySlice.get(row.sliceIndex,)
       ?? {
         sourceText: '',
         incumbentText: '',
@@ -459,7 +459,7 @@ export async function consolidateDocument(
     }
     /* oxlint-enable no-await-in-loop */
     slices.push(describeConsolidateSlice({
-      chunkIndex: row.chunkIndex,
+      sliceIndex: row.sliceIndex,
       settlement,
     },),);
   }

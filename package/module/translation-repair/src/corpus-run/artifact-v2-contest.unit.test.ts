@@ -113,7 +113,7 @@ function catOutcome(
 /**
  * Builds a comparison row carrying the two lane wordings a test needs.
  *
- * @param chunkIndex - slice this names
+ * @param sliceIndex - slice this names
  *
  * @param repairText - wording the repair document carries
  *
@@ -123,22 +123,22 @@ function catOutcome(
  *
  * @example
  * ```ts
- * const row = catRow({ chunkIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ * const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
  * ```
  */
 function catRow(
   {
-    chunkIndex,
+    sliceIndex,
     repairText,
     translateText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairText: string;
     readonly translateText: string;
   },
 ): ArtifactComparisonRowV2 {
   return {
-    chunkIndex,
+    sliceIndex,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
     repairText,
@@ -170,7 +170,7 @@ await describe({
         + 'ballots back up',
       fn: async () => {
         expect(describeContestSlice({
-          chunkIndex: 3,
+          sliceIndex: 3,
           outcome: catOutcome({
             ballots: [
               FOR_REPAIR,
@@ -180,7 +180,7 @@ await describe({
             choice: 'repair',
           },),
         },),).toEqual({
-          chunkIndex: 3,
+          sliceIndex: 3,
           verdict: {
             kind: 'lane-won',
             lane: 'repair',
@@ -204,7 +204,7 @@ await describe({
          * Enough voices, none of them carrying a lane.
          */
         const settled = describeContestSlice({
-          chunkIndex: 0,
+          sliceIndex: 0,
           outcome: catOutcome({
             ballots: [
               FOR_NEITHER,
@@ -218,7 +218,7 @@ await describe({
          * One voice, which cannot settle anything under the same rule.
          */
         const unheard = describeContestSlice({
-          chunkIndex: 1,
+          sliceIndex: 1,
           outcome: catOutcome({
             ballots: [FOR_REPAIR,],
             choice: 'neither',
@@ -234,7 +234,7 @@ await describe({
         + 'why is looking',
       fn: async () => {
         expect(describeContestSlice({
-          chunkIndex: 0,
+          sliceIndex: 0,
           outcome: catOutcome({
             ballots: [
               FOR_NEITHER,
@@ -262,17 +262,17 @@ await describe({
         expect(contestEligibleIndexes({
           comparison: [
             catRow({
-              chunkIndex: 0,
+              sliceIndex: 0,
               repairText: REPAIR_NAP,
               translateText: TRANSLATE_NAP,
             },),
             catRow({
-              chunkIndex: 1,
+              sliceIndex: 1,
               repairText: ARCHIVE_NAP,
               translateText: ARCHIVE_NAP,
             },),
             catRow({
-              chunkIndex: 2,
+              sliceIndex: 2,
               repairText: REPAIR_NAP,
               translateText: ARCHIVE_NAP,
             },),
@@ -289,7 +289,7 @@ await describe({
         expect(contestEligibleIndexes({
           comparison: [
             catRow({
-              chunkIndex: 0,
+              sliceIndex: 0,
               repairText: ARCHIVE_NAP,
               translateText: ARCHIVE_NAP,
             },),

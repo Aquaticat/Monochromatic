@@ -152,7 +152,7 @@ await describe({
          * Sentence a run's findings would carry.
          */
         const finding = quoteLossRefusalFinding({
-          chunkIndex: 4,
+          sliceIndex: 4,
           incumbentText: '> Mittens.\n\n> Whiskers.',
           shippedText: '> Mittens.',
         },);

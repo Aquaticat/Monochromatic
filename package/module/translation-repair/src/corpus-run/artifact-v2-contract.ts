@@ -36,6 +36,16 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
  */
+export const ARTIFACT_SCHEMA_VERSION_V4 = 4;
+
+/**
+ * Generation that renamed the three index and critic keys and left the
+ * per-slice index alone. Still read, no longer written.
+ *
+ * A MIXTURE, and that is the whole reason it needs its own row in the key
+ * table: it spells the arrays the way generation 4 does and the index the way
+ * generation 2 did.
+ */
 export const ARTIFACT_SCHEMA_VERSION_V3 = 3;
 
 /**
@@ -249,7 +259,7 @@ export type SettledArtifactV2 = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V3;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V4;
 
   /**
    * Corpus entry this covers.

@@ -260,7 +260,7 @@ function rawOf(
   return {
     chunks: chunks.map(function toChunk(rounds, index,): Record<string, unknown> {
       return {
-        chunkIndex: index,
+        sliceIndex: index,
         rounds,
       };
     },),

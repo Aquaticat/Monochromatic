@@ -111,7 +111,7 @@ await describe({
          */
         const overClaimed = resumedSliceDiscardFinding({
           lane: 'translate',
-          chunkIndex: 4,
+          sliceIndex: 4,
           changed: true,
         },);
         expect(overClaimed.startsWith('translate-discarded-contradictory-slice',),).toBe(true,);
@@ -123,7 +123,7 @@ await describe({
          */
         const underClaimed = resumedSliceDiscardFinding({
           lane: 'repair',
-          chunkIndex: 0,
+          sliceIndex: 0,
           changed: false,
         },);
         expect(underClaimed.startsWith('repair-discarded-contradictory-slice',),).toBe(true,);
@@ -142,7 +142,7 @@ await describe({
         expect(function acceptAgreeing() {
           assertSettledRecordAgrees({
             lane: 'repair',
-            chunkIndex: 0,
+            sliceIndex: 0,
             changed: true,
             decidedText: DECIDED,
             incumbentText: ARCHIVE,
@@ -163,7 +163,7 @@ await describe({
         try {
           assertSettledRecordAgrees({
             lane: 'repair',
-            chunkIndex: 4,
+            sliceIndex: 4,
             changed: true,
             decidedText: ARCHIVE,
             incumbentText: ARCHIVE,
@@ -183,7 +183,7 @@ await describe({
         try {
           assertSettledRecordAgrees({
             lane: 'translate',
-            chunkIndex: 2,
+            sliceIndex: 2,
             changed: false,
             decidedText: DECIDED,
             incumbentText: ARCHIVE,

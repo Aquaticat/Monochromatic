@@ -74,7 +74,7 @@ export type AuditRepeatSide = {
  *
  * @example
  * ```ts
- * const pair: AuditRepeatPair = { entryId, chunkIndex: 0, left, right, };
+ * const pair: AuditRepeatPair = { entryId, sliceIndex: 0, left, right, };
  * ```
  */
 export type AuditRepeatPair = {
@@ -86,7 +86,7 @@ export type AuditRepeatPair = {
   /**
    * Global slice index.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Which half of the population this pair sits in, so a band can be read for
@@ -127,7 +127,7 @@ function subjectKey(
   return [
     row.runSet,
     row.entryId,
-    String(row.chunkIndex,),
+    String(row.sliceIndex,),
   ].join(SLOT_SEPARATOR,);
 }
 
@@ -221,7 +221,7 @@ export function auditRepeatsWithin(
      */
     const slot = [
       row.entryId,
-      String(row.chunkIndex,),
+      String(row.sliceIndex,),
     ].join(SLOT_SEPARATOR,);
     bySlot.set(
       slot,
@@ -253,7 +253,7 @@ export function auditRepeatsWithin(
         .map(function asPair(right,): AuditRepeatPair {
           return {
             entryId: left.entryId,
-            chunkIndex: left.chunkIndex,
+            sliceIndex: left.sliceIndex,
             auditsArchiveText: left.auditsArchiveText,
             left: repeatSideOf({ row: left, },),
             right: repeatSideOf({ row: right, },),
@@ -365,7 +365,7 @@ export function auditRepeatsAcross(
       },): AuditRepeatPair {
         return {
           entryId: left.entryId,
-          chunkIndex: left.chunkIndex,
+          sliceIndex: left.sliceIndex,
           auditsArchiveText: left.auditsArchiveText,
           left: repeatSideOf({ row: left, },),
           right: repeatSideOf({ row: right, },),
@@ -408,7 +408,7 @@ export function auditRepeatsAcross(
 function nameOf(
   { left, }: { readonly left: SettledAuditRow; },
 ): string {
-  return `${left.runSet}/${left.entryId}#${String(left.chunkIndex,)}`;
+  return `${left.runSet}/${left.entryId}#${String(left.sliceIndex,)}`;
 }
 
 //endregion Settled audit repeat readings

@@ -69,14 +69,14 @@ function catSlices(): readonly ChunkPair[] {
   return [
     {
       source: {
-        chunkIndex: 0,
+        sliceIndex: 0,
         nodes: [],
         startOffset: 0,
         endOffset: SOURCE_NAP.length,
         text: SOURCE_NAP,
       },
       target: {
-        chunkIndex: 0,
+        sliceIndex: 0,
         nodes: [],
         startOffset: 0,
         endOffset: ARCHIVE_NAP.length,
@@ -85,14 +85,14 @@ function catSlices(): readonly ChunkPair[] {
     },
     {
       source: {
-        chunkIndex: 1,
+        sliceIndex: 1,
         nodes: [],
         startOffset: SOURCE_NAP.length,
         endOffset: SOURCE_NAP.length + SOURCE_BOWL.length,
         text: SOURCE_BOWL,
       },
       target: makeInsertionChunk({
-        chunkIndex: 1,
+        sliceIndex: 1,
         offset: ARCHIVE_NAP.length,
       },),
     },
@@ -149,7 +149,7 @@ function catIdentity(): PreparationIdentity {
 function repairLedger(): readonly SliceDeliveryRecord[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       sourceText: SOURCE_NAP,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
@@ -161,7 +161,7 @@ function repairLedger(): readonly SliceDeliveryRecord[] {
       delivery: { kind: 'replacement-shipped', },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       sourceText: SOURCE_BOWL,
       incumbentKind: 'absent',
       incumbentText: '',
@@ -185,7 +185,7 @@ function repairLedger(): readonly SliceDeliveryRecord[] {
 function translateLedger(): readonly SliceDeliveryRecord[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       sourceText: SOURCE_NAP,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
@@ -197,7 +197,7 @@ function translateLedger(): readonly SliceDeliveryRecord[] {
       delivery: { kind: 'incumbent-retained', },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       sourceText: SOURCE_BOWL,
       incumbentKind: 'absent',
       incumbentText: '',
@@ -541,7 +541,7 @@ await describe({
               return (position === 1)
                 ? {
                   ...record,
-                  chunkIndex: 7,
+                  sliceIndex: 7,
                 }
                 : record;
             },),

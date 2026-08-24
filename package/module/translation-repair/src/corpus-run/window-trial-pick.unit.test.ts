@@ -54,7 +54,7 @@ const MODELS = {
 /**
  * Builds one slice pair carrying given texts.
  *
- * @param chunkIndex - position in the document
+ * @param sliceIndex - position in the document
  *
  * @param source - original wording
  *
@@ -64,30 +64,30 @@ const MODELS = {
  *
  * @example
  * ```ts
- * const pair = pairOf({ chunkIndex: 0, source: '猫。', target: 'Cat.', },);
+ * const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
  * ```
  */
 function pairOf(
   {
-    chunkIndex,
+    sliceIndex,
     source,
     target,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly source: string;
     readonly target: string;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: source.length,
       text: source,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: target.length,
@@ -101,7 +101,7 @@ function pairOf(
  */
 const LONE: readonly ChunkPair[] = [
   pairOf({
-    chunkIndex: 0,
+    sliceIndex: 0,
     source: '猫猫在窗台上打盹。',
     target: 'The cat naps on the windowsill.',
   },),
@@ -170,7 +170,7 @@ await describe({
           slices: LONE,
           pick: {
             entryId: 'Mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             sliceClass: 'relocation',
           },
           entryId: 'Mittens',
@@ -195,7 +195,7 @@ await describe({
           slices: LONE,
           pick: {
             entryId: 'Mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             sliceClass: 'relocation',
           },
           entryId: 'Mittens',
@@ -207,7 +207,7 @@ await describe({
             return trialKey({ row: {
               protocol: 'protocol-one',
               entryId: 'Mittens',
-              chunkIndex: 0,
+              sliceIndex: 0,
               arm,
             }, },);
           },),),

@@ -58,7 +58,7 @@ const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
  * One issue record as the repair lane writes them.
  */
 const LANE_ISSUE = {
-  chunkIndex: 0,
+  sliceIndex: 0,
   repairDisposition: 'shipped',
   issue: { issueId: 'cat-1', },
 };
@@ -75,7 +75,7 @@ const LANE_FINDING = 'stage-quorum-unmet (critic 0/6)';
  * returns these and is caught rather than agreeing by coincidence.
  */
 const DECOY_ISSUE = {
-  chunkIndex: 9,
+  sliceIndex: 9,
   repairDisposition: 'shipped',
   issue: { issueId: 'decoy-must-not-be-read', },
 };
@@ -94,7 +94,7 @@ const DECOY_ISSUE = {
 function repairLedger(): readonly ArtifactDeliveryRowV2[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       sourceText: SOURCE_NAP,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
@@ -106,7 +106,7 @@ function repairLedger(): readonly ArtifactDeliveryRowV2[] {
       delivery: { kind: 'incumbent-retained', },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       sourceText: SOURCE_BIRD,
       incumbentKind: 'absent',
       incumbentText: '',
@@ -131,7 +131,7 @@ function repairLedger(): readonly ArtifactDeliveryRowV2[] {
 function translateLedger(): readonly ArtifactDeliveryRowV2[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       sourceText: SOURCE_NAP,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
@@ -143,7 +143,7 @@ function translateLedger(): readonly ArtifactDeliveryRowV2[] {
       delivery: { kind: 'replacement-shipped', },
     },
     {
-      chunkIndex: 1,
+      sliceIndex: 1,
       sourceText: SOURCE_BIRD,
       incumbentKind: 'absent',
       incumbentText: '',
@@ -176,7 +176,7 @@ function repairResult(
     findings: [LANE_FINDING,],
     sliceCritics: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         heardCriticIds: [],
         claimAttributions: [],
       },
@@ -186,7 +186,7 @@ function repairResult(
     withdrawnSliceIndices: [],
     sliceTexts: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         incumbentKind: 'present',
         incumbentText: ARCHIVE_NAP,
         outcome: {
@@ -195,7 +195,7 @@ function repairResult(
         },
       },
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'absent',
         incumbentText: '',
         outcome: { kind: 'not-applicable', },
@@ -226,13 +226,13 @@ function translateResult(): Record<string, unknown> {
     withdrawnSliceIndices: [],
     resumedSliceCount: 0,
     status: 'unfilled',
-    unfilled: [{ chunkIndex: 1, },],
+    unfilled: [{ sliceIndex: 1, },],
     slices: [],
     sliceSelections: [],
     findings: [],
     sliceTexts: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         incumbentKind: 'present',
         incumbentText: ARCHIVE_NAP,
         outcome: {
@@ -241,7 +241,7 @@ function translateResult(): Record<string, unknown> {
         },
       },
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'absent',
         incumbentText: '',
         outcome: { kind: 'unfilled', },
@@ -284,7 +284,7 @@ function artifactWith(
    */
   const translateDelivery = translateLedger();
   return {
-    artifactSchemaVersion: 3,
+    artifactSchemaVersion: 4,
     id: 'CatEntry1',
     tip: 'a'.repeat(40,),
     pipelineDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,

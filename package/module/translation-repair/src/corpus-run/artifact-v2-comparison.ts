@@ -211,22 +211,22 @@ export function compareLanesV2(
         message: `translate ledger has no row at position ${String(position,)}`,
       },);
     }
-    if (theirs.chunkIndex !== mine.chunkIndex) {
+    if (theirs.sliceIndex !== mine.sliceIndex) {
       throw new ArtifactComparisonV2Error({
         message: `position ${String(position,)} names slice ${
-          String(mine.chunkIndex,)
-        } in the repair ledger and slice ${String(theirs.chunkIndex,)} in the translate ledger`,
+          String(mine.sliceIndex,)
+        } in the repair ledger and slice ${String(theirs.sliceIndex,)} in the translate ledger`,
       },);
     }
     if (theirs.sourceText !== mine.sourceText) {
       throw new ArtifactComparisonV2Error({
-        message: `slice ${String(mine.chunkIndex,)} carries a different original in each ledger, `
+        message: `slice ${String(mine.sliceIndex,)} carries a different original in each ledger, `
           + 'so the two ledgers were built over different slicings',
       },);
     }
     if (theirs.incumbentText !== mine.incumbentText) {
       throw new ArtifactComparisonV2Error({
-        message: `slice ${String(mine.chunkIndex,)} carries a different archive wording in each ledger`,
+        message: `slice ${String(mine.sliceIndex,)} carries a different archive wording in each ledger`,
       },);
     }
 
@@ -235,7 +235,7 @@ export function compareLanesV2(
     // pair this comparison must not confuse still equal.
     if (theirs.incumbentKind !== mine.incumbentKind) {
       throw new ArtifactComparisonV2Error({
-        message: `slice ${String(mine.chunkIndex,)} is ${
+        message: `slice ${String(mine.sliceIndex,)} is ${
           mine.incumbentKind
         } of archive wording to the repair lane and ${
           theirs.incumbentKind
@@ -243,7 +243,7 @@ export function compareLanesV2(
       },);
     }
     return {
-      chunkIndex: mine.chunkIndex,
+      sliceIndex: mine.sliceIndex,
       incumbentKind: mine.incumbentKind,
       incumbentText: mine.incumbentText,
       repairText: mine.shippedText,
@@ -329,7 +329,7 @@ export function assertDerivationsAgree(
     },)) {
       throw new ArtifactComparisonV2Error({
         message: `version 2 and the pipeline disagree about slice ${
-          String(row.chunkIndex,)
+          String(row.sliceIndex,)
         }: version 2 says ${JSON.stringify(row,)} and the pipeline says ${JSON.stringify(theirs,)}. `
           + 'One of them changed, and which artifacts mean what depends on which',
       },);

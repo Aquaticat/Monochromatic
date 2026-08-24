@@ -40,7 +40,7 @@ const l = tagged({ tag: 'repair-wrap-test', },);
 /**
  * Builds one prepared pair carrying the archive's wording at an index.
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @param incumbentText - archive wording there
  *
@@ -48,28 +48,28 @@ const l = tagged({ tag: 'repair-wrap-test', },);
  *
  * @example
  * ```ts
- * const pair = pairOf({ chunkIndex: 0, incumbentText: 'The cat naps.', },);
+ * const pair = pairOf({ sliceIndex: 0, incumbentText: 'The cat naps.', },);
  * ```
  */
 function pairOf(
   {
-    chunkIndex,
+    sliceIndex,
     incumbentText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly incumbentText: string;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 1,
-      text: `source of slice ${String(chunkIndex,)}`,
+      text: `source of slice ${String(sliceIndex,)}`,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: incumbentText.length,
@@ -85,7 +85,7 @@ function pairOf(
  * untouched, so a fixture carrying the whole contract would test the spread
  * rather than the decision.
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @param repairedText - wording this lane produced
  *
@@ -95,22 +95,22 @@ function pairOf(
  *
  * @example
  * ```ts
- * const outcome = outcomeOf({ chunkIndex: 0, repairedText: 'It naps.', changed: true, },);
+ * const outcome = outcomeOf({ sliceIndex: 0, repairedText: 'It naps.', changed: true, },);
  * ```
  */
 function outcomeOf(
   {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairedText: string;
     readonly changed: boolean;
   },
 ): Parameters<typeof wrapRepairOutcomes>[0]['outcomes'][number] {
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed,
     issues: [],
@@ -136,11 +136,11 @@ await describe({
          */
         const wrapped = wrapRepairOutcomes({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText: 'The cat sleeps on the sill.',
           },),],
           outcomes: [outcomeOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             repairedText: 'The tabby naps on the sill. It wakes at dusk.',
             changed: true,
           },),],
@@ -165,11 +165,11 @@ await describe({
 
         const wrapped = wrapRepairOutcomes({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText,
           },),],
           outcomes: [outcomeOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             repairedText: incumbentText,
             changed: false,
           },),],
@@ -194,11 +194,11 @@ await describe({
 
         const wrapped = wrapRepairOutcomes({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText,
           },),],
           outcomes: [outcomeOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             repairedText: 'It naps. It wakes.',
             changed: true,
           },),],
@@ -217,11 +217,11 @@ await describe({
       fn: async () => {
         const wrapped = wrapRepairOutcomes({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText: '',
           },),],
           outcomes: [outcomeOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             repairedText: 'The tabby naps. It wakes.',
             changed: true,
           },),],
@@ -254,11 +254,11 @@ await describe({
       fn: async () => {
         const wrapped = wrapRepairOutcomes({
           slices: [pairOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentText: 'The cat sleeps on the sill.',
           },),],
           outcomes: [outcomeOf({
-            chunkIndex: 0,
+            sliceIndex: 0,
             repairedText: GOVERNED_PRODUCED,
             changed: true,
           },),],

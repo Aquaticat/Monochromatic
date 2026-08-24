@@ -450,7 +450,7 @@ await describe({
         /** Chunk indexes in recorded order. */
         const indexes = result.sliceCritics
           .map(function toIndex(record,) {
-          return record.chunkIndex;
+          return record.sliceIndex;
         },);
 
         expect(indexes,).toStrictEqual([...indexes,].toSorted(function ascending(
@@ -1083,14 +1083,14 @@ Meow meow meow meow.
             ...prepared.slices,
             {
               source: {
-                chunkIndex: anchorIndex,
+                sliceIndex: anchorIndex,
                 nodes: [],
                 startOffset: 0,
                 endOffset: 0,
                 text: '## 丙\n\n猫猫也喜欢晒太阳。',
               },
               target: makeInsertionChunk({
-                chunkIndex: anchorIndex,
+                sliceIndex: anchorIndex,
                 offset: TARGET_TWO_SECTIONS.length,
               },),
             },
@@ -1159,7 +1159,7 @@ Meow meow meow meow.
         // NOT ONE MORE EXCHANGE for the extra slice, which is the whole point:
         // an anchor is answered rather than asked about.
         expect(spent.anchored,).toBe(spent.plain,);
-        expect(anchored.findings,).toContain(notApplicableFinding({ chunkIndex: anchorIndex, },),);
+        expect(anchored.findings,).toContain(notApplicableFinding({ sliceIndex: anchorIndex, },),);
         // The document is what it would have been without the anchor: this lane
         // fills nothing, and the passage stays missing until the other one does.
         expect(anchored.repairedText,).toBe(plain.repairedText,);
@@ -1242,9 +1242,9 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         expect(result.withdrawnSliceIndices
           .length,).toBeGreaterThan(0,);
         expect(result.changedSliceIndices,).toEqual([],);
-        for (const chunkIndex of result.withdrawnSliceIndices) {
+        for (const sliceIndex of result.withdrawnSliceIndices) {
           expect(result.changedSliceIndices
-            .includes(chunkIndex,),).toBe(false,);
+            .includes(sliceIndex,),).toBe(false,);
         }
       },
     },),
@@ -1600,7 +1600,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               key,
               {
                 ...outcome,
-                chunkIndex: outcome.chunkIndex + 1,
+                sliceIndex: outcome.sliceIndex + 1,
               },
             ] as const;
           },),
@@ -1626,10 +1626,10 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         expect(resumedRun.changedSliceIndices,).toEqual(first.changedSliceIndices,);
         expect(resumedRun.issues
           .map(function toChunk(record,): number {
-            return record.chunkIndex;
+            return record.sliceIndex;
           },),).toEqual(first.issues
           .map(function toChunk(record,): number {
-            return record.chunkIndex;
+            return record.sliceIndex;
           },),);
       },
     },),

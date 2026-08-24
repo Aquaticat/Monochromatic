@@ -150,7 +150,7 @@ export function assertRecordedComparisonMatches(
       throw new ArtifactParseError({
         path: `${path}[${String(position,)}]`,
         reason: `what this version's rules derive for slice ${
-          String(row.chunkIndex,)
+          String(row.sliceIndex,)
         } from the ledgers stored beside it, which is ${JSON.stringify(row,)}`,
       },);
     }

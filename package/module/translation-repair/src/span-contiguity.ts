@@ -120,7 +120,7 @@ function assertAnchorBetweenBlocks(
     if ((node.startOffset < anchor.startOffset)
       && (anchor.startOffset < node.endOffset)) {
       throw new SpanContiguityError({
-        message: `slice ${String(anchor.chunkIndex,)} anchors at ${
+        message: `slice ${String(anchor.sliceIndex,)} anchors at ${
           String(anchor.startOffset,)
         }, inside block ${node.id}, so assembly would split that block around the inserted text`,
       },);
@@ -181,7 +181,7 @@ export function assertSpanContiguity(
       if ((node.startOffset < span.startOffset)
         || (node.endOffset > span.endOffset)) {
         throw new SpanContiguityError({
-          message: `slice ${String(span.chunkIndex,)} cuts through block ${node.id}, covering part of `
+          message: `slice ${String(span.sliceIndex,)} cuts through block ${node.id}, covering part of `
             + 'it: assembly replaces exactly the range, so the rest of that block would be left beside '
             + 'a replacement written without it',
         },);
@@ -195,7 +195,7 @@ export function assertSpanContiguity(
       .length;
     if (covered.length !== carriedCount) {
       throw new SpanContiguityError({
-        message: `slice ${String(span.chunkIndex,)} spans ${
+        message: `slice ${String(span.sliceIndex,)} spans ${
           String(covered.length,)
         } blocks of the translation and carries ${String(carriedCount,)}: a block inside the range `
           + 'that the slice never saw is replaced anyway, because assembly writes over the range '
@@ -217,7 +217,7 @@ export function assertSpanContiguity(
     for (const node of covered) {
       if (!carried.has(node.id,)) {
         throw new SpanContiguityError({
-          message: `slice ${String(span.chunkIndex,)} covers block ${
+          message: `slice ${String(span.sliceIndex,)} covers block ${
             node.id
           } and does not carry it, so its nodes and its range describe different passages`,
         },);

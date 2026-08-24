@@ -134,34 +134,34 @@ function photoElement({ assetNames, }: { readonly assetNames: readonly string[];
  *
  * @param text - original-side text this slice covers
  *
- * @param chunkIndex - position of this slice in its document
+ * @param sliceIndex - position of this slice in its document
  *
  * @returns Pair whose original side carries that text
  *
  * @example
  * ```ts
- * const pair = sliceOf({ text: 'Mittens naps.\n', chunkIndex: 0, },);
+ * const pair = sliceOf({ text: 'Mittens naps.\n', sliceIndex: 0, },);
  * ```
  */
 function sliceOf(
   {
     text,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly text: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: text.length,
       text,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
@@ -384,11 +384,11 @@ await describe({
         const quietSlices: readonly ChunkPair[] = [
           sliceOf({
             text: 'Mittens naps all afternoon, showing nothing.\n',
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),
           sliceOf({
             text: 'She stretches once and settles again.\n',
-            chunkIndex: 1,
+            sliceIndex: 1,
           },),
         ];
 
@@ -430,7 +430,7 @@ await describe({
             text: `Mittens dozes by the radiator.\n\n${
               photoElement({ assetNames: ['nap.webp',], },)
             }\n`,
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           l,
         },);
@@ -473,19 +473,19 @@ await describe({
             text: `Mittens suns herself on the sill.\n\n${
               photoElement({ assetNames: ['sunbeam.webp',], },)
             }\n`,
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),
           sliceOf({
             text: `She stretches and yawns.\n\n${
               photoElement({ assetNames: ['stretch.webp',], },)
             }\n`,
-            chunkIndex: 1,
+            sliceIndex: 1,
           },),
           sliceOf({
             text: `Then she naps by the door.\n\n${
               photoElement({ assetNames: ['nap.webp',], },)
             }\n`,
-            chunkIndex: 2,
+            sliceIndex: 2,
           },),
         ];
 
@@ -548,13 +548,13 @@ await describe({
             text: `Mittens watches from the sill.\n\n${
               photoElement({ assetNames: ['perch.webp',], },)
             }\n`,
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),
           sliceOf({
             text: `By evening she returns to the sill.\n\n${
               photoElement({ assetNames: ['perch.webp',], },)
             }\n`,
-            chunkIndex: 1,
+            sliceIndex: 1,
           },),
         ];
 
@@ -593,7 +593,7 @@ await describe({
           text: `Mittens suns herself, then vanishes behind the curtain.\n\n${
             photoElement({ assetNames: ['windowsill.webp', 'phantom.webp',], },)
           }\n`,
-          chunkIndex: 0,
+          sliceIndex: 0,
         },);
 
         /**
@@ -647,7 +647,7 @@ await describe({
             text: `Mittens suns herself, then vanishes behind the curtain.\n\n${
               photoElement({ assetNames: ['windowsill.webp', 'phantom.webp',], },)
             }\n`,
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           l,
         },);
@@ -708,7 +708,7 @@ await describe({
               text: `Mittens hides from the vacuum.\n\n${
                 photoElement({ assetNames: ['vacuum.webp',], },)
               }\n`,
-              chunkIndex: 0,
+              sliceIndex: 0,
             },),],
             l,
           },);

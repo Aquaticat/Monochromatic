@@ -209,14 +209,14 @@ export function retainAttributions(
  *
  * @example
  * ```ts
- * const record: SliceCriticRecord = { chunkIndex: 0, heardCriticIds, claimAttributions, };
+ * const record: SliceCriticRecord = { sliceIndex: 0, heardCriticIds, claimAttributions, };
  * ```
  */
 export type SliceCriticRecord = {
   /**
    * Chunk position within the document.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Critics that answered on this chunk, sorted by model id.
@@ -264,7 +264,7 @@ export function buildSliceCriticRecords(
   return outcomes
     .map(function toRecord(outcome,): SliceCriticRecord {
     return {
-      chunkIndex: outcome.chunkIndex,
+      sliceIndex: outcome.sliceIndex,
       // CANONICALIZED here rather than trusted from the caller. Every producer
       // upstream already sorts, so this changes nothing today; what it adds is
       // that the ARTIFACT BOUNDARY guarantees the order rather than inheriting
@@ -305,7 +305,7 @@ export function buildSliceCriticRecords(
       left,
       right,
     ): number {
-    return left.chunkIndex - right.chunkIndex;
+    return left.sliceIndex - right.sliceIndex;
   },);
 }
 

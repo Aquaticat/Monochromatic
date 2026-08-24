@@ -118,34 +118,34 @@ function showing({ assetName, }: { readonly assetName: string; },): string {
  *
  * @param text - original-side text this slice covers
  *
- * @param chunkIndex - position of this slice in its document
+ * @param sliceIndex - position of this slice in its document
  *
  * @returns Pair whose original side carries that text
  *
  * @example
  * ```ts
- * const pair = sliceOf({ text: showing({ assetName: 'a.webp', },), chunkIndex: 0, },);
+ * const pair = sliceOf({ text: showing({ assetName: 'a.webp', },), sliceIndex: 0, },);
  * ```
  */
 function sliceOf(
   {
     text,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly text: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: text.length,
       text,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
@@ -271,10 +271,10 @@ await describe({
           0,
           1,
           2,
-        ].map(function toSlice(chunkIndex,): ChunkPair {
+        ].map(function toSlice(sliceIndex,): ChunkPair {
           return sliceOf({
             text: showing({ assetName: 'noticeboard.webp', },),
-            chunkIndex,
+            sliceIndex,
           },);
         },);
 
@@ -330,7 +330,7 @@ await describe({
           client,
           slices: [sliceOf({
             text: showing({ assetName: 'noticeboard.webp', },),
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
           readerModelIds: READERS,
@@ -364,7 +364,7 @@ await describe({
           client,
           slices: [sliceOf({
             text: showing({ assetName: 'noticeboard.webp', },),
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
           readerModelIds: READERS,
@@ -399,7 +399,7 @@ await describe({
             client,
             slices: [sliceOf({
               text: showing({ assetName: 'noticeboard.webp', },),
-              chunkIndex: 0,
+              sliceIndex: 0,
             },),],
             assets: new Map([['noticeboard.webp', bytesOf({ seed, },),],],),
             readerModelIds: READERS,
@@ -431,7 +431,7 @@ await describe({
           client,
           slices: [sliceOf({
             text: showing({ assetName: 'missing.webp', },),
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           assets: new Map(),
           readerModelIds: READERS,
@@ -462,7 +462,7 @@ await describe({
           client,
           slices: [sliceOf({
             text: '小猫在窗台上睡觉。\n',
-            chunkIndex: 0,
+            sliceIndex: 0,
           },),],
           assets: new Map(),
           readerModelIds: READERS,

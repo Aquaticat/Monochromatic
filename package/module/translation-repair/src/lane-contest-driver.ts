@@ -126,7 +126,7 @@ export async function contestDocumentLanes(
       string,
     ] {
       return [
-        row.chunkIndex,
+        row.sliceIndex,
         row.sourceText,
       ];
     },),);
@@ -157,16 +157,16 @@ export async function contestDocumentLanes(
     .length;
   dl.info(`lane contest: ${String(eligible.size,)}/${String(compared,)} slices differ`,);
   for (const row of projected.comparison) {
-    if (!eligible.has(row.chunkIndex,))
+    if (!eligible.has(row.sliceIndex,))
       continue;
 
     /**
      * Original of this slice, which every ledger row carries.
      */
-    const sourceText = sourceTexts.get(row.chunkIndex,);
+    const sourceText = sourceTexts.get(row.sliceIndex,);
     if (sourceText === undefined) {
       throw new Error(
-        `lane contest: slice ${String(row.chunkIndex,)} is compared and does not appear in the repair ledger`,
+        `lane contest: slice ${String(row.sliceIndex,)} is compared and does not appear in the repair ledger`,
       );
     }
 
@@ -216,7 +216,7 @@ export async function contestDocumentLanes(
     }
     /* oxlint-enable no-await-in-loop */
     slices.push(describeContestSlice({
-      chunkIndex: row.chunkIndex,
+      sliceIndex: row.sliceIndex,
       outcome,
     },),);
   }

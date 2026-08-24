@@ -78,7 +78,7 @@ function eligibleEntry(
     id: 'Whiskers',
     sliceCritics: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         heardCriticIds: [QUIET, TABBY,],
         claimAttributions: [
           {
@@ -265,7 +265,7 @@ await describe({
             id: 'Whiskers',
             sliceCritics: [
               {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 heardCriticIds: [QUIET, TABBY,],
                 claimAttributions: [{
                   claimId: NAP_CLAIM,
@@ -273,7 +273,7 @@ await describe({
                 },],
               },
               {
-                chunkIndex: 1,
+                sliceIndex: 1,
                 heardCriticIds: [QUIET, TABBY,],
                 claimAttributions: [{
                   claimId: NAP_CLAIM,

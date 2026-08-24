@@ -382,7 +382,7 @@ export function prepareDocumentPair(
       slices: stamped.map(function toSlice(stampedSlice,): ChunkSlice {
         return {
           index: stampedSlice.target
-            .chunkIndex,
+            .sliceIndex,
           sourceText: stampedSlice.source
             .text,
         };

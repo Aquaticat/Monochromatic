@@ -155,7 +155,7 @@ export function assertDeliveryAgreesWithDocument(
    * Slices those rows name.
    */
   const fromLedger = shipped.map(function toIndex(record,): number {
-    return record.chunkIndex;
+    return record.sliceIndex;
   },);
 
   /**
@@ -199,7 +199,7 @@ export function assertDeliveryAgreesWithDocument(
    */
   const replacements = shipped.map(function toReplacement(record,): SliceReplacement {
     return {
-      chunkIndex: record.chunkIndex,
+      sliceIndex: record.sliceIndex,
       replacementText: record.shippedText,
     };
   },);

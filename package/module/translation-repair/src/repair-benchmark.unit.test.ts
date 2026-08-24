@@ -437,7 +437,7 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
           throw new Error('fixture planting failed',);
         /** Accepted issue anchored at the deletion point. */
         const nearIssue = {
-          chunkIndex: 0,
+          sliceIndex: 0,
           resolved: false,
           repairRegions: [],
           repairDisposition: 'no-region' as const,
@@ -575,7 +575,7 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
           applications,
           issues: [
             {
-              chunkIndex: slicePosition,
+              sliceIndex: slicePosition,
               resolved: false,
               repairRegions: [],
               repairDisposition: 'no-region' as const,
@@ -666,7 +666,7 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
          */
         function issueWithStatus(status: 'source-defect' | 'rejected',) {
           return {
-            chunkIndex: 0,
+            sliceIndex: 0,
             resolved: false,
             repairRegions: [],
             repairDisposition: 'no-region' as const,
@@ -776,7 +776,7 @@ await describe({
             changedSliceIndices: [0,],
             withdrawnSliceIndices: [],
             sliceTexts: [{
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'present',
               incumbentText: targetText,
               outcome: {

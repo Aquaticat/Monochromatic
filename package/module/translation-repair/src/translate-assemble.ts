@@ -125,7 +125,7 @@ export function assembleTranslation(
    */
   const replacements = changed.map(function toReplacement(record,) {
     return {
-      chunkIndex: record.chunkIndex,
+      sliceIndex: record.sliceIndex,
       replacementText: record.outputText,
     };
   },);
@@ -191,7 +191,7 @@ export function assembleTranslation(
        * This slice's index and the wording the archive had there.
        */
       const {
-        chunkIndex,
+        sliceIndex,
         text: incumbentText,
       } = slice.target;
 
@@ -201,10 +201,10 @@ export function assembleTranslation(
       const replacement = guarded
         .replacements
         .find(function atSlice(candidate,): boolean {
-          return candidate.chunkIndex === chunkIndex;
+          return candidate.sliceIndex === sliceIndex;
         },);
       return {
-        chunkIndex,
+        sliceIndex,
         text: (replacement === undefined)
           ? incumbentText
           : replacement.replacementText,
@@ -251,7 +251,7 @@ export function assembleTranslation(
       slices: prepared.slices,
       settled,
       unfilledChunkIndices: unfilled.map(function toIndex(passage,): number {
-        return passage.chunkIndex;
+        return passage.sliceIndex;
       },),
     },),
     resumedSliceCount,
@@ -291,7 +291,7 @@ export function assembleTranslation(
       },),
       ...unheard.map(function toUnheardFinding(record,): string {
         return `translate-heard-no-translator chunk ${
-          String(record.chunkIndex,)
+          String(record.sliceIndex,)
         }; incumbent stands, slice not cached`;
       },),
     ],

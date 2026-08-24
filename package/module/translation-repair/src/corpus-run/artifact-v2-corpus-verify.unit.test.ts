@@ -85,8 +85,8 @@ function keptEverything(
       const incumbentText = slice.target
         .text;
       return {
-        chunkIndex: slice.target
-          .chunkIndex,
+        sliceIndex: slice.target
+          .sliceIndex,
         sourceText: slice.source
           .text,
         incumbentKind: 'present',
@@ -128,7 +128,7 @@ function rawResultFor(
     withdrawnSliceCount: 0,
     sliceTexts: rows.map(function toEvidence(row,): Record<string, unknown> {
       return {
-        chunkIndex: row.chunkIndex,
+        sliceIndex: row.sliceIndex,
         incumbentKind: row.incumbentKind,
         incumbentText: row.incumbentText,
         outcome: row.outcome,

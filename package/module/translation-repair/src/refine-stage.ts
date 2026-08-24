@@ -114,7 +114,7 @@ export type RefineStageResult = {
  * @param declaredNames - same declarations as strings to compare, since a
  * rewrite for naturalness is exactly the edit that drops one
  *
- * @param chunkIndex - slice being refined, which a refusal names
+ * @param sliceIndex - slice being refined, which a refusal names
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -144,7 +144,7 @@ export async function runRefineStage(
     definitions,
     identityContext,
     declaredNames,
-    chunkIndex,
+    sliceIndex,
     signal,
     perCallTimeoutMs,
     l,
@@ -158,7 +158,7 @@ export async function runRefineStage(
     readonly definitions: string;
     readonly identityContext?: string;
     readonly declaredNames: readonly string[];
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -409,7 +409,7 @@ export async function runRefineStage(
      * Refusal in the wording every lane reports this under.
      */
     const refusal = declaredNameRefusalFinding({
-      chunkIndex,
+      sliceIndex,
       dropped: droppedDeclaredNames,
     },);
     rl.warn(`${refusal}; keeping the repaired text`,);

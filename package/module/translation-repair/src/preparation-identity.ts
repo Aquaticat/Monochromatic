@@ -225,13 +225,13 @@ function sliceRow(
 ): string {
   return [
     framedNumber({ value: slice.target
-      .chunkIndex, },),
+      .sliceIndex, },),
     // BOTH INDICES, though they are equal today. The pairing is what this row
     // exists to record, and `#100`'s one-sided slicing touches exactly the
     // assumption that one number names both sides. Adding it now costs nothing;
     // after the first artifact is written it would cost a scheme version.
     framedNumber({ value: slice.source
-      .chunkIndex, },),
+      .sliceIndex, },),
     // The source side is always existing content; its kind is framed anyway, so
     // a later one-sided slicing cannot change the meaning of a row without
     // changing its bytes.
@@ -288,7 +288,7 @@ export function preparationIdentity(
           slice,
           lineStructured: prepared.lineStructuredSliceIndices
             .has(slice.target
-              .chunkIndex,),
+              .sliceIndex,),
         },);
       },),
     // STATED EITHER WAY, because absent context and empty context are different

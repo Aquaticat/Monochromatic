@@ -66,7 +66,7 @@ const MODELS = {
 /**
  * Builds one slice pair carrying given texts.
  *
- * @param chunkIndex - position in the document
+ * @param sliceIndex - position in the document
  *
  * @param source - original wording
  *
@@ -76,30 +76,30 @@ const MODELS = {
  *
  * @example
  * ```ts
- * const pair = pairOf({ chunkIndex: 0, source: '猫。', target: 'Cat.', },);
+ * const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
  * ```
  */
 function pairOf(
   {
-    chunkIndex,
+    sliceIndex,
     source,
     target,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly source: string;
     readonly target: string;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: source.length,
       text: source,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: target.length,
@@ -113,17 +113,17 @@ function pairOf(
  */
 const SLICES: readonly ChunkPair[] = [
   pairOf({
-    chunkIndex: 0,
+    sliceIndex: 0,
     source: '小猫在窗台上睡觉。',
     target: 'The cat sleeps on the windowsill.',
   },),
   pairOf({
-    chunkIndex: 1,
+    sliceIndex: 1,
     source: '猫猫在窗台上打盹，尾巴垂在暖气片旁边。',
     target: 'The cat is doing the sleeping, with tail by the radiator.',
   },),
   pairOf({
-    chunkIndex: 2,
+    sliceIndex: 2,
     source: '傍晚她回到炉火旁。',
     target: 'In the evening she returns to the fire.',
   },),
@@ -267,7 +267,7 @@ function doneFor(
     return trialKey({ row: {
       protocol: 'protocol-one',
       entryId: 'Mittens',
-      chunkIndex: 1,
+      sliceIndex: 1,
       arm,
     }, },);
   },),);
@@ -285,7 +285,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -314,7 +314,7 @@ await describe({
         await runSliceArms({
           client: rig.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -345,7 +345,7 @@ await describe({
         await runSliceArms({
           client: rig.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -362,7 +362,7 @@ await describe({
         },),).toEqual([...armOrderFor({
           protocol: 'protocol-one',
           entryId: 'Mittens',
-          chunkIndex: 1,
+          sliceIndex: 1,
         },),],);
       },
     },),
@@ -375,7 +375,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -408,7 +408,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -446,7 +446,7 @@ await describe({
         await runSliceArms({
           client: first.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -465,7 +465,7 @@ await describe({
         const rows = await runSliceArms({
           client: second.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -495,7 +495,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
-          chunkIndex: 1,
+          sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
@@ -525,7 +525,7 @@ await describe({
         const attempt = runSliceArms({
           client: rig.client,
           slices: [SLICES[1] as ChunkPair,],
-          chunkIndex: 0,
+          sliceIndex: 0,
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',

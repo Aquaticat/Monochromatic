@@ -101,7 +101,7 @@ await describe({
         },);
         expect(slices.map(function toIndex(slice,): number {
           return slice.target
-            .chunkIndex;
+            .sliceIndex;
         },),).toEqual(slices.map(function toPosition(
           _unused,
           position,
@@ -240,7 +240,7 @@ The cat comes home
         for (const index of lineStructuredSliceIndices) {
           expect(slices.some(function hasIndex(slice,): boolean {
             return slice.target
-              .chunkIndex === index;
+              .sliceIndex === index;
           },),).toBe(true,);
         }
       },

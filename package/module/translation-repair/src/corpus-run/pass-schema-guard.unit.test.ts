@@ -11,7 +11,7 @@
  *
  * AND ONE CASE THE FIRST VERSION MISSED, which an independent review found: the
  * guard read the version LABEL and never the body, so a version 1 artifact
- * relabelled as version 2 passed it.
+ * relabelled as the generation this pass writes passed it.
  *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
@@ -145,7 +145,7 @@ function emptyVersionTwoArtifact(
   },
 ): Record<string, unknown> {
   return {
-    artifactSchemaVersion: 3,
+    artifactSchemaVersion: 4,
     id: entryId,
     tip: FIXED_TIP,
     pipelineDigest: digest,
@@ -303,12 +303,12 @@ await describe({
           artifactsDir: await writeArtifacts({
             entries: {
               Mittens: {
-                version: 3,
+                version: 4,
                 digest: DIGEST_A,
                 wellFormed: true,
               },
               Pouncer: {
-                version: 3,
+                version: 4,
                 digest: DIGEST_A,
                 wellFormed: true,
               },
@@ -321,17 +321,17 @@ await describe({
       name:
         'REFUSES a body that DECLARES this generation and is not one, which the first version of this '
         + 'guard accepted: it read the label and never the body, so a version 1 artifact relabelled as '
-        + 'version 2 was counted as settled, never re-run, and left for whichever reader asked it a '
-        + 'two-lane question first',
+        + 'the generation this pass writes was counted as settled, never re-run, and left for whichever '
+        + 'reader asked it a two-lane question first',
       fn: async () => {
         /**
-         * A version 1 body carrying a version 2 label and nothing else of that
-         * generation.
+         * A version 1 body carrying this generation's label and nothing else
+         * of that generation.
          */
         const artifactsDir = await writeArtifacts({
           entries: {
             Mittens: {
-              version: 3,
+              version: 4,
               digest: DIGEST_A,
             },
           },
@@ -341,7 +341,7 @@ await describe({
          * What the guard said about it.
          */
         const said = await refusalOf({ artifactsDir, },);
-        expect(said,).toContain('Mittens declares schema version 3',);
+        expect(said,).toContain('Mittens declares schema version 4',);
         expect(said,).toContain('and is not one',);
       },
     },),
@@ -363,7 +363,7 @@ await describe({
               digest: DIGEST_A,
             },
             Pouncer: {
-              version: 3,
+              version: 4,
               digest: DIGEST_A,
               wellFormed: true,
             },
@@ -393,12 +393,12 @@ await describe({
           artifactsDir: await writeArtifacts({
             entries: {
               Mittens: {
-                version: 3,
+                version: 4,
                 digest: DIGEST_A,
                 wellFormed: true,
               },
               Pouncer: {
-                version: 3,
+                version: 4,
                 digest: DIGEST_B,
                 wellFormed: true,
               },
@@ -468,7 +468,7 @@ await describe({
         expect(said,).toContain('Restore the code those entries were settled under',);
         expect(said,).toContain('Move the incompatible artifacts to an archive directory',);
         expect(said,).toContain('Deleting them outright is the one thing to avoid',);
-        expect(said,).toContain('this pass writes schema version 3',);
+        expect(said,).toContain('this pass writes schema version 4',);
       },
     },),
   ],
@@ -493,7 +493,7 @@ await describe({
               digest: DIGEST_A,
             },
             Mittens: {
-              version: 3,
+              version: 4,
               digest: DIGEST_B,
               wellFormed: true,
             },

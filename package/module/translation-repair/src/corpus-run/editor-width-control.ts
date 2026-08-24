@@ -220,7 +220,7 @@ export async function widthControlHolds(
       client,
       input: {
         entryId: slice.entryId,
-        chunkIndex: slice.index,
+        sliceIndex: slice.index,
         sourceText: slice.sourceText,
         targetText: slice.incumbentText,
         issues: [],

@@ -52,14 +52,14 @@ const NOT_IN_PAGE = -1;
  *
  * @example
  * ```ts
- * const missing: MissingWording = { chunkIndex: 12, characters: 344, };
+ * const missing: MissingWording = { sliceIndex: 12, characters: 344, };
  * ```
  */
 export type MissingWording = {
   /**
    * Slice whose wording could not be found at or after the cursor.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * How long that wording is, in UTF-16 code units.
@@ -173,7 +173,7 @@ function sliceDelta(
   /**
    * Characters the archive held there, none at an anchor.
    */
-  const held = (incumbentBySlice.get(slice.chunkIndex,) ?? '').length;
+  const held = (incumbentBySlice.get(slice.sliceIndex,) ?? '').length;
 
   /**
    * What this slice would carry, or that it carries nothing.
@@ -224,7 +224,7 @@ function filledAnAnchor(
   if (reading.kind !== 'wording')
     return false;
 
-  return (incumbentBySlice.get(slice.chunkIndex,) ?? '') === '';
+  return (incumbentBySlice.get(slice.sliceIndex,) ?? '') === '';
 }
 
 /**
@@ -281,7 +281,7 @@ export function pageWeighsWhatItShould(
       string,
     ] {
       return [
-        row.chunkIndex,
+        row.sliceIndex,
         row.incumbentText,
       ];
     },),);
@@ -375,7 +375,7 @@ type ScanState = {
  *
  * A CURSOR RATHER THAN A SET OF SUBSTRING TESTS, because order is half the
  * claim. Slices are contiguous and ordered in the document, so their wordings
- * appear in the page in `chunkIndex` order and do not overlap. Searching from
+ * appear in the page in `sliceIndex` order and do not overlap. Searching from
  * where the previous one ended enforces both, and a page that carried every
  * wording in the wrong order would pass a set test and fail this one.
  *
@@ -456,7 +456,7 @@ export function pageCarriesEveryWording(
           missing: [
             ...state.missing,
             {
-              chunkIndex: slice.chunkIndex,
+              sliceIndex: slice.sliceIndex,
               characters: wording.length,
             },
           ],
@@ -565,7 +565,7 @@ export function refusePageThatDisagrees(
       message: `${entryId}: ${String(missing.length,)} wording(s) the artifact says would ship are not in `
         + `the page in slice order, at slices ${missing
           .map(function named(gone,): string {
-            return `${String(gone.chunkIndex,)} (${String(gone.characters,)} characters)`;
+            return `${String(gone.sliceIndex,)} (${String(gone.characters,)} characters)`;
           },)
           .join(', ',)}`,
     },);

@@ -87,12 +87,12 @@ await describe({
           { length: SLICE_COUNT, },
           function toPosition(
             _unused,
-            chunkIndex,
+            sliceIndex,
           ) {
             return armOrderFor({
               protocol: 'protocol-one',
               entryId: 'Mittens',
-              chunkIndex,
+              sliceIndex,
             },)
               .indexOf(TRIAL_ARMS.wide,);
           },
@@ -107,14 +107,14 @@ await describe({
       name: 'returns all three arms exactly once, whatever the digest said, so no slice can buy '
         + 'one arm twice and none at all',
       fn: async () => {
-        for (let chunkIndex = 0; chunkIndex < SLICE_COUNT; chunkIndex += 1) {
+        for (let sliceIndex = 0; sliceIndex < SLICE_COUNT; sliceIndex += 1) {
           /**
            * This slice's order.
            */
           const order = armOrderFor({
             protocol: 'protocol-one',
             entryId: 'Mittens',
-            chunkIndex,
+            sliceIndex,
           },);
           expect(order.length,).toBe(TRIAL_ARM_SET.length,);
           expect([...new Set(order,),].toSorted(alphabetical,),)
@@ -129,11 +129,11 @@ await describe({
         expect(armOrderFor({
           protocol: 'protocol-one',
           entryId: 'Mittens',
-          chunkIndex: 7,
+          sliceIndex: 7,
         },),).toEqual(armOrderFor({
           protocol: 'protocol-one',
           entryId: 'Mittens',
-          chunkIndex: 7,
+          sliceIndex: 7,
         },),);
       },
     },),
@@ -141,14 +141,14 @@ await describe({
       name: 'keeps the narrow arms in their relative order wherever they land, which costs nothing '
         + 'since being the same treatment twice is their entire purpose',
       fn: async () => {
-        for (let chunkIndex = 0; chunkIndex < SLICE_COUNT; chunkIndex += 1) {
+        for (let sliceIndex = 0; sliceIndex < SLICE_COUNT; sliceIndex += 1) {
           /**
            * This slice's order.
            */
           const order = armOrderFor({
             protocol: 'protocol-one',
             entryId: 'Mittens',
-            chunkIndex,
+            sliceIndex,
           },);
           expect(order.indexOf(TRIAL_ARMS.narrowFirst,)
             < order.indexOf(TRIAL_ARMS.narrowSecond,),).toBe(true,);
@@ -168,12 +168,12 @@ await describe({
             { length: SLICE_COUNT, },
             function toPosition(
               _unused,
-              chunkIndex,
+              sliceIndex,
             ) {
               return armOrderFor({
                 protocol,
                 entryId: 'Mittens',
-                chunkIndex,
+                sliceIndex,
               },)
                 .indexOf(TRIAL_ARMS.wide,);
             },

@@ -45,7 +45,7 @@ import {
  *
  * @param client - injected model client
  *
- * @param chunkIndex - chunk position carried onto the outcome
+ * @param sliceIndex - chunk position carried onto the outcome
  *
  * @param sourceText - original chunk text
  *
@@ -94,7 +94,7 @@ import {
 export async function repairChunk(
   {
     client,
-    chunkIndex,
+    sliceIndex,
     sourceText,
     targetText,
     lineStructured,
@@ -109,7 +109,7 @@ export async function repairChunk(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly sourceText: string;
     readonly targetText: string;
     readonly lineStructured: boolean;
@@ -164,7 +164,7 @@ export async function repairChunk(
     documents,
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...windowFragment,
-    chunkIndex,
+    sliceIndex,
     signal,
     perCallTimeoutMs,
     l,
@@ -174,7 +174,7 @@ export async function repairChunk(
    * Unchanged outcome shared by every early exit.
    */
   const unchangedOutcome = unchangedChunkOutcome({
-    chunkIndex,
+    sliceIndex,
     targetText,
     critic,
   },);
@@ -195,7 +195,7 @@ export async function repairChunk(
   // inform rather than decide.
   if (critic.votesStand) {
     l.warn(
-      `chunk ${String(chunkIndex,)}: ${
+      `chunk ${String(sliceIndex,)}: ${
         String(critic.nonTranslationVotes,)
       } non-translation votes stand; proceeding, votes carried as evidence`,
     );
@@ -203,7 +203,7 @@ export async function repairChunk(
   if (critic.claims
     .length
     === 0) {
-    l.info(`chunk ${String(chunkIndex,)}: no validated claims, unchanged`,);
+    l.info(`chunk ${String(sliceIndex,)}: no validated claims, unchanged`,);
     return {
       ...unchangedOutcome,
       issues: [],
@@ -271,7 +271,7 @@ export async function repairChunk(
     targetText,
   },);
   if (envelopes.length === 0) {
-    l.info(`chunk ${String(chunkIndex,)}: nothing to edit, unchanged`,);
+    l.info(`chunk ${String(sliceIndex,)}: nothing to edit, unchanged`,);
     return {
       ...unchangedOutcome,
       issues: deduped.issues,
@@ -317,7 +317,7 @@ export async function repairChunk(
     .applied
     .length
     === 0) {
-    l.info(`chunk ${String(chunkIndex,)}: no operation survived the gate, unchanged`,);
+    l.info(`chunk ${String(sliceIndex,)}: no operation survived the gate, unchanged`,);
     return {
       ...unchangedOutcome,
       issues: deduped.issues,
@@ -407,7 +407,7 @@ export async function repairChunk(
     droppedDeclaredNames,
     resolvedIssueIds,
   } = settleChunkFromChecks({
-    chunkIndex,
+    sliceIndex,
     declaredNames,
     incumbentText: targetText,
     patchedText: editor.patch
@@ -423,13 +423,13 @@ export async function repairChunk(
    * What the declared-name refusal owes this slice's record and findings.
    */
   const refusal = declaredNameRefusalReport({
-    chunkIndex,
+    sliceIndex,
     dropped: droppedDeclaredNames,
   },);
   for (const finding of refusal.findings)
     l.warn(finding,);
   l.info(describeChunkSettlement({
-    chunkIndex,
+    sliceIndex,
     changed,
     resolvedCount: resolvedIssueIds.length,
     creditableCount: appliedEnvelopes.creditableIssues
@@ -439,7 +439,7 @@ export async function repairChunk(
   },),);
 
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText,
     changed,
     issues: deduped.issues,

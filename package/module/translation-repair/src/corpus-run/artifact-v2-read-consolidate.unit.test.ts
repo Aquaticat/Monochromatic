@@ -26,7 +26,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseConsolidationV2, } from '../../dist/final/node/index.mjs';
+import {
+  SLICE_SPELLED_KEYS,
+  parseConsolidationV2,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Path every case reports its refusals under.
@@ -37,7 +40,7 @@ const AT = 'whiskers.consolidation';
  * One slice as the driver records a consolidation that shipped.
  */
 const SHIPPED_SLICE = {
-  chunkIndex: 0,
+  sliceIndex: 0,
   terminal: 'consolidated',
   shipped: {
     kind: 'consolidated',
@@ -72,7 +75,7 @@ const SHIPPED_SLICE = {
  * One slice as the driver records a slate the floor refused.
  */
 const FLOORED_SLICE = {
-  chunkIndex: 1,
+  sliceIndex: 1,
   terminal: 'incumbent-only',
   shipped: { kind: 'unchanged', },
   rewrapped: false,
@@ -102,6 +105,7 @@ function readingOf({ value, }: { readonly value: unknown; },): {
       kind: parseConsolidationV2({
         value,
         path: AT,
+        keys: SLICE_SPELLED_KEYS,
       },).kind,
       reason: '',
     };
@@ -247,7 +251,7 @@ await describe({
     it({
       name: 'REFUSES TWO RECORDS NAMING ONE SLICE, following the contest reader for the reason #113 '
         + 'gave: the driver writes one record per contested slice, so two are two answers to one '
-        + 'question, and a consumer keying by chunkIndex would keep whichever it read last',
+        + 'question, and a consumer keying by sliceIndex would keep whichever it read last',
       fn: async () => {
         const read = readingOf({
           value: {

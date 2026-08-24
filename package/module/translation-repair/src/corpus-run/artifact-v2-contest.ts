@@ -69,14 +69,14 @@ export type ArtifactContestVerdictV2 =
  *
  * @example
  * ```ts
- * const slice: ArtifactContestSliceV2 = { chunkIndex: 0, verdict: { kind: 'settled-neither', }, ballots: [], usable: 0, };
+ * const slice: ArtifactContestSliceV2 = { sliceIndex: 0, verdict: { kind: 'settled-neither', }, ballots: [], usable: 0, };
  * ```
  */
 export type ArtifactContestSliceV2 = {
   /**
    * Slice both lanes name it by, matching the comparison row it answers.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * What the roster settled here.
@@ -138,7 +138,7 @@ function settledNeitherVerdict(
 /**
  * Records one contested slice, verdict and ballots together.
  *
- * @param chunkIndex - slice this answers
+ * @param sliceIndex - slice this answers
  *
  * @param outcome - what the roster settled
  *
@@ -146,15 +146,15 @@ function settledNeitherVerdict(
  *
  * @example
  * ```ts
- * const slice = describeContestSlice({ chunkIndex: 0, outcome, },);
+ * const slice = describeContestSlice({ sliceIndex: 0, outcome, },);
  * ```
  */
 export function describeContestSlice(
   {
-    chunkIndex,
+    sliceIndex,
     outcome,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly outcome: LaneContestOutcome;
   },
 ): ArtifactContestSliceV2 {
@@ -171,7 +171,7 @@ export function describeContestSlice(
         lane: outcome.choice,
       });
   return {
-    chunkIndex,
+    sliceIndex,
     verdict,
     ballots: outcome.ballots,
     usable: outcome.usable,
@@ -204,7 +204,7 @@ export function contestEligibleIndexes(
       return row.repairText !== row.translateText;
     },)
     .map(function nameIt(row: ArtifactComparisonRowV2,): number {
-      return row.chunkIndex;
+      return row.sliceIndex;
     },);
 }
 

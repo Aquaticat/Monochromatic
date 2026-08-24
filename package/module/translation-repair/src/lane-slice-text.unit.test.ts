@@ -52,14 +52,14 @@ function pairOf(
   },
 ): {
   readonly source: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
     readonly text: string;
   };
   readonly target: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly nodes: readonly never[];
     readonly startOffset: number;
     readonly endOffset: number;
@@ -68,14 +68,14 @@ function pairOf(
 } {
   return {
     source: {
-      chunkIndex: index,
+      sliceIndex: index,
       nodes: [],
       startOffset: 0,
       endOffset: source.length,
       text: source,
     },
     target: {
-      chunkIndex: index,
+      sliceIndex: index,
       nodes: [],
       startOffset: 0,
       endOffset: target.length,
@@ -112,14 +112,14 @@ const ANCHORED_SLICES = [
   },),
   {
     source: {
-      chunkIndex: 1,
+      sliceIndex: 1,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
       text: 'source of the bowl',
     },
     target: makeInsertionChunk({
-      chunkIndex: 1,
+      sliceIndex: 1,
       offset: 0,
     },),
   },
@@ -141,8 +141,8 @@ await describe({
           slices: CAT_SLICES,
           undecided: 'refuse',
           decided: [
-            { chunkIndex: 0, text: 'The cat is asleep on the windowsill.', },
-            { chunkIndex: 1, text: 'The bowl is full.', },
+            { sliceIndex: 0, text: 'The cat is asleep on the windowsill.', },
+            { sliceIndex: 1, text: 'The bowl is full.', },
           ],
         },);
         expect(wordings,).toHaveLength(2,);
@@ -173,12 +173,12 @@ await describe({
           slices: CAT_SLICES,
           undecided: 'refuse',
           decided: [
-            { chunkIndex: 1, text: 'The bowl is full.', },
-            { chunkIndex: 0, text: 'The cat sleeps on the sill.', },
+            { sliceIndex: 1, text: 'The bowl is full.', },
+            { sliceIndex: 0, text: 'The cat sleeps on the sill.', },
           ],
         },);
         expect(wordings.map(function toIndex(one,): number {
-          return one.chunkIndex;
+          return one.sliceIndex;
         },),).toEqual([0, 1,],);
       },
     },),
@@ -195,7 +195,7 @@ await describe({
           buildLaneSliceTexts({
             slices: CAT_SLICES,
             undecided: 'refuse',
-            decided: [{ chunkIndex: 0, text: 'The cat is asleep.', },],
+            decided: [{ sliceIndex: 0, text: 'The cat is asleep.', },],
           },);
         }
         catch (error) {
@@ -219,9 +219,9 @@ await describe({
             slices: CAT_SLICES,
             undecided: 'refuse',
             decided: [
-              { chunkIndex: 0, text: 'The cat is asleep.', },
-              { chunkIndex: 1, text: 'The bowl is full.', },
-              { chunkIndex: 7, text: 'A slice from another slicing entirely.', },
+              { sliceIndex: 0, text: 'The cat is asleep.', },
+              { sliceIndex: 1, text: 'The bowl is full.', },
+              { sliceIndex: 7, text: 'A slice from another slicing entirely.', },
             ],
           },);
         }
@@ -245,7 +245,7 @@ await describe({
         const wordings = buildLaneSliceTexts({
           slices: CAT_SLICES,
           undecided: 'not-evaluated',
-          decided: [{ chunkIndex: 0, text: 'The cat is asleep on the windowsill.', },],
+          decided: [{ sliceIndex: 0, text: 'The cat is asleep on the windowsill.', },],
         },);
         expect(wordings,).toHaveLength(2,);
         expect(wordings[0]?.outcome,).toEqual({
@@ -277,7 +277,7 @@ await describe({
           buildLaneSliceTexts({
             slices: CAT_SLICES,
             undecided: 'not-evaluated',
-            decided: [{ chunkIndex: 1, text: 'The bowl is empty.', },],
+            decided: [{ sliceIndex: 1, text: 'The bowl is empty.', },],
           },);
         }
         catch (error) {
@@ -300,7 +300,7 @@ await describe({
           buildLaneSliceTexts({
             slices: CAT_SLICES,
             undecided: 'not-evaluated',
-            decided: [{ chunkIndex: 9, text: 'A slice from another slicing entirely.', },],
+            decided: [{ sliceIndex: 9, text: 'A slice from another slicing entirely.', },],
           },);
         }
         catch (error) {
@@ -323,7 +323,7 @@ await describe({
         const wordings = buildLaneSliceTexts({
           slices: ANCHORED_SLICES,
           undecided: 'refuse',
-          decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+          decided: [{ sliceIndex: 0, text: 'The cat naps on the sill.', },],
           unfilledChunkIndices: [1,],
         },);
         expect(wordings,).toHaveLength(2,);
@@ -341,7 +341,7 @@ await describe({
           buildLaneSliceTexts({
             slices: ANCHORED_SLICES,
             undecided: 'refuse',
-            decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+            decided: [{ sliceIndex: 0, text: 'The cat naps on the sill.', },],
           },);
         }
         catch (error) {
@@ -365,8 +365,8 @@ await describe({
             slices: ANCHORED_SLICES,
             undecided: 'refuse',
             decided: [
-              { chunkIndex: 0, text: 'The cat naps on the sill.', },
-              { chunkIndex: 1, text: '', },
+              { sliceIndex: 0, text: 'The cat naps on the sill.', },
+              { sliceIndex: 1, text: '', },
             ],
             unfilledChunkIndices: [1,],
           },);
@@ -385,8 +385,8 @@ await describe({
             slices: ANCHORED_SLICES,
             undecided: 'refuse',
             decided: [
-              { chunkIndex: 0, text: 'The cat naps on the sill.', },
-              { chunkIndex: 1, text: '', },
+              { sliceIndex: 0, text: 'The cat naps on the sill.', },
+              { sliceIndex: 1, text: '', },
             ],
             unfilledChunkIndices: [7,],
           },);
@@ -410,7 +410,7 @@ await describe({
         const wordings = buildLaneSliceTexts({
           slices: CAT_SLICES,
           undecided: 'refuse',
-          decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+          decided: [{ sliceIndex: 0, text: 'The cat naps on the sill.', },],
           unheardChunkIndices: [1,],
         },);
         expect(wordings,).toHaveLength(2,);
@@ -435,8 +435,8 @@ await describe({
             slices: CAT_SLICES,
             undecided: 'refuse',
             decided: [
-              { chunkIndex: 0, text: 'The cat naps on the sill.', },
-              { chunkIndex: 1, text: 'The bowl is full.', },
+              { sliceIndex: 0, text: 'The cat naps on the sill.', },
+              { sliceIndex: 1, text: 'The bowl is full.', },
             ],
             unheardChunkIndices: [1,],
           },);
@@ -456,8 +456,8 @@ await describe({
             slices: CAT_SLICES,
             undecided: 'refuse',
             decided: [
-              { chunkIndex: 0, text: 'The cat naps on the sill.', },
-              { chunkIndex: 1, text: 'The bowl is full.', },
+              { sliceIndex: 0, text: 'The cat naps on the sill.', },
+              { sliceIndex: 1, text: 'The bowl is full.', },
             ],
             unheardChunkIndices: [7,],
           },);
@@ -482,7 +482,7 @@ await describe({
           buildLaneSliceTexts({
             slices: ANCHORED_SLICES,
             undecided: 'refuse',
-            decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+            decided: [{ sliceIndex: 0, text: 'The cat naps on the sill.', },],
             unfilledChunkIndices: [1,],
             unheardChunkIndices: [1,],
           },);
@@ -509,7 +509,7 @@ await describe({
           buildLaneSliceTexts({
             slices: ANCHORED_SLICES,
             undecided: 'refuse',
-            decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+            decided: [{ sliceIndex: 0, text: 'The cat naps on the sill.', },],
             unheardChunkIndices: [1,],
           },);
         }

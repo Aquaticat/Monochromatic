@@ -67,7 +67,7 @@ function rowOf(
   },
 ): SliceDeliveryRecord {
   return {
-    chunkIndex: 2,
+    sliceIndex: 2,
     sourceText: '猫猫在窗台上睡觉。',
     incumbentKind,
     incumbentText: (incumbentKind === 'absent') ? '' : ARCHIVE_NAP,

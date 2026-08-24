@@ -66,7 +66,7 @@ export function assertWordingCoherent(
   /**
    * Slice being checked, named in every message so a failure points at a row.
    */
-  const at = `slice ${String(wording.chunkIndex,)}`;
+  const at = `slice ${String(wording.sliceIndex,)}`;
 
   /**
    * What the lane did here, and whether the archive holds anything here, which

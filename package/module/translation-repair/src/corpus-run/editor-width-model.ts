@@ -71,7 +71,7 @@ export type WidthRow = {
   /**
    * Slice within that entry.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Accepted issues the editors were given, which is the work available to do.

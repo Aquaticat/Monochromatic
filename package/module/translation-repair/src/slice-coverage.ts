@@ -179,7 +179,7 @@ export function assertSliceCoverage(
   if (contradicted.length > 0)
     throw new SliceCoverageError({
       message: `slicing chunk ${String(pair.source
-        .chunkIndex,)}: target ${String(contradicted.length,)} declined blocks reached a slice: ${
+        .sliceIndex,)}: target ${String(contradicted.length,)} declined blocks reached a slice: ${
         contradicted.join(', ',)
       }`,
     },);
@@ -225,7 +225,7 @@ export function assertSliceCoverage(
     for (const fault of faults)
       throw new SliceCoverageError({
         message: `slicing chunk ${String(pair.source
-          .chunkIndex,)}: ${side.name} ${fault}`,
+          .sliceIndex,)}: ${side.name} ${fault}`,
       },);
   }
 }

@@ -65,7 +65,7 @@ function rowWith(
 ): WidthRow {
   return {
     entryId: 'Mittens',
-    chunkIndex: 0,
+    sliceIndex: 0,
     acceptedIssues: 2,
     comparison,
     heardNarrow: 3,

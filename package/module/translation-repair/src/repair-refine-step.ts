@@ -146,7 +146,7 @@ export async function refineSettledSlices(
   ] {
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       slice.target
         .text,
     ];
@@ -160,17 +160,17 @@ export async function refineSettledSlices(
     /**
      * Archive wording of this outcome's slice.
      */
-    const incumbentText = incumbentByIndex.get(outcome.chunkIndex,);
+    const incumbentText = incumbentByIndex.get(outcome.sliceIndex,);
     if (incumbentText === undefined) {
       throw new Error(
         `refinement returned slice ${
-          String(outcome.chunkIndex,)
+          String(outcome.sliceIndex,)
         }, which this preparation never produced`,
       );
     }
     assertSettledRecordAgrees({
       lane: 'repair',
-      chunkIndex: outcome.chunkIndex,
+      sliceIndex: outcome.sliceIndex,
       changed: outcome.changed,
       decidedText: outcome.repairedText,
       incumbentText,

@@ -132,7 +132,7 @@ function catRecord(
   },
 ): Record<string, unknown> {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     repairDisposition,
     resolved: true,
     refined,
@@ -186,7 +186,7 @@ function catLedger(
 ): readonly ArtifactDeliveryRowV2[] {
   return [
     {
-      chunkIndex: 0,
+      sliceIndex: 0,
       sourceText: SOURCE_NAP,
       incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
@@ -251,7 +251,7 @@ function probeArtifact(
     delivery: 'replacement-shipped',
   },);
   return {
-    artifactSchemaVersion: 3,
+    artifactSchemaVersion: 4,
     id,
     tip: 'a'.repeat(40,),
     pipelineDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,
@@ -284,7 +284,7 @@ function probeArtifact(
           withdrawnSliceIndices: [],
           sliceTexts: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'present',
               incumbentText: ARCHIVE_NAP,
               outcome: {
@@ -313,7 +313,7 @@ function probeArtifact(
           findings: [],
           sliceTexts: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'present',
               incumbentText: ARCHIVE_NAP,
               outcome: {

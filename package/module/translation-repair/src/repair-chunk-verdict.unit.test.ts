@@ -130,7 +130,7 @@ function settleWith(
   },
 ): ChunkVerdict {
   return settleChunkVerdict({
-    chunkIndex: CHUNK_INDEX,
+    sliceIndex: CHUNK_INDEX,
     incumbentText: INCUMBENT_TEXT,
     patchedText,
     measurements,

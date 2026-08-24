@@ -59,7 +59,7 @@ const LANE_PATH = 'lanes.translate';
  * both coherence rules accept.
  */
 const RETAINED_ROW: ArtifactDeliveryRowV2 = {
-  chunkIndex: 0,
+  sliceIndex: 0,
   sourceText: SOURCE_NAP,
   incumbentKind: 'present',
   incumbentText: ARCHIVE_NAP,
@@ -100,7 +100,7 @@ await describe({
               RETAINED_ROW,
               {
                 ...RETAINED_ROW,
-                chunkIndex: 1,
+                sliceIndex: 1,
                 outcome: { kind: 'unfilled', },
               },
             ],
@@ -125,7 +125,7 @@ await describe({
          */
         const unreadable: ArtifactDeliveryRowV2 = {
           ...RETAINED_ROW,
-          get chunkIndex(): never {
+          get sliceIndex(): never {
             throw new RangeError('reader defect, not a fact about the file',);
           },
         };
@@ -158,7 +158,7 @@ await describe({
          */
         const evidence: readonly ArtifactEvidenceRowV2[] = [
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
             outcome: {
@@ -194,7 +194,7 @@ await describe({
          */
         const evidence: readonly ArtifactEvidenceRowV2[] = [
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
             outcome: {

@@ -30,14 +30,14 @@ await describe({
       fn: async () => {
         /** Anchor somewhere inside a document. */
         const anchor = makeInsertionChunk({
-          chunkIndex: 4,
+          sliceIndex: 4,
           offset: 128,
         },);
         expect(anchor.startOffset,).toBe(128,);
         expect(anchor.endOffset,).toBe(anchor.startOffset,);
         expect(anchor.text,).toBe('',);
         expect(anchor.nodes,).toEqual([],);
-        expect(anchor.chunkIndex,).toBe(4,);
+        expect(anchor.sliceIndex,).toBe(4,);
       },
     },),
     it({
@@ -63,21 +63,21 @@ The cat wakes.
           slices: [
             {
               source: {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 nodes: [],
                 startOffset: 0,
                 endOffset: 0,
                 text: '插入',
               },
               target: makeInsertionChunk({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 offset,
               },),
             },
           ],
           replacements: [
             {
-              chunkIndex: 0,
+              sliceIndex: 0,
               replacementText: '## Section one and a half\n\nThe cat stretches.\n\n',
             },
           ],
@@ -102,7 +102,7 @@ await describe({
       fn: async () => {
         /** Content chunk carrying nothing, which no constructor here emits. */
         const hollow: ContentChunk = {
-          chunkIndex: 0,
+          sliceIndex: 0,
           nodes: [],
           startOffset: 12,
           endOffset: 12,
@@ -112,7 +112,7 @@ await describe({
 
         /** Anchor covering the same nothing, at the same offset. */
         const anchor = makeInsertionChunk({
-          chunkIndex: 0,
+          sliceIndex: 0,
           offset: 12,
         },);
         expect(isInsertionChunk(anchor,),).toBe(true,);

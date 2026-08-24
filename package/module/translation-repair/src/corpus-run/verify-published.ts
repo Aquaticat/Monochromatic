@@ -338,7 +338,7 @@ async function reportEntry(
     );
   for (const gone of missing) {
     console.log(
-      `  MISSING slice ${String(gone.chunkIndex,)}, ${String(gone.characters,)} characters the page `
+      `  MISSING slice ${String(gone.sliceIndex,)}, ${String(gone.characters,)} characters the page `
         + 'does not carry in order',
     );
   }

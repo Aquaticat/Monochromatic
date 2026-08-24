@@ -17,6 +17,7 @@ import {
   parseVerdict,
 } from './artifact-v2-read-consolidate-parts.ts';
 
+import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 //region Artifact version 2 consolidation read
 // Reading what the third rendering settled over one document.
@@ -175,6 +176,9 @@ function parseGate(
  *
  * @param path - dotted path for error messages
  *
+ * @param keys - field spellings this artifact's generation uses, so an older
+ * file is read by its own names rather than by today's
+ *
  * @returns Slice this version names
  *
  * @throws {@link ArtifactParseError} when a field is missing, names a terminal
@@ -190,9 +194,11 @@ function parseConsolidateSlice(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactConsolidateSliceV2 {
   /**
@@ -205,7 +211,7 @@ function parseConsolidateSlice(
   requireExactKeys({
     record,
     allowed: [
-      'chunkIndex',
+      keys.sliceIndex,
       'terminal',
       'shipped',
       'rewrapped',
@@ -229,9 +235,9 @@ function parseConsolidateSlice(
     },);
   }
   return {
-    chunkIndex: requireCount({
-      value: record.chunkIndex,
-      path: `${path}.chunkIndex`,
+    sliceIndex: requireCount({
+      value: record[keys.sliceIndex],
+      path: `${path}.${keys.sliceIndex}`,
     },),
     terminal,
     shipped: parseShipped({
@@ -273,11 +279,14 @@ function parseConsolidateSlice(
  * A DUPLICATE SLICE IS REFUSED, following the contest reader for the reason
  * `#113` gave: the driver writes one record per contested slice, so two records
  * naming one slice are two different answers to the same question, and a
- * consumer keying by `chunkIndex` would silently keep whichever it read last.
+ * consumer keying by `sliceIndex` would silently keep whichever it read last.
  *
  * @param value - consolidation field as the artifact carries it
  *
  * @param path - dotted path for error messages
+ *
+ * @param keys - field spellings this artifact's generation uses, so an older
+ * file is read by its own names rather than by today's
  *
  * @returns What the stage settled, that it did not run, or that this artifact
  * predates the field
@@ -287,16 +296,18 @@ function parseConsolidateSlice(
  *
  * @example
  * ```ts
- * const consolidation = parseConsolidationV2({ value: artifact.consolidation, path, },);
+ * const consolidation = parseConsolidationV2({ value: artifact.consolidation, path, keys, },);
  * ```
  */
 export function parseConsolidationV2(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ParsedConsolidationV2 {
   if (value === undefined)
@@ -346,6 +357,7 @@ export function parseConsolidationV2(
       return parseConsolidateSlice({
         value: entry,
         path: `${path}.slices[${String(at,)}]`,
+        keys,
       },);
     },);
 
@@ -355,13 +367,13 @@ export function parseConsolidationV2(
    */
   const named = new Set<number>();
   for (const slice of slices) {
-    if (named.has(slice.chunkIndex,)) {
+    if (named.has(slice.sliceIndex,)) {
       throw new ArtifactParseError({
         path: `${path}.slices`,
-        reason: `one record per slice; slice ${String(slice.chunkIndex,)} appears more than once`,
+        reason: `one record per slice; slice ${String(slice.sliceIndex,)} appears more than once`,
       },);
     }
-    named.add(slice.chunkIndex,);
+    named.add(slice.sliceIndex,);
   }
   return {
     kind: 'settled',

@@ -17,6 +17,7 @@ import type {
   ArtifactComparisonRowV2,
   ArtifactDeliveryRowV2,
 } from './artifact-v2-vocabulary.ts';
+import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 //region Artifact version 2 row parsing
 // Reading the three rows a version 2 artifact carries: a ledger row, a
@@ -35,6 +36,9 @@ import type {
  *
  * @param path - dotted path for error message
  *
+ * @param keys - field spellings this artifact's generation uses, so an older
+ * file is read by its own names rather than by today's
+ *
  * @returns Ledger row as version 2 describes it
  *
  * @throws {@link ArtifactParseError} when the row carries a key this version
@@ -49,9 +53,11 @@ export function parseDeliveryRowV2(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactDeliveryRowV2 {
   /**
@@ -64,7 +70,7 @@ export function parseDeliveryRowV2(
   requireExactKeys({
     record,
     allowed: [
-      'chunkIndex',
+      keys.sliceIndex,
       'sourceText',
       'incumbentKind',
       'incumbentText',
@@ -75,9 +81,9 @@ export function parseDeliveryRowV2(
     path,
   },);
   return {
-    chunkIndex: requireCount({
-      value: record.chunkIndex,
-      path: `${path}.chunkIndex`,
+    sliceIndex: requireCount({
+      value: record[keys.sliceIndex],
+      path: `${path}.${keys.sliceIndex}`,
     },),
     sourceText: requireString({
       value: record.sourceText,
@@ -118,6 +124,9 @@ export function parseDeliveryRowV2(
  *
  * @param path - dotted path for error message
  *
+ * @param keys - field spellings this artifact's generation uses, so an older
+ * file is read by its own names rather than by today's
+ *
  * @returns Comparison row as version 2 describes it
  *
  * @throws {@link ArtifactParseError} when the row carries a key this version
@@ -132,9 +141,11 @@ export function parseComparisonRowV2(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactComparisonRowV2 {
   /**
@@ -162,7 +173,7 @@ export function parseComparisonRowV2(
   requireExactKeys({
     record,
     allowed: [
-      'chunkIndex',
+      keys.sliceIndex,
       'incumbentKind',
       'incumbentText',
       'repairText',
@@ -177,9 +188,9 @@ export function parseComparisonRowV2(
     path,
   },);
   return {
-    chunkIndex: requireCount({
-      value: record.chunkIndex,
-      path: `${path}.chunkIndex`,
+    sliceIndex: requireCount({
+      value: record[keys.sliceIndex],
+      path: `${path}.${keys.sliceIndex}`,
     },),
     incumbentKind: requireOneOf({
       value: record.incumbentKind,
@@ -251,6 +262,9 @@ export function parseComparisonRowV2(
  *
  * @param path - dotted path for error message
  *
+ * @param keys - field spellings this artifact's generation uses, so an older
+ * file is read by its own names rather than by today's
+ *
  * @returns Evidence row, with everything else in the raw row left unread
  *
  * @throws {@link ArtifactParseError} when a field version 2 checks is missing
@@ -265,9 +279,11 @@ export function parseEvidenceRowV2(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactEvidenceRowV2 {
   /**
@@ -278,9 +294,9 @@ export function parseEvidenceRowV2(
     path,
   },);
   return {
-    chunkIndex: requireCount({
-      value: record.chunkIndex,
-      path: `${path}.chunkIndex`,
+    sliceIndex: requireCount({
+      value: record[keys.sliceIndex],
+      path: `${path}.${keys.sliceIndex}`,
     },),
     incumbentKind: requireOneOf({
       value: record.incumbentKind,

@@ -95,14 +95,14 @@ const JUDGES: readonly RosterModelId[] = [
  */
 const SLICE: ChunkPair = {
   source: {
-    chunkIndex: 1,
+    sliceIndex: 1,
     nodes: [],
     startOffset: 0,
     endOffset: SOURCE_TEXT.length,
     text: SOURCE_TEXT,
   },
   target: {
-    chunkIndex: 1,
+    sliceIndex: 1,
     nodes: [],
     startOffset: 0,
     endOffset: INCUMBENT_TEXT.length,

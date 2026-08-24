@@ -64,7 +64,7 @@ function recordFor(
   return {
     kind: 'translate-slice',
     schemaVersion: 1,
-    chunkIndex: 4,
+    sliceIndex: 4,
     outputText,
     changed,
     disposition: 'stage-result',
@@ -93,7 +93,7 @@ await describe({
         + 'claiming no change',
       fn: async () => {
         assertUnheardKeptIncumbent({
-          chunkIndex: 4,
+          sliceIndex: 4,
           record: recordFor({
             heardTranslators: 0,
             outputText: ARCHIVE_NAP,
@@ -110,7 +110,7 @@ await describe({
       fn: async () => {
         expect(function wroteWhatNobodySaid() {
           assertUnheardKeptIncumbent({
-            chunkIndex: 4,
+            sliceIndex: 4,
             record: recordFor({
               heardTranslators: 0,
               outputText: 'The cat is asleep on the windowsill.',
@@ -132,7 +132,7 @@ await describe({
          */
         const refusalOfClaimedAChange = caught(function claimedAChange() {
           assertUnheardKeptIncumbent({
-            chunkIndex: 4,
+            sliceIndex: 4,
             record: recordFor({
               heardTranslators: 0,
               outputText: ARCHIVE_NAP,
@@ -152,7 +152,7 @@ await describe({
         + 'about silence and a lane that was answered may legitimately replace the archive wording',
       fn: async () => {
         assertUnheardKeptIncumbent({
-          chunkIndex: 4,
+          sliceIndex: 4,
           record: recordFor({
             heardTranslators: 2,
             outputText: 'The cat is asleep on the windowsill.',

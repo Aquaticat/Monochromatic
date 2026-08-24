@@ -90,11 +90,11 @@ await describe({
         + 'would be a round of calls bought to change nothing',
       fn: async () => {
         const slice = describeConsolidateSlice({
-          chunkIndex: 4,
+          sliceIndex: 4,
           settlement: settledAs({ terminal: 'consolidated', text: CONSOLIDATED_TEXT, },),
         },);
 
-        expect(slice.chunkIndex,).toBe(4,);
+        expect(slice.sliceIndex,).toBe(4,);
         expect(slice.shipped.kind,).toBe('consolidated',);
         if (slice.shipped.kind !== 'consolidated')
           throw new Error('consolidated by construction',);
@@ -109,7 +109,7 @@ await describe({
         + 'string to write over a passage nobody decided to remove',
       fn: async () => {
         const slice = describeConsolidateSlice({
-          chunkIndex: 0,
+          sliceIndex: 0,
           settlement: settledAs({ terminal: 'no-standing-text', text: '', },),
         },);
 
@@ -138,7 +138,7 @@ await describe({
 
         for (const terminal of keptStanding) {
           const slice = describeConsolidateSlice({
-            chunkIndex: 1,
+            sliceIndex: 1,
             settlement: settledAs({ terminal, text: STANDING_TEXT, },),
           },);
 
@@ -155,7 +155,7 @@ await describe({
         + 'and the two could disagree',
       fn: async () => {
         const slice = describeConsolidateSlice({
-          chunkIndex: 2,
+          sliceIndex: 2,
           settlement: settledAs({ terminal: 'consolidated', text: STANDING_TEXT, },),
         },);
 
@@ -169,7 +169,7 @@ await describe({
         + 'counting exactly that difference',
       fn: async () => {
         const slice = describeConsolidateSlice({
-          chunkIndex: 3,
+          sliceIndex: 3,
           settlement: settledAs({ terminal: 'incumbent-only', text: STANDING_TEXT, },),
         },);
 

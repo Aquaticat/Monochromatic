@@ -88,18 +88,18 @@ async function scratchDir(): Promise<{
  * A complete outcome, carrying every field the loader checks before trusting a
  * cache file.
  *
- * @param chunkIndex - slice position this outcome belongs to
+ * @param sliceIndex - slice position this outcome belongs to
  *
  * @returns Outcome shaped as the pipeline writes it
  *
  * @example
  * ```ts
- * const outcome = catOutcome({ chunkIndex: 0, },);
+ * const outcome = catOutcome({ sliceIndex: 0, },);
  * ```
  */
-function catOutcome({ chunkIndex, }: { readonly chunkIndex: number; },) {
+function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
   return {
-    chunkIndex,
+    sliceIndex,
     repairedText: 'The cat sleeps on the windowsill.',
     changed: true,
     issues: [],
@@ -133,20 +133,20 @@ function catOutcome({ chunkIndex, }: { readonly chunkIndex: number; },) {
 /**
  * A complete translate record, carrying every field its loader checks.
  *
- * @param chunkIndex - slice position this record belongs to
+ * @param sliceIndex - slice position this record belongs to
  *
  * @returns Record shaped as the translate driver writes it
  *
  * @example
  * ```ts
- * const record = catTranslateRecord({ chunkIndex: 0, },);
+ * const record = catTranslateRecord({ sliceIndex: 0, },);
  * ```
  */
-function catTranslateRecord({ chunkIndex, }: { readonly chunkIndex: number; },) {
+function catTranslateRecord({ sliceIndex, }: { readonly sliceIndex: number; },) {
   return {
     kind: 'translate-slice',
     schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
-    chunkIndex,
+    sliceIndex,
     stageResult: {
       text: 'The cat naps on the windowsill.',
       origin: 'fresh',
@@ -197,7 +197,7 @@ await describe({
         expect(first.resumed.size,).toBe(0,);
         await first.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         },);
 
         /**
@@ -234,7 +234,7 @@ await describe({
         const opened = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         await opened.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         },);
 
         /**
@@ -243,7 +243,7 @@ await describe({
          */
         const foreign = JSON.stringify({
           cacheKey: 'slice-hash-bbb',
-          record: catOutcome({ chunkIndex: 0, },),
+          record: catOutcome({ sliceIndex: 0, },),
         },);
         await writeFile(
           join(
@@ -289,7 +289,7 @@ await describe({
 
         await before.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         },);
 
         /**
@@ -339,7 +339,7 @@ await describe({
             dir,
             'slice-hash-aaa.json',
           ),
-          `${JSON.stringify(catOutcome({ chunkIndex: 0, },),)}\n`,
+          `${JSON.stringify(catOutcome({ sliceIndex: 0, },),)}\n`,
         );
 
         expect((await openSliceCache({
@@ -397,7 +397,7 @@ await describe({
          * Outcome from an older pipeline, missing the refinement fields.
          */
         const stale = {
-          chunkIndex: 0,
+          sliceIndex: 0,
           repairedText: 'The cat sleeps.',
           changed: true,
           issues: [],
@@ -439,7 +439,7 @@ await describe({
             dir,
             'slice-hash-cut.json',
           ),
-          '{"chunkIndex": 0, "repairedText": "The cat sle',
+          '{"sliceIndex": 0, "repairedText": "The cat sle',
           'utf8',
         );
 
@@ -463,7 +463,7 @@ await describe({
         const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         await cache.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         },);
         await writeFile(
           join(
@@ -502,7 +502,7 @@ await describe({
           rounds,
           droppedDeclaredNames,
           ...older
-        } = catOutcome({ chunkIndex: 0, },);
+        } = catOutcome({ sliceIndex: 0, },);
         expect(rounds,).toEqual([],);
         expect(droppedDeclaredNames,).toEqual([],);
         await cache.persist({
@@ -555,7 +555,7 @@ await describe({
         },);
         await cache.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         },);
 
         expect([...await listResumableEntries({ dir: scratch.path, },),],).toStrictEqual(
@@ -629,7 +629,7 @@ await describe({
         const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
         await cache.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         },);
 
         expect((await listResumableEntries({ dir: scratch.path, },)).size,).toBe(1,);
@@ -687,7 +687,7 @@ await describe({
         },);
         await first.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catTranslateRecord({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catTranslateRecord({ sliceIndex: 0, },),),
         },);
 
         /**
@@ -698,7 +698,7 @@ await describe({
           generation: TEST_GENERATION,
         },);
         expect(second.resumed.get('slice-hash-aaa',)
-          ?.chunkIndex,).toBe(0,);
+          ?.sliceIndex,).toBe(0,);
       },
     },),
 
@@ -726,7 +726,7 @@ await describe({
             dir,
             'translate.slice-hash-aaa.json',
           ),
-          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         );
         await writeFile(
           join(
@@ -772,7 +772,7 @@ await describe({
         },);
         await repair.persist({
           key: 'slice-hash-aaa',
-          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
         },);
 
         /**
@@ -784,7 +784,7 @@ await describe({
         },);
         await translate.persist({
           key: 'slice-hash-bbb',
-          serialized: JSON.stringify(catTranslateRecord({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catTranslateRecord({ sliceIndex: 0, },),),
         },);
 
         // The translate lane's pipeline moves and the repair lane's does not,
@@ -803,7 +803,7 @@ await describe({
           generation: TEST_GENERATION,
         },);
         expect(survived.resumed.get('slice-hash-aaa',)
-          ?.chunkIndex,).toBe(0,);
+          ?.sliceIndex,).toBe(0,);
       },
     },),
 
@@ -831,7 +831,7 @@ await describe({
         },);
         await translate.persist({
           key: 'slice-hash-bbb',
-          serialized: JSON.stringify(catTranslateRecord({ chunkIndex: 0, },),),
+          serialized: JSON.stringify(catTranslateRecord({ sliceIndex: 0, },),),
         },);
 
         /**

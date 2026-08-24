@@ -44,7 +44,7 @@ const SECOND_END = SECOND_START + 'She purrs.'.length;
 /**
  * Builds a pair whose target side covers a span of {@link ARCHIVE}.
  *
- * @param chunkIndex - position of this slice
+ * @param sliceIndex - position of this slice
  *
  * @param startOffset - absolute start
  *
@@ -56,17 +56,17 @@ const SECOND_END = SECOND_START + 'She purrs.'.length;
  *
  * @example
  * ```ts
- * const pair = spanAt({ chunkIndex: 0, startOffset: 0, endOffset: 15, sourceText: '猫猫在睡觉。', },);
+ * const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, sourceText: '猫猫在睡觉。', },);
  * ```
  */
 function spanAt(
   {
-    chunkIndex,
+    sliceIndex,
     startOffset,
     endOffset,
     sourceText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly startOffset: number;
     readonly endOffset: number;
     readonly sourceText: string;
@@ -74,14 +74,14 @@ function spanAt(
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
       text: sourceText,
     },
     target: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset,
       endOffset,
@@ -96,7 +96,7 @@ function spanAt(
 /**
  * Builds a pair whose target side names a boundary and covers nothing.
  *
- * @param chunkIndex - position of this slice
+ * @param sliceIndex - position of this slice
  *
  * @param offset - boundary the translation belongs at
  *
@@ -106,30 +106,30 @@ function spanAt(
  *
  * @example
  * ```ts
- * const pair = anchorAt({ chunkIndex: 1, offset: 15, sourceText: '她伸了个懒腰。', },);
+ * const pair = anchorAt({ sliceIndex: 1, offset: 15, sourceText: '她伸了个懒腰。', },);
  * ```
  */
 function anchorAt(
   {
-    chunkIndex,
+    sliceIndex,
     offset,
     sourceText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly offset: number;
     readonly sourceText: string;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
       text: sourceText,
     },
     target: makeInsertionChunk({
-      chunkIndex,
+      sliceIndex,
       offset,
     },),
   };
@@ -176,13 +176,13 @@ function ledgerFor(
  */
 const REWRITTEN_SLICES: readonly ChunkPair[] = [
   spanAt({
-    chunkIndex: 0,
+    sliceIndex: 0,
     startOffset: 0,
     endOffset: FIRST_END,
     sourceText: '猫猫在睡觉。',
   },),
   spanAt({
-    chunkIndex: 1,
+    sliceIndex: 1,
     startOffset: SECOND_START,
     endOffset: SECOND_END,
     sourceText: '她在呼噜。',
@@ -194,7 +194,7 @@ const REWRITTEN_SLICES: readonly ChunkPair[] = [
  */
 const REWRITTEN_WORDINGS: readonly LaneSliceText[] = [
   {
-    chunkIndex: 0,
+    sliceIndex: 0,
     incumbentKind: 'present',
     incumbentText: 'The cat sleeps.',
     outcome: {
@@ -203,7 +203,7 @@ const REWRITTEN_WORDINGS: readonly LaneSliceText[] = [
     },
   },
   {
-    chunkIndex: 1,
+    sliceIndex: 1,
     incumbentKind: 'present',
     incumbentText: 'She purrs.',
     outcome: {
@@ -284,7 +284,7 @@ await describe({
         /** Lane that decided a wording for both slices. */
         const wordings: readonly LaneSliceText[] = [
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentKind: 'present',
             incumbentText: 'The cat sleeps.',
             outcome: {
@@ -293,7 +293,7 @@ await describe({
             },
           },
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             incumbentKind: 'present',
             incumbentText: 'She purrs.',
             outcome: {
@@ -328,18 +328,18 @@ await describe({
         /** Archive slices with a boundary between them that has no translation. */
         const slices: readonly ChunkPair[] = [
           spanAt({
-            chunkIndex: 0,
+            sliceIndex: 0,
             startOffset: 0,
             endOffset: FIRST_END,
             sourceText: '猫猫在睡觉。',
           },),
           anchorAt({
-            chunkIndex: 1,
+            sliceIndex: 1,
             offset: FIRST_END,
             sourceText: '她伸了个懒腰。',
           },),
           spanAt({
-            chunkIndex: 2,
+            sliceIndex: 2,
             startOffset: SECOND_START,
             endOffset: SECOND_END,
             sourceText: '她在呼噜。',
@@ -349,7 +349,7 @@ await describe({
         /** Lane that translated only the slice with nothing to keep. */
         const wordings: readonly LaneSliceText[] = [
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             incumbentKind: 'present',
             incumbentText: 'The cat sleeps.',
             outcome: {
@@ -358,7 +358,7 @@ await describe({
             },
           },
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             // The anchor, where the archive holds no wording at all. Stamping
             // it `present` is what the ledger's own consistency check refuses,
             // since the prepared chunk says otherwise.
@@ -370,7 +370,7 @@ await describe({
             },
           },
           {
-            chunkIndex: 2,
+            sliceIndex: 2,
             incumbentKind: 'present',
             incumbentText: 'She purrs.',
             outcome: {

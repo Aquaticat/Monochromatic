@@ -166,7 +166,7 @@ await describe({
         + 'reporting a quiet lane',
       fn: async () => {
         const finding = alignmentRefusalFinding({
-          chunkIndex: 7,
+          sliceIndex: 7,
           assessment: assessSliceAlignment({
             sourceText: '其一：',
             incumbentText: PASSAGE,

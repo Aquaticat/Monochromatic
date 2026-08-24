@@ -137,14 +137,14 @@ export type WouldShipSource = Pick<
  *
  * @example
  * ```ts
- * const slice: WouldShipSlice = { chunkIndex: 0, reading, };
+ * const slice: WouldShipSlice = { sliceIndex: 0, reading, };
  * ```
  */
 export type WouldShipSlice = {
   /**
    * Slice this answers, matching its comparison row.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * What that slice would contribute.
@@ -284,22 +284,22 @@ type ConsolidationContribution =
  *
  * @param artifact - parsed artifact whose consolidation is being read
  *
- * @param chunkIndex - slice to answer for
+ * @param sliceIndex - slice to answer for
  *
  * @returns Consolidated wording, or a stated absence when it replaced nothing
  *
  * @example
  * ```ts
- * const text = consolidatedWordingAt({ artifact, chunkIndex: 0, },);
+ * const text = consolidatedWordingAt({ artifact, sliceIndex: 0, },);
  * ```
  */
 function consolidatedWordingAt(
   {
     artifact,
-    chunkIndex,
+    sliceIndex,
   }: {
     readonly artifact: WouldShipSource;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
   },
 ): ConsolidationContribution {
   /**
@@ -315,7 +315,7 @@ function consolidatedWordingAt(
   const slice = consolidation
     .slices
     .find(function namesIt(candidate: ArtifactConsolidateSliceV2,): boolean {
-      return candidate.chunkIndex === chunkIndex;
+      return candidate.sliceIndex === sliceIndex;
     },);
   if (slice === undefined)
     return { kind: 'replaced-nothing', };
@@ -355,7 +355,7 @@ function lanesAgreedOn(
 ): WouldShipReading {
   if (row.repairText !== row.translateText)
     throw new UnansweredContestSliceError({
-      message: `slice ${String(row.chunkIndex,)} differs across lanes and the contest names it nowhere`,
+      message: `slice ${String(row.sliceIndex,)} differs across lanes and the contest names it nowhere`,
     },);
 
   // AN AGREED EMPTY STRING IS A DECISION, not an absence to be filled from the
@@ -415,7 +415,7 @@ export function wouldShipTextFor(
    */
   const consolidated = consolidatedWordingAt({
     artifact,
-    chunkIndex: row.chunkIndex,
+    sliceIndex: row.sliceIndex,
   },);
   if (consolidated.kind === 'wording')
     return {
@@ -440,7 +440,7 @@ export function wouldShipTextFor(
   const contested = laneSelection
     .slices
     .find(function namesIt(candidate: ArtifactContestSliceV2,): boolean {
-      return candidate.chunkIndex === row.chunkIndex;
+      return candidate.sliceIndex === row.sliceIndex;
     },);
   if (contested === undefined)
     return lanesAgreedOn({ row, },);
@@ -486,7 +486,7 @@ export function wouldShipTextPerSlice(
     .comparison
     .map(function readIt(row: ArtifactComparisonRowV2,): WouldShipSlice {
       return {
-        chunkIndex: row.chunkIndex,
+        sliceIndex: row.sliceIndex,
         reading: wouldShipTextFor({
           artifact,
           row,

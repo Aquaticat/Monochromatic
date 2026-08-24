@@ -295,7 +295,7 @@ export function findDroppedDeclaredNames(
 /**
  * Renders a declared-name refusal as a finding.
  *
- * @param chunkIndex - slice the refusal names
+ * @param sliceIndex - slice the refusal names
  *
  * @param dropped - declared forms the replacement no longer carries
  *
@@ -303,15 +303,15 @@ export function findDroppedDeclaredNames(
  *
  * @example
  * ```ts
- * const finding = declaredNameRefusalFinding({ chunkIndex: 3, dropped: [ 'Blossom', ], },);
+ * const finding = declaredNameRefusalFinding({ sliceIndex: 3, dropped: [ 'Blossom', ], },);
  * ```
  */
 export function declaredNameRefusalFinding(
   {
-    chunkIndex,
+    sliceIndex,
     dropped,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly dropped: readonly string[];
   },
 ): string {
@@ -321,7 +321,7 @@ export function declaredNameRefusalFinding(
   const quoted = dropped.map(function quote(form,): string {
     return JSON.stringify(form,);
   },);
-  return `translate-refused-declared-name (slice ${String(chunkIndex,)}: archive text carries ${
+  return `translate-refused-declared-name (slice ${String(sliceIndex,)}: archive text carries ${
     quoted.join(', ',)
   } and the replacement does not; keeping the archive text)`;
 }
@@ -336,7 +336,7 @@ export function declaredNameRefusalFinding(
  *
  * @example
  * ```ts
- * const report = declaredNameRefusalReport({ chunkIndex: 3, dropped, },);
+ * const report = declaredNameRefusalReport({ sliceIndex: 3, dropped, },);
  * ```
  */
 export type DeclaredNameRefusalReport = {
@@ -358,7 +358,7 @@ export type DeclaredNameRefusalReport = {
 /**
  * Gathers what a refusal owes the record, the findings and the log.
  *
- * @param chunkIndex - slice the refusal names
+ * @param sliceIndex - slice the refusal names
  *
  * @param dropped - declared forms the replacement no longer carries, empty when
  * it dropped none
@@ -367,15 +367,15 @@ export type DeclaredNameRefusalReport = {
  *
  * @example
  * ```ts
- * const { record, findings, } = declaredNameRefusalReport({ chunkIndex, dropped, },);
+ * const { record, findings, } = declaredNameRefusalReport({ sliceIndex, dropped, },);
  * ```
  */
 export function declaredNameRefusalReport(
   {
-    chunkIndex,
+    sliceIndex,
     dropped,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly dropped: readonly string[];
   },
 ): DeclaredNameRefusalReport {
@@ -389,7 +389,7 @@ export function declaredNameRefusalReport(
     record: { droppedDeclaredNames: dropped, },
     findings: [
       declaredNameRefusalFinding({
-        chunkIndex,
+        sliceIndex,
         dropped,
       },),
     ],

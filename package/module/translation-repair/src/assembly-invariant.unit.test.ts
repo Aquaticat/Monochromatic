@@ -36,14 +36,14 @@ const ARCHIVE_NAP = 'The cat sleeps on the sill.';
  */
 const CAT_SLICES = [{
   source: {
-    chunkIndex: 0,
+    sliceIndex: 0,
     nodes: [],
     startOffset: 0,
     endOffset: 3,
     text: 'source of the nap',
   },
   target: {
-    chunkIndex: 0,
+    sliceIndex: 0,
     nodes: [],
     startOffset: 0,
     endOffset: ARCHIVE_NAP.length,
@@ -66,14 +66,14 @@ const ARCHIVE_PARAGRAPHS = 'The cat naps.\n\nThe sill is warm.\n\nThe bird waits
 const PARAGRAPH_SLICES = [
   {
     source: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       nodes: [],
       startOffset: 0,
       endOffset: 3,
       text: 'source of the first two',
     },
     target: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       nodes: [],
       startOffset: 0,
       endOffset: 'The cat naps.\n\nThe sill is warm.'.length,
@@ -82,14 +82,14 @@ const PARAGRAPH_SLICES = [
   },
   {
     source: {
-      chunkIndex: 1,
+      sliceIndex: 1,
       nodes: [],
       startOffset: 3,
       endOffset: 6,
       text: 'source of the last',
     },
     target: {
-      chunkIndex: 1,
+      sliceIndex: 1,
       nodes: [],
       startOffset: 'The cat naps.\n\nThe sill is warm.\n\n'.length,
       endOffset: 'The cat naps.\n\nThe sill is warm.\n\nThe bird waits.'.length,
@@ -111,7 +111,7 @@ await describe({
         try {
           assertReplacementsChange({
             slices: CAT_SLICES,
-            replacements: [{ chunkIndex: 0, replacementText: 'A cat dozes in the window.', },],
+            replacements: [{ sliceIndex: 0, replacementText: 'A cat dozes in the window.', },],
           },);
         }
         catch (error) {
@@ -132,7 +132,7 @@ await describe({
         try {
           assertReplacementsChange({
             slices: CAT_SLICES,
-            replacements: [{ chunkIndex: 0, replacementText: ARCHIVE_NAP, },],
+            replacements: [{ sliceIndex: 0, replacementText: ARCHIVE_NAP, },],
           },);
         }
         catch (error) {
@@ -152,7 +152,7 @@ await describe({
         try {
           assertReplacementsChange({
             slices: CAT_SLICES,
-            replacements: [{ chunkIndex: 5, replacementText: 'A cat dozes in the window.', },],
+            replacements: [{ sliceIndex: 5, replacementText: 'A cat dozes in the window.', },],
           },);
         }
         catch (error) {
@@ -183,7 +183,7 @@ await describe({
           assembledText: REWRITTEN_NAP,
           slices: CAT_SLICES,
           survivingReplacements: [{
-            chunkIndex: 0,
+            sliceIndex: 0,
             replacementText: REWRITTEN_NAP,
           },],
         },),).toEqual([0,],);
@@ -211,7 +211,7 @@ await describe({
             assembledText: 'Some third wording nobody proposed.',
             slices: CAT_SLICES,
             survivingReplacements: [{
-              chunkIndex: 0,
+              sliceIndex: 0,
               replacementText: REWRITTEN_NAP,
             },],
           },);
@@ -263,7 +263,7 @@ await describe({
             assembledText: ARCHIVE_NAP,
             slices: CAT_SLICES,
             survivingReplacements: [{
-              chunkIndex: 0,
+              sliceIndex: 0,
               replacementText: ARCHIVE_NAP,
             },],
           },);
@@ -294,11 +294,11 @@ await describe({
             slices: PARAGRAPH_SLICES,
             survivingReplacements: [
               {
-                chunkIndex: 0,
+                sliceIndex: 0,
                 replacementText: 'The cat naps.',
               },
               {
-                chunkIndex: 1,
+                sliceIndex: 1,
                 replacementText: 'The sill is warm.\n\nThe bird waits.',
               },
             ],

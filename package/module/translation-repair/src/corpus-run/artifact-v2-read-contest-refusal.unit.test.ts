@@ -20,8 +20,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactComparisonRowV2,
+type ArtifactComparisonRowV2,
   ArtifactParseError,
+  SLICE_SPELLED_KEYS,
   parseLaneSelectionV2,
 } from '../../dist/final/node/index.mjs';
 
@@ -60,7 +61,7 @@ const FOR_TRANSLATE = {
 /**
  * Builds a comparison row carrying the two lane wordings a test needs.
  *
- * @param chunkIndex - slice this names
+ * @param sliceIndex - slice this names
  *
  * @param repairText - wording the repair document carries
  *
@@ -70,22 +71,22 @@ const FOR_TRANSLATE = {
  *
  * @example
  * ```ts
- * const row = catRow({ chunkIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
+ * const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
  * ```
  */
 function catRow(
   {
-    chunkIndex,
+    sliceIndex,
     repairText,
     translateText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly repairText: string;
     readonly translateText: string;
   },
 ): ArtifactComparisonRowV2 {
   return {
-    chunkIndex,
+    sliceIndex,
     incumbentKind: 'present',
     incumbentText: ARCHIVE_NAP,
     repairText,
@@ -112,7 +113,7 @@ function catRow(
  * Slice both lanes worded differently, which a contest may answer.
  */
 const CONTESTED_ROW = catRow({
-  chunkIndex: 0,
+  sliceIndex: 0,
   repairText: REPAIR_NAP,
   translateText: TRANSLATE_NAP,
 },);
@@ -129,7 +130,7 @@ const ONE_CONTESTED: readonly ArtifactComparisonRowV2[] = [CONTESTED_ROW,];
 const ONE_CONTESTED_ONE_AGREED: readonly ArtifactComparisonRowV2[] = [
   CONTESTED_ROW,
   catRow({
-    chunkIndex: 1,
+    sliceIndex: 1,
     repairText: ARCHIVE_NAP,
     translateText: ARCHIVE_NAP,
   },),
@@ -165,6 +166,7 @@ function readOneSlice(
     },
     comparison,
     path: SELECTION_PATH,
+    keys: SLICE_SPELLED_KEYS,
   },);
 }
 
@@ -182,7 +184,7 @@ await describe({
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               verdict: {
                 kind: 'lane-won',
                 lane: 'repair',
@@ -212,7 +214,7 @@ await describe({
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               verdict: { kind: 'settled-neither', },
               ballots: [
                 FOR_TRANSLATE,
@@ -239,7 +241,7 @@ await describe({
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               verdict: { kind: 'settled-neither', },
               ballots: [FOR_TRANSLATE,],
               usable: 2,
@@ -266,7 +268,7 @@ await describe({
               kind: 'contested',
               slices: [
                 {
-                  chunkIndex: 1,
+                  sliceIndex: 1,
                   verdict: { kind: 'quorum-not-met', },
                   ballots: [],
                   usable: 0,
@@ -275,6 +277,7 @@ await describe({
             },
             comparison: ONE_CONTESTED_ONE_AGREED,
             path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
           },);
         },);
 
@@ -298,6 +301,7 @@ await describe({
             },
             comparison: ONE_CONTESTED,
             path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
           },);
         },);
 
@@ -314,7 +318,7 @@ await describe({
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               verdict: { kind: 'lane-won', },
               ballots: [
                 FOR_TRANSLATE,
@@ -339,7 +343,7 @@ await describe({
         const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               verdict: { kind: 'quorum-not-met', },
               ballots: [
                 {

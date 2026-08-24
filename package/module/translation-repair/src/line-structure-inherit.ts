@@ -51,7 +51,7 @@ export type ChunkGovernance = Readonly<{
  */
 export type ChunkSlice = Readonly<{
   /**
-   * Global index, matching what the artifact records as `chunkIndex`.
+   * Global index, matching what the artifact records as `sliceIndex`.
    */
   index: number;
 

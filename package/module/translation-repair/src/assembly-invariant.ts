@@ -91,7 +91,7 @@ export function assertReplacementsChange(
   ] {
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       slice.target
         .text,
     ];
@@ -100,16 +100,16 @@ export function assertReplacementsChange(
     /**
      * What the archive said for this slice.
      */
-    const incumbentText = incumbentByIndex.get(replacement.chunkIndex,);
+    const incumbentText = incumbentByIndex.get(replacement.sliceIndex,);
     if (incumbentText === undefined)
       throw new AssemblyContractError({
         message: `replacement names slice ${
-          String(replacement.chunkIndex,)
+          String(replacement.sliceIndex,)
         }, which this preparation never produced`,
       },);
     if (replacement.replacementText === incumbentText)
       throw new AssemblyContractError({
-        message: `slice ${String(replacement.chunkIndex,)} claims a change and carries the archive wording`,
+        message: `slice ${String(replacement.sliceIndex,)} claims a change and carries the archive wording`,
       },);
   }
 }
@@ -375,7 +375,7 @@ export function deriveShippedIndices(
    * Slices those replacements name.
    */
   const shipped = survivingReplacements.map(function toIndex(replacement,): number {
-    return replacement.chunkIndex;
+    return replacement.sliceIndex;
   },);
   if ((assembledText !== incumbentText) && (shipped.length === 0))
     throw new AssemblyContractError({

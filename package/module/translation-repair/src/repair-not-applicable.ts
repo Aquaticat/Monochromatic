@@ -25,19 +25,19 @@ import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
 /**
  * Finding naming a slice the repair lane has nothing to say about.
  *
- * @param chunkIndex - slice this describes
+ * @param sliceIndex - slice this describes
  *
  * @returns Finding in scorecard-stable wording
  *
  * @example
  * ```ts
- * const finding = notApplicableFinding({ chunkIndex: 4, },);
+ * const finding = notApplicableFinding({ sliceIndex: 4, },);
  * ```
  */
 export function notApplicableFinding(
-  { chunkIndex, }: { readonly chunkIndex: number; },
+  { sliceIndex, }: { readonly sliceIndex: number; },
 ): string {
-  return `repair-not-applicable chunk ${String(chunkIndex,)}; no translation to repair`;
+  return `repair-not-applicable chunk ${String(sliceIndex,)}; no translation to repair`;
 }
 
 /**
@@ -49,20 +49,20 @@ export function notApplicableFinding(
  * because there is nothing here to change. The finding is what says why, and it
  * is the only thing this outcome asserts.
  *
- * @param chunkIndex - slice this outcome describes
+ * @param sliceIndex - slice this outcome describes
  *
  * @returns Outcome carrying the archive's own absence of wording
  *
  * @example
  * ```ts
- * const outcome = notApplicableRepair({ chunkIndex: 4, },);
+ * const outcome = notApplicableRepair({ sliceIndex: 4, },);
  * ```
  */
 export function notApplicableRepair(
-  { chunkIndex, }: { readonly chunkIndex: number; },
+  { sliceIndex, }: { readonly sliceIndex: number; },
 ): ChunkRepairOutcome {
   return {
-    chunkIndex,
+    sliceIndex,
     // The archive's wording for an anchor, which is none of it. Assembly reads
     // `changed` rather than this, so nothing is written at that boundary.
     repairedText: '',
@@ -91,7 +91,7 @@ export function notApplicableRepair(
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
     heardCritics: 0,
-    findings: [notApplicableFinding({ chunkIndex, },),],
+    findings: [notApplicableFinding({ sliceIndex, },),],
   };
 }
 

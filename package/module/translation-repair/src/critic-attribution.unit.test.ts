@@ -337,7 +337,7 @@ await describe({
         const forward = buildSliceCriticRecords({
           outcomes: [
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               heardCriticIds: ['hf:Qwen/Qwen3.8-27B', 'hf:openai/gpt-oss-120b',],
               claimAttributions: [
                 {
@@ -350,7 +350,7 @@ await describe({
                 { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },], },
               ],
             },
-            { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], },
+            { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], },
           ],
         },);
 
@@ -359,9 +359,9 @@ await describe({
          */
         const reversed = buildSliceCriticRecords({
           outcomes: [
-            { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], },
+            { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], },
             {
-              chunkIndex: 1,
+              sliceIndex: 1,
               heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:Qwen/Qwen3.8-27B',],
               claimAttributions: [
                 { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },], },
@@ -380,7 +380,7 @@ await describe({
         // Byte identity, not deep equality: this value is serialized into a
         // cached artifact, so what matters is that JSON.stringify agrees.
         expect(JSON.stringify(reversed,),).toBe(JSON.stringify(forward,),);
-        expect(forward[0]?.chunkIndex,).toBe(0,);
+        expect(forward[0]?.sliceIndex,).toBe(0,);
       },
     },),
   ],

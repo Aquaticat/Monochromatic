@@ -44,7 +44,7 @@ import { TRIAL_ARMS, } from './window-trial-report.ts';
  *
  * @param slices - every prepared slice of this entry, for the window
  *
- * @param chunkIndex - position of the slice under trial
+ * @param sliceIndex - position of the slice under trial
  *
  * @param sliceClass - class the screen flagged, or the control label
  *
@@ -72,14 +72,14 @@ import { TRIAL_ARMS, } from './window-trial-report.ts';
  *
  * @example
  * ```ts
- * const rows = await runSliceArms({ client, slices, chunkIndex, ... },);
+ * const rows = await runSliceArms({ client, slices, sliceIndex, ... },);
  * ```
  */
 export async function runSliceArms(
   {
     client,
     slices,
-    chunkIndex,
+    sliceIndex,
     sliceClass,
     entryId,
     protocol,
@@ -92,7 +92,7 @@ export async function runSliceArms(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly sliceClass: string;
     readonly entryId: string;
     readonly protocol: string;
@@ -114,7 +114,7 @@ export async function runSliceArms(
   const order = armOrderFor({
     protocol,
     entryId,
-    chunkIndex,
+    sliceIndex,
   },);
 
   /**
@@ -127,7 +127,7 @@ export async function runSliceArms(
     return !done.has(trialKey({ row: {
       protocol,
       entryId,
-      chunkIndex,
+      sliceIndex,
       arm,
     }, },),);
   },);
@@ -143,7 +143,7 @@ export async function runSliceArms(
   // the slice stays incomplete, and the report already excludes it and says so.
   if (owed.length !== TRIAL_ARM_SET.length) {
     l.warn(
-      `${entryId}/${String(chunkIndex,)}: ${
+      `${entryId}/${String(sliceIndex,)}: ${
         String(TRIAL_ARM_SET.length - owed.length,)
       } of ${String(TRIAL_ARM_SET.length,)} arms survive from an interrupted run; `
         + `skipping rather than finishing them over a slate the earlier arms `
@@ -155,10 +155,10 @@ export async function runSliceArms(
   /**
    * Slice under trial.
    */
-  const slice = slices[chunkIndex];
+  const slice = slices[sliceIndex];
   if (slice === undefined)
     throw new RangeError(
-      `${entryId} has no slice ${String(chunkIndex,)}; the draw and the `
+      `${entryId} has no slice ${String(sliceIndex,)}; the draw and the `
         + `preparation disagree, which means they were made from different text`,
     );
 
@@ -170,7 +170,7 @@ export async function runSliceArms(
    */
   const neighbouringSourceText = neighbouringSource({
     slices,
-    slicePosition: chunkIndex,
+    slicePosition: sliceIndex,
   },);
   // TRIMMED, not compared against the empty string. A window of blank lines is a
   // window in name only: the wide sheet would differ from the narrow one by
@@ -178,7 +178,7 @@ export async function runSliceArms(
   // judges had been shown the neighbouring original.
   if (neighbouringSourceText.trim() === '')
     throw new RangeError(
-      `${entryId}/${String(chunkIndex,)} has no neighbouring section carrying `
+      `${entryId}/${String(sliceIndex,)} has no neighbouring section carrying `
         + `text, so its wide arm would be its narrow arm and the pair would `
         + `report a false null`,
     );
@@ -247,7 +247,7 @@ export async function runSliceArms(
     const row: WindowTrialRow = {
       protocol,
       entryId,
-      chunkIndex,
+      sliceIndex,
       arm,
       sliceClass,
       shipped: decided.origin !== 'incumbent',

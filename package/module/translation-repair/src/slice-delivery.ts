@@ -88,7 +88,7 @@ export type SliceDelivery = {
  * @example
  * ```ts
  * const record: SliceDeliveryRecord = {
- *   chunkIndex: 3,
+ *   sliceIndex: 3,
  *   sourceText: '猫猫在睡觉。',
  *   incumbentKind: 'present',
  *   incumbentText: 'The cat sleeps.',
@@ -102,7 +102,7 @@ export type SliceDeliveryRecord = {
   /**
    * Global slice index, which every other per-slice record names it by.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Original this slice was translated from.
@@ -179,7 +179,7 @@ export class SliceDeliveryError extends Error {
  * a lane ran: a repair lane blocked at an anchor was reported as reached and
  * unfillable when nobody had looked at it.
  *
- * @param chunkIndex - slice being described
+ * @param sliceIndex - slice being described
  *
  * @param wording - what the lane reported for it
  *
@@ -195,18 +195,18 @@ export class SliceDeliveryError extends Error {
  *
  * @example
  * ```ts
- * const delivery = decideDelivery({ chunkIndex, wording, shipped, withdrawn, blocked, },);
+ * const delivery = decideDelivery({ sliceIndex, wording, shipped, withdrawn, blocked, },);
  * ```
  */
 function decideDelivery(
   {
-    chunkIndex,
+    sliceIndex,
     wording,
     shipped,
     withdrawn,
     blocked,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly wording: LaneSliceText;
     readonly shipped: boolean;
     readonly withdrawn: boolean;
@@ -218,7 +218,7 @@ function decideDelivery(
     !== 'decided') {
     if (shipped || withdrawn) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} is named as ${
+        message: `slice ${String(sliceIndex,)} is named as ${
           shipped ? 'shipped' : 'withdrawn'
         } and reports no decision, so the lane both did and did not reach it`,
       },);
@@ -240,7 +240,7 @@ function decideDelivery(
   if (shipped) {
     if (!decided) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} is named as shipped and its decision is the archive's `
+        message: `slice ${String(sliceIndex,)} is named as shipped and its decision is the archive's `
           + 'own wording, so the document would carry a change nobody made',
       },);
     }
@@ -249,7 +249,7 @@ function decideDelivery(
     // reported a change as shipped by a document that was never assembled.
     if (blocked) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} is named as shipped by a blocked run, which returns the `
+        message: `slice ${String(sliceIndex,)} is named as shipped by a blocked run, which returns the `
           + 'archive untouched, so no slice of it carries a replacement',
       },);
     }
@@ -262,7 +262,7 @@ function decideDelivery(
     // to tell apart. Naming both files a refusal under the guard's name.
     if (blocked) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} is named as withdrawn by assembly on a blocked run, `
+        message: `slice ${String(sliceIndex,)} is named as withdrawn by assembly on a blocked run, `
           + 'which returns the archive without assembling anything',
       },);
     }
@@ -273,7 +273,7 @@ function decideDelivery(
     // overruled rather than as one that left the slice alone.
     if (!decided) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} is named as withdrawn and its decision is the archive's `
+        message: `slice ${String(sliceIndex,)} is named as withdrawn and its decision is the archive's `
           + 'own wording, so there was no replacement for assembly to take back',
       },);
     }
@@ -296,7 +296,7 @@ function decideDelivery(
       reason: 'blocked-non-translation',
     };
   throw new SliceDeliveryError({
-    message: `slice ${String(chunkIndex,)} decided wording of its own and is named as neither shipped `
+    message: `slice ${String(sliceIndex,)} decided wording of its own and is named as neither shipped `
       + 'nor withdrawn by a run that was not blocked, so what the document carries there is unstated',
   },);
 }
@@ -328,7 +328,7 @@ function nonNullishAccepted(
     .kind
     !== 'decided') {
     throw new SliceDeliveryError({
-      message: `slice ${String(wording.chunkIndex,)} ships a replacement and reports no decision`,
+      message: `slice ${String(wording.sliceIndex,)} ships a replacement and reports no decision`,
     },);
   }
   return wording.outcome
@@ -459,14 +459,14 @@ export function buildSliceDelivery(
     named: 'withdrawn',
   },);
 
-  for (const chunkIndex of shipped) {
+  for (const sliceIndex of shipped) {
     // SHIPPED AND WITHDRAWN AT ONCE is a contradiction rather than a precedence
     // question. The branch order used to answer it silently, in shipped's
     // favour, which reported a change the assembly guard had taken back as one
     // the document carries.
-    if (withdrawn.has(chunkIndex,)) {
+    if (withdrawn.has(sliceIndex,)) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} is named as both shipped and withdrawn, so the lane `
+        message: `slice ${String(sliceIndex,)} is named as both shipped and withdrawn, so the lane `
           + 'reports the document both carrying its change and having taken it back',
       },);
     }
@@ -481,15 +481,15 @@ export function buildSliceDelivery(
    */
   const preparedIndices = new Set(slices.map(function toIndex(slice,): number {
     return slice.target
-      .chunkIndex;
+      .sliceIndex;
   },),);
-  for (const chunkIndex of [
+  for (const sliceIndex of [
     ...shipped,
     ...withdrawn,
   ]) {
-    if (!preparedIndices.has(chunkIndex,)) {
+    if (!preparedIndices.has(sliceIndex,)) {
       throw new SliceDeliveryError({
-        message: `an index set names slice ${String(chunkIndex,)}, which this preparation of ${
+        message: `an index set names slice ${String(sliceIndex,)}, which this preparation of ${
           String(slices.length,)
         } slices never produced`,
       },);
@@ -511,19 +511,19 @@ export function buildSliceDelivery(
      * Index and archive wording this slice carries.
      */
     const {
-      chunkIndex,
+      sliceIndex,
       text: incumbentText,
     } = slice.target;
-    if (wording.chunkIndex !== chunkIndex) {
+    if (wording.sliceIndex !== sliceIndex) {
       throw new SliceDeliveryError({
         message: `slice at position ${String(position,)} is indexed ${
-          String(chunkIndex,)
-        } and its wording names slice ${String(wording.chunkIndex,)}`,
+          String(sliceIndex,)
+        } and its wording names slice ${String(wording.sliceIndex,)}`,
       },);
     }
     if (wording.incumbentText !== incumbentText) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} carries archive wording its own lane record disagrees `
+        message: `slice ${String(sliceIndex,)} carries archive wording its own lane record disagrees `
           + 'with, so the two were built from different preparations',
       },);
     }
@@ -537,7 +537,7 @@ export function buildSliceDelivery(
         !== (isInsertionChunk(slice.target,) ? 'absent' : 'present')
     ) {
       throw new SliceDeliveryError({
-        message: `slice ${String(chunkIndex,)} is ${
+        message: `slice ${String(sliceIndex,)} is ${
           wording.incumbentKind
         } of archive wording by its lane record and the other way by its prepared chunk`,
       },);
@@ -554,15 +554,15 @@ export function buildSliceDelivery(
      * What the document carries here, and by which route.
      */
     const delivery = decideDelivery({
-      chunkIndex,
+      sliceIndex,
       wording,
-      shipped: shipped.has(chunkIndex,),
-      withdrawn: withdrawn.has(chunkIndex,),
+      shipped: shipped.has(sliceIndex,),
+      withdrawn: withdrawn.has(sliceIndex,),
       blocked,
     },);
 
     return {
-      chunkIndex,
+      sliceIndex,
       sourceText: slice.source
         .text,
       incumbentKind: wording.incumbentKind,

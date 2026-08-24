@@ -128,7 +128,7 @@ export function gradeSeedDetection(
     /**
      * Target slice this issue's spans are local to.
      */
-    const chunk = slices[record.chunkIndex]
+    const chunk = slices[record.sliceIndex]
       ?.target;
     if (chunk === undefined)
       return [];

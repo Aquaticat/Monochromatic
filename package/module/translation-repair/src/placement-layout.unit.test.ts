@@ -28,7 +28,7 @@ const TARGET_TEXT = 'The cat sleeps.\n\nShe purrs.';
 /**
  * Builds one pair covering a span of {@link TARGET_TEXT}.
  *
- * @param chunkIndex - position of this slice
+ * @param sliceIndex - position of this slice
  *
  * @param startOffset - absolute start
  *
@@ -38,16 +38,16 @@ const TARGET_TEXT = 'The cat sleeps.\n\nShe purrs.';
  *
  * @example
  * ```ts
- * const pair = spanAt({ chunkIndex: 0, startOffset: 0, endOffset: 15, },);
+ * const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);
  * ```
  */
 function spanAt(
   {
-    chunkIndex,
+    sliceIndex,
     startOffset,
     endOffset,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly startOffset: number;
     readonly endOffset: number;
   },
@@ -56,7 +56,7 @@ function spanAt(
    * Both sides, since only the target one is read here.
    */
   const side = {
-    chunkIndex,
+    sliceIndex,
     nodes: [],
     startOffset,
     endOffset,
@@ -74,7 +74,7 @@ function spanAt(
 /**
  * Builds one pair whose target is an anchor at an offset.
  *
- * @param chunkIndex - position of this slice
+ * @param sliceIndex - position of this slice
  *
  * @param offset - boundary it names
  *
@@ -82,28 +82,28 @@ function spanAt(
  *
  * @example
  * ```ts
- * const pair = anchorAt({ chunkIndex: 1, offset: 17, },);
+ * const pair = anchorAt({ sliceIndex: 1, offset: 17, },);
  * ```
  */
 function anchorAt(
   {
-    chunkIndex,
+    sliceIndex,
     offset,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly offset: number;
   },
 ): ChunkPair {
   return {
     source: {
-      chunkIndex,
+      sliceIndex,
       nodes: [],
       startOffset: 0,
       endOffset: 0,
       text: '猫',
     },
     target: makeInsertionChunk({
-      chunkIndex,
+      sliceIndex,
       offset,
     },),
   };
@@ -144,24 +144,24 @@ await describe({
           assertPlacementLayout({
             slices: [
               spanAt({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 startOffset: 0,
                 endOffset: 15,
               },),
               anchorAt({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 offset: 15,
               },),
               anchorAt({
-                chunkIndex: 2,
+                sliceIndex: 2,
                 offset: SECOND_START,
               },),
               anchorAt({
-                chunkIndex: 3,
+                sliceIndex: 3,
                 offset: SECOND_START,
               },),
               spanAt({
-                chunkIndex: 4,
+                sliceIndex: 4,
                 startOffset: SECOND_START,
                 endOffset: TARGET_TEXT.length,
               },),
@@ -181,12 +181,12 @@ await describe({
             slices: [
               {
                 source: spanAt({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   startOffset: 0,
                   endOffset: 15,
                 },).source,
                 target: {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: TARGET_TEXT.length + 40,
@@ -211,12 +211,12 @@ await describe({
           assertPlacementLayout({
             slices: [
               spanAt({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 startOffset: SECOND_START,
                 endOffset: TARGET_TEXT.length,
               },),
               spanAt({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 startOffset: 0,
                 endOffset: 15,
               },),
@@ -238,12 +238,12 @@ await describe({
           assertPlacementLayout({
             slices: [
               spanAt({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 startOffset: 0,
                 endOffset: 15,
               },),
               anchorAt({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 offset: 4,
               },),
             ],
@@ -254,12 +254,12 @@ await describe({
           assertPlacementLayout({
             slices: [
               spanAt({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 startOffset: 0,
                 endOffset: 15,
               },),
               anchorAt({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 offset: 0,
               },),
             ],
@@ -279,7 +279,7 @@ await describe({
           assertPlacementLayout({
             slices: [
               spanAt({
-                chunkIndex: 0,
+                sliceIndex: 0,
                 startOffset: 15,
                 endOffset: 15,
               },),
@@ -305,11 +305,11 @@ await describe({
             slices: [
               {
                 source: anchorAt({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   offset: 0,
                 },).source,
                 target: {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 15,
@@ -337,12 +337,12 @@ await describe({
             slices: [
               {
                 source: anchorAt({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   offset: 0,
                 },).source,
                 target: {
                   kind: 'insertion',
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 15,
@@ -364,11 +364,11 @@ await describe({
             slices: [
               {
                 source: anchorAt({
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   offset: 0,
                 },).source,
                 target: {
-                  chunkIndex: 0,
+                  sliceIndex: 0,
                   nodes: [],
                   startOffset: 0,
                   endOffset: 1 / 2,

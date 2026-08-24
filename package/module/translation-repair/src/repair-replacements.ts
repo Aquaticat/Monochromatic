@@ -34,7 +34,7 @@ export function repairReplacements(
     },)
     .map(function toReplacement(outcome,): SliceReplacement {
       return {
-        chunkIndex: outcome.chunkIndex,
+        sliceIndex: outcome.sliceIndex,
         replacementText: outcome.repairedText,
       };
     },);

@@ -45,7 +45,7 @@ function shippedIndicesOf(
     return delivery.kind === 'replacement-shipped';
   },)
     .map(function toIndex(row,): number {
-      return row.chunkIndex;
+      return row.sliceIndex;
     },);
 }
 
@@ -80,7 +80,7 @@ function guardWithdrawnIndicesOf(
     return delivery.reason === 'assembly-integrity';
   },)
     .map(function toIndex(row,): number {
-      return row.chunkIndex;
+      return row.sliceIndex;
     },);
 }
 
@@ -245,10 +245,10 @@ export function assertBlockedCompatible(
       path: `${path}.status`,
       reason: blocked
         ? `a status this ledger could hold: slice ${
-          String(contradiction.chunkIndex,)
+          String(contradiction.sliceIndex,)
         } reports assembly having run, which a blocked run never reaches`
         : `a status this ledger could hold: slice ${
-          String(contradiction.chunkIndex,)
+          String(contradiction.sliceIndex,)
         } reports a withdrawal by whole-document refusal, which only a blocked run produces`,
     },);
   }

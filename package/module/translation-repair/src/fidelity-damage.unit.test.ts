@@ -64,14 +64,14 @@ const BORROWED = 'Her favourite place in the whole building turned out to be the
 function sliceCarrying({ text, }: { readonly text: string; },) {
   return {
     source: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       startOffset: 0,
       endOffset: 2,
       nodes: [],
       text: '小猫',
     },
     target: {
-      chunkIndex: 0,
+      sliceIndex: 0,
       startOffset: 0,
       endOffset: text.length,
       nodes: [],

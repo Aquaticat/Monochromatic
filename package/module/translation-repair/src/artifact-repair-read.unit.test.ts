@@ -33,7 +33,7 @@ function catRecord(
   overrides: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     resolved: true,
     repairDisposition: 'shipped',
     refined: false,
@@ -77,7 +77,7 @@ await describe({
       fn: async () => {
         /** Round-two shaped record: an issue wrapper with no repair fields. */
         const legacy = {
-          chunkIndex: 0,
+          sliceIndex: 0,
           resolved: true,
           issue: { issueId: 'adjudicated/nap', },
         };

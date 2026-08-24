@@ -72,7 +72,7 @@ function blockNode(
  * One side of a chunk, as slicing produces it.
  */
 type Side = {
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
   readonly nodes: readonly Block[];
   readonly startOffset: number;
   readonly endOffset: number;
@@ -93,7 +93,7 @@ type Side = {
  */
 function chunkSide({ nodes, }: { readonly nodes: readonly Block[]; },): Side {
   return {
-    chunkIndex: 0,
+    sliceIndex: 0,
     nodes,
     startOffset: nodes.at(0,)?.startOffset ?? 0,
     endOffset: nodes.at(-1,)?.endOffset ?? 0,

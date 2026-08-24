@@ -27,7 +27,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  ArtifactParseError,
+ArtifactParseError,
+  SLICE_SPELLED_KEYS,
   parseComparisonRowV2,
   parseDecisionComparisonV2,
   parseDeliveryRowV2,
@@ -361,7 +362,7 @@ await describe({
       fn: async () => {
         expect(parseDeliveryRowV2({
           value: {
-            chunkIndex: 0,
+            sliceIndex: 0,
             sourceText: '猫猫在窗台上睡觉。',
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
@@ -373,8 +374,9 @@ await describe({
             delivery: { kind: 'incumbent-retained', },
           },
           path: 'lanes.repair.delivery[0]',
+          keys: SLICE_SPELLED_KEYS,
         },),).toEqual({
-          chunkIndex: 0,
+          sliceIndex: 0,
           sourceText: '猫猫在窗台上睡觉。',
           incumbentKind: 'present',
           incumbentText: ARCHIVE_NAP,
@@ -397,7 +399,7 @@ await describe({
          * One valid row, which each case below breaks in exactly one way.
          */
         const row = {
-          chunkIndex: 0,
+          sliceIndex: 0,
           sourceText: '猫猫在窗台上睡觉。',
           incumbentKind: 'present',
           incumbentText: ARCHIVE_NAP,
@@ -415,6 +417,7 @@ await describe({
               whiskers: 3,
             },
             path: 'row',
+            keys: SLICE_SPELLED_KEYS,
           },);
         },);
 
@@ -426,14 +429,15 @@ await describe({
           Number.NaN,
           Number.POSITIVE_INFINITY,
           Number.MAX_SAFE_INTEGER + 2,
-        ].map(function refusesIndex(chunkIndex,): string {
+        ].map(function refusesIndex(sliceIndex,): string {
           try {
             parseDeliveryRowV2({
               value: {
                 ...row,
-                chunkIndex,
+                sliceIndex,
               },
               path: 'row',
+              keys: SLICE_SPELLED_KEYS,
             },);
             return 'accepted';
           } catch (error) {
@@ -463,7 +467,7 @@ await describe({
          * One row saying both lanes moved to different wordings.
          */
         const row = {
-          chunkIndex: 2,
+          sliceIndex: 2,
           incumbentKind: 'present',
           incumbentText: ARCHIVE_NAP,
           repairText: 'The cat is asleep on the sill.',
@@ -487,6 +491,7 @@ await describe({
         expect(parseComparisonRowV2({
           value: row,
           path: 'comparison[0]',
+          keys: SLICE_SPELLED_KEYS,
         },),).toEqual(row,);
       },
     },),
@@ -503,7 +508,7 @@ await describe({
          * One row as a pipeline before the rename wrote it.
          */
         const legacy = {
-          chunkIndex: 2,
+          sliceIndex: 2,
           incumbentKind: 'present',
           incumbentText: ARCHIVE_NAP,
           repairText: 'The cat is asleep on the sill.',
@@ -528,6 +533,7 @@ await describe({
         expect(parseComparisonRowV2({
           value: legacy,
           path: 'comparison[0]',
+          keys: SLICE_SPELLED_KEYS,
         },).laneRelation,).toBe('both-differ',);
       },
     },),
@@ -544,7 +550,7 @@ await describe({
         const refusalOfBothSpellings = caught(function bothSpellings() {
           parseComparisonRowV2({
             value: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'absent',
               incumbentText: '',
               repairText: '',
@@ -564,6 +570,7 @@ await describe({
               translateDelivery: { kind: 'gap-remains', },
             },
             path: 'comparison[0]',
+            keys: SLICE_SPELLED_KEYS,
           },);
         },);
 
@@ -582,7 +589,7 @@ await describe({
         const refusalOfUnknownVerdict = caught(function unknownVerdict() {
           parseComparisonRowV2({
             value: {
-              chunkIndex: 0,
+              sliceIndex: 0,
               incumbentKind: 'absent',
               incumbentText: '',
               repairText: '',
@@ -601,6 +608,7 @@ await describe({
               translateDelivery: { kind: 'gap-remains', },
             },
             path: 'comparison[0]',
+            keys: SLICE_SPELLED_KEYS,
           },);
         },);
 
@@ -621,7 +629,7 @@ await describe({
       fn: async () => {
         expect(parseEvidenceRowV2({
           value: {
-            chunkIndex: 1,
+            sliceIndex: 1,
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
             outcome: {
@@ -632,8 +640,9 @@ await describe({
             elapsedMs: 12,
           },
           path: 'lanes.repair.result.sliceTexts[1]',
+          keys: SLICE_SPELLED_KEYS,
         },),).toEqual({
-          chunkIndex: 1,
+          sliceIndex: 1,
           incumbentKind: 'present',
           incumbentText: ARCHIVE_NAP,
           outcome: {
@@ -654,11 +663,12 @@ await describe({
         const refusalOfNoIncumbentKind = caught(function noIncumbentKind() {
           parseEvidenceRowV2({
             value: {
-              chunkIndex: 1,
+              sliceIndex: 1,
               incumbentText: ARCHIVE_NAP,
               outcome: { kind: 'unfilled', },
             },
             path: 'sliceTexts[1]',
+            keys: SLICE_SPELLED_KEYS,
           },);
         },);
 

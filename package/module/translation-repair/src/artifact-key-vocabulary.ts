@@ -1,6 +1,7 @@
 import {
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V3,
+  ARTIFACT_SCHEMA_VERSION_V4,
 } from './corpus-run/artifact-v2-contract.ts';
 import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
 
@@ -10,9 +11,15 @@ import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
 //
 // Generations 1 and 2 spelled these keys with `chunk`, in the same records that
 // already spelled `sliceCount` and `withdrawnSliceCount` with `slice`, about
-// the same things. Generation 3 spells all of them `slice`. Nothing else about
-// the shape moved between 2 and 3, which is why one table of three names covers
+// the same things. Generation 4 spells all of them `slice`. Nothing else about
+// the shape moved across any of it, which is why one table of four names covers
 // the whole difference and there is no second reader family.
+//
+// GENERATION 3 IS A MIXTURE and needs its own row rather than a style name: it
+// spells the three arrays the way generation 4 does and the per-slice index the
+// way generation 2 did. The two moved separately because `sliceIndex` was
+// already taken by a different concept, the POSITION in `prepared.slices`, and
+// had to be freed before the stamped index could take the name.
 //
 // NO ARTIFACT IS EVER READ UNDER TWO SPELLINGS. The recorded version selects one
 // table, and a file whose keys disagree with the table its own version selected
@@ -61,6 +68,11 @@ export type ArtifactKeyVocabulary = {
    * Key naming which critics were heard at each slice.
    */
   readonly sliceCritics: string;
+
+  /**
+   * Key naming which slice a per-slice record belongs to.
+   */
+  readonly sliceIndex: string;
 };
 
 /**
@@ -75,6 +87,7 @@ export const CHUNK_SPELLED_KEYS: ArtifactKeyVocabulary = {
   changedSliceIndices: 'shippedChunkIndices',
   withdrawnSliceIndices: 'withdrawnChunkIndices',
   sliceCritics: 'chunkCritics',
+  sliceIndex: 'chunkIndex',
 };
 
 /**
@@ -89,6 +102,19 @@ export const SLICE_SPELLED_KEYS: ArtifactKeyVocabulary = {
   changedSliceIndices: 'changedSliceIndices',
   withdrawnSliceIndices: 'withdrawnSliceIndices',
   sliceCritics: 'sliceCritics',
+  sliceIndex: 'sliceIndex',
+};
+
+/**
+ * Spelling generation 3 wrote, which is neither table whole.
+ *
+ * WRITTEN AS THE DIFFERENCE rather than spelled out again, so it cannot drift
+ * from the two tables it sits between: it is generation 4 except for the index,
+ * which had not moved yet.
+ */
+const GENERATION_3_KEYS: ArtifactKeyVocabulary = {
+  ...SLICE_SPELLED_KEYS,
+  sliceIndex: CHUNK_SPELLED_KEYS.sliceIndex,
 };
 
 /**
@@ -97,7 +123,8 @@ export const SLICE_SPELLED_KEYS: ArtifactKeyVocabulary = {
 const KEYS_BY_GENERATION: Readonly<Record<number, ArtifactKeyVocabulary>> = {
   [ARTIFACT_SCHEMA_VERSION_V1]: CHUNK_SPELLED_KEYS,
   [ARTIFACT_SCHEMA_VERSION_V2]: CHUNK_SPELLED_KEYS,
-  [ARTIFACT_SCHEMA_VERSION_V3]: SLICE_SPELLED_KEYS,
+  [ARTIFACT_SCHEMA_VERSION_V3]: GENERATION_3_KEYS,
+  [ARTIFACT_SCHEMA_VERSION_V4]: SLICE_SPELLED_KEYS,
 };
 
 /**

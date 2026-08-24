@@ -207,7 +207,7 @@ await describe({
         + 'shipped text is the archive and about which the record used to say nothing',
       fn: async function recordsTheVerdict() {
         expect(describeContestSlice({
-          chunkIndex: 0,
+          sliceIndex: 0,
           outcome: outcomeOf({
             ballots: [
               judged({ archive: 'flawed', },),
@@ -230,7 +230,7 @@ await describe({
          * Verdict for a slice whose judges all ignored the archive question.
          */
         const { verdict, } = describeContestSlice({
-          chunkIndex: 0,
+          sliceIndex: 0,
           outcome: outcomeOf({
             ballots: [
               silent(),
@@ -253,7 +253,7 @@ await describe({
          * Verdict for a slice the repair lane won outright.
          */
         const { verdict, } = describeContestSlice({
-          chunkIndex: 0,
+          sliceIndex: 0,
           outcome: outcomeOf({
             ballots: [
               backsRepair({ archive: 'flawed', },),

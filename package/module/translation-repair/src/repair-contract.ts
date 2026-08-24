@@ -534,7 +534,7 @@ export type ChunkRepairOutcome = {
   /**
    * Chunk position within the document.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Winning chunk text; equals the input when unchanged won.

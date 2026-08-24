@@ -101,7 +101,7 @@ function catArtifact(): SettledArtifactV2 {
         },
         delivery: [
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             sourceText: '猫猫在窗台上睡觉。',
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
@@ -113,7 +113,7 @@ function catArtifact(): SettledArtifactV2 {
             delivery: { kind: 'replacement-shipped', },
           },
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             sourceText: '猫猫有自己的碗。',
             incumbentKind: 'absent',
             incumbentText: '',
@@ -127,7 +127,7 @@ function catArtifact(): SettledArtifactV2 {
         result: { status: 'complete', },
         delivery: [
           {
-            chunkIndex: 0,
+            sliceIndex: 0,
             sourceText: '猫猫在窗台上睡觉。',
             incumbentKind: 'present',
             incumbentText: ARCHIVE_NAP,
@@ -139,7 +139,7 @@ function catArtifact(): SettledArtifactV2 {
             delivery: { kind: 'incumbent-retained', },
           },
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             sourceText: '猫猫有自己的碗。',
             incumbentKind: 'absent',
             incumbentText: '',
@@ -155,7 +155,7 @@ function catArtifact(): SettledArtifactV2 {
     },
     comparison: [
       {
-        chunkIndex: 0,
+        sliceIndex: 0,
         incumbentKind: 'present',
         incumbentText: ARCHIVE_NAP,
         repairText: MENDED_NAP,
@@ -177,7 +177,7 @@ function catArtifact(): SettledArtifactV2 {
         translateDelivery: { kind: 'incumbent-retained', },
       },
       {
-        chunkIndex: 1,
+        sliceIndex: 1,
         incumbentKind: 'absent',
         incumbentText: '',
         repairText: '',

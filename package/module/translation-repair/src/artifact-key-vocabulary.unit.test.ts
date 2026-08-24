@@ -1,10 +1,17 @@
 /**
- * Tests for which spelling of three keys each artifact generation used.
+ * Tests for which spelling of the renamed keys each artifact generation used.
  *
  * THE POSITIVE CONTROL COMES FIRST here, because every other case in this file
  * is a lookup and a lookup table that returned the same row for everything
- * would satisfy all of them. The first case pins that the two tables actually
- * disagree, on all three keys, so the dispatch has something to decide.
+ * would satisfy all of them. The first case pins that the two named tables
+ * actually disagree, on every field, so the dispatch has something to decide.
+ *
+ * GENERATION 3 IS THE INTERESTING ONE, and it is why a table exists at all
+ * rather than a boolean. It spells the change-set keys the new way and the
+ * slice index the old way, because the array rename forced a wire change on
+ * artifacts whose lane result is passed through whole while the index rename
+ * did not. A reader holding one flag would read every generation 3 artifact's
+ * slice index as ABSENT.
  *
  * Fixtures are version numbers and key names. There is no passage here.
  *
@@ -26,13 +33,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Fields every generation spells, in one place so a fourth cannot be added to
+ * Fields every generation spells, in one place so a fifth cannot be added to
  * the type and quietly go unchecked here.
  */
 const FIELDS = [
   'changedSliceIndices',
   'withdrawnSliceIndices',
   'sliceCritics',
+  'sliceIndex',
 ] as const;
 
 /**
@@ -46,21 +54,26 @@ const GENERATION_ONE = 1;
 const GENERATION_TWO = 2;
 
 /**
- * Generation the pass writes.
+ * Generation that renamed the change-set arrays and left the index alone.
  */
 const GENERATION_THREE = 3;
 
 /**
+ * Generation the pass writes, which spells every field the current way.
+ */
+const GENERATION_FOUR = 4;
+
+/**
  * Generation no table covers, one past the newest.
  */
-const GENERATION_UNKNOWN = 4;
+const GENERATION_UNKNOWN = 5;
 
 await describe({
   name: keyVocabularyOf.name,
   children: [
     it({
-      name: 'POSITIVE CONTROL: the two tables disagree on every field, so selecting between them can '
-        + 'change what a reader asks the artifact for. A table that returned one row for both '
+      name: 'POSITIVE CONTROL: the two named tables disagree on every field, so selecting between them '
+        + 'can change what a reader asks the artifact for. A table that returned one row for both '
         + 'generations would pass every other case in this file',
       fn: async () => {
         for (const field of FIELDS) {
@@ -70,7 +83,7 @@ await describe({
     },),
 
     it({
-      name: 'spells the generation 3 table with its own field names, which is what makes the internal '
+      name: 'spells the current table with its own field names, which is what makes the internal '
         + 'vocabulary readable: a reader meeting `changedSliceIndices` in the code and in the file is '
         + 'looking at one name rather than two that happen to line up',
       fn: async () => {
@@ -88,24 +101,52 @@ await describe({
           changedSliceIndices: 'shippedChunkIndices',
           withdrawnSliceIndices: 'withdrawnChunkIndices',
           sliceCritics: 'chunkCritics',
+          sliceIndex: 'chunkIndex',
         },);
       },
     },),
 
     it({
-      name: 'gives generations 1 and 2 the older spelling and generation 3 the current one, which is '
+      name: 'gives generation 3 a MIXTURE of the two, which is the case a boolean cannot express: the '
+        + 'change-set arrays carry the current names and the slice index still carries the old one',
+      fn: async () => {
+        expect(keyVocabularyOf({ version: GENERATION_THREE, },),).toStrictEqual({
+          changedSliceIndices: 'changedSliceIndices',
+          withdrawnSliceIndices: 'withdrawnSliceIndices',
+          sliceCritics: 'sliceCritics',
+          sliceIndex: 'chunkIndex',
+        },);
+      },
+    },),
+
+    it({
+      name: 'hands generation 3 a row that is neither named table, so a reader cannot satisfy it by '
+        + 'picking whichever of the two is closer',
+      fn: async () => {
+        /**
+         * Row the mixture generation dispatches to.
+         */
+        const mixed = keyVocabularyOf({ version: GENERATION_THREE, },);
+
+        expect(mixed,).not.toStrictEqual(CHUNK_SPELLED_KEYS,);
+        expect(mixed,).not.toStrictEqual(SLICE_SPELLED_KEYS,);
+      },
+    },),
+
+    it({
+      name: 'gives generations 1 and 2 the older spelling and generation 4 the current one, which is '
         + 'the whole dispatch',
       fn: async () => {
         expect(keyVocabularyOf({ version: GENERATION_ONE, },),).toBe(CHUNK_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_TWO, },),).toBe(CHUNK_SPELLED_KEYS,);
-        expect(keyVocabularyOf({ version: GENERATION_THREE, },),).toBe(SLICE_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_FOUR, },),).toBe(SLICE_SPELLED_KEYS,);
       },
     },),
 
     it({
       name: 'REFUSES a generation it has no spelling for, rather than falling back to either table. A '
-        + 'fallback would read one generation under another generation\'s names and report three keys '
-        + 'as ABSENT, which is the one wrong answer here that looks like an ordinary older artifact',
+        + 'fallback would read one generation under another generation\'s names and report the renamed '
+        + 'keys as ABSENT, which is the one wrong answer here that looks like an ordinary older artifact',
       fn: async () => {
         /**
          * What the selector did when asked for a generation past the newest.

@@ -59,14 +59,14 @@ const ARCHIVE_REPEAT_FLOOR = 2;
  *
  * @example
  * ```ts
- * const slice: AdjacentSliceText = { chunkIndex: 3, text: 'the tabby waited', };
+ * const slice: AdjacentSliceText = { sliceIndex: 3, text: 'the tabby waited', };
  * ```
  */
 export type AdjacentSliceText = {
   /**
    * Global slice index, as `prepareDocumentPair` stamped it.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Wording this slice contributed to the assembled document, whether it is a
@@ -296,8 +296,8 @@ function repeatsInPair(
       kept.push({
         phrase,
         found: {
-          earlierChunkIndex: earlier.chunkIndex,
-          laterChunkIndex: later.chunkIndex,
+          earlierChunkIndex: earlier.sliceIndex,
+          laterChunkIndex: later.sliceIndex,
           words: length,
           characters: phrase.length,
           archiveOccurrences,

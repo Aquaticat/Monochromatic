@@ -116,14 +116,14 @@ export type DecisionComparison = {
  *
  * @example
  * ```ts
- * const row: SliceLaneComparison = { chunkIndex: 3, verdict: 'both-differ', ... };
+ * const row: SliceLaneComparison = { sliceIndex: 3, verdict: 'both-differ', ... };
  * ```
  */
 export type SliceLaneComparison = {
   /**
    * Global slice index both lanes name it by.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Whether the archive holds any wording at this slice at all.
@@ -434,7 +434,7 @@ export function compareDocumentLanes(
     SliceDeliveryRecord,
   ] {
     return [
-      record.chunkIndex,
+      record.sliceIndex,
       record,
     ];
   },),);
@@ -455,7 +455,7 @@ export function compareDocumentLanes(
    * Distinct slices the repair rows name.
    */
   const repairDistinct = new Set(repairRecords.map(function toIndex(record,): number {
-    return record.chunkIndex;
+    return record.sliceIndex;
   },),).size;
   if (repairDistinct !== repairRecords.length)
     throw new LaneComparisonError({
@@ -472,10 +472,10 @@ export function compareDocumentLanes(
       /**
        * Same slice as the other lane left it.
        */
-      const theirs = translateByIndex.get(mine.chunkIndex,);
+      const theirs = translateByIndex.get(mine.sliceIndex,);
       if (theirs === undefined)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.chunkIndex,)} is missing from the translate lane`,
+          message: `slice ${String(mine.sliceIndex,)} is missing from the translate lane`,
         },);
       /**
        * Row the other ledger holds at this POSITION, as against the one it
@@ -483,20 +483,20 @@ export function compareDocumentLanes(
        * the same order, and two that do not were not built over one.
        */
       const alongside = translateRecords[position];
-      if (theirs.chunkIndex !== alongside?.chunkIndex)
+      if (theirs.sliceIndex !== alongside?.sliceIndex)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.chunkIndex,)} sits at position ${
+          message: `slice ${String(mine.sliceIndex,)} sits at position ${
             String(position,)
           } in one ledger and elsewhere in the other, so the two are not in one document order`,
         },);
       if (theirs.sourceText !== mine.sourceText)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.chunkIndex,)} covers a different original in each lane, `
+          message: `slice ${String(mine.sliceIndex,)} covers a different original in each lane, `
             + 'so the two results describe different preparations',
         },);
       if (theirs.incumbentText !== mine.incumbentText)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.chunkIndex,)} carries a different incumbent in each lane, `
+          message: `slice ${String(mine.sliceIndex,)} carries a different incumbent in each lane, `
             + 'so the two results describe different preparations',
         },);
 
@@ -506,7 +506,7 @@ export function compareDocumentLanes(
       // was taken from the repair lane, which decided the gap verdict for both.
       if (theirs.incumbentKind !== mine.incumbentKind)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.chunkIndex,)} is ${
+          message: `slice ${String(mine.sliceIndex,)} is ${
             mine.incumbentKind
           } of archive wording to the repair lane and ${
             theirs.incumbentKind
@@ -522,7 +522,7 @@ export function compareDocumentLanes(
       assertDeliveryCoherent({ record: mine, },);
       assertDeliveryCoherent({ record: theirs, },);
       return {
-        chunkIndex: mine.chunkIndex,
+        sliceIndex: mine.sliceIndex,
         incumbentKind: mine.incumbentKind,
         incumbentText: mine.incumbentText,
 

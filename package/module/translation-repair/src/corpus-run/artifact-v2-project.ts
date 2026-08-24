@@ -191,7 +191,7 @@ export function toArtifactRowV2(
   { record, }: { readonly record: SliceDeliveryRecord; },
 ): ArtifactDeliveryRowV2 {
   return {
-    chunkIndex: record.chunkIndex,
+    sliceIndex: record.sliceIndex,
     sourceText: record.sourceText,
     incumbentKind: record.incumbentKind,
     incumbentText: record.incumbentText,
@@ -218,7 +218,7 @@ export function toArtifactComparisonRowV2(
   { row, }: { readonly row: SliceLaneComparison; },
 ): ArtifactComparisonRowV2 {
   return {
-    chunkIndex: row.chunkIndex,
+    sliceIndex: row.sliceIndex,
     incumbentKind: row.incumbentKind,
     incumbentText: row.incumbentText,
     repairText: row.repairText,

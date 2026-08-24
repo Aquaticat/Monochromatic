@@ -73,7 +73,7 @@ export function wrapTranslateRecords(
   ] {
     return [
       slice.target
-        .chunkIndex,
+        .sliceIndex,
       slice.target
         .text,
     ];
@@ -98,7 +98,7 @@ export function wrapTranslateRecords(
     // LEFT EXACTLY AS PRODUCED, like a record that changed nothing. The
     // line-structure rule made this slice's line breaks the producer's to set,
     // and this function only ever adds more.
-    if (lineStructuredSlices.has(record.chunkIndex,)) {
+    if (lineStructuredSlices.has(record.sliceIndex,)) {
       counted.governed += 1;
       return record;
     }
@@ -114,7 +114,7 @@ export function wrapTranslateRecords(
     /**
      * Whether anything but the wrapping still separates it from the archive.
      */
-    const changed = outputText !== incumbentByIndex.get(record.chunkIndex,);
+    const changed = outputText !== incumbentByIndex.get(record.sliceIndex,);
     if (!changed)
       counted.demoted += 1;
 

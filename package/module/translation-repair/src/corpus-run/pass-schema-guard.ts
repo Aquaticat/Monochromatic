@@ -2,7 +2,7 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { ARTIFACT_SCHEMA_VERSION_V3, } from './artifact-v2-contract.ts';
+import { ARTIFACT_SCHEMA_VERSION_V4, } from './artifact-v2-contract.ts';
 import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
 import {
   censusBySchema,
@@ -401,7 +401,7 @@ async function assertBodyMatchesLabel(
 export async function assertResumableSchemaGeneration(
   {
     artifactsDir,
-    writes = ARTIFACT_SCHEMA_VERSION_V3,
+    writes = ARTIFACT_SCHEMA_VERSION_V4,
   }: {
     readonly artifactsDir: string;
     readonly writes?: number;

@@ -32,7 +32,7 @@ const JUDGES_SEATED = 6;
 /**
  * Builds one completed arm.
  *
- * @param chunkIndex - slice position
+ * @param sliceIndex - slice position
  *
  * @param arm - which arm
  *
@@ -47,18 +47,18 @@ const JUDGES_SEATED = 6;
  *
  * @example
  * ```ts
- * const row = rowFor({ chunkIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },);
+ * const row = rowFor({ sliceIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },);
  * ```
  */
 function rowFor(
   {
-    chunkIndex,
+    sliceIndex,
     arm,
     shipped,
     sliceClass = 'relocation',
     judgesHeard = JUDGES_SEATED,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly arm: string;
     readonly shipped: boolean;
     readonly sliceClass?: string;
@@ -68,7 +68,7 @@ function rowFor(
   return {
     protocol: 'protocol-one',
     entryId: 'Mittens',
-    chunkIndex,
+    sliceIndex,
     arm,
     sliceClass,
     shipped,
@@ -83,7 +83,7 @@ function rowFor(
 /**
  * Builds all three arms of one slice.
  *
- * @param chunkIndex - slice position
+ * @param sliceIndex - slice position
  *
  * @param narrowFirst - whether the first narrow arm replaced
  *
@@ -97,18 +97,18 @@ function rowFor(
  *
  * @example
  * ```ts
- * const rows = tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },);
+ * const rows = tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },);
  * ```
  */
 function tripleFor(
   {
-    chunkIndex,
+    sliceIndex,
     narrowFirst,
     narrowSecond,
     wide,
     sliceClass = 'relocation',
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly narrowFirst: boolean;
     readonly narrowSecond: boolean;
     readonly wide: boolean;
@@ -117,19 +117,19 @@ function tripleFor(
 ): readonly WindowTrialRow[] {
   return [
     rowFor({
-      chunkIndex,
+      sliceIndex,
       arm: TRIAL_ARMS.narrowFirst,
       shipped: narrowFirst,
       sliceClass,
     },),
     rowFor({
-      chunkIndex,
+      sliceIndex,
       arm: TRIAL_ARMS.narrowSecond,
       shipped: narrowSecond,
       sliceClass,
     },),
     rowFor({
-      chunkIndex,
+      sliceIndex,
       arm: TRIAL_ARMS.wide,
       shipped: wide,
       sliceClass,
@@ -150,10 +150,10 @@ await describe({
          * flips one purely by chance.
          */
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
-          ...tripleFor({ chunkIndex: 1, narrowFirst: true, narrowSecond: false, wide: false, },),
-          ...tripleFor({ chunkIndex: 2, narrowFirst: true, narrowSecond: true, wide: true, },),
-          ...tripleFor({ chunkIndex: 3, narrowFirst: false, narrowSecond: false, wide: false, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 1, narrowFirst: true, narrowSecond: false, wide: false, },),
+          ...tripleFor({ sliceIndex: 2, narrowFirst: true, narrowSecond: true, wide: true, },),
+          ...tripleFor({ sliceIndex: 3, narrowFirst: false, narrowSecond: false, wide: false, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
@@ -170,8 +170,8 @@ await describe({
         + 'traffic each way and traffic each way is not the window working',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
-          ...tripleFor({ chunkIndex: 1, narrowFirst: false, narrowSecond: false, wide: true, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 1, narrowFirst: false, narrowSecond: false, wide: true, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
@@ -198,10 +198,10 @@ await describe({
         + 'many it excluded: a half-populated pair is not a smaller sample, it is a different one',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
           // Slice 1 lost its wide arm to an abort.
-          rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
-          rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
+          rowFor({ sliceIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
+          rowFor({ sliceIndex: 1, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
@@ -223,8 +223,8 @@ await describe({
          * where the narrow arms disagreed and the wide arm kept.
          */
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
-          ...tripleFor({ chunkIndex: 1, narrowFirst: true, narrowSecond: false, wide: false, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 1, narrowFirst: true, narrowSecond: false, wide: false, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
@@ -239,7 +239,7 @@ await describe({
         + '`#107` reads as one number rather than as an absence of the expected one',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: false, narrowSecond: false, wide: true, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: false, narrowSecond: false, wide: true, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
@@ -252,8 +252,8 @@ await describe({
         + 'were its own document would be too narrow',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
-          ...tripleFor({ chunkIndex: 1, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 1, narrowFirst: true, narrowSecond: true, wide: false, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
@@ -269,8 +269,8 @@ await describe({
         + 'reading took every one',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
-          ...tripleFor({ chunkIndex: 1, narrowFirst: true, narrowSecond: true, wide: true, },)
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 1, narrowFirst: true, narrowSecond: true, wide: true, },)
             .map(function underAnother(row,): WindowTrialRow {
               return {
                 ...row,
@@ -293,12 +293,12 @@ await describe({
         + 'window',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
-          rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
-          rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          rowFor({ sliceIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
+          rowFor({ sliceIndex: 1, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
           // Slice 1's wide arm heard four of six.
           rowFor({
-            chunkIndex: 1,
+            sliceIndex: 1,
             arm: TRIAL_ARMS.wide,
             shipped: false,
             judgesHeard: 4,
@@ -322,13 +322,13 @@ await describe({
       fn: async () => {
         const rows = [
           rowFor({
-            chunkIndex: 0,
+            sliceIndex: 0,
             arm: TRIAL_ARMS.narrowFirst,
             shipped: true,
             judgesHeard: 3,
           },),
-          rowFor({ chunkIndex: 0, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
-          rowFor({ chunkIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },),
+          rowFor({ sliceIndex: 0, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
+          rowFor({ sliceIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
@@ -342,9 +342,9 @@ await describe({
         + 'the relocations it exists to be compared against',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
           ...tripleFor({
-            chunkIndex: 1,
+            sliceIndex: 1,
             narrowFirst: true,
             narrowSecond: true,
             wide: true,
@@ -375,8 +375,8 @@ await describe({
          * Same chunk index, different entries.
          */
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },)
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },)
             .map(function toOtherEntry(row,): WindowTrialRow {
               return {
                 ...row,
@@ -399,8 +399,8 @@ await describe({
         + 'comparable rather than each being taken over whatever that arm happened to finish',
       fn: async () => {
         const rows = [
-          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: false, wide: false, },),
-          rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
+          ...tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: false, wide: false, },),
+          rowFor({ sliceIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
         ];
 
         const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);

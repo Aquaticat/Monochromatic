@@ -212,13 +212,13 @@ await describe({
                 .text,
               lineStructured: prepared.lineStructuredSliceIndices
                 .has(slice.target
-                  .chunkIndex,),
+                  .sliceIndex,),
             },);
           },);
         expect(prepared.slices
           .map(function toIndex(slice,): number {
             return slice.target
-              .chunkIndex;
+              .sliceIndex;
           },),).toEqual([
           0,
           1,

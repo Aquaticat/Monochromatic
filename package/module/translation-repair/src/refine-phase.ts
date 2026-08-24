@@ -209,7 +209,7 @@ export async function runRefinePhase(
      * this lane rewrites against and the archive wording it must not claim to
      * have changed when it lands back on it.
      */
-    const prepared = slices[outcome.chunkIndex];
+    const prepared = slices[outcome.sliceIndex];
 
     /**
      * Source text of this slice, the faithfulness anchor.
@@ -251,7 +251,7 @@ export async function runRefinePhase(
      * agrees with the position because `document-preparation.ts` stamps
      * `baseIndex: slices.length`, a running counter over emitted slices, so a
      * prepared slice's stamp IS its position. `#99` records that this does not
-     * hold of every `chunkIndex` in the codebase, which is why it is said here
+     * hold of every `sliceIndex` in the codebase, which is why it is said here
      * rather than assumed; were it ever to break, this window would be wrong in
      * exactly the way `sourceText` and `incumbentText` were already wrong, and
      * disagreeing with them would be worse than sharing their fate.
@@ -261,11 +261,11 @@ export async function runRefinePhase(
       : {
         neighbouringSourceText: neighbouringSource({
           slices,
-          slicePosition: outcome.chunkIndex,
+          slicePosition: outcome.sliceIndex,
         },),
         neighbouringIncumbentText: neighbouringIncumbent({
           slices,
-          slicePosition: outcome.chunkIndex,
+          slicePosition: outcome.sliceIndex,
         },),
       };
 

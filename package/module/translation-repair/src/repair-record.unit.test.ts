@@ -120,7 +120,7 @@ function catOutcome(
   },
 ): ChunkRepairOutcome {
   return {
-    chunkIndex: 3,
+    sliceIndex: 3,
     // Modelled the way the pipeline actually assembles it: a refined slice
     // returns the rewritten text, a shipped unrefined slice returns the patched
     // text carrying the replacement verbatim, and an unselected unrefined slice
@@ -181,7 +181,7 @@ await describe({
         expect(records[0]?.repairDisposition,).toBe('shipped',);
         expect(records[0]?.repairRegions,).toHaveLength(1,);
         expect(records[0]?.resolved,).toBe(true,);
-        expect(records[0]?.chunkIndex,).toBe(3,);
+        expect(records[0]?.sliceIndex,).toBe(3,);
         // The second issue shares the slice but not the envelope, so it has no
         // repair of its own even though the slice was repaired.
         expect(records[1]?.repairDisposition,).toBe('no-region',);

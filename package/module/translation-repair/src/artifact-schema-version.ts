@@ -5,6 +5,7 @@ import {
 import {
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V3,
+  ARTIFACT_SCHEMA_VERSION_V4,
 } from './corpus-run/artifact-v2-contract.ts';
 
 //region Artifact schema version
@@ -20,7 +21,7 @@ import {
 /**
  * First schema generation there has ever been.
  *
- * NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V3` and has been
+ * NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V4` and has been
  * a two-lane generation since `settleEntry` moved to one. This was called
  * `SETTLED_ARTIFACT_SCHEMA_VERSION` and documented as the generation the pass
  * writes, which stopped being true at that move; it is renamed rather than
@@ -32,6 +33,12 @@ import {
  * changed and why a reader could not have worked it out from the fields alone.
  * A version that does NOT move on a shape change is the failure this field
  * exists to end, so say so here when a field is added compatibly.
+ *
+ * VERSION 4, 2026-08-24: one key renamed and nothing else. `chunkIndex`
+ * becomes `sliceIndex` on every per-slice record. It is the same rename version
+ * 3 made to the arrays, finishing the job on the field those arrays hold
+ * indices INTO, and it moved separately because `sliceIndex` was already taken
+ * by a different concept and had to be freed first.
  *
  * VERSION 3, 2026-08-24: three keys renamed and nothing else. Generation 2
  * spelled them `shippedChunkIndices`, `withdrawnChunkIndices` and
@@ -118,6 +125,7 @@ export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V1,
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V3,
+  ARTIFACT_SCHEMA_VERSION_V4,
 ];
 
 /**

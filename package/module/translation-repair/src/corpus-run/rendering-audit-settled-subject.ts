@@ -59,7 +59,7 @@ export type SettledIdentity = {
  *
  * @example
  * ```ts
- * const subject: SettledAuditSubject = { runSet, entryId, chunkIndex, ... };
+ * const subject: SettledAuditSubject = { runSet, entryId, sliceIndex, ... };
  * ```
  */
 export type SettledAuditSubject = {
@@ -88,7 +88,7 @@ export type SettledAuditSubject = {
   /**
    * Global slice index, which every join uses.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * What the lane's document ended up carrying here.
@@ -220,7 +220,7 @@ export function subjectsOf(
         WouldShipReading,
       ] {
         return [
-          slice.chunkIndex,
+          slice.sliceIndex,
           slice.reading,
         ];
       },),
@@ -246,7 +246,7 @@ export function subjectsOf(
       } = row;
 
       if (outcome.kind !== 'decided')
-        throw new Error(`slice ${row.chunkIndex} passed the decided filter and is not decided`,);
+        throw new Error(`slice ${row.sliceIndex} passed the decided filter and is not decided`,);
 
       /**
        * What would stand at this slice.
@@ -256,10 +256,10 @@ export function subjectsOf(
        * names is a contradiction inside one artifact. Dropping it would
        * shrink the audited population for a reason nobody would see.
        */
-      const reading = readings.get(row.chunkIndex,);
+      const reading = readings.get(row.sliceIndex,);
       if (reading === undefined)
         throw new Error(
-          `slice ${row.chunkIndex} was delivered by the translate lane and named by no comparison row`,
+          `slice ${row.sliceIndex} was delivered by the translate lane and named by no comparison row`,
         );
 
       return {
@@ -267,7 +267,7 @@ export function subjectsOf(
         entryId: artifact.id,
         artifactDigest: artifact.pipelineDigest,
         corpusSha: artifact.corpusSha,
-        chunkIndex: row.chunkIndex,
+        sliceIndex: row.sliceIndex,
         deliveryKind: shipped.kind,
         auditsArchiveText: shipped.kind === ARCHIVE_TEXT_DELIVERY,
         sourceText: row.sourceText,

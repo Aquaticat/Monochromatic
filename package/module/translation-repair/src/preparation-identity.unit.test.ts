@@ -59,14 +59,14 @@ function contentPair(
 ): ChunkPair {
   return {
     source: {
-      chunkIndex: index,
+      sliceIndex: index,
       nodes: [],
       startOffset: 0,
       endOffset: source.length,
       text: source,
     },
     target: {
-      chunkIndex: index,
+      sliceIndex: index,
       nodes: [],
       startOffset: 0,
       endOffset: target.length,
@@ -209,7 +209,7 @@ await describe({
                 target: '',
               },).source,
               target: makeInsertionChunk({
-                chunkIndex: 1,
+                sliceIndex: 1,
                 offset: 0,
               },),
             },

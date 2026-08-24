@@ -100,7 +100,7 @@ export type ChunkCriticPhase = {
  *
  * @param identityContext - declared names from both sides' front matter
  *
- * @param chunkIndex - chunk position, for the dismissal warning
+ * @param sliceIndex - chunk position, for the dismissal warning
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -125,7 +125,7 @@ export async function runChunkCriticPhase(
     identityContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
-    chunkIndex,
+    sliceIndex,
     signal,
     perCallTimeoutMs,
     l,
@@ -141,7 +141,7 @@ export async function runChunkCriticPhase(
     readonly identityContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -174,7 +174,7 @@ export async function runChunkCriticPhase(
   },);
   if (screening.contradicted) {
     l.warn(
-      `chunk ${String(chunkIndex,)}: ${
+      `chunk ${String(sliceIndex,)}: ${
         String(critic.nonTranslationVotes,)
       } non-translation votes dismissed: ${screening.findings
         .join('; ',)}`,

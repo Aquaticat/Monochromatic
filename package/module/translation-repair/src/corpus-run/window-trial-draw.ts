@@ -43,7 +43,7 @@ export const RELOCATION_CLASSES = {
  *
  * @example
  * ```ts
- * const pick: TrialSlice = { entryId: 'Mittens', chunkIndex: 7, sliceClass: 'relocation', };
+ * const pick: TrialSlice = { entryId: 'Mittens', sliceIndex: 7, sliceClass: 'relocation', };
  * ```
  */
 export type TrialSlice = {
@@ -55,7 +55,7 @@ export type TrialSlice = {
   /**
    * Slice position within that entry's preparation.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Class the screen flagged, or {@link CONTROL_CLASS}.
@@ -129,21 +129,21 @@ export function flaggedSlices(
       displacement.otherImbalances,
     ],
   ] as const) {
-    for (const chunkIndex of indices) {
-      if (assigned.has(chunkIndex,))
+    for (const sliceIndex of indices) {
+      if (assigned.has(sliceIndex,))
         continue;
       assigned.set(
-        chunkIndex,
+        sliceIndex,
         sliceClass,
       );
     }
   }
 
   return [...assigned,]
-    .map(function toSlice([chunkIndex, sliceClass,],): TrialSlice {
+    .map(function toSlice([sliceIndex, sliceClass,],): TrialSlice {
       return {
         entryId,
-        chunkIndex,
+        sliceIndex,
         sliceClass,
       };
     },)
@@ -151,7 +151,7 @@ export function flaggedSlices(
       left,
       right,
     ): number {
-      return left.chunkIndex - right.chunkIndex;
+      return left.sliceIndex - right.sliceIndex;
     },);
 }
 
@@ -200,7 +200,7 @@ export function controlSlices(
     displacement,
   },)
     .map(function toIndex(slice,): number {
-      return slice.chunkIndex;
+      return slice.sliceIndex;
     },),);
 
   /**
@@ -209,12 +209,12 @@ export function controlSlices(
   const unflagged = displacement.slices
     .map(function toIndex(
       _classified,
-      chunkIndex,
+      sliceIndex,
     ): number {
-      return chunkIndex;
+      return sliceIndex;
     },)
-    .filter(function notFlagged(chunkIndex,): boolean {
-      return !flagged.has(chunkIndex,);
+    .filter(function notFlagged(sliceIndex,): boolean {
+      return !flagged.has(sliceIndex,);
     },);
   if ((wanted <= 0) || (unflagged.length === 0))
     return [];
@@ -251,10 +251,10 @@ export function controlSlices(
       0,
       wanted,
     )
-    .map(function toSlice(chunkIndex,): TrialSlice {
+    .map(function toSlice(sliceIndex,): TrialSlice {
       return {
         entryId,
-        chunkIndex,
+        sliceIndex,
         sliceClass: CONTROL_CLASS,
       };
     },);

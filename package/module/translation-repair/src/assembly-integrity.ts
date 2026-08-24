@@ -262,7 +262,7 @@ function suspectsFor(
        * Mentions counted in the archive's own text for this slice.
        */
       const beforeCounts = footnoteIdentifiers({
-        text: incumbentBySlice.get(String(replacement.chunkIndex,),) ?? '',
+        text: incumbentBySlice.get(String(replacement.sliceIndex,),) ?? '',
       },);
 
       /**
@@ -281,7 +281,7 @@ function suspectsFor(
       },);
     },)
     .map(function toIndex(replacement,): number {
-      return replacement.chunkIndex;
+      return replacement.sliceIndex;
     },);
 }
 
@@ -362,7 +362,7 @@ export function guardFootnoteAssembly(
   const incumbentBySlice = new Map(slices.map(function toEntry(slice,) {
     return [
       String(slice.target
-        .chunkIndex,),
+        .sliceIndex,),
       slice.target
         .text,
     ] as const;
@@ -422,7 +422,7 @@ export function guardFootnoteAssembly(
           } slices), since their replacements reassemble to the archive text`,
         );
         withdrawn.push(...standing.map(function toIndex(replacement,): number {
-          return replacement.chunkIndex;
+          return replacement.sliceIndex;
         },),);
         return {
           assembledText: targetText,
@@ -491,7 +491,7 @@ export function guardFootnoteAssembly(
           } slices), since no slice could be blamed for the defect`,
         );
         withdrawn.push(...standing.map(function toIndex(replacement,): number {
-          return replacement.chunkIndex;
+          return replacement.sliceIndex;
         },),);
         return {
           assembledText: targetText,
@@ -522,7 +522,7 @@ export function guardFootnoteAssembly(
       }
       withdrawn.push(...culprits,);
       surviving = standing.filter(function stands(replacement,): boolean {
-        return !culprits.has(replacement.chunkIndex,);
+        return !culprits.has(replacement.sliceIndex,);
       },);
     }
     throw new Error(

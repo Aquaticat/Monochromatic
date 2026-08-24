@@ -24,14 +24,14 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
  *
  * @example
  * ```ts
- * const selection: SliceSelection = { chunkIndex: 7, origin: 'fresh', decision: 'judged', voteWeight: 2, shipped: true, producer, };
+ * const selection: SliceSelection = { sliceIndex: 7, origin: 'fresh', decision: 'judged', voteWeight: 2, shipped: true, producer, };
  * ```
  */
 export type SliceSelection = {
   /**
    * Slice this describes, in document order.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Whether the winning text was the archive's or freshly written.
@@ -125,7 +125,7 @@ export function buildSliceSelections(
 
   return records.map(function toSelection(record,): SliceSelection {
     return {
-      chunkIndex: record.chunkIndex,
+      sliceIndex: record.sliceIndex,
       origin: record.stageResult
         .origin,
       producer: record.stageResult
@@ -134,7 +134,7 @@ export function buildSliceSelections(
         .decision,
       voteWeight: record.stageResult
         .voteWeight,
-      shipped: shipped.has(record.chunkIndex,),
+      shipped: shipped.has(record.sliceIndex,),
       round: {
         // SLATE ORDER, which is the order the judges saw and the order their
         // one-based ballot indices point into. Taking the producers off the

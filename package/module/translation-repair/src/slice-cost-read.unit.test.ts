@@ -89,7 +89,7 @@ await describe({
         expect(rows,).toHaveLength(2,);
         expect(rows[0],).toEqual({
           lane: 'repair',
-          chunkIndex: 0,
+          sliceIndex: 0,
           sourceChars: 812,
           elapsedMs: 45_210,
           exit: 'computed',
@@ -186,14 +186,14 @@ await describe({
          * Loop that leaves its body early for every slice, as a lane does for a
          * slice it has nothing to do with.
          */
-        for (const chunkIndex of [
+        for (const sliceIndex of [
           0,
           1,
         ]) {
           using cost = armSliceCost({
             l: capturingLogger({ lines: said, },),
             lane: 'repair',
-            chunkIndex,
+            sliceIndex,
             sourceChars: 7,
             signal: LIVE_RUN.signal,
           },);
@@ -214,7 +214,7 @@ await describe({
           using cost = armSliceCost({
             l: capturingLogger({ lines: said, },),
             lane: 'translate',
-            chunkIndex: 12,
+            sliceIndex: 12,
             sourceChars: 843,
             signal: LIVE_RUN.signal,
           },);
@@ -226,7 +226,7 @@ await describe({
         expect(rows[0]
           ?.lane,).toBe('translate',);
         expect(rows[0]
-          ?.chunkIndex,).toBe(12,);
+          ?.sliceIndex,).toBe(12,);
         expect(rows[0]
           ?.sourceChars,).toBe(843,);
       },
@@ -241,7 +241,7 @@ await describe({
           using cost = armSliceCost({
             l: capturingLogger({ lines: said, },),
             lane: 'repair',
-            chunkIndex: 0,
+            sliceIndex: 0,
             sourceChars: 11,
             signal: LIVE_RUN.signal,
           },);
@@ -262,7 +262,7 @@ await describe({
           using cost = armSliceCost({
             l: capturingLogger({ lines: said, },),
             lane: 'translate',
-            chunkIndex: 4,
+            sliceIndex: 4,
             sourceChars: 96,
             signal: LIVE_RUN.signal,
           },);
@@ -296,7 +296,7 @@ await describe({
           using cost = armSliceCost({
             l: capturingLogger({ lines: said, },),
             lane: 'repair',
-            chunkIndex: 9,
+            sliceIndex: 9,
             sourceChars: 4_096,
             signal: stopped.signal,
           },);
@@ -331,7 +331,7 @@ await describe({
           using cost = armSliceCost({
             l: capturingLogger({ lines: said, },),
             lane: 'translate',
-            chunkIndex: 3,
+            sliceIndex: 3,
             sourceChars: 51,
             signal: stopped.signal,
           },);
@@ -353,7 +353,7 @@ await describe({
           using cost = armSliceCost({
             l: capturingLogger({ lines: said, },),
             lane: 'translate',
-            chunkIndex: 5,
+            sliceIndex: 5,
             sourceChars: 96,
             signal: LIVE_RUN.signal,
           },);

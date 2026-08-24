@@ -120,14 +120,14 @@ export type ArtifactConsolidationTerminal =
  *
  * @example
  * ```ts
- * const slice: ArtifactConsolidateSliceV2 = { chunkIndex: 0, terminal: 'incumbent-only', shipped: { kind: 'unchanged', }, rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
+ * const slice: ArtifactConsolidateSliceV2 = { sliceIndex: 0, terminal: 'incumbent-only', shipped: { kind: 'unchanged', }, rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
  * ```
  */
 export type ArtifactConsolidateSliceV2 = {
   /**
    * Slice both lanes name it by, matching the comparison row it answers.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * How the slice left the stage, which is the field a census should count.
@@ -169,7 +169,7 @@ export type ArtifactConsolidateSliceV2 = {
 /**
  * Reads the artifact's record out of what the consolidation stage returned.
  *
- * @param chunkIndex - slice this answers
+ * @param sliceIndex - slice this answers
  *
  * @param settlement - what the stage settled
  *
@@ -177,15 +177,15 @@ export type ArtifactConsolidateSliceV2 = {
  *
  * @example
  * ```ts
- * const slice = describeConsolidateSlice({ chunkIndex: 0, settlement, },);
+ * const slice = describeConsolidateSlice({ sliceIndex: 0, settlement, },);
  * ```
  */
 export function describeConsolidateSlice(
   {
-    chunkIndex,
+    sliceIndex,
     settlement,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly settlement: ConsolidationSettlement;
   },
 ): ArtifactConsolidateSliceV2 {
@@ -204,7 +204,7 @@ export function describeConsolidateSlice(
    */
   const consolidated = settlement.terminal === 'consolidated';
   return {
-    chunkIndex,
+    sliceIndex,
     terminal: settlement.terminal,
     shipped: consolidated
       ? {

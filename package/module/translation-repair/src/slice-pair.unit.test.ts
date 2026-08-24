@@ -339,9 +339,9 @@ await describe({
         },);
         for (const [index, slice,] of slices.entries()) {
           expect(slice.target
-            .chunkIndex,).toBe(5 + index,);
+            .sliceIndex,).toBe(5 + index,);
           expect(slice.source
-            .chunkIndex,).toBe(5 + index,);
+            .sliceIndex,).toBe(5 + index,);
         }
       },
     },),
@@ -374,9 +374,9 @@ await describe({
         },);
         for (const slice of slices) {
           expect(slice.source
-            .chunkIndex,).toBe(7,);
+            .sliceIndex,).toBe(7,);
           expect(slice.target
-            .chunkIndex,).toBe(7,);
+            .sliceIndex,).toBe(7,);
         }
       },
     },),
@@ -451,7 +451,7 @@ await describe({
           pair: {
             source: sourceChunk,
             target: makeInsertionChunk({
-              chunkIndex: 0,
+              sliceIndex: 0,
               offset: ANCHOR_OFFSET,
             },),
           },
@@ -484,7 +484,7 @@ await describe({
           pair: {
             source: sourceChunk,
             target: makeInsertionChunk({
-              chunkIndex: 0,
+              sliceIndex: 0,
               offset: ANCHOR_OFFSET,
             },),
           },
@@ -520,7 +520,7 @@ await describe({
           pair: {
             source: sourceChunk,
             target: makeInsertionChunk({
-              chunkIndex: 0,
+              sliceIndex: 0,
               offset: ANCHOR_OFFSET,
             },),
           },
@@ -536,9 +536,9 @@ await describe({
           expect(slice.target
             .endOffset,).toBe(ANCHOR_OFFSET,);
           expect(slice.source
-            .chunkIndex,).toBe(7 + at,);
+            .sliceIndex,).toBe(7 + at,);
           expect(slice.target
-            .chunkIndex,).toBe(7 + at,);
+            .sliceIndex,).toBe(7 + at,);
         }
       },
     },),

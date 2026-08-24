@@ -36,7 +36,7 @@ const CAT_A = 'hf:cat/Cat-A' as unknown as RosterModelId;
  * Everything the ledger ignores is filled with whatever satisfies the type:
  * what is under test is which fields travel, not what the stage decided.
  *
- * @param chunkIndex - slice position
+ * @param sliceIndex - slice position
  *
  * @param origin - whether the winner was the archive's text or fresh
  *
@@ -48,17 +48,17 @@ const CAT_A = 'hf:cat/Cat-A' as unknown as RosterModelId;
  *
  * @example
  * ```ts
- * const record = recordFor({ chunkIndex: 0, origin: 'fresh', decision: 'judged', voteWeight: 2, },);
+ * const record = recordFor({ sliceIndex: 0, origin: 'fresh', decision: 'judged', voteWeight: 2, },);
  * ```
  */
 function recordFor(
   {
-    chunkIndex,
+    sliceIndex,
     origin,
     decision,
     voteWeight,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly origin: string;
     readonly decision: string;
     readonly voteWeight: number;
@@ -67,7 +67,7 @@ function recordFor(
   return {
     kind: 'translate-slice',
     schemaVersion: 1,
-    chunkIndex,
+    sliceIndex,
     outputText: 'The cat sleeps on the windowsill.\n',
     changed: origin === 'fresh',
     disposition: 'stage-result',
@@ -112,23 +112,23 @@ const CAT_B = 'hf:cat/Cat-B' as unknown as RosterModelId;
  * named it. So over these two candidates there is one self-vote out of two
  * stakeholder ballots, which is what the measurement case reads.
  *
- * @param chunkIndex - slice position
+ * @param sliceIndex - slice position
  *
  * @returns Record whose round is worth measuring
  *
  * @example
  * ```ts
- * const record = recordWithRound({ chunkIndex: 0, },);
+ * const record = recordWithRound({ sliceIndex: 0, },);
  * ```
  */
 function recordWithRound(
-  { chunkIndex, }: { readonly chunkIndex: number; },
+  { sliceIndex, }: { readonly sliceIndex: number; },
 ): TranslateSliceRecord {
   /**
    * Base record, whose round is then replaced with a populated one.
    */
   const base = recordFor({
-    chunkIndex,
+    sliceIndex,
     origin: 'fresh',
     decision: 'judged',
     voteWeight: 2,
@@ -189,13 +189,13 @@ await describe({
         const selections = buildSliceSelections({
           records: [
             recordFor({
-              chunkIndex: 0,
+              sliceIndex: 0,
               origin: 'incumbent',
               decision: 'judged',
               voteWeight: 2,
             },),
             recordFor({
-              chunkIndex: 1,
+              sliceIndex: 1,
               origin: 'fresh',
               decision: 'judged',
               voteWeight: 3,
@@ -223,13 +223,13 @@ await describe({
         const selections = buildSliceSelections({
           records: [
             recordFor({
-              chunkIndex: 4,
+              sliceIndex: 4,
               origin: 'fresh',
               decision: 'judged',
               voteWeight: 3,
             },),
             recordFor({
-              chunkIndex: 7,
+              sliceIndex: 7,
               origin: 'fresh',
               decision: 'judged',
               voteWeight: 3,
@@ -247,7 +247,7 @@ await describe({
       fn: async () => {
         const selections = buildSliceSelections({
           records: [recordFor({
-            chunkIndex: 0,
+            sliceIndex: 0,
             origin: 'fresh',
             decision: 'judged',
             voteWeight: 2,
@@ -265,13 +265,13 @@ await describe({
         const selections = buildSliceSelections({
           records: [
             recordFor({
-              chunkIndex: 0,
+              sliceIndex: 0,
               origin: 'incumbent',
               decision: 'declined-indecision',
               voteWeight: 0,
             },),
             recordFor({
-              chunkIndex: 1,
+              sliceIndex: 1,
               origin: 'incumbent',
               decision: 'judged',
               voteWeight: 2,
@@ -289,7 +289,7 @@ await describe({
         + 'reasons are what found the Kimi-K3 channel marker and the Dethelly relocation',
       fn: async () => {
         const selections = buildSliceSelections({
-          records: [recordWithRound({ chunkIndex: 0, },),],
+          records: [recordWithRound({ sliceIndex: 0, },),],
           changedSliceIndices: [0,],
         },);
 
@@ -311,7 +311,7 @@ await describe({
         + 'a reshaping step is where a measurement quietly starts answering a different question',
       fn: async () => {
         const selections = buildSliceSelections({
-          records: [recordWithRound({ chunkIndex: 0, },),],
+          records: [recordWithRound({ sliceIndex: 0, },),],
           changedSliceIndices: [0,],
         },);
 
@@ -337,9 +337,9 @@ await describe({
         const selections = buildSliceSelections({
           records: [3,
             9,
-            11,].map(function toRecord(chunkIndex,) {
+            11,].map(function toRecord(sliceIndex,) {
             return recordFor({
-              chunkIndex,
+              sliceIndex,
               origin: 'fresh',
               decision: 'judged',
               voteWeight: 2,
@@ -348,7 +348,7 @@ await describe({
           changedSliceIndices: [9,],
         },);
         expect(selections.map(function toIndex(selection,) {
-          return selection.chunkIndex;
+          return selection.sliceIndex;
         },),).toEqual([3,
           9,
           11,],);

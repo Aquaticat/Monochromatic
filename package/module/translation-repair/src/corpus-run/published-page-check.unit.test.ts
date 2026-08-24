@@ -96,7 +96,7 @@ type FixtureSlice = {
 };
 
 /**
- * Builds an artifact over the slices given, in `chunkIndex` order.
+ * Builds an artifact over the slices given, in `sliceIndex` order.
  *
  * GOES THROUGH LANES THAT AGREED, which is the shortest path to a settled
  * wording: a slice both lanes wrote the same way needs no contest, so the
@@ -116,10 +116,10 @@ function artifactOver(slices: readonly FixtureSlice[],): WouldShipSource {
   return {
     comparison: slices.map(function slice(
       { incumbent, ships, },
-      chunkIndex,
+      sliceIndex,
     ): unknown {
       return {
-        chunkIndex,
+        sliceIndex,
         incumbentKind: (incumbent === '') ? 'absent' : 'present',
         incumbentText: incumbent,
         repairText: ships,
@@ -153,7 +153,7 @@ function artifactOver(slices: readonly FixtureSlice[],): WouldShipSource {
  * Builds an artifact whose slices ship the wordings given and leave the archive
  * saying the same thing, which is all the wording scan needs.
  *
- * @param wordings - text each slice carries, in `chunkIndex` order, with an
+ * @param wordings - text each slice carries, in `sliceIndex` order, with an
  * empty string standing for a slice that ships nothing
  *
  * @returns Artifact the check reads
@@ -205,7 +205,7 @@ await describe({
 
         expect(check.missing,).toEqual([
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             characters: SECOND_NAP.length,
           },
         ],);
@@ -226,7 +226,7 @@ await describe({
 
         expect(check.missing,).toEqual([
           {
-            chunkIndex: 1,
+            sliceIndex: 1,
             characters: SECOND_NAP.length,
           },
         ],);

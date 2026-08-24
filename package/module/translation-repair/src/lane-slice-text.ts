@@ -105,7 +105,7 @@ export type LaneSliceOutcome = {
  * @example
  * ```ts
  * const wording: LaneSliceText = {
- *   chunkIndex: 3,
+ *   sliceIndex: 3,
  *   incumbentKind: 'present',
  *   incumbentText: 'The cat naps.',
  *   outcome: { kind: 'decided', acceptedText: 'The cat is napping.', },
@@ -116,7 +116,7 @@ export type LaneSliceText = {
   /**
    * Global slice index, which is what a comparison joins two lanes on.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Whether the archive holds any wording at this slice at all.
@@ -169,7 +169,7 @@ export type UndecidedSlicePolicy =
  * already refuses, and reading the sets first here would hide it rather than
  * let that check speak.
  *
- * @param chunkIndex - slice being named, for the failure message
+ * @param sliceIndex - slice being named, for the failure message
  *
  * @param byIndex - wordings the lane reported, by slice index; asked BOTH
  * whether it holds this slice and what it holds, because a slice reported with
@@ -190,19 +190,19 @@ export type UndecidedSlicePolicy =
  *
  * @example
  * ```ts
- * const outcome = outcomeOf({ chunkIndex, byIndex, unfilledHere, unheardHere, undecided, },);
+ * const outcome = outcomeOf({ sliceIndex, byIndex, unfilledHere, unheardHere, undecided, },);
  * ```
  */
 function outcomeOf(
   {
-    chunkIndex,
+    sliceIndex,
     byIndex,
     unfilledHere,
     unheardHere,
     notApplicableHere,
     undecided,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly byIndex: ReadonlyMap<number, string>;
     readonly unfilledHere: boolean;
     readonly unheardHere: boolean;
@@ -210,15 +210,15 @@ function outcomeOf(
     readonly undecided: UndecidedSlicePolicy;
   },
 ): LaneSliceOutcome {
-  if (byIndex.has(chunkIndex,)) {
+  if (byIndex.has(sliceIndex,)) {
     /**
      * Wording the lane reported, which the membership check above proves is
      * there unless the lane reported the slice with nothing in it.
      */
-    const acceptedText = byIndex.get(chunkIndex,);
+    const acceptedText = byIndex.get(sliceIndex,);
     if ((typeof acceptedText) !== 'string')
       throw new LaneSliceCoverageError({
-        message: `lane decided slice ${String(chunkIndex,)} with no wording`,
+        message: `lane decided slice ${String(sliceIndex,)} with no wording`,
       },);
     return {
       kind: 'decided',
@@ -238,7 +238,7 @@ function outcomeOf(
     return { kind: 'not-applicable', };
   if (undecided === 'refuse')
     throw new LaneSliceCoverageError({
-      message: `lane left prepared slice ${String(chunkIndex,)} undecided`,
+      message: `lane left prepared slice ${String(sliceIndex,)} undecided`,
     },);
   return { kind: 'not-evaluated', };
 }
@@ -290,7 +290,7 @@ export function buildLaneSliceTexts(
   }: {
     readonly slices: readonly ChunkPair[];
     readonly decided: readonly {
-      readonly chunkIndex: number;
+      readonly sliceIndex: number;
       readonly text: string;
     }[];
     readonly undecided: UndecidedSlicePolicy;
@@ -307,7 +307,7 @@ export function buildLaneSliceTexts(
     string,
   ] {
     return [
-      one.chunkIndex,
+      one.sliceIndex,
       one.text,
     ];
   },),);
@@ -318,7 +318,7 @@ export function buildLaneSliceTexts(
    */
   const prepared = new Set(slices.map(function toIndex(slice,): number {
     return slice.target
-      .chunkIndex;
+      .sliceIndex;
   },),);
 
   // Both maps above would swallow a repeat: the last entry would win and the
@@ -337,9 +337,9 @@ export function buildLaneSliceTexts(
       } distinct slices`,
     },);
   for (const one of decided) {
-    if (!prepared.has(one.chunkIndex,))
+    if (!prepared.has(one.sliceIndex,))
       throw new LaneSliceCoverageError({
-        message: `lane decided slice ${String(one.chunkIndex,)}, which this preparation never produced`,
+        message: `lane decided slice ${String(one.sliceIndex,)}, which this preparation never produced`,
       },);
   }
 
@@ -394,18 +394,18 @@ export function buildLaneSliceTexts(
     /**
      * This slice's global index.
      */
-    const { chunkIndex, } = slice.target;
+    const { sliceIndex, } = slice.target;
 
     /**
      * What this lane did about the slice, before the stopped-prefix rule sees
      * it.
      */
     const outcome = outcomeOf({
-      chunkIndex,
+      sliceIndex,
       byIndex,
-      unfilledHere: unfilled.has(chunkIndex,),
-      unheardHere: unheard.has(chunkIndex,),
-      notApplicableHere: notApplicable.has(chunkIndex,),
+      unfilledHere: unfilled.has(sliceIndex,),
+      unheardHere: unheard.has(sliceIndex,),
+      notApplicableHere: notApplicable.has(sliceIndex,),
       undecided,
     },);
 
@@ -416,7 +416,7 @@ export function buildLaneSliceTexts(
     if (stopped.already && (outcome.kind !== 'not-evaluated')) {
       throw new LaneSliceCoverageError({
         message: `lane reports reaching slice ${
-          String(chunkIndex,)
+          String(sliceIndex,)
         } after leaving an earlier one unexamined, which no early stop produces`,
       },);
     }
@@ -424,7 +424,7 @@ export function buildLaneSliceTexts(
       stopped.already = true;
 
     return {
-      chunkIndex,
+      sliceIndex,
       // READ OFF THE PREPARED CHUNK, which is the only thing that knows. An
       // anchor names a place the archive never translated; a content slice that
       // happens to be blank is wording the archive does hold.

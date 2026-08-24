@@ -387,8 +387,8 @@ function replacedFirstSlice(
       const acceptedText = position === 0 ? `${incumbentText} It purrs.` : incumbentText;
 
       return {
-        chunkIndex: slice.target
-          .chunkIndex,
+        sliceIndex: slice.target
+          .sliceIndex,
         sourceText: slice.source
           .text,
         incumbentKind: 'present',
@@ -429,7 +429,7 @@ function rawResultFor(
         .kind === 'replacement-shipped';
     },)
     .map(function indexOf(row,): number {
-      return row.chunkIndex;
+      return row.sliceIndex;
     },);
 
   return {
@@ -440,7 +440,7 @@ function rawResultFor(
     withdrawnSliceCount: 0,
     sliceTexts: rows.map(function toEvidence(row,): Record<string, unknown> {
       return {
-        chunkIndex: row.chunkIndex,
+        sliceIndex: row.sliceIndex,
         incumbentKind: row.incumbentKind,
         incumbentText: row.incumbentText,
         outcome: row.outcome,

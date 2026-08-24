@@ -25,7 +25,7 @@ import {
  *
  * @example
  * ```ts
- * const row: SliceCostRow = { lane: 'repair', chunkIndex: 3, sourceChars: 812, elapsedMs: 45210, };
+ * const row: SliceCostRow = { lane: 'repair', sliceIndex: 3, sourceChars: 812, elapsedMs: 45210, };
  * ```
  */
 export type SliceCostRow = {
@@ -37,7 +37,7 @@ export type SliceCostRow = {
   /**
    * Slice this measures.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Size of what was translated.
@@ -398,7 +398,7 @@ function readLine(
         name: 'exit',
         allowed: SLICE_COST_EXITS,
       },),
-      chunkIndex: provenWhole({
+      sliceIndex: provenWhole({
         fields,
         name: 'chunk',
       },),

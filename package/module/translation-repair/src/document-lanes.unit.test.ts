@@ -466,7 +466,7 @@ await describe({
               .kind === 'replacement-shipped';
           },)
           .map(function toIndex(record,): number {
-            return record.chunkIndex;
+            return record.sliceIndex;
           },);
         expect(translateShipped,).toEqual(lanes.translate
           .changedSliceIndices,);

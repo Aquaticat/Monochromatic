@@ -36,7 +36,7 @@ export function alignmentRefusals(
     .flatMap(function toFinding(record,): readonly string[] {
       if (record.disposition === 'refused-alignment') {
         return [alignmentRefusalFinding({
-          chunkIndex: record.chunkIndex,
+          sliceIndex: record.sliceIndex,
           assessment: record.alignment,
         },),];
       }
@@ -47,7 +47,7 @@ export function alignmentRefusals(
       // and a single label would hide that.
       if (record.disposition === 'refused-quote-loss') {
         return [quoteLossRefusalFinding({
-          chunkIndex: record.chunkIndex,
+          sliceIndex: record.sliceIndex,
           incumbentText: record.outputText,
           shippedText: record.stageResult
             .text,
@@ -58,7 +58,7 @@ export function alignmentRefusals(
       // whose refusals are all alignment, and one label would hide that.
       if (record.disposition === 'refused-declared-name') {
         return [declaredNameRefusalFinding({
-          chunkIndex: record.chunkIndex,
+          sliceIndex: record.sliceIndex,
           dropped: record.droppedDeclaredNames ?? [],
         },),];
       }

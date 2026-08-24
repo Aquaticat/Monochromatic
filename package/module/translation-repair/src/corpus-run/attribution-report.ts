@@ -74,14 +74,14 @@ function bump(
  *
  * @example
  * ```ts
- * const view: SliceCriticView = { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], };
+ * const view: SliceCriticView = { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], };
  * ```
  */
 export type SliceCriticView = {
   /**
    * Chunk position within the document.
    */
-  readonly chunkIndex: number;
+  readonly sliceIndex: number;
 
   /**
    * Critics that answered on this chunk.

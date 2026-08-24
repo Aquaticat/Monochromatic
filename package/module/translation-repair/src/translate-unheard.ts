@@ -50,20 +50,20 @@ export function heardNobody(
  * corpus, so a build that started refusing every cached slice would look like a
  * run that simply had no cache.
  *
- * @param chunkIndex - slice being asked again
+ * @param sliceIndex - slice being asked again
  *
  * @returns Finding naming the slice and why it was recomputed
  *
  * @example
  * ```ts
- * findings.push(unheardCacheDiscardFinding({ chunkIndex, },),);
+ * findings.push(unheardCacheDiscardFinding({ sliceIndex, },),);
  * ```
  */
 export function unheardCacheDiscardFinding(
-  { chunkIndex, }: { readonly chunkIndex: number; },
+  { sliceIndex, }: { readonly sliceIndex: number; },
 ): string {
   return `translate-discarded-unheard-slice chunk ${
-    String(chunkIndex,)
+    String(sliceIndex,)
   }; cached record heard no translator, which this driver never caches, so it was written by another `
     + 'build and the slice was asked again rather than settled on a wording nobody produced';
 }
@@ -96,7 +96,7 @@ export class TranslateUnheardError extends Error {
 /**
  * Refuses a record that heard nobody and did not leave the archive alone.
  *
- * @param chunkIndex - slice this record settles, for the message
+ * @param sliceIndex - slice this record settles, for the message
  *
  * @param record - settled record, checked only when its stage heard nobody
  *
@@ -109,16 +109,16 @@ export class TranslateUnheardError extends Error {
  *
  * @example
  * ```ts
- * assertUnheardKeptIncumbent({ chunkIndex, record, incumbentText, },);
+ * assertUnheardKeptIncumbent({ sliceIndex, record, incumbentText, },);
  * ```
  */
 export function assertUnheardKeptIncumbent(
   {
-    chunkIndex,
+    sliceIndex,
     record,
     incumbentText,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly record: TranslateSliceRecord;
     readonly incumbentText: string;
   },
@@ -127,13 +127,13 @@ export function assertUnheardKeptIncumbent(
     return;
   if (record.outputText !== incumbentText) {
     throw new TranslateUnheardError({
-      message: `slice ${String(chunkIndex,)} heard no translator and carries wording that is not the `
+      message: `slice ${String(sliceIndex,)} heard no translator and carries wording that is not the `
         + 'archive\'s, so a rendering nobody produced would be written',
     },);
   }
   if (record.changed) {
     throw new TranslateUnheardError({
-      message: `slice ${String(chunkIndex,)} heard no translator and reports a change, which would put `
+      message: `slice ${String(sliceIndex,)} heard no translator and reports a change, which would put `
         + 'it in the shipped set while the wording ledger reports that nobody produced one',
     },);
   }

@@ -83,7 +83,7 @@ export type ChunkVerdict = {
  * caller can get wrong, and `selectRepairCandidate` refuses a slate whose
  * unchanged entry carries anything else.
  *
- * @param chunkIndex - slice being settled, which names the patched candidate
+ * @param sliceIndex - slice being settled, which names the patched candidate
  *
  * @param incumbentText - archive wording of this slice
  *
@@ -102,18 +102,18 @@ export type ChunkVerdict = {
  *
  * @example
  * ```ts
- * const verdict = settleChunkVerdict({ chunkIndex, incumbentText, patchedText, measurements, },);
+ * const verdict = settleChunkVerdict({ sliceIndex, incumbentText, patchedText, measurements, },);
  * ```
  */
 export function settleChunkVerdict(
   {
-    chunkIndex,
+    sliceIndex,
     incumbentText,
     patchedText,
     measurements,
     declaredNames,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly incumbentText: string;
     readonly patchedText: string;
     readonly measurements: CandidateMeasurements;
@@ -130,7 +130,7 @@ export function settleChunkVerdict(
       measurements: UNCHANGED_MEASUREMENTS,
     },
     {
-      candidateId: `candidate/chunk-${String(chunkIndex,)}`,
+      candidateId: `candidate/chunk-${String(sliceIndex,)}`,
       text: patchedText,
       measurements,
     },
@@ -209,7 +209,7 @@ export type SettledChunk = ChunkVerdict & {
  * count credited issues no applied envelope ever served, and the only reason
  * that was findable is that one place owned both.
  *
- * @param chunkIndex - slice being settled
+ * @param sliceIndex - slice being settled
  *
  * @param incumbentText - archive wording of this slice
  *
@@ -235,12 +235,12 @@ export type SettledChunk = ChunkVerdict & {
  *
  * @example
  * ```ts
- * const settled = settleChunkFromChecks({ chunkIndex, incumbentText, patchedText, ... },);
+ * const settled = settleChunkFromChecks({ sliceIndex, incumbentText, patchedText, ... },);
  * ```
  */
 export function settleChunkFromChecks(
   {
-    chunkIndex,
+    sliceIndex,
     incumbentText,
     patchedText,
     appliedOperations,
@@ -250,7 +250,7 @@ export function settleChunkFromChecks(
     targetDocument,
     declaredNames,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly incumbentText: string;
     readonly patchedText: string;
     readonly appliedOperations: readonly PatchOperation[];
@@ -276,7 +276,7 @@ export function settleChunkFromChecks(
 
   return {
     ...settleChunkVerdict({
-      chunkIndex,
+      sliceIndex,
       declaredNames,
       incumbentText,
       patchedText,
@@ -302,7 +302,7 @@ export function settleChunkFromChecks(
  * the decision it summarises is worse than no summary: a run reads as healthy
  * while shipping something else.
  *
- * @param chunkIndex - slice being reported
+ * @param sliceIndex - slice being reported
  *
  * @param changed - whether the returned wording differs from the archive's
  *
@@ -318,19 +318,19 @@ export function settleChunkFromChecks(
  *
  * @example
  * ```ts
- * const line = describeChunkSettlement({ chunkIndex, changed, resolvedCount, ... },);
+ * const line = describeChunkSettlement({ sliceIndex, changed, resolvedCount, ... },);
  * ```
  */
 export function describeChunkSettlement(
   {
-    chunkIndex,
+    sliceIndex,
     changed,
     resolvedCount,
     creditableCount,
     acceptedCount,
     unenvelopedCount,
   }: {
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly changed: boolean;
     readonly resolvedCount: number;
     readonly creditableCount: number;
@@ -338,7 +338,7 @@ export function describeChunkSettlement(
     readonly unenvelopedCount: number;
   },
 ): string {
-  return `chunk ${String(chunkIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
+  return `chunk ${String(sliceIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
     String(resolvedCount,)
   }/${String(creditableCount,)} served accepted issues resolved (${
     String(acceptedCount,)

@@ -79,7 +79,7 @@ function voiceSaying(
  *
  * @param entryId - corpus entry
  *
- * @param chunkIndex - slice index
+ * @param sliceIndex - slice index
  *
  * @param auditsArchiveText - whether this audited the archive's own English
  *
@@ -89,20 +89,20 @@ function voiceSaying(
  *
  * @example
  * ```ts
- * const row = rowFor({ runSet: 'first', entryId: 'mittens', chunkIndex: 0, auditsArchiveText: false, voices: [], },);
+ * const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, auditsArchiveText: false, voices: [], },);
  * ```
  */
 function rowFor(
   {
     runSet,
     entryId,
-    chunkIndex,
+    sliceIndex,
     auditsArchiveText,
     voices,
   }: {
     readonly runSet: string;
     readonly entryId: string;
-    readonly chunkIndex: number;
+    readonly sliceIndex: number;
     readonly auditsArchiveText: boolean;
     readonly voices: readonly SettledAuditRow['report']['rows'][number][];
   },
@@ -110,7 +110,7 @@ function rowFor(
   return {
     runSet,
     entryId,
-    chunkIndex,
+    sliceIndex,
     deliveryKind: auditsArchiveText ? 'incumbent-retained' : 'replacement-shipped',
     auditsArchiveText,
     artifactDigest: 'sha256-tree-v1:cafef00d',
@@ -150,7 +150,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -161,14 +161,14 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 1,
+            sliceIndex: 1,
             auditsArchiveText: true,
             voices: [QUIET,],
           },),
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 2,
+            sliceIndex: 2,
             auditsArchiveText: false,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -211,7 +211,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             auditsArchiveText: false,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -222,14 +222,14 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 1,
+            sliceIndex: 1,
             auditsArchiveText: false,
             voices: [QUIET,],
           },),
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 2,
+            sliceIndex: 2,
             auditsArchiveText: false,
             voices: [QUIET,],
           },),
@@ -264,7 +264,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             auditsArchiveText: false,
             voices: [
               voiceSaying({
@@ -278,7 +278,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 1,
+            sliceIndex: 1,
             auditsArchiveText: false,
             voices: [
               voiceSaying({
@@ -331,7 +331,7 @@ await describe({
         const rows = [rowFor({
           runSet: 'first',
           entryId: 'mittens',
-          chunkIndex: 0,
+          sliceIndex: 0,
           auditsArchiveText: false,
           voices: [voiceSaying({
             modelId: 'hf:cat/Tabby-1',
@@ -366,7 +366,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 3,
+            sliceIndex: 3,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -377,7 +377,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 4,
+            sliceIndex: 4,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -413,7 +413,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 3,
+            sliceIndex: 3,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -424,7 +424,7 @@ await describe({
           rowFor({
             runSet: 'second',
             entryId: 'mittens',
-            chunkIndex: 4,
+            sliceIndex: 4,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -450,7 +450,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -461,7 +461,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 3,
+            sliceIndex: 3,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -486,7 +486,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 0,
+            sliceIndex: 0,
             auditsArchiveText: true,
             voices: [voiceSaying({
               modelId: 'hf:cat/Tabby-1',
@@ -497,7 +497,7 @@ await describe({
           rowFor({
             runSet: 'first',
             entryId: 'mittens',
-            chunkIndex: 1,
+            sliceIndex: 1,
             auditsArchiveText: true,
             voices: [QUIET,],
           },),
