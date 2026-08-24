@@ -18060,3 +18060,27 @@ THE COST SIDE OF THAT SAME PROPERTY. Any rebuild invalidates every cache, so a p
 source change re-buys everything it had already settled. That is the reason not to restart a
 long-running pass merely to pick up a field: the in-flight passes finish under the bundle they
 started with, and a fresh run directory is what gets the new one.
+
+### How much evidence the recheck was discarding, measured on settled artifacts
+
+Across the 11 settled version 2 artifacts on disk (`~/translation-repair-runs-20260817/artifacts` and
+`~/translation-repair-runs-flagged-20260818/artifacts`), all of which predate both reading fields:
+
+```
+issue rows                                          489
+rows sitting on a slice the naturalness lane rewrote 208
+of those, rows recorded resolved                     141
+refine-recheck-passed findings                        23
+refine-rolled-back findings                            0
+rows carrying any checker reading                      0
+```
+
+So the recheck round has been ruling on 141 issue-level verdicts across 11 entries and leaving 23
+one-line findings behind. At the production roster of three that is several hundred ballots bought
+and discarded in this population alone, and none of it can be recovered without re-running the stage.
+Nothing has ever rolled back, which is worth knowing before reading a future rollback as routine.
+
+A CAUTION FOR WHOEVER READS THESE ARTIFACTS NEXT. There is no `slices` array under
+`lanes.repair.result`; the per-slice facts ride on the issue rows, and `refined` is a field of
+`RepairIssueRecord`. A reader that walks a `slices` path gets zero from every artifact and the zero
+looks like a measurement.
