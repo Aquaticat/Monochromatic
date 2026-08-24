@@ -455,5 +455,33 @@ await describe({
         expect(answering.verdict().kind,).toBe('undecided',);
       },
     },),
+    it({
+      name: 'COUNTS A KEEP-ALIVE PING AS NOTHING, not as an unreadable frame, which a live capture '
+        + 'on 2026-08-24 showed this provider sends: twenty of them on an idle stream would '
+        + 'otherwise read as twenty frames the scanner could not follow',
+      fn: async () => {
+        /**
+         * Scanner under test, fed a stream that is mostly keep-alives.
+         */
+        const scanner = scanAnthropicDeltas();
+
+        scanner.feed({
+          chunk: [
+            'data: {"type":"message_start","message":{"usage":{"input_tokens":0,"output_tokens":0}}}',
+            ...Array.from(
+              { length: 20, },
+              function ping(): string {
+                return 'data: {"type":"ping"}';
+              },
+            ),
+            'data: {"type":"message_stop"}',
+            '',
+          ].join('\n\n',),
+        },);
+
+        expect(scanner.unreadableFrames(),).toBe(0,);
+      },
+    },),
+
   ],
 },);

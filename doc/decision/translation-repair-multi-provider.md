@@ -273,6 +273,21 @@ and `visionReachOf` answers that question separately from `reachOf`.
 Asking one question for both would either send a picture where it cannot be read,
 or refuse one that can.
 
+### The transport, confirmed live on 2026-08-24
+
+These were measured but never written down, which is how the second session came to need re-measuring:
+
+-   `POST https://hyper.charm.land/v1/messages`, with `Authorization: Bearer <key>`,
+    `content-type: application/json` and `anthropic-version: 2023-06-01`.
+    An `x-api-key` header, which is what Anthropic's own API takes, answers `401 missing authorization`.
+-   `GET https://hyper.charm.land/v1/credits` with the same auth returns `{"balance": N}`;
+    read 243 on 2026-08-24, down from 249 earlier the same day.
+-   The stream carries `{"type":"ping"}` keep-alive frames between real events.
+    Both readers already ignore them and count zero unreadable frames over twenty of them,
+    but that was accidental rather than intended, so both now pin it with a case taken off the wire.
+-   A forced tool call arrives as one `input_json_delta` whose `partial_json` is the whole answer object,
+    with `stop_reason: "tool_use"` on `message_delta` and usage there rather than on `message_start`.
+
 ### Still to build
 
 -   The Hyper transport itself, and threading `routeProviderFor` through the client seam

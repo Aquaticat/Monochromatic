@@ -283,5 +283,37 @@ await describe({
         },).finishReason,).toBe(undefined,);
       },
     },),
+    it({
+      name: 'READS THE EXACT STREAM THIS PROVIDER SENT ON 2026-08-24, keep-alive ping and all, '
+        + 'which is the only case here taken off the wire rather than written by hand',
+      fn: async () => {
+        expect(extractAnthropicCompletion({
+          bodyText: [
+            'data: {"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant",'
+              + '"content":[],"model":"gemma-4-26b-a4b-it","stop_reason":null,"stop_sequence":null,'
+              + '"usage":{"input_tokens":0,"output_tokens":0}}}',
+            'data: {"type":"ping"}',
+            'data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use",'
+              + '"id":"toolu_1","name":"whisker_report","input":{}}}',
+            'data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta",'
+              + '"partial_json":"{\\"toebeans\\": 4}"}}',
+            'data: {"type":"content_block_stop","index":0}',
+            'data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},'
+              + '"usage":{"input_tokens":102,"output_tokens":15}}',
+            'data: {"type":"message_stop"}',
+            '',
+          ].join('\n\n',),
+        },),).toEqual({
+          text: '{"toebeans": 4}',
+          finishReason: 'tool_use',
+          usage: {
+            prompt_tokens: 102,
+            completion_tokens: 15,
+            total_tokens: 117,
+          },
+        },);
+      },
+    },),
+
   ],
 },);
