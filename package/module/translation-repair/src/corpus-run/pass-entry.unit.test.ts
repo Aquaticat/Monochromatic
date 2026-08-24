@@ -503,6 +503,34 @@ await describe({
           'repair',
           'translate',
         ],);
+
+        // THE STAMP AND THE SPELLING, checked together on the bytes. A writer
+        // that stamped generation 3 and wrote generation 2's keys would satisfy
+        // the assertion above and produce a file its own reader refuses, and
+        // every fixture in this package would still pass: they are built by
+        // hand from the same names the writer uses.
+        /**
+         * Repair lane's result as the file records it.
+         */
+        const repairResult = (artifact as {
+          lanes: { repair: { result: Record<string, unknown>; }; };
+        })
+          .lanes
+          .repair
+          .result;
+
+        for (const present of ['changedSliceIndices', 'withdrawnSliceIndices', 'sliceCritics',]) {
+          expect(Object.hasOwn(
+            repairResult,
+            present,
+          ),).toBe(true,);
+        }
+        for (const absent of ['shippedChunkIndices', 'withdrawnChunkIndices', 'chunkCritics',]) {
+          expect(Object.hasOwn(
+            repairResult,
+            absent,
+          ),).toBe(false,);
+        }
         // A CONTEST THAT RAN AND DECIDED, end to end through the pass. The two
         // lanes disagree at one slice by construction, so exactly one is worth
         // asking about, and the scripted roster backs the translate candidate.
