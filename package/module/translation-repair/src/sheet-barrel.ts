@@ -42,6 +42,13 @@ export {
   ARTIFACT_SCHEMA_VERSION_V1,
 } from './artifact-schema-version.ts';
 export {
+  type ArtifactKeyVocabulary,
+  CHUNK_SPELLED_KEYS,
+  keyVocabularyOf,
+  SLICE_SPELLED_KEYS,
+  UnknownArtifactGenerationError,
+} from './artifact-key-vocabulary.ts';
+export {
   type ParsedAcceptedIssue,
   type ParsedArtifact,
   type ParsedArtifactReading,

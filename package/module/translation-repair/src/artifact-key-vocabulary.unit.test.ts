@@ -1,0 +1,144 @@
+/**
+ * Tests for which spelling of three keys each artifact generation used.
+ *
+ * THE POSITIVE CONTROL COMES FIRST here, because every other case in this file
+ * is a lookup and a lookup table that returned the same row for everything
+ * would satisfy all of them. The first case pins that the two tables actually
+ * disagree, on all three keys, so the dispatch has something to decide.
+ *
+ * Fixtures are version numbers and key names. There is no passage here.
+ *
+ * @module
+ */
+
+import {
+  caught,
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
+  type ArtifactKeyVocabulary,
+  CHUNK_SPELLED_KEYS,
+  keyVocabularyOf,
+  SLICE_SPELLED_KEYS,
+  UnknownArtifactGenerationError,
+} from '../dist/final/node/index.mjs';
+
+/**
+ * Fields every generation spells, in one place so a fourth cannot be added to
+ * the type and quietly go unchecked here.
+ */
+const FIELDS = [
+  'changedSliceIndices',
+  'withdrawnSliceIndices',
+  'sliceCritics',
+] as const;
+
+/**
+ * Generation that kept these records at the artifact root.
+ */
+const GENERATION_ONE = 1;
+
+/**
+ * Generation that moved them into the lanes and kept the older spelling.
+ */
+const GENERATION_TWO = 2;
+
+/**
+ * Generation the pass writes.
+ */
+const GENERATION_THREE = 3;
+
+/**
+ * Generation no table covers, one past the newest.
+ */
+const GENERATION_UNKNOWN = 4;
+
+await describe({
+  name: keyVocabularyOf.name,
+  children: [
+    it({
+      name: 'POSITIVE CONTROL: the two tables disagree on every field, so selecting between them can '
+        + 'change what a reader asks the artifact for. A table that returned one row for both '
+        + 'generations would pass every other case in this file',
+      fn: async () => {
+        for (const field of FIELDS) {
+          expect(CHUNK_SPELLED_KEYS[field],).not.toBe(SLICE_SPELLED_KEYS[field],);
+        }
+      },
+    },),
+
+    it({
+      name: 'spells the generation 3 table with its own field names, which is what makes the internal '
+        + 'vocabulary readable: a reader meeting `changedSliceIndices` in the code and in the file is '
+        + 'looking at one name rather than two that happen to line up',
+      fn: async () => {
+        for (const field of FIELDS) {
+          expect(SLICE_SPELLED_KEYS[field],).toBe(field,);
+        }
+      },
+    },),
+
+    it({
+      name: 'spells the older table with the names generations 1 and 2 actually wrote, which is the '
+        + 'whole reason it exists: those files are on disk and cannot be re-spelled',
+      fn: async () => {
+        expect(CHUNK_SPELLED_KEYS,).toStrictEqual({
+          changedSliceIndices: 'shippedChunkIndices',
+          withdrawnSliceIndices: 'withdrawnChunkIndices',
+          sliceCritics: 'chunkCritics',
+        },);
+      },
+    },),
+
+    it({
+      name: 'gives generations 1 and 2 the older spelling and generation 3 the current one, which is '
+        + 'the whole dispatch',
+      fn: async () => {
+        expect(keyVocabularyOf({ version: GENERATION_ONE, },),).toBe(CHUNK_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_TWO, },),).toBe(CHUNK_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_THREE, },),).toBe(SLICE_SPELLED_KEYS,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a generation it has no spelling for, rather than falling back to either table. A '
+        + 'fallback would read one generation under another generation\'s names and report three keys '
+        + 'as ABSENT, which is the one wrong answer here that looks like an ordinary older artifact',
+      fn: async () => {
+        /**
+         * What the selector did when asked for a generation past the newest.
+         */
+        const refusal = caught(function selectsUnknownGeneration() {
+          keyVocabularyOf({ version: GENERATION_UNKNOWN, },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(UnknownArtifactGenerationError,);
+        expect((refusal as Error).message,).toContain(String(GENERATION_UNKNOWN,),);
+        expect((refusal as Error).message,).toContain('absent rather than as unread',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS either table where the vocabulary type is asked for, so a reader threading one '
+        + 'down does not have to know which generation it came from',
+      fn: async () => {
+        /**
+         * Both tables under the one type every reader takes.
+         */
+        const both: readonly ArtifactKeyVocabulary[] = [
+          CHUNK_SPELLED_KEYS,
+          SLICE_SPELLED_KEYS,
+        ];
+
+        expect(both.map(function criticsKeyOf(keys,): string {
+          return keys.sliceCritics;
+        },),).toStrictEqual([
+          'chunkCritics',
+          'sliceCritics',
+        ],);
+      },
+    },),
+  ],
+},);
