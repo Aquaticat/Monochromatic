@@ -31,7 +31,7 @@ import {
   type RepairScorecard,
 } from './repair-scorecard.ts';
 import { applySeededErrors, } from './seeded-error.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Repair benchmark
 // Milestone-two exit harness: plant omission seeds into real translations,
@@ -58,7 +58,7 @@ export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
  * Default restoration-judge roster: the three vendor families that complete
  * most reliably on this plan, kept distinct so no single family decides.
  */
-export const DEFAULT_JUDGE_MODEL_IDS: readonly SyntheticModelId[] = [
+export const DEFAULT_JUDGE_MODEL_IDS: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
@@ -232,7 +232,7 @@ export async function runRepairBenchmark(
     readonly repair?: typeof repairTranslation;
     readonly judge?: typeof runRestorationJudge;
     readonly derivability?: typeof runDerivabilityProbe;
-    readonly judgeModelIds?: readonly SyntheticModelId[];
+    readonly judgeModelIds?: readonly RosterModelId[];
   }>,
 ): Promise<RepairBenchmarkResult> {
   /**

@@ -34,7 +34,7 @@ import {
   slicePictureContexts,
   slicePictureNames,
   slicePictures,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -58,17 +58,17 @@ const ENTRY = `\${path}`;
 /**
  * Cat-themed stand-in for one vision reader's model id.
  *
- * A CAST THROUGH `unknown`, since `SyntheticModelId` is a closed union of
+ * A CAST THROUGH `unknown`, since `RosterModelId` is a closed union of
  * production identifiers and neither function under test validates one
  * against real roster: `slicePictures` only folds a reading's model id into a
  * rendered label.
  */
-const WHISKERS = 'hf:cat/Whiskers' as unknown as SyntheticModelId;
+const WHISKERS = 'hf:cat/Whiskers' as unknown as RosterModelId;
 
 /**
  * Cat-themed stand-in for other vision reader's model id.
  */
-const MARMALADE = 'hf:cat/Marmalade' as unknown as SyntheticModelId;
+const MARMALADE = 'hf:cat/Marmalade' as unknown as RosterModelId;
 
 /**
  * Builds one photo element naming given assets, in corpus's only form.

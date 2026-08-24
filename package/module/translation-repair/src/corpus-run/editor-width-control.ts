@@ -2,7 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import type { ArmOutcome, } from './editor-width-arm.ts';
 import { bothOrders, } from './editor-width-contest.ts';
@@ -120,7 +120,7 @@ function asArm(
     producers,
   }: {
     readonly text: string;
-    readonly producers: readonly SyntheticModelId[];
+    readonly producers: readonly RosterModelId[];
   },
 ): ArmOutcome {
   return {
@@ -165,7 +165,7 @@ export async function widthControlHolds(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slices: readonly BenchSlice[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
   }>,

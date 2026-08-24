@@ -3,7 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import { produceTranslateSlate, } from './translate-produce.ts';
 import { judgeSlateWithRetry, } from './translate-retry.ts';
@@ -114,8 +114,8 @@ export async function runTranslateStage(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly translatorModelIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly translatorModelIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;

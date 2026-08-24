@@ -8,7 +8,7 @@ import {
   type EditorStageResult,
   runEditorStage,
 } from '../repair-editor-stage.ts';
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { WidthProbeInput, } from './editor-width-input.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 
@@ -42,7 +42,7 @@ export type ArmOutcome = {
   /**
    * Models that wrote the shipped text.
    */
-  readonly producers: readonly SyntheticModelId[];
+  readonly producers: readonly RosterModelId[];
 };
 
 /**
@@ -132,8 +132,8 @@ export async function runArm(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly input: WidthProbeInput;
-    readonly editorModelIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly editorModelIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
   }>,

@@ -13,7 +13,7 @@ import {
 
 import {
   collectRefinedAuthors,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -24,17 +24,17 @@ const WHISKER = 'adjudicated/whisker';
 /**
  * Model that repaired the text the refiners rewrote.
  */
-const AUTHOR: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Second repairing model, for the case where nothing was rewritten at all.
  */
-const HELPER: SyntheticModelId = 'hf:Qwen/Qwen3.8-27B';
+const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Model that only ever rewrites, never repairs.
  */
-const REFINER: SyntheticModelId = 'hf:openai/gpt-oss-120b';
+const REFINER: RosterModelId = 'hf:openai/gpt-oss-120b';
 
 await describe({
   name: collectRefinedAuthors.name,

@@ -32,7 +32,7 @@ import {
   type ChatTextRequest,
   readImageAsset,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -43,12 +43,12 @@ const l = tagged({ tag: 'image-reading-stage-test', },);
 /**
  * Model that reads images, per the provider's own `input_modalities`.
  */
-const READER: SyntheticModelId = 'hf:moonshotai/Kimi-K3';
+const READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
  * Model that does not, so the catalog refuses before a call is spent.
  */
-const TEXT_ONLY: SyntheticModelId = 'hf:openai/gpt-oss-120b';
+const TEXT_ONLY: RosterModelId = 'hf:openai/gpt-oss-120b';
 
 /**
  * Bytes past the reading stage's own ceiling of 8388608.

@@ -3,7 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TrialSlice, } from './window-trial-draw.ts';
 import type { WindowTrialRow, } from './window-trial-ledger.ts';
 import { runSliceArms, } from './window-trial-slice.ts';
@@ -105,8 +105,8 @@ export async function runPick(
     readonly ledgerPath: string;
     readonly done: ReadonlySet<string>;
     readonly models: {
-      readonly translatorModelIds: readonly SyntheticModelId[];
-      readonly judgeModelIds: readonly SyntheticModelId[];
+      readonly translatorModelIds: readonly RosterModelId[];
+      readonly judgeModelIds: readonly RosterModelId[];
     };
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;

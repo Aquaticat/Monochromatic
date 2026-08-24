@@ -16,7 +16,7 @@ import {
 } from '../stream-idle-guard.ts';
 import {
   SYNTHETIC_MODELS,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../synthetic-catalog.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import { resolveGit, } from './git-command.ts';
@@ -64,7 +64,7 @@ const HERE = import.meta.dirname;
  * Critics and the adjudication panel both use the whole roster so coverage
  * overlaps across models rather than partitioning the work.
  */
-export const RUN_ROSTER: readonly SyntheticModelId[] = [
+export const RUN_ROSTER: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',
   'hf:Qwen/Qwen3.8-27B',
@@ -281,11 +281,11 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  * const readings = await readDocumentPictures({ readerModelIds: RUN_READER_MODELS, ... },);
  * ```
  */
-export const RUN_READER_MODELS: readonly SyntheticModelId[] = Object.values(SYNTHETIC_MODELS,)
+export const RUN_READER_MODELS: readonly RosterModelId[] = Object.values(SYNTHETIC_MODELS,)
   .filter(function reads(model,): boolean {
     return model.readsImages;
   },)
-  .map(function toId(model,): SyntheticModelId {
+  .map(function toId(model,): RosterModelId {
     return model.id;
   },);
 

@@ -27,7 +27,7 @@ import {
   gatherStageVoices,
   type JsonSchemaResponseFormat,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -178,7 +178,7 @@ function hangingClient(
     cut,
     lateMs,
   }: {
-    readonly hangingModelId: SyntheticModelId;
+    readonly hangingModelId: RosterModelId;
     readonly cut: { aborted: boolean; };
     readonly lateMs?: number;
   },
@@ -423,7 +423,7 @@ await describe({
         /** Call log shared with the scripted client. */
         const calls: Record<string, number> = {};
         /** Full six-model roster where five fail once then answer. */
-        const roster: readonly SyntheticModelId[] = [
+        const roster: readonly RosterModelId[] = [
           'hf:zai-org/GLM-5.2',
           'hf:zai-org/GLM-4.7-Flash',
           'hf:Qwen/Qwen3.8-27B',

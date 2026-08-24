@@ -4,7 +4,7 @@ import type {
 } from './apply-patch.ts';
 import type { CandidateProducer, } from './candidate-select-model.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  * Nobody wrote the shipped text, because the untouched translation shipped.
@@ -52,7 +52,7 @@ export type EditorCandidate = {
   /**
    * Model that produced this proposal.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * Apply-gate outcome of the operations it proposed.
@@ -78,7 +78,7 @@ export type EnvelopeSelection = {
   /**
    * Models whose operations the composite carries, in first-win order.
    */
-  readonly contributors: readonly SyntheticModelId[];
+  readonly contributors: readonly RosterModelId[];
 
   /**
    * Envelopes adopted without a vote because only one editor proposed for

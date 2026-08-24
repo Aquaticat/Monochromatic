@@ -18,7 +18,7 @@ import {
   RESOLUTION_RESPONSE_FORMAT,
 } from './resolution-wire.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   type IssueResolutionTally,
   type ResolutionBallot,
@@ -108,7 +108,7 @@ export async function runCheckerStage(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly checkerModelIds: readonly SyntheticModelId[];
+    readonly checkerModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly patchedText: string;
     readonly issues: readonly AdjudicatedIssue[];

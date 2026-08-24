@@ -1,4 +1,4 @@
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 
 //region Editor width model
 // How a width comparison is read, kept apart from the calls that gather it so
@@ -133,12 +133,12 @@ export type WidthRow = {
    * Models that wrote the winning text at each arm, for a roster-level reading
    * of who the extra seats actually bought.
    */
-  readonly narrowProducers: readonly SyntheticModelId[];
+  readonly narrowProducers: readonly RosterModelId[];
 
   /**
    * {@link WidthRow.narrowProducers} for the wide arm.
    */
-  readonly wideProducers: readonly SyntheticModelId[];
+  readonly wideProducers: readonly RosterModelId[];
 };
 
 /**

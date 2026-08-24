@@ -25,7 +25,7 @@ import {
   messageText,
   runFidelityTrial,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -60,8 +60,8 @@ const ROSTER = [
   'hf:cat/Cat-A',
   'hf:cat/Cat-B',
   'hf:cat/Cat-C',
-].map(function toModelId(id,): SyntheticModelId {
-  return id as unknown as SyntheticModelId;
+].map(function toModelId(id,): RosterModelId {
+  return id as unknown as RosterModelId;
 },);
 
 /**

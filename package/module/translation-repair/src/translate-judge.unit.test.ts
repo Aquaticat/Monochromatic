@@ -32,7 +32,7 @@ import {
   type ProducedSlate,
   produceTranslateSlate,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
 } from '../dist/final/node/index.mjs';
@@ -60,22 +60,22 @@ const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with ta
 /**
  * Models that render the slice.
  */
-const TRANSLATORS: readonly SyntheticModelId[] = [
+const TRANSLATORS: readonly RosterModelId[] = [
   'hf:cat/Cat-A',
   'hf:cat/Cat-B',
 ].map(function toId(id,) {
-  return id as unknown as SyntheticModelId;
+  return id as unknown as RosterModelId;
 },);
 
 /**
  * Judges, three so selection can reach its minimum weight.
  */
-const JUDGES: readonly SyntheticModelId[] = [
+const JUDGES: readonly RosterModelId[] = [
   'hf:cat/Cat-A',
   'hf:cat/Cat-B',
   'hf:cat/Cat-C',
 ].map(function toId(id,) {
-  return id as unknown as SyntheticModelId;
+  return id as unknown as RosterModelId;
 },);
 
 /**
@@ -641,7 +641,7 @@ await describe({
          * judge so its win is a plain majority rather than a discounted
          * self-vote.
          */
-        const soleProposer = 'hf:cat/Cat-D' as unknown as SyntheticModelId;
+        const soleProposer = 'hf:cat/Cat-D' as unknown as RosterModelId;
 
         /**
          * Client whose one judge call always names the sole candidate.

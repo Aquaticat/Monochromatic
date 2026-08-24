@@ -22,7 +22,7 @@ import {
   screenRenderingAudit,
 } from './rendering-audit-screen.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Rendering audit stage
 // Asks a roster whether one rendering says what its original says, screens
@@ -61,7 +61,7 @@ export type AuditVoiceRow = {
   /**
    * Auditor that answered.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * What it concluded overall.
@@ -157,7 +157,7 @@ export async function runRenderingAudit(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly subject: RenderingAuditSubject;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;

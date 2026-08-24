@@ -3,7 +3,7 @@ import {
   producerModelIds,
   type SelectionBallot,
 } from './candidate-select-model.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Self-preference
 // Whether a producer judging its own work actually favours it, measured rather
@@ -196,7 +196,7 @@ function drawForCandidate(
   /**
    * Models whose ballot for this candidate would be a self-vote.
    */
-  const stakeholders: readonly SyntheticModelId[] = producerModelIds(producer,);
+  const stakeholders: readonly RosterModelId[] = producerModelIds(producer,);
 
   /**
    * Ballots from judges who helped write this candidate.

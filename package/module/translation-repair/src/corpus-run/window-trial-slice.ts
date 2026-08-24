@@ -5,7 +5,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import { neighbouringSource, } from '../fidelity-window.ts';
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { judgeTranslateSlate, } from '../translate-judge.ts';
 import { produceTranslateSlate, } from '../translate-produce.ts';
 import {
@@ -99,8 +99,8 @@ export async function runSliceArms(
     readonly ledgerPath: string;
     readonly done: ReadonlySet<string>;
     readonly models: {
-      readonly translatorModelIds: readonly SyntheticModelId[];
-      readonly judgeModelIds: readonly SyntheticModelId[];
+      readonly translatorModelIds: readonly RosterModelId[];
+      readonly judgeModelIds: readonly RosterModelId[];
     };
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;

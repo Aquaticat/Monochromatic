@@ -23,7 +23,7 @@ import {
   type ChatJsonRequest,
   runRenderingAudit,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -34,7 +34,7 @@ const l = tagged({ tag: 'rendering-audit-test', },);
 /**
  * Auditors the fixtures configure.
  */
-const AUDITORS: readonly SyntheticModelId[] = [
+const AUDITORS: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',

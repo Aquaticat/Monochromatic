@@ -16,7 +16,7 @@ import {
 } from './non-translation-evidence.ts';
 import type { RepairDocument, } from './parse-document.ts';
 import { runCriticStage, } from './repair-stages.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Chunk critic phase
 // Critics, then the deterministic screen over their non-translation votes.
@@ -69,7 +69,7 @@ export type ChunkCriticPhase = {
    * only a tally. Unfiltered by screening, since being heard is independent of
    * whether the claims survived.
    */
-  readonly heardCriticIds: readonly SyntheticModelId[];
+  readonly heardCriticIds: readonly RosterModelId[];
 
   /**
    * Which critics raised each SURVIVING claim, keyed by deterministic claim id.
@@ -131,7 +131,7 @@ export async function runChunkCriticPhase(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly criticModelIds: readonly SyntheticModelId[];
+    readonly criticModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;
     readonly documents: {

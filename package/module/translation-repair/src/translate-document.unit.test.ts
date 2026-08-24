@@ -27,7 +27,7 @@ import {
   prepareDocumentPair,
   RosterConfigurationError,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
   translateDocument,
   type TranslateModels,
   type TranslateSliceRecord,
@@ -157,7 +157,7 @@ function renderingFor({ content, }: { readonly content: string; },): string {
  */
 const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
 
-const TRANSLATORS: readonly SyntheticModelId[] = [
+const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',

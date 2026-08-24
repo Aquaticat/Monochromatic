@@ -21,7 +21,7 @@ import {
   type Candidate,
   mergeIdenticalCandidates,
   producerModelIds,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -53,7 +53,7 @@ function from(
     modelId,
     text,
   }: {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly text: string;
   },
 ): Candidate<string> {

@@ -28,7 +28,7 @@ import {
   type PatchOutcome,
   pickFallbackCandidate,
   producerModelIds,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -69,7 +69,7 @@ function candidateFor(
     modelId,
     newText,
   }: {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly newText: string;
   },
 ): EditorCandidate {

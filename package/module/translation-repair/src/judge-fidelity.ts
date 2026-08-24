@@ -12,7 +12,7 @@ import { CANDIDATE_NONE, } from './candidate-select-wire.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { FidelityDamageKind, } from './fidelity-damage.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   translateSelectionCriteria,
   TRANSLATE_SELECTION_TASK,
@@ -133,7 +133,7 @@ export type FidelityBallotRead = {
   /**
    * Judge that cast it.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * Which text it chose, or that it named no candidate.
@@ -335,7 +335,7 @@ export async function runFidelityTrial(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly trial: FidelityTrial;
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;

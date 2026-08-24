@@ -1,6 +1,6 @@
 import { hashContent, } from './document-node.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Consolidate key
 // What makes two runs' consolidations the SAME consolidation, for cache
@@ -94,7 +94,7 @@ export function consolidateRunShape(
     modelIds,
     identityContext,
   }: {
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
   },
 ): string {

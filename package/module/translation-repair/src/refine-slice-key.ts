@@ -1,6 +1,6 @@
 import { hashContent, } from './document-node.ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Refine slice key
 // What makes two runs' refinements the SAME refinement, for cache purposes.
@@ -80,9 +80,9 @@ export function refineRunShape(
     checkerModelIds,
     identityContext,
   }: {
-    readonly refinerModelIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
-    readonly checkerModelIds: readonly SyntheticModelId[];
+    readonly refinerModelIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
+    readonly checkerModelIds: readonly RosterModelId[];
     readonly identityContext?: string;
   },
 ): string {

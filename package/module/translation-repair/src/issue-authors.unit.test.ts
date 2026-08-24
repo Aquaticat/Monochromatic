@@ -21,7 +21,7 @@ import {
   NOBODY_WROTE_IT,
   type RepairSlateEntry,
   type ShippedProducer,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -37,12 +37,12 @@ const PAW = 'adjudicated/paw';
 /**
  * Model that wrote the text that ships unless a case says otherwise.
  */
-const AUTHOR: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Second model, for rivals and for candidates that lose.
  */
-const HELPER: SyntheticModelId = 'hf:Qwen/Qwen3.8-27B';
+const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Builds an editable envelope carrying the issues it serves.
@@ -87,7 +87,7 @@ function slateEntryOf(
     modelId,
   }: {
     readonly index: number;
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
   },
 ): RepairSlateEntry {
   return {

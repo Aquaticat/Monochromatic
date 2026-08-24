@@ -48,7 +48,7 @@ import {
   type PairedReading,
   prepareDocumentPair,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
   translateDocument,
   type TranslateDocumentResult,
   type TranslateModels,
@@ -64,7 +64,7 @@ const l = tagged({ tag: 'document-pictures-reach-the-wire-test', },);
  * suite: a roster this small and this shaped is already known to seat both
  * stages without extra scripting.
  */
-const TRANSLATORS: readonly SyntheticModelId[] = [
+const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',

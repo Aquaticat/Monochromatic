@@ -59,7 +59,7 @@ const ROSTER = [
  * One seated voice, narrowed to the roster so a fixture cannot invent a model
  * the provider catalogue does not carry.
  */
-type RosterModelId = (typeof ROSTER)[number];
+type FixtureModelId = (typeof ROSTER)[number];
 
 /**
  * Per-call bound, generous because the transport answers instantly.
@@ -122,7 +122,7 @@ function voiceOf(
     modelId,
     translation,
   }: {
-    readonly modelId: RosterModelId;
+    readonly modelId: FixtureModelId;
     readonly translation: string;
   },
 ) {

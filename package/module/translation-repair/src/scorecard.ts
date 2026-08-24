@@ -1,4 +1,4 @@
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Scorecard
 // Pure aggregation over benchmark attempts. Seeded recall is the primary number
@@ -48,7 +48,7 @@ export type CriticAttemptRecord = {
   /**
    * Model that made the attempt.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * Corpus entry the attempt reviewed.
@@ -119,7 +119,7 @@ export type ModelScorecardRow = {
   /**
    * Model graded by this row.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * Dispatched attempt count behind the rates; skipped records excluded.
@@ -343,7 +343,7 @@ export function computeScorecard(
   /**
    * Attempts grouped by model in first-attempt order.
    */
-  const byModel = new Map<SyntheticModelId, CriticAttemptRecord[]>();
+  const byModel = new Map<RosterModelId, CriticAttemptRecord[]>();
   for (const attempt of attempts) {
     /**
      * Bucket for this attempt's model, created on first sight.

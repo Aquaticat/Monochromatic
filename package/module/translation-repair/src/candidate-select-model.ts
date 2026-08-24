@@ -1,4 +1,4 @@
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Candidate selection model
 // Types the selection stage shares with its callers. They live apart from
@@ -97,7 +97,7 @@ export type CandidateProducer =
     /**
      * Model that wrote this candidate by itself.
      */
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
   }
   | {
     readonly kind: 'composite';
@@ -105,7 +105,7 @@ export type CandidateProducer =
     /**
      * Models whose work the composite carries, in assembly order.
      */
-    readonly contributors: readonly SyntheticModelId[];
+    readonly contributors: readonly RosterModelId[];
   }
   | {
     readonly kind: 'incumbent';
@@ -115,7 +115,7 @@ export type CandidateProducer =
      * were collapsed into it, discounted when they judge it although it is not
      * their work. Empty in the ordinary case, where the incumbent stands alone.
      */
-    readonly matched: readonly SyntheticModelId[];
+    readonly matched: readonly RosterModelId[];
   };
 
 /**
@@ -131,7 +131,7 @@ export type CandidateProducer =
  * const barred = producerModelIds({ kind: 'composite', contributors, },);
  * ```
  */
-export function producerModelIds(producer: CandidateProducer,): readonly SyntheticModelId[] {
+export function producerModelIds(producer: CandidateProducer,): readonly RosterModelId[] {
   if (producer.kind === 'model')
     return [producer.modelId,];
   if (producer.kind === 'incumbent')
@@ -325,7 +325,7 @@ export type SelectionBallot = {
   /**
    * Judge that cast it.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * One-based candidate index, or `CANDIDATE_NONE` when this judge named no

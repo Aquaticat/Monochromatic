@@ -10,7 +10,7 @@ import type { RepairRegion, } from './repair-region.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { IssueAuthorship, } from './resolution-authorship.ts';
 import type { IssueCheckerReading, } from './checker-reading.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Repair contract
 // Role roster and chunk outcome types shared by the chunk runner, the
@@ -35,19 +35,19 @@ export type RepairModels = {
   /**
    * Critic fan-out electorate.
    */
-  readonly criticModelIds: readonly SyntheticModelId[];
+  readonly criticModelIds: readonly RosterModelId[];
 
   /**
    * Fixed adjudication panel.
    */
-  readonly panelModelIds: readonly SyntheticModelId[];
+  readonly panelModelIds: readonly RosterModelId[];
 
   /**
    * Editors that each independently propose a repaired candidate;
    * judges drawn from {@link RepairModels.judgeModelIds} choose what ships,
    * so no one model decides the repaired text.
    */
-  readonly editorModelIds: readonly SyntheticModelId[];
+  readonly editorModelIds: readonly RosterModelId[];
 
   /**
    * Whole roster candidate selection draws judges from, editors included.
@@ -58,7 +58,7 @@ export type RepairModels = {
    * left is that some candidate could reach the minimum weight: see
    * {@link assertJudgeableEditorRoster}.
    */
-  readonly judgeModelIds: readonly SyntheticModelId[];
+  readonly judgeModelIds: readonly RosterModelId[];
 
   /**
    * Extra rule line appended to the editor system prompt, for prompt
@@ -72,14 +72,14 @@ export type RepairModels = {
    * Absent means the lane is off, which is a supported configuration: the
    * accuracy pipeline is complete without it.
    */
-  readonly refinerModelIds?: readonly SyntheticModelId[];
+  readonly refinerModelIds?: readonly RosterModelId[];
 
   /**
    * Resolution checkers proving the repair. Excludes every editor and every
    * refiner unless {@link RepairModels.checkerSelfCertificationPermitted} says
    * otherwise, since a model certifying text it wrote is not proof.
    */
-  readonly checkerModelIds: readonly SyntheticModelId[];
+  readonly checkerModelIds: readonly RosterModelId[];
 
   /**
    * Permits a checker to also write, so the whole roster can check.
@@ -140,8 +140,8 @@ export class ProducerRosterError extends Error {
       role = 'editor',
       fault,
     }: {
-      readonly producerModelIds: readonly SyntheticModelId[];
-      readonly judgeModelIds: readonly SyntheticModelId[];
+      readonly producerModelIds: readonly RosterModelId[];
+      readonly judgeModelIds: readonly RosterModelId[];
       readonly role?: string;
       readonly fault: string;
     },
@@ -178,8 +178,8 @@ export function assertJudgeableEditorRoster(
     editorModelIds,
     judgeModelIds,
   }: {
-    readonly editorModelIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly editorModelIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
   },
 ): void {
   assertJudgeableProducerRoster({
@@ -227,8 +227,8 @@ export function assertJudgeableProducerRoster(
     judgeModelIds,
     role,
   }: {
-    readonly producerModelIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly producerModelIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly role: string;
   },
 ): void {
@@ -343,8 +343,8 @@ export class CheckerIndependenceError extends Error {
       overlapping = [],
       duplicated = [],
     }: {
-      readonly overlapping?: readonly SyntheticModelId[];
-      readonly duplicated?: readonly SyntheticModelId[];
+      readonly overlapping?: readonly RosterModelId[];
+      readonly duplicated?: readonly RosterModelId[];
     },
   ) {
     super(
@@ -398,9 +398,9 @@ export function assertCheckerIndependence(
     checkerModelIds,
     selfCertificationPermitted = false,
   }: {
-    readonly editorModelIds: readonly SyntheticModelId[];
-    readonly refinerModelIds?: readonly SyntheticModelId[];
-    readonly checkerModelIds: readonly SyntheticModelId[];
+    readonly editorModelIds: readonly RosterModelId[];
+    readonly refinerModelIds?: readonly RosterModelId[];
+    readonly checkerModelIds: readonly RosterModelId[];
     readonly selfCertificationPermitted?: boolean;
   },
 ): void {
@@ -482,7 +482,7 @@ export class CheckerQuorumError extends Error {
    *
    * @param checkerModelIds - checkers configured for this run
    */
-  constructor({ checkerModelIds, }: { readonly checkerModelIds: readonly SyntheticModelId[]; },) {
+  constructor({ checkerModelIds, }: { readonly checkerModelIds: readonly RosterModelId[]; },) {
     super(
       `this run configures ${String(checkerModelIds.length,)} checker(s), [${
         checkerModelIds.join(', ',)
@@ -514,7 +514,7 @@ export class CheckerQuorumError extends Error {
  * ```
  */
 export function assertCheckerQuorumReachable(
-  { checkerModelIds, }: { readonly checkerModelIds: readonly SyntheticModelId[]; },
+  { checkerModelIds, }: { readonly checkerModelIds: readonly RosterModelId[]; },
 ): void {
   if (checkerModelIds.length >= MINIMUM_CHECKER_COUNT)
     return;
@@ -577,7 +577,7 @@ export type ChunkRepairOutcome = {
    * separates a critic that stayed silent from an outcome written before any of
    * this existed.
    */
-  readonly heardCriticIds: readonly SyntheticModelId[];
+  readonly heardCriticIds: readonly RosterModelId[];
 
   /**
    * Accepted issues the checkers confirmed fixed in the winning text;

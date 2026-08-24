@@ -14,7 +14,7 @@ import {
 import { photoReferences, } from './photo-reference.ts';
 
 import type { SliceCache, } from './slice-cache.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Document readings
 // EVERY PICTURE IN ONE DOCUMENT, READ ONCE, before any of its slices is
@@ -84,7 +84,7 @@ export async function readDocumentPictures(
     readonly readOcr: OcrReader;
     readonly slices: readonly ChunkPair[];
     readonly assets: ReadonlyMap<string, Uint8Array>;
-    readonly readerModelIds: readonly SyntheticModelId[];
+    readonly readerModelIds: readonly RosterModelId[];
     readonly cache: SliceCache<PairedReading>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;

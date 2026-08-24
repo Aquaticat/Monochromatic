@@ -7,7 +7,7 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import { runGatherRound, } from './stage-round.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Stage quorum
 // A stage that loses voices retries exactly the lost ones on fresh
@@ -51,7 +51,7 @@ export type HeardVoice<ValueT,> = {
   /**
    * Model that answered.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * Validated reply value.
@@ -142,7 +142,7 @@ export async function gatherStageVoices<ValueT,>(
     graceMs,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
@@ -182,7 +182,7 @@ export async function gatherStageVoices<ValueT,>(
     /**
      * Models still owing a reply.
      */
-    let pending: readonly SyntheticModelId[] = modelIds;
+    let pending: readonly RosterModelId[] = modelIds;
     for (let round = 0; round <= maxRetryRounds; round += 1) {
       if (pending.length === 0)
         break;
@@ -218,7 +218,7 @@ export async function gatherStageVoices<ValueT,>(
       /**
        * Models this round still lost.
        */
-      const stillLost: SyntheticModelId[] = [];
+      const stillLost: RosterModelId[] = [];
       for (const outcome of outcomes) {
         if (outcome.voice
           .heard) {

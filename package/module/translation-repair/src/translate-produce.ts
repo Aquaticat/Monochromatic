@@ -7,7 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { Candidate, } from './candidate-select-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   buildTranslateCandidates,
   type TranslateCandidateValue,
@@ -112,7 +112,7 @@ export async function produceTranslateSlate(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly translatorModelIds: readonly SyntheticModelId[];
+    readonly translatorModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly identityContext?: string;

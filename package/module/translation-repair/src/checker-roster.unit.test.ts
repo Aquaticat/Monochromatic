@@ -10,7 +10,7 @@
  * the ballot count, and the second makes disagreement return nothing at all.
  * Neither is rescued by any weighting, so neither honours the switch.
  *
- * Model ids come from the catalog because `SyntheticModelId` is a closed union.
+ * Model ids come from the catalog because `RosterModelId` is a closed union.
  *
  * @module
  */
@@ -25,13 +25,13 @@ import {
   assertCheckerQuorumReachable,
   CheckerIndependenceError,
   CheckerQuorumError,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
  * Writers as production seats them: three models that edit and refine.
  */
-const WRITERS: readonly SyntheticModelId[] = [
+const WRITERS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',
@@ -40,7 +40,7 @@ const WRITERS: readonly SyntheticModelId[] = [
 /**
  * Checkers as production seats them, disjoint from every writer.
  */
-const DISJOINT_CHECKERS: readonly SyntheticModelId[] = [
+const DISJOINT_CHECKERS: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',
@@ -49,7 +49,7 @@ const DISJOINT_CHECKERS: readonly SyntheticModelId[] = [
 /**
  * Whole roster checking, which is the arm the measurement exists to price.
  */
-const EVERY_MODEL: readonly SyntheticModelId[] = [
+const EVERY_MODEL: readonly RosterModelId[] = [
   ...WRITERS,
   ...DISJOINT_CHECKERS,
 ];
@@ -186,7 +186,7 @@ await describe({
         + 'shrink below a decidable panel',
       fn: async () => {
         /** Two writers checking their own work, which passes independence under the switch. */
-        const twoWriters: readonly SyntheticModelId[] = [
+        const twoWriters: readonly RosterModelId[] = [
           'hf:moonshotai/Kimi-K3',
           'hf:zai-org/GLM-5.2',
         ];

@@ -35,7 +35,7 @@ import {
   type PreparedDocumentPair,
   settleTranslateSlice,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -75,7 +75,7 @@ const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with ta
 /**
  * Models that render the slice.
  */
-const TRANSLATORS: readonly SyntheticModelId[] = [
+const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',
@@ -84,7 +84,7 @@ const TRANSLATORS: readonly SyntheticModelId[] = [
 /**
  * Whole roster the judges are drawn from, translators included.
  */
-const JUDGES: readonly SyntheticModelId[] = [
+const JUDGES: readonly RosterModelId[] = [
   ...TRANSLATORS,
   'hf:Qwen/Qwen3.8-27B',
   'hf:openai/gpt-oss-120b',

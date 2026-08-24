@@ -17,7 +17,7 @@ import {
 } from './introduced-defect-screen.ts';
 import type { RepairRegion, } from './repair-region.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Introduced-defect probe stage
 // Asks whether the repair broke anything nobody had raised. Runs in SHADOW
@@ -160,7 +160,7 @@ export async function runIntroducedDefectProbe(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly proberModelIds: readonly SyntheticModelId[];
+    readonly proberModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly baselineText: string;
     readonly regions: readonly RepairRegion[];

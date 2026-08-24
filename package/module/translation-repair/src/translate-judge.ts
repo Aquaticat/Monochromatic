@@ -11,7 +11,7 @@ import {
   LEAVES_PASSAGE_UNTRANSLATED,
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   blankAgainst,
   BlankSelectionError,
@@ -125,7 +125,7 @@ export async function judgeTranslateSlate(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly produced: ProducedSlate;
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;

@@ -1,5 +1,5 @@
 import type { LaneSliceText, } from './lane-slice-text.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import type {
   TranslateAbsenceReason,
   UnfilledReason,
@@ -68,13 +68,13 @@ export type TranslateModels = {
   /**
    * Models producing independent translations of each slice.
    */
-  readonly translatorModelIds: readonly SyntheticModelId[];
+  readonly translatorModelIds: readonly RosterModelId[];
 
   /**
    * Whole roster judging the slate, translators included; a ballot for a
    * judge's own translation counts less rather than not at all.
    */
-  readonly judgeModelIds: readonly SyntheticModelId[];
+  readonly judgeModelIds: readonly RosterModelId[];
 };
 
 /**

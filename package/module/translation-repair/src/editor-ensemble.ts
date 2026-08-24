@@ -30,7 +30,7 @@ import {
   describeJudgedRound,
   type RepairJudgedRound,
 } from './repair-round-record.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Editor ensemble
 // Several editors rewrite the same chunk, and judges that wrote none of the
@@ -163,7 +163,7 @@ export async function selectPerEnvelope(
     readonly client: SyntheticClient;
     readonly candidates: readonly EditorCandidate[];
     readonly envelopes: readonly EditableEnvelope[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;
     readonly signal: AbortSignal;
@@ -187,12 +187,12 @@ export async function selectPerEnvelope(
   /**
    * Contributing models in first-win order, deduplicated by `seen`.
    */
-  const contributors: SyntheticModelId[] = [];
+  const contributors: RosterModelId[] = [];
 
   /**
    * Models already credited as contributors.
    */
-  const seen = new Set<SyntheticModelId>();
+  const seen = new Set<RosterModelId>();
 
   /**
    * Degradation findings gathered from every envelope's judge fan-out.
@@ -357,7 +357,7 @@ export async function selectChunkPatch(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly Candidate<PatchOutcome>[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly indecisionFallback: Candidate<PatchOutcome>;
     readonly rejectionFallback: PatchOutcome;

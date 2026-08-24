@@ -33,7 +33,7 @@ import {
   corroborateByOverlap,
   nearMisses,
   type RenderingAuditCategory,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -89,7 +89,7 @@ function claimOf(
     candidateLocator,
     candidateFocus,
   }: {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly category: RenderingAuditCategory;
     readonly sourceLocator: string;
     readonly sourceFocus: string;

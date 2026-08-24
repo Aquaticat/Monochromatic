@@ -26,7 +26,7 @@ import {
 import type { SyntheticClient, } from './chat-contract.ts';
 import { ProducerRosterError, } from './repair-contract.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Candidate selection stage
 // Shared by every stage that generates text rather than verdicts: the ensemble
@@ -113,7 +113,7 @@ export async function selectBestCandidate<ValueT,>(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly candidates: readonly Candidate<ValueT>[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly task: string;
     readonly criteria: readonly string[];
     readonly evidence: readonly SelectEvidence[];
@@ -190,7 +190,7 @@ export async function selectBestCandidate<ValueT,>(
     throw new ProducerRosterError({
       producerModelIds: candidates.flatMap(function toStakeholders(
         candidate,
-      ): readonly SyntheticModelId[] {
+      ): readonly RosterModelId[] {
         return producerModelIds(candidate.producer,);
       },),
       judgeModelIds: judges,
@@ -209,7 +209,7 @@ export async function selectBestCandidate<ValueT,>(
       index,
     ): readonly [
       number,
-      ReadonlySet<SyntheticModelId>,
+      ReadonlySet<RosterModelId>,
     ] {
       return [
         index + 1,

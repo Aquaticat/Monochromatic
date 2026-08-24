@@ -1,4 +1,4 @@
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 
 //region Judge independence
 // Who may re-examine an accepted issue, given who proposed it.
@@ -33,7 +33,7 @@ export type JudgeSeating = {
   /**
    * Models that may re-examine the claim, in roster order.
    */
-  readonly judges: readonly SyntheticModelId[];
+  readonly judges: readonly RosterModelId[];
 
   /**
    * Models barred because they proposed the claim, in roster order.
@@ -41,7 +41,7 @@ export type JudgeSeating = {
    * Reported rather than merely subtracted, so a reading can tell a claim
    * judged by five from one judged by two.
    */
-  readonly barred: readonly SyntheticModelId[];
+  readonly barred: readonly RosterModelId[];
 
   /**
    * Whether anyone at all may judge it.
@@ -55,7 +55,7 @@ export type JudgeSeating = {
 /**
  * Works out who may re-examine a claim its authors must not judge.
  *
- * Proposers are plain strings, NOT `SyntheticModelId`. They are read from an
+ * Proposers are plain strings, NOT `RosterModelId`. They are read from an
  * artifact some earlier run wrote, and typing them as the current union would
  * assert a guarantee the data does not carry: two ids were retired on
  * 2026-08-05 and artifacts naming them still exist. A retired proposer simply
@@ -79,7 +79,7 @@ export function seatJudges(
     roster,
   }: {
     readonly proposers: readonly string[];
-    readonly roster: readonly SyntheticModelId[];
+    readonly roster: readonly RosterModelId[];
   },
 ): JudgeSeating {
   /**

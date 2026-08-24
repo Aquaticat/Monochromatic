@@ -29,7 +29,7 @@ import {
   selectChunkPatch,
   selectPerEnvelope,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -144,7 +144,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
 /**
  * Whole roster selection draws judges from.
  */
-const JUDGES: readonly SyntheticModelId[] = [
+const JUDGES: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
@@ -172,7 +172,7 @@ async function runSelection(
     judgeModelIds = JUDGES,
   }: {
     readonly ballots: BallotScript;
-    readonly judgeModelIds?: readonly SyntheticModelId[];
+    readonly judgeModelIds?: readonly RosterModelId[];
   },
 ) {
   /**
@@ -227,7 +227,7 @@ async function runSelection(
  * ```
  */
 async function runCollapsedSelection(
-  { contributors, }: { readonly contributors: readonly SyntheticModelId[]; },
+  { contributors, }: { readonly contributors: readonly RosterModelId[]; },
 ) {
   /**
    * Judge calls the round made.
@@ -536,7 +536,7 @@ function candidateFor(
     modelId,
     newText,
   }: {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly newText: string;
   },
 ): EditorCandidate {

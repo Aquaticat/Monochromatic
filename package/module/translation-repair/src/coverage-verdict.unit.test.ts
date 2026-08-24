@@ -22,7 +22,7 @@ import {
   isCoverageReportWire,
   judgeCoverage,
   parseDocument,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -54,7 +54,7 @@ const TARGET = {
  *
  * @example
  * ```ts
- * const voice = voiceOf({ modelId: 'hf:cat/Cat-A' as SyntheticModelId, coverage: 'none', quote: '', },);
+ * const voice = voiceOf({ modelId: 'hf:cat/Cat-A' as RosterModelId, coverage: 'none', quote: '', },);
  * ```
  */
 function voiceOf(
@@ -63,7 +63,7 @@ function voiceOf(
     coverage,
     quote,
   }: {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly coverage: CoverageReportWire['coverage'];
     readonly quote: string;
   },
@@ -88,22 +88,22 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'full',
               quote: 'naps on its cushion at noon',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-B' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-B' as RosterModelId,
               coverage: 'partial',
               quote: 'The cat sleeps on the windowsill each morning',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-C' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-C' as RosterModelId,
               coverage: 'full',
               quote: 'She watches the birds outside.',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-D' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-D' as RosterModelId,
               coverage: 'full',
               quote: 'The cat sleeps on the windowsill each morning and naps on its cushion at noon.',
             },),
@@ -127,17 +127,17 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'none',
               quote: '',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-B' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-B' as RosterModelId,
               coverage: 'none',
               quote: '',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-C' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-C' as RosterModelId,
               coverage: 'full',
               quote: 'She watches the birds outside.',
             },),
@@ -161,17 +161,17 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'full',
               quote: 'The kitten chases butterflies in the yard.',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-B' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-B' as RosterModelId,
               coverage: 'full',
               quote: 'She purrs by the fire.',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-C' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-C' as RosterModelId,
               coverage: 'none',
               quote: '',
             },),
@@ -197,12 +197,12 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'full',
               quote: 'She watches the birds outside.',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-B' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-B' as RosterModelId,
               coverage: 'none',
               quote: '',
             },),
@@ -223,7 +223,7 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'full',
               quote: "The cat's cushion is warm at noon.",
             },),
@@ -250,7 +250,7 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'full',
               // Space-joined, which is how a model copies a wrapped sentence.
               quote: 'naps on its cushion at noon',
@@ -278,7 +278,7 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'none',
               quote: '',
             },),
@@ -299,17 +299,17 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'partial',
               quote: 'She watches the birds outside.',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-B' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-B' as RosterModelId,
               coverage: 'partial',
               quote: 'naps on its cushion at noon',
             },),
             voiceOf({
-              modelId: 'hf:cat/Cat-C' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-C' as RosterModelId,
               coverage: 'none',
               quote: '',
             },),
@@ -330,7 +330,7 @@ await describe({
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
-              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'none',
               quote: '',
             },),

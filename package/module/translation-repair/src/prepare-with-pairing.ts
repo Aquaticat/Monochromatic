@@ -26,7 +26,7 @@ import type {
 import { parseDocument, } from './parse-document.ts';
 import { buySectionPairing, } from './prepare-section-round.ts';
 import type { SliceCache, } from './slice-cache.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Preparation with roster pairing
 // THE ONE PLACE A MODEL TOUCHES PREPARATION, and it is deliberately outside it.
@@ -112,7 +112,7 @@ export async function prepareDocumentPairWithRoster(
     sectionCache,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;
     readonly signal: AbortSignal;

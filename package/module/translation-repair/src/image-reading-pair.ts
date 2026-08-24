@@ -8,7 +8,7 @@ import type { OcrReading, } from './image-ocr.ts';
 import { readPastRefusal, } from './image-reading-past-refusal.ts';
 import type { ImageReading, } from './image-reading-stage.ts';
 import { readingsCorroborate, } from './reading-corroboration.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Image reading pair
 // READING ONE PICTURE TWICE, and letting the two readers decide whether either
@@ -99,7 +99,7 @@ export type ModelReading = {
   /**
    * Model that produced it.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * What it transcribed.
@@ -246,7 +246,7 @@ export async function readImagePair(
     l,
   }: {
     readonly client: SyntheticClient;
-    readonly readerModelIds: readonly SyntheticModelId[];
+    readonly readerModelIds: readonly RosterModelId[];
     readonly readOcr: OcrReader;
     readonly bytes: Uint8Array;
     readonly assetName: string;
@@ -310,7 +310,7 @@ export async function readImagePair(
    * latency for nothing.
    */
   const settled = await Promise.allSettled(readerModelIds.map(async function ask(modelId,): Promise<{
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly reading: ImageReading;
   }> {
     return {
@@ -350,13 +350,13 @@ export async function readImagePair(
    * merely convenient.
    */
   const outcomes: readonly {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly reading: ImageReading;
   }[] = settled.map(function contained(
     result,
     index,
   ): {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly reading: ImageReading;
   } {
     if (result.status === 'fulfilled') {

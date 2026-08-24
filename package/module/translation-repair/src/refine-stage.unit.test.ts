@@ -19,7 +19,7 @@ import {
   parseDocument,
   runRefineStage,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -47,7 +47,7 @@ const SMOOTH_TEXT =
 /**
  * Roster judges are drawn from.
  */
-const JUDGES: readonly SyntheticModelId[] = [
+const JUDGES: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
@@ -57,7 +57,7 @@ const JUDGES: readonly SyntheticModelId[] = [
 /**
  * Refiners proposing rewrites.
  */
-const REFINERS: readonly SyntheticModelId[] = ['hf:zai-org/GLM-5.2',];
+const REFINERS: readonly RosterModelId[] = ['hf:zai-org/GLM-5.2',];
 
 /**
  * Envelopes and definitions of the repaired fixture slice.

@@ -19,7 +19,7 @@ import {
   wrapConsolidation,
   wrapConsolidationProposals,
 } from './consolidate-wrap.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import { buildTranslateCandidates, } from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
 import type {
@@ -313,7 +313,7 @@ export async function settleConsolidation(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly roster: readonly SyntheticModelId[];
+    readonly roster: readonly RosterModelId[];
     readonly subject: ConsolidationSubject;
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly validity: readonly ProposalValidity[];

@@ -55,7 +55,7 @@ import {
   messageText,
   prepareDocumentPair,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
   translateDocument,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TRANSLATE_LINE_STRUCTURE_RULE,
@@ -72,7 +72,7 @@ const l = tagged({ tag: 'document-verse-rule-reaches-the-wire-test', },);
 /**
  * Models that render each slice.
  */
-const TRANSLATORS: readonly SyntheticModelId[] = [
+const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',

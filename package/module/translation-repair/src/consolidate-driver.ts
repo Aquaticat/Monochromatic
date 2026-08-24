@@ -29,7 +29,7 @@ import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { TranslateDecision, } from './translate-stage-result.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Consolidate driver
 // THE CONSOLIDATION OVER ONE DOCUMENT: which slices get a third rendering
@@ -248,7 +248,7 @@ export async function consolidateDocument(
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanesV2;
     readonly contests: readonly ArtifactContestSliceV2[];
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly lineStructuredSlices: ReadonlySet<number>;
     readonly pictureContextBySlice: ReadonlyMap<number, string>;

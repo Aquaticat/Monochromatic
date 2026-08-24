@@ -3,7 +3,7 @@ import type {
   SideReading,
 } from './rendering-audit-screen.ts';
 import type { RenderingAuditCategory, } from './rendering-audit-wire.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Rendering audit corroboration
 // When two auditors are talking about the SAME DEFECT, as against the same
@@ -55,7 +55,7 @@ export type AuditMemberClaim = {
   /**
    * Auditor that made this claim.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * What it claimed, screened.

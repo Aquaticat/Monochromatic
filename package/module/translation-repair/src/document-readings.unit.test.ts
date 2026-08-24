@@ -35,7 +35,7 @@ import {
   readDocumentPictures,
   type SliceCache,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -71,7 +71,7 @@ async function sawText(): Promise<{
 /**
  * Vision sub-roster, which is exactly these two models.
  */
-const READERS: readonly SyntheticModelId[] = [
+const READERS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:Qwen/Qwen3.8-27B',
 ];
@@ -183,12 +183,12 @@ function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
  */
 function agreeingClient(): {
   readonly client: SyntheticClient;
-  readonly asked: SyntheticModelId[];
+  readonly asked: RosterModelId[];
 } {
   /**
    * Models a reading was requested from.
    */
-  const asked: SyntheticModelId[] = [];
+  const asked: RosterModelId[] = [];
 
   /**
    * Transcription each reader returns.

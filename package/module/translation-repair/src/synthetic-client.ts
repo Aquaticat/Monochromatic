@@ -22,7 +22,7 @@ import { failureForReply, } from './request-size-refusal.ts';
 import {
   SYNTHETIC_CHAT_BASE_URL,
   SYNTHETIC_QUOTAS_URL,
-  type SyntheticModelId,
+  type RosterModelId,
 } from './synthetic-catalog.ts';
 import { extractStreamedCompletion, } from './stream-completion.ts';
 import { armCallDeadline, } from './call-deadline.ts';
@@ -112,7 +112,7 @@ export function createSyntheticClient(
    * Per-model limiters keyed by model, created lazily;
    * bounded by catalog size.
    */
-  const limiters = new Map<SyntheticModelId, LimitFunction>();
+  const limiters = new Map<RosterModelId, LimitFunction>();
 
   /**
    * Headers shared by every exchange.
@@ -134,7 +134,7 @@ export function createSyntheticClient(
    * const limit = limiterFor('hf:zai-org/GLM-5.2',);
    * ```
    */
-  function limiterFor(modelId: SyntheticModelId,): LimitFunction {
+  function limiterFor(modelId: RosterModelId,): LimitFunction {
     /**
      * Existing limiter when this model was called before.
      */

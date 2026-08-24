@@ -4,7 +4,7 @@ import {
   producerModelIds,
 } from './candidate-select-model.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
 
 //region Translate candidate assembly
@@ -157,7 +157,7 @@ export function buildTranslateCandidates(
     incumbentText,
   }: {
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
-    readonly translatorModelIds: readonly SyntheticModelId[];
+    readonly translatorModelIds: readonly RosterModelId[];
     readonly incumbentText: string;
   },
 ): TranslateCandidateSet {
@@ -238,7 +238,7 @@ export function buildTranslateCandidates(
    * Models whose rendering turned out to be the incumbent's, which is the
    * measurement telling a kept translation apart from an unexamined one.
    */
-  const matchedIncumbent: SyntheticModelId[] = [];
+  const matchedIncumbent: RosterModelId[] = [];
   for (const candidate of offered) {
     /**
      * Key this candidate competes under.

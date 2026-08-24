@@ -1,6 +1,6 @@
 import { hashContent, } from './document-node.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Lane contest key
 // What makes two runs` contests the SAME contest, for cache purposes.
@@ -50,7 +50,7 @@ export function laneContestRunShape(
     modelIds,
     identityContext,
   }: {
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
   },
 ): string {

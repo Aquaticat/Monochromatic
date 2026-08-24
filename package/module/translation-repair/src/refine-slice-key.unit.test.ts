@@ -21,7 +21,7 @@
  * is the failure `#126` already recorded once at the accuracy window.
  *
  * Content fixtures are cat-themed invention. No corpus content appears here.
- * Model identifiers come from the catalog, because `SyntheticModelId` is a
+ * Model identifiers come from the catalog, because `RosterModelId` is a
  * closed union and an invented one does not typecheck.
  *
  * @module

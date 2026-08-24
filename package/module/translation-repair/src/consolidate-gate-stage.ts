@@ -17,7 +17,7 @@ import {
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
 import { runGatherRound, } from './stage-round.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Consolidate gate stage
 // DECIDES WHETHER THE RENDERING THIS RUN WROTE REPLACES THE ONE THAT WOULD SHIP.
@@ -203,7 +203,7 @@ export async function gateConsolidatedSlice(
     l,
   }: {
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly subject: ConsolidateGateSubject;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;

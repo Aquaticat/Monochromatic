@@ -31,7 +31,7 @@ import {
   type RepairJudgedRound,
 } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Refinement stage
 // One slice's naturalness pass over already-repaired text.
@@ -83,7 +83,7 @@ export type RefineStageResult = {
    * checker being asked, and a contract that claims a bar invites a reader to
    * skip the guard that actually exists.
    */
-  readonly contributors: readonly SyntheticModelId[];
+  readonly contributors: readonly RosterModelId[];
 
   /**
    * Stage telemetry in scorecard-stable wording.
@@ -150,8 +150,8 @@ export async function runRefineStage(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly refinerModelIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly refinerModelIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly repairedText: string;
     readonly envelopes: readonly EditableEnvelope[];

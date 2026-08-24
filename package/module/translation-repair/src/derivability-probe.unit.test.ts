@@ -18,7 +18,7 @@ import {
   resolveDerivabilityJudgment,
   runDerivabilityProbe,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -105,7 +105,7 @@ function probingClient(
 /**
  * Three-judge roster for the stage tests.
  */
-const JUDGES: readonly SyntheticModelId[] = [
+const JUDGES: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',

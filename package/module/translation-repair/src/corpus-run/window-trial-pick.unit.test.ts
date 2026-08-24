@@ -29,7 +29,7 @@ import {
   type ChunkPair,
   runPick,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
   trialKey,
 } from '../../dist/final/node/index.mjs';
 
@@ -43,11 +43,11 @@ const l = tagged({ tag: 'window-trial-pick-test', },);
  */
 const MODELS = {
   translatorModelIds: ['hf:cat/Cat-A',].map(function toId(id,) {
-    return id as unknown as SyntheticModelId;
+    return id as unknown as RosterModelId;
   },),
   judgeModelIds: ['hf:cat/Cat-A',
     'hf:cat/Cat-B',].map(function toId(id,) {
-    return id as unknown as SyntheticModelId;
+    return id as unknown as RosterModelId;
   },),
 };
 

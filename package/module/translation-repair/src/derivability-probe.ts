@@ -14,7 +14,7 @@ import {
   type JudgeReference,
 } from './restoration-judge-wire.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Derivability probe stage
 // Ensemble audit of whether deleted sentences are fully derivable from the
@@ -148,7 +148,7 @@ export async function runDerivabilityProbe(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly references: readonly JudgeReference[];
     readonly signal: AbortSignal;

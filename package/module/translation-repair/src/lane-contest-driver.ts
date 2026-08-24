@@ -20,7 +20,7 @@ import {
   laneContestSliceKey,
 } from './lane-contest-key.ts';
 import type { SliceCache, } from './slice-cache.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Lane contest driver
 // The contest over one document: which slices are worth asking about, and what
@@ -99,7 +99,7 @@ export async function contestDocumentLanes(
   }: {
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanesV2;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly cache: SliceCache<LaneContestOutcome>;
     readonly signal: AbortSignal;

@@ -8,7 +8,7 @@ import { encodeImageAsset, } from './image-asset.ts';
 import { readingMakesSense, } from './image-reading-sense.ts';
 import {
   SYNTHETIC_MODELS,
-  type SyntheticModelId,
+  type RosterModelId,
 } from './synthetic-catalog.ts';
 
 //region Image reading stage
@@ -153,7 +153,7 @@ export async function readImageAsset(
     l,
   }: {
     readonly client: SyntheticClient;
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;
     readonly signal: AbortSignal;

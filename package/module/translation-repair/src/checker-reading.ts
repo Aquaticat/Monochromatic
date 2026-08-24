@@ -1,5 +1,5 @@
 import type { ResolutionVerdict, } from './resolution-wire.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IssueResolutionTally, } from './tally-resolution.ts';
 
 //region Checker reading
@@ -30,7 +30,7 @@ export type IssueCheckerBallot = {
   /**
    * Checker that answered.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * What it said about this issue.

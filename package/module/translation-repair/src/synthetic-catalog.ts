@@ -90,10 +90,10 @@ export type SyntheticVendorFamily =
  *
  * @example
  * ```ts
- * const modelId: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+ * const modelId: RosterModelId = 'hf:zai-org/GLM-5.2';
  * ```
  */
-export type SyntheticModelId =
+export type RosterModelId =
   | 'hf:zai-org/GLM-5.2'
   | 'hf:zai-org/GLM-4.7-Flash'
   | 'hf:Qwen/Qwen3.8-27B'
@@ -113,7 +113,7 @@ export type SyntheticModelInfo = {
   /**
    * Model identifier sent in request bodies.
    */
-  readonly id: SyntheticModelId;
+  readonly id: RosterModelId;
 
   /**
    * Vendor family for cross-family fan-out and rerouting.
@@ -171,7 +171,7 @@ export type SyntheticModelInfo = {
  * const flash = SYNTHETIC_MODELS['hf:zai-org/GLM-4.7-Flash'];
  * ```
  */
-export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelInfo>> = {
+export const SYNTHETIC_MODELS: Readonly<Record<RosterModelId, SyntheticModelInfo>> = {
   'hf:zai-org/GLM-5.2': {
     id: 'hf:zai-org/GLM-5.2',
     readsImages: false,
@@ -232,7 +232,7 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
  * Baseline model whose calls count as exactly one request against the five-hour
  * limit; the provider documents the baseline as its current default model.
  */
-export const SYNTHETIC_BASELINE_MODEL_ID: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+export const SYNTHETIC_BASELINE_MODEL_ID: RosterModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Estimates five-hour-limit weight of one request to one model,
@@ -251,7 +251,7 @@ export const SYNTHETIC_BASELINE_MODEL_ID: SyntheticModelId = 'hf:zai-org/GLM-5.2
  * ```
  */
 export function estimateRequestWeight(
-  { modelId, }: { readonly modelId: SyntheticModelId; },
+  { modelId, }: { readonly modelId: RosterModelId; },
 ): number {
   /**
    * Input price of the requested model.

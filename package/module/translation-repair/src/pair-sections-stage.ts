@@ -19,7 +19,7 @@ import {
   SectionPairingError,
 } from './pair-sections-wire.ts';
 import { runGatherRound, } from './stage-round.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Section pairing stage
 // ASKS THE ROSTER WHICH SECTION RENDERS WHICH, and keeps only what enough of
@@ -276,7 +276,7 @@ export async function pairSectionsWithRoster(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly sourceSections: readonly NumberedSection[];
     readonly targetSections: readonly NumberedSection[];
     readonly signal: AbortSignal;

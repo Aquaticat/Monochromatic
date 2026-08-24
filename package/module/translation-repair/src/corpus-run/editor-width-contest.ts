@@ -6,7 +6,7 @@ import type { Candidate, } from '../candidate-select-model.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { selectChunkPatch, } from '../editor-ensemble.ts';
 import type { ShippedProducer, } from '../editor-selection-result.ts';
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { ArmOutcome, } from './editor-width-arm.ts';
 import type { WidthProbeInput, } from './editor-width-input.ts';
 import {
@@ -107,7 +107,7 @@ async function contest(
     readonly input: WidthProbeInput;
     readonly first: ArmOutcome;
     readonly second: ArmOutcome;
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
   }>,
@@ -349,7 +349,7 @@ export async function bothOrders(
     readonly input: WidthProbeInput;
     readonly narrow: ArmOutcome;
     readonly wide: ArmOutcome;
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly l: Logger;
   }>,

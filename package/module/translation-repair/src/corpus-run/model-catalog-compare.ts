@@ -17,7 +17,7 @@ import {
 // `hugging_face_id`, never on `id`.
 
 /**
- * Ids the pipeline compiles against, mirrored from `SyntheticModelId`.
+ * Ids the pipeline compiles against, mirrored from `RosterModelId`.
  *
  * Written out rather than derived, because a union type has no runtime value.
  * A drift between this list and that union is itself a defect this report

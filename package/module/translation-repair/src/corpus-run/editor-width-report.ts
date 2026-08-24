@@ -1,7 +1,7 @@
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
   summarizeWidths,
   type WidthDraw,
@@ -110,9 +110,9 @@ export async function writeWidthReport(
     readonly rows: readonly WidthRow[];
     readonly skipped: Readonly<Record<string, number>>;
     readonly headSha: string;
-    readonly narrowEditorIds: readonly SyntheticModelId[];
-    readonly wideEditorIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly narrowEditorIds: readonly RosterModelId[];
+    readonly wideEditorIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly controlHeld: boolean;
     readonly draw: WidthDraw;
   },

@@ -8,7 +8,7 @@ import {
   type ImageReading,
   readImageAsset,
 } from './image-reading-stage.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Reading past a refusal
 // ASKING THE SAME MODEL AGAIN WHEN IT DECLINES TO READ A PICTURE, because a
@@ -134,7 +134,7 @@ export async function readPastRefusal(
     l,
   }: {
     readonly client: SyntheticClient;
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;
     readonly signal: AbortSignal;

@@ -19,7 +19,7 @@ import {
   type PatchOperation,
   type RepairJudgedRound,
   type RepairSlateEntry,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -30,12 +30,12 @@ const WHISKER = 'adjudicated/whisker';
 /**
  * Model that wins the envelope rounds below unless a case says otherwise.
  */
-const AUTHOR: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Second model, for composites and for candidates that lose.
  */
-const HELPER: SyntheticModelId = 'hf:Qwen/Qwen3.8-27B';
+const HELPER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * What ships in every `collectIssueAuthors` case here.
@@ -94,7 +94,7 @@ function slateEntryOf(
     modelId,
   }: {
     readonly index: number;
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
   },
 ): RepairSlateEntry {
   return {

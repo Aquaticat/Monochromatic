@@ -31,7 +31,7 @@ import {
   type IssueClaim,
 } from './issue-model.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import { tallyVotes, } from './tally-votes.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
 
@@ -77,7 +77,7 @@ export type CriticStageResult = {
    * same silence-reads-as-clean failure `#68` documents, and `#68` is
    * answerable only because its telemetry carries the denominator.
    */
-  readonly heardCriticIds: readonly SyntheticModelId[];
+  readonly heardCriticIds: readonly RosterModelId[];
 
   /**
    * Which critics raised each claim, keyed by deterministic claim id.
@@ -142,7 +142,7 @@ export async function runCriticStage(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly criticModelIds: readonly SyntheticModelId[];
+    readonly criticModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;
     readonly documents: Readonly<Record<DocumentSide, AnchorTarget>>;
@@ -344,7 +344,7 @@ export async function runPanelStage(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly panelModelIds: readonly SyntheticModelId[];
+    readonly panelModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly targetText: string;
     readonly clusters: readonly ClaimCluster[];

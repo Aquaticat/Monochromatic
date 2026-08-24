@@ -1,4 +1,4 @@
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { AttributionEntry, } from './attribution-report.ts';
 import { seatJudges, } from './judge-independence.ts';
 
@@ -77,12 +77,12 @@ export type CrosscheckItem = {
   /**
    * Models seated to judge it.
    */
-  readonly judges: readonly SyntheticModelId[];
+  readonly judges: readonly RosterModelId[];
 
   /**
    * Models barred as authors.
    */
-  readonly barred: readonly SyntheticModelId[];
+  readonly barred: readonly RosterModelId[];
 };
 
 /**
@@ -194,7 +194,7 @@ export function buildCrosscheckCensus(
     roster,
   }: {
     readonly entries: readonly AttributionEntry[];
-    readonly roster: readonly SyntheticModelId[];
+    readonly roster: readonly RosterModelId[];
   },
 ): CrosscheckCensus {
   /**

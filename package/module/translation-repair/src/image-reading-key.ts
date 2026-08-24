@@ -1,7 +1,7 @@
 import { hashContent, } from './document-node.ts';
 import { READING_INSTRUCTION, } from './image-reading-stage.ts';
 import { CORROBORATION_TRIGRAM_SHARE, } from './reading-corroboration.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Image reading key
 // WHAT MAKES TWO RUNS' PICTURE READINGS THE SAME READING, for cache purposes.
@@ -38,7 +38,7 @@ export function imageReadingKey(
     readerModelIds,
   }: {
     readonly bytes: Uint8Array;
-    readonly readerModelIds: readonly SyntheticModelId[];
+    readonly readerModelIds: readonly RosterModelId[];
   },
 ): string {
   /**

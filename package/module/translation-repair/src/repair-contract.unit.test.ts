@@ -20,7 +20,7 @@
  * roster failure would report itself as an editor failure and send whoever
  * reads it to the wrong configuration.
  *
- * Model ids are real catalog entries because `SyntheticModelId` is a closed
+ * Model ids are real catalog entries because `RosterModelId` is a closed
  * union.
  *
  * @module

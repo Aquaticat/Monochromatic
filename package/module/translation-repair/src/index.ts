@@ -171,7 +171,7 @@ export {
   SYNTHETIC_CHAT_BASE_URL,
   SYNTHETIC_MODELS,
   SYNTHETIC_QUOTAS_URL,
-  type SyntheticModelId,
+  type RosterModelId,
   type SyntheticModelInfo,
   type SyntheticVendorFamily,
 } from './synthetic-catalog.ts';

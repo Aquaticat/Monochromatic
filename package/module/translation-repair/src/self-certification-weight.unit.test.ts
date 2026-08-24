@@ -23,7 +23,7 @@ import {
   type IssueAuthorship,
   type ResolutionBallot,
   type ResolutionVerdict,
-  type SyntheticModelId,
+  type RosterModelId,
   tallyResolutionChecks,
   UNATTRIBUTED_TEXT,
   wroteTextForIssue,
@@ -43,17 +43,17 @@ const PAW = 'adjudicated/paw';
 /**
  * Model cast as the one that wrote the text under check.
  */
-const AUTHOR: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Model that wrote none of it.
  */
-const OUTSIDER: SyntheticModelId = 'hf:Qwen/Qwen3.8-27B';
+const OUTSIDER: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Third voice, for cases needing two independents.
  */
-const BYSTANDER: SyntheticModelId = 'hf:moonshotai/Kimi-K3';
+const BYSTANDER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
  * Authorship naming {@link AUTHOR} as the writer of one issue's text only.

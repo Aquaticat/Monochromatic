@@ -17,7 +17,7 @@ import {
   readBlockPairing,
 } from './pair-blocks-wire.ts';
 import { runGatherRound, } from './stage-round.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Block pairing stage
 // ASKS THE ROSTER WHICH PARAGRAPH RENDERS WHICH, and keeps only what enough of
@@ -223,7 +223,7 @@ export async function pairBlocksWithRoster(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly sourceBlocks: readonly NumberedBlock[];
     readonly targetBlocks: readonly NumberedBlock[];
     readonly signal: AbortSignal;

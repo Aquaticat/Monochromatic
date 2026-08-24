@@ -29,7 +29,7 @@ import type { EditableEnvelope, } from './patch-model.ts';
 import { assertJudgeableEditorRoster, } from './repair-contract.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Editor stage
 // Several editors rewrite one chunk's envelopes independently, every proposal
@@ -138,8 +138,8 @@ export async function runEditorStage(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly editorModelIds: readonly SyntheticModelId[];
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly editorModelIds: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly editorRuleAddendum?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;

@@ -18,7 +18,7 @@ import {
   type IssueAuthorship,
   UNATTRIBUTED_TEXT,
 } from './resolution-authorship.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Pair shapes
 
@@ -45,7 +45,7 @@ type EnvelopeIssues = readonly [
  */
 type EnvelopeAuthors = readonly [
   string,
-  readonly SyntheticModelId[],
+  readonly RosterModelId[],
 ];
 
 /**
@@ -58,7 +58,7 @@ type EnvelopeAuthors = readonly [
  */
 type IssueAuthors = readonly [
   string,
-  readonly SyntheticModelId[],
+  readonly RosterModelId[],
 ];
 
 /**
@@ -74,7 +74,7 @@ type IssueAuthors = readonly [
  */
 type IssueAuthorPair = readonly [
   string,
-  SyntheticModelId,
+  RosterModelId,
 ];
 
 //endregion
@@ -147,7 +147,7 @@ export function appliedIssuesByEnvelope(
  * const authors = roundWinnerAuthors(round,);
  * ```
  */
-function roundWinnerAuthors(round: RepairJudgedRound,): readonly SyntheticModelId[] {
+function roundWinnerAuthors(round: RepairJudgedRound,): readonly RosterModelId[] {
   if (round.kind !== 'selected')
     return [];
 
@@ -197,11 +197,11 @@ function envelopeAuthorsFromRounds(
     readonly rounds: readonly RepairJudgedRound[];
     readonly issuesByEnvelope: Readonly<Record<string, readonly string[]>>;
   },
-): Readonly<Record<string, readonly SyntheticModelId[]>> {
+): Readonly<Record<string, readonly RosterModelId[]>> {
   /**
    * Winners of rounds that decided one envelope, keyed by that envelope.
    */
-  const byEnvelope: Readonly<Record<string, readonly SyntheticModelId[]>> = Object.fromEntries(
+  const byEnvelope: Readonly<Record<string, readonly RosterModelId[]>> = Object.fromEntries(
     rounds
       .filter(function decidedOneEnvelope(round,) {
         return round.envelopeId !== CHUNK_SCOPE_ENVELOPE;
@@ -238,7 +238,7 @@ function envelopeAuthorsFromRounds(
   /**
    * Those pairs gathered per issue, each author named once.
    */
-  const perIssue: Readonly<Record<string, readonly SyntheticModelId[]>> = Object.fromEntries(
+  const perIssue: Readonly<Record<string, readonly RosterModelId[]>> = Object.fromEntries(
     [
       ...new Set(pairs.map(function toIssueId(pair,) {
         return pair[0];
@@ -357,7 +357,7 @@ export function collectRefinedAuthors(
     refineContributors,
   }: {
     readonly editorAuthorship: IssueAuthorship;
-    readonly refineContributors: readonly SyntheticModelId[];
+    readonly refineContributors: readonly RosterModelId[];
   },
 ): IssueAuthorship {
   if (refineContributors.length === 0)

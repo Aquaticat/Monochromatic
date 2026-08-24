@@ -1,4 +1,4 @@
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Critic attribution
 // Which critic raised which claim, kept OUTSIDE the claim because adjudication
@@ -19,7 +19,7 @@ export type ClaimProposer = {
   /**
    * Critic that emitted this claim.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * How many times this critic emitted it within its own report;
@@ -68,7 +68,7 @@ export type ClaimEmission = {
   /**
    * Critic that emitted it.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 };
 
 /**
@@ -100,7 +100,7 @@ export function collectClaimAttributions(
    * and never returned, because a `Map` would not survive `JSON.stringify`
    * into a cached outcome.
    */
-  const tally = new Map<string, Map<SyntheticModelId, number>>();
+  const tally = new Map<string, Map<RosterModelId, number>>();
 
   for (
     const {
@@ -111,7 +111,7 @@ export function collectClaimAttributions(
     /**
      * Critics seen for this claim so far.
      */
-    const byModel = tally.get(claimId,) ?? new Map<SyntheticModelId, number>();
+    const byModel = tally.get(claimId,) ?? new Map<RosterModelId, number>();
     byModel.set(
       modelId,
       (byModel.get(modelId,) ?? 0) + 1,
@@ -221,7 +221,7 @@ export type ChunkCriticRecord = {
   /**
    * Critics that answered on this chunk, sorted by model id.
    */
-  readonly heardCriticIds: readonly SyntheticModelId[];
+  readonly heardCriticIds: readonly RosterModelId[];
 
   /**
    * Which critics raised each surviving claim of this chunk.

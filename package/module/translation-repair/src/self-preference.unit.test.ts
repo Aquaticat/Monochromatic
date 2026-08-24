@@ -22,23 +22,23 @@ import {
   type SelectionBallot,
   type SelectionRound,
   selfPreference,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
  * Models that both write and judge.
  */
-const CAT_A = 'hf:cat/Cat-A' as unknown as SyntheticModelId;
+const CAT_A = 'hf:cat/Cat-A' as unknown as RosterModelId;
 
 /**
  * Second producer-judge.
  */
-const CAT_B = 'hf:cat/Cat-B' as unknown as SyntheticModelId;
+const CAT_B = 'hf:cat/Cat-B' as unknown as RosterModelId;
 
 /**
  * Judge that writes nothing, so its ballots are always disinterested.
  */
-const CAT_C = 'hf:cat/Cat-C' as unknown as SyntheticModelId;
+const CAT_C = 'hf:cat/Cat-C' as unknown as RosterModelId;
 
 /**
  * Builds one ballot.
@@ -65,7 +65,7 @@ function ballotFor(
     best,
     selfVote = false,
   }: {
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly best: number;
     readonly selfVote?: boolean;
   },

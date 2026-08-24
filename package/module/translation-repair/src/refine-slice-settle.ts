@@ -2,7 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { parseDocument, } from './parse-document.ts';
 import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
@@ -401,7 +401,7 @@ async function retainsResolvedIssues(
     readonly client: SyntheticClient;
     readonly models: RepairModels;
     readonly outcome: ChunkRepairOutcome;
-    readonly refineContributors: readonly SyntheticModelId[];
+    readonly refineContributors: readonly RosterModelId[];
     readonly sourceText: string;
     readonly refinedText: string;
     readonly signal: AbortSignal;

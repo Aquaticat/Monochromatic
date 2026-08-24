@@ -30,18 +30,18 @@ import {
   readPastRefusal,
   REFUSAL_ASK_LIMIT,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
  * Reader used by every case that asks a model which reads images.
  */
-const READER: SyntheticModelId = 'hf:moonshotai/Kimi-K3';
+const READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
  * Model the catalog says does not read images, so it is never sent one.
  */
-const TEXT_ONLY: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+const TEXT_ONLY: RosterModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * What a reader returns when it declines, worded the way both real readers
@@ -96,12 +96,12 @@ function sequencedClient(
   { replies, }: { readonly replies: readonly string[]; },
 ): {
   readonly client: SyntheticClient;
-  readonly asks: SyntheticModelId[];
+  readonly asks: RosterModelId[];
 } {
   /**
    * Models asked, in the order the asks arrived.
    */
-  const asks: SyntheticModelId[] = [];
+  const asks: RosterModelId[] = [];
 
   return {
     asks,

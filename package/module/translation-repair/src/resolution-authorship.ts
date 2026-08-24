@@ -9,7 +9,7 @@
  * @module
  */
 
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Authorship of the text under check
 
@@ -31,12 +31,12 @@ export type IssueAuthorship = {
   /**
    * Models that wrote text serving one issue, keyed by issue id.
    */
-  readonly perIssue: Readonly<Record<string, readonly SyntheticModelId[]>>;
+  readonly perIssue: Readonly<Record<string, readonly RosterModelId[]>>;
 
   /**
    * Models that wrote this chunk whole, so they author every issue in it.
    */
-  readonly everyIssue: readonly SyntheticModelId[];
+  readonly everyIssue: readonly RosterModelId[];
 };
 
 /**

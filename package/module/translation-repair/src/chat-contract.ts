@@ -5,7 +5,7 @@ import type {
 } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { QuotaSnapshot, } from './synthetic-quota.ts';
 
 //region Chat contract
@@ -142,7 +142,7 @@ export type ChatTextRequest = {
   /**
    * Catalog model receiving the exchange.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * Conversation sent as-is.

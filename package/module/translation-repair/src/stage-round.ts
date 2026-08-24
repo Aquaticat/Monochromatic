@@ -11,7 +11,7 @@ import {
   attemptStageCall,
   type StageVoice,
 } from './stage-call.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import { describeAbandon, } from './abandon-kind.ts';
 
 //region Stage round
@@ -76,7 +76,7 @@ export type RoundOutcome<ValueT,> = {
   /**
    * Model that was asked.
    */
-  readonly modelId: SyntheticModelId;
+  readonly modelId: RosterModelId;
 
   /**
    * What came back.
@@ -206,7 +206,7 @@ export async function runGatherRound<ValueT,>(
     graceMs = STRAGGLER_GRACE_MS,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;

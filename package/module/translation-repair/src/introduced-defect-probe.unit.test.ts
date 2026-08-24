@@ -21,7 +21,7 @@ import {
   type RepairRegion,
   runIntroducedDefectProbe,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -32,7 +32,7 @@ const l = tagged({ tag: 'introduced-defect-probe-test', },);
 /**
  * Probers the fixtures configure.
  */
-const PROBERS: readonly SyntheticModelId[] = [
+const PROBERS: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',

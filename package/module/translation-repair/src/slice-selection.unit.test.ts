@@ -21,14 +21,14 @@ import {
 import {
   buildSliceSelections,
   selfPreference,
-  type SyntheticModelId,
+  type RosterModelId,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
 
 /**
  * Model standing in for a translator.
  */
-const CAT_A = 'hf:cat/Cat-A' as unknown as SyntheticModelId;
+const CAT_A = 'hf:cat/Cat-A' as unknown as RosterModelId;
 
 /**
  * Builds one settled record with the parts this ledger reads.
@@ -102,7 +102,7 @@ function recordFor(
 /**
  * Second model, so a round can have a stakeholder and a disinterested judge.
  */
-const CAT_B = 'hf:cat/Cat-B' as unknown as SyntheticModelId;
+const CAT_B = 'hf:cat/Cat-B' as unknown as RosterModelId;
 
 /**
  * Builds a record carrying a REAL round: two candidates by two producers, and

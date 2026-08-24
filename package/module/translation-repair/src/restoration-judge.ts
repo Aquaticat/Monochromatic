@@ -12,7 +12,7 @@ import {
   type RestorationVerdict,
 } from './restoration-judge-wire.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Restoration judge stage
 // Ensemble bilingual grading of one entry's restored seeds. No single judge
@@ -146,7 +146,7 @@ export async function runRestorationJudge(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly repairedText: string;
     readonly references: readonly JudgeReference[];

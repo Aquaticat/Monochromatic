@@ -5,7 +5,7 @@ import type { SyntheticClient, } from '../chat-contract.ts';
 import { runCoverageStage, } from '../coverage-stage.ts';
 import type { CoverageVerdict, } from '../coverage-verdict.ts';
 import { parseDocument, } from '../parse-document.ts';
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { AnchorTarget, } from '../validate-issue.ts';
 import { decoyCut, } from './coverage-control-decoy.ts';
 
@@ -323,7 +323,7 @@ async function tryCase(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly probe: CoverageControlCase;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -515,7 +515,7 @@ export async function coverageControlHolds(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly cases: readonly CoverageControlCase[];
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;

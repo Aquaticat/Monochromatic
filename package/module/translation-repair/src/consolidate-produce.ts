@@ -14,7 +14,7 @@ import {
   gatherStageVoices,
   type HeardVoice,
 } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import {
@@ -111,7 +111,7 @@ export async function produceConsolidations(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly roster: readonly SyntheticModelId[];
+    readonly roster: readonly RosterModelId[];
     readonly subject: ConsolidateSubject;
     readonly standingText: string;
     readonly signal: AbortSignal;

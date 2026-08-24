@@ -21,7 +21,7 @@
 // slice it rewrote HAS a wording somebody produced, so hearing nobody means
 // both stages were silent, not just the critics.
 
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  * Reports a slice the repair lane heard nobody about that carries a wording
@@ -81,7 +81,7 @@ export type RepairVoiceRecord = {
   /**
    * Critics that answered on this slice, empty when none did.
    */
-  readonly heardCriticIds: readonly SyntheticModelId[];
+  readonly heardCriticIds: readonly RosterModelId[];
 
   /**
    * Whether the naturalness lane rewrote this slice after the accuracy pass.

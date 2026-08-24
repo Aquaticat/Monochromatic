@@ -24,7 +24,7 @@ import {
   seedHitByRegion,
   type SeededErrorApplication,
 } from './seeded-error.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 export type { BenchmarkEntry, } from './prepare-entry.ts';
 
@@ -182,7 +182,7 @@ export async function runCriticBenchmark(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly runBudgetMs?: number;
@@ -248,7 +248,7 @@ export async function runCriticBenchmark(
       modelId,
       entry,
     }: {
-      readonly modelId: SyntheticModelId;
+      readonly modelId: RosterModelId;
       readonly entry: PreparedEntry;
     },
   ): Promise<CriticAttemptRecord> {

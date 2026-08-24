@@ -23,7 +23,7 @@ import {
 
 import {
   imageReadingKey,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -69,8 +69,8 @@ function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
  * const modelId = catModelId({ id: 'hf:cat/Whiskers', },);
  * ```
  */
-function catModelId({ id, }: { readonly id: string; },): SyntheticModelId {
-  return id as unknown as SyntheticModelId;
+function catModelId({ id, }: { readonly id: string; },): RosterModelId {
+  return id as unknown as RosterModelId;
 }
 
 /**
@@ -102,7 +102,7 @@ function isHexDigest({ value, }: { readonly value: string; },): boolean {
  * Vision sub-roster asked about one picture, cat-themed since a reading key
  * never validates a model id against the real roster.
  */
-const ROSTER: readonly SyntheticModelId[] = [
+const ROSTER: readonly RosterModelId[] = [
   catModelId({ id: 'hf:cat/Whiskers', },),
   catModelId({ id: 'hf:cat/Marmalade', },),
 ];
@@ -110,7 +110,7 @@ const ROSTER: readonly SyntheticModelId[] = [
 /**
  * Same two readers as `ROSTER`, asked in the opposite order.
  */
-const REORDERED_ROSTER: readonly SyntheticModelId[] = [
+const REORDERED_ROSTER: readonly RosterModelId[] = [
   catModelId({ id: 'hf:cat/Marmalade', },),
   catModelId({ id: 'hf:cat/Whiskers', },),
 ];
@@ -118,7 +118,7 @@ const REORDERED_ROSTER: readonly SyntheticModelId[] = [
 /**
  * Different roster membership from `ROSTER`, same length.
  */
-const OTHER_ROSTER: readonly SyntheticModelId[] = [
+const OTHER_ROSTER: readonly RosterModelId[] = [
   catModelId({ id: 'hf:cat/Nutmeg', },),
   catModelId({ id: 'hf:cat/Biscuit', },),
 ];

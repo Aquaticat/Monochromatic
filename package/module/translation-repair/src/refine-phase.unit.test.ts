@@ -24,7 +24,7 @@ import {
   runRefinePhase,
   type SliceCache,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -56,12 +56,12 @@ const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
  * distinguishable ids, which is what lets an assertion tell a union of both
  * stages apart from either stage alone.
  */
-const EDITOR_WHO_DID_NOT_REFINE: SyntheticModelId = 'hf:zai-org/GLM-4.7-Flash';
+const EDITOR_WHO_DID_NOT_REFINE: RosterModelId = 'hf:zai-org/GLM-4.7-Flash';
 
 /**
  * Refiner the scripted client answers as, which is the fixture's other editor.
  */
-const REFINER_THAT_REWROTE: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+const REFINER_THAT_REWROTE: RosterModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Roster with the lane on, refiners disjoint from checkers.

@@ -13,7 +13,7 @@ import {
   isCoverageReportWire,
 } from './coverage-wire.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
 
 //region Coverage stage
@@ -82,7 +82,7 @@ export async function runCoverageStage(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly sourcePassage: string;
     readonly translation: AnchorTarget;
     readonly signal: AbortSignal;

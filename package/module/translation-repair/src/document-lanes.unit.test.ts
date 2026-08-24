@@ -29,7 +29,7 @@ import {
   runDocumentLanes,
   type SliceCache,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
   type TranslateModels,
 } from '../dist/final/node/index.mjs';
 
@@ -75,7 +75,7 @@ const FRESH = 'The cat naps on the windowsill.';
 /**
  * Models that produce and judge.
  */
-const ROSTER: readonly SyntheticModelId[] = [
+const ROSTER: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',

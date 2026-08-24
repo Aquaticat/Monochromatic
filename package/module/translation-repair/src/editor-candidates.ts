@@ -16,7 +16,7 @@ import {
 import type { EditorCandidate, } from './editor-selection-result.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Editor candidate assembly
 // Turning heard editor voices into comparable candidates, and turning those
@@ -99,7 +99,7 @@ export function buildEditorCandidates(
     preservation,
   }: {
     readonly voices: readonly HeardVoice<EditorReportWire>[];
-    readonly editorModelIds: readonly SyntheticModelId[];
+    readonly editorModelIds: readonly RosterModelId[];
     readonly promptEnvelopes: readonly EditableEnvelope[];
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
@@ -235,7 +235,7 @@ export function buildChunkCandidates(
   }: {
     readonly candidates: readonly EditorCandidate[];
     readonly composite: PatchOutcome;
-    readonly contributors: readonly SyntheticModelId[];
+    readonly contributors: readonly RosterModelId[];
   },
 ): ChunkCandidateSet {
   /**

@@ -17,7 +17,7 @@ import {
   readLaneContestBallot,
 } from './lane-contest-wire.ts';
 import { runGatherRound, } from './stage-round.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Lane contest stage
 // SETTLES ONE CONTESTED SLICE by asking the roster which candidate the original
@@ -304,7 +304,7 @@ export async function contestLaneSlice(
     l,
   }: {
     readonly client: SyntheticClient;
-    readonly modelIds: readonly SyntheticModelId[];
+    readonly modelIds: readonly RosterModelId[];
     readonly subject: LaneContestSubject;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;

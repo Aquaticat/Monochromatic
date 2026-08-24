@@ -35,7 +35,7 @@ import {
   type OcrReader,
   readImagePair,
   type SyntheticClient,
-  type SyntheticModelId,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -46,7 +46,7 @@ const l = tagged({ tag: 'image-reading-pair-test', },);
 /**
  * Vision sub-roster, which is exactly these two models.
  */
-const READERS: readonly SyntheticModelId[] = [
+const READERS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:Qwen/Qwen3.8-27B',
 ];
@@ -55,7 +55,7 @@ const READERS: readonly SyntheticModelId[] = [
  * Model whose context is the larger of the two, so a picture can be sized to
  * fit it alone.
  */
-const LARGER_READER: SyntheticModelId = 'hf:moonshotai/Kimi-K3';
+const LARGER_READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
  * What one reader transcribed from a picture of a noticeboard.
@@ -150,12 +150,12 @@ function scriptedClient(
   { byModel, }: { readonly byModel: Readonly<Record<string, string>>; },
 ): {
   readonly client: SyntheticClient;
-  readonly asked: SyntheticModelId[];
+  readonly asked: RosterModelId[];
 } {
   /**
    * Models a reading was requested from.
    */
-  const asked: SyntheticModelId[] = [];
+  const asked: RosterModelId[] = [];
 
   return {
     asked,
@@ -206,12 +206,12 @@ function failingClient(
   },
 ): {
   readonly client: SyntheticClient;
-  readonly asked: SyntheticModelId[];
+  readonly asked: RosterModelId[];
 } {
   /**
    * Models a reading was requested from.
    */
-  const asked: SyntheticModelId[] = [];
+  const asked: RosterModelId[] = [];
 
   return {
     asked,
@@ -278,7 +278,7 @@ await describe({
         expect(paired.readings
           .length,).toBe(2,);
         expect(paired.readings
-          .map(function toModel(reading,): SyntheticModelId {
+          .map(function toModel(reading,): RosterModelId {
             return reading.modelId;
           },),).toEqual([...READERS,],);
         expect(paired.readings

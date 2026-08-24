@@ -8,7 +8,7 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Stage call
 // One guarded model exchange for pipeline stages: non-ok outcomes and
@@ -186,7 +186,7 @@ export async function attemptStageCall<ValueT,>(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly modelId: SyntheticModelId;
+    readonly modelId: RosterModelId;
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
