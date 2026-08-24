@@ -486,6 +486,39 @@ The owner's standing instruction decides what follows from that:
 
 A forty-round pass is therefore running rather than three seats being filled from this table.
 
+### Which seats the forty-round pass actually decides
+
+`RUN_ROSTER` is `ROSTER_MODEL_IDS`, all TEN, so the wide roles already fan out
+across both providers:
+critics, panel, judges, and both stages of the translate lane.
+The calibration's roster is therefore production's roster rather than a superset of it.
+
+Only three roles are narrow, and this is how they stand against the twelve-round table:
+
+    editors    Kimi-K3 10.6% (at chance)   GLM-5.2 2.7% (z -2.29)   Qwen3.8-27B 29.7% (established)
+    refiners   the same three
+    checkers   Qwen3.8-27B 29.7%   Nemotron 4.1% (z -2.18)   gpt-oss-120b 11.8% (at chance)
+
+THE SEAT IN QUESTION IS GLM-5.2's.
+It holds an editor seat AND a refiner seat while scoring third from bottom as a writer,
+and it is also the second worst model measured on reliability,
+losing 2 voices of 21.
+Those two facts point the same way, which is rare enough to be worth saying;
+the reliability finding and the quality finding are independent measurements
+and they agree.
+
+IT IS NOT YET GROUNDS TO MOVE IT.
+`z = -2.29` does not clear the Bonferroni threshold of 2.81,
+so on this evidence GLM-5.2 is suggestively weak rather than measurably weak.
+The seat's own comment already calls the third writer provisional
+and names this calibration as what settles it.
+
+CHECKER SEATS ARE A DIFFERENT QUESTION and this table does not answer them.
+The standing measures who WRITES well, and a checker does not write;
+`#188` settled checker width separately across 231 rounds.
+Nothing here argues Nemotron should leave the checker roster
+merely because it writes below the null.
+
 ### Two models lose voices and eight do not
 
 Measured on the 2026-08-24 producer calibration,
