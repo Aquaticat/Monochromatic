@@ -301,23 +301,24 @@ When the run has exited, check its output rather than its log.
     and a final line reading
     `verify-published: <n> of <n> pages carry every wording their artifact promised, at the length it implies`.
 
-    CHECK `matched=` BEFORE YOU CHECK THE EXIT CODE.
-    A run directory with nothing in it prints the same shape and exits 0:
+    A RUN DIRECTORY WITH NOTHING IN IT DOES NOT READ AS A PASS.
+    It prints one line and exits `2`:
 
     ```text
-    verify-published: matched=0 settledWithNoPage=0 pageWithNoArtifact=0
-    verify-published: 0 of 0 pages carry every wording their artifact promised, at the length it implies
+    verify-published: NOTHING VERIFIED, the artifacts directory holds no settled artifact. No page was read and no artifact was compared, so this is not a clean run
     ```
 
-    The two notices that would reveal the emptiness go to STDERR,
-    so a reader who redirected stdout to a file sees a clean pass over zero entries.
-    A mistyped `TRANSLATION_REPAIR_RUNS_DIR` currently reads as a green run.
-    Capture both streams, and treat `matched=0` on a run you believe settled entries
-    as a failure whatever the exit code says.
-    Tracked as `#217`.
+    The other wording is `no artifacts directory under the run (<reason>)`,
+    which is where a mistyped `TRANSLATION_REPAIR_RUNS_DIR` lands.
+    Before `#217` both cases printed `matched=0` and exited `0`,
+    so an empty run and a typo each read as a clean pass over zero entries.
 
-    Otherwise the exit code is the verdict.
-    It is `1` when any page disagreed or any settled entry has no page.
+    Otherwise the exit code is the verdict:
+
+    -   `0`, every matched page carried every wording its artifact promised,
+        at the length that implies.
+    -   `1`, some page disagreed, or some settled entry has no page.
+    -   `2`, nothing was verified, which is neither a pass nor a disagreement.
 
     Four failure lines, each meaning something different:
 
@@ -478,10 +479,23 @@ and a run made from that checkout recorded none of what they read either.
     while a log with no `SPEND` or round lines is simply an older log
     and says nothing about the operator.
 
-    A ledger file that is malformed rather than absent currently aborts the whole report
-    with an uncaught error and a page of minified JavaScript,
-    losing every good file beside it.
-    Tracked as `#220`.
+    A ledger file that is malformed rather than absent is named, skipped,
+    and counted, and the exit code becomes `2`:
+
+    ```text
+      UNREADABLE <path>: could not read <path> as JSON (<class> at byte <n>)
+      1 of 12 ledger files could not be read. Every figure here counts only the files that could, so a seat that wrote into an unreadable contest is undercounted, and so is every judge who weighed it. Re-run the pass to rewrite them, or read the standing as a floor.
+    ```
+
+    Read a `2` as a floor rather than a standing.
+    The refusal names the class that refused and where it stopped, never the file's text,
+    because a ledger holds corpus wording and a parse message quotes what it disagrees about.
+    If every file refuses, the report prints `NOTHING COUNTED` and still exits `2`,
+    which is a run whose record was lost rather than a run that recorded nothing.
+
+    A third code exists for one operator slip.
+    `--model` with nothing after it exits `3` rather than falling through to the summary,
+    because a summary looks exactly like a successful answer to whatever reads the code.
 
 ## Restore
 
