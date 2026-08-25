@@ -1837,3 +1837,73 @@ producer standing.
 peers at another, so a producer table cannot seat or unseat an editor.
 When the run lands, the analyser names candidates and the cut rates say which of
 them are real.
+
+## The pipeline now keeps what each model wrote (`#212`, 2026-08-25)
+
+### The gap, found by hitting it
+
+Asked to confirm or reject that one seat was weak for this job,
+the honest answer available from the archive was that nothing could answer it.
+No run this project has ever made kept a single line any model produced.
+
+The producer standing says a seat was preferred on 3.0% of disinterested ballots.
+It cannot say whether that seat wrote something WRONG
+or merely something nobody picked as the single best of ten.
+Those are different findings with different remedies.
+Every archived artifact predates model attribution,
+neither calibration writes candidates to its run directory,
+and the log names only the WINNING candidate's author,
+so a losing candidate cannot be joined to the model that wrote it.
+
+Re-deriving the evidence meant buying fresh calls for something a finished run had already paid for.
+
+### What now records it
+
+`candidate-ledger.ts` writes one JSON file per judged contest into
+`${TRANSLATION_REPAIR_RUNS_DIR}/ledger/`,
+holding every candidate's exact rendered text, every model behind it with composites expanded,
+every ballot with its reason verbatim, and the winning position or that the round declined.
+
+ONE HOOK COVERS EVERY CONTEST.
+The translate lane, both editor paths, the refiner and the fidelity judge all route through
+`selectBestCandidate`, so nothing has to be remembered per caller.
+
+### Two shapes this had to take, and why
+
+A WRAPPER, NOT A HOOK IN THE CASCADE.
+The deciding function leaves by six returns, five of them declines.
+Threading a write through each would be five chances to miss the sixth.
+`candidate-select.ts` now exports `decideBestCandidate` with its logic untouched,
+and `candidate-select-record.ts` wraps it.
+The wrapper lives in its own module because `candidate-select.ts` sits at 269 of its 300 permitted
+code lines and restating the request type there would breach the cap;
+`Parameters<typeof ...>` borrows the signature instead of copying it.
+
+IT NEVER RAISES INTO THE SELECTION PATH.
+A pipeline that failed a slice because its telemetry could not write would be worse than one with
+no telemetry, so every failure is caught, named and swallowed.
+The test for that matters more than the success cases:
+it points the run directory at a path where a FILE sits where the directory belongs,
+and asserts the caller is undisturbed.
+
+WITH NO RUN DIRECTORY NAMED, NOTHING IS WRITTEN.
+That is the ordinary path for every unit run and every probe, not an edge case.
+
+### What it holds, and where it must not go
+
+Candidate text is a rendering of a corpus passage,
+so the ledger holds unlicensed corpus wording exactly as the settled artifacts already do.
+It lands under the run directory, outside this repository, and must never be committed.
+
+### The current run gets none of this
+
+The calibration in flight started on a build that predates the ledger,
+and rebuilding `dist/` mid-run would invalidate every cached slice and re-buy the whole run.
+So the roster question that prompted this stays unanswerable from the archive,
+and the next run answers it without a single extra call.
+
+### State
+
+Built, lint clean, 660 suites passing.
+Parked in `~/temp/agent/spend-telemetry-210.tar.gz` with the `#210` spend work,
+twenty-seven files, repo-relative paths, untarred over the repo root to apply.
