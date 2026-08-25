@@ -397,13 +397,28 @@ and reading one as an instruction has cost this package a defect before.
     Note the `CHARM` in the middle;
     a name missing it is read by nothing and reported by nothing.
 
-#### Running out of budget is normal, and neither provider is restorable on demand
+#### Running out of budget is normal, and the two providers run out differently
 
-Charm Hyper capacity cannot be reset on request at all;
-it returns on its own schedule.
-Synthetic capacity can be restored only sometimes.
-Plan a pass around that rather than around a clean window,
-because a clean window cannot be arranged.
+THEY ARE NOT THE SAME KIND OF LIMIT, and an earlier version of this section had
+Charm Hyper backwards.
+
+Charm Hyper is a PREPAID BALANCE, priced per token and per model.
+`GET /v1/credits` returns `balance`, which `parseHyperCredits` reads and the
+`METERS` line prints as `hyperBalance`.
+Spending draws it down and it does not refill on a schedule:
+it read `0` continuously across the whole of 2026-08-24,
+before, during and after a pass,
+and reached `10000` on 2026-08-25 only because credits were bought.
+A reader who hits `hyperBalance=0` and waits is waiting for something that has
+not been observed to happen.
+
+Synthetic is a SUBSCRIPTION ALLOWANCE, weekly and five-hourly,
+which the `METERS` line prints as `syntheticWeekly` and `syntheticFiveHour`.
+That one does refill on its own schedule,
+and the account owner can sometimes reset it, but not reliably and not on demand.
+
+Plan a pass around both facts rather than around a clean window,
+because a clean window still cannot be arranged.
 
 A provider that is out of budget does not fail a run.
 The budget layer raises `NoProviderForModelError` for each model

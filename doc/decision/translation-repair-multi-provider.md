@@ -718,6 +718,42 @@ So Charm Hyper capacity returns on its own schedule and cannot be bought back,
 and Synthetic capacity can be restored only sometimes.
 BOTH PROVIDERS GO DRY AND NEITHER IS RELIABLY RECOVERABLE.
 
+#### Correction, 2026-08-25: half of that inference was wrong
+
+The two sentences above the rule read more into the owner's words than they say,
+and one half of it has since been falsified outright.
+
+WHAT WAS STATED was that Charm Hyper cannot be RESET on demand.
+WHAT WAS INFERRED was that its capacity therefore returns on its own schedule
+and cannot be bought back.
+Neither half follows from the quote,
+and buying is not resetting.
+
+On 2026-08-25 the owner bought 10,000 hypercredits
+and `GET /v1/credits` read `10000` within the minute.
+The balance had read `0` continuously through the whole of 2026-08-24,
+before, during and after a pass,
+so there is no evidence it returns on its own schedule
+and direct evidence it can be bought back.
+
+Charm Hyper is a prepaid balance priced per token, not a rate limit.
+`package/module/translation-repair/README.md` now says so.
+
+WHAT THIS DOES TO THE DECISION: nothing, and it strengthens the reasoning.
+The outage-exposure table below does not rest on recoverability at all;
+it rests on how many editors survive each provider going dry,
+and those counts are unchanged.
+The correction bears only on the quality-times-availability counter-argument,
+where a Hyper outage now ends whenever the owner is willing to pay
+rather than whenever the provider decides.
+That raises Hyper's effective duty cycle,
+which argues FOR the seat the section was already arguing for.
+
+The claim that both providers go dry stands.
+The claim that neither is reliably recoverable does not:
+Synthetic recovers on its own schedule and resets only sometimes,
+while Hyper recovers on purchase.
+
 That is the fact the seating should be judged against, and it argues FOR the
 swap more strongly than the quality table did.
 Count what each arrangement does when a provider goes dry:
