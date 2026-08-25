@@ -2469,3 +2469,51 @@ That is the same shape as the unguarded-parse defect, but the exposure is differ
 those lines go to a run log inside a run directory that already holds corpus wording, and the
 owner's instruction is to log more rather than less.
 Naming it here so the difference is a decision rather than an oversight.
+
+## A second calibration is in flight, to pay four measurements the landing left owed
+
+Launched 2026-08-25T14:14Z, detached, 40 slices, the same command the first calibration used:
+
+```sh
+TRANSLATION_REPAIR_RUNS_DIR=~/temp/agent/editor-calibrate-postguard-20260825 \
+  mise run //package/module/translation-repair:editor-calibrate -- 40
+```
+
+Log at `~/temp/agent/editor-calibrate-postguard-20260825.log`.
+
+THE SHAPE IS COPIED DELIBERATELY. Two of the four things this run owes are RE-derivations
+rather than first measurements, and a re-derivation against a differently shaped population
+answers a different question than the one asked.
+Matching slice count, roster and command is what makes the comparison legible.
+
+Meters before launch, from `budget-sample`:
+
+```text
+METERS synthetic=wet hyper=wet syntheticWeekly=91.03581431818182% syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=9683
+```
+
+### What to read off it
+
+-   `#215`'s achieved concurrency, from `run-timing-report`.
+    The first calibration could not answer this: the round lines it reads did not exist
+    until `#215` landed in `b6ea1cc51`, so `NO ROUND LINE` on that log was a true absence
+    rather than a quiet zero.
+    This replaces the audit's 1.45 hour straggler upper bound with a measurement.
+-   `#214`'s straggler window, re-derived against a population that now contains runaways.
+-   `#221`'s zero-content recount per seat.
+    The number to beat is `deepseek-v4-pro-0813` at 36 of 356 completed streams.
+    Falling to zero confirms one reading of that row; staying near 36 confirms the other.
+    `qwen3.8-max` is expected to stay high and to be an accounting artifact either way,
+    since it is the sole `toolChoice: 'auto'` seat and its answer arrives as tool-call
+    arguments that `generatedChars.content` does not count.
+-   `#213`'s serialization question, which was blocked on `#211` and `#215` and is now free.
+
+### While it runs
+
+Nothing goes through `mise`, per the corpus-pass runbook's step 4: every pass and probe task
+declares `depends = ["build"]`, so invoking one rewrites `dist/final/node` underneath the
+running pass.
+Read the log with built entry points directly instead.
+
+The pass was launched from `a93c0892d`, with the working tree clean and the field confirmed
+clear beforehand by argument-vector inspection rather than by a recorded pid.
