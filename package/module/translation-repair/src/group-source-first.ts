@@ -522,31 +522,5 @@ export function groupSourceFirst(
   },);
 }
 
-/**
- * Total original characters one unit carries.
- *
- * @param unit - unit to measure
- *
- * @returns Span length in characters
- *
- * @example
- * ```ts
- * const chars = unitSourceChars({ unit, },);
- * ```
- */
-export function unitSourceChars(
-  { unit, }: { readonly unit: SourceFirstUnit; },
-): number {
-  return unit.sourceRun
-    .reduce(
-      function addChars(
-        sum,
-        node,
-      ): number {
-        return sum + nodeChars(node,);
-      },
-      0,
-    );
-}
 
 //endregion Source-first grouping

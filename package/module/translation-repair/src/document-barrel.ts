@@ -51,7 +51,6 @@ export {
   AlignedIndexError,
   groupAlignedSteps,
   groupSourceFirst,
-  unitSourceChars,
 } from './group-source-first.ts';
 export { reflowOrphans, } from './reflow-orphans.ts';
 export type {
