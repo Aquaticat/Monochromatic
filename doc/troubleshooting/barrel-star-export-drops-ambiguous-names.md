@@ -21,6 +21,12 @@ parseSettledArtifactV2, readSettledArchive, settledTallyLine
 `readSettledArtifact`, added in the same commit, in the same `export` clause,
 from the same module, is not.
 
+That listing is quoted as it was printed and is not updated.
+`#205` renamed the two-lane family off its version number on 2026-08-25,
+so `buildSettledArtifactV2` and `parseSettledArtifactV2` no longer exist:
+they are now `buildSettledTwoLaneArtifact` and `parseSettledTwoLaneArtifact`.
+`parseSettledArtifact` still names the version-1 reader, unchanged.
+
 ## Cause
 
 `readSettledArtifact` already existed,

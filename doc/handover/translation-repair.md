@@ -1991,3 +1991,103 @@ the point of the two lines is that the answer was unknown, and it still is.
 ### Suite
 
 676 PASS, 0 FAIL, exit 0. Lint 0 warnings 0 errors. Build clean.
+
+## `#205`: the two-lane artifact family is named for its shape, not a version
+
+The owner delegated the naming ("you decide, this isn't a design decision")
+and chose to leave the version-1 family where it is.
+Measuring first changed the answer twice, so both measurements are recorded.
+
+### The task's own candidate was refuted
+
+`#205` proposed `artifact-lanes-*` and `SettledArtifactLanes`,
+noting neither had been checked.
+Checking them killed both:
+`ArtifactLaneRelationV2` and `ArtifactLaneSelectionV2` already use `Lane`
+for PER-LANE concepts, so a family-wide `Lanes` would name the whole thing
+with the word its own parts already use for one part.
+
+### The plain names belong to the older shape
+
+Dropping the suffix outright collides on exactly six names,
+and all six live in `artifact-v1-read.ts`:
+`parseSettledArtifact`, `ParsedArtifact`, `buildSettledArtifact`,
+`judgeSlice`, `compareDecisions`, `collectShippedRegions`.
+
+That is worse than `#205` recorded.
+The plainest names point at the OLDEST shape,
+and the shape the pipeline actually writes wears a version number
+that has been wrong since generation 3.
+The v1 arm is still reachable, so this is a naming problem rather than dead code:
+`artifact-read.ts` routes unversioned and version-1 artifacts to it.
+The owner chose to leave it, and it is filed rather than fixed here.
+
+### The rule, which the measurement chose rather than taste
+
+A marker belongs exactly where two shapes are distinguished.
+
+-   Six symbols have a version-1 counterpart, so those six say `TwoLane`:
+    `parseSettledTwoLaneArtifact`, `ParsedTwoLaneArtifact`,
+    `buildSettledTwoLaneArtifact`, `judgeTwoLaneSlice`,
+    `compareTwoLaneDecisions`, `collectTwoLaneShippedRegions`.
+-   Fifty-six have no counterpart at all,
+    so their suffix asserted a version they do not carry and they simply lose it.
+-   `ARTIFACT_SCHEMA_VERSION_V2` is untouched.
+    It denotes the integer 2, and a version constant should carry a version number.
+-   Forty files move from `artifact-v2-*` to `artifact-two-lane-*`.
+
+### The sweep missed three names, and only the built artifact showed it
+
+The first pass matched `[A-Za-z0-9_]*V2\b`,
+which requires a word boundary after the digit.
+`DamageRegionV2Error`, `ArtifactComparisonV2Error` and
+`verifyArtifactV2AgainstPreparation` carry `V2` in the MIDDLE,
+so the scan never saw them, the rewrite never touched them,
+and a residue check built on the same assumption reported the work complete.
+
+Reading `dist/final/node/index.d.mts` is what found them.
+That is the rule this pays for:
+a rename is checked at the artifact, never only in the source it was applied to.
+
+A method note on the check itself.
+The first probe of the built types returned zero for every name including ones
+that certainly exist, because it read `dist/final/types/index.d.mts`,
+which is not where the declarations land.
+A positive control on a name known to be present is what caught it,
+before the zero could be read as "the rename dropped everything".
+
+The two error classes carry their own name as a string as well,
+and both halves moved together
+so a `name` assertion cannot pass against a class that no longer answers to it.
+
+### Two test labels were lying
+
+`artifact-change-sets.unit.test.ts` wrapped two assertions in
+`caught(function parseTwoLaneArtifact() {...})` and
+`caught(function readTwoLaneArtifact() {...})`,
+and both bodies call the SINGLE-lane side.
+The labels were chosen to dodge self-shadowing,
+since a named function expression binds its own name inside its body,
+and the dodge picked a name that says the opposite of what the code does.
+They now name the assertion:
+`singleLaneParseOfVersionTwo` and `changeSetReadOfVersionTwo`.
+
+### Verification
+
+```text
+build          clean
+lint           0 warnings, 0 errors
+suite          676 PASS, 0 FAIL, exit 0
+```
+
+676 is the same count as before the rename, which is what a pure rename must produce.
+The shipped `index.d.mts` carries every renamed export
+and `ARTIFACT_SCHEMA_VERSION_V2` as the only surviving `V2`,
+and the six version-1 names are still present and untouched.
+
+### Landing note
+
+The 40 file renames mean the parked tarball is no longer sufficient on its own:
+extracting new paths would leave the old ones in place.
+`~/temp/agent/parked-deletions-20260825.txt` lists the 40 paths to delete,
+and `~/temp/agent/parked-status-20260825.txt` holds the full status this park was cut from.
