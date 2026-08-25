@@ -31,6 +31,29 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
+ * Grace the stalling case gives a re-ask before abandoning it.
+ */
+const RECOVERY_GRACE_MS = 60;
+
+/**
+ * Exchange deadline the stalling case sets, far above its grace.
+ *
+ * The gap is the measurement: a recovery round that waited for its voices
+ * would take this, and one bounded by the grace takes a fraction of it.
+ */
+const STALLING_DEADLINE_MS = 4_000;
+
+/**
+ * How long the stalling model holds its second call, past every deadline here.
+ */
+const STALL_MS = 30_000;
+
+/**
+ * Ceiling the stalling case allows, which only the grace bound can meet.
+ */
+const BOUNDED_ENOUGH_MS = 1_000;
+
+/**
  * Logger for the gathers under test.
  */
 const l = tagged({ tag: 'stage-quorum-test', },);
@@ -90,6 +113,76 @@ function silentClient(
 
       if (request.modelId === silentModel)
         throw new Error('scripted transport failure',);
+
+      /**
+       * Scripted payload for the answering call.
+       */
+      const scripted: unknown = { meow: request.modelId, };
+
+      if (!request.validate(scripted,))
+        throw new Error('scripted payload failed the guard',);
+
+      return {
+        kind: 'ok',
+        value: scripted,
+        rawText: JSON.stringify(scripted,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused',);
+    },
+  };
+}
+
+/**
+ * Client whose named model writes one unusable answer and then hangs forever.
+ *
+ * THE SHAPE THE RECOVERY ROUND'S BOUND IS FOR. A model that finished once is
+ * re-asked, and nothing says the second call comes back: this scripts the worst
+ * case so the round's wall clock can be read rather than reasoned about.
+ *
+ * @param stallingModel - model that answers unusably once, then never returns
+ *
+ * @param calls - shared call log the test asserts on
+ *
+ * @returns Client honouring that script
+ *
+ * @example
+ * ```ts
+ * const client = stallingClient({ stallingModel: 'hf:moonshotai/Kimi-K3', calls, },);
+ * ```
+ */
+function stallingClient(
+  {
+    stallingModel,
+    calls,
+  }: {
+    readonly stallingModel: string;
+    readonly calls: Record<string, number>;
+  },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
+
+      if (request.modelId === stallingModel) {
+        if ((calls[request.modelId] ?? 0) === 1) {
+          return {
+            kind: 'schema-mismatch',
+            rawText: '',
+            detail: 'scripted flake',
+          };
+        }
+
+        // Longer than any deadline this suite sets, so the round's own bound is
+        // the only thing that can end it.
+        await wait(STALL_MS,);
+      }
 
       /**
        * Scripted payload for the answering call.
@@ -655,6 +748,47 @@ await describe({
         // round skipped this model because it never answered at all.
         expect(calls['hf:moonshotai/Kimi-K3'],).toBe(1,);
         expect(gather.findings,).toContain('stage-voice-lost (panel hf:moonshotai/Kimi-K3)',);
+      },
+    },),
+
+    it({
+      name: 'BOUNDS the recovery round at one grace window, so a re-ask that '
+        + 'hangs costs the window rather than a whole exchange deadline',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+
+        /** Instant the gather began, for the only figure this case reads. */
+        const startedAt = Date.now();
+
+        /** Two answer at once; the third answers unusably, then hangs. */
+        const gather = await gatherStageVoices({
+          client: stallingClient({
+            stallingModel: 'hf:moonshotai/Kimi-K3',
+            calls,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: STALLING_DEADLINE_MS,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'panel',
+          l,
+          graceMs: RECOVERY_GRACE_MS,
+        },);
+
+        /** What the whole gather cost, recovery round included. */
+        const spentMs = Date.now() - startedAt;
+
+        // The re-ask happened and never came back, so the roster is still two.
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
+        expect(gather.voices,).toHaveLength(2,);
+
+        // THE FIGURE THIS CASE EXISTS FOR. Waiting on the re-ask would cost the
+        // exchange deadline; the grace bound costs a fraction of it, and the
+        // ceiling sits far below the deadline so no clock jitter decides it.
+        expect(spentMs,).toBeLessThan(BOUNDED_ENOUGH_MS,);
       },
     },),
 

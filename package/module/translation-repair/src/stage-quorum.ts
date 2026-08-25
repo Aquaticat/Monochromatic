@@ -289,11 +289,22 @@ export async function gatherStageVoices<ValueT,>(
 
       /**
        * Second reading of the voices that finished but could not be read.
+       *
+       * NEEDING NONE OF THEM IS THE BOUND. Quorum already stands, so this round
+       * is entitled to no more than a straggler window: `heardNeeded: 0` leaves
+       * `runGatherRound` with nothing to wait for, which opens the grace window
+       * at once and abandons whatever has not arrived when it closes. Asking
+       * for all of them instead would let one re-ask that hangs hold the whole
+       * gather for a full exchange deadline, which is six minutes in a run and
+       * the opposite of what a recovery is for.
+       *
+       * A voice that comes back promptly is still collected: the window
+       * resolves as soon as every ask settles.
        */
       const recovered = await runGatherRound<ValueT>({
         ...fanOut,
         modelIds: unreadable,
-        heardNeeded: unreadable.length,
+        heardNeeded: 0,
       },);
 
       for (const outcome of recovered) {
