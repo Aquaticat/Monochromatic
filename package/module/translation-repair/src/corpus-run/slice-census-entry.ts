@@ -3,7 +3,10 @@ import {
   alignDocumentSections,
   chunkByHeadings,
 } from '../chunk-document.ts';
-import { readCorpusFile, } from '../corpus-source.ts';
+import {
+  type CorpusPin,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { parseDocument, } from '../parse-document.ts';
 import {
   SLICE_CHAR_BUDGET,
@@ -105,19 +108,29 @@ export type EntryCensus = {
  *
  * @throws {@link CorpusReadError} when either side is absent
  *
+ * @param pin - corpus clone and commit to read, defaulting to the run pin;
+ * passed rather than read so this is testable against a throwaway clone instead
+ * of the unlicensed one
+ *
  * @example
  * ```ts
  * const row = await censusEntry({ entryId: 'Toka_ls', },);
  * ```
  */
 export async function censusEntry(
-  { entryId, }: { readonly entryId: string; },
+  {
+    entryId,
+    pin = RUN_CORPUS_PIN,
+  }: {
+    readonly entryId: string;
+    readonly pin?: CorpusPin;
+  },
 ): Promise<EntryCensus> {
   /**
    * Original document at the pin.
    */
   const sourceText = await readCorpusFile({
-    pin: RUN_CORPUS_PIN,
+    pin,
     relPath: `people/${entryId}/page.md`,
   },);
 
@@ -125,7 +138,7 @@ export async function censusEntry(
    * Translation at the same commit.
    */
   const targetText = await readCorpusFile({
-    pin: RUN_CORPUS_PIN,
+    pin,
     relPath: `people/${entryId}/page.en.md`,
   },);
 
