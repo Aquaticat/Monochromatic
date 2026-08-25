@@ -2306,3 +2306,50 @@ if the refiner standing's own denominator turns out short, `#200` records that t
 a second batch of 80 poolable slices, and that pooling needs no drift opt-in only while the
 build does not change. The landing changes the build. That constraint is real and worth
 keeping in view; what has changed is that it is now unlikely to bind.
+
+## The run's power inputs, measured at 38 of 40 slices
+
+`#200` projected from a 16-slice reading. These are the figures the standing will actually
+rest on, measured rather than projected, and two of them moved in opposite directions.
+
+```text
+slices seen                     38
+contributing (>= 1 round)       31   82%
+empty (0 rounds, nothing to edit) 7
+total judged rounds            131
+rounds per contributing slice  4.23
+```
+
+Seven empty slices is not a fault. `editor-calibrate.ts` names this case explicitly: a slice
+can buy the whole accuracy lane and have nothing to edit. `#200` recorded one live slice
+doing it; there are now seven, and they simply contribute nothing to either column.
+
+### Both inputs moved, and they largely cancel
+
+The 16-slice reading had 75 percent yield and 2.54 rounds per slice; the 14-slice selftest
+had 2.90 rounds per contributing slice, giving a sqrt(2.90) = 1.70x deflation.
+
+Now yield is BETTER at 82 percent, and rounds per contributing slice is WORSE for power at
+4.23, because within-slice correlation deflates by sqrt of that: 2.06x rather than 1.70x.
+
+These are not independent problems. Raw z grows as sqrt(total rounds), and the deflation
+divides by sqrt(rounds per contributing slice), so the deflated z grows as
+
+    sqrt(total rounds / rounds per slice) = sqrt(contributing slices)
+
+THE EFFECTIVE SAMPLE IS THE NUMBER OF INDEPENDENT SLICES, NOT ROUNDS. Extra rounds bought
+inside one slice buy precision about that slice, not about the roster. So the figure that
+decides the standing is 31 contributing slices, on track for roughly 33 at 40, against the
+10 that produced a deflated best z of 1.76 in the selftest.
+
+### Do not turn that into a prediction
+
+`#200` already refused this, and its reason still holds: the effect size being scaled was
+measured on FIVE models, and the pooled preference rate roughly halves at ten seats, so the
+implied z can move either way. `standing-from-log.mjs` derives the Bonferroni critical value
+from the row count, so it will use the ten-seat threshold rather than the selftest's 2.58,
+and it applies the deflation itself.
+
+Read the printed standing. The value of these numbers is that they make it INTERPRETABLE:
+when a seat clears or fails, the reason is 31 independent slices deflated by 2.06x, and both
+halves are now measured rather than assumed.
