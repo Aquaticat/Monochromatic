@@ -19,7 +19,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { ABSENT_GIT_VALUE, } from '@monochromatic-dev/git-policy-api';
 import {
   ForbiddenStringsPluginError,
   forbiddenStringsPlugin,
@@ -300,7 +299,7 @@ await describe({
           },
           git: {
             candidates: function candidates() { return Promise.resolve(landed,); },
-            headOid: function headOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
+            headOid: function headOid() { return Promise.resolve('head',); },
             landedCommitOid: function landedCommitOid() { return Promise.resolve('landed',); },
             pushUpdates: function pushUpdates() { return Promise.resolve([],); },
           },
