@@ -1682,6 +1682,17 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
               },);
           },),);
         expect(raisers.size,).toBeGreaterThan(0,);
+
+        // AND NOTHING IS CREDITED ON THE CANDIDATE EITHER. That list is the one
+        // selection never reads: it records what the checkers confirmed about
+        // the patched text whether or not it won, so it is where a refused
+        // repair leaves the only trace of how it was judged. Dropping the
+        // filter that builds it, which would then list every accepted issue
+        // rather than the confirmed ones, failed no test.
+        expect(result.issues
+          .length,).toBeGreaterThan(0,);
+        for (const outcome of result.chunks)
+          expect(outcome.candidateResolvedIssueIds,).toEqual([],);
       },
     },),
 
