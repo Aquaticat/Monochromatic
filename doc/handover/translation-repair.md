@@ -2517,3 +2517,94 @@ Read the log with built entry points directly instead.
 
 The pass was launched from `a93c0892d`, with the working tree clean and the field confirmed
 clear beforehand by argument-vector inspection rather than by a recorded pid.
+
+## The same defect had a second half, reaching a sink through a catch (`#224`, 2026-08-25)
+
+`#222` claimed every run-file read goes through the guarded reader.
+That claim is true as it was scoped, and the scope was narrower than it sounds:
+it covered parses that NO `try` encloses,
+which are the ones V8's uncaught-exception reporter prints whole.
+
+Re-reading the sweep found the other half.
+V8's `SyntaxError` MESSAGE quotes the text as well,
+and four handlers forwarded that message to somewhere it could be read.
+Catching the error prevents the whole file being printed;
+it does not prevent the ten characters the message carries.
+
+### What was leaking, and to where
+
+Three of the four read artifacts, which hold corpus renderings:
+
+-   `corpus-run/editor-standing-read.ts` parsed an artifact and printed
+    `caughtValueText(error)` to stderr.
+    `caughtValueText` returns `error.message` for an Error,
+    which is the whole mechanism in one call.
+-   `corpus-run/attribution-read.ts` parsed an artifact and STORED the same text
+    as the `reason` on a `MalformedArtifact` record that travels to its caller.
+    This one does not merely print, it persists.
+-   `corpus-run/artifact-placement.ts` printed it on the `POOL malformed` line.
+
+The fourth, `corpus-run/runs-lock.ts`, parses a lock file holding a pid and a timestamp,
+so nothing corpus-bearing was ever exposed there.
+It is fixed for one contract rather than four.
+
+### Two things measured rather than assumed
+
+V8 quotes only where the text stops being JSON near its start.
+A file truncated at its tail yields a positional message that quotes nothing:
+
+```text
+"Pouncewick not json at all"  ->  Unexpected token 'P', "Pouncewick"... is not valid JSON
+'{ "tail": "Pouncewick" '     ->  Expected ',' or '}' after property value in JSON at position 23
+```
+
+That matters for the test as much as for the defect:
+a fixture that fails late would have tested nothing while appearing to test the guard.
+The fixture word is ten characters, exactly V8's quote window,
+so it is neither padded nor truncated for a reason unrelated to the guard.
+
+### What was correctly excluded, each checked rather than waved through
+
+`attempt-store.ts` and `slice-cache-namespace.ts` catch and branch on the class,
+printing no message.
+Both are deliberately left unconverted:
+each treats `error instanceof SyntaxError` as "half-written file, recompute",
+and routing them through the guarded reader would change the thrown class
+so that branch silently stopped matching.
+`verify-published.ts` reports `errorName`, which is a class name.
+`pass-schema-census.ts` has no parse inside its `try` and forwards only `ArtifactParseError`.
+`runner-closure.ts` reads our own built bundle.
+
+### The shape of the fix
+
+`src/refusal-text.ts` holds the decision.
+`refusalText({ error })` repeats a message only from a class that DECLARES its message
+names rather than quotes, and otherwise renders `refused by <class>`.
+`RunJsonUnreadableError` and `LedgerShapeError` declare it;
+`ledger-directory.ts`'s `refusalOf` now delegates rather than keeping its own copy of the list.
+
+A declared field rather than a symbol, for a measured reason:
+`--isolatedDeclarations` rejects a computed property name on a class (TS9038),
+and the `Error.isError` gate already refuses every plain object a run file could carry.
+What a symbol would have added is refusing a forged marker on a real Error,
+which is the same trust a symbol import gives anyway.
+
+It fails closed.
+An unmarked class, a foreign Error and a thrown non-Error all take the naming branch,
+so the only way to leak through here is to mark a class whose message quotes.
+
+### State
+
+Landed in `2e8dd62f3`, tests in `3c53df242`.
+Type-check clean, lint clean at 0 warnings and 0 errors over 908 files.
+
+NOT YET RUN, and this is the honest gap:
+the suite imports the built bundle, and the calibration in flight owns `dist/final/node`,
+so the new cases resolve only after a build.
+Lint on the test file reports two `TS2305` errors on that import
+plus 14 warnings cascading from them, and nothing else.
+Running the suite and proving both guards per GFP is the remaining work on `#224`.
+
+`mise tasks deps` was used to establish that `lint:types`, `lint:oxlint` and `test:unit`
+carry no build dependency, which is what made checking anything mid-pass possible.
+The type-check writes `dist/final/types/` only, never the node bundle the pass is running.
