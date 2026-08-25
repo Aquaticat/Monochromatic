@@ -20167,3 +20167,85 @@ and a case-insensitive match inside the identifier `toDocumentNode`.
 
 66 lint suppressions, of which ZERO are bare:
 every one carries a ` -- ` justification, which is what `LN5` asks for.
+
+## The 53 indirectly-reached modules, branch by branch (`#209`, 2026-08-24)
+
+`#208` closed the tier no test reached at all.
+This is the next one:
+the 53 modules the suite reaches only through a caller.
+`TC2`'s question there is not whether the module is reached
+but whether each implementation branch has a test,
+or only the happy path does.
+
+The shape of the gap is the same every time.
+`parseSettledArtifactV2` calls `assertIndexSetsMatchLedger` on every valid artifact fixture in the suite,
+thousands of times,
+always down the arm where nothing was wrong.
+That is coverage of the caller.
+The refusal branches are what the module exists for,
+and no valid fixture can reach one.
+
+Ranked by branch density, measured with a brace-and-keyword count over each module.
+The measurement lives in the session scratchpad;
+the ranking is reproduced here because it is what the remaining work is ordered by:
+
+```text
+branches  code lines  exports  module
+      31         239        1  align-headings-optimal.ts              DONE
+      20         164        3  corpus-run/artifact-v2-read-set-relations.ts  DONE
+      16         138        2  preservation-tokens.ts                 DONE
+      14         131        1  lane-slice-sets.ts                     DONE
+      12         127        2  translate-skeleton.ts
+      12         121        2  corpus-run/artifact-placement.ts
+      12         118        5  corpus-run/artifact-v2-project.ts
+      11         237        3  corpus-run/artifact-v2-read-consolidate-parts.ts
+       9          66        1  stream-recurrence-watch.ts
+       9         250        1  refine-slice-settle.ts
+       8          91        1  translate-retry.ts
+       8         122        1  fidelity-splice.ts
+```
+
+### What each landing proved, by mutation
+
+Every module gets a mutation applied to the SOURCE, rebuilt, run, and restored.
+What matters is not that the suite went red;
+it is whether the new cases were the ONLY thing that noticed.
+
+`align-headings-optimal.ts`, commit `5774615b8`.
+Mutation G judged a pairing by its prefix alone,
+replacing the backward-table term in `scanOptimalPaths` with a zero score.
+16 failures, including every new aligner case.
+
+`corpus-run/artifact-v2-read-set-relations.ts`, commit `299e2e6f3`.
+Mutation A removed the position-by-position comparison from `assertListMatches`,
+leaving a length check.
+TWO failures, both new,
+and NOTHING ELSE in the suite noticed:
+before this, a lane recording the right indices in the wrong order was accepted,
+and the ordering both contracts state was untested.
+Mutation B made the whole-document refusal count as a guard withdrawal,
+which two new cases and two existing `parseSettledArtifactV2` cases caught.
+
+`preservation-tokens.ts`, commit `c367d77a0`.
+Mutation C added a colon to `SENTENCE_ENDS`,
+the exact regression the module's comment says made a deleted contributor name invisible.
+Caught by the new colon case and by one existing `applyPatchOperations` case.
+Mutation D stopped dropping one-character Latin words.
+ONE failure, the new case, and nothing else.
+
+`lane-slice-sets.ts`, commit `0c078ad36`.
+Mutation E ran the archive rules BEFORE the disjointness pass.
+Caught by the new ordering case and by one existing `buildLaneSliceTexts` case.
+The ordering is contract:
+a slice named by two lists disagrees with itself first,
+so reporting which archive rule it breaks answers a question neither list has earned the right to ask.
+Mutation F dropped the decided-at-once refusal, caught by two new cases and two existing ones.
+
+`validateNamedSets` and `NamedSliceSet` reach the barrel as `@internal` so the test can exercise the shipped bundle,
+which is the standing ruling on internals rather than a new exception.
+
+### Suite size across the four landings
+
+636 suite verdicts before `#209`,
+639 after the fourth,
+with exit code 0 each time and the FAIL count read off the runner's own `] FAIL ` prefix.
