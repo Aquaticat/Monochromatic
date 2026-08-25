@@ -182,6 +182,7 @@ Inside the Monochromatic monorepo,
   partitioned by scanner version,
   platform,
   and SHA-256 of the exact runtime text.
+  It stores exact-literal groups directly and precompiled engine bytes only for explicit regex rules.
   File-enforcer invokes `forbidden-strings compile-rules` after generating the text when the
   release scanner exists.
   A later scan repairs a missing or rejected artifact automatically.
@@ -623,8 +624,8 @@ use the gitignored `forbidden-strings.append.local.txt` or the CI-only
 `FORBIDDEN_STRINGS_LIST` secret,
 never the committed baseline or appendix.
 Treat compiled artifacts as sensitive as their source:
-a serialized matcher is derived confidential data,
-not an irreversible redaction.
+the runtime envelope retains exact bare-literal bytes and is confidential policy data,
+not a redaction.
 On Unix,
 file-enforcer enforces mode `0600` on the local appendix and generated runtime text;
 the scanner enforces private application directories and mode `0600` on artifacts.
@@ -777,26 +778,31 @@ commands,
 ## Architecture
 
 - **Two-form loader.
-  ** `src/rule/frx` owns the rule-file format:
-  bare literals escape into the verbose dialect,
-  `/PATTERN/FLAGS` lines pass through under the flags policy,
-  and each rule is validated individually so the redacted error can name the first offender's index.
-  `src/frx_load.rs` resolves the runtime rules through `src/runtime_cache/` and,
-  under `--builtin-rules`,
-  appends the embedded baseline into ordered `RegexSet`s with disjoint rule-id ranges.
+  ** `src/rule/frx` owns the rule-file format and preserves whether each rule was written as a bare literal or an
+  explicit regex.
+  Bare literals still escape into the verbose dialect for the public engine compiler;
+  runtime scanning instead retains their exact bytes.
+  `/PATTERN/FLAGS` lines and multiline tail sections remain restricted regex rules,
+  validated under their original global rule ids.
+- **Hybrid runtime matcher.
+  ** `src/runtime_matcher.rs` de-duplicates exact literals into one overlapping Aho-Corasick matcher and compiles only
+  explicit regex rules into `RegexSet`.
+  Both subset-local outputs map back to original ids,
+  sort,
+  and de-duplicate before finding attribution.
 - **Content-addressed runtime cache.
   ** `src/runtime_cache/` hashes exact authoritative text,
   selects a scanner-version and platform partition,
-  validates scanner-owned envelope metadata and engine bytes,
-  and falls back to text compilation on any cache rejection.
-  Scan-time repair and the `compile-rules` subcommand share the same atomic publisher.
+  validates scanner-owned envelope metadata,
+  rebuilds the literal matcher from compact groups,
+  and decodes optional regex-only engine bytes.
+  Scan-time repair and `compile-rules` share the same atomic publisher.
 - **Line-based batch scan.
-  ** `src/frx_scan.rs` splits each file's bytes into lines once and
-  hands the buffer plus line-start offsets to `RegexSet::line_matches`,
-   which resolves
-  per-line rule ids in one SIMD prefilter sweep.
-   Each set runs under a `catch_unwind`
-  boundary so a matcher fault fails closed as a synthetic finding.
+  ** `src/frx_scan.rs` splits each file's bytes into lines once and hands the buffer plus line-start offsets through a
+  common matcher interface.
+  Runtime sets merge Aho-Corasick and regex-subset ids;
+  the built-in baseline retains `RegexSet::line_matches`.
+  Each set runs under a `catch_unwind` boundary so a matcher fault fails closed as a synthetic finding.
 - **Build-time baseline precompilation.
   ** `build.rs` compiles `data/builtin-rules.txt` through the engine once at build time and serializes it
   (`to_bytes`);
