@@ -46,7 +46,12 @@ pub(super) fn read_artifact(
     if !metadata.is_file() || metadata.len() > maximum_bytes {
         return Err(ArtifactReadError::Unreadable);
     }
-    return fs::read(path).map_err(|_| return ArtifactReadError::Unreadable)
+    return fs::read(path).map_err(|error| {
+        if error.kind() == std::io::ErrorKind::NotFound {
+            return ArtifactReadError::Missing;
+        }
+        return ArtifactReadError::Unreadable;
+    })
 }
 
 /// Applies owner-only mode to one application-owned directory on Unix.
@@ -129,7 +134,6 @@ fn publish_from_temporary(
     file.sync_all().map_err(|_| return PublishError)?;
     drop(file);
     fs::rename(temporary, artifact_path).map_err(|_| return PublishError)?;
-    make_file_private(artifact_path)?;
     sync_parent_best_effort(artifact_path);
     return Ok(())
 }

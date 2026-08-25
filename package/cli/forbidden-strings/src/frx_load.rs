@@ -27,6 +27,10 @@ use std::fs;
 /// Imports runtime cache module and precompiled builtin construction path.
 use crate::{load_precompiled, runtime_cache};
 
+/// Imports text compiler used only by in-memory fuzzing loader.
+#[cfg(feature = "fuzzing")]
+use crate::compile_rules;
+
 /// One compiled rule set plus the identity data applied to its findings.
 ///
 /// A named rule renders as `rule=<name>`; an unnamed rule falls back to `base` plus

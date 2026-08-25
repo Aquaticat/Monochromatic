@@ -110,16 +110,23 @@ fn compile_and_repair(
     let compiled = compile_rules(text)?;
     let mut warnings = vec![CacheWarning::compile_from_text(reason)];
     if !source_path_still_matches(rules_path, digest)
-        || encode(&compiled, digest)
-            .and_then(|bytes| {
-                return publish_artifact(location, &bytes)
-                    .map_err(|_| return envelope::EnvelopeError::Invalid)
-            })
-            .is_err()
+        || !publish_compiled_snapshot(&compiled, digest, location)
     {
         warnings.push(CacheWarning::write_failed());
     }
     return Ok(CacheLoad { compiled, warnings })
+}
+
+/// Encodes and publishes compiled snapshot without conflating codec and IO errors.
+fn publish_compiled_snapshot(
+    compiled: &CompiledRules,
+    digest: SourceDigest,
+    location: &path::CacheLocation,
+) -> bool {
+    let Ok(bytes) = encode(compiled, digest) else {
+        return false;
+    };
+    return publish_artifact(location, &bytes).is_ok()
 }
 
 /// Reports whether authoritative path still contains compiled snapshot bytes.
