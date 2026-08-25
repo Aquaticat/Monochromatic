@@ -11,7 +11,10 @@
 // 866 of 875 lost voices carried a single HTTP 429. A second provider is the
 // only remedy that works against an exhausted budget.
 
-export { errorName, } from './error-name.ts';
+export {
+  errorName,
+  failureName,
+} from './error-name.ts';
 export {
   renderSchemaForPrompt,
   SCHEMA_BLOCK_HEADING,

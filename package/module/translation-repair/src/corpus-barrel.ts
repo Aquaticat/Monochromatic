@@ -197,6 +197,10 @@ export {
 } from './corpus-run/markup-slice.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 export {
+  readRunJson,
+  RunJsonUnreadableError,
+} from './run-json-read.ts';
+export {
   BenchDrawError,
   type DrawableSlice,
   orderBySourceSize,
