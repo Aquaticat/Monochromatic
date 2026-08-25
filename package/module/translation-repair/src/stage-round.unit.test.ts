@@ -49,6 +49,21 @@ const GRACE_MS = 250;
 const SLOW_MS = 40;
 
 /**
+ * Milliseconds a measured wait may fall short of the delay that produced it.
+ *
+ * NOT A TOLERANCE ON THE BEHAVIOUR, a tolerance on the CLOCK. `stage-round.ts`
+ * reads both ends of every figure with `Date.now()`, which truncates to whole
+ * milliseconds, and Node's timer list may fire a delay fractionally early. The
+ * two together let a 40 ms wait report 39, which this suite did on 2026-08-25
+ * under load while the rest of the package was building.
+ *
+ * Two rather than one, because each end can lose a fraction and the early fire
+ * is its own. It leaves every floor here far above the figure it has to be
+ * distinguished from, which is a round that did not wait at all.
+ */
+const CLOCK_SLACK_MS = 2;
+
+/**
  * Roster the rounds ask, named from the catalog because model identifiers are
  * never invented.
  */
@@ -340,7 +355,7 @@ await describe({
         expect(timings.asked,).toBe(ROSTER.length,);
         // The window really was spent: the hanging voice never answered, so
         // the round waited it out rather than finishing at quorum.
-        expect(timings.inGraceMs,).toBeGreaterThanOrEqual(GRACE_MS,);
+        expect(timings.inGraceMs,).toBeGreaterThanOrEqual(GRACE_MS - CLOCK_SLACK_MS,);
         // Quorum stood on the first voice, long before the window closed.
         expect(timings.toQuorumMs,).toBeLessThan(timings.inGraceMs,);
         // The three numbers describe one round rather than three measurements.
@@ -381,7 +396,7 @@ await describe({
         expect(timings.inGraceMs,).toBeLessThan(GRACE_MS,);
         // The slow voice is what the round waited on, and it waited before
         // quorum rather than after it.
-        expect(timings.toQuorumMs,).toBeGreaterThanOrEqual(SLOW_MS,);
+        expect(timings.toQuorumMs,).toBeGreaterThanOrEqual(SLOW_MS - CLOCK_SLACK_MS,);
         expect(timings.totalMs,).toBe(timings.toQuorumMs + timings.inGraceMs,);
       },
     },),
