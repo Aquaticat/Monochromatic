@@ -1,5 +1,6 @@
 import { createHash, } from 'node:crypto';
 import {
+  chmod,
   glob,
   lstat,
   mkdir,
@@ -9,15 +10,19 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import nanoSpawn from 'nano-spawn';
+
 import {
   addWatchedPaths,
   cat,
   getTomlProperty,
+  l,
   manageCargoManifests,
   manageLsp4ijServerSettings,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
+  tagged,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import type {
   CanonicalTomlValue,
@@ -134,6 +139,50 @@ const LGPL_3_OR_LATER_TEXT_IDS = [
  * ```
  */
 const ABSENT_PATH_ERROR_CODE = 'ENOENT';
+
+/**
+ * Owner-only Unix mode for sensitive rule source and generated runtime text.
+ *
+ * @example
+ * ```ts
+ * console.log(SENSITIVE_RULE_FILE_MODE);
+ * ```
+ */
+const SENSITIVE_RULE_FILE_MODE = 0o600;
+
+/**
+ * Gitignored sensitive appendix edited by repository user.
+ *
+ * @example
+ * ```ts
+ * console.log(FORBIDDEN_STRINGS_LOCAL_APPENDIX_PATH);
+ * ```
+ */
+const FORBIDDEN_STRINGS_LOCAL_APPENDIX_PATH = './forbidden-strings.append.local.txt';
+
+/**
+ * Authoritative file-enforcer runtime rules output consumed by scanner.
+ *
+ * @example
+ * ```ts
+ * console.log(FORBIDDEN_STRINGS_RUNTIME_RULES_PATH);
+ * ```
+ */
+const FORBIDDEN_STRINGS_RUNTIME_RULES_PATH = './.cache/forbidden-strings.rules.txt';
+
+/**
+ * Repository-built release scanner used by cli-git and eager cache compilation.
+ *
+ * Windows release binaries carry executable suffix while other targets do not.
+ *
+ * @example
+ * ```ts
+ * console.log(FORBIDDEN_STRINGS_SCANNER_PATH);
+ * ```
+ */
+const FORBIDDEN_STRINGS_SCANNER_PATH = process.platform === 'win32'
+  ? './package/cli/forbidden-strings/target/release/forbidden-strings.exe'
+  : './package/cli/forbidden-strings/target/release/forbidden-strings';
 
 /**
  * Canonical repo-relative prefix owned by the agent-skill mirror generator.
@@ -676,6 +725,61 @@ ${envSection}`,
 }
 
 /**
+ * Returns whether repository-built scanner exists as regular file.
+ *
+ * @returns Whether eager compiler can be started.
+ *
+ * @example
+ * ```ts
+ * await forbiddenStringsScannerExists();
+ * ```
+ */
+async function forbiddenStringsScannerExists(): Promise<boolean> {
+  try {
+    return (await lstat(FORBIDDEN_STRINGS_SCANNER_PATH,)).isFile();
+  }
+  catch (error: unknown) {
+    if (errorHasCode({ error, code: ABSENT_PATH_ERROR_CODE, },))
+      return false;
+    throw error;
+  }
+}
+
+/**
+ * Eagerly compiles generated runtime rules when release scanner is available.
+ *
+ * Missing scanner is expected during fresh preparation before Rust package builds.
+ * Any started-command failure propagates so invalid rules or cache publication
+ * failures stop file-enforcer rather than deferring them to commit scanning.
+ *
+ * @example
+ * ```ts
+ * await compileForbiddenStringsRuntimeCache();
+ * ```
+ */
+async function compileForbiddenStringsRuntimeCache(): Promise<void> {
+  /**
+   * Function-scoped logger carrying eager compilation operation tag.
+   */
+  const rl = tagged({
+    tag: compileForbiddenStringsRuntimeCache.name,
+    l,
+  },);
+  if (!(await forbiddenStringsScannerExists())) {
+    rl.warn('release scanner absent; skipped eager runtime-rules cache compilation',);
+    return;
+  }
+  await nanoSpawn(
+    FORBIDDEN_STRINGS_SCANNER_PATH,
+    [
+      'compile-rules',
+      '--rules',
+      FORBIDDEN_STRINGS_RUNTIME_RULES_PATH,
+    ],
+  );
+}
+
+/**
  * Generates the forbidden-strings rules file under the gitignored `.cache/`
  * scratch directory by concatenating the committed shared appendix with a
  * gitignored sensitive appendix. The sensitive appendix is seeded with a
@@ -704,7 +808,7 @@ async function generateForbiddenStringsRules(): Promise<void> {
   // write a literal into this committed config; otherwise the
   // scanner would self-match against the seed string here.
   await overwriteIfNotExists({
-    dest: './forbidden-strings.append.local.txt',
+    dest: FORBIDDEN_STRINGS_LOCAL_APPENDIX_PATH,
     content: `# forbidden-strings per-repo appendix (gitignored).
 # Sensitive deny-list rules that must NOT enter version control: codenames,
 # customer names, partner identifiers, politically-charged literals, etc.
@@ -722,12 +826,16 @@ async function generateForbiddenStringsRules(): Promise<void> {
 # forbidden-strings.append.txt instead.
 `,
   },);
+  await chmod(
+    FORBIDDEN_STRINGS_LOCAL_APPENDIX_PATH,
+    SENSITIVE_RULE_FILE_MODE,
+  );
   await mkdir(
     './.cache',
     { recursive: true, },
   );
   await overwrite({
-    dest: './.cache/forbidden-strings.rules.txt',
+    dest: FORBIDDEN_STRINGS_RUNTIME_RULES_PATH,
     content:
       `# Generated from forbidden-strings.append.txt + forbidden-strings.append.local.txt by file-enforcer.
 # Do not edit manually. Baseline credential rules are NOT in this file: they
@@ -743,6 +851,11 @@ ${await cat([
         './forbidden-strings.append.local.txt',
       ],)}`,
   },);
+  await chmod(
+    FORBIDDEN_STRINGS_RUNTIME_RULES_PATH,
+    SENSITIVE_RULE_FILE_MODE,
+  );
+  await compileForbiddenStringsRuntimeCache();
   // Retired root output of this generator (pre-de-rooting); remove so the
   // scanner's cwd-default fallback can never resolve a stale rules copy.
   await rm(
