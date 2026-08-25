@@ -65,7 +65,11 @@ export {
   type EditorCandidateSet,
   pickFallbackCandidate,
 } from './editor-candidates.ts';
-export type { WidthProbeInput, } from './corpus-run/editor-width-input.ts';
+export {
+  gatherWidthInput,
+  type WidthInputOutcome,
+  type WidthProbeInput,
+} from './corpus-run/editor-width-input.ts';
 export { runWidthSlice, } from './corpus-run/editor-width-slice.ts';
 
 //endregion Editor barrel

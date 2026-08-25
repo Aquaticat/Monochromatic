@@ -525,6 +525,8 @@ export async function openNamespacedCache<ValueT,>(
  * ```ts
  * await discardNamespace({ dir, namespace, cached, },);
  * ```
+ *
+ * @internal
  */
 export async function discardNamespace(
   {

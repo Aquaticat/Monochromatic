@@ -33,6 +33,8 @@ const SKIP_DETAIL_CHARS = 80;
  * ```ts
  * const slice: BenchSlice = { entryId: 'Mittens', index: 3, ... };
  * ```
+ *
+ * @internal
  */
 export type BenchSlice = {
   /**

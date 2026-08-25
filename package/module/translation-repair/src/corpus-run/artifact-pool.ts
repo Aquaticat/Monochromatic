@@ -56,6 +56,8 @@ const POOL_ALL_VALUE = 'yes';
  * ```ts
  * const pool = await resolvePool({ artifactsDir, },);
  * ```
+ *
+ * @internal
  */
 export async function resolvePool(
   {

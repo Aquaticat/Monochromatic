@@ -24,6 +24,7 @@ export {
   type EligibleEntries,
   selectEligible,
 } from './corpus-run/artifact-eligible.ts';
+export { resolvePool, } from './corpus-run/artifact-pool.ts';
 export {
   EmptyPoolError,
   generationLines,

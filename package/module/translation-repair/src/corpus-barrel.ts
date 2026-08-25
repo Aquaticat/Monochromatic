@@ -120,6 +120,7 @@ export {
 export {
   belongsToNamespace,
   CONSOLIDATE_NAMESPACE,
+  discardNamespace,
   EVERY_SLICE_NAMESPACE,
   PICTURE_READING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
@@ -181,6 +182,7 @@ export {
   BenchReportError,
   benchWidths,
 } from './corpus-run/bench-report.ts';
+export type { BenchSlice, } from './corpus-run/bench-sample.ts';
 export {
   classifyWidths,
   type HeadToHeadVerdict,

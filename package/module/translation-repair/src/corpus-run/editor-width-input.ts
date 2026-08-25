@@ -84,6 +84,8 @@ export type WidthInputRefusal = 'no-claims' | 'no-accepted-issues' | 'no-envelop
 
 /**
  * A slice with work, or the reason it has none.
+ *
+ * @internal
  */
 export type WidthInputOutcome =
   | {
@@ -119,6 +121,8 @@ export type WidthInputOutcome =
  * ```ts
  * const outcome = await gatherWidthInput({ client, slice, signal, l, },);
  * ```
+ *
+ * @internal
  */
 export async function gatherWidthInput(
   {
