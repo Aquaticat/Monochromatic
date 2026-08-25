@@ -27,6 +27,8 @@ import {
 // either ship a passage nobody settled on or silently drop one that was.
 
 /**
+ * @internal
+ *
  * Reads what one slice contributes to the document.
  *
  * @param value - shipped field as the slice carries it
@@ -112,6 +114,8 @@ export function parseShipped(
 }
 
 /**
+ * @internal
+ *
  * Reads one voice`s structural verdict on its proposal.
  *
  * @param value - verdict as the slice carries it
@@ -182,6 +186,8 @@ export function parseVerdict(
 
 
 /**
+ * @internal
+ *
  * Reads one judge`s gate ballot.
  *
  * THE EVIDENCE FIELDS ARE READ AS CHOICES, not as prose. `#164` found the gate

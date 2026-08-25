@@ -40,11 +40,6 @@ export {
   describeContestSlice,
 } from './corpus-run/artifact-v2-contest.ts';
 export {
-  parseConsolidationV2,
-  type ParsedConsolidationV2,
-} from './corpus-run/artifact-v2-read-consolidate.ts';
-export { parseLaneSelectionV2, } from './corpus-run/artifact-v2-read-contest.ts';
-export {
   projectLanesV2,
   type ProjectedLanesV2,
 } from './corpus-run/artifact-v2-derive.ts';
@@ -102,7 +97,6 @@ export {
   type SettledIdentity,
   subjectsOf,
 } from './corpus-run/rendering-audit-settled-subject.ts';
-export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
 export {
   readRepairRounds,
   RoundsNotRecordedError,
@@ -117,46 +111,6 @@ export {
   requireRosterModelId,
 } from './corpus-run/artifact-producer-read.ts';
 export { verifyArtifactV2AgainstPreparation, } from './corpus-run/artifact-v2-corpus-verify.ts';
-export { parseLanesV2, } from './corpus-run/artifact-v2-read-lanes.ts';
-export {
-  parseBlockPairingV2,
-  type ParsedBlockPairingV2,
-} from './corpus-run/artifact-v2-read-pairing.ts';
-export {
-  parseRepairEvidenceV2,
-  parseTranslateEvidenceV2,
-} from './corpus-run/artifact-v2-read-evidence.ts';
-export {
-  assertEvidenceMatchesLedger,
-  assertRowsCoherent,
-} from './corpus-run/artifact-v2-read-row-relations.ts';
-export {
-  assertBlockedCompatible,
-  assertIndexSetsMatchLedger,
-  assertTranslateCountsAgree,
-} from './corpus-run/artifact-v2-read-set-relations.ts';
-export { assertRecordedComparisonMatches, } from './corpus-run/artifact-v2-read-comparison.ts';
-export {
-  parseDecisionComparisonV2,
-  parseSliceDeliveryV2,
-  parseSliceOutcomeV2,
-  type UnknownKeyPolicy,
-} from './corpus-run/artifact-v2-read-vocabulary.ts';
-export {
-  parseComparisonRowV2,
-  parseDeliveryRowV2,
-  parseEvidenceRowV2,
-} from './corpus-run/artifact-v2-read-rows.ts';
-export type {
-  ArtifactEvidenceRowV2,
-  ArtifactRepairEvidenceV2,
-  ArtifactRepairStatusV2,
-  ArtifactTranslateEvidenceV2,
-  ArtifactTranslateStatusV2,
-  ParsedArtifactV2,
-  ParsedLaneV2,
-  ParsedPreparationV2,
-} from './corpus-run/artifact-v2-read-contract.ts';
 export {
   comparisonRowsEqualV2,
   decisionsEqualV2,
