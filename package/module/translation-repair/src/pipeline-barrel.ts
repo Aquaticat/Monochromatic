@@ -192,6 +192,8 @@ export {
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
 export {
+  estimateExpansion,
+  FALLBACK_EXPANSION,
   scorePairing,
   tokenize,
 } from './align-blocks.ts';

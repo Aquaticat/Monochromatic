@@ -7,6 +7,8 @@ import {
 
 import {
   alignBlocks,
+  estimateExpansion,
+  FALLBACK_EXPANSION,
   parseDocument,
   scorePairing,
   tokenize,
@@ -364,6 +366,41 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
                 targetNodes: [],
               },),
             ).toHaveLength(0,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: estimateExpansion.name,
+      children: [
+        it({
+          name: 'reads the ratio off both whole block lists, since a single block is exactly the thing '
+            + 'whose pairing is in question and cannot be used to judge itself',
+          fn: async () => {
+            expect(estimateExpansion({
+              sourceNodes: parseDocument({ text: '猫猫睡觉。\n\n猫猫追蝴蝶。\n', },).nodes,
+              targetNodes: parseDocument({
+                text: 'The cat sleeps.\n\nThe cat chases butterflies.\n',
+              },).nodes,
+            },),).toBe(42 / 11,);
+          },
+        },),
+        it({
+          name: 'FALLS BACK where either side carries no characters, rather than dividing by nothing or '
+            + 'reading the expansion as zero. A ratio of zero would score every pairing on length '
+            + 'pointing the wrong way, which is the reading '
+            + '`doc/audit/the-critics-are-shown-the-wrong-paragraph.md` records, and an empty side is '
+            + 'exactly the page this lane exists to fill',
+          fn: async () => {
+            expect(estimateExpansion({
+              sourceNodes: parseDocument({ text: '猫猫睡觉。\n', },).nodes,
+              targetNodes: [],
+            },),).toBe(FALLBACK_EXPANSION,);
+            expect(estimateExpansion({
+              sourceNodes: [],
+              targetNodes: parseDocument({ text: 'The cat sleeps.\n', },).nodes,
+            },),).toBe(FALLBACK_EXPANSION,);
           },
         },),
       ],

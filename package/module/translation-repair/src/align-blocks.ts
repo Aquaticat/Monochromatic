@@ -68,8 +68,10 @@ const GAP_PENALTY = -1.5;
  * paragraph, so length was carrying the alignment alone and pointing the wrong
  * way. Six of eleven slices then paired unrelated paragraphs.
  * `doc/audit/the-critics-are-shown-the-wrong-paragraph.md` records the reading.
+ *
+ * @internal
  */
-const FALLBACK_EXPANSION = 1.8;
+export const FALLBACK_EXPANSION = 1.8;
 
 /**
  * Shortest token worth comparing. Single characters collide constantly across
@@ -314,6 +316,8 @@ function lengthPlausibility(
  * ```ts
  * const expansion = estimateExpansion({ sourceNodes, targetNodes, },);
  * ```
+ *
+ * @internal
  */
 export function estimateExpansion(
   {
