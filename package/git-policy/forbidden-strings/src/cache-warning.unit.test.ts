@@ -7,7 +7,7 @@ import {
 import {
   ForbiddenStringsPluginError,
   parseCacheWarning,
-} from '../dist/final/node/index.js';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Exact valid warning records accepted by protocol.
