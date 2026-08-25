@@ -33,7 +33,39 @@ Acceptance requires separate release-binary measurements for:
 - A source-content change that selects a new cache slot.
 - A planted match proving the timed artifact enforces the intended rule.
 
-Do not claim the cache meets the sub-100 ms pre-commit target until those measurements are recorded here.
+### Rejected all-rules `RegexSet` artifact
+
+A bounded reproduction used the issue author's actual fixture:
+
+- 10,206 rules.
+- 1,109,429 source bytes.
+- One planted positive-control target and one clean control.
+- Release `0.4.0` pre-hybrid implementation.
+- Debian bookworm-slim image
+  `cae69e86e0b024efa293e7ae0c5760d765422473437056e03d7d941fdf24dd8e`.
+- 2 GiB memory,
+  2 CPUs,
+  256-process limit,
+  and no network.
+
+```text
+first compile + publish   146,320 ms
+artifact size             162,668,054 bytes
+warm minimum                1,385 ms
+warm median                 1,428.5 ms
+warm p95                    1,459 ms
+warm maximum                1,467 ms
+samples                        30
+```
+
+The planted rule matched and the clean control exited 0.
+The artifact had mode `0600`.
+The run proves that precompiling every bare literal as an independent `RegexSet` engine moves the cost but does not meet
+the sub-100 ms commit budget.
+The implementation therefore pivots to a hybrid runtime matcher:
+one direct Aho-Corasick set for exact literals and a precompiled `RegexSet` only for explicit regex rules.
+
+Do not claim the hybrid cache meets the target until its actual-fixture measurements are recorded here.
 
 ## Headline numbers
 
