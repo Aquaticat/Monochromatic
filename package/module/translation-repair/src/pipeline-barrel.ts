@@ -48,20 +48,6 @@ export {
   type EditableEnvelope,
   type EnvelopePlan,
 } from './patch-model.ts';
-export {
-  type ChunkCriticPhase,
-  runChunkCriticPhase,
-} from './chunk-critic-phase.ts';
-export { repairChunk, } from './repair-chunk.ts';
-export {
-  type ChunkVerdict,
-  describeChunkSettlement,
-  settleChunkVerdict,
-} from './repair-chunk-verdict.ts';
-export {
-  notApplicableFinding,
-  notApplicableRepair,
-} from './repair-not-applicable.ts';
 export { repairLaneWordings, } from './repair-lane-wordings.ts';
 export {
   assertCheckerIndependence,
