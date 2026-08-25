@@ -139,5 +139,39 @@ await describe({
         expect(extractStreamedCompletion({ bodyText: body, },).finishReason,).toBe(undefined,);
       },
     },),
+    it({
+      name: 'REPORTS no reason for one sent EMPTY or NULL, which the case beside '
+        + 'this one cannot reach: that one omits the field, so a reader keyed on '
+        + 'presence alone still passes it while handing an empty string on as '
+        + 'though the model had named why it stopped',
+      fn: async () => {
+        /**
+         * Stream whose closing event carries the reason as an empty string.
+         */
+        const empty = [
+          'data: {"choices":[{"delta":{"content":"x"},"finish_reason":""}]}',
+          'data: [DONE]',
+          '',
+        ].join('\n\n',);
+
+        /**
+         * Stream whose closing event carries it as null, which is what an
+         * OpenAI-compatible provider sends while it is still generating.
+         */
+        const nulled = [
+          'data: {"choices":[{"delta":{"content":"x"},"finish_reason":null}]}',
+          'data: [DONE]',
+          '',
+        ].join('\n\n',);
+
+        expect([
+          extractStreamedCompletion({ bodyText: empty, },).finishReason,
+          extractStreamedCompletion({ bodyText: nulled, },).finishReason,
+        ],).toEqual([
+          undefined,
+          undefined,
+        ],);
+      },
+    },),
   ],
 },);
