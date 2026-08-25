@@ -2215,3 +2215,36 @@ at all. The only file changed on the branch since the rehearsal base `9569f9d79`
 procedure cannot overwrite a doc commit.
 
 The landing procedure itself is unchanged.
+
+### The runbook was audited against the source, and nothing in it is stale
+
+Every environment variable it names exists in source: both API keys,
+`TRANSLATION_REPAIR_RUNS_DIR`, and `TRANSLATION_REPAIR_HARD_CAP_MINUTES`.
+Both flags it uses exist: `--plan` at `src/corpus-run/corpus-pass.ts:513`,
+and `--only` at `src/corpus-run/entry-filter.ts:24`, read at `src/corpus-run/corpus-pass.ts:318`.
+Every mise task it names exists, apart from the three arriving with the parked work.
+
+Every string it tells the operator to watch for is emitted by non-test source:
+
+-   `PLAN ok tip=` at `src/corpus-run/corpus-pass.ts:515`,
+    carrying exactly the `pipeline=`, `client=constructed`, `pending=` and `first=`
+    fields the runbook claims it does.
+-   `ONLY` at `src/corpus-run/corpus-pass.ts:328`.
+-   `CAP OVERRIDDEN` at `src/corpus-run/corpus-pass.ts:491`.
+-   `CAP TOO TIGHT` at `src/corpus-run/cap-override.ts:156`.
+-   `REATTEMPT` and `STALLED` at `src/corpus-run/entry-attempt-queue.ts:109` and `:116`.
+-   `METERS` at `src/provider-budget.ts:14`.
+
+`RUNDIR` is set in Steps, before What to check uses it, so the additions are reachable
+by a reader working through the document in order.
+
+TWO SEARCHES LIED BEFORE THIS SETTLED, both toward a false absence.
+`rg --fixed-strings "--plan"` returned zero hits because `rg` read the pattern as its own
+flag rather than as text. An `ONLY` search capped with `head` at five lines hid the one
+real emission behind four unrelated prompt strings.
+
+Either would have read as "the runbook names something that does not exist", and acting on
+either would have meant editing a correct instruction into a wrong one. Both are the QRY
+failure mode exactly as it is written down, and the uncapped, flag-safe re-runs found
+everything. Worth remembering that the dangerous direction here is the empty result, not
+the noisy one.
