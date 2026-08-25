@@ -15,7 +15,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { errorName, } from '../dist/final/node/index.mjs';
+import {
+  errorName,
+  failureName,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: errorName.name,
@@ -69,6 +72,57 @@ await describe({
       fn: async () => {
         expect(errorName({ error: { name: 'NotReallyAnError', }, },),)
           .toBe('a thrown value that is not an Error',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: failureName.name,
+  children: [
+    it({
+      name: 'NAMES a filesystem code, which tells a reader what to do where a class name does not',
+      fn: async () => {
+        expect(failureName({
+          error: Object.assign(
+            new Error('ENOENT: no such file or directory, open /runs/whiskerfield/ledger',),
+            { code: 'ENOENT', },
+          ),
+        },),).toBe('ENOENT',);
+      },
+    },),
+    it({
+      name: 'REFUSES to report the message, which quotes a path that can name a person',
+      fn: async () => {
+        expect(failureName({
+          error: Object.assign(
+            new Error('EACCES: permission denied, open /runs/Bixbyfluff/ledger/000001.json',),
+            { code: 'EACCES', },
+          ),
+        },).includes('Bixbyfluff',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'FALLS BACK to the class where there is no code, since most errors carry none',
+      fn: async () => {
+        expect(failureName({ error: new RangeError('out of range',), },),).toBe('RangeError',);
+      },
+    },),
+    it({
+      name: 'FALLS BACK where a code is present but is not a string, which no reader could print',
+      fn: async () => {
+        expect(failureName({
+          error: Object.assign(
+            new RangeError('out of range',),
+            { code: 13, },
+          ),
+        },),).toBe('RangeError',);
+      },
+    },),
+    it({
+      name: 'NAMES a thrown value that is not an Error, which carries neither code nor class',
+      fn: async () => {
+        expect(failureName({ error: 'mittens', },),).toBe('a thrown value that is not an Error',);
       },
     },),
   ],
