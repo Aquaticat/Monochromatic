@@ -2992,3 +2992,89 @@ NOT YET RUN. The suites import `../dist/final/node/index.mjs`,
 and rebuilding would swap the bundle out from under the pass in flight.
 Owed at the same moment as `#224` and `#225`: build once, run the suites,
 then prove each guard by removing it.
+
+## Which error messages may be repeated, decided by a rule rather than an audit (`#227`, 2026-08-25)
+
+`refusalText` repeats a message only from a class declaring `messageNamesOnly`, and four of
+eighty-five classes declared it. So an operator meeting a domain refusal at a CLI boundary
+read `refused by RosterConfigurationError` and learned nothing about what was wrong.
+
+The obvious move, marking all eighty-five, is the one to refuse.
+A 2026-08-25 scan did find that none of them quotes what it was handed,
+but marking on that basis makes the marker mean "audited on a Tuesday"
+rather than "constructed to name and never quote", which is a weaker claim than the marker
+already makes, and it decays silently.
+
+### The rule
+
+A class may declare the marker when the CLASS writes the sentence,
+and every value it interpolates is a number, one of our own names,
+or a value the operator supplied.
+
+A class whose constructor forwards a `message` parameter to `super` may not,
+however careful its throw sites are.
+The claim would then be about thirty call sites rather than about one class,
+and nothing could check it.
+`StatedRefusalError` is the deliberate exception and carries its own note saying so.
+
+That line is what makes the rest mechanical.
+Thirty-four classes forward a message. Fifty-one write their own sentence.
+
+### What the scan found, reading every site rather than sampling
+
+Across 490 construction sites outside the suites, the free-text fields turned out to be
+authored phrases almost everywhere:
+
+-   `ArtifactParseError` has 93 sites, and all 77 distinct `reason` values are shape
+    descriptions written by us, `a boolean`, `a record`, `distinct members`.
+-   `MalformedCompletionError`, `QuotaShapeError` and `CreditsShapeError` take a `detail`
+    that is an authored phrase at every site, naming which part of the protocol broke.
+    None carries a byte of the body.
+-   `TranslateAbsenceError` is the best case: its `reason` is typed `TranslateAbsenceReason`,
+    a closed union, so the type proves what the inventory would otherwise assert.
+
+Forty-two classes gained the marker, joining the five that had it.
+
+### Four that write their own sentence and still stay unmarked
+
+Recorded rather than left silent, because an absent marker looks identical to an oversight:
+
+-   `SyntheticHttpError` interpolates an excerpt of the provider response body, on purpose.
+-   `MislabelledArtifactError` takes `caughtValueText(error)`, which renders a caught error's
+    own message.
+-   `StreamCutShortError` reaches the message through `String` of an unknown abort reason.
+-   `ArtifactProvenanceError` interpolates `expected` and `observed`, whichever field
+    disagreed, which may be text.
+
+### The guard, and why it is a source scan
+
+`src/message-names-only.unit.test.ts` reads the source and checks four things:
+the marked set equals the recorded list, every interpolation in a marked message is named in
+an inventory that says what it holds, no forwarding class carries the marker, and every
+owning-but-unmarked class has a recorded reason.
+
+A behavioural test would have pinned today's wording, which is not the property worth
+guarding: rewording a sentence is fine, and interpolating a new value into it is the thing
+that needs a second look.
+
+GFP-PROVEN, four probes, each restored afterwards:
+
+```text
+  marked but not recorded    KEEPS exactly the classes ... FAIL   exit 1
+  message gains a new part   ACCEPTS only the message parts ... FAIL   exit 1
+  owning class unmarked      KEEPS exactly ... + KEEPS a reason ... FAIL   exit 1
+  withheld class marked      three of four FAIL                        exit 1
+```
+
+The second probe fails that assertion and no other, which is the isolation worth having.
+
+WHAT IT CANNOT CATCH. A field the inventory already names, such as `detail`, can be handed
+different text by a new throw site. The inventory records what each field holds today, and
+that kind of change is caught by reading, not by this file.
+The stronger form would put the rule in the type system, with the message built through a
+tagged template whose interpolated values are a closed union rather than `string`.
+That is a large refactor across the domain primitives and is not proposed here as part of
+this landing; it is written down as the direction if the inventory ever starts to strain.
+
+The guard imports no built artifact, so it runs from source while a pass holds the bundle.
+Landed in `f0f15f5c3`.
