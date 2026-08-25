@@ -31,6 +31,12 @@ import {
  */
 export class LedgerShapeError extends Error {
   /**
+   * Declares this message safe to forward: it names the file and the field,
+   * and quotes neither.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names the file and the field rather than quoting either.
    *
    * NAMES, NEVER QUOTES. A ledger file holds corpus wording, so a refusal that

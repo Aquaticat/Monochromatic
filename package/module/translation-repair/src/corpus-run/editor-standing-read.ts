@@ -1,18 +1,17 @@
-import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { errorName, } from '../error-name.ts';
 import { producerStandings, } from '../producer-standing.ts';
 import {
   rankStandings,
   standingLine,
 } from '../producer-standing-report.ts';
+import { refusalText, } from '../refusal-text.ts';
 import {
   EDITOR_ROUND_STAGES,
   REFINER_ROUND_STAGES,
   selectionRoundsFor,
 } from '../repair-selection-rounds.ts';
+import { readRunJson, } from '../run-json-read.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import { OffRosterModelError, } from './artifact-producer-read.ts';
 import {
@@ -221,10 +220,7 @@ async function readOne(
      * Whole artifact, parsed rather than trusted.
      */
     const artifact = parseSettledTwoLaneArtifact({
-      value: JSON.parse(await readFile(
-        path,
-        'utf8',
-      ),) as unknown,
+      value: await readRunJson({ path, },),
     },);
 
     /**
@@ -271,7 +267,7 @@ async function readOne(
       return 'earlier-schema';
 
     console.error(
-      `editor-standing-read: ${path} refused, ${errorName({ error, },)}: ${caughtValueText(error,)}`,
+      `editor-standing-read: ${path} refused, ${refusalText({ error, },)}`,
     );
     return 'refused';
   }

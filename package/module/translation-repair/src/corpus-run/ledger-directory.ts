@@ -1,10 +1,8 @@
 import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import {
-  errorName,
-  failureName,
-} from '../error-name.ts';
+import { failureName, } from '../error-name.ts';
+import { refusalText, } from '../refusal-text.ts';
 import {
   readRunJson,
   RunJsonUnreadableError,
@@ -93,16 +91,9 @@ export function refusalOf(
     readonly file: string;
   },
 ): RefusedFile {
-  if ((error instanceof RunJsonUnreadableError)
-    || (error instanceof LedgerShapeError))
-    return {
-      file,
-      says: error.message,
-    };
-
   return {
     file,
-    says: `refused by ${errorName({ error, },)}`,
+    says: refusalText({ error, },),
   };
 }
 

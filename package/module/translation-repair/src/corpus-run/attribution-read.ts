@@ -3,13 +3,13 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
+import { refusalText, } from '../refusal-text.ts';
+import { parseRunJson, } from '../run-json-read.ts';
 import { decodeSliceCritics, } from './attribution-decode.ts';
 import {
   CHUNK_SPELLED_KEYS,
@@ -380,7 +380,10 @@ export async function gatherAttributionEntries(
       return {
         entry: toEntry({
           name,
-          parsed: JSON.parse(text,),
+          parsed: parseRunJson({
+            text,
+            from: name,
+          },),
         },),
       };
     }
@@ -391,7 +394,7 @@ export async function gatherAttributionEntries(
       return {
         failure: {
           name,
-          reason: caughtValueText(error,),
+          reason: refusalText({ error, },),
         },
       };
     }

@@ -126,6 +126,12 @@ function offsetIn(
  */
 export class RunJsonUnreadableError extends Error {
   /**
+   * Declares this message safe to forward: it names the file, the failure
+   * class and a byte offset, and repeats none of the text it refused.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * File that refused, by base name only.
    */
   readonly file: string;

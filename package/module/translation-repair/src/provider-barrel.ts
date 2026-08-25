@@ -16,6 +16,11 @@ export {
   failureName,
 } from './error-name.ts';
 export {
+  type NamingError,
+  namesWithoutQuoting,
+  refusalText,
+} from './refusal-text.ts';
+export {
   renderSchemaForPrompt,
   SCHEMA_BLOCK_HEADING,
   withSchemaInSystemPrompt,

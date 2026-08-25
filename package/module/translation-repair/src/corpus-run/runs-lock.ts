@@ -1,10 +1,12 @@
 import {
   mkdir,
   open,
-  readFile,
   rm,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+
+import { refusalText, } from '../refusal-text.ts';
+import { readRunJson, } from '../run-json-read.ts';
 
 //region Runs lock
 // ONE pass at a time per runs directory.
@@ -191,10 +193,7 @@ async function readHolder(
     /**
      * Lock file contents as parsed JSON.
      */
-    const parsed: unknown = JSON.parse(await readFile(
-      path,
-      'utf8',
-    ),);
+    const parsed: unknown = await readRunJson({ path, },);
 
     if (((typeof parsed) !== 'object') || (parsed === null))
       return { kind: 'unreadable', };
@@ -215,7 +214,7 @@ async function readHolder(
     // A lock file that cannot be read is not a lock anyone can respect, and
     // saying so is better than either honouring it forever or ignoring it
     // silently.
-    console.log(`LOCK ${path} unreadable (${String(error,)})`,);
+    console.log(`LOCK ${path} unreadable (${refusalText({ error, },)})`,);
     return { kind: 'unreadable', };
   }
 }

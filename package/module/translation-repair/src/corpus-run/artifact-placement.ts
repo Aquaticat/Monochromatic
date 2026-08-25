@@ -3,6 +3,8 @@ import {
   readFile,
 } from 'node:fs/promises';
 
+import { refusalText, } from '../refusal-text.ts';
+import { parseRunJson, } from '../run-json-read.ts';
 import { isDigestShaped, } from './pipeline-digest.ts';
 
 //region Artifact placement
@@ -220,7 +222,10 @@ export async function readPlacement(
     /**
      * Artifact as parsed JSON.
      */
-    const parsed: unknown = JSON.parse(text,);
+    const parsed: unknown = parseRunJson({
+      text,
+      from: name,
+    },);
 
     if (((typeof parsed) !== 'object') || (parsed === null))
       return { kind: 'untagged', };
@@ -317,7 +322,7 @@ export async function readPlacement(
     // fault, or storage failure. Treating it as routine would normalise every
     // one of those.
     console.log(
-      `POOL malformed ${name}: ${String(error,)}`,
+      `POOL malformed ${name}: ${refusalText({ error, },)}`,
     );
     return { kind: 'malformed', };
   }
