@@ -131,14 +131,20 @@ function slateOf(
  * ```
  */
 function drawnOf(
-  { index, }: { readonly index: number; },
+  {
+    index,
+    weight = 1,
+  }: {
+    readonly index: number;
+    readonly weight?: number;
+  },
 ): Record<string, unknown> {
   return {
     index,
     ballots: 1,
     fullVotes: 1,
     selfVotes: 0,
-    weight: 1,
+    weight,
   };
 }
 
@@ -167,10 +173,12 @@ function roundOf(
     slate,
     ballots,
     stage = 'envelope',
+    drawnWeight = 1,
   }: {
     readonly slate: readonly Record<string, unknown>[];
     readonly ballots: readonly Record<string, unknown>[];
     readonly stage?: string;
+    readonly drawnWeight?: number;
   },
 ): Record<string, unknown> {
   return {
@@ -186,7 +194,10 @@ function roundOf(
       selfVotes: 0,
     },
     perCandidate: slate.map(function drawn(entry, index,): Record<string, unknown> {
-      return drawnOf({ index: Number(entry.index ?? (index + 1),), },);
+      return drawnOf({
+        index: Number(entry.index ?? (index + 1),),
+        weight: drawnWeight,
+      },);
     },),
     selectedIndex: 1,
     voteWeight: 1,
@@ -496,6 +507,56 @@ await describe({
 
         expect(declining[0]?.[0]?.ballots[0]?.best,).toBe(-1,);
         expect(declining[0]?.[0]?.ballots[1]?.weight,).toBe(0.5,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS a FRACTIONAL SUMMED WEIGHT for a candidate, which no count guard would, '
+        + 'and which the ballot-side case beside this one does not reach',
+      fn: async () => {
+        // The ballot case above pins the weight ONE judge carries. This pins
+        // what a candidate DREW from all of them, read by a different guard on
+        // a different field. Every other fixture here draws a whole 1, so
+        // swapping `requireFinite` for `requireCount` on `perCandidate.weight`
+        // passed the whole file while refusing any real round where a judge
+        // voted on its own writing.
+        /**
+         * A round whose one candidate drew a full vote and a self vote.
+         */
+        const drawn = readRepairRounds({
+          raw: rawOf({
+            chunks: [[
+              roundOf({
+                slate: [
+                  slateOf({
+                    index: 1,
+                    producer: {
+                      kind: 'model',
+                      modelId: SEATED,
+                    },
+                  },),
+                ],
+                ballots: [
+                  ballotOf({
+                    modelId: ALSO_SEATED,
+                    best: 1,
+                    weight: 1,
+                  },),
+                  ballotOf({
+                    modelId: SEATED,
+                    best: 1,
+                    weight: 0.5,
+                    selfVote: true,
+                  },),
+                ],
+                drawnWeight: 1.5,
+              },),
+            ],],
+          },),
+          path: PATH,
+        },);
+
+        expect(drawn[0]?.[0]?.perCandidate[0]?.weight,).toBe(1.5,);
       },
     },),
 
