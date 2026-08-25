@@ -1736,3 +1736,27 @@ and `Promise.all` preserves order, so gathering concurrently and folding in inde
 byte-identical output for pure latency.
 The task carries the full list, including the sites that are correctly sequential and must not be
 touched.
+
+### Two more findings from the same run (2026-08-25)
+
+The deepseek zero-content anomaly is RESOLVED, and it is the same defect as `#211` intermittently.
+It had been held open because the instrument used then was a 40-line scan window over 9 samples
+with a measured 39 percent hit rate on healthy calls.
+The completion line's own content count answers it on roughly 1,200 streams:
+`deepseek-v4-pro-0813` is zero-content on 12 of 127, every one with reasoning above zero,
+against a baseline of exactly zero across eight other seats.
+What remains a prediction rather than a conclusion is whether `#211`'s fix removes those 12,
+since the fix exempts `input_json_delta` and not `text_delta`.
+Count them on the first post-fix run.
+
+`#216` implements an owner instruction that turns out never to have been implemented:
+"Please make sure to put even the full tool schema into system prompts."
+Seventeen modules build a system message and NOT ONE carries its response schema;
+the seven that name a schema at all name it only as the API-level `responseFormat`.
+The supporting evidence is that all 6 schema failures in this run are on Charm Hyper seats,
+`gemma-4-26b-a4b-it` 4 and `qwen3.8-max` 2, with zero on Synthetic,
+and one of them reads `{"checks": "\n[{\"region\":` ,
+a JSON-stringified array where the schema declares an array of objects.
+That is the wrong-tool-call-format failure the owner named.
+The provider split is confounded, since those seats are also different models,
+so the task says so and does not claim the protocol causes it.
