@@ -58,11 +58,13 @@ impl CacheWarning {
     }
 
     /// Returns warning reason for tests and protocol adapters.
+    #[cfg(test)]
     pub(crate) fn reason(&self) -> CacheWarningReason {
         return self.reason
     }
 
     /// Returns warning recovery for tests and protocol adapters.
+    #[cfg(test)]
     pub(crate) fn recovery(&self) -> CacheRecovery {
         return self.recovery
     }

@@ -141,10 +141,10 @@ pub(crate) fn compile_rules_file_to_cache(rules_path: &str) -> Result<()> {
         .map_err(|error| return anyhow!(error))?;
     let location = cache_location(&root, digest);
 
-    if let Ok(bytes) = read_artifact(&location.artifact_path, MAX_ARTIFACT_BYTES) {
-        if decode(&bytes, digest).is_ok() {
-            return Ok(());
-        }
+    if read_artifact(&location.artifact_path, MAX_ARTIFACT_BYTES)
+        .is_ok_and(|bytes| return decode(&bytes, digest).is_ok())
+    {
+        return Ok(());
     }
 
     let compiled = compile_rules(text)
