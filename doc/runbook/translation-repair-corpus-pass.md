@@ -356,6 +356,10 @@ When the run has exited, check its output rather than its log.
 
     Every figure is availability WHEN WE WERE ASKING, which is not availability.
 
+The three tools that follow arrived with `#210`, `#212` and `#215`.
+If `mise run` reports no such task, the checkout predates them,
+and a run made from that checkout recorded none of what they read either.
+
 4.  Read where the wall clock went.
 
     ```sh
