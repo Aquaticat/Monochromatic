@@ -301,7 +301,22 @@ When the run has exited, check its output rather than its log.
     and a final line reading
     `verify-published: <n> of <n> pages carry every wording their artifact promised, at the length it implies`.
 
-    The exit code is the verdict.
+    CHECK `matched=` BEFORE YOU CHECK THE EXIT CODE.
+    A run directory with nothing in it prints the same shape and exits 0:
+
+    ```text
+    verify-published: matched=0 settledWithNoPage=0 pageWithNoArtifact=0
+    verify-published: 0 of 0 pages carry every wording their artifact promised, at the length it implies
+    ```
+
+    The two notices that would reveal the emptiness go to STDERR,
+    so a reader who redirected stdout to a file sees a clean pass over zero entries.
+    A mistyped `TRANSLATION_REPAIR_RUNS_DIR` currently reads as a green run.
+    Capture both streams, and treat `matched=0` on a run you believe settled entries
+    as a failure whatever the exit code says.
+    Tracked as `#217`.
+
+    Otherwise the exit code is the verdict.
     It is `1` when any page disagreed or any settled entry has no page.
 
     Four failure lines, each meaning something different:
