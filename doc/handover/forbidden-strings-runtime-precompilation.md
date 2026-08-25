@@ -5,14 +5,22 @@
 Implementation and verification are complete.
 Commit `37fd7136a` ships the hybrid runtime cache and bumps the scanner to `0.4.0`.
 Its shell-constructed final commit paragraph contained literal `\\n` text,
-so GitHub did not recognize the closing keyword there;
-this follow-up documentation commit carries a proper `Closes #456` line.
+so GitHub did not recognize the closing keyword there.
+Follow-up commit `3b2ff2594` carries the proper closing line and GitHub closed issue #456 at
+2026-08-25 17:59:54 UTC.
 
 Clean-tree `cargo package` passed after 560 seconds.
 The independent forbidden-strings workflow and Scorecard workflow passed on the release commit.
-The cargo-publish workflow is still building and publishing the seven-platform release matrix.
+Crates.io published `forbidden-strings 0.4.0` with checksum
+`99e6095140f9154a557470ad1fddee37bd4fe35982efcc16e8a0a0262014f2f6`
+and trusted-publishing provenance bound to commit `37fd7136a`.
+The cargo-publish workflow completed successfully.
+GitHub release [`forbidden-strings-v0.4.0`][release] published at 2026-08-25 18:03:10 UTC with all seven target
+archives.
 
-Keep this handover current through release results.
+[release]: https://github.com/Aquaticat/Monochromatic/releases/tag/forbidden-strings-v0.4.0
+
+This handover is final.
 The user explicitly said no `AGENTS.md` edit is needed for the communication correction.
 
 
@@ -674,6 +682,4 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Confirm GitHub closes issue #456 from this follow-up commit.
-Observe the cargo-publish workflow through crate publication and release creation;
-record any release failure before declaring complete.
+No open action remains for issue #456.
