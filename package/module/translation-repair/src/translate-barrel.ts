@@ -87,6 +87,7 @@ export {
 } from './translate-repair-wire.ts';
 export {
   type BlockShape,
+  blockDetail,
   readSliceSkeleton,
   type SkeletonRead,
   type SliceSkeleton,

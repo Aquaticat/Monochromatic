@@ -138,6 +138,8 @@ type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 /**
+ * @internal
+ *
  * Names what distinguishes this block from another of the same kind.
  *
  * @param node - top-level mdast block
