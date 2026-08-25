@@ -2353,3 +2353,96 @@ and it applies the deflation itself.
 Read the printed standing. The value of these numbers is that they make it INTERPRETABLE:
 when a seat clears or fails, the reason is 31 independent slices deflated by 2.06x, and both
 halves are now measured rather than assumed.
+
+## An unreadable run file printed itself, and the fix was a whole class rather than one CLI
+
+Filed as `#220` during the calibration, deferred until the landing cleared, then reproduced
+on 2026-08-25.
+It was filed as a crash with a minified stack.
+Reproducing it showed something worse.
+
+V8 gives a `JSON.parse` refusal a synthetic script whose source IS the text it was handed,
+so Node's uncaught-exception report prints that line.
+Against a throwaway ledger, `ledger-report` printed a whole contest ahead of the stack trace:
+
+```text
+<anonymous_script>:1
+{ "task": "whiskerfield-1", "at": "2026-08-25T00:01:00.000Z", "candidates": [ { "index": 0, "producers": ["tab
+
+SyntaxError: Bad control character in string literal in JSON at position 110 (line 1 column 111)
+```
+
+A real ledger file holds candidate renderings and a person's entry id.
+A garbled one published both to a terminal.
+
+The package already stated the rule this broke.
+`error-name.ts` records that a message is uncontrolled and that a run directory path can name
+a person; `LedgerShapeError` says outright that it NAMES, NEVER QUOTES.
+Nothing had applied either to the parse step.
+
+### The class was twelve times larger than the report
+
+Counting `JSON.parse` sites that no `try` encloses found 25 matches, which is not the answer:
+11 are TSDoc `@example` text and one parses a string on the write path.
+The real class was 12 file-reading sites across 11 files, every one under a run directory.
+
+Fixing only the one that happened to be tripped would have left eleven instances of the same
+contract violation, which is the layer-1-only mistake `ELR` warns about.
+
+`readRunJson` in `run-json-read.ts` is now the only way a run file is read.
+It refuses with `RunJsonUnreadableError`, naming the file's basename and the failure and
+carrying no text from it.
+A parse offset survives as a number, because a truncation point is what tells an operator what
+happened and it is content-free.
+`parseRunJson` splits out for the two callers that hold text rather than a path.
+
+`slice-cache-namespace.ts` is deliberately left alone.
+Its `serialized` argument arrives from `persistSlice` on the WRITE path as a lane's own
+in-memory serialization, so it never reads a file.
+That was traced to the call site rather than assumed.
+
+### Two lint rules disagreed, and the answer was to delete the code
+
+Reading the digit run by hand needed either a mutable cursor or a character array.
+`no-function-root-let` forbids the first, and `prefer-spread` and `no-misused-spread` forbid
+each other on the second.
+Per `LN1` the remedy is structural, not picking a surface to silence:
+`Number.parseInt` already reads a leading digit run and stops, so the hand-written scan is gone.
+
+### The test that could not have failed
+
+Writing the absence assertion exposed a trap worth remembering.
+V8 quotes only the FIRST TEN CHARACTERS of a file back inside its refusal message, so a fixture
+word of `Marmaladeslept` appears as `Marmalades`, and a test asserting the full word absent
+passes even against a reader that forwards the message whole.
+
+The fixtures now lead with `Bixbyfluff`, exactly ten characters, confirmed against `JSON.parse`
+directly to appear in the message it produces.
+The same measurement corrected a truncation offset guessed at 30 to the real 27.
+
+GFP-proven: breaking both guards, so `readRunJson` forwards V8's message and `refusalOf`
+forwards every class's, fails `readRunJson` on two children and `refusalOf` on exactly the
+foreign-message case, exit 1.
+Restoring returns 680 PASS, 0 FAIL.
+
+### What the boundary check found that the unit tests could not
+
+Driving `rendering-audit-settled-report --run` against a malformed file confirmed the leak is
+closed there too: zero hits for the fixture's distinctive word, with the file's name appearing
+twice as a positive control that the parse was genuinely reached.
+
+It also showed the OTHER half of `#220` is still open, now filed as `#223`.
+The refusal is safe but still uncaught in these CLIs, so Node prints the minified bundle line,
+around three thousand characters of it, around a correct one-line message.
+`ledger-report` is the only one that catches and reports.
+
+Landed as `768d26b18`, `ba83d021c` and `7a4f27db0`.
+
+### One observation recorded rather than acted on
+
+The suite output shows the pipeline's own warn logs forwarding a model's raw non-JSON answer,
+`raw="not json at all"`, alongside the `SyntaxError` message that quotes it.
+That is the same shape as the unguarded-parse defect, but the exposure is different:
+those lines go to a run log inside a run directory that already holds corpus wording, and the
+owner's instruction is to log more rather than less.
+Naming it here so the difference is a decision rather than an oversight.
