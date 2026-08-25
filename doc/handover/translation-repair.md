@@ -1593,3 +1593,45 @@ NOT YET MEASURED: the run in flight predates the fix.
 
 Parked with `#210` and `#212` in `~/temp/agent/spend-telemetry-210.tar.gz`, now thirty-three files.
 Lint clean, types clean, 663 suites passing, zero failures.
+
+## The deepseek zero-content anomaly is NOT resolvable from the log (2026-08-25)
+
+Re-measured over the calibration's first 13 slices, 1176 stream lines parsed and none skipped.
+
+### What the counts say
+
+-   `qwen3.8-max`: 100 calls, 98 zero-content, 17 cut. So 81 COMPLETED calls counted nothing.
+-   `deepseek-v4-pro-0813`: 101 calls, 9 zero-content, 0 cut.
+-   `hf:zai-org/GLM-5.2`: 100 calls, 10 zero-content, 10 cut. Zero-content EQUALS cut count.
+-   `hf:Qwen/Qwen3.8-27B`: 2 and 2. Every other seat: zero and zero.
+
+GLM-5.2 and Qwen3.8-27B are the ordinary case, streams that ended before content arrived.
+GLM-5.2's ten carry a median of 2.3 million raw characters,
+which is runaway reasoning meeting the straggler deadline, not a parsing fault.
+Every zero-content call on every seat carries reasoning above zero,
+so none of them is a genuinely empty reply.
+
+### Why the log cannot settle deepseek's nine
+
+The only correlate available is whether a voice from that seat appears near the stream line.
+That instrument has a measured baseline of 39 percent on HEALTHY calls:
+`hf:openai/gpt-oss-120b` has 102 completed calls with content
+and only 40 of them are followed by a voice within ten seconds,
+because most streams are editor or refiner production calls that produce no ballot line at all.
+
+Against that baseline:
+
+-   `qwen3.8-max`'s zero-content calls score 35 percent, indistinguishable from healthy.
+    That is independent confirmation of `#211`: its answers arrived, only the counter was fooled.
+-   `deepseek-v4-pro-0813`'s nine score 11 percent, where the baseline predicts about three and a half.
+    On nine samples that separates nothing.
+
+An earlier reading of this scanned forty lines after each occurrence and reported the seat present in six of nine.
+That was wrong: the window spanned neighbouring calls and was catching another round's voice.
+
+### What answers it, for free
+
+The candidate ledger from `#212` records which model produced each candidate
+and which cast each ballot, with no timing correlation involved.
+The first run carrying a ledger answers this without a single extra call.
+Until then the honest state is: measured, unexplained, nine events, and not folded into `#211`.
