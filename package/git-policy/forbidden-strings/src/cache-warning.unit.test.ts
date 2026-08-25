@@ -13,21 +13,38 @@ import {
  * Exact valid warning records accepted by protocol.
  */
 const VALID_WARNINGS = [
-  '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}',
-  '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"cache-root-unavailable","recovery":"compile-from-text"}',
-  '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"unreadable","recovery":"compile-from-text"}',
-  '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"source-mismatch","recovery":"compile-from-text"}',
-  '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"incompatible","recovery":"compile-from-text"}',
-  '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"invalid","recovery":"compile-from-text"}',
-  '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"write-failed","recovery":"continue-with-compiled-rules"}',
+  ['missing', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}',],
+  ['cache-root-unavailable', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"cache-root-unavailable","recovery":"compile-from-text"}',],
+  ['unreadable', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"unreadable","recovery":"compile-from-text"}',],
+  ['source-mismatch', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"source-mismatch","recovery":"compile-from-text"}',],
+  ['incompatible', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"incompatible","recovery":"compile-from-text"}',],
+  ['invalid', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"invalid","recovery":"compile-from-text"}',],
+  ['write-failed', '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"write-failed","recovery":"continue-with-compiled-rules"}',],
 ] as const;
+
+/**
+ * Captures parser failure without function-root mutable binding.
+ *
+ * @param line - Warning candidate.
+ *
+ * @returns Caught failure or undefined when parser accepted candidate.
+ */
+function captureWarningError(line: string,): unknown {
+  try {
+    parseCacheWarning(line,);
+    return undefined;
+  }
+  catch (error: unknown) {
+    return error;
+  }
+}
 
 await describe({
   name: parseCacheWarning.name,
   children: [
-    ...VALID_WARNINGS.map(function warningCase(warning,) {
+    ...VALID_WARNINGS.map(function warningCase([reason, warning],) {
       return it({
-        name: `accepts ${JSON.parse(warning,).reason as string}`,
+        name: `accepts ${reason}`,
         fn: async function acceptsWarning() {
           expect(parseCacheWarning(warning,),).toBe(true,);
         },
@@ -53,14 +70,7 @@ await describe({
       return it({
         name: `rejects ${line}`,
         fn: async function rejectsInvalid() {
-          let caught: unknown;
-          try {
-            parseCacheWarning(line,);
-          }
-          catch (error: unknown) {
-            caught = error;
-          }
-          expect(caught,).toBeInstanceOf(ForbiddenStringsPluginError,);
+          expect(captureWarningError(line,),).toBeInstanceOf(ForbiddenStringsPluginError,);
         },
       },);
     },),

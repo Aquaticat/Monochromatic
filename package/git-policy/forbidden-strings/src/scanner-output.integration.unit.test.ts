@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
-import { parseScannerOutput, } from './scanner-output.ts';
+import { parseScannerOutput, } from '../dist/final/node/index.mjs';
 
 /**
  * Release scanner built by the sibling `package/cli/forbidden-strings` crate;

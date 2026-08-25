@@ -30,7 +30,7 @@ import {
   forbiddenStringsPolicy,
   parseScannerOutput,
   scanCandidates,
-} from './index.ts';
+} from '../dist/final/node/index.mjs';
 
 /** Executable fixture mode. */
 const EXECUTABLE_MODE = 0o755;

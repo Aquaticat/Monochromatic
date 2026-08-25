@@ -46,7 +46,11 @@ const CACHE_WARNING_KEYS: ReadonlySet<string> = new Set([
  * ```
  */
 function isJsonRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return (typeof value === 'object') && (value !== null) && (!Array.isArray(value,));
+  if (typeof value !== 'object')
+    return false;
+  if (value === null)
+    return false;
+  return !Array.isArray(value,);
 }
 
 /**
@@ -89,6 +93,9 @@ function validateKeys(
     line: string;
   }>,
 ): void {
+  /**
+   * Actual enumerable warning keys checked against closed schema.
+   */
   const keys = Object.keys(record,);
   if (keys.length !== CACHE_WARNING_KEYS.size)
     malformedWarning({ line, },);
@@ -118,7 +125,9 @@ function validateRecovery(
     line: string;
   }>,
 ): void {
-  if ((typeof reason !== 'string') || (typeof recovery !== 'string'))
+  if (typeof reason !== 'string')
+    malformedWarning({ line, },);
+  if (typeof recovery !== 'string')
     malformedWarning({ line, },);
   if (reason === 'write-failed') {
     if (recovery !== 'continue-with-compiled-rules')
@@ -127,6 +136,25 @@ function validateRecovery(
   }
   if ((!COMPILE_FROM_TEXT_REASONS.has(reason,)) || (recovery !== 'compile-from-text'))
     malformedWarning({ line, },);
+}
+
+/**
+ * Parses complete JSON text or converts parser failure to plugin diagnostic.
+ *
+ * @param line - Complete scanner stderr line.
+ *
+ * @returns Parsed unknown JSON value.
+ */
+function parseWarningJson(line: string,): unknown {
+  try {
+    return JSON.parse(line,);
+  }
+  catch (error: unknown) {
+    malformedWarning({
+      line,
+      cause: error,
+    },);
+  }
 }
 
 /**
@@ -150,16 +178,16 @@ function validateRecovery(
 export function parseCacheWarning(line: string,): boolean {
   if ((!line.startsWith('{',)) || (!line.endsWith('}',)))
     return false;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(line,);
-  }
-  catch (error: unknown) {
-    malformedWarning({ line, cause: error, },);
-  }
+  /**
+   * Parsed warning candidate retained as unknown until record narrowing.
+   */
+  const parsed = parseWarningJson(line,);
   if (!isJsonRecord(parsed,))
     malformedWarning({ line, },);
-  validateKeys({ record: parsed, line, },);
+  validateKeys({
+    record: parsed,
+    line,
+  },);
   if ((parsed.type !== CACHE_WARNING_TYPE)
     || (parsed.schemaVersion !== CACHE_WARNING_SCHEMA_VERSION))
     malformedWarning({ line, },);
