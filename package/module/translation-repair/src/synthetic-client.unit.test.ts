@@ -122,6 +122,12 @@ const COMPLETION_BODY = sseBody({
 },);
 
 /**
+ * Recorded completion cut off before the `[DONE]` sentinel, which is how a
+ * stream the provider truncated arrives: HTTP 200 carrying half an answer.
+ */
+const CUT_COMPLETION_BODY = 'data: {"choices":[{"delta":{"content":"{\\"verdict\\":"}}]}\n\n';
+
+/**
  * Verdict shape the chatJson tests validate against.
  */
 type CatVerdict = { readonly verdict: string; };
@@ -321,6 +327,72 @@ await describe({
             signal: new AbortController().signal,
           },)).usage,
         ).toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a stream that ended without its terminator, after spending every attempt',
+      fn: async () => {
+        /** Transport replaying a body cut off before `[DONE]`. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [{ status: 200, bodyText: CUT_COMPLETION_BODY, },],
+        },);
+        /** Client under test, on a tiny test backoff. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport,
+          retryPolicy: { limit: 2, baseMs: 1, },
+        },);
+        /** Failure the truncated stream produced. */
+        let caught: unknown;
+
+        try {
+          await client.chatText({
+            modelId: 'hf:openai/gpt-oss-120b',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+
+        expect(caught instanceof MalformedCompletionError,).toBe(true,);
+        // THE FIRST ATTEMPT PLUS BOTH RETRIES. A provider that cuts a stream
+        // still answers HTTP 200, so this count is what `#228` changed: the
+        // ladder used to return after one call, and the voice was simply lost.
+        expect(exchanges.length,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS the retry when only the first attempt was cut short',
+      fn: async () => {
+        /** Transport cutting the first stream and completing the second. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [
+            { status: 200, bodyText: CUT_COMPLETION_BODY, },
+            { status: 200, bodyText: COMPLETION_BODY, },
+          ],
+        },);
+        /** Client under test, on a tiny test backoff. */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport,
+          retryPolicy: { limit: 2, baseMs: 1, },
+        },);
+
+        /** Answer the second attempt carried. */
+        const reply = await client.chatText({
+          modelId: 'hf:openai/gpt-oss-120b',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+        },);
+
+        expect(reply.text,).toBe('{"verdict":"pass"}',);
+        // EXACTLY TWO: the cut one and the whole one. A third would say a whole
+        // body is being retried too, which would double the cost of every call.
+        expect(exchanges.length,).toBe(2,);
       },
     },),
 

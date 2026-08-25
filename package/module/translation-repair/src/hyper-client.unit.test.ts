@@ -148,6 +148,13 @@ const TOOL_CALL_BODY = messagesBody({
 },);
 
 /**
+ * Recorded reply cut off before `message_stop`, which is how a stream the
+ * provider truncated arrives: HTTP 200 carrying half a message.
+ */
+const CUT_TOOL_CALL_BODY = 'data: {"type":"content_block_delta","index":0,'
+  + '"delta":{"type":"input_json_delta","partial_json":"{\\"verdict\\":"}}\n\n';
+
+/**
  * Verdict shape the chatJson tests validate against.
  */
 type CatVerdict = { readonly verdict: string; };
@@ -526,20 +533,17 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a stream that ended without its terminator',
+      name: 'REFUSES a stream that ended without its terminator, after spending every attempt',
       fn: async () => {
         /** Transport replaying a body cut off before `message_stop`. */
-        const { transport, } = recordedTransport({
-          replies: [{
-            status: 200,
-            bodyText: 'data: {"type":"content_block_delta","index":0,'
-              + '"delta":{"type":"input_json_delta","partial_json":"{\\"verdict\\":"}}\n\n',
-          },],
+        const { transport, exchanges, } = recordedTransport({
+          replies: [{ status: 200, bodyText: CUT_TOOL_CALL_BODY, },],
         },);
-        /** Client under test with injected transport. */
+        /** Client under test with injected transport and no retry wait. */
         const client = createHyperClient({
           apiKey: 'test-key',
           transport,
+          retryPolicy: { limit: 2, baseMs: 1, },
         },);
         /** Failure the truncated stream produced. */
         let caught: unknown;
@@ -558,6 +562,41 @@ await describe({
         // mismatch, which sends a reader to the prompt rather than to the
         // transport failure this actually is.
         expect(caught instanceof MalformedCompletionError,).toBe(true,);
+        // THE FIRST ATTEMPT PLUS BOTH RETRIES. A provider that cuts a stream
+        // still answers HTTP 200, so this count is what `#228` changed: the
+        // ladder used to return after one call, and the voice was simply lost.
+        expect(exchanges.length,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS the retry when only the first attempt was cut short',
+      fn: async () => {
+        /** Transport cutting the first stream and completing the second. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [
+            { status: 200, bodyText: CUT_TOOL_CALL_BODY, },
+            { status: 200, bodyText: TOOL_CALL_BODY, },
+          ],
+        },);
+        /** Client under test with injected transport and no retry wait. */
+        const client = createHyperClient({
+          apiKey: 'test-key',
+          transport,
+          retryPolicy: { limit: 2, baseMs: 1, },
+        },);
+
+        /** Answer the second attempt carried. */
+        const reply = await client.chatText({
+          modelId: 'minimax-m3',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+        },);
+
+        expect(reply.text,).toBe('{"verdict":"pass"}',);
+        // EXACTLY TWO: the cut one and the whole one. A third would say a whole
+        // body is being retried too, which would double the cost of every call.
+        expect(exchanges.length,).toBe(2,);
       },
     },),
 
