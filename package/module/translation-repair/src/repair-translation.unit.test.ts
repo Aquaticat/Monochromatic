@@ -1646,9 +1646,9 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 
     it({
       name: 'CARRIES the critics onto a slice that shipped NOTHING, which is the half of the attribution '
-        + 'path no case reached: every unchanged exit builds its outcome from one shared shape, and the '
-        + 'case beside this one reads attribution off a run that repaired. Emptying the roster or the '
-        + 'attributions on the unchanged shape failed no test at all, so a rate over these slices could '
+        + 'path no case reached: the settlement records who was heard and what each claim is attributed '
+        + 'to beside a `changed` of false, and every case that reads attribution reads it off a run that '
+        + 'repaired. Gating either field on `changed` failed no test, so a rate over these slices could '
         + 'have divided by zero critics while the run recorded three',
       fn: async () => {
         /** Run whose critics raise a claim the checkers then refuse to confirm. */
@@ -1695,7 +1695,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
          * Run whose critics all report the target is not a translation, and
          * whose checkers then refuse to confirm the repair it bought. Both
          * halves are needed: the votes are what this reads, and the refusal is
-         * what sends the slice down the UNCHANGED shape that carries them.
+         * what makes the settlement record them beside a `changed` of false.
          */
         const result = await repairTranslation({
           client: scriptedClient({
