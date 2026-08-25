@@ -147,6 +147,65 @@ async function captureRealScannerStderr({
   throw new Error('Real forbidden-strings scanner did not report the seeded secret.',);
 }
 
+/**
+ * Runs real scanner through runtime cache miss and returns warning plus finding stderr.
+ *
+ * @param candidatePath - Materialized scanner input path.
+ *
+ * @param rulesPath - Authoritative runtime rules path.
+ *
+ * @param cacheRoot - Disposable cache root forced empty by test directory.
+ *
+ * @param cwd - Scanner working directory.
+ *
+ * @returns Captured mixed-protocol stderr from match exit.
+ */
+async function captureRuntimeCacheMissStderr({
+  candidatePath,
+  rulesPath,
+  cacheRoot,
+  cwd,
+}: Readonly<{
+  candidatePath: string;
+  rulesPath: string;
+  cacheRoot: string;
+  cwd: string;
+}>,): Promise<string> {
+  /**
+   * Environment isolating runtime cache and repository-level rules override.
+   */
+  const environment = {
+    ...process.env,
+    FORBIDDEN_STRINGS_CACHE_DIR: cacheRoot,
+  };
+  delete environment.FORBIDDEN_STRINGS_RULES;
+  try {
+    await nanoSpawn(
+      SCANNER_BINARY,
+      [
+        '--rules',
+        rulesPath,
+        candidatePath,
+      ],
+      {
+        cwd,
+        env: environment,
+      },
+    );
+  }
+  catch (error: unknown) {
+    if (!(error instanceof SubprocessError))
+      throw error;
+    if (error.exitCode !== MATCH_EXIT_CODE)
+      throw new Error(
+        `Real forbidden-strings scanner exited with unexpected status ${String(error.exitCode,)}.`,
+        { cause: error, },
+      );
+    return error.stderr;
+  }
+  throw new Error('Real forbidden-strings scanner did not report runtime-rule match.',);
+}
+
 await describe({
   name: 'forbidden-strings redacted parser over real scanner output',
   children: [
@@ -195,6 +254,54 @@ await describe({
           expect(finding.message.includes('column',),).toBe(false,);
           expect(finding.message.includes(SECRET_SHAPED_TOKEN,),).toBe(false,);
         }
+      },
+    },),
+    it({
+      name: 'ignores real cache warning while mapping runtime-rule finding',
+      fn: async function testRealRuntimeCacheWarning() {
+        await using directory = await createTestDirectory();
+        /**
+         * Authoritative one-rule runtime source.
+         */
+        const rulesPath = join(directory.path, 'rules.txt',);
+        /**
+         * Candidate containing exact runtime rule literal.
+         */
+        const candidatePath = join(directory.path, 'candidate-runtime',);
+        /**
+         * Empty disposable cache root forcing missing warning.
+         */
+        const cacheRoot = join(directory.path, 'cache',);
+        await writeFile(rulesPath, 'RUNTIME_CACHE_RULE_LONG\n',);
+        await writeFile(candidatePath, 'RUNTIME_CACHE_RULE_LONG\n',);
+        const stderr = await captureRuntimeCacheMissStderr({
+          candidatePath,
+          rulesPath,
+          cacheRoot,
+          cwd: directory.path,
+        },);
+        expect(stderr,).toContain('"type":"forbidden-strings/cache-warning"',);
+        expect(parseScannerOutput({
+          stderr,
+          candidateForPath: function candidateForPath(path,): CandidateFile {
+            if (path !== candidatePath)
+              throw new Error(`Unexpected scanner path: ${path}`,);
+            return {
+              targetId: `target:${CANDIDATE_PATH}`,
+              path: CANDIDATE_PATH,
+              revision: 'fixture',
+              mode: 'regular',
+              change: 'added',
+              bytes: function bytes(): Promise<Uint8Array> {
+                return Promise.resolve(new Uint8Array(),);
+              },
+            };
+          },
+        },),).toEqual([{
+          code: 'forbidden-string',
+          message: 'Forbidden string matched at line 1 (rule 0).',
+          path: CANDIDATE_PATH,
+        },],);
       },
     },),
   ],
