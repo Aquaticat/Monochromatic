@@ -720,6 +720,16 @@ await describe({
         expect(result.status,).toBe('unchanged',);
         expect(result.repairedText,).toBe(TARGET_TEXT,);
         expect(result.issues,).toHaveLength(0,);
+
+        // THE ROSTER SURVIVES THE EARLIEST EXIT THERE IS. This slice never
+        // reaches the settlement the other cases read; it leaves as soon as
+        // screening returns no claim, on the shared shape
+        // `unchangedChunkOutcome` builds. Emptying the roster there failed no
+        // test before this line, and a slice recorded as heard by nobody is
+        // how a critic that went silent looks.
+        for (const record of result.sliceCritics)
+          expect(record.heardCriticIds,)
+            .toStrictEqual([...MODELS.criticModelIds,].toSorted(),);
       },
     },),
 
