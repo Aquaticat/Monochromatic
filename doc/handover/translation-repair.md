@@ -20378,3 +20378,182 @@ the undecided-lanes copy,
 the unchanged slice carrying text,
 the trailing-buffer trim,
 and the line-break precedence in the splice join.
+
+## Charm Hyper got credit, the full roster is running, and a run's cost is now measured (2026-08-25)
+
+The owner bought 10,000 hypercredits.
+`budget-sample` confirmed it live before anything was launched:
+
+```text
+METERS synthetic=wet hyper=wet syntheticWeekly=97.09290877272727%
+syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=10000
+```
+
+Both providers wet at once, which is the window `#200` had been waiting for since the 14-slice run of 2026-08-24 settled no seat.
+
+### The run in flight
+
+Launched 2026-08-25T01:30Z, detached, 40 slices, every seat filled by the whole ten-model roster.
+
+```text
+TRANSLATION_REPAIR_RUNS_DIR=~/temp/agent/editor-calibrate-fullroster-20260825 \
+  mise run //package/module/translation-repair:editor-calibrate -- 40
+```
+
+Log at `~/temp/agent/editor-calibrate-fullroster-20260825.log`,
+pid beside it in the `.pid` file.
+
+ALL TEN SEATS ARE ANSWERING, which is the whole reason this run exists.
+The five Hyper-only ones wrote nothing last time.
+`gemma-4-26b-a4b-it` in particular HOLDS an editor seat and had never been tested.
+
+DO NOT REBUILD `dist/` WHILE IT RUNS.
+The run stamps its cache with the runner's own dependency closure,
+so a source change plus any restart invalidates every cached slice and re-buys the whole run.
+Documentation is outside that closure and safe to edit.
+
+### What a slice actually costs in wall time
+
+Measured on the first slices rather than derived:
+
+```text
+slice 1  lintong chunk 0       214 s   no accepted issue, short-circuits before editors
+slice 2  windward0032 chunk 14 1362 s  5 editor rounds
+```
+
+A slice that reaches the editors costs about 23 minutes, not the 11 that roster-round arithmetic implies.
+At the prior run's 71 percent rate of slices carrying an accepted issue,
+40 slices comes to roughly 12 hours rather than the 8 first projected.
+
+### The refiner lane fires, and the two empty slices were not a signal
+
+Slices 1 through 3 each reported `0 refiner rounds (nothing eligible to rewrite)`,
+which looked like the refiner standing was going to come back empty for the second run running.
+
+MEASURED INSTEAD OF WAITED.
+Across 74 real shipped slices from four archived runs,
+mirroring the bounds in `refine-eligibility.ts`:
+
+```text
+paragraphs                 156
+  markup or non-prose       41
+  hard break                 2
+  under 120 chars           78
+  over 1200 chars            1
+  ELIGIBLE                  34
+
+slices carrying at least one eligible paragraph: 32 of 74 (43%)
+```
+
+Three empty slices in a row has probability near 19 percent.
+Unremarkable.
+Slice 4 then produced a refiner round, which is the first this workstream has ever seen:
+the earlier run's binary predated the fix that drives the lane at all.
+
+### What the run costs in credits, and the correction that came with measuring it
+
+The first estimate, computed from assumed tokens per call, was 500 to 1,500 credits for a 40-slice run.
+THAT WAS HIGH BY ROUGHLY A FACTOR OF FOUR.
+
+Measured from the run's own `reportStreamProgress` lines,
+which carry content and reasoning characters per call:
+
+```text
+model                     calls   content   thinking  out-tokens  credits
+qwen3.8-max                   9         0    125,612      31,403     3.77
+minimax-m3                   10     6,409     98,961      26,343     0.69
+deepseek-v4-pro-0813         10     4,512          0       1,128     0.10
+deepseek-v4-flash-0731       10     4,214      4,066       2,070     0.05
+gemma-4-26b-a4b-it           10     3,986          0         997     0.01
+```
+
+Scaled to 40 slices the output side is about 120 credits,
+and adding an input side priced two to three times lower puts the whole run near 250.
+So 10,000 credits buys on the order of 35 runs of this size, not 6 to 20.
+
+THINKING DOMINATES THE BILL.
+`qwen3.8-max` and `hf:zai-org/GLM-5.2` each emitted over 118,000 characters of reasoning
+against a few thousand of answer,
+and `completion_tokens` counts thinking.
+Any cost model built on answer length underreads by most of the bill.
+
+### Nothing we have ever run recorded its token spend (`#210`)
+
+The estimate above had to be computed rather than read,
+because token counts are not in any log this project holds.
+
+`formatUsageNote` in `model-content.ts` reads `prompt_tokens` and `completion_tokens`
+off the provider's own usage block
+and appends them to an `rl.debug` line in both clients.
+Every archived run logged at info,
+so a grep for `[0-9]+\+[0-9]+ tokens` across every log in `~/temp/agent` returns ZERO matches.
+
+It did not matter while Synthetic was the only provider:
+a flat subscription either fits the weekly allowance or it does not,
+and the `METERS` line already carries that percentage.
+Charm Hyper is metered per token at rates differing by two orders of magnitude across one roster,
+so cost depends on which seats answered and by how much.
+
+`spend-line.ts` and `corpus-run/spend-read.ts` close it.
+One `SPEND provider=<name> model=<id> prompt=<n> completion=<n>` line per exchange at info,
+shaped like the `METERS` line so a reader splits rather than matches,
+and a reader that totals a log per provider-and-model seat.
+
+A provider that reports no usage still gets a line carrying `unreported` in both counts.
+A run whose provider stayed quiet and a run that spent nothing total the same,
+and only the named absence tells them apart.
+
+### Two defects that only writing the consumer could find
+
+Both were in code already reported as verified,
+and neither was reachable from the writer's own tests.
+
+THE MARKER CARRIED A LEADING SPACE, copied from `METERS_MARKER`.
+That one only ever meets lines carrying a logger prefix, so it can demand the space.
+This one also meets the bare line the writer RETURNS,
+so `readSpendLine(reportSpend(...))` read as prose and answered `not-a-record`.
+The marker is now `'SPEND '`
+and the reader accepts it at start-of-line or after a space.
+
+THE FIELD TABLE WAS A PLAIN OBJECT,
+so a log line writing `__proto__=` would have reached the prototype.
+Keys come off a log line; it is a `Map` now.
+
+This is the same lesson as the `#209` method note from one day earlier,
+arriving from the other direction:
+there, mutating a module found arms nothing defended;
+here, writing the consumer found what the producer's tests could not reach.
+
+### `qwen3.8-max` books all of its output as thinking (`#211`)
+
+Measured on the live run:
+`qwen3.8-max` reports 0 content characters on every single call,
+13 of 13, against 204,258 reasoning characters.
+Other seats do this occasionally,
+`hf:zai-org/GLM-5.2` on 3 of 10 and two others on 1 of 10.
+Thirteen of thirteen is categorical.
+
+THE VOICE STILL LANDS.
+The same model casts ballots with full reasons,
+so the answer arrives and is used.
+What is wrong is the accounting.
+
+THE OBVIOUS EXPLANATION IS ALREADY REFUTED, recorded so it is not re-walked.
+Charm Hyper speaks the Anthropic protocol,
+and forced tool use would deliver an answer as `input_json_delta` fragments.
+`anthropic-delta-scan.ts` maps that delta to `content` and its own comment names this exact failure mode:
+
+```text
+`input_json_delta` IS THE ANSWER CHANNEL ... Routing them to `reasoning`
+would leave every schema'd call looking like a model that thought at length
+and answered nothing.
+```
+
+So the mapping is right and something else produces the symptom.
+Settling it needs a captured frame from a live call,
+which waits until the run releases the provider.
+
+Not urgent: nothing is broken and no quota is wasted.
+But a reader of any run log would conclude the most expensive seat on the roster produced nothing,
+and the `SPEND` line sidesteps it entirely,
+since `completion_tokens` comes from the provider and is channel-agnostic.
