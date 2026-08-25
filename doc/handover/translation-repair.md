@@ -1760,3 +1760,27 @@ a JSON-stringified array where the schema declares an array of objects.
 That is the wrong-tool-call-format failure the owner named.
 The provider split is confounded, since those seats are also different models,
 so the task says so and does not claim the protocol causes it.
+
+### The `#200` power projection flips, on measured accrual (2026-08-25)
+
+`#200` recorded that 40 slices "lands a hair under the line", worst-case z 2.776 against a
+Bonferroni threshold of 2.807 at ten seats.
+That rested on a projected 63 percent yield.
+Measured at 16 of 40 slices, the yield is 75 percent: 12 of 16 slices contributed a judged round.
+
+Judged-round accrual, counted from `selectBestCandidate` votes rather than projected:
+
+-   407 votes over 16 slices, which at roughly one ballot per judge is about 41 rounds.
+-   2.54 rounds per slice, and 2.30 with the single richest slice dropped,
+    so no one slice carries the rate.
+-   The 14-slice run that settled nothing managed 2.07 per slice from 10 contributing slices.
+
+Holding the prior effect size, 40 slices reaches about 30 contributing slices,
+so z scales by the square root of 3 and the deflated best z goes from 1.76 to roughly 3.05,
+clearing 2.807 by 0.24.
+
+DO NOT ACT ON THIS EITHER, for the same reason the original projection carried.
+The effect size it holds was measured on FIVE models, and the pooled preference rate roughly halves
+at ten seats, so the z it implies could move in either direction.
+The margin is thin in both directions and the run measures the effect size directly.
+Read the standing when it exits; the projection is superseded either way.
