@@ -206,6 +206,33 @@ The user selected all recommended options in grill round 1.
    compatibility partition**:
   partition cache storage by exact scanner version and operating-system/architecture family.
   Repeat compatibility data inside the envelope before decoding raw engine bytes.
+- **Q18,
+   JSON warning schema**:
+  use closed discriminated JSON objects with exact keys,
+  schema version,
+  a closed reason union,
+  and a closed recovery union.
+  Include no paths,
+  digests,
+  rule data,
+  arbitrary operating-system errors,
+  or extra properties.
+- **Q19,
+   retention**:
+  perform no automatic cache deletion.
+  Document that removing the application cache directory is always safe.
+- **Q20,
+   GitHub Actions cache root**:
+  let one-shot secret-backed scans use the hosted runner account's native cache directory.
+  Do not add a `$RUNNER_TEMP` override or a separate eager `compile-rules` step.
+- **Q21,
+   missing scanner during file-enforcer**:
+  emit a non-sensitive notice and continue after generating authoritative text and applying permissions.
+  A later scan repairs the cache through default read-write behavior.
+- **Q22,
+   compilation command output**:
+  print nothing on successful `compile-rules` creation or reuse.
+  Exit status 0 is the complete success signal.
 
 ## Current proposed behavior
 
@@ -231,9 +258,8 @@ versioned artifact under the per-user cache root
 ```
 
 A missing scanner during fresh setup must not destroy or invalidate authoritative text.
-File-enforcer cannot eagerly compile in that state,
-but the first later scan uses the default read-write recovery path.
-The exact file-enforcer notice and retry behavior remains open.
+File-enforcer emits a non-sensitive notice and continues.
+The first later scan uses the default read-write recovery path.
 
 ### Scan behavior
 
@@ -249,7 +275,7 @@ derive versioned platform partition and content-digest slot
             +--> valid compatible artifact: load matcher and names
             |
             +--> cache miss or rejection:
-                    emit redacted JSON warning
+                    emit closed redacted JSON warning
                     compile authoritative text in memory
                     scan correctly
                     attempt atomic cache repair
@@ -274,8 +300,9 @@ It must never run an artifact whose embedded source digest disagrees with curren
 - Flush the temporary file before atomic replacement.
 - Apply owner-only file permissions where supported.
 - Keep all diagnostics free of rule text and matched content.
+- Print nothing on successful creation or valid-artifact reuse.
 
-## Settled grill round 3 consequences
+## Settled grill round 3 and 4 consequences
 
 The selected path shape is provisionally:
 
@@ -297,29 +324,51 @@ and artifact schema before its engine bytes.
 Default read-write behavior intentionally changes every runtime-rules scan from read-only to potentially state-mutating.
 There is no cache-mode flag or environment opt-out to design.
 An unavailable cache root or failed artifact write must therefore degrade to a correct in-memory text compilation.
-The exact diagnostic and retry contract is part of the next grill frontier.
+The scanner emits a closed JSON warning and continues with compiled in-memory rules.
 
 Content-addressed slots make old artifacts unreachable after every rules edit.
 They also permit identical rules content to share one compiled artifact across source paths.
-Cleanup and retention are now required design decisions rather than optional housekeeping.
+No automatic cleanup removes old content,
+scanner-version,
+or platform partitions.
 
 JSON warning records become part of the scanner-to-cli-git protocol.
-Their schema must be closed,
-redacted,
-and distinguishable from plain-text findings without treating arbitrary JSON as trusted output.
+The selected object is one compact JSON value per line with exact keys and no extras.
+The provisional shape is:
 
-## Open dependent decisions after round 3
+```json
+{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}
+```
 
-- Scan-time cache-root and artifact-write failure behavior.
-- Fresh-setup behavior when file-enforcer cannot start the scanner.
-- CI behavior for one-shot secret-backed scans under mandatory read-write caching.
-- Whether warnings appear on an expected first miss or only on invalid or failed cache operations.
-- Exact JSON warning schema and parser strictness.
-- Content-addressed cache cleanup and old-version retention.
-- Exact artifact field encoding and bounds.
+The closed reason candidates are `missing`,
+`cache-root-unavailable`,
+`unreadable`,
+`source-mismatch`,
+`incompatible`,
+`invalid`,
+and `write-failed`.
+The closed recovery candidates are `compile-from-text` and `continue-with-compiled-rules`.
+The exact names remain open until the artifact failure taxonomy is finalized.
+Cli-git parses only a complete object matching the schema.
+A non-JSON line continues through the finding parser;
+unknown or malformed complete JSON fails closed.
+
+An expected first cache miss emits the selected JSON warning because Q8 explicitly included missing artifacts.
+A successful `compile-rules` invocation emits no stdout status.
+
+GitHub Actions keeps its native hosted-runner cache resolution.
+The current one-shot workflow performs no eager compilation step and gains no same-job cache reuse.
+The derived artifact receives owner-only permissions and follows the hosted runner account's lifecycle.
+
+## Open dependent decisions after round 4
+
+- Exact artifact field encoding and hostile-length bounds.
 - Exact cache-directory and artifact filenames.
-- Whether the compilation command prints the derived artifact path.
+- Cache-root and artifact-write error taxonomy within the closed JSON protocol.
 - Version bump and release compatibility expectations.
+- Documentation for manual cache deletion without prescribing user-only action during implementation.
+- Whether the built-in baseline uses the runtime envelope or remains on its existing embedded raw-byte path.
+- Exact file-enforcer process invocation and notice text.
 
 ## Candidate implementation scope
 
@@ -376,10 +425,16 @@ Cover every path separately:
 - `compile-rules` creates or reuses the derived artifact.
 - Scan-time recovery creates a valid artifact when authorized.
 - A cache-write failure still runs a correct text-compiled scan.
-- Cli-git accepts only the settled JSON cache-warning schema and still maps plain-text findings.
+- Cli-git accepts only exact-key schema-version-1 cache-warning JSON and still maps plain-text findings.
+- Cli-git rejects extra JSON properties and every unknown type,
+  reason,
+  recovery,
+  or schema version.
 - Cli-git rejects unknown scanner stderr.
 - File-enforcer generates text before invoking compilation.
-- Fresh setup remains usable when the scanner binary is absent.
+- Fresh setup emits a non-sensitive notice and remains usable when the scanner binary is absent.
+- `compile-rules` success keeps stdout empty for both creation and reuse.
+- GitHub Actions uses native runner cache resolution for its one-shot secret-backed scan.
 - Unix permission checks prove owner-only sensitive files.
 - Linux,
   macOS,
@@ -422,9 +477,9 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 - Raw bincode compatibility is not a public stable format.
   The envelope and cache partition must reject unsupported producers before decoding.
 - Scan-time repair introduces default state mutation with no opt-out.
-  Write failures must preserve a correct scan and follow the still-open JSON diagnostic contract.
+  Write failures must preserve a correct scan and emit the closed JSON diagnostic contract.
 - Content-addressed slots retain one artifact per observed rules content and scanner/platform partition.
-  Automatic retention remains open.
+  No automatic retention bound exists.
 - A content digest is a stable fingerprint of sensitive source.
   Treat cache paths and artifacts as sensitive even when rule text is absent.
 - File-enforcer is only this monorepo's eager integration point.
@@ -434,5 +489,5 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Derive and ask grill round 4 from the open dependent decisions after round 3.
+Derive and ask grill round 5 from the open dependent decisions after round 4.
 Update this handover immediately after the user's next answer.
