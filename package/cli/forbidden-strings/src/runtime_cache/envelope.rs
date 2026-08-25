@@ -262,11 +262,15 @@ pub(super) fn decode(
     if !cursor.is_finished() {
         return Err(EnvelopeError::Invalid);
     }
-    let actual_engine_digest = source_digest(engine_bytes).map_err(|_| return EnvelopeError::Invalid)?;
+    let (engine_digest_result, set_result) = rayon::join(
+        || return source_digest(engine_bytes),
+        || return crate::load_precompiled(engine_bytes),
+    );
+    let actual_engine_digest = engine_digest_result.map_err(|_| return EnvelopeError::Invalid)?;
     if digest_bytes(actual_engine_digest) != expected_engine_digest {
         return Err(EnvelopeError::Invalid);
     }
-    let set = crate::load_precompiled(engine_bytes).map_err(|_| return EnvelopeError::Invalid)?;
+    let set = set_result.map_err(|_| return EnvelopeError::Invalid)?;
     if set.len() != names.len() {
         return Err(EnvelopeError::Invalid);
     }
