@@ -1633,5 +1633,93 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           },),);
       },
     },),
+
+    it({
+      name: 'CARRIES the critics onto a slice that shipped NOTHING, which is the half of the attribution '
+        + 'path no case reached: every unchanged exit builds its outcome from one shared shape, and the '
+        + 'case beside this one reads attribution off a run that repaired. Emptying the roster or the '
+        + 'attributions on the unchanged shape failed no test at all, so a rate over these slices could '
+        + 'have divided by zero critics while the run recorded three',
+      fn: async () => {
+        /** Run whose critics raise a claim the checkers then refuse to confirm. */
+        const result = await repairTranslation({
+          client: scriptedClient({
+            criticIssues: [MISTRANSLATION_ISSUE,],
+            checkerVerdict: 'not-fixed',
+          },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        expect(result.status,).toBe('unchanged',);
+
+        // The roster is the denominator, and it is recorded whether or not the
+        // slice shipped anything.
+        for (const record of result.sliceCritics)
+          expect(record.heardCriticIds,)
+            .toStrictEqual([...MODELS.criticModelIds,].toSorted(),);
+
+        /** Critics credited with raising something on a slice that shipped nothing. */
+        const raisers = new Set(result.sliceCritics
+          .flatMap(function toProposerIds(record,): readonly string[] {
+            return record.claimAttributions
+              .flatMap(function toIds(attribution,): readonly string[] {
+                return attribution.proposers
+                  .map(function toModelId(proposer,): string {
+                    return proposer.modelId;
+                  },);
+              },);
+          },),);
+        expect(raisers.size,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE NON-TRANSLATION READING on the slice it was cast about, votes and standing both, '
+        + 'after the block that used to act on it was removed. The finding beside this one says the '
+        + 'dominance was seen; these say how many said so and whether it stood, which is what a later '
+        + 'reading of the artifact divides by',
+      fn: async () => {
+        /**
+         * Run whose critics all report the target is not a translation, and
+         * whose checkers then refuse to confirm the repair it bought. Both
+         * halves are needed: the votes are what this reads, and the refusal is
+         * what sends the slice down the UNCHANGED shape that carries them.
+         */
+        const result = await repairTranslation({
+          client: scriptedClient({
+            criticIssues: [
+              {
+                category: 'accuracy/non-translation',
+                severity: 'critical',
+                summary: 'The target is not a translation of the source.',
+                targetQuote: 'The cat loves sunbathing on the windowsill.',
+              },
+            ],
+            checkerVerdict: 'not-fixed',
+          },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        expect(result.status,).toBe('unchanged',);
+
+        /** Slices whose critics cast a non-translation vote. */
+        const voted = result.chunks
+          .filter(function wasVotedOn(outcome,): boolean {
+            return outcome.nonTranslationVotes > 0;
+          },);
+        expect(voted.length,).toBeGreaterThan(0,);
+        for (const outcome of voted) {
+          expect(outcome.nonTranslationVotes,).toBe(MODELS.criticModelIds
+            .length,);
+          // Nobody contradicted them, so the reading stands as evidence.
+          expect(outcome.nonTranslationStanding,).toBe(true,);
+          expect(outcome.nonTranslationContradicted,).toBe(false,);
+        }
+      },
+    },),
   ],
 },);
