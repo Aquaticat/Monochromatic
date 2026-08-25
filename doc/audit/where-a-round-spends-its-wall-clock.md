@@ -96,7 +96,35 @@ Ten stream cuts in the whole log, and nine of them are the top two:
 five `hf:zai-org/GLM-5.2`, four `qwen3.8-max`, one `gemma-4-26b-a4b-it`.
 
 Fifteen voices were never heard against ten cuts, so five went missing some other way
-than the stream being cut. That gap is not yet explained and is worth a look.
+than the stream being cut. Recounted at 54 rounds the numbers are 16 and 11,
+and the gap of five closes exactly against the warning lines:
+
+-   3 `MalformedCompletionError` on `panel gemma-4-26b-a4b-it`, a body that failed the
+    protocol contract rather than a stream that ran out of time.
+-   2 schema mismatches at `critic`: one on `qwen3.8-max` where the content was not valid
+    JSON, one on `gemma-4-26b-a4b-it` where it parsed and failed the caller's guard.
+
+So a voice is lost three ways, not one, and only the first is what the window governs.
+Shortening the window does nothing about the other two.
+
+### The gap also exposed a diagnostic that named the wrong provider
+
+The `gemma-4-26b-a4b-it` warning read
+`MalformedCompletionError: Synthetic completion body violated the OpenAI-compatible contract`,
+and every one of that model's 51 billed calls in this run went to Charm Hyper.
+
+The log could not settle it alone, since a failed call bills no `SPEND` line,
+so the deciding source was read instead:
+`hyper-client.ts` imports `SyntheticHttpError` from `completion-shape.ts`
+and documents throwing `MalformedCompletionError`.
+Both providers throw both classes, and both messages named one of them.
+
+`hyper-client.ts` already records why it reuses the class and that the rename is held
+with the `SyntheticClient` rename, so nothing was renamed.
+That note covers the NAME, read by whoever edits the file.
+The MESSAGE is read by whoever is holding a broken run, and is now provider-neutral,
+with the two meter endpoints naming their own provider through the `summary` seam
+that already existed for it. Fixed in `4af3068fa`.
 
 ## What `#211` actually bought
 
@@ -172,7 +200,6 @@ A clean count here is not a clean count for the pass.
 ## What is still owed
 
 -   Re-run every number here when the calibration finishes, at roughly five times the rounds.
--   Explain the five voices that went unheard without a stream cut.
 -   Prototype the `editor-ensemble.ts` change and measure it, rather than reasoning about it.
 -   Recount zero content on a corpus pass, which asks for whole slices
     rather than short ballots and runs stages this calibration never touches.
