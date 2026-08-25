@@ -395,12 +395,63 @@ These are implementation defaults,
 not additional preference gates.
 Change one only when code or measured evidence proves it cannot satisfy the settled product contract.
 
+## Implementation progress
+
+Implementation started after the user ended grilling.
+Current commits:
+
+- `38f01052f` `feat(forbidden-strings): cache compiled runtime rules`
+  adds content hashing,
+  cross-platform cache-root resolution,
+  scanner-owned envelope encoding,
+  private atomic publication,
+  default scan-time repair,
+  `compile-rules`,
+  integration tests,
+  and a cache-envelope fuzz target.
+- `9e16a2e7b` `feat(forbidden-strings): parse cache warning records`
+  adds strict JSON cache-warning parsing to the canonical git-policy package,
+  mirrors it into cli-git,
+  and rejects unknown keys,
+  reasons,
+  recoveries,
+  and schema versions.
+- `4bee062e2` `feat(file-enforcer): precompile forbidden-string rules`
+  makes file-enforcer apply owner-only modes,
+  invoke the release scanner eagerly,
+  and tolerate only an absent executable.
+
+The implementation uses focused modules under
+`package/cli/forbidden-strings/src/runtime_cache/`:
+
+- `path.rs` owns exact-source SHA-256 and platform cache locations.
+- `envelope.rs` owns fixed-width framing and validation.
+- `publish.rs` owns complete reads,
+  private modes,
+  flush,
+  and atomic replacement.
+- `warning.rs` owns the closed JSON protocol.
+- `mod.rs` owns load,
+  fallback compilation,
+  scan-time repair,
+  and eager command orchestration.
+
+Verification is in progress.
+The first scanner package `cargo check` is still compiling the build-time baseline and has not produced a verdict.
+The git-policy package build and `lint:types` passed.
+Its first unit-test run failed because the new test imported `index.js` while the built artifact is `index.mjs`.
+Commit `b1dde844f` fixes that test import;
+the test rerun is pending.
+No version bump,
+README update,
+performance measurement,
+or closing commit has landed yet.
+
 ## Candidate implementation scope
 
-No file in this list has been edited yet.
-The final design may change the list.
+The final design may still adjust this list.
 
-Likely scanner changes:
+Scanner changes:
 
 - `package/cli/forbidden-strings/src/cli.rs`
 - `package/cli/forbidden-strings/src/lib.rs`
@@ -415,7 +466,7 @@ Likely scanner changes:
 - Possibly `package/cli/forbidden-strings/Cargo.toml`,
   through the repository's Cargo-manifest enforcement source if dependencies change.
 
-Likely monorepo integration changes:
+Monorepo integration changes:
 
 - `file-enforcer.config.ts`
 - Generated `mise.toml`
@@ -514,11 +565,9 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Mark the grill task complete and begin implementation.
-Keep exactly one implementation task in progress,
-commit each coherent change at the earliest opportunity,
-and update this handover with files,
-evidence,
-commits,
-blockers,
-and the next concrete action.
+Collect the in-progress scanner and git-policy build verdicts.
+Fix every compiler or lint finding before adding the version bump.
+Then run package-scoped tests,
+exercise the real CLI cache miss and hit paths,
+update README and performance documentation,
+and record verification evidence here.
