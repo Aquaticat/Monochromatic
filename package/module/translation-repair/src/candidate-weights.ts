@@ -27,6 +27,8 @@ import type {
  * ```ts
  * const perCandidate = countCandidateWeights({ ballots, candidateCount, },);
  * ```
+ *
+ * @internal
  */
 export function countCandidateWeights(
   {
@@ -51,6 +53,14 @@ export function countCandidateWeights(
       /**
        * Ballots that named it, abstentions and out-of-range ballots excluded
        * by construction since neither carries a usable index.
+       *
+       * THE WEIGHT TEST IS NOT REDUNDANT WITH THAT, though today`s producer
+       * makes it look so: it sets `best` and weight together, so an in-range
+       * index always arrives above zero. It stops being so the moment
+       * `SELF_VOTE_WEIGHT` is tuned to zero, which is a knob rather than a
+       * constant, and a judge voting for its own work would otherwise be
+       * counted as a ballot while contributing nothing to the weight the
+       * minimum is compared against.
        */
       const named = ballots.filter(function namesIt(ballot,): boolean {
         return (ballot.best === index) && (ballot.weight > 0);

@@ -27,6 +27,8 @@ import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
  * ```ts
  * const unchangedOutcome = unchangedChunkOutcome({ sliceIndex, targetText, critic, },);
  * ```
+ *
+ * @internal
  */
 export function unchangedChunkOutcome(
   {

@@ -38,6 +38,7 @@ export type {
   CandidateProducer,
   SelectionBallot,
 } from './candidate-select-model.ts';
+export { countCandidateWeights, } from './candidate-weights.ts';
 
 /**
  * Reading the recorded contests back.

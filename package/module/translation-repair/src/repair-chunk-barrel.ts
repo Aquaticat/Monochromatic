@@ -20,5 +20,6 @@ export {
   notApplicableFinding,
   notApplicableRepair,
 } from './repair-not-applicable.ts';
+export { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
 
 //endregion Repair chunk barrel
