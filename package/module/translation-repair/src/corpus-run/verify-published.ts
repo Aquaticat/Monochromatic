@@ -23,6 +23,7 @@ import {
   whatThereIsToVerify,
 } from './published-tree-listing.ts';
 import { resolveRunsDir, } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Verify published
 // Checks a run's PUBLISHED TREE against the artifacts that produced it, which
@@ -383,6 +384,10 @@ async function verifyPublished(): Promise<void> {
     process.exitCode = PUBLISHED_TREE_DISAGREES;
 }
 
-await verifyPublished();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'verify-published',
+    run: verifyPublished,
+  },);
 
 //endregion Verify published

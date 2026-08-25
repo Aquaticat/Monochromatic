@@ -11,6 +11,7 @@ import {
   censusEntry,
   type EntryCensus,
 } from './slice-census-entry.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Slice census
 // What the corpus looks like AFTER slicing, measured rather than assumed, and
@@ -311,6 +312,9 @@ async function main(): Promise<void> {
 
 // Guarded so this runs only when INVOKED, never as an import side effect.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'slice-census',
+    run: main,
+  },);
 
 //endregion Slice census

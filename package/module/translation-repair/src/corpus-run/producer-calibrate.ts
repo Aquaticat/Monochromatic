@@ -24,6 +24,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Producer calibrate
 // WHICH OF THE TEN SHOULD WRITE, measured rather than assumed.
@@ -247,6 +248,10 @@ async function main(): Promise<void> {
   );
 }
 
-await main();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'producer-calibrate',
+    run: main,
+  },);
 
 //endregion Producer calibrate

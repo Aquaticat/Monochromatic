@@ -4,6 +4,7 @@ import {
   readSliceCosts,
   type SliceCostRow,
 } from '../slice-cost-read.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Slice cost report
 // Reads the per-slice cost telemetry a pass writes, and answers the one
@@ -474,6 +475,9 @@ async function main(): Promise<void> {
 }
 
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'slice-cost-report',
+    run: main,
+  },);
 
 //endregion Slice cost report

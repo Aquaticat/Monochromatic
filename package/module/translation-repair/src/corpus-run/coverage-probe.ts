@@ -17,6 +17,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Coverage probe
 // PROTOTYPE for question 28: can a roster tell a passage the translation merged
@@ -469,6 +470,9 @@ async function main(): Promise<void> {
 // Guarded so this runs only when INVOKED, never as an import side effect: for a
 // probe that spends quota, loading the library would otherwise buy model calls.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'coverage-probe',
+    run: main,
+  },);
 
 //endregion Coverage probe

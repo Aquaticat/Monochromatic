@@ -25,6 +25,7 @@ import {
 } from './artifact-rounds-read.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Editor standing read
 // THE EDITOR STANDING THAT COSTS NOTHING, read off work already paid for.
@@ -474,6 +475,10 @@ async function reportStandings(): Promise<void> {
   }
 }
 
-await reportStandings();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'editor-standing-read',
+    run: reportStandings,
+  },);
 
 //endregion Editor standing read

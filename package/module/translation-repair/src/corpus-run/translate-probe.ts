@@ -22,6 +22,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Translate probe
 // PROTOTYPE for `#70`. Asks whether a translate stage can do what the repair
@@ -311,6 +312,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'translate-probe',
+    run: main,
+  },);
 
 //endregion Translate probe

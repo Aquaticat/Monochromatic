@@ -16,6 +16,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Coverage control probe
 // `#106`: can the coverage roster vote absence at all.
@@ -286,6 +287,10 @@ async function main(): Promise<void> {
   );
 }
 
-await main();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'coverage-control-probe',
+    run: main,
+  },);
 
 //endregion Coverage control probe

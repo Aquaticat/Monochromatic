@@ -25,6 +25,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_MODELS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Audit sensitivity
 // Asks whether the rendering audit can detect a planted defect at all, and
@@ -502,6 +503,9 @@ async function main(): Promise<void> {
 // probe that spends a full roster per arm, loading the library would otherwise
 // buy the calls.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'audit-sensitivity',
+    run: main,
+  },);
 
 //endregion Audit sensitivity

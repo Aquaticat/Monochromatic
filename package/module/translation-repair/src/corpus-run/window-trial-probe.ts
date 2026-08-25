@@ -38,6 +38,7 @@ import {
   assertWindowReachedJudges,
   witnessSheets,
 } from './window-trial-witness.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Window trial probe
 // `#108`, run end to end: does showing the judges the neighbouring original
@@ -477,6 +478,10 @@ async function main(): Promise<void> {
   }
 }
 
-await main();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'window-trial-probe',
+    run: main,
+  },);
 
 //endregion Window trial probe

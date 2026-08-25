@@ -15,6 +15,7 @@ import { prepareDocumentPair, } from '../document-preparation.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 import { isMarkupOnly, } from './markup-slice.ts';
 import { sharesMedia, } from './transcription-suspect.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Displacement probe
 // `#107`: where the corpus carries a passage the translator MOVED across a
@@ -580,6 +581,9 @@ async function main(): Promise<void> {
 }
 
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'displacement-probe',
+    run: main,
+  },);
 
 //endregion Displacement probe

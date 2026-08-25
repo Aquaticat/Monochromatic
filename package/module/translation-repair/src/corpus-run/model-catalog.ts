@@ -5,6 +5,7 @@ import {
   decodeModelList,
   formatCatalogReport,
 } from './model-catalog-compare.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Model catalog drift
 // Asks the provider what it currently serves and compares that against the
@@ -114,6 +115,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'model-catalog',
+    run: main,
+  },);
 
 //endregion Model catalog drift

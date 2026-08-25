@@ -53,6 +53,7 @@ import {
   RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Corpus pass
 // Runs the pipeline over every complete zh/en corpus pair at the pinned commit,
@@ -609,6 +610,9 @@ async function runCorpusPass(): Promise<void> {
 }
 
 if (import.meta.main)
-  await runCorpusPass();
+  await reportingRefusals({
+    what: 'corpus-pass',
+    run: runCorpusPass,
+  },);
 
 //endregion Corpus pass

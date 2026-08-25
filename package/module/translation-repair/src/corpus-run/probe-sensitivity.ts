@@ -28,6 +28,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_MODELS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Probe sensitivity
 // Asks whether the introduced-defect probe can detect damage AT ALL.
@@ -263,6 +264,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'probe-sensitivity',
+    run: main,
+  },);
 
 //endregion Probe sensitivity

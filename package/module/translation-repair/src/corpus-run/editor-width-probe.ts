@@ -15,6 +15,7 @@ import {
   RUN_MODELS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Editor width probe
 // `#186`: does seating more EDITORS buy a better repair, with the judging panel
@@ -286,6 +287,10 @@ async function main(): Promise<void> {
   console.log(`WIDTH wrote ${path}`,);
 }
 
-await main();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'editor-width-probe',
+    run: main,
+  },);
 
 //endregion Editor width probe

@@ -23,6 +23,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Recall benchmark
 // Measures what precision cannot see: of the defects that ARE present, how many
@@ -402,6 +403,9 @@ async function runRecallBenchmark(): Promise<void> {
 }
 
 if (import.meta.main)
-  await runRecallBenchmark();
+  await reportingRefusals({
+    what: 'recall-benchmark',
+    run: runRecallBenchmark,
+  },);
 
 //endregion Recall benchmark

@@ -6,6 +6,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Sentinel probe
 // Runs a set of named, known-behavior corpus entries through the pipeline and
@@ -177,6 +178,9 @@ async function probeCorpusEntries(): Promise<void> {
 }
 
 if (import.meta.main)
-  await probeCorpusEntries();
+  await reportingRefusals({
+    what: 'sentinel-probe',
+    run: probeCorpusEntries,
+  },);
 
 //endregion Sentinel probe

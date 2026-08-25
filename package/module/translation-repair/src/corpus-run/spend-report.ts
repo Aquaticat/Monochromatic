@@ -9,6 +9,7 @@ import {
   tallySpend,
   type SeatSpend,
 } from './spend-read.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Spend report
 // WHAT A RUN COST, read back off its own log. Spends no quota and touches no
@@ -241,6 +242,10 @@ async function reportSpendCost(): Promise<void> {
   printCost({ cost: priceTally({ tally, },), },);
 }
 
-await reportSpendCost();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'spend-report',
+    run: reportSpendCost,
+  },);
 
 //endregion Spend report

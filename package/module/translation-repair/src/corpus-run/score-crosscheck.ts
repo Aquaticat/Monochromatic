@@ -10,6 +10,7 @@ import {
   resolveRunsDir,
   RUN_MODELS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Score crosscheck
 // Reports the population a judge crosscheck would run over, WITHOUT spending a
@@ -380,6 +381,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'score-crosscheck',
+    run: main,
+  },);
 
 //endregion Score crosscheck

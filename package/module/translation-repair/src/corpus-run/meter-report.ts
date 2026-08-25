@@ -13,6 +13,7 @@ import {
   readMeterLog,
   type MeterSample,
 } from './meter-sample-read.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Meter report
 // Reads run logs and says how much of the time each provider could be spent
@@ -494,6 +495,10 @@ async function reportMeters(): Promise<void> {
   }
 }
 
-await reportMeters();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'meter-report',
+    run: reportMeters,
+  },);
 
 //endregion Meter report

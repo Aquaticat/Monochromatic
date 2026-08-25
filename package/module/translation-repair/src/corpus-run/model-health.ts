@@ -6,6 +6,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Model health
 // Asks every model on the roster for one trivial structured answer, and reports
@@ -201,6 +202,9 @@ async function reportModelHealth(): Promise<void> {
 }
 
 if (import.meta.main)
-  await reportModelHealth();
+  await reportingRefusals({
+    what: 'model-health',
+    run: reportModelHealth,
+  },);
 
 //endregion Model health

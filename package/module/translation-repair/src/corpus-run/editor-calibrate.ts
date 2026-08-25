@@ -29,6 +29,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Editor calibrate
 // WHICH OF THE TEN SHOULD EDIT, measured on the editor's own job.
@@ -629,6 +630,10 @@ async function main(): Promise<void> {
   reportShipped({ perSlice, },);
 }
 
-await main();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'editor-calibrate',
+    run: main,
+  },);
 
 //endregion Editor calibrate

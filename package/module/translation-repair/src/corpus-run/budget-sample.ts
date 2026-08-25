@@ -3,6 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { createHyperClient, } from '../hyper-client.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Budget sample
 // Takes ONE reading of both providers' meters and leaves it in the log.
@@ -111,6 +112,10 @@ async function sampleBudgets(): Promise<void> {
   );
 }
 
-await sampleBudgets();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'budget-sample',
+    run: sampleBudgets,
+  },);
 
 //endregion Budget sample

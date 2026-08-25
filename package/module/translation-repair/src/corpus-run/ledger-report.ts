@@ -10,6 +10,7 @@ import {
   workOfModel,
 } from './ledger-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Ledger report
 // WHAT EACH MODEL WROTE, AND WHAT THE JUDGES SAID ABOUT IT. Spends no quota and
@@ -360,6 +361,10 @@ async function reportLedger(): Promise<void> {
 // could not parse, and the listing re-raises with a code rather than a path.
 // Wrapping them under one class name would replace a message that says what
 // happened with `Error`, which is what `verify-published.ts` learned by doing it.
-await reportLedger();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'ledger-report',
+    run: reportLedger,
+  },);
 
 //endregion Ledger report

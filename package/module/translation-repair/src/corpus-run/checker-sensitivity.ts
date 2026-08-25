@@ -8,6 +8,7 @@ import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Checker sensitivity
 // Asks whether the resolution checkers can say NO.
@@ -353,6 +354,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'checker-sensitivity',
+    run: main,
+  },);
 
 //endregion Checker sensitivity

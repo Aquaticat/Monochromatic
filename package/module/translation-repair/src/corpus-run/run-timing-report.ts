@@ -6,6 +6,7 @@ import {
   readRunTiming,
   type RunTiming,
 } from './run-timing-read.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Run timing report
 // WHERE A RUN'S WALL-CLOCK WENT, read back off its own log. Spends no quota and
@@ -274,6 +275,10 @@ async function reportRunTiming(): Promise<void> {
   printInFlight({ flight: measureInFlight({ calls: reading.calls, },), },);
 }
 
-await reportRunTiming();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'run-timing-report',
+    run: reportRunTiming,
+  },);
 
 //endregion Run timing report

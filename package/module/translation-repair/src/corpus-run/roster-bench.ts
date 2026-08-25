@@ -21,6 +21,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Roster bench
 // Runs the SAME slices at several producer-roster widths, to answer the one
@@ -369,6 +370,10 @@ async function main(): Promise<void> {
   summarizeBench({ rows, },);
 }
 
-await main();
+if (import.meta.main)
+  await reportingRefusals({
+    what: 'roster-bench',
+    run: main,
+  },);
 
 //endregion Roster bench

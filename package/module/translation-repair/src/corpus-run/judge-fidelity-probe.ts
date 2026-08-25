@@ -25,6 +25,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Judge fidelity probe
 // `#84`: before the translate-and-select shape decides a corpus, can its judges
@@ -555,6 +556,9 @@ async function main(): Promise<void> {
 }
 
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'judge-fidelity-probe',
+    run: main,
+  },);
 
 //endregion Judge fidelity probe

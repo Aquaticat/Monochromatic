@@ -6,6 +6,7 @@ import {
   type CriticTally,
 } from './attribution-report.ts';
 import { resolveRunsDir, } from './run-config.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Score attribution
 // Reads critic attribution out of a run's settled artifacts and reports it as
@@ -239,6 +240,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'score-attribution',
+    run: main,
+  },);
 
 //endregion Score attribution
