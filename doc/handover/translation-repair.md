@@ -20576,3 +20576,107 @@ Not urgent: nothing is broken and no quota is wasted.
 But a reader of any run log would conclude the most expensive seat on the roster produced nothing,
 and the `SPEND` line sidesteps it entirely,
 since `completion_tokens` comes from the provider and is channel-agnostic.
+
+### A run's cost is now attributable per seat, and the run in flight will never be (2026-08-25)
+
+`#210` grew its second half while the calibration held the main worktree.
+The writer and reader were already built;
+what was missing was the thing that turns token counts into money.
+
+#### The price table is an observation with a date on it
+
+`package/module/translation-repair/src/corpus-run/hyper-price.ts` carries all
+twenty-six models Charm Hyper lists,
+with input, output, cache-create and cache-hit rates in credits per million tokens.
+The operator read them off the provider's model page on 2026-08-25,
+and `HYPER_PRICE_READ_ON` ships beside the rates so every report prints how old its figures are.
+
+The numbers were not transcribed by hand.
+A parser read the pasted page with strict structural checks,
+refusing any row whose label order or rate format did not match,
+and emitted the table.
+Transcribing a hundred and four figures by eye is exactly where a silent error would live.
+
+#### The two cache columns are unreachable, which makes the input half exact
+
+Nothing in `package/module/translation-repair/src` sends `cache_control`,
+which is one grep to confirm.
+On the Anthropic protocol Hyper speaks,
+that means there are no cache-creation and no cache-read tokens,
+and every prompt token bills at the plain input rate.
+So the input half is exact rather than an upper bound.
+The rates are carried anyway,
+so whoever turns caching on finds them recorded and can see what the saving is worth.
+
+#### Synthetic is never priced, and that is a correctness rule
+
+`priceTally` splits seats into three buckets:
+metered and priced, metered with no row in the table, and flat-subscription.
+Only the first gets a credit figure.
+Folding the second into the total at zero would report a cheaper run rather than an incomplete one,
+and converting the third would invent a currency that provider does not bill in.
+The report names all three separately.
+
+#### What the report says, and the two controls it was checked with
+
+```sh
+mise run //package/module/translation-repair:spend-report -- <log> [<log> ...]
+```
+
+Positive control, on a throwaway fixture carrying every case at once:
+priced seats sorted by cost with their share of the bill,
+one unpriced metered seat named rather than zeroed,
+one subscription seat carried with tokens and no credits,
+one call that reported no usage counted as a floor,
+one prose line mentioning the marker correctly not counted,
+and one truncated record counted as unreadable.
+The arithmetic checks by hand:
+`qwen3.8-max` at 84000 prompt and 51065 completion tokens comes to 3.36 plus 6.13, or 9.49 credits.
+
+Negative control, on the live calibration log:
+`NOTHING RECORDED`,
+which is the honest answer and not a zero total.
+
+#### The run in flight will never have a cost breakdown
+
+The calibration started before `spend-line.ts` existed,
+and the running build is the one it started with.
+Its log carries no `SPEND` line and never will.
+Rebuilding `dist/` mid-run would invalidate every cached slice and re-buy the whole run,
+so this is not a thing to fix.
+It is the last run this project will make that cannot say what it cost.
+
+What the meter does give is the total.
+The balance opened at exactly 10000 and read 9909 after nine slices:
+about ten credits per slice,
+so a forty-slice run lands near four hundred credits and a ten-thousand balance buys roughly
+twenty-five of them.
+That corrects the earlier per-slice figure of 8.33,
+which came from a smaller sample.
+The total is all the meter can say.
+Which seat spent it is what the `SPEND` lines add.
+
+#### Proven by removal
+
+Three mutations, each caught by the file that owns the guard and by no other:
+
+- Dropping the `glm-5.2` row from the price table:
+   caught by the catalog-join case,
+  which asserts every model `hyper-catalog.ts` can seat has a row.
+- Making `priceTally` inherit the tally's token order instead of sorting by cost:
+   caught by an ordering case built so the two disagree,
+  where the seat with ten times the tokens is a quarter of the bill.
+- Looking rates up on the object literal instead of the `Map`:
+   caught by the `__proto__` case.
+
+Full suite after: 659 suites, zero failures, zero lint warnings.
+
+#### Still parked, not landed
+
+Everything lives in `~/temp/agent/spend-telemetry-210.tar.gz`,
+fourteen files with repo-relative paths, untarred over the repo root to apply.
+It cannot be committed from the isolated worktree,
+which lacks the forbidden-strings scanner and is refused by the `branch-worktree-only` policy.
+It must land after the calibration finishes,
+and after any second calibration batch,
+because pooling needs no drift opt-in only while the build is unchanged.
