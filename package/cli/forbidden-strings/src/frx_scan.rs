@@ -99,7 +99,7 @@ pub fn scan_file(path: &str, buf: &[u8], loaded: &LoadedRules) -> Vec<String> {
     for scan_set in loaded.iter_sets() {
         // AssertUnwindSafe: the borrows captured here (the set, `buf`, `starts`) are
         // read-only, so a caught unwind leaves no observable broken invariant.
-        let matcher = AssertUnwindSafe(|| return scan_set.set.line_matches(buf, &starts));
+        let matcher = AssertUnwindSafe(|| return scan_set.matcher.line_matches(buf, &starts));
         hits.extend(scan_one_set(path, scan_set.base, &scan_set.names, matcher));
     }
     return hits

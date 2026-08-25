@@ -15,7 +15,7 @@
 use super::error::LoadError;
 
 /// Imports the shared significance test and the two-form single-line compiler.
-use super::format::{is_significant, significant_line_pattern};
+use super::format::{is_significant, significant_line_rule};
 
 /// Imports the name-to-line map backing duplicate-name enforcement.
 use std::collections::HashMap;
@@ -42,6 +42,8 @@ pub(super) struct ParsedRule {
     pub(super) name: Option<String>,
     /// Engine-ready pattern the compiler validates and assembles into the set.
     pub(super) pattern: String,
+    /// Original exact literal bytes, absent for explicit or multiline regex rule.
+    pub(super) literal: Option<Vec<u8>>,
 }
 
 /// The classification of one line against the section-header grammar.
@@ -144,12 +146,19 @@ fn finish_section(section: OpenSection<'_>, index: usize) -> Result<ParsedRule, 
     if significant.is_empty() {
         return Err(LoadError::EmptySection { line: section.name_line });
     }
-    let pattern = if significant.len() == 1 {
-        significant_line_pattern(significant[0], index)?
-    } else {
-        body.join("\n")
-    };
-    return Ok(ParsedRule { name: Some(section.name), pattern });
+    if significant.len() == 1 {
+        let classified = significant_line_rule(significant[0], index)?;
+        return Ok(ParsedRule {
+            name: Some(section.name),
+            pattern: classified.pattern,
+            literal: classified.literal,
+        });
+    }
+    return Ok(ParsedRule {
+        name: Some(section.name),
+        pattern: body.join("\n"),
+        literal: None,
+    })
 }
 
 /// Closes one open section into the parallel rule and header-line lists.

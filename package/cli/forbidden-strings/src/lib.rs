@@ -37,6 +37,8 @@ mod frx_load;
 mod frx_scan;
 /// Registers runtime cache envelope, path, warning, and publication implementation.
 mod runtime_cache;
+/// Registers hybrid exact-literal and restricted-regex runtime matcher.
+mod runtime_matcher;
 
 /// Registers the `fuzz_api` child module.
 // What:     `#[cfg(feature = "fuzzing")] pub mod fuzz_api;` registers

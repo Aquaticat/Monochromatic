@@ -60,6 +60,14 @@ const AFTER_HELP: &str = "\
 ENV:\n\
     FORBIDDEN_STRINGS_RULES    Default rules path; --rules wins if both are set.\n\
                                If unset, falls back to ./forbidden-strings.local.txt\n\
+    FORBIDDEN_STRINGS_CACHE_DIR\n\
+                               Absolute per-user cache-root override.\n\
+\n\
+RUNTIME CACHE:\n\
+    Runtime rules use read-write caching by default. Cache identity is exact\n\
+    rules content plus scanner version and platform. Missing or rejected cache\n\
+    data emits redacted JSON, compiles authoritative text, and attempts atomic\n\
+    repair. A failed repair never invalidates the in-memory scan.\n\
 \n\
 BUILT-IN BASELINE:\n\
     --builtin-rules appends the embedded betterleaks-ported baseline after\n\
@@ -79,6 +87,9 @@ EXAMPLES:\n\
 \n\
     # Scan the whole working tree\n\
     FORBIDDEN_STRINGS_RULES=./rules.txt forbidden-strings --all\n\
+\n\
+    # Eagerly compile runtime rules without scanning\n\
+    forbidden-strings compile-rules --rules ./rules.txt\n\
 \n\
 RULE FORMAT (autodetected per file, never mixed):\n\
     Tail format            -> '==> name <==' headers open one-rule sections;\n\

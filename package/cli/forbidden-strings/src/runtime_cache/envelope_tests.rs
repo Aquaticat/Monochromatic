@@ -7,7 +7,7 @@ use crate::runtime_cache::path::source_digest;
 fn named_artifact() -> (Vec<u8>, crate::runtime_cache::path::SourceDigest) {
     let source = "==> qqq-one <==\nALPHA_LITERAL_LONG\n==> qqq-two <==\n/BETA[0-9]{2}/\n";
     let digest = source_digest(source.as_bytes()).expect("digest");
-    let compiled = crate::compile_rules(source).expect("compile");
+    let compiled = crate::runtime_matcher::RuntimeRules::compile(source).expect("compile");
     return (encode(&compiled, digest).expect("encode"), digest)
 }
 
@@ -37,6 +37,27 @@ fn engine_length_offset(bytes: &[u8]) -> usize {
             offset += 4 + name_length;
         }
     }
+    let literal_count = u32::from_le_bytes(
+        bytes[offset..offset + 4].try_into().expect("literal count"),
+    );
+    offset += 4;
+    for _ in 0..literal_count {
+        let literal_length = usize::try_from(u32::from_le_bytes(
+            bytes[offset..offset + 4].try_into().expect("literal length"),
+        ))
+        .expect("literal length fits");
+        offset += 4 + literal_length;
+        let id_count = usize::try_from(u32::from_le_bytes(
+            bytes[offset..offset + 4].try_into().expect("literal id count"),
+        ))
+        .expect("literal id count fits");
+        offset += 4 + id_count * 4;
+    }
+    let regex_id_count = usize::try_from(u32::from_le_bytes(
+        bytes[offset..offset + 4].try_into().expect("regex id count"),
+    ))
+    .expect("regex id count fits");
+    offset += 4 + regex_id_count * 4;
     return offset + 32
 }
 
@@ -46,12 +67,12 @@ fn named_rules_round_trip() {
     let (bytes, digest) = named_artifact();
     let decoded = decode(&bytes, digest).expect("decode");
     assert_eq!(
-        decoded.names,
-        vec![Some("qqq-one".to_string()), Some("qqq-two".to_string())],
+        decoded.names(),
+        &[Some("qqq-one".to_string()), Some("qqq-two".to_string())],
     );
-    assert!(decoded.set.is_match(b"ALPHA_LITERAL_LONG"));
-    assert!(decoded.set.is_match(b"BETA42"));
-    assert!(!decoded.set.is_match(b"clean"));
+    assert_eq!(decoded.line_matches(b"ALPHA_LITERAL_LONG", &[0]), vec![(0, 0)]);
+    assert_eq!(decoded.line_matches(b"BETA42", &[0]), vec![(0, 1)]);
+    assert!(decoded.line_matches(b"clean", &[0]).is_empty());
 }
 
 /// Legacy rules retain unnamed identity markers.
@@ -59,9 +80,9 @@ fn named_rules_round_trip() {
 fn legacy_rules_round_trip() {
     let source = "ALPHA_LITERAL_LONG\n/BETA[0-9]{2}/\n";
     let digest = source_digest(source.as_bytes()).expect("digest");
-    let compiled = crate::compile_rules(source).expect("compile");
+    let compiled = crate::runtime_matcher::RuntimeRules::compile(source).expect("compile");
     let decoded = decode(&encode(&compiled, digest).expect("encode"), digest).expect("decode");
-    assert_eq!(decoded.names, vec![None, None]);
+    assert_eq!(decoded.names(), &[None, None]);
 }
 
 /// Every truncated prefix rejects rather than reading beyond input.
@@ -103,6 +124,22 @@ fn trailing_engine_bytes_are_invalid() {
     );
 }
 
+/// Structurally valid literal-byte mutation rejects through payload digest.
+#[test]
+fn literal_payload_mutation_is_invalid() {
+    let (mut bytes, digest) = named_artifact();
+    let literal = b"ALPHA_LITERAL_LONG";
+    let offset = bytes
+        .windows(literal.len())
+        .position(|window| return window == literal)
+        .expect("literal payload");
+    bytes[offset] ^= 1;
+    assert_eq!(
+        decode(&bytes, digest).err().expect("literal mutation"),
+        EnvelopeError::Invalid,
+    );
+}
+
 /// Wrong source digest rejects before matcher use.
 #[test]
 fn source_digest_mismatch_is_distinct() {
@@ -119,7 +156,7 @@ fn source_digest_mismatch_is_distinct() {
 fn schema_mismatch_is_incompatible() {
     let (mut bytes, digest) = named_artifact();
     let schema_offset = MAGIC.len();
-    bytes[schema_offset..schema_offset + 4].copy_from_slice(&2_u32.to_le_bytes());
+    bytes[schema_offset..schema_offset + 4].copy_from_slice(&3_u32.to_le_bytes());
     assert_eq!(
         decode(&bytes, digest).err().expect("schema mismatch"),
         EnvelopeError::Incompatible,

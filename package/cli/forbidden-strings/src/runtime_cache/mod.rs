@@ -17,8 +17,8 @@ mod warning;
 /// Imports application-level redacted error construction.
 use anyhow::{anyhow, Result};
 
-/// Imports scanner rule compiler and compiled bundle.
-use crate::{compile_rules, CompiledRules};
+/// Imports hybrid runtime matcher compiled from authoritative source.
+use crate::runtime_matcher::RuntimeRules;
 
 /// Imports envelope operations and complete artifact ceiling.
 use envelope::{decode, encode, MAX_ARTIFACT_BYTES};
@@ -37,7 +37,7 @@ use warning::CacheWarningReason;
 /// Runtime cache result consumed by frx loader.
 pub(crate) struct CacheLoad {
     /// Valid compiled rules from artifact or authoritative text.
-    pub(crate) compiled: CompiledRules,
+    pub(crate) compiled: RuntimeRules,
     /// Redacted cache diagnostics emitted before scan findings.
     pub(crate) warnings: Vec<CacheWarning>,
 }
@@ -55,7 +55,7 @@ pub(crate) fn load_or_compile(
             return Err(anyhow!(CacheRootError::InvalidOverride));
         }
         Err(CacheRootError::Unavailable) => {
-            let compiled = compile_rules(text)?;
+            let compiled = RuntimeRules::compile(text).map_err(|error| return anyhow!(error))?;
             return Ok(CacheLoad {
                 compiled,
                 warnings: vec![CacheWarning::compile_from_text(
@@ -107,7 +107,7 @@ fn compile_and_repair(
     location: &path::CacheLocation,
     reason: CacheWarningReason,
 ) -> Result<CacheLoad> {
-    let compiled = compile_rules(text)?;
+    let compiled = RuntimeRules::compile(text).map_err(|error| return anyhow!(error))?;
     let mut warnings = vec![CacheWarning::compile_from_text(reason)];
     if !source_path_still_matches(rules_path, digest)
         || !publish_compiled_snapshot(&compiled, digest, location)
@@ -119,7 +119,7 @@ fn compile_and_repair(
 
 /// Encodes and publishes compiled snapshot without conflating codec and IO errors.
 fn publish_compiled_snapshot(
-    compiled: &CompiledRules,
+    compiled: &RuntimeRules,
     digest: SourceDigest,
     location: &path::CacheLocation,
 ) -> bool {
@@ -157,7 +157,7 @@ pub(crate) fn compile_rules_file_to_cache(rules_path: &str) -> Result<()> {
         return Err(anyhow!("rules {} changed while validating cache", rules_path));
     }
 
-    let compiled = compile_rules(text)
+    let compiled = RuntimeRules::compile(text)
         .map_err(|error| return anyhow!("rules {}: {}", rules_path, error))?;
     if !source_path_still_matches(rules_path, digest) {
         return Err(anyhow!("rules {} changed during compilation", rules_path));

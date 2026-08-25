@@ -24,20 +24,45 @@ use forbidden_regex::RegexSet;
 /// Imports the std filesystem module used to read the runtime rules file.
 use std::fs;
 
-/// Imports runtime cache module and precompiled builtin construction path.
-use crate::{load_precompiled, runtime_cache};
+/// Imports runtime cache module, hybrid matcher, and precompiled builtin path.
+use crate::{load_precompiled, runtime_cache, runtime_matcher::RuntimeRules};
 
 /// Imports text compiler used only by in-memory fuzzing loader.
 #[cfg(feature = "fuzzing")]
 use crate::compile_rules;
+
+/// Runtime hybrid or builtin engine matcher behind common batch interface.
+pub(crate) enum ScanMatcher {
+    /// Mutable runtime rules split into exact literals and restricted regexes.
+    Runtime(
+        /// Hybrid runtime matcher retaining original ids.
+        RuntimeRules,
+    ),
+    /// Trusted embedded baseline or in-memory fuzz fixture.
+    Regex(
+        /// Existing engine matcher with local ids.
+        RegexSet,
+    ),
+}
+
+/// Matcher delegation preserving one scan interface.
+impl ScanMatcher {
+    /// Reports `(line index, local rule id)` pairs.
+    pub(crate) fn line_matches(&self, buf: &[u8], starts: &[usize]) -> Vec<(usize, usize)> {
+        match self {
+            Self::Runtime(rules) => return rules.line_matches(buf, starts),
+            Self::Regex(set) => return set.line_matches(buf, starts),
+        }
+    }
+}
 
 /// One compiled rule set plus the identity data applied to its findings.
 ///
 /// A named rule renders as `rule=<name>`; an unnamed rule falls back to `base` plus
 /// its index, giving each source a disjoint numeric range in the combined output.
 pub(crate) struct ScanSet {
-    /// Compiled set whose `line_matches` ids are attributed against `base` and `names`.
-    pub(crate) set: RegexSet,
+    /// Matcher whose local ids are attributed against `base` and `names`.
+    pub(crate) matcher: ScanMatcher,
     /// Rule-id offset for unnamed rules: the runtime set's rule count for the
     /// builtin, else 0.
     pub(crate) base: usize,
@@ -138,8 +163,12 @@ pub fn load(
     // The runtime set takes ids 0..user_len; the builtin baseline is offset past it.
     let mut next_base = 0;
     if let Some(compiled) = user_rules {
-        next_base = compiled.set.len();
-        sets.push(ScanSet { set: compiled.set, base: 0, names: compiled.names });
+        next_base = compiled.len();
+        sets.push(ScanSet {
+            names: compiled.names().to_vec(),
+            matcher: ScanMatcher::Runtime(compiled),
+            base: 0,
+        });
     }
 
     if builtin_rules {
@@ -161,7 +190,11 @@ pub fn load(
                 ));
             }
         }
-        sets.push(ScanSet { set, base: next_base, names });
+        sets.push(ScanSet {
+            matcher: ScanMatcher::Regex(set),
+            base: next_base,
+            names,
+        });
     }
 
     return Ok(LoadedRules { sets, cache_warnings })
@@ -180,7 +213,11 @@ pub fn load(
 pub fn load_from_text(text: &str) -> std::result::Result<LoadedRules, crate::LoadError> {
     let compiled = compile_rules(text)?;
     return Ok(LoadedRules {
-        sets: vec![ScanSet { set: compiled.set, base: 0, names: compiled.names }],
+        sets: vec![ScanSet {
+            matcher: ScanMatcher::Regex(compiled.set),
+            base: 0,
+            names: compiled.names,
+        }],
         cache_warnings: Vec::new(),
     })
 }

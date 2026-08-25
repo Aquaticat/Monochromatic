@@ -73,20 +73,19 @@ resource bounds,
 and positive and clean controls produced:
 
 ```text
-first compile + publish      102 ms
-artifact size          1,232,018 bytes
-warm minimum                  89 ms
-warm median                   94.0 ms
-warm p95                      98 ms
-warm maximum                 101 ms
+first compile + publish      108 ms
+artifact size          1,232,050 bytes
+warm minimum                  85 ms
+warm median                   88.0 ms
+warm p95                      92 ms
+warm maximum                  93 ms
 samples                       30
 ```
 
 The hybrid reduced artifact size by 99.24%,
-made first compilation 1,434.5 times faster,
-and made the warm median 15.2 times faster than the rejected all-engine artifact.
-The warm median and p95 both meet the sub-100 ms objective;
-the observed unchanged-build band was 89 to 101 ms.
+made first compilation 1,354.8 times faster,
+and made the warm median 16.2 times faster than the rejected all-engine artifact.
+The complete observed unchanged-build band of 85 to 93 ms meets the sub-100 ms objective.
 The planted rule still matched,
 the clean control still exited 0,
 and the artifact retained mode `0600`.

@@ -1,6 +1,7 @@
 // Tests for the two-form file format, flag policy, and BOM stripping.
 
 use super::parse_patterns;
+use super::significant_line_pattern;
 use super::strip_bom;
 use crate::rule::frx::LoadError;
 use forbidden_regex::RegexSet;
@@ -12,6 +13,10 @@ fn literal_line_is_escaped() {
     // runs.
     let patterns = parse_patterns("a.b").expect("one literal");
     assert_eq!(patterns, vec!["\\ba\\.b\\b".to_string()]);
+    assert_eq!(
+        significant_line_pattern("a.b", 0).expect("classified literal"),
+        "\\ba\\.b\\b",
+    );
 }
 
 #[test]

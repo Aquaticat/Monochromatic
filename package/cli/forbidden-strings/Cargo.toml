@@ -1,6 +1,6 @@
 [package]
 name = "forbidden-strings"
-version = "0.3.0"
+version = "0.4.0"
 categories = ["command-line-utilities", "development-tools"]
 edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/cli/forbidden-strings"
@@ -50,6 +50,10 @@ path = "src/main.rs"
 fuzzing = []
 
 [dependencies]
+# Runtime matcher owns one Aho-Corasick automaton over exact-literal rules.
+# The engine already uses this crate transitively for its set gate; a direct dependency
+# exposes the same deterministic overlapping matcher without another implementation.
+aho-corasick = "1"
 # `anyhow` carries application-level errors while preserving their display text for
 # CLI stderr output and tests.
 anyhow = "1"

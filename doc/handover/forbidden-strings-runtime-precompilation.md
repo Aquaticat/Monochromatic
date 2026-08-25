@@ -508,12 +508,12 @@ The hybrid source and tests are in the working tree but not committed because th
 The hybrid actual-fixture result under identical bounds is accepted:
 
 ```text
-first compile + publish      102 ms
-artifact size          1,232,018 bytes
-warm minimum                  89 ms
-warm median                   94.0 ms
-warm p95                      98 ms
-warm maximum                 101 ms
+first compile + publish      108 ms
+artifact size          1,232,050 bytes
+warm minimum                  85 ms
+warm median                   88.0 ms
+warm p95                      92 ms
+warm maximum                  93 ms
 samples                       30
 ```
 
@@ -522,20 +522,38 @@ the clean control exited 0,
 and the artifact had mode `0600`.
 Compared with the rejected full-engine artifact,
 the hybrid artifact is 99.24% smaller,
-first compilation is 1,434.5 times faster,
-and warm median is 15.2 times faster.
+first compilation is 1,354.8 times faster,
+and warm median is 16.2 times faster.
 `ba0ed3816` records the accepted evidence in `PERF.md`.
 
-Hybrid build,
-package check,
-feature-gated check,
-Rust linter,
-and all 162 tests pass.
-Final Clippy,
-fuzz-target build,
-bench lock refresh,
-root Oxlint,
-and the closing commit remain.
+Final verification now passes:
+
+- Release build and `forbidden-strings 0.4.0` CLI help/version checks.
+- Package `cargo check` and feature-gated `cargo check`.
+- Clippy with warnings denied.
+- Rust linter with max-lines and required-rustdoc enforcement.
+- All 162 scanner tests in 19.952 seconds after compilation.
+- Cache-envelope fuzz target build plus all-target 128-second smoke campaign.
+- Forbidden-regex bench package check and dependent lock refresh.
+- File-enforcer eager hybrid artifact generation with source/text/artifact modes `0600` and cache directories `0700`.
+- Git-policy build,
+  type lint,
+  zero-finding package Oxlint,
+  unit tests,
+  and real scanner warning integration.
+- Bundled cli-git build,
+  type lint,
+  and unit tests.
+
+Repo-wide Oxlint still exits nonzero on its measured baseline of 1,385 errors and 3,910 warnings;
+its second run reports no diagnostic at the new file-enforcer cache helper lines.
+Repo-wide dprint still lists existing unrelated files,
+but no longer lists `package/cli/forbidden-strings/Cargo.toml`.
+`cargo package` correctly refused the dirty working tree and must rerun immediately after the final commit.
+
+Only the release-triggering closing commit,
+clean-tree `cargo package`,
+and GitHub closure/release observation remain.
 
 ## Candidate implementation scope
 
@@ -655,11 +673,9 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Collect final Clippy,
-fuzz build,
-bench lock refresh,
-and root Oxlint verdicts.
-Update documentation from every final result,
-inspect all generated lockfile diffs,
-and commit the release-triggering `0.4.0` change with `Closes #456`.
-Run `cargo package` immediately from the clean committed tree and confirm GitHub issue and release workflow state.
+Inspect the final diff and commit every remaining scanner source,
+new matcher files,
+manifest,
+and three generated lockfiles with `Closes #456`.
+Run `cargo package` immediately from the clean committed tree,
+then confirm GitHub issue closure and cargo-publish workflow state.
