@@ -226,3 +226,65 @@ A clean count here is not a clean count for the pass.
 -   Recount the three loss classes on a run built after `38a5178d7`.
     The truncation class should fall to whatever survives four retries,
     and any residue is a different defect than the one just fixed.
+
+## A lost voice is a model still thinking, and two volume hypotheses died on the way there
+
+Measured 2026-08-25 at 947 completed streams and 19 cut ones, same run.
+
+18 OF THE 19 CUT STREAMS HAD PRODUCED ZERO CONTENT CHARACTERS.
+The one exception had 301.
+So at the moment the window closed, the model had not begun its answer;
+it was still in the reasoning channel.
+Waiting longer would not have salvaged a partial answer, because there was no answer yet.
+
+That refines what `#214` measured rather than contradicting it.
+Shortening the window costs voices because the window is buying THINKING TIME,
+not answer time.
+
+### Two hypotheses this refuted first, both mine
+
+VOLUME RUNAWAY. The abandon line reads `cut-mid-reply after 306685 delivered chars`,
+which looks like a model that would not stop.
+It is not: `partialText.length` counts RAW WIRE characters, frames and JSON envelopes
+included, and a completed stream's median is 49595 with a maximum of 3627449.
+Every cut stream is smaller than the largest completed one.
+Raw volume does not separate the two populations at all.
+
+A REASONING BOUND. If cut streams were thinking runaways, a bound would catch them:
+
+```text
+  cut streams        reasoning  median  30984   max  41953   n=19
+  completed streams  reasoning  p99     35113   max  60674   n=947
+```
+
+The distributions overlap almost entirely.
+A bound low enough to catch the cut ones kills more than one percent of completed streams,
+and a bound high enough to be safe catches none of them.
+So `#156`'s decision to decline a reasoning bound is CONFIRMED by this workload
+rather than overturned.
+
+### A recorded prediction that did not hold
+
+`doc/handover/translation-repair.md` records `#211` predicting that post-fix bytes would
+meet `contentCap`, cutting a runaway at roughly 32000 rather than 300000,
+and it says in the same breath to record the outcome rather than the prediction.
+
+The outcome: `qwen3.8-max` is still abandoned after 283620 to 345064 raw characters,
+the same tight cluster as before the fix.
+The reason is legible in the source rather than the log.
+`maxAnswerChars` is passed by `translate-produce.ts` and `translate-repair.ts` and by nobody
+else, so `contentCap` is undefined for every judging stage,
+and the 32000 bound `#156` set has never applied to a panel, editor, critic or select call.
+
+### Where that points
+
+Neither request builder sends any reasoning control.
+Searching `src` for `thinking`, `reasoning_effort`, `reasoningEffort` and `budget_tokens`
+returns scanners and comments only.
+This pipeline has never asked a model to think less.
+
+Filed as `#229`, with the provider research owed first,
+and with the measurement that decides it named in advance:
+ballot agreement with and without a budget on the same slices.
+Those seats contribute nothing today, so the comparison is a possibly shallower vote
+against no vote at all, but that is a thing to measure rather than to assume.
