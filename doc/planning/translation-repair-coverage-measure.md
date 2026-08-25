@@ -209,6 +209,39 @@ all three decisions inside `buildLicensedQuotes`,
 `generationLines` printing the count,
 and `unheardCacheDiscardFinding` naming its slice.
 
+Tiers nine and ten added ten more branches,
+of which nine were already asserted:
+both stream terminators,
+the finish reason read,
+`requireFinite`,
+`carriesPicture`,
+`pairScore`'s trusted gate,
+`addScore`'s gap term,
+`introducedFootnoteFindings` accounting for inherited defects,
+and `checkedChangeSets` refusing a negative slice index.
+
+The tenth was `countCandidateWeights` counting only ballots that carried
+weight,
+closed in `6c7eaaef0` along with the row every candidate gets even when nobody
+named it.
+That one is worth reading before deleting:
+today's producer sets `best` and its weight together,
+so an in-range index always arrives above zero and the conjunct looks
+redundant.
+It stops being redundant the moment `SELF_VOTE_WEIGHT` is tuned to zero,
+which is a knob rather than a constant,
+and the counts would then credit a self-vote as a ballot contributing nothing.
+A comment now says so beside the code.
+
+The same commit closed the last item tier one left open,
+`unchangedChunkOutcome`'s carried critic telemetry,
+by calling the builder directly rather than driving the lane.
+The earlier attempt failed because a run whose checkers refuse to confirm
+settles in `repair-chunk.ts` and builds its own outcome,
+so the scripted state it needed does not exist;
+`XPT` allows the direct call,
+and the builder is now exported with `@internal`.
+
 THE UNCOVERED NINE CLUSTER,
 which is worth noticing:
 seven of them are the ends of things.
