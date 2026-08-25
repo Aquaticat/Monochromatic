@@ -2248,3 +2248,54 @@ either would have meant editing a correct instruction into a wrong one. Both are
 failure mode exactly as it is written down, and the uncapped, flag-safe re-runs found
 everything. Worth remembering that the dangerous direction here is the empty result, not
 the noisy one.
+
+## The refiner column may not be decidable, and that decides the landing order
+
+Measured on the live calibration at 32 of 40 slices, while checking why one slice reported
+zero refiner rounds.
+
+```text
+editor column    1023 selectBestCandidate votes over 32 slices   about 32 per slice
+refiner column     20 runRefineStage rounds over 32 slices       0.62 per slice
+                   15 of those 20 produced a winner
+                    5 tied or were declined by every judge
+```
+
+The winners spread thinly across six of the ten seats:
+`hf:Qwen/Qwen3.8-27B` 5, `qwen3.8-max` 3, then `hf:zai-org/GLM-5.2`, `hf:openai/gpt-oss-120b`,
+`hf:moonshotai/Kimi-K3` and `gemma-4-26b-a4b-it` at 2 each.
+
+### What this does and does not establish
+
+On WINS alone it would not clear. Against a ten-seat null of one tenth, an exact binomial on
+the leader gives P(X >= 5 | n = 15, p = 0.1) = 0.0127, and Bonferroni at ten seats wants
+0.005. So 5 of 15 does not clear, and 40 slices projects to roughly 19 wins, which does not
+either.
+
+BUT WINS ARE NOT THE DENOMINATOR THE STANDING USES. `producer-standing-report.ts` prints
+`NN.N% (N of N disinterested ballots, over N candidates)`, so the refiner column is scored on
+BALLOTS, and every round carries several. Twenty rounds could be well over a hundred ballots.
+
+So this is NOT a finding that the refiner column is underpowered. It is a finding that the
+two columns rest on evidence differing by roughly fifty times in round count, and that
+nothing so far has checked whether the refiner denominator survives that.
+
+### Why it has to be checked before the landing rather than after
+
+`#200` records that the remedy for a short standing is a second batch of 80 slices into a
+poolable directory, which shares zero slices with the 40-draw because `pickSpreadSample`
+strides with a `+0.5` offset. It also records the constraint that matters here:
+
+    Pooling needs no drift opt-in as long as the build does not change,
+    so `#210` should land AFTER any second batch, not before.
+
+The landing changes the build. So if the refiner column turns out short, the second batch
+must run BEFORE the parked work lands, and the rehearsed landing procedure waits behind it.
+Landing first would forfeit the cheap remedy and force a drift opt-in to pool at all.
+
+### Owed at exit, before step 2 of the landing procedure
+
+Read the refiner standing's own denominator, not the editor's, and not the win counts above.
+If it is thin, decide the second batch FIRST and land afterwards. If it is sound, land as
+rehearsed. Either way this is a decision to take deliberately at exit rather than a step to
+walk past, because the landing is the thing that closes the cheap option.
