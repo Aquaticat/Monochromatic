@@ -124,8 +124,55 @@ The emitter writes `30001ms in grace`, so nothing matched, and the surrounding
 `round` grep instead matched judges' prose containing the word.
 Anchoring on the emitter's own template rather than on remembered wording fixed it.
 
+## The zero-content count is zero, and the probe was proven able to see one
+
+`#221` was opened to recount zero-content streams, with `deepseek-v4-pro-0813` at
+36 of 356 completed streams as the number to beat,
+and an expectation that `qwen3.8-max` would stay high as an accounting artifact:
+it is the sole `toolChoice: 'auto'` seat, and an answer arriving as tool-call arguments
+is not counted by `generatedChars.content`.
+
+Both halves are refuted on this workload.
+Across 527 model streams, ZERO have no content.
+The minimum is 3 characters, p10 is 42, the median is 350.
+
+POSITIVE CONTROL FIRST, because a null from an unvalidated probe means nothing.
+The same probe, run without the filter that drops the two meter endpoints,
+reports `quotas` at 47 of 47 zero and `credits` at 47 of 47 zero,
+which is correct: they are not model calls and produce no content.
+So the probe can see a zero. There are none among the seats.
+
+Content against reasoning, which is where the old count was going wrong:
+
+```text
+  deepseek-v4-flash-0731                             content  443   reasoning     0   on  0 of 54
+  gemma-4-26b-a4b-it                                 content  429   reasoning     0   on  0 of 53
+  deepseek-v4-pro-0813                               content  436   reasoning   708   on  3 of 54
+  hf:openai/gpt-oss-120b                             content  302   reasoning  2827   on 54 of 54
+  hf:moonshotai/Kimi-K3                              content  440   reasoning  1867   on 54 of 54
+  hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4  content  397   reasoning  7822   on 54 of 54
+  minimax-m3                                         content  490   reasoning  7996   on 54 of 54
+  hf:zai-org/GLM-5.2                                 content  472   reasoning  9222   on 48 of 49
+  qwen3.8-max                                        content  320   reasoning 10948   on 48 of 48
+  hf:Qwen/Qwen3.8-27B                                content  411   reasoning 14419   on 54 of 54
+```
+
+`deepseek-v4-pro-0813`, the model that was 36 of 356, is the one that now emits a
+reasoning channel on 3 calls out of 54.
+That is consistent with `#211`: a ballot filed as reasoning leaves the content counter
+at zero while the model in fact answered.
+`qwen3.8-max` answers on the content channel every time despite being the `auto` seat,
+so the predicted accounting artifact is not present here either.
+
+WHAT THIS DOES NOT SHOW. One workload. An editor calibration asks for short ballots,
+median 350 content characters, where a corpus pass asks for whole slices and runs
+stages this calibration never touches.
+A clean count here is not a clean count for the pass.
+
 ## What is still owed
 
 -   Re-run every number here when the calibration finishes, at roughly five times the rounds.
 -   Explain the five voices that went unheard without a stream cut.
 -   Prototype the `editor-ensemble.ts` change and measure it, rather than reasoning about it.
+-   Recount zero content on a corpus pass, which asks for whole slices
+    rather than short ballots and runs stages this calibration never touches.
