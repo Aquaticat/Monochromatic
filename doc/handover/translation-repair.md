@@ -2759,3 +2759,42 @@ which is the same treatment the `raw=` warn logs already have.
 The three defects found by hand (`#220`, `#224`, `#225`) all came from a parser's own message
 or from a cause chain, never from a class this package wrote.
 That is now a measured statement about all seventy-five rather than an impression from three.
+
+## The remaining 16 entry points, and the tension inside wrapping them (open, 2026-08-25)
+
+`#223` wrapped nine CLIs when `reportingRefusals` caught exactly one class.
+It now catches everything, so the list should arguably be every entry point.
+Twenty-five entry points exist and nine are wrapped;
+all sixteen unwrapped ones share one shape,
+`if (import.meta.main)` followed by `await <fn>();`,
+so the edit is mechanical.
+
+It is NOT being made yet, because measuring the error classes changed what it costs.
+
+`refusalText` forwards a message only from a class that declares it quote-free,
+and exactly two classes declare it.
+Wrapping a CLI therefore turns
+`ArtifactParseError: <what it says>` into `refused by ArtifactParseError` plus frames.
+For a report CLI that is a small loss.
+For `corpus-pass`, the production driver, it is the diagnostic that matters most.
+
+The scan of all seventy-five error classes cuts both ways here.
+It says none of them quotes, so forwarding their messages would be safe today,
+which makes the conservative default look like pure cost.
+It also says nothing about the seventy-sixth,
+and a library added later reintroduces the risk silently,
+which is the whole reason the default fails closed.
+
+Three ways out, and they are not equally good:
+
+-   Mark all seventy-five classes. Restores every message, and makes the marker mean
+    "audited" rather than "constructed safe", which is a weaker claim than the marker
+    currently makes.
+-   Wrap only the report and probe CLIs, and leave `corpus-pass` alone with its reason
+    recorded, the way `ledger-report` is already excluded for a reason of its own.
+-   Wrap everything and accept that an unexpected fault is located by frames rather than
+    described by a message.
+
+DECIDING THIS WITHOUT THE SUITE WOULD BE GUESSING at what the output actually reads like,
+and there is already a large stack of source changes waiting on the same build.
+It is queued behind running the suites, not dropped.
