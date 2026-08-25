@@ -397,6 +397,7 @@ export function createSyntheticClient(
       throw new SyntheticHttpError({
         status: reply.status,
         bodyText: reply.bodyText,
+        summary: `Synthetic /quotas returned HTTP ${String(reply.status,)}:`,
       },);
     }
 

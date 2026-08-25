@@ -495,6 +495,7 @@ export function createHyperClient(
       throw new SyntheticHttpError({
         status: reply.status,
         bodyText: reply.bodyText,
+        summary: `Charm Hyper /credits returned HTTP ${String(reply.status,)}:`,
       },);
 
     /**

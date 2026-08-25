@@ -9,6 +9,22 @@ import {
 // Provider protocol parsing for chat-completion bodies. A 200 body that fails these
 // expectations is a provider defect and throws; what the model wrote inside
 // `message.content` is never judged here, that is chatJson's job and flows as data.
+//
+// BOTH PROVIDERS THROW THESE CLASSES, so neither message names one. `hyper-client.ts`
+// records why it reuses `SyntheticHttpError` rather than adding a class of its own,
+// and states that the name is wrong and the rename is held with the `SyntheticClient`
+// rename. That note covers the NAME. The MESSAGES were a separate problem, because a
+// name is read by whoever edits this file and a message is read by whoever is holding
+// a broken run at two in the morning.
+//
+// FOUND IN A LIVE LOG, not by reading: `panel gemma-4-26b-a4b-it: MalformedCompletionError:
+// Synthetic completion body violated the OpenAI-compatible contract`. Every one of that
+// model's 51 billed calls that run went to Charm Hyper. The message sent the reader to
+// the wrong provider's status page.
+//
+// SO A MESSAGE HERE STATES ONLY WHAT THIS FILE KNOWS: a status, a detail, an excerpt.
+// A caller that does know which provider answered says so through `summary`, which the
+// two meter endpoints now do because each is bound to one provider by construction.
 
 /**
  * Character count of the body excerpt embedded in thrown errors,
@@ -64,7 +80,7 @@ export class SyntheticHttpError extends Error {
     },
   ) {
     super(
-      `${summary ?? `Synthetic API returned HTTP ${String(status,)}:`} ${
+      `${summary ?? `provider API returned HTTP ${String(status,)}:`} ${
         bodyText.slice(
           0,
           BODY_EXCERPT_LIMIT,
@@ -112,7 +128,7 @@ export class MalformedCompletionError extends Error {
     },
   ) {
     super(
-      `Synthetic completion body violated the OpenAI-compatible contract: ${detail}`,
+      `completion body violated the OpenAI-compatible contract: ${detail}`,
       // Conditional spread keeps cause absent when none was supplied.
       ...(cause === undefined
         ? []
