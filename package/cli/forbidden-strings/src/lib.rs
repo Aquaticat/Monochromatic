@@ -89,8 +89,8 @@ pub const BUILTIN_RULES: &str = include_str!("../data/builtin-rules.txt");
 ///           `from_bytes` decodes without recompiling.
 /// Why:      Compiling the full baseline at startup is not viable (the migration
 ///           measured tens of seconds), so the baseline is compiled once at build time
-///           and only decoded at runtime. Only the small runtime rules files still
-///           compile from text.
+///           and only decoded at runtime. Mutable runtime rules use their separate
+///           content-addressed per-user cache with text fallback.
 /// Gotcha:   The blob is regenerated whenever `data/builtin-rules.txt` or the
 ///           shared frx parser sources change (`build.rs` `rerun-if-changed`); editing
 ///           the baseline file changes nothing until the crate is rebuilt.
@@ -110,7 +110,7 @@ pub const BUILTIN_NAMES: &str =
 /// Re-exports the forbidden-regex rule compiler's public surface.
 // What:     `pub use rule::frx::{...}` lifts the engine's rule-compiler entry
 //           points to the crate root so they are reachable crate-public API.
-//           `frx_load::load` calls `compile_from_text` and `load_precompiled`;
+//           `frx_load::load` calls the runtime cache and `load_precompiled`;
 //           `frx_scan::scan_file` runs the resulting sets against each file.
 // Why:      These are the live load-path construction functions and the redacted
 //           error they return. Exposing them at the crate root lets the loader,

@@ -6,8 +6,8 @@
 //! compiled once here, at build time, and serialized with the engine's `to_bytes`;
 //! `lib.rs` embeds the blob with `include_bytes!` and the runtime loader rebuilds it
 //! through the stage-one `load_precompiled` (the engine's validating `from_bytes`),
-//! which only decodes, never recompiles. Only the small runtime rules files still
-//! compile from text at startup.
+//! which only decodes, never recompiles. Mutable runtime rules use a separate
+//! content-addressed per-user artifact and compile from text only on cache recovery.
 //!
 //! The two-form parse and literal escaper are shared verbatim with the runtime frx
 //! compiler by `#[path]`-including the same source files: the build script cannot

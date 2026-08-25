@@ -4,7 +4,7 @@
 //! compiler instead of the resharp/`regex` pipeline. Two sources feed a scan:
 //!
 //! - the resolved runtime rules file (the `forbidden-strings.local.txt` precedence
-//!   chain), compiled from text at startup via `compile_from_text`; and
+//!   chain), loaded through the validated per-user runtime cache with text fallback; and
 //! - the builtin baseline, embedded as a precompiled serialized `RegexSet` and
 //!   rebuilt via `load_precompiled` (never recompiled), active only under
 //!   `--builtin-rules`.
@@ -93,8 +93,8 @@ fn parse_builtin_names(text: &str, expected: usize) -> Result<Vec<Option<String>
 
 /// Loads the runtime rules file and, under the flag, the precompiled builtin baseline.
 ///
-/// Reads the resolved `rules_path`, compiles it from text, and (when `builtin_rules`)
-/// appends the embedded baseline rebuilt from `precompiled` with its name sidecar
+/// Reads the resolved `rules_path`, loads or repairs its compiled runtime cache,
+/// and (when `builtin_rules`) appends the embedded baseline rebuilt from `precompiled` with its name sidecar
 /// `builtin_names`. A missing implicit default file is tolerated only under
 /// `--builtin-rules` (the baseline alone scans); an explicitly named missing file, or
 /// any other read failure, errors. A runtime rule whose name collides with a builtin
