@@ -1,5 +1,7 @@
 import { parse as parseYaml, } from 'yaml';
 
+import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
+
 //region Front matter model
 // Upstream strips metadata before MDX compilation and repairs must never rewrite this
 // zone, so the split keeps an exact raw slice alongside parsed data.
@@ -56,6 +58,94 @@ export type SplitMdxDocument = {
 //region Front matter splitting
 
 /**
+ * Names the fault code a YAML refusal assigned, or its class.
+ *
+ * @param cause - caught value, of unknown type by construction
+ *
+ * @returns Parser's own code where it set one, class name otherwise
+ *
+ * @example
+ * ```ts
+ * const code = yamlFaultCode({ cause, },);
+ * ```
+ */
+function yamlFaultCode({ cause, }: { readonly cause: unknown; },): string {
+  if (!Error.isError(cause,))
+    return NAMED_POSITION_UNSTATED;
+
+  if (('code' in cause) && ((typeof cause.code) === 'string'))
+    return cause.code;
+
+  return cause.name;
+}
+
+/**
+ * Reads the line and column a YAML refusal stopped at.
+ *
+ * @param cause - caught value, of unknown type by construction
+ *
+ * @returns Position phrase, or a stand-in where the refusal stated none
+ *
+ * @example
+ * ```ts
+ * const at = yamlLineColumn({ cause, },);
+ * ```
+ */
+function yamlLineColumn({ cause, }: { readonly cause: unknown; },): string {
+  if ((!Error.isError(cause,)) || (!('linePos' in cause)))
+    return NAMED_POSITION_UNSTATED;
+
+  /**
+   * Start and end positions the parser recorded, when it recorded any.
+   *
+   * READ BY INDEX MEMBERSHIP rather than `Array.isArray`, which narrows to
+   * `any[]` and hands every element out untyped.
+   */
+  const { linePos, } = cause;
+
+  if (((typeof linePos) !== 'object')
+    || (linePos === null)
+    || (!(0 in linePos)))
+    return NAMED_POSITION_UNSTATED;
+
+  /**
+   * Position the refusal begins at.
+   */
+  const start: unknown = linePos[0];
+
+  if (((typeof start) !== 'object')
+    || (start === null)
+    || (!('line' in start))
+    || ((typeof start.line) !== 'number')
+    || (!('col' in start))
+    || ((typeof start.col) !== 'number'))
+    return NAMED_POSITION_UNSTATED;
+
+  return `line ${String(start.line,)} column ${String(start.col,)}`;
+}
+
+/**
+ * Describes where a YAML refusal stopped, quoting nothing it read.
+ *
+ * @param cause - caught value, of unknown type by construction
+ *
+ * @returns Phrase naming position and fault code
+ *
+ * @example
+ * ```ts
+ * `refused to parse ${yamlRefusalSite({ cause, },)}`;
+ * ```
+ */
+function yamlRefusalSite({ cause, }: { readonly cause: unknown; },): string {
+  /**
+   * Where the parser stopped, or that it said.
+   */
+  const at = yamlLineColumn({ cause, },);
+
+  return `at ${at} (${yamlFaultCode({ cause, },)})`;
+}
+
+/**
  * Signals YAML inside a front matter fence pair that refuses to parse;
  * corpus metadata parses upstream, so failure here indicates corruption.
  *
@@ -66,9 +156,24 @@ export type SplitMdxDocument = {
  */
 export class FrontMatterParseError extends Error {
   /**
-   * Builds failure carrying original YAML parser error for diagnosis.
+   * Declares this message safe to forward: it states where the parser stopped
+   * and what it called the fault, and repeats no front matter.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * Builds failure stating where YAML stopped, never what it read.
    *
-   * @param cause - underlying YAML parser error
+   * DOES NOT CARRY THE PARSER ERROR AS `cause`, deliberately. A
+   * `YAMLParseError` message embeds a source code frame, measured on five
+   * failure shapes and present in all five, and Node's uncaught-exception
+   * reporter renders a cause chain. Front matter names a person, so carrying
+   * the original would publish it through any printer that never asked to.
+   *
+   * Nothing is lost for diagnosis: the position and the parser's own code are
+   * what a reader acts on, and the file is on disk to open at that line.
+   *
+   * @param cause - underlying YAML parser error, read for position and code
    *
    * @example
    * ```ts
@@ -77,13 +182,14 @@ export class FrontMatterParseError extends Error {
    */
   public constructor({ cause, }: { readonly cause: unknown; },) {
     super(
-      'Front matter fence pair found but YAML inside refused to parse;'
-        + ' corpus metadata parses upstream, so this signals corruption.',
-      { cause, },
+      `Front matter fence pair found but YAML inside refused to parse ${
+        yamlRefusalSite({ cause, },)
+      }; corpus metadata parses upstream, so this signals corruption.`,
     );
     this.name = 'FrontMatterParseError';
   }
 }
+
 
 /**
  * Fence line delimiting YAML front matter on both sides.

@@ -178,7 +178,7 @@ function parseBodyTolerant(
         startOffset: bodyOffset,
         endOffset: bodyOffset + body.length,
         detail: `strict MDX parse failed, fell back to plain markdown: ${
-          String(error.cause,)
+          error.message
         }`,
       },],
     };

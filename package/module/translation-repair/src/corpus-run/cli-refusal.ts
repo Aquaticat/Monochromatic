@@ -1,8 +1,8 @@
+import { refusalText, } from '../refusal-text.ts';
 import { RunJsonUnreadableError, } from '../run-json-read.ts';
 
 //region CLI refusal
-// Turns THIS PACKAGE'S OWN refusals into one diagnostic line, and leaves every
-// other failure exactly as it was.
+// Turns ANY failure out of a CLI body into a report that quotes nothing.
 //
 // `#222` closed the half of `#220` that mattered most: a run file no longer
 // prints itself when it will not parse. Verifying that at the boundary showed
@@ -10,10 +10,23 @@ import { RunJsonUnreadableError, } from '../run-json-read.ts';
 // and a bundled CLI is one line of minified JavaScript, so Node echoes about
 // three thousand characters of it around a correct one-line message.
 //
-// ONLY `RunJsonUnreadableError` IS CAUGHT. Catching every `Error` would hide the
-// stack of a genuine programming fault, trading a rare ugly report for a
-// permanently undiagnosable one. A refusal this package wrote already says what
-// happened and names nothing it should not; anything else keeps its stack.
+// THIS USED TO CATCH ONLY `RunJsonUnreadableError`, and said so: catching every
+// `Error` would hide the stack of a genuine programming fault, trading a rare
+// ugly report for a permanently undiagnosable one. That reasoning was right
+// about the cost and wrong about the choice, because the two are separable.
+//
+// `#225` supplied the fact the old note did not have. A `YAMLParseError`
+// message embeds a source code frame, measured on five failure shapes and
+// present in all five, and Node renders a cause chain. Re-throwing therefore
+// published a page's front matter, which names a person, through a printer that
+// never agreed to. Re-throwing is not neutral; it delegates the decision to
+// whatever prints next.
+//
+// SO EVERYTHING IS CAUGHT, AND THE STACK IS KEPT ANYWAY. What is dropped is the
+// message line and the cause chain, which is where text travels; what is kept
+// is the frames, which name files inside our own `dist`. A fault stays
+// diagnosable, and a class that declares its message quote-free still gets to
+// say it in full.
 //
 // `ledger-report.ts` does NOT use this. It reads a whole directory and reports
 // the files that refused as a shortfall inside its own output, which is a
@@ -31,13 +44,60 @@ import { RunJsonUnreadableError, } from '../run-json-read.ts';
 const COULD_NOT_READ = 4;
 
 /**
+ * Exit code a CLI leaves behind when it failed for a reason nobody planned for.
+ *
+ * SEPARATE FROM FOUR, because they ask different things of whoever reads them.
+ * Four says a named file would not read and the run is intact. This says the
+ * command itself broke, which is a bug report rather than a re-run.
+ */
+const UNEXPECTED_FAULT = 5;
+
+/**
+ * Renders a caught value's stack frames, without its message or its cause.
+ *
+ * THE FRAMES ARE THE SAFE HALF. Each names a file and a position inside our own
+ * built output, so they locate a fault precisely and carry no text that was
+ * read. The message line is dropped because an error built by interpolation can
+ * embed whatever it was given, and the cause chain is dropped because a parser's
+ * cause is exactly the thing that quotes.
+ *
+ * @param error - caught value, of unknown type by construction
+ *
+ * @returns Frame lines, or a note saying why there are none
+ *
+ * @example
+ * ```ts
+ * console.error(framesOf({ error, },),);
+ * ```
+ */
+function framesOf({ error, }: { readonly error: unknown; },): string {
+  if (!Error.isError(error,))
+    return '  (no frames: the thrown value is not an Error)';
+
+  /**
+   * Stack as the runtime recorded it, message line included.
+   */
+  const { stack, } = error;
+
+  if ((typeof stack) !== 'string')
+    return '  (no frames: this error recorded no stack)';
+
+  return stack
+    .split('\n',)
+    .filter(function isFrame(line,): boolean {
+      return line
+        .trimStart()
+        .startsWith('at ',);
+    },)
+    .join('\n',);
+}
+
+/**
  * Runs a CLI body, reporting a refusal this package wrote rather than crashing.
  *
  * @param what - command name as an operator would type it, which starts the line
  *
  * @param run - CLI body to run
- *
- * @throws Whatever `run` threw, where it is not a refusal this package wrote
  *
  * @example
  * ```ts
@@ -57,18 +117,26 @@ export async function reportingRefusals(
   try {
     await run();
   } catch (error) {
-    if (!(error instanceof RunJsonUnreadableError))
-      throw error;
-
     // TO STDERR, unlike the reports these commands normally print. A reader
     // piping stdout to a file is collecting a report, and this says there is no
     // report to collect.
-    console.error(`${what}: ${error.message}`,);
+    console.error(`${what}: ${refusalText({ error, },)}`,);
+
+    if (error instanceof RunJsonUnreadableError) {
+      console.error(
+        '  Nothing was read past that file, so this run was not examined. Re-run the pass to '
+          + 'rewrite it, or name a run directory that has it.',
+      );
+      process.exitCode = COULD_NOT_READ;
+      return;
+    }
+
     console.error(
-      '  Nothing was read past that file, so this run was not examined. Re-run the pass to '
-        + 'rewrite it, or name a run directory that has it.',
+      '  This is a fault in the command rather than in the run. The frames below name the '
+        + 'built files it stopped in.',
     );
-    process.exitCode = COULD_NOT_READ;
+    console.error(framesOf({ error, },),);
+    process.exitCode = UNEXPECTED_FAULT;
   }
 }
 
