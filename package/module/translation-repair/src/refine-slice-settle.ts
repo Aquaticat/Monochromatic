@@ -80,6 +80,8 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
 };
 
 /**
+ * @internal
+ *
  * Runs the naturalness lane over one settled slice.
  *
  * @param client - injected model client

@@ -241,9 +241,10 @@ export {
   type RepairStatus,
   type RepairTranslationResult,
 } from './repair-translation.ts';
-export type {
-  RefinedSliceOutcome,
-  RefinedSliceSettlement,
+export {
+  type RefinedSliceOutcome,
+  type RefinedSliceSettlement,
+  settleRefinedSlice,
 } from './refine-slice-settle.ts';
 export type { SliceCache, } from './slice-cache.ts';
 export {
