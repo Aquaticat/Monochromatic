@@ -1641,3 +1641,27 @@ The corpus is still read at runtime from the pinned clone,
 corpus files are still never committed as corpus files,
 and artifacts and grading sheets still live under run directories outside the repository.
 The change is that quoting inside our own documents is now unremarkable.
+
+## Two source fixes found while the run was live, both owed (2026-08-25)
+
+Both were found by testing documentation against reality rather than by reading code,
+and both edit `src/`, which restamps the pipeline digest and invalidates
+the slice cache the calibration has been buying since 01:29Z.
+So both wait for the run, and both belong in the landing sequence
+after the standing is read and the parked work is extracted.
+
+-   `#217`: `verify-published` cannot tell a clean run from an empty one.
+    An empty runs directory prints `matched=0` with both counters zero and exits 0,
+    while the two notices that would reveal it go to stderr.
+    A mistyped `TRANSLATION_REPAIR_RUNS_DIR` therefore reads as a green run.
+    `errorName` compounds it: a missing directory and one at mode 000 both print `(Error)`,
+    because every filesystem failure has the constructor name `Error`.
+    `doc/runbook/translation-repair-corpus-pass.md` carries the workaround until this lands.
+
+-   `#218`: a real Bilibili account UID sits in the TSDoc `@example` for `readingAnchors`
+    in `image-reading-sense.ts`, where an invented number would serve identically.
+
+`#219` is not a code fix and is the easiest thing here to lose:
+when the pipeline is production ready, say so with the `AskUserQuestion` tool,
+not in prose, because that is the signal the owner is waiting for
+before disabling branch protection to sanitize the committed corpus text.
