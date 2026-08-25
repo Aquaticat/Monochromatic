@@ -3,13 +3,14 @@
 ## Status
 
 GitHub issue [#456][] is open and no implementation has started.
-The current activity is a user-directed design grill.
-The user asked for comprehensive questions that assume they have forgotten how
-`forbidden-strings` works.
+The user ended the design grill after Q22 and confirmed that the remaining questions were implementation details.
+Shared product understanding is complete;
+implementation is now authorized.
 
-Update this handover immediately after every user answer.
-Continue the design tree until every dependent decision is settled.
-Do not implement until the user confirms shared understanding.
+Keep this handover current through implementation,
+verification,
+commits,
+and release results.
 The user explicitly said no `AGENTS.md` edit is needed for the communication correction.
 
 [#456]: https://github.com/Aquaticat/Monochromatic/issues/456
@@ -360,15 +361,39 @@ GitHub Actions keeps its native hosted-runner cache resolution.
 The current one-shot workflow performs no eager compilation step and gains no same-job cache reuse.
 The derived artifact receives owner-only permissions and follows the hosted runner account's lifecycle.
 
-## Open dependent decisions after round 4
+## Delegated implementation details
 
-- Exact artifact field encoding and hostile-length bounds.
-- Exact cache-directory and artifact filenames.
-- Cache-root and artifact-write error taxonomy within the closed JSON protocol.
-- Version bump and release compatibility expectations.
-- Documentation for manual cache deletion without prescribing user-only action during implementation.
-- Whether the built-in baseline uses the runtime envelope or remains on its existing embedded raw-byte path.
-- Exact file-enforcer process invocation and notice text.
+After Q22,
+the user said the remaining frontier consisted of implementation questions and ended grilling.
+The implementer owns these choices and should use the strongest design consistent with the settled contract.
+The current implementation defaults are:
+
+- Use an explicit fixed-width scanner-owned envelope around existing raw engine bytes.
+- Apply hostile-length ceilings before allocation,
+  reject overflow and trailing bytes,
+  and confirm rule-name count against decoded engine rule count.
+- Use the detailed closed warning reasons:
+  `missing`,
+  `cache-root-unavailable`,
+  `unreadable`,
+  `source-mismatch`,
+  `incompatible`,
+  `invalid`,
+  and `write-failed`.
+- Use hierarchical lowercase cache components:
+  `forbidden-strings/v<scanner-version>/<os>-<architecture>/<content-sha256>/rules.bin`.
+- Bump the public scanner to `0.4.0` because default filesystem mutation and stderr protocol are material
+  pre-1.0 behavior changes.
+- File-enforcer tolerates only an absent scanner executable.
+  Once `compile-rules` starts,
+  any nonzero or interrupted result fails generation.
+- Keep the built-in baseline on its existing embedded raw-byte and name-sidecar path.
+- Document manual deletion of the application cache directory;
+  add no automatic cleanup or cache-clear command for issue #456.
+
+These are implementation defaults,
+not additional preference gates.
+Change one only when code or measured evidence proves it cannot satisfy the settled product contract.
 
 ## Candidate implementation scope
 
@@ -489,5 +514,11 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Derive and ask grill round 5 from the open dependent decisions after round 4.
-Update this handover immediately after the user's next answer.
+Mark the grill task complete and begin implementation.
+Keep exactly one implementation task in progress,
+commit each coherent change at the earliest opportunity,
+and update this handover with files,
+evidence,
+commits,
+blockers,
+and the next concrete action.
