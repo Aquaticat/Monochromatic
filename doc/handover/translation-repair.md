@@ -2798,3 +2798,57 @@ Three ways out, and they are not equally good:
 DECIDING THIS WITHOUT THE SUITE WOULD BE GUESSING at what the output actually reads like,
 and there is already a large stack of source changes waiting on the same build.
 It is queued behind running the suites, not dropped.
+
+## The cause sweep, which the message scan had missed (2026-08-25)
+
+Scanning seventy-five error classes checked their `super()` MESSAGES.
+It said nothing about their causes,
+and a cause chain is exactly how `#225` travelled:
+a clean message carrying a quoting cause that Node's reporter renders anyway.
+
+So the same question was asked of causes.
+Every site constructing an error with `{ cause: error }`, and what that cause can hold:
+
+-   TWO PARSER CAUSES, `FrontMatterParseError` and `MdxParseError`.
+    Fixed in `7b81a95c3`; neither carries a cause any more.
+
+-   THREE PROVIDER-PARSE CAUSES: `completion-shape.ts`, `stream-completion.ts` and
+    `anthropic-completion.ts` each wrap a `JSON.parse` of a model's response as the cause of a
+    `MalformedCompletionError`.
+    V8 quotes ten characters, and a model's answer is a rendering of corpus text.
+
+-   TWO FILESYSTEM AND GIT CAUSES, in `ledger-directory.ts` and `artifact-generation.ts`.
+    One wraps `readdir`, the other a git revision resolution.
+    Their messages name a path and a revision, not content.
+
+-   ONE COMMAND CAUSE in `corpus-source.ts`, whose message carries the `git show` command line.
+    That names an entry id, which these tools print by design:
+    `ledger-report` and `verify-published` both report per entry.
+
+-   TWO ABORT CAUSES in `stream-cut.ts` and `stream-drain.ts`, carrying an abort reason.
+
+### The provider three are dominated, and that is measurable rather than arguable
+
+`stage-call.ts` already logs `raw=${JSON.stringify(opening,)}` on every lost-voice warning,
+bounded at `RAW_PREVIEW_CHARS = 120` grapheme clusters of the model's text.
+Its own note records why that bound exists and what it bought:
+the Kimi-K3 outage was a two-character channel marker,
+507 mismatches in one pass were explained by it,
+and its 2026-08-13 recurrence was explained the same way from `p|>` and `ep|>`.
+
+So the deliberate disclosure is 120 characters, on a routine warning, to the run log.
+The cause is ten characters of the same text, only when the answer is malformed JSON,
+and only if the error reaches a printer.
+Twelve times smaller, far rarer, same destination.
+
+They stay. Changing them would trade a diagnostic the owner asked for
+against an exposure strictly smaller than one already accepted beside it.
+
+### What this sweep does and does not cover
+
+It covers two channels: an error's own message, and its cause chain.
+It does not by itself cover a third,
+a value written into a persisted record rather than thrown,
+which is how `attribution-read` was leaking in `#224`.
+That one was found by reading call sites, and no mechanical scan has been built for it.
+Naming the gap here so a later session knows which of the three has no scanner.
