@@ -837,6 +837,58 @@ await describe({
     },),
 
     it({
+      name:
+        'REFUSES a ballot weight that OVERFLOWED to infinity, which the check beside this one reads as '
+        + 'a number: `1e400` is valid JSON, so a file can carry it, and a share dividing by an infinite '
+        + 'weight is zero at every candidate rather than a refusal anyone would see',
+      fn: async () => {
+        /**
+         * Weight exactly as a file carries it. `1e400` is syntactically valid
+         * JSON and parses to `Infinity`, which is the only way a non-finite
+         * number reaches a reader that sees nothing but `JSON.parse` output.
+         */
+        const overflowed = JSON.parse('{ "weight": 1e400 }',) as { readonly weight: number; };
+
+        /**
+         * What the reader threw, held so both its class and its reason can be
+         * asserted separately.
+         */
+        const refusalOfInfiniteWeight = caught(function readsAnOverflowedWeight() {
+          readRepairRounds({
+            raw: rawOf({
+              chunks: [[
+                roundOf({
+                  slate: [
+                    slateOf({
+                      index: 1,
+                      producer: {
+                        kind: 'model',
+                        modelId: SEATED,
+                      },
+                    },),
+                  ],
+                  ballots: [
+                    {
+                      ...ballotOf({
+                        modelId: SEATED,
+                        best: 1,
+                      },),
+                      weight: overflowed.weight,
+                    },
+                  ],
+                },),
+              ],],
+            },),
+            path: PATH,
+          },);
+        },);
+
+        expect(refusalOfInfiniteWeight,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfInfiniteWeight as Error).message,).toContain('a finite number',);
+      },
+    },),
+
+    it({
       name: 'names the exact path a departed model was read at',
       fn: async () => {
         /**
