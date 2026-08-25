@@ -504,13 +504,37 @@ Final Clippy is currently rebuilding the baseline.
 
 The hybrid source and tests are in the working tree but not committed because the same final change carries the
 `0.4.0` release-triggering manifest update.
-Its first package check is compiling the build-time baseline.
 
-Hybrid actual-fixture measurement,
-full file-enforcer execution against the final schema,
-dependent lockfile regeneration,
+The hybrid actual-fixture result under identical bounds is accepted:
+
+```text
+first compile + publish      102 ms
+artifact size          1,232,018 bytes
+warm minimum                  89 ms
+warm median                   94.0 ms
+warm p95                      98 ms
+warm maximum                 101 ms
+samples                       30
+```
+
+The planted rule matched,
+the clean control exited 0,
+and the artifact had mode `0600`.
+Compared with the rejected full-engine artifact,
+the hybrid artifact is 99.24% smaller,
+first compilation is 1,434.5 times faster,
+and warm median is 15.2 times faster.
+`ba0ed3816` records the accepted evidence in `PERF.md`.
+
+Hybrid build,
+package check,
+feature-gated check,
+Rust linter,
+and all 162 tests pass.
+Final Clippy,
 fuzz-target build,
-post-pivot tests,
+bench lock refresh,
+root Oxlint,
 and the closing commit remain.
 
 ## Candidate implementation scope
@@ -631,11 +655,11 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Collect the first hybrid package-check verdict and fix compiler findings.
-Build the hybrid release artifact and rerun the actual 10,206-rule fixture under the same bounds.
-Only continue if warm performance meets the agreed objective with positive and clean controls.
-Then rerun file-enforcer,
-scanner tests and lint,
+Collect final Clippy,
 fuzz build,
-dependent locks,
-and bundled cli-git verification before the `Closes #456` commit.
+bench lock refresh,
+and root Oxlint verdicts.
+Update documentation from every final result,
+inspect all generated lockfile diffs,
+and commit the release-triggering `0.4.0` change with `Closes #456`.
+Run `cargo package` immediately from the clean committed tree and confirm GitHub issue and release workflow state.
