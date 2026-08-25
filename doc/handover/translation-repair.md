@@ -1612,7 +1612,26 @@ NOT YET MEASURED: the run in flight predates the fix.
 Parked with `#210` and `#212` in `~/temp/agent/spend-telemetry-210.tar.gz`, now thirty-three files.
 Lint clean, types clean, 663 suites passing, zero failures.
 
-## The deepseek zero-content anomaly is NOT resolvable from the log (2026-08-25)
+## SUPERSEDED: the deepseek zero-content anomaly, first reading (2026-08-25)
+
+RESOLVED LATER THE SAME DAY. The heading this section used to carry said the anomaly was not
+resolvable from the log. That is no longer true, and the resolution is in
+`doc/audit/every-volume-guard-is-blind-to-one-model.md` and in the section named
+"Two more findings from the same run".
+The counts here were right; what was wrong was the conclusion drawn from them.
+
+WHAT THIS SECTION STILL GETS RIGHT, and why it is kept rather than deleted:
+
+-   The method lesson. The instrument used for CAUSE here was a 40-line scan
+    window, and a positive control on `hf:openai/gpt-oss-120b` showed it fired on
+    39 percent of healthy calls. Nine samples against that baseline separate
+    nothing. That reasoning was correct and is worth keeping.
+-   The `hf:zai-org/GLM-5.2` distinction, which the later measurement depends on:
+    its zero-content count EQUALS its cut count, so those zeros are unfinished
+    calls rather than the `#211` signature. The later count reads only COMPLETED
+    streams, which is why GLM shows zero there and why
+    `deepseek-v4-pro-0813`, with 12 zero-content against 0 cuts, is the real
+    anomaly.
 
 Re-measured over the calibration's first 13 slices, 1176 stream lines parsed and none skipped.
 
