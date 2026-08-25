@@ -481,3 +481,23 @@ What to count on the next run is the line the recovery round logs:
 
 Against it, count how many of those voices came back heard.
 That ratio is the number this decision was made without.
+
+### The round is bounded at one grace window, and the bound is proven too
+
+`c5cd3d0a3`.
+The round landed asking for all its voices back,
+which let a single re-ask that hangs hold the whole gather for a full exchange deadline,
+six minutes in a run.
+Quorum already stands when the recovery round opens,
+so it is owed nothing and is entitled to no more than a straggler window.
+
+`heardNeeded: 0` leaves `runGatherRound` with nothing to wait for,
+so the grace window opens at once and whatever has not arrived when it closes is abandoned.
+A voice that comes back promptly is still collected,
+because the window resolves as soon as every ask settles.
+
+The case that covers it scripts the worst shape:
+a model answers unusably, is re-asked, and never returns.
+Removing the bound fails that one case and no other,
+and the suite takes thirty seconds instead of milliseconds while it does,
+which is the defect showing itself rather than an assertion describing it.
