@@ -193,15 +193,31 @@ async function attemptExchange(
   {
     transport,
     exchange,
+    verify,
   }: {
     readonly transport: ModelTransport;
     readonly exchange: ForeignBorrowed<Parameters<ModelTransport>[0]>;
+    readonly verify?: (reply: Awaited<ReturnType<ModelTransport>>,) => void;
   },
 ): Promise<ExchangeAttemptOutcome> {
   try {
+    /**
+     * Reply this attempt produced, not yet read.
+     */
+    const reply = await transport(exchange,);
+
+    // READ INSIDE THIS TRY ON PURPOSE. A body that is not a whole message is a
+    // transport failure wearing a success status: the exchange returned 200 and
+    // the message inside it stops early. Running the caller's check here drops
+    // it into the same catch as a dropped connection, filtered by the same
+    // predicate and paced by the same ladder. Reading it after this function
+    // returned is what made a truncated stream the one transport failure that
+    // never retried, while an HTTP 503 got the whole ladder.
+    verify?.(reply,);
+
     return {
       replied: true,
-      reply: await transport(exchange,),
+      reply,
     };
   }
   catch (error) {
@@ -249,6 +265,10 @@ async function attemptExchange(
  *
  * @param policy - retry pacing; production default retries four times
  *
+ * @param verify - caller's read of a reply the status accepted, run inside the
+ * attempt so an incomplete body counts as a failed attempt rather than a
+ * success the caller has to fail on afterwards. Absent leaves every 200 whole
+ *
  * @mutates exchange - delegated transport attempts may invoke getters while
  * serializing, and the exchange's `signal` rides into each attempt;
  * see the transport's own contract
@@ -267,10 +287,12 @@ export async function exchangeWithRetry(
     transport,
     exchange,
     policy = DEFAULT_RETRY_POLICY,
+    verify,
   }: {
     readonly transport: ModelTransport;
     readonly exchange: ForeignBorrowed<Parameters<ModelTransport>[0]>;
     readonly policy?: RetryPolicy;
+    readonly verify?: (reply: Awaited<ReturnType<ModelTransport>>,) => void;
   },
 ): Promise<Awaited<ReturnType<ModelTransport>>> {
   /**
@@ -293,6 +315,11 @@ export async function exchangeWithRetry(
     const outcome = await attemptExchange({
       transport,
       exchange,
+      // Conditional spread keeps the check absent instead of undefined, which
+      // `exactOptionalPropertyTypes` refuses for an optional property.
+      ...(verify === undefined
+        ? {}
+        : { verify, }),
     },);
 
     /**

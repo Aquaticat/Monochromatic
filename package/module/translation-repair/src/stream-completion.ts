@@ -158,6 +158,41 @@ function dataPayloadOf(rawLine: string,): string {
 }
 
 /**
+ * Refuses a body whose event stream never reached its terminator.
+ *
+ * SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO, on the same grounds as the
+ * Anthropic side: a stream that stopped early comes back as 200, so a check
+ * that runs after the retry returned is a check no retry ever sees.
+ *
+ * @param bodyText - whole drained body, as the transport returned it
+ *
+ * @throws {@link MalformedCompletionError} when the terminator never arrived
+ *
+ * @example
+ * ```ts
+ * requireStreamTerminator({ bodyText, },);
+ * ```
+ */
+export function requireStreamTerminator(
+  { bodyText, }: { readonly bodyText: string; },
+): void {
+  /**
+   * Whether the terminal sentinel arrived anywhere in the stream.
+   */
+  const sawDone = bodyText
+    .split('\n',)
+    .some(function isDone(rawLine,): boolean {
+      return dataPayloadOf(rawLine,) === DONE_SENTINEL;
+    },);
+
+  if (!sawDone) {
+    throw new MalformedCompletionError({
+      detail: 'stream ended without its [DONE] terminator; the reply was cut off',
+    },);
+  }
+}
+
+/**
  * Reassembles one drained SSE body into a completion.
  * Requires the `[DONE]` terminator: a stream that ended without it was cut
  * off, and silently returning truncated content would poison every consumer.
@@ -186,17 +221,12 @@ export function extractStreamedCompletion(
     finishReasons: [],
   };
 
-  /**
-   * Stream lines walked twice: once for the terminator, once for folding.
-   */
-  const lines = bodyText.split('\n',);
+  requireStreamTerminator({ bodyText, },);
 
   /**
-   * Whether the terminal sentinel arrived anywhere in the stream.
+   * Stream lines, folded into the answer.
    */
-  const sawDone = lines.some(function isDone(rawLine,) {
-    return dataPayloadOf(rawLine,) === DONE_SENTINEL;
-  },);
+  const lines = bodyText.split('\n',);
 
   for (const rawLine of lines) {
     /**
@@ -226,12 +256,6 @@ export function extractStreamedCompletion(
         cause: error,
       },);
     }
-  }
-
-  if (!sawDone) {
-    throw new MalformedCompletionError({
-      detail: 'stream ended without its [DONE] terminator; the reply was cut off',
-    },);
   }
 
   /**

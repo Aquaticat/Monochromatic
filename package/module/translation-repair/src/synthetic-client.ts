@@ -21,7 +21,10 @@ import {
   SYNTHETIC_QUOTAS_URL,
   type RosterModelId,
 } from './synthetic-catalog.ts';
-import { extractStreamedCompletion, } from './stream-completion.ts';
+import {
+  extractStreamedCompletion,
+  requireStreamTerminator,
+} from './stream-completion.ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import {
   parseQuotaSnapshot,
@@ -35,6 +38,7 @@ import {
 import {
   fetchTransport,
   type ModelTransport,
+  type TransportReply,
 } from './synthetic-transport.ts';
 
 //region Synthetic client
@@ -50,6 +54,32 @@ import {
  * Logger root for this package's model-facing shell.
  */
 const l = tagged({ tag: 'translation-repair', },);
+
+/**
+ * Refuses a success reply whose server-sent stream stopped before its terminator.
+ *
+ * MODULE SCOPE BECAUSE IT CAPTURES NOTHING. The reply handed in is its whole
+ * input, so nesting it at the call site would make a closure over an empty set.
+ *
+ * ONLY A BODY THE STATUS ALREADY ACCEPTED. A non-success reply is reported by
+ * the status branch at the call site, which names the HTTP code; reading it
+ * here would replace that with a parse failure about an error page.
+ *
+ * @param attemptReply - one attempt's reply, read before the ladder returns it
+ *
+ * @throws MalformedCompletionError - when a success body stops before
+ * `[DONE]`, which is what puts a truncated stream on the retry path
+ * instead of past it
+ *
+ * @example
+ * ```ts
+ * const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
+ * ```
+ */
+function wholeMessage(attemptReply: TransportReply,): void {
+  if (isSuccessStatus({ status: attemptReply.status, },))
+    requireStreamTerminator({ bodyText: attemptReply.bodyText, },);
+}
 
 /**
  * Builds one client over injected transport.
@@ -257,6 +287,9 @@ export function createSyntheticClient(
             : { maxAnswerChars: request.maxAnswerChars, }),
         },
         policy: retryPolicy,
+        // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,
+        // so the ladder reads it inside its own try and retries the attempt.
+        verify: wholeMessage,
       },);
 
       if (!isSuccessStatus({ status: reply.status, },)) {

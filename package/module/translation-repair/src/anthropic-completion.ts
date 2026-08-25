@@ -388,6 +388,51 @@ function usageOf(
 }
 
 /**
+ * Refuses a body whose event stream never reached its terminator.
+ *
+ * SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO. A body that stops before
+ * `message_stop` is a transport failure wearing a success status: the HTTP
+ * exchange returned 200 and the message inside it is not whole. Reading it
+ * only after the retry had already returned meant the one failure this file
+ * calls a transport failure was the only one that never retried.
+ *
+ * ONE RULE IN ONE PLACE. `extractAnthropicCompletion` calls this rather than
+ * carrying its own copy, so the retry and the parse can never disagree about
+ * what a finished message looks like.
+ *
+ * @param bodyText - whole drained body, as the transport returned it
+ *
+ * @throws {@link MalformedCompletionError} when the terminator never arrived
+ *
+ * @example
+ * ```ts
+ * requireAnthropicTerminator({ bodyText, },);
+ * ```
+ */
+export function requireAnthropicTerminator(
+  { bodyText, }: { readonly bodyText: string; },
+): void {
+  /**
+   * Whether the message ended the way a whole one does.
+   */
+  const ended = bodyText
+    .split('\n',)
+    .some(function isStop(rawLine,): boolean {
+      /**
+       * Payload of this line, empty for a line carrying no event.
+       */
+      const payload = dataPayloadOf(rawLine,);
+      return payload.includes(`"${TERMINATOR}"`,);
+    },);
+
+  if (!ended) {
+    throw new MalformedCompletionError({
+      detail: `anthropic stream ended without ${TERMINATOR}`,
+    },);
+  }
+}
+
+/**
  * Reassembles one drained Anthropic Messages body into a completion.
  *
  * @param bodyText - whole drained `text/event-stream` body
@@ -414,21 +459,12 @@ export function extractAnthropicCompletion(
     completionTokens: [],
   };
 
-  /**
-   * Body lines, walked once for the terminator and once for folding.
-   */
-  const lines = bodyText.split('\n',);
+  requireAnthropicTerminator({ bodyText, },);
 
   /**
-   * Whether the message ended the way a whole one does.
+   * Body lines, folded into the answer.
    */
-  const ended = lines.some(function isStop(rawLine,): boolean {
-    /**
-     * Payload of this line, empty for a line carrying no event.
-     */
-    const payload = dataPayloadOf(rawLine,);
-    return payload.includes(`"${TERMINATOR}"`,);
-  },);
+  const lines = bodyText.split('\n',);
 
   for (const rawLine of lines) {
     /**
@@ -479,11 +515,6 @@ export function extractAnthropicCompletion(
         fold,
       },);
   }
-
-  if (!ended)
-    throw new MalformedCompletionError({
-      detail: `anthropic stream ended without ${TERMINATOR}`,
-    },);
 
   /**
    * Stop reason, when the stream reported one.

@@ -2,7 +2,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import pLimit, { type LimitFunction, } from 'p-limit';
 
-import { extractAnthropicCompletion, } from './anthropic-completion.ts';
+import {
+  extractAnthropicCompletion,
+  requireAnthropicTerminator,
+} from './anthropic-completion.ts';
 import { buildAnthropicBody, } from './anthropic-request.ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import type {
@@ -34,6 +37,7 @@ import { hyperIdFor, } from './roster-reach.ts';
 import {
   fetchTransport,
   type ModelTransport,
+  type TransportReply,
 } from './synthetic-transport.ts';
 import {
   DEFAULT_RETRY_POLICY,
@@ -133,6 +137,32 @@ export type HyperClient = ModelCaller & {
    */
   readonly credits: (args: { readonly signal: AbortSignal; },) => Promise<HyperCredits>;
 };
+
+/**
+ * Refuses a success reply whose event stream stopped before its terminator.
+ *
+ * MODULE SCOPE BECAUSE IT CAPTURES NOTHING. The reply handed in is its whole
+ * input, so nesting it at the call site would make a closure over an empty set.
+ *
+ * ONLY A BODY THE STATUS ALREADY ACCEPTED. A non-success reply is reported by
+ * the status branch at the call site, which names the HTTP code; reading it
+ * here would replace that with a parse failure about an error page.
+ *
+ * @param attemptReply - one attempt's reply, read before the ladder returns it
+ *
+ * @throws MalformedCompletionError - when a success body stops before
+ * `message_stop`, which is what puts a truncated stream on the retry path
+ * instead of past it
+ *
+ * @example
+ * ```ts
+ * const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
+ * ```
+ */
+function wholeMessage(attemptReply: TransportReply,): void {
+  if (isSuccessStatus({ status: attemptReply.status, },))
+    requireAnthropicTerminator({ bodyText: attemptReply.bodyText, },);
+}
 
 /**
  * Builds one client over injected transport, speaking the Messages protocol.
@@ -356,6 +386,9 @@ export function createHyperClient(
             : { maxAnswerChars: request.maxAnswerChars, }),
         },
         policy: retryPolicy,
+        // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,
+        // so the ladder reads it inside its own try and retries the attempt.
+        verify: wholeMessage,
       },);
 
       if (!isSuccessStatus({ status: reply.status, },)) {
