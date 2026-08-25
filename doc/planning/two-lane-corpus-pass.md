@@ -14,7 +14,8 @@ so writing it down is the point of this section.
 
 The window trial (`#108`) is live against the same six models and is losing a voice on roughly a third of its arms.
 A two-lane pass over 92 entries is thousands of competing calls,
-and it would raise that loss rate in the middle of an experiment whose whole validity argument is that degradation lands symmetrically.
+and it would raise that loss rate in the middle of an experiment whose whole validity argument is
+that degradation lands symmetrically.
 The trial reads its own record and revises from the ledger,
 so nothing needs re-buying,
 but the rate it reads has to be the trial's own rate and not one this pass caused.
@@ -49,12 +50,14 @@ including the ones a reviewer raised that turned out to be wrong.
 
 -   **Cache cleanup relabelled a settled entry as an error.**
     The discard ran inside the same `try` as the pipeline,
-    so a failed unlink logged `TALLY status=ERROR` after the success line for an entry whose artifact was already on disk.
+    so a failed unlink logged `TALLY status=ERROR`
+    after the success line for an entry whose artifact was already on disk.
     Any reader counting statuses saw one entry in both counts.
     Fixed in `9b4c121fc`,
     together with two faults sharing the same block:
     the cache opened outside the `try`, so one unreadable cache directory ended the whole pass,
-    and the deadline was armed after that open, so a resumed entry ran against a slightly different ceiling from a fresh one.
+    and the deadline was armed after that open,
+    so a resumed entry ran against a slightly different ceiling from a fresh one.
 
 ### Confirmed and fixed, second round
 
@@ -83,7 +86,8 @@ The delivery ledger's three index contracts landed earlier, as `0c17123bf`, with
     so an unfilled passage is recorded as never examined.
     `carriedText` falls back to the blank incumbent, neither lane reads as having moved,
     and `judgeSlice` returns `archive-stands`:
-    the record asserts the archive's translation stands at a passage where the archive has no translation and the lane looked and failed.
+    the record asserts the archive's translation stands at a passage where the archive has no translation
+    and the lane looked and failed.
     Both halves of that row are false.
 
     `buildSliceDelivery` gets the common case right,
@@ -224,7 +228,8 @@ Recorded so a later session does not re-derive them.
     False.
     The check is in the callee, `repair-refine-step.ts:129`,
     with `stage-round.ts:311` behind it,
-    and `repair-translation.unit.test.ts` already carries a case that aborts on the first rewrite request and asserts the run rejects.
+    and `repair-translation.unit.test.ts` already carries a case that aborts on the first rewrite request
+    and asserts the run rejects.
     The reviewer read the caller only.
 
 -   **"Two cache roots will make `listResumableEntries` treat `repair` and `translate` as entry ids."**
@@ -537,7 +542,8 @@ Closed since:
     It stores neither today and measures both.
     Storing them makes every artifact self-contained for re-analysis without a corpus checkout at the pinned commit,
     at roughly the corpus size again per generation.
-    Taking the standing instruction about disk space at face value, the answer is yes, and that is what will be built unless you say otherwise.
+    Taking the standing instruction about disk space at face value, the answer is yes,
+    and that is what will be built unless you say otherwise.
 2.  A two-lane entry costs roughly twice a one-lane entry, and `HARD_CAP_MINUTES` is 180, tuned for one lane.
     Raise it for this campaign, or accept a higher rate of entries cut mid-run and resumed?
     This will be read against a measured two-lane entry before the full launch rather than pre-tuned.

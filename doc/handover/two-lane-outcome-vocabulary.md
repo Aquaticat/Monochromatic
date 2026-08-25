@@ -36,7 +36,8 @@ The user graded items 1 to 7 of the first relocation sheet and said it was
   3 [? The matching might have been broken.]
   4 [N, but 姐妹 obviously is better translated to "girl" or "woman" here, depending on the final age of the subject.]
   5 [? Maybe there is a matching issue]
-  6 [? Semantic wrapping is paramount even when original Chinese text didn't, for maintainability. And I don't see an issue with the original translated text.]
+  6 [? Semantic wrapping is paramount even when original Chinese text didn't,
+  for maintainability. And I don't see an issue with the original translated text.]
   7 [??? Once again, semantic wrapping, and I don't see an issue with the original passage.]
 
 PRESERVED BEFORE ANYTHING WAS REGENERATED: `relocation-sheet.graded-v1.md` and
@@ -2120,7 +2121,12 @@ stream diagnostics), and anything in `#90`, `#100` or `#106` touching slicing.
 3.  Re-read the slice cost telemetry, which by then includes translate-lane slices:
     `mise run //package/module/translation-repair:slice-cost-report -- ~/temp/agent/corpus-pass-20260817.log`
 4.  Re-run the settled rendering audit over the six artifacts. The reader takes the flat layout, so:
-    `mise run //package/module/translation-repair:rendering-audit-settled -- --archive ~/translation-repair-runs-20260817/artifacts`
+
+    ```sh
+    mise run //package/module/translation-repair:rendering-audit-settled \
+      -- --archive ~/translation-repair-runs-20260817/artifacts
+    ```
+
     Verified working against the real artifacts at `--cap 0` on 2026-08-17.
 5.  `#60`'s redraw, now unblocked at the lowered bar of six.
 6.  `#108`'s replacement rate ON displacement-flagged slices against off them, which is what `#107`'s

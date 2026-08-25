@@ -12824,7 +12824,8 @@ ONLY `#107` GATES IT. The fix list does not grow while the pass waits.
 control, so it changes no pairing here and is correctly gated on heading scoring instead.
 `#90`, `#91`, `#94` and `#96` have no measured shipped damage and stay post-pass.
 
-HARD RELAUNCH DEADLINE (WITHDRAWN 2026-08-25, kept only as a record of what was decided then). If the window fix has not cleared its gates by then,
+HARD RELAUNCH DEADLINE (WITHDRAWN 2026-08-25,
+kept only as a record of what was decided then). If the window fix has not cleared its gates by then,
 relaunch on the current tip and land the fix afterwards. A perfect pipeline that never gets
 measured is worth less than a measured one.
 
@@ -16400,7 +16401,8 @@ and the distinction matters because it decides whether the machinery earns its c
 Authorship can only ever name an editor
 (`producer.modelId`, `producer.matched`, `producer.contributors` at `candidate-select-model.ts:136-139`)
 or a refiner, added by `collectRefinedAuthors`.
-`assertCheckerIndependence` at `repair-contract.ts:359` refuses any roster where a checker is also an editor or a refiner,
+`assertCheckerIndependence` at `repair-contract.ts:359` refuses any roster where a checker is also an editor
+or a refiner,
 and it runs at `repair-chunk.ts:126` and `refine-phase.ts:153`,
 so every chunk and every refine phase is gated on it.
 The production roster at `corpus-run/run-config.ts:192`,
@@ -18901,8 +18903,12 @@ RETRACTED: "WHAT IS NOT ESTABLISHED is which external thing it is.
 Provider, network and this host are all consistent with the evidence gathered."
 
 The cause was established by reading the response bodies.
-866 of 875 lost voices carried
-`SyntheticHttpError HTTP 429: {"error":"You've exceeded your subscription rate limits. Upgrade, or try again later..."}`.
+866 of 875 lost voices carried:
+
+```text
+SyntheticHttpError HTTP 429: {"error":"You've exceeded your subscription rate limits. Upgrade, or try again later..."}
+```
+
 Three were content-based and three were nginx 503.
 It was not provider degradation and not the network.
 It was this account's own Synthetic budget running out,
@@ -19402,7 +19408,8 @@ Mutation L spread the live ledger record instead of rebuilding it through a lite
 caught by the new key-list case and by one existing `buildSettledArtifactV2` case.
 Mutation M aliased `undecidedLanes` instead of copying it.
 ONE failure, the new case, and nothing else:
-the artifact outlives the run, and a reader mutating what it read would have reached back into the builder's own comparison.
+the artifact outlives the run,
+and a reader mutating what it read would have reached back into the builder's own comparison.
 
 `corpus-run/artifact-v2-read-consolidate-parts.ts`, commit `caf4ca0f2`.
 Mutation N let text ship from a slice that settled on no change,
@@ -19879,8 +19886,12 @@ Type-check found two source defects nothing else had:
 and `editor-standing-read.ts` referenced a `DirectoryReading` type it never declared.
 
 Both new CLIs are verified at the user boundary.
-`budget-sample` now prints
-`METERS synthetic=wet hyper=dry syntheticWeekly=95.98% syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=0`,
+`budget-sample` now prints:
+
+```text
+METERS synthetic=wet hyper=dry syntheticWeekly=95.98% syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=0
+```
+
 and `meter-report` reads those levels back and prints them beside the verdict,
 which closes `#202`.
 `editor-standing-read` accounts for all 41 archived artifacts, none of them malformed,

@@ -742,7 +742,8 @@ It is a production follow-up, filed with the other unswept sheets rather than re
 
 The four sheets of #149 grade rather than write, so nothing ships from any of them.
 What they decide is which defects get worked on next,
-and an instrument that penalises a page for obeying the rules it was written under reports damage where the pipeline was right.
+and an instrument that penalises a page for obeying the rules it was written under
+reports damage where the pipeline was right.
 
 `JUDGE_POLICY_BLOCK` could not simply be spliced into them.
 Its closing paragraph reads
@@ -784,7 +785,8 @@ and until now nothing gave the checker any reason to cast it.
 
 `PROBE_RULES_HEAD` says content the AFTER text drops is damage only if the ORIGINAL supports it.
 On a protected detail the ORIGINAL does support it, which is the entire reason the rule exists.
-A block spliced beside that bullet would have left two live rules disagreeing, with the older one written as a numbered rule.
+A block spliced beside that bullet would have left two live rules disagreeing,
+with the older one written as a numbered rule.
 `PROBE_HOUSE_RULE_CLAUSE` names the interaction in as many words.
 
 ### The restoration grader keeps its anchor
@@ -815,9 +817,11 @@ so every verse candidate would be rejected on any page that had merged lines.
 
 Measured, and refuted.
 `validateTranslatedSlice` has two sides, and neither of them forbids unmerging on verse.
-Every block of the page must appear in the candidate, in kind and in order, so a candidate that MERGES the page's blocks fails.
+Every block of the page must appear in the candidate, in kind and in order,
+so a candidate that MERGES the page's blocks fails.
 Extra blocks are allowed, but only where the ORIGINAL has them:
-a three-block candidate against a one-block page returns `valid` when the source is verse and `invalid` when the source is prose,
+a three-block candidate against a one-block page returns `valid` when the source is verse and `invalid`
+when the source is prose,
 with `Add a block only to carry something the ORIGINAL has and the text you are replacing left out.`
 
 So on a line-structured chunk the guard actively PERMITS the unmerge, because the original licenses every block it adds.
@@ -835,8 +839,10 @@ So the null on the verse cases is a real null, and the guard has nothing to say 
 On a line-structured chunk the producer's system prompt carries two rules that point opposite ways,
 and until now neither deferred to the other.
 
-- `TRANSLATE_RULES`, from #144: where the existing translation shapes the passage differently, keep the existing translation's shape.
-- `TRANSLATE_LINE_STRUCTURE_RULE`, from #79: produce one output line per original line, and where the existing translation has merged lines, unmerge them.
+- `TRANSLATE_RULES`, from #144: where the existing translation shapes the passage differently,
+  keep the existing translation's shape.
+- `TRANSLATE_LINE_STRUCTURE_RULE`, from #79: produce one output line per original line,
+  and where the existing translation has merged lines, unmerge them.
 
 On `Toka_ls`, the entry the verse rule was written for,
 the Chinese chunk is 21 blocks at median 22 against the English rendering's 18 blocks at median 101.
@@ -849,7 +855,8 @@ Because the guard is a floor, nothing downstream would ever have caught the wron
 which is why the precedence had to be stated in the sheet rather than left to the check.
 
 `LINE_STRUCTURE_RULE` in `line-structure-addendum.ts` is NOT the same defect.
-It is given to an editor working on the standing text, where keeping every existing line is the anti-reflow rule #79 built,
+It is given to an editor working on the standing text,
+where keeping every existing line is the anti-reflow rule #79 built,
 and its own documentation states the distinction.
 
 ### It could not have reached run 6 either way
@@ -866,8 +873,11 @@ so all three sensitivity probes were run live against their pre-built fixtures.
 
 Resolution checker, every arm where the harness expects it:
 
-- a genuine fix reads `fixed` on all three voices, an untouched text reads `not-fixed` on all three, and a fix that damaged its slice splits two `fixed` against one `worse`.
-- on the mixed sheet the tense issue resolves, the meaning issue does not, and the FABRICATED issue draws two `not-fixed` against one `fixed`, so the majority still refuses to agree with a sheet describing something absent from the text.
+- a genuine fix reads `fixed` on all three voices, an untouched text reads `not-fixed` on all three,
+  and a fix that damaged its slice splits two `fixed` against one `worse`.
+- on the mixed sheet the tense issue resolves, the meaning issue does not,
+  and the FABRICATED issue draws two `not-fixed` against one `fixed`,
+  so the majority still refuses to agree with a sheet describing something absent from the text.
 
 Introduced-defect prober:
 
@@ -877,13 +887,16 @@ Introduced-defect prober:
 Rendering auditor:
 
 - the flipped rendering draws an agreed `altered-polarity` finding on two voices.
-- the clean rendering agrees at neither tier, which is the expectation; one voice filed a lone claim and no agreement formed on it.
+- the clean rendering agrees at neither tier, which is the expectation;
+  one voice filed a lone claim and no agreement formed on it.
 - two degraded lines on the flipped arm are infrastructure rather than sheet: one voice lost and a 2-of-3 roster.
 
 ## Measurement 3, read on the three slices the reading called tied
 
-Read while the run was still buying its last slices, because the reading is the slow half and these three were already settled.
-The question fixed in advance was whether a consolidation gives these slices a text the reading would prefer to BOTH lanes.
+Read while the run was still buying its last slices,
+because the reading is the slow half and these three were already settled.
+The question fixed in advance was whether a consolidation gives these slices
+a text the reading would prefer to BOTH lanes.
 
 ### keyword233 slice 0: no consolidation, and that passes
 
@@ -939,14 +952,17 @@ Filed as its own task, blocking the wiring half of this work.
 which is the population measurement 4 exists to protect.
 The gate settled on a consolidation anyway, and that consolidation moved the slice from past into present.
 
-- standing: `Gaoyang was a cute, gentle, and kind girl. She grew up in a single-parent family with difficult living conditions, but she was always very strong.`
-- shipped: `Gaoyang is a cute, gentle, kind girl. She is from a single-parent family, and from childhood her living conditions were difficult, but she has always been very strong.`
+```text
+standing: Gaoyang was a cute, gentle, and kind girl. She grew up in a single-parent family with difficult living conditions, but she was always very strong.
+shipped:  Gaoyang is a cute, gentle, kind girl. She is from a single-parent family, and from childhood her living conditions were difficult, but she has always been very strong.
+```
 
 The rest of the page is past.
 Chunk 0's standing text reads `Gaoyang indulged in the cradle of happiness.`,
 and chunk 1's own standing text reads `Gaoyang was a pretty, tender and kind girl.`
 A reader meets both tenses on one short memorial page.
-The shipped sentence also disagrees with itself: `She is from a single-parent family, and from childhood her living conditions were difficult.`
+The shipped sentence also disagrees with itself:
+`She is from a single-parent family, and from childhood her living conditions were difficult.`
 
 The shipped text is not worse on any other axis.
 It separates `单亲家庭` from `从小生活条件不好`, which the Chinese does carry as two clauses and the standing text had fused.
@@ -957,7 +973,8 @@ So this is a tense defect specifically, not a bad consolidation.
 `consolidate-wire.ts` splices `HOUSE_POLICY_BLOCK`, which says nothing about tense,
 so the producer choosing the wording had no guidance at all, with the past-tense standing text in front of it.
 `contest-ballot-wire.ts` splices `JUDGE_POLICY_BLOCK`,
-whose forced-differences paragraph tells the gate that rendering a tenseless copula in past or present is a choice English forces and never a fault.
+whose forced-differences paragraph tells the gate that rendering a tenseless copula in past
+or present is a choice English forces and never a fault.
 The producer was free and the decider was told not to object.
 
 That paragraph was added by #146 for a measured reason and is not the thing to undo:
@@ -965,7 +982,8 @@ three whole-slate refusals came from judges treating a forced tense as an altera
 and Chinese does mark no tense.
 What no sheet has ever carried is the other half.
 A slice joins a page that already has a tense, and absent a reason to change it, the page's tense is the one to match.
-Consistency with the page is a different claim from whether a forced choice is a fault, so stating it does not reopen the refusals.
+Consistency with the page is a different claim from whether a forced choice is a fault,
+so stating it does not reopen the refusals.
 
 This is the run reporting a behavioural finding rather than an instrument defect,
 which is what a swept instrument is supposed to produce.
@@ -1825,7 +1843,8 @@ Nothing has read that slice.
 
 What follows describes RUN 6's deletion, which remains the clearest evidence in the bed.
 
-Run 6 replaced 3875 characters of standing text with 164 characters, and the gate ballots were 6 for consolidated, 0 against.
+Run 6 replaced 3875 characters of standing text with 164 characters, and the gate ballots were 6 for consolidated,
+0 against.
 Every other slice in both runs shipped between 90 and 111 percent of what stood.
 This one shipped 4 percent.
 
@@ -1837,7 +1856,8 @@ They were shown 41 characters of source against 3875 characters of standing Engl
 Given that pairing the short answer IS the faithful one.
 
 The pairing is the defect.
-Every other slice in the bed has a source-to-standing ratio between 2.1 and 4.0, which is what a Chinese to English pair looks like.
+Every other slice in the bed has a source-to-standing ratio between 2.1 and 4.0,
+which is what a Chinese to English pair looks like.
 `Zha_Ke#1` sits at 94.5.
 
 `Zha_Ke`'s English page carries ONE container spanning offsets 372 to 4045, a span of 3673 characters,
@@ -1847,7 +1867,8 @@ and the slicing paired it against a note of 41 characters.
 
 ### The structural check filtered in the wrong direction
 
-Three of the six candidates at that slice reproduced the letter at about 3800 characters, and all three were marked `invalid`,
+Three of the six candidates at that slice reproduced the letter at about 3800 characters,
+and all three were marked `invalid`,
 every one of them for the same reason:
 `MdxParseError: MDX body refused to parse`.
 The three candidates marked `valid` were 136, 161 and 164 characters, all of them deletions.
@@ -1859,7 +1880,8 @@ It selected against it.
 
 That parse failure has a named cause, and it is `#154`:
 these slices were cut before the container widening,
-so the container's tags belonged to no node and the slice text carried a letter body without its opening and closing tags.
+so the container's tags belonged to no node and the slice text carried a letter body without its opening
+and closing tags.
 A candidate faithfully reproducing that text reproduces the imbalance, and unbalanced MDX does not parse.
 A candidate that rewrites it into a short clean note parses fine.
 
@@ -2561,7 +2583,8 @@ At `lintong#2` the panel was two for the consolidation, one for the standing tex
 and the single asymmetric evidence ballot is the one standing vote, naming the rendering it voted against.
 At `Weideriche_#0` the panel was five to one, and the disagreement is again the single dissenting vote.
 
-Calling that "the panel's evidence points the other way" describes what every majority vote looks like from the minority.
+Calling that "the panel's evidence points the other way"
+describes what every majority vote looks like from the minority.
 
 ### Decided: nothing weighs on this signal
 

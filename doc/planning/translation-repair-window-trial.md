@@ -57,7 +57,8 @@ Measured against the pinned corpus,
 not estimated:
 
 -   93 entries, of which 29 contribute a flagged slice.
--   109 slices: 19 `relocation-high`, 21 `relocation-low`, 24 `other-imbalance`, 12 `target-only`, 4 `untranslated`, 29 `control-unflagged`.
+-   109 slices: 19 `relocation-high`, 21 `relocation-low`, 24 `other-imbalance`, 12 `target-only`, 4 `untranslated`,
+    29 `control-unflagged`.
 -   327 judgings and 2616 model exchanges at roster width 6.
 -   Zero slices have a blank neighbouring window.
 
@@ -149,7 +150,10 @@ since a slate is produced before any arm is judged.
 
 Per class:
 
--   `pairedExcess`, the mean over read triples of the two narrow arms' replacement rate minus the wide arm's. Positive means the window reduced replacement. This is the primary number.
+-   `pairedExcess`, the mean over read triples of the two narrow arms'
+    replacement rate minus the wide arm's.
+    Positive means the window reduced replacement.
+    This is the primary number.
 -   `entries`, the documents those triples came from, because slices are not independent observations.
 -   The wide-against-narrow transition counts in both directions.
 -   The narrow-against-narrow band, which is the negative control.
@@ -275,7 +279,8 @@ Stated plainly because a number without these caveats is worse than no number.
 ### The screen does not provide relocation ground truth
 
 `classifyDisplacement` produces relocation CANDIDATES, not verdicts.
-A lower replacement rate on this population establishes that neighbouring Chinese changed decisions on a size-screened mixture.
+A lower replacement rate on this population establishes
+that neighbouring Chinese changed decisions on a size-screened mixture.
 It does not establish that judges recognised relocations.
 Narrowing that claim needs the candidates hand-labelled.
 
@@ -327,8 +332,11 @@ So the exclusion will be decided from the run's own record,
 by this rule, fixed now:
 
 1.  Compute the short-panel rate per arm over every arm bought, not per triple.
-2.  If the wide arm's rate exceeds each narrow arm's by more than the binomial spread at that sample size, keep the strict exclusion. Degradation is asymmetric and reading those triples would credit lost voices to the window.
-3.  If the three rates sit within that spread of each other, relax to reading every complete triple, and report BOTH readings side by side with the rates that justified the choice.
+2.  If the wide arm's rate exceeds each narrow arm's by more than the binomial spread at that sample size,
+    keep the strict exclusion. Degradation is asymmetric
+    and reading those triples would credit lost voices to the window.
+3.  If the three rates sit within that spread of each other, relax to reading every complete triple,
+    and report BOTH readings side by side with the rates that justified the choice.
 
 Nothing about this needs re-buying:
 every row records the panel it decided on,
@@ -338,9 +346,13 @@ since the wide arm no longer occupies the position most exposed to a filling que
 
 ## Open questions for the user
 
-1.  Is a fourth sham-context arm worth roughly a third more quota, to separate semantic relevance from extra context as such?
-2.  Should the relocation candidates be hand-labelled before the result is quoted as being about relocations, or is the narrower claim, that neighbouring Chinese moved decisions on a size-screened population, enough?
-3.  `relocation-low` slices are bought and reported but the treatment cannot reach them: neighbouring CHINESE cannot say where missing ENGLISH went. Keep buying them as a within-trial control, or drop them and spend the quota on repeats of the high endpoints?
+1.  Is a fourth sham-context arm worth roughly a third more quota,
+    to separate semantic relevance from extra context as such?
+2.  Should the relocation candidates be hand-labelled before the result is quoted as being about relocations,
+    or is the narrower claim, that neighbouring Chinese moved decisions on a size-screened population, enough?
+3.  `relocation-low` slices are bought and reported but the treatment cannot reach them:
+    neighbouring CHINESE cannot say where missing ENGLISH went. Keep buying them as a within-trial control,
+    or drop them and spend the quota on repeats of the high endpoints?
 
 ## Commits
 

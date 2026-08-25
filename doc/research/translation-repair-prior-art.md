@@ -115,7 +115,7 @@ It targets context-similar lexical inconsistency,
 Document repair also predates this package.
 [Context-Aware Monolingual Repair](https://aclanthology.org/D19-1081/) post-edits sequences of sentence translations
 for contextual consistency,
-while [Lexical Translation Inconsistency-Aware Document-Level Translation Repair](https://aclanthology.org/2023.findings-acl.791/)
+while [Lexical Translation Inconsistency-Aware Document-Level Translation Repair][ltidtr]
 locates inconsistent items,
  supplies candidates,
  and repairs document translations.
@@ -245,7 +245,7 @@ terminology,
  false-warning handling,
  and reports.
 
-Translate Toolkit's [pofilter](https://docs.translatehouse.org/projects/translate-toolkit/en/latest/commands/pofilter.html)
+Translate Toolkit's [pofilter][pofilter]
 runs checks over PO,
  XLIFF,
  and TMX files,
@@ -279,7 +279,7 @@ The strongest analogues for the package's guarded-edit machinery come from annot
    and atomic HTTP PATCH behavior.
   Its own example combines a patch with `If-Match`,
    making it a direct analogue for rejecting stale edits.
-- [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html) represents findings with physical
+- [SARIF 2.1.0][sarif] represents findings with physical
   regions and snippets,
    artifact hashes,
    stable fingerprints,
@@ -334,3 +334,7 @@ unchanged-baseline safety policy.
 Claims that it is the first translation-repair system,
  that model-family diversity provides independence,
 or that seeded benchmarks prove real-world safety would exceed the evidence reviewed here.
+
+[ltidtr]: https://aclanthology.org/2023.findings-acl.791/
+[pofilter]: https://docs.translatehouse.org/projects/translate-toolkit/en/latest/commands/pofilter.html
+[sarif]: https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html

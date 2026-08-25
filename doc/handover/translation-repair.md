@@ -95,7 +95,8 @@ and then exited cleanly, exit 0, in 601.84s:
     TALLY MocaKawai status=ERROR ms=300002 aborted=true error=Timeout: MocaKawai exceeded its 300000ms deadline
     REATTEMPT MocaKawai queued: cached 2 more slices, so the next attempt starts further along
     TALLY MocaKawai status=ERROR ms=300004 aborted=true error=Timeout: MocaKawai exceeded its 300000ms deadline
-    STALLED MocaKawai: its 2 cached slices are what it started with, so a further attempt in this invocation would repeat it
+    STALLED MocaKawai: its 2 cached slices are what it started with,
+    so a further attempt in this invocation would repeat it
     DONE processed=0 of pending=1; artifacts=0/92 elapsed=600008ms
 
 `attempts.json` read `{"MocaKawai": 2}`,
@@ -578,7 +579,8 @@ METERS synthetic=wet hyper=wet syntheticWeekly=97.09290877272727%
 syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=10000
 ```
 
-Both providers wet at once, which is the window `#200` had been waiting for since the 14-slice run of 2026-08-24 settled no seat.
+Both providers wet at once,
+which is the window `#200` had been waiting for since the 14-slice run of 2026-08-24 settled no seat.
 
 ### The run in flight
 
