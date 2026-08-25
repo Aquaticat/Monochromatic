@@ -295,6 +295,92 @@ A layer that pasted the block unconditionally satisfies "the sheet carries it";
 only "a document declaring nothing gets no block at all" separates forwarding
 from hardcoding.
 
+## Mutating an argument, when there is no comparison to flip
+
+Recorded 2026-08-25,
+after the sixty-round sweep and a nineteenth tier built differently.
+
+The round generator that drove tiers one to eighteen mutates a COMPARISON:
+it flips an operator,
+rebuilds,
+and reads the suite.
+It could produce no round at all for 43 of 98 targets,
+which is itself a measurement:
+those functions decide nothing by comparing,
+and their only decisions are which value goes where.
+
+That is exactly the class the sweep had just proved unguarded,
+so tier nineteen mutates ARGUMENTS instead:
+swap two operands,
+read one lane's ledger where the other was meant,
+drop a leading character from a derived identifier,
+seat the same arm twice where two were meant.
+
+Eleven such rounds ran.
+Nine came back covered,
+which is a better rate than the comparison tiers managed,
+and the two that did not are both worth the reading:
+
+-   `collectTwoLaneShippedRegions` derives an entry id from its artifact's own
+    file name.
+    Starting that slice one character in changes every id the damage census
+    reports and failed no test.
+
+-   `bothOrders` exists to cancel position bias by running the same pair twice
+    with the seats swapped.
+    Seating the NARROW arm in both places failed no test,
+    so nothing asserted the second order is a different question from the first.
+
+BOTH ARE THE SAME SHAPE AS THE SPREAD BLIND SPOT.
+Nothing is missing and nothing throws;
+a value is simply the wrong one,
+and every layer downstream carries it faithfully.
+
+## The measuring instrument had its own blind spot
+
+The generator matched `export function <name>(` and
+`export async function <name>(` only,
+so every GENERIC signature was skipped without a word.
+Fixed by trying `<` as well as `(`.
+The cost turned out to be two functions,
+which is small,
+but a measure that silently declines to measure part of its population is the
+failure mode this whole document is about.
+
+## Batch two, and a race the cases found
+
+Recorded 2026-08-25,
+landing the second group of sweep gaps in `76feb54d7`.
+
+Four closed:
+`gatherWidthInput` skipping a slice its critics filed nothing about,
+`widthControlHolds` refusing a draw whose every slice is one sentence,
+`resolvePool` refusing a filtered pool and an unfiltered one at once,
+and `discardNamespace` counting what it removed while staying quiet when it
+removed nothing.
+
+THE DISCARD CASES FAILED FIRST,
+and the reason is worth keeping.
+`console.log` is one global binding.
+The house capture helper swaps it,
+runs,
+and swaps it back,
+which is atomic only while the critical section stays SYNCHRONOUS.
+`discardNamespace` is async,
+so three cases each held the binding across an await and diverted each other's
+lines:
+one case saw none of its own output and another saw two lines where one was
+printed.
+
+`concurrency: 1` on the suite fixes it,
+and the module doc says why.
+The existing console-capturing suite,
+`corpus-run/probe-telemetry-report.unit.test.ts`,
+is safe without it because its captured call is synchronous;
+that is a property of the code under test,
+not of the helper,
+so it stops holding the moment anything it captures gains an await.
+
 ## What not to do
 
 Do not re-run module reachability with barrel edges counted.
