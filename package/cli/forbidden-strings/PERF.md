@@ -65,7 +65,34 @@ the sub-100 ms commit budget.
 The implementation therefore pivots to a hybrid runtime matcher:
 one direct Aho-Corasick set for exact literals and a precompiled `RegexSet` only for explicit regex rules.
 
-Do not claim the hybrid cache meets the target until its actual-fixture measurements are recorded here.
+### Accepted hybrid artifact
+
+The same actual fixture,
+container image,
+resource bounds,
+and positive and clean controls produced:
+
+```text
+first compile + publish      102 ms
+artifact size          1,232,018 bytes
+warm minimum                  89 ms
+warm median                   94.0 ms
+warm p95                      98 ms
+warm maximum                 101 ms
+samples                       30
+```
+
+The hybrid reduced artifact size by 99.24%,
+made first compilation 1,434.5 times faster,
+and made the warm median 15.2 times faster than the rejected all-engine artifact.
+The warm median and p95 both meet the sub-100 ms objective;
+the observed unchanged-build band was 89 to 101 ms.
+The planted rule still matched,
+the clean control still exited 0,
+and the artifact retained mode `0600`.
+
+This is the accepted issue #456 result.
+It moves exact literals out of per-rule regex engines while retaining explicit regex rules in the precompiled engine path.
 
 ## Headline numbers
 
