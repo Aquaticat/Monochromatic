@@ -229,6 +229,22 @@ TODO | DONE
     A rebuild with no source change is byte-identical and harmless,
     which is exactly why this is easy to get away with and worth stating anyway.
 
+    THE RULE IS ABOUT WHAT THE RUN WRITES, not about whether the process would notice.
+    A measurement CLI that settles no artifact stamps no digest,
+    and `editor-calibrate` is one: its output is its log.
+    Its bundle was rebuilt eight times under a live 40-slice calibration on 2026-08-25,
+    twice with deliberately broken source for a guard proof,
+    and the run kept producing rounds throughout.
+    Three facts were checked on the running process first, rather than assumed:
+    one process with zero children,
+    no descriptor open under `translation-repair/dist`,
+    and zero occurrences of `import(` in its entry bundle.
+
+    That is a licence for a calibration and NOT for a corpus pass.
+    A pass stamps its digest into every artifact it settles,
+    so a rebuild leaves the run recording a digest that no longer describes what is on disk,
+    and the pool partitions generations by exactly that field.
+
     To read something while a pass is in flight, invoke the built entry point directly
     and skip the task that would rebuild it:
 

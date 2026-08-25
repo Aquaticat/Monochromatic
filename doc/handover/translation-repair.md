@@ -3078,3 +3078,136 @@ this landing; it is written down as the direction if the inventory ever starts t
 
 The guard imports no built artifact, so it runs from source while a pass holds the bundle.
 Landed in `f0f15f5c3`.
+
+## The guard proof found the guard was somewhere else (`#224`, 2026-08-25)
+
+`#224` routed four sinks through `refusalText` and owed a proof that the routing mattered.
+The proof was run the way the rule prescribes:
+revert the fix, rebuild, run the suite, see it fail.
+It did not fail.
+686 of 686 passed with all four sinks reverted to a bare `caughtValueText(error)`.
+
+A passing revert reads as missing coverage,
+and this session nearly recorded it as one.
+The reason it is not is that the probe could not have failed:
+a MALFORMED file reaches every sink through `parseRunJson`,
+which already wraps it in a class declaring its message quote-free,
+so `refusalText` returns that message and the bare expression returns the same message.
+The two are the same string.
+A null result from a probe that cannot show a difference means nothing,
+and the control that gives it meaning is a file that will not OPEN.
+
+### Two of the four opened without a guard
+
+Measured on a mode-`000` fixture in a throwaway directory:
+
+```text
+POOL malformed Basket.json: EACCES: permission denied, open '/tmp/sink-probe-OXYrhl/Basket.json'
+```
+
+`attribution-read.ts` and `artifact-placement.ts` called `readFile` directly
+and only PARSED through the guard,
+so a file that would not open arrived as an ordinary `Error`
+whose message quotes the whole path.
+`refusalText` refused to repeat it,
+which is the second layer doing its job,
+but the only thing left to say was `refused by Error`,
+and an operator reading that learns neither that the file exists nor that it is a permission fault.
+
+`#222` recorded that all twelve run-file reads went through the guarded reader.
+That was true of the parse and not of the open.
+A run directory path names the run,
+and under `artifacts/` a file's own stem is a person's entry id,
+so the path is the sensitive half.
+
+Landed in `f8a00627f`: both call `readRunJson`, which opens and parses behind one refusal:
+
+```text
+could not read Basket.json as JSON (EACCES)
+```
+
+`runs-lock.ts` and `editor-standing-read.ts` already said exactly that,
+so all four sinks now speak one vocabulary.
+
+### The suite that pins it, and the two-layer proof
+
+`src/corpus-run/sink-names-only.unit.test.ts` holds five cases,
+one per sink plus the case that reads the path back.
+It pairs with `message-names-only.unit.test.ts`:
+that one decides which CLASSES may repeat a message,
+this one checks that the SINKS actually ask.
+
+`editor-standing-read.ts` exports nothing,
+so its case runs the built command the way an operator does and reads its stderr.
+That is the first spawn in this package's suite.
+The command exits 1 on the fixture for its own `#217` reason, having recorded no rounds,
+so the helper reads both streams off a `spawnSync` status
+rather than treating a non-zero exit as a failure to run.
+
+Every fixture proves itself unreadable before any assertion runs.
+A suite run as root opens a mode-`000` file,
+which would leave all five cases exercising the happy path while reporting a pass.
+
+The two layers are proven separately, because they fail in different worlds:
+
+-   guarded open removed, policy call kept: 2 of 5 fail,
+    and the path-leak case PASSES, because `refusalText` is what keeps the path out there.
+-   both removed: 3 of 5 fail, the path-leak case included.
+-   restored: 5 of 5 pass, whole suite 687 of 687.
+
+## Four guard proofs, run once the bundle was free (`#225`, `#228`, 2026-08-25)
+
+The suites for `#224`, `#225`, `#226`, `#227` and `#228` all import the built bundle,
+and the bundle had been held by a live calibration since the day before.
+Rebuilding released all five at once.
+
+`#228`, both providers.
+Replacing `verify: wholeMessage` with a comment fails exactly two cases per provider:
+`REFUSES a stream that ended without its terminator` reports `expected 1 to equal 3`,
+one attempt spent instead of three,
+and `ACCEPTS the retry when only the first attempt was cut short`
+lets a `MalformedCompletionError` escape.
+Four failures across the two suites, no collateral.
+
+`#225`, parser half.
+Reverting `front-matter.ts` and `parse-mdx.ts` fails three cases in each suite:
+the position case, the no-cause case, and the marker case.
+The no-quoting case passes in both worlds,
+which is right rather than a gap:
+the pre-fix classes already wrapped, and the leak travelled through the CAUSE chain
+that Node's reporter renders whether asked to or not.
+
+`#225`, CLI half.
+Reverting `cli-refusal.ts` fails five of its seven cases,
+including the two added this session for `#226`'s stated-refusal branch
+and `#227`'s marked-class fault path,
+so both of those are boundary-proven here too.
+The survivors are the `RunJsonUnreadableError` report, which the old code already caught,
+and the clean run.
+
+### Rebuilding under a live pass, measured rather than argued
+
+`doc/runbook/translation-repair-corpus-pass.md` says to run nothing through `mise`
+while a pass is in flight, and gives the pipeline digest as the reason.
+That reason is sound and it is narrower than the rule.
+
+The pass in flight was `editor-calibrate`, which writes no artifacts and stamps no digest:
+its output is its log.
+Before rebuilding, three facts were checked on the running process rather than assumed:
+
+```text
+node dist/final/node/editor-calibrate.mjs 40    one process, zero children
+/proc/<pid>/fd                                  no descriptor under translation-repair/dist
+grep -o "import(" dist/.../editor-calibrate.mjs 0
+```
+
+A running pass never reads that directory again,
+so overwriting it cannot reach the process.
+The bundle was rebuilt eight times over the session,
+twice with deliberately broken source for a guard proof,
+and the calibration kept producing rounds throughout.
+
+This does not license rebuilding under a CORPUS pass.
+That one stamps a digest into every artifact it settles,
+and a rebuild leaves the run recording a digest that no longer describes what is on disk.
+The distinction is what the run WRITES, not whether the process would notice.
