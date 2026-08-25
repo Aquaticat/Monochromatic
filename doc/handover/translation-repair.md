@@ -2911,3 +2911,84 @@ a value written into a persisted record rather than thrown,
 which is how `attribution-read` was leaking in `#224`.
 That one was found by reading call sites, and no mechanical scan has been built for it.
 Naming the gap here so a later session knows which of the three has no scanner.
+
+## A stream the provider cut short was the one transport failure that never retried (`#228`, 2026-08-25)
+
+Found by reading the running calibration's warnings rather than by suspecting anything:
+
+```text
+      4  MalformedCompletionError
+      2  SyntaxError
+```
+
+All four are `panel gemma-4-26b-a4b-it`, all four say
+`anthropic stream ended without message_stop, voice lost`.
+The two `SyntaxError` are the critic schema mismatches already recorded.
+With the 13 straggler cuts in the same log, the three classes account for every voice
+the run never heard, which is how this class was separated from the other two at all.
+
+### Why it never retried, which is more interesting than that it did not
+
+`hyper-client.ts` and `synthetic-client.ts` both call `exchangeWithRetry`
+and then extract the completion AFTER it returns.
+A truncated body arrives as HTTP 200.
+That status is not in `RETRYABLE_STATUSES`, so the ladder hands the reply straight back,
+and extraction throws with nothing left that could re-dispatch it.
+
+Every other transport failure carries a status the ladder recognises.
+This one wears a success status, which is exactly why it was invisible:
+the ladder was working correctly and the failure was outside it.
+
+### The fix follows a design that was already there
+
+`attemptExchange` catches a thrown failure and asks ONE predicate, `isSelfEndedStream`,
+whether we caused it, so that a runaway we cut is never re-dispatched.
+Running the caller's read inside that same `try` puts a truncated body on exactly that path:
+same catch, same predicate, same ladder.
+
+So the terminator pass moved out of each extractor into an exported check,
+`requireAnthropicTerminator` and `requireStreamTerminator`,
+and `attemptExchange` gained an optional `verify` it runs before returning.
+
+RULED OUT FIRST, because retrying our own deliberate cut would be a bug:
+the guards throw their own classes, `StreamStalledError` and `StreamCutShortError`,
+and an aborted drain THROWS with `partialText` rather than RETURNING a short body.
+The only `return bodyText` in `stream-drain.ts` is the normal completion path.
+
+### Measured from source, without a build
+
+`dist/final/node` is held by the calibration, so the boundary proof ran under
+`node --experimental-strip-types` against `src/`, with a fake transport and no key.
+Both providers, four cells each:
+
+```text
+  cut every time        attempts=5  MalformedCompletionError
+  cut once, then whole  attempts=2  answered
+  whole every time      attempts=1  answered
+  HTTP 400 error page   attempts=1  SyntheticHttpError
+```
+
+Row two is the voice that used to be lost.
+Rows three and four are the controls, and row four is the one worth naming:
+`wholeMessage` checks `isSuccessStatus` first, so a non-success reply is never read as a stream.
+Without that guard a 400 carrying an error page would report a parse failure
+instead of the HTTP code, which sends a reader to the prompt rather than to the provider.
+
+### What the suites now assert, and what is still owed
+
+Landed in `38a5178d7` (fix) and `05928328e` (tests).
+Each client suite gained the two cases, and the Hyper suite's existing terminator test
+gained the attempt count it had been missing:
+it ran on the production ladder, paying about seven seconds of real backoff
+to assert something the count now states outright.
+
+The third path needs no new test.
+Each suite already refuses a non-success reply whose body carries no terminator,
+`out of credits` and `{"error":"slow down"}`,
+so removing the `isSuccessStatus` guard inside `wholeMessage`
+turns both into a parse failure about an error page.
+
+NOT YET RUN. The suites import `../dist/final/node/index.mjs`,
+and rebuilding would swap the bundle out from under the pass in flight.
+Owed at the same moment as `#224` and `#225`: build once, run the suites,
+then prove each guard by removing it.

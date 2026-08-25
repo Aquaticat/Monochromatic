@@ -126,6 +126,26 @@ The MESSAGE is read by whoever is holding a broken run, and is now provider-neut
 with the two meter endpoints naming their own provider through the `summary` seam
 that already existed for it. Fixed in `4af3068fa`.
 
+### The first of those two is a defect, not weather (`#228`)
+
+Recounted at 768 streams the classes stand at 13 cuts, 4 `MalformedCompletionError`
+and 2 `SyntaxError`, still `panel gemma-4-26b-a4b-it` every time.
+
+The message says `anthropic stream ended without message_stop`,
+which is a stream the provider truncated, arriving as HTTP 200.
+Both clients extracted the completion AFTER `exchangeWithRetry` returned,
+and 200 is not a retryable status, so the ladder handed the reply straight back
+and extraction threw with nothing left that could re-dispatch it.
+Every other transport failure carries a status the ladder recognises;
+this one wore a success status, which is why it was invisible.
+
+Fixed in `38a5178d7` by running the terminator check inside `attemptExchange`'s own try,
+so a truncated body lands in the same catch, behind the same `isSelfEndedStream` predicate,
+as a dropped connection. `doc/handover/translation-repair.md` carries the measurement.
+
+So of the three ways a voice is lost, the window governs one, the second was a defect
+and is now retried, and the third, a critic answer that fails its schema, is still open.
+
 ## What `#211` actually bought
 
 The earlier reading in `doc/audit/every-volume-guard-is-blind-to-one-model.md`
@@ -203,3 +223,6 @@ A clean count here is not a clean count for the pass.
 -   Prototype the `editor-ensemble.ts` change and measure it, rather than reasoning about it.
 -   Recount zero content on a corpus pass, which asks for whole slices
     rather than short ballots and runs stages this calibration never touches.
+-   Recount the three loss classes on a run built after `38a5178d7`.
+    The truncation class should fall to whatever survives four retries,
+    and any residue is a different defect than the one just fixed.
