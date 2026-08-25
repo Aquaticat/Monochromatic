@@ -428,6 +428,18 @@ function toolFieldsFor(
  * ```ts
  * const body = buildAnthropicBody({ modelId, messages, responseFormat, },);
  * ```
+ *
+ * @remarks
+ * NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
+ * instruction, 2026-08-25: "Please don't set any thinking parameter or budget
+ * tokens... These providers and models have known issues with non-default
+ * thinking or budget tokens and we'd rather not step on the mines."
+ *
+ * That covers `reasoning_effort` on the OpenAI-shaped side, which is the same
+ * lever under the name that provider documents it by. Recorded at the build
+ * site rather than only in a document, because this is where someone would add
+ * one. `doc/audit/where-a-round-spends-its-wall-clock.md` carries the
+ * measurements that led here and the levers that stay open.
  */
 export function buildAnthropicBody(
   {
