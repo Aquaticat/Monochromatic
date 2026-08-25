@@ -29,6 +29,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { readAskedCount, } from './asked-count.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Editor calibrate
@@ -525,7 +526,11 @@ async function main(): Promise<void> {
   /**
    * Slices asked for on the command line, or the default.
    */
-  const wanted = Number(process.argv[2] ?? String(DEFAULT_SLICES,),);
+  const wanted = readAskedCount({
+    argv: process.argv,
+    fallback: DEFAULT_SLICES,
+    asks: 'slices',
+  },);
 
   /**
    * Slices every model edits.

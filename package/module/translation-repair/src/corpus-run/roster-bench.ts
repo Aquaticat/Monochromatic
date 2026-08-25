@@ -21,6 +21,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import { readAskedCount, } from './asked-count.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Roster bench
@@ -284,10 +285,11 @@ async function main(): Promise<void> {
   /**
    * Slices asked for on the command line, or the default.
    */
-  const wanted = Number(
-    process.argv[2]
-      ?? String(DEFAULT_SLICES,),
-  );
+  const wanted = readAskedCount({
+    argv: process.argv,
+    fallback: DEFAULT_SLICES,
+    asks: 'slices',
+  },);
 
   /**
    * Widths this roster supports, and which of them is run twice.

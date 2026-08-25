@@ -12,6 +12,7 @@
 // grounds when this file in turn reached the budget. `index.ts` composes both,
 // so nothing importing the package sees the seam.
 
+export { readAskedCount, } from './corpus-run/asked-count.ts';
 export { buildSettledArtifact, } from './corpus-run/artifact-build.ts';
 export { buildSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-build.ts';
 export {

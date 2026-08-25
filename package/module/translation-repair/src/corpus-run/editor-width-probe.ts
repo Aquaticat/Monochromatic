@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { readAskedCount, } from './asked-count.ts';
 import { sampleBenchSlices, } from './bench-sample.ts';
 import { widthControlHolds, } from './editor-width-control.ts';
 import { gatherWidthInput, } from './editor-width-input.ts';
@@ -114,18 +115,19 @@ async function main(): Promise<void> {
    */
   const judgeModelIds = RUN_ROSTER;
 
+  /**
+   * Slices asked for on the command line, or the default.
+   */
+  const wanted = readAskedCount({
+    argv: process.argv,
+    fallback: DEFAULT_SLICES,
+    asks: 'slices',
+  },);
+
   console.log(
     `WIDTH narrow ${String(narrowEditorIds.length,)} against wide ${
       String(wideEditorIds.length,)
     }, panel of ${String(judgeModelIds.length,)} held fixed`,
-  );
-
-  /**
-   * Slices asked for on the command line, or the default.
-   */
-  const wanted = Number(
-    process.argv[2]
-      ?? String(DEFAULT_SLICES,),
   );
 
   /**
