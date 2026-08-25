@@ -444,6 +444,154 @@ await describe({
     },),
 
     it({
+      name: 'NAMES THE FIELD rather than the file at every level a record can '
+        + 'break, which is what makes a refusal actionable: a settled artifact '
+        + 'runs to thousands of lines, and nine shapes that all reported the '
+        + 'file would leave an operator to find the broken field by hand',
+      fn: async () => {
+        /**
+         * One artifact per shape a decoder refuses, each paired with the path
+         * fragment its refusal has to name.
+         *
+         * `claimAttributions` is decoded before `heardCriticIds` is read, so
+         * the shapes aimed at the heard set carry an empty attribution list:
+         * a broken one would be refused first and the case would then pin a
+         * field it was not aiming at.
+         */
+        const broken: readonly {
+          readonly id: string;
+          readonly expects: string;
+          readonly critics: unknown;
+        }[] = [
+          {
+            id: 'HeardNotArray',
+            expects: '.heardCriticIds',
+            critics: [{ sliceIndex: 0, heardCriticIds: TABBY, claimAttributions: [], },],
+          },
+          {
+            id: 'HeardMemberNotString',
+            expects: 'heardCriticIds[0]',
+            critics: [{ sliceIndex: 0, heardCriticIds: [7,], claimAttributions: [], },],
+          },
+          {
+            id: 'RecordNotRecord',
+            expects: 'chunkCritics[0]',
+            critics: ['a nap',],
+          },
+          {
+            id: 'AttributionsNotArray',
+            expects: '.claimAttributions',
+            critics: [{ sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: NAP, },],
+          },
+          {
+            id: 'AttributionNotRecord',
+            expects: 'claimAttributions[0]',
+            critics: [{ sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [NAP,], },],
+          },
+          {
+            id: 'ClaimIdNotString',
+            expects: 'claimAttributions[0].claimId',
+            critics: [{
+              sliceIndex: 0,
+              heardCriticIds: [TABBY,],
+              claimAttributions: [{ claimId: 7, proposers: [{ modelId: TABBY, emissionCount: 1, },], },],
+            },],
+          },
+          {
+            id: 'ProposersNotArray',
+            expects: '.proposers',
+            critics: [{
+              sliceIndex: 0,
+              heardCriticIds: [TABBY,],
+              claimAttributions: [{ claimId: NAP, proposers: TABBY, },],
+            },],
+          },
+          {
+            id: 'ProposerNotRecord',
+            expects: 'proposers[0]',
+            critics: [{
+              sliceIndex: 0,
+              heardCriticIds: [TABBY,],
+              claimAttributions: [{ claimId: NAP, proposers: [TABBY,], },],
+            },],
+          },
+          {
+            id: 'ProposerModelIdNotString',
+            expects: 'proposers[0].modelId',
+            critics: [{
+              sliceIndex: 0,
+              heardCriticIds: [TABBY,],
+              claimAttributions: [{ claimId: NAP, proposers: [{ modelId: 7, emissionCount: 1, },], },],
+            },],
+          },
+        ];
+
+        /**
+         * All nine written into one directory, so a single gather answers them
+         * together and a shape that was quietly accepted shows up as a missing
+         * row rather than as a passing case.
+         *
+         * Each artifact records the id its file is named for, because the pool
+         * treats a file whose recorded id is not its file name as unplaceable,
+         * and one readable artifact rides along because a pool with nothing
+         * placeable in it is refused before any shape is reported.
+         */
+        await using scratch = await writeArtifacts({
+          artifacts: {
+            'Readable.json': {
+              ...artifactWith({
+                sliceCritics: [{
+                  sliceIndex: 0,
+                  heardCriticIds: [TABBY,],
+                  claimAttributions: [{
+                    claimId: NAP,
+                    proposers: [{ modelId: TABBY, emissionCount: 1, },],
+                  },],
+                },],
+              },),
+              id: 'Readable',
+            },
+            ...Object.fromEntries(broken.map(function toFile(one,): [string, unknown,] {
+              return [
+                `${one.id}.json`,
+                {
+                  ...artifactWith({ sliceCritics: one.critics, },),
+                  id: one.id,
+                },
+              ];
+            },),),
+          },
+        },);
+
+        /**
+         * Why each file failed, keyed by the file that failed.
+         */
+        const reasons = new Map((await gatherAttributionEntries({ artifactsDir: scratch.dir, },))
+          .malformed
+          .map(function toEntry(row,): [string, string,] {
+            return [
+              row.name,
+              row.reason,
+            ];
+          },),);
+
+        expect(reasons.size,).toBe(broken.length,);
+        for (const one of broken) {
+          /**
+           * Why this file failed, absent where the decoders accepted a shape
+           * they were supposed to refuse.
+           */
+          const reason = reasons.get(`${one.id}.json`,);
+
+          // STRINGIFIED so an accepted shape fails on the expected path being
+          // absent, rather than throwing on an absent row, which reads as a
+          // broken test instead of as the missing refusal it is.
+          expect(String(reason,),).toContain(one.expects,);
+        }
+      },
+    },),
+
+    it({
       name: 'THROWS on an emission count below one, since a proposer that '
         + 'emitted a claim zero times did not propose it and crediting one '
         + 'would manufacture support from a critic that stayed silent',
