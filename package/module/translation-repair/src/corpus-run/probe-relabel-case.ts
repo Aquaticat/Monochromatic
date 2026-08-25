@@ -83,11 +83,6 @@ export const DAMAGED_CASES = [
 ] as const;
 
 /**
- * How much of a replaced text an error message quotes back.
- */
-const QUOTE_PREVIEW_CHARS = 80;
-
-/**
  * Positions {@link DAMAGED_CASES} names, for membership tests.
  */
 const DAMAGED_POSITIONS: ReadonlySet<number> = new Set(
@@ -237,13 +232,20 @@ export function locateSlice(
         .includes(before,);
     },);
   if (holder === undefined) {
+    // NAMES THE LOOKUP, NEVER THE TEXT. `ArtifactParseError` carries
+    // `messageNamesOnly`, which `reportingRefusals` reads as permission to
+    // print the whole message, and the marker's own justification is that the
+    // class "names the artifact path and the shape the value failed to satisfy,
+    // and quotes neither the value nor the file". Until 2026-08-25 this site
+    // put 80 characters of the replaced TRANSLATION in the path, so a probe
+    // that could not find its slice printed a memorial page's wording to a
+    // terminal and into whatever log the run was writing. It was the only one
+    // of 47 interpolating paths in the package that quoted text rather than a
+    // structural position. The length is the whole diagnosis anyway: it says
+    // which lookup failed and how big the missing text was, and the artifact
+    // holds the text for anyone who needs to read it.
     throw new ArtifactParseError({
-      path: `slice holding ${
-        JSON.stringify(before.slice(
-          0,
-          QUOTE_PREVIEW_CHARS,
-        ),)
-      }`,
+      path: `slice holding the replaced text of ${String(before.length,)} characters`,
       reason:
         'present in one slice; absence means slicing no longer reproduces the run, so any comparison would use a different prompt than production sent',
     },);
