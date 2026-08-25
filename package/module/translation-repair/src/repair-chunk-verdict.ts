@@ -316,6 +316,8 @@ export function settleChunkFromChecks(
  *
  * @returns One line naming what this slice settled on
  *
+ * @internal
+ *
  * @example
  * ```ts
  * const line = describeChunkSettlement({ sliceIndex, changed, resolvedCount, ... },);
