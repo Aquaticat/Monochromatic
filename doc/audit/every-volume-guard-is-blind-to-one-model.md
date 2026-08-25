@@ -323,7 +323,10 @@ OWED AT EXIT: recount this table on the finished run, then again on the first po
 run. The instrument is `~/temp/agent/zero-content-from-log.mjs`, which takes one or more log
 paths and was cross-checked against an independently written pass over the same log rather
 than against itself. It belongs in the package beside `run-timing-report` once `#221` is
-built; until then the method is the whole of it, and is stated above. Three outcomes are worth telling apart, and only the pair of counts tells them apart:
+built; until then the method is the whole of it: zero-content counted against completed
+streams only, never against cut ones.
+
+Three outcomes are worth telling apart, and only the pair of counts tells them apart:
 
 -   `qwen3.8-max` falling from 232 to near zero confirms `#211` addresses the seat it was
     diagnosed on, which is the whole of its claim.
