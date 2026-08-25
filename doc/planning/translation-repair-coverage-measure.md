@@ -169,6 +169,58 @@ Measured this way on 2026-08-25:
     Reaching the exits that build those with a non-empty attribution list
     needs a scripted state this work has not found.
 
+## What the sweep found, tier by tier
+
+Recorded 2026-08-25,
+after nineteen further branches were measured the same way.
+
+Rounds run in batches of four or five,
+each one mutating a branch,
+rebuilding,
+running the package suite and restoring.
+A round costs about forty-five seconds here,
+so a batch of five fits inside a single wait.
+
+ONE BRANCH PER FUNCTION,
+which bounds what a covered verdict means:
+it says that branch is asserted,
+not that the function is.
+Breadth first was chosen deliberately,
+since it finds the largest gaps soonest,
+and a function whose representative branch came back uncovered is worth
+deepening before one whose came back covered.
+
+Covered, so nothing was written:
+`codePointCount` excluding the surrogate range,
+`wordsOf` pushing its final word,
+`collapseSoftLineBreaks` requiring both neighbours,
+`sharedNumber` on both its source check and its digit floor,
+`sourceBytesOf` counting bytes rather than characters,
+the slice cache key and its file name,
+`isTranslateReportWire` refusing a blank,
+and `extensionOf` lowercasing.
+
+Uncovered, and closed by a case in `2302cf549`:
+`reflowOrphans` clearing what it holds at an anchor,
+`digitRuns` closing a run that ends the passage,
+`unsupportedVariant` wrapping through ten,
+all three decisions inside `buildLicensedQuotes`,
+`pluralEntries` agreeing its noun,
+`generationLines` printing the count,
+and `unheardCacheDiscardFinding` naming its slice.
+
+THE UNCOVERED NINE CLUSTER,
+which is worth noticing:
+seven of them are the ends of things.
+The last digit run in a passage,
+the wrap from nine to zero,
+the empty quote,
+the repeated quote,
+the noun at one entry.
+Cases get written against the middle of a function,
+where the interesting behaviour is,
+and the ends go unasserted while still being executed on every run.
+
 ## What not to do
 
 Do not re-run module reachability with barrel edges counted.
