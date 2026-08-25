@@ -19514,3 +19514,435 @@ the undecided-lanes copy,
 the unchanged slice carrying text,
 the trailing-buffer trim,
 and the line-break precedence in the splice join.
+
+## Six sections aged out of the working handover on 2026-08-25 (second round)
+
+Moved verbatim under the rule the working handover preamble sets:
+history takes closed work whose conclusion is already encoded in the code,
+and superseded reasoning kept only for its evidence.
+
+KEPT IN THE WORKING FILE DELIBERATELY: the sections a reader needs to INTERPRET the
+standing when the calibration exits, namely "Zero editor rounds does not mean nothing
+was repaired", "How many slices an editor calibration needs", and "The 14-slice editor
+calibration finished, and it settles no seat".
+
+## `#201` landed: availability is recorded, readable, and samplable
+
+Four commits on 2026-08-24, all pushed.
+
+### What shipped
+
+-   `provider-budget.ts` logs `METERS synthetic=<state> hyper=<state>` at `info`
+    on every meter reading, once per sixty-second freshness window.
+    Since 8f774f34f the line also carries the numbers each state was read from;
+    see the `#202` section.
+    It was already computing this and saying it at `debug`, which runs do not record.
+-   The meter now has three states.
+    `meterRecordOf` (named `meterStateOf` until 8f774f34f) reports
+    `wet`, `dry` or `unreadable`,
+    and `routesAsDry` maps that back to the routing bit.
+    Both are exported `@internal` and pinned by six cases.
+-   `meter-sample-read.ts` parses those lines back into samples.
+    No regex.
+-   `meter-dry-span.ts` computes duty cycle and outage spans as bounded ranges.
+-   `meter-report` reads any number of logs and reports both providers.
+    Spends nothing.
+-   `budget-sample` takes one reading between runs.
+    Spends no generation.
+
+### The defect the round-trip found
+
+Reading a real sampler log back reported `unread=1` on an intact log.
+The sampler's own summary said "the METERS line above is the record",
+and the parser counted that sentence as a record it could not read.
+
+A record is now recognised by its first field parsing.
+Prose does not do that; a record truncated part way through its second field still does.
+Confirmed both ways:
+the real log now reads `unread=0`,
+and the fixture's planted undated record still reads `unread=1`,
+so the gate did not simply switch the detection off.
+
+### State
+
+-   Lint 0 warnings 0 errors on 845 files, types clean, 619 suites pass, 0 fail.
+-   One reading exists so far:
+    2026-08-24T18:17:35.383Z, `synthetic=wet hyper=dry`.
+    Charm Hyper has been dry all day; Synthetic is up.
+-   The record only grows from here,
+    so the numbers are worth reading again after the next few passes
+    rather than now.
+
+### What is left
+
+-   `#200`, an editor-role calibration, is still open and still needs its shape decided.
+-   `#94`, the slice rename, is still deliberately deferred.
+
+## `#200`: the editor calibration is built, and its blocker was imaginary
+
+### The finding that unblocked it
+
+The task was held because a settled artifact exposes neither the envelopes nor
+the issues an editor worked from, so the claims looked unreplayable, and the
+choice looked like an artifact schema change or inventing claims as fixtures.
+
+Neither is needed. `ChunkRepairOutcome.rounds` already carries, per round, the
+slate judges saw with each candidate's producer attached, and every ballot cast
+over it, and both sides name the same `CandidateProducer` and `SelectionBallot`
+out of `candidate-select-model.ts`. That is `SelectionRound` one re-shape away.
+
+So the calibration drives the lane live and reads what it records.
+
+### What shipped
+
+-   `repair-selection-rounds.ts` projects recorded rounds into the standing's
+    shape, sorting by the position judges were shown and REFUSING a slate whose
+    positions are not one to its length. A ballot names a candidate by number,
+    so that is the assumption which cannot be checked afterwards.
+-   `producer-standing-report.ts` holds the rendering both calibrations share.
+-   `editor-calibrate` drives the whole repair lane, all ten editing and all ten
+    judging every slice, and reports the EDITOR and REFINER standings off one
+    spend.
+
+### The one deliberate divergence from production
+
+Checkers self-certify in this runner and nowhere else. Production forbids a
+checker proving its own repair, and a full editor roster leaves nobody
+independent when the roster is ten; rotating editors out would reintroduce the
+survivorship the shape exists to avoid. Safe here because checking runs after
+selection: the ballots a standing reads are cast before any checker is asked.
+
+### What is still owed
+
+The MEASUREMENT, which needs a full roster. Charm Hyper has been dry all day, so
+a run now seats five of ten and produces exactly the survivorship the shape
+prevents. `budget-sample` makes the recovery observable; run the calibration
+once a sample shows `hyper=wet`.
+
+A one-slice smoke run was made against the dry roster to prove the runner
+executes. It ran 7m18s and exited 0: the checker assertions passed with the full
+roster seated, the five Hyper-only models were refused as lost voices, and the
+lane continued on the five that answered.
+
+IT REPORTED ZERO ROUNDS, AND THAT IS THE LANE WORKING. Critics raised two claims
+on that slice, the panel adjudicated two issues, and the lane then said
+`chunk 5: nothing to edit, unchanged`, because neither issue was ACCEPTED. No
+editor is asked to write on a slice like that, so no round exists to count.
+
+ADJUDICATED IS NOT ACCEPTED, and that governs how the real measurement must be
+sized. A slice can buy ten critics and a ten-model panel and contribute nothing
+to an editor standing. The default of six slices may well yield very few rounds;
+draw generously and read the new "from N of M slices" line before trusting a
+standing.
+
+Because a null from a probe never shown able to produce a non-null says nothing,
+there is now a positive control in the unit suite: real-shaped rounds driven
+through the projection and the tally together, asserting a standing falls out
+with its counts. That is what makes the live zero readable as "this slice had
+nothing to repair" rather than "the instrument produces nothing".
+
+## `#202`: the record carries the numbers, not only the verdict
+
+One commit on 2026-08-24, 8f774f34f, pushed.
+
+### How it was found
+
+Checking whether Charm Hyper was really out during the `#200` calibration,
+the record answered `METERS synthetic=wet hyper=dry` and nothing else.
+That is exactly what a wrong threshold in `budget-routing.ts` would also print,
+so the only way to tell was a live `GET /v1/credits`,
+which answered:
+
+```json
+{
+  "balance": 0
+}
+```
+
+The meter was right.
+The point is that the record could not say so,
+and for any moment already past there is no second call to make.
+That is the same failure `#201` was opened on,
+one level down:
+a reading was being computed, used, and then dropped.
+
+### What shipped
+
+-   `syntheticMeterLevel` and `hyperMeterLevel` in `budget-routing.ts`
+    render `key=value` tokens from the same snapshot
+    the dryness verdict is read from.
+    One read, so a verdict and its numbers cannot describe different moments.
+-   `meterStateOf` became `meterRecordOf` and returns `{ state, fields }`.
+    A meter that did not answer reports no fields;
+    `state` already carries that it did not.
+-   The record now reads:
+
+    ```text
+    METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0
+    ```
+
+-   `meter-sample-read.ts` defines a level as any field whose value
+    is not a meter state,
+    so a field added later reaches a human instead of being dropped.
+    The report's dedupe key covers levels,
+    so two genuinely different readings at one instant no longer collapse.
+-   `meter-report` prints the level at both ends of the record.
+    Two ends, because the last says what the budget is now
+    and the first says which way it moved to get there,
+    which separates a budget this run drained
+    from one that was empty before it started.
+
+### Why throttling earned its own field
+
+Synthetic reads dry for three reasons that route identically:
+the weekly budget empties,
+the rolling window empties,
+or the account is actively throttled while both still have room.
+`syntheticThrottled=yes` beside a full window is the third,
+and nothing in the record could previously show it.
+
+### State
+
+-   Committed before verification, per `AGENTS.md` `GCE`.
+-   Build, lint, type-check and suite are OWED.
+    None can run while the `#200` calibration holds `dist`:
+    every mise task declares `depends = ["build"]`
+    and would rewrite the bundle underneath a live run.
+
+## The editor calibration never ran the naturalness lane at all (`#200`)
+
+2026-08-24, found by watching the partial run rather than by reading code.
+
+### The signal
+
+Nine slices, every one reporting `0 refiner rounds`,
+and `grep -i refine` over the whole run log returning
+nothing but my own progress lines.
+A stage that declines still logs;
+a stage that never runs does not.
+
+### The cause
+
+`repairChunk` does not reach refinement.
+It accepts `refinerModelIds` only so `repair-contract.ts` can compute
+the union of models the slice must seat,
+sets `refined: false`, and returns.
+`runRefineStage` is called from `refine-slice-settle.ts`,
+which the DOCUMENT driver runs afterwards, per slice, in `refine-phase.ts`.
+
+So the module note in `editor-calibrate.ts` claiming
+
+> IT REPORTS THE REFINER STANDING TOO, off the same spend
+
+was false from the day it was written.
+The refiner standing it printed was always going to be empty,
+and an empty standing there would have read as
+"the rewriters answered nothing",
+which is a different and much worse claim than
+"no rewriter was ever asked".
+
+### The fix, in `f49cde75b`
+
+`settleRefinedSlice` now runs on each slice off the same client,
+and its rounds land on the outcome beside the accuracy lane's.
+That call was already shaped for this:
+it takes the `ChunkRepairOutcome`, the source, the incumbent and the models,
+and derives eligible paragraphs itself.
+Definitions are passed empty,
+which is honest rather than a sentinel:
+a drawn slice carries no document glossary behind it.
+
+It also reports how many slices reached a rewriter at all.
+A paragraph under the eligibility floor is never offered to one,
+so a slice can buy the whole accuracy lane and reach no refiner,
+and without that denominator the standing cannot be read.
+
+### Why this mattered enough to fix mid-run
+
+The refiner seat was reseated on 2026-08-24
+on the same 40-round WRITING calibration the editor seat was.
+It is exactly as unmeasured.
+Measuring one seat while leaving the other
+would have answered half the question `#200` exists for,
+and would have done it while printing an empty table
+that looked like an answer.
+
+### What the partial run in flight will report
+
+Its editor standing stands.
+Its refiner standing will be empty,
+and that emptiness means the lane was never run,
+not that the rewriters were silent.
+The full-roster re-run is the one that measures the refiner seat.
+
+## The writer calibration had no silent-model list at all (`#200`)
+
+Found 2026-08-24 by auditing `producer-calibrate.ts` against its own module note,
+the same method that had just falsified `editor-calibrate.ts`'s note twice.
+
+### What the audit confirmed and what it refuted
+
+Three claims in the note hold:
+`translatorModelIds: RUN_ROSTER` and `judgeModelIds: RUN_ROSTER`
+really do seat every model as writer and judge,
+self-votes really are discounted,
+and every rate really does carry its count.
+
+The suspected consensus blind spot is NOT there.
+`editor-ensemble.ts:387` ships any sole candidate unjudged;
+`translate-judge.ts:314` short-circuits only when the sole survivor IS the incumbent,
+and its own comment gives the reason a sole FRESH candidate is still judged:
+the repair pipeline's later safeguards,
+the resolution checkers and the unchanged-versus-patched selection,
+do not exist on the translate path.
+On the editor path they do,
+which is why the editor's short-circuit is a measurement gap and not a correctness one.
+
+### The gap that was real
+
+`producerStandings` carries a row only for a model somebody voted on.
+A model its provider refused for budget writes nothing,
+so it vanishes from the table,
+and an absent row reads exactly like a model that wrote and lost.
+
+`editor-calibrate.ts` named those models.
+`producer-calibrate.ts` did not,
+and that is the instrument that seated the current three writers,
+on a day Charm Hyper was empty.
+
+### What landed, in `eb60eac09`
+
+`producer-silence.ts` splits a seated roster three ways:
+judged, wrote but was never voted on, and wrote nothing at all.
+The two silent groups are named separately because they call for opposite readings:
+one is evidence already paid for,
+the other is evidence nobody has bought yet.
+The silent line carries both denominators, as `covers N of M seats`.
+
+A standing or a slate naming a model the run never seated raises `UnseatedStandingError`,
+since coverage of one roster cannot be read off another.
+Both inputs are checked, because either one naming an unseated model
+means the table and the roster came from different runs.
+
+It is read AFTER the standings are printed in both callers,
+so a run whose evidence disagrees with its own roster
+still leaves every standing it paid for on stdout before the refusal.
+
+`editor-calibrate.ts` drops its inline version and uses the shared one.
+
+### A defect this found in the same file, introduced earlier the same day
+
+`SliceRounds.shipped` was read off the REFINED outcome.
+`issue-authors.ts:354` unions the editors with any refiner whose rewrite won,
+so that field named both seats in one list,
+printed under a heading a reader takes as editor credit.
+With both rosters at all ten the mixing is invisible in the ids and wrong in the attribution.
+
+The editor column now comes from the accuracy lane's own outcome, before refinement.
+The refiner column comes from a new `refinedBy` on `RefinedSliceOutcome`,
+which names the models whose rewrite is actually in the text that ships:
+empty on a non-translation slice, on a rewriter that changed nothing,
+and on a rewrite the recheck rolled back.
+It is kept off the cached `RefinedSliceSettlement` for the reason `asked` is:
+a slice resumed from disk bought no rewrite.
+
+### Two tests were importing a path that does not exist
+
+`artifact-rounds-read.unit.test.ts` and `digest-group.unit.test.ts`,
+both written earlier the same day,
+imported `../dist/final/node/index.mjs` from `src/corpus-run/`,
+which resolves to `src/dist`.
+The 72 sibling tests in that directory use `../../dist/`.
+Both would have thrown at import.
+Corrected before the suite ran, so the suite never recorded a green run over them.
+
+### State
+
+Code and tests landed in `eb60eac09` and `8ed5da052`.
+`producer-silence.ts` was exercised directly against source ahead of the build,
+which is what caught the silent line reading `compares 1 models and not 4`.
+
+All four checks are green as of `fc5dca624`:
+build exit 0,
+unit suite 628 suites passing and 0 failing at exit 0,
+oxlint 0 warnings and 0 errors,
+and `tsc --build` clean.
+The lint pass went from 164 warnings to 0,
+and it caught an auto-fix that had changed behaviour:
+rewriting `error instanceof Error` inside a template literal
+moved the ternary outside the template,
+leaving a non-empty string as the condition
+so the branch was always taken on a value typed `unknown`.
+
+Type-check found two source defects nothing else had:
+`requireJudgedRound` declared `RepairJudgedRound` and returned six of its fields,
+and `editor-standing-read.ts` referenced a `DirectoryReading` type it never declared.
+
+Both new CLIs are verified at the user boundary.
+`budget-sample` now prints
+`METERS synthetic=wet hyper=dry syntheticWeekly=95.98% syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=0`,
+and `meter-report` reads those levels back and prints them beside the verdict,
+which closes `#202`.
+`editor-standing-read` accounts for all 41 archived artifacts, none of them malformed,
+which closes `#203`.
+
+## SUPERSEDED: the deepseek zero-content anomaly, first reading (2026-08-25)
+
+RESOLVED LATER THE SAME DAY. The heading this section used to carry said the anomaly was not
+resolvable from the log. That is no longer true, and the resolution is in
+`doc/audit/every-volume-guard-is-blind-to-one-model.md` and in the section named
+"Two more findings from the same run".
+The counts here were right; what was wrong was the conclusion drawn from them.
+
+WHAT THIS SECTION STILL GETS RIGHT, and why it is kept rather than deleted:
+
+-   The method lesson. The instrument used for CAUSE here was a 40-line scan
+    window, and a positive control on `hf:openai/gpt-oss-120b` showed it fired on
+    39 percent of healthy calls. Nine samples against that baseline separate
+    nothing. That reasoning was correct and is worth keeping.
+-   The `hf:zai-org/GLM-5.2` distinction, which the later measurement depends on:
+    its zero-content count EQUALS its cut count, so those zeros are unfinished
+    calls rather than the `#211` signature. The later count reads only COMPLETED
+    streams, which is why GLM shows zero there and why
+    `deepseek-v4-pro-0813`, with 12 zero-content against 0 cuts, is the real
+    anomaly.
+
+Re-measured over the calibration's first 13 slices, 1176 stream lines parsed and none skipped.
+
+### What the counts say
+
+-   `qwen3.8-max`: 100 calls, 98 zero-content, 17 cut. So 81 COMPLETED calls counted nothing.
+-   `deepseek-v4-pro-0813`: 101 calls, 9 zero-content, 0 cut.
+-   `hf:zai-org/GLM-5.2`: 100 calls, 10 zero-content, 10 cut. Zero-content EQUALS cut count.
+-   `hf:Qwen/Qwen3.8-27B`: 2 and 2. Every other seat: zero and zero.
+
+GLM-5.2 and Qwen3.8-27B are the ordinary case, streams that ended before content arrived.
+GLM-5.2's ten carry a median of 2.3 million raw characters,
+which is runaway reasoning meeting the straggler deadline, not a parsing fault.
+Every zero-content call on every seat carries reasoning above zero,
+so none of them is a genuinely empty reply.
+
+### Why the log cannot settle deepseek's nine
+
+The only correlate available is whether a voice from that seat appears near the stream line.
+That instrument has a measured baseline of 39 percent on HEALTHY calls:
+`hf:openai/gpt-oss-120b` has 102 completed calls with content
+and only 40 of them are followed by a voice within ten seconds,
+because most streams are editor or refiner production calls that produce no ballot line at all.
+
+Against that baseline:
+
+-   `qwen3.8-max`'s zero-content calls score 35 percent, indistinguishable from healthy.
+    That is independent confirmation of `#211`: its answers arrived, only the counter was fooled.
+-   `deepseek-v4-pro-0813`'s nine score 11 percent, where the baseline predicts about three and a half.
+    On nine samples that separates nothing.
+
+An earlier reading of this scanned forty lines after each occurrence and reported the seat present in six of nine.
+That was wrong: the window spanned neighbouring calls and was catching another round's voice.
+
+### What answers it, for free
+
+The candidate ledger from `#212` records which model produced each candidate
+and which cast each ballot, with no timing correlation involved.
+The first run carrying a ledger answers this without a single extra call.
+Until then the honest state is: measured, unexplained, nine events, and not folded into `#211`.
