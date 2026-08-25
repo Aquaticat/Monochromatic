@@ -1758,3 +1758,50 @@ The fork exposed it because only this package's `dist/` is built there,
 so the non-`/ts` path had nothing to resolve to:
 one `TS2307` that cascaded into 12 `no-unsafe-call` and `no-unsafe-member-access` warnings.
 Adding `/ts` cleared all 13.
+
+## The parked work is now build-and-test verified together, not just apply-clean (2026-08-25)
+
+`#210`, `#211`, `#212`, `#217` and `#218` were each parked separately,
+and each was checked only for whether its files applied cleanly over the main worktree.
+Applying cleanly is not the same as compiling, and none of them had ever been built together.
+
+All five are now extracted into `/var/home/user/worktrees/verify-empty` on top of `e8430d094`,
+and the combined tree was taken through the whole gate:
+
+```text
+build      exit 0
+lint       exit 0   0 warnings, 0 errors  (oxlint type-aware plus tsc)
+test:unit  exit 0   668 PASS, 0 FAIL
+```
+
+Six hundred and sixty-eight suites is nine more than the `#217` tree alone,
+which is the `#210` and `#212` suites arriving.
+
+The combined tarball is `~/temp/agent/parked-combined-20260825.tar.gz`, 42 files,
+and it SUPERSEDES both `~/temp/agent/spend-telemetry-210.tar.gz`
+and `~/temp/agent/verify-empty-217-218.tar.gz`.
+Extract only the combined one; extracting an older tarball afterwards would
+overwrite files with their pre-combination contents.
+
+### Why they were combined rather than kept apart
+
+`#210` touches `provider-barrel.ts`, `pipeline-barrel.ts`, `ballot-barrel.ts`,
+`candidate-select.ts`, `editor-ensemble.ts`, `judge-fidelity.ts`, `refine-stage.ts`
+and `translate-judge.ts`, all of which further work is likely to touch.
+Building each item against the same untouched base and landing them in sequence
+would have let a later tarball silently overwrite an earlier one's edits to a shared file,
+because a tarball carries whole files rather than a diff.
+Building each item on top of the previous removes that hazard entirely.
+
+No source file changed on the branch between the `#210` tarball's base and `e8430d094`:
+the last commit touching `package/module/translation-repair/src/` is `91fe0d0e6`,
+and everything after it is documentation.
+So extracting the older tarballs onto this base discarded nothing.
+
+### The landing sequence is correspondingly shorter
+
+Read the standing, extract `parked-combined-20260825.tar.gz`, build, lint, types, test,
+then commit in item order so each item keeps its own message.
+The build, lint and test steps have now been run once already and passed,
+so a failure there after landing would mean the main worktree differs from this fork,
+which is itself the thing worth knowing.
