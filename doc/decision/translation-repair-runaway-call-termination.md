@@ -446,7 +446,7 @@ WHAT THIS CORRECTS IS THE STATED REASON, NOT THE CONSTANT. `STREAM_FIRST_BYTE_MS
 the three logs are static files and `flagged-pass-2.log` kept growing after the audit was written,
 finds a completed, not cut, first byte at 183755 ms and a completed, not cut, mid-stream gap of
 124992 ms on `hf:zai-org/GLM-5.2` (first byte 794 ms, otherwise an ordinary stream). A separate,
-uncensored 2026-07-26 run, PASS 7 RUN 014 in `doc/handover/translation-repair.md` (a different,
+uncensored 2026-07-26 run, PASS 7 RUN 014 in `doc/handover/translation-repair-history.md` (a different,
 seven-model roster, three weeks before this traffic), recorded a completed call at 347099 ms,
 WITHIN 3.6 PERCENT OF THE CURRENT 360000 MS DEADLINE, with 9 of 764 sampled calls landing at or
 past 300 s. Any window tight enough to meaningfully beat the deadline would, on the evidence in

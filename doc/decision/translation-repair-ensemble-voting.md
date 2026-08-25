@@ -3,7 +3,7 @@
 Decided by the user on 2026-08-14, in three separate rulings during the session
 that built the translate lane.
 Each one reverses or narrows an earlier choice recorded in
-`doc/handover/translation-repair.md`, so this document is canonical for all
+`doc/handover/translation-repair-history.md`, so this document is canonical for all
 three and the older passages are history.
 
 ## The standing rule: one model's bad day must not delay the pipeline

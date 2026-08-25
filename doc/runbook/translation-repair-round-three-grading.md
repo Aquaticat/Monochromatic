@@ -269,7 +269,7 @@ its only refiner lost every voice to schema-mismatch, so five settled entries
 carry no rewrite at all.
 Read a rising `slicesSilent` as the lane going quiet, not as a run with nothing
 worth rewriting;
-`doc/handover/translation-repair.md` has the evidence, and the open decision is
+`doc/handover/translation-repair-history.md` has the evidence, and the open decision is
 task 64.
 
 ## What this round cannot tell you

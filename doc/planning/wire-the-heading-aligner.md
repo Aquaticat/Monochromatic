@@ -60,7 +60,7 @@ The pipeline aligns at `repair-translation.ts`, which calls
  character fraction and MERGES adjacent source sections to force the counts to
  match.
 
-So the record in `doc/handover/translation-repair.md` saying the section
+So the record in `doc/handover/translation-repair-history.md` saying the section
  aligner now pairs `XingZ60` correctly is true of `alignHeadings` and false of
  the production path. The fix was built, tested, committed and never connected.
 

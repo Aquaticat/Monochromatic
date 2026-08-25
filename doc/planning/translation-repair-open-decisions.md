@@ -436,7 +436,7 @@ D, do #84 first
 This question was gated on a number nobody had. There is one now, from two disjoint draws of twenty
 slices each over the same forty-slice sample, thirty-one of which carried work.
 The instrument, its three fixed defects and its positive control are described in
-`doc/handover/translation-repair.md`.
+`doc/handover/translation-repair-history.md`.
 
 Widening the editors from three to six changed what ships NO MORE OFTEN than re-running the same
 three did. The comparison is paired, one bit per slice from changing the width and one from changing
@@ -928,7 +928,7 @@ which is why the class is named `relocationCandidates`. The earlier "6.4 percent
 is a floor" wording is withdrawn: it was a floor for the union, never for
 relocation. The sections "The displacement screen measures four different things"
 and "The screen rebuilt, and the corrected corpus numbers" in
-`doc/handover/translation-repair.md` carry the per-slice numbers and what the
+`doc/handover/translation-repair-history.md` carry the per-slice numbers and what the
 rebuild changed.
 
 ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges decline

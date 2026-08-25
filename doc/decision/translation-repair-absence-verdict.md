@@ -70,4 +70,4 @@ so a merged pair fails the length test even when the roster is unsure.
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D
 and which framed the four as exclusive. The wiring gate recorded on `#106` is released by this
-decision, and the stopgap copy in `doc/handover/translation-repair.md` is replaced by this file.
+decision, and the stopgap copy in `doc/handover/translation-repair-history.md` is replaced by this file.
