@@ -2608,3 +2608,106 @@ Running the suite and proving both guards per GFP is the remaining work on `#224
 `mise tasks deps` was used to establish that `lint:types`, `lint:oxlint` and `test:unit`
 carry no build dependency, which is what made checking anything mid-pass possible.
 The type-check writes `dist/final/types/` only, never the node bundle the pass is running.
+
+## A third shape, found by asking which other parsers quote (`#225`, 2026-08-25)
+
+`#220` and `#224` were both about `JSON.parse`.
+The question that found this one was smaller and better:
+which OTHER parsers does this package hand corpus text to,
+and what do their refusals say?
+
+Two, and they answered differently.
+
+### YAML quotes, every way it was asked
+
+The `yaml` package raises `YAMLParseError` carrying a source code frame:
+
+```text
+Nested mappings are not allowed in compact mappings at line 1, column 7:
+
+name: Pouncewick
+      ^
+```
+
+That is a whole line where V8 gives ten characters,
+and five failure shapes were tried rather than one:
+nested mapping, duplicate key, unclosed flow sequence, tab indentation, and bad block indent.
+All five reproduced the frame.
+Front matter holds a person's name, their dates and their links.
+
+WRAPPING IT DID NOT CONTAIN IT.
+`FrontMatterParseError` carried the parser error as `cause`,
+and Node's uncaught-exception reporter renders a cause chain,
+so the frame printed under `[cause]:`.
+Measured end to end by throwing a wrapped error from `node` and reading the terminal.
+
+Reachable two ways:
+`corpus-run/recall-benchmark.ts` calls `splitFrontMatter` and is not one of the nine CLIs `#223` wrapped,
+and `parse-document.ts` runs inside the pass, which writes to a terminal when run interactively.
+
+### MDX was the near miss, and the first probe called it safe
+
+Four of five MDX failure shapes report a position and an expectation and quote nothing.
+On that evidence the module was written off as already safe.
+Widening the probe found the fifth:
+
+```text
+1:1: Expected a closing tag for `<Pouncewick>` (1:1-1:13)
+```
+
+It quotes the tag name.
+Narrow, but `parse-document.ts` stringified that cause into a `ParseFinding.detail`,
+which is STORED in the artifact rather than printed and forgotten,
+and `mdx-downgraded` is a routine tolerance rather than a corruption path.
+
+The lesson is the one `RXH` states:
+the narrowest query returning nothing is not evidence of nothing.
+One probe produced a clean negative that a fifth case refuted.
+
+### What both errors say now
+
+Position and fault code, which is the whole of what a reader acts on:
+
+```text
+Front matter fence pair found but YAML inside refused to parse at line 1 column 7
+(BLOCK_AS_IMPLICIT_KEY); corpus metadata parses upstream, so this signals corruption.
+
+MDX body refused to parse at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch); corpus documents
+compile as MDX upstream, so failure signals corruption or an unsupported construct.
+```
+
+Neither carries the parser error as `cause` any more.
+Nothing is lost that a reader acts on:
+the file is on disk to open at that line.
+
+### A recorded decision reversed, with its reasoning answered
+
+`cli-refusal.ts` caught only `RunJsonUnreadableError`, and its note argued for that:
+catching every `Error` would destroy the stack of a genuine programming fault,
+trading a rare ugly report for a permanently undiagnosable one.
+
+That reasoning was right about the cost and wrong about the choice,
+because the two are separable.
+Everything is caught now, and the frames are kept anyway.
+What is dropped is the message line and the cause chain, which is where text travels;
+what is kept is the frames, which name files inside our own `dist`.
+An unexpected fault exits 5, distinct from 4,
+because one is a bug report and the other is a re-run.
+
+The old forwarding test pinned the old contract, so it was replaced rather than left to fail.
+Three cases now hold the design from both sides:
+the message must not appear anywhere the reporter writes,
+and the frames must still be there.
+Either assertion alone is satisfiable by a wrong implementation.
+
+### State
+
+Source landed in `7b81a95c3`, tests in `9145cc8aa` and `1e862f9e5`.
+Type-check clean, and every source file lints clean.
+
+NOT YET RUN.
+Every new suite imports the built bundle,
+and the calibration in flight owns `dist/final/node`.
+Lint reports 20 findings across the three test files,
+all four errors being `TS2305` on symbols the rebuild will supply.
+Running them, and proving each guard by removing it, is what `#224` and `#225` still owe.
