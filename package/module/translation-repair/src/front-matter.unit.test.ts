@@ -5,6 +5,8 @@
  * @module
  */
 
+import { parse as parseYaml, } from 'yaml';
+
 import {
   describe,
   expect,
@@ -12,6 +14,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   FrontMatterParseError,
+  namesWithoutQuoting,
   splitFrontMatter,
 } from '../dist/final/node/index.mjs';
 
@@ -190,3 +193,145 @@ await describe({
     },),
   ],
 },);
+
+//region Front matter refusal disclosure
+
+/**
+ * Word appearing nowhere else in this file, so an assertion of absence cannot
+ * pass by accident.
+ */
+const REFUSAL_FIXTURE_WORD = 'Tuftmallow';
+
+/**
+ * Front matter whose YAML refuses, with the fixture word on the offending line.
+ *
+ * MEASURED: this refuses as `BLOCK_AS_IMPLICIT_KEY` at line 1 column 7, and the
+ * parser's own message reproduces the line. The control below asserts that,
+ * because an absence assertion against a probe that cannot show a difference
+ * proves nothing.
+ */
+const REFUSING_SOURCE = `---\nname: ${REFUSAL_FIXTURE_WORD}\n  bad: [x\n---\n喵。\n`;
+
+/**
+ * Reads what the YAML parser says with nothing between it and a reader.
+ *
+ * @param yamlSource - YAML that must refuse
+ *
+ * @returns Parser's own message, code frame included
+ *
+ * @throws {@link Error} where the control fixture parsed, which would leave the
+ * absence assertions unproven
+ *
+ * @example
+ * ```ts
+ * const raw = rawYamlRefusal({ yamlSource: 'a: [x\n', },);
+ * ```
+ */
+function rawYamlRefusal({ yamlSource, }: { readonly yamlSource: string; },): string {
+  try {
+    parseYaml(yamlSource,);
+  }
+  catch (error) {
+    if (Error.isError(error,))
+      return error.message;
+
+    throw error;
+  }
+
+  throw new Error('the control fixture parsed, so it proves nothing',);
+}
+
+/**
+ * Splits source that must refuse, handing the refusal back to be read.
+ *
+ * @param text - source whose front matter will not parse
+ *
+ * @returns Refusal the split raised
+ *
+ * @throws {@link Error} where the fixture parsed, which would mean it no longer
+ * exercises anything
+ *
+ * @example
+ * ```ts
+ * const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
+ * ```
+ */
+function refusalFrom({ text, }: { readonly text: string; },): Error {
+  try {
+    splitFrontMatter({ text, },);
+  }
+  catch (error) {
+    if (Error.isError(error,))
+      return error;
+
+    throw error;
+  }
+
+  throw new Error('the fixture parsed, so it no longer exercises a refusal',);
+}
+
+await describe({
+  name: 'FrontMatterParseError says where, never what',
+  children: [
+    it({
+      name: 'CONTROL: the YAML parser itself does quote the line, so absence is provable',
+      fn: async () => {
+        /**
+         * What the parser says when nothing stands between it and a reader.
+         */
+        const raw = rawYamlRefusal({
+          yamlSource: `name: ${REFUSAL_FIXTURE_WORD}\n  bad: [x\n`,
+        },);
+
+        expect(raw.includes(REFUSAL_FIXTURE_WORD,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES to repeat the front matter it could not parse',
+      fn: async () => {
+        /**
+         * Refusal as a reader would see it.
+         */
+        const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
+
+        expect(refusal.message.includes(REFUSAL_FIXTURE_WORD,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'STATES the position and the code the parser assigned',
+      fn: async () => {
+        /**
+         * Refusal as a reader would see it.
+         */
+        const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
+
+        expect(refusal.message.includes('at line 1 column 7',),).toBe(true,);
+        expect(refusal.message.includes('BLOCK_AS_IMPLICIT_KEY',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'CARRIES NO cause, which a reporter would render whether asked to or not',
+      fn: async () => {
+        /**
+         * Refusal as a reader would see it.
+         */
+        const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
+
+        expect(refusal.cause,).toBe(undefined,);
+      },
+    },),
+    it({
+      name: 'DECLARES its message safe to forward',
+      fn: async () => {
+        /**
+         * Refusal as a reader would see it.
+         */
+        const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
+
+        expect(namesWithoutQuoting(refusal,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+//endregion Front matter refusal disclosure
