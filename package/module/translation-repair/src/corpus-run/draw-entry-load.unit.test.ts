@@ -158,6 +158,42 @@ function pooled(
 }
 
 /**
+ * Opens a throwaway directory that removes itself on disposal.
+ *
+ * @returns Disposable directory handle
+ *
+ * @example
+ * ```ts
+ * await using scratch = await scratchDir();
+ * ```
+ */
+async function scratchDir(): Promise<{
+  readonly path: string;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
+}> {
+  /**
+   * Fresh directory under the platform temp root.
+   */
+  const path = await mkdtemp(join(
+    tmpdir(),
+    'whiskers-draw-entry-',
+  ),);
+
+  return {
+    path,
+    [Symbol.asyncDispose]: async function removeScratch() {
+      await rm(
+        path,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
+/**
  * Writes one artifact into a throwaway directory and reads it back.
  *
  * @param artifact - whole artifact value, valid or not
@@ -182,38 +218,21 @@ async function loadingFrom(
     readonly eligible: EligibleEntries;
   },
 ): Promise<unknown> {
-  /**
-   * Throwaway directory, removed however this ends.
-   */
-  const artifactsDir = await mkdtemp(join(
-    tmpdir(),
-    'draw-entry-load-',
-  ),);
+  await using scratch = await scratchDir();
 
-  try {
-    await writeFile(
-      join(
-        artifactsDir,
-        ARTIFACT_NAME,
-      ),
-      JSON.stringify(artifact,),
-      'utf8',
-    );
-    return await loadEntry({
-      artifactsDir,
-      name: ARTIFACT_NAME,
-      eligible,
-    },);
-  }
-  finally {
-    await rm(
-      artifactsDir,
-      {
-        recursive: true,
-        force: true,
-      },
-    );
-  }
+  await writeFile(
+    join(
+      scratch.path,
+      ARTIFACT_NAME,
+    ),
+    JSON.stringify(artifact,),
+    'utf8',
+  );
+  return await loadEntry({
+    artifactsDir: scratch.path,
+    name: ARTIFACT_NAME,
+    eligible,
+  },);
 }
 
 await describe({
