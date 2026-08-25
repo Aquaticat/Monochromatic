@@ -12,6 +12,15 @@
  * cases below hold both halves at once: the message must NOT be repeated, and
  * the frames MUST still be there.
  *
+ * THREE EXIT CODES NOW, AND EACH IS DEFINED AGAINST THE OTHER TWO. `#226`
+ * closed the message of every class that had not declared itself quote-free,
+ * and `#227` decided which of our own may speak. So what a reader gets depends
+ * on the class thrown: a stated refusal says its sentence and stops at 6, a
+ * marked class that is not one says its sentence AND keeps its frames at 5, and
+ * everything else is named without being quoted. The cases below hold one of
+ * each, so a later change that collapses the three into one report fails here
+ * rather than in an operator's terminal.
+ *
  * BOTH SWAPS ARE DISPOSABLE. `process.exitCode` is process-wide, so a case that
  * set it and walked away would decide the whole suite's exit code, and a suite
  * reporting 680 passes while exiting 4 is worse than a failing test.
@@ -35,8 +44,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  LedgerShapeError,
   reportingRefusals,
   RunJsonUnreadableError,
+  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
 //region CLI refusal tests
@@ -78,6 +89,34 @@ const FAULT_MESSAGE = 'a tabby walked across Pouncewick';
  * Byte offset the fixture refusal names.
  */
 const FIXTURE_BYTE = 27;
+
+/**
+ * Exit code a CLI leaves behind when it declined in its own words.
+ */
+const REFUSED_AS_STATED = 6;
+
+/**
+ * Lines a stated refusal is expected to print: the sentence, and nothing after.
+ */
+const STATED_LINES = 1;
+
+/**
+ * Message the stated fixture carries, which MUST reach a reader.
+ *
+ * Shaped as a usage line because that is what the marker exists for: the words
+ * an operator needs most are the ones saying what to type next.
+ */
+const STATED_MESSAGE = 'name at least one basket: sunbeam-report <path> [<path> ...]';
+
+/**
+ * File the ledger fixture names, which its message may repeat.
+ */
+const LEDGER_FILE = 'ledger/000007.json';
+
+/**
+ * Field the ledger fixture reports missing, which its message may repeat.
+ */
+const LEDGER_FIELD = 'ballots';
 
 /**
  * Collects what would have gone to stderr, restoring the real one on disposal.
@@ -231,6 +270,52 @@ await describe({
          */
         const frames = printed.lines[FRAMES_LINE] ?? '';
 
+        expect(frames.includes('at ',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REPEATS a refusal stated in our own words, at its own code and with no frames',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'score-verify',
+          run: async () => {
+            throw new StatedRefusalError({ says: STATED_MESSAGE, },);
+          },
+        },);
+
+        expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
+        expect(printed.lines.length,).toBe(STATED_LINES,);
+        expect(printed.lines[0],).toBe(`score-verify: ${STATED_MESSAGE}`,);
+      },
+    },),
+    it({
+      name: 'KEEPS both halves for a marked class on the fault path, sentence and frames',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'ledger-report',
+          run: async () => {
+            throw new LedgerShapeError({
+              from: LEDGER_FILE,
+              field: LEDGER_FIELD,
+            },);
+          },
+        },);
+
+        /**
+         * Frames as the reporter rendered them.
+         */
+        const frames = printed.lines[FRAMES_LINE] ?? '';
+
+        expect(process.exitCode,).toBe(UNEXPECTED_FAULT,);
+        expect(printed.lines.length,).toBe(FAULT_LINES,);
+        expect(printed.lines[0],)
+          .toBe(`ledger-report: ledger file ${LEDGER_FILE} has no usable ${LEDGER_FIELD}`,);
         expect(frames.includes('at ',),).toBe(true,);
       },
     },),
