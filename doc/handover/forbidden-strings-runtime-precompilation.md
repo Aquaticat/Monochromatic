@@ -116,7 +116,7 @@ The user selected all recommended options in grill round 1.
 - **Q1,
    public scope**:
   add a supported scanner capability and wire it automatically in this monorepo.
-  External consumers may opt in without adopting file-enforcer.
+  Q13 later established that external consumers receive read-write caching by default.
 - **Q2,
    authority**:
   text is always authoritative.
@@ -182,6 +182,30 @@ The user selected all recommended options in grill round 1.
   Do not add a persistent artifact lock.
   Concurrent writers may duplicate compilation,
   but readers must see only complete self-validating artifacts.
+- **Q13,
+   cache activation**:
+  read-write caching is the default and has no opt-out.
+  Every runtime-rules scan checks the derived cache and attempts repair after a miss or rejection.
+  `compile-rules` remains the eager explicit operation.
+- **Q14,
+   cross-platform cache root**:
+  use an absolute `FORBIDDEN_STRINGS_CACHE_DIR` override when present.
+  Otherwise use XDG cache resolution on Linux and other XDG-oriented Unix,
+  `$HOME/Library/Caches` on macOS,
+  and `%LOCALAPPDATA%` on Windows.
+- **Q15,
+   source slot identity**:
+  key the artifact slot by SHA-256 of the exact current rules content.
+  Identical content may share one artifact across repositories within the same version and platform partition.
+  Every source edit selects a different slot.
+- **Q16,
+   warning protocol**:
+  emit JSON cache-warning records on stderr alongside plain-text findings.
+  Cli-git must parse the exact warning schema and continue rejecting unknown stderr records.
+- **Q17,
+   compatibility partition**:
+  partition cache storage by exact scanner version and operating-system/architecture family.
+  Repeat compatibility data inside the envelope before decoding raw engine bytes.
 
 ## Current proposed behavior
 
@@ -207,7 +231,9 @@ versioned artifact under the per-user cache root
 ```
 
 A missing scanner during fresh setup must not destroy or invalidate authoritative text.
-The exact bootstrap diagnostic and retry behavior remains open until the cache-mode questions settle.
+File-enforcer cannot eagerly compile in that state,
+but the first later scan uses the default read-write recovery path.
+The exact file-enforcer notice and retry behavior remains open.
 
 ### Scan behavior
 
@@ -215,15 +241,15 @@ The exact bootstrap diagnostic and retry behavior remains open until the cache-m
 resolve authoritative runtime rules path
             |
             v
-derive user-cache slot
+read and hash authoritative rules bytes
             |
             v
-read and hash authoritative rules bytes
+derive versioned platform partition and content-digest slot
             |
             +--> valid compatible artifact: load matcher and names
             |
             +--> cache miss or rejection:
-                    emit fixed redacted warning
+                    emit redacted JSON warning
                     compile authoritative text in memory
                     scan correctly
                     attempt atomic cache repair
@@ -237,8 +263,8 @@ It must never run an artifact whose embedded source digest disagrees with curren
 `compile-rules` should:
 
 - Require an explicit `--rules` path.
-- Canonicalize the source path for cache-slot identity.
 - Read and hash one source snapshot.
+- Derive the cache slot from the exact source-content digest.
 - Reuse an already valid compatible artifact without recompiling.
 - Compile through the same `compile_rules` path used by scanning.
 - Preserve every optional rule name in order.
@@ -249,100 +275,47 @@ It must never run an artifact whose embedded source digest disagrees with curren
 - Apply owner-only file permissions where supported.
 - Keep all diagnostics free of rule text and matched content.
 
-## Open grill round 3
+## Settled grill round 3 consequences
 
-The user has not answered Q13 through Q17 yet.
-Ask these questions with full context and options if the conversation state is lost.
+The selected path shape is provisionally:
 
-### Q13: cache activation
+```text
+<platform-cache-root>/forbidden-strings/
+  <exact-scanner-version>/
+    <operating-system>-<architecture>/
+      <source-content-sha256>/
+        rules.bin
+```
 
-Choose when cache reads and scan-time repairs are enabled.
-
-- **A,
-   recommended**:
-  explicit `off`,
-   `read-only`,
-   and `read-write` modes;
-  flag wins over environment;
-  existing users default to `off`;
-  this monorepo sets `read-write`.
-- **B**:
-  read-write caching by default with an opt-out.
-- **C**:
-  inspect valid caches automatically,
-  but require separate permission before scan mode writes.
-
-### Q14: cross-platform cache root
-
-Choose cache-root resolution.
-
-- **A,
-   recommended**:
-  absolute `FORBIDDEN_STRINGS_CACHE_DIR` override,
-  then XDG cache on Linux and other XDG-oriented Unix,
-  `$HOME/Library/Caches` on macOS,
-  and `%LOCALAPPDATA%` on Windows.
-- **B**:
-  XDG semantics on every operating system.
-- **C**:
-  require an explicit cache-root environment variable.
-
-### Q15: source slot identity
-
-Choose the identifier below the cache root.
-
-- **A,
-   recommended**:
-  SHA-256 of the canonical absolute rules path.
-- **B**:
-  SHA-256 of current rules content.
-- **C**:
-  SHA-256 of the source path string exactly as supplied.
-
-The artifact still embeds the source-content digest regardless of slot choice.
-
-### Q16: warning protocol
-
-Choose how Q8 warnings coexist with cli-git's strict stderr parser.
-
-- **A,
-   recommended**:
-  a closed set of fixed redacted ASCII warning records on stderr;
-  cli-git ignores only those exact records and rejects all other unknown lines.
-- **B**:
-  JSON warning records mixed with plain-text findings.
-- **C**:
-  ordinary tracing output.
-
-The recommended messages contain no rule text,
+The exact component spelling remains open.
+The envelope repeats the scanner version,
+platform family,
 source digest,
-source path,
-cache path,
-or arbitrary operating-system error text.
+rule identities,
+and artifact schema before its engine bytes.
 
-### Q17: compatibility partition
+Default read-write behavior intentionally changes every runtime-rules scan from read-only to potentially state-mutating.
+There is no cache-mode flag or environment opt-out to design.
+An unavailable cache root or failed artifact write must therefore degrade to a correct in-memory text compilation.
+The exact diagnostic and retry contract is part of the next grill frontier.
 
-Choose how cache slots separate scanner and platform variants.
+Content-addressed slots make old artifacts unreachable after every rules edit.
+They also permit identical rules content to share one compiled artifact across source paths.
+Cleanup and retention are now required design decisions rather than optional housekeeping.
 
-- **A,
-   recommended**:
-  partition by exact scanner version and operating-system/architecture family;
-  repeat compatibility data inside the envelope.
-- **B**:
-  one slot for all scanner versions,
-  with incompatible versions replacing each other's artifact.
-- **C**:
-  partition only by artifact schema version and claim cross-release compatibility.
+JSON warning records become part of the scanner-to-cli-git protocol.
+Their schema must be closed,
+redacted,
+and distinguishable from plain-text findings without treating arbitrary JSON as trusted output.
 
-## Expected dependent decisions after round 3
+## Open dependent decisions after round 3
 
-Do not silently settle these before Q13 through Q17 determine their prerequisites:
-
-- Scan-time cache-write failure behavior under each cache mode.
+- Scan-time cache-root and artifact-write failure behavior.
 - Fresh-setup behavior when file-enforcer cannot start the scanner.
-- CI behavior for one-shot secret-backed scans.
-- Whether cache warnings appear on an expected first miss or only on invalid existing artifacts.
-- Cache cleanup and old-version retention.
+- CI behavior for one-shot secret-backed scans under mandatory read-write caching.
+- Whether warnings appear on an expected first miss or only on invalid or failed cache operations.
+- Exact JSON warning schema and parser strictness.
+- Content-addressed cache cleanup and old-version retention.
 - Exact artifact field encoding and bounds.
 - Exact cache-directory and artifact filenames.
 - Whether the compilation command prints the derived artifact path.
@@ -386,7 +359,7 @@ Cover every path separately:
 - Named tail-format rules round-trip with names unchanged.
 - Unnamed legacy rules round-trip with numeric identity unchanged.
 - Valid artifact produces findings identical to text compilation.
-- Source-content change rejects old artifact.
+- Source-content change selects a new content-addressed slot and cannot reuse the old artifact.
 - Scanner-version or platform mismatch rejects old artifact.
 - Bad magic,
   truncated fields,
@@ -403,7 +376,7 @@ Cover every path separately:
 - `compile-rules` creates or reuses the derived artifact.
 - Scan-time recovery creates a valid artifact when authorized.
 - A cache-write failure still runs a correct text-compiled scan.
-- Cli-git accepts exact cache warnings and still maps findings.
+- Cli-git accepts only the settled JSON cache-warning schema and still maps plain-text findings.
 - Cli-git rejects unknown scanner stderr.
 - File-enforcer generates text before invoking compilation.
 - Fresh setup remains usable when the scanner binary is absent.
@@ -448,8 +421,12 @@ TypeScript changes require the package `lint:types` task in addition to tests an
   Broadly ignoring stderr would weaken fail-closed behavior.
 - Raw bincode compatibility is not a public stable format.
   The envelope and cache partition must reject unsupported producers before decoding.
-- Scan-time repair introduces state mutation.
-  Cache-mode authority and write-failure behavior need explicit decisions.
+- Scan-time repair introduces default state mutation with no opt-out.
+  Write failures must preserve a correct scan and follow the still-open JSON diagnostic contract.
+- Content-addressed slots retain one artifact per observed rules content and scanner/platform partition.
+  Automatic retention remains open.
+- A content digest is a stable fingerprint of sensitive source.
+  Treat cache paths and artifacts as sensitive even when rule text is absent.
 - File-enforcer is only this monorepo's eager integration point.
   Do not make the published scanner depend on it.
 - The repository supports Windows and macOS releases.
@@ -457,6 +434,5 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Obtain the user's answers to Q13 through Q17.
-Update this handover immediately with those answers,
-then derive the next design-tree frontier.
+Derive and ask grill round 4 from the open dependent decisions after round 3.
+Update this handover immediately after the user's next answer.
