@@ -28,9 +28,30 @@ import { RunJsonUnreadableError, } from '../run-json-read.ts';
 // diagnosable, and a class that declares its message quote-free still gets to
 // say it in full.
 //
-// `ledger-report.ts` does NOT use this. It reads a whole directory and reports
-// the files that refused as a shortfall inside its own output, which is a
-// better answer than stopping, and its closing comment records why.
+// `#226` put EVERY corpus-run entry point through this, thirty-eight of them,
+// after measuring the four cells it turns on. Running the source on a throwaway
+// fixture under node's type stripping:
+//
+//   bare, marked error      exit 1, 708 bytes. A stack dump, and Node also
+//                           spills the error's own fields as an object literal.
+//   wrapped, marked error   exit 4, 193 bytes. The message, and what to do.
+//   bare, unmarked error    exit 1, 554 bytes. Class, message and stack.
+//   wrapped, unmarked error exit 5, 662 bytes. Class and frames, no message.
+//
+// So this is an outright win on a refusal, and on a fault it trades the message
+// for a code that separates a fault from a refusal from the command's own
+// verdict. Unwrapped, all three are `1`. The lost message is the policy in
+// `refusal-text.ts` failing closed, and the lever that gets it back is marking
+// more of our own classes, not unwrapping the commands.
+//
+// A VERDICT SURVIVES because `process.exitCode` is set only in the catch here,
+// which was measured before the change rather than read off this file:
+// `verify-published` still exits `2` on a run it cannot check, byte-identical.
+//
+// `ledger-report.ts` is wrapped like the rest, but almost nothing reaches this
+// from it. It reads a whole directory and reports the files that refused as a
+// shortfall inside its own output, which is a better answer than stopping, and
+// its closing comment records why. This catches only what escapes that.
 
 /**
  * Exit code a CLI leaves behind when a run file would not read.
