@@ -129,6 +129,16 @@ running,
 and restoring,
 per `GFP`.
 
+Do not read a steady `] PASS ` count as evidence nothing broke.
+The runner prints ONE `PASS` line per suite,
+naming every child that passed,
+and a separate `FAIL` line per child that did not.
+A suite with one failing case still prints its `PASS` line naming the rest,
+so the count held at 711 across a `GFP` round in which a case failed and the run
+exited 1.
+`TLY` already rules that the exit code decides;
+this is what a count disagreeing with it looks like in this package.
+
 Do not put two suites a single GFP round needs to read in one file.
 `await describe` throws,
 so a failure in the first suite aborts the file before the second runs,
