@@ -205,6 +205,8 @@ function survivingRun(
 }
 
 /**
+ * @internal
+ *
  * Removes one occurrence of a sentence and the separator it no longer needs.
  *
  * @param text - passage to cut

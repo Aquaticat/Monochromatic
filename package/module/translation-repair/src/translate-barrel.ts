@@ -183,6 +183,7 @@ export {
   type FidelityDamageKind,
   insertBorrowedSentence,
 } from './fidelity-damage.ts';
+export { spliceOutSentence, } from './fidelity-splice.ts';
 export {
   digitRuns,
   sharedNumber,
