@@ -2711,3 +2711,51 @@ and the calibration in flight owns `dist/final/node`.
 Lint reports 20 findings across the three test files,
 all four errors being `TS2305` on symbols the rebuild will supply.
 Running them, and proving each guard by removing it, is what `#224` and `#225` still owe.
+
+## Does any error class quote what it was handed? Scanned, not sampled (2026-08-25)
+
+Three disclosure defects were found by hand, one after another,
+which is a bad way to learn a class is closed.
+So the question was asked mechanically instead:
+of every error class this package defines, which builds a message that interpolates a value
+that could be corpus text?
+
+Seventy-five files define an `Error` subclass.
+Scanning each class's `super(...)` call for interpolated identifiers whose names are text-shaped
+(`text`, `raw`, `body`, `content`, `passage`, `wording`, `rendering`, `answer`, `source`,
+`slice`, `value`, `excerpt`, `snippet`, `output`, `reply`, `message`)
+returns three, and reading all three settles them.
+
+-   `WordingCoherenceError` takes a caller-supplied message and forwards it.
+    All four call sites build `${at} reports ...`, where `at` is a slice locator,
+    and none interpolates the wording.
+    The scan flagged it on a neighbouring `@param wording`, not on the message.
+
+-   `HardCapOverrideError` quotes what the hard-cap environment variable held.
+    That is an operator's own input, not corpus text, and quoting it is the point:
+    an operator who set a ceiling believes the run is bounded the way they asked.
+
+-   `SyntheticHttpError` carries 600 characters of a provider's HTTP error body.
+
+### The third is a judgment, and it is being recorded rather than changed
+
+A provider's error body is the provider's text, not ours.
+The one instance recorded in this handover is
+`{"error":"You've exceeded your subscription rate limits. Upgrade, or try again later..."}`,
+which echoes nothing.
+A provider COULD echo part of a request in a 400,
+and a request carries corpus wording, so the path is not impossible.
+
+It stays as it is, for two reasons the owner has already stated.
+Provider issues are normal and expected and the pipeline must stay diagnosable through them,
+and the standing instruction on logging is to add more where it is thin, not less.
+An excerpt bounded at 600 characters is the diagnostic that makes a provider fault legible.
+
+Recorded here so it reads as a decision rather than an oversight,
+which is the same treatment the `raw=` warn logs already have.
+
+### What this closes
+
+The three defects found by hand (`#220`, `#224`, `#225`) all came from a parser's own message
+or from a cause chain, never from a class this package wrote.
+That is now a measured statement about all seventy-five rather than an impression from three.
