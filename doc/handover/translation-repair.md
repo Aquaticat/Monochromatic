@@ -20680,3 +20680,89 @@ which lacks the forbidden-strings scanner and is refused by the `branch-worktree
 It must land after the calibration finishes,
 and after any second calibration batch,
 because pooling needs no drift opt-in only while the build is unchanged.
+
+### `#211` diagnosed from logs and source, without spending a call (2026-08-25)
+
+The earlier note recorded this as needing a captured frame from a live call,
+and put the count at 13.
+Both were wrong.
+The count is about seventy calls,
+and most of the diagnosis was reachable by reading.
+
+#### The premise, remeasured
+
+Across the calibration's first nine slices,
+`qwen3.8-max` opened seventy-one streams and reported zero content characters on seventy of them,
+while casting seventy-one ballots with full prose reasons.
+
+#### There are two independent parsers, and only one of them is blind
+
+`anthropic-completion.ts` imports `json-guard.ts` and `completion-shape.ts` and nothing else.
+It never touches `anthropic-delta-scan.ts`.
+So the thing that extracts the answer and the thing that counts characters for the progress line
+read the same bytes through different code.
+The vote landing while the count reads zero is the two disagreeing,
+not the model failing.
+
+#### The mechanism, from `channelFor` in `anthropic-delta-scan.ts`
+
+Block type outranks delta type:
+
+```ts
+if (blockType === THINKING_BLOCK)
+  return 'reasoning';
+return DELTA_CHANNELS[deltaType] ?? UNREAD;
+```
+
+Its own comment says why that precedence exists:
+providers have been seen sending plain text deltas inside a thinking block,
+and reading only the delta type would file that as the answer.
+The rule is right for the model it was written for.
+If `qwen3.8-max` declares a thinking block and sends its answer deltas inside it,
+the same rule files its entire reply as reasoning,
+while the extractor, which reads only `delta.type` and ignores blocks, still recovers the answer.
+
+`qwen3.8-max` is also the only model on the roster configured `toolChoice: 'auto'`;
+every other Hyper seat is `forced`.
+`hyper-catalog.ts` records that it answers HTTP 400 to every forced-tool variant tried.
+
+#### What separates this from the ordinary case
+
+For every other model, the zero-content count equals the cut count exactly:
+`hf:zai-org/GLM-5.2` five and five,
+`hf:Qwen/Qwen3.8-27B` two and two.
+Those are streams that ended before any content arrived, which is expected.
+
+`qwen3.8-max` reports seventy zero-content streams against twelve cuts.
+Fifty-eight of them completed cleanly and still counted nothing.
+Cutting cannot explain that, and no other model shows the pattern.
+
+`deepseek-v4-pro-0813` shows a smaller separate anomaly,
+eight zero-content streams with no cuts at all,
+recorded here so it is not folded into this one.
+
+#### This is not cosmetic: the runaway guard is blind to this model
+
+`stream-runaway-watch.ts` applies `CONTENT_OVERRUN_CAP` to the content channel only,
+and its comment states the reasoning channel is deliberately untouched.
+If this model's output is filed as reasoning, the volume bound never sees it,
+so nothing stops it early and it runs to the straggler deadline instead.
+
+The cut rates match that prediction.
+`qwen3.8-max` is cut on twelve of seventy-one streams, near seventeen percent,
+the highest on the roster by a factor of two and a half.
+`hf:zai-org/GLM-5.2` is next at five of seventy-two.
+Six of the eleven seats are cut zero times.
+Each cut is a lost voice on a panel that was paid for.
+
+#### What is still owed
+
+One thing, and it is now a single cheap check rather than an investigation:
+capture one `qwen3.8-max` stream and confirm it declares a thinking block
+whose deltas carry the answer.
+If it does, the fix is at `channelFor`, not at the model,
+and the candidate shape is to keep the block-type override only for delta types
+that are not themselves answer channels.
+Do not change it before the frame is seen:
+the override exists because a real provider needed it,
+and removing it blind would restore the defect it was added for.
