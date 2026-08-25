@@ -20200,9 +20200,9 @@ branches  code lines  exports  module
       12         118        5  corpus-run/artifact-v2-project.ts      DONE
       11         237        3  corpus-run/artifact-v2-read-consolidate-parts.ts  DONE
        9          66        1  stream-recurrence-watch.ts             DONE
-       9         250        1  refine-slice-settle.ts
-       8          91        1  translate-retry.ts
-       8         122        1  fidelity-splice.ts
+       9         250        1  refine-slice-settle.ts                 DONE
+       8          91        1  translate-retry.ts                     PROBED, already defended
+       8         122        1  fidelity-splice.ts                     DONE
 ```
 
 ### What each landing proved, by mutation
@@ -20312,13 +20312,63 @@ leaving 252 lines against 52.
 leaving 265 against 41.
 `index.ts` composes both, so no importer sees either seam.
 
-### Suite size across the nine landings
+### The eleventh landing: the join rule that hides a seeded deletion
+
+`fidelity-splice.ts` holds one export, `spliceOutSentence`,
+and one importer, `fidelity-damage.ts`,
+whose own cases ask whether a seeded sentence disappeared.
+Every join rule answers that identically, including no join rule at all,
+so the whitespace decision the module exists for was invisible to the suite.
+
+PROBE W1 confirmed it before a line of test was written.
+Removing the line-break precedence from the private `survivingRun`,
+
+```ts
+  if (lineBreaksIn({ run: before, },) !== lineBreaksIn({ run: after, },)) {
+    return (lineBreaksIn({ run: before, },) > lineBreaksIn({ run: after, },))
+      ? before
+      : after;
+  }
+```
+
+left only the two boundary rules and the length tiebreak,
+and the whole suite stayed green at 653 verdicts, exit 0.
+
+WHAT THAT BRANCH DECIDES. A paragraph cut from the middle of a page
+sits between a paragraph break and whatever follows.
+Without the rule the longer run wins, so a two-character `\n\n`
+loses to a three-space gap and two paragraphs collapse onto one line
+with a triple space at the join.
+That is precisely the typographic edit-mark the module note says it exists to prevent,
+and it would let a damaged candidate lose a fidelity trial on tidiness
+rather than on the coverage the trial means to test.
+
+Sixteen cases landed in `src/fidelity-splice.unit.test.ts`, one rule each:
+both arms of the line-break comparison,
+both boundary rules and the order they are asked in
+(the only observable case is a cut that reaches both ends at once),
+the length tiebreak and its equal-weight fallback,
+the ideographic and no-break spaces the Chinese half of the corpus separates with,
+first-occurrence-only removal,
+and the two runs of length zero.
+
+GFP: re-applying probe W1 fails exactly the two line-break cases
+and the suite aborts at 654 PASS / 3 FAIL, exit 1.
+Restored, rebuilt, back to 654 / 0.
+
+### `translate-retry.ts`: probed, already defended, no file written
+
+Probes V1 and V2 were both caught by existing `runTranslateStage` cases.
+Recorded here rather than left as a gap:
+the module is reached indirectly, and its branches are covered through its caller.
+
+### Suite size across the eleven landings
 
 636 suite verdicts before `#209`,
-652 after the ninth,
+654 after the eleventh,
 with exit code 0 each time and the FAIL count read off the runner's own `] FAIL ` prefix.
 
-Seven mutations so far were caught by the NEW CASES ALONE,
+Eight mutations were caught by the NEW CASES ALONE,
 which is the part that says a gap existed rather than a rule being restated:
 the index ordering comparison,
 the one-character-token rule,
@@ -20326,4 +20376,5 @@ the footnote definition atom,
 the lowercase-only object id,
 the undecided-lanes copy,
 the unchanged slice carrying text,
-and the trailing-buffer trim.
+the trailing-buffer trim,
+and the line-break precedence in the splice join.
