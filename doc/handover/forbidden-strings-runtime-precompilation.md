@@ -2,18 +2,19 @@
 
 ## Status
 
-GitHub issue [#456][] is open and no implementation has started.
-The user ended the design grill after Q22 and confirmed that the remaining questions were implementation details.
-Shared product understanding is complete;
-implementation is now authorized.
+Implementation and verification are complete.
+Commit `37fd7136a` ships the hybrid runtime cache and bumps the scanner to `0.4.0`.
+Its shell-constructed final commit paragraph contained literal `\\n` text,
+so GitHub did not recognize the closing keyword there;
+this follow-up documentation commit carries a proper `Closes #456` line.
 
-Keep this handover current through implementation,
-verification,
-commits,
-and release results.
+Clean-tree `cargo package` passed after 560 seconds.
+The independent forbidden-strings workflow and Scorecard workflow passed on the release commit.
+The cargo-publish workflow is still building and publishing the seven-platform release matrix.
+
+Keep this handover current through release results.
 The user explicitly said no `AGENTS.md` edit is needed for the communication correction.
 
-[#456]: https://github.com/Aquaticat/Monochromatic/issues/456
 
 ## User goal
 
@@ -673,9 +674,6 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Inspect the final diff and commit every remaining scanner source,
-new matcher files,
-manifest,
-and three generated lockfiles with `Closes #456`.
-Run `cargo package` immediately from the clean committed tree,
-then confirm GitHub issue closure and cargo-publish workflow state.
+Confirm GitHub closes issue #456 from this follow-up commit.
+Observe the cargo-publish workflow through crate publication and release creation;
+record any release failure before declaring complete.
