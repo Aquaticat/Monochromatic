@@ -1366,3 +1366,164 @@ fn double_dash_scans_file_named_compile_rules() {
     assert!(String::from_utf8_lossy(&output.stderr).contains("compile-rules:1 rule=0"));
     let _ = fs::remove_dir_all(dir);
 }
+
+/// Compile operation rejects missing required rules argument as usage error.
+#[test]
+fn compile_rules_subcommand_requires_rules_path() {
+    let output = ProcessCommand::new(BIN)
+        .arg("compile-rules")
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("--rules"));
+}
+
+/// Compile operation fails closed on invalid text and publishes no artifact.
+#[test]
+fn compile_rules_subcommand_rejects_invalid_rules() {
+    let dir = unique_tmp("compile-rules-invalid");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "/ALPHA*/\n").expect("write invalid rules");
+    let output = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("rule 0"));
+    assert!(files_named(&cache, "rules.bin").is_empty());
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Corrupt artifact warns, recompiles, replaces cache, and preserves finding.
+#[test]
+fn corrupt_artifact_is_repaired_without_false_clean() {
+    let dir = unique_tmp("corrupt-cache-repair");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let compiled = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn compiler");
+    assert!(compiled.status.success());
+    let artifacts = files_named(&cache, "rules.bin");
+    assert_eq!(artifacts.len(), 1);
+    fs::write(&artifacts[0], b"corrupt").expect("corrupt artifact");
+
+    let repaired = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&repaired.stderr);
+    assert_eq!(repaired.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"invalid\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+
+    let hit = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn scanner");
+    assert!(!String::from_utf8_lossy(&hit.stderr).contains("cache-warning"));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Changed source content selects a second immutable content-addressed slot.
+#[test]
+fn changed_rules_content_selects_new_cache_slot() {
+    let dir = unique_tmp("cache-content-change");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write first rules");
+    fs::write(&target, "BETA_LITERAL_LONG\n").expect("write target");
+    assert!(
+        ProcessCommand::new(BIN)
+            .args(["compile-rules", "--rules"])
+            .arg(&rules)
+            .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+            .status()
+            .expect("spawn compiler")
+            .success(),
+    );
+
+    fs::write(&rules, "BETA_LITERAL_LONG\n").expect("write changed rules");
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"missing\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+    assert_eq!(files_named(&cache, "rules.bin").len(), 2);
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Failed publication warns but retains correct compiled in-memory finding.
+#[test]
+fn cache_write_failure_keeps_scan_correct() {
+    let dir = unique_tmp("cache-write-failure");
+    let cache_root_file = dir.join("cache-root-file");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&cache_root_file, "not a directory").expect("write root blocker");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache_root_file)
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"unreadable\""));
+    assert!(stderr.contains("\"reason\":\"write-failed\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Missing native cache environment warns and scans from authoritative text.
+#[test]
+fn unavailable_native_cache_root_keeps_scan_correct() {
+    let dir = unique_tmp("cache-root-unavailable");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env_remove("FORBIDDEN_STRINGS_CACHE_DIR")
+        .env_remove("XDG_CACHE_HOME")
+        .env_remove("HOME")
+        .env_remove("LOCALAPPDATA")
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"cache-root-unavailable\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
+}
