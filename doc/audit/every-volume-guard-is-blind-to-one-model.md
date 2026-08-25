@@ -236,102 +236,70 @@ Twelve becoming zero confirms the first reading; twelve staying put confirms the
 its own task.
 Do not fold the answer into `#211` before that count exists.
 
-## What it costs in generated volume, measured at 30 of 40 slices
+## Generated volume, and a correction to what zero content means
 
-Counted from the live full-roster calibration log while it was still running,
-so the figures are partial and will grow. Every seat had been asked
-about the same number of times, so the shares below compare like with like.
+Counted from the finished full-roster calibration, 40 of 40 slices.
 
 ```text
 run-wide          3149 streams   content  1242020   reasoning 21392195   94.5% reasoning
+                  (measured at 30 slices; the shares below are the finished run)
 
-qwen3.8-max        271 streams   content      892   reasoning  4001251  100.0% reasoning
-hf:Qwen/Qwen3.8-27B 275 streams  content   116314   reasoning  5765153   98.0%
-hf:zai-org/GLM-5.2  272 streams  content   131653   reasoning  3930074   96.8%
-nvidia Nemotron-3   272 streams  content   123186   reasoning  2650296   95.6%
-minimax-m3          272 streams  content   175386   reasoning  2971259   94.4%
-hf:openai/gpt-oss-120b 272 streams content 110702   reasoning  1021604   90.2%
-hf:moonshotai/Kimi-K3  272 streams content 138577   reasoning   694423   83.4%
-deepseek-v4-pro-0813   272 streams content 129296   reasoning   353174   73.2%
-deepseek-v4-flash-0731 272 streams content 151192   reasoning     4961    3.2%
-gemma-4-26b-a4b-it     272 streams content 164251   reasoning        0    0.0%
+zero content, against COMPLETED streams only:
+  qwen3.8-max            285 completed   281 zero-content   98.6%
+  deepseek-v4-pro-0813   356 completed    36 zero-content   10.1%
+  hf:Qwen/Qwen3.8-27B    344 completed     4 zero-content    1.2%
+  hf:zai-org/GLM-5.2     323 completed     2 zero-content    0.6%
+  the remaining six seats                  0
 ```
 
-`qwen3.8-max` spent 18.7 percent of the run's entire generated reasoning volume
-to deliver 0.07 percent of its content.
+### THE `qwen3.8-max` ROW IS AN ACCOUNTING ARTIFACT, NOT A LOST ANSWER
 
-267 of its 271 streams carried EXACTLY zero content characters.
-The four that carried any managed 3, 9, 10 and 870.
-That extends the 16-slice reading of 104 of 106 to 267 of 271, at nearly three times the sample,
-and it is the same defect rather than a new one.
+An earlier version of this section read the 281 as answers that never arrived, and said the
+pipeline "believed the call succeeded and received nothing". THAT IS WRONG, and the finished
+standing is what refuted it.
 
-### A high reasoning share is not itself the finding
+`qwen3.8-max` placed SECOND in the editor column at 22.7 percent over 81 candidates, won 10
+editor rounds and 3 refinements, and cast 97 ballots. A seat that delivered nothing cannot
+do any of that.
 
-Seven other seats sit between 73 and 98 percent reasoning and produce real content throughout,
-because they are thinking models and that is where thinking models legitimately spend.
-`gemma-4-26b-a4b-it` emits no reasoning at all and still reached 30737 content characters
-on a single call. Reading the run-wide 94.5 percent as waste would be wrong.
+The cause is in `src/hyper-catalog.ts:73`, which states it outright: of the nine Hyper
+models, eight honour `tool_choice: {type: 'tool'}` and `qwen3.8-max` REFUSES it. It is
+therefore the one seat configured `toolChoice: 'auto'` (`src/hyper-catalog.ts:180`), so its
+whole answer arrives as TOOL-CALL ARGUMENTS. `generatedChars.content` counts the content
+channel and does not count tool-call arguments, so for this one seat a correct, complete,
+round-winning answer is recorded as zero content characters.
 
-THE PATHOLOGY IS THE PAIR, not either half:
-a stream that finishes with zero content characters while consuming millions of reasoning
-characters, and is recorded `completed` rather than failed.
+Zero content here means the counter cannot see this seat's delivery channel. It does not
+mean the seat was silent.
 
-### The outcome field cannot see it
+### What survives the correction
 
-Of the 271 `qwen3.8-max` streams, 232 are recorded `completed` and 39 `cut`.
-So on 232 occasions the pipeline believed the call succeeded and received nothing.
+`deepseek-v4-pro-0813` at 36 of 356, 10.1 percent, IS a real anomaly. It runs `forced` tool
+choice, so the auto-channel explanation does not cover it, and its rate held steady across
+three samples: 9.4 percent, then 11.2 percent, now 10.1 percent. Stable intermittent
+behaviour rather than drift.
 
-No success-or-failure check can find this, because by that measure nothing failed.
-Only a content-volume reading finds it, which is the same blindness this document
-was opened on, seen from the producing side rather than the guard side.
+`hf:Qwen/Qwen3.8-27B` at 4 and `hf:zai-org/GLM-5.2` at 2 remain small and unexplained. Both
+were previously recorded as losing voices to CUTS, a different column, and neither was known
+to complete a stream empty.
 
-That is worth keeping after `#211` lands: the fix removes this instance of the defect,
-but nothing yet refuses a completed stream that delivered no content,
-so a future recurrence by another mechanism would again be invisible.
+A high reasoning share is also not the finding. Seven seats sit between 73 and 98 percent
+reasoning and produce real content throughout, because that is where thinking models spend.
+`gemma-4-26b-a4b-it` emits no reasoning at all and still reached 30737 content characters on
+a single call. Reading the run-wide 94.5 percent as waste would be wrong.
 
-### The pre-`#211` baseline, so the prediction can be checked
+### The prediction this document still carries
 
-Zero-content streams counted against COMPLETED streams only, per seat, at 31 of 40 slices.
-Cut streams are excluded on purpose: a cut stream carrying no content is explained by the
-cut, while a completed one is not.
+Count zero-content streams for `deepseek-v4-pro-0813` on the first post-`#211` run.
+Thirty-six becoming zero confirms the first reading recorded here; thirty-six staying put
+confirms the second and opens its own task.
 
-```text
-qwen3.8-max             236 completed   232 zero-content   98.3%
-deepseek-v4-pro-0813    278 completed    31 zero-content   11.2%
-hf:Qwen/Qwen3.8-27B     272 completed     4 zero-content    1.5%
-hf:zai-org/GLM-5.2      255 completed     2 zero-content    0.8%
-minimax-m3              280 completed     0
-hf:openai/gpt-oss-120b  280 completed     0
-nvidia Nemotron-3       280 completed     0
-hf:moonshotai/Kimi-K3   280 completed     0
-gemma-4-26b-a4b-it      279 completed     0
-deepseek-v4-flash-0731  280 completed     0
-```
+`qwen3.8-max` is NOT part of that prediction any more. Its 281 are expected and correct, and
+will stay at roughly 281 after `#211` lands, because nothing about the tool-call channel is
+a defect. Any guard written against "completed with zero content" must exempt the `auto`
+seat or it will fire on every one of its calls (`#221`).
 
-`deepseek-v4-pro-0813` holds its rate across samples: 12 of 127 at the earlier reading,
-9.4 percent, against 31 of 278 here, 11.2 percent. So it is stable intermittent behaviour
-rather than something drifting during the run, and the falsifiable prediction stands as
-written with 31 as its new before-number.
-
-TWO SEATS APPEAR HERE THAT NO EARLIER COUNT NAMED.
-`hf:Qwen/Qwen3.8-27B` at 4 and `hf:zai-org/GLM-5.2` at 2 were both recorded as losing
-voices to CUTS, which is a different column, and neither was known to complete a stream
-empty. The counts are small enough to be noise and large enough to be a third mechanism,
-and nothing here separates those two readings.
-
-OWED AT EXIT: recount this table on the finished run, then again on the first post-`#211`
-run. The instrument is `~/temp/agent/zero-content-from-log.mjs`, which takes one or more log
-paths and was cross-checked against an independently written pass over the same log rather
-than against itself. It belongs in the package beside `run-timing-report` once `#221` is
-built; until then the method is the whole of it: zero-content counted against completed
-streams only, never against cut ones.
-
-Three outcomes are worth telling apart, and only the pair of counts tells them apart:
-
--   `qwen3.8-max` falling from 232 to near zero confirms `#211` addresses the seat it was
-    diagnosed on, which is the whole of its claim.
--   `deepseek-v4-pro-0813` falling to zero confirms the first reading recorded in this
-    document; staying near 31 confirms the second and opens its own task.
--   The two small seats going to zero makes them noise. Either of them surviving while
-    `qwen3.8-max` clears means a mechanism `#211` does not cover, and it would be invisible
-    to every check the pipeline currently makes (`#221`).
+The instrument is `~/temp/agent/zero-content-from-log.mjs`, which takes one or more log paths
+and was cross-checked against an independently written pass over the same log rather than
+against itself. Its output must be read with the tool-choice column beside it; the counter
+alone cannot tell an empty answer from an unseen channel.
