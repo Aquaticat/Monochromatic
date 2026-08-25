@@ -1868,3 +1868,126 @@ so this change CANNOT be validated by that number falling.
 What it can be measured on is a first Synthetic schema failure never appearing under load,
 and the token cost, which the `#210` spend ledger now makes readable.
 Record the outcome; do not claim an improvement.
+
+## `#215`: a run now says where its wall-clock went, and a CLI reads it back
+
+The task's own text quoted the owner's standing instruction:
+"If you found out we're not logging enough, you should change the pipeline to log enough."
+Following that instruction found a second gap the task had not named.
+
+### What the log could not say, measured before changing anything
+
+The live full-roster calibration log was surveyed for every line shape it carries.
+Three tags appear in it and no others:
+`reportStreamProgress` on 2405 lines, `takeReading` on 161, `exchangeWithRetry` on 4.
+`takeReading` is the availability meter, polled every minute or two.
+There is no dispatch line, and there is no round boundary line.
+
+So the log records when each call ENDED and nothing else about time.
+A call's start is not recoverable, a round's extent is not recoverable,
+and the question the audit `doc/audit/every-volume-guard-is-blind-to-one-model.md`
+opened on has no answer in the data.
+
+A lower bound was computable and was computed, before the fix, as a control.
+Each completion line carries `firstByte` and `maxGap`, and the largest gap falls
+strictly after the first byte, so their sum bounds the call's duration from below.
+Intervals built from that sum are subsets of the true ones, so overlaps counted on them
+can only undercount:
+
+```text
+calls                        2405 (2349 completed, 56 cut)
+log span                     6.15 h
+summed duration FLOOR        2.37 h
+mean concurrency FLOOR       0.39
+peak concurrency FLOOR       9
+```
+
+Read that as a floor and nothing more.
+It says at least nine calls were once in flight together,
+and it cannot say what the figure actually is.
+
+A method note worth keeping:
+the first version of this sweep matched 1043 of 2405 lines and reported a peak of 5.
+The label pattern required a colon, so it silently dropped every non-`hf:` model.
+An uncapped `grep --count` on the raw marker is what caught it,
+which is the `QRY` rule paying for itself.
+
+### The two lines that landed
+
+`StreamProgress` gained `elapsedMs`, computed as `Date.now() - state.armedAt` in
+`armIdleGuard`'s `progress()`, and `reportStreamProgress` prints it directly after
+the outcome.
+With the line's own timestamp that gives every call an interval, which is what an
+overlap count needs and what no completion line carried before.
+
+`runGatherRound` now writes a round line, which nothing did:
+
+```text
+editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace
+```
+
+The split is the point.
+Time before quorum is the round doing its work; time after it is the round waiting on
+voices it may never hear.
+Only the second is straggler cost, and one round duration cannot tell them apart.
+The audit could bound that cost only from above, at the grace window times the number of
+cut events, and recorded that confirming it "needs the dispatch timestamps the run does
+not currently record".
+
+Both lines carry ids, counts and durations only.
+No corpus wording enters either.
+
+### The reader, because a log nothing reads is not a measurement
+
+`run-timing-parse.ts`, `run-timing-read.ts` and `run-timing-report.ts`, with the
+`run-timing-report` mise task, mirror the `spend-` and `ledger-` families.
+
+Every read names what it found rather than returning an absence.
+A completion line with no duration and a line that is not a completion at all are
+different facts about a log: the first says the run predates `#215`.
+Folding them together would let a mixed archive's readable half be reported as the whole,
+which is the shape of error this project has hit before.
+The house `no-nullish-union` rule is what forced the discriminated union, and it made the
+reader better: `readRunTiming` used to check `undefined` and then re-inspect the text to
+count untimed lines, and now one read decides all three outcomes.
+
+Boundary verification, all three states:
+
+```text
+new-format fixture   2 rounds, 29.0% of round time in grace, 1 voice lost,
+                     mean 1.05 in flight, peak 2, 21.00s of calls across 20.00s of run
+live pre-215 log     NO ROUND LINE, 2533 completion lines carry no elapsed field,
+                     NO TIMED CALL
+no argument          throws, naming the usage
+```
+
+Every figure in the fixture row is hand-computed from three intervals at
+`[0,10]`, `[2,8]` and `[15,20]` seconds, not recorded from a run,
+so a change in the sweep fails the case instead of moving the target.
+
+### GFP
+
+Both new guards were shown to fail with the guard removed and to pass with it restored.
+
+```text
+elapsedMs set to 0            stream-cut and stream-idle-guard both exit 1
+                              "expected +0 to be at least 20"
+round line deleted            stage-round exits 1, both cases
+                              "expected exactly one round line, got 0"
+```
+
+The idle-guard failure is non-vacuous: `firstByteMs` read 20 from a real wait,
+so the assertion compared a measurement against a constant rather than zero against zero.
+
+### What is owed
+
+The measurement itself.
+Achieved concurrency and the real straggler cost cannot be computed until a run emits the
+new lines, and the calibration now running was launched from the old build.
+The audit's 1.45 hour figure stays an upper bound until then.
+This is recorded as owed, not predicted:
+the point of the two lines is that the answer was unknown, and it still is.
+
+### Suite
+
+676 PASS, 0 FAIL, exit 0. Lint 0 warnings 0 errors. Build clean.

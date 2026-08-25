@@ -135,6 +135,40 @@ So a stream's start time is not recoverable, and neither is its duration.
 Adding a duration field to the existing completion line is the cheaper of the two fixes:
 it adds no line volume, and start time follows by subtraction.
 
+### Closed by `#215`, with the measurement still owed
+
+Both halves landed on 2026-08-25.
+
+`reportStreamProgress` now prints `elapsed <n>ms` beside the outcome,
+so a completion line plus its own timestamp gives every call an interval.
+
+A SECOND GAP WAS FOUND WHILE FIXING THIS ONE, and it is the larger of the two.
+The log has no round boundary either.
+Surveying every line shape in the live calibration finds three tags and no others:
+`reportStreamProgress`, `takeReading` (the availability meter) and `exchangeWithRetry`.
+Nothing delimits a fan-out, so even with per-call durations
+the waiting could not be attributed to the rounds that did it.
+`runGatherRound` now writes one line per round:
+
+```text
+editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace
+```
+
+`ms in grace` is this section's figure, measured rather than bounded.
+
+THE 1.45 HOUR FIGURE ABOVE REMAINS AN UPPER BOUND until a run emits these lines.
+The calibration running when they landed was launched from the older build,
+so the first real reading comes from the next pass.
+`mise run //package/module/translation-repair:run-timing-report -- <log>` reads them back,
+and on a log written before this it says so rather than reporting zeros.
+
+What could be measured on the OLD log, as a floor rather than the figure:
+each completion carries `firstByte` and `maxGap`, and the largest gap falls strictly
+after the first byte, so their sum bounds a call's duration from below.
+Sweeping those subset intervals over 2405 calls across 6.15 hours gives
+a mean of at least 0.39 in flight and a peak of at least 9.
+That is a floor and says nothing about the true figure.
+
 ## What follows
 
 -   `#211`'s fix routes `input_json_delta` to content, which is what lets any volume guard see this
