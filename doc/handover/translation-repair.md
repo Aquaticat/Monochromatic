@@ -2249,53 +2249,60 @@ failure mode exactly as it is written down, and the uncapped, flag-safe re-runs 
 everything. Worth remembering that the dangerous direction here is the empty result, not
 the noisy one.
 
-## The refiner column may not be decidable, and that decides the landing order
+## The refiner column is thinner than the editor column, by about four times
 
-Measured on the live calibration at 32 of 40 slices, while checking why one slice reported
+Measured on the live calibration at 33 of 40 slices, while checking why one slice reported
 zero refiner rounds.
 
+### The first version of this section was wrong by an order of magnitude
+
+It claimed the two columns differ by "roughly fifty times in round count". That compared
+1023 LOG LINES against 20 ROUNDS, which are not the same unit. `selectBestCandidate` emits
+three different line shapes, and only one of them is a round:
+
 ```text
-editor column    1023 selectBestCandidate votes over 32 slices   about 32 per slice
-refiner column     20 runRefineStage rounds over 32 slices       0.62 per slice
-                   15 of those 20 produced a winner
-                    5 tied or were declined by every judge
+918 per-judge ballots      "<model> chose candidate N at weight N: <reason>"
+ 90 decided rounds         "candidate N from <model> won weight N across N ballots"
+ 14 tied rounds            "judges tied at weight N; keeping the fallback"
 ```
 
-The winners spread thinly across six of the ten seats:
-`hf:Qwen/Qwen3.8-27B` 5, `qwen3.8-max` 3, then `hf:zai-org/GLM-5.2`, `hf:openai/gpt-oss-120b`,
-`hf:moonshotai/Kimi-K3` and `gemma-4-26b-a4b-it` at 2 each.
+The error was counting all three as if each were a vote. Recorded rather than quietly
+corrected, because the wrong number pointed at a real and expensive action.
 
-### What this does and does not establish
+### What the rounds actually are
 
-On WINS alone it would not clear. Against a ten-seat null of one tenth, an exact binomial on
-the leader gives P(X >= 5 | n = 15, p = 0.1) = 0.0127, and Bonferroni at ten seats wants
-0.005. So 5 of 15 does not clear, and 40 slices projects to roughly 19 wins, which does not
-either.
+`runRefineStage` judges through the SAME `selectBestCandidate` (`src/refine-stage.ts:328`)
+with the whole roster as judges, so refiner rounds are already inside those counts:
 
-BUT WINS ARE NOT THE DENOMINATOR THE STANDING USES. `producer-standing-report.ts` prints
-`NN.N% (N of N disinterested ballots, over N candidates)`, so the refiner column is scored on
-BALLOTS, and every round carries several. Twenty rounds could be well over a hundred ballots.
+```text
+104 rounds total   (90 decided + 14 tied) at 33 slices
+ 20 refiner rounds (15 with a winner, 5 tied or declined by every judge)
+ 84 editor rounds  by subtraction
+```
 
-So this is NOT a finding that the refiner column is underpowered. It is a finding that the
-two columns rest on evidence differing by roughly fifty times in round count, and that
-nothing so far has checked whether the refiner denominator survives that.
+That is about 4.2 editor rounds per refiner round, not 50.
 
-### Why it has to be checked before the landing rather than after
+Every decided round carries a real panel: 865 ballots over 90 rounds, mean 9.6, min 7,
+max 10. Refiner rounds draw from the same roster, so 20 of them is on the order of 190
+ballots at 33 slices, projecting to roughly 230 at 40.
 
-`#200` records that the remedy for a short standing is a second batch of 80 slices into a
-poolable directory, which shares zero slices with the 40-draw because `pickSpreadSample`
-strides with a `+0.5` offset. It also records the constraint that matters here:
+The reason the refiner ballot count looked absent is that `runRefineStage` puts it in a
+FINDING string rather than its log line (`src/refine-stage.ts:436` writes
+`refine-selected (weight N of N ballots)`), while the log line carries only the winning
+weight. Nothing was missing; it was being read in the wrong place.
 
-    Pooling needs no drift opt-in as long as the build does not change,
-    so `#210` should land AFTER any second batch, not before.
+### What that changes
 
-The landing changes the build. So if the refiner column turns out short, the second batch
-must run BEFORE the parked work lands, and the rehearsed landing procedure waits behind it.
-Landing first would forfeit the cheap remedy and force a drift opt-in to pool at all.
+The alarm was overstated. A column with roughly 230 ballots is not obviously short, and
+there is no longer a prior that a second batch is needed before the landing.
 
-### Owed at exit, before step 2 of the landing procedure
+STILL READ THE ACTUAL STANDING AT EXIT rather than this projection. Ballots are not
+independent within a round, `#200` already records a sqrt(2.9) within-slice deflation for
+exactly that reason, and 15 decided refiner rounds spread across six seats is a thin base
+for a ten-seat Bonferroni comparison however many ballots sit under it.
 
-Read the refiner standing's own denominator, not the editor's, and not the win counts above.
-If it is thin, decide the second batch FIRST and land afterwards. If it is sound, land as
-rehearsed. Either way this is a decision to take deliberately at exit rather than a step to
-walk past, because the landing is the thing that closes the cheap option.
+So the exit order is unchanged from the rehearsed procedure, with one added reading:
+if the refiner standing's own denominator turns out short, `#200` records that the remedy is
+a second batch of 80 poolable slices, and that pooling needs no drift opt-in only while the
+build does not change. The landing changes the build. That constraint is real and worth
+keeping in view; what has changed is that it is now unlikely to bind.
