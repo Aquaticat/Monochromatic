@@ -142,6 +142,11 @@ export {
   trackDrawOutputs,
 } from './corpus-run/draw-outputs.ts';
 export {
+  type BandedEntry,
+  type EntryContribution,
+  loadEntry,
+} from './corpus-run/draw-entry-load.ts';
+export {
   bandOf,
   countSettledPerBand,
   MEDIUM_PAGE_BYTES,

@@ -252,6 +252,7 @@ export {
 export * from './artifact-read-barrel.ts';
 export * from './stream-barrel.ts';
 export * from './assembly-barrel.ts';
+export * from './audit-barrel.ts';
 export * from './ballot-barrel.ts';
 export * from './control-barrel.ts';
 export * from './corpus-barrel.ts';

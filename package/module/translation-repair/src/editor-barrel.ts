@@ -64,5 +64,6 @@ export {
   type EditorCandidateSet,
   pickFallbackCandidate,
 } from './editor-candidates.ts';
+export { runWidthSlice, } from './corpus-run/editor-width-slice.ts';
 
 //endregion Editor barrel

@@ -109,5 +109,22 @@ export {
   type RegionProbeVerdict,
   summarizeProbeTelemetry,
 } from './probe-telemetry.ts';
+export {
+  type ArtifactRecord,
+  readArtifactRecords,
+} from './corpus-run/probe-relabel-artifact.ts';
+export {
+  DAMAGED_CASES,
+  gatherRelabelCases,
+  locateSlice,
+  type RelabelCase,
+} from './corpus-run/probe-relabel-case.ts';
+export { gatherControlCases, } from './corpus-run/probe-relabel-control.ts';
+export {
+  formatVerifyManifest,
+  formatVerifySheet,
+  orderBlind,
+  type VerifyItem,
+} from './corpus-run/probe-verify-sheet.ts';
 
 //endregion Probe barrel

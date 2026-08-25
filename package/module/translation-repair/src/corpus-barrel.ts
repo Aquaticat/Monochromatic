@@ -51,53 +51,6 @@ export {
   compareLanes,
 } from './corpus-run/artifact-two-lane-comparison.ts';
 export {
-  type AudienceSplit,
-  rateByVoice,
-  type AuditRelocationPair,
-  splitFor,
-  type VoiceRate,
-} from './corpus-run/rendering-audit-settled-read.ts';
-export { auditRelocationPairs, } from './corpus-run/rendering-audit-settled-relocation.ts';
-export {
-  type AuditRepeatPair,
-  auditRepeatsAcross,
-  type AuditRepeatSide,
-  auditRepeatsWithin,
-} from './corpus-run/rendering-audit-settled-repeat.ts';
-export {
-  type AuditRepeatBand,
-  repeatBandOf,
-} from './corpus-run/rendering-audit-settled-band.ts';
-export {
-  digestAuditedText,
-  sameAuditedText,
-  textIdentityOf,
-} from './corpus-run/rendering-audit-settled-digest.ts';
-export type {
-  AuditedTextIdentity,
-  SettledAuditRow,
-} from './corpus-run/rendering-audit-settled-row.ts';
-export {
-  pageRelationFor,
-  pageRelationLabel,
-  pageRelationOf,
-  type PageRelationTally,
-  relationTallyOf,
-  type SettledPageRelation,
-} from './corpus-run/rendering-audit-settled-relation.ts';
-export {
-  readArchiveSubjects,
-  readArtifactSubjects,
-  type SettledArtifactReading,
-  type SettledVerification,
-} from './corpus-run/rendering-audit-settled-input.ts';
-export {
-  identityOf,
-  type SettledAuditSubject,
-  type SettledIdentity,
-  subjectsOf,
-} from './corpus-run/rendering-audit-settled-subject.ts';
-export {
   readRepairRounds,
   RoundsNotRecordedError,
 } from './corpus-run/artifact-rounds-read.ts';
@@ -177,6 +130,15 @@ export {
   reportProbeTelemetry,
 } from './corpus-run/probe-telemetry-report.ts';
 export { settledTallyLine, } from './corpus-run/settled-tally.ts';
+export {
+  describeSpread,
+  percentileOf,
+  REPORTED_PERCENTILES,
+} from './corpus-run/census-spread.ts';
+export {
+  censusEntry,
+  type EntryCensus,
+} from './corpus-run/slice-census-entry.ts';
 export {
   ArtifactPreparationMismatchError,
   assertFindingsDescribePreparation,
