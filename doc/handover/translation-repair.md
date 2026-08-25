@@ -1653,3 +1653,86 @@ The candidate ledger from `#212` records which model produced each candidate
 and which cast each ballot, with no timing correlation involved.
 The first run carrying a ledger answers this without a single extra call.
 Until then the honest state is: measured, unexplained, nine events, and not folded into `#211`.
+
+## No volume guard can see `qwen3.8-max`, and stragglers may cost more than serialization (2026-08-25)
+
+Measured on the live full-roster calibration at 15 of 40 slices, from the run log alone.
+Full working in `doc/audit/every-volume-guard-is-blind-to-one-model.md`, committed as `d16a616e3`.
+This run predates the parked `#211` fix, so every number here is a clean pre-fix baseline.
+
+### The measurement
+
+Every seat was asked exactly 120 times, so the denominators need no adjustment.
+Seven of the ten lose no voice at all.
+The 34 losses are `qwen3.8-max` 21, `hf:zai-org/GLM-5.2` 11, `hf:Qwen/Qwen3.8-27B` 2.
+
+`qwen3.8-max` reports content characters of 0 at the median AND at the 95th percentile,
+across all 100 of its completed streams.
+Not one byte it sent reached the content channel.
+Every other seat medians between 303 and 619.
+That is `#211` confirmed at production scale, where it had been proved on one captured frame run.
+
+### Why that is worse than a telemetry error
+
+`src/stream-runaway-watch.ts` applies its volume cap to the content channel only,
+and its module note says the reasoning channel is untouched.
+`#156` set that bound at 32000 and declined a reasoning bound deliberately.
+So for this one seat the chain closes: answer filed as reasoning,
+cap reads content, content is always zero, no volume guard can ever fire.
+The only thing that stops it is `STRAGGLER_GRACE_MS`, and that is what its 21 cuts are.
+
+### The correction to `#211`'s recorded prediction
+
+`#211` predicted the cut rate would fall toward the roster's.
+That is not supported and has been replaced on the task.
+The cuts are volume runaways, not stalls: `qwen3.8-max` is cut mid-reply after 106,405 characters
+once and then 19 of 21 times between 293,163 and 350,293,
+a tight cluster because the cut is time-bound while the stream rate is steady.
+Post-fix those bytes meet `contentCap`, so the call is cut at roughly 32000 rather than 300,000,
+in seconds rather than 180.
+What changes is when and how expensively the voice is lost, not obviously whether.
+Two mechanisms pull opposite ways: an early overrun rides the retry predicate `#156` built,
+giving the model an attempt it never used to get,
+against which a model emitting 300,000 characters may simply overrun again.
+Record the outcome, not the prediction.
+
+### What it redirects
+
+The straggler cuts group into 29 distinct events.
+At 180 seconds each that is an upper bound of 1.45 hours inside a 3.73 hour run.
+It is an upper bound and must be read as one:
+`runStageRound` assembles from its `arrived` map rather than awaiting abandoned calls,
+so the true per-event cost is at most the grace window and may be less.
+
+That is potentially a larger lever than the serialization question `#213` was opened on,
+and 21 of the 34 cuts are the seat `#211` already fixes.
+So the order is now: land `#211` and re-measure, then re-derive the window, then prototype fan-out.
+Measuring fan-out first would be measuring a system about to change underneath it.
+
+### Two tasks this opened
+
+`#214` re-derives the straggler window.
+`doc/decision/translation-repair-straggler-grace.md` rests on the claim that no hung call had ever
+been recorded and every cut voice was slow-but-working.
+A voice cut mid-reply after 3,020,068 characters refutes that.
+The decision should be superseded rather than edited, since its reasoning was correct for the
+population it had, and it should not be reverted:
+60 seconds really did cut `hf:zai-org/GLM-5.2` inside its ordinary range, and still would.
+
+`#215` adds elapsed milliseconds to the stream completion line.
+A production run currently cannot answer where its own wall-clock went,
+because dispatch is logged at `debug` and production emits only `info` and `warn`,
+while the completion line carries `firstByte` and `maxGap` but no duration.
+That is why the 1.45 hour figure is a bound rather than a measurement,
+and why `#213` cannot yet measure the baseline it needs.
+
+### Corrected count for `#213`
+
+The first pass said seven serialization sites and grepped four wrong paths.
+The full sweep finds eleven resting on the refuted premise, seven of them on the production path,
+and `src/editor-ensemble.ts:248` is the one with a clean argument:
+envelopes within a slice are independent, nothing reads back an earlier envelope's outcome,
+and `Promise.all` preserves order, so gathering concurrently and folding in index order is
+byte-identical output for pure latency.
+The task carries the full list, including the sites that are correctly sequential and must not be
+touched.
