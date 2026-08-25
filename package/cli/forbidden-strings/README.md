@@ -192,6 +192,9 @@ The generator is `generateForbiddenStringsRules` in `file-enforcer.config.ts`.
 During fresh setup before the release scanner exists,
 file-enforcer reports that eager compilation was skipped;
 the first later scan compiles and publishes the artifact.
+A stale pre-0.4.0 release binary exists but does not understand `compile-rules`,
+so file-enforcer fails instead of silently claiming eager compilation;
+rebuild the scanner before rerunning file-enforcer.
  If you
 fork this scanner into a project that does not use file-enforcer,
  drop the appendix split
