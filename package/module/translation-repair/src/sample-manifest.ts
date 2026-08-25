@@ -272,7 +272,7 @@ function readGeneration(
  *
  * @example
  * ```ts
- * const manifest = parseSampleManifest({ value: JSON.parse(text,), },);
+ * const manifest = parseSampleManifest({ value: parseRunJson({ text, from, },), },);
  * ```
  */
 export function parseSampleManifest(

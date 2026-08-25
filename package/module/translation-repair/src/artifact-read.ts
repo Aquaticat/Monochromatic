@@ -90,7 +90,7 @@ export type ParsedArtifactReading = {
  *
  * @example
  * ```ts
- * const reading = readSettledArtifact({ value: JSON.parse(text,), },);
+ * const reading = readSettledArtifact({ value: parseRunJson({ text, from, },), },);
  * ```
  */
 export function readSettledArtifact(

@@ -288,7 +288,7 @@ function parsePreparation(
  *
  * @example
  * ```ts
- * const artifact = parseSettledTwoLaneArtifact({ value: JSON.parse(text,), },);
+ * const artifact = parseSettledTwoLaneArtifact({ value: parseRunJson({ text, from, },), },);
  * ```
  */
 export function parseSettledTwoLaneArtifact(

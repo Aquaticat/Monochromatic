@@ -276,7 +276,7 @@ export type ParsedArtifact = {
  * @example
  * ```ts
  * const parsed = parseSettledArtifact({
- *   value: JSON.parse(await readFile(path, 'utf8',),),
+ *   value: await readRunJson({ path, },),
  * },);
  * ```
  */

@@ -473,7 +473,7 @@ function readSelected(
  *
  * @example
  * ```ts
- * const round = parseLedgerRound({ value: JSON.parse(text,) as unknown, from, },);
+ * const round = parseLedgerRound({ value: parseRunJson({ text, from, },), from, },);
  * ```
  */
 export function parseLedgerRound(
