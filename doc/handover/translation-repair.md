@@ -20412,18 +20412,37 @@ The run stamps its cache with the runner's own dependency closure,
 so a source change plus any restart invalidates every cached slice and re-buys the whole run.
 Documentation is outside that closure and safe to edit.
 
-### What a slice actually costs in wall time
+### What a slice actually costs in wall time, and a revision that should not have happened
 
-Measured on the first slices rather than derived:
+Measured over the first six slices:
 
 ```text
-slice 1  lintong chunk 0       214 s   no accepted issue, short-circuits before editors
-slice 2  windward0032 chunk 14 1362 s  5 editor rounds
+slice 1  lintong chunk 0        214 s   0 editor  0 refiner
+slice 2  windward0032 chunk 14 1362 s   5 editor  0 refiner
+slice 3  Huasheng chunk 16       503 s   2 editor  0 refiner
+slice 4  Mio chunk 10           1083 s   2 editor  1 refiner
+slice 5  lintong chunk 4         967 s   2 editor  1 refiner
+slice 6  zheermao101 chunk 2      16 s   0 editor  0 refiner
+
+real slices   4, mean  979 s
+cheap slices  2, mean  115 s
+real share   67 percent
 ```
 
-A slice that reaches the editors costs about 23 minutes, not the 11 that roster-round arithmetic implies.
-At the prior run's 71 percent rate of slices carrying an accepted issue,
-40 slices comes to roughly 12 hours rather than the 8 first projected.
+Projected total 7.7 hours, which is the figure first estimated from roster-round arithmetic.
+
+A REVISION WAS MADE ON ONE SAMPLE AND WAS WRONG.
+After slice 2 alone, at 1362 s, the projection was moved from 8 hours to 12
+and the earlier number was declared superseded.
+Slice 2 turned out to be the slowest of the four real slices measured,
+which span 503 to 1362 s, a 2.7-fold spread.
+The mean is 979 s and the original estimate was right.
+
+THIS IS EXACTLY WHAT `QNB` FORBIDS:
+measure the run-to-run band before crediting a difference smaller than it.
+The rule was quoted in the same session it was broken in.
+One slice could not distinguish a real slowdown from the top of an ordinary spread,
+and no projection should have moved until it could.
 
 ### The refiner lane fires, and the two empty slices were not a signal
 
