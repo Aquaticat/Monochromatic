@@ -147,3 +147,57 @@ it adds no line volume, and start time follows by subtraction.
 -   Whether the reasoning channel should carry a volume cap of its own is a separate question.
     52 of 1,182 completed streams exceeded 32000 reasoning characters and completed fine,
     `hf:Qwen/Qwen3.8-27B` reaching 99,244, so a naive cap would cut working voices.
+
+## The deepseek anomaly is the same defect, intermittently (resolved 2026-08-25)
+
+`#211` recorded a second, smaller anomaly on `deepseek-v4-pro-0813` and held it open,
+because the instrument used then was a 40-line scan window over 9 samples,
+and a positive control on `hf:openai/gpt-oss-120b` showed that instrument had a 39 percent hit rate
+on healthy calls.
+Nine samples against a 39 percent baseline separate nothing, and the honest conclusion was that the
+log could not answer it.
+
+The same run answers it now, because the right instrument is the completion line's own content
+count and this run carries roughly 1,200 of them.
+Zero-content streams per seat, at 15 of 40 slices:
+
+-   `qwen3.8-max`: 104 of 106, 98.1 percent.
+-   `deepseek-v4-pro-0813`: 12 of 127, 9.4 percent.
+-   `gemma-4-26b-a4b-it`: 0 of 127.
+-   `deepseek-v4-flash-0731`: 0 of 127.
+-   `minimax-m3`: 0 of 127.
+-   `hf:openai/gpt-oss-120b`: 0 of 127.
+-   `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4`: 0 of 127.
+-   `hf:moonshotai/Kimi-K3`: 0 of 127.
+-   `hf:Qwen/Qwen3.8-27B`: 0 of 124.
+-   `hf:zai-org/GLM-5.2`: 0 of 115.
+
+THE BASELINE IS EXACTLY ZERO, not 39 percent.
+Eight seats across roughly 1,000 streams produce not one zero-content call,
+so 12 of 127 is not something a null distribution supplies.
+Every one of the 12 carried reasoning characters above zero,
+which is the same signature as `qwen3.8-max`: bytes arrived, and none were accounted to content.
+
+The split follows the provider.
+Both affected seats are served by Charm Hyper, which speaks the Anthropic protocol that
+`src/anthropic-delta-scan.ts` reads, and every `hf:` seat on Synthetic is clean.
+Three other Hyper seats are also clean, so this is not "the Hyper path is broken":
+it is a frame pattern only some upstream models emit.
+
+### What is still not settled, and the prediction that settles it
+
+Why constant for one seat and intermittent for the other is not readable from the log.
+`qwen3.8-max` is the one seat on `toolChoice: 'auto'`, so its whole answer always arrives as
+tool-call arguments, which is exactly the delta type `#211` found misrouted.
+For `deepseek-v4-pro-0813` two readings remain, and they differ in whether `#211`'s fix helps:
+
+-   Same mechanism, occurring on 9.4 percent of calls because the duplicate
+    `content_block_start` is what varies. `#211`'s fix removes all 12.
+-   A different delta type, `text_delta` inside a thinking block, which `#211`
+    deliberately does NOT exempt. The fix removes none of the 12.
+
+That is a clean falsifiable prediction rather than an open question:
+count zero-content streams for `deepseek-v4-pro-0813` on the first post-`#211` run.
+Twelve becoming zero confirms the first reading; twelve staying put confirms the second and opens
+its own task.
+Do not fold the answer into `#211` before that count exists.
