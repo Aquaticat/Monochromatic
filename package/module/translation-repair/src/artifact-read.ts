@@ -10,9 +10,9 @@ import {
   type ParsedArtifact,
   parseSettledArtifact,
 } from './artifact-v1-read.ts';
-import { TWO_LANE_GENERATIONS, } from './corpus-run/artifact-v2-contract.ts';
-import type { ParsedArtifactV2, } from './corpus-run/artifact-v2-read-contract.ts';
-import { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
+import { TWO_LANE_GENERATIONS, } from './corpus-run/artifact-two-lane-contract.ts';
+import type { ParsedTwoLaneArtifact, } from './corpus-run/artifact-two-lane-read-contract.ts';
+import { parseSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-read.ts';
 
 //region Artifact dispatch
 // Choosing which generation's reader an artifact belongs to, and nothing else.
@@ -69,7 +69,7 @@ export type ParsedArtifactReading = {
   /**
    * What the two-lane reader made of it, comparison recomputed.
    */
-  readonly artifact: ParsedArtifactV2;
+  readonly artifact: ParsedTwoLaneArtifact;
 };
 
 /**
@@ -131,7 +131,7 @@ export function readSettledArtifact(
   if (TWO_LANE_GENERATIONS.includes(reading.version,)) {
     return {
       kind: 'version-2',
-      artifact: parseSettledArtifactV2({ value, },),
+      artifact: parseSettledTwoLaneArtifact({ value, },),
     };
   }
 

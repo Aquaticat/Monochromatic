@@ -359,6 +359,7 @@ await describe({
                 firstByteMs: 40,
                 maxGapMs: 900,
                 chars: 8,
+                elapsedMs: 1_400,
               },
               cause: new Error('socket closed',),
             },),

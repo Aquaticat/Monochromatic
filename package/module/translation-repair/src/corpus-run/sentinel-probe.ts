@@ -11,7 +11,7 @@ import {
 // Runs a set of named, known-behavior corpus entries through the pipeline and
 // prints one PROBE line each (status, issue counts, findings). Used before an
 // improve-and-restart step to confirm a change moved the known cases the way it
-// should; expected statuses live in doc/handover/translation-repair.md, not
+// should; expected statuses live in doc/handover/translation-repair-history.md, not
 // hardcoded here, so this runner never drifts against the recorded ledger. Run
 // it with `mise run //package/module/translation-repair:sentinel-probe -- Anilovr Aniloviraw`.
 

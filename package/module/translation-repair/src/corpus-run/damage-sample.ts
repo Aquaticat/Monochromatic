@@ -8,8 +8,8 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
 import {
-  collectShippedRegionsV2,
-  type ShippedRegionV2,
+  collectTwoLaneShippedRegions,
+  type ShippedRegion,
 } from './damage-region-v2.ts';
 import {
   formatVerifyManifest,
@@ -98,7 +98,7 @@ const FIELD_SEPARATOR = '\u0000';
  */
 async function collectShippedRegions(
   { dir, }: { readonly dir: string; },
-): Promise<Awaited<ReturnType<typeof collectShippedRegionsV2>>> {
+): Promise<Awaited<ReturnType<typeof collectTwoLaneShippedRegions>>> {
   /**
    * Directory the settled artifacts sit in, named once so the listing, the
    * census and the later reads cannot drift onto different paths.
@@ -117,7 +117,7 @@ async function collectShippedRegions(
       return name.endsWith('.json',);
     },);
 
-  return await collectShippedRegionsV2({
+  return await collectTwoLaneShippedRegions({
     artifactsDir,
     files: keepEligible({
       names: listed,
@@ -140,7 +140,7 @@ type KeyedRegion = Readonly<{
   /**
    * Region that may be drawn.
    */
-  region: ShippedRegionV2;
+  region: ShippedRegion;
 
   /**
    * Seeded hash of the region's identity, the draw order.
@@ -171,10 +171,10 @@ function drawRegions(
     regions,
     seed,
   }: {
-    readonly regions: readonly ShippedRegionV2[];
+    readonly regions: readonly ShippedRegion[];
     readonly seed: string;
   },
-): readonly ShippedRegionV2[] {
+): readonly ShippedRegion[] {
   return regions
     .map(function withKey(region,): KeyedRegion {
       return {
@@ -230,7 +230,7 @@ function drawRegions(
  * ```
  */
 function buildCase(
-  { ref, }: { readonly ref: ShippedRegionV2; },
+  { ref, }: { readonly ref: ShippedRegion; },
 ): RelabelCase {
   return {
     entryId: ref.entryId,

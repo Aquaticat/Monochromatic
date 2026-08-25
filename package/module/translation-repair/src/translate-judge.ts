@@ -5,7 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { describeProducer, } from './candidate-select-model.ts';
-import { selectBestCandidate, } from './candidate-select.ts';
+import { selectBestCandidate, } from './candidate-select-record.ts';
 import {
   KEEPS_TRUSTED_TEXT,
   LEAVES_PASSAGE_UNTRANSLATED,

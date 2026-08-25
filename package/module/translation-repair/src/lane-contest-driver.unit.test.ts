@@ -20,12 +20,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactComparisonRowV2,
-  type ArtifactDeliveryRowV2,
+  type ArtifactComparisonRow,
+  type ArtifactDeliveryRow,
   contestDocumentLanes,
   createSyntheticClient,
   type LaneContestOutcome,
-  type ProjectedLanesV2,
+  type ProjectedLanes,
   type SliceCache,
 } from '../dist/final/node/index.mjs';
 
@@ -90,7 +90,7 @@ function catLedgerRow(
     readonly sliceIndex: number;
     readonly shippedText: string;
   },
-): ArtifactDeliveryRowV2 {
+): ArtifactDeliveryRow {
   return {
     sliceIndex,
     sourceText: SOURCE_NAP,
@@ -131,7 +131,7 @@ function catComparisonRow(
     readonly repairText: string;
     readonly translateText: string;
   },
-): ArtifactComparisonRowV2 {
+): ArtifactComparisonRow {
   return {
     sliceIndex,
     incumbentKind: 'present',
@@ -177,13 +177,13 @@ function catProjection(
       string,
     ])[];
   },
-): ProjectedLanesV2 {
+): ProjectedLanes {
   return {
     delivery: {
       repair: pairs.map(function toRepairRow(
         pair,
         sliceIndex,
-      ): ArtifactDeliveryRowV2 {
+      ): ArtifactDeliveryRow {
         return catLedgerRow({
           sliceIndex,
           shippedText: pair[0],
@@ -192,7 +192,7 @@ function catProjection(
       translate: pairs.map(function toTranslateRow(
         pair,
         sliceIndex,
-      ): ArtifactDeliveryRowV2 {
+      ): ArtifactDeliveryRow {
         return catLedgerRow({
           sliceIndex,
           shippedText: pair[1],
@@ -202,7 +202,7 @@ function catProjection(
     comparison: pairs.map(function toComparisonRow(
       pair,
       sliceIndex,
-    ): ArtifactComparisonRowV2 {
+    ): ArtifactComparisonRow {
       return catComparisonRow({
         sliceIndex,
         repairText: pair[0],

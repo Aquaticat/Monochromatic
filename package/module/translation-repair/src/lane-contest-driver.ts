@@ -5,11 +5,11 @@ import {
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
-  type ArtifactContestSliceV2,
+  type ArtifactContestSlice,
   contestEligibleIndexes,
   describeContestSlice,
-} from './corpus-run/artifact-v2-contest.ts';
-import type { ProjectedLanesV2, } from './corpus-run/artifact-v2-derive.ts';
+} from './corpus-run/artifact-two-lane-contest.ts';
+import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
 import {
   contestLaneSlice,
   LANE_CONTEST_QUORUM,
@@ -98,7 +98,7 @@ export async function contestDocumentLanes(
     l,
   }: {
     readonly client: SyntheticClient;
-    readonly projected: ProjectedLanesV2;
+    readonly projected: ProjectedLanes;
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly cache: SliceCache<LaneContestOutcome>;
@@ -106,7 +106,7 @@ export async function contestDocumentLanes(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
   },
-): Promise<readonly ArtifactContestSliceV2[]> {
+): Promise<readonly ArtifactContestSlice[]> {
   /**
    * Logger naming this driver.
    */
@@ -147,7 +147,7 @@ export async function contestDocumentLanes(
   /**
    * One record per contested slice, in comparison-row order.
    */
-  const slices: ArtifactContestSliceV2[] = [];
+  const slices: ArtifactContestSlice[] = [];
 
   /**
    * Slices the two lanes covered at all, which the eligible count is read

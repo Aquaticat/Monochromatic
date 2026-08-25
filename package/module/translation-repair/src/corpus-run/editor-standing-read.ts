@@ -1,7 +1,4 @@
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -22,11 +19,12 @@ import {
   type DigestGroup,
   groupByDigest,
 } from './digest-group.ts';
+import { namesIn, } from './directory-listing.ts';
 import {
   readRepairRounds,
   RoundsNotRecordedError,
 } from './artifact-rounds-read.ts';
-import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
+import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Editor standing read
@@ -92,63 +90,6 @@ type ArtifactReading = {
    */
   readonly refiner: readonly (readonly SelectionRound[])[];
 };
-
-/**
- * What listing one directory produced.
- *
- * A REFUSAL IS NAMED BY CLASS, NEVER QUOTED. A filesystem error carries the
- * path it failed on, and a run directory path can name a person.
- *
- * @example
- * ```ts
- * const reading: DirectoryReading = { kind: 'read', names: [], };
- * ```
- */
-type DirectoryReading =
-  | {
-    readonly kind: 'read';
-
-    /**
-     * Everything the directory holds, in whatever order it gave them.
-     */
-    readonly names: readonly string[];
-  }
-  | {
-    readonly kind: 'unreadable';
-
-    /**
-     * Class that refused the listing.
-     */
-    readonly refusedBy: string;
-  };
-
-/**
- * Lists one directory, reporting an absent one rather than raising.
- *
- * @param dir - directory to list
- *
- * @returns Its names, or the refusal
- *
- * @example
- * ```ts
- * const reading = await namesIn({ dir, },);
- * ```
- */
-async function namesIn(
-  { dir, }: { readonly dir: string; },
-): Promise<DirectoryReading> {
-  try {
-    return {
-      kind: 'read',
-      names: await readdir(dir,),
-    };
-  } catch (error) {
-    return {
-      kind: 'unreadable',
-      refusedBy: errorName({ error, },),
-    };
-  }
-}
 
 /**
  * Turns one directory's names into the artifact paths among them.
@@ -235,8 +176,8 @@ async function artifactPaths(
     },);
 
   console.error(
-    `editor-standing-read: no artifacts under ${path} (${under.refusedBy} on `
-      + `${ARTIFACTS_DIR}/, ${flat.refusedBy} on the directory itself)`,
+    `editor-standing-read: no artifacts under ${path} (${under.reason} on `
+      + `${ARTIFACTS_DIR}/, ${flat.reason} on the directory itself)`,
   );
   return [];
 }
@@ -279,7 +220,7 @@ async function readOne(
     /**
      * Whole artifact, parsed rather than trusted.
      */
-    const artifact = parseSettledArtifactV2({
+    const artifact = parseSettledTwoLaneArtifact({
       value: JSON.parse(await readFile(
         path,
         'utf8',

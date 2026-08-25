@@ -12,8 +12,8 @@ import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { prepareDocumentPairWithRoster, } from '../prepare-with-pairing.ts';
 import { sliceNeighbourContexts, } from '../fidelity-window.ts';
 import { slicePictureContexts, } from '../slice-pictures.ts';
-import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
-import { projectLanesV2, } from './artifact-v2-derive.ts';
+import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
+import { projectLanes, } from './artifact-two-lane-derive.ts';
 import { consolidateDocument, } from '../consolidate-driver.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
 import { openConsolidateCache, } from './consolidate-cache-store.ts';
@@ -351,7 +351,7 @@ async function runEntryPipeline(
      * along, because the builder derives it again from the same function. The
      * contest needs it first, to know which slices are worth asking about.
      */
-    const projected = projectLanesV2({ lanes, },);
+    const projected = projectLanes({ lanes, },);
 
     /**
      * What the roster said at every slice the two lanes worded differently.
@@ -430,7 +430,7 @@ async function runEntryPipeline(
      * preparation, which is why no artifact can name a slicing the lanes never
      * ran over.
      */
-    const artifact = buildSettledArtifactV2({
+    const artifact = buildSettledTwoLaneArtifact({
       entryId: entry.id,
       tip,
       pipelineDigest,

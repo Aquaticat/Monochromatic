@@ -2,7 +2,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V3,
   ARTIFACT_SCHEMA_VERSION_V4,
-} from './corpus-run/artifact-v2-contract.ts';
+} from './corpus-run/artifact-two-lane-contract.ts';
 import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
 
 //region Artifact key vocabulary

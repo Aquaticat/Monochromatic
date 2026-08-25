@@ -13,43 +13,43 @@
 // so nothing importing the package sees the seam.
 
 export { buildSettledArtifact, } from './corpus-run/artifact-build.ts';
-export { buildSettledArtifactV2, } from './corpus-run/artifact-v2-build.ts';
+export { buildSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-build.ts';
 export {
-  collectShippedRegionsV2,
+  collectTwoLaneShippedRegions,
   DAMAGE_LANES,
   type DamageLane,
-  DamageRegionV2Error,
+  DamageRegionError,
   regionIdOf,
   regionsOfLane,
   type ShippedRegionCensus,
-  type ShippedRegionV2,
+  type ShippedRegion,
 } from './corpus-run/damage-region-v2.ts';
 export {
   ARTIFACT_SCHEMA_VERSION_V2,
   type ArtifactJsonValue,
-  type SettledArtifactV2,
-  type SettledLaneV2,
-  type SettledPreparationV2,
+  type SettledArtifact,
+  type SettledLane,
+  type SettledPreparation,
   TWO_LANE_GENERATIONS,
-} from './corpus-run/artifact-v2-contract.ts';
+} from './corpus-run/artifact-two-lane-contract.ts';
 export {
-  type ArtifactContestSliceV2,
-  type ArtifactContestVerdictV2,
-  type ArtifactLaneSelectionV2,
+  type ArtifactContestSlice,
+  type ArtifactContestVerdict,
+  type ArtifactLaneSelection,
   contestEligibleIndexes,
   describeContestSlice,
-} from './corpus-run/artifact-v2-contest.ts';
+} from './corpus-run/artifact-two-lane-contest.ts';
 export {
-  projectLanesV2,
-  type ProjectedLanesV2,
-} from './corpus-run/artifact-v2-derive.ts';
+  projectLanes,
+  type ProjectedLanes,
+} from './corpus-run/artifact-two-lane-derive.ts';
 export { openConsolidateCache, } from './corpus-run/consolidate-cache-store.ts';
 export { openLaneContestCache, } from './corpus-run/lane-contest-cache-store.ts';
 export {
-  ArtifactComparisonV2Error,
+  ArtifactComparisonError,
   assertDerivationsAgree,
-  compareLanesV2,
-} from './corpus-run/artifact-v2-comparison.ts';
+  compareLanes,
+} from './corpus-run/artifact-two-lane-comparison.ts';
 export {
   type AudienceSplit,
   rateByVoice,
@@ -106,24 +106,29 @@ export {
   groupByDigest,
 } from './corpus-run/digest-group.ts';
 export {
+  type DirectoryReading,
+  filesystemReason,
+  namesIn,
+} from './corpus-run/directory-listing.ts';
+export {
   OffRosterModelError,
   requireProducer,
   requireRosterModelId,
 } from './corpus-run/artifact-producer-read.ts';
-export { verifyArtifactV2AgainstPreparation, } from './corpus-run/artifact-v2-corpus-verify.ts';
+export { verifyArtifactAgainstPreparation, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
 export {
-  comparisonRowsEqualV2,
-  decisionsEqualV2,
-  deliveriesEqualV2,
-  outcomesEqualV2,
-} from './corpus-run/artifact-v2-row-equality.ts';
+  comparisonRowsEqual,
+  decisionsEqual,
+  deliveriesEqual,
+  outcomesEqual,
+} from './corpus-run/artifact-two-lane-row-equality.ts';
 export {
-  toArtifactComparisonRowV2,
-  toArtifactDecisionsV2,
-  toArtifactDeliveryV2,
-  toArtifactOutcomeV2,
-  toArtifactRowV2,
-} from './corpus-run/artifact-v2-project.ts';
+  toArtifactComparisonRow,
+  toArtifactDecisions,
+  toArtifactDelivery,
+  toArtifactOutcome,
+  toArtifactRow,
+} from './corpus-run/artifact-two-lane-project.ts';
 export {
   type CorpusPair,
   settleEntry,
@@ -144,6 +149,21 @@ export {
 } from './corpus-run/entry-reattempt.ts';
 export { openPictureReadingCache, } from './corpus-run/reading-cache-store.ts';
 export {
+  type CallReading,
+  type CallTiming,
+  readCallTiming,
+  readRoundTiming,
+  type RoundReading,
+  type RoundTiming,
+  STREAM_MARKER,
+} from './corpus-run/run-timing-parse.ts';
+export {
+  type InFlight,
+  measureInFlight,
+  readRunTiming,
+  type RunTiming,
+} from './corpus-run/run-timing-read.ts';
+export {
   belongsToNamespace,
   CONSOLIDATE_NAMESPACE,
   EVERY_SLICE_NAMESPACE,
@@ -162,15 +182,15 @@ export {
   assertFindingsDescribePreparation,
   assertLedgerDescribesPreparation,
   assertResultCountsPreparation,
-} from './corpus-run/artifact-v2-verify.ts';
+} from './corpus-run/artifact-two-lane-verify.ts';
 export type {
-  ArtifactComparisonRowV2,
-  ArtifactDecisionComparisonV2,
-  ArtifactDeliveryRowV2,
-  ArtifactLaneRelationV2,
-  ArtifactSliceDeliveryV2,
-  ArtifactSliceOutcomeV2,
-} from './corpus-run/artifact-v2-vocabulary.ts';
+  ArtifactComparisonRow,
+  ArtifactDecisionComparison,
+  ArtifactDeliveryRow,
+  ArtifactLaneRelation,
+  ArtifactSliceDelivery,
+  ArtifactSliceOutcome,
+} from './corpus-run/artifact-two-lane-vocabulary.ts';
 export {
   isMarkupOnly,
   markupFraction,

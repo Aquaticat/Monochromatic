@@ -126,12 +126,12 @@ export {
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
 export {
-  type ArtifactConsolidateGateV2,
-  type ArtifactConsolidateShippedV2,
-  type ArtifactConsolidateSliceV2,
-  type ArtifactConsolidationV2,
+  type ArtifactConsolidateGate,
+  type ArtifactConsolidateShipped,
+  type ArtifactConsolidateSlice,
+  type ArtifactConsolidation,
   describeConsolidateSlice,
-} from './corpus-run/artifact-v2-consolidate.ts';
+} from './corpus-run/artifact-two-lane-consolidate.ts';
 export {
   consolidateDocument,
   consolidationWorthResuming,

@@ -224,7 +224,8 @@ export function reportStreamProgress(
    * Sample line, assembled before the call so the logger chain stays one step
    * per line.
    */
-  const sample = `stream ${label}: ${outcome}, firstByte ${String(progress.firstByteMs,)}ms, `
+  const sample = `stream ${label}: ${outcome}, elapsed ${String(progress.elapsedMs,)}ms, `
+    + `firstByte ${String(progress.firstByteMs,)}ms, `
     + `maxGap ${String(progress.maxGapMs,)}ms, ${String(progress.chars,)} raw chars, `
     + `${String(unreadableFrames,)} unreadable frames, `
     + `${String(generatedChars.content,)} content chars, `

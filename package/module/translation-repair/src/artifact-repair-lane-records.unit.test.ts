@@ -23,9 +23,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactDeliveryRowV2,
+  type ArtifactDeliveryRow,
   ArtifactParseError,
-  compareLanesV2,
+  compareLanes,
   repairLaneRecordsOf,
 } from '../dist/final/node/index.mjs';
 
@@ -91,7 +91,7 @@ const DECOY_ISSUE = {
  * const rows = repairLedger();
  * ```
  */
-function repairLedger(): readonly ArtifactDeliveryRowV2[] {
+function repairLedger(): readonly ArtifactDeliveryRow[] {
   return [
     {
       sliceIndex: 0,
@@ -128,7 +128,7 @@ function repairLedger(): readonly ArtifactDeliveryRowV2[] {
  * const rows = translateLedger();
  * ```
  */
-function translateLedger(): readonly ArtifactDeliveryRowV2[] {
+function translateLedger(): readonly ArtifactDeliveryRow[] {
   return [
     {
       sliceIndex: 0,
@@ -317,7 +317,7 @@ function artifactWith(
         delivery: translateDelivery,
       },
     },
-    comparison: compareLanesV2({
+    comparison: compareLanes({
       repair: repairDelivery,
       translate: translateDelivery,
     },),

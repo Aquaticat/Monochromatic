@@ -28,6 +28,7 @@ import {
 } from './hyper-credits.ts';
 import { formatUsageNote, } from './model-content.ts';
 import { failureForReply, } from './request-size-refusal.ts';
+import { reportSpend, } from './spend-line.ts';
 import type { RosterModelId, } from './roster-id.ts';
 import { hyperIdFor, } from './roster-reach.ts';
 import {
@@ -318,6 +319,11 @@ export function createHyperClient(
 
       /**
        * Exactly what goes on the wire, hoisted so its size can be measured.
+       *
+       * THE SCHEMA IS STATED DOWNSTREAM, not here. `buildAnthropicBody` routes
+       * every schema-bearing call through `renderToolSystemPrompt`, which
+       * prints the whole schema into this protocol's `system` field along with
+       * its format rules. `#216` checked before adding a second copy.
        */
       const bodyJson = JSON.stringify(buildAnthropicBody({
         modelId: servedId,
@@ -380,6 +386,11 @@ export function createHyperClient(
       rl.debug(
         `<- ${servedId}: ${String(textLength,)} chars${formatUsageNote({ extracted, },)}`,
       );
+      reportSpend({
+        provider: 'hyper',
+        label: servedId,
+        extracted,
+      },);
       return extracted;
     },);
   }

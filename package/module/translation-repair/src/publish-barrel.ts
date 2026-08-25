@@ -19,6 +19,14 @@ export {
   shippableReplacements,
 } from './corpus-run/publish-fixed.ts';
 export {
+  ARTIFACT_SUFFIX,
+  ARTIFACTS_DIR,
+  publishedEntryIds,
+  settledEntryIds,
+  type VerifiableRun,
+  whatThereIsToVerify,
+} from './corpus-run/published-tree-listing.ts';
+export {
   type MissingWording,
   pageCarriesEveryWording,
   type PageLengthCheck,

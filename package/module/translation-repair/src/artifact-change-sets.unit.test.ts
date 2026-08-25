@@ -130,9 +130,9 @@ await describe({
         + 'absent top-level sets as unrecorded would report a run that changed nothing',
       fn: async () => {
         /**
-         * What readTwoLaneArtifact raised, read for its class as well as its wording.
+         * What changeSetReadOfVersionTwo raised, read for its class as well as its wording.
          */
-        const refusalOfReadTwoLaneArtifact = caught(function readTwoLaneArtifact() {
+        const refusalOfChangeSetRead = caught(function changeSetReadOfVersionTwo() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
@@ -142,8 +142,8 @@ await describe({
           },);
         },);
 
-        expect(refusalOfReadTwoLaneArtifact,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfReadTwoLaneArtifact as Error).message,).toContain('one change set',);
+        expect(refusalOfChangeSetRead,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfChangeSetRead as Error).message,).toContain('one change set',);
       },
     },),
     it({
@@ -625,9 +625,9 @@ await describe({
         + 'top-level status and issues a version 2 artifact does not have would come back as absences',
       fn: async () => {
         /**
-         * What parseTwoLaneArtifact raised, read for its class as well as its wording.
+         * What singleLaneParseOfVersionTwo raised, read for its class as well as its wording.
          */
-        const refusalOfParseTwoLaneArtifact = caught(function parseTwoLaneArtifact() {
+        const refusalOfSingleLaneParse = caught(function singleLaneParseOfVersionTwo() {
           parseSettledArtifact({
             value: {
               ...VERSIONED_ARTIFACT,
@@ -639,8 +639,8 @@ await describe({
           },);
         },);
 
-        expect(refusalOfParseTwoLaneArtifact,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfParseTwoLaneArtifact as Error).message,).toContain('one change set',);
+        expect(refusalOfSingleLaneParse,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfSingleLaneParse as Error).message,).toContain('one change set',);
       },
     },),
     it({

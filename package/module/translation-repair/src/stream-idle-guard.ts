@@ -41,7 +41,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
  * THE TAIL DOES NOT AGREE WITH THE MEDIAN, which is why this constant is
  * corrected rather than lowered. The same re-count found a completed (not
  * cut) `hf:zai-org/GLM-5.2` stream whose first byte took 183_755 ms, and a
- * separate uncensored 2026-07-26 run (`doc/handover/translation-repair.md`,
+ * separate uncensored 2026-07-26 run (`doc/handover/translation-repair-history.md`,
  * "PASS 7 RUN 014", a different roster and three weeks earlier) recorded a
  * completed call at 347_099 ms, within 3.6 percent of the deadline this
  * constant sits above today. Both were healthy completions, not
@@ -131,7 +131,7 @@ export class StreamStalledError extends Error {
  *
  * @example
  * ```ts
- * const progress: StreamProgress = { firstByteMs: 812, maxGapMs: 43, chars: 9_211, };
+ * const progress: StreamProgress = { firstByteMs: 812, maxGapMs: 43, chars: 9_211, elapsedMs: 4_210, };
  * ```
  */
 export type StreamProgress = {
@@ -150,6 +150,22 @@ export type StreamProgress = {
    * Total decoded characters received.
    */
   readonly chars: number;
+
+  /**
+   * Milliseconds from arming the guard to this reading.
+   *
+   * ANSWERS WHERE A RUN'S WALL-CLOCK WENT, which nothing could before `#215`.
+   * Dispatch is logged at `debug` and production runs emit `info` and `warn`
+   * only, so a stream's start time was unrecoverable and the only concurrency
+   * figure derivable was a clustering of completion timestamps, which cannot
+   * tell calls that overlapped from calls that merely finished near each other.
+   *
+   * CARRIED HERE RATHER THAN LOGGED AT DISPATCH because it answers strictly
+   * more for no extra lines: start time follows by subtraction, while a
+   * dispatch line cannot be paired to its completion when one model has
+   * several calls in flight.
+   */
+  readonly elapsedMs: number;
 };
 
 /**
@@ -319,6 +335,7 @@ export function armIdleGuard(
         firstByteMs: state.firstByteMs,
         maxGapMs: state.maxGapMs,
         chars: state.chars,
+        elapsedMs: Date.now() - state.armedAt,
       };
     },
     [Symbol.dispose](): void {

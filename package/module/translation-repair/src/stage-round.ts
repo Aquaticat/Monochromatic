@@ -246,6 +246,21 @@ export async function runGatherRound<ValueT,>(
   const arrived = new Map<number, RoundOutcome<ValueT>>();
 
   /**
+   * When this round dispatched, so its own line can say how long it took.
+   *
+   * THE RUN COULD NOT SAY WHERE ITS HOURS WENT. `#215` found that the only
+   * per-call line fires at completion, so a log carries no round boundary at
+   * all: nothing separates the time a round spent gathering from the time it
+   * spent waiting on a straggler after quorum already stood. That second
+   * number is exactly what
+   * `doc/audit/every-volume-guard-is-blind-to-one-model.md` could bound only
+   * from above, at the grace window times the number of cut events, and said
+   * confirming it "needs the dispatch timestamps the run does not currently
+   * record". This is that timestamp.
+   */
+  const startedAt = Date.now();
+
+  /**
    * Every ask, in flight together.
    */
   const asks = modelIds.map(async function askOnce(
@@ -309,6 +324,16 @@ export async function runGatherRound<ValueT,>(
     heardNeeded,
   },);
 
+  /**
+   * When quorum stood, which is the instant the grace window opens.
+   *
+   * SPLITTING THE ROUND HERE IS THE POINT. Time before this is the round doing
+   * its work; time after it is the round waiting on voices it may never hear.
+   * Only the second half is straggler cost, and a single round duration cannot
+   * tell them apart.
+   */
+  const quorumAt = Date.now();
+
   // Whichever comes first: everyone answers, or the grace expires. A round
   // that never reaches quorum has already waited for every ask above, since
   // `awaitHeard` also stops when nothing is pending, so this resolves at once
@@ -340,7 +365,11 @@ export async function runGatherRound<ValueT,>(
   // through `awaitHeard`; this covers the window after it.
   signal.throwIfAborted();
 
-  return modelIds.map(function toOutcome(
+  /**
+   * Every model's outcome in roster order, with a recorded silence at any
+   * position this round never filled.
+   */
+  const outcomes = modelIds.map(function toOutcome(
     modelId,
     index,
   ): RoundOutcome<ValueT> {
@@ -349,6 +378,34 @@ export async function runGatherRound<ValueT,>(
       voice: { heard: false, },
     };
   },);
+
+  /**
+   * Voices this round actually heard, counted off the outcomes rather than off
+   * `heardNeeded`: the grace window can add voices after quorum stood, so the
+   * target is a floor and never the figure.
+   */
+  const heard = outcomes
+    .filter(function wasHeard({ voice, },): boolean {
+      return voice.heard;
+    },)
+    .length;
+
+  /**
+   * When this round finished, once the grace window closed.
+   */
+  const finishedAt = Date.now();
+
+  // IDS, COUNTS AND DURATIONS ONLY, like every other line a corpus run emits:
+  // the stage label, the roster size and the clock. A run directory holds
+  // unlicensed corpus wording, and this line is written on every gather.
+  l.info(
+    `${stage} round: ${String(heard,)}/${String(modelIds.length,)} heard, `
+      + `${String(finishedAt - startedAt,)}ms total, `
+      + `${String(quorumAt - startedAt,)}ms to quorum, `
+      + `${String(finishedAt - quorumAt,)}ms in grace`,
+  );
+
+  return outcomes;
 }
 
 //endregion Stage round

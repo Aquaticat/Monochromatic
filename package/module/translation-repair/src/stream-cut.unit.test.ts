@@ -28,6 +28,7 @@ const SOME_PROGRESS = {
   firstByteMs: 40,
   maxGapMs: 4,
   chars: 512,
+  elapsedMs: 830,
 };
 
 /**
@@ -147,6 +148,29 @@ await describe({
         // a reader grepping for "delivered chars" must find nothing, not a
         // second copy of the raw count.
         expect(line.includes('delivered chars',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SAYS HOW LONG THE CALL TOOK, in the same line as its outcome: a log of phase timings '
+        + 'and character counts cannot answer where a pass spent its hours, and `#215` found no '
+        + 'line anywhere that carried a call duration',
+      fn: async () => {
+        /**
+         * A completion line, the shape every settled call leaves behind.
+         */
+        const line = reportStreamProgress({
+          label: 'hf:whiskers',
+          progress: SOME_PROGRESS,
+          unreadableFrames: 0,
+          outcome: 'completed',
+          openingText: '',
+          generatedChars: SOME_GENERATED_CHARS,
+        },);
+
+        // The value, not merely the word: 830 appears in no other fixture
+        // field, so this cannot pass by reading a neighbouring count.
+        expect(line.includes(`elapsed ${String(SOME_PROGRESS.elapsedMs,)}ms`,),).toBe(true,);
       },
     },),
 

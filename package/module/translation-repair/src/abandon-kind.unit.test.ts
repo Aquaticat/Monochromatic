@@ -53,6 +53,7 @@ function cutWith(
       firstByteMs,
       maxGapMs: 0,
       chars: partialText.length,
+      elapsedMs: 120,
     },
     cause: new Error('exchange torn down by abort',),
   },);

@@ -105,6 +105,21 @@ description = "#106: ask the coverage roster about a passage, delete the spans i
 depends = ["build"]
 run = "node dist/final/node/coverage-control-probe.mjs"
 
+[tasks."run-timing-report"]
+description = "#215: read back where a run's wall-clock went, splitting every round into the time it worked and the time it waited on a straggler, and counting how many calls were in flight at once; SPENDS NO QUOTA (name one or more log paths after --)"
+depends = ["build"]
+run = "node dist/final/node/run-timing-report.mjs"
+
+[tasks."spend-report"]
+description = "#210: read what a run cost from the SPEND lines its own log carries, priced against a DATED Charm Hyper rate table; subscription seats are counted but never priced; SPENDS NO QUOTA (name one or more log paths after --)"
+depends = ["build"]
+run = "node dist/final/node/spend-report.mjs"
+
+[tasks."ledger-report"]
+description = "#212: read the candidate ledger a run wrote, saying who produced what, how often it was chosen, and what judges said about it; pass --model <id> after -- to read one seat's candidates and its judges' verbatim reasons; SPENDS NO QUOTA (prints corpus wording when a model is named)"
+depends = ["build"]
+run = "node dist/final/node/ledger-report.mjs"
+
 [tasks."slice-cost-report"]
 description = "Read the per-slice cost telemetry a pass wrote, and say whether cost tracks slice size or a fixed overhead (pass a log path after --)"
 depends = ["build"]

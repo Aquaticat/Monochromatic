@@ -2,8 +2,8 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { ARTIFACT_SCHEMA_VERSION_V4, } from './artifact-v2-contract.ts';
-import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
+import { ARTIFACT_SCHEMA_VERSION_V4, } from './artifact-two-lane-contract.ts';
+import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import {
   censusBySchema,
   type SchemaCensusRow,
@@ -365,7 +365,7 @@ async function assertBodyMatchesLabel(
   );
 
   try {
-    parseSettledArtifactV2({ value: JSON.parse(text,), },);
+    parseSettledTwoLaneArtifact({ value: JSON.parse(text,), },);
   } catch (error) {
     throw new MislabelledArtifactError({
       entryId,

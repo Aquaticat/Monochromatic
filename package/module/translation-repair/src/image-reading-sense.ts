@@ -134,7 +134,7 @@ function isDigit({ character, }: { readonly character: string; },): boolean {
  *
  * @example
  * ```ts
- * const anchors = readingAnchors({ text: 'Bilibili UID: 2119605209', },);
+ * const anchors = readingAnchors({ text: 'posted by Mittens on 2019-04-07', },);
  * ```
  */
 export function readingAnchors({ text, }: { readonly text: string; },): ReadonlySet<string> {

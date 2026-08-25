@@ -12,6 +12,11 @@
 // only remedy that works against an exhausted budget.
 
 export { errorName, } from './error-name.ts';
+export {
+  renderSchemaForPrompt,
+  SCHEMA_BLOCK_HEADING,
+  withSchemaInSystemPrompt,
+} from './schema-prompt.ts';
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export { readJsonOutcome, } from './chat-json-outcome.ts';
 export { isSuccessStatus, } from './http-success.ts';
@@ -34,6 +39,26 @@ export {
   readMeterLine,
   readMeterLog,
 } from './corpus-run/meter-sample-read.ts';
+export {
+  type CreditRates,
+  creditsFor,
+  HYPER_PRICE_READ_ON,
+  ratesFor,
+} from './corpus-run/hyper-price.ts';
+export {
+  type PricedSeat,
+  priceTally,
+  type SpendCost,
+} from './corpus-run/spend-cost.ts';
+export {
+  readSpendLine,
+  type SeatSpend,
+  type SpendCount,
+  type SpendLineReading,
+  type SpendRecord,
+  type SpendTally,
+  tallySpend,
+} from './corpus-run/spend-read.ts';
 export {
   type BudgetView,
   createProviderBudgets,
@@ -79,6 +104,10 @@ export {
   type HyperCredits,
   parseHyperCredits,
 } from './hyper-credits.ts';
+export {
+  reportSpend,
+  SPEND_MARKER,
+} from './spend-line.ts';
 export {
   type AnthropicContentBlock,
   type AnthropicImageSource,

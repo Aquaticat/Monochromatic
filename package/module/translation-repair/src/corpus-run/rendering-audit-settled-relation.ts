@@ -1,4 +1,4 @@
-import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
+import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import { anchoredClaims, } from './rendering-audit-settled-read.ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
 import type {
@@ -120,7 +120,7 @@ export function pageRelationOf(
     reading,
     candidateText,
   }: {
-    readonly laneSelection: ArtifactLaneSelectionV2;
+    readonly laneSelection: ArtifactLaneSelection;
     readonly reading: WouldShipReading;
     readonly candidateText: string;
   },

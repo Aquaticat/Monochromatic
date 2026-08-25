@@ -21,7 +21,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  DamageRegionV2Error,
+  DamageRegionError,
   regionIdOf,
   regionsOfLane,
 } from '../../dist/final/node/index.mjs';
@@ -351,7 +351,7 @@ await describe({
           },);
         },);
 
-        expect(refusalOfUnnamedSlice,).toBeInstanceOf(DamageRegionV2Error,);
+        expect(refusalOfUnnamedSlice,).toBeInstanceOf(DamageRegionError,);
         expect((refusalOfUnnamedSlice as Error).message,).toContain('named by no comparison row',);
       },
     },),

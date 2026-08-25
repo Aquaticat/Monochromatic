@@ -9,7 +9,7 @@ import type {
   CandidateProducer,
 } from './candidate-select-model.ts';
 import { CANDIDATE_NONE, } from './candidate-select-wire.ts';
-import { selectBestCandidate, } from './candidate-select.ts';
+import { selectBestCandidate, } from './candidate-select-record.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { FidelityDamageKind, } from './fidelity-damage.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';

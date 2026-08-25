@@ -238,6 +238,46 @@ await describe({
     },),
 
     it({
+      name: 'FORWARDS a tool argument fragment as CONTENT even inside a thinking block, since a '
+        + 'block declaration cannot demote the answer: this is the frame qwen3.8-max sends, which '
+        + 'reopens one index as thinking after opening it as a tool call',
+      fn: async () => {
+        // THE CAPTURED SHAPE, `#211`, 2026-08-25. Index 1 opens as `tool_use`
+        // and is then reopened as `thinking` with no stop between, after which
+        // both delta kinds arrive under it. The scanner keeps the later
+        // declaration, so this case fails outright unless the answer channel is
+        // exempt from the block-type override.
+        const deltas = scanAll({
+          raw: blockStart({
+            index: 1,
+            type: 'tool_use',
+          },) + blockStart({
+            index: 1,
+            type: 'thinking',
+          },) + blockDelta({
+            index: 1,
+            deltaType: 'thinking_delta',
+            field: 'thinking',
+            text: 'Comparing the three.',
+          },) + blockDelta({
+            index: 1,
+            deltaType: 'input_json_delta',
+            field: 'partial_json',
+            text: '{"best": 2',
+          },),
+        },);
+
+        expect(deltas.map(function channelOf(delta,): string {
+          return delta.channel;
+        },),)
+          .toEqual([
+            'reasoning',
+            'content',
+          ],);
+      },
+    },),
+
+    it({
       name: 'SEPARATES two open blocks by the type each declared, since a message interleaves '
         + 'thinking and answer blocks and both carry deltas under their own index',
       fn: async () => {

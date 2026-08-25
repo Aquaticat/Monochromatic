@@ -17,9 +17,9 @@ import {
   prepareDocumentPair,
   type PreparedDocumentPair,
 } from '../document-preparation.ts';
-import { verifyArtifactV2AgainstPreparation, } from './artifact-v2-corpus-verify.ts';
-import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
-import type { ParsedArtifactV2, } from './artifact-v2-read-contract.ts';
+import { verifyArtifactAgainstPreparation, } from './artifact-two-lane-corpus-verify.ts';
+import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
+import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import {
   identityOf,
   type SettledAuditSubject,
@@ -54,7 +54,7 @@ import {
 //     name it cannot derive from the source and has every reason to call it a
 //     fabrication. That is the defect `#36` was opened for, and rediscovering
 //     it as "defects" would poison every name-bearing slice.
-// -   Provenance. `verifyArtifactV2AgainstPreparation` is the only check that
+// -   Provenance. `verifyArtifactAgainstPreparation` is the only check that
 //     the recorded preparation identity describes these two documents, since
 //     the artifact stores measurements of the pair rather than the pair.
 //
@@ -186,12 +186,12 @@ function verifySettled(
     artifact,
     prepared,
   }: {
-    readonly artifact: ParsedArtifactV2;
+    readonly artifact: ParsedTwoLaneArtifact;
     readonly prepared: PreparedDocumentPair;
   },
 ): SettledVerification {
   try {
-    verifyArtifactV2AgainstPreparation({
+    verifyArtifactAgainstPreparation({
       artifact,
       prepared,
     },);
@@ -256,7 +256,7 @@ export async function readArtifactSubjects(
   /**
    * Artifact checked against the version 2 read contract.
    */
-  const artifact = parseSettledArtifactV2({ value: raw, },);
+  const artifact = parseSettledTwoLaneArtifact({ value: raw, },);
 
   /**
    * Corpus pin taken from the artifact, so the file answers for itself even

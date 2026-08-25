@@ -96,7 +96,13 @@ export {
   SELF_VOTE_WEIGHT,
 } from './candidate-select-model.ts';
 export { mergeIdenticalCandidates, } from './candidate-merge.ts';
-export { selectBestCandidate, } from './candidate-select.ts';
+export { selectBestCandidate, } from './candidate-select-record.ts';
+export { decideBestCandidate, } from './candidate-select.ts';
+export {
+  type LedgerCandidate,
+  type LedgerRound,
+  recordContest,
+} from './candidate-ledger.ts';
 export {
   buildCandidateSelectMessages,
   CANDIDATE_NONE,

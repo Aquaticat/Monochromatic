@@ -14,6 +14,8 @@ import { SyntheticHttpError, } from './completion-shape.ts';
 import { isSuccessStatus, } from './http-success.ts';
 import { formatUsageNote, } from './model-content.ts';
 import { failureForReply, } from './request-size-refusal.ts';
+import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
+import { reportSpend, } from './spend-line.ts';
 import {
   SYNTHETIC_CHAT_BASE_URL,
   SYNTHETIC_QUOTAS_URL,
@@ -198,6 +200,23 @@ export function createSyntheticClient(
         : deadline.callSignal;
 
       /**
+       * Messages as they go on the wire, carrying this call's own response
+       * schema inside the system prompt.
+       *
+       * THIS PROTOCOL HAS NOWHERE ELSE TO PUT IT. The Anthropic path states the
+       * schema in its own `system` field through `renderToolSystemPrompt`; an
+       * OpenAI-compatible body carries only `response_format`, which a model
+       * that does not honour that field never sees. `#216`.
+       */
+      const asked = withSchemaInSystemPrompt({
+        messages: request.messages,
+        // Conditional spread keeps the knob absent instead of undefined.
+        ...(request.responseFormat === undefined
+          ? {}
+          : { responseFormat: request.responseFormat, }),
+      },);
+
+      /**
        * Exactly what goes on the wire, hoisted so its size can be measured.
        *
        * MEASURED, NOT ESTIMATED. The gateway caps this body and reports a body
@@ -206,7 +225,7 @@ export function createSyntheticClient(
        */
       const bodyJson = JSON.stringify({
         model: request.modelId,
-        messages: request.messages,
+        messages: asked,
         // The provider is finicky without streaming, and streamed headers
         // arrive before fetch's default headers timeout can fire.
         stream: true,
@@ -268,6 +287,11 @@ export function createSyntheticClient(
       rl.debug(
         `<- ${request.modelId}: ${String(textLength,)} chars${formatUsageNote({ extracted, },)}`,
       );
+      reportSpend({
+        provider: 'synthetic',
+        label: request.modelId,
+        extracted,
+      },);
       return extracted;
     },);
   }

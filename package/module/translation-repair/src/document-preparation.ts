@@ -120,7 +120,7 @@ export type PreparedDocumentPair = {
    * has an original on one side and a boundary on the other. The name predates
    * insertions existing and is kept because settled version 2 artifacts record
    * it, and because every consumer wants exactly this number: it is the bound
-   * `parseBlockPairingV2` refuses a section index against, and a real-pair
+   * `parseBlockPairing` refuses a section index against, and a real-pair
    * count there would falsely refuse a block pairing filed after an insertion.
    *
    * WHICH entries are insertions is reported by

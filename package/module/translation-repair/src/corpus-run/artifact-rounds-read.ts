@@ -25,7 +25,7 @@ import {
 //region Artifact rounds read
 // Reads judged repair rounds back out of an artifact's raw lane result.
 //
-// WHY THIS IS NOT THE VERSION 2 PARSER'S JOB. `ParsedLaneV2` deliberately hands
+// WHY THIS IS NOT THE VERSION 2 PARSER'S JOB. `ParsedLane` deliberately hands
 // back the lane's `result` as an unread record and checks only the core version
 // 2 requires, saying in its own note that a reader wanting a field this version
 // does not check should take it from the artifact. Rounds are such a field.

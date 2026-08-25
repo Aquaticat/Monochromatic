@@ -1,5 +1,5 @@
-import type { SettledArtifactV2, } from './artifact-v2-contract.ts';
-import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
+import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
+import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 import { wouldShipTextFor, } from './would-ship-text.ts';
 
 //region Settled tally
@@ -34,7 +34,7 @@ import { wouldShipTextFor, } from './would-ship-text.ts';
  * ```
  */
 function changedSlices(
-  { rows, }: { readonly rows: readonly ArtifactDeliveryRowV2[]; },
+  { rows, }: { readonly rows: readonly ArtifactDeliveryRow[]; },
 ): number {
   /**
    * Rows whose document carries a replacement.
@@ -61,7 +61,7 @@ function changedSlices(
  * ```
  */
 export function settledTallyLine(
-  { artifact, }: { readonly artifact: SettledArtifactV2; },
+  { artifact, }: { readonly artifact: SettledArtifact; },
 ): string {
   /**
    * Both lanes as the artifact nests them.

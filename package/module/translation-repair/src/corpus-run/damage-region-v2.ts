@@ -1,8 +1,8 @@
 import { readFile, } from 'node:fs/promises';
 
-import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
-import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
-import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
+import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
+import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
+import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import {
   pageRelationOf,
   type SettledPageRelation,
@@ -45,10 +45,10 @@ import {
  *
  * @example
  * ```ts
- * throw new DamageRegionV2Error({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
+ * throw new DamageRegionError({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
  * ```
  */
-export class DamageRegionV2Error extends Error {
+export class DamageRegionError extends Error {
   /**
    * Builds refusal carrying what could not hold.
    *
@@ -56,12 +56,12 @@ export class DamageRegionV2Error extends Error {
    *
    * @example
    * ```ts
-   * throw new DamageRegionV2Error({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
+   * throw new DamageRegionError({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
    * ```
    */
   public constructor({ message, }: { readonly message: string; },) {
     super(message,);
-    this.name = 'DamageRegionV2Error';
+    this.name = 'DamageRegionError';
   }
 }
 
@@ -83,7 +83,7 @@ export type DamageLane = typeof DAMAGE_LANES[number];
  *
  * @example
  * ```ts
- * const region: ShippedRegionV2 = {
+ * const region: ShippedRegion = {
  *   entryId: 'Tabby',
  *   lane: 'repair',
  *   sliceIndex: 2,
@@ -94,7 +94,7 @@ export type DamageLane = typeof DAMAGE_LANES[number];
  * };
  * ```
  */
-export type ShippedRegionV2 = {
+export type ShippedRegion = {
   /**
    * Corpus entry the region belongs to.
    */
@@ -169,7 +169,7 @@ export type ShippedRegionCensus = {
   /**
    * Regions the damage question can be asked about.
    */
-  readonly regions: readonly ShippedRegionV2[];
+  readonly regions: readonly ShippedRegion[];
 
   /**
    * Rows that shipped into a passage with no incumbent wording.
@@ -242,8 +242,8 @@ export function regionsOfLane(
   }: {
     readonly entryId: string;
     readonly lane: DamageLane;
-    readonly rows: readonly ArtifactDeliveryRowV2[];
-    readonly laneSelection: ArtifactLaneSelectionV2;
+    readonly rows: readonly ArtifactDeliveryRow[];
+    readonly laneSelection: ArtifactLaneSelection;
     readonly readings: ReadonlyMap<number, WouldShipReading>;
   },
 ): ShippedRegionCensus {
@@ -266,7 +266,7 @@ export function regionsOfLane(
   },);
 
   return {
-    regions: replaced.map(function toRegion(row,): ShippedRegionV2 {
+    regions: replaced.map(function toRegion(row,): ShippedRegion {
       /**
        * What would stand at this slice.
        *
@@ -277,7 +277,7 @@ export function regionsOfLane(
        */
       const reading = readings.get(row.sliceIndex,);
       if (reading === undefined)
-        throw new DamageRegionV2Error({
+        throw new DamageRegionError({
           message: `slice ${row.sliceIndex} shipped in the ${lane} lane and is named by no comparison row`,
         },);
 
@@ -319,10 +319,10 @@ export function regionsOfLane(
  *
  * @example
  * ```ts
- * const census = await collectShippedRegionsV2({ artifactsDir, files, },);
+ * const census = await collectTwoLaneShippedRegions({ artifactsDir, files, },);
  * ```
  */
-export async function collectShippedRegionsV2(
+export async function collectTwoLaneShippedRegions(
   {
     artifactsDir,
     files,
@@ -334,7 +334,7 @@ export async function collectShippedRegionsV2(
   /**
    * Regions gathered so far.
    */
-  const found: ShippedRegionV2[] = [];
+  const found: ShippedRegion[] = [];
 
   /**
    * Rows that filled a passage having no incumbent wording.
@@ -355,7 +355,7 @@ export async function collectShippedRegionsV2(
      * Artifact, parsed by version 2's own reader so its invariants are checked
      * here rather than assumed.
      */
-    const artifact = parseSettledArtifactV2({
+    const artifact = parseSettledTwoLaneArtifact({
       value: JSON.parse(await readFile(
         `${artifactsDir}/${file}`,
         'utf8',

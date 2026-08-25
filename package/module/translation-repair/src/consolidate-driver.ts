@@ -17,14 +17,14 @@ import {
 } from './consolidate-settle.ts';
 import { standingTextFor, } from './consolidate-standing.ts';
 import {
-  type ArtifactConsolidateSliceV2,
+  type ArtifactConsolidateSlice,
   describeConsolidateSlice,
-} from './corpus-run/artifact-v2-consolidate.ts';
+} from './corpus-run/artifact-two-lane-consolidate.ts';
 import type {
-  ArtifactContestSliceV2,
-  ArtifactContestVerdictV2,
-} from './corpus-run/artifact-v2-contest.ts';
-import type { ProjectedLanesV2, } from './corpus-run/artifact-v2-derive.ts';
+  ArtifactContestSlice,
+  ArtifactContestVerdict,
+} from './corpus-run/artifact-two-lane-contest.ts';
+import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
 import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
@@ -180,7 +180,7 @@ export function consolidationWorthResuming(
  * ```
  */
 function laneChoiceOf(
-  { verdict, }: { readonly verdict: ArtifactContestVerdictV2; },
+  { verdict, }: { readonly verdict: ArtifactContestVerdict; },
 ): LaneChoice {
   if (verdict.kind === 'lane-won')
     return verdict.lane;
@@ -246,8 +246,8 @@ export async function consolidateDocument(
     l,
   }: {
     readonly client: SyntheticClient;
-    readonly projected: ProjectedLanesV2;
-    readonly contests: readonly ArtifactContestSliceV2[];
+    readonly projected: ProjectedLanes;
+    readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly lineStructuredSlices: ReadonlySet<number>;
@@ -258,7 +258,7 @@ export async function consolidateDocument(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
   },
-): Promise<readonly ArtifactConsolidateSliceV2[]> {
+): Promise<readonly ArtifactConsolidateSlice[]> {
   /**
    * Logger naming this driver.
    */
@@ -287,7 +287,7 @@ export async function consolidateDocument(
    */
   const contestBySlice = new Map(contests.map(function nameSlice(slice,): readonly [
     number,
-    ArtifactContestSliceV2,
+    ArtifactContestSlice,
   ] {
     return [
       slice.sliceIndex,
@@ -306,7 +306,7 @@ export async function consolidateDocument(
   /**
    * One record per consolidated slice, in comparison-row order.
    */
-  const slices: ArtifactConsolidateSliceV2[] = [];
+  const slices: ArtifactConsolidateSlice[] = [];
 
   dl.info(`consolidation: ${String(contests.length,)} contested slices to settle`,);
   for (const row of projected.comparison) {

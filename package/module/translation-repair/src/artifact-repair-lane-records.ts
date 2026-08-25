@@ -1,5 +1,5 @@
 import { requireArray, } from './artifact-guard.ts';
-import { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
+import { parseSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-read.ts';
 
 //region Repair lane records
 // Where the repair lane's own records live, said once, for every reader that
@@ -51,7 +51,7 @@ export type RepairLaneRecords = {
  * Reads the repair lane's records out of one settled artifact.
  *
  * VERSION 2 OWNS THE ENVELOPE AND THE LANE OWNS ITS CONTENTS, which is why this
- * is split across a parse and two guards. `parseSettledArtifactV2` proves the
+ * is split across a parse and two guards. `parseSettledTwoLaneArtifact` proves the
  * walk as far as the lane's `result` record and hands it back unread, because
  * version 2 deliberately says nothing about what a result holds. The two arrays
  * inside it are the repair lane's own schema, so they are checked here.
@@ -92,7 +92,7 @@ export function repairLaneRecordsOf(
   /**
    * Artifact with its envelope proven, so the walk below is type-checked.
    */
-  const artifact = parseSettledArtifactV2({ value, },);
+  const artifact = parseSettledTwoLaneArtifact({ value, },);
 
   /**
    * Repair lane's result exactly as the file holds it.

@@ -95,10 +95,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * @example
  * ```ts
- * const outcome = await selectBestCandidate({ client, candidates, judgeModelIds, ... },);
+ * const outcome = await decideBestCandidate({ client, candidates, judgeModelIds, ... },);
  * ```
  */
-export async function selectBestCandidate<ValueT,>(
+export async function decideBestCandidate<ValueT,>(
   {
     client,
     candidates,
@@ -127,7 +127,7 @@ export async function selectBestCandidate<ValueT,>(
    * Logger tagged with this stage.
    */
   const sl = tagged({
-    tag: selectBestCandidate.name,
+    tag: decideBestCandidate.name,
     l,
   },);
 

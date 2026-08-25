@@ -32,13 +32,13 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  type ArtifactContestSliceV2,
+  type ArtifactContestSlice,
   consolidateDocument,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
   consolidationWorthResuming,
   createSyntheticClient,
-  type ProjectedLanesV2,
+  type ProjectedLanes,
   type SliceCache,
   type SliceNeighbourContext,
   type SyntheticClient,
@@ -231,7 +231,7 @@ function answeringClient(): {
  * const projected = twoSliceDocument();
  * ```
  */
-function twoSliceDocument(): ProjectedLanesV2 {
+function twoSliceDocument(): ProjectedLanes {
   /**
    * One comparison row per slice, both lanes wording them differently.
    */
@@ -256,7 +256,7 @@ function twoSliceDocument(): ProjectedLanesV2 {
       },),
       translate: [],
     },
-  } as unknown as ProjectedLanesV2;
+  } as unknown as ProjectedLanes;
 }
 
 /**
@@ -281,7 +281,7 @@ function contestSettling(
     readonly sliceIndex: number;
     readonly lane: 'repair' | 'translate';
   },
-): ArtifactContestSliceV2 {
+): ArtifactContestSlice {
   return {
     sliceIndex,
     verdict: {
@@ -348,9 +348,9 @@ async function driveWith(
     pictureContextBySlice = new Map(),
     neighbourContextBySlice = new Map(),
   }: {
-    readonly contests: readonly ArtifactContestSliceV2[];
+    readonly contests: readonly ArtifactContestSlice[];
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
-    readonly projected?: ProjectedLanesV2;
+    readonly projected?: ProjectedLanes;
     readonly client?: SyntheticClient;
     readonly lineStructuredSlices?: ReadonlySet<number>;
     readonly pictureContextBySlice?: ReadonlyMap<number, string>;

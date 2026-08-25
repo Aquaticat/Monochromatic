@@ -1,7 +1,7 @@
-import type { ArtifactConsolidateSliceV2, } from './artifact-v2-consolidate.ts';
-import type { ArtifactContestSliceV2, } from './artifact-v2-contest.ts';
-import type { ParsedArtifactV2, } from './artifact-v2-read-contract.ts';
-import type { ArtifactComparisonRowV2, } from './artifact-v2-vocabulary.ts';
+import type { ArtifactConsolidateSlice, } from './artifact-two-lane-consolidate.ts';
+import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
+import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
+import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 
 //region Would-ship vocabulary
 // WHAT A READER WOULD SEE AT ONE SLICE, and no field holds it. Two deciding
@@ -41,7 +41,7 @@ export type WouldShipDecider =
  *
  * NEVER REPRESENTED AS AN EMPTY STRING, which is the trap this whole shape
  * exists to close. `standingTextFor` returns `''` at a declined contest, and
- * `ArtifactConsolidateShippedV2` documents that a consumer writing a bare per
+ * `ArtifactConsolidateShipped` documents that a consumer writing a bare per
  * slice `text` into a document would delete every declined slice outright. A
  * reading that carries no `text` key at all makes that unrepresentable rather
  * than warned against.
@@ -117,18 +117,18 @@ export type WouldShipReading =
  *
  * NARROWER THAN THE WHOLE ARTIFACT deliberately, so this file names its own
  * inputs rather than taking everything and reading three things. A whole
- * `ParsedArtifactV2` satisfies it unchanged, so consumers pass what they
+ * `ParsedTwoLaneArtifact` satisfies it unchanged, so consumers pass what they
  * already hold, and the types still come from the parsed contract: that is
  * what makes a key this file misspells a type error rather than an
  * `undefined` that reads as an answer.
  *
  * @example
  * ```ts
- * const source: WouldShipSource = parseSettledArtifactV2({ value, },);
+ * const source: WouldShipSource = parseSettledTwoLaneArtifact({ value, },);
  * ```
  */
 export type WouldShipSource = Pick<
-  ParsedArtifactV2,
+  ParsedTwoLaneArtifact,
   'comparison' | 'consolidation' | 'laneSelection'
 >;
 
@@ -218,7 +218,7 @@ function archiveStandsOr(
     row,
     silence,
   }: {
-    readonly row: ArtifactComparisonRowV2;
+    readonly row: ArtifactComparisonRow;
     readonly silence: WouldShipSilence;
   },
 ): WouldShipReading {
@@ -246,7 +246,7 @@ function archiveStandsOr(
  *
  * A NAMED ABSENCE RATHER THAN `undefined`, for the reason the union it feeds
  * carries: this stage contributing nothing is a state to read, not a value
- * missing. `ArtifactConsolidateShippedV2` makes the same choice one level
+ * missing. `ArtifactConsolidateShipped` makes the same choice one level
  * below, and collapsing it here would put the trap back one call deeper.
  *
  * @example
@@ -314,7 +314,7 @@ function consolidatedWordingAt(
    */
   const slice = consolidation
     .slices
-    .find(function namesIt(candidate: ArtifactConsolidateSliceV2,): boolean {
+    .find(function namesIt(candidate: ArtifactConsolidateSlice,): boolean {
       return candidate.sliceIndex === sliceIndex;
     },);
   if (slice === undefined)
@@ -351,7 +351,7 @@ function consolidatedWordingAt(
  * ```
  */
 function lanesAgreedOn(
-  { row, }: { readonly row: ArtifactComparisonRowV2; },
+  { row, }: { readonly row: ArtifactComparisonRow; },
 ): WouldShipReading {
   if (row.repairText !== row.translateText)
     throw new UnansweredContestSliceError({
@@ -407,7 +407,7 @@ export function wouldShipTextFor(
     row,
   }: {
     readonly artifact: WouldShipSource;
-    readonly row: ArtifactComparisonRowV2;
+    readonly row: ArtifactComparisonRow;
   },
 ): WouldShipReading {
   /**
@@ -439,7 +439,7 @@ export function wouldShipTextFor(
    */
   const contested = laneSelection
     .slices
-    .find(function namesIt(candidate: ArtifactContestSliceV2,): boolean {
+    .find(function namesIt(candidate: ArtifactContestSlice,): boolean {
       return candidate.sliceIndex === row.sliceIndex;
     },);
   if (contested === undefined)
@@ -484,7 +484,7 @@ export function wouldShipTextPerSlice(
 ): readonly WouldShipSlice[] {
   return artifact
     .comparison
-    .map(function readIt(row: ArtifactComparisonRowV2,): WouldShipSlice {
+    .map(function readIt(row: ArtifactComparisonRow,): WouldShipSlice {
       return {
         sliceIndex: row.sliceIndex,
         reading: wouldShipTextFor({

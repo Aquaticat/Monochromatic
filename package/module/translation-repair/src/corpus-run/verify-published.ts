@@ -1,11 +1,8 @@
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { errorName, } from '../error-name.ts';
-import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
+import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import {
   ENGLISH_PAGE_FILE,
   FIXED_TREE_DIR,
@@ -18,6 +15,13 @@ import {
   pageWeightRefutes,
   pairPublishedPages,
 } from './published-page-check.ts';
+import {
+  ARTIFACT_SUFFIX,
+  ARTIFACTS_DIR,
+  publishedEntryIds,
+  settledEntryIds,
+  whatThereIsToVerify,
+} from './published-tree-listing.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Verify published
@@ -52,108 +56,14 @@ import { resolveRunsDir, } from './run-config.ts';
 const PUBLISHED_TREE_DISAGREES = 1;
 
 /**
- * Directory under a runs dir holding one settled artifact per entry.
+ * Exit code a run that could not be checked at all leaves behind.
+ *
+ * SEPARATE FROM DISAGREEMENT, because the two ask different things of whoever
+ * reads it. A disagreement says the run shipped something wrong. This says the
+ * run was never examined, and a gate that treats the two alike either ships an
+ * unchecked run or refuses a good one.
  */
-const ARTIFACTS_DIR = 'artifacts';
-
-/**
- * Suffix every settled artifact file carries.
- */
-const ARTIFACT_SUFFIX = '.json';
-
-/**
- * Lists a directory, reporting an absent one rather than raising.
- *
- * NAMES THE ERROR CLASS AND NOT ITS MESSAGE, matching the module note: a
- * filesystem error quotes a path, and a run directory path can name a person.
- *
- * @param path - directory to list
- *
- * @param what - what a reader should understand is absent
- *
- * @returns Entry names, empty where the directory is not there
- *
- * @example
- * ```ts
- * const names = await namesUnder({ path, what: 'artifacts directory', },);
- * ```
- */
-async function namesUnder(
-  {
-    path,
-    what,
-  }: {
-    readonly path: string;
-    readonly what: string;
-  },
-): Promise<readonly string[]> {
-  try {
-    return await readdir(path,);
-  } catch (error) {
-    console.error(`verify-published: no ${what} (${errorName({ error, },)})`,);
-    return [];
-  }
-}
-
-/**
- * Lists the entries a run settled, by the artifacts it wrote.
- *
- * @param runsDir - run directory holding the artifacts
- *
- * @returns Entry ids, sorted, empty where the directory is absent
- *
- * @example
- * ```ts
- * const settled = await settledEntryIds({ runsDir, },);
- * ```
- */
-async function settledEntryIds(
-  { runsDir, }: { readonly runsDir: string; },
-): Promise<readonly string[]> {
-  return (await namesUnder({
-    path: join(
-      runsDir,
-      ARTIFACTS_DIR,
-    ),
-    what: 'artifacts directory',
-  },))
-    .filter(function isArtifact(name,): boolean {
-      return name.endsWith(ARTIFACT_SUFFIX,);
-    },)
-    .map(function toId(name,): string {
-      return name.slice(
-        0,
-        -ARTIFACT_SUFFIX.length,
-      );
-    },)
-    .toSorted();
-}
-
-/**
- * Lists the entries a run published, by the pages it wrote.
- *
- * @param runsDir - run directory holding the fixed tree
- *
- * @returns Entry ids, sorted, empty where the tree is absent
- *
- * @example
- * ```ts
- * const published = await publishedEntryIds({ runsDir, },);
- * ```
- */
-async function publishedEntryIds(
-  { runsDir, }: { readonly runsDir: string; },
-): Promise<readonly string[]> {
-  return (await namesUnder({
-    path: join(
-      runsDir,
-      FIXED_TREE_DIR,
-      PEOPLE_DIR,
-    ),
-    what: 'published tree',
-  },))
-    .toSorted();
-}
+const NOTHING_WAS_VERIFIED = 2;
 
 /**
  * Reads one entry's artifact and page, or names the class that refused them.
@@ -180,7 +90,7 @@ async function readEntry(
 ): Promise<
   | {
     readonly kind: 'read';
-    readonly artifact: ReturnType<typeof parseSettledArtifactV2>;
+    readonly artifact: ReturnType<typeof parseSettledTwoLaneArtifact>;
     readonly pageText: string;
   }
   | {
@@ -196,7 +106,7 @@ async function readEntry(
   try {
     return {
       kind: 'read',
-      artifact: parseSettledArtifactV2({
+      artifact: parseSettledTwoLaneArtifact({
         value: JSON.parse(await readFile(
           join(
             runsDir,
@@ -367,6 +277,52 @@ async function verifyPublished(): Promise<void> {
   const runsDir = await resolveRunsDir();
 
   /**
+   * What the run left on disk, or why each half could not be read.
+   */
+  const [
+    settled,
+    published,
+  ] = await Promise.all([
+    settledEntryIds({ runsDir, },),
+    publishedEntryIds({ runsDir, },),
+  ],);
+
+  /**
+   * Ids to check, or why this run leaves nothing to check.
+   */
+  const toVerify = whatThereIsToVerify({
+    settled,
+    published,
+  },);
+
+  if (toVerify.kind === 'nothing-verified') {
+    console.log(
+      `verify-published: NOTHING VERIFIED, ${toVerify.why}. No page was read and no artifact was `
+        + 'compared, so this is not a clean run',
+    );
+    process.exitCode = NOTHING_WAS_VERIFIED;
+    return;
+  }
+
+  // Reported only once there are settled entries to report it ABOUT: an absent
+  // tree beside no artifacts at all says nothing, and phrasing it as "every
+  // settled entry" when none was settled is a claim about an empty set that
+  // reads as a finding.
+  /**
+   * Entries the run settled, which is what an absent tree loses all of.
+   */
+  const settledCount = toVerify
+    .settled
+    .length;
+
+  if (published.kind === 'unreadable')
+    console.log(
+      `verify-published: NO PUBLISHED TREE (${published.reason}). All `
+        + `${String(settledCount,)} entries the run settled are unpublished, and a resumed `
+        + 'pass skips exactly those entries',
+    );
+
+  /**
    * Which entries were settled and which were published.
    */
   const {
@@ -374,8 +330,8 @@ async function verifyPublished(): Promise<void> {
     unpublished,
     unsettled,
   } = pairPublishedPages({
-    settled: await settledEntryIds({ runsDir, },),
-    published: await publishedEntryIds({ runsDir, },),
+    settled: toVerify.settled,
+    published: toVerify.published,
   },);
 
   console.log(

@@ -9,7 +9,7 @@ import {
   type Candidate,
   producerModelIds,
 } from './candidate-select-model.ts';
-import { selectBestCandidate, } from './candidate-select.ts';
+import { selectBestCandidate, } from './candidate-select-record.ts';
 import { mergeIdenticalCandidates, } from './candidate-merge.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {

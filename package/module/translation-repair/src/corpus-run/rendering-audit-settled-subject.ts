@@ -1,6 +1,6 @@
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
-import type { ParsedArtifactV2, } from './artifact-v2-read-contract.ts';
-import type { ArtifactSliceDeliveryV2, } from './artifact-v2-vocabulary.ts';
+import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
+import type { ArtifactSliceDelivery, } from './artifact-two-lane-vocabulary.ts';
 import {
   pageRelationOf,
   type SettledPageRelation,
@@ -93,7 +93,7 @@ export type SettledAuditSubject = {
   /**
    * What the lane's document ended up carrying here.
    */
-  readonly deliveryKind: ArtifactSliceDeliveryV2['kind'];
+  readonly deliveryKind: ArtifactSliceDelivery['kind'];
 
   /**
    * Whether the text under audit is the ARCHIVE's own English rather than a
@@ -137,7 +137,7 @@ export type SettledAuditSubject = {
  * A retained slice ships the incumbent unchanged, so auditing it audits the
  * archive. Anything else ships something the lane produced.
  */
-const ARCHIVE_TEXT_DELIVERY: ArtifactSliceDeliveryV2['kind'] = 'incumbent-retained';
+const ARCHIVE_TEXT_DELIVERY: ArtifactSliceDelivery['kind'] = 'incumbent-retained';
 
 /**
  * Reads the identity block a preparation produced into a tagged answer.
@@ -196,7 +196,7 @@ export function subjectsOf(
     runSet,
     identity,
   }: {
-    readonly artifact: ParsedArtifactV2;
+    readonly artifact: ParsedTwoLaneArtifact;
     readonly runSet: string;
     readonly identity: SettledIdentity;
   },

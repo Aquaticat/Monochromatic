@@ -13,9 +13,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ArtifactDeliveryRowV2,
+  type ArtifactDeliveryRow,
   ArtifactParseError,
-  compareLanesV2,
+  compareLanes,
   readArtifactProbe,
 } from '../dist/final/node/index.mjs';
 
@@ -183,7 +183,7 @@ function catLedger(
     readonly shippedText: string;
     readonly delivery: string;
   },
-): readonly ArtifactDeliveryRowV2[] {
+): readonly ArtifactDeliveryRow[] {
   return [
     {
       sliceIndex: 0,
@@ -197,7 +197,7 @@ function catLedger(
       shippedText,
       delivery: { kind: delivery, },
     },
-  ] as readonly ArtifactDeliveryRowV2[];
+  ] as readonly ArtifactDeliveryRow[];
 }
 
 /**
@@ -326,7 +326,7 @@ function probeArtifact(
         delivery: translateDelivery,
       },
     },
-    comparison: compareLanesV2({
+    comparison: compareLanes({
       repair: repairDelivery,
       translate: translateDelivery,
     },),

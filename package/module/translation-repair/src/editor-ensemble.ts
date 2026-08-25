@@ -15,7 +15,7 @@ import {
   describeProducer,
   producerModelIds,
 } from './candidate-select-model.ts';
-import { selectBestCandidate, } from './candidate-select.ts';
+import { selectBestCandidate, } from './candidate-select-record.ts';
 import { collectEnvelopeProposals, } from './editor-proposals.ts';
 import {
   type ChunkPatchSelection,

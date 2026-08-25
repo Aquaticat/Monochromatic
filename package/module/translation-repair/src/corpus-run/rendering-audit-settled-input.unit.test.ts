@@ -33,7 +33,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  buildSettledArtifactV2,
+  buildSettledTwoLaneArtifact,
   type PipelineDigest,
   preparationIdentity,
   prepareDocumentPair,
@@ -517,7 +517,7 @@ async function writeArtifact(
       preparationIdentity: identity,
       records: rows,
     },
-  } as unknown as Parameters<typeof buildSettledArtifactV2>[0]['lanes'];
+  } as unknown as Parameters<typeof buildSettledTwoLaneArtifact>[0]['lanes'];
 
   /**
    * Run-set directory this artifact lands in.
@@ -536,7 +536,7 @@ async function writeArtifact(
       `${entryId}.json`,
     ),
     JSON.stringify(
-      buildSettledArtifactV2({
+      buildSettledTwoLaneArtifact({
         entryId,
         tip: 'a'.repeat(40,),
         pipelineDigest: DIGEST,

@@ -87,6 +87,35 @@ const DELTA_CHANNELS: Readonly<Record<string, StreamChannel>> = {
 };
 
 /**
+ * Delta types carrying the answer itself, which no enclosing block may demote
+ * to reasoning.
+ *
+ * THE ASYMMETRY IS THE POINT, and `text_delta` is deliberately NOT here. A
+ * provider has been seen sending plain text deltas inside a thinking block, so
+ * a `text_delta` must still yield to whatever the block declared. A tool-call
+ * argument fragment cannot be deliberation: it is the structured answer by
+ * construction, filling a schema this pipeline sent.
+ *
+ * CAPTURED FROM THE WIRE on 2026-08-25, `#211`. `qwen3.8-max` on Charm Hyper
+ * opens index 1 as `tool_use`, then opens THE SAME INDEX again as `thinking`,
+ * and thereafter interleaves `thinking_delta` and `input_json_delta` under it.
+ * The block map keeps the later declaration, so the block-type override filed
+ * the whole reply as reasoning: 70 of 71 streams reported zero content while
+ * every one of them cast a ballot with a full prose reason.
+ *
+ * NOT COSMETIC. `stream-runaway-watch.ts` bounds the content channel and
+ * deliberately leaves reasoning alone, so an answer filed as reasoning escapes
+ * the volume cap and runs to the straggler deadline. That seat was cut 12 times
+ * in 71, the highest on the roster by two and a half times, and each cut is a
+ * lost voice on a panel already paid for.
+ *
+ * WHY THIS RATHER THAN FIXING THE BLOCK MAP: keeping the FIRST declaration
+ * would also route this capture correctly, but only because `tool_use` happened
+ * to arrive first. This holds whichever order the two declarations come in.
+ */
+const ANSWER_DELTAS: ReadonlySet<string> = new Set(['input_json_delta',],);
+
+/**
  * Field each delta type carries its text in.
  *
  * SEPARATE FROM {@link DELTA_CHANNELS} because the two are genuinely
@@ -191,6 +220,10 @@ function frameIndex(
  * plain text deltas inside a thinking block, and reading only the delta type
  * would file that as the answer.
  *
+ * {@link ANSWER_DELTAS} IS THE EXCEPTION, and its own note carries the wire
+ * capture that made it necessary: a block declaration cannot demote a tool-call
+ * argument fragment, because that fragment is the answer by construction.
+ *
  * @param deltaType - `type` of the delta object
  *
  * @param blockType - type the enclosing block declared, empty when unknown
@@ -211,7 +244,7 @@ function channelFor(
     readonly blockType: string;
   },
 ): DeltaRouting {
-  if (blockType === THINKING_BLOCK)
+  if ((blockType === THINKING_BLOCK) && (!ANSWER_DELTAS.has(deltaType,)))
     return 'reasoning';
   return DELTA_CHANNELS[deltaType] ?? UNREAD;
 }

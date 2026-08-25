@@ -1,4 +1,4 @@
-import type { ParsedArchiveTextV2, } from './artifact-v2-read-contract.ts';
+import type { ParsedArchiveText, } from './artifact-two-lane-read-contract.ts';
 import {
   type WouldShipSlice,
   type WouldShipSource,
@@ -22,7 +22,7 @@ import {
 // WHAT THIS CANNOT CHECK, stated so nobody reads more into a clean report than
 // it carries. The exact check is to splice the artifact's readings over its
 // archive text and compare byte for byte, which is what `publishFixedPage` does.
-// That needs the slice SPANS, and `SettledPreparationV2` records `sliceCount`
+// That needs the slice SPANS, and `SettledPreparation` records `sliceCount`
 // and an identity hash rather than offsets. Two necessary conditions stand in:
 //
 //   ORDER. Every wording the artifact says would ship occurs in the page, in
@@ -103,7 +103,7 @@ export type PageWordingCheck = {
  * weighed at all.
  *
  * A TAGGED ABSENCE RATHER THAN A CLEAN RESULT, for the reason
- * `ParsedArchiveTextV2` gives for being one itself. An artifact written before
+ * `ParsedArchiveText` gives for being one itself. An artifact written before
  * the archive text was stored gives this check nothing to subtract from, and
  * reporting that as agreement would let a whole run of old artifacts read as
  * verified. `unweighable` says the arithmetic never ran.
@@ -259,7 +259,7 @@ export function pageWeighsWhatItShould(
     pageText,
   }: {
     readonly artifact: WouldShipSource;
-    readonly archive: ParsedArchiveTextV2;
+    readonly archive: ParsedArchiveText;
     readonly pageText: string;
   },
 ): PageLengthCheck {
@@ -547,7 +547,7 @@ export function refusePageThatDisagrees(
     entryId,
   }: {
     readonly artifact: WouldShipSource;
-    readonly archive: ParsedArchiveTextV2;
+    readonly archive: ParsedArchiveText;
     readonly pageText: string;
     readonly entryId: string;
   },

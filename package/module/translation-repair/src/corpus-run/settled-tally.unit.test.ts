@@ -24,7 +24,7 @@ import {
 
 import {
   ARTIFACT_SCHEMA_VERSION_V2,
-  type SettledArtifactV2,
+  type SettledArtifact,
   settledTallyLine,
 } from '../../dist/final/node/index.mjs';
 
@@ -57,7 +57,7 @@ const FRESH_BOWL = 'The cat has a bowl of its own.';
  * const artifact = catArtifact();
  * ```
  */
-function catArtifact(): SettledArtifactV2 {
+function catArtifact(): SettledArtifact {
   return {
     artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
     id: 'CatEntry1',
@@ -202,7 +202,7 @@ function catArtifact(): SettledArtifactV2 {
     // hiding: leaving it out made this fixture claim a shape no pipeline
     // writes, and the first reader to reach for the field found undefined.
     consolidation: { kind: 'not-run', },
-  } as unknown as SettledArtifactV2;
+  } as unknown as SettledArtifact;
 }
 
 /**

@@ -3,7 +3,7 @@ import {
   requireRecord,
   requireString,
 } from './artifact-guard.ts';
-import type { ArtifactJsonValue, } from './corpus-run/artifact-v2-contract.ts';
+import type { ArtifactJsonValue, } from './corpus-run/artifact-two-lane-contract.ts';
 import {
   isJsonArray,
   isJsonRecord,

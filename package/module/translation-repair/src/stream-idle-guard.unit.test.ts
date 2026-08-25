@@ -1,3 +1,4 @@
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -94,7 +95,7 @@ await describe({
           name: 'keeps both windows above the highest first-byte wait and mid-stream gap observed in production so far',
           fn: async () => {
             // 347_099 is PASS 7 RUN 014's uncensored first-byte maximum
-            // (doc/handover/translation-repair.md), a completed call within
+            // (doc/handover/translation-repair-history.md), a completed call within
             // 3.6 percent of the current deadline. 124_992 is the largest
             // mid-stream gap `#121` found pooling
             // doc/audit/stream-guards-first-production-traffic.md's three
@@ -212,6 +213,35 @@ await describe({
             expect(progress.chars,).toBe(18,);
             expect(progress.firstByteMs,).toBeGreaterThanOrEqual(0,);
             expect(progress.maxGapMs,).toBeGreaterThanOrEqual(0,);
+          },
+        },),
+
+        it({
+          name: 'CARRIES THE WALL CLOCK SINCE ARMING, which is the only number that says where a '
+            + "run's own hours went: first-byte and gap measure phases inside a call, and no sum "
+            + 'of them is the call',
+          fn: async () => {
+            using guard = armIdleGuard({
+              label: 'hf:mittens',
+              firstByteMs: ROOMY_MS,
+              idleMs: ROOMY_MS,
+            },);
+
+            // A real span, so first byte lands at a measurable offset rather
+            // than at zero, where a constant would be indistinguishable from a
+            // measurement.
+            await wait(TINY_MS,);
+            guard.notify(9,);
+
+            /**
+             * What the guard measured across the whole armed window.
+             */
+            const progress = guard.progress();
+
+            expect(progress.firstByteMs,).toBeGreaterThan(0,);
+            // The call cannot be shorter than the wait for its own first byte.
+            expect(progress.elapsedMs,).toBeGreaterThanOrEqual(progress.firstByteMs,);
+            expect(Number.isFinite(progress.elapsedMs,),).toBe(true,);
           },
         },),
 
