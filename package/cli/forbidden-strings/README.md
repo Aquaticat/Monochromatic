@@ -37,9 +37,10 @@ secret without exposure on public CI logs.
    `overflow-checks = true`,
    `strip = true`.
    No Node startup and no WASM init.
-   Runtime rules compile once per distinct content and reload from a validated
-  per-user artifact on later invocations,
-   which is what a sub-100 ms pre-commit budget needs.
+   Explicit regex rules compile once per distinct content;
+  later invocations reload compact exact-literal groups plus regex-only engine bytes and rebuild one Aho-Corasick
+  matcher,
+  which meets the measured sub-100 ms pre-commit budget.
 - **Linear-time matching.
   ** The engine is derivative and product based with no
   backtracking,
