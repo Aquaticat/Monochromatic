@@ -20766,3 +20766,66 @@ that are not themselves answer channels.
 Do not change it before the frame is seen:
 the override exists because a real provider needed it,
 and removing it blind would restore the defect it was added for.
+
+### Authorization to drop weak models, and why the worst-looking seat is not one (2026-08-25)
+
+The owner granted authorization to drop models that are exceptionally bad.
+Recorded here with the guard that has to travel with it.
+
+#### The instrument now names drop candidates, and warns about one confound
+
+`~/temp/agent/standing-stats.mjs` previously reported a seat as `SETTLED` on the
+absolute value of its z score, which puts a seat far above the pooled null and
+one far below it under the same word.
+It now splits by direction:
+`CARRIES ITS SEAT` above, `DROP CANDIDATE` below,
+each still requiring both the per-round and the per-slice reading to clear the
+Bonferroni threshold for the actual number of comparisons.
+
+It also prints a standing warning to check a seat's cut rate before dropping it.
+A seat whose voice is lost scores low for a reason that is not its judgement.
+
+#### Its control is now a real log rather than pasted figures
+
+The analyser learned the second header shape that `producer-calibrate` prints,
+so the prior forty-round producer run reads directly.
+That run is now the positive control:
+pooled null 13.48% over 336 of 2492 ballots,
+ten comparisons, Bonferroni threshold 2.807.
+
+#### The evidence says drop nothing today, and says it twice
+
+`hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` sits at 3.0%, z of -4.99,
+which clears the threshold by a wide margin in the negative direction.
+Its cut rate in the run now in flight is zero of seventy-eight,
+so the score is not voice loss.
+That is genuine weakness, and it is already acted on:
+the writer seats were settled at three from this same run,
+and a model at 3.0% was never among them.
+Nothing to drop.
+
+`qwen3.8-max` is the opposite case and the important one.
+It is the BEST producer on the roster at 27.0%, z of +5.22,
+and it carries the worst cut rate on the roster, twelve of seventy-eight.
+It earns the top score while losing twelve voices to the defect in `#211`.
+
+So the seat that looks worst by cut rate is the strongest seat by judgement,
+and dropping on the cut rate alone would have removed it.
+That is exactly the confound the warning exists for.
+
+#### What this changes about `#211`
+
+It stops being an accounting curiosity.
+The scanner mis-files this model's output, the volume bound therefore cannot see it,
+it runs to the straggler deadline, and the pipeline loses a sixth of the voices
+of its highest-scoring producer.
+Fixing it does not tidy a log line, it recovers the best seat's lost ballots.
+
+#### What the authorization is waiting on
+
+The editor standing, which the run in flight is measuring and which is not the
+producer standing.
+`#136` already recorded a model that is worst at one stage and better than two
+peers at another, so a producer table cannot seat or unseat an editor.
+When the run lands, the analyser names candidates and the cut rates say which of
+them are real.
