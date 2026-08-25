@@ -207,6 +207,10 @@ export {
   type AlignmentStep,
 } from './align-blocks-walk.ts';
 export {
+  type CoverageCandidate,
+  listCoverageCandidates,
+} from './coverage-candidates.ts';
+export {
   type AlignedRun,
   groupNodesAligned,
 } from './group-aligned.ts';

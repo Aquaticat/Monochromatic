@@ -266,6 +266,8 @@ function unpairedBlocks(
 }
 
 /**
+ * @internal
+ *
  * Lists every passage an aligner reports as unpaired, at both scales.
  *
  * @param source - original document
