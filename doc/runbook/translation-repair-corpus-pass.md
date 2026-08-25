@@ -214,8 +214,17 @@ TODO | DONE
     so invoking any of them rewrites `dist/final/node` underneath the running pass.
     A pass computes its pipeline digest once at startup and stamps it into every artifact,
     so a rebuild that changes any output file leaves the run recording a digest
-    that no longer describes what is on disk,
-    and leaves its process holding a mix of old modules and new files.
+    that no longer describes what is on disk.
+    That is the whole of the reason, and it is enough on its own.
+
+    NOT BECAUSE THE PROCESS WOULD LOAD A MIX OF OLD AND NEW MODULES,
+    which this runbook used to claim and which was measured false on 2026-08-25.
+    Every one of the 176 chunks is reached by a static import resolved at startup,
+    the only dynamic imports in the whole bundle are `node:fs/promises` and `node:path`
+    inside the logger, and no child process the bundle spawns runs a file under `dist`.
+    A running pass never reads that directory again.
+    The claim is corrected rather than deleted because a wrong mechanism invites
+    someone to disprove it and conclude the rule is safe to break.
 
     A rebuild with no source change is byte-identical and harmless,
     which is exactly why this is easy to get away with and worth stating anyway.
@@ -226,6 +235,23 @@ TODO | DONE
     ```sh
     node dist/final/node/meter-report.mjs "${RUNDIR}.log"
     ```
+
+    To exercise a CHANGE while a pass is in flight, run the source rather than the bundle:
+
+    ```sh
+    node --experimental-strip-types --disable-warning=ExperimentalWarning src/hyper-client.ts
+    ```
+
+    Node runs the package's TypeScript directly, resolving its `.ts` extension imports,
+    so a probe that injects a fake transport can exercise a provider path end to end
+    with no key, no network and no build.
+    `#226`, `#227` and `#228` were each verified this way while a pass held the bundle.
+    Two limits: a suite that imports `../dist/final/node/index.mjs` still needs the build,
+    and a probe run this way exercises the source rather than the artifact,
+    so it verifies the change and not the packaging.
+
+    `mise run //package/module/translation-repair:lint:types` and `:lint:oxlint`
+    carry no build dependency and are safe at any time.
 
 ## What to check
 
