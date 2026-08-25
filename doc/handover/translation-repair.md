@@ -1784,3 +1784,103 @@ The effect size it holds was measured on FIVE models, and the pooled preference 
 at ten seats, so the z it implies could move in either direction.
 The margin is thin in both directions and the run measures the effect size directly.
 Read the standing when it exits; the projection is superseded either way.
+
+## Landing sequence for the parked work, verified ready (2026-08-25)
+
+Everything below is blocked on the calibration exiting and nothing else.
+The archive was verified on 2026-08-25 and applies cleanly:
+`gzip --test` passes, it holds 33 repo-relative paths,
+HEAD descends from its base `f800f1352`,
+every commit between that base and HEAD is documentation only,
+and NONE of the 33 files changed in that range.
+So untarring over the repo root reverts nothing and clobbers no concurrent work.
+
+### Order, and why this order
+
+```sh
+# 1. Confirm the run is actually gone, rather than merely quiet.
+ps -o pid,etime -p "$(cat ~/temp/agent/editor-calibrate-fullroster-20260825.pid)"
+
+# 2. Read the standing FIRST, while the tree still matches the build that
+#    produced it. This answers `#200`, and nothing else here can change it.
+node ~/temp/agent/standing-from-log.mjs \
+  ~/temp/agent/editor-calibrate-fullroster-20260825.log
+
+# 3. Land the parked work. 16 new files, 17 modified, 0 identical.
+tar --extract --file ~/temp/agent/spend-telemetry-210.tar.gz \
+  --directory /var/home/user/worktrees/translation-repair
+
+# 4. Build BEFORE any test: the suite imports from `dist/`, so a test run
+#    against a stale bundle measures the old code and passes.
+mise run //package/module/translation-repair:build
+
+# 5. Then lint, types, tests.
+mise run //package/module/translation-repair:lint
+mise run //package/module/translation-repair:lint:types
+mise run //package/module/translation-repair:test:unit
+```
+
+### The commit, and the trap in it
+
+`CPN`: a pathspec commit omits any file it does not name, and this lands SIXTEEN
+new files. Naming only the modified ones would commit a tree whose imports do not
+resolve at that commit while the working tree still builds, which is invisible
+until somebody checks out that commit.
+
+Verify with `git status --short` afterwards that nothing is left untracked.
+
+New files, all of which must appear in the pathspec:
+
+    package/module/translation-repair/src/candidate-ledger.ts
+    package/module/translation-repair/src/candidate-ledger.unit.test.ts
+    package/module/translation-repair/src/candidate-select-record.ts
+    package/module/translation-repair/src/corpus-run/hyper-price.ts
+    package/module/translation-repair/src/corpus-run/hyper-price.unit.test.ts
+    package/module/translation-repair/src/corpus-run/ledger-parse.ts
+    package/module/translation-repair/src/corpus-run/ledger-read.ts
+    package/module/translation-repair/src/corpus-run/ledger-read.unit.test.ts
+    package/module/translation-repair/src/corpus-run/ledger-report.ts
+    package/module/translation-repair/src/corpus-run/spend-cost.ts
+    package/module/translation-repair/src/corpus-run/spend-cost.unit.test.ts
+    package/module/translation-repair/src/corpus-run/spend-read.ts
+    package/module/translation-repair/src/corpus-run/spend-read.unit.test.ts
+    package/module/translation-repair/src/corpus-run/spend-report.ts
+    package/module/translation-repair/src/spend-line.ts
+    package/module/translation-repair/src/spend-line.unit.test.ts
+
+Modified files:
+
+    package/module/translation-repair/mise.toml
+    package/module/translation-repair/rolldown.node.config.ts
+    package/module/translation-repair/src/anthropic-delta-scan.ts
+    package/module/translation-repair/src/anthropic-delta-scan.unit.test.ts
+    package/module/translation-repair/src/ballot-barrel.ts
+    package/module/translation-repair/src/candidate-select.ts
+    package/module/translation-repair/src/corpus-run/sentinel-probe.ts
+    package/module/translation-repair/src/editor-ensemble.ts
+    package/module/translation-repair/src/hyper-client.ts
+    package/module/translation-repair/src/judge-fidelity.ts
+    package/module/translation-repair/src/pipeline-barrel.ts
+    package/module/translation-repair/src/provider-barrel.ts
+    package/module/translation-repair/src/refine-stage.ts
+    package/module/translation-repair/src/stream-idle-guard.ts
+    package/module/translation-repair/src/stream-idle-guard.unit.test.ts
+    package/module/translation-repair/src/synthetic-client.ts
+    package/module/translation-repair/src/translate-judge.ts
+
+### The three measurements owed immediately after, before anything else is built
+
+Each one is a prediction already on record, and each is falsifiable. Take them on
+the first post-fix run rather than reasoning about them.
+
+-   `qwen3.8-max` cut rate. Pre-fix baseline 21 of 119, 17.6 percent, stable
+    against an earlier 12 of 71. `#211` predicts NOT that this falls but that
+    each cut costs a fraction of the time and bytes, because `contentCap` can
+    finally see the model. Record whichever happens.
+-   `deepseek-v4-pro-0813` zero-content count. Pre-fix 12 of 127. Twelve to zero
+    means it is the same mechanism as `qwen3.8-max`; twelve holding means
+    `text_delta` inside a thinking block, which `#211` deliberately does not
+    exempt, and that opens its own task.
+-   `qwen3.8-max` content characters at p50 and p95. Pre-fix both are 0. Any
+    nonzero value confirms the routing fix at the user boundary rather than in a
+    unit test.
