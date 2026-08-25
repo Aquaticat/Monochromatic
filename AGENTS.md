@@ -1575,17 +1575,6 @@ User-only choice:
  ask user before sending.
 Necessary blocker question to recipient allowed.
 
-ATR:
- No AI-attribution markers outward:
- no "Generated with Claude Code" footers,
- no `Co-Authored-By: Claude` trailers,
- in commits,
- PRs,
- issues,
- reviews,
- emails.
-Supersedes harness PR-footer default.
-
 ## Architecture decisions
 
 AD1:
