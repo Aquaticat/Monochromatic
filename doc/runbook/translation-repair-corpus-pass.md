@@ -274,6 +274,27 @@ Each is the exact string the log carries.
 
 When the run has exited, check its output rather than its log.
 
+### Three exit codes every command below can leave
+
+Each command has its own verdicts in `1` through `3`, listed with it.
+Above those sit three that mean the same thing whichever command printed them,
+because they come from the reporter every command is wrapped in.
+
+-   `4`. A file it needed would not read, and it stopped there.
+    The first line names the file and the failure, never the file's text.
+    Re-run the pass to rewrite the file, or name a run directory that has it.
+-   `5`. A fault in the command rather than in the run.
+    The first line names the class, and stack frames follow.
+    There is no message: a fault's message can carry text from whatever it
+    choked on, and a run directory holds unlicensed corpus wording,
+    so the reporter drops the message and keeps the frames.
+    This one is a bug report.
+-   `6`. The command declined in its own words, and the words are the report.
+    A usage line, an unset key, a control that did not hold.
+    Nothing broke and nothing was half-read.
+
+So `6` means read the line, `4` means fix the input, `5` means file a bug.
+
 1.  Confirm it is actually gone rather than merely quiet.
 
     ```sh
@@ -483,9 +504,13 @@ and a run made from that checkout recorded none of what they read either.
     and counted, and the exit code becomes `2`:
 
     ```text
-      UNREADABLE <path>: could not read <path> as JSON (<class> at byte <n>)
-      1 of 12 ledger files could not be read. Every figure here counts only the files that could, so a seat that wrote into an unreadable contest is undercounted, and so is every judge who weighed it. Re-run the pass to rewrite them, or read the standing as a floor.
+      UNREADABLE 000001.json: could not read 000001.json as JSON (SyntaxError)
+      1 of 1 ledger files could not be read. Every figure here counts only the files that could, so a seat that wrote into an unreadable contest is undercounted, and so is every judge who weighed it. Re-run the pass to rewrite them, or read the standing as a floor.
     ```
+
+    A byte offset joins the class where the parser stated one,
+    as `(SyntaxError at byte 42)`.
+    A file truncated at the end states none, which is the case above.
 
     Read a `2` as a floor rather than a standing.
     The refusal names the class that refused and where it stopped, never the file's text,
