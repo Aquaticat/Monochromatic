@@ -1581,6 +1581,18 @@ The chosen shape holds whichever order the two declarations come in.
 GFP-proven: removing the carve-out turns the new case red, restoring it turns it green.
 The test fixture is the captured frame order, duplicate `content_block_start` included.
 
+### Measured on the captured bytes, before against after
+
+The same 17612 characters replayed through the same scanner, the carve-out being the only difference:
+
+-   Without it: `content 0 chars, reasoning 1488 chars, unreadable 0`.
+-   With it: `content 218 chars, reasoning 1270 chars, unreadable 0`.
+
+The before state reproduces the production symptom exactly,
+which is the zero content chars the log reports for 98 of this seat's 100 calls.
+The 218 characters that move are the ballot,
+and 218 plus 1270 equals 1488, so nothing was invented or dropped: it was only filed under the wrong heading.
+
 ### What it should buy on the next run
 
 `stream-runaway-watch.ts` bounds the content channel and leaves reasoning alone,
