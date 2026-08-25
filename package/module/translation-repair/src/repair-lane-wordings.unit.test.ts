@@ -340,5 +340,36 @@ await describe({
           .kind,).toBe('decided',);
       },
     },),
+    it({
+      name:
+        'REFUSES a slice nobody was heard about that keeps the archive`s own wording and still CLAIMS a '
+        + 'change, which the case beside this one cannot reach: there the wording gave the contradiction '
+        + 'away, and here the text matches, so the claim is the only thing wrong with the row',
+      fn: async () => {
+        /**
+         * What silentSliceClaimsChange raised, read for its class as well as its wording.
+         */
+        const refusalOfSilentSliceClaimsChange = caught(function silentSliceClaimsChange() {
+          repairLaneWordings({
+            slices: alternatingSlices(),
+            undecided: 'refuse',
+            outcomes: [
+              heard({ sliceIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+              heard({ sliceIndex: 1, repairedText: '', },),
+              {
+                ...unheard({ sliceIndex: 2, repairedText: 'The bowl is full.', },),
+                changed: true,
+              },
+              heard({ sliceIndex: 3, repairedText: '', },),
+            ],
+          },);
+        },);
+
+        expect(refusalOfSilentSliceClaimsChange,).toBeInstanceOf(RepairUnheardError,);
+        expect((refusalOfSilentSliceClaimsChange as Error).message,).toContain(
+          'slice 2 heard no critic and was never refined, and claims a change',
+        );
+      },
+    },),
   ],
 },);

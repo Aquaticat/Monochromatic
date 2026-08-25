@@ -1218,6 +1218,44 @@ await describe({
     },),
     it({
       name:
+        'REFUSES a recorded comparison carrying MORE rows than the two ledgers derive, which the '
+        + 'row-by-row check beside it cannot reach: that walk visits the DERIVED rows, so a row recorded '
+        + 'past the end of them is never read, and the file`s claim about a slice its own ledgers do not '
+        + 'cover would be dropped without a word',
+      fn: async () => {
+        /**
+         * What version 2's rules derive from the two ledgers, which is two rows
+         * because the preparation carries two slices.
+         */
+        const derived = compareLanes({
+          repair: repairLedger(),
+          translate: translateLedger(),
+        },);
+
+        /**
+         * The same comparison with its last row recorded twice, so the file
+         * claims three slices where the ledgers cover two.
+         */
+        const overlong = [
+          ...derived,
+          ...derived.slice(-1,),
+        ];
+
+        /**
+         * What comparisonOverruns raised, read for its class as well as its wording.
+         */
+        const refusalOfComparisonOverruns = caught(function comparisonOverruns() {
+          parseSettledTwoLaneArtifact({ value: artifactWith({ comparison: overlong, },), },);
+        },);
+
+        expect(refusalOfComparisonOverruns,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfComparisonOverruns as Error).message,).toContain(
+          '2 rows, which is how many slices the two ledgers cover, rather than 3',
+        );
+      },
+    },),
+    it({
+      name:
         'ACCEPTS a recorded comparison whose rows carry the same values in a different KEY ORDER, which '
         + 'is what a file read off disk holds: key order is not part of what a row says, and refusing it '
         + 'would fail artifacts over a difference no reader can see',
