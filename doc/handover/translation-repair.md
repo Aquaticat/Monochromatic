@@ -2431,12 +2431,35 @@ Driving `rendering-audit-settled-report --run` against a malformed file confirme
 closed there too: zero hits for the fixture's distinctive word, with the file's name appearing
 twice as a positive control that the parse was genuinely reached.
 
-It also showed the OTHER half of `#220` is still open, now filed as `#223`.
-The refusal is safe but still uncaught in these CLIs, so Node prints the minified bundle line,
+It also showed the OTHER half of `#220`, which `#222` did not close:
+the refusal was safe but still uncaught, so Node printed the minified bundle line,
 around three thousand characters of it, around a correct one-line message.
-`ledger-report` is the only one that catches and reports.
 
-Landed as `768d26b18`, `ba83d021c` and `7a4f27db0`.
+`reportingRefusals` closes that.
+It catches ONLY `RunJsonUnreadableError`, because catching every `Error` would hide the stack
+of a genuine programming fault, and the forwarding case is tested to hold that line.
+
+Which CLIs needed it was measured off the built bundles' own import graph rather than guessed:
+11 of 39 entry bundles can reach the reader, one is the library barrel, one is `ledger-report`
+which reports its unreadable files as a shortfall inside its own output, and the other nine are
+wrapped.
+The same throwaway now yields two lines and 211 characters at exit 4.
+
+### The test suite taught something about its own runner
+
+Written with three sibling cases, the suite failed.
+`describe` runs children concurrently by default, and all three cases swap process-global state:
+one saw zero captured lines because a sibling had already restored `console.error`, and another
+read `undefined` where it had just written zero.
+`concurrency: 1` is documented for exactly this.
+Both swaps are process-wide, and the runner spawns `node` once per test FILE, so nothing outside
+the file was ever at risk.
+
+A grep counting `PASS` and `FAIL` lines reported 681 passes and zero failures on that failing
+run, because the runner reports a file-level failure in its own line.
+The exit code was right and the count was wrong, which is what `TLY` says to expect.
+
+Landed as `768d26b18`, `ba83d021c`, `7a4f27db0` and `a72d9b6fb`.
 
 ### One observation recorded rather than acted on
 
