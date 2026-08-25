@@ -34,7 +34,7 @@ struct Command;
 /// Builds subprocess commands without touching developer's real user cache.
 impl Command {
     /// Creates process command with hermetic cache-root override.
-    fn new(program: impl AsRef<std::ffi::OsStr>) -> ProcessCommand {
+    fn configured(program: impl AsRef<std::ffi::OsStr>) -> ProcessCommand {
         static CACHE_ROOT: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
         let cache_root = CACHE_ROOT.get_or_init(|| {
             let path = std::env::temp_dir().join(format!(
@@ -110,7 +110,7 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
     fs::set_permissions(&target, fs::Permissions::from_mode(0o000))
         .expect("chmod 000");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -188,7 +188,7 @@ fn explicit_arg_with_skip_basename_is_still_scanned() {
     let target = sub.join("forbidden-strings.local.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -230,7 +230,7 @@ fn user_regex_rule_matches_bounded_pattern() {
     let target = dir.join("key.txt");
     fs::write(&target, b"prefix AKIA2345 suffix\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -269,7 +269,7 @@ fn output_is_columnless_with_correct_line_number() {
     fs::write(&target, "clean one\nclean two\nNEEDLE_LITERAL_LONG_ENOUGH\n")
         .expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -331,7 +331,7 @@ fn windows_style_path_does_not_basename_skip() {
     let target = dir.join("forbidden-strings.local.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -379,7 +379,7 @@ fn config_file_at_cwd_is_skipped_even_as_explicit_arg() {
     fs::write(&content, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write content");
 
     // Run with cwd == dir so the config file sits directly at the cwd root.
-    let skipped = Command::new(BIN)
+    let skipped = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules", "rules.txt", "forbidden-strings.append.txt"])
         .output()
@@ -392,7 +392,7 @@ fn config_file_at_cwd_is_skipped_even_as_explicit_arg() {
         String::from_utf8_lossy(&skipped.stderr),
     );
 
-    let scanned = Command::new(BIN)
+    let scanned = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules", "rules.txt", "content.txt"])
         .output()
@@ -418,7 +418,7 @@ fn nul_byte_in_file_does_not_skip_scan() {
     fs::write(&target, b"SECRET_NEEDLE_XYZ_LONG_ENOUGH\0and then more")
         .expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -461,7 +461,7 @@ fn large_text_file_secret_after_probe_is_matched() {
     content.extend_from_slice(b"SECRET_NEEDLE_XYZ_LONG_ENOUGH");
     fs::write(&target, &content).expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -502,7 +502,7 @@ fn large_binary_file_secret_in_probe_before_nul_is_matched() {
     content.extend(std::iter::repeat_n(b'X', 9000));
     fs::write(&target, &content).expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -544,7 +544,7 @@ fn large_binary_file_secret_after_probe_is_acceptably_missed() {
     content.extend_from_slice(b"SECRET_NEEDLE_XYZ_LONG_ENOUGH");
     fs::write(&target, &content).expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -574,7 +574,7 @@ fn large_binary_file_secret_after_probe_is_acceptably_missed() {
 //           the exit code. Pins both the channel and the exit shape.
 #[test]
 fn help_long_flag_exits_zero_and_lists_usage() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--help")
         .output()
         .expect("spawn binary");
@@ -597,7 +597,7 @@ fn help_long_flag_exits_zero_and_lists_usage() {
 //           "unknown flag" arm and exit 2; this test pins the alias.
 #[test]
 fn help_short_flag_exits_zero_and_lists_usage() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("-h")
         .output()
         .expect("spawn binary");
@@ -620,7 +620,7 @@ fn help_short_flag_exits_zero_and_lists_usage() {
 //           those tools silently.
 #[test]
 fn version_long_flag_exits_zero_and_prints_version_line() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--version")
         .output()
         .expect("spawn binary");
@@ -648,7 +648,7 @@ fn version_long_flag_exits_zero_and_prints_version_line() {
 
 #[test]
 fn version_short_flag_exits_zero_and_prints_version_line() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("-V")
         .output()
         .expect("spawn binary");
@@ -677,7 +677,7 @@ fn version_short_flag_exits_zero_and_prints_version_line() {
 fn missing_rules_file_exits_with_config_error() {
     let dir = unique_tmp("missing-rules");
     let rules = dir.join("does-not-exist.txt");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .output()
@@ -718,7 +718,7 @@ fn rules_flag_wins_over_env_var() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .env("FORBIDDEN_STRINGS_RULES", &env_rules)
         .args(["--rules"])
         .arg(&flag_rules)
@@ -754,7 +754,7 @@ fn repeated_rules_flag_uses_last_value() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&first_rules)
         .args(["--rules"])
@@ -785,7 +785,7 @@ fn rules_flag_accepts_hyphen_prefixed_path_value() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules", "-rules.txt", "target.txt"])
         .output()
@@ -817,7 +817,7 @@ fn env_var_supplies_rules_when_no_flag() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .env("FORBIDDEN_STRINGS_RULES", &env_rules)
         .arg(&target)
         .output()
@@ -851,7 +851,7 @@ fn short_literal_matches_whole_word_not_substring() {
     // (1) Standalone occurrence: must match (word boundaries on both sides).
     let hit_file = dir.join("hit.txt");
     fs::write(&hit_file, "see ACR here\n").expect("write hit file");
-    let hit_output = Command::new(BIN)
+    let hit_output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&hit_file)
@@ -868,7 +868,7 @@ fn short_literal_matches_whole_word_not_substring() {
     // (2) Glued occurrence: must NOT match (no trailing word boundary).
     let glued_file = dir.join("glued.txt");
     fs::write(&glued_file, "see ACRYLIC here\n").expect("write glued file");
-    let glued_output = Command::new(BIN)
+    let glued_output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&glued_file)
@@ -913,7 +913,7 @@ fn all_mode_skips_configured_rules_file() {
     } else {
         "git"
     };
-    let init_status = Command::new(git_bin)
+    let init_status = Command::configured(git_bin)
         .args(["init", "-q"])
         .current_dir(&dir)
         .status()
@@ -926,14 +926,14 @@ fn all_mode_skips_configured_rules_file() {
     // threshold.
     let rules_path = dir.join("myrules.txt");
     fs::write(&rules_path, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
-    let add_status = Command::new(git_bin)
+    let add_status = Command::configured(git_bin)
         .args(["add", "myrules.txt"])
         .current_dir(&dir)
         .status()
         .expect("git add");
     assert!(add_status.success(), "git add must succeed");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules"])
         .arg(&rules_path)
@@ -968,7 +968,7 @@ fn all_mode_skips_configured_rules_file() {
 //           the right shape.
 #[test]
 fn unknown_flag_exits_with_usage_error() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--no-such-flag")
         .output()
         .expect("spawn binary");
@@ -1001,7 +1001,7 @@ fn unknown_flag_exits_with_usage_error() {
 //           error.
 #[test]
 fn rules_flag_without_value_exits_with_usage_error() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--rules")
         .output()
         .expect("spawn binary");
@@ -1069,7 +1069,7 @@ fn builtin_rules_flag_scans_with_baseline_alone_when_default_absent() {
     // ```ts
     // spawnSync(BIN, ['--builtin-rules', 'leaky.txt'], { cwd: dir, env: cleaned });
     // ```
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--builtin-rules", "leaky.txt"])
         .current_dir(&dir)
         .env_remove("FORBIDDEN_STRINGS_RULES")
@@ -1110,7 +1110,7 @@ fn builtin_rules_flag_appends_after_user_rules() {
         format!("SECRET_NEEDLE_XYZ_LONG_ENOUGH\n{}\n", fake_github_oauth_token()),
     )
     .expect("write target");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--builtin-rules", "--rules"])
         .arg(&rules)
         .arg(&target)
@@ -1160,7 +1160,7 @@ fn builtin_rules_flag_appends_after_user_rules() {
 fn builtin_rules_flag_with_explicit_missing_rules_still_errors() {
     let dir = unique_tmp("builtin-explicit-missing");
     let rules = dir.join("does-not-exist.txt");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--builtin-rules", "--rules"])
         .arg(&rules)
         .env_remove("FORBIDDEN_STRINGS_RULES")
@@ -1192,7 +1192,7 @@ fn no_builtin_flag_and_no_rules_file_errors_unchanged() {
     let dir = unique_tmp("no-builtin-no-rules");
     let target = dir.join("leaky.txt");
     fs::write(&target, format!("{}\n", fake_github_oauth_token())).expect("write target");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("leaky.txt")
         .current_dir(&dir)
         .env_remove("FORBIDDEN_STRINGS_RULES")
