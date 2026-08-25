@@ -436,7 +436,25 @@ Current commits:
 - `2203dc6a9` verifies that cli-git accepts a clean exit carrying a first-miss cache warning.
 - `b800bd9f5` applies mode `0600` to CI's secret-bearing runtime text.
 
-The implementation uses focused modules under
+The first implementation serialized one `RegexSet` engine per rule.
+Actual-fixture evidence proved that shape insufficient:
+146.320 seconds to compile,
+a 162,668,054-byte artifact,
+and 1,428.5 ms warm median under the bounded 2-GiB/2-CPU container.
+The positive and clean controls passed,
+but the sub-100 ms objective failed by more than an order of magnitude.
+`3f197a33f` records the rejected result in `PERF.md`.
+
+The implementation is pivoting to one hybrid runtime matcher:
+
+- Bare literals retain exact bytes and build one Aho-Corasick automaton.
+- Explicit and multiline regex rules alone enter a precompiled `RegexSet`.
+- Both subset-local ids map back to original runtime ids before finding attribution.
+- Cache schema 2 stores compact literal groups,
+  regex-id mappings,
+  and optional regex-only engine bytes.
+
+The cache implementation uses focused modules under
 `package/cli/forbidden-strings/src/runtime_cache/`:
 
 - `path.rs` owns exact-source SHA-256 and platform cache locations.
@@ -450,6 +468,11 @@ The implementation uses focused modules under
   fallback compilation,
   scan-time repair,
   and eager command orchestration.
+- `runtime_matcher.rs` owns exact-literal de-duplication,
+  Aho-Corasick construction,
+  short-literal boundaries,
+  regex subset mapping,
+  and globally ordered batch matches.
 
 Verification is in progress.
 
@@ -479,11 +502,15 @@ the rerun passed.
 Post-review package check and Rust linter also pass.
 Final Clippy is currently rebuilding the baseline.
 
-Performance measurement,
-full file-enforcer execution,
+The hybrid source and tests are in the working tree but not committed because the same final change carries the
+`0.4.0` release-triggering manifest update.
+Its first package check is compiling the build-time baseline.
+
+Hybrid actual-fixture measurement,
+full file-enforcer execution against the final schema,
 dependent lockfile regeneration,
 fuzz-target build,
-post-review tests,
+post-pivot tests,
 and the closing commit remain.
 
 ## Candidate implementation scope
@@ -604,10 +631,11 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Collect final Clippy and post-review test verdicts.
-Run file-enforcer through its eager compile path against a disposable cache root,
-then rebuild the bundled cli-git mirror consumer.
-Regenerate fuzz and bench dependent lockfiles and build the new envelope fuzz target.
-Measure disposable large-rule cache miss and hit paths under resource isolation,
-record results in `PERF.md`,
-and finish the closing commit with `Closes #456`.
+Collect the first hybrid package-check verdict and fix compiler findings.
+Build the hybrid release artifact and rerun the actual 10,206-rule fixture under the same bounds.
+Only continue if warm performance meets the agreed objective with positive and clean controls.
+Then rerun file-enforcer,
+scanner tests and lint,
+fuzz build,
+dependent locks,
+and bundled cli-git verification before the `Closes #456` commit.
