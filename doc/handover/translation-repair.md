@@ -1805,3 +1805,66 @@ then commit in item order so each item keeps its own message.
 The build, lint and test steps have now been run once already and passed,
 so a failure there after landing would mean the main worktree differs from this fork,
 which is itself the thing worth knowing.
+
+## `#216` was half wrong, and reading the source before building found it (2026-08-25)
+
+`#216` was opened on the finding that seventeen modules build a `role: 'system'` message
+and not one of them puts its response schema into that message.
+That is true of the PROMPT BUILDERS and false of what a model actually receives on Charm Hyper.
+
+`anthropic-request.ts` routes every schema-bearing call through `renderToolSystemPrompt`,
+which prints the whole schema into the Anthropic `system` field under
+"THE EXACT SCHEMA OF THAT OBJECT", followed by seven format rules.
+One of those rules reads
+"Pass the object itself. Do not pass a string that contains JSON, and do not escape its braces",
+which is exactly the failure `#216` cited as evidence that the schema was missing.
+
+So the correlation runs the opposite way to the mechanism the task assumed:
+
+```text
+Charm Hyper   schema IS in the system prompt    6 of 6 measured schema failures
+Synthetic     schema is NOT in the prompt       0 measured schema failures
+```
+
+The owner's instruction was already implemented on the provider where the failures are.
+This is worth stating plainly because the task's own evidence section reads as though
+it were about to conclude the opposite, and a later session would have believed it.
+
+### What was genuinely missing
+
+The Synthetic path had nothing of the kind.
+`synthetic-client.ts` builds an OpenAI-compatible body carrying only the API-level
+`response_format` field, which a model that does not honour it never sees.
+That is a real gap against the instruction, and it is the half that was built.
+
+`src/schema-prompt.ts` renders a block from the same `JsonSchemaResponseFormat`
+the request puts on the wire, so the prompt and the wire cannot drift.
+It is idempotent, it adds a system message where a call has none
+rather than dropping the schema on the calls that state least,
+and it handles a system message carrying parts
+so a call that also sends a picture is not the one that loses its schema.
+Its rules list is carried over from the Anthropic renderer,
+which is the wording this codebase has already run in production.
+
+`hyper-client.ts` is deliberately unchanged, with a comment at the seam saying why.
+An edit there was written and then reverted:
+it would have stated the schema twice on every Hyper call.
+
+### Why the client seam rather than the seventeen prompts
+
+The task proposed editing each prompt builder to append a rendered block.
+The seam is strictly better.
+It derives the text from the exact value going on the wire,
+it covers every caller that exists and every caller written later,
+and there is no eighteenth prompt to remember.
+
+### What is owed, stated as an open question rather than a prediction
+
+The after-measurement.
+Adding schema text lengthens every Synthetic system prompt, which costs tokens
+and could hurt as well as help.
+Synthetic's schema-failure count is already zero,
+so this change CANNOT be validated by that number falling.
+What it can be measured on is a first Synthetic schema failure never appearing under load,
+and the token cost, which the `#210` spend ledger now makes readable.
+Record the outcome; do not claim an improvement.
