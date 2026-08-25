@@ -143,6 +143,11 @@ export type UnfilledReason =
  */
 export class BlankSelectionError extends Error {
   /**
+   * Declares this message safe to forward: it is one fixed sentence; the findings ride beside it as a field and never enter it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * What the stage had gathered before the winner came back blank.
    */
   public readonly findings: readonly string[];
@@ -181,6 +186,11 @@ export class BlankSelectionError extends Error {
  * ```
  */
 export class TranslateAbsenceError extends Error {
+  /**
+   * Declares this message safe to forward: it names one of a closed set of absence reasons, which the type enforces.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    * Why the slice could not be filled.
    */

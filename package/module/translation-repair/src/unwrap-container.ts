@@ -145,6 +145,11 @@ export type FlattenedBlocks = {
  */
 export class UnpositionedContainerError extends Error {
   /**
+   * Declares this message safe to forward: it names a container tag.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds the failure naming which element could not be located.
    *
    * @param name - element name as written, empty for a fragment

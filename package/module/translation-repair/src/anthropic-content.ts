@@ -50,6 +50,11 @@ const BASE64 = 'base64';
  */
 export class MalformedImageUriError extends Error {
   /**
+   * Declares this message safe to forward: it names which part of the data URI is wrong, never its payload.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming what could not be read.
    *
    * @param detail - which part of the data URI was missing or unexpected

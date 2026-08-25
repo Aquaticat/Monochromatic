@@ -137,6 +137,11 @@ const KEYS_BY_GENERATION: Readonly<Record<number, ArtifactKeyVocabulary>> = {
  */
 export class UnknownArtifactGenerationError extends Error {
   /**
+   * Declares this message safe to forward: it names a schema version.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names the generation and says what its absence means for the read.
    *
    * @param version - generation an artifact recorded

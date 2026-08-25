@@ -120,6 +120,11 @@ export function hashContent({ content, }: { readonly content: string; },): strin
  */
 export class UnpositionedNodeError extends Error {
   /**
+   * Declares this message safe to forward: it names a node type and its index in the tree.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming offending node.
    *
    * @param kind - mdast node type lacking positions

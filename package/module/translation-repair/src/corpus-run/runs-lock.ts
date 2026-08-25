@@ -91,6 +91,11 @@ type HolderRead =
  */
 export class RunsDirectoryBusyError extends Error {
   /**
+   * Declares this message safe to forward: it names a process id, its start time and the directory.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names the holder and the two ways forward.
    *
    * @param runsDir - directory whose lock is held

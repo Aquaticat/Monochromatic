@@ -143,6 +143,11 @@ export type PatchOutcome = {
  */
 export class EnvelopeOverlapError extends Error {
   /**
+   * Declares this message safe to forward: it names two envelope ids and neither envelope's text.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds the overlap report from the two colliding envelope ids.
    *
    * @param leftId - envelope earlier in document order

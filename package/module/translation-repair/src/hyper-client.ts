@@ -108,6 +108,11 @@ const l = tagged({ tag: 'translation-repair', },);
  */
 export class ModelNotServedError extends Error {
   /**
+   * Declares this message safe to forward: it names a model.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the model this provider has no spelling for.
    *
    * @param modelId - roster model that was addressed here

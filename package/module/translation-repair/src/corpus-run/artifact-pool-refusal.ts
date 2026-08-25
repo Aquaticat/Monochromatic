@@ -210,6 +210,11 @@ function emptyCensusLines(
  */
 export class MixedGenerationError extends Error {
   /**
+   * Declares this message safe to forward: it counts generations and names none of their contents.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names every generation present and how to proceed.
    *
    * @param census - what the pool actually holds
@@ -262,6 +267,11 @@ export class MixedGenerationError extends Error {
  * Raised when generation filtering leaves no entry to pool at all.
  */
 export class EmptyPoolError extends Error {
+  /**
+   * Declares this message safe to forward: it names a commit and a count.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    * Names why the pool came out empty and what would refill it.
    *

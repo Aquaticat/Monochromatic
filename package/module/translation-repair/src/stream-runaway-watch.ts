@@ -410,6 +410,11 @@ export function watchRunaway(
  */
 export class StreamDegenerateError extends Error {
   /**
+   * Declares this message safe to forward: it names the model, the channel and two measurements of the stream.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Model or endpoint whose stream ran away.
    *
    * CARRIED AS A PROPERTY, not only baked into the message, for the same

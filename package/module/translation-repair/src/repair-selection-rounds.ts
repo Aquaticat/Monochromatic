@@ -57,6 +57,11 @@ export const REFINER_ROUND_STAGES: readonly RepairRoundStage[] = ['refine',];
  */
 export class SlatePositionsError extends Error {
   /**
+   * Declares this message safe to forward: it names positions and counts, never a candidate's wording.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the positions the slate carried.
    *
    * @param detail - what the slate claimed, and why that cannot be read

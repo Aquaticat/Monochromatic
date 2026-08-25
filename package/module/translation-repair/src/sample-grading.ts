@@ -336,6 +336,11 @@ export type GradableIssue = {
  */
 export class UnmeasurableRepairError extends Error {
   /**
+   * Declares this message safe to forward: it counts samples.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds the refusal from the counts that make the sample unmeasurable.
    *
    * @param unrecorded - sampled issues carrying no recorded repair

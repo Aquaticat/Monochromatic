@@ -299,6 +299,11 @@ function requireJudgedRound(
  */
 export class RoundsNotRecordedError extends Error {
   /**
+   * Declares this message safe to forward: it names an artifact path and nothing inside it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * @param path - where in the artifact the absent field would sit
    */
   public constructor(

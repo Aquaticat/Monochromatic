@@ -21,6 +21,11 @@ import {
  */
 export class ArtifactParseError extends Error {
   /**
+   * Declares this message safe to forward: it names the artifact path and the shape the value failed to satisfy, and quotes neither the value nor the file.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the malformed path.
    *
    * @param path - dotted path to malformed value

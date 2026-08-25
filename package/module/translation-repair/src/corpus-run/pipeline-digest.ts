@@ -158,6 +158,11 @@ export type PipelineStamp = Readonly<{
  */
 export class PipelineDigestError extends Error {
   /**
+   * Declares this message safe to forward: it names the directory and what is missing from it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names the directory, what was wrong with it, and why that stops a pass.
    *
    * @param dir - directory the digest was to be taken over

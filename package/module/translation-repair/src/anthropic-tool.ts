@@ -99,6 +99,11 @@ export type ReadableResponseFormat = {
  */
 export class UnnameableToolError extends Error {
   /**
+   * Declares this message safe to forward: it names which rule the tool name broke.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming what disqualified the schema's name.
    *
    * @param detail - which naming rule the schema violated

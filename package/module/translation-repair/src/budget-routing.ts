@@ -40,6 +40,11 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
  */
 export class BothProvidersDryError extends Error {
   /**
+   * Declares this message safe to forward: it is one fixed sentence with nothing interpolated into it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure stating that no provider can serve any call.
    *
    * @example

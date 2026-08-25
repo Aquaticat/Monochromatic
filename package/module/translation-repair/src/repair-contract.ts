@@ -120,6 +120,11 @@ export type RepairModels = {
  */
 export class ProducerRosterError extends Error {
   /**
+   * Declares this message safe to forward: it names roster roles, model ids and counts.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds the report from the two colliding rosters.
    *
    * @param producerModelIds - models that propose candidates in this stage
@@ -331,6 +336,11 @@ export function assertJudgeableProducerRoster(
  */
 export class CheckerIndependenceError extends Error {
   /**
+   * Declares this message safe to forward: it names model ids and never anything they wrote.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds the report from whichever fault was found.
    *
    * @param overlapping - models that both write and check; empty when the
@@ -477,6 +487,11 @@ const MINIMUM_CHECKER_COUNT = 3;
  * ```
  */
 export class CheckerQuorumError extends Error {
+  /**
+   * Declares this message safe to forward: it names model ids and counts them.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    * Builds the report from the roster that cannot decide.
    *

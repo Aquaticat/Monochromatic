@@ -28,6 +28,11 @@ export const HARD_CAP_VAR = 'TRANSLATION_REPAIR_HARD_CAP_MINUTES';
  */
 export class HardCapOverrideError extends Error {
   /**
+   * Declares this message safe to forward: it names the variable and repeats the value the operator set in it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names the variable, what it held, and why that cannot be a ceiling.
    *
    * @param value - what the variable held, quoted back

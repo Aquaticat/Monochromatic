@@ -91,6 +91,11 @@ const l = tagged({ tag: 'translation-repair', },);
  */
 export class NoProviderForModelError extends Error {
   /**
+   * Declares this message safe to forward: it names a model and which of two routing outcomes it hit.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the model and why nowhere could take it.
    *
    * @param modelId - model the call was addressed to

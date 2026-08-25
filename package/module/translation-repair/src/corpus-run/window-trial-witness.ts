@@ -40,6 +40,11 @@ export const WINDOW_LABEL = 'SURROUNDING ORIGINAL';
  */
 export class WindowEvidenceError extends Error {
   /**
+   * Declares this message safe to forward: it names the window and two counts.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming how many sheets carried the window against how many
    * the arms bought should have.
    *

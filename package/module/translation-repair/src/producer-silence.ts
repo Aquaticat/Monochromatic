@@ -59,6 +59,11 @@ export type StandingCoverage = {
  */
 export class UnseatedStandingError extends Error {
   /**
+   * Declares this message safe to forward: it names model ids.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * @param modelIds - models named by the evidence and absent from the roster
    */
   public constructor(

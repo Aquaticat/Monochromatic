@@ -163,6 +163,11 @@ const WAYS_FORWARD = [
  */
 export class SchemaGenerationError extends Error {
   /**
+   * Declares this message safe to forward: it names a schema version.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names every foreign generation, what this pass writes, and every way
    * forward.
    *

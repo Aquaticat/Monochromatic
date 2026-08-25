@@ -130,6 +130,11 @@ const DRAW_OUTPUTS: Readonly<Record<SheetKind, {
  */
 export class GradedSheetExistsError extends Error {
   /**
+   * Declares this message safe to forward: it names the sheet path and nothing inside it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds the refuse-to-clobber failure.
    *
    * @param path - sheet that already exists
@@ -151,6 +156,11 @@ export class GradedSheetExistsError extends Error {
  * @internal
  */
 export class UnsafeSeedError extends Error {
+  /**
+   * Declares this message safe to forward: it names the seed the operator asked for.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    * Builds the rejected-seed failure.
    *

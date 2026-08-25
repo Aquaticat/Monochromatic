@@ -37,6 +37,11 @@ import type { StreamChannel, } from './stream-delta-scan.ts';
  */
 export class StreamOverrunError extends Error {
   /**
+   * Declares this message safe to forward: it names the model, the channel and two bounds.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Model or endpoint whose stream overran.
    *
    * CARRIED AS A PROPERTY for the reason `StreamDegenerateError` carries it:

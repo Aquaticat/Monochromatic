@@ -54,6 +54,11 @@ const HTTP_BAD_REQUEST = 400;
  */
 export class SyntheticRequestTooLargeError extends SyntheticHttpError {
   /**
+   * Declares this message safe to forward: it counts bytes.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Bytes the request body occupied on the wire, measured rather than
    * estimated.
    */

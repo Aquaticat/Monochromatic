@@ -88,6 +88,11 @@ export type CorpusPin = {
  */
 export class CorpusReadError extends Error {
   /**
+   * Declares this message safe to forward: it names the corpus path and revision that were asked for, never what they hold.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming what was read and why git refused.
    *
    * @param detail - object spec or listing that failed

@@ -99,6 +99,11 @@ const l = tagged({ tag: 'translation-repair', },);
  */
 export class StreamStalledError extends Error {
   /**
+   * Declares this message safe to forward: it names the model, the phase and a duration.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds the stalled-stream failure.
    *
    * @param label - names the stalled call

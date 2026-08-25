@@ -56,6 +56,11 @@ type SpeakingRole = 'user' | 'assistant';
  */
 export class EmptyConversationError extends Error {
   /**
+   * Declares this message safe to forward: it names which structural rule the request broke, never a message's content.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming what the conversation was missing.
    *
    * @param detail - which requirement the message array failed

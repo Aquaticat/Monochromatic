@@ -107,6 +107,11 @@ export class SyntheticHttpError extends Error {
  */
 export class MalformedCompletionError extends Error {
   /**
+   * Declares this message safe to forward: it names which part of the protocol the body broke, never the body.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the violated expectation.
    *
    * @param detail - which contract expectation the body violated

@@ -44,6 +44,11 @@ const PRODUCER_KINDS = [
  */
 export class OffRosterModelError extends Error {
   /**
+   * Declares this message safe to forward: it names a model and the artifact path that recorded it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the id and where it was read.
    *
    * @param modelId - id the record carried

@@ -76,6 +76,11 @@ export type QuotaSnapshot = {
  */
 export class QuotaShapeError extends Error {
   /**
+   * Declares this message safe to forward: it names the field that failed its shape, never the body it came from.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the field or parse step at fault.
    *
    * @param detail - which expectation the body violated

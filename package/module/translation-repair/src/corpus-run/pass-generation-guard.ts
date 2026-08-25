@@ -58,6 +58,11 @@ export function readDriftOptIn(): boolean {
  */
 export class GenerationDriftError extends Error {
   /**
+   * Declares this message safe to forward: it names two digests and the variable that would allow the drift.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names what is already there, what would be added, and every way forward.
    *
    * @param digests - built pipelines the settled entries already record
@@ -125,6 +130,11 @@ export class GenerationDriftError extends Error {
  */
 export class LegacyPipelineError extends Error {
   /**
+   * Declares this message safe to forward: it names entry ids and counts them.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Names the entries that predate generation identity and what to do.
    *
    * @param entryIds - entries recording a commit but no build
@@ -164,6 +174,11 @@ export class LegacyPipelineError extends Error {
  * Raised when an artifact records nothing that could identify it.
  */
 export class UnplaceableArtifactError extends Error {
+  /**
+   * Declares this message safe to forward: it names entry ids and counts them.
+   */
+  readonly messageNamesOnly: true = true;
+
   /**
    * Names every unplaceable artifact and what removing it restores.
    *

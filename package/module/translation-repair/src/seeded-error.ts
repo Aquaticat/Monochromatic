@@ -122,6 +122,11 @@ export type SeededDocumentResult = {
  */
 export class SeedApplicationError extends Error {
   /**
+   * Declares this message safe to forward: it names the seed and which application failure it hit, never the needle.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Builds failure naming the offending seed.
    *
    * @param seedId - seed that failed to apply
