@@ -40,7 +40,7 @@ await describe({
       },
     },),
     ...[
-      '{',
+      '{not-json}',
       '{}',
       '[]',
       '{"type":"other","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}',
