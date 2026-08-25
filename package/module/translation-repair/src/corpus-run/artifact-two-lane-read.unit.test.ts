@@ -1476,6 +1476,49 @@ await describe({
     },),
     it({
       name:
+        'REFUSES each lane`s own status ON THE OTHER LANE, in both directions. The two allowed sets sit '
+        + 'a few lines apart in one file, so a reader that offered either set to both lanes would take '
+        + 'a repair result claiming it was complete and a translate result claiming it was unchanged, '
+        + 'and every relation below reads a status it was never asked to doubt',
+      fn: async () => {
+        /**
+         * What repairBorrowsTranslate raised, read for its class as well as its wording.
+         */
+        const refusalOfRepairBorrowsTranslate = caught(function repairBorrowsTranslate() {
+          parseSettledTwoLaneArtifact({
+            value: artifactWith({
+              repairRaw: {
+                ...repairResult(),
+                status: 'complete',
+              },
+            },),
+          },);
+        },);
+
+        expect(refusalOfRepairBorrowsTranslate,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfRepairBorrowsTranslate as Error).message,)
+          .toContain('one of repaired, unchanged, blocked-non-translation',);
+
+        /**
+         * What translateBorrowsRepair raised, read the same way.
+         */
+        const refusalOfTranslateBorrowsRepair = caught(function translateBorrowsRepair() {
+          parseSettledTwoLaneArtifact({
+            value: artifactWith({
+              translateRaw: {
+                ...translateResult(),
+                status: 'unchanged',
+              },
+            },),
+          },);
+        },);
+
+        expect(refusalOfTranslateBorrowsRepair,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfTranslateBorrowsRepair as Error).message,).toContain('one of complete, unfilled',);
+      },
+    },),
+    it({
+      name:
         'CARRIES THE REPAIR LANE`S BALLOTS THROUGH, verbatim reasons included, which is the whole '
         + 'reason the rounds are recorded: this lane can delete a declared name from a translation, '
         + 'and until the rounds landed in the artifact the only way to see it happen was to run a '
