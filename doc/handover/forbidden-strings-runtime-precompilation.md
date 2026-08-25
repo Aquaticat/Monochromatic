@@ -420,6 +420,17 @@ Current commits:
   makes file-enforcer apply owner-only modes,
   invoke the release scanner eagerly,
   and tolerate only an absent executable.
+- Follow-up fixes through `e242ca0c7` satisfy warning-protocol TypeScript lint,
+  Rust documentation lint,
+  Clippy,
+  and built-artifact test imports.
+- `2a1493ed2` replaces open-ended JSON parsing with a byte-exact allow-list of valid compact warning records.
+- `fcec4611d` and `58b70f7d5` exercise mixed real-scanner cache-warning and finding output through git-policy.
+- `be7117fca` adds scanner integration coverage for invalid rules,
+  corrupt artifacts,
+  content changes,
+  write failures,
+  and unavailable native cache roots.
 
 The implementation uses focused modules under
 `package/cli/forbidden-strings/src/runtime_cache/`:
@@ -437,15 +448,29 @@ The implementation uses focused modules under
   and eager command orchestration.
 
 Verification is in progress.
-The first scanner package `cargo check` is still compiling the build-time baseline and has not produced a verdict.
-The git-policy package build and `lint:types` passed.
-Its first unit-test run failed because the new test imported `index.js` while the built artifact is `index.mjs`.
-Commit `b1dde844f` fixes that test import;
-the test rerun is pending.
-No version bump,
-README update,
-performance measurement,
-or closing commit has landed yet.
+
+- Scanner package `cargo check` passed after 503 seconds,
+  including its build-time baseline compile.
+- Scanner Rust linter passed after documenting the digest tuple field and Unix permission imports.
+- Scanner Clippy passed after restricting test-only warning accessors and renaming the configured command factory.
+- The first scanner test run passed all 147 then-existing tests in 20.374 seconds after compilation.
+  Additional recovery integration tests landed afterward and still need the final versioned rerun.
+- Git-policy build,
+  `lint:types`,
+  Oxlint with zero findings,
+  and unit tests pass.
+- The real git-policy integration test now parses a cache-miss JSON warning and runtime finding from the release scanner.
+- A first attempt to scope root Oxlint by appending `file-enforcer.config.ts` to `mise run lint:oxlint` failed in mise's
+  inline task parser;
+  it did not execute Oxlint and is not a source-code verdict.
+- README and `PERF.md` now document runtime caching and pending performance acceptance.
+- The `0.4.0` version bump and CLI help update are in the working tree.
+  Package `cargo check` is regenerating the lock and rebuilding with that version.
+
+Performance measurement,
+full file-enforcer execution,
+final versioned tests,
+and the closing commit remain.
 
 ## Candidate implementation scope
 
@@ -565,9 +590,9 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Collect the in-progress scanner and git-policy build verdicts.
-Fix every compiler or lint finding before adding the version bump.
-Then run package-scoped tests,
-exercise the real CLI cache miss and hit paths,
-update README and performance documentation,
-and record verification evidence here.
+Collect the `0.4.0` package-check verdict and generated lockfile change.
+Build and test the release artifact again under the final version,
+then run file-enforcer through its eager compile path.
+Measure disposable large-rule cache miss and hit paths under resource isolation,
+record results in `PERF.md`,
+and finish the closing commit with `Closes #456`.
