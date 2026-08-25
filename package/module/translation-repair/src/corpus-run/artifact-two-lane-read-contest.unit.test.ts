@@ -265,6 +265,115 @@ await describe({
       },
     },),
     it({
+      name:
+        'ROUND-TRIPS an ARCHIVE VERDICT on a ballot, and gives a ballot carrying none back with NO '
+        + 'archive key rather than an undefined one: the archive is judged as its own question, so a '
+        + 'ballot written before that question existed has to read as silent about it, and a key set '
+        + 'to undefined is not silence to anything that asks whether the ballot answered',
+      fn: async () => {
+        /**
+         * Selection whose one ballot judged the archive beside the two lanes.
+         */
+        const judged = parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [
+              {
+                sliceIndex: 0,
+                verdict: { kind: 'quorum-not-met', },
+                ballots: [{
+                  ...FOR_REPAIR,
+                  archive: 'flawed',
+                },],
+                usable: 1,
+              },
+            ],
+          },
+          comparison: ONE_CONTESTED,
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+        },);
+        if (judged.kind !== 'contested')
+          throw new Error('reader returned a pending selection for a contested one',);
+        expect(judged.slices
+          .at(0,)
+          ?.ballots
+          .at(0,)
+          ?.archive,).toBe('flawed',);
+
+        /**
+         * Same selection with the ballot silent about the archive.
+         */
+        const silent = parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [
+              {
+                sliceIndex: 0,
+                verdict: { kind: 'quorum-not-met', },
+                ballots: [FOR_REPAIR,],
+                usable: 1,
+              },
+            ],
+          },
+          comparison: ONE_CONTESTED,
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+        },);
+        if (silent.kind !== 'contested')
+          throw new Error('reader returned a pending selection for a contested one',);
+
+        /**
+         * Ballot the reader gave back, whose KEYS are what this half reads.
+         */
+        const ballot = silent.slices
+          .at(0,)
+          ?.ballots
+          .at(0,);
+        if (ballot === undefined)
+          throw new Error('reader gave back a slice with no ballots',);
+        expect(Object.hasOwn(
+          ballot,
+          'archive',
+        ),).toBe(false,);
+      },
+    },),
+    it({
+      name:
+        'REFUSES an archive verdict this version does not describe, which the lane choice beside it '
+        + 'cannot catch: the two fields are read against different lists, and a judge answering the '
+        + 'archive question with a lane name would otherwise be recorded as having judged it',
+      fn: async () => {
+        /**
+         * What archiveVerdictUnknown raised, read for its class as well as its wording.
+         */
+        const refusalOfArchiveVerdictUnknown = caught(function archiveVerdictUnknown() {
+          parseLaneSelection({
+            value: {
+              kind: 'contested',
+              slices: [
+                {
+                  sliceIndex: 0,
+                  verdict: { kind: 'quorum-not-met', },
+                  ballots: [{
+                    ...FOR_REPAIR,
+                    archive: 'repair',
+                  },],
+                  usable: 1,
+                },
+              ],
+            },
+            comparison: ONE_CONTESTED,
+            path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
+          },);
+        },);
+
+        expect(refusalOfArchiveVerdictUnknown,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfArchiveVerdictUnknown as Error).message,).toContain('one of publishable, flawed',);
+      },
+    },),
+    it({
       name: 'REFUSES a kind this version does not describe, rather than reading it as pending',
       fn: async () => {
         /**
