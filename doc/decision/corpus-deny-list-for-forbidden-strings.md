@@ -120,9 +120,14 @@ This is a wiring gap rather than a documentation gap.
 
 ## Decision
 
-Adopt the literal deny-list, built as described,
-and hold it at a rule count whose compile cost fits a commit
-until the precompiled slot is reachable for user rules.
+Adopt the literal deny-list, built as described, and DO NOT INSTALL IT YET.
+
+Filed as `#456`, and the deny-list waits for that fix rather than taxing every commit.
+Waiting costs nothing here: the owner decided separately that corpus text in commits
+is not a blocker at all, and that sanitization happens once at the end
+under temporarily disabled branch protection.
+A guard that charges two minutes per commit to prevent something already scheduled
+for a single sweep is the wrong trade.
 
 The natural fix is to compile the appendix once where it is already generated:
 `file-enforcer` writes `.cache/forbidden-strings.rules.txt` when rules change,

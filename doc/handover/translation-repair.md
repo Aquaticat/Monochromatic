@@ -1608,3 +1608,34 @@ without thinking.
 Proposed there and declined by the owner as too narrow to be worth a repo-wide
 shortcode: it is a rule about one corpus, in one package, under one relationship.
 It belongs where the people working on that package will read it.
+
+## Corpus exposure is not a blocker, and sanitization is the last step (2026-08-25)
+
+Supersedes the caution in the corpus-exposure sections of this handover.
+The owner set the plan after `#456` was measured:
+
+-   COMMIT THE CORPUS HOWEVER IS CONVENIENT.
+    Do not spend effort avoiding corpus text in commits,
+    do not shrink a quote to dodge exposure,
+    and do not treat a corpus-bearing diff as something to route around.
+    Nothing about corpus text blocks any commit on this branch.
+
+-   SANITIZATION HAPPENS ONCE, AT THE END.
+    When the pipeline is production ready,
+    tell the owner with the `AskUserQuestion` tool rather than in ordinary prose,
+    because that is the signal they are waiting for.
+    They will disable branch protection temporarily,
+    and the corpus content committed along the way gets sanitized then.
+
+-   THE DENY-LIST IS BUILT AND NOT INSTALLED.
+    `doc/decision/corpus-deny-list-for-forbidden-strings.md` has the design and the evidence.
+    Installing 10206 literal rules today would cost about two minutes of rule compilation
+    on every single commit, because the scanner recompiles the runtime rules file per scan.
+    `#456` is the fix. The deny-list waits for it rather than taxing every commit,
+    and it waits without cost, since sanitization at the end covers the same ground.
+
+WHAT THIS DOES NOT CHANGE.
+The corpus is still read at runtime from the pinned clone,
+corpus files are still never committed as corpus files,
+and artifacts and grading sheets still live under run directories outside the repository.
+The change is that quoting inside our own documents is now unremarkable.
