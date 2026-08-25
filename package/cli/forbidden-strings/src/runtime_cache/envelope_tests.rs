@@ -37,7 +37,7 @@ fn engine_length_offset(bytes: &[u8]) -> usize {
             offset += 4 + name_length;
         }
     }
-    return offset
+    return offset + 32
 }
 
 /// Named rules retain exact identities and matching behavior.

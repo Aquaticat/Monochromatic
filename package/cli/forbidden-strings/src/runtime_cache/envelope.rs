@@ -8,7 +8,9 @@
 use crate::CompiledRules;
 
 /// Imports content digest and compile compatibility identities.
-use super::path::{digest_bytes, platform_identity, scanner_version, SourceDigest};
+use super::path::{
+    digest_bytes, platform_identity, scanner_version, source_digest, SourceDigest,
+};
 /// Imports redacted warning reason mapping.
 use super::warning::CacheWarningReason;
 
@@ -154,6 +156,7 @@ pub(super) fn encode(
         return Err(EnvelopeError::Invalid);
     }
     let engine_bytes = compiled.set.to_bytes().map_err(|_| return EnvelopeError::Invalid)?;
+    let engine_digest = source_digest(&engine_bytes).map_err(|_| return EnvelopeError::Invalid)?;
     let engine_length = u64::try_from(engine_bytes.len()).map_err(|_| return EnvelopeError::Invalid)?;
     if engine_length > MAX_ARTIFACT_BYTES {
         return Err(EnvelopeError::Invalid);
@@ -179,6 +182,7 @@ pub(super) fn encode(
             output.push(NAME_ABSENT);
         }
     }
+    output.extend_from_slice(&digest_bytes(engine_digest));
     output.extend_from_slice(&engine_length.to_le_bytes());
     output.extend_from_slice(&engine_bytes);
     if u64::try_from(output.len()).map_err(|_| return EnvelopeError::Invalid)? > MAX_ARTIFACT_BYTES {
@@ -244,6 +248,10 @@ pub(super) fn decode(
         names.push(Some(name.to_string()));
     }
 
+    let expected_engine_digest: [u8; 32] = cursor
+        .take(32)?
+        .try_into()
+        .map_err(|_| return EnvelopeError::Invalid)?;
     let engine_length = cursor.read_u64()?;
     if engine_length > MAX_ARTIFACT_BYTES {
         return Err(EnvelopeError::Invalid);
@@ -254,12 +262,12 @@ pub(super) fn decode(
     if !cursor.is_finished() {
         return Err(EnvelopeError::Invalid);
     }
-    let set = crate::load_precompiled(engine_bytes).map_err(|_| return EnvelopeError::Invalid)?;
-    if set.len() != names.len() {
+    let actual_engine_digest = source_digest(engine_bytes).map_err(|_| return EnvelopeError::Invalid)?;
+    if digest_bytes(actual_engine_digest) != expected_engine_digest {
         return Err(EnvelopeError::Invalid);
     }
-    let canonical_engine_bytes = set.to_bytes().map_err(|_| return EnvelopeError::Invalid)?;
-    if canonical_engine_bytes != engine_bytes {
+    let set = crate::load_precompiled(engine_bytes).map_err(|_| return EnvelopeError::Invalid)?;
+    if set.len() != names.len() {
         return Err(EnvelopeError::Invalid);
     }
     return Ok(CompiledRules { set, names })
