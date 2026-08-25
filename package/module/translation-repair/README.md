@@ -6,6 +6,32 @@ Takes an original text plus its translation,
 returns a structured issue list anchored to an immutable document model,
 and a repaired candidate translation.
 
+## Operating a corpus pass
+
+This file describes the design.
+To RUN the pipeline over the corpus, follow
+[the corpus pass runbook](../../../doc/runbook/translation-repair-corpus-pass.md),
+which carries the environment, the launch, what to watch while it runs,
+and how to read the output back once it has exited.
+
+Read-back tools, none of which spends quota or calls a model:
+
+-   `verify-published` reads the published tree back against the artifacts that produced it,
+    and refuses a run whose pages disagree with what its artifacts promised.
+-   `meter-report` says what each provider was doing while the run was asking,
+    which is availability WHEN WE WERE ASKING rather than availability.
+-   `run-timing-report` says where the wall clock went,
+    splitting each round into work and straggler waiting,
+    and reports achieved rather than configured concurrency.
+-   `spend-report` prices the metered seats against a DATED rate table,
+    and counts subscription seats without pricing them.
+-   `ledger-report` says who produced each candidate and how often judges chose it.
+    Its `--model` view prints corpus wording, so it must not be pasted anywhere.
+
+The runbook carries the exact invocation and the expected output for each,
+including what each one prints when the run recorded nothing for it,
+which is never the same as the run having done nothing.
+
 ## Contract
 
 The core export is the batch driver over pure stage functions:

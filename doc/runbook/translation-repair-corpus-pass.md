@@ -356,6 +356,129 @@ When the run has exited, check its output rather than its log.
 
     Every figure is availability WHEN WE WERE ASKING, which is not availability.
 
+4.  Read where the wall clock went.
+
+    ```sh
+    mise run //package/module/translation-repair:run-timing-report -- "${RUNDIR}.log"
+    ```
+
+    This spends no quota and calls no model.
+    Name more than one log to read a resumed run as a single span.
+    Expected, on a run whose rounds and calls were both recorded:
+
+    ```text
+    run-timing-report: 1 logs, 6 lines
+    rounds                 2, 1.50min in total
+      waiting after quorum 40.00s, 44.4% of round time
+      voices never heard   1
+    calls in flight        mean 1.05, peak 2
+      busy against span    21.00s of calls across 20.00s of run
+    ```
+
+    `waiting after quorum` is the time rounds spent holding the door open for a straggler
+    after enough voices had already answered to proceed.
+    That is the quantity `STRAGGLER_GRACE_MS` trades against,
+    so read it before changing the window.
+
+    `calls in flight` is ACHIEVED concurrency, not configured concurrency.
+    A peak below the producer count means the pipeline never actually ran that wide,
+    whatever it was configured to do.
+
+    A log written before `#215` landed carries neither line,
+    and the tool says so instead of reporting zero:
+
+    ```text
+    NO ROUND LINE. This log predates `#215`, so how long each fan-out took and how much of that was spent waiting after quorum are both unrecorded. That is not the same as a run that never waited.
+    NO TIMED CALL. Nothing here can be counted in flight, which is not the same as a run that made one call at a time.
+    ```
+
+    THE EXIT CODE IS `0` EITHER WAY.
+    Check for `NO ROUND LINE` in the output rather than reading the exit code as a verdict.
+
+5.  Read what the run cost.
+
+    ```sh
+    mise run //package/module/translation-repair:spend-report -- "${RUNDIR}.log"
+    ```
+
+    This spends no quota and calls no model.
+    Expected, on a run that touched both providers:
+
+    ```text
+    spend-report: 1 logs, 6 lines, 3 seats
+    metered seats, priced at rates read 2026-08-25:
+      qwen3.8-max: 0.78 credits (97.5%) over 3 calls, in 7168=0.29 out 4096=0.49
+      minimax-m3: 0.02 credits (2.5%) over 1 calls, in 1000=0.01 out 500=0.01
+    metered run total: 0.80 credits
+    subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on the METERS line:
+      hf:zai-org/GLM-5.2: 1 calls, in 4096 out 2048
+    ```
+
+    Subscription seats are counted and never priced,
+    because a weekly allowance is not a per-call rate and pricing it would invent a number.
+    Their consumption shows up on the `METERS` line instead.
+
+    `FLOOR, NOT A TOTAL` appears when any call reported no usage block:
+
+    ```text
+    FLOOR, NOT A TOTAL: 1 calls reported no usage block, so their tokens are in no figure above
+    ```
+
+    Read the total as a lower bound whenever that line is present.
+
+    The price table carries the date it was read.
+    A total priced against a stale table is arithmetic about rates that may no longer hold,
+    so check the date before quoting the figure anywhere.
+
+    A log written before `spend-line.ts` landed carries no `SPEND` line,
+    and again the tool names the absence rather than reporting a free run,
+    exiting `0` as it does so.
+
+6.  Read who produced what, and what the judges said about it.
+
+    ```sh
+    TRANSLATION_REPAIR_RUNS_DIR="${RUNDIR}" \
+      mise run //package/module/translation-repair:ledger-report
+    ```
+
+    This spends no quota and calls no model.
+    Expected:
+
+    ```text
+    ledger-report: 2 contests under /path/to/run
+    1 ballots named nothing, 0 named a candidate the slate did not have
+      qwen3.8-max: 2 candidates, 1 chosen, 66.7% of 3 disinterested ballots, 0 self-votes
+      hf:zai-org/GLM-5.2: 1 candidates, 0 chosen, 0.0% of 2 disinterested ballots, 0 self-votes
+    ```
+
+    `disinterested ballots` excludes the seat's own votes for its own candidate,
+    which is why `self-votes` is reported beside the share rather than folded into it.
+    A low share means rarely picked as best, which is not the same as wrong.
+
+    DO NOT PASTE `--model` OUTPUT ANYWHERE.
+    Passing `--model <id>` prints that seat's candidate text verbatim,
+    which on a real run is corpus wording from an unlicensed archive,
+    along with the judges' reasons quoting it.
+    The summary above names only models and counts and is safe to share;
+    the per-model view is not.
+
+    THIS ONE EXITS `1` WHEN IT FINDS NOTHING, unlike the two tools before it:
+
+    ```text
+    NOTHING RECORDED. This run wrote no ledger, which is not the same as a run whose models wrote nothing: every run started before candidate-ledger.ts landed has none, and so does any run launched without TRANSLATION_REPAIR_RUNS_DIR set.
+    ```
+
+    The difference is deliberate.
+    An empty ledger usually means the environment variable was never set,
+    which is an operator mistake worth failing on,
+    while a log with no `SPEND` or round lines is simply an older log
+    and says nothing about the operator.
+
+    A ledger file that is malformed rather than absent currently aborts the whole report
+    with an uncaught error and a page of minified JavaScript,
+    losing every good file beside it.
+    Tracked as `#220`.
+
 ## Restore
 
 Status:
