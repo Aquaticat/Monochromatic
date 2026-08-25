@@ -414,6 +414,36 @@ await describe({
     },),
 
     it({
+      name: 'THROWS on a chunk crediting the SAME CLAIM twice, which is the '
+        + 'fourth set written as an array here and the one the case beside this '
+        + 'one misses: the writer keys attributions by claim id, so a repeat '
+        + 'counts one claim as two and lifts every per-claim rate on its own',
+      fn: async () => {
+        /**
+         * One chunk carrying the same claim id under two attributions.
+         */
+        await using claims = await writeArtifacts({
+          artifacts: {
+            'Whiskers.json': artifactWith({
+              sliceCritics: [{
+                sliceIndex: 0,
+                heardCriticIds: [TABBY,],
+                claimAttributions: [
+                  { claimId: NAP, proposers: [{ modelId: TABBY, emissionCount: 1, },], },
+                  { claimId: NAP, proposers: [{ modelId: TABBY, emissionCount: 1, },], },
+                ],
+              },],
+            },),
+          },
+        },);
+        expect(
+            (await gatherAttributionEntries({ artifactsDir: claims.dir, },)).malformed[0]
+              ?.reason,
+          ).toContain('one entry per claim',);
+      },
+    },),
+
+    it({
       name: 'THROWS on an emission count below one, since a proposer that '
         + 'emitted a claim zero times did not propose it and crediting one '
         + 'would manufacture support from a critic that stayed silent',
