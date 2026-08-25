@@ -288,3 +288,58 @@ and with the measurement that decides it named in advance:
 ballot agreement with and without a budget on the same slices.
 Those seats contribute nothing today, so the comparison is a possibly shallower vote
 against no vote at all, but that is a thing to measure rather than to assume.
+
+### The parameter is real, and `low` is not the setting to reach for
+
+Probed 2026-08-25 against the live Synthetic endpoint, twelve calls in total.
+`dev.synthetic.new/docs/openai/chat-completions` documents `reasoning_effort` as
+"Control reasoning effort for thinking models: low, medium, or high" and names no models,
+so it was tested rather than believed.
+
+POSITIVE CONTROL FIRST. `hf:openai/gpt-oss-120b` exposes reasoning effort natively,
+so a probe that cannot move that seat cannot show a change at all:
+
+```text
+  hf:openai/gpt-oss-120b   absent  338 reasoning chars   117 completion tokens   1974ms
+  hf:openai/gpt-oss-120b   low      48 reasoning chars    33 completion tokens   1087ms
+  hf:Qwen/Qwen3.8-27B      absent  306 reasoning chars    88 completion tokens   1693ms
+  hf:Qwen/Qwen3.8-27B      low       0 reasoning chars     9 completion tokens   1154ms
+```
+
+So Synthetic honours it. That was the question this needed answered and it is answered.
+
+On a JUDGING-SHAPED task, choosing between three renderings of an invented cat-themed
+sentence, which is the kind of question a panel seat actually gets:
+
+```text
+  hf:Qwen/Qwen3.8-27B   absent  2970 reasoning   146 content    7343ms   picked C
+  hf:Qwen/Qwen3.8-27B   low        0 reasoning     1 content    1149ms   picked A
+  hf:Qwen/Qwen3.8-27B   medium  3873 reasoning   314 content    9223ms   picked C
+  hf:Qwen/Qwen3.8-27B   high    8138 reasoning   180 content   16153ms   picked A
+  hf:zai-org/GLM-5.2    absent  3413 reasoning   256 content   15727ms   picked C
+  hf:zai-org/GLM-5.2    low        0 reasoning   159 content    4067ms   picked A
+  hf:zai-org/GLM-5.2    medium  2145 reasoning   201 content   17149ms   picked A
+  hf:zai-org/GLM-5.2    high     277 reasoning   170 content   10218ms   picked A
+```
+
+WHAT IS ESTABLISHED. `low` sets reasoning to exactly zero on both seats.
+That is categorical rather than a noisy reading, and it is not what we want:
+`hf:Qwen/Qwen3.8-27B` answered with a ONE CHARACTER content at `low`,
+which in production would reach the caller's schema guard as a mismatch
+and lose the voice anyway, faster and for a different reason.
+
+WHAT IS NOT ESTABLISHED, and must not be read off this table.
+Every cell is one call. `hf:zai-org/GLM-5.2` produced less reasoning at `high` than at
+`medium` or absent, which is either indifference to the value above the on switch
+or ordinary per-call variance, and one sample cannot tell those apart.
+The run-to-run band has to be measured before any ladder is claimed.
+
+THE RISK THIS EXPOSES, which is the reason to measure quality rather than volume:
+both seats picked C with reasoning on and A with reasoning off.
+Cheaper thinking changed the verdict on the one question asked.
+Whether it changes verdicts for the worse is what `#229` still has to measure,
+on repeated calls, against ballots the pipeline already trusts.
+
+The Charm Hyper half is unprobed: its docs say only that "all standard Anthropic
+parameters are accepted" without naming `thinking`, and the key for it is not in
+this session's environment.
