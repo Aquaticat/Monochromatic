@@ -23,14 +23,14 @@ import {
   ABSENT_GIT_VALUE,
   type CandidateFile,
   type PolicyContext,
-} from '../../api/dist/final/node/index.mjs';
+} from '@monochromatic-dev/git-policy-api';
 import {
   ForbiddenStringsPluginError,
   forbiddenStringsPlugin,
   forbiddenStringsPolicy,
   parseScannerOutput,
   scanCandidates,
-} from '../dist/final/node/index.mjs';
+} from '@monochromatic-dev/git-policy-forbidden-strings';
 
 /** Executable fixture mode. */
 const EXECUTABLE_MODE = 0o755;

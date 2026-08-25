@@ -16,8 +16,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { CandidateFile, } from '../../api/dist/final/node/index.mjs';
-import { parseScannerOutput, } from '../dist/final/node/index.mjs';
+import type { CandidateFile, } from '@monochromatic-dev/git-policy-api';
+import { parseScannerOutput, } from '@monochromatic-dev/git-policy-forbidden-strings';
 
 /**
  * Release scanner built by the sibling `package/cli/forbidden-strings` crate;

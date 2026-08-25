@@ -7,7 +7,7 @@ import {
 import {
   ForbiddenStringsPluginError,
   parseCacheWarning,
-} from '../dist/final/node/index.mjs';
+} from '@monochromatic-dev/git-policy-forbidden-strings';
 
 /**
  * Exact valid warning records accepted by protocol.
