@@ -451,7 +451,14 @@ await describe({
       fn: async () => {
         /**
          * One artifact per shape a decoder refuses, each paired with the path
-         * fragment its refusal has to name.
+         * AND the reason its refusal has to carry.
+         *
+         * BOTH HALVES, because a path alone is a prefix of the path the next
+         * check down would name: with the record checks removed, reading a
+         * field off a string yields `undefined`, the check below refuses that
+         * instead, and `proposers[0]` is satisfied by a refusal naming
+         * `proposers[0].modelId`. Three of these passed against three missing
+         * guards before the reason was pinned beside the path.
          *
          * `claimAttributions` is decoded before `heardCriticIds` is read, so
          * the shapes aimed at the heard set carry an empty attribution list:
@@ -465,32 +472,32 @@ await describe({
         }[] = [
           {
             id: 'HeardNotArray',
-            expects: '.heardCriticIds',
+            expects: '.heardCriticIds: expected an array',
             critics: [{ sliceIndex: 0, heardCriticIds: TABBY, claimAttributions: [], },],
           },
           {
             id: 'HeardMemberNotString',
-            expects: 'heardCriticIds[0]',
+            expects: 'heardCriticIds[0]: expected a string',
             critics: [{ sliceIndex: 0, heardCriticIds: [7,], claimAttributions: [], },],
           },
           {
             id: 'RecordNotRecord',
-            expects: 'chunkCritics[0]',
+            expects: 'chunkCritics[0]: expected a record',
             critics: ['a nap',],
           },
           {
             id: 'AttributionsNotArray',
-            expects: '.claimAttributions',
+            expects: '.claimAttributions: expected an array',
             critics: [{ sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: NAP, },],
           },
           {
             id: 'AttributionNotRecord',
-            expects: 'claimAttributions[0]',
+            expects: 'claimAttributions[0]: expected a record',
             critics: [{ sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [NAP,], },],
           },
           {
             id: 'ClaimIdNotString',
-            expects: 'claimAttributions[0].claimId',
+            expects: 'claimAttributions[0].claimId: expected a string',
             critics: [{
               sliceIndex: 0,
               heardCriticIds: [TABBY,],
@@ -499,7 +506,7 @@ await describe({
           },
           {
             id: 'ProposersNotArray',
-            expects: '.proposers',
+            expects: '.proposers: expected an array',
             critics: [{
               sliceIndex: 0,
               heardCriticIds: [TABBY,],
@@ -508,7 +515,7 @@ await describe({
           },
           {
             id: 'ProposerNotRecord',
-            expects: 'proposers[0]',
+            expects: 'proposers[0]: expected a record',
             critics: [{
               sliceIndex: 0,
               heardCriticIds: [TABBY,],
@@ -517,7 +524,7 @@ await describe({
           },
           {
             id: 'ProposerModelIdNotString',
-            expects: 'proposers[0].modelId',
+            expects: 'proposers[0].modelId: expected a string',
             critics: [{
               sliceIndex: 0,
               heardCriticIds: [TABBY,],
