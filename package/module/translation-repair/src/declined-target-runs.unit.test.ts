@@ -1,25 +1,28 @@
 /**
- * Tests that a translation block no original claims reaches no slice.
+ * Tests for which translation blocks a pairing declined.
  *
- * WHAT THIS FILE EXISTS TO STOP, measured on `Zha_Ke` and recorded in
- * `doc/planning/one-sided-pairing-census.md`. Its English page carries a letter
- * its Chinese page does not. The roster paired all four source blocks and left
- * the letter unpaired, exactly as asked. Grouping then folded the unpaired run
- * into its neighbour, and the slice reached the judges as 41 characters of
- * source against 3875 characters of standing English, 93 percent of which the
- * pairing had already declined. A consolidation deleted the letter.
+ * WHY THIS FILE EXISTS. Grouping and the coverage assertion both ask this
+ * question, and they must derive the same answer from the same inputs, since a
+ * disagreement between them reads as a coverage fault at a place neither one
+ * caused. The answer is built by turning the pairing into alignment steps,
+ * which needs to be told HOW MANY blocks each side has.
  *
- * THE SPAN IS THE POINT, not the node list. A run's text is cut from its first
- * offset to its last, so skipping a declined block without CLOSING the run
- * leaves its bytes inside the span and changes only the record. Every case here
- * asserts offsets rather than counts for that reason.
+ * WHAT WAS MEASURED. On 2026-08-25, swapping those two counts failed no test
+ * in this package. A swap is silent in the common case, because most pairs
+ * carry equal counts, and it only shows itself where the two sides differ:
+ * exactly the entries the pairing exists for.
  *
- * Fixtures are cat-themed invention.
+ * THE FIXTURE THEREFORE MAKES THEM DIFFER, two originals against three
+ * translation blocks. Under the counts as passed, the third translation block
+ * is declined; under the swap, the walk stops one block early and reports
+ * nothing declined at all, which would hand grouping a block no slice covers
+ * while telling the coverage assertion everything was accounted for.
+ *
+ * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -27,353 +30,64 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  blockPairingToSteps,
-  declinedTargetBlocks,
-  type DocumentNode,
-  groupNodesAligned,
+  type BlockPair,
+  declinedTargetIdsOfPairing,
   parseDocument,
 } from '../dist/final/node/index.mjs';
 
-/**
- * Budget wide enough that nothing splits on size alone, so any run boundary
- * these cases show was placed by a decline rather than by the budget.
- */
-const WIDE_BUDGET = 100_000;
+//region Fixtures
 
 /**
- * Parses a document and hands back its blocks.
- *
- * @param text - markdown source
- *
- * @returns Blocks in document order
- *
- * @example
- * ```ts
- * const nodes = blocksOf({ text: 'The cat naps.\n', },);
- * ```
+ * Original side, two paragraphs.
  */
-function blocksOf({ text, }: { readonly text: string; },): readonly DocumentNode[] {
-  return parseDocument({ text, },).nodes;
-}
+const SOURCE_PAGE = `Mittens slept on the sill until noon.
+
+Whiskers counted the birds outside.
+`;
 
 /**
- * Original side: four paragraphs, none of them mentioning the long letter.
+ * Translation side, three paragraphs, of which the last answers to no original.
  */
-const SOURCE_TEXT = 'Mochi sleeps by the window.\n\n'
-  + 'A note about the tin.\n\n'
-  + 'Mochi answers to two names.\n\n'
-  + 'The vet visit went well, and she forgave us by evening.\n';
+const TARGET_PAGE = `Mittens slept on the sill until noon.
+
+Whiskers counted the birds outside.
+
+Her brother brought her a feather.
+`;
 
 /**
- * Translation side: the same four, plus a short aside and a long letter that
- * the original never mentions, sitting together in the middle.
+ * Correspondences the roster returned, leaving the third block unclaimed.
  */
-const TARGET_TEXT = 'Mochi sleeps in the window seat.\n\n'
-  + 'A note about the biscuit tin, which she opens herself.\n\n'
-  + 'Written by a neighbour.\n\n'
-  + `> ${'She waited at the gate every afternoon for a year. '.repeat(20,)}\n\n`
-  + 'Mochi answers to two names.\n\n'
-  + 'The trip to the vet went well, and she had forgiven us by evening.\n';
+const PAIRS = [
+  {
+    source: 0,
+    target: 0,
+  },
+  {
+    source: 1,
+    target: 1,
+  },
+] as const satisfies readonly BlockPair[];
+
+//endregion Fixtures
 
 await describe({
-  name: 'declined target runs',
+  name: declinedTargetIdsOfPairing.name,
   children: [
     it({
-      name: 'KEEPS a declined block out of every run, and out of every span',
+      name: 'NAMES the translation block no original claimed, reading each side by its own count, so a '
+        + 'page with more blocks than its original does not report everything accounted for',
       fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-        expect(sourceNodes.length,).toBe(4,);
-        expect(targetNodes.length,).toBe(6,);
-
-        // The pairing `Zha_Ke`'s roster returned: every original placed, the
-        // aside and the letter claimed by none of them.
-        const runs = groupNodesAligned({
-          sourceNodes,
-          targetNodes,
-          sourceBudget: WIDE_BUDGET,
-          targetBudget: WIDE_BUDGET,
-          steps: blockPairingToSteps({
-            pairs: [
-              { source: 0, target: 0, },
-              { source: 1, target: 1, },
-              { source: 2, target: 4, },
-              { source: 3, target: 5, },
-            ],
-            sourceCount: sourceNodes.length,
-            targetCount: targetNodes.length,
-          },),
-        },);
-
         /**
-         * Ids of every translation block any run carries.
+         * Blocks the pairing left for no slice to cover.
          */
-        const carried = new Set(runs.flatMap(function toIds(run,): readonly string[] {
-          // An insertion run names originals nothing rendered, so it carries no
-          // translation block and contributes nothing to this set.
-          return (run.kind === 'insertion')
-            ? []
-            : run.targetRun
-              .map(function toId(node,): string {
-                return node.id;
-              },);
-        },),);
-        expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(false,);
-        expect(carried.has(nonNullishOrThrow(targetNodes.at(3,),).id,),).toBe(false,);
-        expect(carried.has(nonNullishOrThrow(targetNodes.at(1,),).id,),).toBe(true,);
-        expect(carried.has(nonNullishOrThrow(targetNodes.at(4,),).id,),).toBe(true,);
-
-        // THE SPAN CHECK. Some run must end at the paired block before the
-        // letter, and the next must begin at the paired block after it, or the
-        // letter's bytes are still inside a slice.
-        /**
-         * Every run's translation-side span, in document order.
-         */
-        const spans = runs
-          .flatMap(function toTargetRun(run,): readonly (readonly DocumentNode[])[] {
-            return ((run.kind === 'insertion') || (run.targetRun.length === 0))
-              ? []
-              : [ run.targetRun, ];
-          },)
-          .map(function toSpan(targetRun,): { readonly start: number; readonly end: number; } {
-            return {
-              start: nonNullishOrThrow(targetRun.at(0,),).startOffset,
-              end: nonNullishOrThrow(targetRun.at(-1,),).endOffset,
-            };
-          },);
-        /**
-         * Whether any span covers a byte the letter occupies.
-         */
-        const overlapsLetter = spans.some(function covers(span,): boolean {
-          return (span.start < nonNullishOrThrow(targetNodes.at(3,),).endOffset)
-            && (span.end > nonNullishOrThrow(targetNodes.at(3,),).startOffset);
-        },);
-        expect(overlapsLetter,).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'KEEPS a block that continues a pairing, because a split rendering is not a decline',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-
-        // Original 1 rendered as BOTH the tin note and the neighbour aside,
-        // which `readBlockPairing` allows by repeating the source.
-        const runs = groupNodesAligned({
-          sourceNodes,
-          targetNodes,
-          sourceBudget: WIDE_BUDGET,
-          targetBudget: WIDE_BUDGET,
-          steps: blockPairingToSteps({
-            pairs: [
-              { source: 0, target: 0, },
-              { source: 1, target: 1, },
-              { source: 1, target: 2, },
-              { source: 2, target: 4, },
-              { source: 3, target: 5, },
-            ],
-            sourceCount: sourceNodes.length,
-            targetCount: targetNodes.length,
-          },),
+        const declined = declinedTargetIdsOfPairing({
+          pairs: [...PAIRS,],
+          sourceNodes: parseDocument({ text: SOURCE_PAGE, },).nodes,
+          targetNodes: parseDocument({ text: TARGET_PAGE, },).nodes,
         },);
 
-        /**
-         * Ids of every translation block any run carries.
-         */
-        const carried = new Set(runs.flatMap(function toIds(run,): readonly string[] {
-          return (run.kind === 'insertion')
-            ? []
-            : run.targetRun
-              .map(function toId(node,): string {
-                return node.id;
-              },);
-        },),);
-        expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(true,);
-        expect(carried.has(nonNullishOrThrow(targetNodes.at(3,),).id,),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'KEEPS every block when the scorer produced the walk, since a scorer cannot decline',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-
-        // No steps supplied, so `alignBlocks` scores it. Its skips report where
-        // a heuristic ran out, not a decision that nothing renders a block.
-        const runs = groupNodesAligned({
-          sourceNodes,
-          targetNodes,
-          sourceBudget: WIDE_BUDGET,
-          targetBudget: WIDE_BUDGET,
-        },);
-
-        /**
-         * Ids of every translation block any run carries.
-         */
-        const carried = new Set(runs.flatMap(function toIds(run,): readonly string[] {
-          return (run.kind === 'insertion')
-            ? []
-            : run.targetRun
-              .map(function toId(node,): string {
-                return node.id;
-              },);
-        },),);
-        for (const node of targetNodes)
-          expect(carried.has(node.id,),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'KEEPS every block when the pairing left an original unplaced',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-
-        // Original 3 is placed nowhere, so this reply did not finish reading
-        // the pair and its silence about the letter is a gap, not a decision.
-        const declined = declinedTargetBlocks({
-          steps: blockPairingToSteps({
-            pairs: [
-              { source: 0, target: 0, },
-              { source: 1, target: 1, },
-              { source: 2, target: 4, },
-            ],
-            sourceCount: sourceNodes.length,
-            targetCount: targetNodes.length,
-          },),
-          targetNodes,
-        },);
-        expect(declined,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'KEEPS every block when the pairing placed nothing at all',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-
-        // What `pairBlocksAcrossRoster` returns when no voice was usable. The
-        // caller passes it straight through, so this is a live shape.
-        const declined = declinedTargetBlocks({
-          steps: blockPairingToSteps({
-            pairs: [],
-            sourceCount: sourceNodes.length,
-            targetCount: targetNodes.length,
-          },),
-          targetNodes,
-        },);
-        expect(declined,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'NAMES exactly the blocks no original claims',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-
-        const declined = declinedTargetBlocks({
-          steps: blockPairingToSteps({
-            pairs: [
-              { source: 0, target: 0, },
-              { source: 1, target: 1, },
-              { source: 2, target: 4, },
-              { source: 3, target: 5, },
-            ],
-            sourceCount: sourceNodes.length,
-            targetCount: targetNodes.length,
-          },),
-          targetNodes,
-        },);
-
-        expect(declined.map(function toId(node,): string {
-          return node.id;
-        },),).toStrictEqual([
-          nonNullishOrThrow(targetNodes.at(2,),).id,
-          nonNullishOrThrow(targetNodes.at(3,),).id,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'KEEPS a block sandwiched between two halves of one rendering',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-
-        // One original rendered as TWO translation blocks, with a third block
-        // nobody claims sitting between them. Declining that middle block would
-        // ask grouping to close a run inside a rendering, and the span would
-        // then cover the declined bytes anyway or cut the original away from
-        // half its own translation.
-        const pairs = [
-          { source: 0, target: 0, },
-          { source: 1, target: 1, },
-          { source: 1, target: 3, },
-          { source: 2, target: 4, },
-          { source: 3, target: 5, },
-        ];
-        const steps = blockPairingToSteps({
-          pairs,
-          sourceCount: sourceNodes.length,
-          targetCount: targetNodes.length,
-        },);
-
-        expect(declinedTargetBlocks({ steps, targetNodes, },),).toStrictEqual([],);
-
-        /**
-         * Ids of every translation block any run carries.
-         */
-        const carried = new Set(groupNodesAligned({
-          sourceNodes,
-          targetNodes,
-          sourceBudget: WIDE_BUDGET,
-          targetBudget: WIDE_BUDGET,
-          steps,
-        },).flatMap(function toIds(run,): readonly string[] {
-          return (run.kind === 'insertion')
-            ? []
-            : run.targetRun.map(function toId(node,): string {
-              return node.id;
-            },);
-        },),);
-        expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'NAMES declined blocks when the pairing MERGES two originals',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-
-        // A merge arrives as a `source-only` step carrying `continuesPairing`,
-        // and that original IS placed. Reading it as an unplaced original would
-        // switch the decline off for every entry that merges anywhere.
-        const declined = declinedTargetBlocks({
-          steps: blockPairingToSteps({
-            pairs: [
-              { source: 0, target: 0, },
-              { source: 1, target: 1, },
-              { source: 2, target: 1, },
-              { source: 3, target: 5, },
-            ],
-            sourceCount: sourceNodes.length,
-            targetCount: targetNodes.length,
-          },),
-          targetNodes,
-        },);
-
-        expect(declined.map(function toId(node,): string {
-          return node.id;
-        },),).toStrictEqual([
-          nonNullishOrThrow(targetNodes.at(2,),).id,
-          nonNullishOrThrow(targetNodes.at(3,),).id,
-          nonNullishOrThrow(targetNodes.at(4,),).id,
-        ],);
+        expect([...declined,],).toEqual(['block/2',],);
       },
     },),
   ],
