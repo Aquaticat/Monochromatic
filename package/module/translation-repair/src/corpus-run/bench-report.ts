@@ -367,6 +367,8 @@ function describeRows(
  * ```ts
  * summarizeBench({ rows, },);
  * ```
+ *
+ * @internal
  */
 export function summarizeBench(
   { rows, }: { readonly rows: readonly BenchRow[]; },

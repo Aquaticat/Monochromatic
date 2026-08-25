@@ -70,6 +70,10 @@ export {
   type WidthInputOutcome,
   type WidthProbeInput,
 } from './corpus-run/editor-width-input.ts';
+export {
+  type ArmOutcome,
+} from './corpus-run/editor-width-arm.ts';
+export { bothOrders, } from './corpus-run/editor-width-contest.ts';
 export { runWidthSlice, } from './corpus-run/editor-width-slice.ts';
 
 //endregion Editor barrel

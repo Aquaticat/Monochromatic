@@ -52,6 +52,8 @@ const DEFAULT_SLICES = 10;
  * ```ts
  * const row: BenchRow = { width: 3, entryId: 'Mittens', ... };
  * ```
+ *
+ * @internal
  */
 export type BenchRow = {
   /**
