@@ -454,3 +454,30 @@ that is a reason to expect recovery, not a measurement of it.
 One more thing the same log shows:
 a single `StreamCutShortError`, on a bundle built before `#228` landed.
 The defect `#228` fixed was live in production, once in 1090 calls.
+
+### Landed, and proven by removing it twice
+
+`91f0c8ba5`.
+`StageVoice`'s lost branch carries `answered`,
+and one recovery round follows the quorum loop over the answered-but-unusable voices only.
+
+Two guard proofs, each failing only the cases it owns:
+
+-   recovery round removed: four cases fail, including `RECOVERS a voice quorum did not
+    need`, while the silent-voice case correctly still passes;
+-   the `answered` split removed so both populations are re-asked: exactly one case fails,
+    `REFUSES to re-ask a voice that never answered`, and nothing else.
+
+The bound is one extra call per answered-but-unusable voice per gather.
+A model broken all day costs one extra call per round rather than a ladder,
+which on the shape measured here is about a tenth of the round budget in the worst case
+and nothing at all in the ordinary one.
+
+What to count on the next run is the line the recovery round logs:
+
+```text
+<stage>: recovery round for <n> unreadable answers
+```
+
+Against it, count how many of those voices came back heard.
+That ratio is the number this decision was made without.
