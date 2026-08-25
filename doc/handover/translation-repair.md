@@ -1531,3 +1531,65 @@ through the same `resolveRunsDir` every other reader in this family uses.
 Built, lint clean, types clean, 663 suites passing, zero failures.
 Parked in `~/temp/agent/spend-telemetry-210.tar.gz` with the `#210` spend work,
 thirty-one files, repo-relative paths, untarred over the repo root to apply.
+
+## `#211` is proved at the wire, and the fix is in (2026-08-25)
+
+One call to `qwen3.8-max` on Charm Hyper, shaped exactly like a production ballot request,
+with the untouched SSE bytes kept at `~/temp/agent/capture-211.sse`.
+HTTP 200, 17612 raw characters, 128 frames.
+
+### What the provider actually sends
+
+The diagnosis guessed the model declares a thinking block carrying its answer deltas.
+The wire is narrower and stranger than that:
+
+```text
+content_block_start  index 0  {"type":"thinking"}
+  ... 106 thinking_delta frames ...
+content_block_stop   index 0
+content_block_start  index 1  {"type":"tool_use","name":"candidate_ballot"}
+content_block_start  index 1  {"type":"thinking"}          <- SAME INDEX, no stop between
+  ... thinking_delta and input_json_delta interleaved, 17 of the latter ...
+```
+
+The provider opens index 1 as a tool call and then opens THE SAME INDEX again as thinking.
+`openBlock` in `anthropic-delta-scan.ts` sets the block map unconditionally,
+so the later declaration wins,
+and `channelFor` then files every index 1 delta as reasoning,
+including the `input_json_delta` frames carrying `{"best": 2 ...`, which is the ballot.
+
+That is the whole of the 70-zero-content-against-71-ballots signature.
+The extractor in `anthropic-completion.ts` ignores blocks,
+so it recovers the answer and the vote lands;
+only the scanner that feeds the progress line and the runaway guard is fooled.
+
+### The fix, and why this shape rather than the other one
+
+`ANSWER_DELTAS` in `anthropic-delta-scan.ts` now exempts `input_json_delta`
+from the thinking-block override.
+A tool-call argument fragment cannot be deliberation:
+it is the structured answer by construction, filling a schema this pipeline sent.
+`text_delta` is deliberately NOT exempt,
+so the case the override was added for, plain text deltas inside a thinking block,
+still routes to reasoning.
+
+The alternative was to keep the FIRST declaration in the block map.
+That also routes this capture correctly,
+but only because `tool_use` happened to arrive first.
+The chosen shape holds whichever order the two declarations come in.
+
+GFP-proven: removing the carve-out turns the new case red, restoring it turns it green.
+The test fixture is the captured frame order, duplicate `content_block_start` included.
+
+### What it should buy on the next run
+
+`stream-runaway-watch.ts` bounds the content channel and leaves reasoning alone,
+so an answer filed as reasoning escaped the volume cap and ran to the straggler deadline.
+`qwen3.8-max` was cut 12 times in 71, the highest on the roster by two and a half times.
+The prediction is that its cut rate falls toward the roster's.
+NOT YET MEASURED: the run in flight predates the fix.
+
+### State
+
+Parked with `#210` and `#212` in `~/temp/agent/spend-telemetry-210.tar.gz`, now thirty-three files.
+Lint clean, types clean, 663 suites passing, zero failures.
