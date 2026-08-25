@@ -2760,19 +2760,19 @@ The three defects found by hand (`#220`, `#224`, `#225`) all came from a parser'
 or from a cause chain, never from a class this package wrote.
 That is now a measured statement about all seventy-five rather than an impression from three.
 
-## The remaining 16 entry points, and the tension inside wrapping them (open, 2026-08-25)
+## Every entry point now reports its refusals, settled by measurement (`#226`, 2026-08-25)
 
 `#223` wrapped nine CLIs when `reportingRefusals` caught exactly one class.
-It now catches everything, so the list should arguably be every entry point.
-Twenty-five entry points exist and nine are wrapped;
-all sixteen unwrapped ones share one shape,
-`if (import.meta.main)` followed by `await <fn>();`,
-so the edit is mechanical.
+It now catches everything, so the list should be every entry point, and now is:
+29 more were wrapped, in `f92df6042`.
 
-It is NOT being made yet, because measuring the error classes changed what it costs.
+This section keeps the argument that held the change back for a day,
+because the argument was sound and the thing that resolved it was evidence,
+not a better argument.
 
 `refusalText` forwards a message only from a class that declares it quote-free,
-and exactly two classes declare it.
+and four classes declare it:
+`RunJsonUnreadableError`, `LedgerShapeError`, `FrontMatterParseError`, `MdxParseError`.
 Wrapping a CLI therefore turns
 `ArtifactParseError: <what it says>` into `refused by ArtifactParseError` plus frames.
 For a report CLI that is a small loss.
@@ -2795,9 +2795,68 @@ Three ways out, and they are not equally good:
 -   Wrap everything and accept that an unexpected fault is located by frames rather than
     described by a message.
 
-DECIDING THIS WITHOUT THE SUITE WOULD BE GUESSING at what the output actually reads like,
-and there is already a large stack of source changes waiting on the same build.
-It is queued behind running the suites, not dropped.
+### The premise that it needed the suite was wrong
+
+The sentence this section used to end on said deciding without the suite
+would be guessing at what the output reads like.
+That was a refusal with an unconsidered bridge behind it.
+`node --experimental-strip-types` runs the package source directly,
+so the output could be read at any point without building anything,
+and the whole decision took one throwaway fixture under `~/temp/agent`.
+
+The same bridge answered a question the section never thought to ask,
+and answered it against the section's own numbers.
+
+### What the census actually was
+
+Twenty-five was wrong. There are 38 entry points, 9 of them wrapped.
+The count was low because the search looked for `if (import.meta.main)`,
+and 13 entry points did not have it:
+they ended in a bare top-level `await main();`, which runs on import.
+Nothing value-imports any of them today,
+and the one import that exists takes only a type from `roster-bench`, which erases,
+so this was a latent hazard rather than a live defect.
+They now carry the guard the other 16 had.
+
+### The four cells
+
+Each cell is one process, source run on a throwaway fixture,
+stderr measured in bytes:
+
+```text
+bare, marked error        exit 1, 708 bytes   stack dump, plus Node spilling the
+                                              error's own fields as an object literal
+wrapped, marked error     exit 4, 193 bytes   the message, and what to do next
+bare, unmarked error      exit 1, 554 bytes   class, message and stack
+wrapped, unmarked error   exit 5, 662 bytes   class and frames, message dropped
+```
+
+Read against the three options, this picks the third and weakens the case for the first.
+
+Wrapping is an outright win on the refusal path:
+708 bytes of stack and spilled fields become 193 bytes that say what happened.
+On the fault path it costs the message and buys a code.
+That code is the part the options list undervalued:
+unwrapped, a refusal, a fault and the command's own verdict are all `1`,
+and no gate or operator can tell them apart.
+
+Marking all seventy-five classes stays available and stays the lever
+that gets the message back on the paths where it matters.
+It is now an improvement to make on top of a working separation,
+rather than a precondition for making any change at all.
+
+### What was measured before the change rather than after
+
+That a wrapped CLI still leaves its own verdict alone.
+`reportingRefusals` sets `process.exitCode` only inside its catch,
+which the source says and a probe confirmed:
+`verify-published` on an unreadable run directory exits `2` either way,
+with byte-identical output.
+Reading that off the source would have been an inference about unchanged code.
+
+Type-check and lint carry the same 20 findings after the change as before,
+all of them in the three test files waiting on a rebuild,
+none in the 29 files touched.
 
 ## The cause sweep, which the message scan had missed (2026-08-25)
 
