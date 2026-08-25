@@ -23,12 +23,10 @@ import {
   overwriteEach,
   overwriteIfNotExists,
   tagged,
-} from '@monochromatic-dev/dev-script-file-enforcer/ts';
-import type {
-  CanonicalTomlValue,
-  CargoEnforcement,
-  CargoManifestPlan,
-  GlobResults,
+  type CanonicalTomlValue,
+  type CargoEnforcement,
+  type CargoManifestPlan,
+  type GlobResults,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 import type browserslist from 'browserslist';
@@ -739,7 +737,10 @@ async function forbiddenStringsScannerExists(): Promise<boolean> {
     return (await lstat(FORBIDDEN_STRINGS_SCANNER_PATH,)).isFile();
   }
   catch (error: unknown) {
-    if (errorHasCode({ error, code: ABSENT_PATH_ERROR_CODE, },))
+    if (errorHasCode({
+      error,
+      code: ABSENT_PATH_ERROR_CODE,
+    },))
       return false;
     throw error;
   }
