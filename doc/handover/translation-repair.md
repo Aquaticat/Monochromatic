@@ -20283,7 +20283,7 @@ unless the failing suite is the last one in its file.
 648 after the seventh,
 with exit code 0 each time and the FAIL count read off the runner's own `] FAIL ` prefix.
 
-Four mutations so far were caught by the NEW CASES ALONE,
+Five mutations so far were caught by the NEW CASES ALONE,
 which is the part that says a gap existed rather than a rule being restated:
 the index ordering comparison,
 the one-character-token rule,
