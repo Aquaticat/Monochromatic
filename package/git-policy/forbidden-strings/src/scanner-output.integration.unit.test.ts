@@ -16,8 +16,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { CandidateFile, } from '@monochromatic-dev/git-policy-api';
 import { parseScannerOutput, } from '@monochromatic-dev/git-policy-forbidden-strings';
+
+/** Candidate type owned by built parser interface under test. */
+type CandidateFile = ReturnType<Parameters<typeof parseScannerOutput>[0]['candidateForPath']>;
 
 /**
  * Release scanner built by the sibling `package/cli/forbidden-strings` crate;

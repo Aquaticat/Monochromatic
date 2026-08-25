@@ -19,11 +19,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  ABSENT_GIT_VALUE,
-  type CandidateFile,
-  type PolicyContext,
-} from '@monochromatic-dev/git-policy-api';
+import { ABSENT_GIT_VALUE, } from '@monochromatic-dev/git-policy-api';
 import {
   ForbiddenStringsPluginError,
   forbiddenStringsPlugin,
@@ -31,6 +27,12 @@ import {
   parseScannerOutput,
   scanCandidates,
 } from '@monochromatic-dev/git-policy-forbidden-strings';
+
+/** Candidate type owned by built scanner-adapter interface under test. */
+type CandidateFile = Parameters<typeof scanCandidates>[0]['candidates'][number];
+
+/** Policy context type owned by built policy interface under test. */
+type PolicyContext = Parameters<NonNullable<typeof forbiddenStringsPolicy.check>>[0]['context'];
 
 /** Executable fixture mode. */
 const EXECUTABLE_MODE = 0o755;
