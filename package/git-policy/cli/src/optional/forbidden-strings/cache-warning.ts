@@ -46,7 +46,7 @@ const CACHE_WARNING_KEYS: ReadonlySet<string> = new Set([
  * ```
  */
 function isJsonRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  if (typeof value !== 'object')
+  if ((typeof value) !== 'object')
     return false;
   if (value === null)
     return false;
@@ -125,9 +125,9 @@ function validateRecovery(
     line: string;
   }>,
 ): void {
-  if (typeof reason !== 'string')
+  if ((typeof reason) !== 'string')
     malformedWarning({ line, },);
-  if (typeof recovery !== 'string')
+  if ((typeof recovery) !== 'string')
     malformedWarning({ line, },);
   if (reason === 'write-failed') {
     if (recovery !== 'continue-with-compiled-rules')
@@ -150,7 +150,7 @@ function parseWarningJson(line: string,): unknown {
     return JSON.parse(line,);
   }
   catch (error: unknown) {
-    malformedWarning({
+    return malformedWarning({
       line,
       cause: error,
     },);

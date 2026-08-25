@@ -16,7 +16,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
+import type { CandidateFile, } from '../../api/dist/final/node/index.mjs';
 import { parseScannerOutput, } from '../dist/final/node/index.mjs';
 
 /**

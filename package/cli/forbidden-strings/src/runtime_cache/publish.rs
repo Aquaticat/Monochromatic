@@ -52,6 +52,7 @@ pub(super) fn read_artifact(
 /// Applies owner-only mode to one application-owned directory on Unix.
 #[cfg(unix)]
 fn make_directory_private(path: &Path) -> Result<(), PublishError> {
+    /// Imports Unix mode construction for owner-only directory permission.
     use std::os::unix::fs::PermissionsExt;
     return fs::set_permissions(path, fs::Permissions::from_mode(0o700))
         .map_err(|_| return PublishError)
@@ -66,6 +67,7 @@ fn make_directory_private(_path: &Path) -> Result<(), PublishError> {
 /// Applies owner-only mode to one artifact file on Unix.
 #[cfg(unix)]
 fn make_file_private(path: &Path) -> Result<(), PublishError> {
+    /// Imports Unix mode construction for owner-only artifact permission.
     use std::os::unix::fs::PermissionsExt;
     return fs::set_permissions(path, fs::Permissions::from_mode(0o600))
         .map_err(|_| return PublishError)

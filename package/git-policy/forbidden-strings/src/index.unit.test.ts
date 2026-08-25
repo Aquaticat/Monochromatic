@@ -23,7 +23,7 @@ import {
   ABSENT_GIT_VALUE,
   type CandidateFile,
   type PolicyContext,
-} from '@monochromatic-dev/git-policy-api/ts';
+} from '../../api/dist/final/node/index.mjs';
 import {
   ForbiddenStringsPluginError,
   forbiddenStringsPlugin,

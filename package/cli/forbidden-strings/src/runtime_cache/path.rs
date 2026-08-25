@@ -15,7 +15,10 @@ const HEX_DIGITS: &[u8; 16] = b"0123456789abcdef";
 
 /// Exact 32-byte SHA-256 of authoritative rules-file bytes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) struct SourceDigest([u8; 32]);
+pub(super) struct SourceDigest(
+    /// Exact digest bytes retained without source content.
+    [u8; 32],
+);
 
 /// Hashing failure at the existing `gix-hash` seam.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
