@@ -288,3 +288,44 @@ was opened on, seen from the producing side rather than the guard side.
 That is worth keeping after `#211` lands: the fix removes this instance of the defect,
 but nothing yet refuses a completed stream that delivered no content,
 so a future recurrence by another mechanism would again be invisible.
+
+### The pre-`#211` baseline, so the prediction can be checked
+
+Zero-content streams counted against COMPLETED streams only, per seat, at 31 of 40 slices.
+Cut streams are excluded on purpose: a cut stream carrying no content is explained by the
+cut, while a completed one is not.
+
+```text
+qwen3.8-max             236 completed   232 zero-content   98.3%
+deepseek-v4-pro-0813    278 completed    31 zero-content   11.2%
+hf:Qwen/Qwen3.8-27B     272 completed     4 zero-content    1.5%
+hf:zai-org/GLM-5.2      255 completed     2 zero-content    0.8%
+minimax-m3              280 completed     0
+hf:openai/gpt-oss-120b  280 completed     0
+nvidia Nemotron-3       280 completed     0
+hf:moonshotai/Kimi-K3   280 completed     0
+gemma-4-26b-a4b-it      279 completed     0
+deepseek-v4-flash-0731  280 completed     0
+```
+
+`deepseek-v4-pro-0813` holds its rate across samples: 12 of 127 at the earlier reading,
+9.4 percent, against 31 of 278 here, 11.2 percent. So it is stable intermittent behaviour
+rather than something drifting during the run, and the falsifiable prediction stands as
+written with 31 as its new before-number.
+
+TWO SEATS APPEAR HERE THAT NO EARLIER COUNT NAMED.
+`hf:Qwen/Qwen3.8-27B` at 4 and `hf:zai-org/GLM-5.2` at 2 were both recorded as losing
+voices to CUTS, which is a different column, and neither was known to complete a stream
+empty. The counts are small enough to be noise and large enough to be a third mechanism,
+and nothing here separates those two readings.
+
+OWED AT EXIT: recount this table on the finished run, then again on the first post-`#211`
+run. Three outcomes are worth telling apart, and only the pair of counts tells them apart:
+
+-   `qwen3.8-max` falling from 232 to near zero confirms `#211` addresses the seat it was
+    diagnosed on, which is the whole of its claim.
+-   `deepseek-v4-pro-0813` falling to zero confirms the first reading recorded in this
+    document; staying near 31 confirms the second and opens its own task.
+-   The two small seats going to zero makes them noise. Either of them surviving while
+    `qwen3.8-max` clears means a mechanism `#211` does not cover, and it would be invisible
+    to every check the pipeline currently makes (`#221`).
