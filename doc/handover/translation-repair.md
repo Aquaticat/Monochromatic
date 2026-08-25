@@ -1651,12 +1651,8 @@ So both wait for the run, and both belong in the landing sequence
 after the standing is read and the parked work is extracted.
 
 -   `#217`: `verify-published` cannot tell a clean run from an empty one.
-    An empty runs directory prints `matched=0` with both counters zero and exits 0,
-    while the two notices that would reveal it go to stderr.
-    A mistyped `TRANSLATION_REPAIR_RUNS_DIR` therefore reads as a green run.
-    `errorName` compounds it: a missing directory and one at mode 000 both print `(Error)`,
-    because every filesystem failure has the constructor name `Error`.
-    `doc/runbook/translation-repair-corpus-pass.md` carries the workaround until this lands.
+    NOW BUILT AND PARKED, in the section `#217` is built, GFP-proven and parked.
+    `doc/runbook/translation-repair-corpus-pass.md` carries the workaround until it lands.
 
 -   `#218`: a real Bilibili account UID sits in the TSDoc `@example` for `readingAnchors`
     in `image-reading-sense.ts`, where an invented number would serve identically.
@@ -1665,3 +1661,91 @@ after the standing is read and the parked work is extracted.
 when the pipeline is production ready, say so with the `AskUserQuestion` tool,
 not in prose, because that is the signal the owner is waiting for
 before disabling branch protection to sanitize the committed corpus text.
+
+## `#217` is built, GFP-proven and parked (2026-08-25)
+
+Built in the fork worktree `/var/home/user/worktrees/verify-empty`, checked out at `e8430d094`,
+because the change edits `src/` and the calibration's slice cache is keyed on the pipeline digest.
+It cannot be committed from there:
+that worktree has no `node_modules/.bin/git`, so the policy wrapper is absent.
+It is parked as a tarball and applied over the main worktree in the landing sequence.
+
+### What was wrong
+
+`namesUnder` answered an absent directory with an empty array and printed the absence with `console.error`.
+Stdout therefore read `verify-published: matched=0 settledWithNoPage=0 pageWithNoArtifact=0`,
+then `verify-published: 0 of 0 pages carry every wording their artifact promised`,
+and `process.exitCode` stayed 0.
+An empty runs directory and a run whose every page agreed produced the same report and the same exit code,
+so a mistyped `TRANSLATION_REPAIR_RUNS_DIR` read as a green run.
+
+`errorName` compounded it.
+It answers `error.name`, which is `Error` for every filesystem failure,
+so a directory that was never created and one at mode 000 printed the same `(Error)`.
+
+### What landed
+
+Absence became a kind rather than an empty list, in two new modules.
+
+-   `src/corpus-run/directory-listing.ts` holds `DirectoryReading`, `namesIn` and `filesystemReason`.
+    `filesystemReason` reads `error.code`, so the report says `ENOENT` or `ENOTDIR` instead of `Error`.
+-   `src/corpus-run/published-tree-listing.ts` holds `settledEntryIds`, `publishedEntryIds`
+    and the verdict `whatThereIsToVerify`.
+
+`verify-published.ts` gained a second exit code, `NOTHING_WAS_VERIFIED = 2`,
+kept separate from `PUBLISHED_TREE_DISAGREES = 1`:
+a disagreement says the run shipped something wrong,
+while the new code says the run was never examined,
+and a gate that treats those alike either ships an unchecked run or refuses a good one.
+
+An absent published tree is deliberately NOT one of the nothing-verified cases.
+Beside real artifacts it means every settled entry is unpublished,
+which is the most serious finding this check can make,
+so it stays a finding with a count rather than collapsing into silence.
+
+### The lister already had a second copy
+
+`editor-standing-read.ts` carried its own `DirectoryReading` union and its own `namesIn`,
+with the same `errorName` weakness and the same `console.error` plus empty-list shape.
+Both now call the shared module, following the rule `error-name.ts` records for itself:
+lift at the point a further caller would be written.
+Its one refusal message now names `ENOENT` rather than `Error`.
+
+### Evidence
+
+Boundary cases, run against the built CLI on `mktemp` fixtures:
+
+```text
+absent runs directory        exit 2   NOTHING VERIFIED, no artifacts directory under the run (ENOENT)
+run dir with no artifacts/   exit 2   NOTHING VERIFIED, no artifacts directory under the run (ENOENT)
+artifacts/ present, empty    exit 2   NOTHING VERIFIED, the artifacts directory holds no settled artifact
+artifacts, no published tree exit 1   NO PUBLISHED TREE (ENOENT). All 2 entries the run settled are unpublished
+six agreeing pages           exit 0   matched=6, 6 of 6 pages carry every wording
+```
+
+The last row is the positive control, and it is not invented:
+it uses the six real artifacts from `~/translation-repair-runs-20260817`,
+with each page synthesised from that artifact's own `shippableReplacements`
+and checked with `pageCarriesEveryWording` before being written.
+Without it, every non-zero exit above would prove only that the check can refuse.
+
+GFP: with the verdict reverted to reading an unreadable listing as an empty one,
+the two guard cases fail and the CLI reproduces `#217` exactly,
+printing `0 of 0 pages carry every wording` and exiting 0 on an empty run.
+Restored from copies kept in `~/temp/agent/217-gfp/`, rebuilt, and both pass again.
+
+`published-tree-listing.unit.test.ts` covers 14 cases across five suites:
+`namesIn` on a present directory, an absent one and a file;
+`filesystemReason` on a coded error, an uncoded error and a thrown string;
+both id listers on present and absent directories;
+and all four verdict branches.
+
+### One unrelated fix came with it
+
+`probe-telemetry-report.unit.test.ts` imported `@monochromatic-dev/module-test`
+rather than the `/ts` subpath every other test file uses, which is what `ST3` requires.
+It was the only such file in the package.
+The fork exposed it because only this package's `dist/` is built there,
+so the non-`/ts` path had nothing to resolve to:
+one `TS2307` that cascaded into 12 `no-unsafe-call` and `no-unsafe-member-access` warnings.
+Adding `/ts` cleared all 13.
