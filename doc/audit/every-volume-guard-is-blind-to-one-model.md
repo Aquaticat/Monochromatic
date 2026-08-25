@@ -235,3 +235,56 @@ count zero-content streams for `deepseek-v4-pro-0813` on the first post-`#211` r
 Twelve becoming zero confirms the first reading; twelve staying put confirms the second and opens
 its own task.
 Do not fold the answer into `#211` before that count exists.
+
+## What it costs in generated volume, measured at 30 of 40 slices
+
+Counted from the live full-roster calibration log while it was still running,
+so the figures are partial and will grow. Every seat had been asked
+about the same number of times, so the shares below compare like with like.
+
+```text
+run-wide          3149 streams   content  1242020   reasoning 21392195   94.5% reasoning
+
+qwen3.8-max        271 streams   content      892   reasoning  4001251  100.0% reasoning
+hf:Qwen/Qwen3.8-27B 275 streams  content   116314   reasoning  5765153   98.0%
+hf:zai-org/GLM-5.2  272 streams  content   131653   reasoning  3930074   96.8%
+nvidia Nemotron-3   272 streams  content   123186   reasoning  2650296   95.6%
+minimax-m3          272 streams  content   175386   reasoning  2971259   94.4%
+hf:openai/gpt-oss-120b 272 streams content 110702   reasoning  1021604   90.2%
+hf:moonshotai/Kimi-K3  272 streams content 138577   reasoning   694423   83.4%
+deepseek-v4-pro-0813   272 streams content 129296   reasoning   353174   73.2%
+deepseek-v4-flash-0731 272 streams content 151192   reasoning     4961    3.2%
+gemma-4-26b-a4b-it     272 streams content 164251   reasoning        0    0.0%
+```
+
+`qwen3.8-max` spent 18.7 percent of the run's entire generated reasoning volume
+to deliver 0.07 percent of its content.
+
+267 of its 271 streams carried EXACTLY zero content characters.
+The four that carried any managed 3, 9, 10 and 870.
+That extends the 16-slice reading of 104 of 106 to 267 of 271, at nearly three times the sample,
+and it is the same defect rather than a new one.
+
+### A high reasoning share is not itself the finding
+
+Seven other seats sit between 73 and 98 percent reasoning and produce real content throughout,
+because they are thinking models and that is where thinking models legitimately spend.
+`gemma-4-26b-a4b-it` emits no reasoning at all and still reached 30737 content characters
+on a single call. Reading the run-wide 94.5 percent as waste would be wrong.
+
+THE PATHOLOGY IS THE PAIR, not either half:
+a stream that finishes with zero content characters while consuming millions of reasoning
+characters, and is recorded `completed` rather than failed.
+
+### The outcome field cannot see it
+
+Of the 271 `qwen3.8-max` streams, 232 are recorded `completed` and 39 `cut`.
+So on 232 occasions the pipeline believed the call succeeded and received nothing.
+
+No success-or-failure check can find this, because by that measure nothing failed.
+Only a content-volume reading finds it, which is the same blindness this document
+was opened on, seen from the producing side rather than the guard side.
+
+That is worth keeping after `#211` lands: the fix removes this instance of the defect,
+but nothing yet refuses a completed stream that delivered no content,
+so a future recurrence by another mechanism would again be invisible.
