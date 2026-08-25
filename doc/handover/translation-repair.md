@@ -1654,8 +1654,13 @@ after the standing is read and the parked work is extracted.
     NOW BUILT AND PARKED, in the section `#217` is built, GFP-proven and parked.
     `doc/runbook/translation-repair-corpus-pass.md` carries the workaround until it lands.
 
--   `#218`: a real Bilibili account UID sits in the TSDoc `@example` for `readingAnchors`
-    in `image-reading-sense.ts`, where an invented number would serve identically.
+-   `#218`: a real Bilibili account UID sat in the TSDoc `@example` for `readingAnchors`
+    in `image-reading-sense.ts`.
+    NOW FIXED AND PARKED beside `#217`.
+    An invented UID was rejected, because any ten-digit number could be somebody's real account.
+    The example now reads `'posted by Mittens on 2019-04-07'`,
+    which demonstrates more of what the docstring claims than the original did:
+    it lists a date and a username first, and the old example carried only a digit run.
 
 `#219` is not a code fix and is the easiest thing here to lose:
 when the pipeline is production ready, say so with the `AskUserQuestion` tool,
@@ -1668,7 +1673,11 @@ Built in the fork worktree `/var/home/user/worktrees/verify-empty`, checked out 
 because the change edits `src/` and the calibration's slice cache is keyed on the pipeline digest.
 It cannot be committed from there:
 that worktree has no `node_modules/.bin/git`, so the policy wrapper is absent.
-It is parked as a tarball and applied over the main worktree in the landing sequence.
+It is parked as `~/temp/agent/verify-empty-217-218.tar.gz`, which carries `#218` as well,
+and is applied over the main worktree in the landing sequence.
+The tarball was checked against the main worktree before parking:
+all six modified files are byte-identical to the fork's base commit,
+and all three new files are absent there, so it applies without clobbering anything.
 
 ### What was wrong
 
