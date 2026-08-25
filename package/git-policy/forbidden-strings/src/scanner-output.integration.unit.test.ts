@@ -16,7 +16,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { parseScannerOutput, } from '@monochromatic-dev/git-policy-forbidden-strings';
+import {
+  parseScannerOutput,
+  scanCandidates,
+} from '@monochromatic-dev/git-policy-forbidden-strings';
 
 /** Candidate type owned by built parser interface under test. */
 type CandidateFile = ReturnType<Parameters<typeof parseScannerOutput>[0]['candidateForPath']>;
@@ -302,6 +305,42 @@ await describe({
           message: 'Forbidden string matched at line 1 (rule 0).',
           path: CANDIDATE_PATH,
         },],);
+      },
+    },),
+    it({
+      name: 'accepts clean real scan carrying cache warning on stderr',
+      fn: async function testCleanRuntimeCacheWarning() {
+        await using directory = await createTestDirectory();
+        /**
+         * Authoritative runtime rule absent from candidate bytes.
+         */
+        const rulesPath = join(directory.path, 'rules-clean.txt',);
+        /**
+         * Empty disposable cache root forcing warning on clean scan.
+         */
+        const cacheRoot = join(directory.path, 'cache-clean',);
+        await writeFile(rulesPath, 'RUNTIME_CACHE_RULE_LONG\n',);
+        expect(await scanCandidates({
+          executable: SCANNER_BINARY,
+          builtinRules: false,
+          repositoryRoot: directory.path,
+          environment: {
+            ...process.env,
+            FORBIDDEN_STRINGS_RULES: rulesPath,
+            FORBIDDEN_STRINGS_CACHE_DIR: cacheRoot,
+          },
+          candidates: [{
+            targetId: `target:${CANDIDATE_PATH}`,
+            path: CANDIDATE_PATH,
+            revision: 'fixture',
+            mode: 'regular',
+            change: 'added',
+            bytes: function bytes(): Promise<Uint8Array> {
+              return Promise.resolve(new TextEncoder().encode('clean content\n',),);
+            },
+          },],
+          signal: new AbortController().signal,
+        },),).toEqual([],);
       },
     },),
   ],
