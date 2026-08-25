@@ -16,6 +16,12 @@ This file reached twenty thousand lines, at which point it stopped being a hando
 and became an archive nobody could read at the start of a session.
 The history keeps every measurement; this keeps the working set.
 
+THERE IS NO RELEASE DEADLINE.
+The owner withdrew the one that used to sit here, on the grounds that being aware of it
+made the work worse: it bought lower quality and, more than once, took longer anyway.
+Do not reintroduce a date, do not infer schedule pressure from anything in the archive,
+and do not let "time remaining" enter any decision. Quality is the only standing constraint.
+
 WHAT BELONGS HERE.
 Open tasks and their state, decisions still in force, defects not yet fixed,
 and any measurement a reader would otherwise re-run.

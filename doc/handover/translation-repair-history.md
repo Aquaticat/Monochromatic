@@ -12800,11 +12800,16 @@ Measuring a pipeline corpus-wide for four days, when a known defect in it alread
 specified fix, spends the time to learn the rate of something we were about to remove.
 The arithmetic favours stopping and it is not close:
 
+WITHDRAWN 2026-08-25. The owner removed the release date this table reasons against,
+because working under it produced worse results and sometimes slower ones.
+The comparison is kept because it records why "stop then run" was chosen,
+but the schedule half of it is void and must not inform any later decision.
+
 ```text
-run then fix   baseline 08-23 describing a superseded pipeline,
-               fix plus verification plus a second pass lands 08-28 or 08-29, no slack
+run then fix   baseline describing a superseded pipeline,
+               fix plus verification plus a second pass lands late, no slack
 stop then run  fix in hours, 5 flagged entries verify overnight,
-               relaunch 08-20, full pass done 08-24 or 08-25, real slack before 08-30
+               relaunch sooner, full pass done sooner, real slack
 ```
 
 THE USER RATIFIED THIS AS A STANDING RULE while it was happening, in three words:
@@ -12819,7 +12824,7 @@ ONLY `#107` GATES IT. The fix list does not grow while the pass waits.
 control, so it changes no pairing here and is correctly gated on heading scoring instead.
 `#90`, `#91`, `#94` and `#96` have no measured shipped damage and stay post-pass.
 
-HARD RELAUNCH DEADLINE 2026-08-21. If the window fix has not cleared its gates by then,
+HARD RELAUNCH DEADLINE (WITHDRAWN 2026-08-25, kept only as a record of what was decided then). If the window fix has not cleared its gates by then,
 relaunch on the current tip and land the fix afterwards. A perfect pipeline that never gets
 measured is worth less than a measured one.
 
