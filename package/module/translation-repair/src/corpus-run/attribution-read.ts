@@ -1,6 +1,3 @@
-import {
-  readFile,
-} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { ArtifactParseError, } from '../artifact-guard.ts';
@@ -9,7 +6,7 @@ import {
   isJsonRecord,
 } from '../json-guard.ts';
 import { refusalText, } from '../refusal-text.ts';
-import { parseRunJson, } from '../run-json-read.ts';
+import { readRunJson, } from '../run-json-read.ts';
 import { decodeSliceCritics, } from './attribution-decode.ts';
 import {
   CHUNK_SPELLED_KEYS,
@@ -366,23 +363,19 @@ export async function gatherAttributionEntries(
     { readonly entry: AttributionEntry; } | { readonly failure: MalformedArtifact; }
   > {
     try {
-      /**
-       * Raw artifact text.
-       */
-      const text = await readFile(
-        join(
-          artifactsDir,
-          name,
-        ),
-        'utf8',
-      );
-
       return {
         entry: toEntry({
           name,
-          parsed: parseRunJson({
-            text,
-            from: name,
+          // THE READ IS INSIDE THE GUARD TOO, not only the parse. Opening was a
+          // bare `readFile` until 2026-08-25, so a file that would not open
+          // arrived here as an ordinary `Error` whose message quotes the whole
+          // path, and the sink below could only answer `refused by Error`. This
+          // names the filesystem code instead, and names the file by base name.
+          parsed: await readRunJson({
+            path: join(
+              artifactsDir,
+              name,
+            ),
           },),
         },),
       };

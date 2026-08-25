@@ -1,10 +1,7 @@
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readdir, } from 'node:fs/promises';
 
 import { refusalText, } from '../refusal-text.ts';
-import { parseRunJson, } from '../run-json-read.ts';
+import { readRunJson, } from '../run-json-read.ts';
 import { isDigestShaped, } from './pipeline-digest.ts';
 
 //region Artifact placement
@@ -212,19 +209,16 @@ export async function readPlacement(
     // opposite of this module's stated policy, and it aborts a pass at
     // startup now that the resume guard runs the census.
     /**
-     * Raw artifact text.
-     */
-    const text = await readFile(
-      `${artifactsDir}/${name}`,
-      'utf8',
-    );
-
-    /**
      * Artifact as parsed JSON.
+     *
+     * READ AND PARSED THROUGH ONE GUARD. Opening was a bare `readFile` until
+     * 2026-08-25, so a file that would not open arrived at the sink below as an
+     * ordinary `Error` whose message quotes the whole path, and the only safe
+     * thing to say about it was `refused by Error`. This names the filesystem
+     * code, and names the file by base name.
      */
-    const parsed: unknown = parseRunJson({
-      text,
-      from: name,
+    const parsed: unknown = await readRunJson({
+      path: `${artifactsDir}/${name}`,
     },);
 
     if (((typeof parsed) !== 'object') || (parsed === null))
