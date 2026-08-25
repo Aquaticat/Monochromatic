@@ -1,5 +1,6 @@
 import { refusalText, } from '../refusal-text.ts';
 import { RunJsonUnreadableError, } from '../run-json-read.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region CLI refusal
 // Turns ANY failure out of a CLI body into a report that quotes nothing.
@@ -74,6 +75,16 @@ const COULD_NOT_READ = 4;
 const UNEXPECTED_FAULT = 5;
 
 /**
+ * Exit code a CLI leaves behind when it declined in its own words.
+ *
+ * ABOVE THE FAULT CODE RATHER THAN BELOW IT, because a stated refusal is the
+ * mildest of the three: nothing broke and nothing was half-read. A usage line,
+ * an unset key, a control that did not hold. Codes one through three stay free
+ * for each command's own verdicts, which this must never be read as.
+ */
+const REFUSED_AS_STATED = 6;
+
+/**
  * Renders a caught value's stack frames, without its message or its cause.
  *
  * THE FRAMES ARE THE SAFE HALF. Each names a file and a position inside our own
@@ -142,6 +153,14 @@ export async function reportingRefusals(
     // piping stdout to a file is collecting a report, and this says there is no
     // report to collect.
     console.error(`${what}: ${refusalText({ error, },)}`,);
+
+    // NOTHING FURTHER TO SAY. The line above is the whole report: the command
+    // stated why it declined, and no frames are worth printing because there is
+    // no bug to locate.
+    if (error instanceof StatedRefusalError) {
+      process.exitCode = REFUSED_AS_STATED;
+      return;
+    }
 
     if (error instanceof RunJsonUnreadableError) {
       console.error(

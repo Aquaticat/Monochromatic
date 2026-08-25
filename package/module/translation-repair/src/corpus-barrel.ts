@@ -202,6 +202,7 @@ export {
   RunJsonUnreadableError,
 } from './run-json-read.ts';
 export { reportingRefusals, } from './corpus-run/cli-refusal.ts';
+export { StatedRefusalError, } from './stated-refusal.ts';
 export {
   BenchDrawError,
   type DrawableSlice,

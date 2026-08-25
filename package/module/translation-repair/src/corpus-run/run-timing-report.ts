@@ -7,6 +7,7 @@ import {
   type RunTiming,
 } from './run-timing-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Run timing report
 // WHERE A RUN'S WALL-CLOCK WENT, read back off its own log. Spends no quota and
@@ -223,10 +224,10 @@ async function reportRunTiming(): Promise<void> {
     .slice(2,);
 
   if (paths.length === 0) {
-    throw new Error(
-      'name at least one log file: run-timing-report <path> [<path> ...]. Any log a pass, probe or '
+    throw new StatedRefusalError({
+      says: 'name at least one log file: run-timing-report <path> [<path> ...]. Any log a pass, probe or '
         + 'calibration wrote will do, and passing several reads them as one run.',
-    );
+    },);
   }
 
   /**

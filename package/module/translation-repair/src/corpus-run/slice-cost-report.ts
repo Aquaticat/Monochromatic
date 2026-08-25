@@ -5,6 +5,7 @@ import {
   type SliceCostRow,
 } from '../slice-cost-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Slice cost report
 // Reads the per-slice cost telemetry a pass writes, and answers the one
@@ -394,7 +395,7 @@ async function main(): Promise<void> {
    */
   const path = process.argv[2] ?? '';
   if (path === '')
-    throw new Error('name a log file: slice-cost-report <path>',);
+    throw new StatedRefusalError({ says: 'name a log file: slice-cost-report <path>', },);
 
   /**
    * Everything its cost lines said.

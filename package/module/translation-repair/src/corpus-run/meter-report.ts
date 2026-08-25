@@ -14,6 +14,7 @@ import {
   type MeterSample,
 } from './meter-sample-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Meter report
 // Reads run logs and says how much of the time each provider could be spent
@@ -385,10 +386,10 @@ async function reportMeters(): Promise<void> {
     .slice(2,);
 
   if (paths.length === 0) {
-    throw new Error(
-      'name at least one log file: meter-report <path> [<path> ...]. Any log a pass, '
+    throw new StatedRefusalError({
+      says: 'name at least one log file: meter-report <path> [<path> ...]. Any log a pass, '
         + 'probe or sample wrote will do, and passing several merges them into one record.',
-    );
+    },);
   }
 
   /**

@@ -4,6 +4,7 @@ import { createHyperClient, } from '../hyper-client.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Budget sample
 // Takes ONE reading of both providers' meters and leaves it in the log.
@@ -79,14 +80,14 @@ async function sampleBudgets(): Promise<void> {
     ?? '';
 
   if ((syntheticKey === '') || (hyperKey === '')) {
-    throw new Error(
-      'both provider keys must be set to sample availability, and at least one is not: '
+    throw new StatedRefusalError({
+      says: 'both provider keys must be set to sample availability, and at least one is not: '
         + `TRANSLATION_REPAIR_SYNTHETIC_API_KEY is ${syntheticKey === '' ? 'absent' : 'present'}, `
         + `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is ${hyperKey === '' ? 'absent' : 'present'}. `
         + 'Run under mise so sops injects them. A sample of one provider is not recorded, '
         + 'because the record is read as a statement about both and a missing column would '
         + 'be indistinguishable from a provider that answered.',
-    );
+    },);
   }
 
   /**

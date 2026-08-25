@@ -6,6 +6,7 @@ import {
   formatCatalogReport,
 } from './model-catalog-compare.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Model catalog drift
 // Asks the provider what it currently serves and compares that against the
@@ -63,7 +64,11 @@ async function fetchModels(
     },
   );
   if (!reply.ok)
-    throw new Error(`${MODELS_URL} answered ${String(reply.status,)} ${reply.statusText}`,);
+    throw new StatedRefusalError({
+      says: `${MODELS_URL} answered ${String(reply.status,)}. The reason phrase is dropped `
+        + 'rather than repeated: it is the provider\'s wording, and this message promises to '
+        + 'carry only ours.',
+    },);
   return await reply.json();
 }
 
@@ -86,9 +91,9 @@ async function main(): Promise<void> {
     .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
     ?? '';
   if (apiKey === '')
-    throw new Error(
-      'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set; run under mise so sops injects it',
-    );
+    throw new StatedRefusalError({
+      says: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set; run under mise so sops injects it',
+    },);
 
   /**
    * Every model the provider currently serves, aliases included.

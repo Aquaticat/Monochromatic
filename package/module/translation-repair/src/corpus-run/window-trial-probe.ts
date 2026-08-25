@@ -39,6 +39,7 @@ import {
   witnessSheets,
 } from './window-trial-witness.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Window trial probe
 // `#108`, run end to end: does showing the judges the neighbouring original
@@ -399,11 +400,11 @@ async function main(): Promise<void> {
         // genuinely cannot be tried are scattered through the draw, so a run of
         // them says the fault is the run's rather than the slices'.
         if (bought.refusedInARow >= REFUSALS_BEFORE_STOPPING)
-          throw new Error(
-            `${String(bought.refusedInARow,)} slices refused in a row, which is `
+          throw new StatedRefusalError({
+            says: `${String(bought.refusedInARow,)} slices refused in a row, which is `
               + `a fault in the run rather than in the slices; stopping before `
               + `the rest of the draw is spent producing slates nobody judges`,
-          );
+          },);
         continue;
       }
       bought.refusedInARow = 0;

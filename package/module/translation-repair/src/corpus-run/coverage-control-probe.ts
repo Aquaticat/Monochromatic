@@ -17,6 +17,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Coverage control probe
 // `#106`: can the coverage roster vote absence at all.
@@ -196,10 +197,10 @@ async function main(): Promise<void> {
   const cases = await gatherCases({ onlyIds, },);
 
   if (cases.length === 0)
-    throw new Error(
-      'coverage control probe refused: no walked entry offered a passage the aligners '
+    throw new StatedRefusalError({
+      says: 'coverage control probe refused: no walked entry offered a passage the aligners '
         + 'declined to pair, so there was nothing to ask the roster about',
-    );
+    },);
 
   console.log(
     `COVERAGE control offering ${String(cases.length,)} cases to a roster of ${

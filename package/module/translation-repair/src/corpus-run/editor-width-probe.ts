@@ -16,6 +16,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Editor width probe
 // `#186`: does seating more EDITORS buy a better repair, with the judging panel
@@ -133,10 +134,10 @@ async function main(): Promise<void> {
   const asked = process.argv[DRAW_ARGV_INDEX] ?? DEFAULT_DRAW;
 
   if ((asked !== 'a') && (asked !== 'b'))
-    throw new Error(
-      `editor width probe refused: draw must be 'a' or 'b', not '${asked}'; spending draw A `
+    throw new StatedRefusalError({
+      says: `editor width probe refused: draw must be 'a' or 'b', not '${asked}'; spending draw A `
         + 'under another name would burn the held-back half of the sample without saying so',
-    );
+    },);
 
   /**
    * That name, narrowed to the two draws that exist.
@@ -185,11 +186,11 @@ async function main(): Promise<void> {
   },);
 
   if (!controlHeld)
-    throw new Error(
-      'editor width probe refused: the panel did not prefer intact text over the same '
+    throw new StatedRefusalError({
+      says: 'editor width probe refused: the panel did not prefer intact text over the same '
         + 'text with a sentence removed, so it cannot read the finer difference this draw '
         + 'asks about and the draw was not spent',
-    );
+    },);
 
   console.log(`WIDTH control held; running draw ${draw.toUpperCase()}`,);
 

@@ -10,6 +10,7 @@ import {
   type SeatSpend,
 } from './spend-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Spend report
 // WHAT A RUN COST, read back off its own log. Spends no quota and touches no
@@ -191,10 +192,10 @@ async function reportSpendCost(): Promise<void> {
     .slice(2,);
 
   if (paths.length === 0) {
-    throw new Error(
-      'name at least one log file: spend-report <path> [<path> ...]. Any log a pass, probe or '
+    throw new StatedRefusalError({
+      says: 'name at least one log file: spend-report <path> [<path> ...]. Any log a pass, probe or '
         + 'calibration wrote will do, and passing several totals them as one run.',
-    );
+    },);
   }
 
   /**

@@ -26,6 +26,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Judge fidelity probe
 // `#84`: before the translate-and-select shape decides a corpus, can its judges
@@ -279,7 +280,7 @@ function readArguments(): {
    */
   const damageKinds = DAMAGE_BY_NAME[damageText];
   if (damageKinds === undefined)
-    throw new Error(`--damage takes deletion, insertion or alteration, not ${damageText}`,);
+    throw new StatedRefusalError({ says: `--damage takes deletion, insertion or alteration, not ${damageText}`, },);
   return {
     // `#107`: whether the sheet also carries the neighbouring sections' original,
     // which is the one thing that differs between a narrow run and a wide one.
