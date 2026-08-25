@@ -113,6 +113,62 @@ and whether `TCV` is met depends on whether that caller's cases drive the
 branches,
 which no import-graph measure can see.
 
+## Reading whether one branch is covered
+
+Recorded 2026-08-25,
+while working the functions no test names directly.
+
+The four attempts recorded here all answer one question,
+"is this module reached".
+None answers what `TCV` asks,
+which is whether a case drives a particular BRANCH,
+and reading the caller's cases by eye answers it badly:
+a case can execute a branch while asserting nothing that branch decides.
+
+Mutate the branch and run the suite.
+If nothing fails,
+no case asserts what that branch decides,
+whatever the import graph says.
+This is `GFP` pointed at code that already exists rather than at a new guard,
+and it costs one build plus one suite run per branch,
+about two minutes in this package.
+
+It overturned two readings on the day it was written.
+`blankAgainst` looked uncovered,
+since its only caller documents its own arm as unreachable;
+removing the guard failed `translate-judge.unit.test.ts` too,
+which hand-builds a slate the producer would never assemble.
+And two new cases looked like they pinned the shape
+`unchangedChunkOutcome` builds;
+mutating that shape left them green,
+because a run whose checkers refuse to confirm passes through the settlement
+in `repair-chunk.ts` instead,
+which builds its own outcome.
+
+Measured this way on 2026-08-25:
+
+-   Covered, so no case was written:
+    `reanchorInsertions` on both arms,
+    `anchorOffsets`' placed-nothing guard,
+    `leavesOriginalUnplaced`'s second conjunct,
+    `notApplicableRepair`'s finding,
+    `placeInsertions`' shortfall label,
+    `unchangedChunkOutcome`'s heard-critic count,
+    `assembleRepair`'s shipped-slice count,
+    and `applyCandidate`'s composite.
+
+-   Uncovered, and closed by a case since:
+    `assembleTranslation`'s two refusal dispositions beside alignment,
+    the settlement's critic telemetry where nothing shipped,
+    and `unchangedChunkOutcome`'s roster.
+
+-   Uncovered and still open:
+    `unchangedChunkOutcome`'s attributions,
+    non-translation votes,
+    and their standing.
+    Reaching the exits that build those with a non-empty attribution list
+    needs a scripted state this work has not found.
+
 ## What not to do
 
 Do not re-run module reachability with barrel edges counted.
