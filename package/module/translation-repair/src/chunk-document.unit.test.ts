@@ -312,6 +312,38 @@ await describe({
     },),
 
     it({
+      name: 'SAYS WHERE the insertion goes IN THE FINDING an operator reads, since the anchoring '
+        + 'cases beside this one assert the PAIR rather than the sentence, and the refusal wording '
+        + 'is the only other thing that field ever carries: a finding naming no offset reads like '
+        + 'one more section the aligner gave up on',
+      fn: async () => {
+        /**
+         * That same document, whose middle section is anchored rather than
+         * refused.
+         */
+        const alignment = alignDocumentSections({
+          source: parseDocument({ text: ANCHORED_SOURCE, },),
+          target: parseDocument({ text: SHORT_TARGET, },),
+        },);
+
+        /**
+         * What the findings say about the source side.
+         */
+        const sourceSide = alignment.findings
+          .map(function toDetail(finding,) {
+            return finding.detail;
+          },)
+          .filter(function isSourceSide(detail,) {
+            return detail.startsWith('source-only',);
+          },);
+
+        expect(sourceSide.length,).toBe(1,);
+        expect(sourceSide[0],).toContain(
+          `anchored for insertion at offset ${String(SHORT_TARGET.indexOf('## Paws',),)}`,
+        );
+      },
+    },),
+    it({
       name: 'KEEPS EVERY OTHER SECTION PAIRED AND IN ORDER around an anchor, since a document '
         + 'whose insertion displaced a real pairing would repair the wrong passages either side '
         + 'of the hole it filled',
