@@ -20195,9 +20195,9 @@ branches  code lines  exports  module
       20         164        3  corpus-run/artifact-v2-read-set-relations.ts  DONE
       16         138        2  preservation-tokens.ts                 DONE
       14         131        1  lane-slice-sets.ts                     DONE
-      12         127        2  translate-skeleton.ts
-      12         121        2  corpus-run/artifact-placement.ts
-      12         118        5  corpus-run/artifact-v2-project.ts
+      12         127        2  translate-skeleton.ts                  DONE
+      12         121        2  corpus-run/artifact-placement.ts       DONE
+      12         118        5  corpus-run/artifact-v2-project.ts      DONE
       11         237        3  corpus-run/artifact-v2-read-consolidate-parts.ts
        9          66        1  stream-recurrence-watch.ts
        9         250        1  refine-slice-settle.ts
@@ -20244,8 +20244,49 @@ Mutation F dropped the decided-at-once refusal, caught by two new cases and two 
 `validateNamedSets` and `NamedSliceSet` reach the barrel as `@internal` so the test can exercise the shipped bundle,
 which is the standing ruling on internals rather than a new exception.
 
-### Suite size across the four landings
+`translate-skeleton.ts`, commit `e6d57da2c`.
+Mutation G stopped a list saying whether it is ordered, caught by three new cases.
+Mutation H stopped a footnote DEFINITION contributing an atom,
+so only the marker survived.
+ONE failure, the new case, and nothing else:
+a translation dropping the definition and keeping the marker passed every structural guard in the suite.
+`blockDetail` reaches the barrel as `@internal` so a case can ask what an absent `ordered` field means,
+which no Markdown input produces.
+
+`corpus-run/artifact-placement.ts`, commit `9244e8120`.
+Mutation I made an unreadable digest unplaceable rather than legacy,
+and mutation J let an artifact carrying no id skip the identity check;
+the census already covered both, which is the honest result and the reason the third was run.
+Mutation K accepted uppercase hex as an object id.
+ONE failure, the new case, and nothing else:
+git writes lowercase, so two spellings of one commit would have counted as two generations.
+
+`corpus-run/artifact-v2-project.ts`, commit `6aebccf27`.
+Mutation L spread the live ledger record instead of rebuilding it through a literal,
+caught by the new key-list case and by one existing `buildSettledArtifactV2` case.
+Mutation M aliased `undecidedLanes` instead of copying it.
+ONE failure, the new case, and nothing else:
+the artifact outlives the run, and a reader mutating what it read would have reached back into the builder's own comparison.
+
+### A runner behaviour worth knowing before reading any of this
+
+A failing `await describe(...)` REJECTS, and a rejected top-level await ends the module.
+Later `describe` blocks in the same file never run.
+So a mutation report naming two failures out of five suites is not evidence the other three passed:
+they may not have executed.
+Read a GFP result as "these cases fired", never as "only these cases were affected",
+unless the failing suite is the last one in its file.
+
+### Suite size across the seven landings
 
 636 suite verdicts before `#209`,
-639 after the fourth,
+648 after the seventh,
 with exit code 0 each time and the FAIL count read off the runner's own `] FAIL ` prefix.
+
+Four mutations so far were caught by the NEW CASES ALONE,
+which is the part that says a gap existed rather than a rule being restated:
+the index ordering comparison,
+the one-character-token rule,
+the footnote definition atom,
+the lowercase-only object id,
+and the undecided-lanes copy.
