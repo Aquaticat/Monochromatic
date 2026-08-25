@@ -9,6 +9,7 @@ import {
   type GradedItem,
   parseGradedSheet,
 } from '../grade-sheet-read.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
@@ -302,6 +303,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'score-verify',
+    run: main,
+  },);
 
 //endregion Score verify

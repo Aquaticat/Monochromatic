@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { reportingRefusals, } from './cli-refusal.ts';
 import { formatGradingSheet, } from '../grading-sheet.ts';
 import { formatRepairSheet, } from '../repair-sheet.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
@@ -421,6 +422,9 @@ async function drawGradingSample(): Promise<void> {
 }
 
 if (import.meta.main)
-  await drawGradingSample();
+  await reportingRefusals({
+    what: 'draw-sample',
+    run: drawGradingSample,
+  },);
 
 //endregion Draw sample

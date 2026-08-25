@@ -9,6 +9,7 @@ import {
   requireString,
 } from '../artifact-guard.ts';
 
+import { reportingRefusals, } from './cli-refusal.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { repeatBandOf, } from './rendering-audit-settled-band.ts';
 import {
@@ -354,6 +355,9 @@ async function main(): Promise<void> {
 }
 
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'rendering-audit-settled-report',
+    run: main,
+  },);
 
 //endregion Settled audit report

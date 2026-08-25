@@ -1,6 +1,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { reportingRefusals, } from './cli-refusal.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { readArtifactProbe, } from '../artifact-probe-read.ts';
 import {
@@ -384,6 +385,9 @@ async function main(): Promise<void> {
 // anything that pulled this module into the package bundle made importing the
 // library scan a corpus directory and print to stdout.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'score-probe',
+    run: main,
+  },);
 
 //endregion Score probe

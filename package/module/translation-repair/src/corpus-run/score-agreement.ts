@@ -8,6 +8,7 @@ import {
   scoreGradeAgreement,
   scoreGradedPrecision,
 } from '../grade-agreement.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 import { parseRunJson, } from '../run-json-read.ts';
 import { parseGradedSheet, } from '../grade-sheet-read.ts';
 import { readSheetIdentity, } from '../repair-grade-read.ts';
@@ -360,6 +361,9 @@ async function reportGrades(): Promise<void> {
 }
 
 if (import.meta.main)
-  await reportGrades();
+  await reportingRefusals({
+    what: 'score-agreement',
+    run: reportGrades,
+  },);
 
 //endregion Score agreement

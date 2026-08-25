@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { reportingRefusals, } from './cli-refusal.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import type { RepairRegion, } from '../repair-region.ts';
@@ -239,6 +240,9 @@ async function main(): Promise<void> {
 // side effect of loading the library: for the probing scripts that means live
 // model calls, and for every one of them it means writing files.
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'probe-relabel',
+    run: main,
+  },);
 
 //endregion Probe relabel

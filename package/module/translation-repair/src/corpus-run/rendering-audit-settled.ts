@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { reportingRefusals, } from './cli-refusal.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
@@ -513,6 +514,9 @@ async function main(): Promise<void> {
 }
 
 if (import.meta.main)
-  await main();
+  await reportingRefusals({
+    what: 'rendering-audit-settled',
+    run: main,
+  },);
 
 //endregion Settled rendering audit
