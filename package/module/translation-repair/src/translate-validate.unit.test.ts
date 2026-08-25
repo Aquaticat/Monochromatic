@@ -284,6 +284,52 @@ In the morning it dozes on the windowsill.
     },),
 
     it({
+      name: 'NAMES WHICH GRAMMAR READ THE PAGE on all three readings, since a '
+        + 'pass carries no findings and the reader of a valid verdict has '
+        + 'nothing else to tell an empty page from one that was downgraded. '
+        + 'The case beside this one pins only the downgraded reading being '
+        + 'accepted, not that a reader can see it happened',
+      fn: async () => {
+        /**
+         * Pass at a slice the archive never translated, where there is no page
+         * to read at all.
+         */
+        const absent = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: '',
+          candidateText: 'The cat dozes on the windowsill.',
+        },);
+
+        /**
+         * Pass over a page this grammar reads as written.
+         */
+        const strict = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: 'The cat dozes on the windowsill.',
+          candidateText: 'The cat naps on the windowsill.',
+        },);
+
+        /**
+         * Pass over a page only the relaxed reading gets through.
+         */
+        const relaxed = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: 'The cat dozes {unclosed on the windowsill.',
+          candidateText: 'The cat naps on the windowsill.',
+        },);
+
+        expect([
+          absent.kind === 'valid' ? absent.pageGrammar : 'not-valid',
+          strict.kind === 'valid' ? strict.pageGrammar : 'not-valid',
+          relaxed.kind === 'valid' ? relaxed.pageGrammar : 'not-valid',
+        ],).toEqual([
+          'absent',
+          'strict',
+          'relaxed',
+        ],);
+      },
+    },),
+    it({
       name: 'FALLS BACK to the original alone when the page refuses the strict '
         + 'grammar, since an archive written before this grammar existed is '
         + 'not the candidate\'s fault',
