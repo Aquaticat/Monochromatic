@@ -11,7 +11,7 @@
 
 use std::fs;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::Command as ProcessCommand;
 
 // What:     `const BIN: &str = env!("CARGO_BIN_EXE_forbidden-strings");`
 //           uses the compile-time env var Cargo sets for integration
@@ -27,6 +27,29 @@ use std::process::Command;
 // const BIN = process.env.CARGO_BIN_EXE_forbidden_strings!;
 // ```
 const BIN: &str = env!("CARGO_BIN_EXE_forbidden-strings");
+
+/// Test command factory injecting one disposable process-scoped cache root.
+struct Command;
+
+/// Builds subprocess commands without touching developer's real user cache.
+impl Command {
+    /// Creates process command with hermetic cache-root override.
+    fn new(program: impl AsRef<std::ffi::OsStr>) -> ProcessCommand {
+        static CACHE_ROOT: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+        let cache_root = CACHE_ROOT.get_or_init(|| {
+            let path = std::env::temp_dir().join(format!(
+                "forbidden-strings-integration-cache-{}",
+                std::process::id(),
+            ));
+            let _ = fs::remove_dir_all(&path);
+            fs::create_dir_all(&path).expect("create integration cache root");
+            return path
+        });
+        let mut command = ProcessCommand::new(program);
+        command.env("FORBIDDEN_STRINGS_CACHE_DIR", cache_root);
+        return command
+    }
+}
 
 // What:     `fn unique_tmp(label) -> PathBuf` returns a fresh empty
 //           directory under `std::env::temp_dir()`. Uses PID + label so
@@ -1188,4 +1211,158 @@ fn no_builtin_flag_and_no_rules_file_errors_unchanged() {
         stderr,
     );
     let _ = fs::remove_dir_all(&dir);
+}
+
+/// Lists files with requested name under bounded cache hierarchy.
+fn files_named(root: &std::path::Path, wanted: &str) -> Vec<PathBuf> {
+    let mut pending = vec![root.to_path_buf()];
+    let mut matches = Vec::new();
+    while let Some(directory) = pending.pop() {
+        let Ok(entries) = fs::read_dir(directory) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                pending.push(path);
+            } else if path.file_name().and_then(|name| return name.to_str()) == Some(wanted) {
+                matches.push(path);
+            }
+        }
+    }
+    return matches
+}
+
+/// Explicit compile operation creates private artifact and emits no success output.
+#[test]
+fn compile_rules_subcommand_creates_silent_artifact() {
+    let dir = unique_tmp("compile-rules-command");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert!(
+        output.status.success(),
+        "compile-rules must succeed; stderr: {}",
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(output.stdout.is_empty(), "compile-rules success stdout must stay empty");
+    assert!(output.stderr.is_empty(), "compile-rules success stderr must stay empty");
+    assert_eq!(files_named(&cache, "rules.bin").len(), 1);
+
+    let repeated = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert!(repeated.status.success(), "repeated compile-rules must reuse artifact");
+    assert!(repeated.stdout.is_empty());
+    assert!(repeated.stderr.is_empty());
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// First scan warns and repairs; repeated scan reuses cache with identical finding.
+#[test]
+fn scan_repairs_missing_cache_then_reuses_artifact() {
+    let dir = unique_tmp("scan-cache-repair");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let run = || {
+        return ProcessCommand::new(BIN)
+            .args(["--rules"])
+            .arg(&rules)
+            .arg(&target)
+            .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+            .output()
+            .expect("spawn binary")
+    };
+    let first = run();
+    let first_stderr = String::from_utf8_lossy(&first.stderr);
+    assert_eq!(first.status.code(), Some(1));
+    assert!(first_stderr.contains("\"reason\":\"missing\""));
+    assert!(first_stderr.contains("target.txt:1 rule=0"));
+    assert_eq!(files_named(&cache, "rules.bin").len(), 1);
+
+    let second = run();
+    let second_stderr = String::from_utf8_lossy(&second.stderr);
+    assert_eq!(second.status.code(), Some(1));
+    assert!(!second_stderr.contains("cache-warning"));
+    assert!(second_stderr.contains("target.txt:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Clean first scan still emits missing-cache warning and exits successfully.
+#[test]
+fn clean_first_scan_reports_cache_warning_on_stderr() {
+    let dir = unique_tmp("clean-cache-warning");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "clean\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert!(output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("\"reason\":\"missing\""));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Relative explicit cache override is configuration error rather than cwd path.
+#[test]
+fn relative_cache_override_exits_with_config_error() {
+    let dir = unique_tmp("relative-cache-root");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "clean\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", "relative/cache")
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .contains("FORBIDDEN_STRINGS_CACHE_DIR must be an absolute path"),
+    );
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Double-dash preserves scan access to positional file named like subcommand.
+#[test]
+fn double_dash_scans_file_named_compile_rules() {
+    let dir = unique_tmp("compile-rules-positional");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(dir.join("compile-rules"), "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .current_dir(&dir)
+        .args(["--rules", "rules.txt", "--", "compile-rules"])
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", dir.join("cache"))
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("compile-rules:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
 }

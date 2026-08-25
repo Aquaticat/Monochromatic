@@ -20,7 +20,7 @@
 // ```ts
 // import { parseArgs } from "some-cli-parser";
 // ```
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 /// Custom clap help layout with the historical uppercase usage heading.
 // What:     `const HELP_TEMPLATE: &str = "..."` declares a borrowed static string.
@@ -110,6 +110,32 @@ OUTPUT:\n\
 See README.md for the full dialect, set-algebra examples, and CI integration.\n\
 ";
 
+/// Distinct non-scan operations selected by first command word.
+#[derive(Subcommand, Debug, PartialEq)]
+pub enum CliCommand {
+    /// Compiles one authoritative runtime rules file into derived user cache.
+    #[command(name = "compile-rules")]
+    CompileRules {
+        /// Explicit authoritative rules path; environment fallback is deliberately absent.
+        #[arg(
+            long = "rules",
+            value_name = "PATH",
+            allow_hyphen_values = true,
+            help = "Path to authoritative runtime rules file"
+        )]
+        rules_path: String,
+    },
+}
+
+/// Returns explicit compile-rules source path when selected.
+impl CliCommand {
+    /// Borrows rules path carried by compile operation.
+    pub fn rules_path(&self) -> &str {
+        let Self::CompileRules { rules_path } = self;
+        return rules_path
+    }
+}
+
 /// Parsed command-line options for `forbidden-strings`.
 // What:     `#[derive(Parser, Debug, PartialEq)]` asks Rust to generate three
 //           implementations for `Cli`: clap's parser, debug formatting, and
@@ -135,6 +161,10 @@ See README.md for the full dialect, set-algebra examples, and CI integration.\n\
     args_override_self = true,
 )]
 pub struct Cli {
+    /// Optional non-scan operation selected before scan flags.
+    #[command(subcommand)]
+    pub command: Option<CliCommand>,
+
     /// Optional path to the rule file passed with `--rules`.
     // What:     `#[arg(...)] pub rules_path: Option<String>` declares an optional
     //           long option named `--rules` whose value is parsed as an owned

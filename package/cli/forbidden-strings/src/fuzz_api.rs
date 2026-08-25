@@ -20,6 +20,12 @@
 /// serialized set, and `LoadError` is the redacted failure both return.
 pub use crate::{compile_from_text, load_precompiled, LoadError};
 
+/// Re-exports hostile runtime-cache envelope decoder for coverage-guided validation.
+///
+/// Target supplies arbitrary artifact bytes plus authoritative source bytes; decoder
+/// must return a verdict without panicking or reading outside framing bounds.
+pub use crate::runtime_cache::decode_artifact_for_fuzzing;
+
 /// Re-exports the literal-to-verbose-dialect escaper the roundtrip target drives.
 ///
 /// `escape_literal` rewrites a bare literal so every byte matches itself in the

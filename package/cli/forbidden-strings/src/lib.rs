@@ -35,6 +35,8 @@ mod walk;
 mod frx_load;
 /// Registers the `frx_scan` child module: the forbidden-regex line scan.
 mod frx_scan;
+/// Registers runtime cache envelope, path, warning, and publication implementation.
+mod runtime_cache;
 
 /// Registers the `fuzz_api` child module.
 // What:     `#[cfg(feature = "fuzzing")] pub mod fuzz_api;` registers
@@ -570,6 +572,13 @@ pub fn run_cli_from_env() -> Result<i32> {
         }
     };
 
+    // A subcommand is a disjoint operation, not a scan option. Dispatch before
+    // reading scan-mode environment fallback or walking candidate files.
+    if let Some(command) = &cli.command {
+        runtime_cache::compile_rules_file_to_cache(command.rules_path())?;
+        return Ok(0);
+    }
+
     // What:     `cli.rules_path.or_else(|| env::var("...").ok()).unwrap_or_else(...)`
     //           applies the existing rules-path precedence. `Option::or_else`
     //           keeps clap's `Some(path)` when `--rules` was present; otherwise it
@@ -723,6 +732,12 @@ pub fn run_cli_from_env() -> Result<i32> {
             return Ok(2);
         }
     };
+
+    // Cache diagnostics are compact redacted JSON lines. Emit them before any
+    // scan findings so cli-git's mixed-protocol parser sees deterministic order.
+    for warning in loaded.cache_warnings() {
+        eprintln!("{}", warning);
+    }
 
     // What:     `if let Some(listed) = listed_result { match listed { ... } }`.
     //           One-arm pattern match: enter the block ONLY when

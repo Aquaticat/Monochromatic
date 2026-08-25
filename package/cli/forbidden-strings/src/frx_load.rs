@@ -24,8 +24,8 @@ use forbidden_regex::RegexSet;
 /// Imports the std filesystem module used to read the runtime rules file.
 use std::fs;
 
-/// Imports the stage-one frx construction paths (from text and from precompiled bytes).
-use crate::{compile_rules, load_precompiled};
+/// Imports runtime cache module and precompiled builtin construction path.
+use crate::{load_precompiled, runtime_cache};
 
 /// One compiled rule set plus the identity data applied to its findings.
 ///
@@ -49,6 +49,8 @@ pub(crate) struct ScanSet {
 pub struct LoadedRules {
     /// Sets scanned in order: the runtime set first (when present), then the builtin.
     sets: Vec<ScanSet>,
+    /// Redacted cache warnings emitted before findings.
+    cache_warnings: Vec<runtime_cache::CacheWarning>,
 }
 
 /// Reads a value out of a `LoadedRules` for the scan path.
@@ -60,6 +62,11 @@ impl LoadedRules {
     /// builtin findings never collide.
     pub(crate) fn iter_sets(&self) -> impl Iterator<Item = &ScanSet> {
         return self.sets.iter()
+    }
+
+    /// Returns redacted runtime-cache warning records in load order.
+    pub(crate) fn cache_warnings(&self) -> &[runtime_cache::CacheWarning] {
+        return &self.cache_warnings
     }
 }
 
@@ -103,14 +110,17 @@ pub fn load(
     builtin_names: &str,
 ) -> Result<LoadedRules> {
     let mut sets: Vec<ScanSet> = Vec::new();
+    let mut cache_warnings: Vec<runtime_cache::CacheWarning> = Vec::new();
 
-    // Read and compile the runtime rules file. A missing implicit default under
+    // Read and load the runtime rules file. A missing implicit default under
     // `--builtin-rules` is the one tolerated absence; every other failure surfaces.
     let user_rules = match fs::read_to_string(rules_path) {
-        Ok(text) => Some(
-            compile_rules(&text)
-                .map_err(|reason| return anyhow!("rules {}: {}", rules_path, reason))?,
-        ),
+        Ok(text) => {
+            let cache_load = runtime_cache::load_or_compile(rules_path, &text)
+                .map_err(|reason| return anyhow!("rules {}: {}", rules_path, reason))?;
+            cache_warnings = cache_load.warnings;
+            Some(cache_load.compiled)
+        }
         Err(error)
             if builtin_rules
                 && !explicit
@@ -150,7 +160,7 @@ pub fn load(
         sets.push(ScanSet { set, base: next_base, names });
     }
 
-    return Ok(LoadedRules { sets })
+    return Ok(LoadedRules { sets, cache_warnings })
 }
 
 /// Builds a single-set `LoadedRules` from in-memory rule text, for the fuzz targets.
@@ -167,6 +177,7 @@ pub fn load_from_text(text: &str) -> std::result::Result<LoadedRules, crate::Loa
     let compiled = compile_rules(text)?;
     return Ok(LoadedRules {
         sets: vec![ScanSet { set: compiled.set, base: 0, names: compiled.names }],
+        cache_warnings: Vec::new(),
     })
 }
 
