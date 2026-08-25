@@ -66,6 +66,8 @@ await describe({
       '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"continue-with-compiled-rules"}',
       '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"write-failed","recovery":"compile-from-text"}',
       '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text","extra":true}',
+      '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"unknown","reason":"missing","recovery":"compile-from-text"}',
+      '{ "type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}',
     ].map(function invalidCase(line,) {
       return it({
         name: `rejects ${line}`,
