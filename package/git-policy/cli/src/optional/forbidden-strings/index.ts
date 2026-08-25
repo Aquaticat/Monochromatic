@@ -118,6 +118,7 @@ export const forbiddenStringsPlugin: PluginDefinition<
   policies: [forbiddenStringsPolicy,],
 },);
 
+export { parseCacheWarning, } from './cache-warning.ts';
 export { ForbiddenStringsPluginError, } from './errors.ts';
 export { parseScannerOutput, } from './scanner-output.ts';
 export { scanCandidates, } from './scan-candidates.ts';

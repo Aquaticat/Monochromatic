@@ -1725,6 +1725,7 @@ ${await cat(['./AGENTS.md',],)}`,
   },),
 
   ...await Promise.all([
+    'cache-warning.ts',
     'errors.ts',
     'index.ts',
     'materialize-candidates.ts',

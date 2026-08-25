@@ -8,6 +8,7 @@ import type {
   CandidateFile,
   PolicyFinding,
 } from '../../api/index.ts';
+import { parseCacheWarning, } from './cache-warning.ts';
 import { ForbiddenStringsPluginError, } from './errors.ts';
 
 /**
@@ -169,6 +170,9 @@ export function parseScannerOutput({
   return stderr.split('\n',)
     .filter(function isOutputLine(line,): boolean {
       return line.length > 0;
+    },)
+    .filter(function isFindingLine(line,): boolean {
+      return !parseCacheWarning(line,);
     },)
     .map(function toFinding(line,): PolicyFinding {
       if (line.includes(': read error:',) || line.includes(' engine error',))
