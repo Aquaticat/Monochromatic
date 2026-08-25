@@ -20,6 +20,7 @@ import {
   AssemblyContractError,
   footnoteIdentifiers,
   guardFootnoteAssembly,
+  introducedFootnoteFindings,
   introducedStructuralRegressions,
   prepareDocumentPair,
 } from '../dist/final/node/index.mjs';
@@ -742,6 +743,56 @@ On the windowsill there is being a bird.
           .some(function namesBlanketWithdrawal(finding,): boolean {
             return finding.startsWith('assembly-withdrew-every-replacement',);
           },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: introducedFootnoteFindings.name,
+  children: [
+    it({
+      name: 'SPENDS ONE INHERITED DEFECT ON ONE ASSEMBLED DEFECT, so a second duplicate definition of '
+        + 'an identifier the archive already duplicated is still reported, which is what counting '
+        + 'rather than set-differencing was for',
+      fn: async () => {
+        /**
+         * Archive already defining one identifier twice, which is one defect.
+         */
+        const incumbentText = 'Mittens naps.[^1]\n\n[^1]: Since spring.\n\n[^1]: Since the spring.';
+
+        /**
+         * Assembly defining it a third time, which is two defects of that key.
+         */
+        const assembledText =
+          'Mittens naps.[^1]\n\n[^1]: Since spring.\n\n[^1]: Since the spring.\n\n[^1]: Every spring.';
+
+        /**
+         * Defects the assembly added beyond what the archive carried.
+         */
+        const introduced = introducedFootnoteFindings({
+          incumbentText,
+          assembledText,
+        },);
+
+        expect(introduced.length,).toBe(1,);
+        expect(introduced[0]?.kind,).toBe('duplicate-definition',);
+        expect(introduced[0]?.identifier,).toBe('1',);
+      },
+    },),
+    it({
+      name: 'REPORTS NOTHING when the assembly carries exactly the defects the archive already had, '
+        + 'which is the control that makes the case above a count rather than an alarm on any defect',
+      fn: async () => {
+        /**
+         * Same duplicated identifier on both sides, carried through unchanged.
+         */
+        const carried = 'Mittens naps.[^1]\n\n[^1]: Since spring.\n\n[^1]: Since the spring.';
+
+        expect(introducedFootnoteFindings({
+          incumbentText: carried,
+          assembledText: carried,
+        },),).toEqual([],);
       },
     },),
   ],

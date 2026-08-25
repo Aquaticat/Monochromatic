@@ -219,6 +219,8 @@ export {
 } from './markdown-fence.ts';
 export {
   declaredNameForms,
+  type DeclaredNameRefusalReport,
+  declaredNameRefusalReport,
   findDroppedDeclaredNames,
 } from './declared-name-survival.ts';
 export {

@@ -58,6 +58,8 @@ const PATH = 'Whiskerfold.lanes.repair.result';
  *
  * @param selfVote - whether the judge named its own writing
  *
+ * @param reason - what the judge said, which every case but one leaves alone
+ *
  * @returns Ballot as an artifact records one
  *
  * @example
@@ -71,17 +73,19 @@ function ballotOf(
     best,
     weight = 1,
     selfVote = false,
+    reason = 'the tabby paragraph reads more like a cat and less like a filing',
   }: {
     readonly modelId: string;
     readonly best: number;
     readonly weight?: number;
     readonly selfVote?: boolean;
+    readonly reason?: string;
   },
 ): Record<string, unknown> {
   return {
     modelId,
     best,
-    reason: 'the tabby paragraph reads more like a cat and less like a filing',
+    reason,
     weight,
     selfVote,
   };
@@ -330,6 +334,68 @@ await describe({
         expect(perChunk[0]?.length,).toBe(1,);
         expect(perChunk[0]?.[0]?.stage,).toBe('envelope',);
         expect(perChunk[0]?.[0]?.slate.length,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'CARRIES WHAT EACH JUDGE SAID, in its own words and in ballot order, since a standing that '
+        + 'reported a judge name where its reasoning belongs would read as a roster the pipeline never '
+        + 'seated and would say nothing at all about why a candidate won',
+      fn: async () => {
+        /**
+         * Two ballots whose stated reasons differ from each other and from
+         * every other field on them, so no other value can stand in.
+         */
+        const spoken = readRepairRounds({
+          raw: rawOf({
+            chunks: [[
+              roundOf({
+                slate: [
+                  slateOf({
+                    index: 1,
+                    producer: {
+                      kind: 'model',
+                      modelId: SEATED,
+                    },
+                  },),
+                  slateOf({
+                    index: 2,
+                    producer: {
+                      kind: 'model',
+                      modelId: ALSO_SEATED,
+                    },
+                  },),
+                ],
+                ballots: [
+                  ballotOf({
+                    modelId: SEATED,
+                    best: 2,
+                    reason: 'the second keeps the cat in the window where the original leaves her',
+                  },),
+                  ballotOf({
+                    modelId: ALSO_SEATED,
+                    best: 1,
+                    reason: 'the first says whiskers once rather than three times',
+                  },),
+                ],
+              },),
+            ],],
+          },),
+          path: PATH,
+        },);
+
+        /**
+         * Ballots of the only round the only chunk recorded.
+         */
+        const ballots = spoken[0]?.[0]?.ballots ?? [];
+
+        expect(ballots.length,).toBe(2,);
+        expect(ballots[0]?.reason,).toBe(
+          'the second keeps the cat in the window where the original leaves her',
+        );
+        expect(ballots[1]?.reason,).toBe('the first says whiskers once rather than three times',);
+        expect(ballots[0]?.modelId,).toBe(SEATED,);
+        expect(ballots[1]?.modelId,).toBe(ALSO_SEATED,);
       },
     },),
 

@@ -78,6 +78,8 @@ import type {
  * ```ts
  * const phase = await refineSettledSlices({ client, targetText, slices, outcomes, models, signal, perCallTimeoutMs, l, },);
  * ```
+ *
+ * @internal
  */
 export async function refineSettledSlices(
   {

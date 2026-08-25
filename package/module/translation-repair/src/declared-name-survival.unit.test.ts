@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   declaredNameForms,
+  declaredNameRefusalReport,
   findDroppedDeclaredNames,
 } from '../dist/final/node/index.mjs';
 
@@ -187,6 +188,54 @@ await describe({
           baseText: 'Mitte\u0308ns naps.',
           candidateText: 'The cat naps in the sun.',
         },),).toEqual([ 'Mitt\u00EBns', ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: declaredNameRefusalReport.name,
+  children: [
+    it({
+      name: 'NAMES THE FIELD WITH AN EMPTY LIST when nothing was refused, so a reader of a settled '
+        + 'slice never has to tell dropping nothing from nobody writing the field',
+      fn: async () => {
+        /**
+         * Report for a slice where every declared handle survived.
+         */
+        const quiet = declaredNameRefusalReport({
+          sliceIndex: 3,
+          dropped: [],
+        },);
+
+        expect(quiet.record.droppedDeclaredNames,).toEqual([],);
+        expect(quiet.findings,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'CARRIES the refused forms into both the record a reader queries and the finding a '
+        + 'scorecard counts, since a refusal missing from either is one nobody can audit',
+      fn: async () => {
+        /**
+         * Report for a slice whose replacement lost two declared handles.
+         */
+        const refused = declaredNameRefusalReport({
+          sliceIndex: 3,
+          dropped: [
+            'Mittens',
+            'Whiskers',
+          ],
+        },);
+
+        expect(refused.record.droppedDeclaredNames,).toEqual([
+          'Mittens',
+          'Whiskers',
+        ],);
+        expect(refused.findings.length,).toBe(1,);
+        expect(refused.findings[0],).toBe(
+          'translate-refused-declared-name (slice 3: archive text carries "Mittens", "Whiskers" '
+            + 'and the replacement does not; keeping the archive text)',
+        );
       },
     },),
   ],

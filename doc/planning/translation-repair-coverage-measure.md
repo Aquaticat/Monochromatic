@@ -254,6 +254,47 @@ Cases get written against the middle of a function,
 where the interesting behaviour is,
 and the ends go unasserted while still being executed on every run.
 
+## The optional-property spread is a coverage blind spot
+
+Recorded 2026-08-25,
+after tiers sixteen and seventeen and the start of a sixty-round sweep.
+
+Of the seven branches those rounds reported uncovered,
+FOUR are the same shape:
+a value threaded from one layer to the next as an optional property spread into
+an object literal.
+
+-   `refineSettledSlices` forwarding `identityContext` to the refinement phase.
+-   `repairChunk` forwarding `neighbouringSourceText` into the fragment its four
+    stages spread.
+-   `sliceNeighbourContexts` putting the original on the source side and the
+    archive English on the incumbent side, which is the same window read the
+    wrong way round.
+-   `subjectsOf` reading the translate lane's delivery ledger rather than the
+    repair lane's.
+
+TypeScript does not excess-property-check a spread,
+so a layer that forwards nothing compiles and lints,
+and every builder-level test still passes because each hands its builder the
+value by hand.
+The result is a change that looks landed and does nothing,
+which is exactly what `#68`,
+`#107` and `#126` each recorded separately without anyone naming the class.
+
+WHAT A TEST FOR THIS HAS TO DO:
+drive the layer that FORWARDS,
+not the builder that renders,
+and read the assertion off the recorded request rather than off the return
+value.
+`nearby-window-reaches-the-models.unit.test.ts` says so in its own header and
+still cannot see `repairChunk`,
+because it calls the builders directly.
+
+AND IT NEEDS THE ABSENT CASE.
+A layer that pasted the block unconditionally satisfies "the sheet carries it";
+only "a document declaring nothing gets no block at all" separates forwarding
+from hardcoding.
+
 ## What not to do
 
 Do not re-run module reachability with barrel edges counted.

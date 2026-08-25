@@ -52,6 +52,8 @@ import type { RepairTranslationResult, } from './repair-result.ts';
  * ```ts
  * const result = assembleRepair({ targetText, slices, outcomes, lineStructuredSlices, findings, l, },);
  * ```
+ *
+ * @internal
  */
 export function assembleRepair(
   {

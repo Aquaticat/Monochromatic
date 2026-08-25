@@ -338,6 +338,8 @@ export function declaredNameRefusalFinding(
  * ```ts
  * const report = declaredNameRefusalReport({ sliceIndex: 3, dropped, },);
  * ```
+ *
+ * @internal
  */
 export type DeclaredNameRefusalReport = {
   /**
@@ -369,6 +371,8 @@ export type DeclaredNameRefusalReport = {
  * ```ts
  * const { record, findings, } = declaredNameRefusalReport({ sliceIndex, dropped, },);
  * ```
+ *
+ * @internal
  */
 export function declaredNameRefusalReport(
   {
