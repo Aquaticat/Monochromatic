@@ -94,6 +94,7 @@ jobs:
         set -euo pipefail
         rules="$RUNNER_TEMP/forbidden-strings.rules.txt"
         cp forbidden-strings.append.txt "$rules"
+        chmod 600 "$rules"
         if [ -n "$FORBIDDEN_STRINGS_LIST" ]; then
           printenv FORBIDDEN_STRINGS_LIST >> "$rules"
         else
