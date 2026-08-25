@@ -57,6 +57,43 @@ That is the one piece of good news, and it is what makes remediation cheap:
 the exposure is a working branch that has never been merged,
 so rewriting it destroys no shared history.
 
+## Measured again by content rather than by script, 2026-08-25
+
+The Chinese-character count is a floor because the English side of the corpus is in English.
+Measured properly by splitting the whole pinned corpus into sentences
+and searching the repository for each one.
+
+The corpus at the pinned sha holds 92 person entries,
+276 page files across three language variants,
+and 2552 comment files.
+Split on sentence boundaries and de-duplicated, that is 20197 distinct strings.
+
+Of the 10214 strings at least 24 characters long,
+exactly 8 appear anywhere in the 7981 TRACKED files, across 9 files.
+Untracked run logs under `node_modules` and built output carry far more,
+about 50 files, but those are never committed and are not exposure.
+
+Four of the nine are documents already counted.
+The other five are TRACKED SOURCE FILES, and four of those five are false alarms:
+they carry the corpus's own template labels,
+the kind of structural boilerplate a parser has to recognise to do its job,
+which the corpus repeats across dozens of entries.
+
+### One real identifier is in tracked source
+
+`package/module/translation-repair/src/image-reading-sense.ts` carries a real Bilibili account UID
+as the example value in a TSDoc `@example` block for `readingAnchors`.
+
+It is small and it is not prose, but it is a live account identifier for a real person,
+committed to a public repository,
+and any invented number would have served the example identically.
+It is the failure mode the handover rule names:
+quoted because quoting was easier than inventing.
+
+OWED, NOT DONE. Changing it edits `src/`,
+which restamps the pipeline digest and invalidates the running calibration's slice cache,
+so it waits until that run lands.
+
 ## What was believed, and why it was wrong
 
 The working rule recorded across sessions was that corpus text stays out of the repository
