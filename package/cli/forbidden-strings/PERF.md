@@ -9,6 +9,32 @@ Numbers below are not aspirational targets;
  they are reproducible measurements
 against the binary built from this package's `src/`.
 
+## Runtime rule precompilation
+
+Issue #456 measured repeated startup compilation against the same 10,206-rule runtime file and two targets:
+
+```text
+run 1   139.81s
+run 2   139.26s
+```
+
+Those values are issue-author evidence,
+not a measurement reproduced by the current implementation session.
+The runtime cache stores a scanner-version and platform-specific compiled artifact under a per-user content-addressed
+cache slot.
+A cache miss compiles authoritative text and attempts atomic publication;
+a valid hit decodes and validates the artifact without compiling rule patterns.
+
+Acceptance requires separate release-binary measurements for:
+
+- Unchanged-build run-to-run timing variation.
+- First compilation and publication.
+- Repeated validated artifact load.
+- A source-content change that selects a new cache slot.
+- A planted match proving the timed artifact enforces the intended rule.
+
+Do not claim the cache meets the sub-100 ms pre-commit target until those measurements are recorded here.
+
 ## Headline numbers
 
 Cutover re-measure for the `forbidden-regex` engine,
