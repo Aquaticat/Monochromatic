@@ -69,7 +69,7 @@ export const STRAGGLER_GRACE_MS = 180_000;
  *
  * @example
  * ```ts
- * const outcome: RoundOutcome<Wire> = { modelId, voice: { heard: false, }, };
+ * const outcome: RoundOutcome<Wire> = { modelId, voice: { heard: false, answered: false, }, };
  * ```
  */
 export type RoundOutcome<ValueT,> = {
@@ -309,7 +309,12 @@ export async function runGatherRound<ValueT,>(
        */
       const abandoned: RoundOutcome<ValueT> = {
         modelId,
-        voice: { heard: false, },
+        // NOT ANSWERED: this is the straggler window closing on a model that
+        // was still working, which is the one loss a fresh call cannot shorten.
+        voice: {
+          heard: false,
+          answered: false,
+        },
       };
       arrived.set(
         index,
@@ -375,7 +380,11 @@ export async function runGatherRound<ValueT,>(
   ): RoundOutcome<ValueT> {
     return arrived.get(index,) ?? {
       modelId,
-      voice: { heard: false, },
+      // NOT ANSWERED: nothing ever arrived for this position at all.
+      voice: {
+        heard: false,
+        answered: false,
+      },
     };
   },);
 

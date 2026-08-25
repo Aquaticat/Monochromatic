@@ -180,9 +180,39 @@ export async function gatherStageVoices<ValueT,>(
     const collected: HeardVoice<ValueT>[] = [];
 
     /**
+     * Everything a round needs except who to ask and how many to wait for.
+     *
+     * Hoisted so the recovery round below cannot drift from the quorum rounds
+     * above: they differ in exactly two fields, and writing the other ten twice
+     * is how the two would eventually disagree about a deadline or a guard.
+     */
+    const fanOut = {
+      client,
+      messages,
+      signal,
+      exchangeTimeoutMs,
+      ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
+      responseFormat,
+      validate,
+      stage,
+      l,
+      ...((graceMs === undefined) ? {} : { graceMs, }),
+    };
+
+    /**
      * Models still owing a reply.
      */
     let pending: readonly RosterModelId[] = modelIds;
+
+    /**
+     * Models whose last loss was an answer nothing could read, in roster order.
+     *
+     * SEPARATE FROM `pending`, because the two are re-asked for opposite
+     * reasons. A pending model is one quorum still NEEDS. One of these is a
+     * model quorum does not need and whose voice is recoverable anyway, since
+     * it reached the end of its work and only the shape defeated the guard.
+     */
+    let unreadable: readonly RosterModelId[] = [];
     for (let round = 0; round <= maxRetryRounds; round += 1) {
       if (pending.length === 0)
         break;
@@ -200,18 +230,9 @@ export async function gatherStageVoices<ValueT,>(
        * in flight a grace period after quorum abandoned rather than waited on.
        */
       const outcomes = await runGatherRound<ValueT>({
-        client,
+        ...fanOut,
         modelIds: pending,
-        messages,
-        signal,
-        exchangeTimeoutMs,
-        ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
-        responseFormat,
-        validate,
-        stage,
-        l,
         heardNeeded: quorumNeeded - collected.length,
-        ...((graceMs === undefined) ? {} : { graceMs, }),
       },);
       /* oxlint-enable no-await-in-loop */
 
@@ -219,6 +240,11 @@ export async function gatherStageVoices<ValueT,>(
        * Models this round still lost.
        */
       const stillLost: RosterModelId[] = [];
+
+      /**
+       * Models this round lost to an answer nothing could read.
+       */
+      const answeredBadly: RosterModelId[] = [];
       for (const outcome of outcomes) {
         if (outcome.voice
           .heard) {
@@ -230,8 +256,56 @@ export async function gatherStageVoices<ValueT,>(
           continue;
         }
         stillLost.push(outcome.modelId,);
+        if (outcome.voice
+          .answered)
+          answeredBadly.push(outcome.modelId,);
       }
       pending = stillLost;
+      unreadable = answeredBadly;
+    }
+
+    // ONE RECOVERY ROUND, OUTSIDE THE QUORUM LOOP AND AFTER IT.
+    //
+    // The loop above stops the moment quorum stands, which is correct for what
+    // it is for and is why nothing it re-asks has ever been re-asked: measured
+    // over 109 rounds of a ten-model roster on 2026-08-25, the first fan-out
+    // met quorum every time, 1054 voices of 1090 were heard, 31 rounds lost at
+    // least one, and zero retry rounds ran.
+    //
+    // Thirteen of those 36 losses were the model ANSWERING in a shape nothing
+    // could read, spread over 7 distinct slices of 15 with at most 2 on any
+    // one, so no input reliably breaks a model. The other 23 were silence,
+    // which `doc/audit/where-a-round-spends-its-wall-clock.md` measures to be a
+    // model still thinking. Re-asking both would spend the expensive half to
+    // recover the cheap half, so only the answered half is re-asked here.
+    //
+    // ONE ROUND, NEVER A LADDER. A model that formats badly twice is telling us
+    // something about itself rather than about the weather, and the calibration
+    // is what answers that.
+    if (unreadable.length > 0) {
+      l.warn(
+        `${stage}: recovery round for ${String(unreadable.length,)} unreadable answers`,
+      );
+
+      /**
+       * Second reading of the voices that finished but could not be read.
+       */
+      const recovered = await runGatherRound<ValueT>({
+        ...fanOut,
+        modelIds: unreadable,
+        heardNeeded: unreadable.length,
+      },);
+
+      for (const outcome of recovered) {
+        if (outcome.voice
+          .heard) {
+          collected.push({
+            modelId: outcome.modelId,
+            value: outcome.voice
+              .value,
+          },);
+        }
+      }
     }
     return collected;
   })();

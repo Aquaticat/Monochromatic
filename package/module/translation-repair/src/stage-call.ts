@@ -23,7 +23,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * @example
  * ```ts
- * const voice: StageVoice<CriticReportWire> = { heard: false, };
+ * const voice: StageVoice<CriticReportWire> = { heard: false, answered: false, };
  * ```
  */
 export type StageVoice<ValueT,> =
@@ -43,6 +43,20 @@ export type StageVoice<ValueT,> =
      * Voice lost to a non-ok outcome or transport failure.
      */
     readonly heard: false;
+
+    /**
+     * Whether the model finished and only the shape was wrong.
+     *
+     * SEPARATES THE TWO LOSSES THAT LOOK ALIKE AND ARE NOT. `ChatJsonOutcome`
+     * has three kinds and only `ok` is usable, so a non-`ok` outcome carries
+     * `rawText` and means the model got there. A thrown failure, a grace
+     * abandonment and an unfilled roster position all mean it did not.
+     *
+     * `stage-quorum.ts` re-asks on exactly this: a model that finished is worth
+     * one fresh call, and a model still thinking is worth a second timeout on
+     * the critical path to nobody.
+     */
+    readonly answered: boolean;
   };
 
 /**
@@ -213,7 +227,13 @@ export async function attemptStageCall<ValueT,>(
     },);
     if (outcome.kind !== 'ok') {
       l.warn(`${stage} ${modelId}: ${lostVoiceCause({ outcome, },)}, voice lost`,);
-      return { heard: false, };
+
+      // ANSWERED. Every non-`ok` kind carries `rawText`, so the model reached
+      // the end of its work and only the shape defeated the guard.
+      return {
+        heard: false,
+        answered: true,
+      };
     }
     return {
       heard: true,
@@ -225,7 +245,13 @@ export async function attemptStageCall<ValueT,>(
     if (signal.aborted)
       throw error;
     l.warn(`${stage} ${modelId}: ${String(error,)}, voice lost`,);
-    return { heard: false, };
+
+    // NOT ANSWERED. A thrown failure is a transport that never delivered one,
+    // and the client's own ladder has already spent its retries on it.
+    return {
+      heard: false,
+      answered: false,
+    };
   }
 }
 

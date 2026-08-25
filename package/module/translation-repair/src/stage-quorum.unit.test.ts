@@ -51,6 +51,67 @@ function isMeowReply(value: unknown,): value is MeowReply {
 }
 
 /**
+ * Client whose named model throws rather than answering, and records calls.
+ *
+ * SEPARATE FROM {@link flakyClient} BECAUSE THE TWO LOSSES ARE DIFFERENT. That
+ * one returns `schema-mismatch`, which is a model that finished and wrote
+ * something nothing could read. This one never delivers, which is what a
+ * transport failure looks like from here, and it is the loss the recovery round
+ * must leave alone.
+ *
+ * @param silentModel - model that throws on every call
+ *
+ * @param calls - shared call log the test asserts on
+ *
+ * @returns Client honouring that script
+ *
+ * @example
+ * ```ts
+ * const client = silentClient({ silentModel: 'hf:moonshotai/Kimi-K3', calls, },);
+ * ```
+ */
+function silentClient(
+  {
+    silentModel,
+    calls,
+  }: {
+    readonly silentModel: string;
+    readonly calls: Record<string, number>;
+  },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
+
+      if (request.modelId === silentModel)
+        throw new Error('scripted transport failure',);
+
+      /**
+       * Scripted payload for the answering call.
+       */
+      const scripted: unknown = { meow: request.modelId, };
+
+      if (!request.validate(scripted,))
+        throw new Error('scripted payload failed the guard',);
+
+      return {
+        kind: 'ok',
+        value: scripted,
+        rawText: JSON.stringify(scripted,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused',);
+    },
+  };
+}
+
+/**
  * Response format naming the test stage.
  */
 const MEOW_FORMAT: JsonSchemaResponseFormat = {
@@ -253,7 +314,8 @@ await describe({
     },),
 
     it({
-      name: 'stops retrying once quorum is met even with voices still lost',
+      name: 'STOPS RETRYING FOR QUORUM once it stands, and reads an unusable '
+        + 'answer exactly once more, which is two calls and never a third',
       fn: async () => {
         /** Call log shared with the scripted client. */
         const calls: Record<string, number> = {};
@@ -274,9 +336,14 @@ await describe({
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
-        // Quorum (2 of 3) was met after the first round, so the lost
-        // voice is never re-asked.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(1,);
+        // Quorum (2 of 3) was met after the first round, so the quorum loop
+        // never runs a retry round. The one extra call is the recovery round:
+        // this fixture fails with `schema-mismatch`, which means the model
+        // finished and only the shape was wrong, and that is the one loss a
+        // fresh call can fix. Two, never three: the recovery round runs once
+        // whatever it finds, so a model broken all day costs one extra call per
+        // gather rather than a ladder.
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
       },
     },),
 
@@ -483,8 +550,10 @@ await describe({
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(false,);
         expect(gather.findings,).toContain('stage-quorum-unmet (checker 1/3)',);
-        // Initial ask plus every retry round.
-        expect(calls['hf:Qwen/Qwen3.8-27B'],).toBe(4,);
+        // Initial ask, every retry round, and the one recovery round that
+        // follows them: the loop spends its rounds chasing quorum and the
+        // recovery round reads the unusable answers once more regardless.
+        expect(calls['hf:Qwen/Qwen3.8-27B'],).toBe(5,);
       },
     },),
 
@@ -513,13 +582,79 @@ await describe({
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
-        // The whole point: asked once, never re-asked, so a degraded model
-        // costs one deadline per gather rather than four.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(1,);
+        // The whole point: no retry ROUNDS, so a degraded model costs one
+        // deadline per gather rather than four. The second call is the single
+        // recovery read of an answer that came back unusable.
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
         // Met quorum reads as healthy everywhere else, so the shortfall is
         // recorded anyway, both as a ratio and by name.
         expect(gather.findings,).toContain('stage-roster-incomplete (critic 2/3)',);
         expect(gather.findings,).toContain('stage-voice-lost (critic hf:moonshotai/Kimi-K3)',);
+      },
+    },),
+
+    it({
+      name: 'RECOVERS a voice quorum did not need, which is the whole reason the '
+        + 'recovery round exists: the model finished and only its shape was wrong',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Two answer at once, and the third writes one unusable answer first. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({
+            failuresByModel: { 'hf:moonshotai/Kimi-K3': 1, },
+            calls,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'panel',
+          l,
+        },);
+
+        // Quorum (2 of 3) stood after the first round, so the quorum loop was
+        // finished and the old contract would have shipped two voices. The
+        // third is here because the recovery round asked again.
+        expect(gather.voices,).toHaveLength(3,);
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
+
+        // A full roster leaves nothing to report as missing.
+        expect(gather.findings,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES to re-ask a voice that never answered, since a model still '
+        + 'thinking is bought a second deadline and not a second answer',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Two answer at once, and the third never delivers anything. */
+        const gather = await gatherStageVoices({
+          client: silentClient({
+            silentModel: 'hf:moonshotai/Kimi-K3',
+            calls,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'panel',
+          l,
+        },);
+
+        expect(gather.voices,).toHaveLength(2,);
+        expect(gather.quorumMet,).toBe(true,);
+
+        // ASKED ONCE. Quorum stood, so no retry round ran, and the recovery
+        // round skipped this model because it never answered at all.
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(1,);
+        expect(gather.findings,).toContain('stage-voice-lost (panel hf:moonshotai/Kimi-K3)',);
       },
     },),
 
