@@ -1,10 +1,16 @@
 /**
  * Tests for reporting a refusal instead of crashing out of a CLI.
  *
- * THE FORWARDING CASE IS THE ONE THAT CONSTRAINS THE DESIGN. Catching every
- * `Error` would make every case here pass while destroying the stack of a
- * genuine programming fault, so a foreign class is checked to come straight
- * back out.
+ * THE UNEXPECTED-FAULT CASES ARE THE ONES THAT CONSTRAIN THE DESIGN, and they
+ * replaced a forwarding case that pinned the opposite contract. That case
+ * checked a foreign class came straight back out, on the reasoning that
+ * catching every `Error` destroys the stack of a genuine programming fault.
+ *
+ * `#225` showed re-throwing is not neutral: it hands the decision to whatever
+ * prints next, and Node's reporter renders a cause chain, which is how a YAML
+ * refusal published a page's front matter. So everything is caught now, and the
+ * cases below hold both halves at once: the message must NOT be repeated, and
+ * the frames MUST still be there.
  *
  * BOTH SWAPS ARE DISPOSABLE. `process.exitCode` is process-wide, so a case that
  * set it and walked away would decide the whole suite's exit code, and a suite
@@ -44,6 +50,29 @@ const COULD_NOT_READ = 4;
  * Lines a reporting run is expected to print.
  */
 const REPORTED_LINES = 2;
+
+/**
+ * Lines an unexpected fault is expected to print: name, explanation, frames.
+ */
+const FAULT_LINES = 3;
+
+/**
+ * Index of the frames line among those three.
+ */
+const FRAMES_LINE = 2;
+
+/**
+ * Exit code a CLI leaves behind when it broke for a reason nobody planned for.
+ */
+const UNEXPECTED_FAULT = 5;
+
+/**
+ * Message the fault fixture carries, which must never reach a reader.
+ *
+ * Phrased as something a real error could say about content it was handed,
+ * because that is the shape this guard exists for.
+ */
+const FAULT_MESSAGE = 'a tabby walked across Pouncewick';
 
 /**
  * Byte offset the fixture refusal names.
@@ -106,33 +135,6 @@ function holdingExitCode(): Disposable {
 }
 
 /**
- * Runs a body through the reporter and returns whatever came back out.
- *
- * @param run - body expected to throw something the reporter forwards
- *
- * @returns Value that escaped, or a note that nothing did
- *
- * @example
- * ```ts
- * const forwarded = await forwardedFrom({ run, },);
- * ```
- */
-async function forwardedFrom(
-  { run, }: { readonly run: () => Promise<void>; },
-): Promise<unknown> {
-  try {
-    await reportingRefusals({
-      what: 'score-verify',
-      run,
-    },);
-  } catch (error) {
-    return error;
-  }
-
-  return 'returned instead of forwarding';
-}
-
-/**
  * Builds the refusal these cases are reported about.
  *
  * @returns Refusal naming a file, a class and an offset
@@ -173,22 +175,63 @@ await describe({
       },
     },),
     it({
-      name: 'FORWARDS a class this package did not write, so a real fault keeps its stack',
+      name: 'NAMES a class this package did not write, without repeating what it said',
       fn: async () => {
         using held = holdingExitCode();
         using printed = collectingErrors({ lines: [], },);
 
-        /**
-         * What came back out, if anything did.
-         */
-        const forwarded = await forwardedFrom({
+        await reportingRefusals({
+          what: 'score-verify',
           run: async () => {
-            throw new RangeError('a tabby walked across the keyboard',);
+            throw new RangeError(FAULT_MESSAGE,);
           },
         },);
 
-        expect(forwarded instanceof RangeError,).toBe(true,);
-        expect(printed.lines.length,).toBe(0,);
+        expect(process.exitCode,).toBe(UNEXPECTED_FAULT,);
+        expect(printed.lines.length,).toBe(FAULT_LINES,);
+        expect(printed.lines[0],).toBe('score-verify: refused by RangeError',);
+      },
+    },),
+    it({
+      name: 'REFUSES to print the message anywhere, frames line included',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'score-verify',
+          run: async () => {
+            throw new RangeError(FAULT_MESSAGE,);
+          },
+        },);
+
+        /**
+         * Everything the reporter said, as one body to search.
+         */
+        const said = printed.lines.join('\n',);
+
+        expect(said.includes(FAULT_MESSAGE,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'KEEPS the frames, so an unexpected fault stays locatable',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'score-verify',
+          run: async () => {
+            throw new RangeError(FAULT_MESSAGE,);
+          },
+        },);
+
+        /**
+         * Frames as the reporter rendered them.
+         */
+        const frames = printed.lines[FRAMES_LINE] ?? '';
+
+        expect(frames.includes('at ',),).toBe(true,);
       },
     },),
     it({
