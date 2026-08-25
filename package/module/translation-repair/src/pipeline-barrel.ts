@@ -211,6 +211,10 @@ export {
   listCoverageCandidates,
 } from './coverage-candidates.ts';
 export {
+  type NamedSliceSet,
+  validateNamedSets,
+} from './lane-slice-sets.ts';
+export {
   type AlignedRun,
   groupNodesAligned,
 } from './group-aligned.ts';

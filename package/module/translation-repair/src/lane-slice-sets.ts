@@ -19,6 +19,8 @@ import { LaneSliceCoverageError, } from './lane-slice-coverage-error.ts';
 // exemption list becomes a way around the coverage rule.
 
 /**
+ * @internal
+ *
  * One list of slices a lane names, beside what makes the list legal.
  *
  * @example
@@ -212,6 +214,8 @@ function assertArchiveAllows(
 }
 
 /**
+ * @internal
+ *
  * Validates every list a lane names, and refuses any slice on two of them.
  *
  * @param sets - lists to validate, in the order their messages should be tried
