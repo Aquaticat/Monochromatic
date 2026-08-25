@@ -175,6 +175,8 @@ export type RecurrenceDetector = {
 };
 
 /**
+ * @internal
+ *
  * Builds a detector that reports when generated text has begun recurring at
  * a short lag, regardless of the recurring span's length.
  *

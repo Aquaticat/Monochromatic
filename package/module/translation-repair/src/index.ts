@@ -127,7 +127,6 @@ export {
   failureForReply,
   SyntheticRequestTooLargeError,
 } from './request-size-refusal.ts';
-export { extractStreamedCompletion, } from './stream-completion.ts';
 export {
   type BenchmarkEntry,
   type CriticBenchmarkResult,
@@ -237,41 +236,6 @@ export {
   type QuotaSnapshot,
 } from './synthetic-quota.ts';
 export { describeAbandon, } from './abandon-kind.ts';
-export { drainBody, } from './stream-drain.ts';
-export {
-  reportStreamProgress,
-  StreamCutShortError,
-  type StreamOutcome,
-} from './stream-cut.ts';
-export {
-  type DegenerationDetector,
-  type DegenerationVerdict,
-  watchForDegeneration,
-} from './stream-degeneration.ts';
-export {
-  type ChannelDelta,
-  type DeltaScanner,
-  scanStreamDeltas,
-  type StreamChannel,
-} from './stream-delta-scan.ts';
-export {
-  type RunawayVerdict,
-  type RunawayWatch,
-  StreamDegenerateError,
-  watchRunaway,
-} from './stream-runaway-watch.ts';
-export {
-  isSelfEndedStream,
-  StreamOverrunError,
-} from './stream-overrun.ts';
-export {
-  armIdleGuard,
-  type IdleGuard,
-  STREAM_FIRST_BYTE_MS,
-  STREAM_IDLE_MS,
-  type StreamProgress,
-  StreamStalledError,
-} from './stream-idle-guard.ts';
 export {
   fetchTransport,
   type ModelTransport,
@@ -286,6 +250,7 @@ export {
 } from './validate-issue.ts';
 
 export * from './artifact-read-barrel.ts';
+export * from './stream-barrel.ts';
 export * from './assembly-barrel.ts';
 export * from './ballot-barrel.ts';
 export * from './control-barrel.ts';
