@@ -112,7 +112,11 @@ export function assembleTranslation(
   },);
   l.info(
     `translated ${String(settled.length,)} slices (${String(resumedSliceCount,)} resumed): `
-    + `${String(changed.length,)} changed, ${String(refused.length,)} refused on alignment`,
+    // A GUARD rather than ALIGNMENT, which is the name of one of the three
+    // dispositions this count covers and sent a reader looking for an alignment
+    // finding the other two never wrote. Which guard refused which slice is in
+    // the findings, one per refusal, in three shapes.
+    + `${String(changed.length,)} changed, ${String(refused.length,)} refused by a guard`,
   );
 
   /**
