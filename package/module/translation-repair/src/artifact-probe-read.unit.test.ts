@@ -619,6 +619,56 @@ await describe({
     },),
 
     it({
+      name: 'READS AN ABSENT preExisting AS ZERO, which is what every artifact '
+        + 'settled before that outcome existed carries. Every other count here '
+        + 'is required, and requiring this one would make the whole earlier '
+        + 'population unreadable by the same reader that still has to score it. '
+        + 'Zero is what those runs meant rather than a convenience: they '
+        + 'rendered the accepted issues into the prompt, so no claim of theirs '
+        + 'could be dismissed as restating one',
+      fn: async () => {
+        /**
+         * Tally as this fixture builds it, with every count present.
+         */
+        const declared = catTally({ envelopeId: 'envelope/nap', },);
+
+        /**
+         * The same tally with the key gone rather than present and zero, which
+         * is the difference between an older artifact and a current one.
+         */
+        const beforePreExisting = Object.fromEntries(Object
+          .entries(declared,)
+          .filter(function isNotPreExisting([field,],): boolean {
+            return field !== 'preExisting';
+          },),);
+
+        /**
+         * What the reader made of it.
+         */
+        const reading = readArtifactProbe({
+          value: probeArtifact({
+            id: 'Kitten',
+            issues: [
+              catRecord({
+                repairDisposition: 'shipped',
+                introducedDefects: {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [beforePreExisting,],
+                },
+              },),
+            ],
+          },),
+          path: 'Kitten',
+        },);
+
+        expect(reading.readings[0]
+          ?.regions[0]
+          ?.preExisting,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'THROWS on a disposition the pipeline never writes rather than '
         + 'filing it under not-shipped. A typo is not another disposition, it '
         + 'means writer and reader disagree, and quietly excluding the record '
