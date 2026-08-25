@@ -42,7 +42,7 @@ await describe({
     ...[
       '{not-json}',
       '{}',
-      '[]',
+      '{"unexpected":[]}',
       '{"type":"other","schemaVersion":1,"reason":"missing","recovery":"compile-from-text"}',
       '{"type":"forbidden-strings/cache-warning","schemaVersion":2,"reason":"missing","recovery":"compile-from-text"}',
       '{"type":"forbidden-strings/cache-warning","schemaVersion":1,"reason":"unknown","recovery":"compile-from-text"}',
