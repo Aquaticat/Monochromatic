@@ -6,7 +6,10 @@ import {
   alignDocumentSections,
   type ChunkPair,
 } from '../chunk-document.ts';
-import { readCorpusFile, } from '../corpus-source.ts';
+import {
+  type CorpusPin,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
@@ -264,6 +267,9 @@ export function locateSlice(
  *
  * @param manifestPath - sample manifest the positions index into
  *
+ * @param pin - corpus commit to read the pages at, defaulting to the run pin so
+ * nothing production does changes
+ *
  * @returns One case per distinct region, in sample order
  *
  * @throws {@link ArtifactParseError} when a manifest, artifact, or slice lookup
@@ -275,7 +281,13 @@ export function locateSlice(
  * ```
  */
 export async function gatherRelabelCases(
-  { manifestPath, }: { readonly manifestPath: string; },
+  {
+    manifestPath,
+    pin = RUN_CORPUS_PIN,
+  }: {
+    readonly manifestPath: string;
+    readonly pin?: CorpusPin;
+  },
 ): Promise<readonly RelabelCase[]> {
   /**
    * Drawn items, validated and digest-checked against their own contents.
@@ -323,7 +335,7 @@ export async function gatherRelabelCases(
      * Original document at the pinned commit.
      */
     const sourceText = await readCorpusFile({
-      pin: RUN_CORPUS_PIN,
+      pin,
       relPath: `people/${item.entryId}/page.md`,
     },);
 
@@ -331,7 +343,7 @@ export async function gatherRelabelCases(
      * Translation at the same commit.
      */
     const targetText = await readCorpusFile({
-      pin: RUN_CORPUS_PIN,
+      pin,
       relPath: `people/${item.entryId}/page.en.md`,
     },);
 

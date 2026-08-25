@@ -1,7 +1,10 @@
 
 import { readRunJson, } from '../run-json-read.ts';
 import { alignDocumentSections, } from '../chunk-document.ts';
-import { readCorpusFile, } from '../corpus-source.ts';
+import {
+  type CorpusPin,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { parseDocument, } from '../parse-document.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
 import {
@@ -126,6 +129,9 @@ function byLengthDistance<Region extends { readonly before: string; },>(
  *
  * @param damaged - damaged cases, whose envelopes are excluded
  *
+ * @param pin - corpus commit to read the pages at, defaulting to the run pin so
+ * nothing production does changes
+ *
  * @returns Control cases, at most {@link CONTROL_REGIONS_PER_ENTRY} per entry
  *
  * @throws {@link ArtifactParseError} when an artifact or manifest is malformed
@@ -139,9 +145,11 @@ export async function gatherControlCases(
   {
     manifestPath,
     damaged,
+    pin = RUN_CORPUS_PIN,
   }: {
     readonly manifestPath: string;
     readonly damaged: readonly RelabelCase[];
+    readonly pin?: CorpusPin;
   },
 ): Promise<readonly RelabelCase[]> {
   /**
@@ -193,7 +201,7 @@ export async function gatherControlCases(
      * Original document at the pinned commit.
      */
     const sourceText = await readCorpusFile({
-      pin: RUN_CORPUS_PIN,
+      pin,
       relPath: `people/${entryId}/page.md`,
     },);
 
@@ -201,7 +209,7 @@ export async function gatherControlCases(
      * Translation at the same commit.
      */
     const targetText = await readCorpusFile({
-      pin: RUN_CORPUS_PIN,
+      pin,
       relPath: `people/${entryId}/page.en.md`,
     },);
 
