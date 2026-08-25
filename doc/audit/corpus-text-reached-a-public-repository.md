@@ -81,8 +81,35 @@ and may want a support request to purge caches.
 
 Forks and existing clones are unaffected by anything done here.
 
-## What is owed
+## Decided by the owner, 2026-08-25: nothing is removed
 
-A decision from the repository owner, because every path is either
-outward-facing, destructive, or both, and none is an agent's to take unasked.
-Recorded so the decision is made against measurements rather than an impression.
+Asked, and answered the same day:
+exposing corpus text is sometimes fine,
+because the owner is friends with the people who run the site the corpus comes from.
+
+So none of the fifteen files change,
+no history is rewritten,
+the branch is not force-pushed,
+and the repository stays public.
+A later session finding this document should not reopen it.
+The relationship that makes it fine is not visible from inside the repository,
+which is exactly why it is written down here.
+
+### What the decision does not license
+
+The instruction that came with it was to take extra care not to expose more in commits later.
+"Sometimes fine" is permission, not indifference, and it is not retroactive cover
+for adding corpus text without thinking about it.
+
+The rule going forward:
+corpus text goes into a commit only when it carries evidence nothing else can carry,
+only as much of it as the evidence needs,
+and never as a convenience because quoting was easier than naming.
+Prefer the entry id and the slice index.
+Reach for the passage when the point IS the wording,
+as it is where a rendering changed a tense or an aligner paired the wrong headings.
+
+Everything else about handling the corpus stands unchanged:
+it is still read at runtime from the pinned clone,
+still never committed as corpus files,
+and grading sheets and artifacts still live under run directories outside the repository.

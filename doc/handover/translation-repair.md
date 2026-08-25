@@ -1555,3 +1555,56 @@ for want of a duration on the completion line.
 It is worse than that: the per-slice progress lines cannot be placed on a clock
 at all except by leaning on an unrelated line that happens to be timestamped.
 Whatever `#215` adds should cover the progress lines too.
+
+## Corpus text in commits: what the owner decided, and the rule (2026-08-25)
+
+Raised because a sweep found corpus text committed to a PUBLIC repository,
+and the working rule carried across sessions said it should never be there.
+`doc/audit/corpus-text-reached-a-public-repository.md` has the measurements.
+The short version: fifteen documents under `doc/` carry 185 lines of Chinese
+source text, plus English memorial sentences that a script-keyed scan cannot see,
+on `origin/translation-repair-rebased`, none of it on `origin/main`,
+publicly readable since 2026-08-20.
+
+THE OWNER DECIDED NOTHING IS REMOVED.
+Exposing corpus text is sometimes fine, because the owner is friends with the
+people who run the site the corpus comes from.
+So no file changes, no history is rewritten, nothing is force-pushed,
+and the repository stays public.
+A session that rediscovers this must not reopen it, must not offer to scrub it,
+and must not treat it as an incident.
+The relationship that makes it fine is not visible from inside the repository,
+which is why it is written here.
+
+### The rule going forward
+
+The instruction attached to that decision was to take extra care not to expose
+more in commits later.
+Permission is not indifference, and it is not retroactive cover for adding more
+without thinking.
+
+-   Corpus text enters a commit only when it carries evidence nothing else can carry,
+    and only as much of it as the evidence needs.
+    Where a rendering changed a tense, or an aligner paired the wrong headings,
+    the wording IS the finding and quoting it is right.
+    Where the point is a count, a rate, a slice index or a model's behaviour,
+    it is not, and the id and index say it better.
+
+-   Never quote because quoting was easier than naming.
+    That is the failure mode that produced 185 lines:
+    each one was individually defensible and nobody was counting.
+
+-   A document ABOUT the exposure quotes nothing.
+    Naming files and counts is the whole discipline,
+    so an audit that reprints the evidence repeats the fault it records.
+
+-   Everything else about handling the corpus is unchanged.
+    It is read at runtime from the pinned clone by `git show <sha>:<path>`,
+    corpus files are never committed,
+    and artifacts and grading sheets stay under run directories outside the repository.
+
+### Why this is not an `AGENTS.md` rule
+
+Proposed there and declined by the owner as too narrow to be worth a repo-wide
+shortcode: it is a rule about one corpus, in one package, under one relationship.
+It belongs where the people working on that package will read it.
