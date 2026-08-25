@@ -9,6 +9,7 @@ import {
   type GradedItem,
   parseGradedSheet,
 } from '../grade-sheet-read.ts';
+import { readRunJson, } from '../run-json-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Score verify
@@ -67,10 +68,7 @@ async function readVerifyManifest(
    * Manifest as a record.
    */
   const manifest = requireRecord({
-    value: JSON.parse(await readFile(
-      path,
-      'utf8',
-    ),),
+    value: await readRunJson({ path, },),
     path: 'verify manifest',
   },);
 

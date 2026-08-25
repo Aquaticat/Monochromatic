@@ -2,6 +2,7 @@ import type {
   GradedItem,
   GradeVerdict,
 } from './grade-sheet-read.ts';
+import { parseRunJson, } from './run-json-read.ts';
 import { isJsonRecord, } from './json-guard.ts';
 
 //region Grade agreement
@@ -163,7 +164,10 @@ export function parsePreGrades(
   /**
    * Raw parsed file, untyped until checked.
    */
-  const raw: unknown = JSON.parse(text,);
+  const raw: unknown = parseRunJson({
+    text,
+    from: 'pre-grades file',
+  },);
   if (!Array.isArray(raw,))
     throw new Error('pre-grades file must hold an array of graded items.',);
 

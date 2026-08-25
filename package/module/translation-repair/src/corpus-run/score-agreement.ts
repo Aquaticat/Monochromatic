@@ -8,6 +8,7 @@ import {
   scoreGradeAgreement,
   scoreGradedPrecision,
 } from '../grade-agreement.ts';
+import { parseRunJson, } from '../run-json-read.ts';
 import { parseGradedSheet, } from '../grade-sheet-read.ts';
 import { readSheetIdentity, } from '../repair-grade-read.ts';
 import { DEFAULT_SAMPLE_SEED, } from '../sample-grading.ts';
@@ -246,7 +247,12 @@ async function reportGrades(): Promise<void> {
      */
     const binding = assertSheetMatchesManifest({
       identity,
-      manifest: parseSampleManifest({ value: JSON.parse(manifest.text,), },),
+      manifest: parseSampleManifest({
+        value: parseRunJson({
+          text: manifest.text,
+          from: 'sample manifest',
+        },),
+      },),
       sheetLabel: 'detection sheet',
     },);
     if (binding === 'header-only')

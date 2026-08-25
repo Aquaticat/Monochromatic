@@ -9,6 +9,7 @@ import {
   requireString,
 } from '../artifact-guard.ts';
 
+import { readRunJson, } from '../run-json-read.ts';
 import { repeatBandOf, } from './rendering-audit-settled-band.ts';
 import {
   printBand,
@@ -82,10 +83,7 @@ async function readRunRows(
    * Run as written.
    */
   const run = requireRecord({
-    value: JSON.parse(await readFile(
-      path,
-      'utf8',
-    ),),
+    value: await readRunJson({ path, },),
     path,
   },);
 

@@ -1,5 +1,5 @@
-import { readFile, } from 'node:fs/promises';
 
+import { readRunJson, } from '../run-json-read.ts';
 import { alignDocumentSections, } from '../chunk-document.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { parseDocument, } from '../parse-document.ts';
@@ -148,10 +148,7 @@ export async function gatherControlCases(
    * Drawn items, validated against their own contents.
    */
   const manifest = parseSampleManifest({
-    value: JSON.parse(await readFile(
-      manifestPath,
-      'utf8',
-    ),),
+    value: await readRunJson({ path: manifestPath, },),
   },);
 
   /**

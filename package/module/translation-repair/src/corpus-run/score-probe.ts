@@ -1,6 +1,7 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { readRunJson, } from '../run-json-read.ts';
 import { readArtifactProbe, } from '../artifact-probe-read.ts';
 import {
   type ProbeAgreementItem,
@@ -93,15 +94,12 @@ async function gatherReadings(
    */
   const perEntry = await Promise.all(names.map(async function toReading(name,) {
     return readArtifactProbe({
-      value: JSON.parse(
-        await readFile(
-          join(
-            artifactsDir,
-            name,
-          ),
-          'utf8',
+      value: await readRunJson({
+        path: join(
+          artifactsDir,
+          name,
         ),
-      ),
+      },),
       path: name,
     },);
   },),);
@@ -273,12 +271,7 @@ async function main(): Promise<void> {
    * Draw manifest, the only record of which issue sat at which position.
    */
   const manifest = parseSampleManifest({
-    value: JSON.parse(
-      await readFile(
-        joinPaths.manifest,
-        'utf8',
-      ),
-    ),
+    value: await readRunJson({ path: joinPaths.manifest, },),
   },);
 
   /**

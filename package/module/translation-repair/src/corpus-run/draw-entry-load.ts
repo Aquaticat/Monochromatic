@@ -1,7 +1,7 @@
-import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 
+import { readRunJson, } from '../run-json-read.ts';
 import { parseSettledArtifact, } from '../artifact-read.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { isJsonRecord, } from '../json-guard.ts';
@@ -98,13 +98,12 @@ export async function loadEntry(
   /**
    * Raw artifact JSON, untyped until parsed.
    */
-  const raw: unknown = JSON.parse(await readFile(
-    join(
+  const raw: unknown = await readRunJson({
+    path: join(
       artifactsDir,
       name,
     ),
-    'utf8',
-  ),);
+  },);
 
   /**
    * Parsed accepted issues for this entry.

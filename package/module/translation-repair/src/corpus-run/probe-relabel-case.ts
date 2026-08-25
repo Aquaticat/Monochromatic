@@ -1,5 +1,5 @@
-import { readFile, } from 'node:fs/promises';
 
+import { readRunJson, } from '../run-json-read.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import {
@@ -279,10 +279,7 @@ export async function gatherRelabelCases(
    * Drawn items, validated and digest-checked against their own contents.
    */
   const manifest = parseSampleManifest({
-    value: JSON.parse(await readFile(
-      manifestPath,
-      'utf8',
-    ),),
+    value: await readRunJson({ path: manifestPath, },),
   },);
 
   /**

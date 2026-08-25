@@ -1,5 +1,5 @@
-import { readFile, } from 'node:fs/promises';
 
+import { readRunJson, } from '../run-json-read.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import {
   ArtifactParseError,
@@ -376,10 +376,7 @@ export async function readArtifactRecords(
    * artifact for carrying no issues at all.
    */
   const { issues, } = repairLaneRecordsOf({
-    value: JSON.parse(await readFile(
-      `${dir}/artifacts/${entryId}.json`,
-      'utf8',
-    ),),
+    value: await readRunJson({ path: `${dir}/artifacts/${entryId}.json`, },),
     path: `artifact ${entryId}`,
   },);
 

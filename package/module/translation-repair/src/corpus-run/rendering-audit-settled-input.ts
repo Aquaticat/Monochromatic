@@ -17,6 +17,7 @@ import {
   prepareDocumentPair,
   type PreparedDocumentPair,
 } from '../document-preparation.ts';
+import { readRunJson, } from '../run-json-read.ts';
 import { verifyArtifactAgainstPreparation, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
@@ -244,14 +245,13 @@ export async function readArtifactSubjects(
   /**
    * Artifact as written, untyped until parsed.
    */
-  const raw: unknown = JSON.parse(await readFile(
-    join(
+  const raw: unknown = await readRunJson({
+    path: join(
       archiveDir,
       runSetDir,
       artifactFile,
     ),
-    'utf8',
-  ),);
+  },);
 
   /**
    * Artifact checked against the version 2 read contract.

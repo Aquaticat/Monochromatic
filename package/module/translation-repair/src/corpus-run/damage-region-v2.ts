@@ -1,5 +1,5 @@
-import { readFile, } from 'node:fs/promises';
 
+import { readRunJson, } from '../run-json-read.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
@@ -356,10 +356,7 @@ export async function collectTwoLaneShippedRegions(
      * here rather than assumed.
      */
     const artifact = parseSettledTwoLaneArtifact({
-      value: JSON.parse(await readFile(
-        `${artifactsDir}/${file}`,
-        'utf8',
-      ),),
+      value: await readRunJson({ path: `${artifactsDir}/${file}`, },),
     },);
 
     /**

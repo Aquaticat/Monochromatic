@@ -201,6 +201,49 @@ async function textOf(
 }
 
 /**
+ * Parses run-directory JSON already held as text.
+ *
+ * SEPARATE FROM THE READ because two callers hold the text before this module
+ * sees it: a pre-grade file and a sample manifest are both read through a
+ * lookup that reports whether they were found. They need the same refusal, and
+ * copying it would have put the rule in three places.
+ *
+ * @param text - file contents, which are never quoted back
+ *
+ * @param from - what to call it in a refusal, a file name or a short label
+ *
+ * @returns Parsed value, of unknown shape for a caller's parser to check
+ *
+ * @throws {@link RunJsonUnreadableError} where the text is not JSON
+ *
+ * @example
+ * ```ts
+ * const value = parseRunJson({ text, from: 'sample manifest', },);
+ * ```
+ */
+export function parseRunJson(
+  {
+    text,
+    from,
+  }: {
+    readonly text: string;
+    readonly from: string;
+  },
+): unknown {
+  try {
+    return JSON.parse(text,) as unknown;
+  } catch (error) {
+    throw new RunJsonUnreadableError({
+      file: from,
+      failure: errorName({ error, },),
+      at: Error.isError(error,)
+        ? offsetIn({ message: error.message, },)
+        : OFFSET_UNSTATED,
+    },);
+  }
+}
+
+/**
  * Reads and parses one JSON file from a run directory.
  *
  * USE THIS RATHER THAN `JSON.parse` ON A RUN FILE. A bare parse that reaches
@@ -225,17 +268,10 @@ export async function readRunJson(
    */
   const text = await textOf({ path, },);
 
-  try {
-    return JSON.parse(text,) as unknown;
-  } catch (error) {
-    throw new RunJsonUnreadableError({
-      file: basename(path,),
-      failure: errorName({ error, },),
-      at: Error.isError(error,)
-        ? offsetIn({ message: error.message, },)
-        : OFFSET_UNSTATED,
-    },);
-  }
+  return parseRunJson({
+    text,
+    from: basename(path,),
+  },);
 }
 
 //endregion Run JSON read

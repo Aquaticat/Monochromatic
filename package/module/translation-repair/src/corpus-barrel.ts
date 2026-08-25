@@ -197,6 +197,7 @@ export {
 } from './corpus-run/markup-slice.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 export {
+  parseRunJson,
   readRunJson,
   RunJsonUnreadableError,
 } from './run-json-read.ts';
