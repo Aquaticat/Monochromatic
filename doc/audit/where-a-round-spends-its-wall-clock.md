@@ -375,3 +375,82 @@ WHAT IS LEFT TO TRY, none of which touches a request parameter:
 -   DROP a seat that loses voices repeatedly. The owner has already authorised dropping
     models that are exceptionally bad, and `qwen3.8-max` plus `hf:zai-org/GLM-5.2`
     are most of every cut list measured so far.
+
+## The re-ask exists, is gated on quorum, and has never run (`#230`, 2026-08-25)
+
+`#230` was opened on the belief that production never re-asks a malformed answer
+while `benchmark.ts` does.
+Reading `stage-quorum.ts` corrects it in the more troubling direction:
+production has the re-ask, and the reason nobody has seen it work is that it never fires.
+
+`gatherStageVoices` loops rounds and re-asks only the models the previous round lost,
+which is the right shape.
+It breaks on:
+
+```ts
+if ((round > 0) && (collected.length >= quorumNeeded))
+  break;
+```
+
+Quorum is half the roster rounded up.
+The roster is ten, so quorum is five,
+and the first fan-out has met it on every round measured.
+
+### Counted on the calibration in flight, fifteen slices in
+
+```text
+109 rounds, roster of 10 on every one
+1054 voices heard of 1090 asked
+31 rounds lost at least one voice
+0 retry rounds fired
+```
+
+Thirty-six voices lost and not one re-asked.
+That is worse than having no mechanism:
+`stage-quorum.ts` tells a reader that lost voices are retried, and they are not.
+
+### The benchmark's predicate would have recovered none of them
+
+`isTruncatedAttempt` fires on three detail markers and on a completion count
+at the 65536 ceiling.
+Every one of those four strings appears zero times in the run log,
+so lifting that predicate into production recovers nothing here.
+The option is refuted on data rather than argued against.
+
+### Two populations, and they behave oppositely
+
+Of the 36:
+
+-   13 are the model ANSWERING in a shape nothing could use,
+    6 `MalformedCompletionError`, 4 `schema-mismatch` and 3 `SyntaxError`.
+    They spread over 7 distinct slices of the 15 seen, at most 2 on any one,
+    so no input reliably breaks a model.
+    Ten of the thirteen belong to two models:
+    `gemma-4-26b-a4b-it` seven, five of them at the panel stage,
+    and `qwen3.8-max` three.
+-   23 are silence, which is a model still thinking.
+    That is the finding this document already carries for the straggler window.
+
+Re-asking both spends the expensive half to recover the cheap half.
+A silent voice re-asked buys a second timeout on the critical path;
+an unusable answer re-asked buys a fresh call to a model that already finished.
+
+### The split is exact, not a heuristic
+
+`ChatJsonOutcome` has three kinds and only `ok` is usable,
+so "the model answered and we could not read it" is decidable at the call site:
+
+-   a non-`ok` outcome carries `rawText`, so the model finished;
+-   a thrown failure, a grace abandonment and an unfilled roster position
+    all mean it never got there.
+
+### What is decided, and what is still owed
+
+Decided: re-ask once, after quorum, only a voice that answered unusably.
+Owed: the recovery rate, which cannot be measured until a run carries the change.
+The spread across slices is consistent with per-call independence;
+that is a reason to expect recovery, not a measurement of it.
+
+One more thing the same log shows:
+a single `StreamCutShortError`, on a bundle built before `#228` landed.
+The defect `#228` fixed was live in production, once in 1090 calls.
