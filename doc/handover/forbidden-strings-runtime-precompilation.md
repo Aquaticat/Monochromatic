@@ -431,6 +431,10 @@ Current commits:
   content changes,
   write failures,
   and unavailable native cache roots.
+- `ca331e7a5` rejects noncanonical inner engine bytes and removes invalid warning-pair construction.
+- `8720834a9` preserves missing-versus-unreadable read races and separates publication errors from envelope errors.
+- `2203dc6a9` verifies that cli-git accepts a clean exit carrying a first-miss cache warning.
+- `b800bd9f5` applies mode `0600` to CI's secret-bearing runtime text.
 
 The implementation uses focused modules under
 `package/cli/forbidden-strings/src/runtime_cache/`:
@@ -453,13 +457,14 @@ Verification is in progress.
   including its build-time baseline compile.
 - Scanner Rust linter passed after documenting the digest tuple field and Unix permission imports.
 - Scanner Clippy passed after restricting test-only warning accessors and renaming the configured command factory.
-- The first scanner test run passed all 147 then-existing tests in 20.374 seconds after compilation.
-  Additional recovery integration tests landed afterward and still need the final versioned rerun.
+- The `0.4.0` scanner test run passed all 154 tests in 21.189 seconds after compilation.
+  A post-review rerun is pending after the final read-race and canonical-envelope fixes.
 - Git-policy build,
   `lint:types`,
   Oxlint with zero findings,
   and unit tests pass.
-- The real git-policy integration test now parses a cache-miss JSON warning and runtime finding from the release scanner.
+- Real git-policy integration tests parse a cache-miss JSON warning with a runtime finding and accept the warning on a
+  clean scanner exit.
 - A first attempt to scope root Oxlint by appending `file-enforcer.config.ts` to `mise run lint:oxlint` failed in mise's
   inline task parser;
   it did not execute Oxlint and is not a source-code verdict.
@@ -467,9 +472,18 @@ Verification is in progress.
 - The `0.4.0` version bump and CLI help update are in the working tree.
   Package `cargo check` is regenerating the lock and rebuilding with that version.
 
+The first `lint:fuzzing` run exposed a feature-gated missing import in `frx_load.rs` after 509 seconds of baseline
+compilation.
+`8720834a9` restores the conditional import;
+the rerun passed.
+Post-review package check and Rust linter also pass.
+Final Clippy is currently rebuilding the baseline.
+
 Performance measurement,
 full file-enforcer execution,
-final versioned tests,
+dependent lockfile regeneration,
+fuzz-target build,
+post-review tests,
 and the closing commit remain.
 
 ## Candidate implementation scope
@@ -590,9 +604,10 @@ TypeScript changes require the package `lint:types` task in addition to tests an
 
 ## Next action
 
-Collect the `0.4.0` package-check verdict and generated lockfile change.
-Build and test the release artifact again under the final version,
-then run file-enforcer through its eager compile path.
+Collect final Clippy and post-review test verdicts.
+Run file-enforcer through its eager compile path against a disposable cache root,
+then rebuild the bundled cli-git mirror consumer.
+Regenerate fuzz and bench dependent lockfiles and build the new envelope fuzz target.
 Measure disposable large-rule cache miss and hit paths under resource isolation,
 record results in `PERF.md`,
 and finish the closing commit with `Closes #456`.
