@@ -174,7 +174,7 @@ async function captureRuntimeCacheMissStderr({
   /**
    * Environment isolating runtime cache and repository-level rules override.
    */
-  const environment = {
+  const environment: NodeJS.ProcessEnv = {
     ...process.env,
     FORBIDDEN_STRINGS_CACHE_DIR: cacheRoot,
   };
