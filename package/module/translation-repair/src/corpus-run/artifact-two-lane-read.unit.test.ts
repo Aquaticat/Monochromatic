@@ -762,6 +762,42 @@ await describe({
     },),
     it({
       name:
+        'REFUSES A THIRD LANE on the lanes record itself, which the envelope case above cannot reach: '
+        + 'that one pins the keys INSIDE a lane, and this shape names exactly two lanes, so a file '
+        + 'recording a third lane`s deliveries would otherwise be read as an ordinary two-lane '
+        + 'artifact with one lane`s work silently dropped',
+      fn: async () => {
+        /**
+         * What thirdLane raised, read for its class as well as its wording.
+         */
+        const refusalOfThirdLane = caught(function thirdLane() {
+          parseSettledTwoLaneArtifact({
+            value: artifactWith({
+              lanes: {
+                repair: {
+                  result: repairResult(),
+                  delivery: repairLedger(),
+                },
+                translate: {
+                  result: translateResult(),
+                  delivery: translateLedger(),
+                },
+                consolidate: {
+                  result: repairResult(),
+                  delivery: repairLedger(),
+                },
+              },
+            },),
+          },);
+        },);
+
+        expect(refusalOfThirdLane,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfThirdLane as Error).message,).toContain('lanes.consolidate',);
+        expect((refusalOfThirdLane as Error).message,).toContain('no key here beyond repair, translate',);
+      },
+    },),
+    it({
+      name:
         'REFUSES a nested `null` in the call configuration and ACCEPTS one in an unknown raw addition: '
         + 'the writer controls every byte of the first and leaves an unset key out, and controls none of '
         + 'the second',
