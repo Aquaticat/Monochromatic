@@ -1,6 +1,7 @@
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Settled rendering audit arguments
@@ -71,17 +72,50 @@ export type AuditArguments = {
 };
 
 /**
+ * What a flag carried, or that nobody wrote it.
+ *
+ * NAMED RATHER THAN LEFT NULLISH because the two answers lead to opposite
+ * behaviour one line later: an unwritten flag takes a default, and a written
+ * one that carries nothing is a typo this refuses. A nullish union puts both
+ * behind the same check and invites the collapse that was the defect here.
+ */
+type FlagValue = {
+  readonly kind: 'written';
+
+  /**
+   * What was written after the flag.
+   */
+  readonly value: string;
+} | { readonly kind: 'unwritten'; };
+
+/**
+ * Marker every flag here starts with, so a missing value is distinguishable
+ * from the next flag standing where a value should be.
+ */
+const FLAG_PREFIX = '--';
+
+/**
  * Reads a value written after a named flag.
+ *
+ * ABSENT AND EMPTY ARE DIFFERENT ANSWERS, and collapsing them is what this
+ * function used to do. Both came back as the empty string, which every caller
+ * then read as "not asked for", so `--cap` written at the end of the line
+ * bought everything and `--only` written at the end audited everything. Those
+ * are the opposite of what the person typing them asked for, and neither said
+ * a word about it.
  *
  * @param args - arguments after the script path
  *
  * @param flag - flag to look for
  *
- * @returns Value written after it, empty when the flag is absent
+ * @returns Value written after it, or that the flag itself was not written
+ *
+ * @throws StatedRefusalError when the flag was written with nothing usable
+ * after it
  *
  * @example
  * ```ts
- * const capText = valueAfter({ args, flag: '--cap', },);
+ * const asked = valueAfter({ args, flag: '--cap', },);
  * ```
  */
 function valueAfter(
@@ -92,14 +126,121 @@ function valueAfter(
     readonly args: readonly string[];
     readonly flag: string;
   },
-): string {
+): FlagValue {
   /**
    * Where the flag was written.
    */
   const at = args.indexOf(flag,);
   if (at === FLAG_ABSENT)
-    return '';
-  return args[at + 1] ?? '';
+    return { kind: 'unwritten', };
+
+  /**
+   * What was written after it, empty when the flag ended the line.
+   */
+  const written = args[at + 1] ?? '';
+
+  if ((written === '') || written.startsWith(FLAG_PREFIX,))
+    throw new StatedRefusalError({
+      says: `${flag} needs a value written after it`,
+    },);
+
+  return {
+    kind: 'written',
+    value: written,
+  };
+}
+
+/**
+ * Reads how many subjects this run may buy.
+ *
+ * A CAP THAT IS NOT A NUMBER USED TO BUY NOTHING IN SILENCE. `capped` in
+ * `rendering-audit-settled.ts` returns every subject when the cap is negative
+ * and `slice(0, cap)` otherwise. `Number('once')` is `NaN`, `NaN < 0` is false
+ * and `slice(0, NaN)` is empty, so a mistyped cap audited zero subjects and
+ * reported a clean run over the whole archive.
+ *
+ * @param args - arguments after the script path
+ *
+ * @returns Cap as asked, or every subject when none was asked for
+ *
+ * @throws StatedRefusalError when a cap was named that is not a whole number
+ *
+ * @example
+ * ```ts
+ * const cap = readCap({ args, },);
+ * ```
+ */
+function readCap(
+  { args, }: { readonly args: readonly string[]; },
+): number {
+  /**
+   * Cap as written, absent when none was named.
+   */
+  const capText = valueAfter({
+    args,
+    flag: '--cap',
+  },);
+  if (capText.kind === 'unwritten')
+    return NO_CAP;
+
+  /**
+   * Cap as a whole number, which a mistyped one is not.
+   */
+  const asked = Math.trunc(Number(capText.value,),);
+
+  if (!Number.isFinite(asked,))
+    throw new StatedRefusalError({
+      says: `--cap needs a whole number, and ${capText.value} is not one`,
+    },);
+
+  return asked;
+}
+
+/**
+ * Reads which entries this run may audit.
+ *
+ * @param args - arguments after the script path
+ *
+ * @returns Entries named, empty when every entry was asked for
+ *
+ * @throws StatedRefusalError when `--only` was written naming no entry
+ *
+ * @example
+ * ```ts
+ * const onlyIds = readOnlyIds({ args, },);
+ * ```
+ */
+function readOnlyIds(
+  { args, }: { readonly args: readonly string[]; },
+): readonly string[] {
+  /**
+   * Entries as written, comma separated, absent when none were named.
+   */
+  const onlyText = valueAfter({
+    args,
+    flag: '--only',
+  },);
+  if (onlyText.kind === 'unwritten')
+    return [];
+
+  /**
+   * Entries the text actually names, dropping the gaps a stray comma leaves.
+   */
+  const named = onlyText
+    .value
+    .split(',',)
+    .filter(function isNamed(id,): boolean {
+      return id !== '';
+    },);
+
+  // A separator with no id beside it names nobody, and returning it empty
+  // would read as "every entry" one line later.
+  if (named.length === 0)
+    throw new StatedRefusalError({
+      says: `--only needs at least one entry id, and ${onlyText.value} names none`,
+    },);
+
+  return named;
 }
 
 /**
@@ -109,6 +250,8 @@ function valueAfter(
  * without a subprocess
  *
  * @returns Archive, clone, entry filter and cap
+ *
+ * @throws StatedRefusalError when a flag was written without a usable value
  *
  * @example
  * ```ts
@@ -124,15 +267,7 @@ export function readAuditArguments(
   const args = argv.slice(2,);
 
   /**
-   * Cap as written, when one was named.
-   */
-  const capText = valueAfter({
-    args,
-    flag: '--cap',
-  },);
-
-  /**
-   * Archive as written, when one was named.
+   * Archive as written, absent when none was named.
    */
   const archiveText = valueAfter({
     args,
@@ -140,30 +275,18 @@ export function readAuditArguments(
   },);
 
   /**
-   * Clone as written, when one was named.
+   * Clone as written, absent when none was named.
    */
   const cloneText = valueAfter({
     args,
     flag: '--clone',
   },);
 
-  /**
-   * Entries named after `--only`, comma separated.
-   */
-  const onlyIds = valueAfter({
-    args,
-    flag: '--only',
-  },)
-    .split(',',)
-    .filter(function isNamed(id,): boolean {
-      return id !== '';
-    },);
-
   return {
-    archiveDir: (archiveText === '') ? DEFAULT_ARCHIVE_DIR : archiveText,
-    cloneDir: (cloneText === '') ? RUN_CORPUS_PIN.cloneDir : cloneText,
-    onlyIds,
-    cap: (capText === '') ? NO_CAP : Math.trunc(Number(capText,),),
+    archiveDir: (archiveText.kind === 'written') ? archiveText.value : DEFAULT_ARCHIVE_DIR,
+    cloneDir: (cloneText.kind === 'written') ? cloneText.value : RUN_CORPUS_PIN.cloneDir,
+    onlyIds: readOnlyIds({ args, },),
+    cap: readCap({ args, },),
   };
 }
 
