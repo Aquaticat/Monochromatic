@@ -343,3 +343,35 @@ on repeated calls, against ballots the pipeline already trusts.
 The Charm Hyper half is unprobed: its docs say only that "all standard Anthropic
 parameters are accepted" without naming `thinking`, and the key for it is not in
 this session's environment.
+
+### The owner ruled the parameter out, so the lever is closed
+
+2026-08-25, mid-investigation:
+"Please don't set any thinking parameter or budget tokens."
+
+Read broadly, since `reasoning_effort` is documented by the provider as
+"Control reasoning effort for thinking models" and is the same lever under another name.
+The pipeline sets none of these and will not.
+The probe scripts were discarded; nothing in `src` ever carried them,
+which a search for `reasoning_effort`, `reasoningEffort`, `budget_tokens` and `thinking:`
+confirms returns nothing.
+
+The measurements above stay because they are about the pipeline rather than about the lever:
+18 of 19 cut streams had produced no content, raw volume separates nothing,
+and a reasoning bound cannot separate the populations.
+What changes is where those facts point.
+
+WHAT IS LEFT TO TRY, none of which touches a request parameter:
+
+-   LENGTHEN the window rather than shorten it. `#214` measured only the cost of
+    shortening. A voice lost while still thinking is a voice a longer window might hear,
+    and nobody has measured what a 240s or 300s window would recover.
+    The honest limit: a cut stream never finished, so the log cannot say when it would have,
+    and only a run with a longer window can answer it.
+
+-   RE-ASK the lost seat, which several stages already do for other refusal kinds,
+    rather than counting the round complete without it.
+
+-   DROP a seat that loses voices repeatedly. The owner has already authorised dropping
+    models that are exceptionally bad, and `qwen3.8-max` plus `hf:zai-org/GLM-5.2`
+    are most of every cut list measured so far.
