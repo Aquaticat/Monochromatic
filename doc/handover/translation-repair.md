@@ -20198,8 +20198,8 @@ branches  code lines  exports  module
       12         127        2  translate-skeleton.ts                  DONE
       12         121        2  corpus-run/artifact-placement.ts       DONE
       12         118        5  corpus-run/artifact-v2-project.ts      DONE
-      11         237        3  corpus-run/artifact-v2-read-consolidate-parts.ts
-       9          66        1  stream-recurrence-watch.ts
+      11         237        3  corpus-run/artifact-v2-read-consolidate-parts.ts  DONE
+       9          66        1  stream-recurrence-watch.ts             DONE
        9         250        1  refine-slice-settle.ts
        8          91        1  translate-retry.ts
        8         122        1  fidelity-splice.ts
@@ -20268,6 +20268,31 @@ Mutation M aliased `undecidedLanes` instead of copying it.
 ONE failure, the new case, and nothing else:
 the artifact outlives the run, and a reader mutating what it read would have reached back into the builder's own comparison.
 
+`corpus-run/artifact-v2-read-consolidate-parts.ts`, commit `caf4ca0f2`.
+Mutation N let text ship from a slice that settled on no change,
+and mutation O read the ballot evidence lists as prose rather than as rendering names;
+`parseConsolidationV2` already covered both, which is the honest result.
+Mutation P let an unchanged slice carry text it does not ship.
+ONE failure, the new case, and nothing else.
+
+`stream-recurrence-watch.ts`, commit `670a552d6`.
+THE STRONGEST RESULT IN THIS TIER, and the one that came from measuring rather than reading.
+The runaway watch's own tests already prove this detector's headline claims,
+so a duplicate file would have restated them.
+Before writing anything, two diagnostic mutations asked what the suite actually defends:
+setting the consecutive-hit threshold to 1 was caught,
+and REMOVING THE TRAILING-BUFFER TRIM LEFT THE WHOLE SUITE GREEN.
+
+That trim is a correctness rule, not an optimisation.
+It decides how far apart two copies of a passage may be before the earlier one stops counting.
+A reasoning trace in this pipeline restates whole candidates verbatim,
+so one quoted near the start and again near the end is ordinary work,
+and without the trim the early copy stays findable forever
+and the second quotation reads as a loop that kills a healthy voice.
+The new case is exactly that pair of distant quotations,
+and re-running the same mutation after it landed produced one failure:
+the new case, and nothing else.
+
 ### A runner behaviour worth knowing before reading any of this
 
 A failing `await describe(...)` REJECTS, and a rejected top-level await ends the module.
@@ -20277,16 +20302,28 @@ they may not have executed.
 Read a GFP result as "these cases fired", never as "only these cases were affected",
 unless the failing suite is the last one in its file.
 
-### Suite size across the seven landings
+### Two barrels split on the way
+
+Adding `@internal` exports so the tests could reach the shipped bundle
+pushed two files past the 300-line budget, and both were split by audience rather than shortened.
+`corpus-barrel.ts` gave up the version 2 READER family to `artifact-read-barrel.ts`,
+leaving 252 lines against 52.
+`index.ts` gave up the stream-watching family to `stream-barrel.ts`,
+leaving 265 against 41.
+`index.ts` composes both, so no importer sees either seam.
+
+### Suite size across the nine landings
 
 636 suite verdicts before `#209`,
-648 after the seventh,
+652 after the ninth,
 with exit code 0 each time and the FAIL count read off the runner's own `] FAIL ` prefix.
 
-Five mutations so far were caught by the NEW CASES ALONE,
+Seven mutations so far were caught by the NEW CASES ALONE,
 which is the part that says a gap existed rather than a rule being restated:
 the index ordering comparison,
 the one-character-token rule,
 the footnote definition atom,
 the lowercase-only object id,
-and the undecided-lanes copy.
+the undecided-lanes copy,
+the unchanged slice carrying text,
+and the trailing-buffer trim.
