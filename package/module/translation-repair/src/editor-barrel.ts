@@ -19,6 +19,7 @@ export {
   resolveEditorEdits,
 } from './edit-wire.ts';
 export { collectEnvelopeProposals, } from './editor-proposals.ts';
+export { buildLicensedQuotes, } from './licensed-quotes.ts';
 export {
   applyCandidate,
   selectChunkPatch,

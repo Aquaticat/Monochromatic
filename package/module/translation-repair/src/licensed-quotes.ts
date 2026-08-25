@@ -23,6 +23,8 @@ import type { EditableEnvelope, } from './patch-model.ts';
  * ```ts
  * const licensedQuotes = buildLicensedQuotes({ envelopes, issues, },);
  * ```
+ *
+ * @internal
  */
 export function buildLicensedQuotes(
   {

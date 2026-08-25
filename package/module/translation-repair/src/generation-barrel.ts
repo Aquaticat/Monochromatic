@@ -26,7 +26,9 @@ export {
 } from './corpus-run/artifact-eligible.ts';
 export {
   EmptyPoolError,
+  generationLines,
   MixedGenerationError,
+  pluralEntries,
 } from './corpus-run/artifact-pool-refusal.ts';
 export {
   assertArtifactsPlaceable,

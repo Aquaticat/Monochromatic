@@ -33,6 +33,8 @@ export const ENTRY_NOUN_WIDTH: number = 'entries'.length;
  * ```ts
  * const noun = pluralEntries({ count: 1, },);
  * ```
+ *
+ * @internal
  */
 export function pluralEntries(
   { count, }: { readonly count: number; },
@@ -75,6 +77,8 @@ export function censusDigests(
  * ```ts
  * const lines = generationLines({ census, short, },);
  * ```
+ *
+ * @internal
  */
 export function generationLines(
   {
