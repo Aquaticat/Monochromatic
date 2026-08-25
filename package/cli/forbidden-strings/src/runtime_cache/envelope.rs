@@ -258,6 +258,10 @@ pub(super) fn decode(
     if set.len() != names.len() {
         return Err(EnvelopeError::Invalid);
     }
+    let canonical_engine_bytes = set.to_bytes().map_err(|_| return EnvelopeError::Invalid)?;
+    if canonical_engine_bytes != engine_bytes {
+        return Err(EnvelopeError::Invalid);
+    }
     return Ok(CompiledRules { set, names })
 }
 

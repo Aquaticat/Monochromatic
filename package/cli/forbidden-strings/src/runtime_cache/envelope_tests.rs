@@ -11,6 +11,35 @@ fn named_artifact() -> (Vec<u8>, crate::runtime_cache::path::SourceDigest) {
     return (encode(&compiled, digest).expect("encode"), digest)
 }
 
+/// Locates engine-length field in valid fixture envelope.
+fn engine_length_offset(bytes: &[u8]) -> usize {
+    let mut offset = MAGIC.len() + 4;
+    let version_length = usize::from(u16::from_le_bytes(
+        bytes[offset..offset + 2].try_into().expect("version length"),
+    ));
+    offset += 2 + version_length;
+    let platform_length = usize::from(u16::from_le_bytes(
+        bytes[offset..offset + 2].try_into().expect("platform length"),
+    ));
+    offset += 2 + platform_length + 32;
+    let rule_count = u32::from_le_bytes(
+        bytes[offset..offset + 4].try_into().expect("rule count"),
+    );
+    offset += 4;
+    for _ in 0..rule_count {
+        let marker = bytes[offset];
+        offset += 1;
+        if marker == 1 {
+            let name_length = usize::try_from(u32::from_le_bytes(
+                bytes[offset..offset + 4].try_into().expect("name length"),
+            ))
+            .expect("name length fits");
+            offset += 4 + name_length;
+        }
+    }
+    return offset
+}
+
 /// Named rules retain exact identities and matching behavior.
 #[test]
 fn named_rules_round_trip() {
@@ -51,6 +80,25 @@ fn trailing_bytes_are_invalid() {
     bytes.push(0);
     assert_eq!(
         decode(&bytes, digest).err().expect("trailing bytes"),
+        EnvelopeError::Invalid,
+    );
+}
+
+/// Trailing bytes inside declared engine payload reject as noncanonical serialization.
+#[test]
+fn trailing_engine_bytes_are_invalid() {
+    let (mut bytes, digest) = named_artifact();
+    let length_offset = engine_length_offset(&bytes);
+    let original_length = u64::from_le_bytes(
+        bytes[length_offset..length_offset + 8]
+            .try_into()
+            .expect("engine length"),
+    );
+    bytes[length_offset..length_offset + 8]
+        .copy_from_slice(&(original_length + 1).to_le_bytes());
+    bytes.push(0);
+    assert_eq!(
+        decode(&bytes, digest).err().expect("trailing engine bytes"),
         EnvelopeError::Invalid,
     );
 }

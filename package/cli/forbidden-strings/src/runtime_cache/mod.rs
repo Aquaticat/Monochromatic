@@ -144,7 +144,10 @@ pub(crate) fn compile_rules_file_to_cache(rules_path: &str) -> Result<()> {
     if read_artifact(&location.artifact_path, MAX_ARTIFACT_BYTES)
         .is_ok_and(|bytes| return decode(&bytes, digest).is_ok())
     {
-        return Ok(());
+        if source_path_still_matches(rules_path, digest) {
+            return Ok(());
+        }
+        return Err(anyhow!("rules {} changed while validating cache", rules_path));
     }
 
     let compiled = compile_rules(text)

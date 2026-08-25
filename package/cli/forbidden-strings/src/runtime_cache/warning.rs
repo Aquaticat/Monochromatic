@@ -1,10 +1,10 @@
 //! Redacted cache diagnostics shared by scanner output and cli-git parsing.
 //!
-//! Every value is a closed enum rendered as one compact JSON line. The renderer
-//! interpolates only fixed ASCII tokens, so rule text, source paths, cache paths,
-//! digests, and operating-system errors cannot reach stderr through this module.
+//! Every value is constructed from fixed ASCII tokens and rendered as one compact
+//! JSON line. Private token fields make an unsupported reason/recovery pairing
+//! unrepresentable without adding a constructor in this module.
 
-/// Cache condition that forced text compilation or prevented artifact publication.
+/// Cache condition recovered by compiling authoritative text.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum CacheWarningReason {
     /// Expected content-addressed artifact did not exist.
@@ -19,58 +19,37 @@ pub(crate) enum CacheWarningReason {
     Incompatible,
     /// Envelope framing, names, or engine bytes failed validation.
     Invalid,
-    /// Compiled snapshot remained usable but atomic publication failed.
-    WriteFailed,
 }
 
-/// Recovery action taken after a cache warning.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum CacheRecovery {
-    /// Scanner compiled authoritative text before scanning.
-    CompileFromText,
-    /// Scanner retained already compiled in-memory rules after a write failure.
-    ContinueWithCompiledRules,
-}
-
-/// One valid cache-warning record with a reason and its permitted recovery.
+/// One valid cache-warning record storing only fixed protocol tokens.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct CacheWarning {
-    /// Closed cache condition.
-    reason: CacheWarningReason,
-    /// Closed recovery paired with condition.
-    recovery: CacheRecovery,
+    /// Closed reason token.
+    reason: &'static str,
+    /// Closed recovery token paired by constructor.
+    recovery: &'static str,
 }
 
 /// Cache-warning constructors and fixed-token rendering.
 impl CacheWarning {
-    /// Builds a warning for any condition recovered by compiling authoritative text.
+    /// Builds a warning for condition recovered by compiling authoritative text.
     pub(crate) fn compile_from_text(reason: CacheWarningReason) -> Self {
-        debug_assert!(reason != CacheWarningReason::WriteFailed);
-        return Self { reason, recovery: CacheRecovery::CompileFromText }
-    }
-
-    /// Builds the only warning recovered by retaining already compiled rules.
-    pub(crate) fn write_failed() -> Self {
         return Self {
-            reason: CacheWarningReason::WriteFailed,
-            recovery: CacheRecovery::ContinueWithCompiledRules,
+            reason: reason_token(reason),
+            recovery: "compile-from-text",
         }
     }
 
-    /// Returns warning reason for tests and protocol adapters.
-    #[cfg(test)]
-    pub(crate) fn reason(&self) -> CacheWarningReason {
-        return self.reason
-    }
-
-    /// Returns warning recovery for tests and protocol adapters.
-    #[cfg(test)]
-    pub(crate) fn recovery(&self) -> CacheRecovery {
-        return self.recovery
+    /// Builds only warning recovered by retaining already compiled rules.
+    pub(crate) fn write_failed() -> Self {
+        return Self {
+            reason: "write-failed",
+            recovery: "continue-with-compiled-rules",
+        }
     }
 }
 
-/// Returns fixed JSON token for one warning reason.
+/// Returns fixed JSON token for one text-compilation warning reason.
 fn reason_token(reason: CacheWarningReason) -> &'static str {
     if reason == CacheWarningReason::Missing {
         return "missing";
@@ -87,18 +66,7 @@ fn reason_token(reason: CacheWarningReason) -> &'static str {
     if reason == CacheWarningReason::Incompatible {
         return "incompatible";
     }
-    if reason == CacheWarningReason::Invalid {
-        return "invalid";
-    }
-    return "write-failed"
-}
-
-/// Returns fixed JSON token for one recovery action.
-fn recovery_token(recovery: CacheRecovery) -> &'static str {
-    if recovery == CacheRecovery::CompileFromText {
-        return "compile-from-text";
-    }
-    return "continue-with-compiled-rules"
+    return "invalid"
 }
 
 /// Renders compact single-line JSON without accepting arbitrary values.
@@ -108,8 +76,8 @@ impl std::fmt::Display for CacheWarning {
         return write!(
             formatter,
             "{{\"type\":\"forbidden-strings/cache-warning\",\"schemaVersion\":1,\"reason\":\"{}\",\"recovery\":\"{}\"}}",
-            reason_token(self.reason),
-            recovery_token(self.recovery),
+            self.reason,
+            self.recovery,
         )
     }
 }
