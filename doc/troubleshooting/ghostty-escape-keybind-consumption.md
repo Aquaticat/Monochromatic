@@ -1,17 +1,23 @@
-# Ghostty 1.3.1 GTK: bare `escape=end_search` consumes Escape, while stock bindings pass it to the PTY
+# Ghostty 1.3.1 GTK passes stock Escape; bare `escape=end_search` is a separate consumption trap
 
 ## Symptom
 
-In an existing Ghostty session,
-Escape appeared not to reach applications.
+Escape appeared not to reach applications in an existing Ghostty session.
 This was operationally important because pi binds `app.interrupt` to Escape.
-No automation was run against the actual desktop because a misdirected key event could interfere with the live session.
+Firefox later failed to leave YouTube full-screen mode with Escape too,
+which contradicted a Ghostty-local cause.
 
-The desktop symptom was not reproduced in the isolated test.
+A kernel input query then found `KEY_ESC` held only on `ydotoold virtual device`.
+Restarting the user ydotool daemon cleared that state,
+and the user confirmed that Escape immediately worked in Firefox and Ghostty.
+The incident cause and prevention are documented in
+[Interrupted ydotool can leave a virtual key pressed desktop-wide](ydotool-interrupted-key-release.md).
+
+No automation was run against the actual desktop because a misdirected key event could interfere with the live session.
 The exact installed Ghostty binary,
 the current user configuration,
 and pi-tui 0.84.2 all passed Escape inside this repository's nested Wayland compositor.
-The reproducible failure is narrower:
+The separate reproducible Ghostty failure is narrower:
 an explicit unprefixed binding
 
 ```ini
@@ -47,7 +53,10 @@ There was no Ghostty warning or error for the consumed cases.
 
 ## Root cause
 
-### The confirmed failure mechanism
+### The separate Ghostty configuration mechanism
+
+This mechanism did not cause the cross-application incident.
+It explains why a copied or hand-written bare Ghostty binding can create a similar terminal-only symptom.
 
 Ghostty 1.3.1 installs the Linux Escape binding with `performable = true`.
 The source at tag `v1.3.1`,
@@ -221,42 +230,31 @@ and `global:`.
 The command's line is not a round-trip-safe representation of the binding flags.
 It also is not evidence that the live default is bare.
 
-### What remains unknown about the desktop incident
+### Why Ghostty was not the desktop cause
 
-The actual desktop event was not captured.
 The nested positive control proved the harness can show a missing Escape:
 the bare override produced `61 62` while the stock binding produced `61 1b 62`.
-It did not reproduce the accumulated state of any live desktop surface.
-
-The remaining boundaries are:
-
-- Ghostty search or GUI focus state in the affected surface.
-  The first Escape is expected to close an active search.
-  [Discussion #11410][ghostty-11410] reports related GTK search-focus behavior.
-  Its selected answer points to [PR #12492][ghostty-12492],
-  but that PR changes only macOS files,
-  so its applicability to GTK is not established.
-  The discussion reports that the default Escape close action already worked on the tested 1.3.1 build.
-- Kitty keyboard protocol state left active by an application that exited without popping it.
-  A later application that expects a raw `1b` byte can misread `CSI 27 u` as no Escape.
-- Modifiers or input-method state on the real event.
-  The nested control injected an unmodified physical Escape.
-- Host compositor,
-  input-remapper,
-  or hardware delivery before the nested boundary.
-  Read-only configuration checks found no bare-Escape KWin shortcut and no persisted Escape remap,
-  but they did not capture a live hardware event or prove that no runtime grab existed.
-
 The current user Ghostty file contains no `keybind`,
 `key-remap`,
-or `config-file` entry.
-`ghostty +show-config` produced 24 lines and 681 bytes with no such entry.
-The oldest live Ghostty process and `/usr/bin/ghostty` had the same inode,
-size,
-and SHA-256 digest
-`d25ec3c56b1831eb02cea340e0d78a0d23acc5ab7795c753547be36a6913a8ed`.
-That rules out a stale Ghostty executable,
-not stale per-surface runtime state.
+or `config-file` entry,
+and `ghostty +show-config` contains no such override.
+
+The later host-level evidence established a different boundary:
+
+- Every queried physical keyboard interface reported `KEY_ESC` released.
+- `ydotoold virtual device` reported `KEY_ESC` pressed.
+- Python evdev reported Escape as that device's only active key.
+- Restarting ydotoold cleared every active key.
+- The same physical Escape key then worked in Firefox and Ghostty.
+
+That before-state,
+recovery,
+and cross-application after-state establish the virtual input device as the incident cause.
+Search focus,
+Kitty keyboard mode,
+modifiers,
+and Ghostty executable identity remain useful generic diagnostic branches,
+but they are not needed to explain this incident.
 
 ## Verification
 
@@ -515,7 +513,11 @@ Interpretation:
 Run this only in a separate disposable terminal surface,
 not in the surface holding an irreplaceable session.
 
-## Verified workarounds
+## Configuration repairs for the separate bare-binding trap
+
+For Escape failure across unrelated applications,
+use the [ydotool reset runbook](../runbook/verify-escape-after-ydotool-reset.md)
+instead of changing Ghostty configuration.
 
 ### Preserve Ghostty's stock search behavior explicitly
 
@@ -630,8 +632,9 @@ Related records were read in full:
   so the GTK fix status is unclear.
 - [Issues #3114][ghostty-3114] and [#4505][ghostty-4505] covered other incorrect `+list-keybinds` output.
 
-Nothing in those threads establishes the unreproduced desktop cause.
-There is no additive comment to post to them.
+Nothing in those threads establishes a Ghostty cause for the desktop incident.
+The later kernel evidence attributes it to ydotool instead.
+There is no additive comment to post to the Ghostty threads.
 
 ### Upstream filing decision
 
@@ -653,9 +656,9 @@ Default policy remains not to file.
    but it did not cause this incident unless its output had previously been copied into runtime configuration.
 
 2. **Can upstream fix it?**
-   Unknown for the incident because no failing upstream state is isolated.
+   Ghostty cannot fix the actual incident because the stuck state belonged to another virtual input device.
    Upstream can separately make `+list-keybinds` serialize flags,
-   but that is not yet a demonstrated fix for the desktop symptom.
+   but that would address the diagnostic hazard rather than this incident.
 
 3. **Are they supporting this use case?**
    Yes.
@@ -674,9 +677,9 @@ Default policy remains not to file.
    No human-edited upstream artifact exists in this investigation.
 
 5. **Will they likely fix it?**
-   Unknown for the incident.
+   Not applicable to the incident because Ghostty was not the failing layer.
    Related input and formatter defects were accepted and fixed,
-   but there is no reproducible current defect to assess.
+   but the separate formatter omission was not filed during this investigation.
 
 6. **Have we prototyped a minimal fix compatible with their architecture?**
    No upstream fix was prototyped.
@@ -686,10 +689,9 @@ Default policy remains not to file.
 
 Decision:
 do not file an issue or discussion and do not keep a sendable draft.
-The exact desktop cause remains unresolved,
-and the available evidence would make a Ghostty defect report misleading.
-If the bounded desktop classifier later captures a failing byte boundary,
-repeat the duplicate search and six-constraint audit against that evidence.
+The desktop cause is resolved as an interrupted ydotool release,
+and the available evidence would make a Ghostty defect report false attribution.
+The separate `+list-keybinds` flag omission remains documented here without an upstream filing.
 
 [ghostty-3114]: https://github.com/ghostty-org/ghostty/issues/3114
 [ghostty-4328]: https://github.com/ghostty-org/ghostty/issues/4328
