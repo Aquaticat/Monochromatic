@@ -313,6 +313,31 @@ restored, all six suites pass. Whole-suite `buildAndTest` after `b19bd23b0`: 800
 group was made at the start of this group's GFP; it confirmed the chain and asked only that the tightened test be
 committed before the mutation batch, which it was.
 
+Whole-suite `buildAndTest` after `65cca20fc`: 800 PASS, 0 FAIL, exit 0 (three describes fewer than the 803 after
+`c27dfa297`: the three deleted reading helpers took theirs with them).
+
+Slices MINORs, first half (slices-4, 5, 7, 8, 9) LANDED 2026-08-26 in `c2d2473db`: the slice-cache discard notice
+goes through the tagged logger (`discardNamespace` tag); the unreachable proportional merge loop in `slice-pair.ts`
+is deleted with `totalRunChars` and the TSDoc names the three live shapes (aligned, insertion, one-sided);
+repetition containment compares whole words through `holdsPhrase` in both `assembly-repetition.ts` and
+`assembly-adjacent-repetition.ts`; the rendering-audit anchor type is `RenderingAuditSpanAnchor`, so the root
+barrel exports one `SpanAnchor`; the draw's three reconcile refusals are `DrawReconcileError`
+(`corpus-run/draw-reconcile.ts`), marked, naming the entry (deliberately, as `INCOMPLETE` lines do) and the counts,
+with the stray value's `typeof` name in place of its `JSON.stringify`. GFP: `console.log` restored fails `COUNTS what
+it removed and NAMES who filled it` (the case asserts the `[discardNamespace]` tag); plain `includes` restored fails
+both new `KEEPS` cases; the marker removed fails the two inventory cases; a bare `Error` restored fails `REFUSES as
+DrawReconcileError`; all restored, all five suites pass. slices-5 and slices-8 have no runtime guard (a deletion and a
+type rename; `lint:types` is the guard). Whole-suite run after `c2d2473db` is in flight.
+
+slices-6 is NOT landed and is the open item: the nine index-and-count classes (`SliceDeliveryError` 17 sites,
+`DeliveryCoherenceError` 10, `DeliveryInvariantError` 5, `SliceCoverageError` 4, `LaneSliceCoverageError` 13 across
+three files, `LaneComparisonError` 11, `SliceIndexingError` 4, `SliceRecordContradictionError` 3,
+`AssemblyContractError` 13) all forward a caller's `message`, which the inventory's forwarding rule forbids marking
+(`StatedRefusalError` is the sole documented exception). The reviewer's fix shape (add the marker) is therefore not
+available. The boundary prints `refused by <Class>` and frames only (`framesOf` keeps `at ` lines), so the loss is
+real: an invariant violation reaches the operator without its slice index. The candidate fix is the calibrate-9 and
+repair-6 shape, typed fault unions with the sentence written in the class's module, per class.
+
 Queue: the register's MINORs in register order (slices-4 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
