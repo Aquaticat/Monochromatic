@@ -30,6 +30,7 @@ import {
 import { repairReplacements, } from './repair-replacements.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { spliceSlices, } from './splice-slices.ts';
+import { UnpreparedSliceError, } from './unprepared-slice.ts';
 
 //region Refinement phase
 // The naturalness lane as a SECOND per-slice phase, run after every accuracy
@@ -215,12 +216,18 @@ export async function runRefinePhase(
      */
     const prepared = slices[outcome.sliceIndex];
 
+    // REFUSED BEFORE ANY CALL. The tolerance this replaced read an empty
+    // original and the outcome's own text as the archive wording, bought
+    // rewriter calls against them, and was refused by `repair-refine-step.ts`
+    // afterwards anyway; the refusal comes first now and costs nothing.
+    if (prepared === undefined)
+      throw new UnpreparedSliceError({ sliceIndex: outcome.sliceIndex, },);
+
     /**
      * Source text of this slice, the faithfulness anchor.
      */
-    const sourceText = prepared?.source
-      .text
-      ?? '';
+    const sourceText = prepared.source
+      .text;
 
     /**
      * Archive wording of this slice.
@@ -231,13 +238,9 @@ export async function runRefinePhase(
      * in: recording it as changed would name it in the shipped set beside text
      * nobody touched, and assembly refuses a replacement carrying the archive
      * wording, so the whole document would fail for a run the models got right.
-     *
-     * With no prepared slice to read, the rewriter's own verdict stands, which
-     * is what this lane did for every outcome before.
      */
-    const incumbentText = prepared?.target
-      .text
-      ?? outcome.repairedText;
+    const incumbentText = prepared.target
+      .text;
 
     /**
      * Original and archive English of the passages either side, for the damage
@@ -334,6 +337,12 @@ export async function runRefinePhase(
       .push(settled.outcome,);
     collected.findings
       .push(...settled.findings,);
+
+    // NOTHING IS PERSISTED AFTER AN ABORT, the check the accuracy pass makes
+    // before its own write. Today every aborted call propagates as a throw and
+    // never reaches this line; the line is what keeps that true should a later
+    // path turn an abort into a settled outcome.
+    signal.throwIfAborted();
 
     // Persisted before the next slice starts, matching the accuracy pass, so an
     // abort leaves settled refinements recoverable rather than rebought. NOT

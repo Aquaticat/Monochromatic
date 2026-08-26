@@ -538,9 +538,9 @@ export async function repairPreparedDocument(
    *
    * Runs HERE, after every accuracy outcome settled and after the
    * non-translation dominance decision, and before anything below reads
-   * `changed`. A blocked document already returned above, so no rewriter call
-   * is ever spent on one, and a refinement-only change reaches
-   * `changedOutcomes` and `anyChanged` because those are computed from these
+   * `changed`. Nothing blocks a document any more (see the module note), so
+   * every settled slice reaches the rewriters, and a refinement-only change
+   * reaches `changedOutcomes` and `anyChanged` because those are computed from these
    * final outcomes rather than from the accuracy ones.
    */
   const phase = await refineSettledSlices({

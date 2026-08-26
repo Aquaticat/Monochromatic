@@ -21,10 +21,11 @@ import {
   messageText,
   type RefinedSliceSettlement,
   type RepairModels,
+  type RosterModelId,
   runRefinePhase,
   type SliceCache,
   type SyntheticClient,
-  type RosterModelId,
+  UnpreparedSliceError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -633,6 +634,82 @@ await describe({
         // returns can have resolved anything: crediting the issue here would
         // count a repair no reader saw.
         expect(phase.outcomes[0]?.resolvedIssueIds,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES an outcome naming a slice the preparation never produced before buying any call, '
+        + 'where it used to refine against an empty original and be refused by the step afterwards',
+      fn: async () => {
+        /**
+         * Calls made, which must stay at zero.
+         */
+        const calls = { count: 0, };
+
+        await expect(runRefinePhase({
+          declaredNames: [],
+          client: countingClient({
+            inner: scriptedPhase({ checkerVerdict: 'fixed', },),
+            calls,
+          },),
+          targetText: REPAIRED_TEXT,
+          slices: SLICES,
+          outcomes: [
+            {
+              ...settledOutcome({ resolvedIssueIds: [], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),
+              sliceIndex: SLICES.length + 2,
+            },
+          ],
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },),).rejects.toThrow(UnpreparedSliceError,);
+        expect(calls.count,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'THROWS on an abort that lands during a slice and persists nothing for it, the check the '
+        + 'accuracy pass makes before its own write',
+      fn: async () => {
+        /**
+         * Cache that must stay empty.
+         */
+        const stored = new Map<string, RefinedSliceSettlement>();
+
+        /**
+         * Abort raised from inside the first call, after which the scripted
+         * client still answers, so the stage settles and the guard before the
+         * write is what has to refuse.
+         */
+        const controller = new AbortController();
+
+        /**
+         * Scripted client whose first exchange aborts the run.
+         */
+        const inner = scriptedPhase({ checkerVerdict: 'fixed', },);
+
+        await expect(runRefinePhase({
+          declaredNames: [],
+          client: {
+            chatText: inner.chatText,
+            chatJson: async (request) => {
+              controller.abort(new Error('the operator stopped the run',),);
+              return await inner.chatJson(request,);
+            },
+            quotas: inner.quotas,
+          },
+          targetText: REPAIRED_TEXT,
+          slices: SLICES,
+          outcomes: [settledOutcome({ resolvedIssueIds: [], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),],
+          models: MODELS,
+          refineCache: memoryRefineCache({ stored, },),
+          signal: controller.signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },),).rejects.toThrow(Error,);
+        expect(stored.size,).toBe(0,);
       },
     },),
   ],

@@ -14,6 +14,7 @@ import type {
   ChunkRepairOutcome,
   RepairModels,
 } from './repair-contract.ts';
+import { UnpreparedSliceError, } from './unprepared-slice.ts';
 
 //region Repair refine step
 // The naturalness lane as the DRIVER sees it: one call, plus the two abort
@@ -163,13 +164,8 @@ export async function refineSettledSlices(
      * Archive wording of this outcome's slice.
      */
     const incumbentText = incumbentByIndex.get(outcome.sliceIndex,);
-    if (incumbentText === undefined) {
-      throw new Error(
-        `refinement returned slice ${
-          String(outcome.sliceIndex,)
-        }, which this preparation never produced`,
-      );
-    }
+    if (incumbentText === undefined)
+      throw new UnpreparedSliceError({ sliceIndex: outcome.sliceIndex, },);
     assertSettledRecordAgrees({
       lane: 'repair',
       sliceIndex: outcome.sliceIndex,

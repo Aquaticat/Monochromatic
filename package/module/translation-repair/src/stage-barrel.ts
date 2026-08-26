@@ -34,5 +34,6 @@ export {
   runGatherRound,
   STRAGGLER_GRACE_MS,
 } from './stage-round.ts';
+export { UnpreparedSliceError, } from './unprepared-slice.ts';
 
 //endregion Stage barrel

@@ -147,7 +147,7 @@ export async function settleRefinedSlice(
     readonly incumbentText: string;
     readonly definitions: string;
     readonly models: RepairModels;
-    readonly refinerModelIds: RepairModels['checkerModelIds'];
+    readonly refinerModelIds: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly declaredNames: readonly string[];
     readonly neighbouringSourceText?: string;
