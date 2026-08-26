@@ -3,7 +3,7 @@
 Status:
 the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
-is landed, GFP-proven and recorded under "State of the tree";
+is landed, GFP-proven and recorded under "State of the tree" (now in the history, with the audit section);
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
 every group from calibrate through rendering is landed (`acfc7ad22` to `8bffaba9b`) and `#236` is CLOSED;
 `#213`, `#230` and `#229` are measured; the readiness signal was put and REJECTED (see "The owner's answers"),
@@ -52,7 +52,7 @@ and superseded reasoning kept only for its evidence.
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
 STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed,
-verified live the same day (see "State of the tree" in the audit section);
+verified live the same day (see "State of the tree" under the audit section, now in the history);
 `doc/troubleshooting/synthetic-hf-prefix-misroute.md` holds the located cause and the fix.
 The body below is the diagnosis as it stood while the cause was being located, kept for its evidence.
 
@@ -1463,4 +1463,5 @@ Moved on the evening of 2026-08-26, when this file stood at 1984 lines against t
 
 -   AUDIT IN PROGRESS: the whole package, before any new work (`#236`, 2026-08-26). The audit is closed;
     its register with every marker is `doc/audit/translation-repair-package-audit.md`, and the closing
-    verification (814 PASS, every entry marked) stands in "State of the tree" above and in the register.
+    verification (814 PASS, every entry marked) stands in its "State of the tree" subsection, now in the
+    history, and in the register.
