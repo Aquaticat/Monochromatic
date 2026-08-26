@@ -762,6 +762,18 @@ a resumed pass then ranks bands over a shrunken `settled`.
 No corpus-pass test references `CorpusReadError`.
 Tracked as `#252`.
 
+FIXED 2026-08-26 in `8af2b2bde`: `CorpusReadError.kind` is read off git's stderr, measured against git 2.55
+(a path absent at the commit says `does not exist in` and is `missing-object`; an unreadable clone, a spawn failure,
+an oversized blob or a failed listing is `other`), `isMissingCorpusObject` is the one guard a corpus walk may step
+past, and all five catchers use it (the pass, the recall benchmark, the picture gatherer, the window trial probe,
+the slice census).
+The pass's walk lives in `src/corpus-run/pass-eligibility.ts`, names each incomplete entry by id and absent side,
+and the pass prints one `INCOMPLETE <id>: <side> page absent at the pin (...)` line per entry.
+Guards: the corpus-source tests assert the kind on a missing path, a missing clone and a failed listing; the
+eligibility tests sort a throwaway clone into a pair, a settled size and a named gap, name a missing original as
+the source side, and propagate an unreadable clone.
+Collapsing the classifier fails 2 and 3 cases; re-widening the walk's catch fails 2.
+
 ### document-2, MAJOR, verified: a transient reader failure is cached as a permanent `unavailable` verdict
 
 `src/document-readings.ts:166-183` persists every paired reading whatever its kind;

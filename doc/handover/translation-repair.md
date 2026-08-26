@@ -213,7 +213,13 @@ Whole-suite `buildAndTest` after `2c9886a55`: 770 PASS, 0 FAIL, exit 0.
 `#251` LANDED 2026-08-26 in `a8bc69508`: no slate is bought for a slice with no standing text; GFP fails 2 cases
 with the refusing client's throw when the purchase is restored.
 Whole-suite `buildAndTest` after `a8bc69508`: 770 PASS, 0 FAIL, exit 0.
-Queue: `#252` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
+`#252` LANDED 2026-08-26 in `8af2b2bde`: `CorpusReadError.kind` (`missing-object` or `other`, measured off git
+2.55's stderr), `isMissingCorpusObject` as the one steppable failure in all five catchers, and the pass's walk in
+`pass-eligibility.ts` printing `INCOMPLETE <id>: <side> page absent at the pin (...)`; GFP fails 2 and 3 cases
+under the collapsed classifier and 2 under the re-widened catch.
+Whole-suite `buildAndTest` after `8af2b2bde`: 730 PASS, 0 FAIL, exit 0; plan mode over the real corpus prints exactly one
+`INCOMPLETE` line (the one one-sided entry, its source page absent) beside `pending=92` and `PLAN ok`.
+Queue: `#253` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
