@@ -236,7 +236,13 @@ Whole-suite `buildAndTest` after `17bcaf46c`: 772 PASS, 0 FAIL, exit 0 (solo run
 1 block before and 45 after), the block splitter folds again, and the invisible-line mask judges around the return;
 GFP fails 2 cases under each of the three mutations.
 Whole-suite `buildAndTest` after `7a2a21ed8`: 773 PASS, 0 FAIL, exit 0 (solo run, nothing else building).
-Queue: `#256` (the last open MAJOR task), then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
+`#256` LANDED 2026-08-26 in `68062ccf7`: the report reads `--run` and `--against` through the args module's refusing
+reader; GFP fails 3 cases under a lenient reader; the CLI refuses `--run` written last with exit 6 and no frames.
+Whole-suite `buildAndTest` after `68062ccf7`: 774 PASS, 0 FAIL, exit 0 (solo run, nothing else building).
+EVERY MAJOR FROM THE AUDIT IS LANDED (`#237` to `#257`).
+Queue: the register's MINORs in register order, then the owed doc passes (A-4 open-decisions status lines, A-5 handover
+trim under the 2000-line cap, A-6 TNM renames) that close `#236`; then `#213` (arm A and arm B under `mise run`),
+`#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via AskUserQuestion).
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

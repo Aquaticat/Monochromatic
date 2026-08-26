@@ -137,7 +137,7 @@ Tally as of 2026-08-26, after all ten slices reported:
 2 BLOCKER (A-1 fixed, probes-1 open as `#247`),
 21 MAJOR of which 1 fixed (A-2), 14 open as their own tasks (`#237` to `#246`, `#248` to `#251`, `#252` to `#257`),
 and 6 folded into those tasks (slices-1 to slices-3, artifact-1, artifact-2, rendering-2);
-by the end of 2026-08-26 the MAJORs `#237` to `#249` and `#255` are fixed in place, each marked FIXED under its entry,
+by the end of 2026-08-26 every MAJOR task, `#237` to `#257`, is fixed in place, each marked FIXED under its entry,
 and roughly seventy MINOR, verified where cited and queued after the MAJORs.
 
 Severity:
@@ -968,6 +968,13 @@ so `--run` written last reports the newest run and `--against` written last prin
 the sibling args module records the same collapse as a fixed defect for `--cap` and `--only`,
 and the report module has no test.
 Tracked as `#256`.
+
+FIXED 2026-08-26 in `68062ccf7`: the report reads both flags through `readReportArguments` in the args module,
+which shares `valueAfter` and its refusal with `--cap` and `--only`; a flag at the end of the line or followed by
+another flag is a stated refusal naming the flag (`--run needs a value written after it`, exit 6, no frames, verified
+at the CLI boundary).
+Guards in the args test: nothing named gives two empty lists, both named are read in any order, `--run` at the end
+refuses, `--against` followed by `--run` refuses; a lenient reader fails 3 cases.
 
 ### rendering-4 to rendering-12, MINOR, verified where cited
 
