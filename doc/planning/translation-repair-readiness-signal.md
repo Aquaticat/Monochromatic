@@ -17,7 +17,8 @@ This document is the evidence behind the question and the decisions the question
     both keys are required, a half-dark roster is loud (`SEAT` lines end every command), and the two
     calibration arms of 2026-08-26 ran the full ten-model roster with 304 and 302 of 312 voices heard.
 -   The three measurements the queue held open are paid:
-    `#213` (overlap), `#230` (recovery rate) and `#229` lever 1 (arm C, recorded in the handover when it ends).
+    `#213` (overlap), `#230` (recovery rate: 3 of 4 re-asked answers came back) and `#229` lever 1
+    (arm C, below).
 
 ## What is known and not done
 
@@ -25,8 +26,8 @@ This document is the evidence behind the question and the decisions the question
     a mutation: repair-8's typography half, consolidate-5, probes-10 and probes-11, calibrate-5 and calibrate-8,
     repair-2, document-11, slices-5 and slices-8.
     They are coverage debts, not defects, and each entry says so.
--   The straggler window decision (`doc/decision/translation-repair-straggler-grace.md`) stands at 180000 ms
-    until arm C is read.
+-   The straggler window decision (`doc/decision/translation-repair-straggler-grace.md`) stands at 180000 ms;
+    arm C is read and the move is the owner's call (question 4).
 
 ## Sanitization inventory
 
@@ -59,4 +60,9 @@ Each is its own question, because answering "yes" to all of them in order must b
     The calibration arms contradict the first premise under the same limiter, and the second predates the
     multi-provider routing. Building the dial into the pass is a design change; the proposal is to measure it
     on the pass the same way before any default moves.
-4.  Straggler window: keep 180000 ms or move it, decided on arm C against arm A.
+4.  Straggler window: keep 180000 ms or move it. Measured on arm C (overlap 1, 300000 ms, the same four slices)
+    against arm A (overlap 1, 180000 ms): 53.87 min against 43.19 (+24.7%), voices never heard 5 against 8,
+    grace cuts 4 against 6, all `qwen3.8-max`. Two rounds spent 214 s and 263 s in grace, the two voices the
+    longer window bought back; four rounds burned the full 300 s and were cut anyway. About 5.3 min of wall
+    clock per voice bought while slices run one at a time; under overlap the wait is what overlap fills, so a
+    longer window under overlap 4 is the unrun arm that would reprice it.

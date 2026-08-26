@@ -514,6 +514,21 @@ stderr as `PATH:LINE rule=<token>`, never the text. The branch carries 2342 comm
 `88ba0ae2e`, since 2026-07-16). The proposal behind the `#219` question, with the four decisions it keeps apart, is
 `doc/planning/translation-repair-readiness-signal.md`.
 
+`#229` LEVER 1 MEASURED (2026-08-26). Arm C (overlap 1, `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=300000`, the same four
+slices, launched 12:23:14Z, exit 0 at 13:17:15Z) against arm A (overlap 1, 180000): round time 53.87 min against 43.19
+(+24.7%), waiting after quorum 48.33 min (89.7%) against 37.08 (85.9%), voices never heard 5 against 8 (306 of 311
+heard against 304 of 312; C ran 32 rounds to A's 33 because it needed one recovery round to A's two), grace cuts 4
+against 6, all `qwen3.8-max` in both, one `schema-mismatch` (`critic`, recovered `1/1`) against two. The window's
+effect is legible in the rounds themselves: four rounds burned the full 300000 ms (the four cuts), and two rounds
+spent 214010 ms and 263265 ms in grace, which are voices that arrived after 180000 ms and would have been cut under
+the built-in window. So on this sample the longer window bought back 2 voices of the 6 the built-in one loses, at
+10.68 min of wall clock, about 5.3 min per voice, and the other four stragglers reason past five minutes and are cut
+anyway. Under overlap that price changes, since waiting after quorum is what overlap fills: a longer window under
+overlap 4 was not run and would be the arm to run if overlap becomes the default. QNB: one run per arm again; the two
+180000 arms cut 6 and 7, so C's 4 sits below both and the two in-band rounds are direct evidence rather than a
+difference of totals. The dial stays opt-in and `STRAGGLER_GRACE_MS` stays 180000 until the owner decides (question 4
+of the readiness signal). Log and run directory: `~/temp/agent/overlap-arm-grace-20260826`.
+
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
 STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed,
