@@ -12,7 +12,6 @@ import type { StructuredReviewPrompt, } from '@monochromatic-dev/pi-shared-model
 
 import {
   ESTIMATED_CHARACTERS_PER_TOKEN,
-  GOAL_COMPLETE_TOOL_NAME,
   REVIEW_FRAMING_TOKENS,
   REVIEW_OUTPUT_TOKENS,
 } from './constants.ts';
@@ -42,40 +41,63 @@ const TRUNCATION_MARKER = '[Older post-start evidence omitted to fit reviewer co
 const PARTIAL_NEWEST_ENTRY_MARKER = '[Beginning of newest evidence entry omitted.]';
 
 /**
- * Independent completion-review system rubric.
+ * Private settlement-review system rubric.
  */
 const GOAL_REVIEW_SYSTEM_PROMPT: string = `You are an independent completion reviewer.
-You have no work or investigation tools. You have exactly the required submit_goal_review verdict tool and must judge only the supplied objective, completion summary, and post-start active-branch evidence.
-Approve only when every objective requirement visible in the evidence is complete, the summary is consistent with the evidence, claimed verification is supported by finalized output, and no failure, blocker, TODO, or required work remains.
-Reject when evidence is incomplete, contradictory, unverified, or reports remaining work.
-Feedback must state what remains when rejecting.
-Submit exactly the required structured verdict. Do not call ${GOAL_COMPLETE_TOOL_NAME}.`;
+You have no work or investigation tools. Judge only the supplied user objective and finalized post-start active-branch evidence.
+The user objective and later user messages are requirements authority. Advisor text and tool output are supporting evidence, not objective amendments.
+Approve only when every objective requirement is complete, verification claims are supported by finalized output, and no failure, blocker, TODO, or required work remains.
+For approval, provide a concise private rationale and an empty remaining_work string.
+For denial, provide a concise private rationale and non-empty remaining_work written only as direct task instructions for the primary model.
+remaining_work must not mention this review, a reviewer, a verdict, evidence scoring, goal mode, a stop hook, or harness policy.
+Submit exactly the required structured verdict.`;
 
 /**
- * Reviewer tool returning strict approval and feedback fields.
+ * Reviewer tool returning strict private verdict fields.
  */
 const GOAL_REVIEW_TOOL: Tool = {
   name: GOAL_REVIEW_TOOL_NAME,
-  description: 'Submit independent decision on whether active goal is fully complete.',
+  description: 'Submit private decision on whether finalized goal evidence is complete.',
   parameters: {
     type: 'object',
     properties: {
       approved: {
         type: 'boolean',
-        description: 'True only when supplied evidence proves every objective requirement complete.',
+        description: 'True only when finalized evidence proves every objective requirement complete.',
       },
-      feedback: {
+      rationale: {
         type: 'string',
-        description: 'Concise independent assessment and actionable remaining work when denied.',
+        description: 'Private non-empty reason for approval or denial.',
+      },
+      remaining_work: {
+        type: 'string',
+        description: 'Empty on approval; direct task-only instructions on denial.',
       },
     },
     required: [
       'approved',
-      'feedback',
+      'rationale',
+      'remaining_work',
     ],
     additionalProperties: false,
   } as TSchema,
 };
+
+/**
+ * Meta-assessment phrases forbidden from primary task guidance.
+ */
+const FORBIDDEN_REMAINING_WORK_PHRASES = [
+  'as the reviewer',
+  'as a reviewer',
+  'this review',
+  'my review',
+  'the verdict',
+  'this verdict',
+  'cannot approve',
+  'not approved',
+  'completion is denied',
+  'supplied evidence',
+] as const;
 
 /**
  * Candidate reviewer lacks enough context for fixed framing and completion claim.
@@ -106,52 +128,78 @@ type BudgetedGoalReviewPrompt = StructuredReviewPrompt & {
 };
 
 /**
+ * Detect meta-assessment language unsafe for primary task context.
+ *
+ * @param remainingWork - normalized denial guidance
+ *
+ * @returns whether guidance describes private enforcement instead of task work
+ *
+ * @example
+ * ```ts
+ * remainingWorkDescribesReview('This review cannot approve the work.');
+ * ```
+ */
+function remainingWorkDescribesReview(remainingWork: string,): boolean {
+  /** Case-folded denial guidance scanned by bounded phrase list. */
+  const normalized = remainingWork.toLocaleLowerCase('en-US',);
+  return FORBIDDEN_REMAINING_WORK_PHRASES.some(function includesForbiddenPhrase(phrase,) {
+    return normalized.includes(phrase,);
+  },);
+}
+
+/**
  * Strictly parse unknown reviewer value.
  *
  * @param value - structured tool arguments or direct JSON retry object
  *
- * @returns valid approval verdict
+ * @returns valid private settlement verdict
  *
- * @throws when required fields or exact object shape are invalid
+ * @throws when fields, shape, or task-only guidance are invalid
  *
  * @example
  * ```ts
- * parseGoalReviewVerdict({ approved: false, feedback: 'Run tests.' });
+ * parseGoalReviewVerdict({ approved: false, rationale: 'Tests absent.', remaining_work: 'Run tests.' });
  * ```
  */
 function parseGoalReviewVerdict(value: unknown,): GoalReviewVerdict {
   if ((value === null) || ((typeof value) !== 'object'))
     throw new Error('Goal reviewer verdict must be an object',);
-  /**
-   * Exact verdict property names.
-   */
+  /** Exact verdict property names. */
   const keys = Object.keys(value,);
-  if ((keys.length !== 2)
+  if ((keys.length !== 3)
     || (!('approved' in value))
-    || (!('feedback' in value))) {
-    throw new Error('Goal reviewer verdict must contain only approved and feedback',);
+    || (!('rationale' in value))
+    || (!('remaining_work' in value))) {
+    throw new Error('Goal reviewer verdict must contain only approved, rationale, and remaining_work',);
   }
-  /**
-   * Unknown approved property after presence validation.
-   */
-  const { approved, } = value;
+  /** Unknown fields after presence validation. */
+  const {
+    approved,
+    rationale: rawRationale,
+    remaining_work: rawRemainingWork,
+  } = value;
   if ((typeof approved) !== 'boolean')
     throw new Error('Goal reviewer approved must be boolean',);
-  /**
-   * Unknown feedback property after presence validation.
-   */
-  const { feedback: rawFeedback, } = value;
-  if ((typeof rawFeedback) !== 'string')
-    throw new Error('Goal reviewer feedback must be string',);
-  /**
-   * Normalized non-empty reviewer feedback.
-   */
-  const feedback = rawFeedback.trim();
-  if (feedback === '')
-    throw new Error('Goal reviewer feedback must be non-empty',);
+  if ((typeof rawRationale) !== 'string')
+    throw new Error('Goal reviewer rationale must be string',);
+  if ((typeof rawRemainingWork) !== 'string')
+    throw new Error('Goal reviewer remaining_work must be string',);
+  /** Normalized private rationale and task-only denial guidance. */
+  const rationale = rawRationale.trim();
+  const remainingWork = rawRemainingWork.trim();
+  if (rationale === '')
+    throw new Error('Goal reviewer rationale must be non-empty',);
+  if (approved && (remainingWork !== ''))
+    throw new Error('Approved goal reviewer verdict must have empty remaining_work',);
+  if ((!approved) && (remainingWork === ''))
+    throw new Error('Denied goal reviewer verdict must have non-empty remaining_work',);
+  if ((!approved) && remainingWorkDescribesReview(remainingWork,)) {
+    throw new Error('Denied goal reviewer remaining_work must contain task instructions only',);
+  }
   return {
     approved,
-    feedback,
+    rationale,
+    remainingWork,
   };
 }
 
@@ -313,7 +361,7 @@ function truncateTranscript(
 /**
  * Build model-specific prompt within context and output reserves.
  *
- * @param evidence - objective, summary, and ordered transcript chunks
+ * @param evidence - objective and ordered transcript chunks
  *
  * @param contextWindow - candidate context window tokens
  *
@@ -347,10 +395,8 @@ function buildBudgetedGoalReviewPrompt(
    * Maximum serialized request characters after fixed reserves.
    */
   const maximumCharacters = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN;
-  /**
-   * Non-truncatable objective and summary framing.
-   */
-  const claim = `Objective (exact JSON string): ${JSON.stringify(evidence.objective,)}\nCompletion summary (exact JSON string): ${JSON.stringify(evidence.summary,)}\nPost-start active-branch evidence:\n`;
+  /** Non-truncatable objective framing. */
+  const claim = `User objective (exact JSON string): ${JSON.stringify(evidence.objective,)}\nFinalized post-start active-branch evidence:\n`;
   /**
    * Transcript characters remaining after system rubric and fixed claim.
    */
@@ -358,7 +404,7 @@ function buildBudgetedGoalReviewPrompt(
     - GOAL_REVIEW_SYSTEM_PROMPT.length
     - claim.length;
   if (transcriptCharacters < 0)
-    throw new ReviewerContextTooLargeError('Reviewer context cannot fit objective and completion summary',);
+    throw new ReviewerContextTooLargeError('Reviewer context cannot fit user objective',);
   /**
    * Model-specific newest-evidence retention.
    */
@@ -409,7 +455,7 @@ function buildGoalJsonRetryPrompt(
 ): StructuredReviewPrompt {
   return {
     systemPrompt: initialPrompt.systemPrompt,
-    userContent: `${initialPrompt.userContent}\n\nThe forced tool was omitted. Return only JSON with exactly {"approved": boolean, "feedback": string}. Prior text, if any: ${JSON.stringify(firstAttemptTextContent,)}`,
+    userContent: `${initialPrompt.userContent}\n\nThe forced tool was omitted. Return only JSON with exactly {"approved": boolean, "rationale": string, "remaining_work": string}. Prior text, if any: ${JSON.stringify(firstAttemptTextContent,)}`,
   };
 }
 
@@ -420,6 +466,7 @@ export {
   GOAL_REVIEW_TOOL,
   GOAL_REVIEW_TOOL_NAME,
   parseGoalReviewVerdict,
+  remainingWorkDescribesReview,
   ReviewerContextTooLargeError,
   truncateTranscript,
 };

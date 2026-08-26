@@ -21,8 +21,8 @@ import {
   REVIEW_TIMEOUT_MS,
 } from './constants.ts';
 import type {
-  GoalCompletionReview,
-  GoalCompletionReviewer,
+  GoalSettlementReview,
+  GoalSettlementReviewer,
   GoalReviewerCandidate,
   GoalReviewVerdict,
 } from './completion-types.ts';
@@ -230,7 +230,7 @@ async function runGoalReviewerPool(
     readonly signal?: AbortSignal;
     readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
   },
-): Promise<GoalCompletionReview> {
+): Promise<GoalSettlementReview> {
   /** Ranked candidates and selection diagnostics. */
   const { candidates, diagnostics: selectionDiagnostics, } = pool;
   /** Initial highest-cost reviewer. */
@@ -318,13 +318,13 @@ async function runGoalReviewerPool(
 }
 
 /**
- * Production completion reviewer building active-branch evidence and scoped pool.
+ * Production settlement reviewer building active-branch evidence and scoped pool.
  *
- * @param request - locally validated active completion claim
+ * @param request - captured active settlement
  *
- * @param context - current Pi tool context
+ * @param context - current Pi extension context
  *
- * @param signal - tool cancellation signal
+ * @param signal - optional review cancellation signal
  *
  * @returns first valid verdict and reviewer audit
  *
@@ -336,20 +336,20 @@ async function runGoalReviewerPool(
  *
  * @example
  * ```ts
- * await reviewGoalCompletion({ request, context });
+ * await reviewGoalSettlement({ request, context });
  * ```
  */
-async function reviewGoalCompletion(
+async function reviewGoalSettlement(
   {
     request,
     context,
     signal,
-  }: Parameters<GoalCompletionReviewer>[0],
-): Promise<GoalCompletionReview> {
+  }: Parameters<GoalSettlementReviewer>[0],
+): Promise<GoalSettlementReview> {
   /** Selected active branch captured before reviewer awaits. */
   const branch = context.sessionManager
     .getBranch();
-  /** Post-start evidence excluding pending completion assistant message. */
+  /** Finalized post-start evidence including settled assistant output. */
   const evidence = buildGoalReviewEvidence({ branch, request, },);
   /** Ranked authenticated reviewer pool. */
   const pool = await resolveGoalReviewerPool({ context, evidence, },);
@@ -360,7 +360,7 @@ async function reviewGoalCompletion(
 }
 
 export {
-  reviewGoalCompletion,
+  reviewGoalSettlement,
   runGoalReviewerAttempt,
   runGoalReviewerPool,
 };

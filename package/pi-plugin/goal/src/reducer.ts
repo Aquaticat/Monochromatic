@@ -76,7 +76,9 @@ function reduceGoalEvent(
       ...state,
       continuationSequence: event.continuationSequence,
       transitionedAt: event.transitionedAt,
-      reviewerFeedback: event.feedback,
+      remainingWork: 'remainingWork' in event
+        ? event.remainingWork
+        : event.feedback,
     };
   }
   if (event.kind === 'continuation_issued') {
@@ -102,11 +104,16 @@ function reduceGoalEvent(
       runId: state.runId,
       generationId: state.generationId,
       objective: state.objective,
-      summary: event.summary,
       approvalSource: 'model',
       reviewerIdentity: event.reviewerIdentity,
-      reviewerFeedback: event.reviewerFeedback,
+      reviewerRationale: event.reviewerRationale
+        ?? event.reviewerFeedback
+        ?? 'Approved by legacy reviewer.',
+      attemptedReviewerIdentities: event.attemptedReviewerIdentities
+        ?? [event.reviewerIdentity,],
+      transcriptTruncated: event.transcriptTruncated ?? false,
       completedAt: event.completedAt,
+      ...(event.summary === undefined ? {} : { legacySummary: event.summary, }),
     };
   }
   if (event.kind === 'run_completed_manual') {
@@ -120,10 +127,13 @@ function reduceGoalEvent(
       runId: state.runId,
       generationId: state.generationId,
       objective: state.objective,
-      summary: event.summary,
       approvalSource: 'manual',
-      reviewerFeedback: event.reviewerFeedback,
+      reviewerRationale: event.reviewerRationale
+        ?? event.reviewerFeedback
+        ?? 'Approved manually after reviewer exhaustion.',
+      attemptedReviewerIdentities: event.attemptedReviewerIdentities ?? [],
       completedAt: event.completedAt,
+      ...(event.summary === undefined ? {} : { legacySummary: event.summary, }),
     };
   }
   if (event.kind === 'review_unavailable') {
@@ -137,10 +147,10 @@ function reduceGoalEvent(
       runId: state.runId,
       generationId: state.generationId,
       objective: state.objective,
-      summary: event.summary,
       attemptedReviewerIdentities: [...event.attemptedReviewerIdentities,],
       diagnostic: event.diagnostic,
       terminalAt: event.terminalAt,
+      ...(event.summary === undefined ? {} : { legacySummary: event.summary, }),
     };
   }
   if (event.kind === 'run_cleared') {

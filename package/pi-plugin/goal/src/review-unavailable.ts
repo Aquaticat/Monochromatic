@@ -1,5 +1,5 @@
 /**
- * TUI manual and non-interactive terminal fallbacks after reviewer exhaustion.
+ * TUI manual and non-interactive fallbacks after reviewer exhaustion.
  *
  * @module
  */
@@ -10,16 +10,17 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { ReviewUnavailableError, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 import {
-  completionResult,
-  revalidateCompletion,
+  revalidateSettlementReview,
   type GoalReviewerUnavailableHandler,
 } from './completion.ts';
+import { continueGoalAfterDenial, } from './completion-outcome.ts';
+import type { GoalSettlementDisposition, } from './completion-types.ts';
 import {
   manuallyApproveGoalCompletion,
   markGoalReviewUnavailable,
 } from './completion-terminal.ts';
-import type { GoalCompletionResult, } from './completion-types.ts';
 import {
+  defaultCreateId,
   defaultNow,
   type GoalLifecycleHandle,
 } from './lifecycle-services.ts';
@@ -27,6 +28,11 @@ import {
   type ManualGoalReviewPrompt,
   promptManualGoalReview,
 } from './manual-review-dialog.ts';
+
+/**
+ * Task-only fallback guidance when manual rejection has no reason.
+ */
+const DEFAULT_MANUAL_REJECTION_REMAINING_WORK = 'Continue working on the current user objective.';
 
 /**
  * Normalized model-review exhaustion audit.
@@ -51,12 +57,8 @@ type GoalReviewFailureAudit = {
  */
 function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
   if (error instanceof ReviewUnavailableError) {
-    /**
-     * Shared normalized diagnostics with non-empty fallback.
-     */
-    const diagnostics = error.diagnostics
-      .length
-      === 0
+    /** Shared normalized diagnostics with non-empty fallback. */
+    const diagnostics = error.diagnostics.length === 0
       ? [error.message,]
       : error.diagnostics;
     return {
@@ -65,9 +67,7 @@ function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
       diagnostic: diagnostics.join('; ',),
     };
   }
-  /**
-   * Normalized unexpected reviewer orchestration failure.
-   */
+  /** Normalized unexpected reviewer orchestration failure. */
   const diagnostic = caughtValueText(error,);
   return {
     attemptedReviewerIdentities: [],
@@ -77,34 +77,33 @@ function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
 }
 
 /**
- * Build explicit stale-completion result without state mutation.
+ * Return explicit stale fallback disposition.
  *
- * @returns stale tool result
+ * @returns stale harness outcome
  *
  * @example
  * ```ts
- * staleFallbackResult();
+ * staleFallbackDisposition();
  * ```
  */
-function staleFallbackResult(): GoalCompletionResult {
-  return completionResult({
-    text: 'Stale goal_complete fallback ignored because the active goal, generation, runtime, or branch changed.',
-    details: { outcome: 'stale', },
-  },);
+function staleFallbackDisposition(): GoalSettlementDisposition {
+  return 'stale';
 }
 
 /**
- * Create mode-specific reviewer exhaustion handler bound to current lifecycle.
+ * Create mode-specific reviewer exhaustion handler.
  *
- * @param lifecycle - live goal runtime used for stale revalidation and transitions
+ * @param lifecycle - live runtime used for stale revalidation
  *
  * @param promptManualReview - injectable mandatory TUI decision dialog
  *
+ * @param createId - private continuation identity source
+ *
  * @param now - timestamp source
  *
- * @returns reviewer-unavailable handler for completion registration
+ * @returns reviewer-unavailable handler
  *
- * @mutates promptManualReview - dialog capability may update captured TUI state
+ * @mutates promptManualReview - dialog capability may update TUI state
  *
  * @example
  * ```ts
@@ -115,10 +114,12 @@ function createGoalReviewerUnavailableHandler(
   {
     lifecycle,
     promptManualReview = promptManualGoalReview,
+    createId = defaultCreateId,
     now = defaultNow,
   }: {
     readonly lifecycle: GoalLifecycleHandle;
     readonly promptManualReview?: ForeignBorrowed<ManualGoalReviewPrompt>;
+    readonly createId?: () => string;
     readonly now?: () => string;
   },
 ): GoalReviewerUnavailableHandler {
@@ -129,20 +130,16 @@ function createGoalReviewerUnavailableHandler(
       context,
     },
   ) {
-    /**
-     * Normalized failed model-review audit.
-     */
+    /** Normalized failed-model audit. */
     const audit = normalizeGoalReviewFailure(error,);
-    /**
-     * Stale check before any mode-specific UI or terminal transition.
-     */
-    const initialRevalidation = revalidateCompletion({
+    /** Stale check before mode-specific UI or transition. */
+    const initialRevalidation = revalidateSettlementReview({
       lifecycle,
       request,
       context,
     },);
     if (!initialRevalidation.current)
-      return staleFallbackResult();
+      return staleFallbackDisposition();
     if (context.mode !== 'tui') {
       lifecycle.applyTransition({
         transition: markGoalReviewUnavailable({
@@ -154,74 +151,65 @@ function createGoalReviewerUnavailableHandler(
         },),
         context,
       },);
-      return completionResult({
-        text: `Independent completion review unavailable: ${audit.diagnostic}`,
-        details: {
-          outcome: 'review_unavailable',
-          attemptedReviewerIdentities: audit.attemptedReviewerIdentities,
-          reviewerFeedback: audit.diagnostic,
-        },
-        terminate: true,
-      },);
+      return 'review_unavailable';
     }
-    /**
-     * Mandatory explicit TUI decision after model exhaustion.
-     */
+    /** Mandatory human decision after model exhaustion. */
     const decision = await promptManualReview({
       context,
       diagnostic: audit.diagnostic,
     },);
-    /**
-     * Post-dialog stale check before state mutation or rejection feedback.
-     */
-    const finalRevalidation = revalidateCompletion({
+    /** Post-dialog stale check before state mutation. */
+    const finalRevalidation = revalidateSettlementReview({
       lifecycle,
       request,
       context,
     },);
     if (!finalRevalidation.current)
-      return staleFallbackResult();
+      return staleFallbackDisposition();
     if (decision.action === 'accept') {
       lifecycle.applyTransition({
         transition: manuallyApproveGoalCompletion({
           controller: finalRevalidation.controller,
           request,
+          attemptedReviewerIdentities: audit.attemptedReviewerIdentities,
           diagnostic: audit.diagnostic,
           timestamp: now(),
         },),
         context,
       },);
-      return completionResult({
-        text: `Goal manually approved after independent reviewers were unavailable: ${audit.diagnostic}`,
-        details: {
-          outcome: 'approved',
-          reviewerFeedback: audit.diagnostic,
-          attemptedReviewerIdentities: audit.attemptedReviewerIdentities,
-        },
-        terminate: true,
-      },);
+      return 'approved';
     }
-    /**
-     * Optional rejection reason normalized without replacing empty rejection semantics.
-     */
-    const reason = decision.reason
-      .trim();
-    return completionResult({
-      text: reason === ''
-        ? 'Manual reviewer rejected completion after model review was unavailable.'
-        : reason,
-      details: {
-        outcome: 'denied',
-        ...(reason === '' ? {} : { reviewerFeedback: reason, }),
-        attemptedReviewerIdentities: audit.attemptedReviewerIdentities,
-      },
+    /** Optional human reason normalized to task-only fallback guidance. */
+    const reason = decision.reason.trim();
+    const remainingWork = reason === ''
+      ? DEFAULT_MANUAL_REJECTION_REMAINING_WORK
+      : reason;
+    lifecycle.applyTransition({
+      transition: continueGoalAfterDenial({
+        controller: finalRevalidation.controller,
+        request,
+        review: {
+          verdict: {
+            approved: false,
+            rationale: `Manual rejection after reviewer exhaustion: ${audit.diagnostic}`,
+            remainingWork,
+          },
+          reviewerIdentity: 'manual',
+          attemptedReviewerIdentities: audit.attemptedReviewerIdentities,
+          transcriptTruncated: false,
+        },
+        marker: createId(),
+        timestamp: now(),
+      },),
+      context,
     },);
+    return 'continued';
   };
 }
 
 export {
   createGoalReviewerUnavailableHandler,
   normalizeGoalReviewFailure,
-  staleFallbackResult,
+  staleFallbackDisposition,
 };
 export type { GoalReviewFailureAudit, };

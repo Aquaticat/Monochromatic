@@ -1,148 +1,177 @@
 /**
- * Pi registration boundary for goal completion tool and sibling finality tracking.
+ * Harness-owned settlement-review registration.
  *
  * @module
  */
 
 import type {
+  AgentEndEvent,
+  AgentSettledEvent,
   ExtensionAPI,
   ExtensionContext,
-  SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { Type, } from 'typebox';
 
+import { registerBackgroundProcessMonitor, } from './background-process-monitor.ts';
 import {
-  executeGoalCompletion,
-  type GoalCompletionParams,
+  createGoalSettlementReviewRequest,
+  executeGoalSettlementReview,
   type GoalReviewerUnavailableHandler,
 } from './completion.ts';
-import { goalCompletionFinalityFromMessage, } from './completion-finality.ts';
-import type { GoalCompletionReviewer, } from './completion-types.ts';
-import { GOAL_COMPLETE_TOOL_NAME, } from './constants.ts';
+import type { GoalSettlementReviewer, } from './completion-types.ts';
 import {
+  defaultCreateId,
   defaultNow,
   type GoalLifecycleHandle,
 } from './lifecycle-services.ts';
-import { reviewGoalCompletion, } from './review-runner.ts';
+import { reviewGoalSettlement, } from './review-runner.ts';
 import { createGoalReviewerUnavailableHandler, } from './review-unavailable.ts';
 
 /**
- * Finalized message event shape omitted from Pi root type exports.
+ * Registration dependencies for private settlement review.
  */
-type GoalMessageEndEvent = {
-  readonly type: 'message_end';
-  readonly message: SessionMessageEntry['message'];
-};
-
-/**
- * Registration dependencies for completion tool.
- */
-type GoalCompletionRegistration = {
+type GoalSettlementReviewRegistration = {
   readonly pi: ForeignBorrowed<ExtensionAPI>;
   readonly lifecycle: GoalLifecycleHandle;
-  readonly reviewer?: GoalCompletionReviewer;
+  readonly reviewer?: GoalSettlementReviewer;
   readonly handleReviewerUnavailable?: GoalReviewerUnavailableHandler;
+  readonly createId?: () => string;
   readonly now?: () => string;
 };
 
 /**
- * Register sequential completion tool and message-finality tracker.
+ * Build stable duplicate-review key from captured settlement.
  *
- * @param pi - Pi extension API receiving tool and lifecycle registration
+ * @param request - captured active settlement
  *
- * @param lifecycle - shared goal runtime boundary
- *
- * @param reviewer - injectable independent model reviewer
- *
- * @param handleReviewerUnavailable - mode-specific reviewer exhaustion behavior
- *
- * @param now - timestamp source
- *
- * @mutates pi - registers message handler and sequential completion tool
+ * @returns runtime-local duplicate guard key
  *
  * @example
  * ```ts
- * registerGoalCompletion({ pi, lifecycle });
+ * settlementReviewKey(request);
  * ```
  */
-function registerGoalCompletion(
+function settlementReviewKey(
+  request: Parameters<typeof executeGoalSettlementReview>[0]['request'],
+): string {
+  return JSON.stringify([
+    request.runtimeEpoch,
+    request.goal.runId,
+    request.goal.generationId,
+    request.branchLeafId,
+    request.settlementSequence,
+  ],);
+}
+
+/**
+ * Register private review at Pi's final settlement seam.
+ *
+ * @param pi - Pi extension API receiving lifecycle handlers
+ *
+ * @param lifecycle - shared goal runtime
+ *
+ * @param reviewer - injectable independent reviewer
+ *
+ * @param handleReviewerUnavailable - injectable mode-specific fallback
+ *
+ * @param createId - private continuation identity source
+ *
+ * @param now - timestamp source
+ *
+ * @mutates pi - registers agent lifecycle handlers
+ *
+ * @example
+ * ```ts
+ * registerGoalSettlementReview({ pi, lifecycle });
+ * ```
+ */
+function registerGoalSettlementReview(
   {
     pi,
     lifecycle,
-    reviewer = reviewGoalCompletion,
+    reviewer = reviewGoalSettlement,
     handleReviewerUnavailable,
+    createId = defaultCreateId,
     now = defaultNow,
-  }: GoalCompletionRegistration,
+  }: GoalSettlementReviewRegistration,
 ): void {
-  /**
-   * Final-tool status keyed by finalized assistant tool-call identity.
-   */
-  const finality = new Map<string, boolean>();
-  /**
-   * Explicit caller override or production mode-specific exhaustion handler.
-   */
+  /** Passive runtime-local view of background work. */
+  const backgroundProcessMonitor = registerBackgroundProcessMonitor(pi,);
+  /** Explicit user abort marker consumed by final settlement. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Separate agent_end and agent_settled callbacks share one runtime marker.
+  let settledRunWasAborted = false;
+  /** Most recent captured settlement protected from duplicate callbacks. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Runtime-local duplicate guard spans agent_settled callbacks.
+  let lastReviewedSettlementKey: string | undefined;
+  /** Explicit fallback or production mode-specific exhaustion handler. */
   const unavailableHandler = handleReviewerUnavailable
     ?? createGoalReviewerUnavailableHandler({
       lifecycle,
+      createId,
       now,
     },);
+
   pi.on(
-    'message_end',
-    function captureCompletionFinality(event: ForeignBorrowed<GoalMessageEndEvent>,) {
-      for (const record of goalCompletionFinalityFromMessage(event.message,)) {
-        finality.set(
-          record.toolCallId,
-          record.isFinalToolCall,
-        );
-      }
+    'agent_end',
+    function recordAbortedRun(
+      event: ForeignBorrowed<AgentEndEvent>,
+    ) {
+      /** Latest assistant message determines explicit abort. */
+      const finalAssistant = event.messages
+        .findLast(function isAssistant(message,) {
+          return message.role === 'assistant';
+        },);
+      settledRunWasAborted = finalAssistant?.stopReason === 'aborted';
     },
   );
-  pi.registerTool({
-    name: GOAL_COMPLETE_TOOL_NAME,
-    label: 'Complete Goal',
-    description: 'Request independent completion review for exact active goal generation. Call only as final action after requirement-by-requirement verification.',
-    promptSnippet: 'Request independent completion review for active /goal after all work and verification finish',
-    promptGuidelines: [
-      'Call goal_complete only as the final tool call after every objective requirement is complete and verified.',
-      'Pass exact current goal_id from active goal prompt. It is only a stale-completion guard.',
-      'Summarize completed work and concrete verification evidence.',
-    ],
-    executionMode: 'sequential',
-    parameters: Type.Object(
-      {
-        goal_id: Type.String({
-          description: 'Exact current goal_id from active goal prompt.',
-        },),
-        summary: Type.String({
-          description: 'Completed work and requirement-by-requirement verification evidence.',
-        },),
-      },
-      {
-        additionalProperties: false,
-      },
-    ),
-    async execute(
-      toolCallId,
-      params: Readonly<GoalCompletionParams>,
-      signal,
-      _onUpdate,
+  pi.on(
+    'agent_settled',
+    async function reviewSettledGoal(
+      _event: ForeignBorrowed<AgentSettledEvent>,
       context: ForeignBorrowed<ExtensionContext>,
     ) {
-      return await executeGoalCompletion({
-        toolCallId,
-        params,
-        ...(signal === undefined ? {} : { signal, }),
+      if (settledRunWasAborted) {
+        settledRunWasAborted = false;
+        return;
+      }
+      if ((!context.isIdle())
+        || context.hasPendingMessages()
+        || backgroundProcessMonitor.hasLiveBackgroundProcess()) {
+        return;
+      }
+      if (lifecycle.deliverPendingKickoff(context,))
+        return;
+      /** Finalized selected branch leaf. */
+      const branchLeafId = context.sessionManager.getLeafId();
+      if (branchLeafId === null)
+        return;
+      /** Captured active settlement or absent marker. */
+      const request = createGoalSettlementReviewRequest({
+        controller: lifecycle.currentController(),
+        branchLeafId,
+      },);
+      if (request === undefined)
+        return;
+      /** Duplicate guard for exact runtime, generation, leaf, and sequence. */
+      const reviewKey = settlementReviewKey(request,);
+      if (reviewKey === lastReviewedSettlementKey)
+        return;
+      lastReviewedSettlementKey = reviewKey;
+      await executeGoalSettlementReview({
+        request,
         context,
-        finality,
         lifecycle,
         reviewer,
         handleReviewerUnavailable: unavailableHandler,
+        createId,
         now,
       },);
     },
-  },);
+  );
 }
 
-export { registerGoalCompletion, };
-export type { GoalCompletionRegistration, };
+export {
+  registerGoalSettlementReview,
+  settlementReviewKey,
+};
+export type { GoalSettlementReviewRegistration, };

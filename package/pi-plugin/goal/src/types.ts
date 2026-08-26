@@ -12,7 +12,7 @@
 type GoalRunId = string;
 
 /**
- * Stale-callback generation identity exposed as `goal_id`.
+ * Private stale-callback generation identity.
  */
 type GoalGenerationId = string;
 
@@ -54,7 +54,7 @@ type ActiveGoalState = {
   readonly startBoundary: GoalStartBoundary;
   readonly continuationSequence: number;
   readonly transitionedAt: string;
-  readonly reviewerFeedback?: string;
+  readonly remainingWork?: string;
 };
 
 /**
@@ -65,11 +65,13 @@ type ModelCompletedGoalState = {
   readonly runId: GoalRunId;
   readonly generationId: GoalGenerationId;
   readonly objective: string;
-  readonly summary: string;
   readonly approvalSource: 'model';
   readonly reviewerIdentity: string;
-  readonly reviewerFeedback: string;
+  readonly reviewerRationale: string;
+  readonly attemptedReviewerIdentities: readonly string[];
+  readonly transcriptTruncated: boolean;
   readonly completedAt: string;
+  readonly legacySummary?: string;
 };
 
 /**
@@ -80,10 +82,11 @@ type ManualCompletedGoalState = {
   readonly runId: GoalRunId;
   readonly generationId: GoalGenerationId;
   readonly objective: string;
-  readonly summary: string;
   readonly approvalSource: 'manual';
-  readonly reviewerFeedback: string;
+  readonly reviewerRationale: string;
+  readonly attemptedReviewerIdentities: readonly string[];
   readonly completedAt: string;
+  readonly legacySummary?: string;
 };
 
 /**
@@ -94,10 +97,10 @@ type ReviewUnavailableGoalState = {
   readonly runId: GoalRunId;
   readonly generationId: GoalGenerationId;
   readonly objective: string;
-  readonly summary: string;
   readonly attemptedReviewerIdentities: readonly string[];
   readonly diagnostic: string;
   readonly terminalAt: string;
+  readonly legacySummary?: string;
 };
 
 /**
@@ -149,6 +152,22 @@ type GoalReviewDeniedEvent = {
   readonly kind: 'review_denied';
   readonly runId: GoalRunId;
   readonly generationId: GoalGenerationId;
+  readonly remainingWork: string;
+  readonly reviewerIdentity: string;
+  readonly reviewerRationale: string;
+  readonly attemptedReviewerIdentities: readonly string[];
+  readonly transcriptTruncated: boolean;
+  readonly continuationSequence: number;
+  readonly transitionedAt: string;
+};
+
+/**
+ * Legacy tool-era denial retained for session reconstruction.
+ */
+type LegacyGoalReviewDeniedEvent = {
+  readonly kind: 'review_denied';
+  readonly runId: GoalRunId;
+  readonly generationId: GoalGenerationId;
   readonly feedback: string;
   readonly continuationSequence: number;
   readonly transitionedAt: string;
@@ -172,10 +191,13 @@ type GoalModelCompletedEvent = {
   readonly kind: 'run_completed_model';
   readonly runId: GoalRunId;
   readonly generationId: GoalGenerationId;
-  readonly summary: string;
   readonly reviewerIdentity: string;
-  readonly reviewerFeedback: string;
+  readonly reviewerRationale?: string;
+  readonly attemptedReviewerIdentities?: readonly string[];
+  readonly transcriptTruncated?: boolean;
   readonly completedAt: string;
+  readonly summary?: string;
+  readonly reviewerFeedback?: string;
 };
 
 /**
@@ -185,9 +207,11 @@ type GoalManualCompletedEvent = {
   readonly kind: 'run_completed_manual';
   readonly runId: GoalRunId;
   readonly generationId: GoalGenerationId;
-  readonly summary: string;
-  readonly reviewerFeedback: string;
+  readonly reviewerRationale?: string;
+  readonly attemptedReviewerIdentities?: readonly string[];
   readonly completedAt: string;
+  readonly summary?: string;
+  readonly reviewerFeedback?: string;
 };
 
 /**
@@ -197,10 +221,10 @@ type GoalReviewUnavailableEvent = {
   readonly kind: 'review_unavailable';
   readonly runId: GoalRunId;
   readonly generationId: GoalGenerationId;
-  readonly summary: string;
   readonly attemptedReviewerIdentities: readonly string[];
   readonly diagnostic: string;
   readonly terminalAt: string;
+  readonly summary?: string;
 };
 
 /**
@@ -220,6 +244,7 @@ type GoalEvent =
   | GoalRunStartedEvent
   | GoalGenerationRotatedEvent
   | GoalReviewDeniedEvent
+  | LegacyGoalReviewDeniedEvent
   | GoalContinuationIssuedEvent
   | GoalModelCompletedEvent
   | GoalManualCompletedEvent
@@ -287,6 +312,20 @@ type GoalReviewUnavailableDiagnostic = {
 };
 
 /**
+ * Durable human-only completion audit.
+ */
+type GoalCompletionDiagnostic = {
+  readonly runId: GoalRunId;
+  readonly generationId: GoalGenerationId;
+  readonly approvalSource: 'model' | 'manual';
+  readonly reviewerIdentity: string;
+  readonly reviewerRationale: string;
+  readonly attemptedReviewerIdentities: readonly string[];
+  readonly transcriptTruncated: boolean;
+  readonly completedAt: string;
+};
+
+/**
  * Immutable controller state held by Pi adapter.
  */
 type GoalControllerState = {
@@ -321,6 +360,10 @@ type GoalEffect =
     readonly diagnostic: GoalReviewUnavailableDiagnostic
   }
   | {
+    readonly type: 'persist_completion_diagnostic';
+    readonly diagnostic: GoalCompletionDiagnostic
+  }
+  | {
     readonly type: 'notify';
     readonly level: 'info' | 'warning' | 'error';
     readonly message: string
@@ -344,6 +387,7 @@ type GoalControllerTransition = {
 export type {
   AbsentGoalState,
   ActiveGoalState,
+  GoalCompletionDiagnostic,
   GoalContinuationIssuedEvent,
   GoalControllerState,
   GoalControllerTransition,

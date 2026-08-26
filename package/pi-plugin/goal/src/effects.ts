@@ -15,6 +15,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  GOAL_COMPLETION_ENTRY_TYPE,
   GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
   GOAL_STATE_ENTRY_TYPE,
   GOAL_STATUS_KEY,
@@ -89,6 +90,13 @@ function applyGoalEffects(
     if (effect.type === 'persist_review_unavailable_diagnostic') {
       pi.appendEntry(
         GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
+        effect.diagnostic,
+      );
+      continue;
+    }
+    if (effect.type === 'persist_completion_diagnostic') {
+      pi.appendEntry(
+        GOAL_COMPLETION_ENTRY_TYPE,
         effect.diagnostic,
       );
       continue;

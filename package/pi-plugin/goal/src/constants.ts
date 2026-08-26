@@ -15,7 +15,12 @@ const GOAL_STATE_ENTRY_TYPE = 'goal:state';
 const GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE = 'goal:review-unavailable';
 
 /**
- * Custom message type for visible kickoff and continuation context.
+ * Human-only durable completion entry type.
+ */
+const GOAL_COMPLETION_ENTRY_TYPE = 'goal:completion';
+
+/**
+ * Custom message type for task-only kickoff and continuation context.
  */
 const GOAL_MESSAGE_TYPE = 'goal';
 
@@ -23,11 +28,6 @@ const GOAL_MESSAGE_TYPE = 'goal';
  * Footer status key owned by goal extension.
  */
 const GOAL_STATUS_KEY = 'goal';
-
-/**
- * Exact model-callable completion tool name.
- */
-const GOAL_COMPLETE_TOOL_NAME = 'goal_complete';
 
 /**
  * Maximum normalized objective length.
@@ -71,7 +71,7 @@ const GOAL_USAGE = 'Usage: /goal <objective> or /goal clear';
 
 export {
   ESTIMATED_CHARACTERS_PER_TOKEN,
-  GOAL_COMPLETE_TOOL_NAME,
+  GOAL_COMPLETION_ENTRY_TYPE,
   GOAL_MESSAGE_TYPE,
   GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
   GOAL_STATE_ENTRY_TYPE,

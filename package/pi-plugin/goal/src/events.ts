@@ -76,6 +76,25 @@ function hasStringProperties(
 }
 
 /**
+ * Validate unknown value as string array.
+ *
+ * @param value - candidate array
+ *
+ * @returns whether every entry is string
+ *
+ * @example
+ * ```ts
+ * isStringArray(['review/model']);
+ * ```
+ */
+function isStringArray(value: unknown,): value is string[] {
+  return Array.isArray(value,)
+    && value.every(function entryIsString(entry,) {
+      return (typeof entry) === 'string';
+    },);
+}
+
+/**
  * Validate persisted unknown payload as one supported goal event.
  *
  * @param value - custom-entry payload
@@ -127,16 +146,29 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
         || (value.cause === 'tree_navigation'));
   }
   if (kind === 'review_denied') {
-    return hasStringProperties({
+    const baseValid = hasStringProperties({
       record: value,
       names: [
         'runId',
         'generationId',
-        'feedback',
         'transitionedAt',
       ],
     },)
       && ((typeof value.continuationSequence) === 'number');
+    if (!baseValid)
+      return false;
+    if ((typeof value.remainingWork) === 'string') {
+      return hasStringProperties({
+        record: value,
+        names: [
+          'reviewerIdentity',
+          'reviewerRationale',
+        ],
+      },)
+        && isStringArray(value.attemptedReviewerIdentities,)
+        && ((typeof value.transcriptTruncated) === 'boolean');
+    }
+    return (typeof value.feedback) === 'string';
   }
   if (kind === 'continuation_issued') {
     return hasStringProperties({
@@ -150,27 +182,47 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
       && ((typeof value.continuationSequence) === 'number');
   }
   if (kind === 'run_completed_model') {
-    return hasStringProperties({
+    const baseValid = hasStringProperties({
       record: value,
       names: [
         'runId',
         'generationId',
-        'summary',
         'reviewerIdentity',
-        'reviewerFeedback',
         'completedAt',
+      ],
+    },);
+    if (!baseValid)
+      return false;
+    if ((typeof value.reviewerRationale) === 'string') {
+      return isStringArray(value.attemptedReviewerIdentities,)
+        && ((typeof value.transcriptTruncated) === 'boolean');
+    }
+    return hasStringProperties({
+      record: value,
+      names: [
+        'summary',
+        'reviewerFeedback',
       ],
     },);
   }
   if (kind === 'run_completed_manual') {
-    return hasStringProperties({
+    const baseValid = hasStringProperties({
       record: value,
       names: [
         'runId',
         'generationId',
+        'completedAt',
+      ],
+    },);
+    if (!baseValid)
+      return false;
+    if ((typeof value.reviewerRationale) === 'string')
+      return isStringArray(value.attemptedReviewerIdentities,);
+    return hasStringProperties({
+      record: value,
+      names: [
         'summary',
         'reviewerFeedback',
-        'completedAt',
       ],
     },);
   }
@@ -180,16 +232,12 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
       names: [
         'runId',
         'generationId',
-        'summary',
         'diagnostic',
         'terminalAt',
       ],
     },)
-      && Array.isArray(value.attemptedReviewerIdentities,)
-      && value.attemptedReviewerIdentities
-      .every(function reviewerIsString(reviewer,) {
-        return (typeof reviewer) === 'string';
-      },);
+      && isStringArray(value.attemptedReviewerIdentities,)
+      && ((value.summary === undefined) || ((typeof value.summary) === 'string'));
   }
   if (kind === 'run_cleared') {
     return hasStringProperties({

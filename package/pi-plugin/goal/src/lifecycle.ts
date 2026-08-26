@@ -5,8 +5,6 @@
  */
 
 import type {
-  AgentEndEvent,
-  AgentSettledEvent,
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
   ExtensionAPI,
@@ -19,7 +17,6 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { registerBackgroundProcessMonitor, } from './background-process-monitor.ts';
 import { parseGoalCommand, } from './command.ts';
 import {
   clearGoal,
@@ -39,7 +36,7 @@ import {
 import { buildActiveGoalPrompt, } from './prompt.ts';
 import { reduceGoalEvents, } from './reducer.ts';
 import {
-  settleGoal,
+  deliverPendingGoalKickoff,
   shutdownGoalController,
 } from './settlement.ts';
 import type {
@@ -81,20 +78,10 @@ function registerGoalLifecycle(
    */
   const runtimeEpoch = services.createId();
   /**
-   * Passive runtime-local view of background work that must settle before goal continuation.
-   */
-  const backgroundProcessMonitor = registerBackgroundProcessMonitor(pi,);
-  /**
    * Controller ownership belongs to this single extension runtime closure.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Pi lifecycle handlers share one runtime-owned immutable-state cursor.
   let controller = createGoalController(runtimeEpoch,);
-  /**
-   * Whether most recent run ended by explicit user abort.
-   */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Agent end records abort; later final settlement consumes this runtime-owned marker.
-  let settledRunWasAborted = false;
-
   /**
    * Store next immutable controller and execute its ordered effects.
    *
@@ -267,24 +254,22 @@ function registerGoalLifecycle(
   }
 
   /**
-   * Continue current active goal after final settlement when no process remains live.
+   * Deliver deferred kickoff before settlement review.
    *
    * @param context - active session context
    *
-   * @mutates context - context.hasPendingMessages may change context-owned Pi state, and emitted effects may update UI
+   * @returns whether matching deferred kickoff owned this settlement
+   *
+   * @mutates context - emitted effects may append task context and update Pi UI
    */
-  function settleCurrentGoal(context: ForeignBorrowed<ExtensionContext>,): void {
-    if (backgroundProcessMonitor.hasLiveBackgroundProcess())
-      return;
+  function deliverPendingKickoff(context: ForeignBorrowed<ExtensionContext>,): boolean {
+    if (controller.pendingKickoff === undefined)
+      return false;
     applyTransition({
-      transition: settleGoal({
-        controller,
-        marker: services.createId(),
-        timestamp: services.now(),
-        hasPendingMessages: context.hasPendingMessages(),
-      },),
+      transition: deliverPendingGoalKickoff(controller,),
       context,
     },);
+    return true;
   }
 
   pi.registerCommand(
@@ -365,38 +350,10 @@ function registerGoalLifecycle(
       };
     },
   );
-  pi.on(
-    'agent_end',
-    function recordAbortedRun(
-      event: ForeignBorrowed<AgentEndEvent>,
-    ) {
-      /**
-       * Latest assistant message determines final run stop reason.
-       */
-      const finalAssistant = event.messages
-        .findLast(function isAssistant(message,) {
-          return message.role === 'assistant';
-        },);
-      settledRunWasAborted = finalAssistant?.stopReason === 'aborted';
-    },
-  );
-  pi.on(
-    'agent_settled',
-    function continueActiveGoal(
-      _event: ForeignBorrowed<AgentSettledEvent>,
-      context: ForeignBorrowed<ExtensionContext>,
-    ) {
-      if (settledRunWasAborted) {
-        settledRunWasAborted = false;
-        return;
-      }
-      settleCurrentGoal(context,);
-    },
-  );
-
   return {
     currentController,
     applyTransition,
+    deliverPendingKickoff,
   };
 }
 

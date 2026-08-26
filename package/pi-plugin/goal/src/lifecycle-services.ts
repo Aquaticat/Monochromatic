@@ -49,6 +49,13 @@ type GoalLifecycleHandle = {
       readonly context: ForeignBorrowed<ExtensionContext>;
     },
   ) => void;
+
+  /**
+   * Deliver deferred kickoff before reviewing settlement.
+   */
+  readonly deliverPendingKickoff: (
+    context: ForeignBorrowed<ExtensionContext>,
+  ) => boolean;
 };
 
 /**

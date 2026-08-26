@@ -1,5 +1,5 @@
 /**
- * Active-branch post-start evidence serialization for completion reviewers.
+ * Active-branch post-start evidence serialization for settlement reviewers.
  *
  * @module
  */
@@ -22,7 +22,7 @@ import {
 } from './constants.ts';
 import type {
   GoalReviewEvidence,
-  ValidGoalCompletionRequest,
+  GoalSettlementReviewRequest,
 } from './completion-types.ts';
 import { isGoalEvent, } from './events.ts';
 
@@ -32,7 +32,7 @@ import { isGoalEvent, } from './events.ts';
 const EVIDENCE_ENTRY_OMITTED: unique symbol = Symbol('goal/evidence-entry-omitted',);
 
 /**
- * Convert text, image, or tool-call blocks to bounded textual evidence.
+ * Convert finalized content block to reviewer-visible text.
  *
  * @param content - finalized message content block
  *
@@ -78,38 +78,7 @@ function messageContentText(
 }
 
 /**
- * Detect pending completion call in assistant message excluded from evidence.
- *
- * @param message - finalized assistant message
- *
- * @param toolCallId - pending completion call identity
- *
- * @returns whether assistant message contains pending completion claim
- *
- * @example
- * ```ts
- * assistantContainsToolCall({ message, toolCallId: 'call-1' });
- * ```
- */
-function assistantContainsToolCall(
-  {
-    message,
-    toolCallId,
-  }: {
-    readonly message: ForeignBorrowed<SessionMessageEntry['message']>;
-    readonly toolCallId: string;
-  },
-): boolean {
-  if (message.role !== 'assistant')
-    return false;
-  return message.content
-    .some(function matchesToolCall(content,) {
-    return (content.type === 'toolCall') && (content.id === toolCallId);
-  },);
-}
-
-/**
- * Validate visible current-generation goal-message provenance.
+ * Validate current-generation task-message provenance.
  *
  * @param details - unknown custom-message details
  *
@@ -117,7 +86,7 @@ function assistantContainsToolCall(
  *
  * @param generationId - active generation identity
  *
- * @returns whether details identify visible kickoff or continuation
+ * @returns whether details identify current kickoff or continuation
  *
  * @example
  * ```ts
@@ -156,8 +125,6 @@ function isCurrentGoalMessageDetails(
  *
  * @param entry - active-branch session entry
  *
- * @param toolCallId - pending completion call excluded from evidence
- *
  * @param runId - current active run identity
  *
  * @param generationId - current active generation identity
@@ -166,18 +133,16 @@ function isCurrentGoalMessageDetails(
  *
  * @example
  * ```ts
- * serializeEvidenceEntry({ entry, toolCallId: 'call-1' });
+ * serializeEvidenceEntry({ entry, runId: 'run-1', generationId: 'generation-1' });
  * ```
  */
 function serializeEvidenceEntry(
   {
     entry,
-    toolCallId,
     runId,
     generationId,
   }: {
     readonly entry: ForeignBorrowed<SessionEntry>;
-    readonly toolCallId: string;
     readonly runId: string;
     readonly generationId: string;
   },
@@ -192,19 +157,12 @@ function serializeEvidenceEntry(
       },))) {
       return EVIDENCE_ENTRY_OMITTED;
     }
-    return `Goal continuation:\n${messageContentText(entry.content,)}`;
+    return `Task context:\n${messageContentText(entry.content,)}`;
   }
   if (entry.type !== 'message')
     return EVIDENCE_ENTRY_OMITTED;
-  /**
-   * Finalized agent message stored by selected branch.
-   */
+  /** Finalized agent message stored by selected branch. */
   const { message, } = entry;
-  if (assistantContainsToolCall({
-    message,
-    toolCallId,
-  },))
-    return EVIDENCE_ENTRY_OMITTED;
   if (message.role === 'user')
     return `User:\n${messageContentText(message.content,)}`;
   if (message.role === 'assistant')
@@ -244,19 +202,14 @@ function findRunStartIndex(
     readonly runId: string;
   },
 ): number {
-  /**
-   * Matching run-start entry position.
-   */
+  /** Matching run-start entry position. */
   const index = branch.findIndex(function isMatchingRunStart(entry,) {
     if ((entry.type !== 'custom') || (entry.customType !== GOAL_STATE_ENTRY_TYPE))
       return false;
     if (!isGoalEvent(entry.data,))
       return false;
-    return (entry.data
-      .kind
-      === 'run_started') && (entry.data
-        .runId
-        === runId);
+    return (entry.data.kind === 'run_started')
+      && (entry.data.runId === runId);
   },);
   if (index === (-1))
     throw new Error(`Active goal run start is absent from selected branch: ${runId}`,);
@@ -268,9 +221,9 @@ function findRunStartIndex(
  *
  * @param branch - `SessionManager.getBranch()` result
  *
- * @param request - locally validated completion request
+ * @param request - captured settlement identity
  *
- * @returns objective, summary, and finalized post-start chunks
+ * @returns objective and finalized post-start chunks
  *
  * @example
  * ```ts
@@ -283,33 +236,25 @@ function buildGoalReviewEvidence(
     request,
   }: {
     readonly branch: readonly ForeignBorrowed<SessionEntry>[];
-    readonly request: ValidGoalCompletionRequest;
+    readonly request: GoalSettlementReviewRequest;
   },
 ): GoalReviewEvidence {
-  /**
-   * Matching run-start position defining transcript boundary.
-   */
+  /** Matching run-start position defining transcript seam. */
   const startIndex = findRunStartIndex({
     branch,
-    runId: request.goal
-      .runId,
+    runId: request.goal.runId,
   },);
-  /**
-   * Active run and generation identities filtering custom messages.
-   */
+  /** Active run identities filtering task messages. */
   const {
     runId,
     generationId,
   } = request.goal;
-  /**
-   * Eligible serialized chunks after current run started.
-   */
+  /** Eligible serialized chunks after current run started. */
   const transcriptChunks = branch
     .slice(startIndex + 1,)
     .map(function serializeEntry(entry,) {
       return serializeEvidenceEntry({
         entry,
-        toolCallId: request.toolCallId,
         runId,
         generationId,
       },);
@@ -320,9 +265,7 @@ function buildGoalReviewEvidence(
       return (typeof chunk) === 'string';
     },);
   return {
-    objective: request.goal
-      .objective,
-    summary: request.summary,
+    objective: request.goal.objective,
     transcriptChunks,
   };
 }

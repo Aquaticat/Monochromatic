@@ -1,5 +1,5 @@
 /**
- * Visible extension-authored goal kickoff and continuation messages.
+ * Task-only extension messages for goal kickoff and continuation.
  *
  * @module
  */
@@ -12,67 +12,57 @@ import type {
 } from './types.ts';
 
 /**
- * Build model-visible goal message body.
- *
- * JSON string encoding preserves exact objective text without allowing it to break prompt delimiters.
+ * Build model-visible task content without harness protocol.
  *
  * @param goal - exact active goal state
  *
  * @param kind - kickoff or continuation
  *
- * @param continuationSequence - auditable continuation sequence
+ * @param remainingWork - actionable task-only denial guidance
  *
- * @returns model-visible message body
+ * @returns task context safe for primary-model input
  *
  * @example
  * ```ts
- * goalMessageContent({ goal, kind: 'kickoff', continuationSequence: 0 });
+ * goalMessageContent({ goal, kind: 'kickoff' });
  * ```
  */
 function goalMessageContent(
   {
     goal,
     kind,
-    continuationSequence,
+    remainingWork,
   }: {
     readonly goal: ActiveGoalState;
     readonly kind: 'kickoff' | 'continuation';
-    readonly continuationSequence: number;
+    readonly remainingWork?: string;
   },
 ): string {
-  /**
-   * Message-specific opening instruction.
-   */
-  const opening = kind === 'kickoff'
-    ? 'Begin the active goal and continue until it is fully complete.'
-    : `Continue the active goal after settlement ${continuationSequence} until it is fully complete.`;
-  return [
-    opening,
-    `Objective (exact JSON string): ${JSON.stringify(goal.objective,)}`,
-    `Current goal_id: ${goal.generationId}`,
-    'This goal_id is only the stale-completion guard. It is not part of the objective.',
-    'Use current files, command output, tests, and external state as authority.',
-    'Do not stop at a plan or partial result.',
-    'Call goal_complete only after requirement-by-requirement verification and pass this exact goal_id.',
-  ].join('\n',);
+  if (kind === 'kickoff')
+    return `User objective (exact JSON string): ${JSON.stringify(goal.objective,)}`;
+  if (remainingWork === undefined)
+    throw new Error('Goal continuation requires task-only remaining work',);
+  return remainingWork;
 }
 
 /**
- * Build visible custom goal message and audit details.
+ * Build task-only custom message with private lifecycle details.
  *
  * @param goal - exact active goal state
  *
  * @param kind - kickoff or continuation
  *
- * @param continuationSequence - message sequence
+ * @param continuationSequence - private message sequence
  *
  * @param marker - unique generation-scoped marker
+ *
+ * @param remainingWork - actionable task-only denial guidance
  *
  * @returns Pi custom message
  *
  * @example
  * ```ts
- * buildGoalMessage({ goal, kind: 'continuation', continuationSequence: 1, marker });
+ * buildGoalMessage({ goal, kind: 'continuation', continuationSequence: 1, marker, remainingWork: 'Run tests.' });
  * ```
  */
 function buildGoalMessage(
@@ -81,11 +71,13 @@ function buildGoalMessage(
     kind,
     continuationSequence,
     marker,
+    remainingWork,
   }: {
     readonly goal: ActiveGoalState;
     readonly kind: 'kickoff' | 'continuation';
     readonly continuationSequence: number;
     readonly marker: GoalMessageMarker;
+    readonly remainingWork?: string;
   },
 ): GoalMessage {
   return {
@@ -93,7 +85,7 @@ function buildGoalMessage(
     content: goalMessageContent({
       goal,
       kind,
-      continuationSequence,
+      ...(remainingWork === undefined ? {} : { remainingWork, }),
     },),
     display: true,
     details: {
