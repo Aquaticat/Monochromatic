@@ -17,8 +17,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { CALLER_SCOPED_YDOTOOL_REASON, } from '@monochromatic-dev/pi-plugin-auto-mode';
-import {
+import autoMode, {
   BYPASS_ALLOW_KIND,
   BYPASS_ALLOW_REASON,
   BYPASS_ENTRY_TYPE,
@@ -27,7 +26,8 @@ import {
   BYPASS_STATUS_KEY,
   BYPASS_STATUS_TEXT,
   BYPASS_TOGGLE_KIND,
-} from './bypass.ts';
+  CALLER_SCOPED_YDOTOOL_REASON,
+} from '@monochromatic-dev/pi-plugin-auto-mode';
 
 //region Mock infrastructure
 
@@ -270,9 +270,6 @@ function getBypassShortcut(
 }
 
 //endregion Mock infrastructure
-
-/** Auto-mode entry point under test. */
-const { default: autoMode, } = await import('./index.ts');
 
 await describe({
   name: 'auto-mode bypass',

@@ -4,6 +4,16 @@
  * @module
  */
 
+export {
+  BYPASS_ALLOW_KIND,
+  BYPASS_ALLOW_REASON,
+  BYPASS_ENTRY_TYPE,
+  BYPASS_SHORTCUT,
+  BYPASS_SOURCE_SHORTCUT,
+  BYPASS_STATUS_KEY,
+  BYPASS_STATUS_TEXT,
+  BYPASS_TOGGLE_KIND,
+} from './bypass.ts';
 export { findBudgetModel, } from './budget-model.ts';
 export {
   buildContext,
