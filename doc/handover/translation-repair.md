@@ -167,9 +167,10 @@ The second whole-suite run, at `6d19c68a0`, passed 759 of 759.
 `#239` landed in `7103ae59c`: a sole-adopted envelope records an `adopted` round and keeps its authors;
 the whole suite passed 759 of 759 behind it.
 `#240` landed in `fd8ac6c7e`: the re-ask takes the Synthetic slot it releases; the whole suite passed 759 of 759.
-`#241` landed in `bbbd5f2c5` and `995b76f30` (HEAD): the roster-to-catalog proof is a value and a test;
-a whole-suite run is in flight.
-Queue: `#242` onward in task order.
+`#241` landed in `bbbd5f2c5` and `995b76f30`: the roster-to-catalog proof is a value and a test;
+the whole suite passed 760 of 760.
+`#242` landed in `3bc37b4f1` (HEAD): a tool answer is kept apart from the prose written before it.
+Queue: `#243` onward in task order; whole-suite run owed after `#242`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

@@ -360,6 +360,12 @@ No mixed-stream case exists in `anthropic-completion.unit.test.ts`.
 How often the provider does this is unmeasured; a wire capture decides the size.
 Tracked as `#242`.
 
+FIXED 2026-08-26 in `3bc37b4f1`: text and tool fragments accumulate apart; the tool arguments are the answer
+whenever there are any, prose is the answer only when no tool was called, and set-aside prose is logged by size.
+Guard: a stream with a text block before the tool block yields the JSON alone; with the channels glued again the
+case fails on the prose prefix (2 lines); restored, passes.
+Frequency in the wild stays unmeasured, as the finding said; the reader is now correct whatever it is.
+
 ### provider-5, MAJOR, verified: stale-lock takeover is `rm` then `claim`, which two starters can interleave
 
 `src/corpus-run/runs-lock.ts:353-375`: `await rm(path, { force: true })` then one `claim`.
