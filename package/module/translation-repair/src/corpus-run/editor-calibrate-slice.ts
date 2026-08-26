@@ -65,6 +65,14 @@ export type SliceRounds = {
    * includes a rewrite the recheck rolled back.
    */
   readonly refinerShipped: readonly RosterModelId[];
+
+  /**
+   * Refiners heard with a usable answer on this slice, proposal or not.
+   *
+   * WHAT SEPARATES ANSWERED FROM SILENT in the refiner standing's coverage
+   * line. Empty on a slice that reached no rewriter.
+   */
+  readonly refinerHeard: readonly RosterModelId[];
 };
 
 /**

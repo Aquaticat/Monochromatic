@@ -389,5 +389,34 @@ await describe({
         ).rejects.toThrow(ProducerRosterError,);
       },
     },),
+
+    it({
+      name: 'REPORTS a refiner that answered and proposed nothing as heard, with no contributor '
+        + 'and no round, which is the shape #263 found reported as provider silence',
+      fn: async () => {
+        /** Result of a refiner answering every ask with an empty rewrite list. */
+        const result = await runFixture(scriptedRefiner({ ballot: 1, },),);
+
+        expect(result.heard,).toStrictEqual(REFINERS,);
+        expect(result.contributors,).toStrictEqual([],);
+        expect(result.rounds,).toStrictEqual([],);
+        expect(result.changed,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REPORTS the refiner as heard on the path where its rewrite ships too, so heard '
+        + 'is about answering rather than winning',
+      fn: async () => {
+        /** Result of a rewrite the scripted judge prefers. */
+        const result = await runFixture(scriptedRefiner({
+          newText: SMOOTH_TEXT,
+          ballot: 1,
+        },),);
+
+        expect(result.heard,).toStrictEqual(REFINERS,);
+        expect(result.changed,).toBe(true,);
+      },
+    },),
   ],
 },);

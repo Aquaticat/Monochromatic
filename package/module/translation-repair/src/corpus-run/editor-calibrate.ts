@@ -2,21 +2,11 @@ import pLimit from 'p-limit';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { producerModelIds, } from '../candidate-select-model.ts';
 import {
   graceOverrideNote,
   resolveStragglerGraceMs,
 } from '../grace-override.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
-import {
-  coverageGapLines,
-  readStandingCoverage,
-} from '../producer-silence.ts';
-import { producerStandings, } from '../producer-standing.ts';
-import {
-  rankStandings,
-  standingLine,
-} from '../producer-standing-report.ts';
 import { repairChunk, } from '../repair-chunk.ts';
 import { settleRefinedSlice, } from '../refine-slice-settle.ts';
 import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
@@ -31,6 +21,10 @@ import {
   type BenchSlice,
   sampleBenchSlices,
 } from './bench-sample.ts';
+import {
+  judgedAuthors,
+  seatReportLines,
+} from './editor-calibrate-seat.ts';
 import {
   shippedAuthors,
   type SliceRounds,
@@ -215,118 +209,8 @@ async function runOne(
     refineAsked: refined.asked,
     editorShipped: shippedAuthors({ authorship: outcome.authorship, },),
     refinerShipped: refined.refinedBy,
+    refinerHeard: refined.refinersHeard,
   };
-}
-
-/**
- * Prints one seat's standing over the rounds it produced.
- *
- * @param seat - what the standing is about, for the heading
- *
- * @param perSlice - that seat's rounds, grouped by the slice that bought them
- *
- * @example
- * ```ts
- * reportSeat({ seat: 'EDITOR', perSlice, },);
- * ```
- */
-function reportSeat(
-  {
-    seat,
-    perSlice,
-    produced,
-  }: {
-    readonly seat: string;
-    readonly perSlice: readonly (readonly SelectionRound[])[];
-    readonly produced: readonly RosterModelId[];
-  },
-): void {
-  /**
-   * Every round this seat produced, across every slice.
-   */
-  const rounds = perSlice.flat();
-
-  /**
-   * Slices that produced any round at all.
-   *
-   * THE DENOMINATOR THE ROUND COUNT HIDES. A slice carrying no accepted issue
-   * never asks an editor to write, so it buys critics and a panel and
-   * contributes nothing here. Without this, a standing drawn almost entirely
-   * from one slice reads the same as one drawn evenly from six, and the first
-   * is a much narrower measurement than its round count suggests.
-   */
-  const contributed = perSlice.filter(function paidIn(slice,): boolean {
-    return slice.length > 0;
-  },);
-
-  console.log(
-    `\n${seat} standing over ${String(rounds.length,)} judged rounds, `
-      + `from ${String(contributed.length,)} of ${String(perSlice.length,)} slices`,
-  );
-
-  if (rounds.length === 0) {
-    console.log(
-      '  NO ROUNDS. This seat judged nothing across the sample, so it has no standing. '
-        + 'For the editor seat that means no slice carried an ACCEPTED issue: critics can '
-        + 'raise claims and the panel can adjudicate them and the lane still report '
-        + '"nothing to edit", which is what one live slice did. For the refiner seat it '
-        + 'means the naturalness lane proposed nothing. Draw more slices.',
-    );
-    return;
-  }
-
-  /**
-   * What the rounds came to, best first.
-   */
-  const standings = producerStandings({ rounds, },);
-
-  for (const standing of rankStandings({ standings, },)) {
-    console.log(`  ${standingLine({ standing, },)}`,);
-  }
-
-  /**
-   * Which of the seated models this table actually describes.
-   *
-   * NAMED RATHER THAN OMITTED. `producerStandings` carries a row only for a
-   * model somebody voted on, so a model whose provider was out of budget
-   * vanishes, and absence there reads exactly like a model that wrote and
-   * lost. During a provider outage that is half the roster.
-   */
-  const coverage = readStandingCoverage({
-    roster: RUN_ROSTER,
-    standings,
-    produced,
-  },);
-
-  for (const line of coverageGapLines({ coverage, },)) {
-    console.log(`  ${line}`,);
-  }
-}
-
-/**
- * Every model holding a stake in any candidate one seat's rounds judged.
- *
- * @param perSlice - that seat's rounds, grouped by the slice that bought them
- *
- * @returns Model ids, repeats included, in the order the slates carried them
- *
- * @example
- * ```ts
- * const wrote = judgedAuthors({ perSlice, },);
- * ```
- */
-function judgedAuthors(
-  { perSlice, }: { readonly perSlice: readonly (readonly SelectionRound[])[]; },
-): readonly RosterModelId[] {
-  return perSlice
-    .flat()
-    .flatMap(function slateAuthors(round,): readonly RosterModelId[] {
-      return round
-        .producers
-        .flatMap(function stakeholders(producer,): readonly RosterModelId[] {
-          return producerModelIds(producer,);
-        },);
-    },);
 }
 
 /**
@@ -586,8 +470,10 @@ async function main(): Promise<void> {
     return rounds.refiner;
   },);
 
-  reportSeat({
+  for (
+    const line of seatReportLines({
     seat: 'EDITOR',
+    roster: RUN_ROSTER,
     perSlice: editorPerSlice,
     // JUDGED AUTHORS PLUS SHIPPING ONES, because a slice where every editor
     // proposed the same text ships it with no round at all, and a model seen
@@ -598,10 +484,20 @@ async function main(): Promise<void> {
         return rounds.editorShipped;
       },),
     ],
-  },);
+    // THE EDITOR STAGE CARRIES NO ANSWER LIST OUT OF THE CHUNK OUTCOME, only a
+    // count for `editor-width-arm`, so this seat cannot tell an editor that
+    // answered and was dropped before judging from one that never answered.
+    // The line it prints says so and points at the SEAT lines.
+    answered: { kind: 'unrecorded', },
+  },)
+  ) {
+    console.log(line,);
+  }
 
-  reportSeat({
+  for (
+    const line of seatReportLines({
     seat: 'REFINER',
+    roster: RUN_ROSTER,
     perSlice: refinerPerSlice,
     produced: [
       ...judgedAuthors({ perSlice: refinerPerSlice, },),
@@ -609,7 +505,18 @@ async function main(): Promise<void> {
         return rounds.refinerShipped;
       },),
     ],
-  },);
+    // WHO THE REFINE STAGE HEARD, so a rewriter that answered every ask and
+    // left every paragraph as it stood is reported as answered, not silent.
+    answered: {
+      kind: 'recorded',
+      modelIds: perSlice.flatMap(function heardRefiners(rounds,): readonly RosterModelId[] {
+        return rounds.refinerHeard;
+      },),
+    },
+  },)
+  ) {
+    console.log(line,);
+  }
 
   reportRefineReach({ perSlice, },);
 

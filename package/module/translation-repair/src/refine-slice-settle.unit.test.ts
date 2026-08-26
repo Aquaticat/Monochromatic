@@ -210,6 +210,7 @@ await describe({
 
         expect(settled.asked,).toBe(false,);
         expect(settled.refinedBy,).toEqual([],);
+        expect(settled.refinersHeard,).toEqual([],);
         expect(settled.findings,).toEqual([],);
         expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
       },
@@ -232,6 +233,8 @@ await describe({
         expect(settled.findings,)
           .toContain(`stage-voice-lost (refiner ${REFINER})`,);
         expect(settled.refinedBy,).toEqual([],);
+        // The one refiner's voice was lost, so nobody was heard either.
+        expect(settled.refinersHeard,).toEqual([],);
       },
     },),
   ],

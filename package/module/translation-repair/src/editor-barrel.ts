@@ -35,6 +35,7 @@ export {
 export {
   coverageGapLines,
   readStandingCoverage,
+  type SeatAnswers,
   type StandingCoverage,
   UnseatedStandingError,
 } from './producer-silence.ts';

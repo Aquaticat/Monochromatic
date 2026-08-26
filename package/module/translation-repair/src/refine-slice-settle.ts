@@ -78,6 +78,16 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
    * from one that never answered, which `authorship` unions away.
    */
   readonly refinedBy: readonly RosterModelId[];
+
+  /**
+   * Refiners heard with a usable answer on this slice, proposal or not.
+   *
+   * NOT STORED, FOR THE REASON `refinedBy` IS NOT. This exists so an
+   * instrument can tell a refiner that answered and left the paragraph as it
+   * stood from one that never answered, which every stored field unions
+   * away. Empty where no rewriter was asked.
+   */
+  readonly refinersHeard: readonly RosterModelId[];
 };
 
 /**
@@ -166,6 +176,7 @@ export async function settleRefinedSlice(
       asked: false,
       // Nothing was offered to a rewriter, so nobody rewrote anything.
       refinedBy: [],
+      refinersHeard: [],
     };
 
   /**
@@ -229,6 +240,7 @@ export async function settleRefinedSlice(
       // Rewriters answered and none of their text is in what ships, so none of
       // them wrote it.
       refinedBy: [],
+      refinersHeard: refined.heard,
     };
 
   /**
@@ -268,6 +280,7 @@ export async function settleRefinedSlice(
       asked,
       // The rewrite was rolled back, so what ships is the editors' text again.
       refinedBy: [],
+      refinersHeard: refined.heard,
     };
 
   /**
@@ -373,6 +386,7 @@ export async function settleRefinedSlice(
     asked,
     // THE ONLY PATH WHERE A REWRITE SHIPS, so the only one that names anybody.
     refinedBy: refined.contributors,
+    refinersHeard: refined.heard,
   };
 }
 

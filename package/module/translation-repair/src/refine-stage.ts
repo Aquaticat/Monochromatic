@@ -90,6 +90,16 @@ export type RefineStageResult = {
   readonly contributors: readonly RosterModelId[];
 
   /**
+   * Refiners heard with a usable answer, whether or not it proposed a change.
+   *
+   * CARRIED OUT SO A STANDING CAN TELL ANSWERED FROM SILENT. A rewriter that
+   * leaves a paragraph as it stands never reaches a slate, and `#263` found
+   * that reported as provider silence beside a SEAT line saying the seat had
+   * answered every ask. Empty on the exit that asks nobody.
+   */
+  readonly heard: readonly RosterModelId[];
+
+  /**
    * Stage telemetry in scorecard-stable wording.
    */
   readonly findings: readonly string[];
@@ -183,6 +193,7 @@ export async function runRefineStage(
     refinedText: repairedText,
     changed: false,
     contributors: [],
+    heard: [],
     rounds: [],
     findings: [`refine-skipped (${String(envelopes.length,)} eligible paragraphs)`,],
   };
@@ -326,6 +337,13 @@ export async function runRefineStage(
   const candidates = mergeIdenticalCandidates({ candidates: proposed, },);
 
   /**
+   * Refiners whose answer was usable, proposal or not.
+   */
+  const heard = gather.voices.map(function answered(voice,): RosterModelId {
+    return voice.modelId;
+  },);
+
+  /**
    * Telemetry every exit after the fan-out carries.
    */
   const stageFindings = [
@@ -338,6 +356,7 @@ export async function runRefineStage(
   if (candidates.length === 0) {
     return {
       ...unchanged,
+      heard,
       findings: stageFindings,
     };
   }
@@ -391,6 +410,7 @@ export async function runRefineStage(
     rl.info(`${outcome.reason}; keeping the repaired text`,);
     return {
       ...unchanged,
+      heard,
       rounds,
       findings: [
         ...stageFindings,
@@ -435,6 +455,7 @@ export async function runRefineStage(
     rl.warn(`${refusal}; keeping the repaired text`,);
     return {
       ...unchanged,
+      heard,
       rounds,
       findings: [
         ...stageFindings,
@@ -448,6 +469,7 @@ export async function runRefineStage(
     refinedText: outcome.value,
     changed: true,
     contributors,
+    heard,
     rounds,
     findings: [
       ...stageFindings,
