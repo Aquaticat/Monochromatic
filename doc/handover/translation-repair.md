@@ -151,7 +151,10 @@ Note for the record: `f199b70cf`'s message overclaimed, one of its two legacy ca
 One run is in flight: `probe-relabel` under `mise run` against the round-three draw in the default runs directory
 (output under `~/temp/agent/vub-relabel-*`), which must print `RELABEL rebuilt N` with N above zero,
 three `issues-` lines per region (`issues-withheld`, `issues-rendered`, `issues-absent`), and closing `SEAT` lines.
-Queue after it: `#237` onward in task order.
+`#237` landed in `c19d203c6` (lint tidy `82db8fb4e`, HEAD): the four stdout printers go through `refusalText`,
+and the two comparison checks name differing fields instead of quoting rows.
+Queue after the run: `#238` (a silent stage must not be cached, nor resumed from caches already written),
+then `#239` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

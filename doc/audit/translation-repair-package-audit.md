@@ -246,6 +246,10 @@ Fix: `error=${refusalText({ error })}` at both sites, with the full text kept in
 through the tagged logger where diagnosis needs it.
 Tracked as `#237`.
 
+FIXED 2026-08-26 in `c19d203c6` (lint tidy in `82db8fb4e`): the TALLY and CLEANUP lines, the sentinel probe's
+PROBE line, and the rendering audit's REFUSED line print `refusalText`, a marked class in its own words and
+anything else by name; the CLEANUP guard fails with the printer restored (2 failing lines), passes restored.
+
 ### calibrate-3, MINOR, verified: an operator refusal thrown as a bare `Error`
 
 `src/corpus-run/editor-width-control.ts:186-190` throws `new Error('editor width control refused: ...')`,
@@ -740,6 +744,10 @@ so `refusalText` forwards the row verbatim at every CLI that reads a settled art
 which the pass's TALLY and CLEANUP lines print 200 characters of.
 The trigger is a stored row disagreeing with the frozen rules, which is exactly what the guards exist to catch.
 
+FIXED 2026-08-26 in `c19d203c6`: both checks name the differing fields through `comparisonRowDifferences`
+(`comparisonRowsEqual` derives from it) and never a row; the read test asserts the message names `laneRelation`
+and carries no `"repairText"`; guard fails with `laneRelation` dropped from the checks (2 failing lines per suite).
+
 ### artifact-7, MAJOR, verified structurally: the round-three instruments cannot read their own draw
 
 `probe-relabel-artifact.ts:362-383` reads through `repairLaneRecordsOf` (`artifact-repair-lane-records.ts:83-121`),
@@ -789,6 +797,9 @@ Folded into `#237`:
 which `rendering-audit-settled-input.ts:204` fills with `caughtValueText(error)` and no marker check;
 bounded today to hashes and counts, but the verifier's `translating()` wrapper launders inner messages
 into the marked `ArtifactParseError`, the `#244` shape.
+
+FIXED 2026-08-26 in `c19d203c6`: `verifySettled` records `refusalText` as the detail.
+No guard of its own: the path is one call, and an unmarked inner throw cannot be injected through the public reader.
 
 ### rendering-3, MAJOR, verified: `--run` and `--against` written last are read as absent
 
