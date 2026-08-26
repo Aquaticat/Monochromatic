@@ -439,6 +439,19 @@ The findings travel with the record, so the artifact says `stage-quorum-unmet` w
 Retroactive: caches written during the `#199` outage may already hold such records.
 Tracked as `#238`.
 
+FIXED 2026-08-26 in `1a96979ad`, together with slices-1.
+The finding has one spelling, built and read through `stage-silence.ts`;
+the repair driver refuses to cache a settlement carrying it through `cacheRefusalsOf`, which names its reasons,
+the refine driver does the same, both cache guards refuse to resume such a record,
+and the namespace loader now says which record it refused instead of dropping it silently.
+Guard: a persisted slice carrying `stage-quorum-unmet (critic 0/6)` is not resumed while its neighbour is;
+shown to fail with the guard's finding check removed (2 failing lines), restored, passed.
+Retroactive scan: this worktree's default runs directory holds 150 slice-cache files and none carries the finding;
+the main worktree has no runs directory, so nothing needed purging.
+Not guarded: the two persist-side refusals in the drivers have no driver-level test,
+because the scripted client in the driver suites cannot make one stage fall short of quorum;
+the existing no-critic refusal beside them has none either (repair-9), and both are listed there.
+
 ### repair-2, MINOR (downgraded from the reviewer's MAJOR): the refine loop lacks the accuracy loop's abort check
 
 `src/refine-phase.ts` has no `signal.throwIfAborted()` before its persist at `:336`;

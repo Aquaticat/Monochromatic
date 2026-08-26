@@ -154,8 +154,9 @@ three checker seats 45 of 45 usable, no dark seat; that run is also the relabel 
 No run is in flight.
 `#237` landed in `c19d203c6` (lint tidy `82db8fb4e`, HEAD): the four stdout printers go through `refusalText`,
 and the two comparison checks name differing fields instead of quoting rows.
-Queue after the run: `#238` (a silent stage must not be cached, nor resumed from caches already written),
-then `#239` onward in task order.
+`#238` landed in `1a96979ad` (HEAD): a silent stage is neither cached nor resumed, and this worktree's caches
+were scanned clean (150 files, none carrying the finding).
+Queue: `#239` onward in task order; a whole-suite `buildAndTest` runs in the background as the day's regression check.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
