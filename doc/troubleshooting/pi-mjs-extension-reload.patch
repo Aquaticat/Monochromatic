@@ -1,0 +1,64 @@
+diff --git a/src/eval.ts b/src/eval.ts
+index 3fcf671..faff23d 100644
+--- a/src/eval.ts
++++ b/src/eval.ts
+@@ -43,7 +43,7 @@ export function evalModule(
+   const needsTranspile =
+     evalOptions.forceTranspile ??
+     (!isCommonJS && // CommonJS skips transpile
+-      !(isESM && evalOptions.async) && // In async mode, we can skip native ESM as well
++      !(isESM && evalOptions.async && ctx.opts.moduleCache) && // Cached async mode can use native ESM
+       // prettier-ignore
+       (isTypescript || isESM || ctx.isTransformRe.test(filename) || hasESMSyntax(source)));
+   const start = performance.now();
+diff --git a/test/esm-temp-file.test.ts b/test/esm-temp-file.test.ts
+index 94cb945..bcbe920 100644
+--- a/test/esm-temp-file.test.ts
++++ b/test/esm-temp-file.test.ts
+@@ -1,9 +1,17 @@
+ import { resolve, join } from "node:path";
+-import { writeFileSync, unlinkSync, readFileSync } from "node:fs";
++import {
++  mkdtempSync,
++  readFileSync,
++  rmSync,
++  unlinkSync,
++  writeFileSync,
++} from "node:fs";
+ import { tmpdir } from "node:os";
+ import { describe, it, expect } from "vitest";
+ import { x } from "tinyexec";
+ 
++import { createJiti } from "../lib/jiti.mjs";
++
+ describe("esmEvalTempFile", () => {
+   const jitiPath = resolve(__dirname, "../lib/jiti-cli.mjs");
+   const fixture = resolve(__dirname, "fixtures/import-meta/index.ts");
+@@ -89,6 +97,27 @@ describe("esmEvalTempFile", () => {
+     }
+   });
+ 
++  it.each(["ts", "mjs"])(
++    "reloads changed .%s modules when moduleCache is false",
++    async (extension) => {
++      const root = mkdtempSync(join(tmpdir(), `jiti-module-cache-${extension}-`));
++      const modulePath = join(root, `config.${extension}`);
++      const jiti = createJiti(import.meta.url, {
++        fsCache: false,
++        moduleCache: false,
++      });
++
++      try {
++        writeFileSync(modulePath, "export default 'v1';\n");
++        expect(await jiti.import(modulePath, { default: true })).toBe("v1");
++        writeFileSync(modulePath, "export default 'v2';\n");
++        expect(await jiti.import(modulePath, { default: true })).toBe("v2");
++      } finally {
++        rmSync(root, { recursive: true, force: true });
++      }
++    },
++  );
++
+   it("handles large ESM files with import.meta.custom", async () => {
+     // Large files can trigger ENAMETOOLONG with data URL approach on some
+     // OS/filesystem combinations. The temp file approach avoids this.
