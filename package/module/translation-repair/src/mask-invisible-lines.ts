@@ -304,7 +304,27 @@ export function maskInvisibleLines(
     if (fenced[index] === true)
       return line;
 
-    if (!isInvisibleOnly({ line, },))
+    /**
+     * Whether this line ends in a carriage return, which a CRLF page leaves
+     * on every line the split on `\n` produces.
+     *
+     * JUDGED WITHOUT IT AND BLANKED AROUND IT. The return is part of the line
+     * ending, not of what a reader sees, so it neither makes the line visible
+     * nor gets blanked: it stays exactly where it was, and the line stays
+     * exactly as long.
+     */
+    const carriage = line.endsWith('\r',);
+
+    /**
+     * The line without its carriage return, which is what a reader sees.
+     */
+    const body = carriage
+      ? line.slice(
+        0,
+        -1,
+      )
+      : line;
+    if (!isInvisibleOnly({ line: body, },))
       return line;
 
     /**
@@ -313,8 +333,8 @@ export function maskInvisibleLines(
     const startOffset = lineStarts[index] ?? 0;
     regions.push({
       startOffset,
-      endOffset: startOffset + line.length,
-      codePoints: unseenCodePoints({ line, },),
+      endOffset: startOffset + body.length,
+      codePoints: unseenCodePoints({ line: body, },),
     },);
 
     // Spaces rather than removal: a line of spaces is blank to CommonMark, so
@@ -322,7 +342,7 @@ export function maskInvisibleLines(
     // length keeps the replacement exactly as long as what it replaces, which
     // is what every absolute offset downstream depends on, and it sidesteps
     // the question of how a code point maps to units entirely.
-    return ' '.repeat(line.length,);
+    return `${' '.repeat(body.length,)}${carriage ? '\r' : ''}`;
   },);
 
   return {

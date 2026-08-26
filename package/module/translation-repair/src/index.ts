@@ -144,6 +144,7 @@ export {
   readCorpusFile,
 } from './corpus-source.ts';
 export { buildCriticMessages, } from './critic-prompt.ts';
+export { foldCarriageReturns, } from './line-endings.ts';
 export {
   CRITIC_RESPONSE_FORMAT,
   type CriticIssueResolution,

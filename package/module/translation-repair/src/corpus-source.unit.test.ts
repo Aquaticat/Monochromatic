@@ -45,6 +45,12 @@ const REAL_GIT = await resolveGit();
 const WHISKERS_PAGE = '---\nname: 小猫-whiskers\n---\n\n## 简介\n\n猫猫喜欢晒太阳。[^1]\n\n[^1]:[猫猫习性说明。](https://example.org/cat)\n';
 
 /**
+ * Invented zh page written with CRLF endings, as the one such page in the
+ * pinned corpus is.
+ */
+const TABBY_CRLF_PAGE = '---\r\nname: 小猫-tabby\r\n---\r\n\r\n## 简介\r\n\r\n猫猫在窗台上睡觉。\r\n';
+
+/**
  * Runs one git command inside the throwaway clone,
  * hermetic against user and system git configuration.
  *
@@ -144,11 +150,30 @@ async function makeThrowawayClone(): Promise<
     WHISKERS_PAGE,
     'utf8',
   );
+  await mkdir(
+    join(
+      cloneDir,
+      'people',
+      'tabby',
+    ),
+    { recursive: true, },
+  );
+  await writeFile(
+    join(
+      cloneDir,
+      'people',
+      'tabby',
+      'page.md',
+    ),
+    TABBY_CRLF_PAGE,
+    'utf8',
+  );
   await fixtureGit({
     cloneDir,
     args: [
       'add',
       'people/whiskers/page.md',
+      'people/tabby/page.md',
     ],
   },);
   await fixtureGit({
@@ -215,6 +240,27 @@ await describe({
     },),
 
     it({
+      name: 'FOLDS CRLF TO LF on the way in, since every splitter downstream looks for a line feed and the '
+        + 'one CRLF page in the pinned corpus defeated the line-structure predicate, the invisible-line '
+        + 'mask and the quote normalizer at once; the bytes are otherwise untouched',
+      fn: async () => {
+        await using fixture = await makeThrowawayClone();
+
+        /**
+         * The CRLF page as the package reads it.
+         */
+        const read = await readCorpusFile({
+          pin: {
+            cloneDir: fixture.cloneDir,
+            commitSha: fixture.commitSha,
+          },
+          relPath: 'people/tabby/page.md',
+        },);
+        expect(read.includes('\r',),).toBe(false,);
+        expect(read,).toBe(TABBY_CRLF_PAGE.replaceAll('\r\n', '\n',),);
+      },
+    },),
+    it({
       name: 'lists person entry ids at the pinned commit',
       fn: async () => {
         await using fixture = await makeThrowawayClone();
@@ -225,7 +271,10 @@ await describe({
               commitSha: fixture.commitSha,
             },
           },),
-        ).toEqual(['whiskers',],);
+        ).toEqual([
+          'tabby',
+          'whiskers',
+        ],);
       },
     },),
 

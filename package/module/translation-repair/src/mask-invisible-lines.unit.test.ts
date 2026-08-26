@@ -42,6 +42,27 @@ await describe({
     },),
 
     it({
+      name: 'blanks the same line on a CRLF page, keeping every carriage return where it was: the '
+        + 'return is part of the line ending rather than of what a reader sees, so it neither makes '
+        + 'the line visible nor gets blanked, and the text stays exactly as long',
+      fn: async () => {
+        /**
+         * The byte-order-mark page, as a CRLF file carries it.
+         */
+        const text = `Alpha.\r\n${MARK}\r\nBeta.\r\n`;
+
+        /**
+         * What the mask made of it.
+         */
+        const { masked, regions, } = maskInvisibleLines({ text, },);
+        expect(masked,).toBe('Alpha.\r\n \r\nBeta.\r\n',);
+        expect(masked.length,).toBe(text.length,);
+        expect(regions.length,).toBe(1,);
+        // The region covers the mark alone, not the return after it.
+        expect(regions[0]?.endOffset,).toBe((regions[0]?.startOffset ?? 0) + MARK.length,);
+      },
+    },),
+    it({
       name: 'preserves LENGTH exactly, because node text, quotes, hashes and '
         + 'every claim anchor are sliced from the body by absolute offset, so '
         + 'removing the character rather than replacing it would move every '

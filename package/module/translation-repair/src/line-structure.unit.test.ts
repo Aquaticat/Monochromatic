@@ -73,6 +73,31 @@ await describe({
     },),
 
     it({
+      name: 'recognizes the same verse written with CRLF endings, which is how the one such page in '
+        + 'the pinned corpus is written: a splitter looking for two line feeds found no boundary in '
+        + 'it, counted one block, and answered false, so no addendum, inheritance or line-count '
+        + 'guard ever reached that page',
+      fn: async () => {
+        /**
+         * Verse as an LF page carries it.
+         */
+        const verse = slice({
+          blocks: [
+            '猫猫在窗台上',
+            '看着外面的鸟',
+            '尾巴轻轻摇',
+            '阳光洒下来',
+            '它闭上眼睛',
+            '睡着了',
+          ],
+        },);
+        // POSITIVE CONTROL: the LF form is line-structured, or the CRLF case
+        // below would be checking nothing.
+        expect(isLineStructured({ text: verse, },),).toBe(true,);
+        expect(isLineStructured({ text: verse.replaceAll('\n', '\r\n',), },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'does NOT fire on prose, however many paragraphs it has, since a '
         + 'paragraph is not a unit the editor must preserve line for line',
       fn: async () => {

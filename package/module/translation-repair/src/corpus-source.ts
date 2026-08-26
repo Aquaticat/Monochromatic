@@ -4,6 +4,8 @@ import { promisify, } from 'node:util';
 import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
 
+import { foldCarriageReturns, } from './line-endings.ts';
+
 //region Corpus source
 // Reads benchmark texts from the user's local clone of `one-among-us/data`.
 // That repository is UNLICENSED (all rights reserved): its content is read at
@@ -312,11 +314,17 @@ async function gitOutput(
 /**
  * Reads one file of the corpus at the pinned commit.
  *
+ * LINE ENDINGS ARE FOLDED TO LF, which is the one place the whole package
+ * needs it: every splitter downstream looks for `\n`, and the one CRLF page in
+ * the pinned corpus (a source page, measured in `line-endings.ts`) defeated
+ * the line-structure predicate, the invisible-line mask and the quote
+ * normalizer at once. Bytes are otherwise untouched.
+ *
  * @param pin - clone and commit the read resolves against
  *
  * @param relPath - repository-relative path, e.g. `people/<id>/page.md`
  *
- * @returns File content at the pinned commit, byte-for-byte
+ * @returns File content at the pinned commit, with CRLF folded to LF
  *
  * @throws {@link CorpusReadError} when the path is absent at the pinned commit
  *
@@ -361,7 +369,12 @@ export async function readCorpusFile(
         maxBuffer: MAX_BLOB_BYTES,
       },
     );
-    return stdout.toString('utf8',);
+    /**
+     * Content with CRLF folded to LF; the count is not logged here since this
+     * module carries no logger, and `line-endings.ts` records the population.
+     */
+    const { text, } = foldCarriageReturns({ text: stdout.toString('utf8',), },);
+    return text;
   }
   catch (error) {
     throw new CorpusReadError({

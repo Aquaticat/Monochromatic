@@ -1,3 +1,5 @@
+import { foldCarriageReturns, } from './line-endings.ts';
+
 //region Line structure
 // Whether a slice is line-structured, meaning each block is a unit rather than
 // a paragraph: verse, chat transcripts, lists of short statements.
@@ -53,8 +55,14 @@ export function isLineStructured(
 ): boolean {
   /**
    * Blank-line-separated blocks carrying content.
+   *
+   * FOLDED FIRST, for a caller that read the text by some other route than
+   * the corpus read: a CRLF page carries no `\n\n` at all, reads as one
+   * block, fails the block floor and answers false, so no addendum, no
+   * inheritance and no line-count guard reach it.
    */
-  const blocks = text
+  const blocks = foldCarriageReturns({ text, },)
+    .text
     .split('\n\n',)
     .map(function trim(block,): string {
     return block.trim();
