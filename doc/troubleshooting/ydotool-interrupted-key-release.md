@@ -288,6 +288,18 @@ The hard guard runs even when auto-mode bypass is enabled.
 covers command classification.
 `package/pi-plugin/auto-mode/src/index-bypass.unit.test.ts`
 covers the non-bypassable integration boundary.
+Removing the guard call,
+rebuilding,
+and running that test made it fail because bypass executed the fake Bash path;
+restoring the guard made it pass.
+
+A one-off disposable verifier also loaded the built extension through real Pi `AgentSession`,
+used a scripted local provider to request the ydotool command,
+and replaced Bash execution with a fake callback.
+The built extension returned the hard-block reason,
+the provider completed its follow-up turn,
+and the fake Bash callback remained unused.
+No desktop input was injected.
 
 ### Agent policy
 
