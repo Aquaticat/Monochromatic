@@ -61,7 +61,7 @@ const INLINE_SHELL_INTERPRETERS = new Set([
 /**
  * Guidance returned when direct ydotool execution is blocked.
  */
-const CALLER_SCOPED_YDOTOOL_REASON = [
+const CALLER_SCOPED_YDOTOOL_REASON: string = [
   'Direct ydotool invocation is blocked because an injected key can cancel its own Bash caller before key-up.',
   'Use nested-wayland-session, or an independently supervised input broker after user authorization.',
 ].join(' ',);
