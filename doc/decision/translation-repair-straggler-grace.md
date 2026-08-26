@@ -254,3 +254,22 @@ If that is what some of these calls are doing,
 no widening of this window would ever have helped them,
 and the remedy is to end them ourselves.
 That is `doc/decision/translation-repair-runaway-call-termination.md` and `#119`.
+
+## Addendum 2026-08-26: the window has a dial, and single runs cannot price it
+
+`TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (`grace-override.ts`, landed `4c070f729`) overrides the 180000 ms window
+for one run; a run under an override prints `STRAGGLER GRACE OVERRIDDEN by ...` on its first line. The built-in
+value is unchanged.
+
+MEASURED ON THE FOUR-SLICE EDITOR CALIBRATION, one run per arm, same slices, same build. Arm C (300000 ms,
+one slice in flight) took 53.87 min against arm A's 43.19 (180000 ms), bought back 2 of 6 cut voices, all
+`qwen3.8-max`, and burned the full 300 s on four rounds that were cut anyway. That read as +24.7% wall clock
+per 2 voices.
+
+THEN ARM A2 REPEATED ARM A UNCHANGED and took 58.95 min: the calls themselves were slower (stream sum
+9294 s against 6312 s), 8 voices were cut instead of 6, and nothing about the window had moved. Normalized
+as wall clock over stream sum, A 0.41, A2 0.38, C 0.43: the window's cost sits inside the run-to-run band.
+The 2-of-6 recovery is inside what provider speed alone moved. So this decision stays at 180000 ms not
+because the longer window was shown to cost too much, but because nothing about it is shown at this scale.
+What would show it: interleaved repeats (A, C, A, C) in one sitting, read normalized, or arm D's overlap-4
+reading (running as this is written), where the wait a longer window adds is what overlap fills.

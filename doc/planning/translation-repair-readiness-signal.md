@@ -52,7 +52,8 @@ Each is its own question, because answering "yes" to all of them in order must b
 1.  Readiness: disable branch protection now and sanitize, or name what is still missing.
 2.  Calibration overlap default: `TRANSLATION_REPAIR_SLICE_OVERLAP` stays opt-in at 1, or the editor calibration
     defaults to overlapping slices (only `editor-calibrate` carries the dial today; `producer-calibrate` gets
-    the same dial as follow-up work if the default moves). Measured on matched arms: overlap 4 ran the same 1.74 h of calls in 24.19 min
+    the same dial as follow-up work if the default moves). Measured on matched arms: overlap 4 ran the same 1.74 h of
+    calls in 24.19 min
     instead of 43.19, voices 302 against 304 of 312 (one run per arm; the run-to-run band is unmeasured).
 3.  Corpus pass slice overlap: the pass's drivers run slices sequentially by a recorded rationale
     (`lane-contest-driver.ts`: "the client's limiter grants one stream per model, so contesting two slices at
@@ -76,3 +77,33 @@ Each is its own question, because answering "yes" to all of them in order must b
 2.  Overlap default: measure the run-to-run band first, by repeating arm A.
 3.  Pass overlap: build the dial into the pass and measure it there; the default stays 1 until measured.
 4.  Window: run arm D (overlap 4 at 300000 ms) before moving it.
+
+## Since the answers (2026-08-26, updated the same day)
+
+WHAT THE REJECTION CHANGED. The signal had rested on process gates; the deliverable is the published page, and
+none had been read by the session that put the signal. `#259` opened as the gate that now precedes any
+re-signal: read pages against source and archive, trace every defect into the artifact (slice, lane, ballots)
+before filing it, and have a second reader (sol, whole files attached) read each page too. The advisor
+checkpoint on that plan (16:00Z) added the hard entries this project's own history names (`Toka_ls`, `XIEPT2`,
+`XingZ60`) to the sample, since eight short entries answer only whether the output is publishable on easy input.
+
+WHAT THE FIRST READING FOUND, on four older-build pages (`doc/audit/translation-repair-output-reading-20260826.md`):
+six defect classes no gate measured. Three became code that is landed in source and awaits the build the
+running arms forbid: `#263` (a refiner that answered every ask reported as silent; recurred on arm A2 on two
+seats), `#264` (invisible-variant punctuation, U+2011 for the hyphen, folded at every lane's intake; U+2019
+measured as the archive's own convention and kept), `#265` (a source hyperlink absent from the page, now a
+`DESTINATIONS` line per entry with the addresses in the run log). The other three (name rendering where the
+source uses an alias, lexical ambiguity introduced by a change, coverage misdiagnosis) are recorded in the
+reading and re-read on the fresh pass before anything is built for them.
+
+WHAT THE MEASUREMENTS SAID. Arm A2 (`#260`) put the run-to-run band at 37% of wall clock on an unchanged
+build, driven by provider speed (stream sum 9294 s against 6312 s). Normalized as wall clock over stream sum:
+A 0.41, A2 0.38, C 0.43, B 0.23. So question 2's overlap effect stands (six bands wide) and question 4's
+window cost is unmeasured at this scale rather than the +24.7% one pair of runs suggested. Arm D (`#262`) is
+running as this is written. Question 3's dial is designed (`#261`) and waits for the fresh pass to launch,
+because the pass task builds what it runs and a driver edit present at launch would ship into the reading.
+
+WHAT COMES BEFORE ANY RE-SIGNAL, in order: arm D read; whole suite and the guard-failure rounds on the three
+landings; the fresh pass at production defaults over ten entries (`XingZ60` second); each page read twice and
+traced; a spot re-read on the fixed build if the reading finds publishability blockers; then this document
+gains a section that says what the pages showed, and `#219` is put again.

@@ -260,6 +260,14 @@ asked and how many answers were usable, and that the run log names the failure. 
 `POINTS AT THE SEAT LINES from the silent-seat sentence`; restored, passes. Found unmarked when the closing tally
 was measured; the pointer was the only half of the consequence still owed.
 
+SUPERSEDED IN PART 2026-08-26 (`#263`, landed in source `d8a040edf` and `04f1ebafd`, unbuilt while the arms hold
+`dist`): the sentence itself was wrong for a seat that answered. Arm A's REFINER table called `minimax-m3` silent
+beside `SEAT minimax-m3 asked=31 usable=31`, and arm A2 did it for two seats, because the refiner's `produced` list
+was built from slates and a rewriter that leaves a paragraph as it stands never reaches one. The refine stage now
+carries out who it heard, the coverage split takes `answered` as a fourth input, and the line reads `ANSWERED AND
+WAS NEVER SLATED` for that seat; a seat that does not record who answered (editor, translate; `#266`) says so in
+its silent line instead of calling the unknown silent. The pointer at the `SEAT` lines stays on every wording.
+
 ### calibrate-2, MAJOR, verified: the pass prints any error's message into its stdout summary
 
 `src/corpus-run/pass-entry.ts:522-529` and `:641-648`:

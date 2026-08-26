@@ -187,3 +187,24 @@ The corpus is UNLICENSED: its content must never be committed, so keep the
 For each file, count the characters listed in `INVISIBLE_CHARACTERS` plus the
  non-ASCII spaces, and for every hit report whether its line is otherwise blank.
 A hit on an otherwise-blank line is a weld; a hit inside visible text is not.
+
+## Invisible variants a model writes, folded at intake (2026-08-26)
+
+The census above is about the corpus. A second class arrives from the models: characters a reader cannot tell
+from their plain counterpart, written where the source and the archive have the plain one. The 2026-08-26 output
+reading found "non-binary" published with U+2011 NON-BREAKING HYPHEN where the archive had the ASCII hyphen, and
+nothing between the model and the page had noticed (`doc/audit/translation-repair-output-reading-20260826.md`).
+
+MEASURED FIRST, at the pin over all 92 archive `page.en.md` files: 85 carry typographic quotes, 1173 U+2019 in
+total, so a U+2019 the pipeline writes is the archive's own majority convention and stays. U+2011 occurs 11 times
+in the archive, the no-break space and the soft hyphen never.
+
+`foldInvisibleVariants` (`src/invisible-variants.ts`, `#264`) folds U+2011 to the hyphen, U+00A0 and U+202F to
+the space, and drops U+00AD, U+200B, U+2060 and U+FEFF, at the point where each lane turns an answer into a
+candidate: edit operations (`edit-wire.ts`), refine rewrites (`refine-wire.ts`), and translate and consolidate
+candidates (`translate-candidates.ts`, which the consolidation also builds through). It runs before any decider
+judges, so the bytes judged are the bytes that ship (`#162`), and each fold is a finding,
+`invisible-variant-folded (U+2011 x1)`, in the stage's findings. Typographic quotes, dashes, the ellipsis and the
+emoji joiner U+200D pass through. An archive passage that itself carries one of the folded characters and is
+reproduced verbatim by a model will read as changed by the fold; at 11 U+2011 across the corpus that is the
+accepted cost.

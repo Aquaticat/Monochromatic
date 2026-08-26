@@ -1922,6 +1922,17 @@ it the same two ways. What goes back to the owner with D: the overlap default ca
 the window cannot be decided on single runs, and the honest options are interleaved repeats (A, C, A, C on one
 afternoon) or leaving it at 180000 ms with the dial available.
 
+DOCS UPDATED 2026-08-26 on the owner's instruction "Please update all docs now": this file; the package README
+(destinations line, the fold at intake, the site's grammar, the four coverage states, status); the corpus pass
+runbook (destinations check); `doc/planning/translation-repair-readiness-signal.md` (since the answers);
+`doc/planning/translation-repair-open-decisions.md` (questions 11 and 12, the two dials, with rankings);
+`doc/decision/translation-repair-straggler-grace.md` (addendum: the dial and the band);
+`doc/audit/translation-repair-package-audit.md` (calibrate-1 superseded in part by `#263`);
+`doc/troubleshooting/translation-repair-invisible-characters.md` (the fold);
+`doc/troubleshooting/translation-repair-unread-signals.md` (the misread coverage line, the destinations line);
+`doc/audit/translation-repair-output-reading-20260826.md` (tooling, the second reader's dry run). `#268` holds
+the reading tooling's move into the package.
+
 THE `#263` MISREPORT RECURRED IN A2, now on two seats: `WROTE NOTHING AT ALL: minimax-m3,
 deepseek-v4-flash-0731` beside `SEAT minimax-m3 asked=32 usable=32` and `SEAT deepseek-v4-flash-0731 asked=32
 usable=32`. The landed fix reports them as answered-but-unslated; the live check after the build reads this

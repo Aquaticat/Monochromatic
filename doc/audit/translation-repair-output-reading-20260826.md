@@ -111,3 +111,22 @@ measurement). Eight short entries alone would answer whether the output is publi
 is not the owner's question. Each published page is then read the same way, and the instruments
 (`verify-published`, the rendering audit, the damage probe) are run on the same pages so their verdicts can be
 compared with the reading.
+
+## Tooling for the fresh pass, and the second reader's dry run
+
+Two helpers in the session scratchpad (`page-read.py`, `sol-read.py`), owed as a package CLI (`#268`) so the
+method survives the session:
+
+-   `page-read.py <entry> <runs-dir>` writes the source, the archive and the published page beside a unified
+    diff of archive against published and a census of the watched code points (typographic and invisible
+    punctuation, archive count to published count, introduced ones marked), plus a bare-address count on both
+    sides. Dry run on the older `wangzihao980` page: 4 diff hunks, U+2019 9 to 11, no invisible variant, 1 of 3
+    source addresses absent from the page, which is the `#265` finding the reading made by hand.
+-   `sol-read.py <entry> <runs-dir>` attaches the three whole files with `@file` arguments and asks sol for a
+    numbered list of every place the page departs from the source, with the source words, whether the archive
+    had the same defect, and a severity, ending with one sentence on publishability. Launched in the
+    background, never polled. Dry run on the same page launched 16:52Z; its answer is read when it lands.
+
+The pass itself: `corpus-pass --only` over the ten entries into `~/temp/agent/fresh-read-20260826`, then
+`XingZ60` alone into the same directory, at production defaults; the launch lines are in the scratchpad
+(`launch-fresh-pass.txt`) and in the corpus pass runbook.

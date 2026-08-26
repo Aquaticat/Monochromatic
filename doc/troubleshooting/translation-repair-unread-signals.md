@@ -934,3 +934,21 @@ The fallback did no harm HERE, because pairing one chunk to one chunk
  The proportional path has since been deleted (`chunk-document.ts` says so at
  its head); an unequal shape now goes to `alignHeadingsForced`, and the finding
  names the sections it could not pair rather than a fraction it aligned by.
+
+## A signal that was read and said the wrong thing, and one that did not exist (2026-08-26)
+
+THE COVERAGE SENTENCE MISREAD ITS OWN SEAT. `WROTE NOTHING AT ALL: minimax-m3` at the end of arm A's REFINER
+table told the reader to re-run a seat whose `SEAT` line, printed by the same command, said `asked=31 usable=31`;
+arm A2 repeated it for `minimax-m3` and `deepseek-v4-flash-0731`. The line was derived from slates, and a
+rewriter that answers every ask and leaves the paragraph as it stands reaches no slate. `#263` (landed in source,
+awaiting the build) carries the refine stage's heard ids out to the coverage split, which gains an
+answered-but-unslated state; the editor and translate seats still carry only a count out and say so (`#266`).
+The general shape is the one this document keeps finding: a summary line derived from one record while the
+contradicting record sits three lines below it, and nothing compares them.
+
+NOTHING WATCHED THE LINKS. The naturalness lane protects link destinations as ordered atoms, but a slice that
+ships through the repair lane's archive sentence or the contest's incumbent can drop a source hyperlink with no
+finding anywhere; the output reading found a page that had. `#265` (landed in source) adds the document-level
+check at publish: `DESTINATIONS <id> source=N page=M dropped=K` on stdout beside the `TALLY` line, the
+addresses at info in the run log, a warn line with the count. It is a finding and never a refusal, because the
+page is what both deciders approved. `grep '^DESTINATIONS ' <log> | grep -v 'dropped=0'` is the read.

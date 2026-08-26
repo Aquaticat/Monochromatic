@@ -1,7 +1,8 @@
 # Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-19
 
-STATUS ON 2026-08-26: EVERY QUESTION BELOW IS ANSWERED, and this document is kept for the evidence behind
-the answers (register item A-4). A reader starting here decides nothing; the records are:
+STATUS ON 2026-08-26: EVERY QUESTION FROM 1 TO 10 IS ANSWERED, and this document is kept for the evidence behind
+the answers (register item A-4). Questions 11 and 12, opened the same day at the end of this file, are the two
+dials the readiness signal's rejection left with the owner; both wait on arm D. The records for 1 to 10 are:
 
 -   Question 1, producing roster width: `doc/decision/translation-repair-question-answers.md`
     ("Producing roster width: keep three, widen on evidence"), and the "RULED 2026-08-23" section under the
@@ -2066,3 +2067,65 @@ Still nothing wired, and still the owner's call.
     for the second run.
     VETO THIS if you would rather the resume path be verified by interrupting a run,
     which reaches the case organically but only for whichever stages happened to be finished.
+
+## Question 11: whether the editor calibration overlaps slices by default
+
+`TRANSLATION_REPAIR_SLICE_OVERLAP` (`slice-overlap.ts`, landed `ce5ca2368`) sets how many slices
+`editor-calibrate` keeps in flight; the default is 1. Measured on 2026-08-26 over the same four slices,
+one run per arm: arm B (overlap 4) took 24.18 min against arm A's 43.18 (overlap 1), heard 302 of 312
+voices against 304, and the calls themselves cost the same (stream sums 6249 s and 6312 s). Arm A2
+repeated arm A unchanged and took 58.95 min, so the run-to-run band is 37% of wall clock and comes from
+provider speed. Normalized as wall clock over stream sum: A 0.41, A2 0.38, B 0.23. The overlap effect is
+six bands wide. The owner's 2026-08-26 answer was "measure the run-to-run band first"; it is measured.
+
+### Options
+
+A.  **Default `editor-calibrate` to overlap 4, keep the dial.**
+    -   For: halves the wall clock of the one command a session waits on most, on evidence that clears the
+        band six times over; voices heard moved by 2 of 312, inside what provider speed alone moves (A2 lost
+        8 with no dial change).
+    -   Against: a four-slice standing is noise either way (GLM-5.2 swung 52.2% to 26.7% to 10.0% between
+        identical runs), so faster standings are faster noise until the sample grows; `producer-calibrate`
+        has no dial yet, so the two calibrations would run under different defaults.
+B.  **Keep the default at 1; document `TRANSLATION_REPAIR_SLICE_OVERLAP=4` as the recommended launch.**
+    -   For: nothing changes for a reader of an old log; the pass drivers (question 3, `#261`) still run at
+        1, so calibration and pass stay alike until the pass is measured.
+    -   Against: the recommendation lives in a doc a reader may not open; every default run pays 19 minutes
+        for nothing measurable.
+C.  **Move both calibrations and the pass to overlap 4 together, after `#261` is measured.**
+    -   For: one story for every driver.
+    -   Against: couples a decided measurement to an undone one for no gain in evidence.
+
+### Ranking
+
+A > B > C. A over B because the effect is measured and six bands wide, and the standing-noise objection
+applies equally at either overlap; B over C because C delays a decided question behind an undecided one.
+
+## Question 12: whether the straggler window moves from 180000 ms
+
+`TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (`grace-override.ts`, landed `4c070f729`) overrides the window for
+one run. Arm C (300000 ms, overlap 1) took 53.87 min against arm A's 43.18 and bought back 2 of 6 cut
+voices, all `qwen3.8-max`. Arm A2 then showed the band: 58.95 min for an unchanged arm A, 8 cut voices
+instead of 6. Normalized, A 0.41, A2 0.38, C 0.43: the window's cost sits inside the band, and so does its
+recovery. Arm D (overlap 4 at 300000 ms) is running; under overlap the wait a longer window adds is what
+overlap fills, so D is the arm that could show a cheap window.
+
+### Options
+
+A.  **Keep 180000 ms, keep the dial, read arm D before reopening.**
+    -   For: nothing about the longer window is shown at this scale; the decision doc's own derivation
+        still stands; the dial lets any later trial run without a build.
+    -   Against: 6 to 8 cut voices per four-slice calibration persist, all on one model.
+B.  **Move to 300000 ms on arm C's 2-of-6.**
+    -   For: two voices came back on one run.
+    -   Against: the band swallows both the cost and the recovery; A2 lost 8 voices with no window change,
+        so 2 of 6 is not distinguishable from noise on single runs.
+C.  **Run interleaved repeats (A, C, A, C in one sitting) and decide on the normalized pair.**
+    -   For: the only design that resolves a difference smaller than the band.
+    -   Against: about four hours of provider time for a dial whose largest plausible effect is two voices
+        per calibration, all from one model that `#121` already names as the window's single payer.
+
+### Ranking
+
+A > C > B. A over C because D is already running and answers the overlap-4 half of the same question for
+free; C over B because B decides on a number the band has already erased.

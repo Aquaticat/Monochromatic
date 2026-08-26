@@ -32,6 +32,15 @@ The runbook carries the exact invocation and the expected output for each,
 including what each one prints when the run recorded nothing for it,
 which is never the same as the run having done nothing.
 
+The pass also prints, beside each settled entry's `TALLY` line,
+`DESTINATIONS <id> source=N page=M dropped=K`:
+how many distinct web addresses the source page links to, how many the published page carries,
+and how many of the source's the page lacks (`#265`).
+The addresses themselves go to the run log at info, never to stdout.
+A dropped destination is a finding, not a refusal:
+the page is what both deciders approved, and a link the pipeline cannot restore at publish time
+is reported for the reading rather than holding the entry.
+
 ## Contract
 
 The core export is the batch driver over pure stage functions:
@@ -237,6 +246,21 @@ and a translation-only window carrying the same text cannot collide.
 A slice whose neighbours change is asked a new question and is recomputed;
 a slice with no neighbours keys exactly as before and resumes.
 
+## What is folded out of a model's text at intake
+
+Characters a reader cannot tell from their plain counterpart are folded
+where each lane turns an answer into a candidate (`#264`):
+U+2011 to the hyphen, U+00A0 and U+202F to the space,
+and U+00AD, U+200B, U+2060 and U+FEFF dropped.
+The fold runs before any decider judges,
+so the bytes judged are the bytes that ship,
+and each fold is a finding, `invisible-variant-folded (U+2011 x1)`, in the stage's findings.
+Typographic quotes, dashes and the ellipsis pass through:
+measured over every archive page at the pin, 85 of 92 carry typographic quotes
+and the corpus holds 1173 U+2019, so those are the archive's own convention.
+The 2026-08-26 output reading found the case that motivated this,
+a hyphenated word published with a non-breaking hyphen the archive never had.
+
 ## Repetition the pipeline introduced
 
 Every per-slice instrument in this package is structurally blind to a passage said twice,
@@ -285,6 +309,20 @@ Two instruments are the exception, by design, and their standard output is an ar
 and `judge-fidelity-probe` prints per-trial judge `reasons`, which are model prose quoting candidates.
 Redirect both to a file under the runs directory and never paste either into a log, a commit, or a chat;
 both also persist their rows through the probe store, so the redirect is a convenience rather than the record.
+
+## The site's grammar is not this one
+
+The corpus repository builds each `page.md` itself:
+its `scripts/build.ts` rewrites `<!--` and `-->` into JSX comment delimiters
+and `scripts/mdx.ts` compiles with `@mdx-js/mdx` under `remark-math` and `rehype-katex`, with no GFM.
+This package parses with `remark-mdx` plus `remark-gfm` after masking HTML comments to whitespace.
+Verified with the site's own renderer on 2026-08-26:
+a footnote reference compiles to literal text there and to structure here,
+a `$...$` pair compiles to math there and to prose here.
+Six source pages at the pin carry a math pair.
+`#267` holds the reconciliation question;
+nothing published changes either way, since the text is preserved as written,
+but a formula is unprotected structure until the strict grammar knows it.
 
 ## Design commitments
 
@@ -758,9 +796,9 @@ so every other seated model vanishes,
 and its absence would otherwise read exactly like a model that wrote and lost.
 During a provider outage that is half the roster.
 
-Two different things put a seated model outside the table,
-and both calibrations now name them apart
-rather than reporting one absence:
+Three different things put a seated model outside the table,
+and the calibrations name them apart
+rather than reporting one absence (`#263`):
 
 -   WROTE AND WAS NEVER VOTED ON.
     Its text reached a slate and no disinterested ballot was cast over it,
@@ -768,17 +806,30 @@ rather than reporting one absence:
     it ships unjudged.
     That evidence is already paid for, and more slices are what would separate it.
 
--   WROTE NOTHING AT ALL.
-    No candidate of its reached any slate.
+-   ANSWERED AND WAS NEVER SLATED.
+    At least one usable answer of its was heard and none became a candidate a judge saw:
+    a rewriter that leaves a paragraph as it stands, or whose rewrite is dropped before judging.
+    Re-running it buys the same again; slices with something to rewrite are what would seat it.
+    Arm A of 2026-08-26 reported such a seat as silent beside a `SEAT` line saying it had answered 31 of 31,
+    which is the misreport this state exists to end.
+
+-   ANSWERED NOTHING USABLE.
+    No usable answer of its was heard at the seat.
     A provider out of budget, a refused sheet and a call that timed out
-    all look identical from the report, and the run log names which.
+    all look identical from the report, and the `SEAT` lines and the run log name which.
     That evidence has not been bought yet, and re-running those seats buys it.
+
+Only a seat that records who answered can tell the last two apart.
+The refiner seat does (`settleRefinedSlice` returns `refinersHeard`);
+the editor and translate seats carry only a heard count out of their stages (`#266`),
+so their silent line reads `NO CANDIDATE OF THEIRS REACHED ANY SLATE` and says the seat does not record who answered,
+instead of calling the unknown silent.
 
 The silent line carries both denominators,
 as `covers N of M seats`,
 so a table narrowed by an outage cannot read as a full roster comparison.
 
-A standing or a slate naming a model the run never seated is REFUSED,
+A standing, a slate or an answer list naming a model the run never seated is REFUSED,
 because coverage of one roster cannot be read off another.
 
 #### Editor credit and refiner credit are separate columns
@@ -798,6 +849,9 @@ including one the recheck rolled back,
 and it is deliberately kept off the cached settlement
 for the reason `asked` is:
 a slice resumed from disk bought no rewrite.
+`refinersHeard` rides beside it, also uncached:
+the refiners heard with a usable answer, proposal or not,
+which is what separates a seat that answered from one that never did.
 
 #### The editor calibration diverges from production in one place
 
@@ -964,3 +1018,18 @@ Where a stage grades itself the figure is named as telemetry and excluded:
 `runIntroducedDefectProbe` ships in shadow mode for exactly that reason,
 and the checker stage's resolution rate is a stage self-report,
 which is why repair quality is graded on its own human sheet instead.
+
+Status on 2026-08-26.
+The whole-package audit closed on a measured tally and every MAJOR and MINOR it filed landed with a guard shown
+to fail when its fix is removed.
+The production readiness signal was then put to the owner and REJECTED,
+because the published pages had not been read by anyone:
+"Not yet. You didn't even look at its actual output."
+The reading is now the gate.
+Four older-build pages read against source and archive found six defect classes no gate measured
+(`doc/audit/translation-repair-output-reading-20260826.md`);
+three are landed in source and await a build (`#263`, `#264`, `#265`, described in this file),
+and a fresh pass over ten entries, the hard cases among them, is read next, twice, with every defect traced
+into its artifact before it is filed.
+Read the milestone figures above as history:
+they were measured under earlier shapes of the pipeline and none of them is the readiness claim.

@@ -406,6 +406,26 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     A `chars=UNWEIGHED(artifact predates stored archive text)` column
     is not a pass. It means that entry could not be weighed at all.
 
+    Then read the destination lines off the pass log, which spends nothing either:
+
+    ```sh
+    grep '^DESTINATIONS ' "${RUNDIR}.log"
+    ```
+
+    Expected: one line per settled entry,
+    `DESTINATIONS <id> source=<n> page=<n> dropped=<n>`,
+    counting the distinct web addresses the source page links to,
+    the ones the published page carries,
+    and the source's that the page lacks.
+    `dropped=0` on every line is the clean reading.
+    A non-zero `dropped` is a finding rather than a failure:
+    the page is what both deciders approved,
+    and the addresses themselves are in the run log at `info`
+    under `publish: dropped destination`, never on stdout.
+    A trailing `destinations-mdx-downgraded (source)` or `(page)` says the strict grammar refused that side
+    and the plain-markdown parse was read instead; the count still stands.
+    A checkout that predates `#265` prints no such line, and a run made from it recorded nothing to read.
+
 3.  Read what the providers were doing while it ran.
 
     ```sh
