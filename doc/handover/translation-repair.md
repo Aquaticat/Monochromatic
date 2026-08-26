@@ -3,8 +3,8 @@
 Status:
 the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices and its fix queue is open;
-`#235` is fixed (`8b289c3ab`) and its live verification is in flight;
-the full-roster editor calibration (`#213`) re-runs once that verification lands.
+`#235` is fixed (`8b289c3ab`) and verified live; `#213` is unblocked;
+the fix queue is running, `#247` landed in `bf7d6afbd` with its instrument run in flight.
 Read `doc/planning/translation-repair-open-decisions.md` for what is still undecided.
 
 WHAT THIS FILE IS.
@@ -133,16 +133,21 @@ reports are verified, not after the whole audit, because those two slices hold e
 ### State of the tree
 
 Worktree `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`,
-HEAD `8b289c3ab` (the `#235` fix; its guards are `e0010019f`), clean.
-One run is in flight: the `#235` live verification, `editor-calibrate -- 1` under `mise run` from this worktree,
-with a throwaway runs directory whose path is in `~/temp/agent/vub-calibrate-current.txt`.
-What it must show: `METERS` lines, no `hf: prefix` refusal, heard fractions other than `5/10`,
-and closing `SEAT` lines with no `SEATS DARK:` line.
-Then `#235` closes, `#213` unblocks, and the fix queue starts at `#247`.
+HEAD `bf7d6afbd` (`#247`), clean.
+`#235` verified live 2026-08-26 (`editor-calibrate -- 1` under `mise run` from this worktree, exit 0):
+rounds `10/10` three times and `9/10` twice, zero `hf: prefix` refusals, all ten seats asked five times,
+nine usable five of five, `qwen3.8-max` usable three and thrown two, no `SEATS DARK:` line.
+The run wrote its `SEAT` lines to stderr and its `METERS` and `round:` lines to stdout;
+its throwaway runs directory is named in `~/temp/agent/vub-calibrate-current.txt`.
+One run is in flight: `probe-sensitivity` under `mise run`, the `#247` instrument's live verification
+(output under `~/temp/agent/vub-sensitivity-*`), which must print eighteen `SENSITIVITY` lines carrying
+`list=` and `issue=` and end with `SEAT` lines.
+Queue after it: `#257` (so the relabel half of `#247` can run against its draw), then `#237` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
-STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed;
+STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed,
+verified live the same day (see "State of the tree" in the audit section);
 `doc/troubleshooting/synthetic-hf-prefix-misroute.md` holds the located cause and the fix.
 The body below is the diagnosis as it stood while the cause was being located, kept for its evidence.
 

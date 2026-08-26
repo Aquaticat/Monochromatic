@@ -161,10 +161,15 @@ FIXED 2026-08-26: guards in `e0010019f`, fix in `8b289c3ab`.
 the Synthetic client refuses any id outside its catalog before the wire on both surfaces,
 every call through the factory's client is counted on `RUN_SEATS`,
 and `reportingRefusals` prints `SEAT` lines plus a `SEATS DARK:` line at the end of every command.
-Each of five fix lines was removed in turn, rebuilt, and its suite failed (2, 3, 2, 4, 2 failing lines);
-each was then restored and passed.
+Each of five fix lines was removed in turn, rebuilt, and its suite failed
+(2, 3, 2, 4, 2 failing lines); each was then restored and passed.
 Negative control: a bare `node` launch with no Hyper key exits 6 with the variable name, no frames, no `SEAT` lines.
-Live verification: a one-slice `editor-calibrate` under `mise run`, recorded in the handover when it lands.
+Live verification, 2026-08-26: a one-slice `editor-calibrate` under `mise run` from this worktree exited 0
+with rounds `10/10` three times and `9/10` twice (never `5/10`), zero `hf: prefix` refusals,
+every one of the ten seats asked five times, nine usable five of five,
+`qwen3.8-max` usable three and thrown two (a wobble, not a dark seat), and no `SEATS DARK:` line.
+The calibration's own coverage sentence still said six of ten seats wrote something;
+that is standing coverage, and the `SEAT` lines now separate it from darkness.
 Correction to the earlier diagnosis: the fork worktree carries an encrypted `.env.local.json` byte-identical to the main one;
 the half-dark run had been launched with bare `node`, which is what left the key unset.
 
@@ -551,10 +556,21 @@ rendered prompt at all.
 No recorded decision rests on a post-flip run; any rerun would mislead.
 Tracked as `#247`.
 
+FIXED 2026-08-26 in `bf7d6afbd`.
+Production's disclosure is one exported constant (`PRODUCTION_PRIOR_ISSUE_DISCLOSURE`) read by both stages
+and both instruments; the sensitivity arms are a data table (`probe-sensitivity-arms.ts`) whose unit test
+holds every arm's printed list to the disclosure it sends; each accuracy region runs under `none`,
+`withheld`, and `rendered`, so none-against-withheld isolates the screen and withheld-against-rendered the prompt.
+Guard shown to fail with the rendered arm sending `withheld` (2 failing lines), restored, passed.
+Live run of the instrument: in flight, recorded in the handover when it lands.
+
 ### probes-2, MAJOR, verified: the relabel instrument's "shown" arm shows nothing either
 
 `src/corpus-run/probe-relabel.ts:78-88` passes no `disclosure`, and `:150` labels the arm
 "Production condition: the issue list is shown". Same mechanism; folded into `#247`.
+
+FIXED 2026-08-26 in `bf7d6afbd`: three arms per region (the production disclosure, the other prompt, no list),
+each labelled from the constant it sends. Its live run waits on `#257`, since it reads the round-three draw.
 
 ### probes-3, MAJOR, verified: the damage sheet tells the grader every item was flagged
 
