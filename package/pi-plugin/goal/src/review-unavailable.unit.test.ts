@@ -1,18 +1,10 @@
 /**
- * Built-artifact tests for manual and non-interactive reviewer exhaustion.
+ * Built-artifact tests for settlement-review exhaustion behavior.
  *
  * @module
  */
 
-import type {
-  ExtensionContext,
-  KeybindingsManager,
-  Theme,
-} from '@earendil-works/pi-coding-agent';
-import type {
-  Component,
-  TUI,
-} from '@earendil-works/pi-tui';
+import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -22,62 +14,42 @@ import { ReviewUnavailableError, } from '@monochromatic-dev/pi-shared-model-revi
 
 import {
   createGoalReviewerUnavailableHandler,
-  promptManualGoalReview,
   reduceGoalEvents,
-  type GoalCompletionResult,
   type GoalControllerState,
-  type GoalEffect,
   type GoalLifecycleHandle,
+  type GoalSettlementReviewRequest,
   type ManualGoalReviewDecision,
-  type ValidGoalCompletionRequest,
 } from '../dist/final/node/index.mjs';
 
-/** Stable start timestamp. */
-const STARTED_AT = '2026-07-16T00:00:00.000Z';
+/** Stable event timestamp. */
+const STARTED_AT = '2026-08-26T00:00:00.000Z';
 
-/** Stable terminal timestamp. */
-const TERMINAL_AT = '2026-07-16T00:01:00.000Z';
+/** Stable fallback timestamp. */
+const FALLBACK_AT = '2026-08-26T00:01:00.000Z';
 
-/**
- * Fallback handler test harness.
- */
-type FallbackHarness = {
-  readonly lifecycle: GoalLifecycleHandle;
-  readonly context: ExtensionContext;
-  readonly state: { value: GoalControllerState; };
-  readonly leaf: { value: string; };
-  readonly effects: GoalEffect[];
-};
+/** Pi modes exercised by fallback tests. */
+type GoalTestMode = 'tui' | 'rpc' | 'json' | 'print';
+
+/** Shared exhausted-review error. */
+const REVIEW_ERROR = new ReviewUnavailableError({
+  attemptedCandidateIdentities: ['review/one', 'review/two',],
+  diagnostics: ['review/one: timeout', 'review/two: malformed verdict',],
+},);
 
 /**
- * Focused manual-dialog component factory used by fake custom UI.
- */
-type ManualDialogFactory = (
-  tui: TUI,
-  theme: Theme,
-  keybindings: KeybindingsManager,
-  done: (decision: ManualGoalReviewDecision) => void,
-) => Component;
-
-/**
- * Sentinel before manual dialog calls completion callback.
- */
-const MANUAL_DECISION_PENDING: unique symbol = Symbol('manual-decision-pending',);
-
-/**
- * Build active request shared by exhaustion tests.
+ * Build captured active settlement.
  *
- * @returns validated completion request
+ * @returns active settlement request
  */
-function fallbackRequest(): ValidGoalCompletionRequest {
-  /** Active goal fixture. */
+function fallbackRequest(): GoalSettlementReviewRequest {
+  /** Reduced active goal fixture. */
   const goal = reduceGoalEvents([{
     kind: 'run_started',
     runId: 'run-1',
     generationId: 'generation-1',
-    objective: 'Finish fallback behavior',
+    objective: 'Ship reviewed feature',
     startedAt: STARTED_AT,
-    startBoundary: 'leaf-start',
+    startBoundary: 'leaf-before-start',
     continuationSequence: 0,
     transitionedAt: STARTED_AT,
   },],);
@@ -85,46 +57,53 @@ function fallbackRequest(): ValidGoalCompletionRequest {
     throw new Error('expected active fallback fixture',);
   return {
     goal,
-    goalId: 'generation-1',
-    summary: 'Implemented and verified.',
     runtimeEpoch: 'runtime-1',
     branchLeafId: 'leaf-current',
-    toolCallId: 'completion-call',
+    settlementSequence: 0,
   };
 }
 
 /**
- * Build mode-specific lifecycle and context.
+ * Build fallback lifecycle harness.
  *
- * @param mode - Pi execution mode
+ * @param mode - Pi mode under test
  *
- * @returns mutable test state behind immutable lifecycle snapshots
+ * @returns mutable state, context, lifecycle, and effects
  */
-function fallbackHarness(mode: ExtensionContext['mode'],): FallbackHarness {
-  /** Runtime controller cell. */
+function fallbackHarness(mode: GoalTestMode,): {
+  readonly state: { value: GoalControllerState; };
+  readonly leaf: { value: string; };
+  readonly context: ExtensionContext;
+  readonly lifecycle: GoalLifecycleHandle;
+  readonly effects: unknown[];
+} {
+  /** Current controller cursor. */
   const state: { value: GoalControllerState; } = {
     value: {
       goal: fallbackRequest().goal,
       runtimeEpoch: 'runtime-1',
       settlementSequence: 0,
       shutdown: false,
-    },
+    } satisfies GoalControllerState,
   };
-  /** Selected branch leaf cell. */
+  /** Current selected branch leaf. */
   const leaf = { value: 'leaf-current', };
-  /** Applied semantic effects. */
-  const effects: GoalEffect[] = [];
-  /** Fake lifecycle boundary. */
+  /** Applied transition effects. */
+  const effects: unknown[] = [];
+  /** Fake lifecycle seam. */
   const lifecycle: GoalLifecycleHandle = {
     currentController() {
       return state.value;
     },
-    applyTransition({ transition, },) {
+    applyTransition({ transition, }) {
       state.value = transition.controller;
       effects.push(...transition.effects,);
     },
+    deliverPendingKickoff() {
+      return false;
+    },
   };
-  /** Focused completion fallback context. */
+  /** Fake Pi context with selected leaf. */
   const context = {
     mode,
     sessionManager: {
@@ -134,239 +113,137 @@ function fallbackHarness(mode: ExtensionContext['mode'],): FallbackHarness {
     },
   } as unknown as ExtensionContext;
   return {
-    lifecycle,
-    context,
     state,
     leaf,
+    context,
+    lifecycle,
     effects,
   };
 }
 
-/**
- * Shared exhausted-review error with transport audit.
- */
-const REVIEW_ERROR = new ReviewUnavailableError({
-  attemptedCandidateIdentities: [
-    'review/one',
-    'review/two',
-  ],
-  diagnostics: [
-    'review/one: timeout',
-    'review/two: malformed verdict',
-  ],
-});
-
 await describe({
   name: createGoalReviewerUnavailableHandler.name,
   children: [
-    it({
-      name: 'ignores escape and requires explicit dialog activation',
-      fn: async () => {
-        /** Dialog completion state observed by fake UI. */
-        const decision = {
-          value: MANUAL_DECISION_PENDING as ManualGoalReviewDecision | typeof MANUAL_DECISION_PENDING,
-        };
-        /** Minimal TUI used by component and inline editor. */
-        const tui = {
-          requestRender() {},
-        } as unknown as TUI;
-        /** Minimal theme methods used by manual component. */
-        const theme = {
-          fg(_color: string, text: string,) {
-            return text;
-          },
-          bold(text: string,) {
-            return text;
-          },
-        } as unknown as Theme;
-        /** Focused context whose custom UI drives escape then explicit accept. */
-        const context = {
-          ui: {
-            async custom(factory: ManualDialogFactory,) {
-              /** Manual dialog component under test. */
-              const component = factory(
-                tui,
-                theme,
-                {} as KeybindingsManager,
-                function finishDialog(result,) {
-                  decision.value = result;
-                },
-              );
-              if (component.handleInput === undefined)
-                throw new Error('manual dialog component lacks input handler',);
-              component.handleInput('\u001B',);
-              if (decision.value !== MANUAL_DECISION_PENDING)
-                throw new Error('escape incorrectly settled manual dialog',);
-              component.handleInput('\r',);
-              if (decision.value === MANUAL_DECISION_PENDING)
-                throw new Error('enter did not activate manual dialog choice',);
-              return decision.value;
-            },
-          },
-        } as unknown as ExtensionContext;
-        /** Explicit decision after ignored escape. */
-        const result = await promptManualGoalReview({
-          context,
-          diagnostic: 'all model reviewers failed',
-        },);
-        expect(result,).toEqual({ action: 'accept', },);
-      },
-    },),
-    it({
-      name: 'terminates RPC, JSON, and print modes as persisted review unavailable',
-      fn: async () => {
-        /** Non-interactive modes required to avoid TUI substitution. */
-        const modes = [
-          'rpc',
-          'json',
-          'print',
-        ] as const;
-        /** Terminal results and harnesses per mode. */
-        const outcomes = await Promise.all(modes.map(async function runMode(mode,) {
-          /** Mode-specific harness. */
+    ...(['rpc', 'json', 'print',] as const).map(function nonInteractiveMode(mode,) {
+      return it({
+        name: `terminates ${mode} mode as review unavailable`,
+        fn: async () => {
           const harness = fallbackHarness(mode,);
-          /** Production non-interactive exhaustion handler. */
           const handler = createGoalReviewerUnavailableHandler({
             lifecycle: harness.lifecycle,
             now() {
-              return TERMINAL_AT;
+              return FALLBACK_AT;
             },
           },);
-          /** Terminal non-interactive result. */
           const result = await handler({
             error: REVIEW_ERROR,
             request: fallbackRequest(),
             context: harness.context,
           },);
-          return { harness, result, };
-        },));
-        for (const { harness, result, } of outcomes) {
-          expect(result.details.outcome,).toBe('review_unavailable',);
-          expect(result.terminate,).toBe(true,);
+          expect(result,).toBe('review_unavailable',);
           expect(harness.state.value.goal.phase,).toBe('review_unavailable',);
-          expect(harness.effects.flatMap(function persistedKind(effect,) {
-            return effect.type === 'persist' ? [effect.event.kind,] : [];
-          },),).toEqual(['review_unavailable',],);
-          expect(harness.effects.some(function isDiagnostic(effect,) {
-            return effect.type === 'persist_review_unavailable_diagnostic';
-          },),).toBe(true,);
-          expect(harness.effects.some(function sendsTurn(effect,) {
-            return effect.type === 'send_message';
-          },),).toBe(false,);
-        }
-      },
+          expect(harness.effects,).toContainEqual(expect.objectContaining({
+            type: 'persist_review_unavailable_diagnostic',
+          }),);
+        },
+      },);
     },),
     it({
-      name: 'manually accepts in TUI after one mandatory combined decision',
+      name: 'persists manual approval and human-only completion audit',
       fn: async () => {
-        /** TUI fallback harness. */
         const harness = fallbackHarness('tui',);
-        /** Dialog invocation audit. */
-        const dialogs = { value: 0, };
-        /** Manual-accept handler. */
         const handler = createGoalReviewerUnavailableHandler({
           lifecycle: harness.lifecycle,
-          async promptManualReview({ diagnostic, },) {
-            dialogs.value += 1;
-            expect(diagnostic,).toContain('timeout',);
+          async promptManualReview(): Promise<ManualGoalReviewDecision> {
             return { action: 'accept', };
           },
           now() {
-            return TERMINAL_AT;
+            return FALLBACK_AT;
           },
         },);
-        /** Manually approved result. */
         const result = await handler({
           error: REVIEW_ERROR,
           request: fallbackRequest(),
           context: harness.context,
         },);
-        expect(dialogs.value,).toBe(1,);
-        expect(result.details.outcome,).toBe('approved',);
-        expect(result.terminate,).toBe(true,);
-        expect(harness.state.value.goal,).toMatchObject({
-          phase: 'completed',
-          approvalSource: 'manual',
-        },);
-        expect(harness.effects.flatMap(function persistedKind(effect,) {
-          return effect.type === 'persist' ? [effect.event.kind,] : [];
-        },),).toEqual(['run_completed_manual',],);
+        expect(result,).toBe('approved',);
+        expect(harness.state.value.goal.phase,).toBe('completed',);
+        expect(harness.effects,).toContainEqual(expect.objectContaining({
+          type: 'persist_completion_diagnostic',
+        }),);
       },
     },),
     it({
-      name: 'keeps TUI goal active after rejection and returns exact optional reason',
+      name: 'continues manual rejection with task-only reason or fallback',
       fn: async () => {
-        /** Reasoned manual rejection harness. */
-        const reasonedHarness = fallbackHarness('tui',);
-        /** Reasoned rejection handler. */
+        /** Reasoned rejection harness. */
+        const reasoned = fallbackHarness('tui',);
         const reasonedHandler = createGoalReviewerUnavailableHandler({
-          lifecycle: reasonedHarness.lifecycle,
-          async promptManualReview() {
-            return {
-              action: 'reject',
-              reason: 'Run the end-user verifier.',
-            };
+          lifecycle: reasoned.lifecycle,
+          async promptManualReview(): Promise<ManualGoalReviewDecision> {
+            return { action: 'reject', reason: 'Run the integration test.', };
+          },
+          createId() {
+            return 'reasoned-marker';
+          },
+          now() {
+            return FALLBACK_AT;
           },
         },);
-        /** Reasoned rejection result. */
-        const reasoned = await reasonedHandler({
+        expect(await reasonedHandler({
           error: REVIEW_ERROR,
           request: fallbackRequest(),
-          context: reasonedHarness.context,
-        },);
-        expect(reasoned.content,).toEqual([{
-          type: 'text',
-          text: 'Run the end-user verifier.',
-        },],);
-        expect(reasonedHarness.state.value.goal.phase,).toBe('active',);
-        expect(reasonedHarness.effects,).toHaveLength(0,);
-        /** Empty-reason manual rejection harness. */
-        const emptyHarness = fallbackHarness('tui',);
-        /** Empty-reason rejection handler. */
+          context: reasoned.context,
+        },),).toBe('continued',);
+        expect(reasoned.effects,).toContainEqual(expect.objectContaining({
+          type: 'send_message',
+          message: expect.objectContaining({ content: 'Run the integration test.', }),
+        }),);
+        /** Empty rejection fallback harness. */
+        const empty = fallbackHarness('tui',);
         const emptyHandler = createGoalReviewerUnavailableHandler({
-          lifecycle: emptyHarness.lifecycle,
-          async promptManualReview() {
-            return {
-              action: 'reject',
-              reason: ' ',
-            };
+          lifecycle: empty.lifecycle,
+          async promptManualReview(): Promise<ManualGoalReviewDecision> {
+            return { action: 'reject', reason: ' ', };
+          },
+          createId() {
+            return 'empty-marker';
+          },
+          now() {
+            return FALLBACK_AT;
           },
         },);
-        /** Generic empty-reason rejection result. */
-        const empty = await emptyHandler({
+        await emptyHandler({
           error: REVIEW_ERROR,
           request: fallbackRequest(),
-          context: emptyHarness.context,
+          context: empty.context,
         },);
-        expect(empty.content,).toEqual([{
-          type: 'text',
-          text: 'Manual reviewer rejected completion after model review was unavailable.',
-        },],);
-        expect(emptyHarness.state.value.goal.phase,).toBe('active',);
+        expect(empty.effects,).toContainEqual(expect.objectContaining({
+          type: 'send_message',
+          message: expect.objectContaining({
+            content: 'Continue working on the current user objective.',
+          }),
+        }),);
       },
     },),
     it({
-      name: 'ignores stale manual acceptance after branch changes during dialog',
+      name: 'ignores stale result after manual dialog changes branch',
       fn: async () => {
-        /** TUI harness whose branch changes inside dialog. */
         const harness = fallbackHarness('tui',);
-        /** Stale manual handler. */
         const handler = createGoalReviewerUnavailableHandler({
           lifecycle: harness.lifecycle,
-          async promptManualReview() {
-            harness.leaf.value = 'leaf-other';
+          async promptManualReview(): Promise<ManualGoalReviewDecision> {
+            harness.leaf.value = 'changed-leaf';
             return { action: 'accept', };
           },
         },);
-        /** Stale fallback result. */
-        const result: GoalCompletionResult = await handler({
+        const result = await handler({
           error: REVIEW_ERROR,
           request: fallbackRequest(),
           context: harness.context,
         },);
-        expect(result.details.outcome,).toBe('stale',);
+        expect(result,).toBe('stale',);
         expect(harness.state.value.goal.phase,).toBe('active',);
-        expect(harness.effects,).toHaveLength(0,);
       },
     },),
   ],

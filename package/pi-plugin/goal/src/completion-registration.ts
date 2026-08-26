@@ -16,6 +16,7 @@ import { registerBackgroundProcessMonitor, } from './background-process-monitor.
 import {
   createGoalSettlementReviewRequest,
   executeGoalSettlementReview,
+  GOAL_SETTLEMENT_NOT_REVIEWABLE,
   type GoalReviewerUnavailableHandler,
 } from './completion.ts';
 import type { GoalSettlementReviewer, } from './completion-types.ts';
@@ -40,6 +41,11 @@ type GoalSettlementReviewRegistration = {
 };
 
 /**
+ * Domain sentinel before any settlement has been reviewed.
+ */
+const SETTLEMENT_REVIEW_KEY_ABSENT: unique symbol = Symbol('settlement review key absent',);
+
+/**
  * Build stable duplicate-review key from captured settlement.
  *
  * @param request - captured active settlement
@@ -56,8 +62,10 @@ function settlementReviewKey(
 ): string {
   return JSON.stringify([
     request.runtimeEpoch,
-    request.goal.runId,
-    request.goal.generationId,
+    request.goal
+      .runId,
+    request.goal
+      .generationId,
     request.branchLeafId,
     request.settlementSequence,
   ],);
@@ -95,15 +103,23 @@ function registerGoalSettlementReview(
     now = defaultNow,
   }: GoalSettlementReviewRegistration,
 ): void {
-  /** Passive runtime-local view of background work. */
+  /**
+   * Passive runtime-local view of background work.
+   */
   const backgroundProcessMonitor = registerBackgroundProcessMonitor(pi,);
-  /** Explicit user abort marker consumed by final settlement. */
+  /**
+   * Explicit user abort marker consumed by final settlement.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Separate agent_end and agent_settled callbacks share one runtime marker.
   let settledRunWasAborted = false;
-  /** Most recent captured settlement protected from duplicate callbacks. */
+  /**
+   * Most recent captured settlement protected from duplicate callbacks.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Runtime-local duplicate guard spans agent_settled callbacks.
-  let lastReviewedSettlementKey: string | undefined;
-  /** Explicit fallback or production mode-specific exhaustion handler. */
+  let lastReviewedSettlementKey: string | typeof SETTLEMENT_REVIEW_KEY_ABSENT = SETTLEMENT_REVIEW_KEY_ABSENT;
+  /**
+   * Explicit fallback or production mode-specific exhaustion handler.
+   */
   const unavailableHandler = handleReviewerUnavailable
     ?? createGoalReviewerUnavailableHandler({
       lifecycle,
@@ -116,7 +132,9 @@ function registerGoalSettlementReview(
     function recordAbortedRun(
       event: ForeignBorrowed<AgentEndEvent>,
     ) {
-      /** Latest assistant message determines explicit abort. */
+      /**
+       * Latest assistant message determines explicit abort.
+       */
       const finalAssistant = event.messages
         .findLast(function isAssistant(message,) {
           return message.role === 'assistant';
@@ -141,18 +159,28 @@ function registerGoalSettlementReview(
       }
       if (lifecycle.deliverPendingKickoff(context,))
         return;
-      /** Finalized selected branch leaf. */
-      const branchLeafId = context.sessionManager.getLeafId();
+      /**
+       * Finalized selected branch leaf.
+       */
+      const branchLeafId = context.sessionManager
+        .getLeafId();
       if (branchLeafId === null)
         return;
-      /** Captured active settlement or absent marker. */
+      /**
+       * Captured active settlement or absent marker.
+       */
       const request = createGoalSettlementReviewRequest({
         controller: lifecycle.currentController(),
         branchLeafId,
       },);
-      if (request === undefined)
+      if ((typeof request) === 'symbol') {
+        if (request !== GOAL_SETTLEMENT_NOT_REVIEWABLE)
+          throw new Error('Unknown settlement review sentinel',);
         return;
-      /** Duplicate guard for exact runtime, generation, leaf, and sequence. */
+      }
+      /**
+       * Duplicate guard for exact runtime, generation, leaf, and sequence.
+       */
       const reviewKey = settlementReviewKey(request,);
       if (reviewKey === lastReviewedSettlementKey)
         return;

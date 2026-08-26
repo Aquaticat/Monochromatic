@@ -15,10 +15,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { registerGoalLifecycle, } from '../dist/final/node/index.mjs';
+import {
+  registerGoalLifecycle,
+  type GoalLifecycleHandle,
+} from '../dist/final/node/index.mjs';
 
 /**
- * Broad lifecycle callback shape captured by fake Pi registration boundary.
+ * Broad lifecycle callback shape captured by fake Pi registration seam.
  */
 type CapturedHandler = (
   event: unknown,
@@ -37,9 +40,9 @@ type CapturedCommandHandler = (
  * Fake Pi lifecycle harness state.
  */
 type LifecycleHarness = {
-  readonly api: ExtensionAPI;
   readonly handlers: Readonly<Record<string, CapturedHandler>>;
   readonly command: CapturedCommandHandler;
+  readonly lifecycle: GoalLifecycleHandle;
   readonly appended: unknown[];
   readonly messages: unknown[];
   readonly statuses: string[];
@@ -48,31 +51,41 @@ type LifecycleHarness = {
 };
 
 /**
- * Build focused fake Pi API and context for lifecycle contract checks.
+ * Build focused fake Pi API and context.
  *
  * @param branch - selected-branch entries returned by session manager
+ *
+ * @param idle - whether command can send kickoff immediately
  *
  * @returns captured registrations and observable effects
  *
  * @example
  * ```ts
- * const harness = lifecycleHarness([]);
+ * const harness = lifecycleHarness({ branch: [] });
  * ```
  */
-function lifecycleHarness(branch: readonly unknown[],): LifecycleHarness {
+function lifecycleHarness(
+  {
+    branch,
+    idle = true,
+  }: {
+    readonly branch: readonly unknown[];
+    readonly idle?: boolean;
+  },
+): LifecycleHarness {
   /** Captured lifecycle callbacks by event name. */
   const handlers: Record<string, CapturedHandler> = {};
   /** Captured command handlers by command name. */
   const commands: Record<string, CapturedCommandHandler> = {};
   /** Custom entries appended by extension. */
   const appended: unknown[] = [];
-  /** Custom messages sent by extension. */
+  /** Task-only custom messages sent by extension. */
   const messages: unknown[] = [];
   /** Footer status values observed in order. */
   const statuses: string[] = [];
   /** UI notifications observed in order. */
   const notifications: string[] = [];
-  /** Focused fake API implementing surfaces used by goal lifecycle. */
+  /** Focused fake API. */
   const api = {
     on(event: string, handler: CapturedHandler,) {
       handlers[event] = handler;
@@ -90,12 +103,12 @@ function lifecycleHarness(branch: readonly unknown[],): LifecycleHarness {
       messages.push(message,);
     },
   } as unknown as ExtensionAPI;
-  /** Focused context implementing surfaces used by goal lifecycle. */
+  /** Focused lifecycle context. */
   const context = {
     mode: 'tui',
     hasUI: true,
     ui: {
-      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Mirrors external ExtensionUIContext.setStatus parameter exactly at fake boundary.
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Mirrors external setStatus exactly.
       setStatus(_key: string, text: string | undefined,) {
         statuses.push(text ?? 'CLEARED',);
       },
@@ -112,20 +125,21 @@ function lifecycleHarness(branch: readonly unknown[],): LifecycleHarness {
       },
     },
     isIdle() {
-      return true;
+      return idle;
     },
     hasPendingMessages() {
       return false;
     },
   } as unknown as ExtensionCommandContext;
-  registerGoalLifecycle({
+  /** Registered lifecycle handle. */
+  const lifecycle = registerGoalLifecycle({
     pi: api,
     services: {
       createId: function createFixtureId() {
         return 'fixture-id';
       },
       now: function fixtureNow() {
-        return '2026-07-16T00:00:00.000Z';
+        return '2026-08-26T00:00:00.000Z';
       },
     },
   },);
@@ -134,9 +148,9 @@ function lifecycleHarness(branch: readonly unknown[],): LifecycleHarness {
   if (command === undefined)
     throw new Error('goal command was not registered',);
   return {
-    api,
     handlers,
     command,
+    lifecycle,
     appended,
     messages,
     statuses,
@@ -165,7 +179,7 @@ function requiredHandler(
   harness: LifecycleHarness,
   eventName: string,
 ): CapturedHandler {
-  /** Captured handler for requested lifecycle event. */
+  /** Captured handler for requested event. */
   const handler = harness.handlers[eventName];
   if (handler === undefined)
     throw new Error(`missing ${eventName} lifecycle registration`,);
@@ -176,16 +190,11 @@ await describe({
   name: registerGoalLifecycle.name,
   children: [
     it({
-      name: 'restores active branch, rotates generation, injects prompt, and continues only at final settlement',
+      name: 'restores active branch and injects only task objective',
       fn: async () => {
-        /** Active branch fixture with unrelated custom entry. */
-        const harness = lifecycleHarness([
-          {
-            type: 'custom',
-            customType: 'unrelated',
-            data: { ignored: true, },
-          },
-          {
+        /** Active branch fixture. */
+        const harness = lifecycleHarness({
+          branch: [{
             type: 'custom',
             customType: 'goal:state',
             data: {
@@ -193,21 +202,17 @@ await describe({
               runId: 'run-existing',
               generationId: 'generation-existing',
               objective: 'Restore exact objective',
-              startedAt: '2026-07-15T00:00:00.000Z',
+              startedAt: '2026-08-25T00:00:00.000Z',
               startBoundary: 'leaf-start',
               continuationSequence: 0,
-              transitionedAt: '2026-07-15T00:00:00.000Z',
+              transitionedAt: '2026-08-25T00:00:00.000Z',
             },
-          },
-        ],);
+          },],
+        },);
         await requiredHandler(harness, 'session_start',)(
           { type: 'session_start', reason: 'startup', },
           harness.context,
         );
-        expect(harness.statuses,).toEqual([
-          'goal Restore e…',
-          'goal Restore e…',
-        ],);
         expect(harness.appended,).toHaveLength(1,);
         expect(harness.messages,).toHaveLength(0,);
         /** Per-turn prompt injection result. */
@@ -220,34 +225,24 @@ await describe({
           },
           harness.context,
         );
-        expect(JSON.stringify(promptResult,),).toContain('Restore exact objective',);
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.appended,).toHaveLength(2,);
-        expect(harness.messages,).toHaveLength(1,);
+        const serialized = JSON.stringify(promptResult,);
+        expect(serialized,).toContain('Restore exact objective',);
+        expect(serialized,).not.toContain('goal_id',);
+        expect(serialized,).not.toContain('review',);
+        expect(Object.hasOwn(harness.handlers, 'agent_settled',),).toBe(false,);
         expect(Object.hasOwn(harness.handlers, 'tool_call',),).toBe(false,);
       },
     },),
     it({
-      name: 'starts, replaces without confirmation, rejects removed forms, and clears idempotently',
+      name: 'starts, replaces, rejects removed forms, and clears idempotently',
       fn: async () => {
-        /** Empty selected-branch harness. */
-        const harness = lifecycleHarness([],);
+        const harness = lifecycleHarness({ branch: [], },);
         await harness.command('First objective', harness.context,);
-        expect(harness.appended,).toHaveLength(1,);
-        expect(harness.messages,).toHaveLength(1,);
         await harness.command('Second objective', harness.context,);
         expect(harness.appended,).toHaveLength(2,);
         expect(harness.messages,).toHaveLength(2,);
-        expect(harness.notifications,).toHaveLength(0,);
         await harness.command('status', harness.context,);
-        expect(harness.notifications,).toEqual([
-          'Usage: /goal <objective> or /goal clear',
-        ],);
         await harness.command('clear', harness.context,);
-        expect(harness.appended,).toHaveLength(3,);
         await harness.command('clear', harness.context,);
         expect(harness.notifications,).toEqual([
           'Usage: /goal <objective> or /goal clear',
@@ -257,235 +252,30 @@ await describe({
       },
     },),
     it({
-      name: 'leaves active goal unchanged after abort and resumes on later ordinary settlement',
+      name: 'delivers deferred kickoff through private lifecycle handle',
       fn: async () => {
-        /** Active goal runtime under abort. */
-        const harness = lifecycleHarness([],);
-        await harness.command('Survive explicit abort', harness.context,);
-        await requiredHandler(harness, 'agent_end',)(
-          {
-            type: 'agent_end',
-            messages: [{ role: 'assistant', stopReason: 'aborted', },],
-          },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.appended,).toHaveLength(1,);
+        const harness = lifecycleHarness({ branch: [], idle: false, },);
+        await harness.command('Deferred objective', harness.context,);
+        expect(harness.messages,).toHaveLength(0,);
+        expect(harness.lifecycle.deliverPendingKickoff(harness.context,),).toBe(true,);
         expect(harness.messages,).toHaveLength(1,);
-        await requiredHandler(harness, 'agent_end',)(
-          {
-            type: 'agent_end',
-            messages: [{ role: 'assistant', stopReason: 'stop', },],
-          },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.appended,).toHaveLength(2,);
-        expect(harness.messages,).toHaveLength(2,);
+        expect(harness.messages[0],).toMatchObject({
+          content: 'User objective (exact JSON string): "Deferred objective"',
+        },);
+        expect(harness.lifecycle.deliverPendingKickoff(harness.context,),).toBe(false,);
       },
     },),
     it({
-      name: 'suppresses continuation while observed background processes remain live',
+      name: 'reconstructs tree and compaction then shuts down without model turn',
       fn: async () => {
-        /** Runtime that starts one background process before goal activation. */
-        const harness = lifecycleHarness([],);
-        await harness.handlers.tool_result?.(
-          {
-            type: 'tool_result',
-            toolCallId: 'process-start',
-            toolName: 'process',
-            input: { action: 'start', },
-            content: [],
-            isError: false,
-            details: {
-              action: 'start',
-              success: true,
-              process: {
-                id: 'proc_1',
-                status: 'running',
-              },
-            },
-          },
-          harness.context,
-        );
-        await harness.command('Wait for background verification', harness.context,);
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.appended,).toHaveLength(1,);
-        expect(harness.messages,).toHaveLength(1,);
-        await requiredHandler(harness, 'message_end',)(
-          {
-            type: 'message_end',
-            message: {
-              role: 'custom',
-              customType: 'ad-process:update',
-              content: 'Process completed',
-              display: true,
-              details: {
-                kind: 'lifecycle',
-                processId: 'proc_1',
-                status: 'exited',
-              },
-            },
-          },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.appended,).toHaveLength(2,);
-        expect(harness.messages,).toHaveLength(2,);
-      },
-    },),
-    it({
-      name: 'ignores delayed start result after terminal lifecycle message',
-      fn: async () => {
-        /** Active goal runtime receiving terminal event before delayed start result. */
-        const harness = lifecycleHarness([],);
-        await harness.command('Survive process event reordering', harness.context,);
-        await requiredHandler(harness, 'message_end',)(
-          {
-            type: 'message_end',
-            message: {
-              role: 'custom',
-              customType: 'ad-process:update',
-              content: 'Process completed',
-              display: true,
-              details: {
-                kind: 'lifecycle',
-                processId: 'proc_race',
-                status: 'exited',
-              },
-            },
-          },
-          harness.context,
-        );
-        await harness.handlers.tool_result?.(
-          {
-            type: 'tool_result',
-            toolCallId: 'process-start-delayed',
-            toolName: 'process',
-            input: { action: 'start', },
-            content: [],
-            isError: false,
-            details: {
-              action: 'start',
-              success: true,
-              process: {
-                id: 'proc_race',
-                status: 'running',
-              },
-            },
-          },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.messages,).toHaveLength(2,);
-      },
-    },),
-    it({
-      name: 'reconciles live processes from list results before continuation',
-      fn: async () => {
-        /** Active goal runtime receiving complete process-manager snapshot. */
-        const harness = lifecycleHarness([],);
-        await harness.command('Respect process list', harness.context,);
-        await harness.handlers.tool_result?.(
-          {
-            type: 'tool_result',
-            toolCallId: 'process-list',
-            toolName: 'process',
-            input: { action: 'list', },
-            content: [],
-            isError: false,
-            details: {
-              action: 'list',
-              success: true,
-              processes: [
-                { id: 'proc_timeout', status: 'terminate_timeout', },
-                { id: 'proc_terminating', status: 'terminating', },
-                { id: 'proc_done', status: 'exited', },
-              ],
-            },
-          },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.messages,).toHaveLength(1,);
-        await requiredHandler(harness, 'message_end',)(
-          {
-            type: 'message_end',
-            message: {
-              role: 'custom',
-              customType: 'ad-process:update',
-              content: 'Process terminated',
-              display: true,
-              details: {
-                kind: 'lifecycle',
-                processId: 'proc_timeout',
-                status: 'killed',
-              },
-            },
-          },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.messages,).toHaveLength(1,);
-        await requiredHandler(harness, 'message_end',)(
-          {
-            type: 'message_end',
-            message: {
-              role: 'custom',
-              customType: 'ad-process:update',
-              content: 'Process exited',
-              display: true,
-              details: {
-                kind: 'lifecycle',
-                processId: 'proc_terminating',
-                status: 'exited',
-              },
-            },
-          },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
-          harness.context,
-        );
-        expect(harness.messages,).toHaveLength(2,);
-      },
-    },),
-    it({
-      name: 'reconstructs branch on tree and compaction and suppresses post-shutdown settlement',
-      fn: async () => {
-        /** Empty selected branch harness. */
-        const harness = lifecycleHarness([],);
+        const harness = lifecycleHarness({ branch: [], },);
         await harness.command('Temporary objective', harness.context,);
         await requiredHandler(harness, 'session_tree',)(
           { type: 'session_tree', newLeafId: null, oldLeafId: 'leaf-current', },
           harness.context,
         );
-        /** Empty target branch clears footer without sending a turn. */
         const [lastStatus,] = harness.statuses.toReversed();
         expect(lastStatus,).toBe('CLEARED',);
-        expect(harness.messages,).toHaveLength(1,);
         await requiredHandler(harness, 'session_compact',)(
           {
             type: 'session_compact',
@@ -498,10 +288,6 @@ await describe({
         );
         await requiredHandler(harness, 'session_shutdown',)(
           { type: 'session_shutdown', reason: 'quit', },
-          harness.context,
-        );
-        await requiredHandler(harness, 'agent_settled',)(
-          { type: 'agent_settled', },
           harness.context,
         );
         expect(harness.messages,).toHaveLength(1,);

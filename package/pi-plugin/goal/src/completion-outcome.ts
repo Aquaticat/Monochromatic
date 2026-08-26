@@ -45,11 +45,19 @@ function settlementReviewControllerStillCurrent(
     return false;
   if (controller.settlementSequence !== request.settlementSequence)
     return false;
-  if (controller.goal.phase !== 'active')
+  if (controller.goal
+    .phase
+    !== 'active')
     return false;
-  if (controller.goal.runId !== request.goal.runId)
+  if (controller.goal
+    .runId
+    !== request.goal
+    .runId)
     return false;
-  return controller.goal.generationId === request.goal.generationId;
+  return controller.goal
+    .generationId
+    === request.goal
+    .generationId;
 }
 
 /**
@@ -120,33 +128,49 @@ function continueGoalAfterDenial(
     readonly timestamp: string;
   },
 ): GoalControllerTransition {
-  if (controller.goal.phase !== 'active')
+  if (controller.goal
+    .phase
+    !== 'active')
     throw new Error('Cannot continue denied non-active goal',);
-  if (review.verdict.approved)
+  if (review.verdict
+    .approved)
     throw new Error('Cannot continue approved goal as denial',);
-  /** Persisted private reviewer audit. */
+  /**
+   * Persisted private reviewer audit.
+   */
   const denialEvent = {
     kind: 'review_denied',
-    runId: request.goal.runId,
-    generationId: request.goal.generationId,
-    remainingWork: review.verdict.remainingWork,
+    runId: request.goal
+      .runId,
+    generationId: request.goal
+      .generationId,
+    remainingWork: review.verdict
+      .remainingWork,
     reviewerIdentity: review.reviewerIdentity,
-    reviewerRationale: review.verdict.rationale,
+    reviewerRationale: review.verdict
+      .rationale,
     attemptedReviewerIdentities: review.attemptedReviewerIdentities,
     transcriptTruncated: review.transcriptTruncated,
-    continuationSequence: controller.goal.continuationSequence,
+    continuationSequence: controller.goal
+      .continuationSequence,
     transitionedAt: timestamp,
   } as const;
-  /** Active state retaining task-only remaining work. */
+  /**
+   * Active state retaining task-only remaining work.
+   */
   const deniedGoal = reduceGoalEvent({
     state: controller.goal,
     event: denialEvent,
   },);
   if (deniedGoal.phase !== 'active')
     throw new Error('Goal denial did not retain active state',);
-  /** Next private continuation sequence. */
+  /**
+   * Next private continuation sequence.
+   */
   const continuationSequence = deniedGoal.continuationSequence + 1;
-  /** Persisted continuation issuance. */
+  /**
+   * Persisted continuation issuance.
+   */
   const continuationEvent = {
     kind: 'continuation_issued',
     runId: deniedGoal.runId,
@@ -154,22 +178,29 @@ function continueGoalAfterDenial(
     continuationSequence,
     transitionedAt: timestamp,
   } as const;
-  /** Active state advanced through branch reducer. */
+  /**
+   * Active state advanced through branch reducer.
+   */
   const goal = reduceGoalEvent({
     state: deniedGoal,
     event: continuationEvent,
   },);
   if (goal.phase !== 'active')
     throw new Error('Goal continuation did not retain active state',);
-  /** Task-only continuation visible to primary model. */
+  /**
+   * Task-only continuation visible to primary model.
+   */
   const message = buildGoalMessage({
     goal,
     kind: 'continuation',
     continuationSequence,
     marker,
-    remainingWork: review.verdict.remainingWork,
+    remainingWork: review.verdict
+      .remainingWork,
   },);
-  /** Runtime settlement sequence after continuation. */
+  /**
+   * Runtime settlement sequence after continuation.
+   */
   const settlementSequence = controller.settlementSequence + 1;
   return {
     controller: {
@@ -180,8 +211,14 @@ function continueGoalAfterDenial(
       shutdown: controller.shutdown,
     },
     effects: [
-      { type: 'persist', event: denialEvent, },
-      { type: 'persist', event: continuationEvent, },
+      {
+        type: 'persist',
+        event: denialEvent,
+      },
+      {
+        type: 'persist',
+        event: continuationEvent,
+      },
       {
         type: 'send_message',
         message,
@@ -227,22 +264,32 @@ function approveGoalCompletion(
     readonly timestamp: string;
   },
 ): GoalControllerTransition {
-  if (controller.goal.phase !== 'active')
+  if (controller.goal
+    .phase
+    !== 'active')
     throw new Error('Cannot approve completion for non-active goal',);
-  if (!review.verdict.approved)
+  if (!review.verdict
+    .approved)
     throw new Error('Cannot approve denied goal review',);
-  /** Persisted model-approved terminal event. */
+  /**
+   * Persisted model-approved terminal event.
+   */
   const event = {
     kind: 'run_completed_model',
-    runId: request.goal.runId,
-    generationId: request.goal.generationId,
+    runId: request.goal
+      .runId,
+    generationId: request.goal
+      .generationId,
     reviewerIdentity: review.reviewerIdentity,
-    reviewerRationale: review.verdict.rationale,
+    reviewerRationale: review.verdict
+      .rationale,
     attemptedReviewerIdentities: review.attemptedReviewerIdentities,
     transcriptTruncated: review.transcriptTruncated,
     completedAt: timestamp,
   } as const;
-  /** Terminal state derived through branch reducer. */
+  /**
+   * Terminal state derived through branch reducer.
+   */
   const goal = reduceGoalEvent({
     state: controller.goal,
     event,
@@ -255,15 +302,21 @@ function approveGoalCompletion(
       shutdown: controller.shutdown,
     },
     effects: [
-      { type: 'persist', event, },
+      {
+        type: 'persist',
+        event,
+      },
       {
         type: 'persist_completion_diagnostic',
         diagnostic: {
-          runId: request.goal.runId,
-          generationId: request.goal.generationId,
+          runId: request.goal
+            .runId,
+          generationId: request.goal
+            .generationId,
           approvalSource: 'model',
           reviewerIdentity: review.reviewerIdentity,
-          reviewerRationale: review.verdict.rationale,
+          reviewerRationale: review.verdict
+            .rationale,
           attemptedReviewerIdentities: review.attemptedReviewerIdentities,
           transcriptTruncated: review.transcriptTruncated,
           completedAt: timestamp,
@@ -273,7 +326,8 @@ function approveGoalCompletion(
       {
         type: 'log',
         level: 'debug',
-        message: `goal completion approved privately for ${request.goal.runId}`,
+        message: `goal completion approved privately for ${request.goal
+          .runId}`,
       },
     ],
   };

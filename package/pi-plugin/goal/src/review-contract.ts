@@ -100,6 +100,11 @@ const FORBIDDEN_REMAINING_WORK_PHRASES = [
 ] as const;
 
 /**
+ * Exact private verdict property count.
+ */
+const GOAL_REVIEW_VERDICT_PROPERTY_COUNT = 3;
+
+/**
  * Candidate reviewer lacks enough context for fixed framing and completion claim.
  *
  * @example
@@ -140,7 +145,9 @@ type BudgetedGoalReviewPrompt = StructuredReviewPrompt & {
  * ```
  */
 function remainingWorkDescribesReview(remainingWork: string,): boolean {
-  /** Case-folded denial guidance scanned by bounded phrase list. */
+  /**
+   * Case-folded denial guidance scanned by bounded phrase list.
+   */
   const normalized = remainingWork.toLocaleLowerCase('en-US',);
   return FORBIDDEN_REMAINING_WORK_PHRASES.some(function includesForbiddenPhrase(phrase,) {
     return normalized.includes(phrase,);
@@ -164,15 +171,19 @@ function remainingWorkDescribesReview(remainingWork: string,): boolean {
 function parseGoalReviewVerdict(value: unknown,): GoalReviewVerdict {
   if ((value === null) || ((typeof value) !== 'object'))
     throw new Error('Goal reviewer verdict must be an object',);
-  /** Exact verdict property names. */
+  /**
+   * Exact verdict property names.
+   */
   const keys = Object.keys(value,);
-  if ((keys.length !== 3)
+  if ((keys.length !== GOAL_REVIEW_VERDICT_PROPERTY_COUNT)
     || (!('approved' in value))
     || (!('rationale' in value))
     || (!('remaining_work' in value))) {
     throw new Error('Goal reviewer verdict must contain only approved, rationale, and remaining_work',);
   }
-  /** Unknown fields after presence validation. */
+  /**
+   * Unknown fields after presence validation.
+   */
   const {
     approved,
     rationale: rawRationale,
@@ -184,8 +195,13 @@ function parseGoalReviewVerdict(value: unknown,): GoalReviewVerdict {
     throw new Error('Goal reviewer rationale must be string',);
   if ((typeof rawRemainingWork) !== 'string')
     throw new Error('Goal reviewer remaining_work must be string',);
-  /** Normalized private rationale and task-only denial guidance. */
+  /**
+   * Normalized private rationale and task-only denial guidance.
+   */
   const rationale = rawRationale.trim();
+  /**
+   * Normalized task-only denial guidance.
+   */
   const remainingWork = rawRemainingWork.trim();
   if (rationale === '')
     throw new Error('Goal reviewer rationale must be non-empty',);
@@ -395,7 +411,9 @@ function buildBudgetedGoalReviewPrompt(
    * Maximum serialized request characters after fixed reserves.
    */
   const maximumCharacters = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN;
-  /** Non-truncatable objective framing. */
+  /**
+   * Non-truncatable objective framing.
+   */
   const claim = `User objective (exact JSON string): ${JSON.stringify(evidence.objective,)}\nFinalized post-start active-branch evidence:\n`;
   /**
    * Transcript characters remaining after system rubric and fixed claim.

@@ -15,7 +15,6 @@ import {
 } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { GoalCompletionResult, } from '../dist/final/node/index.mjs';
 import {
   bindRuntimeActions,
   type CapturedRuntimeMessage,
@@ -42,18 +41,6 @@ type RuntimeCommand = (
     readonly context: ExtensionCommandContext;
   }>,
 ) => Promise<void>;
-
-/**
- * Generic loaded tool callback including Pi extension context.
- */
-type RuntimeTool = (
-  input: {
-    readonly toolCallId: ForeignBorrowed<string>;
-    readonly params: ForeignBorrowed<Readonly<Record<string, unknown>>>;
-    readonly context: ForeignBorrowed<ExtensionContext>;
-    readonly signal?: ForeignBorrowed<AbortSignal>;
-  },
-) => Promise<GoalCompletionResult>;
 
 /**
  * Disposable package discovery result and stateful Pi boundaries.
@@ -203,5 +190,4 @@ export type {
   GoalRuntimeHarness,
   RuntimeCommand,
   RuntimeHandler,
-  RuntimeTool,
 };

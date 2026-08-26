@@ -1,5 +1,5 @@
 /**
- * Discovered command, settlement, abort, clear, and branch runtime scenarios.
+ * Discovered command, abort, process, clear, and branch runtime scenarios.
  *
  * @module
  */
@@ -22,27 +22,32 @@ import {
 const REPLACEMENT_MESSAGE_COUNT = 2;
 
 /**
- * Messages after natural settlement continuation.
- */
-const NATURAL_MESSAGE_COUNT = REPLACEMENT_MESSAGE_COUNT + 1;
-
-/**
- * Messages after output-exhaustion continuation.
- */
-const LENGTH_MESSAGE_COUNT = NATURAL_MESSAGE_COUNT + 1;
-
-/**
- * Messages after process-gated settlement later becomes eligible.
- */
-const PROCESS_RELEASED_MESSAGE_COUNT = LENGTH_MESSAGE_COUNT + 1;
-
-/**
- * Loaded lifecycle verification result retained for completion scenario.
+ * Loaded lifecycle verification result retained for exhaustion scenario.
  */
 type GoalFlowResult = {
   readonly harness: GoalRuntimeHarness;
   readonly summary: string;
 };
+
+/**
+ * Check captured primary task content for private protocol absence.
+ *
+ * @param content - untrusted custom-message content
+ *
+ * @returns whether content is plain task text without protocol terms
+ *
+ * @example
+ * ```ts
+ * taskContentHasNoProtocol('User objective: test');
+ * ```
+ */
+function taskContentHasNoProtocol(content: unknown,): boolean {
+  if ((typeof content) !== 'string')
+    return false;
+  return (!content.includes('goal_id'))
+    && (!content.includes('review'))
+    && (!content.includes('goal_complete'));
+}
 
 /**
  * Exercise discovered command, lifecycle, and selected-branch reconstruction.
@@ -55,7 +60,7 @@ type GoalFlowResult = {
  *
  * @returns runtime harness positioned on active replacement branch
  *
- * @throws when any lifecycle invariant differs
+ * @throws when lifecycle invariant differs
  *
  * @example
  * ```ts
@@ -74,12 +79,19 @@ async function verifyDiscoveredGoalFlow(
   },
 ): Promise<GoalFlowResult> {
   /**
-   * Real package discovery with runtime actions bound to disposable session.
+   * Real package discovery with disposable session.
    */
   const harness = await createGoalRuntimeHarness({
     packageDirectory,
     agentDirectory,
     sessionDirectory,
+  },);
+  requireCondition({
+    condition: harness.extension
+      .tools
+      .size
+      === 0,
+    message: 'discovered package exposed primary-model tools',
   },);
   requireCondition({
     condition: !harness.extension
@@ -96,58 +108,54 @@ async function verifyDiscoveredGoalFlow(
     context: harness.context,
   },);
   /**
-   * Leaf retaining first goal start and kickoff for branch reconstruction.
+   * Leaf retaining first start and kickoff.
    */
   const firstLeaf = harness.sessionManager
     .getLeafId();
   if (firstLeaf === null)
-    throw new Error('first goal did not persist a session leaf',);
+    throw new Error('first goal did not persist session leaf',);
   await command({
     args: 'Replacement disposable objective',
     context: harness.context,
   },);
   /**
-   * Leaf retaining immediate replacement before continuations.
+   * Leaf retaining replacement before review.
    */
   const replacementLeaf = harness.sessionManager
     .getLeafId();
   if (replacementLeaf === null)
-    throw new Error('replacement goal did not persist a session leaf',);
+    throw new Error('replacement goal did not persist session leaf',);
   requireCount({
     actual: harness.messages
       .length,
     expected: REPLACEMENT_MESSAGE_COUNT,
-    message: 'start and immediate replacement kickoff messages',
+    message: 'start and replacement task kickoffs',
   },);
   requireCondition({
-    condition: harness.statuses
-      .at(-1,)
-      ?.includes('Replaceme',)
-      === true,
-    message: 'replacement did not update active footer',
+    condition: harness.messages
+      .every(function containsNoProtocol(message,) {
+      return taskContentHasNoProtocol(message.content,);
+    },),
+    message: 'task kickoff exposed harness protocol',
   },);
 
+  /**
+   * Explicit abort leaves active state without review or continuation.
+   */
   await settleGoalRun({
     harness,
-    stopReason: 'stop',
+    stopReason: 'aborted',
   },);
   requireCount({
     actual: harness.messages
       .length,
-    expected: NATURAL_MESSAGE_COUNT,
-    message: 'natural settlement continuation',
-  },);
-  await settleGoalRun({
-    harness,
-    stopReason: 'length',
-  },);
-  requireCount({
-    actual: harness.messages
-      .length,
-    expected: LENGTH_MESSAGE_COUNT,
-    message: 'length settlement continuation',
+    expected: REPLACEMENT_MESSAGE_COUNT,
+    message: 'abort task messages',
   },);
 
+  /**
+   * Live process suppresses settlement review.
+   */
   await emitGoalEvent({
     harness,
     type: 'tool_result',
@@ -175,7 +183,7 @@ async function verifyDiscoveredGoalFlow(
   requireCount({
     actual: harness.messages
       .length,
-    expected: LENGTH_MESSAGE_COUNT,
+    expected: REPLACEMENT_MESSAGE_COUNT,
     message: 'live process settlement suppression',
   },);
   await emitGoalEvent({
@@ -195,22 +203,10 @@ async function verifyDiscoveredGoalFlow(
       },
     },
   },);
-  await settleGoalRun({
-    harness,
-    stopReason: 'stop',
-  },);
-  requireCount({
-    actual: harness.messages
-      .length,
-    expected: PROCESS_RELEASED_MESSAGE_COUNT,
-    message: 'process release settlement continuation',
-  },);
 
   /**
-   * Message count before compaction recovery.
+   * Compaction restores state without triggering task turn.
    */
-  const beforeCompaction = harness.messages
-    .length;
   await emitGoalEvent({
     harness,
     type: 'session_compact',
@@ -222,49 +218,16 @@ async function verifyDiscoveredGoalFlow(
       willRetry: true,
     },
   },);
-  requireCondition({
-    condition: harness.messages
-      .length
-      === beforeCompaction,
-    message: 'compaction emitted premature continuation',
-  },);
-  await settleGoalRun({
-    harness,
-    stopReason: 'stop',
-  },);
-  requireCondition({
-    condition: harness.messages
-      .length
-      === (beforeCompaction + 1),
-    message: 'post-compaction settlement did not emit once',
+  requireCount({
+    actual: harness.messages
+      .length,
+    expected: REPLACEMENT_MESSAGE_COUNT,
+    message: 'compaction task messages',
   },);
 
   /**
-   * Message count before inert abort.
+   * Clear invalidates delayed settlement review.
    */
-  const beforeAbort = harness.messages
-    .length;
-  await settleGoalRun({
-    harness,
-    stopReason: 'aborted',
-  },);
-  requireCondition({
-    condition: harness.messages
-      .length
-      === beforeAbort,
-    message: 'abort emitted goal-owned continuation',
-  },);
-  await settleGoalRun({
-    harness,
-    stopReason: 'error',
-  },);
-  requireCondition({
-    condition: harness.messages
-      .length
-      === (beforeAbort + 1),
-    message: 'settled error did not continue active goal',
-  },);
-
   await emitGoalEvent({
     harness,
     type: 'agent_end',
@@ -280,29 +243,27 @@ async function verifyDiscoveredGoalFlow(
     args: 'clear',
     context: harness.context,
   },);
-  /**
-   * Message count after clear invalidates captured settlement.
-   */
-  const afterClear = harness.messages
-    .length;
   await emitGoalEvent({
     harness,
     type: 'agent_settled',
     event: { type: 'agent_settled', },
   },);
-  requireCondition({
-    condition: harness.messages
-      .length
-      === afterClear,
-    message: 'clear did not invalidate delayed settlement',
+  requireCount({
+    actual: harness.messages
+      .length,
+    expected: REPLACEMENT_MESSAGE_COUNT,
+    message: 'clear invalidated settlement',
   },);
 
+  /**
+   * Start active run retained for exhaustion scenario.
+   */
   await command({
     args: 'Reloaded disposable objective',
     context: harness.context,
   },);
   /**
-   * Message count before restoration and tree navigation.
+   * Task message count before restoration.
    */
   const beforeRestore = harness.messages
     .length;
@@ -314,11 +275,11 @@ async function verifyDiscoveredGoalFlow(
       reason: 'resume',
     },
   },);
-  requireCondition({
-    condition: harness.messages
-      .length
-      === beforeRestore,
-    message: 'session restoration triggered model turn',
+  requireCount({
+    actual: harness.messages
+      .length,
+    expected: beforeRestore,
+    message: 'session restoration task messages',
   },);
   harness.sessionManager
     .branch(firstLeaf,);
@@ -328,17 +289,11 @@ async function verifyDiscoveredGoalFlow(
     event: { type: 'session_tree', },
   },);
   requireCondition({
-    condition: harness.messages
-      .length
-      === beforeRestore,
-    message: 'tree reconstruction triggered model turn',
-  },);
-  requireCondition({
     condition: harness.statuses
       .at(-1,)
       ?.includes('First',)
       === true,
-    message: 'tree reconstruction used abandoned branch state',
+    message: 'tree reconstruction used abandoned state',
   },);
   harness.sessionManager
     .branch(replacementLeaf,);
@@ -349,7 +304,7 @@ async function verifyDiscoveredGoalFlow(
   },);
   return {
     harness,
-    summary: 'manifest discovery, lifecycle continuation, process gating, abort, compaction, clear, and branch reconstruction',
+    summary: 'manifest discovery, zero tools, task-only context, process gating, abort, compaction, clear, and branch reconstruction',
   };
 }
 

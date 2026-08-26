@@ -57,8 +57,12 @@ type GoalReviewFailureAudit = {
  */
 function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
   if (error instanceof ReviewUnavailableError) {
-    /** Shared normalized diagnostics with non-empty fallback. */
-    const diagnostics = error.diagnostics.length === 0
+    /**
+     * Shared normalized diagnostics with non-empty fallback.
+     */
+    const diagnostics = error.diagnostics
+      .length
+      === 0
       ? [error.message,]
       : error.diagnostics;
     return {
@@ -67,7 +71,9 @@ function normalizeGoalReviewFailure(error: unknown,): GoalReviewFailureAudit {
       diagnostic: diagnostics.join('; ',),
     };
   }
-  /** Normalized unexpected reviewer orchestration failure. */
+  /**
+   * Normalized unexpected reviewer orchestration failure.
+   */
   const diagnostic = caughtValueText(error,);
   return {
     attemptedReviewerIdentities: [],
@@ -130,9 +136,13 @@ function createGoalReviewerUnavailableHandler(
       context,
     },
   ) {
-    /** Normalized failed-model audit. */
+    /**
+     * Normalized failed-model audit.
+     */
     const audit = normalizeGoalReviewFailure(error,);
-    /** Stale check before mode-specific UI or transition. */
+    /**
+     * Stale check before mode-specific UI or transition.
+     */
     const initialRevalidation = revalidateSettlementReview({
       lifecycle,
       request,
@@ -153,12 +163,16 @@ function createGoalReviewerUnavailableHandler(
       },);
       return 'review_unavailable';
     }
-    /** Mandatory human decision after model exhaustion. */
+    /**
+     * Mandatory human decision after model exhaustion.
+     */
     const decision = await promptManualReview({
       context,
       diagnostic: audit.diagnostic,
     },);
-    /** Post-dialog stale check before state mutation. */
+    /**
+     * Post-dialog stale check before state mutation.
+     */
     const finalRevalidation = revalidateSettlementReview({
       lifecycle,
       request,
@@ -179,8 +193,14 @@ function createGoalReviewerUnavailableHandler(
       },);
       return 'approved';
     }
-    /** Optional human reason normalized to task-only fallback guidance. */
-    const reason = decision.reason.trim();
+    /**
+     * Optional human reason normalized to task-only fallback guidance.
+     */
+    const reason = decision.reason
+      .trim();
+    /**
+     * Task-only guidance from human reason or stable fallback.
+     */
     const remainingWork = reason === ''
       ? DEFAULT_MANUAL_REJECTION_REMAINING_WORK
       : reason;

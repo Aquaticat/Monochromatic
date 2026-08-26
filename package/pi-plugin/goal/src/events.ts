@@ -146,6 +146,9 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
         || (value.cause === 'tree_navigation'));
   }
   if (kind === 'review_denied') {
+    /**
+     * Shared identity and sequence validity for legacy and current denials.
+     */
     const baseValid = hasStringProperties({
       record: value,
       names: [
@@ -182,6 +185,9 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
       && ((typeof value.continuationSequence) === 'number');
   }
   if (kind === 'run_completed_model') {
+    /**
+     * Shared model-completion identity validity.
+     */
     const baseValid = hasStringProperties({
       record: value,
       names: [
@@ -206,6 +212,9 @@ function isGoalEvent(value: unknown,): value is GoalEvent {
     },);
   }
   if (kind === 'run_completed_manual') {
+    /**
+     * Shared manual-completion identity validity.
+     */
     const baseValid = hasStringProperties({
       record: value,
       names: [

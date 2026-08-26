@@ -22,6 +22,11 @@ import type { GoalLifecycleHandle, } from './lifecycle-services.ts';
 import type { GoalControllerState, } from './types.ts';
 
 /**
+ * Domain sentinel for settlement without active reviewable goal.
+ */
+const GOAL_SETTLEMENT_NOT_REVIEWABLE: unique symbol = Symbol('goal settlement is not reviewable',);
+
+/**
  * Mode-specific reviewer-exhaustion capability.
  */
 type GoalReviewerUnavailableHandler = (
@@ -54,9 +59,11 @@ function createGoalSettlementReviewRequest(
     readonly controller: GoalControllerState;
     readonly branchLeafId: string;
   },
-): GoalSettlementReviewRequest | undefined {
-  if (controller.shutdown || (controller.goal.phase !== 'active'))
-    return undefined;
+): GoalSettlementReviewRequest | typeof GOAL_SETTLEMENT_NOT_REVIEWABLE {
+  if (controller.shutdown || (controller.goal
+    .phase
+    !== 'active'))
+    return GOAL_SETTLEMENT_NOT_REVIEWABLE;
   return {
     goal: controller.goal,
     runtimeEpoch: controller.runtimeEpoch,
@@ -98,12 +105,20 @@ function revalidateSettlementReview(
     readonly controller: GoalControllerState;
   }
   | { readonly current: false; } {
-  /** Current controller read before captured session-handle use. */
+  /**
+   * Current controller read before captured session-handle use.
+   */
   const controller = lifecycle.currentController();
-  if (!settlementReviewControllerStillCurrent({ controller, request, }))
+  if (!settlementReviewControllerStillCurrent({
+    controller,
+    request,
+  }))
     return { current: false, };
-  /** Current branch leaf read only while runtime and generation match. */
-  const branchLeafId = context.sessionManager.getLeafId();
+  /**
+   * Current branch leaf read only while runtime and generation match.
+   */
+  const branchLeafId = context.sessionManager
+    .getLeafId();
   if (branchLeafId === null)
     return { current: false, };
   if (!settlementReviewStillCurrent({
@@ -113,7 +128,90 @@ function revalidateSettlementReview(
   },)) {
     return { current: false, };
   }
-  return { current: true, controller, };
+  return {
+    current: true,
+    controller,
+  };
+}
+
+/**
+ * Acquire reviewer result or mode-specific fallback disposition.
+ *
+ * @param request - captured active settlement
+ *
+ * @param context - current Pi context
+ *
+ * @param reviewer - independent model reviewer
+ *
+ * @param handleReviewerUnavailable - mode-specific exhaustion behavior
+ *
+ * @param signal - optional cancellation signal
+ *
+ * @returns available review or settled fallback disposition
+ *
+ * @mutates context - reviewer or fallback may update Pi state and UI
+ *
+ * @mutates reviewer - reviewer may update transport state
+ *
+ * @mutates handleReviewerUnavailable - fallback may update UI state
+ *
+ * @mutates signal - reviewer transport may retain cancellation signal
+ *
+ * @example
+ * ```ts
+ * await acquireGoalSettlementReview({ request, context, reviewer, handleReviewerUnavailable });
+ * ```
+ */
+async function acquireGoalSettlementReview(
+  {
+    request,
+    context,
+    reviewer,
+    handleReviewerUnavailable,
+    signal,
+  }: {
+    readonly request: GoalSettlementReviewRequest;
+    readonly context: ForeignBorrowed<ExtensionContext>;
+    readonly reviewer: ForeignBorrowed<GoalSettlementReviewer>;
+    readonly handleReviewerUnavailable: ForeignBorrowed<GoalReviewerUnavailableHandler>;
+    readonly signal?: AbortSignal;
+  },
+): Promise<
+  | {
+    readonly available: true;
+    readonly review: Awaited<ReturnType<GoalSettlementReviewer>>;
+  }
+  | {
+    readonly available: false;
+    readonly disposition: GoalSettlementDisposition;
+  }
+> {
+  try {
+    return {
+      available: true,
+      review: await reviewer({
+        request,
+        context,
+        ...(signal === undefined ? {} : { signal, }),
+      },),
+    };
+  }
+  catch (error) {
+    if (signal?.aborted === true) {
+      return {
+        available: false,
+        disposition: 'stale',
+      };
+    }
+    return {
+      available: false,
+      disposition: await handleReviewerUnavailable({
+        error,
+        request,
+        context,
+      },),
+    };
+  }
 }
 
 /**
@@ -171,25 +269,25 @@ async function executeGoalSettlementReview(
     readonly signal?: AbortSignal;
   },
 ): Promise<GoalSettlementDisposition> {
-  /** Independent review or mode-specific exhaustion handling. */
-  let review: Awaited<ReturnType<GoalSettlementReviewer>>;
-  try {
-    review = await reviewer({
-      request,
-      context,
-      ...(signal === undefined ? {} : { signal, }),
-    },);
-  }
-  catch (error) {
-    if (signal?.aborted === true)
-      return 'stale';
-    return await handleReviewerUnavailable({
-      error,
-      request,
-      context,
-    },);
-  }
-  /** Post-review stale-result validation. */
+  /**
+   * Independent review or mode-specific exhaustion result.
+   */
+  const acquisition = await acquireGoalSettlementReview({
+    request,
+    context,
+    reviewer,
+    handleReviewerUnavailable,
+    ...(signal === undefined ? {} : { signal, }),
+  },);
+  if (!acquisition.available)
+    return acquisition.disposition;
+  /**
+   * Available independent review.
+   */
+  const { review, } = acquisition;
+  /**
+   * Post-review stale-result validation.
+   */
   const revalidation = revalidateSettlementReview({
     lifecycle,
     request,
@@ -197,7 +295,8 @@ async function executeGoalSettlementReview(
   },);
   if (!revalidation.current)
     return 'stale';
-  if (!review.verdict.approved) {
+  if (!review.verdict
+    .approved) {
     lifecycle.applyTransition({
       transition: continueGoalAfterDenial({
         controller: revalidation.controller,
@@ -223,7 +322,9 @@ async function executeGoalSettlementReview(
 }
 
 export {
+  acquireGoalSettlementReview,
   createGoalSettlementReviewRequest,
+  GOAL_SETTLEMENT_NOT_REVIEWABLE,
   executeGoalSettlementReview,
   revalidateSettlementReview,
 };

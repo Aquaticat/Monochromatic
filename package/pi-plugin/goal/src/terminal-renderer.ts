@@ -62,12 +62,19 @@ function registerGoalTerminalRenderer(
       options: ForeignBorrowed<EntryRenderOptions>,
       theme: ForeignBorrowed<Theme>,
     ) {
-      /** Persisted completion audit payload. */
+      /**
+       * Persisted completion audit payload.
+       */
       const { data, } = entry;
       if (data === undefined)
         return undefined;
-      /** Compact success row with optional expanded audit. */
-      const lines = [theme.fg('success', theme.bold('Goal complete',)),];
+      /**
+       * Compact success row with optional expanded audit.
+       */
+      const lines = [theme.fg(
+        'success',
+        theme.bold('Goal complete',)
+      ),];
       if (options.expanded) {
         lines.push(
           `Approval source: ${data.approvalSource}`,
@@ -91,7 +98,9 @@ function registerGoalTerminalRenderer(
       _options: ForeignBorrowed<EntryRenderOptions>,
       theme: ForeignBorrowed<Theme>,
     ) {
-      /** Persisted terminal diagnostic payload. */
+      /**
+       * Persisted terminal diagnostic payload.
+       */
       const { data, } = entry;
       if (data === undefined)
         return undefined;

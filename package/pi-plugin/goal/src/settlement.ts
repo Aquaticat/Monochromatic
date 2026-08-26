@@ -26,15 +26,32 @@ import type {
  */
 function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalControllerTransition {
   if (controller.shutdown)
-    return { controller, effects: [], };
-  if (controller.goal.phase !== 'active')
-    return { controller, effects: [], };
-  /** Deferred kickoff captured while Pi was busy. */
+    return {
+      controller,
+      effects: [],
+    };
+  if (controller.goal
+    .phase
+    !== 'active')
+    return {
+      controller,
+      effects: [],
+    };
+  /**
+   * Deferred kickoff captured while Pi was busy.
+   */
   const { pendingKickoff, } = controller;
   if (pendingKickoff === undefined)
-    return { controller, effects: [], };
-  if ((pendingKickoff.runId !== controller.goal.runId)
-    || (pendingKickoff.generationId !== controller.goal.generationId)
+    return {
+      controller,
+      effects: [],
+    };
+  if ((pendingKickoff.runId
+    !== controller.goal
+    .runId)
+    || (pendingKickoff.generationId
+      !== controller.goal
+      .generationId)
     || (pendingKickoff.runtimeEpoch !== controller.runtimeEpoch)) {
     return {
       controller: {
@@ -46,14 +63,19 @@ function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalContro
       effects: [],
     };
   }
-  /** Task-only kickoff rebuilt from current validated generation. */
+  /**
+   * Task-only kickoff rebuilt from current validated generation.
+   */
   const kickoff = buildGoalMessage({
     goal: controller.goal,
     kind: 'kickoff',
-    continuationSequence: controller.goal.continuationSequence,
+    continuationSequence: controller.goal
+      .continuationSequence,
     marker: pendingKickoff.marker,
   },);
-  /** Settlement sequence identifying emitted kickoff. */
+  /**
+   * Settlement sequence identifying emitted kickoff.
+   */
   const settlementSequence = controller.settlementSequence + 1;
   return {
     controller: {

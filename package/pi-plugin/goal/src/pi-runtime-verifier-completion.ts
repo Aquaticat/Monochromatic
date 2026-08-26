@@ -1,25 +1,25 @@
 /**
- * Default noninteractive completion exhaustion runtime scenario.
+ * Default noninteractive settlement-review exhaustion runtime scenario.
  *
  * @module
  */
 
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 import {
-  activeGoalGeneration,
-  emitGoalEvent,
-  getGoalCompletionTool,
   requireCondition,
+  settleGoalRun,
 } from './pi-runtime-verifier-access.ts';
 import type { GoalRuntimeHarness, } from './pi-runtime-verifier-harness.ts';
 
 /**
- * Verify discovered default completion terminates when reviewers are unavailable.
+ * Verify discovered settlement review terminates when reviewers are unavailable.
  *
- * @param harness - real-loader harness positioned on active replacement branch
+ * @param harness - real-loader harness positioned on active branch
  *
- * @returns completion scenario summary
+ * @returns exhaustion scenario summary
  *
- * @throws when terminal outcome, persistence, or footer differs
+ * @throws when tool inventory, terminal state, or footer differs
  *
  * @example
  * ```ts
@@ -29,50 +29,37 @@ import type { GoalRuntimeHarness, } from './pi-runtime-verifier-harness.ts';
 async function verifyDefaultCompletionExhaustion(
   harness: GoalRuntimeHarness,
 ): Promise<string> {
-  /**
-   * Final completion tool-call identity tracked by message-end handler.
-   */
-  const completionCallId = 'runtime-completion-call';
-  await emitGoalEvent({
+  requireCondition({
+    condition: harness.extension
+      .tools
+      .size
+      === 0,
+    message: 'goal extension exposed a primary-model completion tool',
+  },);
+  await settleGoalRun({
     harness,
-    type: 'message_end',
-    event: {
-      type: 'message_end',
-      message: {
-        role: 'assistant',
-        content: [{
-          type: 'toolCall',
-          id: completionCallId,
-          name: 'goal_complete',
-          arguments: {},
-        },],
-      },
-    },
+    stopReason: 'stop',
   },);
   /**
-   * Completion generation reconstructed from selected replacement branch.
+   * Latest persisted private goal-state event.
    */
-  const generationId = activeGoalGeneration(harness.sessionManager,);
-  /**
-   * Default registered completion result after reviewer selection exhaustion.
-   */
-  const completion = await getGoalCompletionTool(harness,)({
-    toolCallId: completionCallId,
-    params: {
-      goal_id: generationId,
-      summary: 'Disposable runtime verification completed.',
-    },
-    context: harness.context,
-  },);
+  const latestGoalEvent = harness.sessionManager
+    .getBranch()
+    .toReversed()
+    .find(function isGoalStateEntry(
+      entry: ForeignBorrowed<ReturnType<GoalRuntimeHarness['sessionManager']['getBranch']>[number]>,
+    ) {
+      return (entry.type === 'custom') && (entry.customType === 'goal:state');
+    },);
   requireCondition({
-    condition: completion.terminate === true,
-    message: 'noninteractive reviewer exhaustion did not terminate',
-  },);
-  requireCondition({
-    condition: completion.details
-      .outcome
-      === 'review_unavailable',
-    message: 'reviewer exhaustion returned wrong outcome',
+    condition: (latestGoalEvent?.type === 'custom')
+      && (latestGoalEvent.data !== null)
+      && ((typeof latestGoalEvent.data) === 'object')
+      && ('kind' in latestGoalEvent.data)
+      && (latestGoalEvent.data
+        .kind
+        === 'review_unavailable'),
+    message: 'reviewer exhaustion did not persist terminal state',
   },);
   requireCondition({
     condition: harness.statuses
@@ -80,7 +67,7 @@ async function verifyDefaultCompletionExhaustion(
       === 'CLEARED',
     message: 'terminal reviewer exhaustion did not clear footer',
   },);
-  return 'noninteractive reviewer exhaustion';
+  return 'noninteractive settlement-review exhaustion with zero primary tools';
 }
 
 export { verifyDefaultCompletionExhaustion, };

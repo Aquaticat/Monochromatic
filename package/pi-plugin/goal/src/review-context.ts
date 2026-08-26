@@ -10,10 +10,7 @@ import type {
   ThinkingContent,
   ToolCall,
 } from '@earendil-works/pi-ai';
-import type {
-  SessionEntry,
-  SessionMessageEntry,
-} from '@earendil-works/pi-coding-agent';
+import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
@@ -44,7 +41,7 @@ const EVIDENCE_ENTRY_OMITTED: unique symbol = Symbol('goal/evidence-entry-omitte
  * ```
  */
 function contentBlockText(
-  content: Readonly<TextContent | ImageContent | ToolCall | ThinkingContent>,
+  content: ForeignBorrowed<TextContent | ImageContent | ToolCall | ThinkingContent>,
 ): string {
   if (content.type === 'text')
     return content.text;
@@ -68,7 +65,9 @@ function contentBlockText(
  * ```
  */
 function messageContentText(
-  content: string | readonly (TextContent | ImageContent | ToolCall | ThinkingContent)[],
+  content: ForeignBorrowed<
+    string | (TextContent | ImageContent | ToolCall | ThinkingContent)[]
+  >,
 ): string {
   if ((typeof content) === 'string')
     return content;
@@ -161,7 +160,9 @@ function serializeEvidenceEntry(
   }
   if (entry.type !== 'message')
     return EVIDENCE_ENTRY_OMITTED;
-  /** Finalized agent message stored by selected branch. */
+  /**
+   * Finalized agent message stored by selected branch.
+   */
   const { message, } = entry;
   if (message.role === 'user')
     return `User:\n${messageContentText(message.content,)}`;
@@ -202,14 +203,20 @@ function findRunStartIndex(
     readonly runId: string;
   },
 ): number {
-  /** Matching run-start entry position. */
+  /**
+   * Matching run-start entry position.
+   */
   const index = branch.findIndex(function isMatchingRunStart(entry,) {
     if ((entry.type !== 'custom') || (entry.customType !== GOAL_STATE_ENTRY_TYPE))
       return false;
     if (!isGoalEvent(entry.data,))
       return false;
-    return (entry.data.kind === 'run_started')
-      && (entry.data.runId === runId);
+    return (entry.data
+      .kind
+      === 'run_started')
+      && (entry.data
+        .runId
+        === runId);
   },);
   if (index === (-1))
     throw new Error(`Active goal run start is absent from selected branch: ${runId}`,);
@@ -239,17 +246,24 @@ function buildGoalReviewEvidence(
     readonly request: GoalSettlementReviewRequest;
   },
 ): GoalReviewEvidence {
-  /** Matching run-start position defining transcript seam. */
+  /**
+   * Matching run-start position defining transcript seam.
+   */
   const startIndex = findRunStartIndex({
     branch,
-    runId: request.goal.runId,
+    runId: request.goal
+      .runId,
   },);
-  /** Active run identities filtering task messages. */
+  /**
+   * Active run identities filtering task messages.
+   */
   const {
     runId,
     generationId,
   } = request.goal;
-  /** Eligible serialized chunks after current run started. */
+  /**
+   * Eligible serialized chunks after current run started.
+   */
   const transcriptChunks = branch
     .slice(startIndex + 1,)
     .map(function serializeEntry(entry,) {
@@ -265,7 +279,8 @@ function buildGoalReviewEvidence(
       return (typeof chunk) === 'string';
     },);
   return {
-    objective: request.goal.objective,
+    objective: request.goal
+      .objective,
     transcriptChunks,
   };
 }

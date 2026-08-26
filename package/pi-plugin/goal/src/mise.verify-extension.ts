@@ -23,7 +23,7 @@ const EXPECTED_EVENT_HANDLER_COUNTS = {
   agent_end: 1,
   agent_settled: 1,
   before_agent_start: 1,
-  message_end: 2,
+  message_end: 1,
   session_compact: 1,
   session_shutdown: 1,
   session_start: 1,
@@ -37,7 +37,7 @@ const EXPECTED_EVENT_HANDLER_COUNTS = {
 type GoalBuiltModule = {
   readonly default: ExtensionFactory;
   readonly parseGoalCommand: (raw: string) => unknown;
-  readonly registerGoalCompletion: (...inputs: readonly unknown[]) => unknown;
+  readonly registerGoalSettlementReview: (...inputs: readonly unknown[]) => unknown;
   readonly registerGoalLifecycle: (...inputs: readonly unknown[]) => unknown;
 };
 
@@ -75,8 +75,8 @@ function isGoalBuiltModule(value: unknown,): value is GoalBuiltModule {
     && ((typeof value.default) === 'function')
     && ('parseGoalCommand' in value)
     && ((typeof value.parseGoalCommand) === 'function')
-    && ('registerGoalCompletion' in value)
-    && ((typeof value.registerGoalCompletion) === 'function')
+    && ('registerGoalSettlementReview' in value)
+    && ((typeof value.registerGoalSettlementReview) === 'function')
     && ('registerGoalLifecycle' in value)
     && ((typeof value.registerGoalLifecycle) === 'function');
 }
@@ -208,16 +208,19 @@ async function verifyBuiltGoalExtension(): Promise<string> {
     expected: 'goal',
     kind: 'command',
   },);
-  requireOnlyRegistration({
-    actual: harness.tools,
-    expected: 'goal_complete',
-    kind: 'tool',
-  },);
-  requireOnlyRegistration({
-    actual: harness.entryRenderers,
-    expected: 'goal:review-unavailable',
-    kind: 'entry renderer',
-  },);
+  if (harness.tools
+    .length
+    > 0)
+    throw new Error(`goal extension exposed primary tools: ${harness.tools
+      .join(', ')}`,);
+  if (JSON.stringify(harness.entryRenderers
+    .toSorted(),) !== JSON.stringify([
+    'goal:completion',
+    'goal:review-unavailable',
+  ],)) {
+    throw new Error(`unexpected entry renderers: ${harness.entryRenderers
+      .join(', ')}`,);
+  }
   if (harness.events
     .has('tool_call',))
     throw new Error('goal extension registered forbidden goal-state tool_call blocker',);
@@ -255,7 +258,7 @@ async function verifyBuiltGoalExtension(): Promise<string> {
   },);
   if (wrongCountEvent !== undefined)
     throw new Error(`unexpected ${wrongCountEvent} handler count`,);
-  return 'pi-goal built extension verified: one command, one completion tool, exact lifecycle handlers, no tool_call blocker';
+  return 'pi-goal built extension verified: one command, zero primary tools, human-only outcome renderers, exact lifecycle handlers';
 }
 
 //endregion Verification

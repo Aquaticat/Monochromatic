@@ -16,6 +16,7 @@ import {
   buildGoalMessage,
   clearGoal,
   createGoalController,
+  deliverPendingGoalKickoff,
   formatGoalFooter,
   goalEventsFromBranch,
   GOAL_USAGE,
@@ -27,7 +28,6 @@ import {
   reduceGoalEvents,
   restoreGoalController,
   rotateGoalGeneration,
-  settleGoal,
   shutdownGoalController,
   startGoal,
   type ActiveGoalState,
@@ -189,7 +189,7 @@ await describe({
           throw new Error('expected active reduced state',);
         expect(state.generationId,).toBe('generation-2',);
         expect(state.startBoundary,).toBe('boundary-1',);
-        expect(state.reviewerFeedback,).toBe('Add evidence.',);
+        expect(state.remainingWork,).toBe('Add evidence.',);
       },
     },),
     it({
@@ -477,10 +477,10 @@ await describe({
 },);
 
 await describe({
-  name: settleGoal.name,
+  name: deliverPendingGoalKickoff.name,
   children: [
     it({
-      name: 'emits deferred kickoff once after matching busy generation settles',
+      name: 'emits deferred task kickoff once for matching active generation',
       fn: async () => {
         /** Busy start retaining kickoff intent. */
         const started = startGoal({
@@ -495,12 +495,7 @@ await describe({
           hasPendingMessages: false,
         },);
         /** First final settlement drains matching kickoff. */
-        const settled = settleGoal({
-          controller: started.controller,
-          marker: 'unused-marker',
-          timestamp: LATER_AT,
-          hasPendingMessages: false,
-        },);
+        const settled = deliverPendingGoalKickoff(started.controller,);
         expect(settled.effects,).toHaveLength(1,);
         /** Sole kickoff effect. */
         const [effect,] = settled.effects;
@@ -508,59 +503,23 @@ await describe({
           throw new Error('expected deferred kickoff message',);
         expect(effect.message.details.kind,).toBe('kickoff',);
         expect(effect.message.details.marker,).toBe('kickoff-marker',);
+        expect(effect.message.content,).toBe('User objective (exact JSON string): "Deferred goal"',);
         expect(settled.controller.pendingKickoff,).toBeUndefined();
       },
     },),
     it({
-      name: 'persists one continuation and one visible message per eligible settlement',
+      name: 'does nothing without pending kickoff or after shutdown',
       fn: async () => {
-        /** Active controller fixture. */
+        /** Active controller without deferred kickoff. */
         const restored = restoreGoalController({
           controller: createGoalController(RUNTIME_EPOCH,),
           goal: activeGoal(),
         },);
-        /** Final settlement continuation transition. */
-        const settled = settleGoal({
-          controller: restored.controller,
-          marker: 'continuation-marker',
-          timestamp: LATER_AT,
-          hasPendingMessages: false,
-        },);
-        expect(settled.effects.filter(effect => effect.type === 'persist'),).toHaveLength(1,);
-        expect(settled.effects.filter(effect => effect.type === 'send_message'),).toHaveLength(1,);
-        expect(settled.controller.goal,).toMatchObject({
-          phase: 'active',
-          continuationSequence: 1,
-        },);
-      },
-    },),
-    it({
-      name: 'does not overwrite queued human turn or act after shutdown',
-      fn: async () => {
-        /** Active controller fixture. */
-        const restored = restoreGoalController({
-          controller: createGoalController(RUNTIME_EPOCH,),
-          goal: activeGoal(),
-        },);
-        /** Settlement while human message owns next turn. */
-        const queued = settleGoal({
-          controller: restored.controller,
-          marker: 'marker-queued',
-          timestamp: LATER_AT,
-          hasPendingMessages: true,
-        },);
-        expect(queued.effects,).toHaveLength(0,);
+        expect(deliverPendingGoalKickoff(restored.controller,).effects,).toHaveLength(0,);
         /** Runtime shutdown transition. */
         const stopped = shutdownGoalController(restored.controller,);
         expect(stopped.effects,).toEqual([{ type: 'clear_footer', },],);
-        /** Settlement callback arriving after shutdown. */
-        const stale = settleGoal({
-          controller: stopped.controller,
-          marker: 'marker-stale',
-          timestamp: LATER_AT,
-          hasPendingMessages: false,
-        },);
-        expect(stale.effects,).toHaveLength(0,);
+        expect(deliverPendingGoalKickoff(stopped.controller,).effects,).toHaveLength(0,);
       },
     },),
   ],
@@ -629,7 +588,7 @@ await describe({
   name: buildGoalMessage.name,
   children: [
     it({
-      name: 'carries exact generation, provenance, sequence, and stale-guard explanation',
+      name: 'keeps private provenance outside task-only continuation content',
       fn: async () => {
         /** Continuation message fixture. */
         const message = buildGoalMessage({
@@ -637,6 +596,7 @@ await describe({
           kind: 'continuation',
           continuationSequence: 3,
           marker: 'marker-3',
+          remainingWork: 'Run the integration test.',
         },);
         expect(message.display,).toBe(true,);
         expect(message.details,).toEqual({
@@ -646,8 +606,9 @@ await describe({
           marker: 'marker-3',
           kind: 'continuation',
         },);
-        expect(message.content,).toContain('only the stale-completion guard',);
-        expect(message.content,).toContain('requirement-by-requirement verification',);
+        expect(message.content,).toBe('Run the integration test.',);
+        expect(message.content,).not.toContain('goal',);
+        expect(message.content,).not.toContain('review',);
       },
     },),
   ],
@@ -657,17 +618,16 @@ await describe({
   name: buildActiveGoalPrompt.name,
   children: [
     it({
-      name: 'includes exact objective and generation with complete persistence rules',
+      name: 'contains only exact user objective without harness protocol',
       fn: async () => {
         /** Active prompt suffix. */
         const prompt = buildActiveGoalPrompt(activeGoal(),);
-        expect(prompt,).toContain('"Ship the exact feature"',);
-        expect(prompt,).toContain('generation-1',);
-        expect(prompt,).toContain('Do not redefine the objective',);
-        expect(prompt,).toContain('no background process is live',);
-        expect(prompt,).toContain('Do not poll',);
-        expect(prompt,).toContain('final action',);
-        expect(prompt,).toContain('restored generation',);
+        expect(prompt,).toBe(
+          'Current user objective (exact JSON string): "Ship the exact feature"',
+        );
+        expect(prompt,).not.toContain('generation-1',);
+        expect(prompt,).not.toContain('review',);
+        expect(prompt,).not.toContain('completion',);
       },
     },),
   ],

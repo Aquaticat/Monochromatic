@@ -38,7 +38,9 @@ import {
   resolveGoalReviewerPool,
 } from './review-selection.ts';
 
-/** Reviewer orchestration logger. */
+/**
+ * Reviewer orchestration logger.
+ */
 const reviewRunnerLogger = tagged({ tag: 'pi-goal-review-runner', },);
 
 /**
@@ -74,7 +76,9 @@ async function runGoalReviewerAttempt(
     readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
   },
 ): Promise<GoalReviewVerdict> {
-  /** Candidate prompt reused by initial request and retry builder. */
+  /**
+   * Candidate prompt reused by initial request and retry builder.
+   */
   const prompt = {
     systemPrompt: candidate.systemPrompt,
     userContent: candidate.userContent,
@@ -86,7 +90,9 @@ async function runGoalReviewerAttempt(
     timeoutMs: REVIEW_TIMEOUT_MS,
     ...(callerSignal === undefined ? {} : { signal: callerSignal, }),
   },);
-  /** Initial forced-tool provider result. */
+  /**
+   * Initial forced-tool provider result.
+   */
   const initial = await runStructuredToolRequest({
     model: candidate.model,
     auth: candidate.auth,
@@ -99,12 +105,16 @@ async function runGoalReviewerAttempt(
   },);
   if (initial.kind === 'toolCall')
     return parseGoalReviewVerdict(initial.arguments,);
-  /** Goal-specific direct-JSON retry prompt. */
+  /**
+   * Goal-specific direct-JSON retry prompt.
+   */
   const retryPrompt = buildGoalJsonRetryPrompt({
     initialPrompt: prompt,
     firstAttemptTextContent: initial.textContent,
   },);
-  /** Unknown direct-JSON value retained only until strict parsing. */
+  /**
+   * Unknown direct-JSON value retained only until strict parsing.
+   */
   const value = await runStructuredJsonRetries({
     model: candidate.model,
     auth: candidate.auth,
@@ -126,11 +136,17 @@ async function runGoalReviewerAttempt(
  * ```
  */
 type GoalFallbackSuccess = {
-  /** Candidate returning valid verdict. */
+  /**
+   * Candidate returning valid verdict.
+   */
   readonly candidate: GoalReviewerCandidate;
-  /** Canonical reviewer identity. */
+  /**
+   * Canonical reviewer identity.
+   */
   readonly identity: string;
-  /** Strict reviewer verdict. */
+  /**
+   * Strict reviewer verdict.
+   */
   readonly verdict: GoalReviewVerdict;
 };
 
@@ -173,7 +189,9 @@ async function runGoalFallbackAttempt(
     readonly diagnostics: string[];
   },
 ): Promise<GoalFallbackSuccess> {
-  /** Canonical reviewer identity. */
+  /**
+   * Canonical reviewer identity.
+   */
   const identity = canonicalSlug(candidate.model,);
   reviewRunnerLogger.debug(`starting fallback goal reviewer ${identity}`,);
   try {
@@ -188,11 +206,16 @@ async function runGoalFallbackAttempt(
     };
   }
   catch (error) {
-    /** Candidate-labeled normalized failure. */
+    /**
+     * Candidate-labeled normalized failure.
+     */
     const diagnostic = `${identity}: ${caughtValueText(error,)}`;
     diagnostics.push(diagnostic,);
     reviewRunnerLogger.error(`fallback goal reviewer failed: ${diagnostic}`,);
-    throw new Error(diagnostic, { cause: error, },);
+    throw new Error(
+      diagnostic,
+      { cause: error, },
+    );
   }
 }
 
@@ -231,10 +254,21 @@ async function runGoalReviewerPool(
     readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
   },
 ): Promise<GoalSettlementReview> {
-  /** Ranked candidates and selection diagnostics. */
-  const { candidates, diagnostics: selectionDiagnostics, } = pool;
-  /** Initial highest-cost reviewer. */
-  const firstCandidate = candidates[0];
+  /**
+   * Ranked candidates and selection diagnostics.
+   */
+  const {
+    candidates,
+    diagnostics: selectionDiagnostics,
+  } = pool;
+  /**
+   * Initial and bounded fallback candidates in expected-cost order.
+   */
+  const [
+    firstCandidate,
+    firstFallback,
+    secondFallback,
+  ] = candidates;
   if (firstCandidate === undefined) {
     throw new ReviewUnavailableError({
       attemptedCandidateIdentities: [],
@@ -243,11 +277,17 @@ async function runGoalReviewerPool(
         : selectionDiagnostics,
     },);
   }
-  /** Initial reviewer identity. */
+  /**
+   * Initial reviewer identity.
+   */
   const firstIdentity = canonicalSlug(firstCandidate.model,);
-  /** Candidate identities whose transports started. */
+  /**
+   * Candidate identities whose transports started.
+   */
   const attemptedReviewerIdentities: string[] = [firstIdentity,];
-  /** Complete selection and transport failure audit. */
+  /**
+   * Complete selection and transport failure audit.
+   */
   const diagnostics = [...selectionDiagnostics,];
   reviewRunnerLogger.debug(
     `selected initial goal reviewer ${firstIdentity} from ${candidates.length} authenticated candidates`,
@@ -266,21 +306,22 @@ async function runGoalReviewerPool(
   }
   catch (error) {
     diagnostics.push(`${firstIdentity}: ${caughtValueText(error,)}`,);
-    reviewRunnerLogger.error(`initial goal reviewer failed: ${diagnostics[diagnostics.length - 1]}`,);
+    reviewRunnerLogger.error(`initial goal reviewer failed: ${diagnostics.at(-1)}`,);
   }
 
-  /** First ranked distinct fallback. */
-  const firstFallback = candidates[1];
   if (firstFallback === undefined) {
     throw new ReviewUnavailableError({
       attemptedCandidateIdentities: attemptedReviewerIdentities,
-      diagnostics: [...diagnostics, 'no distinct fallback reviewer is available',],
+      diagnostics: [
+        ...diagnostics,
+        'no distinct fallback reviewer is available',
+      ],
     },);
   }
-  /** Optional second ranked distinct fallback. */
-  const secondFallback = candidates[2];
   attemptedReviewerIdentities.push(canonicalSlug(firstFallback.model,),);
-  /** Concurrent fallback attempts started before first await. */
+  /**
+   * Concurrent fallback attempts started before first await.
+   */
   const fallbackAttempts: Promise<GoalFallbackSuccess>[] = [
     runGoalFallbackAttempt({
       candidate: firstFallback,
@@ -299,13 +340,16 @@ async function runGoalReviewerPool(
     },),);
   }
   try {
-    /** First fulfilled strict verdict; rejected transports do not settle race. */
+    /**
+     * First fulfilled strict verdict; rejected transports do not settle race.
+     */
     const winner = await Promise.any(fallbackAttempts,);
     return {
       verdict: winner.verdict,
       reviewerIdentity: winner.identity,
       attemptedReviewerIdentities,
-      transcriptTruncated: winner.candidate.transcriptTruncated,
+      transcriptTruncated: winner.candidate
+        .transcriptTruncated,
     };
   }
   catch (error) {
@@ -346,13 +390,25 @@ async function reviewGoalSettlement(
     signal,
   }: Parameters<GoalSettlementReviewer>[0],
 ): Promise<GoalSettlementReview> {
-  /** Selected active branch captured before reviewer awaits. */
+  /**
+   * Selected active branch captured before reviewer awaits.
+   */
   const branch = context.sessionManager
     .getBranch();
-  /** Finalized post-start evidence including settled assistant output. */
-  const evidence = buildGoalReviewEvidence({ branch, request, },);
-  /** Ranked authenticated reviewer pool. */
-  const pool = await resolveGoalReviewerPool({ context, evidence, },);
+  /**
+   * Finalized post-start evidence including settled assistant output.
+   */
+  const evidence = buildGoalReviewEvidence({
+    branch,
+    request,
+  },);
+  /**
+   * Ranked authenticated reviewer pool.
+   */
+  const pool = await resolveGoalReviewerPool({
+    context,
+    evidence,
+  },);
   return await runGoalReviewerPool({
     pool,
     ...(signal === undefined ? {} : { signal, }),

@@ -343,41 +343,38 @@ async function verifyOrdinaryToolsAfterAbort(
     throw new Error('aborted goal turn persisted continuation effect',);
 
   /**
-   * Replacement kickoff drives post-abort tools, error continuation, and post-error tools.
+   * Replacement kickoff drives post-abort tools and terminal model error.
    */
-  const recoveryRun = session.prompt('/goal Replacement interruption recovery',);
-  await provider.finalTurnStarted;
+  await session.prompt('/goal Replacement interruption recovery',);
   if (goalEventCount({
     sessionManager,
     kind: 'run_started',
   },) !== 2)
     throw new Error('real AgentSession replacement did not persist both run starts',);
-  /**
-   * Persisted continuation event count after settled model error.
-   */
-  const postErrorContinuationEvents = goalEventCount({
+  if (goalEventCount({
     sessionManager,
-    kind: 'continuation_issued',
-  },);
-  /**
-   * Persisted continuation message count after settled model error.
-   */
-  const postErrorContinuationMessages = goalContinuationMessageCount(sessionManager,);
-  if ((postErrorContinuationEvents !== 1)
-    || (postErrorContinuationMessages !== 1)) {
-    throw new Error(`settled model error continuation differed: events ${postErrorContinuationEvents}, messages ${postErrorContinuationMessages}`,);
-  }
-  await session.abort();
-  await recoveryRun;
-  await session.waitForIdle();
-  if (provider.invocationCount() !== EXPECTED_PRE_CLEAR_PROVIDER_CALLS)
-    throw new Error(`unexpected pre-clear provider calls: ${provider.invocationCount()}`,);
+    kind: 'review_unavailable',
+  },) !== 1)
+    throw new Error('settled model error did not persist unavailable review state',);
   if ((goalEventCount({
     sessionManager,
     kind: 'continuation_issued',
-  },) !== 1)
-    || (goalContinuationMessageCount(sessionManager,) !== 1))
-    throw new Error('final abort persisted another goal continuation',);
+  },) !== 0)
+    || (goalContinuationMessageCount(sessionManager,) !== 0))
+    throw new Error('review-unavailable error emitted primary continuation',);
+
+  /**
+   * Ordinary user turn executes every tool after terminal errored goal.
+   */
+  const postErrorRun = session.prompt('Exercise tools after goal error.',);
+  await provider.finalTurnStarted;
+  await session.abort();
+  await postErrorRun;
+  await session.waitForIdle();
+  if (provider.invocationCount() !== EXPECTED_PRE_CLEAR_PROVIDER_CALLS)
+    throw new Error(`unexpected pre-clear provider calls: ${provider.invocationCount()}`,);
+  if (goalContinuationMessageCount(sessionManager,) !== 0)
+    throw new Error('terminal goal emitted continuation during post-error tools',);
 
   await session.prompt('/goal clear',);
   if (goalEventCount({
@@ -398,8 +395,8 @@ async function verifyOrdinaryToolsAfterAbort(
   if ((goalEventCount({
     sessionManager,
     kind: 'continuation_issued',
-  },) !== 1)
-    || (goalContinuationMessageCount(sessionManager,) !== 1))
+  },) !== 0)
+    || (goalContinuationMessageCount(sessionManager,) !== 0))
     throw new Error('cleared goal emitted continuation during ordinary tools',);
   /**
    * Final edited fixture after post-error tool round.

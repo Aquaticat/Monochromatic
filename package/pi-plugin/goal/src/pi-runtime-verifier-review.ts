@@ -1,5 +1,5 @@
 /**
- * Built-artifact completion review checks with deterministic fake reviewer transport.
+ * Built-artifact settlement-review checks with deterministic fake reviewer.
  *
  * @module
  */
@@ -8,30 +8,32 @@ import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 
 import {
   createGoalController,
-  executeGoalCompletion,
+  executeGoalSettlementReview,
   startGoal,
   type GoalControllerState,
   type GoalLifecycleHandle,
+  type GoalSettlementReviewRequest,
 } from '../dist/final/node/index.mjs';
 
 /**
- * Deterministic timestamp for built completion verification.
+ * Deterministic timestamp for built review verification.
  */
-const REVIEW_TIMESTAMP = '2026-07-16T00:00:00.000Z';
+const REVIEW_TIMESTAMP = '2026-08-26T00:00:00.000Z';
 
 /**
  * Review outcome fixture returned by deterministic fake transport.
  */
 type ReviewFixture = {
   readonly approved: boolean;
-  readonly expectedOutcome: 'approved' | 'denied';
-  readonly feedback: string;
+  readonly expectedOutcome: 'approved' | 'continued';
+  readonly rationale: string;
+  readonly remainingWork: string;
 };
 
 /**
- * Build active controller and exact branch start event for reviewer evidence.
+ * Build active controller and settlement identity.
  *
- * @returns controller cell, lifecycle adapter, and context
+ * @returns controller cell, lifecycle adapter, context, and request
  *
  * @example
  * ```ts
@@ -42,9 +44,10 @@ function createReviewFixture(): {
   readonly state: { value: GoalControllerState; };
   readonly lifecycle: GoalLifecycleHandle;
   readonly context: ExtensionContext;
+  readonly request: GoalSettlementReviewRequest;
 } {
   /**
-   * Pure start transition supplying active state and persisted run event.
+   * Pure start transition supplying active state.
    */
   const started = startGoal({
     controller: createGoalController('runtime-review',),
@@ -58,28 +61,11 @@ function createReviewFixture(): {
     hasPendingMessages: false,
   },);
   /**
-   * Runtime-owned controller cell updated by completion transitions.
+   * Runtime-owned controller cell.
    */
   const state = { value: started.controller, };
   /**
-   * Persist effect carrying exact run-start event for evidence boundary.
-   */
-  const persisted = started.effects
-    .find(function isPersist(effect,) {
-    return effect.type === 'persist';
-  },);
-  if ((persisted === undefined) || (persisted.type !== 'persist'))
-    throw new Error('review fixture start transition omitted persisted event',);
-  /**
-   * Minimal selected branch containing active run start.
-   */
-  const branch = [{
-    type: 'custom',
-    customType: 'goal:state',
-    data: persisted.event,
-  },];
-  /**
-   * Lifecycle capability consumed by completion implementation.
+   * Lifecycle capability consumed by settlement implementation.
    */
   const lifecycle: GoalLifecycleHandle = {
     currentController() {
@@ -88,11 +74,14 @@ function createReviewFixture(): {
     applyTransition({ transition, },) {
       state.value = transition.controller;
     },
+    deliverPendingKickoff() {
+      return false;
+    },
   };
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- Disposable verifier implements only context members consumed by settlement review. */
   /**
-   * Focused context for branch evidence and stale-result leaf validation.
+   * Focused context for stale-result leaf validation.
    */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Review verifier implements exact branch and leaf context members consumed by completion.
   const context = {
     mode: 'rpc',
     hasUI: false,
@@ -100,95 +89,101 @@ function createReviewFixture(): {
       getLeafId() {
         return 'leaf-current-review';
       },
-      getBranch() {
-        return branch;
-      },
     },
   } as unknown as ExtensionContext;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
+  /**
+   * Active started goal after transition validation.
+   */
+  const { goal, } = started.controller;
+  if (goal.phase !== 'active')
+    throw new Error('review fixture did not start active goal',);
+  /**
+   * Captured active settlement request.
+   */
+  const request: GoalSettlementReviewRequest = {
+    goal,
+    runtimeEpoch: 'runtime-review',
+    branchLeafId: 'leaf-current-review',
+    settlementSequence: started.controller
+      .settlementSequence,
+  };
   return {
     state,
     lifecycle,
     context,
+    request,
   };
 }
 
 /**
- * Execute one built completion path through fake independent reviewer.
+ * Execute one built settlement path through fake reviewer.
  *
  * @param approved - fake structured reviewer decision
  *
- * @param expectedOutcome - expected tool result detail
+ * @param expectedOutcome - expected harness disposition
  *
- * @param feedback - exact reviewer feedback
+ * @param rationale - private reviewer rationale
  *
- * @returns verified terminal or active phase
+ * @param remainingWork - task-only denial guidance
  *
- * @throws when result, identity audit, or state transition differs
+ * @returns verified disposition
+ *
+ * @throws when result or state transition differs
  *
  * @example
  * ```ts
- * await verifyReviewOutcome({ approved: true, expectedOutcome: 'approved', feedback: 'complete' });
+ * await verifyReviewOutcome({ approved: true, expectedOutcome: 'approved', rationale: 'complete', remainingWork: '' });
  * ```
  */
 async function verifyReviewOutcome(
   {
     approved,
     expectedOutcome,
-    feedback,
+    rationale,
+    remainingWork,
   }: ReviewFixture,
 ): Promise<string> {
   /**
-   * Active completion fixture isolated from sibling outcome.
+   * Active deterministic review fixture.
    */
   const {
     state,
     lifecycle,
     context,
+    request,
   } = createReviewFixture();
   /**
-   * Built completion result after deterministic fake transport.
+   * Built settlement result after deterministic fake reviewer.
    */
-  const result = await executeGoalCompletion({
-    toolCallId: 'completion-review-call',
-    params: {
-      goal_id: 'generation-review',
-      summary: 'Requirement and verification evidence are complete.',
-    },
+  const result = await executeGoalSettlementReview({
+    request,
     context,
-    finality: new Map([[
-      'completion-review-call',
-      true,
-    ],]),
     lifecycle,
-    // oxlint-disable-next-line typescript/require-await -- Reviewer contract is asynchronous while deterministic transport fixture is immediate.
-    async reviewer() {
-      return {
+    reviewer() {
+      return Promise.resolve({
         verdict: {
           approved,
-          feedback,
+          rationale,
+          remainingWork,
         },
         reviewerIdentity: 'fake-reviewer/distinct-model',
         attemptedReviewerIdentities: ['fake-reviewer/distinct-model',],
         transcriptTruncated: false,
-      };
+      },);
     },
-    // oxlint-disable-next-line typescript/require-await, eslint/require-await -- Completion fallback contract is asynchronous; fixture always fails immediately.
-    async handleReviewerUnavailable() {
-      throw new Error('fake reviewer unexpectedly became unavailable',);
+    handleReviewerUnavailable() {
+      return Promise.reject(new Error('fake reviewer unexpectedly became unavailable',),);
+    },
+    createId() {
+      return 'fake-continuation-marker';
     },
     now() {
       return REVIEW_TIMESTAMP;
     },
   },);
-  if (result.details
-    .outcome
-    !== expectedOutcome)
-    throw new Error(`expected ${expectedOutcome} completion, received ${result.details
-      .outcome}`,);
-  if (result.details
-    .reviewerIdentity
-    !== 'fake-reviewer/distinct-model')
-    throw new Error('completion omitted fake reviewer identity audit',);
+  if (result !== expectedOutcome)
+    throw new Error(`expected ${expectedOutcome}, received ${result}`,);
   /**
    * Expected state phase after reviewer decision.
    */
@@ -196,19 +191,16 @@ async function verifyReviewOutcome(
   if (state.value
     .goal
     .phase
-    !== expectedPhase)
+    !== expectedPhase) {
     throw new Error(`expected goal phase ${expectedPhase}, received ${state.value
       .goal
       .phase}`,);
-  if (approved && (result.terminate !== true))
-    throw new Error('approved completion did not terminate agent run',);
-  if ((!approved) && (result.terminate === true))
-    throw new Error('review denial incorrectly terminated agent run',);
+  }
   return expectedOutcome;
 }
 
 /**
- * Verify reviewer denial feedback and approval termination through built artifact.
+ * Verify fake denial and approval through built artifact.
  *
  * @returns review scenario summary
  *
@@ -224,13 +216,15 @@ async function verifyInjectedReviewerOutcomes(): Promise<string> {
   const outcomes = await Promise.all([
     verifyReviewOutcome({
       approved: false,
-      expectedOutcome: 'denied',
-      feedback: 'Add missing verification evidence.',
+      expectedOutcome: 'continued',
+      rationale: 'Verification absent.',
+      remainingWork: 'Add missing verification evidence.',
     },),
     verifyReviewOutcome({
       approved: true,
       expectedOutcome: 'approved',
-      feedback: 'Objective independently verified.',
+      rationale: 'Objective independently verified.',
+      remainingWork: '',
     },),
   ],);
   return `fake reviewer ${outcomes.join(' and ')}`;
