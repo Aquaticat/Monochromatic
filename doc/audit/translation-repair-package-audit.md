@@ -1075,6 +1075,32 @@ bare `Error` for the footnote overflow refusal and several unreachable states, o
 `image-ocr.ts:261,275` discards both decoder errors with `void error` (`LG2`),
 and `MIN_OCR_CHARS` is a literal copy of `MIN_READING_CHARS`.
 
+FIXED 2026-08-26 in `8ac0fff65`, with the tightened entry-filter guard in `b19bd23b0`.
+document-5: `doc/troubleshooting/translation-repair-unread-signals.md` names `equalShape` and `alignHeadingsForced`
+and describes the proportional fallback as deleted. Prose only.
+document-6: both `--only` refusals are `StatedRefusalError`; the suite's three THROWS cases assert the class.
+Guard: both throws reverted to bare `Error` fail all three THROWS cases; restored, passes.
+document-7: `REFUSAL_ASK_LIMIT` is justified by the `#124` measurement (20 extra calls against 119 first asks, one
+recovery on the third ask); the refuted projection is gone. Prose only.
+document-8: `needlePreview` reports the flattened needle's length and Latin token count and never its text, so a
+`quote-not-found` finding carries shape only; the decision is recorded in the module note.
+Guard: text quoting restored fails five locate-quote cases, among them `COUNTS a paragraph-length needle rather than
+quoting any of it`; restored, passes.
+document-9: `readingAnchors`, `sharedAnchorCount`, `quotedTranscript` and their constants are deleted with their
+describes and barrel exports; `MIN_READING_CHARS` stays, exported. Deletion; no guard applies.
+document-10: `footnote-graph.ts` collects digit parts into a list joined once and slices the GFM identifier from its
+start; `reading-refusal.ts` builds each word in a list closed by `closeWord()`; `protected-atom.ts` walks with a
+cursor and a run start and slices each atom once. Each is one linear pass with no accumulator rebuild.
+Guards: the identifier start shifted by one fails two footnote-graph cases; the closing `closeWord()` dropped fails
+two reading-refusal cases (`ACCEPTS \`note\` AS ITS OWN WORD` among them); the atom slice shortened by one fails four
+inspect-paragraph cases; each restored, passes.
+document-11: the overflow refusal is `FootnoteOverflowError`, marked and in the inventory; `chunk-insertion.ts`
+reads the source chunk through `nonNullishOrThrow` instead of defaulting to `''`.
+Guard: the marker removed fails the two inventory cases (`KEEPS exactly the classes the inventory records` among
+them); restored, passes. The `nonNullishOrThrow` change has no guard: the defaulted branch was unreachable.
+document-12: `decodeToPng` logs each decoder's refusal through `refusalText` at debug, and `image-ocr.ts` imports
+`MIN_READING_CHARS` instead of copying it. Logging; no guard.
+
 ### slices-1, MAJOR, verified: the slice-cache store cannot refuse a silence-settled record
 
 Folded into `#238` as its store side:

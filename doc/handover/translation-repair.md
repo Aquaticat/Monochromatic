@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-calibrate through consolidate are landed (`acfc7ad22` to `c27dfa297`), document is next;
+calibrate through document are landed (`acfc7ad22` to `b19bd23b0`), slices is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -300,7 +300,20 @@ refusals over pre-grades and sheets with an index-presence and a printed-number 
 zero denominators, `ConsolidationLedgerGapError`, `describeAbandon` naming classes, four prose fixes, a produce
 suite, and a gate ballot surviving a mistyped list; GFP fails one to two cases per guard under mutation and
 passes restored. The gate's two-ballot bar stays an open design question in the register.
-Queue: the register's MINORs in register order (document-5 next), which close `#236`; then `#213` (arm A and arm B
+Whole-suite `buildAndTest` after `c27dfa297`: 803 PASS, 0 FAIL, exit 0.
+
+Document MINORs (document-5 to document-12) LANDED 2026-08-26 in `8ac0fff65`, with the entry-filter suite tightened
+to assert `StatedRefusalError` in `b19bd23b0`: the unread-signals doc names the live aligner, `--only` refuses as a
+stated refusal, `REFUSAL_ASK_LIMIT` cites the `#124` measurement, a `quote-not-found` finding carries the needle's
+length and Latin token count and never its text, the three dead reading helpers are deleted, four accumulator
+rebuilds are single passes, the footnote overflow is a marked class, and both image decoders log their refusals.
+GFP: six mutations (text quoting restored, identifier start shifted, closing `closeWord()` dropped, atom slice
+shortened, marker removed, bare `Error` restored) failed 5, 2, 2, 4, 3 and 4 cases in their own suites; all
+restored, all six suites pass. Whole-suite run after it is in flight. The advisor checkpoint owed since the calibrate
+group was made at the start of this group's GFP; it confirmed the chain and asked only that the tightened test be
+committed before the mutation batch, which it was.
+
+Queue: the register's MINORs in register order (slices-4 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 
