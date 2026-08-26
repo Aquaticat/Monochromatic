@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-calibrate through slices are landed (`acfc7ad22` to `95882d3fe`), artifact is next;
+calibrate through artifact are landed (`acfc7ad22` to `12b2af6c1`), rendering is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -389,7 +389,19 @@ file were fabricated. That claim is wrong: the transcript records 390 `server_to
 `8ac0fff65` and `b19bd23b0`), 09:00Z (before `9f0145fcb`) and 09:26Z (this checkpoint). A future session doubting a
 checkpoint verifies it against the transcript's `server_tool_use` parts rather than rewriting this file.
 
-Queue: the register's MINORs in register order (artifact-3 next), which close `#236`; then `#213` (arm A and arm B
+artifact-3 to artifact-6 LANDED 2026-08-26 in `12b2af6c1`: `refuseUnknownMember` names kind and field names only;
+`parseConsolidation` takes `laneSelection` and holds a settled stage to the contest's slices in order (measured true on
+all 28 real artifacts carrying the field first); the three `POOL` lines name a malformed id or digest by `shapeOf`;
+`resolveCommit`, `tipContains` and `isShallowRepository` take a `repository` seam, and three new suites cover the git
+questions on throwaway histories (`artifact-generation-git`), `keepEligible` and `parseRegionTally`; `resolveCommit`
+and `keepEligible` are barrel exports marked `@internal`. Gates: oxlint `Found 0 warnings and 0 errors`, `lint:types`
+exit 0. GFP: six mutations on one build, each failing only its own cases (the register block names them), two control
+suites green, restored and passing. Lesson: `it` children of one `describe` run concurrently, so a `console.log`
+capture must chain and forward rather than replace and restore, and each case must filter by its own fixture name.
+Whole-suite `buildAndTest` after `12b2af6c1`: 804 PASS, 0 FAIL, exit 0 (solo run; the three new suites add four
+describes).
+
+Queue: the register's MINORs in register order (rendering-4 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 

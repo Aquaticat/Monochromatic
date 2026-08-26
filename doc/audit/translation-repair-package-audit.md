@@ -1234,6 +1234,41 @@ The reviewer also answered `#238`'s question:
 the owned artifact shape carries no per-stage heard or configured count and no `stage-quorum-unmet` marker;
 those strings travel only inside the tolerant raw lane result.
 
+FIXED 2026-08-26 in `12b2af6c1`.
+artifact-3: `refuseUnknownMember` names the member by its `kind` and sorted field names, never by value; a member
+that is not a record is named by its `typeof`.
+Guard: `JSON.stringify` of the member appended fails `NAMES THE FIELDS of an unknown member and none of their values`;
+restored, passes.
+artifact-4: `parseConsolidation` takes the artifact's `laneSelection` and holds a settled stage to exactly the
+contest's slices in its order (`assertConsolidationCoversContest`, mirroring `assertContestCoversEligible`); the
+whole-artifact reader hoists the selection and passes it. Measured first: all 28 artifacts on this machine carrying
+the field (schema versions 2, 3 and 4, under `~/temp/agent`) name exactly their contest's slices in its order, one of
+them naming none, so the refusal rejects nothing on disk. Five cases: the empty settled stage beside an empty contest,
+a missing slice, an extra slice, out-of-order records, and records beside a pending selection.
+Guard: the coverage call removed fails the four refusal cases; restored, passes.
+artifact-5: `shapeOf` names a recorded value by type and, for a string, length; the three `POOL` lines print that in
+place of the value. Four cases capture the lines through a chained `console.log` wrapper (the suite's cases run
+concurrently, so a wrapper that restored the real reporter outright cut its siblings out mid-case) and pin both the
+shape and the absence of the value.
+Guard: `JSON.stringify` restored on the id line and the unreadable-digest line fails `NAMES A MISMATCHED ID BY SHAPE
+ALONE`, `NAMES AN ABSENT ID` and `NAMES AN UNREADABLE DIGEST BY LENGTH ALONE`; restored, passes.
+artifact-6: `resolveCommit`, `tipContains` and `isShallowRepository` take a `repository` seam defaulting to the
+package's own worktree; `artifact-generation-git.unit.test.ts` builds a three-commit history and a `--depth 2` clone
+in `mkdtemp` directories (identity passed per call, never the pinned corpus clone) and drives the abbreviation, the
+unknown name, the ancestor, the same commit, the clean negative, the shallow refusal and the unknown-commit refusal;
+the exit codes were probed on the same fixture before the cases were written (negative 1, unknown 128, shallow flag
+true). `artifact-pool-keep-eligible.unit.test.ts` and `artifact-probe-tally.unit.test.ts` cover `keepEligible` (five
+cases) and `parseRegionTally` (seven, including the attribution-only projection and the tolerant `preExisting`).
+`resolveCommit` and `keepEligible` are exported through the generation barrel as `@internal`.
+Guards: the shallow check disabled fails `REFUSES TO ANSWER THE SAME NEGATIVE IN A SHALLOW CLONE`; `malformedIds`
+dropped from the filter fails `CARRIES A MALFORMED ARTIFACT THROUGH` and `KEEPS AND DROPS IN ONE LISTING`; the
+count-versus-claims throw disabled fails `REFUSES A COUNT THAT DISAGREES WITH THE CLAIM LIST` and `HOLDS A DECLARED
+preExisting COUNT TO THE CLAIMS TOO`. The six mutations were applied together on one build; each suite failed only
+its own cases and the whole-artifact and eligibility suites stayed green as controls; all restored, all pass.
+Whole-suite `buildAndTest` after `12b2af6c1`: 804 PASS, 0 FAIL, exit 0.
+The reviewer's `#238` answer (no per-stage heard or configured count in the owned shape) is acknowledged as recorded;
+it asked for no change.
+
 ### rendering-1, MAJOR, verified: the provenance verdict is wrong on every roster-paired artifact
 
 `rendering-audit-settled-input.ts:288` re-prepares with `prepareDocumentPair({ sourceText, targetText })`,
