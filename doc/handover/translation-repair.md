@@ -1420,6 +1420,17 @@ buys the fewest cut voices of any arm, which is the pairing the question 12 rank
 `doc/planning/translation-repair-open-decisions.md` did not have when it was written; it now does. The
 `#263` coverage line did not fire in D: every seated model drew a row in both tables.
 
+THE BUILD AFTER THE ARMS FOUND FOUR CASES WRONG (whole suite 17:23Z: 828 PASS, 8 FAIL counting each case
+twice). Two were the fixes' own tests: the fold test had lost its literal invisible characters to the tool that
+wrote it (the module's own table had survived, checked by code point), and the coverage case's four-model
+roster had a silent fourth model the expectation omitted. Two were a real defect in `#265`: a GFM autolink
+literal in Chinese prose runs into the full-width punctuation after the address, so the tree reader and the
+scanner disagreed on one link and the union counted it twice; every destination is now cut at the first
+stopper and shed of trailing punctuation before comparison (`trimDestination`). Fixed in `5edd6a3b8` and
+`fbf23ceae`; the seven touched suites pass and the package lints clean (0 warnings, 0 errors). The
+guard-removal rounds (`scratchpad/gfp-three-landings.py`, eight rounds) and a second whole-suite run follow
+serially, then the fresh pass.
+
 THE SECOND READER'S DRY RUN CHANGED THE READING METHOD. sol read the older `wangzihao980` page (2026-08-22
 build) and returned 15 items where this session's own reading had two: 1 inherited blocker (the day of death,
 "the next day" where the source says the early hours of that day), 5 inherited majors, 5 inherited minors, and
