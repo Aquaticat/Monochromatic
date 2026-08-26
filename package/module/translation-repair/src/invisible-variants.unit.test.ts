@@ -6,6 +6,10 @@
  * typography the archive itself uses passes through untouched; and a text with
  * nothing to fold comes back byte-identical with no finding.
  *
+ * EVERY FIXTURE IS SPELLED AS AN ESCAPE. The first version of this file wrote
+ * the characters themselves, and the tool that wrote it dropped two of them,
+ * which is exactly the invisibility the fold exists to catch.
+ *
  * Fixtures are a sentence about a bookshop cat, so there is no corpus text here.
  *
  * @module
@@ -24,7 +28,7 @@ await describe({
     it({
       name: 'folds the non-breaking hyphen to a hyphen and names it with its count (#264)',
       fn: async () => {
-        const folded = foldInvisibleVariants({ text: 'A non‑binary, part‑time shop cat.', },);
+        const folded = foldInvisibleVariants({ text: 'A non\u2011binary, part\u2011time shop cat.', },);
 
         expect(folded.text,).toBe('A non-binary, part-time shop cat.',);
         expect(folded.findings,).toStrictEqual(['invisible-variant-folded (U+2011 x2)',],);
@@ -35,10 +39,10 @@ await describe({
       name: 'folds the no-break spaces to spaces and drops the soft hyphen and the zero-width joiners',
       fn: async () => {
         const folded = foldInvisibleVariants({
-          text: 'She slept by the­till​, every⁠ day﻿.',
+          text: 'She\u00a0slept by\u202fthe till\u00ad, every\u200b day\u2060 long\ufeff.',
         },);
 
-        expect(folded.text,).toBe('She slept by the till, every day.',);
+        expect(folded.text,).toBe('She slept by the till, every day long.',);
         expect(folded.findings,).toStrictEqual([
           'invisible-variant-folded (U+00A0 x1)',
           'invisible-variant-folded (U+202F x1)',
@@ -57,7 +61,7 @@ await describe({
          * Text carrying only visible typography, which is the archive's own
          * convention, plus a joined emoji.
          */
-        const text = '“She’s ours” — the shop – said… \u{1F469}‍\u{1F4BB}';
+        const text = '\u201cShe\u2019s ours\u201d \u2014 the shop \u2013 said\u2026 \u{1F469}\u200d\u{1F4BB}';
 
         expect(foldInvisibleVariants({ text, },),).toStrictEqual({
           text,

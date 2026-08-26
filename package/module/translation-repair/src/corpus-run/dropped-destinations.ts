@@ -222,22 +222,53 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
     while ((end < text.length) && (!RUN_STOPPERS.has(text.charAt(end,),)))
       end += 1;
 
-    /**
-     * Run with its trailing sentence punctuation shed.
-     */
-    let run = text.slice(
+    runs.push(trimDestination({ url: text.slice(
       start,
       end,
-    );
-    while ((run.length > 0) && RUN_TRAILERS.has(run.at(-1,) ?? '',))
-      run = run.slice(
-        0,
-        -1,
-      );
-    runs.push(run,);
+    ), },),);
     at = (end > start) ? end : start + 1;
   }
   return runs;
+}
+
+/**
+ * Destination as a reader would follow it: cut at the first stopper, trailing
+ * sentence punctuation shed.
+ *
+ * A GFM autolink literal runs until whitespace, so in Chinese prose it swallows
+ * the full-width comma or stop after the address; the scanner never does, and
+ * the two readers must agree on the address or the union counts one link twice.
+ *
+ * @param url - destination as the tree or the scan produced it
+ *
+ * @returns Destination ending where a reader's address ends
+ *
+ * @example
+ * ```ts
+ * const clean = trimDestination({ url: 'https://example.org/a\uff0c', },);
+ * ```
+ */
+function trimDestination({ url, }: { readonly url: string; },): string {
+  /**
+   * End of the address, exclusive: the first stopper.
+   */
+  let end = 0;
+  while ((end < url.length) && (!RUN_STOPPERS.has(url.charAt(end,),)))
+    end += 1;
+
+  /**
+   * Address with its trailing sentence punctuation shed.
+   */
+  let run = url.slice(
+    0,
+    end,
+  );
+  while ((run.length > 0) && RUN_TRAILERS.has(run.at(-1,) ?? '',))
+    run = run.slice(
+      0,
+      -1,
+    );
+  return run;
 }
 
 /**
@@ -306,7 +337,7 @@ export function markdownDestinations(
     if ((node.type === 'link')
       || (node.type === 'image')
       || (node.type === 'definition'))
-      urls.push(node.url,);
+      urls.push(trimDestination({ url: node.url, },),);
     if ('children' in node) {
       /**
        * Children in document order, pushed reversed so the first is visited first.

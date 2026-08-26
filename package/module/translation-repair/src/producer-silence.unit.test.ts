@@ -170,7 +170,11 @@ await describe({
         },);
 
         expect(coverage.answeredUnslated,).toStrictEqual([ABSENT,],);
-        expect(coverage.neverWrote,).toStrictEqual([ALSO_ABSENT,],);
+        // The unvoted model neither wrote nor answered in this fixture, so it is silent beside the other.
+        expect(coverage.neverWrote,).toStrictEqual([
+          UNVOTED,
+          ALSO_ABSENT,
+        ],);
         expect(coverage.answersRecorded,).toBe(true,);
       },
     },),

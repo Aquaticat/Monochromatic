@@ -42,41 +42,44 @@ type Fold = {
 
 /**
  * Every fold, in the order applied. Order does not matter: no `to` is any
- * other entry's `from`.
+ * other entry's `from`. SPELLED AS ESCAPES on purpose: as the characters
+ * themselves they are invisible in a diff, and the first version of this module's
+ * test lost its literal fixtures to the tool that wrote it, which is the failure
+ * the fold exists to catch.
  */
 const FOLDS: readonly Fold[] = [
   {
-    from: '‑',
+    from: '\u2011',
     to: '-',
     name: 'U+2011',
   },
   {
-    from: ' ',
+    from: '\u00A0',
     to: ' ',
     name: 'U+00A0',
   },
   {
-    from: ' ',
+    from: '\u202F',
     to: ' ',
     name: 'U+202F',
   },
   {
-    from: '­',
+    from: '\u00AD',
     to: '',
     name: 'U+00AD',
   },
   {
-    from: '​',
+    from: '\u200B',
     to: '',
     name: 'U+200B',
   },
   {
-    from: '⁠',
+    from: '\u2060',
     to: '',
     name: 'U+2060',
   },
   {
-    from: '﻿',
+    from: '\uFEFF',
     to: '',
     name: 'U+FEFF',
   },
@@ -114,7 +117,7 @@ export type FoldedText = {
  *
  * @example
  * ```ts
- * const hyphens = occurrences({ text, needle: '‑', },);
+ * const hyphens = occurrences({ text, needle: '\u2011', },);
  * ```
  */
 function occurrences(
@@ -155,7 +158,7 @@ function occurrences(
  *
  * @example
  * ```ts
- * const folded = foldInvisibleVariants({ text: 'non‑binary', },);
+ * const folded = foldInvisibleVariants({ text: 'non\u2011binary', },);
  * // folded.text === 'non-binary', folded.findings deep-equals ['invisible-variant-folded (U+2011 x1)']
  * ```
  */
