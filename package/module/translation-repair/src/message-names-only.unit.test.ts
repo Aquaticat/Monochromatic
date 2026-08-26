@@ -83,12 +83,14 @@ const MARKED_CLASSES: readonly string[] = [
   'MalformedCompletionError',
   'MalformedImageUriError',
   'MdxParseError',
+  'MislabelledArtifactError',
   'MixedGenerationError',
   'ModelNotServedError',
   'NoProviderForModelError',
   'OffRosterModelError',
   'PipelineDigestError',
   'ProducerRosterError',
+  'PublishedPageDisagreesError',
   'QuotaShapeError',
   'RoundsNotRecordedError',
   'RunConfigError',
@@ -156,6 +158,7 @@ const NAMED_PARTS: Record<string, string> = {
   'dir': 'directory path',
   'distinctRatio.toFixed(RATIO_DIGITS,)': 'ratio this process computed',
   'duplicated.join(\', \',)': 'model ids from the catalog',
+  'disagreementSentence({ disagreement, },)': 'slice indices and character counts, composed from numbers alone',
   'entryId': 'person entry id, which these tools report by design',
   'entryIds.length === 1 ? \'\' : \'s\'': 'plural suffix',
   'entryIds.length === 1 ? \'s\' : \'\'': 'plural suffix',
@@ -196,7 +199,6 @@ const NAMED_PARTS: Record<string, string> = {
  */
 const WITHHELD: Record<string, string> = {
   ArtifactProvenanceError: 'expected and observed carry whatever field disagreed, which may be text',
-  MislabelledArtifactError: 'reason is caughtValueText of a caught error, which renders its message',
   StreamCutShortError: 'the abort reason reaches the message through String of an unknown value',
   SyntheticHttpError: 'the message carries an excerpt of the provider response body, on purpose',
 };

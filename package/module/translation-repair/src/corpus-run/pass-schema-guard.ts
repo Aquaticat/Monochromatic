@@ -1,7 +1,9 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+import { refusalText, } from '../refusal-text.ts';
 import { ARTIFACT_SCHEMA_VERSION_V4, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import {
@@ -132,6 +134,11 @@ function generationLine(
 }
 
 /**
+ * Logger for the guard's own lines; the guard takes no caller-supplied logger.
+ */
+const gl = tagged({ tag: 'pass-schema-guard', },);
+
+/**
  * Ways forward every refusal here ends with, in the order an operator should
  * consider them.
  *
@@ -228,37 +235,40 @@ export class SchemaGenerationError extends Error {
  */
 export class MislabelledArtifactError extends Error {
   /**
-   * Names the entry and what its own generation's reader refused.
+   * Declares this message safe to print whole at a boundary: it names the entry
+   * and the generation and states the ways forward. The reader's own objection,
+   * which may quote the file it refused, goes to the run log at the throw site
+   * instead of riding here, which is what let the ways forward reach nobody
+   * while the class was unmarked.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * Names the entry and the generation whose reader refused it.
    *
    * @param entryId - entry whose artifact carries the wrong label
    *
    * @param writes - generation it claims
    *
-   * @param reason - what the reader for that generation said
-   *
    * @example
    * ```ts
-   * throw new MislabelledArtifactError({ entryId: 'Mittens', writes: 2, reason, },);
+   * throw new MislabelledArtifactError({ entryId: 'Mittens', writes: 2, },);
    * ```
    */
   constructor(
     {
       entryId,
       writes,
-      reason,
     }: {
       readonly entryId: string;
       readonly writes: number;
-      readonly reason: string;
     },
   ) {
     super(
       [
         `${entryId} declares schema version ${
           String(writes,)
-        }, which is what this pass writes, and is not one:`,
-        '',
-        `  ${reason}`,
+        }, which is what this pass writes, and is not one; what its reader refused is in the run log.`,
         '',
         'A label is not a shape. The scheduler counts this file as settled and',
         'never re-runs the entry, so a body that does not satisfy the generation',
@@ -372,10 +382,13 @@ async function assertBodyMatchesLabel(
   try {
     parseSettledTwoLaneArtifact({ value: JSON.parse(text,), },);
   } catch (error) {
+    // THE READER'S WORDS GO TO THE LOG, not into the refusal: the boundary
+    // prints a marked message whole, and a parser's objection may quote the
+    // file it refused.
+    gl.warn(`${entryId}: its reader refused the body, ${refusalText({ error, },)}`,);
     throw new MislabelledArtifactError({
       entryId,
       writes,
-      reason: caughtValueText(error,),
     },);
   }
 }

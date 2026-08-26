@@ -65,12 +65,14 @@ async function settledArtifactNames(
  *
  * @returns Ids already settled, whatever produced them
  *
+ * @internal
+ *
  * @example
  * ```ts
- * const done = await settledEntryIds({ artifactsDir, },);
+ * const done = await artifactBackedIds({ artifactsDir, },);
  * ```
  */
-export async function settledEntryIds(
+export async function artifactBackedIds(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<ReadonlySet<string>> {
   return new Set(
@@ -90,6 +92,8 @@ export async function settledEntryIds(
  * @param artifactsDir - directory holding one JSON per settled entry
  *
  * @returns Count of artifacts present
+ *
+ * @internal
  *
  * @example
  * ```ts

@@ -36,6 +36,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   type BenchSlice,
+  StatedRefusalError,
   type SyntheticClient,
   widthControlHolds,
   withoutASentence,
@@ -161,7 +162,9 @@ await describe({
           },);
         },);
 
-        expect(refusal,).toBeInstanceOf(Error,);
+        // A STATED REFUSAL, not a bare Error: the boundary prints a stated one
+        // in a line and exits 6, and printed a bare one as a fault with frames.
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain('no drawn slice holds more than one sentence',);
       },
     },),

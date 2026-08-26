@@ -11,7 +11,6 @@ import {
 import { classifyDisplacement, } from '../displacement-class.ts';
 import { sliceSizeOf, } from '../displacement-ratio.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
-import { hashContent, } from '../document-node.ts';
 import {
   createRunClient,
   readHeadSha,
@@ -35,6 +34,10 @@ import {
 } from './window-trial-draw.ts';
 import { runPick, } from './window-trial-pick.ts';
 import {
+  protocolDigest,
+  streakAfter,
+} from './window-trial-protocol.ts';
+import {
   assertWindowReachedJudges,
   witnessSheets,
 } from './window-trial-witness.ts';
@@ -52,14 +55,6 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // ledger, the draw, the per-slice arms and the report each have their own file
 // and their own tests. What is here is composition, the corpus walk, and the two
 // checks that can only be made against a live run.
-
-/**
- * Version of this trial's protocol, bumped when what a row MEANS changes.
- *
- * Folded into the protocol digest, so a change here stops a later run resuming
- * rows bought under the older meaning rather than silently pooling them.
- */
-const TRIAL_PROTOCOL_VERSION = 1;
 
 /**
  * Controls drawn per entry that contributes any flagged slice.
@@ -100,35 +95,6 @@ const PROTOCOL_LOG_CHARS = 12;
  * Logger the run writes under.
  */
 const l = tagged({ tag: 'window-trial', },);
-
-/**
- * Digest of everything this run buys under.
- *
- * ROSTER, CORPUS PIN, CODE AND PROTOCOL TOGETHER. A trial re-run after any of
- * them moved is asking a different question, and resuming across that boundary
- * would pool two experiments into one tally. The ledger skips on this, so
- * getting it wrong is what silently mixes them.
- *
- * @param headSha - commit the pipeline is running at
- *
- * @returns Digest the ledger keys resumption on
- *
- * @example
- * ```ts
- * const protocol = protocolDigest({ headSha, },);
- * ```
- */
-function protocolDigest({ headSha, }: { readonly headSha: string; },): string {
-  return hashContent({
-    content: JSON.stringify([
-      'window-trial',
-      TRIAL_PROTOCOL_VERSION,
-      RUN_ROSTER,
-      RUN_CORPUS_PIN,
-      headSha,
-    ],),
-  },);
-}
 
 /**
  * Both sides of one entry, or the fact that it carries only one.
@@ -393,7 +359,10 @@ async function main(): Promise<void> {
       /* oxlint-enable no-await-in-loop */
       if (outcome.kind === 'refused') {
         bought.refused += 1;
-        bought.refusedInARow += 1;
+        bought.refusedInARow = streakAfter({
+          refusedInARow: bought.refusedInARow,
+          yielded: 'refused',
+        },);
         // A REFUSAL IS NOT FREE: the slate is produced before any arm is judged,
         // so a fault that fails every judging still spends a roster of
         // translator calls per slice and leaves an empty ledger. Slices that
@@ -407,12 +376,17 @@ async function main(): Promise<void> {
           },);
         continue;
       }
-      bought.refusedInARow = 0;
-
       /**
        * Arms this call bought.
        */
       const { rows, } = outcome;
+
+      // See `streakAfter`: a slice the ledger already held bought nothing and
+      // leaves the streak alone.
+      bought.refusedInARow = streakAfter({
+        refusedInARow: bought.refusedInARow,
+        yielded: (rows.length === 0) ? 'already-held' : 'bought',
+      },);
       if (rows.length === 0)
         continue;
       bought.count += 1;

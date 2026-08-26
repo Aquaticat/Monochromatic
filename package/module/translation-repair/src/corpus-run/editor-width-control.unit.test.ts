@@ -61,6 +61,14 @@ await describe({
     },),
 
     it({
+      name: 'REMOVES THE FIRST SENTENCE at a stop that ends its line, so a passage written one sentence '
+        + 'per line is damageable rather than read as one sentence and dropped from the control',
+      fn: async function cutsAtAStopEndingItsLine() {
+        expect(withoutASentence('The tabby slept.\nThe grey cat waited.\n',),).toBe('The grey cat waited.',);
+      },
+    },),
+
+    it({
       name: 'TRIMS THE REMAINDER so the damaged passage does not open on the space that followed '
         + 'the cut, which would be a second difference the panel could notice instead',
       fn: async function theRemainderIsTrimmed() {

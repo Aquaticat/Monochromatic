@@ -4,7 +4,10 @@ import { join, } from 'node:path';
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { readArtifactSchemaVersion, } from '../artifact-schema-version.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { isJsonRecord, } from '../json-guard.ts';
+import {
+  isJsonArray,
+  isJsonRecord,
+} from '../json-guard.ts';
 import { readdirArtifacts, } from './artifact-placement.ts';
 
 //region Pass schema census
@@ -122,7 +125,11 @@ function classifyArtifact(
     readonly entryId: string;
   },
 ): SchemaClassification {
-  if (!isJsonRecord(artifact,)) {
+  // AN ARRAY IS NOT A RECORD HERE, whatever `isJsonRecord` lets through for
+  // field probing. Left to the version reader it carries no version field and
+  // would be filed as an unversioned generation, which is a sound result to
+  // keep; a file that is a JSON array is a file to investigate.
+  if (!isJsonRecord(artifact,) || isJsonArray(artifact,)) {
     return {
       kind: 'malformed',
       reason: 'a JSON object, which is what every generation of this artifact is',

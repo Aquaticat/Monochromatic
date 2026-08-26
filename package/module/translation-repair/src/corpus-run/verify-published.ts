@@ -174,6 +174,20 @@ function weighedAs(
 }
 
 /**
+ * What one entry's report concluded.
+ *
+ * THREE ANSWERS, NOT TWO. A page that carries every wording but whose length
+ * could not be checked is not the evidence a weighed page is, and the closing
+ * line used to claim the length for both.
+ *
+ * @example
+ * ```ts
+ * const agreement: EntryAgreement = 'agreed-unweighed';
+ * ```
+ */
+type EntryAgreement = 'agreed-weighed' | 'agreed-unweighed' | 'disagreed';
+
+/**
  * Reports one entry, returning whether its page agreed with its artifact.
  *
  * @param runsDir - run directory both halves live under
@@ -195,7 +209,7 @@ async function reportEntry(
     readonly runsDir: string;
     readonly entryId: string;
   },
-): Promise<boolean> {
+): Promise<EntryAgreement> {
   /**
    * Artifact and page as they sit on disk, or the class that refused them.
    */
@@ -206,7 +220,7 @@ async function reportEntry(
 
   if (read.kind === 'refused') {
     console.log(`${entryId}: REFUSED by ${read.refusedBy}`,);
-    return false;
+    return 'disagreed';
   }
 
   /**
@@ -255,9 +269,10 @@ async function reportEntry(
   }
 
   if (wrongLength)
-    return false;
-
-  return missing.length === 0;
+    return 'disagreed';
+  if (missing.length > 0)
+    return 'disagreed';
+  return (weight.kind === 'unweighable') ? 'agreed-unweighed' : 'agreed-weighed';
 }
 
 /**
@@ -359,7 +374,7 @@ async function verifyPublished(): Promise<void> {
    * disagreement, because a run is verified to decide whether to ship it and a
    * partial answer decides nothing.
    */
-  const agreements = await Promise.all(matched.map(function one(entryId,): Promise<boolean> {
+  const agreements = await Promise.all(matched.map(function one(entryId,): Promise<EntryAgreement> {
     return reportEntry({
       runsDir,
       entryId,
@@ -371,13 +386,35 @@ async function verifyPublished(): Promise<void> {
    */
   const disagreed = agreements
     .filter(function isBad(agreed,): boolean {
-      return !agreed;
+      return agreed === 'disagreed';
     },)
     .length;
 
+  /**
+   * Entries whose page carried every wording but could not be weighed, because
+   * the artifact predates the stored archive text. Counted apart so the closing
+   * line claims a length check only for the pages that had one.
+   */
+  const unweighed = agreements
+    .filter(function wasUnweighed(agreed,): boolean {
+      return agreed === 'agreed-unweighed';
+    },)
+    .length;
+
+  /**
+   * Pages that carried every wording, weighed or not.
+   */
+  const agreed = agreements.length - disagreed;
+
+  /**
+   * Pages that carried every wording and weighed what the artifact implies.
+   */
+  const weighed = agreed - unweighed;
+
   console.log(
-    `verify-published: ${String(agreements.length - disagreed,)} of ${String(agreements.length,)} `
-      + 'pages carry every wording their artifact promised, at the length it implies',
+    `verify-published: ${String(agreed,)} of ${String(agreements.length,)} `
+      + `pages carry every wording their artifact promised; ${String(weighed,)} of those at the length `
+      + `it implies, ${String(unweighed,)} UNWEIGHED because the artifact predates the stored archive text`,
   );
 
   if ((disagreed > 0) || (unpublished.length > 0))

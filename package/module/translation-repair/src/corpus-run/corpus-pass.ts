@@ -30,7 +30,7 @@ import {
 import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
 import {
   countSettled,
-  settledEntryIds,
+  artifactBackedIds,
 } from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import {
@@ -298,7 +298,7 @@ async function runCorpusPass(): Promise<void> {
   /**
    * Entry ids already carrying an artifact this pass.
    */
-  const done = await settledEntryIds({ artifactsDir, },);
+  const done = await artifactBackedIds({ artifactsDir, },);
 
   /**
    * Attempt counts from prior runs, or empty on the first.
@@ -553,7 +553,7 @@ async function runCorpusPass(): Promise<void> {
 
       // Read from the artifact directory rather than from `settleEntry`, which
       // reports neither settlement nor progress.
-      return (await settledEntryIds({ artifactsDir, },))
+      return (await artifactBackedIds({ artifactsDir, },))
         .has(entry.id,);
     },
   },);

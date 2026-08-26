@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import type { ArmOutcome, } from './editor-width-arm.ts';
@@ -40,6 +41,12 @@ const TERMINATORS = [
   '. ',
   '! ',
   '? ',
+  // A sentence that ends its line, which a passage written one sentence per
+  // line is made of: without these the cut read such a passage as one
+  // sentence and the slice left the positive control.
+  '.\n',
+  '!\n',
+  '?\n',
 ];
 
 /**
@@ -184,10 +191,10 @@ export async function widthControlHolds(
     );
 
   if (usable.length === 0)
-    throw new Error(
-      'editor width control refused: no drawn slice holds more than one sentence, so no '
+    throw new StatedRefusalError({
+      says: 'editor width control refused: no drawn slice holds more than one sentence, so no '
         + 'deletion could be cut and the panel was never asked anything',
-    );
+    },);
 
   /**
    * Verdict on each pair, gathered so the count is a read over results rather

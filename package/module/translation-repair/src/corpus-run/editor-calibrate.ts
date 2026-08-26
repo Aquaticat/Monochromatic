@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { producerModelIds, } from '../candidate-select-model.ts';
+import type { SyntheticClient, } from '../chat-contract.ts';
 import {
   coverageGapLines,
   readStandingCoverage,
@@ -190,25 +191,28 @@ function shippedAuthors(
  *
  * @param slice - passage to repair, with the archive text it stands against
  *
+ * @param client - client every slice of the run shares
+ *
  * @returns Rounds that slice produced, split by seat
  *
  * @example
  * ```ts
- * const rounds = await runOne({ slice, },);
+ * const rounds = await runOne({ slice, client, },);
  * ```
  */
 async function runOne(
-  { slice, }: { readonly slice: BenchSlice; },
+  {
+    slice,
+    client,
+  }: {
+    readonly slice: BenchSlice;
+    readonly client: SyntheticClient;
+  },
 ): Promise<SliceRounds> {
   /**
    * Logger tagged for this slice.
    */
   const l = tagged({ tag: `editor-calibrate-${slice.entryId}-${String(slice.index,)}`, },);
-
-  /**
-   * Client both stages share, so one slice is one budget conversation.
-   */
-  const client = createRunClient();
 
   /**
    * Abort signal for the whole slice.
@@ -551,13 +555,26 @@ async function main(): Promise<void> {
    */
   const perSlice: SliceRounds[] = [];
 
+  /**
+   * Client every slice shares, built once for the run.
+   *
+   * ONCE RATHER THAN PER SLICE, because the client holds the budget cooldowns,
+   * the meter caches and the per-model limiters: built per slice, a provider
+   * held out on one slice was re-asked immediately on the next, and every
+   * slice re-read the meters. The two probes already build theirs in `main`.
+   */
+  const client = createRunClient();
+
   for (const slice of sample) {
     /* oxlint-disable no-await-in-loop -- slices run one at a time on purpose;
        see the note on `perSlice`. */
     /**
      * Rounds this slice produced, both seats.
      */
-    const rounds = await runOne({ slice, },);
+    const rounds = await runOne({
+      slice,
+      client,
+    },);
     /* oxlint-enable no-await-in-loop */
 
     perSlice.push(rounds,);

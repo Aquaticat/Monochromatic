@@ -278,3 +278,12 @@ export {
   WindowEvidenceError,
   witnessSheets,
 } from './corpus-run/window-trial-witness.ts';
+export {
+  artifactBackedIds,
+  countSettled,
+} from './corpus-run/pass-settled.ts';
+export {
+  protocolDigest,
+  type SliceYield,
+  streakAfter,
+} from './corpus-run/window-trial-protocol.ts';

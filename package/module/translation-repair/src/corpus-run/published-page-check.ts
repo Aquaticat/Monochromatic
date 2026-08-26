@@ -4,6 +4,7 @@ import {
   type WouldShipSource,
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
+import { PublishedPageDisagreesError, } from './published-page-disagreement.ts';
 
 //region Published page check
 // Reads the DELIVERABLE back, which until now nothing did.
@@ -484,29 +485,6 @@ export function pageCarriesEveryWording(
 }
 
 /**
- * Raised when a page about to be published disagrees with the artifact that
- * produced it.
- *
- * NAMES SLICES AND COUNTS AND QUOTES NOTHING. A run directory holds unlicensed
- * corpus wording, and an error message travels further than the directory it
- * was raised in: into logs, into a pass report, into a session transcript.
- *
- * @example
- * ```ts
- * throw new PublishedPageDisagreesError({ message: 'lintong: 1 wording missing', },);
- * ```
- */
-export class PublishedPageDisagreesError extends Error {
-  /**
-   * @param message - what disagreed, in slice indices and character counts
-   */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
-    this.name = 'PublishedPageDisagreesError';
-  }
-}
-
-/**
  * Refuses a page that does not carry what its artifact says would ship.
  *
  * CALLED BEFORE THE PAGE IS WRITTEN, which is what makes the refusal cheap and
@@ -562,12 +540,11 @@ export function refusePageThatDisagrees(
 
   if (missing.length > 0)
     throw new PublishedPageDisagreesError({
-      message: `${entryId}: ${String(missing.length,)} wording(s) the artifact says would ship are not in `
-        + `the page in slice order, at slices ${missing
-          .map(function named(gone,): string {
-            return `${String(gone.sliceIndex,)} (${String(gone.characters,)} characters)`;
-          },)
-          .join(', ',)}`,
+      entryId,
+      disagreement: {
+        kind: 'wordings-missing',
+        missing,
+      },
     },);
 
   /**
@@ -584,18 +561,14 @@ export function refusePageThatDisagrees(
   if (weight.kind === 'unweighable')
     return;
 
-  /**
-   * Note that a filled anchor makes the expectation a floor, said only where it
-   * applies so an ordinary refusal does not carry an irrelevant caveat.
-   */
-  const caveat = weight.exact
-    ? ''
-    : ', which a filled anchor makes a floor rather than an equality';
-
   throw new PublishedPageDisagreesError({
-    message: `${entryId}: page is ${String(weight.actual - weight.expected,)} characters off the `
-      + `${String(weight.expected,)} the archive plus every slice change comes to${caveat}`
-      + '. Text no slice decided on was lost or added',
+    entryId,
+    disagreement: {
+      kind: 'weight-off',
+      actual: weight.actual,
+      expected: weight.expected,
+      exact: weight.exact,
+    },
   },);
 }
 

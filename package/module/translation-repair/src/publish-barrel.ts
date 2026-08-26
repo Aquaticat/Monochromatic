@@ -34,10 +34,13 @@ export {
   pageWeightRefutes,
   type PageWordingCheck,
   pairPublishedPages,
-  PublishedPageDisagreesError,
   type PublishedPairing,
   refusePageThatDisagrees,
 } from './corpus-run/published-page-check.ts';
+export {
+  type PageDisagreement,
+  PublishedPageDisagreesError,
+} from './corpus-run/published-page-disagreement.ts';
 export {
   UnansweredContestSliceError,
   type WouldShipDecider,
