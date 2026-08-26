@@ -16,6 +16,7 @@ import {
   type NumberedBlock,
   readBlockPairing,
 } from './pair-blocks-wire.ts';
+import { agreePairs, } from './pair-agreement.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -148,39 +149,6 @@ export type PairedSectionRecord = {
    */
   readonly findings: readonly string[];
 };
-
-/**
- * Counts how many voices named each correspondence.
- *
- * @param pairings - one usable pairing per voice
- *
- * @returns Voice count per `source,target` key
- *
- * @example
- * ```ts
- * const votes = countPairs({ pairings, },);
- * ```
- */
-function countPairs(
-  { pairings, }: { readonly pairings: readonly (readonly BlockPair[])[]; },
-): ReadonlyMap<string, number> {
-  /**
-   * Votes so far, keyed by the correspondence itself.
-   */
-  const votes = new Map<string, number>();
-  for (const pairing of pairings)
-    for (const pair of pairing) {
-      /**
-       * This correspondence as one comparable key.
-       */
-      const key = `${String(pair.source,)},${String(pair.target,)}`;
-      votes.set(
-        key,
-        (votes.get(key,) ?? 0) + 1,
-      );
-    }
-  return votes;
-}
 
 /**
  * Asks the roster to pair two block lists and keeps what enough voices agree on.
@@ -316,21 +284,30 @@ export async function pairBlocksWithRoster(
   }
 
   /**
-   * Voices per correspondence.
+   * Pairs the roster agreed on, counted over every usable voice's pairs and
+   * kept strictly increasing on both sides (`#245`).
    */
-  const votes = countPairs({ pairings, },);
+  const agreement = agreePairs({
+    pairings,
+    needed: AGREEMENT_NEEDED,
+  },);
+  /**
+   * What agreement dropped, in its own words.
+   */
+  const { findings: dropped, } = agreement;
 
   /**
-   * Correspondences enough voices named, in document order.
-   *
-   * Taken from the FIRST usable pairing's order rather than re-sorted, since
-   * each pairing is already monotone and a subset of a monotone sequence stays
-   * monotone.
+   * The same, in this stage's vocabulary.
    */
-  const agreed = (pairings[0] ?? [])
-    .filter(function enoughAgree(pair,): boolean {
-      return (votes.get(`${String(pair.source,)},${String(pair.target,)}`,) ?? 0) >= AGREEMENT_NEEDED;
-    },);
+  const prefixed = dropped.map(function prefix(finding,): string {
+    return `block-pairing ${finding}`;
+  },);
+  findings.push(...prefixed,);
+
+  /**
+   * Pairs that survived agreement and ordering.
+   */
+  const agreed = agreement.pairs;
   pl.info(
     `paired ${String(agreed.length,)} of ${String(sourceBlocks.length,)} original and ${
       String(targetBlocks.length,)

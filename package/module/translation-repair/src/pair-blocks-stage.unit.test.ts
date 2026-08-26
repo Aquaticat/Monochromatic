@@ -144,6 +144,30 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS a correspondence two later voices named though the first voice omitted it, since '
+        + 'agreement is per pair and not per reply (`#245`)',
+      fn: async () => {
+        const outcome = await pairBlocksWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+            ],
+          },),
+          modelIds: [...ROSTER, 'hf:openai/gpt-oss-120b',],
+          sourceBlocks: SOURCE,
+          targetBlocks: TARGET,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.usable,).toBe(3,);
+        expect(outcome.pairs.length,).toBe(2,);
+        expect(outcome.pairs[1]?.source,).toBe(1,);
+      },
+    },),
+    it({
       name: 'DROPS a correspondence only one voice named',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({

@@ -18,6 +18,7 @@ import {
   type SectionPair,
   SectionPairingError,
 } from './pair-sections-wire.ts';
+import { agreePairs, } from './pair-agreement.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -131,39 +132,6 @@ export type PairedDocumentRecord = {
    */
   readonly findings: readonly string[];
 };
-
-/**
- * Counts how many voices named each correspondence.
- *
- * @param pairings - one usable pairing per voice
- *
- * @returns Voice count per `source,target` key
- *
- * @example
- * ```ts
- * const votes = countSectionPairs({ pairings, },);
- * ```
- */
-function countSectionPairs(
-  { pairings, }: { readonly pairings: readonly (readonly SectionPair[])[]; },
-): ReadonlyMap<string, number> {
-  /**
-   * Votes so far, keyed by the correspondence itself.
-   */
-  const votes = new Map<string, number>();
-  for (const pairing of pairings)
-    for (const pair of pairing) {
-      /**
-       * This correspondence as one comparable key.
-       */
-      const key = `${String(pair.source,)},${String(pair.target,)}`;
-      votes.set(
-        key,
-        (votes.get(key,) ?? 0) + 1,
-      );
-    }
-  return votes;
-}
 
 /**
  * Reads every heard reply, keeping the usable ones and reporting the rest.
@@ -353,23 +321,30 @@ export async function pairSectionsWithRoster(
   }
 
   /**
-   * Voices per correspondence.
+   * Pairs the roster agreed on, counted over every usable voice's pairs and
+   * kept strictly increasing on both sides (`#245`).
    */
-  const votes = countSectionPairs({ pairings, },);
+  const agreement = agreePairs({
+    pairings,
+    needed: AGREEMENT_NEEDED,
+  },);
+  /**
+   * What agreement dropped, in its own words.
+   */
+  const { findings: dropped, } = agreement;
 
   /**
-   * Correspondences enough voices named, in document order.
-   *
-   * Taken from the FIRST usable pairing's order rather than re-sorted. Every
-   * pairing the reader passed is strictly increasing on both sides, and a
-   * subsequence of a strictly increasing sequence is strictly increasing, so
-   * the filter cannot produce a pairing the step builder would refuse.
+   * The same, in this stage's vocabulary.
    */
-  const agreed = (pairings[0] ?? [])
-    .filter(function enoughAgree(pair,): boolean {
-      return (votes.get(`${String(pair.source,)},${String(pair.target,)}`,) ?? 0)
-        >= AGREEMENT_NEEDED;
-    },);
+  const prefixed = dropped.map(function prefix(finding,): string {
+    return `section-pairing ${finding}`;
+  },);
+  findings.push(...prefixed,);
+
+  /**
+   * Pairs that survived agreement and ordering.
+   */
+  const agreed = agreement.pairs;
   pl.info(
     `paired ${String(agreed.length,)} of ${String(sourceSections.length,)} original and ${
       String(targetSections.length,)

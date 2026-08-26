@@ -24,6 +24,11 @@ export {
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
 export {
+  agreePairs,
+  type IndexPair,
+  type PairAgreement,
+} from './pair-agreement.ts';
+export {
   type SectionBlockPairing,
   sectionPairingsOf,
 } from './section-pairing.ts';
