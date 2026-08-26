@@ -1,9 +1,10 @@
 # Plan: repository-owned Pi goal stop hook
 
 Status:
- design complete after grilling on 2026-07-15.
- Implementation has not started.
- Do not implement from this session unless the user gives a later action instruction.
+ implemented in `package/pi-plugin/goal/`.
+ The primary-model `goal_complete` interface and completion sections are superseded by
+ `doc/planning/pi-goal-tool-free-completion.md` after the 2026-08-26 session diagnosis.
+ This file remains the design record for unaffected lifecycle and reviewer behavior.
 
 Tracking issue:
  [#360](https://github.com/Aquaticat/Monochromatic/issues/360).
