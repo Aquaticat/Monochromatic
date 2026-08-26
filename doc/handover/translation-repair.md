@@ -139,10 +139,13 @@ rounds `10/10` three times and `9/10` twice, zero `hf: prefix` refusals, all ten
 nine usable five of five, `qwen3.8-max` usable three and thrown two, no `SEATS DARK:` line.
 The run wrote its `SEAT` lines to stderr and its `METERS` and `round:` lines to stdout;
 its throwaway runs directory is named in `~/temp/agent/vub-calibrate-current.txt`.
-One run is in flight: `probe-sensitivity` under `mise run`, the `#247` instrument's live verification
-(output under `~/temp/agent/vub-sensitivity-*`), which must print eighteen `SENSITIVITY` lines carrying
-`list=` and `issue=` and end with `SEAT` lines.
-Queue after it: `#257` (so the relabel half of `#247` can run against its draw), then `#237` onward in task order.
+`#247` verified live 2026-08-26 (`probe-sensitivity` under `mise run`, exit 0, output under
+`~/temp/agent/vub-sensitivity-*`): eighteen `SENSITIVITY` lines with `list=` and `issue=`, three checker seats
+usable eighteen of eighteen, no dark seat; the rendered prompt measurably silences two of three probers on
+`deletion/mislabelled` (`removal=1`, `preExisting=2`) where the withheld prompt raises `removal=3`,
+and the screen moves nothing on any region.
+No run is in flight.
+Queue: `#257` (so the relabel half of `#247` can run against its draw), then `#237` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

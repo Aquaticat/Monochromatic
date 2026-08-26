@@ -563,7 +563,12 @@ and both instruments; the sensitivity arms are a data table (`probe-sensitivity-
 holds every arm's printed list to the disclosure it sends; each accuracy region runs under `none`,
 `withheld`, and `rendered`, so none-against-withheld isolates the screen and withheld-against-rendered the prompt.
 Guard shown to fail with the rendered arm sending `withheld` (2 failing lines), restored, passed.
-Live run of the instrument: in flight, recorded in the handover when it lands.
+Live run of the instrument, 2026-08-26, exit 0: eighteen `SENSITIVITY` lines each carrying `list=` and `issue=`,
+three checker seats asked eighteen times and usable eighteen of eighteen, no dark seat.
+It measured what the old arms could not: on `deletion/mislabelled`, `list=withheld` raises `removal=3`
+while `list=rendered` raises `removal=1` with two probers filing the real deletion as `preExisting`,
+so the rendered prompt lets a false accepted issue talk two of three probers out of seeing real damage;
+`list=none` against `list=withheld` moves nothing on any region, so the screen dismisses no real claim here.
 
 ### probes-2, MAJOR, verified: the relabel instrument's "shown" arm shows nothing either
 
