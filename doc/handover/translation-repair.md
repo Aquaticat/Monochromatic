@@ -175,9 +175,11 @@ the whole suite passed 760 of 760.
 the whole suite passed 760 of 760.
 `#244` landed in `0fb6a8ad8`: the marked size refusal keeps the gateway's words off its message;
 the whole suite passed 761 of 761.
-`#245` landed in `4eaa89ede` (HEAD): pairing agreement is counted over every voice's pairs, strictly increasing;
+`#245` landed in `4eaa89ede`: pairing agreement is counted over every voice's pairs, strictly increasing;
+the whole suite passed 762 of 762.
+`#246` landed in `b00f9d3b2` (HEAD): ledger files are named per launch, so a relaunch appends;
 a whole-suite run is in flight.
-Queue: `#246` onward in task order.
+Queue: `#248` onward in task order (`#247` closed earlier).
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

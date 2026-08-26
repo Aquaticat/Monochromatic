@@ -581,6 +581,13 @@ reads the whole directory with no way to tell an overwritten file from an origin
 evidence (producer standings, self-preference counts) is silently lost for every relaunched pass.
 Tracked as `#246`.
 
+FIXED 2026-08-26 in `b00f9d3b2`: every ledger file is named by a per-process launch stamp (file-safe ISO time plus
+process id) and then the ordinal, so names never collide across launches and still sort as text into contest order.
+Guard: the same ordinal under two launches names two files and names sort by launch then ordinal;
+with the launch dropped from the name two cases fail; restored, passes.
+The reader-side check slices-2 proposed is not added: with unique names the collision cannot recur,
+and files written before this fix already collided in a way no reader can undo.
+
 ### translate-3, MINOR, verified: `sentinel-probe` prints any error's message to stdout
 
 `src/corpus-run/sentinel-probe.ts:166-173`, the same shape as calibrate-2. Folded into `#237`.
