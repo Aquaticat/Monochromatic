@@ -188,7 +188,7 @@ await describe({
         expect(hit.outcomeKind,).toBe('ok',);
         expect(hit.resolvedClaimCount,).toBe(1,);
         expect(hit.unresolvedReasons,)
-          .toEqual(['quote-not-found (target) needle="The cat adores the sunshine."',],);
+          .toEqual(['quote-not-found (target) needle=28 chars, 5 Latin tokens',],);
         expect(hit.seededHitIds,).toEqual(['seed/omission-0',],);
         expect(hit.completionTokens,).toBe(900,);
 
