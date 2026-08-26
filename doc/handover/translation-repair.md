@@ -6,7 +6,7 @@ the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
 every group from calibrate through rendering is landed (`acfc7ad22` to `8bffaba9b`) and `#236` is CLOSED;
-`#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
+`#213` and `#230` are measured on matched arms and closed, `#229`'s arm C is running, and `#219` follows.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
 WHAT THIS FILE IS.
@@ -466,19 +466,45 @@ Whole-suite `buildAndTest` after `ce5ca2368`: 816 PASS, 0 FAIL, exit 0 (solo run
 to back at 2026-08-26T11:08Z into `~/temp/agent/overlap-arm-serial-20260826` and
 `~/temp/agent/overlap-arm-four-20260826`, logs beside them under the same names with `.log`.
 
-`#229` LEVER 1, IN PROGRESS (2026-08-26, written while the arms run). The straggler window has a dial of the same
-shape as the overlap one: `src/grace-override.ts` reads `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (unset or empty means
-the built-in `STRAGGLER_GRACE_MS`; anything unreadable or not positive is a `StatedRefusalError`, since a mistyped
-window quietly becoming 180000 would compare two matched runs), `runGatherRound`'s `graceMs` default resolves through
-it per call, and `editor-calibrate` and `corpus-pass` resolve it first thing and print `STRAGGLER GRACE OVERRIDDEN by
-...` when it differs, so a log says which window a run was under whether or not a voice was cut. `shippedAuthors`
-moved beside the progress line to keep the driver at 297 code lines. Suites written: `src/grace-override.unit.test.ts`
-(seven dial cases, two note cases) and two `shippedAuthors` cases. UNBUILT AND UNCOMMITTED as of this line because the
-arms are running from `dist` and nothing may rebuild it until they finish; oxlint on the source reports only the
-bundle-missing-export findings the tests cause before a build. After arm B: build, oxlint, `lint:types`, the suites,
-commit, GFP, whole suite, then arm C, the `#229` run: overlap 1, `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=300000`, the
-same four slices, matched against arm A at 180000; 300000 stays under `RUN_PER_CALL_TIMEOUT_MS` (360000) so a hung
-voice is still cut before its deadline.
+`#213` MEASURED (2026-08-26). Arm A (`TRANSLATION_REPAIR_SLICE_OVERLAP=1`) and arm B (`4`) ran back to back over the
+same four slices, full roster, both exiting 0, 33 rounds each. `run-timing-report` on each log: A, 43.19 min of round
+time (sequential, so also the wall clock), 37.08 min of it waiting after quorum (85.9%), 8 voices never heard, calls
+in flight mean 2.44 peak 10, 1.75 h of calls; B, 24.19 min of run for 51.96 min of overlapped round time, 46.98 min
+waiting (90.4%), 10 voices never heard, mean 4.31 in flight, peak 34, 1.74 h of calls. So the same call time ran in
+56% of the wall clock, and voices heard were 304 against 302 of 312. Losses by cause: A, 6 grace cuts (all
+`qwen3.8-max`) and 2 `schema-mismatch`; B, 7 grace cuts (`qwen3.8-max` 4, `hf:Qwen/Qwen3.8-27B` 2,
+`hf:zai-org/GLM-5.2` 1) and 3 `schema-mismatch`, one of them the same `deepseek-v4-flash-0731` panel answer failing
+its re-ask. QNB CAVEAT: one run per arm, and the run-to-run band on an unchanged build is unmeasured, so the two-voice
+difference is not a finding either way; the wall-clock gain is the arithmetic of one call budget spread over four
+lanes while 86% to 90% of every round is waiting, which a repeat could shrink but not undo. WHAT IS NOT DECIDED:
+whether overlap above one becomes the calibrations' default, and whether the corpus pass should overlap its slices the
+same way; both are design changes for the owner, queued for the `#219` question. Logs and run directories:
+`~/temp/agent/overlap-arm-serial-20260826` and `~/temp/agent/overlap-arm-four-20260826`, read only through their own
+templates (`compare-arms.py` in the session scratchpad).
+
+`#230` PAID (2026-08-26). Both arms carry `91f0c8ba5`, and each logged two `recovery round for 1 unreadable answers`
+lines: A recovered both (`panel` and `critic`, each `1/1 heard`), B recovered one (`introduced-defect-probe` `1/1`;
+`panel` `0/1`, the same model answering badly twice), so 3 of 4 re-asked answers came back readable. The split comment
+is CONFIRMED rather than corrected, and `2829fd4da` records why in `stage-call.ts`: the only non-`ok` kinds `chatJson`
+returns are `refusal-shaped` and `schema-mismatch`, a stream the idle, runaway or degeneration guards cut throws into
+the not-answered catch, and a grace-abandoned straggler is classified in `stage-round.ts`; live, all four re-asked
+voices were `schema-mismatch` and none of the thirteen grace cuts was re-asked.
+
+`#229` LEVER 1, DIAL LANDED (2026-08-26). `4c070f729`: `src/grace-override.ts` reads
+`TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (unset or empty means the built-in `STRAGGLER_GRACE_MS`; unreadable or not
+positive is a `StatedRefusalError`), `runGatherRound`'s `graceMs` default resolves through it per call, and
+`editor-calibrate` and `corpus-pass` resolve it first thing and print `STRAGGLER GRACE OVERRIDDEN by ...` when it
+differs. `shippedAuthors` moved to `editor-calibrate-slice.ts` (driver at 297 code lines). Guards: nine cases in
+`grace-override.unit.test.ts`, two `shippedAuthors` cases; four GFP rounds each bit only their own cases (NaN returned
+fails the prose and `300s` cases, zero admitted fails the zero case, the note inverted fails both note cases,
+per-issue authors dropped fails `CREDITS both halves`); restored, both pass. Boundary, keys stripped: `five` exits 6
+in one line; `300000` prints the note after the header and then the key refusal; `corpus-pass --plan` on a throwaway
+runs dir prints the note after START and exits 0, and refuses `soon` with exit 6. Whole-suite `buildAndTest` after
+`4c070f729`: 819 PASS, 0 FAIL, exit 0 (solo run). Arm C launched at 2026-08-26T12:23:14Z: overlap 1,
+`TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=300000`, the same four slices, into `~/temp/agent/overlap-arm-grace-20260826`
+with the log beside it; it is matched against arm A. The proof that the window reached the rounds is a round with more
+than 180000 `ms in grace` or an `abandoned 300000ms` line. Nothing may rebuild `dist` until it ends; the whole suite
+after `2829fd4da` (a comment-only commit that passed oxlint and `lint:types`) runs then.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
