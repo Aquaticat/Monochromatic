@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-calibrate, provider, repair and translate are landed (`acfc7ad22` to `8e10cfa19`), probes is next;
+calibrate, provider, repair, translate and probes are landed (`acfc7ad22` to `ebc53f24f`), consolidate is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -288,7 +288,13 @@ Whole-suite `buildAndTest` after `9135037e8`: 794 PASS, 0 FAIL, exit 0 (solo run
 Translate MINORs LANDED 2026-08-26: translate-4 and translate-5 in `732d7fb41` (the stage note and the version 6
 paragraph), translate-6 in `8e10cfa19` (retry, slice attempt and assembly suites on the branches the register
 named; GFP fails 2, 1 and 1 cases under mutation, passes restored); translate-3 was closed by `#237`.
-Queue: the register's MINORs in register order (probes-6 next), which close `#236`; then `#213` (arm A and arm B
+Whole-suite `buildAndTest` after `8e10cfa19`: 797 PASS, 0 FAIL, exit 0 (solo run).
+Probes MINORs (probes-7 to probes-13) LANDED 2026-08-26 in `ebc53f24f`: whole-roster prose, one check per prober
+per region with a skipped region uncertain, a refusing atomic sheet-pair writer, control slices stamped from the
+finished order, the README naming the two corpus-quoting outputs and the fidelity rows persisted, `refusalText`
+in bench rows with `CallTimeoutError` as the marked deadline reason, and a `writeBenchReport` suite; GFP fails one
+case each for the screen, the sheet writer, the report writer and the inventory, passes restored.
+Queue: the register's MINORs in register order (consolidate-2 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 

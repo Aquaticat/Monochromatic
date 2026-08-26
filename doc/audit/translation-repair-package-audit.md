@@ -902,6 +902,31 @@ control stamping `baseIndex: index` (`probe-relabel-control.ts:234`); `coverage-
 rows (`bench-record.ts:289-290`, `benchmark.ts:415-424`); `writeBenchReport` named by no test.
 Full text in `~/temp/agent/audit-probes.md`.
 
+FIXED 2026-08-26 in `ebc53f24f` (probes-6 landed with repair-5 in `9135037e8`).
+probes-7: the judge-independence note and the crosscheck's printed NOTE describe the whole-roster panel, six from one
+provider when written and ten across two since 2026-08-24, with the shape (no seat outside the panel to bar) as the
+point; prose only.
+probes-8: the screen counts one check per prober per region, the first with a known verdict, and counts a prober that
+cast nothing on the region as uncertain; a prober whose only check carried an unknown verdict stays dropped, which the
+existing schema-noise case pins.
+Guard: the collapse undone fails `COUNTS a prober once on a region however many checks it cast there`; restored, passes.
+probes-9: `sheet-write.ts` lands a sheet and its manifest atomically and refuses, as a stated refusal naming the path,
+to write into a directory already holding either; `damage-sample` and `probe-verify` write through it.
+Guard: the refusal removed fails `REFUSES to write into a directory already holding the sheet`; restored, passes.
+probes-10: the relabel control's slices are stamped from the finished order through `reindexSlicePair` and checked by
+`assertSliceIndexing`, the path `probe-relabel-case.ts` already took. No guard: `gatherControlCases` walks the corpus;
+the stamping rule's own suite covers the helper.
+probes-11: the README names `coverage-probe` and `judge-fidelity-probe` as the two outputs that quote corpus text, and
+the fidelity probe keeps its rows through `persistProbeRun` before printing them. No unit guard: command-level.
+probes-12: bench rows carry `refusalText` instead of `String(error)`, in both recorders, and the per-call deadline's
+reason is `CallTimeoutError`, marked, so a hung call still reads as a timeout in a row.
+Guard: the marker removed fails the two inventory cases; restored, passes. The benchmark suite's hung-call case pins
+the timeout wording through the marked message.
+probes-13: `writeBenchReport` has a suite on a disposable runs directory.
+Guard: the file name changed fails `LANDS roster-bench/rows.json under the runs directory`; restored, passes.
+The fidelity probe's argument reader and its constants moved to `judge-fidelity-args.ts`, since the probe crossed the
+file-length cap with the persistence added.
+
 ### consolidate-1, MAJOR, verified: a slice with no standing text buys a producer round it then discards
 
 `src/consolidate-driver.ts:333-338` computes `standingText`, which `standingTextFor`
