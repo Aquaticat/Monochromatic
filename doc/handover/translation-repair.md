@@ -462,6 +462,9 @@ refusal and no other output; a dial of `2` prints `1 slices, 10 models editing a
 and then the key refusal; the built command keeps its `import.meta.main` guard. Next: the whole suite (in flight),
 then arm A (`TRANSLATION_REPAIR_SLICE_OVERLAP=1`) and arm B (`4`) back to back over four slices under `mise run` from
 this worktree, which carries `.env.local.json`; `mise env` here lists both key names.
+Whole-suite `buildAndTest` after `ce5ca2368`: 816 PASS, 0 FAIL, exit 0 (solo run). Both arms were launched back
+to back at 2026-08-26T11:08Z into `~/temp/agent/overlap-arm-serial-20260826` and
+`~/temp/agent/overlap-arm-four-20260826`, logs beside them under the same names with `.log`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
