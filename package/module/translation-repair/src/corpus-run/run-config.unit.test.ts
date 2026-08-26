@@ -31,9 +31,12 @@ import { join, } from 'node:path';
 
 import {
   createRunClient,
+  HYPER_MESSAGES_URL,
   readHeadSha,
   resolveRunsDir,
+  RUN_SEATS,
   RunConfigError,
+  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -294,13 +297,14 @@ await describe({
   name: createRunClient.name,
   children: [
     it({
-      name: 'builds a client when the key is injected, which is the only path '
-        + 'a run should ever take',
+      name: 'builds a client when both keys are injected, which is the only '
+        + 'path a run should ever take',
       fn: async () => {
         using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
 
         /**
-         * Client built from the stand-in key.
+         * Client built from the stand-in keys.
          */
         const client = createRunClient();
 
@@ -331,22 +335,45 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS a missing second key and runs on one provider, because '
-        + 'refusing would stop a run the first provider can serve alone',
+      name: 'REFUSES a missing second key rather than running on one provider. '
+        + 'Half the roster is served only by the second provider, so a '
+        + 'one-provider client offered those seats to a provider that cannot '
+        + 'serve them, quorum still met on the other half, and the run settled '
+        + 'as a well-formed comparison half the roster never took part in '
+        + '(`#235`)',
       fn: async () => {
         using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
         using _second = withHyperKey({ value: '', },);
 
         /**
-         * Client built with only the first provider keyed.
+         * What buildWithoutSecondKey raised, read for its class and its wording.
          */
-        const client = createRunClient();
+        const refusalOfBuildingWithOneKey = caught(function buildWithoutSecondKey() {
+          createRunClient();
+        },);
 
-        // It still builds. The absence is warned about rather than raised,
-        // because a silent single-provider run turns a setup mistake into what
-        // looks like a provider outage once the budget runs out.
-        expect(typeof client.chatText,).toBe('function',);
-        expect(typeof client.quotas,).toBe('function',);
+        expect(refusalOfBuildingWithOneKey,).toBeInstanceOf(RunConfigError,);
+        expect((refusalOfBuildingWithOneKey as Error).message,).toContain(HYPER_KEY_VAR,);
+        expect((refusalOfBuildingWithOneKey as Error).message,).toContain('mise',);
+      },
+    },),
+
+    it({
+      name: 'refuses as a STATED refusal, so the CLI boundary repeats the '
+        + 'variable name and exits 6 instead of printing a fault with frames: '
+        + 'the message names a variable and a fix, never content',
+      fn: async () => {
+        using _unset = withoutApiKey();
+
+        /**
+         * What buildWithoutKey raised, read for the marker the boundary checks.
+         */
+        const refusalReadForItsMarker = caught(function buildWithoutKey() {
+          createRunClient();
+        },);
+
+        expect(refusalReadForItsMarker,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusalReadForItsMarker as StatedRefusalError).messageNamesOnly,).toBe(true,);
       },
     },),
 
@@ -408,6 +435,265 @@ await describe({
       },
     },),
   ],
+},);
+
+/**
+ * Streamed reply the first provider's chat endpoint answers with in the wiring
+ * cases: one content delta and the terminator, the way the provider ends a
+ * stream. Cat-themed, like every fixture here.
+ */
+const FIRST_PROVIDER_REPLY = [
+  `data: ${JSON.stringify({ choices: [{ delta: { content: '喵。', }, },], },)}`,
+  'data: [DONE]',
+  '',
+].join('\n\n',);
+
+/**
+ * Status the wiring transport answers where a call must fail at once: not a
+ * budget status, so the router does not re-ask the other provider, and not a
+ * transient one, so no retry ladder waits on it.
+ */
+const REFUSED_OUTRIGHT = 400;
+
+/**
+ * Status of the one endpoint that answers.
+ */
+const ANSWERED = 200;
+
+/**
+ * Whether a URL is the first provider's chat endpoint.
+ *
+ * @param url - URL the transport was asked
+ *
+ * @returns Whether a chat exchange went to the first provider
+ *
+ * @example
+ * ```ts
+ * const askedFirst = urls.some(isFirstProviderChat,);
+ * ```
+ */
+function isFirstProviderChat(url: string,): boolean {
+  return url.endsWith('/chat/completions',);
+}
+
+/**
+ * Builds a transport that records every URL asked and answers by endpoint:
+ * the first provider's chat endpoint streams `FIRST_PROVIDER_REPLY`, the
+ * second provider's messages endpoint refuses outright, and every meter
+ * (quotas, credits) refuses too. AN UNREADABLE METER READS AS SPENDABLE, which
+ * is the documented failover in `provider-budget.ts`, so the routing these
+ * cases observe is decided on serving capability alone, never on budget.
+ *
+ * @returns Transport plus the URLs it was asked, in call order
+ *
+ * @example
+ * ```ts
+ * const { transport, urls, } = recordingTransport();
+ * ```
+ */
+function recordingTransport(): {
+  readonly transport: (exchange: { readonly url: string; },) => Promise<{
+    readonly status: number;
+    readonly bodyText: string;
+  }>;
+  readonly urls: string[];
+} {
+  /**
+   * URLs asked so far, pushed as each exchange arrives.
+   */
+  const urls: string[] = [];
+  return {
+    async transport(exchange: { readonly url: string; },): Promise<{
+      readonly status: number;
+      readonly bodyText: string;
+    }> {
+      urls.push(exchange.url,);
+      if (isFirstProviderChat(exchange.url,))
+        return { status: ANSWERED, bodyText: FIRST_PROVIDER_REPLY, };
+      return { status: REFUSED_OUTRIGHT, bodyText: '{}', };
+    },
+    urls,
+  };
+}
+
+/**
+ * Empties the run-wide seat tally for the life of a scope and again on exit,
+ * so a case reads only what it caused and leaves nothing for the next one.
+ *
+ * @returns Disposable emptying the tally again
+ *
+ * @example
+ * ```ts
+ * using _fresh = withFreshRunSeats();
+ * ```
+ */
+function withFreshRunSeats(): Disposable {
+  RUN_SEATS.reset();
+  return {
+    [Symbol.dispose](): void {
+      RUN_SEATS.reset();
+    },
+  };
+}
+
+/**
+ * Single user message reused across the wiring exchanges.
+ */
+const MESSAGES = [
+  {
+    role: 'user' as const,
+    content: '猫猫的翻译对吗？',
+  },
+];
+
+/**
+ * Seat the first provider serves under its own catalog name.
+ */
+const SHARED_SEAT = 'hf:openai/gpt-oss-120b';
+
+/**
+ * Seat only the second provider serves: a Charm Hyper endpoint label.
+ */
+const SECOND_ONLY_SEAT = 'qwen3.8-max';
+
+/**
+ * Asks one seat through the client and hands back whatever came of it, the
+ * reply or the failure, because half of the wiring cases expect the call to
+ * fail and care only about where it went and how it was counted.
+ *
+ * @param client - client under test
+ *
+ * @param modelId - seat to ask
+ *
+ * @returns Reply when the call answered, otherwise what it threw
+ *
+ * @example
+ * ```ts
+ * const came = await askSeat({ client, modelId: SECOND_ONLY_SEAT, },);
+ * ```
+ */
+async function askSeat(
+  {
+    client,
+    modelId,
+  }: {
+    readonly client: ReturnType<typeof createRunClient>;
+    readonly modelId: typeof SHARED_SEAT | typeof SECOND_ONLY_SEAT;
+  },
+): Promise<unknown> {
+  try {
+    return await client.chatText({
+      modelId,
+      messages: MESSAGES,
+      signal: new AbortController().signal,
+    },);
+  }
+  catch (error) {
+    return error;
+  }
+}
+
+await describe({
+  name: `${createRunClient.name} wiring`,
+  children: [
+    it({
+      name: 'ROUTES a Charm Hyper endpoint label to the second provider and '
+        + 'never to the first, with the first provider live: serving '
+        + 'capability is a property of the pair, not of a provider\'s health '
+        + '(`#235`)',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+
+        /**
+         * Transport recording where the call went.
+         */
+        const { transport, urls, } = recordingTransport();
+
+        await askSeat({
+          client: createRunClient({ transport, },),
+          modelId: SECOND_ONLY_SEAT,
+        },);
+
+        expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(true,);
+        expect(urls.some(isFirstProviderChat,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SENDS a seat the first provider serves to the first provider, so '
+        + 'the routing does not push the whole roster onto the second',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+
+        /**
+         * Transport recording where the call went.
+         */
+        const { transport, urls, } = recordingTransport();
+
+        /**
+         * What the shared seat answered.
+         */
+        const came = await askSeat({
+          client: createRunClient({ transport, },),
+          modelId: SHARED_SEAT,
+        },);
+
+        expect(came instanceof Error,).toBe(false,);
+        expect(urls.some(isFirstProviderChat,),).toBe(true,);
+        expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS every call against its seat on the run-wide tally, so the '
+        + 'closing report can say which seat never answered (`#235`)',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+
+        /**
+         * Transport answering the first provider and refusing the second.
+         */
+        const { transport, } = recordingTransport();
+
+        /**
+         * Client under test, built once for both seats.
+         */
+        const client = createRunClient({ transport, },);
+
+        await askSeat({ client, modelId: SHARED_SEAT, },);
+        await askSeat({ client, modelId: SECOND_ONLY_SEAT, },);
+
+        /**
+         * Counts for the seat that answered.
+         */
+        const shared = RUN_SEATS.counts().find(function isShared(count,): boolean {
+          return count.modelId === SHARED_SEAT;
+        },);
+
+        /**
+         * Counts for the seat that was refused.
+         */
+        const secondOnly = RUN_SEATS.counts().find(function isSecondOnly(count,): boolean {
+          return count.modelId === SECOND_ONLY_SEAT;
+        },);
+
+        expect(shared?.asked,).toBe(1,);
+        expect(shared?.usable,).toBe(1,);
+        expect(secondOnly?.asked,).toBe(1,);
+        expect(secondOnly?.threw,).toBe(1,);
+        expect(RUN_SEATS.dark().map(function toId(count,): string {
+          return count.modelId;
+        },),).toStrictEqual([SECOND_ONLY_SEAT,],);
+      },
+    },),
+  ],
+  concurrency: 1,
 },);
 
 /**

@@ -44,8 +44,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  createSeatTally,
   LedgerShapeError,
   reportingRefusals,
+  RUN_SEATS,
+  RunConfigError,
   RunJsonUnreadableError,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
@@ -191,6 +194,32 @@ function fixtureRefusal(): RunJsonUnreadableError {
   },);
 }
 
+/**
+ * Message a run configuration refusal carries: a variable name and a fix,
+ * which is all that class may ever say.
+ */
+const CONFIG_MESSAGE = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set; run under mise so sops injects it';
+
+/**
+ * Empties the run-wide seat tally for the life of a scope and again on exit,
+ * so a case reads only what it caused and leaves nothing for the next one.
+ *
+ * @returns Disposable emptying the tally again
+ *
+ * @example
+ * ```ts
+ * using _fresh = withFreshRunSeats();
+ * ```
+ */
+function withFreshRunSeats(): Disposable {
+  RUN_SEATS.reset();
+  return {
+    [Symbol.dispose](): void {
+      RUN_SEATS.reset();
+    },
+  };
+}
+
 await describe({
   name: reportingRefusals.name,
   children: [
@@ -320,7 +349,122 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES a clean run alone, touching neither the exit code nor stderr',
+      name: 'PRINTS the seat report when the run ends clean, naming the seat '
+        + 'that never answered, so a roster half that failed every call cannot '
+        + 'pass as a comparison (`#235`)',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        /**
+         * Tally of a run in which one seat answered and one threw every time.
+         */
+        const seats = createSeatTally();
+        seats.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
+        seats.record({ modelId: 'qwen3.8-max', outcome: 'threw', },);
+        seats.record({ modelId: 'qwen3.8-max', outcome: 'threw', },);
+
+        process.exitCode = 0;
+        await reportingRefusals({
+          what: 'editor-calibrate',
+          run: async () => {
+            // A run that finishes, which is what `#235` hid behind.
+          },
+          seats,
+        },);
+
+        /**
+         * The one line a reader who is not grepping must see.
+         */
+        const dark = printed.lines.find(function isDarkLine(line,): boolean {
+          return line.startsWith('SEATS DARK: ',);
+        },) ?? '';
+
+        expect(process.exitCode,).toBe(0,);
+        expect(
+          printed.lines.includes('SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0',),
+        ).toBe(true,);
+        expect(printed.lines.includes('SEAT qwen3.8-max asked=2 usable=0 unusable=0 threw=2',),).toBe(true,);
+        expect(dark.startsWith(
+          'SEATS DARK: 1 of 2 seats asked produced nothing usable this run: '
+            + 'qwen3.8-max (asked 2, unusable 0, threw 2).',
+        ),).toBe(true,);
+        expect(dark.includes('gpt-oss',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'PRINTS the seat report under a stated refusal too, so the report '
+        + 'is on every exit path and not only the clean one',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        /**
+         * Tally with one seat that answered, unusably, every time.
+         */
+        const seats = createSeatTally();
+        seats.record({ modelId: 'minimax-m3', outcome: 'unusable', },);
+
+        await reportingRefusals({
+          what: 'editor-calibrate',
+          run: async () => {
+            throw new StatedRefusalError({ says: STATED_MESSAGE, },);
+          },
+          seats,
+        },);
+
+        expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
+        expect(printed.lines[0],).toBe(`editor-calibrate: ${STATED_MESSAGE}`,);
+        expect(printed.lines[1],).toBe('SEAT minimax-m3 asked=1 usable=0 unusable=1 threw=0',);
+        expect((printed.lines[2] ?? '').startsWith('SEATS DARK: 1 of 1 seats asked',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'DEFAULTS to the run-wide tally the client factory counts into, so '
+        + 'no CLI has to thread it',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+        using _fresh = withFreshRunSeats();
+
+        RUN_SEATS.record({ modelId: 'minimax-m3', outcome: 'usable', },);
+
+        process.exitCode = 0;
+        await reportingRefusals({
+          what: 'corpus-pass',
+          run: async () => {
+            // A run that finishes.
+          },
+        },);
+
+        expect(process.exitCode,).toBe(0,);
+        expect(printed.lines.length,).toBe(1,);
+        expect(printed.lines[0],).toBe('SEAT minimax-m3 asked=1 usable=1 unusable=0 threw=0',);
+      },
+    },),
+    it({
+      name: 'REPORTS a run configuration refusal in its own words at exit 6, '
+        + 'since that message names a variable and a fix and never content',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        await reportingRefusals({
+          what: 'editor-calibrate',
+          run: async () => {
+            throw new RunConfigError({ message: CONFIG_MESSAGE, },);
+          },
+          seats: createSeatTally(),
+        },);
+
+        expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
+        expect(printed.lines.length,).toBe(STATED_LINES,);
+        expect(printed.lines[0],).toBe(`editor-calibrate: ${CONFIG_MESSAGE}`,);
+      },
+    },),
+    it({
+      name: 'LEAVES a clean run alone when no seat was asked, touching neither '
+        + 'the exit code nor stderr',
       fn: async () => {
         using held = holdingExitCode();
         using printed = collectingErrors({ lines: [], },);
@@ -331,6 +475,7 @@ await describe({
           run: async () => {
             // A body that simply finishes, which is every ordinary run.
           },
+          seats: createSeatTally(),
         },);
 
         expect(process.exitCode,).toBe(0,);

@@ -21,6 +21,7 @@ import {
   stripCodeFence,
   stripThinkBlock,
   SyntheticHttpError,
+  SyntheticModelNotServedError,
   SyntheticRequestTooLargeError,
   type TransportExchange,
   type TransportReply,
@@ -1236,6 +1237,69 @@ await describe({
         expect(snapshot.weekly.percentRemaining,).toBe(87.5,);
         expect(exchanges[0]?.url,).toBe('https://api.synthetic.new/v2/quotas',);
         expect(exchanges[0]?.method,).toBe('GET',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: SyntheticModelNotServedError.name,
+  children: [
+    it({
+      name: 'REFUSES a Charm Hyper endpoint label before the wire, so the transport never sees a request',
+      fn: async () => {
+        /** Transport that would answer cleanly, proving the refusal happens before any exchange. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [{ status: 200, bodyText: COMPLETION_BODY, },],
+        },);
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Value caught from the refused call. */
+        let caught: unknown;
+        try {
+          await client.chatText({
+            modelId: 'qwen3.8-max',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(SyntheticModelNotServedError,);
+        expect(
+          caught instanceof SyntheticModelNotServedError
+            ? caught.modelId
+            : '',
+        ).toBe('qwen3.8-max',);
+        expect(exchanges,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES the same label on the JSON surface, which rides the text one and must not grow its own path',
+      fn: async () => {
+        /** Transport that would answer cleanly, proving the refusal happens before any exchange. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [{ status: 200, bodyText: COMPLETION_BODY, },],
+        },);
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /** Value caught from the refused call. */
+        let caught: unknown;
+        try {
+          await client.chatJson({
+            modelId: 'minimax-m3',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+            validate: isCatVerdict,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(SyntheticModelNotServedError,);
+        expect(exchanges,).toHaveLength(0,);
       },
     },),
   ],
