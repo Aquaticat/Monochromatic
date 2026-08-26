@@ -60,6 +60,10 @@ TODO
    ```
 
    Then repeat setup step 3.
+4. In an already-running Pi session that predates the virtual-input guard build,
+   enter **/reload** in the Pi editor.
+   Pi should return to its editor without displaying `Failed to load extension`.
+   New Pi processes load the built guard during startup and do not need this step.
 
 ## Steps
 
