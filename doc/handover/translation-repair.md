@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-every group from calibrate through rendering is landed (`acfc7ad22` to `50ffffc07`), closing `#236` is next;
+every group from calibrate through rendering is landed (`acfc7ad22` to `8bffaba9b`) and `#236` is CLOSED;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -421,9 +421,21 @@ Two lessons for guards: a failing `describe` rejects and stops its suite, so one
 describe per suite file or later describes never report; and `it` children of one describe run concurrently, so a
 console capture must chain and forward (recorded under the artifact group).
 
-Queue: close `#236` after the advisor checkpoint (register tally, handover, the issue itself); then `#213` (arm A and arm B
-under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
-AskUserQuestion).
+Whole-suite `buildAndTest` after `50ffffc07`: 814 PASS, 0 FAIL, exit 0 (solo run; the two new suites add ten
+describes).
+
+CLOSING `#236` (2026-08-26). The register's closing tally was measured rather than assumed: a scan of every entry
+under "Findings register" for a FIXED, CLOSED, folded or tracked marker found three without one. `provider-14` was
+CLOSED already (the scan had not looked for that word); `provider-1` was fixed with A-1 and lacked only its line;
+`calibrate-1`, a MAJOR tied to `#235`, still owed the pointer from the calibrations' `WROTE NOTHING AT ALL` sentence
+to the `SEAT` report, which landed in `8bffaba9b` with its guard (`POINTS AT THE SEAT LINES`; the pointer removed
+fails it, restored passes). With that, every entry carries a marker: 3 BLOCKER, 28 MAJOR, 35 MINOR by heading.
+NOTE ON THE NUMBER: `#236` here and throughout this file is the session's task-list item, "Exhaustive audit of the
+translation-repair package"; the GitHub issue numbered 236 is an unrelated, already closed file-enforcer issue, so
+closing the audit mutates no GitHub issue. The task-list items `#258` and `#236` are marked completed.
+
+Queue: `#213` (arm A and arm B under `mise run` from a worktree carrying the secrets), `#230`'s recovery rate on the
+next run, `#229` lever 1, and `#219` (the readiness signal via AskUserQuestion).
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

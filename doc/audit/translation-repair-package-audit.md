@@ -140,6 +140,16 @@ and 6 folded into those tasks (slices-1 to slices-3, artifact-1, artifact-2, ren
 by the end of 2026-08-26 every MAJOR task, `#237` to `#257`, is fixed in place, each marked FIXED under its entry,
 and roughly seventy MINOR, verified where cited and queued after the MAJORs.
 
+Closing tally, measured 2026-08-26 after the last landing (`8bffaba9b`): every entry under this heading carries a
+FIXED, CLOSED, folded or tracked marker; counted by heading, 3 BLOCKER, 28 MAJOR and 35 MINOR (a grouped heading
+such as `document-5 to document-12` counts once). The measurement found three entries without a marker, all fixed
+in fact and recorded since: `provider-1` (with A-1), `provider-14` (CLOSED by the MAJOR landings) and `calibrate-1`,
+whose pointer half was the one piece still owed and landed in `8bffaba9b`. Whole suite after `50ffffc07`: 814 PASS,
+0 FAIL, exit 0. Guards recorded as owed inside FIXED blocks (repair-8's typography half, consolidate-5, probes-10
+and probes-11, calibrate-5 and calibrate-8, repair-2, document-11, slices-5 and slices-8 as type-checked only) are
+not defects; they are the places where the landing is proven by the type check or by measurement rather than by a
+mutation, and each says so under its entry.
+
 Severity:
 BLOCKER is wrong or missing output, silent failure, data loss, or corpus/key leakage;
 MAJOR is a contract violation or resilience gap likely to bite in a real run;
@@ -242,6 +252,13 @@ Consequence for the `#235` design: the process-scoped seat tally reported by `re
 stays, because it is the only universal boundary, and it must print asked, usable, and failure
 counts per dark seat with the failure class; `coverageGapLines` stays as the standing-coverage
 measure it already is, and its sentence gains a pointer at the seat report.
+
+FIXED 2026-08-26: the seat report landed with A-1 (`8b289c3ab`: `SEAT <model> asked= usable= unusable= threw=`
+per seat and a `SEATS DARK:` line at the end of every command), and the pointer landed in `8bffaba9b`: the
+`WROTE NOTHING AT ALL` sentence now says the `SEAT` lines at the end of the command carry how often each seat was
+asked and how many answers were usable, and that the run log names the failure. Guard: the pointer removed fails
+`POINTS AT THE SEAT LINES from the silent-seat sentence`; restored, passes. Found unmarked when the closing tally
+was measured; the pointer was the only half of the consequence still owed.
 
 ### calibrate-2, MAJOR, verified: the pass prints any error's message into its stdout summary
 
@@ -380,6 +397,11 @@ catalog or `hf:` check anywhere in `synthetic-client.ts`, `synthetic-transport.t
 while the routing client cannot misroute this way (`provider-router.unit.test.ts:210` pins it).
 The TSDoc at `run-config.ts:564-568` ("THE SECOND KEY IS OPTIONAL AND ITS ABSENCE IS LOUD")
 describes a refusal the code does not make.
+
+FIXED 2026-08-26 with A-1 (`e0010019f`, `8b289c3ab`): the Synthetic client refuses any id outside its catalog
+before the wire on both surfaces, both keys are required, and the TSDoc that promised a loud absence is gone
+(`SECOND KEY IS OPTIONAL` has no match in `run-config.ts`, measured 2026-08-26). Recorded here because this entry
+carried no marker of its own until the register's closing tally was measured.
 
 ### provider-2, MAJOR, verified: the second-opinion re-ask releases a Synthetic slot it never took
 
