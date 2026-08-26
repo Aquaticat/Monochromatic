@@ -59,6 +59,12 @@ import {
 const ENTRY_ID = 'mittens';
 
 /**
+ * Entry carrying an original and no translation, which is what the corpus looks
+ * like where nobody has written the English side yet.
+ */
+const HALF_ENTRY_ID = 'whiskers';
+
+/**
  * Original page of that entry.
  */
 const SOURCE_PAGE = '## 窗台\n\n小猫在窗台上打盹。它的尾巴垂在地板上。\n';
@@ -310,6 +316,49 @@ await describe({
         expect(sample.length,).toBe(1,);
         expect(sample[0]?.entryId,).toBe(ENTRY_ID,);
         expect(sample[0]?.sourceText,).toContain('小猫',);
+      },
+    },),
+
+    it({
+      name: 'SKIPS an entry it cannot read and keeps drawing, rather than letting one unreadable '
+        + 'entry refuse the whole sample, since the census reports the same gap and a bench that '
+        + 'failed on it would depend on a completeness it does not need',
+      fn: async () => {
+        /**
+         * Clone carrying one readable entry beside one missing its English side.
+         */
+        const pin = await clonedCorpusHolding({
+          files: {
+            [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
+            [`people/${ENTRY_ID}/page.en.md`]: TARGET_PAGE,
+            [`people/${HALF_ENTRY_ID}/page.md`]: SOURCE_PAGE,
+          },
+        },);
+
+        /**
+         * Slices drawn across both entries, one of which cannot be sliced.
+         */
+        const sample = await sampleBenchSlices({
+          count: 2,
+          pin,
+        },);
+
+        await rm(
+          pin.cloneDir,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+
+        // The half entry contributed nothing and cost nothing. Anything other
+        // than the readable entry's own slices here means the draw either threw
+        // out of the whole sample or admitted an entry with no translation to
+        // repair.
+        expect(sample.length,).toBe(1,);
+        expect(sample.map(function toEntryId(slice,): string {
+          return slice.entryId;
+        },),).toStrictEqual([ENTRY_ID,],);
       },
     },),
   ],

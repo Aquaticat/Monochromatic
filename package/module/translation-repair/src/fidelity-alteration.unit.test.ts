@@ -90,5 +90,28 @@ await describe({
         },),).toBe('2019',);
       },
     },),
+    it({
+      name: 'REFUSES a number the ENGLISH states twice even though the original states it once, '
+        + 'because the probe alters the English and a second occurrence leaves it no single place '
+        + 'to alter: a splice would change one of them and the other would still say the old thing',
+      fn: async () => {
+        // The original carries `2019` exactly once, so a uniqueness check asked
+        // of the SOURCE would admit this and hand the probe an ambiguous target.
+        expect(sharedNumber({
+          cleanText: 'In 2019 Mittens had kittens, and in 2019 she had more.',
+          sourceText: '2019年猫猫生了小猫。',
+        },),).toBe('',);
+      },
+    },),
+    it({
+      name: 'ADMITS the same number when the English states it once, which is the control showing '
+        + 'the case above turns on the second occurrence rather than on the wording around it',
+      fn: async () => {
+        expect(sharedNumber({
+          cleanText: 'In 2019 Mittens had kittens, and later she had more.',
+          sourceText: '2019年猫猫生了小猫。',
+        },),).toBe('2019',);
+      },
+    },),
   ],
 },);

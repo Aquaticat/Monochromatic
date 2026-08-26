@@ -997,5 +997,30 @@ await describe({
         expect((refusal as Error).message,).toContain(DEPARTED,);
       },
     },),
+
+    it({
+      name: 'names the FIELD and not just the result when `chunks` is not a list, since an operator '
+        + 'reading a refusal that stops at the result has been told which artifact is unreadable '
+        + 'and not which of its fields to look at',
+      fn: async () => {
+        /**
+         * What the reader threw when handed a result whose `chunks` is a string.
+         *
+         * PRESENT BUT WRONG-SHAPED, which is a different answer from absent: a
+         * result carrying no `chunks` at all predates the field and is reported
+         * as {@link RoundsNotRecordedError} rather than as a parse failure.
+         */
+        const refusal = caught(function readsChunksThatAreNotAList() {
+          readRepairRounds({
+            raw: { chunks: 'recorded as prose rather than as a list', },
+            path: PATH,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(refusal,).not.toBeInstanceOf(RoundsNotRecordedError,);
+        expect((refusal as Error).message,).toContain(`${PATH}.chunks`,);
+      },
+    },),
   ],
 },);
