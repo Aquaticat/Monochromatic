@@ -376,6 +376,13 @@ Needs two starts against one stale lock, which a relauncher can produce.
 No concurrent-takeover case in `runs-lock.unit.test.ts`.
 Tracked as `#243`.
 
+FIXED 2026-08-26 in `caee057fd`: the eviction is a rename to a name only that call knows, so exactly one of any
+number of concurrent starters evicts (`evictStaleLock`), every acquisition carries a random token, and the release
+removes the file only while it still carries that token (`releaseIfOwned`), saying so when it keeps one.
+Guards: two concurrent evictions report `evicted` and `gone` (fails as `evicted`, `evicted` with a remove),
+a release of a lock another holder took over keeps it (fails with the owner check removed),
+and of two concurrent takeovers exactly one acquires and the other is refused with the winner's lock intact.
+
 ### provider-6, MAJOR by contract, verified: a marked class inherits a provider body excerpt
 
 `src/request-size-refusal.ts:59` declares `messageNamesOnly: true` on `SyntheticRequestTooLargeError`,
