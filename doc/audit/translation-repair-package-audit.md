@@ -565,6 +565,13 @@ Pairing is the input every later stage reasons from: a dropped block pair leaves
 Both suites seat only two voices, a shape that cannot show it.
 Tracked as `#245`.
 
+FIXED 2026-08-26 in `4eaa89ede`: agreement is per pair through `agreePairs` (`pair-agreement.ts`), shared by both
+stages: every distinct pair across every usable voice is counted, a contested source keeps its better-voted target
+or is dropped with a finding on a tie, and the result stays strictly increasing on both sides with a finding for an
+agreed pair that would run backwards.
+Guards: six helper cases plus a three-voice case per stage; the blocks stage reverted to the first reply's pairs
+fails its three-voice case, the tie rule removed fails the contested case; restored, both pass.
+
 ### translate-2, MAJOR, verified: ledger file names restart at zero per process and overwrite on relaunch
 
 `src/candidate-ledger.ts:78` (`const state = { recorded: 0 }`), `:208-209` (ordinal from that counter),

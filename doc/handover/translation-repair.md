@@ -173,9 +173,11 @@ the whole suite passed 760 of 760.
 the whole suite passed 760 of 760.
 `#243` landed in `caee057fd`: stale-lock eviction is a rename and release is owner-checked;
 the whole suite passed 760 of 760.
-`#244` landed in `0fb6a8ad8` (HEAD): the marked size refusal keeps the gateway's words off its message;
+`#244` landed in `0fb6a8ad8`: the marked size refusal keeps the gateway's words off its message;
+the whole suite passed 761 of 761.
+`#245` landed in `4eaa89ede` (HEAD): pairing agreement is counted over every voice's pairs, strictly increasing;
 a whole-suite run is in flight.
-Queue: `#245` onward in task order.
+Queue: `#246` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
