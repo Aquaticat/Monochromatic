@@ -50,8 +50,9 @@ This document is the evidence behind the question and the decisions the question
 Each is its own question, because answering "yes" to all of them in order must be reachable.
 
 1.  Readiness: disable branch protection now and sanitize, or name what is still missing.
-2.  Calibration overlap default: `TRANSLATION_REPAIR_SLICE_OVERLAP` stays opt-in at 1, or the calibrations
-    default to overlapping slices. Measured on matched arms: overlap 4 ran the same 1.74 h of calls in 24.19 min
+2.  Calibration overlap default: `TRANSLATION_REPAIR_SLICE_OVERLAP` stays opt-in at 1, or the editor calibration
+    defaults to overlapping slices (only `editor-calibrate` carries the dial today; `producer-calibrate` gets
+    the same dial as follow-up work if the default moves). Measured on matched arms: overlap 4 ran the same 1.74 h of calls in 24.19 min
     instead of 43.19, voices 302 against 304 of 312 (one run per arm; the run-to-run band is unmeasured).
 3.  Corpus pass slice overlap: the pass's drivers run slices sequentially by a recorded rationale
     (`lane-contest-driver.ts`: "the client's limiter grants one stream per model, so contesting two slices at

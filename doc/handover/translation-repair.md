@@ -6,7 +6,7 @@ the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
 every group from calibrate through rendering is landed (`acfc7ad22` to `8bffaba9b`) and `#236` is CLOSED;
-`#213` and `#230` are measured on matched arms and closed, `#229`'s arm C is running, and `#219` follows.
+`#213`, `#230` and `#229` are measured on matched arms and closed; `#219`, the readiness signal, is next.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
 WHAT THIS FILE IS.
@@ -480,7 +480,7 @@ lanes while 86% to 90% of every round is waiting, which a repeat could shrink bu
 whether overlap above one becomes the calibrations' default, and whether the corpus pass should overlap its slices the
 same way; both are design changes for the owner, queued for the `#219` question. Logs and run directories:
 `~/temp/agent/overlap-arm-serial-20260826` and `~/temp/agent/overlap-arm-four-20260826`, read only through their own
-templates (`compare-arms.py` in the session scratchpad).
+templates (`~/temp/agent/compare-arms.py`, beside the logs it reads).
 
 `#230` PAID (2026-08-26). Both arms carry `91f0c8ba5`, and each logged two `recovery round for 1 unreadable answers`
 lines: A recovered both (`panel` and `critic`, each `1/1 heard`), B recovered one (`introduced-defect-probe` `1/1`;
@@ -528,6 +528,11 @@ overlap 4 was not run and would be the arm to run if overlap becomes the default
 180000 arms cut 6 and 7, so C's 4 sits below both and the two in-band rounds are direct evidence rather than a
 difference of totals. The dial stays opt-in and `STRAGGLER_GRACE_MS` stays 180000 until the owner decides (question 4
 of the readiness signal). Log and run directory: `~/temp/agent/overlap-arm-grace-20260826`.
+
+Whole-suite `buildAndTest` after `2829fd4da` (the last code commit), run after arm C as the final gate before the
+readiness signal: 819 PASS, 0 FAIL, exit 0 (solo run). The advisor checkpoint before `#219` was made and asked
+for this verdict to be read first, the status head refreshed, the arm reader kept beside its logs, and question
+2 scoped to `editor-calibrate`; all four are in this commit.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
