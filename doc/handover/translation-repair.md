@@ -144,8 +144,13 @@ its throwaway runs directory is named in `~/temp/agent/vub-calibrate-current.txt
 usable eighteen of eighteen, no dark seat; the rendered prompt measurably silences two of three probers on
 `deletion/mislabelled` (`removal=1`, `preExisting=2`) where the withheld prompt raises `removal=3`,
 and the screen moves nothing on any region.
-No run is in flight.
-Queue: `#257` (so the relabel half of `#247` can run against its draw), then `#237` onward in task order.
+`#257` landed in `f199b70cf` and `bab444350` (HEAD): the round-three instruments read legacy artifacts from the root again.
+Note for the record: `f199b70cf`'s message overclaimed, one of its two legacy cases was failing when committed;
+`bab444350` fixed the fixture and says so in its message, per the no-amend rule.
+One run is in flight: `probe-relabel` under `mise run` against the round-three draw in the default runs directory
+(output under `~/temp/agent/vub-relabel-*`), which must print `RELABEL rebuilt N` with N above zero,
+three `issues-` lines per region (`issues-withheld`, `issues-rendered`, `issues-absent`), and closing `SEAT` lines.
+Queue after it: `#237` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

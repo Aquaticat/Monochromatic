@@ -749,6 +749,15 @@ artifacts that `readSettledArtifact` reads as `kind: 'legacy'`.
 Loud, not silent: exit 5 at the first item.
 Tracked as `#257`, to be decided with `#247` and `#249`.
 
+FIXED 2026-08-26 in `f199b70cf` and `bab444350`:
+`readArtifactRecords` dispatches on the generation through `readSettledArtifact`,
+the lane for version 2 and the root for the legacy and version 1 generations, with two cases pinning the legacy path.
+`f199b70cf`'s message claimed both cases passed; one was failing at commit time
+(the legacy parser requires `repairDisposition` and `refined` once a record carries regions, and the fixture lacked them),
+which `bab444350` fixed and says so.
+Guard shown to fail with the dispatch forced to the lane (both legacy cases refuse at `artifactSchemaVersion`),
+restored, passed. Live run of `probe-relabel` against the round-three draw: in flight.
+
 ### artifact-3 to artifact-6, MINOR, verified where cited
 
 `artifact-two-lane-project.ts:68-70` stringifies a `never` member carrying text fields
