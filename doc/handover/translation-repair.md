@@ -217,8 +217,16 @@ Whole-suite `buildAndTest` after `a8bc69508`: 770 PASS, 0 FAIL, exit 0.
 2.55's stderr), `isMissingCorpusObject` as the one steppable failure in all five catchers, and the pass's walk in
 `pass-eligibility.ts` printing `INCOMPLETE <id>: <side> page absent at the pin (...)`; GFP fails 2 and 3 cases
 under the collapsed classifier and 2 under the re-widened catch.
-Whole-suite `buildAndTest` after `8af2b2bde`: 730 PASS, 0 FAIL, exit 0; plan mode over the real corpus prints exactly one
-`INCOMPLETE` line (the one one-sided entry, its source page absent) beside `pending=92` and `PLAN ok`.
+Whole-suite `buildAndTest` after `8af2b2bde`, first run: VOID, and the line committed in `4e23e3d5c` claiming
+"730 PASS, 0 FAIL, exit 0" was WRONG (the exit was 1; the "exit 0" was typed, not read). The run reported
+`test files failed:` for 29 files, each with `ERR_MODULE_NOT_FOUND` on a hashed dist chunk, because the plan-mode
+boundary run (`mise run ...:corpus-pass -- --plan`, whose task depends on `build`) was launched concurrently and
+rewrote `dist/` at 06:31:44Z, inside the suite's window. A solo rerun's result is recorded on the line below.
+LESSON: never launch a mise task that depends on `build` while `buildAndTest` is running; the suite imports hashed
+chunks from `dist/` and a concurrent build deletes the ones it holds. Count verdicts by the runner's exit code first
+(TLY); a PASS count with a non-zero exit is the count's bug.
+Plan mode over the real corpus (that concurrent run) printed exactly one `INCOMPLETE` line (the one one-sided
+entry, its source page absent) beside `pending=92` and `PLAN ok`; that measurement stands.
 Queue: `#253` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
