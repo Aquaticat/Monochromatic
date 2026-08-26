@@ -1896,9 +1896,14 @@ front matter with `markdown-yaml-metadata-parser`, and `scripts/mdx.ts` compiles
 under `remarkMath` and `rehypeKatex`, no GFM. `one-among-us/web` (cloned shallow to `~/temp/agent/oau-web-20260826`)
 renders the compiled page and uses `marked` only for metadata. The pipeline parses with `remark-mdx` plus
 `remark-gfm` after masking comments to whitespace. Measured at the pin: two or more `$` on 34 source pages,
-`[^` on 23, `<!--` on 17, a JSX component on 53. `#267` holds the reconciliation question (remark-math in the
-strict grammar; what the site renders for a footnote); the destination check is unaffected because it scans
-bare runs as well as the tree.
+`[^` on 23, `<!--` on 17, a JSX component on 53. `#267` holds the reconciliation question; the destination
+check is unaffected because it scans bare runs as well as the tree. VERIFIED WITH THE SITE'S OWN RENDERER
+(shallow clone at `~/temp/agent/oau-data-20260826`, deps from its lockfile via npm, `renderMdx` driven by
+`scratchpad/render-probe.ts`): `[^1]` compiles to literal text, `$x^2$` to KaTeX markup, a JSX comment
+vanishes, a GFM table stays literal. Classified at the pin: 6 source pages carry a math-like `$...$` pair
+(14 occurrences); the other 171 `$` are lone. So math is real on the site for six pages and the pipeline
+reads it as prose; footnotes are structure to the pipeline and literal text on the site, which loses
+nothing since the text is preserved either way.
 
 ARM A2 IS IN (`#260`), and the band is wider than one of the two effects it was meant to size. Wall clock from
 the log's first to last timestamp (the `run-timing-report` task depends on `build`, which arm D forbids, so the
