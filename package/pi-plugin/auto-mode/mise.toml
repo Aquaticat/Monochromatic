@@ -30,3 +30,8 @@ extends = "format:oxlint"
 
 [tasks."test:unit"]
 extends = "test:unit"
+
+[tasks."verify:virtual-input-guard"]
+description = "Verify built ydotool hard guard through real Pi AgentSession"
+depends = ["build"]
+run = "node src/mise.verify-virtual-input-guard.ts"
