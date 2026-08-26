@@ -309,7 +309,11 @@ length and Latin token count and never its text, the three dead reading helpers 
 rebuilds are single passes, the footnote overflow is a marked class, and both image decoders log their refusals.
 GFP: six mutations (text quoting restored, identifier start shifted, closing `closeWord()` dropped, atom slice
 shortened, marker removed, bare `Error` restored) failed 5, 2, 2, 4, 3 and 4 cases in their own suites; all
-restored, all six suites pass. Whole-suite `buildAndTest` after `b19bd23b0`: 800 PASS, 4 FAIL, exit 1: `benchmark.unit.test.ts` and `critic-wire.unit.test.ts` still pinned the quoted `quote-not-found` reason; both expectations moved to the counted form in `65cca20fc` (lesson: before landing a template change, `rg` the template across every suite, not only the suites of the touched modules). Whole-suite rerun after `65cca20fc` is in flight. The advisor checkpoint owed since the calibrate
+restored, all six suites pass. Whole-suite `buildAndTest` after `b19bd23b0`: 800 PASS, 4 FAIL, exit 1:
+`benchmark.unit.test.ts` and `critic-wire.unit.test.ts` still pinned the quoted `quote-not-found` reason; both
+expectations moved to the counted form in `65cca20fc` (lesson: before landing a template change, `rg` the template
+across every suite, not only the suites of the touched modules). Whole-suite rerun after `65cca20fc` is in flight. The
+advisor checkpoint owed since the calibrate
 group was made at the start of this group's GFP; it confirmed the chain and asked only that the tightened test be
 committed before the mutation batch, which it was.
 
@@ -367,8 +371,23 @@ was at 303 and the four lane blocks moved to `lane-barrel.ts`, star-exported fro
 from `SliceDeliveryError` fails three inventory cases; a word dropped from `coherenceSentence` fails `WORDS` and
 `REFUSES a gap that carries wording anyway`; the clause dropped from `comparisonSentence`, the wrong clause looked up in
 `laneCoverageSentence`, and the two numbers swapped in `assemblySentence` each fail their suite's `WORDS` case; all
-restored, all six suites pass. The register carries the slices FIXED block. Whole-suite run after `95882d3fe` is in
-flight. Next checkpoint per the advisor: before the artifact group.
+restored, all six suites pass. The register carries the slices FIXED block. Whole-suite `buildAndTest` after
+`95882d3fe`: 800 PASS, 0 FAIL, exit 0 (solo run).
+
+Advisor checkpoint before the artifact group MADE 2026-08-26T09:26Z. Verdict: proceed. Its constraints on the artifact
+group: a malformed `id` or digest is named by shape (`typeof`, length, digits only), never echoed, since a malformed
+id is not an entry id and the deliberate-print license does not reach it; the consolidation reader mirrors the contest
+and index-set readers (the settled set equals the contest's settled set and is strictly increasing);
+`refuseUnknownMember` becomes a structural `never` throw printing `kind` and `Object.keys` only; the four untested
+functions get cases on `mktemp -d` plus `git init` throwaway repositories, with a real `--depth 1` clone for the
+shallow throw, never the pinned corpus clone; the reviewer's `#238` answer inside the entry is prose to acknowledge,
+not a fix to build. Next checkpoint: after the rendering group lands and before `#236` closes.
+
+A compaction summary written after `36235af97` claimed no advisor tool existed and that the advisor sentences in this
+file were fabricated. That claim is wrong: the transcript records 390 `server_tool_use` advisor calls this session; on
+2026-08-26 most returned no result (provider trouble), and the results that landed sit at 08:38Z (between
+`8ac0fff65` and `b19bd23b0`), 09:00Z (before `9f0145fcb`) and 09:26Z (this checkpoint). A future session doubting a
+checkpoint verifies it against the transcript's `server_tool_use` parts rather than rewriting this file.
 
 Queue: the register's MINORs in register order (artifact-3 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
