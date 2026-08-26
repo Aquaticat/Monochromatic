@@ -49,5 +49,11 @@ export {
   type OverlappedRow,
   OverlapRefusedError,
 } from './overlapped-map.ts';
+export {
+  reuseTwinOrBuy,
+  type TwinMemo,
+  type TwinOrBought,
+  type TwinStored,
+} from './twin-memo.ts';
 
 //endregion Stage barrel
