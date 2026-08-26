@@ -27,6 +27,7 @@ const BLOCKED_COMMANDS = [
   'true && ydotool key 1:1 1:0',
   'env YDOTOOL_SOCKET=/tmp/socket ydotool key 1:1 1:0',
   'command /usr/bin/ydotool key 1:1 1:0',
+  'systemd-run --user --collect /usr/bin/ydotool key 1:1 1:0',
   'bash -c "ydotool key 1:1 1:0"',
   "sh -lc 'ydotool key 1:1 1:0'",
 ] as const;
@@ -35,7 +36,6 @@ const BLOCKED_COMMANDS = [
 const ALLOWED_COMMANDS = [
   "rg --fixed-strings 'ydotool' AGENTS.md",
   "printf '%s\\n' ydotool",
-  'systemd-run --user --collect /usr/bin/ydotool key 1:1 1:0',
 ] as const;
 
 /**

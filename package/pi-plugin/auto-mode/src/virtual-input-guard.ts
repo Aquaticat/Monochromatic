@@ -24,10 +24,10 @@ import type {
 const YDOTOOL_COMMAND_NAME = 'ydotool';
 
 /**
- * Command wrappers that execute a following argument in the caller's process lifecycle.
+ * Command wrappers that execute a following executable from agent-authored shell source.
  *
- * `systemd-run` is intentionally absent because a transient service is an
- * independently supervised broker and survives cancellation of its Pi caller.
+ * Durable input brokers expose a narrow API and own key release internally;
+ * forwarding ydotool through a generic process launcher is not that boundary.
  */
 const CALLER_SCOPED_COMMAND_FORWARDERS = new Set([
   'command',
@@ -37,6 +37,7 @@ const CALLER_SCOPED_COMMAND_FORWARDERS = new Set([
   'nohup',
   'setsid',
   'sudo',
+  'systemd-run',
 ],);
 
 /** Shell interpreters whose inline command source needs another parser pass. */
@@ -87,8 +88,8 @@ function namesYdotool(name: string,): boolean {
 /**
  * Test whether command invokes ydotool in current caller lifecycle.
  *
- * Direct executable names and known forwarding wrappers are covered. Durable
- * supervisors are excluded so a release-completing broker remains available.
+ * Direct executable names and generic forwarding wrappers are covered.
+ * A release-completing broker uses its own narrow API rather than exposing ydotool.
  *
  * @param command - Parsed simple shell command.
  *
