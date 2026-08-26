@@ -2,8 +2,10 @@
 
 ## Status
 
-Investigation and independent design comparison are complete.
-The recommended typed-focus and symbolic-findings contract awaits user acceptance or delegated implementation authority.
+The first design comparison is complete,
+but its symbolic-findings recommendation was rejected by the user because it reduces Advisor expressiveness.
+The investigation is active again under a new hard requirement:
+preserve full natural-language review expressiveness.
 No Advisor production code was changed.
 This handover was created before further source investigation at
 `2026-08-25T23:58:24-04:00` from repository commit
@@ -21,6 +23,11 @@ No prevention design has been accepted or implemented.
 - Keep this handover current throughout the investigation.
 - Limit this session to `package/pi-plugin/advisor` and directly shared Advisor dependencies.
 - Do not investigate or change `package/pi-plugin/goal` because another session owns that work.
+- Preserve full natural-language Advisor expressiveness.
+  Prevention must not depend on a finite finding taxonomy,
+  enum-only output,
+  fixed prose,
+  or removal of useful reviewer explanations.
 
 ## Observed session
 
@@ -487,9 +494,12 @@ but nondeterministic model compliance is supplementary evidence rather than the 
 - Do not claim prevention from a test that only checks static prompt text.
 - Verify behavioral protections with a model or deterministic transport capable of emitting forbidden replacement content.
 
-## Recommendation and rankings
+## Rejected recommendation and prior rankings
 
-The recommended design combines two complementary decisions.
+The user rejected the typed-focus and symbolic-findings recommendation because it reduces expressiveness.
+The material is retained as a rejected design record,
+not current direction.
+The prior design combined two complementary decisions.
 
 ### Input ranking
 
@@ -532,7 +542,7 @@ bounded prose ranks ahead of unrestricted text because it still constrains shape
 volume,
 and evidence linkage.
 
-The full recommended stack is:
+The rejected stack was:
 
 1. Replace `question` with optional typed `focus` and reject unknown fields before dispatch.
 2. Generate a provenance-aware local evidence inventory,
@@ -555,15 +565,9 @@ The full recommended stack is:
 9. Defer renaming.
    A rename does not add an enforcement seam and would distract from the contract change.
 
-The deterministic claim should be precise:
-this design eliminates free-form per-call review instructions and prevents provider-authored free-form text from entering primary
-context through Advisor results.
-Valid structured selections may still convey or coincide with primary-task information.
-Finding accuracy,
-completeness,
-evidence relevance,
-provenance interpretation,
-and correct reviewer judgment remain model-dependent.
+The rejected stack would have eliminated free-form per-call review instructions and provider-authored free-form text.
+That guarantee was purchased by removing the expressive review channel,
+so it does not satisfy the corrected requirement.
 
 ## Rejected conclusions
 
@@ -578,10 +582,10 @@ and correct reviewer judgment remain model-dependent.
 
 ## Exact next action
 
-Obtain user acceptance or delegated authority for the recommended typed-focus and symbolic-findings contract.
-Then implement it test-first inside `package/pi-plugin/advisor`,
-reusing `package/pi-shared/model-review` without importing goal behavior.
-Start with the exact incident input-rejection test and provider-free-text leak test.
+Redesign prevention around ownership and orchestration rather than vocabulary restriction.
+Determine which guarantees are possible when focus and review output remain natural language,
+then obtain independent review and replace the rejected ranking.
+Do not implement production code before the new design is accepted or delegated.
 
 ## Commits
 
@@ -593,3 +597,4 @@ Start with the exact incident input-rejection test and provider-free-text leak t
 - `137dac233`, `docs(advisor): define prevention verification`, defined negative cases and positive controls.
 - `bb8a9cd17`, `docs(advisor): recommend symbolic review contract`, recorded independent ranking and recommendation.
 - `fd1f3dc99`, `docs(advisor): qualify symbolic review guarantee`, incorporated final independent-review constraints.
+- `79b62b595`, `docs(advisor): close prevention design investigation`, closed the now-rejected first comparison.
