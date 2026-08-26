@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-calibrate, provider, repair, translate and probes are landed (`acfc7ad22` to `ebc53f24f`), consolidate is next;
+calibrate through consolidate are landed (`acfc7ad22` to `c27dfa297`), document is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -294,7 +294,13 @@ per region with a skipped region uncertain, a refusing atomic sheet-pair writer,
 finished order, the README naming the two corpus-quoting outputs and the fidelity rows persisted, `refusalText`
 in bench rows with `CallTimeoutError` as the marked deadline reason, and a `writeBenchReport` suite; GFP fails one
 case each for the screen, the sheet writer, the report writer and the inventory, passes restored.
-Queue: the register's MINORs in register order (consolidate-2 next), which close `#236`; then `#213` (arm A and arm B
+Whole-suite `buildAndTest` after `ebc53f24f`: 800 PASS, 0 FAIL, exit 0 (solo run).
+Consolidate MINORs (consolidate-2 to consolidate-10) LANDED 2026-08-26 in `f83e9b449` and `c27dfa297`: stated
+refusals over pre-grades and sheets with an index-presence and a printed-number check, the recall bench refusing
+zero denominators, `ConsolidationLedgerGapError`, `describeAbandon` naming classes, four prose fixes, a produce
+suite, and a gate ballot surviving a mistyped list; GFP fails one to two cases per guard under mutation and
+passes restored. The gate's two-ballot bar stays an open design question in the register.
+Queue: the register's MINORs in register order (document-5 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 

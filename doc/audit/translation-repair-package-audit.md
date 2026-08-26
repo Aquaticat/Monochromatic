@@ -963,6 +963,35 @@ Open question it raised for the main session: the consolidation gate's bar is ab
 (`CONSOLIDATE_GATE_QUORUM = 2`, `HEARD_NEEDED = 2`), so two of ten ballots against one can replace a
 memorial page's wording and be cached as settled; whether that bar is intended is recorded here, undecided.
 
+FIXED 2026-08-26 in `f83e9b449`, with the guards in `c27dfa297`.
+consolidate-2: the pre-grade parser and the agreement guard refuse as `StatedRefusalError`, naming positions and
+counts; the unknown verdict is no longer quoted, since the rule that keeps text out of a refusal goes by class.
+consolidate-3: the agreement guard refuses a pre-grade file that misses any sheet position, count aside.
+consolidate-4: the sheet reader parses the printed item number and refuses when it disagrees with the position.
+Guards: the presence loop removed fails `REFUSES a pre-grade file that misses a sheet position`; the heading check
+disabled fails `REFUSES a sheet whose printed item number disagrees with its position`; a non-array pre-grades file
+is refused as a stated refusal (case added); each restored, passes.
+consolidate-5: `recall-benchmark` refuses, after keeping its record, to print rates over no dispatched entries or no
+planted seeds, so a zero denominator never prints as a zero rate; the scorecard's fields are unchanged. No unit guard
+(command-level); the refusal names both counts and the kept path.
+consolidate-6: the contested-slice invariant is `ConsolidationLedgerGapError`, marked and in the inventory.
+Guard: the marker removed fails the two inventory cases; restored, passes.
+consolidate-7: `describeAbandon` names an unfamiliar class through `refusalText` instead of rendering its text.
+Guard: `String(error)` restored fails `NAMES THE CLASS of anything it does not recognise`; restored, passes.
+consolidate-8: the driver's TSDoc says the producers are asked at every slice the contest was asked about, the
+selection header lists total resolution in the order `compareCandidates` reads, `consolidateSliceKey` documents both
+neighbouring texts, and `quoteLine` and `renderCandidate` carry examples. Prose only.
+consolidate-9: `consolidate-produce.unit.test.ts` drives the producing half on its own with a scripted transport:
+a proposal refused for shape is sent back to its author and both verdicts are reported, a valid slate asks nothing
+more and reports the same verdict twice, and the repair's findings follow the gather's.
+Guard: the repair round bypassed fails `SENDS a proposal refused for shape back to its author`; restored, passes.
+consolidate-10: a gate ballot whose `unsupported` or `dropped` is not a list keeps its choice and reads the field as
+empty; the wire type carries the fields as `unknown` and the reader narrows.
+Guard: the list checks restored in the guard fail `KEEPS the choice and reads the field as an empty list`; restored,
+passes.
+The open question the reviewer raised (whether the gate's absolute bar of two ballots is intended) stays recorded above
+and undecided; it is a design question, not a defect this pass lands.
+
 ### document-1, MAJOR, verified: any corpus read failure silently drops the entry from a pass
 
 `src/corpus-run/corpus-pass.ts:392-396` continues past any `CorpusReadError`,
