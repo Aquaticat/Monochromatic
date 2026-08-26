@@ -8,6 +8,7 @@ import type {
   Api,
   AssistantMessageEvent,
   Model,
+  ProviderHeaders,
   Tool,
 } from '@earendil-works/pi-ai';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -28,7 +29,7 @@ type StructuredReviewAuth = {
   /**
    * Provider headers when required.
    */
-  readonly headers?: Readonly<Record<string, string>>;
+  readonly headers?: ForeignBorrowed<ProviderHeaders>;
 };
 
 /**
