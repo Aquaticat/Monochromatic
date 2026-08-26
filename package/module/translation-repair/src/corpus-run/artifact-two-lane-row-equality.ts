@@ -140,6 +140,14 @@ export function decisionsEqual(
 }
 
 /**
+ * One field of a comparison row with whether two rows agree on it.
+ */
+type FieldCheck = {
+  readonly name: string;
+  readonly same: boolean;
+};
+
+/**
  * Names of the comparison-row fields that differ between two rows, in the
  * order the row is written, empty when the rows agree.
  *
@@ -167,41 +175,74 @@ export function comparisonRowDifferences(
   },
 ): readonly string[] {
   /**
-   * Each field with whether the two rows agree on it.
+   * Each field with whether the two rows agree on it, in row order.
    */
-  const checks: readonly (readonly [string, boolean])[] = [
-    ['sliceIndex', left.sliceIndex === right.sliceIndex,],
-    ['incumbentKind', left.incumbentKind === right.incumbentKind,],
-    ['incumbentText', left.incumbentText === right.incumbentText,],
-    ['repairText', left.repairText === right.repairText,],
-    ['translateText', left.translateText === right.translateText,],
-    ['laneRelation', left.laneRelation === right.laneRelation,],
-    ['repairOutcome', outcomesEqual({
-      left: left.repairOutcome,
-      right: right.repairOutcome,
-    },),],
-    ['translateOutcome', outcomesEqual({
-      left: left.translateOutcome,
-      right: right.translateOutcome,
-    },),],
-    ['decisionComparison', decisionsEqual({
-      left: left.decisionComparison,
-      right: right.decisionComparison,
-    },),],
-    ['repairDelivery', deliveriesEqual({
-      left: left.repairDelivery,
-      right: right.repairDelivery,
-    },),],
-    ['translateDelivery', deliveriesEqual({
-      left: left.translateDelivery,
-      right: right.translateDelivery,
-    },),],
+  const checks: readonly FieldCheck[] = [
+    {
+      name: 'sliceIndex',
+      same: left.sliceIndex === right.sliceIndex,
+    },
+    {
+      name: 'incumbentKind',
+      same: left.incumbentKind === right.incumbentKind,
+    },
+    {
+      name: 'incumbentText',
+      same: left.incumbentText === right.incumbentText,
+    },
+    {
+      name: 'repairText',
+      same: left.repairText === right.repairText,
+    },
+    {
+      name: 'translateText',
+      same: left.translateText === right.translateText,
+    },
+    {
+      name: 'laneRelation',
+      same: left.laneRelation === right.laneRelation,
+    },
+    {
+      name: 'repairOutcome',
+      same: outcomesEqual({
+        left: left.repairOutcome,
+        right: right.repairOutcome,
+      },),
+    },
+    {
+      name: 'translateOutcome',
+      same: outcomesEqual({
+        left: left.translateOutcome,
+        right: right.translateOutcome,
+      },),
+    },
+    {
+      name: 'decisionComparison',
+      same: decisionsEqual({
+        left: left.decisionComparison,
+        right: right.decisionComparison,
+      },),
+    },
+    {
+      name: 'repairDelivery',
+      same: deliveriesEqual({
+        left: left.repairDelivery,
+        right: right.repairDelivery,
+      },),
+    },
+    {
+      name: 'translateDelivery',
+      same: deliveriesEqual({
+        left: left.translateDelivery,
+        right: right.translateDelivery,
+      },),
+    },
   ];
   return checks
-    .filter(function differs([, same,],): boolean {
+    .filter(function differs({ same, }: FieldCheck,): boolean {
       return !same;
     },)
-    .map(function toName([name,],): string {
+    .map(function toName({ name, }: FieldCheck,): string {
       return name;
     },);
 }
@@ -229,10 +270,14 @@ export function comparisonRowsEqual(
     readonly right: ArtifactComparisonRow;
   },
 ): boolean {
-  return comparisonRowDifferences({
+  /**
+   * Fields that differ, none when the rows agree.
+   */
+  const differing = comparisonRowDifferences({
     left,
     right,
-  },).length === 0;
+  },);
+  return differing.length === 0;
 }
 
 //endregion Artifact version 2 row equality
