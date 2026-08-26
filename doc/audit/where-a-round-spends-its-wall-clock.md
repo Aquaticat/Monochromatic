@@ -624,3 +624,55 @@ Seven times the sample did not move it.
 A roster of ten that averages 2.56 in flight is a roster waiting,
 not a roster saturating anything.
 Whatever bounds this run, it is not the number of calls the client will carry.
+
+## The prototype, and what it is allowed to conclude
+
+Built 2026-08-25 in a throwaway worktree at `/var/home/user/worktrees/tr-overlap`,
+kept out of the main tree until a measurement says whether it earns its place.
+The two changed files are saved as `~/temp/agent/proto-editor-calibrate.ts`
+and `~/temp/agent/proto-slice-overlap.ts`.
+
+WHAT CHANGED IS ONE LOOP.
+`editor-calibrate` ran its slices in a `for...of`,
+with a comment saying slices run one at a time on purpose.
+It now maps them through `pLimit`,
+keeping `Promise.all` so the results stay in SAMPLE order rather than completion order,
+because every standing the run prints is computed off that array
+and a report that depended on which slice finished first
+would not be comparable between the two arms.
+
+THE DIAL REFUSES RATHER THAN FALLS BACK.
+`TRANSLATION_REPAIR_SLICE_OVERLAP` is read by `readOverlap`,
+which throws on anything but a whole number of at least one:
+
+```text
+TRANSLATION_REPAIR_SLICE_OVERLAP must be a whole number
+TRANSLATION_REPAIR_SLICE_OVERLAP must be at least 1
+```
+
+That is not defensive habit.
+The entire comparison rests on two runs differing in this value and nothing else,
+so a typo that silently became `1` would produce two sequential runs,
+a null result,
+and a conclusion that overlap does nothing.
+Both refusals were exercised before either arm was launched,
+at no quota cost.
+
+THE CONTROL IS THE SAME BINARY.
+`TRANSLATION_REPAIR_SLICE_OVERLAP=1` reproduces the sequential driver exactly,
+so the control arm is the program under test with its dial at one
+rather than a different program.
+Each arm gets its own `TRANSLATION_REPAIR_RUNS_DIR`,
+so neither can read the other's cache and finish early on work it did not do.
+The sample is drawn by `pickSpreadSample`, which carries no randomness,
+so both arms draw the same four slices from the same pin.
+
+WHAT THIS PROTOTYPE MAY AND MAY NOT CONCLUDE.
+It can say whether overlapping units moves wall clock on this provider mix,
+and whether it costs voices.
+It cannot say that the production pass would gain the same,
+because `runAttemptQueue` is a different loop over different units,
+and it cannot settle a difference smaller than the run-to-run band,
+which four slices is too small a sample to establish.
+A difference of the size the 87.2% figure implies would clear any plausible band;
+anything subtler wants a second pair of runs before it is believed.
