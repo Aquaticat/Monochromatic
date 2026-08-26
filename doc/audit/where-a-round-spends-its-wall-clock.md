@@ -676,3 +676,35 @@ and it cannot settle a difference smaller than the run-to-run band,
 which four slices is too small a sample to establish.
 A difference of the size the 87.2% figure implies would clear any plausible band;
 anything subtler wants a second pair of runs before it is believed.
+
+## The per-model gate does not bind across slices, and that is the mechanism under test
+
+Read from `editor-calibrate.ts` while the first arm was running.
+
+`runOne` calls `createRunClient()` PER SLICE.
+Each client carries its own `pLimit` per model,
+so two overlapped slices hold two independent limiters
+and can have two calls open on the same model at once.
+
+That settles two things at once.
+
+CORRECTNESS IS NOT AT RISK.
+A slice shares no mutable state with its neighbours:
+its own client, its own logger, its own `AbortController`.
+The overlap changes when work runs, not what it computes,
+which is why `Promise.all` over the sample is enough
+to keep the standings identical to the sequential arm's.
+
+AND THE PROTOTYPE REALLY DOES TEST THE CLAIM IT SAYS IT TESTS.
+The comments this change edits say aggregate concurrency beyond one stream per model
+collapses throughput on this plan.
+Because the limiter is per client and the client is per slice,
+overlapping slices does not queue behind that gate,
+it multiplies it: overlap of four means up to four streams per model.
+So the arms differ in exactly the quantity those comments name,
+and a result either way is about that claim rather than about something adjacent to it.
+
+WHAT WOULD SHOW THE OLD COMMENTS RIGHT:
+the overlapped arm finishing no faster,
+or finishing faster while losing more voices.
+Voices heard is recorded per arm for exactly that reason.
