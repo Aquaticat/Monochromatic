@@ -175,7 +175,7 @@ await describe({
         },),
 
         it({
-          name: 'PASSES OVER A COMPLETION LINE THAT PREDATES THE DURATION FIELD, which every log '
+          name: 'SKIPS A COMPLETION LINE THAT PREDATES THE DURATION FIELD, which every log '
             + 'written before `#215` is, so a concurrency is never computed from the half of a '
             + 'mixed archive that happens to be readable',
           fn: async () => {

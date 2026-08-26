@@ -363,7 +363,7 @@ await describe({
     },),
 
     it({
-      name: 'PASSES quotas through as the very same function, since the meter is not a seat',
+      name: 'FORWARDS quotas as the very same function, since the meter is not a seat',
       fn: async () => {
         /** Inner client whose meter identity is checked. */
         const inner = innerClient({ text: '喵。', },);

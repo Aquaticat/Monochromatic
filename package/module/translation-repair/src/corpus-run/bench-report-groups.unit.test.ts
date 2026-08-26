@@ -129,7 +129,7 @@ await describe({
   name: summarizeBench.name,
   children: [
     it({
-      name: 'PUTS EACH ROW UNDER ITS OWN WIDTH AND PASS, since every number on a line is a sum over '
+      name: 'PUTS EACH ROW UNDER ITS OWN WIDTH AND RUN, since every number on a line is a sum over '
         + 'whichever rows the grouping put there, and a line built from another arm\'s rows describes '
         + 'that arm while naming this one',
       fn: async () => {

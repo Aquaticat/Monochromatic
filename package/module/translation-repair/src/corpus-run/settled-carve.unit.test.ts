@@ -752,7 +752,7 @@ await describe({
       },
     },),
     it({
-      name: 'PASSES an unsettled or legacy answer through without reading the corpus',
+      name: 'FORWARDS an unsettled or legacy answer without reading the corpus',
       fn: async () => {
         await using runs = await throwawayRuns();
         expect(await carveSettled({

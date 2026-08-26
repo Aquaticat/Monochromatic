@@ -409,7 +409,7 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS the ballots of a recheck that PASSED as well, so agreement '
+      name: 'KEEPS the ballots of a recheck that CLEARED as well, so agreement '
         + 'and rollback leave the same kind of evidence and a reader cannot '
         + 'mistake an unrecorded round for a unanimous one',
       fn: async function apassingRecheckKeepsItsEvidence() {

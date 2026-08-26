@@ -171,7 +171,7 @@ await describe({
     },),
 
     it({
-      name: 'FAILS OVER TO HYPER when Synthetic is dry, whether or not its concurrency had room, '
+      name: 'SWITCHES TO HYPER when Synthetic is dry, whether or not its concurrency had room, '
         + 'since budget outranks saturation',
       fn: async () => {
         for (const syntheticSaturated of [true, false,]) {
