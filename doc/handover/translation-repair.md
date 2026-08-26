@@ -466,6 +466,20 @@ Whole-suite `buildAndTest` after `ce5ca2368`: 816 PASS, 0 FAIL, exit 0 (solo run
 to back at 2026-08-26T11:08Z into `~/temp/agent/overlap-arm-serial-20260826` and
 `~/temp/agent/overlap-arm-four-20260826`, logs beside them under the same names with `.log`.
 
+`#229` LEVER 1, IN PROGRESS (2026-08-26, written while the arms run). The straggler window has a dial of the same
+shape as the overlap one: `src/grace-override.ts` reads `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (unset or empty means
+the built-in `STRAGGLER_GRACE_MS`; anything unreadable or not positive is a `StatedRefusalError`, since a mistyped
+window quietly becoming 180000 would compare two matched runs), `runGatherRound`'s `graceMs` default resolves through
+it per call, and `editor-calibrate` and `corpus-pass` resolve it first thing and print `STRAGGLER GRACE OVERRIDDEN by
+...` when it differs, so a log says which window a run was under whether or not a voice was cut. `shippedAuthors`
+moved beside the progress line to keep the driver at 297 code lines. Suites written: `src/grace-override.unit.test.ts`
+(seven dial cases, two note cases) and two `shippedAuthors` cases. UNBUILT AND UNCOMMITTED as of this line because the
+arms are running from `dist` and nothing may rebuild it until they finish; oxlint on the source reports only the
+bundle-missing-export findings the tests cause before a build. After arm B: build, oxlint, `lint:types`, the suites,
+commit, GFP, whole suite, then arm C, the `#229` run: overlap 1, `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=300000`, the
+same four slices, matched against arm A at 180000; 300000 stays under `RUN_PER_CALL_TIMEOUT_MS` (360000) so a hung
+voice is still cut before its deadline.
+
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
 STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed,
