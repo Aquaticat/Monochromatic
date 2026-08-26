@@ -7,6 +7,8 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 
@@ -30,6 +32,11 @@ import { readRunJson, } from '../run-json-read.ts';
 //
 // The atomic rename in `writeFileAtomic` protects a READER from a half-written
 // file. It says nothing about two writers, which is this.
+
+/**
+ * Logger every lock line goes through; the lock takes no caller-supplied one.
+ */
+const lockLog = tagged({ tag: 'runs-lock', },);
 
 /**
  * Name of the lock file inside a runs directory.
@@ -179,8 +186,8 @@ function isAlive({ pid, }: { readonly pid: number; },): boolean {
     // live process is the one outcome this must never produce silently.
     if (Error.isError(error,) && ('code' in error)
       && (error.code === 'EPERM')) {
-      console.log(
-        `LOCK process ${String(pid,)} exists but is not ours; treating the lock as held`,
+      lockLog.warn(
+        `process ${String(pid,)} exists but is not ours; treating the lock as held`,
       );
       return true;
     }
@@ -229,7 +236,7 @@ async function readHolder(
     // A lock file that cannot be read is not a lock anyone can respect, and
     // saying so is better than either honouring it forever or ignoring it
     // silently.
-    console.log(`LOCK ${path} unreadable (${refusalText({ error, },)})`,);
+    lockLog.warn(`${path} unreadable (${refusalText({ error, },)})`,);
     return { kind: 'unreadable', };
   }
 }
@@ -264,13 +271,16 @@ async function claim(
   try {
     /**
      * Handle from an exclusive create, which fails when the file is there.
+     *
+     * DISPOSED RATHER THAN CLOSED BY HAND, so a write that fails still closes
+     * it; the empty file such a failure leaves is what the next pass reads as
+     * unreadable and evicts, which is the documented recovery.
      */
-    const handle = await open(
+    await using handle = await open(
       path,
       'wx',
     );
     await handle.writeFile(`${JSON.stringify(holder,)}\n`,);
-    await handle.close();
     return true;
   }
   catch (error) {
@@ -352,14 +362,14 @@ export async function lockRunsDir(
           holder: heldBy,
         },);
 
-      console.log(
-        `LOCK taking over a stale lock in ${runsDir} from gone process ${
+      lockLog.info(
+        `taking over a stale lock in ${runsDir} from gone process ${
           String(heldBy.pid,)
         }`,
       );
     }
     else
-      console.log(`LOCK taking over an unreadable lock in ${runsDir}`,);
+      lockLog.info(`taking over an unreadable lock in ${runsDir}`,);
 
     await evictStaleLock({ path, },);
 
@@ -487,7 +497,7 @@ export async function releaseIfOwned(
       return 'released';
     }
   }
-  console.log(`LOCK ${path} is not this acquisition's any more; leaving it in place`,);
+  lockLog.warn(`${path} is not this acquisition's any more; leaving it in place`,);
   return 'kept';
 }
 

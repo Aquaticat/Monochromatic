@@ -1,5 +1,7 @@
 import { access, } from 'node:fs/promises';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 //region Git command
 // WHICH GIT this package spawns, decided once and shared.
 //
@@ -9,6 +11,11 @@ import { access, } from 'node:fs/promises';
 // fail at startup reading HEAD. That is a portability difference between two
 // answers to one question, which is the kind of split that only shows up on
 // someone else's machine.
+
+/**
+ * Logger for the probe's one line; the command takes no caller-supplied one.
+ */
+const gitLog = tagged({ tag: 'git-command', },);
 
 /**
  * Real git binary, preferred over the PATH entry.
@@ -51,8 +58,8 @@ async function detectGit(): Promise<string> {
     // swallowed, because falling back to PATH means git is whatever the shell
     // resolves, including a shim, and that is worth seeing in a report which
     // turns on what git answered.
-    console.log(
-      `POOL ${SYSTEM_GIT} not present (${String(error,)}); using git from PATH`,
+    gitLog.warn(
+      `${SYSTEM_GIT} not present (${String(error,)}); using git from PATH`,
     );
     return 'git';
   }

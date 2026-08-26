@@ -171,7 +171,7 @@ export function carriesPicture(
  * @example
  * ```ts
  * const request: ChatTextRequest = {
- *   modelId: 'hf:zai-org/GLM-4.7-Flash',
+ *   modelId: 'hf:zai-org/GLM-5.2',
  *   messages: [{ role: 'user', content: '喵？', },],
  *   signal: AbortSignal.timeout(120_000,),
  * };

@@ -120,10 +120,17 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
  * coming. Quorum on a roster of three is two, so the ensemble property survives
  * the removal.
  *
- * GLM-4.7-Flash takes the third editor seat because it is the only model not
- * already checking or editing, and the constraints left no other choice at the
- * time: checkers must exclude every editor and refiner, judges needed two
- * disinterested seats, and the other three models hold the checker roster.
+ * WHAT FOLLOWS IS THE HISTORY OF THESE SEATS, kept because each rule below was
+ * argued from it. The seats themselves are the measured ones in the constant:
+ * the roster is ten across two providers since 2026-08-24, the three editors
+ * and three refiners were chosen by the 40-round calibration of that day, and
+ * the checkers are the three the width measurement settled.
+ *
+ * GLM-4.7-Flash took the third editor seat on 2026-08-12 because it was the
+ * only model not already checking or editing, and the constraints left no
+ * other choice at the time: checkers had to exclude every editor and refiner,
+ * judges needed two disinterested seats, and the other three models held the
+ * checker roster. It left the roster on 2026-08-24.
  *
  * ONE OF THOSE CONSTRAINTS IS GONE. Producers judge as of 2026-08-14, with a
  * ballot for their own work counted at half weight, so seating another producer
@@ -137,15 +144,19 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
  * exact single-voice failure the 2026-08-12 roster change closed. Next to it
  * sit `assertJudgeableProducerRoster`'s two-disinterested-judge floor, now a
  * policy rather than an arithmetic necessity, and judge quality, which `#84`
- * has not measured. Widening is question 1 of the handover's next steps. It is also the
- * model that most often loses its voice, which is now an argument FOR seating
- * it here rather than against: a third editor that sometimes drops still leaves
- * two, whereas the same model in the checker set would cost proof.
+ * has not measured. Widening was question 1 of the handover's next steps and
+ * was answered by the calibration recorded at `editorModelIds`. GLM-4.7-Flash
+ * was also the model that most often lost its voice, which argued FOR seating
+ * it as a third editor rather than against: a third editor that sometimes
+ * drops still leaves two, whereas the same model in the checker set would have
+ * cost proof.
  *
- * The panel is six rather than seven because the provider withdrew two models
- * and only one replacement (Kimi-K3) appeared. `gatherStageVoices` computes
- * the stage quorum as `voices >= ceil(modelIds.length / 2)`, so seven models
- * need 4 voices and six need 3.
+ * The panel was six rather than seven from 2026-08-05, when the provider
+ * withdrew two models and only one replacement (Kimi-K3) appeared, and has
+ * been ten since 2026-08-24, when Charm Hyper's five seats joined.
+ * `gatherStageVoices` computes the stage quorum as
+ * `voices >= ceil(modelIds.length / 2)`, so seven models need 4 voices, six
+ * need 3, and ten need 5.
  *
  * The ISSUE-acceptance gate does move, and the user accepted the move rather
  * than it happening unnoticed: `DEFAULT_ADJUDICATION_CONFIG.minBallotWeight` is
@@ -161,7 +172,8 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
  * 37 true positives carried notes saying detection was right but the proposed
  * repair was poor ("is there a better way?"), which is an editor complaint, not
  * a critic one. GLM-5.2 was the second editor, having held the role alone
- * before, and GLM-4.7-Flash is the third.
+ * before, and GLM-4.7-Flash was the third until 2026-08-24, when the measured
+ * seats replaced both.
  *
  * The count was TWO until 2026-08-12, and the paragraph that follows is kept as
  * the reasoning for that earlier choice rather than as current policy. Every
@@ -180,19 +192,21 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
  * own text is allowed and counts half for that candidate alone; every other
  * ballot it casts carries full weight.
  *
- * Checkers deliberately EXCLUDE every editor, so nothing checks its own work.
- * That drops GLM-5.2 from the checker set it held while it was also editing,
- * and gpt-oss-120b takes the seat. GLM-4.7-Flash stays out: it is the model
- * that most often loses its voice to schema mismatch, and the checker stage is
- * where a lost voice costs proof rather than coverage.
+ * Checkers EXCLUDED every editor until 2026-08-24, so nothing checked its own
+ * work. That dropped GLM-5.2 from the checker set it held while it was also
+ * editing, and gpt-oss-120b took the seat. GLM-4.7-Flash stayed out: it was
+ * the model that most often lost its voice to schema mismatch, and the checker
+ * stage is where a lost voice costs proof rather than coverage. Since
+ * 2026-08-24 one model both edits and checks, bounded by the half-weight
+ * discount described at `checkerModelIds`.
  *
  * The naturalness lane runs on the same three models that edit, Kimi-K3 among
- * them. Nothing forbids a refiner also editing: judges exclude producers per
- * selection round, so the refinement is still chosen by models with no stake in
- * it, and the checker roster excludes every editor and every refiner, so
- * nothing certifies its own text. The tradeoff is real and is accepted rather
- * than hidden: a model that just wrote a paragraph is a poor judge of whether
- * that paragraph reads awkwardly.
+ * them. Nothing forbids a refiner also editing: a judge's ballot for its own
+ * candidate has counted half since 2026-08-14 and a checker's verdict on text
+ * it helped write has counted half since 2026-08-24, so neither stage is
+ * decided by the model whose text it is. The tradeoff is real and is accepted
+ * rather than hidden: a model that just wrote a paragraph is a poor judge of
+ * whether that paragraph reads awkwardly.
  *
  * This paragraph read "ONE refiner runs the naturalness lane" until 2026-08-13,
  * left stale by `eb21ffa6b`, which took the lane from one refiner to three. The
@@ -339,12 +353,16 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  * capability, and it would go stale silently: a text-only model sent a picture
  * answers about nothing, and the call is spent either way.
  *
- * READING IS ITS OWN STAGE, and the roster's narrowness is why. Exactly two
- * models read images, selection needs a minimum weight of two, and a producer's
- * ballot for its own work counts half, so if these two also translated then no
+ * READING IS ITS OWN STAGE, and the roster's narrowness when the stage was
+ * built is why. Exactly two models read images while the roster was one
+ * provider's six; selection needs a minimum weight of two, and a producer's
+ * ballot for its own work counts half, so if those two also translated then no
  * disinterested judge would remain on any slice carrying a picture. Asking them
- * only to READ turns the picture into text, and the ordinary six-model roster
- * translates and judges from that text with its weights untouched.
+ * only to READ turns the picture into text, and the whole roster translates
+ * and judges from that text with its weights untouched. Six of the ten read
+ * images since 2026-08-24 (two on Synthetic, four on Charm Hyper); the stage
+ * stays separate because the reasoning above is about weights, not about how
+ * many readers there happen to be.
  *
  * @example
  * ```ts

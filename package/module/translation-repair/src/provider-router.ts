@@ -186,6 +186,35 @@ function isBudgetRefusal(
 }
 
 /**
+ * What a re-ask came back with.
+ *
+ * A NAMED REFUSAL RATHER THAN AN ABSENT REPLY, because the two are different
+ * facts: the provider was asked and said no on budget, which the caller keeps
+ * the first answer over, as opposed to never having been asked.
+ *
+ * @example
+ * ```ts
+ * const asked: ReAskReply = { kind: 'budget-refused', };
+ * ```
+ */
+type ReAskReply = {
+  /**
+   * Provider answered.
+   */
+  readonly kind: 'replied';
+
+  /**
+   * What it said.
+   */
+  readonly reply: ChatTextReply;
+} | {
+  /**
+   * Provider refused on budget, and its cooldown has started.
+   */
+  readonly kind: 'budget-refused';
+};
+
+/**
  * Builds the client that routes each call to whichever provider can serve it.
  *
  * @param synthetic - first provider's text call, which is all this delegates
@@ -392,6 +421,62 @@ export function createRoutingClient(
     // makes it do its work, and reading it here keeps that legible.
     void slot;
     return await synthetic.chatText(request,);
+  }
+
+  /**
+   * Calls one provider, and reads a budget refusal as no reply rather than as
+   * a fault.
+   *
+   * THE RE-ASK IS OPPORTUNISTIC, so a 429 or a 402 on it is the re-ask not
+   * happening, not the exchange failing: the first answer is what the caller
+   * gets, the way it does when there is nowhere else to ask. The refusal still
+   * starts that provider's cooldown on the call it arrived on, rather than one
+   * call later when the next routing decision meets it.
+   *
+   * @param provider - stack to ask
+   *
+   * @param request - exchange to perform
+   *
+   * @returns Reply, or the named refusal when the provider was out of budget
+   *
+   * @example
+   * ```ts
+   * const asked = await replyOrBudgetRefusal({ provider: 'synthetic', request, },);
+   * ```
+   */
+  async function replyOrBudgetRefusal(
+    {
+      provider,
+      request,
+    }: {
+      readonly provider: ProviderName;
+      readonly request: ForeignBorrowed<ChatTextRequest>;
+    },
+  ): Promise<ReAskReply> {
+    /**
+     * Logger pre-tagged with this function's name.
+     */
+    const rl = tagged({
+      tag: replyOrBudgetRefusal.name,
+      l,
+    },);
+
+    try {
+      return {
+        kind: 'replied',
+        reply: await callOn({
+          provider,
+          request,
+        },),
+      };
+    } catch (error) {
+      if (!isBudgetRefusal({ error, },))
+        throw error;
+
+      budgets.markRefused({ provider, },);
+      rl.warn(`${request.modelId}: ${provider} is out of budget on the re-ask; keeping the first answer`,);
+      return { kind: 'budget-refused', };
+    }
   }
 
   /**
@@ -602,14 +687,23 @@ export function createRoutingClient(
       },);
 
     /**
-     * Same model, same question, the other serving stack.
+     * Same model, same question, the other serving stack; or nothing, when that
+     * stack refused on budget.
+     */
+    const asked = await replyOrBudgetRefusal({
+      provider: elsewhere,
+      request,
+    },);
+
+    if (asked.kind === 'budget-refused')
+      return outcome;
+
+    /**
+     * What the other stack's answer turned out to be.
      */
     const second = readJsonOutcome({
       modelId: request.modelId,
-      reply: await callOn({
-        provider: elsewhere,
-        request,
-      },),
+      reply: asked.reply,
       validate: request.validate,
     },);
 

@@ -3,6 +3,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
+import { SYNTHETIC_MODELS, } from '../synthetic-catalog.ts';
 
 //region Model catalog comparison
 // The pure half of the drift check: decoding what the provider returned and
@@ -17,20 +18,16 @@ import {
 // `hugging_face_id`, never on `id`.
 
 /**
- * Ids the pipeline compiles against, mirrored from `RosterModelId`.
+ * Ids the pipeline compiles against on this provider, read off the catalog.
  *
- * Written out rather than derived, because a union type has no runtime value.
- * A drift between this list and that union is itself a defect this report
- * surfaces: a served model absent here reads as new.
+ * DERIVED RATHER THAN WRITTEN OUT. The copy this replaced still listed a model
+ * removed on 2026-08-24, so the instrument built to catch catalog removals
+ * reported the departed model as expected and would have read a served one as
+ * new; a list read off `SYNTHETIC_MODELS` moves with the catalog. Synthetic's
+ * endpoint is what the fetch compares against, so the Hyper-only ids are not
+ * in it on purpose.
  */
-export const CATALOG_MODEL_IDS: readonly string[] = [
-  'hf:zai-org/GLM-5.2',
-  'hf:zai-org/GLM-4.7-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-  'hf:openai/gpt-oss-120b',
-];
+export const CATALOG_MODEL_IDS: readonly string[] = Object.keys(SYNTHETIC_MODELS,);
 
 /**
  * One model as the provider describes it.

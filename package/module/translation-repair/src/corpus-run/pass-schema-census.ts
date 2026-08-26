@@ -129,7 +129,7 @@ function classifyArtifact(
   // field probing. Left to the version reader it carries no version field and
   // would be filed as an unversioned generation, which is a sound result to
   // keep; a file that is a JSON array is a file to investigate.
-  if (!isJsonRecord(artifact,) || isJsonArray(artifact,)) {
+  if ((!isJsonRecord(artifact,)) || isJsonArray(artifact,)) {
     return {
       kind: 'malformed',
       reason: 'a JSON object, which is what every generation of this artifact is',

@@ -151,6 +151,25 @@ await describe({
             },).toThrow(Error,);
           },
         },),
+
+        it({
+          name: 'THROWS ON A RATIO THAT IS NOT TWO WHOLE NUMBERS rather than reading NaN into the '
+            + 'heard count, since a round that heard NaN sums into a report as nothing at all',
+          fn: async () => {
+            expect(function readsWordCount(): void {
+              readRoundTiming({
+                line: '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
+                  + 'editor round: six/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace',
+              },);
+            },).toThrow(Error,);
+            expect(function readsNoSlash(): void {
+              readRoundTiming({
+                line: '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
+                  + 'editor round: 6 heard, 91402ms total, 61401ms to quorum, 30001ms in grace',
+              },);
+            },).toThrow(Error,);
+          },
+        },),
       ],
     },),
 

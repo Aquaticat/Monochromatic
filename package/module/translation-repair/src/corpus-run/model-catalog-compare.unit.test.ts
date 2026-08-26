@@ -21,9 +21,25 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CATALOG_MODEL_IDS,
   compareCatalog,
   decodeModelList,
+  SYNTHETIC_MODELS,
 } from '../../dist/final/node/index.mjs';
+
+await describe({
+  name: 'CATALOG_MODEL_IDS',
+  children: [
+    it({
+      name: 'IS the compiled Synthetic catalog, so a model removed from the catalog is removed from the drift '
+        + 'check the same day, rather than a copy that reported a departed model as expected',
+      fn: async () => {
+        expect([...CATALOG_MODEL_IDS,].toSorted(),).toEqual(Object.keys(SYNTHETIC_MODELS,).toSorted(),);
+        expect(CATALOG_MODEL_IDS.includes('hf:zai-org/GLM-4.7-Flash',),).toBe(false,);
+      },
+    },),
+  ],
+},);
 
 /**
  * Catalog the comparisons run against.

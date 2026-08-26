@@ -182,6 +182,30 @@ export type CallReading =
   };
 
 /**
+ * Reads one field as a whole number, refusing anything else.
+ *
+ * @param field - digits and nothing else
+ *
+ * @returns Count the field carries
+ *
+ * @throws Error when the field is empty or carries anything but digits
+ *
+ * @example
+ * ```ts
+ * const heard = countIn({ field: '5', },);
+ * ```
+ */
+function countIn({ field, }: { readonly field: string; },): number {
+  if (field === '')
+    throw new Error('count field is empty',);
+  for (const character of field) {
+    if ((character < '0') || (character > '9'))
+      throw new Error(`count field is not a whole number: "${field}"`,);
+  }
+  return Number(field,);
+}
+
+/**
  * Reads one field's number, given the unit it must carry.
  *
  * NAMES THE FIELD IT COULD NOT READ rather than returning a zero, because a
@@ -290,12 +314,19 @@ export function readRoundTiming(
   const counts = ratio?.split('/',) ?? [];
 
   try {
+    // TWO WHOLE NUMBERS OR NOTHING. `Number('')` is 0 and `Number('x')` is
+    // NaN, and either rode into the report as a round that heard nobody or a
+    // round that never summed; the duration fields already refused, and the
+    // counts refuse the same way now.
+    if (counts.length !== 2)
+      throw new Error(`round ratio is not heard/asked: "${ratio ?? ''}"`,);
+
     return {
       kind: 'round',
       round: {
         stage,
-        heard: Number(counts[0],),
-        asked: Number(counts[1],),
+        heard: countIn({ field: counts[0] ?? '', },),
+        asked: countIn({ field: counts[1] ?? '', },),
         totalMs: durationIn({
           field: totalField ?? '',
           unit: 'ms ',

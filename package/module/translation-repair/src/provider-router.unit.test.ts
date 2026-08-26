@@ -685,6 +685,42 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS the first answer and starts the other provider\'s cooldown when the re-ask is refused on '
+        + 'budget, instead of raising out of an exchange that already has an answer',
+      fn: async () => {
+        /**
+         * Providers: the first answers unparseably, the second refuses on
+         * budget when re-asked.
+         */
+        const { synthetic, hyper, called, } = stubProviders({
+          syntheticText: 'I will not do that.',
+          hyperStatus: 429,
+        },);
+        /** Budget view with money on both sides, recording refusals. */
+        const { budgets, refused, } = stubBudgets({},);
+        /** Router under test. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets,
+        },);
+
+        /**
+         * Outcome the caller gets, which is the first answer read as unusable.
+         */
+        const outcome = await client.chatJson({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          messages: MESSAGES,
+          signal: SIGNAL,
+          validate: isNapSpot,
+        },);
+
+        expect(outcome.kind,).not.toBe('ok',);
+        expect(called,).toEqual(['synthetic', 'hyper',],);
+        expect(refused,).toEqual(['hyper',],);
+      },
+    },),
+    it({
       name: 'keeps the preferred provider\'s answer when the re-ask fails too',
       fn: async () => {
         /** Providers, both answering unparseably and distinguishably. */
