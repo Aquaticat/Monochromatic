@@ -34,6 +34,47 @@ import {
   visionReachOf,
 } from '../dist/final/node/index.mjs';
 
+// FIRST, because every describe after this one assumes the roster is served:
+// a label with no catalog row must fail here, by name, before it fails a
+// count elsewhere.
+await describe({
+  name: 'roster against the catalogs',
+  children: [
+    it({
+      name: 'SERVES every roster id from at least one catalog, so a roster label without a catalog '
+        + 'row fails here rather than as one lost voice per call (`#241`)',
+      fn: async () => {
+        /**
+         * Roster ids no catalog has a row for under the roster's own spelling.
+         */
+        const unserved = ROSTER_MODEL_IDS.filter(function nobodyServes(modelId,): boolean {
+          return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,));
+        },);
+        expect(unserved,).toStrictEqual([],);
+      },
+    },),
+    it({
+      name: 'HAS a Charm Hyper row for every Hyper-only roster label, the half of the roster with no '
+        + 'other provider to fall back to',
+      fn: async () => {
+        /**
+         * Hyper-only labels the Hyper catalog does not carry.
+         */
+        const missing = HYPER_ONLY_ROSTER_IDS.filter(function noRow(modelId,): boolean {
+          return !hyperServesLabel(modelId,);
+        },);
+        expect(missing,).toStrictEqual([],);
+      },
+    },),
+    it({
+      name: 'CARRIES the type-level proof as a value, so the same drift also stops the type check',
+      fn: async () => {
+        expect(HYPER_ONLY_NAMES_ARE_SERVED,).toBe(true,);
+      },
+    },),
+  ],
+},);
+
 await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
@@ -242,44 +283,6 @@ await describe({
       name: 'ANSWERS true for a model that reads on either provider, not only on both',
       fn: async () => {
         expect(readsImages({ modelId: 'hf:zai-org/GLM-5.2', },),).toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: 'roster against the catalogs',
-  children: [
-    it({
-      name: 'SERVES every roster id from at least one catalog, so a roster label without a catalog '
-        + 'row fails here rather than as one lost voice per call (`#241`)',
-      fn: async () => {
-        /**
-         * Roster ids no catalog has a row for under the roster's own spelling.
-         */
-        const unserved = ROSTER_MODEL_IDS.filter(function nobodyServes(modelId,): boolean {
-          return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,));
-        },);
-        expect(unserved,).toStrictEqual([],);
-      },
-    },),
-    it({
-      name: 'HAS a Charm Hyper row for every Hyper-only roster label, the half of the roster with no '
-        + 'other provider to fall back to',
-      fn: async () => {
-        /**
-         * Hyper-only labels the Hyper catalog does not carry.
-         */
-        const missing = HYPER_ONLY_ROSTER_IDS.filter(function noRow(modelId,): boolean {
-          return !hyperServesLabel(modelId,);
-        },);
-        expect(missing,).toStrictEqual([],);
-      },
-    },),
-    it({
-      name: 'CARRIES the type-level proof as a value, so the same drift also stops the type check',
-      fn: async () => {
-        expect(HYPER_ONLY_NAMES_ARE_SERVED,).toBe(true,);
       },
     },),
   ],
