@@ -784,6 +784,16 @@ until the generation marker retires the cache on a rebuild, never on the provide
 That is provider trouble degrading the pipeline durably, which the owner's standing rule forbids.
 Tracked as `#253`.
 
+FIXED 2026-08-26 in `17bcaf46c`: an `unavailable` pair verdict carries `transient`, true when any reader produced
+nothing for a reason that may not hold tomorrow (`reader-failed`, `empty-reply`, `too-short`, `reads-as-refusal`),
+false for a disagreement or a roster that cannot read the picture; `readDocumentPictures` persists only resumable
+verdicts (`isResumableReading`), and `openPictureReadingCache` refuses a transient record and any record written
+before the field, so the one reader failure that left a picture unread is read once more.
+Guards: a throwing reader marks the verdict transient and unresumable, a disagreement stays stable, the document
+reader persists nothing under a failing client and one record under a disagreeing one, and the cache refuses the
+transient and the older-shape records.
+Flattening the mark fails 3 and 2 cases, dropping the persist guard fails 2, re-admitting transient records fails 3.
+
 ### document-3, MAJOR, verified: a CRLF original silently disables the line-structure family
 
 `src/line-structure.ts:57-66` splits blocks on `\n\n`, which a CRLF document never contains,

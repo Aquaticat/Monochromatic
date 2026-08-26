@@ -228,7 +228,11 @@ chunks from `dist/` and a concurrent build deletes the ones it holds. Count verd
 (TLY); a PASS count with a non-zero exit is the count's bug.
 Plan mode over the real corpus (that concurrent run) printed exactly one `INCOMPLETE` line (the one one-sided
 entry, its source page absent) beside `pending=92` and `PLAN ok`; that measurement stands.
-Queue: `#253` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
+`#253` LANDED 2026-08-26 in `17bcaf46c`: a pair verdict resting on a transient reader failure is marked
+`transient`, is not persisted, and is refused on resume together with every record from before the field; GFP fails
+3 and 2, 2, and 3 cases under the three mutations.
+Whole-suite `buildAndTest` after `17bcaf46c`: 772 PASS, 0 FAIL, exit 0 (solo run, nothing else building).
+Queue: `#254` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
