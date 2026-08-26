@@ -460,3 +460,68 @@ Do not put two suites a single GFP round needs to read in one file.
 so a failure in the first suite aborts the file before the second runs,
 and the round then proves nothing about the second.
 `#231`'s second round hit exactly this.
+
+## Tier twenty closed, and the rule that scoped it held again
+
+The five gaps depth two found are all closed and all GFP-proven,
+each against the exact mutation that had failed nothing:
+
+```text
+refinesettledslices-b2   COVERED (exit 1, 2 FAIL, 750 PASS)
+assemblerepair-b2        COVERED (exit 1, 3 FAIL, 749 PASS)
+gatherwidthinput-b2      COVERED (exit 1, 2 FAIL, 749 PASS)
+resolvepool-b2           COVERED (exit 1, 2 FAIL, 749 PASS)
+coveragecontrolholds-b2  COVERED (exit 1, 2 FAIL, 749 PASS)
+```
+
+The baseline before them was exit 0 with 750 passing cases.
+Note again that the passing count does not fall when a case fails,
+which is why the exit code is the verdict and the count is only context.
+
+## The runner lost eight rounds to a buffer, in silence
+
+Tier twenty-b ran for over an hour in the background and then vanished,
+leaving a zero-byte output file and no verdicts at all.
+
+Nothing crashed.
+`python3` block-buffers stdout when it is not a terminal,
+so every line the runner printed sat in a 4 KiB buffer waiting to be filled,
+and the buffer went with the process.
+A run that prints one short line per round,
+where each round takes five minutes,
+can run to completion without ever filling one buffer.
+
+Two changes, both cheap:
+
+-   Launch with `python3 -u`,
+    which makes every print reach the file as it happens.
+-   Redirect to a real file under the scratch directory rather than relying on the task output,
+    so a killed run still leaves everything that was flushed.
+
+The general form is worth keeping:
+a long measurement whose only output arrives at the end
+has no partial credit,
+and the failure mode is indistinguishable from a run that produced nothing to say.
+
+## A waiting loop can answer for the process it is waiting on
+
+While that run was dying,
+the wait loop kept reporting it alive.
+
+The check was `pgrep -f 'rounds-tier20b.json'`,
+and the loop's own shell command line contains that string,
+so `pgrep` matched the waiter rather than the runner.
+The same shape had already bitten once in this session,
+where `pgrep -af 'mutate-run.py'` matched the `grep` reading its output.
+
+The reliable check reads what the process actually is:
+
+```sh
+for p in $(pgrep -f mutate-run); do
+  [ "$(cat /proc/$p/comm)" = python3 ] && echo "alive: $p"
+done
+```
+
+This belongs beside `QRY` rather than beside the mutation work.
+A search that matches its own invocation is a search that always succeeds,
+and the answer it gives is the one the caller was hoping for.
