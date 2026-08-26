@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
+  PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
   buildIntroducedDefectMessages,
   type IntroducedDefectCheckWire,
   INTRODUCED_DEFECT_RESPONSE_FORMAT,
@@ -152,7 +153,7 @@ export async function runIntroducedDefectProbe(
     regions,
     issues,
     editKind = 'accuracy-repair',
-    disclosure = 'withheld',
+    disclosure = PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     neighbouringIncumbentText,
     neighbouringSourceText,
     signal,

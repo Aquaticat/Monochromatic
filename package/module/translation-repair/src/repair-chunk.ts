@@ -24,6 +24,7 @@ import {
 } from './repair-contract.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
+import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
 import { runPanelStage, } from './repair-stages.ts';
 import {
@@ -386,7 +387,7 @@ export async function repairChunk(
     // Withheld on purpose: rendering the accepted issues into the prompt was
     // measured to silence this stage, and `introduced-defect-screen.ts` now
     // dismisses a claim that merely restates one.
-    disclosure: 'withheld',
+    disclosure: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     signal,
     perCallTimeoutMs,
     l,

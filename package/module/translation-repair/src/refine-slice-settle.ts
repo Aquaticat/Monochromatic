@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
+import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts';
 import { parseDocument, } from './parse-document.ts';
 import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
 import { runRefineStage, } from './refine-stage.ts';
@@ -318,7 +319,7 @@ export async function settleRefinedSlice(
     // force here: this lane rewrites text whose accepted issues were ALREADY
     // repaired, so listing them describes defects that are no longer present
     // and excuses damage to wording that was correct.
-    disclosure: 'withheld',
+    disclosure: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     signal,
     perCallTimeoutMs,
     l,

@@ -3,6 +3,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
+import {
+  type PriorIssueDisclosure,
+  PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
+} from '../introduced-defect-wire.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import {
   gatherRelabelCases,
@@ -17,8 +21,9 @@ import {
 } from './run-config.ts';
 
 //region Probe relabel
-// Asks the introduced-defect probe about regions a HUMAN read as damaged, twice
-// each: once with the accepted issues the run showed it, once with none.
+// Asks the introduced-defect probe about regions a HUMAN read as damaged, three
+// times each: under the disclosure production sends, under the other prompt,
+// and with no accepted issue known at all.
 //
 // The cat fixtures established that the probe reports damage 3/3 on a deleted
 // clause the source supports, loses one voice of three when a false accepted
@@ -32,6 +37,14 @@ import {
 // drawing at least one admissible claim. The fixture understated the effect
 // because it carried ONE prior issue and these regions carry six to seventeen.
 //
+// That run was made while the probe still rendered the list by default.
+// Production has since withheld it and moved the excusing to the screen
+// (`introduced-defect-wire.ts`), and for a while the two arms here relied on
+// that default, so both sent the same prompt and differed only in the screen,
+// under labels that said otherwise (`#247`). Every arm now names its
+// disclosure, and the third arm, no list at all, separates the screen's effect
+// from the prompt's.
+//
 // That alone proves nothing, which is why the control arm exists. Every damaged
 // region is damaged by construction, so no claim raised there could be wrong,
 // and an unlabelled prober reporting the PRE-EXISTING defect would look exactly
@@ -42,11 +55,20 @@ import {
 // Reads corpus text through git at the pinned commit and writes nothing.
 
 /**
+ * Disclosure production does not send, for the arm that measures the other prompt.
+ */
+const OTHER_DISCLOSURE: PriorIssueDisclosure = (PRODUCTION_PRIOR_ISSUE_DISCLOSURE === 'rendered')
+  ? 'withheld'
+  : 'rendered';
+
+/**
  * Runs one probe call over one region and returns a printable tally.
  *
  * @param region - region under test
  *
- * @param issues - accepted issues to render as pre-existing, empty to withhold
+ * @param issues - accepted issues the region was cut for; empty when nothing is known
+ *
+ * @param disclosure - whether the list is written into the prompt or only known to the screen
  *
  * @param sourceText - slice original
  *
@@ -56,18 +78,20 @@ import {
  *
  * @example
  * ```ts
- * const line = await probeOnce({ region, issues: [], sourceText, baselineText, },);
+ * const line = await probeOnce({ region, issues: [], disclosure: 'withheld', sourceText, baselineText, },);
  * ```
  */
 async function probeOnce(
   {
     region,
     issues,
+    disclosure,
     sourceText,
     baselineText,
   }: {
     readonly region: RepairRegion;
     readonly issues: readonly AdjudicatedIssue[];
+    readonly disclosure: PriorIssueDisclosure;
     readonly sourceText: string;
     readonly baselineText: string;
   },
@@ -82,6 +106,7 @@ async function probeOnce(
     baselineText,
     regions: [region,],
     issues,
+    disclosure,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-relabel', },),
@@ -147,26 +172,40 @@ async function probePair(
   console.log(`  run-recorded  ${relabelCase.recorded}`,);
 
   /**
-   * Production condition: the issue list is shown.
+   * Production condition: the list under the disclosure the pass sends.
    */
-  const shown = await probeOnce({
+  const production = await probeOnce({
     region: relabelCase.region,
     issues: relabelCase.issues,
+    disclosure: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     sourceText: relabelCase.sourceText,
     baselineText: relabelCase.baselineText,
   },);
-  console.log(`  issues-shown  ${shown}`,);
+  console.log(`  issues-${PRODUCTION_PRIOR_ISSUE_DISCLOSURE} ${production}`,);
 
   /**
-   * Counterfactual: the same region with nothing labelled pre-existing.
+   * The other prompt: the same list under the disclosure production does not send.
    */
-  const withheld = await probeOnce({
+  const otherPrompt = await probeOnce({
     region: relabelCase.region,
-    issues: [],
+    issues: relabelCase.issues,
+    disclosure: OTHER_DISCLOSURE,
     sourceText: relabelCase.sourceText,
     baselineText: relabelCase.baselineText,
   },);
-  console.log(`  issues-withheld ${withheld}`,);
+  console.log(`  issues-${OTHER_DISCLOSURE} ${otherPrompt}`,);
+
+  /**
+   * Counterfactual: nothing known, so nothing rendered and nothing screened.
+   */
+  const absent = await probeOnce({
+    region: relabelCase.region,
+    issues: [],
+    disclosure: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
+    sourceText: relabelCase.sourceText,
+    baselineText: relabelCase.baselineText,
+  },);
+  console.log(`  issues-absent ${absent}`,);
 }
 
 /**
@@ -221,17 +260,18 @@ async function main(): Promise<void> {
   /* oxlint-enable no-await-in-loop */
 
   console.log(
-    'NOTE compare issues-shown against issues-withheld on each region. A '
-      + 'region that reports damage only when the issue list is withheld is one '
-      + 'the production prompt talks the probe out of. A region dark under both '
-      + 'exonerates the label and indicts the difficulty of the judgement.',
+    `NOTE production sends issues-${PRODUCTION_PRIOR_ISSUE_DISCLOSURE}. Compare it against `
+      + `issues-${OTHER_DISCLOSURE} on each region: a region that reports damage under one prompt `
+      + 'only is one the other prompt talks the probe out of. Compare it against issues-absent: a '
+      + 'region that reports damage only with no list known is one whose claims the screen '
+      + 'dismisses as restating a prior issue. A region dark under all three exonerates the label '
+      + 'and indicts the difficulty of the judgement.',
   );
   console.log(
-    'NOTE a control line prints positions= empty. Read the withheld arm across '
-      + 'controls against the withheld arm across damaged regions: similar rates '
-      + 'mean the unlabelled prober is re-reporting pre-existing defects and the '
-      + 'damaged result proves nothing, and a much lower control rate means the '
-      + 'issue list is suppressing real detections.',
+    'NOTE a control line prints positions= empty. Read the issues-absent arm across controls '
+      + 'against the issues-absent arm across damaged regions: similar rates mean the unlabelled '
+      + 'prober is re-reporting pre-existing defects and the damaged result proves nothing, and a '
+      + 'much lower control rate means the issue list is suppressing real detections.',
   );
 }
 

@@ -1,34 +1,18 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
-import type { ProbedEditKind, } from '../introduced-defect-wire.ts';
-import type { RepairRegion, } from '../repair-region.ts';
+import { reportingRefusals, } from './cli-refusal.ts';
 import {
-  BASELINE_TEXT,
-  CLEAN_REGION,
-  COMMA_ISSUE,
-  CONTRADICTING_REGION,
-  LABEL_BASELINE_TEXT,
-  LICENSED_DELETION_REGION,
-  LICENSING_ISSUE,
-  MISLABELLED_DELETION_REGION,
-  MISLABELLING_ISSUE,
-  OMITTING_REGION,
-  PRIOR_ISSUE,
-  REFINED_BASELINE_TEXT,
-  REFINED_CLEAN_REGION,
-  REFINED_CONTRADICTING_REGION,
-  REFINED_OMITTING_REGION,
-  SOURCE_TEXT,
-  UNLABELLED_DELETION_REGION,
-} from './probe-sensitivity-input.ts';
+  PRODUCTION_LIST,
+  SENSITIVITY_ARMS,
+  type SensitivityArm,
+} from './probe-sensitivity-arms.ts';
+import { SOURCE_TEXT, } from './probe-sensitivity-input.ts';
 import {
   createRunClient,
-  RUN_PER_CALL_TIMEOUT_MS,
   RUN_MODELS,
+  RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
-import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Probe sensitivity
 // Asks whether the introduced-defect probe can detect damage AT ALL.
@@ -47,56 +31,46 @@ import { reportingRefusals, } from './cli-refusal.ts';
 //
 // Probe inputs live in `probe-sensitivity-input.ts` and are cat-themed invention.
 // NO corpus text, licensed or otherwise, takes part, and this writes nothing.
+//
+// THE ARMS LIVE IN `probe-sensitivity-arms.ts`, as data with a test, since
+// `#247`: this file once built its arms inline, and its `prior=shown` arm sent
+// the same prompt as its `prior=absent` arm because it relied on a default
+// that had flipped. Every arm now names the list it sends, and the test holds
+// the name to the value before a run spends anything.
 
 /**
- * Runs the probe over one deliberately shaped region and reports what it said.
+ * Runs one arm and prints what the probe said about it.
  *
- * @param region - region under test
+ * @param arm - region, list, issue, and framing to send
  *
- * @param expectation - what a working probe should conclude, for the verdict
- * line only; nothing branches on it
- *
- * @param issues - accepted issues rendered into the sheet as pre-existing
- *
- * @param condition - label for the arm, printed so two lines can be compared
- *
- * @param editKind - framing under test
- *
- * @param baselineText - translation the region was cut from
+ * @param client - client shared by every arm
  *
  * @example
  * ```ts
- * await probeOne({ region: OMITTING_REGION, expectation: 'damage', issues: [], condition: 'absent', },);
+ * await probeOne({ arm: SENSITIVITY_ARMS[0], client, },);
  * ```
  */
 async function probeOne(
   {
-    region,
-    expectation,
-    issues,
-    condition,
-    editKind = 'accuracy-repair',
-    baselineText = BASELINE_TEXT,
+    arm,
+    client,
   }: {
-    readonly region: RepairRegion;
-    readonly expectation: string;
-    readonly issues: readonly AdjudicatedIssue[];
-    readonly condition: string;
-    readonly editKind?: ProbedEditKind;
-    readonly baselineText?: string;
+    readonly arm: SensitivityArm;
+    readonly client: ReturnType<typeof createRunClient>;
   },
 ): Promise<void> {
   /**
    * Report for this single region.
    */
   const report = await runIntroducedDefectProbe({
-    client: createRunClient(),
+    client,
     proberModelIds: RUN_MODELS.checkerModelIds,
     sourceText: SOURCE_TEXT,
-    baselineText,
-    regions: [region,],
-    issues,
-    editKind,
+    baselineText: arm.baselineText,
+    regions: [arm.region,],
+    issues: arm.issues,
+    editKind: arm.editKind,
+    disclosure: arm.disclosure,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-sensitivity', },),
@@ -107,9 +81,14 @@ async function probeOne(
    */
   const [tally,] = report.regions;
 
+  /**
+   * Region the line names.
+   */
+  const { region, } = arm;
+
   console.log(
-    `SENSITIVITY ${region.envelopeId} prior=${condition} expected=${
-      expectation
+    `SENSITIVITY ${region.envelopeId} list=${arm.list} issue=${arm.issue} expected=${
+      arm.expectation
     } heard=${
       String(report.heardProbers,)
     }/${String(report.configuredProbers,)} corroborated=${
@@ -127,7 +106,7 @@ async function probeOne(
 }
 
 /**
- * Probes a clean region and two damaged ones, in that order.
+ * Runs every arm in order and prints how to read the lines.
  *
  * @example
  * ```ts
@@ -135,127 +114,51 @@ async function probeOne(
  * ```
  */
 async function main(): Promise<void> {
-  // Each damaged region runs TWICE, and the pairing is the point.
-  //
-  // Production never shows a bare region: every one arrives with the accepted
-  // issues it was cut for, rendered under "PRE-EXISTING DEFECTS THIS EDIT
-  // TARGETED (these are NOT your findings)". That line is one of the three
-  // defenses against a prober reporting the old defect, and it is therefore
-  // also the likeliest thing to talk a prober out of reporting anything at all.
-  // A sensitivity result measured WITHOUT it would not describe the stage that
-  // actually runs.
-  //
+  /**
+   * One client for the whole instrument, counted on the run-wide seat tally.
+   */
+  const client = createRunClient();
+
+  console.log(
+    `SENSITIVITY production sends list=${PRODUCTION_LIST}; ${
+      String(SENSITIVITY_ARMS.length,)
+    } arms follow`,
+  );
+
   // Sequential so this never competes with a running corpus pass for the
   // per-model stream slots.
   /* oxlint-disable no-await-in-loop -- sequential by design, see comment */
-  for (const probe of [
-    {
-      region: CLEAN_REGION,
-      expectation: 'no-damage',
-    },
-    {
-      region: OMITTING_REGION,
-      expectation: 'damage-omission',
-    },
-    {
-      region: CONTRADICTING_REGION,
-      expectation: 'damage-meaning-inverted',
-    },
-  ]) {
+  for (const arm of SENSITIVITY_ARMS)
     await probeOne({
-      ...probe,
-      issues: [],
-      condition: 'absent',
-    },);
-    await probeOne({
-      ...probe,
-      issues: [PRIOR_ISSUE,],
-      condition: 'shown',
-    },);
-  }
-  // The NATURALNESS framing gets its own arm, because it is a different prompt
-  // asking the same question and a working accuracy probe proves nothing about
-  // it. Its control carries the weight here: the lane exists to rephrase, so a
-  // prober that reads rephrasing as damage would flag every refinement the
-  // pipeline makes, and that failure is invisible in production because a
-  // shadow-mode stage nobody reads looks identical either way.
-  for (const probe of [
-    {
-      region: REFINED_CLEAN_REGION,
-      expectation: 'no-damage',
-    },
-    {
-      region: REFINED_OMITTING_REGION,
-      expectation: 'damage-omission',
-    },
-    {
-      region: REFINED_CONTRADICTING_REGION,
-      expectation: 'damage-meaning-inverted',
-    },
-  ]) {
-    await probeOne({
-      ...probe,
-      issues: [PRIOR_ISSUE,],
-      condition: 'shown',
-      editKind: 'naturalness-refinement',
-      baselineText: REFINED_BASELINE_TEXT,
-    },);
-  }
-  // The LABELLING arm asks what the pre-existing issue list itself does to a
-  // verdict, which the arms above cannot answer: they vary whether a list is
-  // shown, never what it SAYS. Corpus-wide the probe returns no finding on
-  // 94.8 percent of prober verdicts, and its raise rate barely moves with how
-  // much text an edit removed, so the remaining suspect is that the list is
-  // read as ground truth rather than as a claim.
-  //
-  // All three regions delete a trailing clause. The first two delete the SAME
-  // source-supported clause and differ only in what the list says about it; the
-  // third deletes content the original genuinely lacks. If the mislabelled line
-  // goes quiet while the unlabelled one reports damage, the probe is believing
-  // the label, and its blindness is downstream of detection precision rather
-  // than a defect of its own.
-  for (const probe of [
-    {
-      region: UNLABELLED_DELETION_REGION,
-      expectation: 'damage-omission',
-      issues: [COMMA_ISSUE,],
-      condition: 'unrelated-issue',
-    },
-    {
-      region: MISLABELLED_DELETION_REGION,
-      expectation: 'damage-omission',
-      issues: [MISLABELLING_ISSUE,],
-      condition: 'false-addition-claim',
-    },
-    {
-      region: LICENSED_DELETION_REGION,
-      expectation: 'no-damage',
-      issues: [LICENSING_ISSUE,],
-      condition: 'true-addition-claim',
-    },
-  ])
-    await probeOne({
-      ...probe,
-      baselineText: LABEL_BASELINE_TEXT,
+      arm,
+      client,
     },);
   /* oxlint-enable no-await-in-loop */
 
   console.log(
-    'NOTE compare each region\'s two lines. A stage that claims damage with '
-      + 'prior=absent and goes quiet with prior=shown is one the production '
-      + 'prompt silences, and its zeros in a real run would mean nothing.',
+    `NOTE compare each accuracy region's three lines. list=none against list=withheld differ only `
+      + 'in the deterministic screen, which dismisses a claim restating the prior issue; '
+      + 'list=withheld against list=rendered differ only in the prompt, and rendered is the prompt '
+      + 'production abandoned because it silenced the stage. A region that reports damage with '
+      + 'list=none and goes quiet with list=withheld is one whose claims merely restate the prior '
+      + 'issue; one that goes quiet only with list=rendered is one the rendered prompt silences, '
+      + `and its zeros would mean nothing in a run that rendered. Production sends list=${
+        PRODUCTION_LIST
+      }.`,
   );
   console.log(
-    'NOTE the refinement/* lines test the naturalness framing. Its control is '
-      + 'refinement/clean: a claim there means the probe reads mere rephrasing '
-      + 'as damage, which would flag every refinement the lane ever ships.',
+    'NOTE the refinement/* lines test the naturalness framing under production\'s list. Its '
+      + 'control is refinement/clean: a claim there means the probe reads mere rephrasing as '
+      + 'damage, which would flag every refinement the lane ever ships.',
   );
   console.log(
-    'NOTE the deletion/* lines vary only what the issue list SAYS. '
-      + 'deletion/unlabelled and deletion/mislabelled delete identical '
-      + 'source-supported text; a gap between them measures how far a false '
-      + 'accepted issue can talk the probe out of seeing real damage. '
-      + 'deletion/licensed is the negative control, where silence is correct.',
+    'NOTE the deletion/* lines vary what the issue list SAYS, under both lists that carry one. '
+      + 'With list=rendered the prober reads the label; with list=withheld only the screen does. '
+      + 'deletion/unlabelled and deletion/mislabelled delete identical source-supported text; a '
+      + 'gap between them under list=rendered measures how far a false accepted issue can talk '
+      + 'the probe out of seeing real damage, and under list=withheld how far the screen dismisses '
+      + 'a real claim as restating it. deletion/licensed is the negative control, where silence '
+      + 'is correct.',
   );
 }
 

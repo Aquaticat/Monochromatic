@@ -76,7 +76,7 @@ depends = ["build"]
 run = "node dist/final/node/recall-benchmark.mjs"
 
 [tasks."probe-sensitivity"]
-description = "Ask whether the introduced-defect probe can detect damage at all: one clean region and two with damage injected, cat-themed fixtures only"
+description = "#247: ask whether the introduced-defect probe can detect damage at all, each region under three prior-issue lists (none, withheld from the prompt as production sends, rendered as the abandoned prompt did), cat-themed fixtures only; SPENDS QUOTA"
 depends = ["build"]
 run = "node dist/final/node/probe-sensitivity.mjs"
 
@@ -166,7 +166,7 @@ depends = ["build"]
 run = "node dist/final/node/score-verify.mjs"
 
 [tasks."probe-relabel"]
-description = "Re-probe the regions a human read as damaged, once with the accepted issues shown and once withheld, to separate a suppressing label from a hard judgement"
+description = "#247: re-probe the regions a human read as damaged under three arms (the production disclosure, the other prompt, no list at all), to separate a suppressing prompt from a dismissing screen from a hard judgement; SPENDS QUOTA"
 depends = ["build"]
 run = "node dist/final/node/probe-relabel.mjs"
 

@@ -5,6 +5,7 @@
 // budget.
 
 export {
+  PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
   buildIntroducedDefectMessages,
   INTRODUCED_DEFECT_RESPONSE_FORMAT,
   INTRODUCED_DEFECT_VERDICTS,
@@ -119,6 +120,13 @@ export {
   locateSlice,
   type RelabelCase,
 } from './corpus-run/probe-relabel-case.ts';
+export {
+  type IssueLabel,
+  type PriorIssueList,
+  PRODUCTION_LIST,
+  SENSITIVITY_ARMS,
+  type SensitivityArm,
+} from './corpus-run/probe-sensitivity-arms.ts';
 export { gatherControlCases, } from './corpus-run/probe-relabel-control.ts';
 export {
   formatVerifyManifest,

@@ -273,6 +273,22 @@ export type IntroducedDefectPromptPlan = {
 export type PriorIssueDisclosure = 'rendered' | 'withheld';
 
 /**
+ * Disclosure the production stages send, for every instrument that claims to
+ * measure the production condition.
+ *
+ * ONE CONSTANT, so an instrument's "production" arm cannot drift from what the
+ * pass sends. `#247` found two instruments labelling an arm "shown" while
+ * relying on a default that had meanwhile flipped to `withheld`, so their
+ * closing notes described a prompt effect that was a screen effect.
+ *
+ * @example
+ * ```ts
+ * disclosure: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
+ * ```
+ */
+export const PRODUCTION_PRIOR_ISSUE_DISCLOSURE: PriorIssueDisclosure = 'withheld';
+
+/**
  * Renders the pre-existing issues a region was cut for, so a prober can
  * recognise and discount them.
  *
