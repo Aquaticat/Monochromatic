@@ -1,7 +1,4 @@
-import {
-  mkdir,
-  writeFile,
-} from 'node:fs/promises';
+import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -24,6 +21,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { persistRecallScorecard, } from './recall-scorecard-store.ts';
 
 //region Recall benchmark
 // Measures what precision cannot see: of the defects that ARE present, how many
@@ -218,6 +216,11 @@ async function buildEntry(
  */
 async function runRecallBenchmark(): Promise<void> {
   /**
+   * When this run began, which names its scorecard file.
+   */
+  const startedAt = new Date().toISOString();
+
+  /**
    * Durable, gitignored output root.
    */
   const runsDir = await resolveRunsDir();
@@ -329,26 +332,25 @@ async function runRecallBenchmark(): Promise<void> {
     runBudgetMs: RUN_BUDGET_MS,
   },);
 
-  await writeFile(
-    join(
-      runsDir,
-      'recall-scorecard.json',
-    ),
-    `${JSON.stringify(
-      {
-        tip,
-        corpusSha: RUN_CORPUS_PIN.commitSha,
-        callConfig: RUN_CALL_CONFIG,
-        timestamp: new Date().toISOString(),
-        entriesPerBand: ENTRIES_PER_BAND,
-        seedsPerEntry: SEEDS_PER_ENTRY,
-        scorecard,
-        records,
-      },
-      undefined,
-      2,
-    )}\n`,
-  );
+  /**
+   * Where the scorecard was kept: a stamped name of its own, written
+   * atomically, so a rerun sits beside the run it is compared against rather
+   * than over it.
+   */
+  const keptAt = await persistRecallScorecard({
+    runsDir,
+    record: {
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      tip,
+      corpusSha: RUN_CORPUS_PIN.commitSha,
+      callConfig: RUN_CALL_CONFIG,
+      entriesPerBand: ENTRIES_PER_BAND,
+      seedsPerEntry: SEEDS_PER_ENTRY,
+      scorecard,
+      records,
+    },
+  },);
 
   console.log(
     `SCORECARD dispatched=${String(scorecard.dispatchedEntries,)} coverage=${
@@ -364,6 +366,7 @@ async function runRecallBenchmark(): Promise<void> {
         .toFixed(RATE_DECIMALS,)
     }`,
   );
+  console.log(`SCORECARD kept at ${keptAt}`,);
   // Printed beside the raw rate rather than left in the JSON. Attributing a
   // miss to the house policy instead of to the critics is the whole reason
   // both numbers are computed, and a driver that prints only the raw one hands

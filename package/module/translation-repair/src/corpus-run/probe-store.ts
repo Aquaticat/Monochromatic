@@ -123,8 +123,12 @@ export type ProbeRun = {
  * ```ts
  * stampFor({ startedAt: '2026-08-17T12:00:00.000Z', },);
  * ```
+ *
+ * Shared with the recall scorecard store, which stamps its files the same way.
+ *
+ * @internal
  */
-function stampFor({ startedAt, }: { readonly startedAt: string; },): string {
+export function stampFor({ startedAt, }: { readonly startedAt: string; },): string {
   return startedAt
     .split(':',)
     .join('-',);
