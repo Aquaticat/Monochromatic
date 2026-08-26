@@ -360,6 +360,10 @@ function registerInterruptionProvider(
    */
   const firstStage = Promise.withResolvers<void>();
   /**
+   * Error-call latch controlled by scripted stream.
+   */
+  const errorStage = Promise.withResolvers<void>();
+  /**
    * Final call latch controlled by scripted stream.
    */
   const finalStage = Promise.withResolvers<void>();
@@ -409,8 +413,10 @@ function registerInterruptionProvider(
         invocation,
       },);
     }
-    if (invocation === ERROR_CALL)
+    if (invocation === ERROR_CALL) {
+      errorStage.resolve();
       return errorStream(model,);
+    }
     if (invocation === AFTER_ERROR_TOOL_CALL) {
       return toolCallStream({
         model,
@@ -486,6 +492,7 @@ function registerInterruptionProvider(
   return {
     model,
     firstTurnStarted: firstStage.promise,
+    errorTurnStarted: errorStage.promise,
     finalTurnStarted: finalStage.promise,
     clearFinalTurnStarted: clearFinalStage.promise,
     invocationCount() {

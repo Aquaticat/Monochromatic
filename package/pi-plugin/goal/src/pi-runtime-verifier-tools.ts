@@ -345,17 +345,51 @@ async function verifyOrdinaryToolsAfterAbort(
   /**
    * Replacement kickoff drives post-abort tools and terminal model error.
    */
-  await session.prompt('/goal Replacement interruption recovery',);
+  const recoveryRun = session.prompt('/goal Replacement interruption recovery',);
+  await provider.errorTurnStarted;
+  await recoveryRun;
+  await session.waitForIdle();
   if (goalEventCount({
     sessionManager,
     kind: 'run_started',
   },) !== 2)
     throw new Error('real AgentSession replacement did not persist both run starts',);
-  if (goalEventCount({
+  /** Persisted unavailable-review events after settled model error. */
+  const unavailableReviewEvents = goalEventCount({
     sessionManager,
     kind: 'review_unavailable',
-  },) !== 1)
-    throw new Error('settled model error did not persist unavailable review state',);
+  },);
+  if (unavailableReviewEvents !== 1) {
+    /** Selected-branch custom event kinds for focused failure diagnostics. */
+    const selectedGoalEventKinds = sessionManager
+      .getBranch()
+      .flatMap(function selectedGoalKind(entry,) {
+        if ((entry.type !== 'custom') || (entry.customType !== 'goal:state'))
+          return [];
+        if ((entry.data === null)
+          || ((typeof entry.data) !== 'object')
+          || (!('kind' in entry.data))) {
+          return [];
+        }
+        return [String(entry.data.kind,),];
+      },);
+    /** All-session custom event kinds detecting active-leaf displacement. */
+    const allGoalEventKinds = sessionManager
+      .getEntries()
+      .flatMap(function allGoalKind(entry,) {
+        if ((entry.type !== 'custom') || (entry.customType !== 'goal:state'))
+          return [];
+        if ((entry.data === null)
+          || ((typeof entry.data) !== 'object')
+          || (!('kind' in entry.data))) {
+          return [];
+        }
+        return [String(entry.data.kind,),];
+      },);
+    throw new Error(
+      `settled model error unavailable-review count ${unavailableReviewEvents}; selected kinds ${selectedGoalEventKinds.join(', ')}; all kinds ${allGoalEventKinds.join(', ')}`,
+    );
+  }
   if ((goalEventCount({
     sessionManager,
     kind: 'continuation_issued',

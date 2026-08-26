@@ -15,6 +15,7 @@ import type {
 type ScriptedProvider = {
   readonly model: Model<Api>;
   readonly firstTurnStarted: Promise<void>;
+  readonly errorTurnStarted: Promise<void>;
   readonly finalTurnStarted: Promise<void>;
   readonly clearFinalTurnStarted: Promise<void>;
   readonly invocationCount: () => number;
