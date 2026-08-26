@@ -72,8 +72,12 @@ What it was not built to do is notice that the loss is total and permanent
 rather than momentary, and say so.
 
 The result is a run that is completely well-formed and quietly worthless:
-a ten-model calibration carried out by five models,
-with no signal above `warn` that would tell a reader which one they are holding.
+a ten-model calibration carried out by five models.
+CORRECTED 2026-08-26: the calibration's closing coverage line did name the five seats
+(`WROTE NOTHING AT ALL: ... covers 5 of 10 seats`, from `producer-silence.ts:222`).
+It carries no counts and no cause, it is stdout prose under exit 0,
+and the pass and the other CLIs print nothing of the kind;
+that, not total silence, is the gap the fix closes.
 
 ## How to check whether a run has this
 

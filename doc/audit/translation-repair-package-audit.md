@@ -184,6 +184,96 @@ The runner's own verdict prefix is `] PASS `, so prefix-anchored counts are unaf
 but a bare-substring grep reports the opposite of the truth on these four.
 Fix: reword (`ACCEPTS`, `KEEPS`, `SKIPS`, `ROUTES TO HYPER`).
 
+### calibrate-1, MAJOR, verified: the "nothing above warn" premise of `#235`'s silence half is wrong
+
+`src/corpus-run/editor-calibrate.ts:359-367` ends the calibration with `coverageGapLines`,
+and `src/producer-silence.ts:222` renders
+`WROTE NOTHING AT ALL: <models>. No candidate of theirs reached any slate, so the table covers N of M seats`.
+The arm A log carries that line twice (EDITOR and REFINER), each ending `covers 5 of 10 seats`.
+So the handover's "said nothing at any level above warn" and the troubleshooting document's
+"nothing aggregates it" were wrong, and both are corrected in this commit.
+What is actually missing is narrower and still real:
+the line cannot tell a budget refusal from a timeout from a seat failing every call with HTTP 400
+(its own wording says so), it carries no per-seat call or failure count,
+it is stdout prose under exit 0, and it exists only in the two calibration CLIs;
+the pass's per-entry `TALLY` line (`src/corpus-run/settled-tally.ts`) has no seat field,
+and the other 36 CLIs have nothing of the kind.
+Consequence for the `#235` design: the process-scoped seat tally reported by `reportingRefusals`
+stays, because it is the only universal boundary, and it must print asked, usable, and failure
+counts per dark seat with the failure class; `coverageGapLines` stays as the standing-coverage
+measure it already is, and its sentence gains a pointer at the seat report.
+
+### calibrate-2, MAJOR, verified: the pass prints any error's message into its stdout summary
+
+`src/corpus-run/pass-entry.ts:522-529` and `:641-648`:
+`Error.isError(error) ? error.message.slice(0, ERROR_MESSAGE_CAP) : String(error)` lands in
+`TALLY <id> status=ERROR ... error=<message>` and `CLEANUP <id> ... error=<message>`.
+That bypasses the `#227` rule that only `messageNamesOnly` classes may repeat their message:
+`SyntheticHttpError` (`src/completion-shape.ts`) embeds an excerpt of the provider's raw body,
+and any unmarked parser class may quote a passage.
+The `TALLY` line is the one operators grep and paste.
+Fix: `error=${refusalText({ error })}` at both sites, with the full text kept in the run log
+through the tagged logger where diagnosis needs it.
+Tracked as `#237`.
+
+### calibrate-3, MINOR, verified: an operator refusal thrown as a bare `Error`
+
+`src/corpus-run/editor-width-control.ts:186-190` throws `new Error('editor width control refused: ...')`,
+so the boundary prints `refused by Error` plus a fault stack and exits 5;
+the sibling site `editor-width-probe.ts:139` already uses `StatedRefusalError`.
+
+### calibrate-4, MINOR, verified: `MislabelledArtifactError` writes remedies nobody sees
+
+`src/corpus-run/pass-schema-guard.ts:229-277` builds an operator remedy ("Ways forward")
+into a class that is correctly unmarked, because `reason` carries a parser's text
+(`caughtValueText(error)` at `:378`), so the boundary prints only `refused by MislabelledArtifactError`.
+Fix: a marked class naming entry, generation, and the ways forward; the reader's reason goes
+to the log through `refusalText`.
+
+### calibrate-5, MINOR, verified: `editor-calibrate` builds a client per slice
+
+`src/corpus-run/editor-calibrate.ts:211`: `createRunClient()` inside `runOne`,
+so budget cooldowns, meter caches, and per-model limiters restart on every slice,
+and a provider held out on slice N is re-asked immediately on slice N+1.
+`editor-width-probe.ts:94` and `window-trial-probe.ts:326` build once in `main`.
+This is also why the arm A log carries four `is not set` warnings.
+
+### calibrate-6, MINOR, verified: the refusal streak resets on slices the ledger already held
+
+`src/corpus-run/window-trial-probe.ts:410-416`: `bought.refusedInARow = 0` runs before
+`if (rows.length === 0) continue`, and a slice already complete in the ledger returns empty rows,
+so on a resumed run a fault refusing every NEW slice never reaches `REFUSALS_BEFORE_STOPPING`,
+and each refusal still buys a producer slate.
+Fix: reset only when `rows.length > 0`.
+
+### calibrate-7, MINOR, verified: the control's sentence cut needs a trailing space
+
+`src/corpus-run/editor-width-control.ts:38-43`: `TERMINATORS = ['。', '. ', '! ', '? ']`,
+so a passage with one sentence per line reads as one sentence and leaves the positive control.
+
+### calibrate-8, MINOR, verified: `verify-published` overclaims on unweighable entries
+
+`src/corpus-run/verify-published.ts:260` returns `missing.length === 0` for an entry whose
+artifact predates the stored archive text, and the closing line at `:378-381` says every page
+carries its wordings "at the length it implies" although no length was checked for them.
+The per-entry line does say `UNWEIGHED`; the summary does not.
+
+### calibrate-9, MINOR, verified: `PublishedPageDisagreesError` is unmarked
+
+`src/corpus-run/published-page-check.ts:499-507`: the class documents that it names slices
+and counts and quotes nothing, and carries no `messageNamesOnly`, so at a boundary it is muted.
+
+### calibrate-10, MINOR, verified: four modules in the slice are referenced by no test
+
+`pass-settled.ts` (whose module note records a past silent defect: a directory named `<id>.json`
+counted as settled), `editor-width-arm.ts`, `pass-schema-census.ts`, `window-trial-probe.ts`:
+`rg --files-with-matches` over `*.test.ts` finds 0 references for each.
+
+### calibrate-11, note: the window-trial ledger stores model-produced English
+
+`src/corpus-run/window-trial-ledger.ts:83` writes `winnerText` to `<runs>/window-trial/arms.jsonl`.
+Outside the repository by design; listed so the sanitization step knows the file exists.
+
 ## Slice reports
 
 Each entry records the reviewer's coverage claim, then what the main session verified.
@@ -192,7 +282,14 @@ Each entry records the reviewer's coverage claim, then what the main session ver
 - `translate`: pending.
 - `repair`: pending.
 - `probes`: pending.
-- `calibrate`: pending.
+- `calibrate`: reviewer read 33 of 33 files (10042 lines), none unread;
+  reported 2 MAJOR and 9 MINOR, all eleven re-verified at the cited lines and recorded;
+  the reviewer named the `#235` fallback and the `RunConfigError` gap unprompted
+  and corrected the silence premise, which is the opposite of a skim.
+  Its open questions, handed to other slices:
+  whether `candidate-select.ts:347` `judgesAvailable` counts seated or reachable judges (`consolidate`),
+  whether `producer-calibrate.ts` also builds a client per slice (`translate`),
+  and whether any consumer prints the `reason` field `pass-schema-census.ts` stores from a `SyntaxError`.
 - `consolidate`: not started (queued behind the concurrency cap).
 - `document`: not started.
 - `artifact`: not started.

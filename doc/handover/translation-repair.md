@@ -175,7 +175,15 @@ so every round stood, every slice settled, and the command exited zero.
 The resilience work is what hid this.
 `#199` and the multi-provider landing made the pipeline survive a provider going away,
 and it did survive: it produced a complete, well-formed, four-slice calibration.
-It just produced it from half the roster, and said nothing at any level above `warn`.
+It just produced it from half the roster.
+CORRECTED 2026-08-26: it did not say "nothing above `warn`".
+The calibration's closing coverage line (`producer-silence.ts:222`, printed by
+`editor-calibrate.ts:359-367`) named all five dark seats twice, as
+`WROTE NOTHING AT ALL: ... covers 5 of 10 seats`.
+What was missing: per-seat call and failure counts, the failure class
+(the line itself says a budget refusal, a refused sheet and a timeout all look alike from there),
+any such line in the pass or the other 36 CLIs, and anything louder than stdout prose under exit 0.
+Audit finding `calibrate-1` in `doc/audit/translation-repair-package-audit.md`.
 
 That is the defect to fix, and it has two halves that should not be conflated:
 
@@ -201,7 +209,8 @@ That is the defect to fix, and it has two halves that should not be conflated:
 
 2.  **The silence half.**
     Losing five of ten voices for an entire run should be loud.
-    Right now it is a `warn` per call and a `5/10 heard` per round, and nothing aggregates it.
+    Right now it is a `warn` per call, a `5/10 heard` per round, and one closing coverage
+    sentence in the two calibration CLIs that names the seats but not the counts or the cause.
     A run that finishes with a model at a hundred percent failure should say so at the end,
     in its own summary, where a reader who is not grepping will see it.
 
