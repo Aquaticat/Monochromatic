@@ -272,7 +272,8 @@ including:
   and related shell programs;
 - malformed shell source containing ydotool.
 
-Text inspection such as `rg ydotool .` remains allowed.
+Allowlisted text inspection such as `rg ydotool .` remains available.
+Commands with `-exec`-style capabilities fail closed instead.
 A caller-independent broker must expose a narrow input API and own key release internally,
 rather than accepting arbitrary ydotool commands from agent-authored shell.
 No such broker was validated or adopted during this incident.
@@ -281,7 +282,9 @@ Live global input still requires user authorization.
 The static guard cannot identify executable names hidden behind shell variables,
 commands loaded from script files,
 heredocs or standard input,
-or custom interpreter code that spawns ydotool.
+runtime-generated command-substitution output,
+configuration that later spawns ydotool,
+or custom interpreter code that spawns it.
 `AGENTS.md` rule `VKI` is the policy backstop for those forms.
 The hard guard runs even when auto-mode bypass is enabled.
 `package/pi-plugin/auto-mode/src/virtual-input-guard.unit.test.ts`
