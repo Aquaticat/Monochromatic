@@ -170,7 +170,8 @@ every one of the ten seats asked five times, nine usable five of five,
 `qwen3.8-max` usable three and thrown two (a wobble, not a dark seat), and no `SEATS DARK:` line.
 The calibration's own coverage sentence still said six of ten seats wrote something;
 that is standing coverage, and the `SEAT` lines now separate it from darkness.
-Correction to the earlier diagnosis: the fork worktree carries an encrypted `.env.local.json` byte-identical to the main one;
+Correction to the earlier diagnosis:
+the fork worktree carries an encrypted `.env.local.json` byte-identical to the main one;
 the half-dark run had been launched with bare `node`, which is what left the key unset.
 
 ### A-2, MAJOR, verified: a missing key is reported as a fault, and its name is muted
