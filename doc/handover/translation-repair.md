@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-calibrate through document are landed (`acfc7ad22` to `b19bd23b0`), slices is next;
+calibrate through slices are landed (`acfc7ad22` to `95882d3fe`), artifact is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -356,7 +356,21 @@ message is one sentence call passes it bare, and the inventory scanner treats a 
 no parts to name. Remaining: `DeliveryCoherenceError` (10 sites), `LaneComparisonError` (11),
 `LaneSliceCoverageError` (13, three files), `AssemblyContractError` (13), `SliceDeliveryError` (17).
 
-Queue: the register's MINORs in register order (slices-4 next), which close `#236`; then `#213` (arm A and arm B
+slices-6 part two LANDED 2026-08-26 in `95882d3fe`: `DeliveryCoherenceError` (`{ sliceIndex, fault }`, eight kinds,
+`coherenceSentence`), `LaneComparisonError` (`lane-comparison-fault.ts`, `comparisonSentence`),
+`LaneSliceCoverageError` (`NamedSliceSetLabel`, `SET_CLAUSES`, `laneCoverageSentence`; `NamedSliceSet` lost its clause
+fields and the sets suite's fixtures with them), `AssemblyContractError` (`assembly-contract-fault.ts`,
+`assemblySentence`), `SliceDeliveryError` (`slice-delivery-fault.ts`, which now holds the class; `deliverySentence`).
+`slice-delivery.ts` was at 302 code lines and is split: `slice-delivery-decide.ts` holds `SliceDelivery`,
+`decideDelivery` and `nonNullishAccepted`; `slice-delivery.ts` re-exports the type and the class. `pipeline-barrel.ts`
+was at 303 and the four lane blocks moved to `lane-barrel.ts`, star-exported from `index.ts`. GFP: the marker removed
+from `SliceDeliveryError` fails three inventory cases; a word dropped from `coherenceSentence` fails `WORDS` and
+`REFUSES a gap that carries wording anyway`; the clause dropped from `comparisonSentence`, the wrong clause looked up in
+`laneCoverageSentence`, and the two numbers swapped in `assemblySentence` each fail their suite's `WORDS` case; all
+restored, all six suites pass. The register carries the slices FIXED block. Whole-suite run after `95882d3fe` is in
+flight. Next checkpoint per the advisor: before the artifact group.
+
+Queue: the register's MINORs in register order (artifact-3 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 

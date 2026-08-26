@@ -1142,6 +1142,44 @@ compares space-joined strings with `includes`, so a phrase inside a longer span 
 `SpanAnchor` names two declarations and the explicit `index.ts:37` export shadows the rendering-audit one;
 `draw-entry-load.ts:162-189` throws its three reconcile refusals as bare `Error`, muting the counts they carry.
 
+FIXED 2026-08-26 in `c2d2473db` (slices-4, 5, 7, 8, 9), `9f0145fcb` and `95882d3fe` (slices-6).
+slices-4: `discardNamespace` announces through `tagged({ tag: discardNamespace.name, l })`, same wording.
+Guard: `console.log` restored fails `COUNTS what it removed and NAMES who filled it`, which asserts the
+`[discardNamespace]` tag; restored, passes.
+slices-5: the proportional merge loop and `totalRunChars` are deleted, the target runs with them, and the TSDoc names
+the three live shapes: aligned when both sides carry blocks, one slice per source run at the insertion boundary, one
+re-indexed slice otherwise. Deletion; `slice-pair` passes unchanged and `lint:types` is the guard.
+slices-6: the nine classes forward no message. `SliceRecordContradictionError` takes `{ lane, sliceIndex, changed }`;
+the other eight take a fault union (`SliceIndexingFault`, `SliceCoverageFault` with `BlockPlacementFault`,
+`DeliveryInvariantFault`, `DeliveryCoherenceFault`, `LaneComparisonFault`, `LaneSliceCoverageFault`,
+`AssemblyContractFault`, `SliceDeliveryFault`) and word it through a sentence function in their own module
+(`lane-comparison-fault.ts`, `assembly-contract-fault.ts`, `slice-delivery-fault.ts` are new siblings; the rest sit
+beside the class). All nine are marked and in the inventory, so the boundary and the `TALLY` line print the slice and
+the counts. Block ids in a coverage fault are the parser's positional `block/N` tokens, recorded on the type. The
+named slice sets carry a closed `NamedSliceSetLabel` and their clauses live beside the sentence, so no caller string
+reaches a message. The reviewer's fix shape (add the marker) was not available: the inventory refuses a marked class
+that forwards its message, `StatedRefusalError` being the sole exception. `slice-delivery.ts` split into
+`slice-delivery-decide.ts` and the fault module, and the lane exports moved to `lane-barrel.ts`, both for the
+file-length limit. Each of the nine suites gained a `WORDS its refusal` case pinning the sentence and the marker.
+Guards, part one: the marker removed from `SliceCoverageError` fails three inventory cases; a word dropped from
+`indexingSentence`, the two phrases swapped in the record class, and the separator changed in
+`deliveryInvariantSentence` each fail their suite's `WORDS` case. Part two: the marker removed from
+`SliceDeliveryError` fails three inventory cases; a word dropped from `coherenceSentence` fails `WORDS` and `REFUSES a
+gap that carries wording anyway`; the clause dropped from `comparisonSentence`, the wrong clause looked up in
+`laneCoverageSentence`, and the two numbers swapped in `assemblySentence` each fail their suite's `WORDS` case; all
+restored, all suites pass.
+slices-7: `holdsPhrase` pads both phrases with spaces before the substring test, in both the document and the
+adjacent check.
+Guard: plain `includes` restored fails `KEEPS a phrase that is a character substring of a longer finding across a word
+boundary` and `KEEPS wording that is a character substring of longer shared wording across a word boundary`; restored,
+passes.
+slices-8: the rendering-audit type is `RenderingAuditSpanAnchor`; the root barrel exports one `SpanAnchor`. Rename;
+`lint:types` is the guard.
+slices-9: `DrawReconcileError` (`corpus-run/draw-reconcile.ts`), marked, names the entry (deliberately, as the pass's
+`INCOMPLETE` lines do) and the counts, and carries the stray value's `typeof` name in place of its `JSON.stringify`.
+Guard: the marker removed fails the two inventory cases; a bare `Error` restored fails `REFUSES as
+DrawReconcileError`; restored, passes.
+
 ### artifact-1 and artifact-2, MAJOR, verified: both comparison checks embed whole rows in their messages
 
 Folded into `#237`:
