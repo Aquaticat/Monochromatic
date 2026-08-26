@@ -390,6 +390,16 @@ file were fabricated. That claim is wrong: the transcript records 390 `server_to
 `8ac0fff65` and `b19bd23b0`), 09:00Z (before `9f0145fcb`) and 09:26Z (this checkpoint). A future session doubting a
 checkpoint verifies it against the transcript's `server_tool_use` parts rather than rewriting this file.
 
+IT HAPPENED A SECOND TIME. The compaction summary written after `1e678ec2d` claimed that no advisor tool was listed
+or called in its segment and that the checkpoint sentences on the close and on the `#219` gate had to be corrected.
+Verified against the transcript on 2026-08-26 before touching either sentence: 410 `server_tool_use` advisor parts
+in total; a call at 10:49:17Z answered at 10:51:10Z backs the close sentence (commit `29c9a7411` at 10:55Z), a call
+at 13:19:07Z answered at 13:21:01Z backs the gate sentence (commit `50b534b4c` at 13:22Z), and the checkpoint on
+the output-reading plan at 16:00:52Z answered at 16:02:59Z. The verification is one command: find the
+`server_tool_use` record whose tool name is `advisor` and read the `advisor_tool_result` record that follows it,
+about two minutes later; a summary cannot see those records, so a summary's claim about them is not evidence.
+Both sentences stand unchanged.
+
 artifact-3 to artifact-6 LANDED 2026-08-26 in `12b2af6c1`: `refuseUnknownMember` names kind and field names only;
 `parseConsolidation` takes `laneSelection` and holds a settled stage to the contest's slices in order (measured true on
 all 28 real artifacts carrying the field first); the three `POOL` lines name a malformed id or digest by `shapeOf`;
