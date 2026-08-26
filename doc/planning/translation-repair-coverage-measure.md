@@ -381,6 +381,54 @@ that is a property of the code under test,
 not of the helper,
 so it stops holding the moment anything it captures gains an await.
 
+## The sweep is finished, and what it cost to finish it
+
+Recorded 2026-08-25,
+closing the last two branches in `b5ab11e7c`.
+
+TALLY.
+Seventy-three branches measured by mutation across nineteen tiers.
+Nineteen came back uncovered and all nineteen are now closed by a case,
+each one GFP-proven against the exact mutation that had failed nothing.
+A twenty-six percent miss rate over a package whose suite was already green.
+
+THE LAST TWO WERE THE EXPENSIVE ONES,
+and both for the same reason:
+neither branch could be reached from a value a test could construct.
+
+`coverageControlHolds`' cap is counted on ROWS rather than on cases,
+so reaching it needs five cases that each survive three scripted rounds of the
+whole roster,
+with a standing verdict of `carried` whose evidence a cut can actually locate.
+One scripted reply serves all of it:
+full coverage, quoting a sentence really present in the translation.
+
+`sampleBenchSlices`' empty-corpus guard could not be reached at all,
+because the draw read the pinned corpus through a module constant.
+The fix was not a testability hack:
+`censusEntry` in `corpus-run/slice-census-entry.ts` already takes
+`pin = RUN_CORPUS_PIN` as a defaulted parameter,
+and its own TSDoc gives the reason,
+"passed rather than read so this is testable against a throwaway clone instead
+of the unlicensed one".
+The draw now does the same, and threads it to its private slicer as well.
+
+## A git fixture in this repo obeys the repo's git policy
+
+Worth knowing before writing another one.
+
+The bench-draw fixture builds a real repository in a temporary directory,
+and `git add --all` came back exit 1 with a JSON policy refusal rather than a
+git error.
+`git-policy-cli` is on `PATH`,
+so it guards a throwaway clone exactly as it guards this one:
+bulk staging and pathspec-less commits are rejected wherever they are run.
+
+Name the paths.
+The fixture wrote them, so it knows them,
+and `git add -- <paths>` plus `git commit --message ... -- <paths>` is what the
+guard asks for.
+
 ## What not to do
 
 Do not re-run module reachability with barrel edges counted.
