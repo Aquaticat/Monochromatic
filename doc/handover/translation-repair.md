@@ -42,6 +42,131 @@ and any measurement a reader would otherwise re-run.
 What belongs in the history: closed work whose conclusion is already encoded in the code,
 and superseded reasoning kept only for its evidence.
 
+## OPEN DEFECT: half the roster is sent to a provider that cannot serve it (2026-08-25)
+
+This is the most important open item in this file, and it is unfixed.
+It was found while running arm A of the `#213` overlap measurement, and it invalidates that run.
+
+### What happened
+
+The run was the serial control arm:
+`TRANSLATION_REPAIR_SLICE_OVERLAP=1`, four slices, the full ten-model roster.
+Log at `~/temp/agent/overlap-arm-serial.log`, 887 lines;
+run directory `~/temp/agent/overlap-arm-serial`.
+It started at 01:54:46 UTC and ended at 02:15:58 UTC, about twenty-one minutes,
+and it exited cleanly: no refusal line, no fault line, all four slices reported.
+
+Every single round it logged heard five of ten voices.
+Twenty-two rounds, `5/10 heard` on all twenty-two, no exceptions.
+
+The five that were lost are exactly the five Charm Hyper endpoint labels,
+the ones whose identifiers do not carry an `hf:` prefix,
+and each of them failed on every call it made:
+
+```text
+model                                              http400  streams
+  qwen3.8-max                                           25       25
+  minimax-m3                                            25       25
+  gemma-4-26b-a4b-it                                    25       25
+  deepseek-v4-pro-0813                                  25       25
+  deepseek-v4-flash-0731                                25       25
+  hf:zai-org/GLM-5.2                                     0       26
+  hf:Qwen/Qwen3.8-27B                                    0       25
+  hf:moonshotai/Kimi-K3                                  0       25
+  hf:openai/gpt-oss-120b                                 0       25
+  hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4      0       25
+```
+
+A hundred percent failure rate on five models, a zero percent failure rate on the other five.
+The provider's own words, which are the giveaway:
+
+```text
+SyntheticHttpError: provider API returned HTTP 400:
+{"error":"Your model name should start with an hf: prefix; for example: ...
+```
+
+Synthetic was handed five models that only Charm Hyper serves, and said so, 125 times.
+
+### Why nobody noticed
+
+Quorum is five of ten.
+The five surviving models are exactly enough to meet it,
+so every round stood, every slice settled, and the command exited zero.
+
+The resilience work is what hid this.
+`#199` and the multi-provider landing made the pipeline survive a provider going away,
+and it did survive: it produced a complete, well-formed, four-slice calibration.
+It just produced it from half the roster, and said nothing at any level above `warn`.
+
+That is the defect to fix, and it has two halves that should not be conflated:
+
+1.  **The routing half.**
+    A model that only one provider serves must never be offered to the other one.
+    `src/budget-routing.ts` is the file; its module note says the policy is
+    Synthetic first, overflow to Hyper, Hyper alone when Synthetic is dry.
+    That note does not describe what to do with a model Synthetic cannot serve at all,
+    and the note's own promise, that
+    "a model that no live provider serves is an outcome, not a throw",
+    is about no provider serving it, not about the wrong provider being asked.
+    Read the body past line 60.
+    I had read only lines 1 to 60 when this was written, so the cause is NOT yet located.
+
+2.  **The silence half.**
+    Losing five of ten voices for an entire run should be loud.
+    Right now it is a `warn` per call and a `5/10 heard` per round, and nothing aggregates it.
+    A run that finishes with a model at a hundred percent failure should say so at the end,
+    in its own summary, where a reader who is not grepping will see it.
+
+### What this costs, and what is now void
+
+The arm A measurement is void as a ten-model measurement.
+Do not read wall clock, concurrency, or overlap conclusions off it.
+Arm B, the `TRANSLATION_REPAIR_SLICE_OVERLAP=4` arm, was never launched;
+`~/temp/agent/overlap-arm-four.log` does not exist.
+Both arms need re-running after the routing fix, back to back,
+and that re-run also pays the recovery rate owed by `#230`, since it will carry `91f0c8ba5`.
+
+`#213` therefore stays open, and it is now blocked on this defect rather than on quota.
+
+This also blocks `#219`.
+Production readiness cannot be signalled while one provider's absence
+silently halves the roster and the run still reports success.
+
+### Three instruments that lied, and how to not be fooled again
+
+Recorded because each one cost real time in this session.
+
+1.  **The run log stamps are UTC, and the machine is on EDT.**
+    A line reading `02:11:48` was written at `22:11:48` local.
+    Reading them as local time makes a live run look like it died twenty hours ago.
+    Compare against `date -u`, never against `date`.
+
+2.  **Node's `comm` on this machine is `node-MainThread`, not `node`.**
+    Scanning `/proc/*/comm` for exactly `node` finds nothing and looks like proof of death.
+    Match on a `node*` prefix, or match the `cmdline` instead.
+
+3.  **`pgrep -f PATTERN` matches the shell that is running it.**
+    A waiting loop whose own command line contains the pattern never exits.
+    This has now cost three separate incidents, including one where a kill loop
+    killed its own shell and returned exit 144.
+    List PIDs first, confirm the kind from `/proc/<pid>/comm`, then kill by number
+    from a command that does not contain the pattern.
+
+### Exactly where to pick this up
+
+- Read `package/module/translation-repair/src/budget-routing.ts` in full,
+  then its call sites, and find where a bare Charm Hyper label is offered to Synthetic.
+- The fix needs a test proven per `GFP`:
+  a non-`hf:` model with Synthetic live must never produce a Synthetic call,
+  and the test must be shown to fail with the fix removed.
+- The overlap prototype itself is built and lint-clean but NOT committed.
+  It lives in the fork at `/var/home/user/worktrees/tr-overlap`, detached at `166b08e81`,
+  and its two files are saved at `~/temp/agent/proto-slice-overlap.ts`
+  and `~/temp/agent/proto-editor-calibrate.ts`,
+  with a drafted, unlanded test at `~/temp/agent/proto-slice-overlap.unit.test.ts`.
+  Because the fork is pinned to an older commit, recreate it from the new head
+  and reapply those two saved files rather than patching the stale checkout.
+
 ## The writers are seated, and the queue is being verified live
 
 2026-08-24, after the 40-round producer calibration landed.
