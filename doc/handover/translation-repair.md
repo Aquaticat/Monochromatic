@@ -266,6 +266,10 @@ under `await using`, and a round line whose ratio is not two whole numbers is un
 re-ask guard, the ratio guard and the catalog guard each fail exactly their one case under mutation and pass
 restored; provider-10 and provider-12 are prose and structure with no guard, and provider-14 is closed by the MAJOR
 landings' own guards.
+Whole-suite `buildAndTest` after `2376b7d14`: exit 1, 782 PASS, 2 FAIL. The sink suite's LOCK case still read the
+lock's unreadable line off `console.log`, which provider-12 had moved to the tagged logger; `c7f2a5075` makes its
+collector wrap the logger's console methods. The register's provider-12 paragraph had claimed no test read the
+line, on a search anchored on the old prefix; corrected there.
 Queue: the register's MINORs in register order (repair-2 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).

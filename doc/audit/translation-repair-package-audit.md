@@ -527,7 +527,11 @@ by another process, an unreadable file and a lock no longer this acquisition's, 
 `git-command.ts` logs its fallback through `tagged({ tag: 'git-command' })`; and `claim` holds its `wx` handle in
 `await using`, so a write that fails still closes it, the empty file such a failure leaves being what the next pass
 reads as unreadable and evicts.
-No guard: no test reads those lines and the disposal is structural; the lock suite passes unchanged.
+The sink suite `sink-names-only.unit.test.ts` reads the unreadable-lock line and caught the move: the whole-suite
+run after `2376b7d14` failed its LOCK case (782 PASS, 2 FAIL, exit 1), and `c7f2a5075` makes the suite's collector
+capture the logger's console methods and drops the `LOCK ` prefix from the expectation.
+An earlier draft of this paragraph said no test read those lines; the search behind it was anchored on the old
+prefix with a leading quote and missed the case. The disposal itself has no guard.
 
 ### provider-13, MINOR, verified: a malformed round line parses to `NaN` silently
 
