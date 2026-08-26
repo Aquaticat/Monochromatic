@@ -424,6 +424,29 @@ export async function consolidateDocument(
      * What the roster settled here, bought or resumed.
      */
     const settlement = resumed ?? await (async function settleFresh(): Promise<ConsolidationSettlement> {
+      // NO STANDING TEXT BUYS NO SLATE. `settleConsolidation` refuses such a
+      // slice before judging anything, so a producer round bought for it, one
+      // roster of calls plus up to one roster of repairs, was discarded whole;
+      // on a night the contest lost quorum every contested slice paid it. The
+      // settlement is still taken from the settle half, handed an empty slate,
+      // so the terminal, its floor and its findings come from one place.
+      if (standingText === '') {
+        dl.info(`slice ${String(row.sliceIndex,)}: no standing text to consolidate against, so no slate is bought`,);
+        return settleConsolidation({
+          client,
+          roster: modelIds,
+          subject,
+          voices: [],
+          validity: [],
+          producedFindings: [],
+          standingText,
+          lineStructured,
+          signal,
+          perCallTimeoutMs,
+          l: dl,
+        },);
+      }
+
       /**
        * Slate this run buys, produced once and judged once, per `#109`.
        */
