@@ -59,12 +59,13 @@ const NON_EXECUTING_ARGUMENT_COMMANDS = new Set([
 ],);
 
 /**
- * Shell interpreters whose inline command source needs another parser pass.
+ * Commands whose `-c`-family option carries inline shell source.
  */
-const INLINE_SHELL_INTERPRETERS = new Set([
+const INLINE_SOURCE_COMMANDS = new Set([
   'bash',
   'dash',
   'sh',
+  'su',
   'zsh',
 ],);
 
@@ -205,7 +206,7 @@ type ShellInvocation = {
 function inlineSourcesForInvocation(
   invocation: ShellInvocation,
 ): readonly string[] {
-  if (!INLINE_SHELL_INTERPRETERS.has(executableName(invocation.name,),))
+  if (!INLINE_SOURCE_COMMANDS.has(executableName(invocation.name,),))
     return [];
   return invocation
     .args
@@ -246,6 +247,12 @@ function inlineShellSources(command: CommandInfo,): readonly string[] {
   if (commandTreatsArgumentsAsData(command,))
     return [];
   /**
+   * Shell source concatenated by eval before execution.
+   */
+  const evalSources = executableName(command.name,) === 'eval'
+    ? [command.args.join(' ',),]
+    : [];
+  /**
    * Direct command followed by every argument-tail candidate for wrapped shell.
    */
   const invocationCandidates: readonly ShellInvocation[] = [
@@ -267,8 +274,11 @@ function inlineShellSources(command: CommandInfo,): readonly string[] {
         };
       },),
   ];
-  return invocationCandidates
-    .flatMap(inlineSourcesForInvocation,);
+  return [
+    ...evalSources,
+    ...invocationCandidates
+      .flatMap(inlineSourcesForInvocation,),
+  ];
 }
 
 /**

@@ -38,6 +38,10 @@ const BLOCKED_COMMANDS = [
   "sudo bash -c 'ydotool key 1:1 1:0'",
   "env bash -c 'ydotool key 1:1 1:0'",
   "nohup sh -c 'ydotool key 1:1 1:0'",
+  "eval 'ydotool key 1:1 1:0'",
+  "bash -c 'eval \"ydotool key 1:1 1:0\"'",
+  "su -c 'ydotool key 1:1 1:0' user",
+  "echo \"$(ydotool key 1:1 1:0)\"",
   'ydotool key "unterminated',
 ] as const;
 
