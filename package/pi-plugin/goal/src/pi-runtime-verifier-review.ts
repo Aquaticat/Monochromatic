@@ -85,6 +85,12 @@ function createReviewFixture(): {
   const context = {
     mode: 'rpc',
     hasUI: false,
+    isIdle() {
+      return true;
+    },
+    hasPendingMessages() {
+      return false;
+    },
     sessionManager: {
       getLeafId() {
         return 'leaf-current-review';
