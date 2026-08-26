@@ -1429,7 +1429,9 @@ scanner disagreed on one link and the union counted it twice; every destination 
 stopper and shed of trailing punctuation before comparison (`trimDestination`). Fixed in `5edd6a3b8` and
 `fbf23ceae`; the seven touched suites pass and the package lints clean (0 warnings, 0 errors). The
 guard-removal rounds (`scratchpad/gfp-three-landings.py`, eight rounds) and a second whole-suite run follow
-serially, then the fresh pass.
+serially, then the fresh pass. WHOLE SUITE AFTER `fbf23ceae`: 829 PASS, 0 FAIL, exit 0 (solo run, 17:29Z).
+The guard script's first launch crashed on a path it built wrong (`src/src/...`) before touching anything;
+relaunched after the fix.
 
 THE SECOND READER'S DRY RUN CHANGED THE READING METHOD. sol read the older `wangzihao980` page (2026-08-22
 build) and returned 15 items where this session's own reading had two: 1 inherited blocker (the day of death,
