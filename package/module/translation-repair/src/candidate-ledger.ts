@@ -59,6 +59,83 @@ const LEDGER_DIR = 'ledger';
 const ORDINAL_DIGITS = 6;
 
 /**
+ * Stamp naming this launch, fixed at module load: the moment as an ISO time
+ * with its separators made file-safe, then the process id.
+ *
+ * ONE PER PROCESS, so two launches into one runs directory never write the
+ * same name. `#246`: the ordinal alone restarted at zero per process, and a
+ * relaunch into the same directory, which is the documented resume path,
+ * overwrote the earlier launch's contests one by one with no reader able to
+ * tell. Names still sort as text into contest order: launches by their stamp,
+ * contests within a launch by their ordinal.
+ *
+ * @example
+ * ```ts
+ * const name = ledgerFileName({ ordinal: 3, launch: LAUNCH_STAMP, },);
+ * ```
+ */
+export const LAUNCH_STAMP: string = `${launchMoment()}-${String(process.pid,)}`;
+
+/**
+ * This launch's moment as an ISO time with its separators made file-safe.
+ *
+ * @returns Time text carrying neither colons nor dots
+ *
+ * @example
+ * ```ts
+ * const moment = launchMoment();
+ * ```
+ */
+function launchMoment(): string {
+  return new Date()
+    .toISOString()
+    .replaceAll(
+      ':',
+      '-',
+    )
+    .replaceAll(
+      '.',
+      '-',
+    );
+}
+
+/**
+ * File name of one recorded contest.
+ *
+ * @param ordinal - contest number within the launch, from zero
+ *
+ * @param launch - stamp of the launch writing it
+ *
+ * @returns Name that sorts by launch, then by ordinal
+ *
+ * @example
+ * ```ts
+ * const name = ledgerFileName({ ordinal: 0, launch: LAUNCH_STAMP, },);
+ * ```
+ *
+ * @internal
+ */
+export function ledgerFileName(
+  {
+    ordinal,
+    launch,
+  }: {
+    readonly ordinal: number;
+    readonly launch: string;
+  },
+): string {
+  /**
+   * Ordinal padded so a thousand contests still sort as text.
+   */
+  const padded = String(ordinal,)
+    .padStart(
+      ORDINAL_DIGITS,
+      '0',
+    );
+  return `${launch}-${padded}.json`;
+}
+
+/**
  * Environment variable naming the run directory, matching `run-config.ts`.
  *
  * READ DIRECTLY RATHER THAN THROUGH `resolveRunsDir`, because that lives in
@@ -229,13 +306,12 @@ export async function recordContest<ValueT,>(
   };
 
   /**
-   * Ordinal rendered wide enough that a thousand contests sort as text.
+   * File this contest is written to, unique across launches (`#246`).
    */
-  const padded = String(ordinal,)
-    .padStart(
-      ORDINAL_DIGITS,
-      '0',
-    );
+  const fileName = ledgerFileName({
+    ordinal,
+    launch: LAUNCH_STAMP,
+  },);
 
   try {
     /**
@@ -252,7 +328,7 @@ export async function recordContest<ValueT,>(
     await writeFile(
       join(
         dir,
-        `${padded}.json`,
+        fileName,
       ),
       JSON.stringify(
         round,

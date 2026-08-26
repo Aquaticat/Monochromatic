@@ -88,6 +88,8 @@ export { decideBestCandidate, } from './candidate-select.ts';
 export {
   type LedgerCandidate,
   type LedgerRound,
+  LAUNCH_STAMP,
+  ledgerFileName,
   recordContest,
 } from './candidate-ledger.ts';
 export {
