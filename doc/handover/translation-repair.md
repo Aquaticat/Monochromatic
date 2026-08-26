@@ -84,6 +84,14 @@ That register is open as of `918d9a8b3` with the baseline, the whole-package mec
 (all clean: no forbidden request fields, zero debt markers, every suppression justified,
 no banned constructs, 38 of 38 CLIs wrapped), the documentation layer,
 and six verified findings `A-1` to `A-6`; read it before this section.
+Running tally, 2026-08-26 after five of ten slice reports (provider, translate, repair, probes pending, calibrate):
+1 BLOCKER (`#235`), 10 MAJOR, 27 MINOR, all verified at the cited line; one task per MAJOR:
+`#237` pass TALLY line prints any error's message; `#238` a stage that heard nobody is cached as a decision
+(retroactive, may already sit in caches); `#239` sole-adopted envelopes lose their authors;
+`#240` router slot count drifts negative on the re-ask; `#241` roster-to-catalog proof is an unused type;
+`#242` text and tool deltas fold into one answer; `#243` stale-lock takeover race;
+`#244` a marked class inherits a provider body excerpt; `#245` pairing agreement read off the first voice only;
+`#246` ledger files overwrite on relaunch.
 Advisor's adjustment, adopted: `#235` lands as soon as the `provider` and `calibrate` slice
 reports are verified, not after the whole audit, because those two slices hold every file the fix touches.
 

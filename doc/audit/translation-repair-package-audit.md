@@ -274,13 +274,257 @@ counted as settled), `editor-width-arm.ts`, `pass-schema-census.ts`, `window-tri
 `src/corpus-run/window-trial-ledger.ts:83` writes `winnerText` to `<runs>/window-trial/arms.jsonl`.
 Outside the repository by design; listed so the sanitization step knows the file exists.
 
+### provider-1, BLOCKER, verified: the `#235` path, confirmed independently at source
+
+Same defect as `A-1`; the reviewer reached it from the code alone and added one fact:
+`src/synthetic-client.ts:264-265` builds the wire body as `model: request.modelId` with no
+catalog or `hf:` check anywhere in `synthetic-client.ts`, `synthetic-transport.ts`, or `run-config.ts`,
+while the routing client cannot misroute this way (`provider-router.unit.test.ts:210` pins it).
+The TSDoc at `run-config.ts:564-568` ("THE SECOND KEY IS OPTIONAL AND ITS ABSENCE IS LOUD")
+describes a refusal the code does not make.
+
+### provider-2, MAJOR, verified: the second-opinion re-ask releases a Synthetic slot it never took
+
+`src/provider-router.ts:320-324` increments `inFlightOnSynthetic` only when `chooseProvider` decides
+Synthetic; `:389` releases one slot (`using slot = heldSlot(...)`) on EVERY Synthetic call in `callOn`;
+the `chatJson` re-ask at `:597` calls `callOn({ provider: elsewhere })` without `chooseProvider`.
+Whenever the preferred answer came from Hyper and was unusable, `elsewhere` is Synthetic and the
+release decrements a count nothing incremented, so the count drifts negative and the saturation
+test at `:305` (`>= syntheticSlotsPerModel`) needs extra concurrent calls before overflow to Hyper
+resumes.
+The comment at `:384-385` asserts a pairing this path breaks;
+`provider-router.unit.test.ts:519` covers only the Synthetic-to-Hyper direction.
+Tracked as `#240`.
+
+### provider-3, MAJOR, verified: the roster-to-catalog proof is a type nothing instantiates
+
+`src/hyper-catalog.ts:329` exports `HyperOnlyNamesAreServed` and no other line in `src` names it,
+so adding a label to `HYPER_ONLY_ROSTER_IDS` without a `HYPER_MODELS` row type-checks and surfaces
+at run time as one `NoProviderForModelError` per call, converted by `attemptStageCall` into a lost
+voice: the `#235` class again, one roster edit away.
+Tracked as `#241`.
+
+### provider-4, MAJOR (mechanism verified, frequency unknown): text and tool deltas fold into one answer
+
+`src/anthropic-completion.ts:249-262` pushes both `text_delta` and `input_json_delta` fragments
+into `fold.answerParts` with no block attribution.
+`hyper-catalog.ts:180` runs `qwen3.8-max` with `toolChoice: 'auto'`, under which a leading text
+block is legal; such a stream yields prose plus JSON, fails the schema, and loses the voice, and a
+Hyper-only seat has no other stack for a second opinion.
+No mixed-stream case exists in `anthropic-completion.unit.test.ts`.
+How often the provider does this is unmeasured; a wire capture decides the size.
+Tracked as `#242`.
+
+### provider-5, MAJOR, verified: stale-lock takeover is `rm` then `claim`, which two starters can interleave
+
+`src/corpus-run/runs-lock.ts:353-375`: `await rm(path, { force: true })` then one `claim`.
+The comment says "exactly one create succeeds", which holds only when both removes precede both claims;
+B-rm, B-claim, C-rm (removes B's live lock), C-claim lets both passes proceed, and the dispose at
+`:380-383` removes whichever file is present, so B's exit deletes C's lock.
+Needs two starts against one stale lock, which a relauncher can produce.
+No concurrent-takeover case in `runs-lock.unit.test.ts`.
+Tracked as `#243`.
+
+### provider-6, MAJOR by contract, verified: a marked class inherits a provider body excerpt
+
+`src/request-size-refusal.ts:59` declares `messageNamesOnly: true` on `SyntheticRequestTooLargeError`,
+and its `super({ status, bodyText, summary })` at `:103-117` ends `Gateway said:`, after which the
+parent (`src/completion-shape.ts:82-89`) appends `bodyText.slice(0, BODY_EXCERPT_LIMIT)`.
+The marker's contract (`stated-refusal.ts`, `refusal-text.ts`) excludes anything read from a provider body.
+The observed gateway wording carries only a byte position, so nothing has leaked;
+a gateway that echoes request bytes would print corpus text at the boundary.
+Tracked as `#244`.
+
+### provider-7, MINOR, verified: a budget refusal during the re-ask is not caught
+
+`src/provider-router.ts:590-604` calls `callOn` bare for the second opinion; a 429 or 402 there
+becomes a throw instead of the first outcome, and `markRefused` starts that provider's cooldown one
+call late.
+Folded into `#240`.
+
+### provider-8, note: the run log carries provider body excerpts and 80-character openings
+
+`src/stage-call.ts:247` logs `String(error)` of a `SyntheticHttpError` (up to 600 body characters);
+`src/stream-cut.ts:40` sets `OPENING_CHARS = 80`.
+Both are recorded decisions (`#75`), and the log is treated as corpus-bearing; no change.
+
+### provider-9, MINOR, verified: the catalog-drift instrument compares against a stale copy
+
+`src/corpus-run/model-catalog-compare.ts:26-33`: `CATALOG_MODEL_IDS` still lists
+`hf:zai-org/GLM-4.7-Flash` and omits every Hyper-only id, so the tool built to catch catalog
+removals reports a departed model as expected.
+Fix: derive from `Object.keys(SYNTHETIC_MODELS)` and delete the copy.
+
+### provider-10, MINOR, verified: TSDoc describes a roster that no longer exists
+
+`src/chat-contract.ts:174` (example uses the departed `hf:zai-org/GLM-4.7-Flash`),
+`src/synthetic-catalog.ts:134` ("two of the six"),
+`src/corpus-run/run-config.ts:111,152,173` (GLM-4.7-Flash as the third editor) and `:330-335`
+("Exactly two models read images").
+The `#235` diagnosis started from this prose.
+
+### provider-11, note: a shared meter read aborted by its first caller resolves wet for every sharer
+
+`src/provider-budget.ts:318-322`, documented and pinned by `provider-budget.unit.test.ts:268`;
+the 429/402 re-route corrects the one decision it can mislead. Accepted.
+
+### provider-12, MINOR, verified: raw `console.log` in two library modules, and a handle outside `using`
+
+`src/corpus-run/git-command.ts:54`, `src/corpus-run/runs-lock.ts:173,222,344,351` (`TLG`);
+`runs-lock.ts:258-263` opens with `'wx'` and closes by hand, so a write failure leaves an empty
+lock the next pass reports unreadable and takes over (`PP3`).
+
+### provider-13, MINOR, verified: a malformed round line parses to `NaN` silently
+
+`src/corpus-run/run-timing-parse.ts:297-298`: `heard: Number(counts[0])` with no check that the
+ratio split into two integers; only the duration fields refuse.
+
+### provider-14, MINOR, verified: each of provider-1 to provider-5 lacks the test that would have caught it
+
+No re-ask landing on Synthetic, no mixed text-then-tool stream, no roster-subset assertion,
+no bare-client refusal of a non-`hf:` id, no `RunConfigError` marker check at the boundary,
+no concurrent stale-lock takeover. Each fix carries its guard, committed first per `GFP`.
+
+### repair-1, MAJOR, verified: a slice settled while a whole stage heard nobody is cached as a decision
+
+`src/repair-translation.ts:453-470`: the only gate on the write is `outcome.heardCritics === 0`.
+The quorum gather never throws on shortfall (`src/stage-quorum.ts:369-377` returns
+`stage-quorum-unmet (...)` as a finding), and every silent stage downstream lands on an ordinary
+"unchanged" exit: a silent panel makes every claim `needs-human` (`src/tally-votes.ts:76`, electorate
+below `minBallotWeight`), so `src/repair-chunk.ts:274` returns "nothing to edit, unchanged";
+a silent editor returns `src/repair-editor-stage.ts:251` "no operation survived the gate";
+a silent checker leaves every tally unresolved and `src/select-candidate.ts:193` ranks the unchanged
+candidate first on the tie.
+All three carry `heardCritics > 0`, so all three are persisted and memoised.
+`src/refine-phase.ts:336` persists unconditionally, so `refine-candidates (0/N heard)` and a
+rollback produced by a silent recheck are stored too.
+Consequence: a provider outage lasting one slice (the `#199` week of 429s, or the `#235` shape where
+every seat of one role sits on a dark provider) is frozen into the cache as "examined and found
+nothing to change"; every later run resumes it, reports success, and never re-asks.
+The findings travel with the record, so the artifact says `stage-quorum-unmet` while the text ships settled.
+Retroactive: caches written during the `#199` outage may already hold such records.
+Tracked as `#238`.
+
+### repair-2, MINOR (downgraded from the reviewer's MAJOR): the refine loop lacks the accuracy loop's abort check
+
+`src/refine-phase.ts` has no `signal.throwIfAborted()` before its persist at `:336`;
+`src/repair-translation.ts:437` checks before its write.
+The reviewer's mechanism, that an abort settles every remaining slice as silence, does not hold:
+`src/stage-round.ts:103-108` rethrows a caught error when the signal is aborted, `src/stage-call.ts:244-246`
+does the same, and `src/stream-drain.ts:353-358` throws `StreamCutShortError` under a caller abort
+rather than returning partial text, so an aborted call propagates as a throw and nothing after it is
+persisted.
+The symmetric check is still owed as a guard against a future path that turns an abort into a non-ok
+outcome, and `refine-phase.unit.test.ts` has no abort case.
+Folded into `#238`.
+
+### repair-3, MAJOR, verified: envelopes adopted without a vote lose their authors
+
+`src/editor-ensemble.ts:232-243`: the sole-proposal path pushes the winner and its contributors but
+no round (`rounds.push` happens only on the judged path at `:282`).
+`src/issue-authors.ts:311-318` builds a composite's `perIssue` from `envelopeAuthorsFromRounds({ rounds })`,
+and `:227` reads `byEnvelope[envelopeId] ?? []`, so every issue served by a sole-adopted envelope has no author.
+Under `checkerSelfCertificationPermitted: true` (the live setting) a checker that wrote that text votes
+on it at full weight and the artifact's `wroteTheText` is false for it.
+Bounded today because the checker and editor rosters do not overlap (`#187`); the record is wrong now
+and the weighting becomes wrong on the first overlapping roster.
+`issue-authors.unit.test.ts` has no composite built from a sole envelope.
+Tracked as `#239`.
+
+### repair-4, MINOR, verified: an outcome with no prepared slice is refined against an empty original
+
+`src/refine-phase.ts:219` (`prepared?.source.text ?? ''`) and `:236` (`?? outcome.repairedText`);
+`src/repair-refine-step.ts:150-157` throws for that state after the phase, so the tolerance buys
+model calls before a refusal that comes anyway. Unreachable through `repairPreparedDocument` today.
+
+### repair-5, MINOR, verified: six prompts fence document text with a fixed `=====`
+
+`src/edit-prompt.ts:18`, `src/critic-prompt.ts:18`, `src/adjudicate-prompt.ts:17`,
+`src/resolution-wire.ts:21`, `src/restoration-judge-wire.ts:23`, `src/derivability-wire.ts:22`,
+against `src/refine-prompt.ts`, whose note calls the fixed value forgeable (a setext underline) and
+picks its fence against the content with `selectFence`.
+A page carrying a `=====` line closes the instruction block early; every gated stage bounds the damage.
+
+### repair-6, MINOR, verified: two unmarked classes whose messages hold positions only
+
+`src/repair-unheard.ts` (`RepairUnheardError`) and `src/placement-layout.ts` (`PlacementLayoutError`)
+carry no `messageNamesOnly` and quote nothing, so the slice they name is muted at the boundary.
+`repair-unheard.ts:160` spells `archive\`s` with a backtick for an apostrophe.
+
+### repair-7, MINOR, verified: a stale comment names an exit that no longer exists
+
+`src/repair-translation.ts:536`: "A blocked document already returned above" against the module
+note at `:47-56` ("NOTHING BLOCKS THE DOCUMENT ANY MORE").
+
+### repair-8, MINOR, verified: typography restoration runs after the structural gate
+
+`src/apply-patch.ts:346` applies `restoreTypography` to `newText` after every check, while
+`src/refine-stage.ts:255` gated the raw `operation.newText`, so a protected atom holding a straight
+quote between word characters can be altered by text no gate saw. Low frequency.
+
+### repair-9, MINOR, verified: the guards the three MAJORs need do not exist
+
+No abort case in `refine-phase.unit.test.ts`; the only silence-and-cache case in
+`repair-translation.unit.test.ts` is the critic one; no sole-envelope composite in
+`issue-authors.unit.test.ts`; `repair-not-applicable`, `assertUnheardKeptArchive`, `heardNobodyAbout`,
+`settleChunkFromChecks`, `collectEnvelopeProposals` are named by 0 test files;
+`src/refine-slice-settle.ts:149` types the refiner roster as `RepairModels['checkerModelIds']`.
+
+### translate-1, MAJOR, verified: pairing agreement is filtered from the first usable voice's reply only
+
+`src/pair-blocks-stage.ts:330-333` and `src/pair-sections-stage.ts:368-372`:
+`const agreed = (pairings[0] ?? []).filter(votes >= AGREEMENT_NEEDED)` with `AGREEMENT_NEEDED = 2`.
+Votes are tallied over every usable reply, but candidates come only from the first, so a
+correspondence two other voices named is dropped whenever the first voice omitted it, and which pairs
+survive depends on which seat answered usably first.
+Both files' module notes say "AGREEMENT IS PER PAIR rather than per reply", which the code contradicts.
+Pairing is the input every later stage reasons from: a dropped block pair leaves its original
+`source-only` (the `#157` shape returns), a dropped section pair sends a translated section through as absent (`#159`).
+Both suites seat only two voices, a shape that cannot show it.
+Tracked as `#245`.
+
+### translate-2, MAJOR, verified: ledger file names restart at zero per process and overwrite on relaunch
+
+`src/candidate-ledger.ts:78` (`const state = { recorded: 0 }`), `:208-209` (ordinal from that counter),
+`:252-255` (`writeFile` to `${padded}.json`).
+Relaunching into the same runs directory is the documented resume path, and `ledger-report.ts`
+reads the whole directory with no way to tell an overwritten file from an original, so the `#212`
+evidence (producer standings, self-preference counts) is silently lost for every relaunched pass.
+Tracked as `#246`.
+
+### translate-3, MINOR, verified: `sentinel-probe` prints any error's message to stdout
+
+`src/corpus-run/sentinel-probe.ts:166-173`, the same shape as calibrate-2. Folded into `#237`.
+
+### translate-4, MINOR, verified: a stage note says a guard is missing that `translate-slice.ts` now runs
+
+`src/translate-stage.ts:31-33` against `src/translate-slice.ts` (`findDroppedDeclaredNames`, two sites).
+
+### translate-5, MINOR, verified: the translate slice cache is at version 6 with a history ending at 5
+
+`src/translate-document-contract.ts:57` against the paragraphs at `:31-50`;
+nobody can tell what the bump to 6 discarded or why.
+
+### translate-6, MINOR, verified: twenty-one files in the slice have no sibling unit test
+
+Named in the reviewer's report (`~/temp/agent/audit-translate.md`); the branches that deserve a
+direct case are `translate-retry.ts:200-228`, `translate-slice-attempt.ts:182-183`, the shipped and
+withdrawn index sets in `translate-assemble.ts`, every `blankAgainst` branch in `translate-absence.ts`,
+and the three-voice pairing case translate-1 needs.
+
 ## Slice reports
 
 Each entry records the reviewer's coverage claim, then what the main session verified.
 
-- `provider`: pending.
-- `translate`: pending.
-- `repair`: pending.
+- `provider`: reviewer read 76 of 76 files (20733 lines), none unread; reported 1 BLOCKER, 5 MAJOR, 8 MINOR;
+  all fourteen re-verified at the cited lines and recorded; it named the `#235` fallback, the missing
+  catalog check, and the `RunConfigError` gap unprompted.
+- `translate`: reviewer read 66 of 66 files (16700 lines), none unread; reported 2 MAJOR, 4 MINOR,
+  all six re-verified and recorded. Answered calibrate's question: `producer-calibrate.ts:120` also builds
+  a client per slice.
+- `repair`: reviewer read 65 of 65 files (17544 lines), none unread; reported 3 MAJOR, 6 MINOR;
+  eight re-verified as reported, one (repair-2) downgraded after the abort path was traced through
+  `stage-round.ts`, `stage-call.ts`, and `stream-drain.ts`.
 - `probes`: pending.
 - `calibrate`: reviewer read 33 of 33 files (10042 lines), none unread;
   reported 2 MAJOR and 9 MINOR, all eleven re-verified at the cited lines and recorded;
