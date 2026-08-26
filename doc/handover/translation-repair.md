@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-the calibrate group landed in `acfc7ad22`, provider-7 is next;
+the calibrate group landed in `acfc7ad22` and the provider group in `2376b7d14`, repair-2 is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -257,7 +257,16 @@ cases, the array check 1 census case, the blank rule 1 arm case, the terminators
 `settledEntryIds` for the published tree). calibrate-5 and calibrate-8 have no unit guard (client construction is
 unobservable; `verify-published` has no suite), and the register says so; the new closing line was read at the
 boundary over the 2026-08-17 directory (`0 of 0 ... 0 UNWEIGHED`, exit 1, no published tree there).
-Queue: the register's MINORs in register order (provider-7 next), which close `#236`; then `#213` (arm A and arm B
+Whole-suite `buildAndTest` after `acfc7ad22`: 781 PASS, 0 FAIL, exit 0 (solo run, read from the runner's exit).
+The provider MINORs (provider-7, 9, 10, 12, 13, 14) LANDED 2026-08-26 in `2376b7d14`, each recorded under its entry:
+a budget refusal on the re-ask keeps the first answer and starts the cooldown on that call (`replyOrBudgetRefusal`),
+the drift check's catalog list is read off `SYNTHETIC_MODELS`, the run configuration's seat history is dated past
+tense under the current seating, the lock and the git probe log through tagged loggers with the lock's `wx` handle
+under `await using`, and a round line whose ratio is not two whole numbers is unreadable rather than NaN. GFP: the
+re-ask guard, the ratio guard and the catalog guard each fail exactly their one case under mutation and pass
+restored; provider-10 and provider-12 are prose and structure with no guard, and provider-14 is closed by the MAJOR
+landings' own guards.
+Queue: the register's MINORs in register order (repair-2 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 

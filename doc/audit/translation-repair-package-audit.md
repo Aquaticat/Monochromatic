@@ -469,6 +469,13 @@ becomes a throw instead of the first outcome, and `markRefused` starts that prov
 call late.
 Folded into `#240`.
 
+FIXED 2026-08-26 in `2376b7d14`: the re-ask goes through `replyOrBudgetRefusal`, which reads a 429 or a 402
+as the re-ask not happening: the first answer is returned and `markRefused` runs on the call the refusal arrived on.
+`#240` closed the slot half of this site; this is the refusal half the entry named.
+Guard: with the helper rethrowing, the case
+`KEEPS the first answer and starts the other provider's cooldown when the re-ask is refused on budget` fails;
+restored, passes.
+
 ### provider-8, note: the run log carries provider body excerpts and 80-character openings
 
 `src/stage-call.ts:247` logs `String(error)` of a `SyntheticHttpError` (up to 600 body characters);
@@ -482,6 +489,11 @@ Both are recorded decisions (`#75`), and the log is treated as corpus-bearing; n
 removals reports a departed model as expected.
 Fix: derive from `Object.keys(SYNTHETIC_MODELS)` and delete the copy.
 
+FIXED 2026-08-26 in `2376b7d14`: `CATALOG_MODEL_IDS` is `Object.keys(SYNTHETIC_MODELS)`; the Hyper-only ids are
+absent on purpose, since the fetch compares Synthetic's own endpoint.
+Guard: with the departed id appended to the derived list, the case `IS the compiled Synthetic catalog` fails;
+restored, passes.
+
 ### provider-10, MINOR, verified: TSDoc describes a roster that no longer exists
 
 `src/chat-contract.ts:174` (example uses the departed `hf:zai-org/GLM-4.7-Flash`),
@@ -489,6 +501,15 @@ Fix: derive from `Object.keys(SYNTHETIC_MODELS)` and delete the copy.
 `src/corpus-run/run-config.ts:111,152,173` (GLM-4.7-Flash as the third editor) and `:330-335`
 ("Exactly two models read images").
 The `#235` diagnosis started from this prose.
+
+FIXED 2026-08-26 in `2376b7d14`: the seat history in `RUN_MODELS`'s TSDoc opens with the current seating (ten seats
+across two providers, the measured editors, refiners and checkers) and keeps each earlier rule in the past tense with
+its date; the reader paragraph counts six readers of ten, measured as `readsImages: true` on 2 Synthetic and 4 Hyper
+rows; the chat contract's example names `hf:zai-org/GLM-5.2`.
+Prose only, no guard.
+The "two of the six" the entry placed at `synthetic-catalog.ts:134` is not in that file (`rg` over the whole of `src`
+finds the phrase nowhere), so nothing was changed there; the file's remaining mentions of the departed model are
+dated history.
 
 ### provider-11, note: a shared meter read aborted by its first caller resolves wet for every sharer
 
@@ -501,16 +522,34 @@ the 429/402 re-route corrects the one decision it can mislead. Accepted.
 `runs-lock.ts:258-263` opens with `'wx'` and closes by hand, so a write failure leaves an empty
 lock the next pass reports unreadable and takes over (`PP3`).
 
+FIXED 2026-08-26 in `2376b7d14`: `runs-lock.ts` logs through `tagged({ tag: 'runs-lock' })`, warn for a lock held
+by another process, an unreadable file and a lock no longer this acquisition's, info for the two takeovers;
+`git-command.ts` logs its fallback through `tagged({ tag: 'git-command' })`; and `claim` holds its `wx` handle in
+`await using`, so a write that fails still closes it, the empty file such a failure leaves being what the next pass
+reads as unreadable and evicts.
+No guard: no test reads those lines and the disposal is structural; the lock suite passes unchanged.
+
 ### provider-13, MINOR, verified: a malformed round line parses to `NaN` silently
 
 `src/corpus-run/run-timing-parse.ts:297-298`: `heard: Number(counts[0])` with no check that the
 ratio split into two integers; only the duration fields refuse.
+
+FIXED 2026-08-26 in `2376b7d14`: `countIn` refuses an empty or non-digit field and the ratio must split into exactly
+two fields; both throw inside the existing `round line unreadable` wrapper.
+Guard: with `Number` restored and the two-field check removed, the case
+`THROWS ON A RATIO THAT IS NOT TWO WHOLE NUMBERS` fails; restored, passes.
 
 ### provider-14, MINOR, verified: each of provider-1 to provider-5 lacks the test that would have caught it
 
 No re-ask landing on Synthetic, no mixed text-then-tool stream, no roster-subset assertion,
 no bare-client refusal of a non-`hf:` id, no `RunConfigError` marker check at the boundary,
 no concurrent stale-lock takeover. Each fix carries its guard, committed first per `GFP`.
+
+CLOSED 2026-08-26 by the MAJOR landings, each recorded under its own entry with its guard: the re-ask landing on
+Synthetic (`#240`, provider-2), the mixed text-then-tool stream (`#242`, provider-4), the roster-subset proof
+(`#241`, provider-3), the bare client's refusal of a non-`hf:` id and the `RunConfigError` marker at the boundary
+(`#235`, A-1 and provider-1), and the concurrent stale-lock takeover (`#243`, provider-5).
+Nothing further to land.
 
 ### repair-1, MAJOR, verified: a slice settled while a whole stage heard nobody is cached as a decision
 
