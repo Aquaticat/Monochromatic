@@ -11,6 +11,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
+import { fileURLToPath, } from 'node:url';
 
 import {
   type Api,
@@ -33,7 +34,9 @@ import {
 import { Type, } from 'typebox';
 
 /** Built extension loaded by real Pi resource discovery. */
-const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
+const BUILT_EXTENSION_PATH = fileURLToPath(
+  new URL('../dist/final/node/index.mjs', import.meta.url,),
+);
 
 /** Scripted provider identity. */
 const PROVIDER_ID = 'auto-mode-virtual-input-verifier';
