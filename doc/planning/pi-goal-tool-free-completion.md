@@ -1,8 +1,7 @@
 # Plan: tool-free Pi goal completion
 
 Status:
- accepted architecture on 2026-08-26.
- Runtime implementation is not part of the diagnosis session.
+ implementation authorized on 2026-08-26 after two grilling rounds.
 
 This plan supersedes the primary-model `goal_complete` interface and completion sections in
 `doc/planning/pi-goal-stop-hook.md`.
@@ -152,14 +151,20 @@ The reviewer treats the user objective and later user input as requirements auth
 
 ### Verdicts
 
-The reviewer contract must distinguish these outcomes:
+The reviewer contract has two outcomes:
 
 - `complete`:
   every objective requirement is supported by finalized evidence
 - `continue`:
   required work remains and the primary model can proceed autonomously
-- `blocked_on_user`:
-  completion depends on a user decision or resource that automation cannot supply
+
+A denial carries a contracted task-only `remaining_work` value.
+It cannot contain reviewer identity,
+verdict language,
+evidence scoring,
+or stop-hook protocol.
+A response that violates this contract is a failed reviewer attempt,
+not a valid denial.
 
 `complete` appends durable completed state,
 records reviewer identity and truncation audit,
@@ -168,16 +173,18 @@ and ends without a primary-model tool result or another model turn.
 A TUI notification may report approval without replacing the assistant's answer.
 
 `continue` appends the private verdict audit and injects one task-level continuation
-containing only actionable missing requirements.
-The continuation does not identify its reviewer or the completion mechanism.
+containing only `remaining_work`.
 The exact settlement identity prevents duplicate review or duplicate continuation.
+There is no arbitrary consecutive-denial cap.
+The active run continues until approval,
+user abort,
+or `/goal clear`.
 
-`blocked_on_user` preserves branch-local goal state but suppresses automatic continuation.
-The next non-extension user input resumes normal active-goal processing with a fresh generation.
-This prevents completion review from overrunning a legitimate question to the user.
+Human decisions use `ask_user_question` inside the primary run.
+That tool blocks indefinitely until the user answers or cancels,
+so completion review does not need a second blocked-on-user state.
 
-Reviewer exhaustion keeps the existing TUI manual decision and non-interactive terminal behavior
-unless a later decision changes it.
+Reviewer exhaustion keeps the existing TUI manual decision and non-interactive terminal behavior.
 
 ## Interface reduction
 
@@ -218,7 +225,7 @@ Implementation is incomplete until tests prove:
 - the exact five-way answer from session `01a03c23-5f48-778f-8306-b30a1fddddd2` can be approved
 - the same session without the final answer is denied
 - advisor output cannot replace or amend the user objective
-- a settled user question produces `blocked_on_user` rather than autonomous continuation
+- `ask_user_question` can remain pending without completion review or continuation
 - one selected branch leaf is reviewed at most once
 - denial emits one feedback continuation
 - approval emits no primary tool result and no continuation
@@ -239,15 +246,17 @@ Implementation is incomplete until tests prove:
 State-mutating verification must use disposable Pi homes and session files.
 The final user-boundary check loads the built extension through Pi,
 confirms the primary tool inventory has no completion tool,
-and drives approval,
-denial,
-and blocked-on-user flows end to end.
+and drives approval and denial flows end to end.
 
-## Open implementation decisions
+## Human-only completion presentation
 
-The accepted decision does not set a consecutive-denial limit or review-spending cap.
-Those policies change autonomy versus provider-cost behavior
-and require a separate user decision before implementation.
+Approval appends a durable TUI-only completion entry excluded from model context.
+Its default rendering is only `Goal complete`.
+Expanded rendering shows:
 
-The exact TUI approval notification is also unsettled.
-It must preserve the normal assistant answer and durable completion audit without adding another primary response.
+- reviewer identity
+- approval rationale
+- attempted reviewer identities
+- whether reviewer evidence was truncated
+
+The entry preserves the normal assistant answer and adds no primary response.
