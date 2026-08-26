@@ -132,6 +132,9 @@ const CURL_PREFIX: &str = "\\bcurl\\b";
 /// Substring at which the curl rule's kept credential shape begins.
 const CURL_CREDENTIAL_MARKER: &str = "(?:-u|--user)";
 
+/// Line-start or horizontal-whitespace boundary required before curl user options.
+const CURL_OPTION_BOUNDARY: &str = "(?:^|[ \\t])";
+
 /// Source-pattern prefix identifying the single mongodb connection-string builtin rule.
 const MONGODB_PREFIX: &str = "\\b(mongodb";
 
@@ -146,17 +149,19 @@ const MONGODB_CORE: &str = "\\bmongodb(?:\\+srv)?://[!-9;-~]{3,50}:[!-?A-~]{3,88
 
 /// Ports one rule pattern, reshaping the curl and mongodb rules per the settled decisions.
 ///
-/// What: for the curl rule, drops the leading `\bcurl\b` context and the cross-line window and
-/// ports only the `(?:-u|--user)` credential shape onward; for the mongodb rule, emits the
-/// credential-bearing core directly; every other rule is ported whole. Why: rule 172 is the
-/// only cross-line rule and its credential pair is the payload, and rule 518 otherwise
+/// What: for the curl rule, drops the leading `\bcurl\b` context and the cross-line window,
+/// retains a line-start or horizontal-whitespace option boundary, and ports the
+/// `(?:-u|--user)` credential shape onward; for the mongodb rule, emits the credential-bearing
+/// core directly; every other rule is ported whole. Why: rule 172 is the only cross-line rule
+/// and its separately-tokenized credential pair is the payload, and rule 518 otherwise
 /// determinizes past the state cap while its non-secret URI suffix carries no leak.
 fn port_pattern(pattern: &str) -> (String, bool) {
     if pattern.starts_with(CURL_PREFIX) {
         let idx = pattern
             .find(CURL_CREDENTIAL_MARKER)
             .expect("curl rule contains the -u/--user credential marker");
-        return (faithful_port(&pattern[idx..]), true);
+        let credential_pattern = faithful_port(&pattern[idx..]);
+        return (format!("{CURL_OPTION_BOUNDARY}{credential_pattern}"), true);
     }
     if pattern.starts_with(MONGODB_PREFIX) {
         return (MONGODB_CORE.to_string(), true);
@@ -255,7 +260,7 @@ pub(crate) struct Ported {
     pub(crate) case: bool,
     /// Unbounded quantifier bounded to the cap.
     pub(crate) quant: bool,
-    /// Curl rule reshaped (context and cross-line window dropped).
+    /// Curl rule reshaped (curl context and cross-line window dropped; option boundary retained).
     pub(crate) reshape: bool,
     /// Bare `\n`/`\r` escape dropped.
     pub(crate) crlf: bool,

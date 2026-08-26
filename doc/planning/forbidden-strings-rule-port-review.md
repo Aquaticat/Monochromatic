@@ -148,7 +148,7 @@ Rule 518 previously appeared here;
 ### Rule 172 reshape (the curl basic-auth rule)
 
 Rule 172 is the only cross-line rule.
-Per the settled decision it drops the leading `\bcurl\b` context and the up-to-five-line
+The cutover decision dropped the leading `\bcurl\b` context and the up-to-five-line
 continuation window entirely,
  keeping the `(?:-u|--user)` option,
  its separator,
@@ -156,6 +156,9 @@ continuation window entirely,
 The credential pair is the payload;
  `curl` is context,
  and the continuation window cannot survive the line-at-a-time model.
+The later [curl authentication option boundary decision][curl-auth-user-boundary]
+ partially supersedes that reshape:
+line start or horizontal whitespace must now precede the kept option.
 Within the kept tail,
  the value alternation's `{3,}` bounds become `{3,512}`,
  the capturing groups become non-capturing,
@@ -163,16 +166,17 @@ Within the kept tail,
 
 ```text
 before: /\bcurl\b(?:.*|.*(?:[\r\n]{1,2}.*){1,5})[ \t\n\r](?:-u|--user)(?:=|[ \t]{0,5})("(: ... )|'( ... )'|( ... ))(?:\s|\z)/
-after:  /(?:(?:-u)|(?:--user))(?:=|[ \t]{0,5})(?: ... {3,512} ... )(?:\s|$)/
+after:  /(?:^|[ \t])(?:(?:-u)|(?:--user))(?:=|[ \t]{0,5})(?: ... {3,512} ... )(?:\s|$)/
 ```
 
 The full ported form is line 172 of `builtin-rules.ported.txt`.
 Compared with the original,
  the reshape broadens the rule
- (it now flags a `-u user:pass` credential on any single line,
+ (it flags a separately tokenized `-u user:pass` credential on any single line,
  without requiring `curl`)
- and drops the continuation-line case;
- both directions are the settled trade against same-line-only and multi-line windowing.
+ and drops cross-line correlation with the curl command.
+This preserves detection on an option-bearing continuation line,
+while rejecting option-like substrings embedded inside larger words or paths.
 
 ### Rule 518 reshape (the mongodb connection-string rule)
 
@@ -741,3 +745,5 @@ No rule trips `EmptyMatchable`,
  plus rule 518);
  the append ported file is byte-identical to the previous output.
 Line alignment with `builtin-rules.txt` is preserved at 861 lines.
+
+[curl-auth-user-boundary]: ../decision/forbidden-strings-curl-auth-user-boundary.md
