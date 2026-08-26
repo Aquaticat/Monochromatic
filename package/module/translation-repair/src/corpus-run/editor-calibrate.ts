@@ -3,13 +3,12 @@ import pLimit from 'p-limit';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  graceOverrideNote,
-  resolveStragglerGraceMs,
+  adoptCalibrationGrace,
+  STRAGGLER_GRACE_VAR,
 } from '../grace-override.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { repairChunk, } from '../repair-chunk.ts';
 import { settleRefinedSlice, } from '../refine-slice-settle.ts';
-import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
 import {
   EDITOR_ROUND_STAGES,
   REFINER_ROUND_STAGES,
@@ -36,7 +35,10 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { readAskedCount, } from './asked-count.ts';
-import { readOverlap, } from './slice-overlap.ts';
+import {
+  CALIBRATION_OVERLAP,
+  readOverlap,
+} from './slice-overlap.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Editor calibrate
@@ -355,13 +357,13 @@ async function main(): Promise<void> {
   /**
    * How many slices may be in flight at once.
    *
-   * READ FROM THE ENVIRONMENT so one build serves both arms of the `#213`
-   * comparison. `1` reproduces the sequential driver exactly, which is what
-   * makes the sequential arm a control rather than a different program. Read
-   * before the sample is drawn, so a value nothing can read refuses before
-   * any work is done.
+   * FOUR BY THE OWNER'S DECISION OF 2026-08-26, read from the environment so
+   * one build still serves both arms of a comparison: `1` reproduces the
+   * sequential driver exactly, which is what makes the sequential arm a control
+   * rather than a different program. Read before the sample is drawn, so a
+   * value nothing can read refuses before any work is done.
    */
-  const overlap = readOverlap();
+  const overlap = readOverlap({ fallback: CALIBRATION_OVERLAP, },);
 
   /**
    * Slices every model edits.
@@ -375,19 +377,20 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Note naming the straggler window when it is not the built-in one.
+   * Straggler window this run's rounds wait under, and where it came from.
    *
-   * RESOLVED HERE, before any round, so an unreadable override refuses the run
+   * ADOPTED HERE, before any round, so an unreadable override refuses the run
    * before it spends anything, and printed so the log says which window this
-   * run was under whether or not a voice was ever cut.
+   * run was under whether or not a voice was ever cut. The calibration's own
+   * window is 300000 ms under four slices in flight, the owner's decision of
+   * 2026-08-26 on arm D; a launch that sets the variable is honored instead.
    */
-  const graceNote = graceOverrideNote({
-    effectiveMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
-    builtInMs: STRAGGLER_GRACE_MS,
-  },);
-
-  if (graceNote !== '')
-    console.log(graceNote,);
+  const grace = adoptCalibrationGrace();
+  console.log(
+    `straggler window ${String(grace.effectiveMs,)}ms (${
+      (grace.source === 'override') ? `${STRAGGLER_GRACE_VAR} override` : 'calibration default'
+    })`,
+  );
 
   /**
    * Client every slice shares, built once for the run.

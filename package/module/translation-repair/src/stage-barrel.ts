@@ -31,6 +31,9 @@ export {
 } from './stage-silence.ts';
 export { cacheRefusalsOf, } from './repair-cache-gate.ts';
 export {
+  adoptCalibrationGrace,
+  CALIBRATION_STRAGGLER_GRACE_MS,
+  type CalibrationGrace,
   graceOverrideNote,
   resolveStragglerGraceMs,
   STRAGGLER_GRACE_VAR,

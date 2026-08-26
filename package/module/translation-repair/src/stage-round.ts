@@ -62,6 +62,12 @@ import { resolveStragglerGraceMs, } from './grace-override.ts';
  * under `RUN_PER_CALL_TIMEOUT_MS` of 360_000, so the window still cuts a
  * genuinely hung voice long before its own deadline would, which is the whole
  * purpose the user's rule of 2026-08-14 gave it.
+ *
+ * THE EDITOR CALIBRATION RUNS UNDER 300000 MS INSTEAD (`adoptCalibrationGrace`
+ * in `grace-override.ts`, the owner's decision of 2026-08-26 on arm D), because
+ * under four slices in flight the longer window costs nothing measurable and
+ * cuts the fewest voices. This value stays the pass's until `#261` gives the
+ * pass overlap too; the two move together.
  */
 export const STRAGGLER_GRACE_MS = 180_000;
 

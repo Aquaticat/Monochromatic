@@ -23,6 +23,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  CALIBRATION_OVERLAP,
   readOverlap,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
@@ -78,12 +79,12 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'runs SEQUENTIALLY when nobody asked, so a driver invoked the way it always was behaves '
-        + 'the way it always did and the control arm of any comparison is the same program',
+      name: 'RETURNS THE CALLER\'S FALLBACK when nobody asked, so a driver decided to run sequentially '
+        + 'still does and the control arm of any comparison is the same program',
       fn: async () => {
         using dial = dialSaying({},);
 
-        expect(readOverlap(),).toBe(1,);
+        expect(readOverlap({ fallback: 1, },),).toBe(1,);
         expect(process.env[OVERLAP_VAR],).toBe(undefined,);
         expect(dial,).not.toBe(undefined,);
       },
@@ -94,7 +95,7 @@ await describe({
       fn: async () => {
         using dial = dialSaying({ says: '4', },);
 
-        expect(readOverlap(),).toBe(4,);
+        expect(readOverlap({ fallback: 1, },),).toBe(4,);
         expect(dial,).not.toBe(undefined,);
       },
     },),
@@ -110,7 +111,7 @@ await describe({
          * What the reader threw on a value nothing could read.
          */
         const refusal = caught(function readsProse() {
-          readOverlap();
+          readOverlap({ fallback: 1, },);
         },);
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
@@ -130,11 +131,34 @@ await describe({
          * What the reader threw on a limit that admits nothing.
          */
         const refusal = caught(function readsZero() {
-          readOverlap();
+          readOverlap({ fallback: 1, },);
         },);
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain('at least 1',);
+        expect(dial,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'GIVES THE CALIBRATION FOUR when nobody asked, which is the owner\'s decision of 2026-08-26 '
+        + 'on arm B against arms A and A2, and lets the variable bring it back down to one',
+      fn: async () => {
+        using dial = dialSaying({},);
+
+        expect(CALIBRATION_OVERLAP,).toBe(4,);
+        expect(readOverlap({ fallback: CALIBRATION_OVERLAP, },),).toBe(4,);
+        expect(dial,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'LETS A LAUNCH BRING THE CALIBRATION BACK TO ONE, so the sequential arm of a comparison is '
+        + 'still one variable away',
+      fn: async () => {
+        using dial = dialSaying({ says: '1', },);
+
+        expect(readOverlap({ fallback: CALIBRATION_OVERLAP, },),).toBe(1,);
         expect(dial,).not.toBe(undefined,);
       },
     },),

@@ -28,6 +28,33 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 export const STRAGGLER_GRACE_VAR = 'TRANSLATION_REPAIR_STRAGGLER_GRACE_MS';
 
 /**
+ * Straggler window the editor calibration runs under when nobody set one.
+ *
+ * FIVE MINUTES, DECIDED ON MEASUREMENT (`doc/decision/translation-repair-calibration-overlap.md`):
+ * under four slices in flight, arm D ran this window at the same normalized
+ * cost as arm B's built-in window and cut 2 voices against B's 7, because the
+ * wait a longer window adds is what overlap fills. The corpus pass keeps
+ * `STRAGGLER_GRACE_MS` until `#261` gives it overlap too.
+ */
+export const CALIBRATION_STRAGGLER_GRACE_MS = 300_000;
+
+/**
+ * Where a calibration's window came from.
+ */
+export type CalibrationGrace = {
+  /**
+   * Milliseconds the rounds wait on stragglers after quorum.
+   */
+  readonly effectiveMs: number;
+
+  /**
+   * `calibration-default` when nothing was set and the calibration's own window
+   * was adopted; `override` when a launch set the variable.
+   */
+  readonly source: 'calibration-default' | 'override';
+};
+
+/**
  * Reads the straggler window this invocation's rounds run under.
  *
  * @param fallback - built-in window, used when nothing overrides it
@@ -106,6 +133,50 @@ export function graceOverrideNote(
 
   return `STRAGGLER GRACE OVERRIDDEN by ${STRAGGLER_GRACE_VAR}: rounds abandon stragglers `
     + `${String(effectiveMs,)}ms after quorum rather than the built-in ${String(builtInMs,)}ms`;
+}
+
+/**
+ * Puts the editor calibration under its own window unless a launch set one.
+ *
+ * THROUGH THE VARIABLE, DELIBERATELY. Every stage round reads its window off
+ * `resolveStragglerGraceMs` with the built-in fallback, and threading a second
+ * fallback through every stage the calibration drives would touch a dozen
+ * signatures for one caller. Setting the variable when it is unset gives the
+ * calibration's rounds the decided window by the path a launch already has,
+ * and a launch that set the variable is honored as an override, refused if
+ * unreadable, exactly as before.
+ *
+ * @returns Window the calibration's rounds run under, and where it came from
+ *
+ * @throws {@link StatedRefusalError} when a launch set the variable to
+ * something that is not a positive finite number of milliseconds
+ *
+ * @example
+ * ```ts
+ * const grace = adoptCalibrationGrace();
+ * console.log(`straggler window ${String(grace.effectiveMs,)}ms (${grace.source})`,);
+ * ```
+ */
+export function adoptCalibrationGrace(): CalibrationGrace {
+  /**
+   * What the launch set, empty when it set nothing.
+   */
+  const written = process.env[STRAGGLER_GRACE_VAR] ?? '';
+
+  if (written.trim() === '') {
+    process.env[STRAGGLER_GRACE_VAR] = String(CALIBRATION_STRAGGLER_GRACE_MS,);
+    return {
+      effectiveMs: CALIBRATION_STRAGGLER_GRACE_MS,
+      source: 'calibration-default',
+    };
+  }
+  return {
+    effectiveMs: resolveStragglerGraceMs({
+      fallback: CALIBRATION_STRAGGLER_GRACE_MS,
+      raw: written,
+    },),
+    source: 'override',
+  };
 }
 
 //endregion Grace override

@@ -23,6 +23,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  adoptCalibrationGrace,
+  CALIBRATION_STRAGGLER_GRACE_MS,
   graceOverrideNote,
   resolveStragglerGraceMs,
   STRAGGLER_GRACE_VAR,
@@ -173,6 +175,91 @@ await describe({
         expect(note,).toContain(STRAGGLER_GRACE_VAR,);
         expect(note,).toContain('300000ms',);
         expect(note,).toContain('built-in 180000ms',);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Sets or clears the window variable for one case, restoring it after.
+ *
+ * @param says - value to set, or nothing to clear the variable
+ *
+ * @returns Disposable that puts the variable back
+ *
+ * @example
+ * ```ts
+ * using dial = windowSaying({},);
+ * ```
+ */
+function windowSaying({ says, }: { readonly says?: string; },): Disposable {
+  /**
+   * Value before the case, restored on dispose.
+   */
+  const before = process.env[STRAGGLER_GRACE_VAR];
+
+  if (says === undefined)
+    delete process.env.TRANSLATION_REPAIR_STRAGGLER_GRACE_MS;
+  else
+    process.env[STRAGGLER_GRACE_VAR] = says;
+
+  return {
+    [Symbol.dispose]: () => {
+      if (before === undefined)
+        delete process.env.TRANSLATION_REPAIR_STRAGGLER_GRACE_MS;
+      else
+        process.env[STRAGGLER_GRACE_VAR] = before;
+    },
+  };
+}
+
+await describe({
+  name: adoptCalibrationGrace.name,
+  // ONE AT A TIME: every case writes the same process-wide variable.
+  concurrency: 1,
+  children: [
+    it({
+      name: 'ADOPTS the calibration window through the variable when nothing was set, so every stage '
+        + 'round the calibration drives reads it by the path a launch already has',
+      fn: async () => {
+        using dial = windowSaying({},);
+
+        expect(adoptCalibrationGrace(),).toStrictEqual({
+          effectiveMs: CALIBRATION_STRAGGLER_GRACE_MS,
+          source: 'calibration-default',
+        },);
+        expect(process.env[STRAGGLER_GRACE_VAR],).toBe(String(CALIBRATION_STRAGGLER_GRACE_MS,),);
+        expect(resolveStragglerGraceMs({ fallback: FALLBACK, },),).toBe(CALIBRATION_STRAGGLER_GRACE_MS,);
+        expect(dial,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'HONORS a launch that set the variable, as an override, and leaves it as set',
+      fn: async () => {
+        using dial = windowSaying({ says: '180000', },);
+
+        expect(adoptCalibrationGrace(),).toStrictEqual({
+          effectiveMs: FALLBACK,
+          source: 'override',
+        },);
+        expect(process.env[STRAGGLER_GRACE_VAR],).toBe('180000',);
+        expect(dial,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES an unreadable launch value the way the dial does, instead of adopting over it',
+      fn: async () => {
+        using dial = windowSaying({ says: 'five minutes', },);
+
+        const refusal = caught(function adoptsProse() {
+          adoptCalibrationGrace();
+        },);
+
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
+        expect(dial,).not.toBe(undefined,);
       },
     },),
   ],
