@@ -113,6 +113,102 @@ Advisor can reuse that transport without importing goal behavior.
 A structured contract would deterministically constrain response shape,
 but string fields would still need bounded semantics because a schema alone cannot prove that prose is not a replacement answer.
 
+## Enforcement layers
+
+Prevention has distinct layers with different guarantees:
+
+- **Primary-model ownership guidance** can require a candidate artifact or conclusion before review.
+  This changes model behavior but is not deterministic.
+- **Input grammar** can remove arbitrary imperative text from the Advisor call.
+  An enumerated focus rejects the exact incident request before provider spending.
+- **Request encoding** can carry focus as JSON data rather than a user-message instruction heading.
+  This reduces prompt role confusion but remains model-dependent.
+- **Forced structured output** can make a single review-submission tool the provider's only output path.
+  Free text from an omitted tool must never reach the primary model.
+- **Strict parsing** can reject unknown fields,
+  invalid evidence references,
+  excessive findings,
+  and overlong strings.
+- **Bounded rendering** can expose only validated findings to the primary model.
+- **Finding semantics** remain model-dependent unless a separate semantic classifier is added.
+  A classifier would add another fallible model call rather than create proof.
+
+The strongest practical design therefore combines deterministic grammar and output-shape constraints with positive reviewer-role
+prompting.
+No single prompt sentence can supply the guarantee.
+
+## Candidate interfaces under comparison
+
+### Minimal typed review
+
+```typescript
+type AdvisorInput = {
+  readonly model?: string;
+  readonly focus?: 'assumptions' | 'correctness' | 'verification' | 'risk' | 'scope';
+};
+```
+
+The implementation returns validated findings rather than provider prose.
+This removes the free-form instruction channel and keeps empty parameters safe.
+Its cost is loss of arbitrary natural-language focus.
+
+### Anchored multidimensional review
+
+```typescript
+type AdvisorInput = {
+  readonly model?: string;
+  readonly focus?: {
+    readonly dimensions: readonly AdvisorDimension[];
+    readonly target: 'latest-candidate' | 'changes' | 'verification-output' | 'whole-session';
+  };
+};
+```
+
+This preserves more precision without accepting task instructions.
+Its interface is wider,
+and the primary model must choose target semantics correctly.
+
+### Free-form focus with local intent gate
+
+Keep `question` but reject task-performing language locally and quote it as data.
+This preserves flexibility but cannot classify arbitrary natural language soundly.
+Verb lists,
+regular expressions,
+and model classifiers all leave bypasses or false positives.
+This candidate currently ranks last.
+
+## Candidate structured result
+
+A review result should contain no general answer field.
+The current candidate shape is:
+
+```typescript
+type AdvisorReview = {
+  readonly assessment: 'clear' | 'findings' | 'insufficient-evidence';
+  readonly findings: readonly {
+    readonly category: AdvisorDimension;
+    readonly evidenceRefs: readonly number[];
+    readonly concern: string;
+    readonly requiredCheck: string;
+  }[];
+};
+```
+
+The parser must bound array sizes and string lengths,
+validate every evidence reference against serialized context,
+and reject unknown fields.
+The renderer,
+not the provider,
+creates final review prose.
+`requiredCheck` names evidence the primary agent must obtain;
+it is deliberately narrower than a replacement or suggested-answer field.
+
+The exact incident would fail at two deterministic seams:
+`question` would be unsupported,
+and a free-text five-part answer would not be a valid review result.
+A malicious or confused model could still place answer content inside a bounded `concern`,
+so field bounds and evidence references remain required defense.
+
 ## Investigation questions
 
 - Which caller guidance would cause the primary model to ask defect-seeking questions only after concrete evidence exists?
@@ -160,12 +256,13 @@ These are hypotheses, not decisions:
 
 ## Exact next action
 
-Characterize the smallest Advisor review contract that removes answer-generating caller instructions while preserving focused review.
-Compare removal of free-form `question`,
-structured focus categories,
-structured findings output,
-and prompt-only hardening against the exact incident.
-Identify red tests at the public tool and provider transport seams.
+Collect the independent interface sketches already running in isolated,
+tool-free Pi subprocesses.
+Compare them by depth,
+locality,
+seam placement,
+and exact-incident prevention.
+Then define red tests and rank the final options.
 
 ## Commits
 
