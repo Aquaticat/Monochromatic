@@ -1,8 +1,15 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { isJsonRecord, } from './json-guard.ts';
 import {
   type ExtractedCompletion,
   MalformedCompletionError,
 } from './completion-shape.ts';
+
+/**
+ * Logger root for the Anthropic completion reader.
+ */
+const l = tagged({ tag: 'translation-repair', },);
 
 //region Anthropic completion
 // Reassembles one drained Anthropic Messages stream into the same
@@ -40,9 +47,17 @@ const TERMINATOR = 'message_stop';
  */
 type AnthropicFold = {
   /**
-   * Answer fragments, in arrival order, from text and tool-argument deltas.
+   * Text fragments, in arrival order, from `text_delta` frames: the answer
+   * when the model answered in prose, and prose set aside when it also called
+   * the tool.
    */
-  readonly answerParts: string[];
+  readonly textParts: string[];
+
+  /**
+   * Tool-argument fragments, in arrival order, from `input_json_delta`
+   * frames: the answer whenever there are any (`#242`).
+   */
+  readonly toolParts: string[];
 
   /**
    * Why the model stopped, as `message_delta` reported it.
@@ -248,14 +263,14 @@ function foldDelta(
 
   if (kind === 'text_delta')
     fold
-      .answerParts
+      .textParts
       .push(stringField({
       fields: delta,
       name: 'text',
     },),);
   if (kind === 'input_json_delta')
     fold
-      .answerParts
+      .toolParts
       .push(stringField({
       fields: delta,
       name: 'partial_json',
@@ -452,8 +467,20 @@ export function extractAnthropicCompletion(
   /**
    * Everything the body accumulates across its frames.
    */
+  /**
+   * Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: extractAnthropicCompletion.name,
+    l,
+  },);
+
+  /**
+   * Everything this pass over the body accumulates.
+   */
   const fold: AnthropicFold = {
-    answerParts: [],
+    textParts: [],
+    toolParts: [],
     stopReasons: [],
     promptTokens: [],
     completionTokens: [],
@@ -524,10 +551,33 @@ export function extractAnthropicCompletion(
     .at(-1,)
     ?? '';
 
+  /**
+   * Tool arguments, whole, when the model called the tool at all.
+   */
+  const toolAnswer = fold
+    .toolParts
+    .join('',);
+
+  /**
+   * Prose, whole, which is the answer only when no tool was called.
+   */
+  const prose = fold
+    .textParts
+    .join('',);
+
+  // THE TOOL'S ARGUMENTS ARE THE ANSWER WHENEVER THERE ARE ANY. Under
+  // `tool_choice: auto` a model may write a text block before the tool block;
+  // folding both into one string handed the schema reader prose glued to JSON
+  // and lost the voice, and a Hyper-only seat has no other stack for a second
+  // opinion (`#242`). The prose is set aside and its size logged, never its
+  // content.
+  if ((toolAnswer !== '') && (prose !== ''))
+    rl.info(
+      `tool answer kept, ${String(prose.length,)} characters of prose set aside`,
+    );
+
   return {
-    text: fold
-      .answerParts
-      .join('',),
+    text: (toolAnswer === '') ? prose : toolAnswer,
     ...((stopReason === '') ? {} : { finishReason: stopReason, }),
     ...usageOf({ counts: fold, },),
   };

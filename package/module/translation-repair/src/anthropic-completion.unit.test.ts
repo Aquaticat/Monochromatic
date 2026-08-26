@@ -200,6 +200,37 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS the tool arguments as the whole answer when the model also wrote prose before '
+        + 'calling the tool, since gluing the two lost the voice on a schema\'d call (`#242`)',
+      fn: async () => {
+        /**
+         * Stream with a text block before the tool block, which `tool_choice:
+         * auto` permits.
+         */
+        const bodyText = startOf({ inputTokens: 12, },)
+          + deltaOf({
+            deltaType: 'text_delta',
+            field: 'text',
+            text: 'Here is my verdict: ',
+          },)
+          + deltaOf({
+            deltaType: 'input_json_delta',
+            field: 'partial_json',
+            text: '{"verdict":',
+          },)
+          + deltaOf({
+            deltaType: 'input_json_delta',
+            field: 'partial_json',
+            text: '"pass"}',
+          },)
+          + endOf({
+            stopReason: 'tool_use',
+            outputTokens: 9,
+          },);
+        expect(extractAnthropicCompletion({ bodyText, },).text,).toBe('{"verdict":"pass"}',);
+      },
+    },),
+    it({
       name: 'DISCARDS the thinking channel, which is the model\'s private working and would '
         + 'corrupt the answer a validator reads if it were concatenated in',
       fn: async () => {
