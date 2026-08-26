@@ -122,8 +122,16 @@ function isPairedReading(value: unknown,): value is PairedReading {
     'one-reader-only',
     'readers-disagree',
   ];
-  return ((typeof value.reason) === 'string')
-    && reasons.includes(value.reason,);
+  if ((typeof value.reason) !== 'string')
+    return false;
+  if (!reasons.includes(value.reason,))
+    return false;
+
+  // A TRANSIENT VERDICT IS NOT RESUMED, and a record that does not say whether
+  // it is transient was written before the field and is not resumed either:
+  // it may be the one reader failure that left a picture unread on every run,
+  // and reading it once more is the whole remedy.
+  return value.transient === false;
 }
 
 /**

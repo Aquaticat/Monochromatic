@@ -253,9 +253,135 @@ function recordingCache(
   };
 }
 
+/**
+ * A client whose every reader throws, which is what provider trouble looks
+ * like from here.
+ *
+ * @returns Client and the models it was asked about
+ *
+ * @example
+ * ```ts
+ * const { client, } = failingClient();
+ * ```
+ */
+function failingClient(): {
+  readonly client: SyntheticClient;
+  readonly asked: RosterModelId[];
+} {
+  /**
+   * Models asked, in order.
+   */
+  const asked: RosterModelId[] = [];
+  return {
+    asked,
+    client: {
+      chatText: async (request,) => {
+        asked.push(request.modelId,);
+        throw new Error('HTTP 503 after every retry',);
+      },
+      chatJson: async () => {
+        throw new Error('chatJson unused by the reading stage',);
+      },
+      quotas: async () => {
+        throw new Error('quotas unused by the reading stage',);
+      },
+    },
+  };
+}
+
+/**
+ * A client whose two readers describe different pictures, which is a stable
+ * verdict about the roster rather than about the evening.
+ *
+ * @returns Client
+ *
+ * @example
+ * ```ts
+ * const { client, } = disagreeingClient();
+ * ```
+ */
+function disagreeingClient(): { readonly client: SyntheticClient; } {
+  /**
+   * Readings that share no words.
+   */
+  const scripted: Readonly<Record<string, string>> = {
+    'hf:moonshotai/Kimi-K3': READING,
+    'hf:Qwen/Qwen3.8-27B': 'A handwritten note about kibble prices at the market stall.',
+  };
+  return {
+    client: {
+      chatText: async (request,) => ({ text: scripted[request.modelId] ?? '', }),
+      chatJson: async () => {
+        throw new Error('chatJson unused by the reading stage',);
+      },
+      quotas: async () => {
+        throw new Error('quotas unused by the reading stage',);
+      },
+    },
+  };
+}
+
 await describe({
   name: readDocumentPictures.name,
   children: [
+    it({
+      name: 'DOES NOT PERSIST A VERDICT THAT RESTS ON A READER FAILING FOR NOW, so the picture is read '
+        + 'again next run rather than served unread until a rebuild retires the cache; the same walk '
+        + 'persists a disagreement, which is a stable fact about the roster, as the positive control',
+      fn: async () => {
+        /**
+         * Both readers throwing, which used to be cached as permanent.
+         */
+        const failing = failingClient();
+
+        /**
+         * Cache under the failing client.
+         */
+        const transientCache = recordingCache({ resumed: new Map(), },);
+
+        /**
+         * Readings under the failing client.
+         */
+        const unread = await readDocumentPictures({
+          readOcr: sawText,
+          client: failing.client,
+          slices: [sliceOf({
+            text: showing({ assetName: 'noticeboard.webp', },),
+            sliceIndex: 0,
+          },),],
+          assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+          readerModelIds: READERS,
+          cache: transientCache.cache,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+        expect(failing.asked.length,).toBe(2,);
+        expect(unread.get('noticeboard.webp',)?.kind,).toBe('unavailable',);
+        expect(transientCache.persisted.length,).toBe(0,);
+
+        /**
+         * Cache under the disagreeing client.
+         */
+        const stableCache = recordingCache({ resumed: new Map(), },);
+        const disagreed = await readDocumentPictures({
+          readOcr: sawText,
+          client: disagreeingClient().client,
+          slices: [sliceOf({
+            text: showing({ assetName: 'noticeboard.webp', },),
+            sliceIndex: 0,
+          },),],
+          assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+          readerModelIds: READERS,
+          cache: stableCache.cache,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+        expect(disagreed.get('noticeboard.webp',)?.kind,).toBe('unavailable',);
+        expect(stableCache.persisted.length,).toBe(1,);
+      },
+    },),
     it({
       name: 'READS ONE PICTURE ONCE HOWEVER MANY SLICES NAME IT, which is the arithmetic that '
         + 'makes this affordable: a picture travels to its slice and to both neighbours, so '

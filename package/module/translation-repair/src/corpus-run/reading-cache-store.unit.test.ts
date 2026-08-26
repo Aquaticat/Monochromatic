@@ -199,6 +199,7 @@ await describe({
           '',
           '',
         ],
+        transient: false,
         overlap: 0.11,
         readings: [
           {
@@ -228,9 +229,43 @@ await describe({
         kind: 'unavailable',
         reason: 'no-reader-available',
         perReader: [ 'no vision reader in the roster', ],
+        transient: false,
       };
 
       expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
+      },
+    },),
+    it({
+      name: 'REFUSES an unavailable record marked transient, since a reader that failed for now may read '
+        + 'tomorrow and serving the old verdict would leave the picture unread until a rebuild',
+      fn: async () => {
+      /**
+       * A verdict resting on one reader failing for now.
+       */
+      const record = {
+        kind: 'unavailable',
+        reason: 'one-reader-only',
+        perReader: [ 'whiskers/reader-b: reader-failed', ],
+        transient: true,
+      };
+
+      expect((await roundTrip({ record, },)).has(KEY,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES an unavailable record written before the transient field, which may be exactly the '
+        + 'one reader failure that left a picture unread on every run; reading it once more is the remedy',
+      fn: async () => {
+      /**
+       * A verdict in the older shape, which cannot say whether it was transient.
+       */
+      const record = {
+        kind: 'unavailable',
+        reason: 'no-reader-available',
+        perReader: [ 'whiskers/reader-a: reader-failed', ],
+      };
+
+      expect((await roundTrip({ record, },)).has(KEY,),).toBe(false,);
       },
     },),
     it({

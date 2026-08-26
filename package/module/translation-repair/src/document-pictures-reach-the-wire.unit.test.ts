@@ -194,6 +194,7 @@ const UNAVAILABLE_ASSET_NAME = 'blurry-tabby.webp';
 const UNAVAILABLE_READING: PairedReading = {
   kind: 'unavailable',
   reason: 'readers-disagree',
+  transient: false,
   perReader: [
     'hf:moonshotai/Kimi-K3: describes a sleeping cat',
     'hf:zai-org/GLM-5.2: describes an empty windowsill',

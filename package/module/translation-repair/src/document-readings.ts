@@ -7,6 +7,7 @@ import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { imageReadingKey, } from './image-reading-key.ts';
 import {
+  isResumableReading,
   type OcrReader,
   type PairedReading,
   readImagePair,
@@ -177,6 +178,16 @@ export async function readDocumentPictures(
       assetName,
       paired,
     );
+
+    // A TRANSIENT VERDICT IS NOT REMEMBERED. A reader that timed out once used
+    // to leave this picture unread on every later run, served from the cache
+    // with only `resumed, unavailable` in the log, until a rebuild retired the
+    // cache; the provider recovering never did. That is provider trouble
+    // degrading the pipeline durably, which the standing rule forbids.
+    if (!isResumableReading({ reading: paired, },)) {
+      rl.warn(`${assetName}: unavailable for a transient reason, so it is not cached and is read again next run`,);
+      continue;
+    }
     await cache.persist({
       key,
       serialized: JSON.stringify(paired,),

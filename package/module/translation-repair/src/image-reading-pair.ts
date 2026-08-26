@@ -6,7 +6,10 @@ import {
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { OcrReading, } from './image-ocr.ts';
 import { readPastRefusal, } from './image-reading-past-refusal.ts';
-import type { ImageReading, } from './image-reading-stage.ts';
+import {
+  type ImageReading,
+  isTransientReadingReason,
+} from './image-reading-stage.ts';
 import { readingsCorroborate, } from './reading-corroboration.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -172,6 +175,20 @@ export type PairedReading = {
     | 'readers-disagree';
 
   /**
+   * Whether this verdict rests on a reader that produced nothing for a reason
+   * that may not hold tomorrow: one that threw, answered nothing, answered too
+   * little, or refused.
+   *
+   * WHAT DECIDES WHETHER THE VERDICT IS REMEMBERED. A transient verdict
+   * describes the provider's evening and is read again on the next run; a
+   * stable one describes the picture and the roster and is resumed. Until
+   * this field every `unavailable` verdict was persisted, so one reader
+   * timing out once left a picture unread on every later run until a rebuild
+   * retired the cache.
+   */
+  readonly transient: boolean;
+
+  /**
    * Why each reader produced nothing usable, in roster order, empty for a reader
    * that did produce one.
    */
@@ -200,6 +217,25 @@ export type PairedReading = {
    */
   readonly readings?: readonly ModelReading[];
 };
+
+/**
+ * Whether a paired reading is a fact worth resuming on a later run.
+ *
+ * @param reading - what reading one picture produced
+ *
+ * @returns False only for an unavailable verdict that rests on a transient
+ * reader failure, which a later run should read again
+ *
+ * @example
+ * ```ts
+ * if (isResumableReading({ reading: paired, },)) await cache.persist({ key, serialized, },);
+ * ```
+ */
+export function isResumableReading({ reading, }: { readonly reading: PairedReading; },): boolean {
+  if (reading.kind !== 'unavailable')
+    return true;
+  return !reading.transient;
+}
 
 /**
  * Reads one picture with every reader and settles whether either reading is
@@ -449,6 +485,9 @@ export async function readImagePair(
       kind: 'unavailable',
       reason,
       perReader,
+      transient: outcomes.some(function failedForNow({ reading, },): boolean {
+        return (reading.kind === 'unavailable') && isTransientReadingReason({ reason: reading.reason, },);
+      },),
       ...(readings.length > 0) ? { readings, } : {},
     };
   }
@@ -482,10 +521,13 @@ export async function readImagePair(
           .overlap
           .toFixed(LOGGED_OVERLAP_PLACES,)}`,
     );
+    // BOTH READERS ANSWERED, so the disagreement is about the picture and the
+    // roster, not about the call, and it is remembered like a corroboration.
     return {
       kind: 'unavailable',
       reason: 'readers-disagree',
       perReader,
+      transient: false,
       overlap: verdict.overlap,
       readings,
     };

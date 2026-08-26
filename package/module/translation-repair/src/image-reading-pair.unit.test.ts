@@ -32,7 +32,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type ChatTextRequest,
+  isResumableReading,
   type OcrReader,
+  type PairedReading,
   readImagePair,
   type SyntheticClient,
   type RosterModelId,
@@ -323,6 +325,10 @@ await describe({
         if (paired.kind !== 'unavailable')
           throw new Error('unavailable by construction',);
         expect(paired.reason,).toBe('readers-disagree',);
+        // Both readers answered, so the disagreement is about the picture and
+        // the roster, not the call, and it is remembered like a corroboration.
+        expect(paired.transient,).toBe(false,);
+        expect(isResumableReading({ reading: paired, },),).toBe(true,);
         expect(paired.overlap === undefined,).toBe(false,);
       },
     },),
@@ -466,6 +472,10 @@ await describe({
           .some(function named(entry,): boolean {
             return entry.includes('reader-failed',);
           },),).toBe(true,);
+        // A reader that threw may read tomorrow, so this verdict describes
+        // the evening and must not be remembered.
+        expect(paired.transient,).toBe(true,);
+        expect(isResumableReading({ reading: paired, },),).toBe(false,);
       },
     },),
 
@@ -504,6 +514,7 @@ await describe({
           .filter(function named(entry,): boolean {
             return entry.includes('reader-failed',);
           },).length,).toBe(2,);
+        expect(paired.transient,).toBe(true,);
       },
     },),
 
@@ -695,6 +706,58 @@ await describe({
 
         expect(asked.length,).toBe(2,);
         expect(paired.kind,).toBe('corroborated',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isResumableReading.name,
+  children: [
+    it({
+      name: 'RESUMES every verdict that describes the picture: a corroboration, a textless picture, and a '
+        + 'stable unavailability, and REFUSES only the unavailability that rests on a reader failing for now',
+      fn: async () => {
+        /**
+         * Verdicts and whether each is worth remembering.
+         */
+        const cases: readonly (readonly [PairedReading, boolean,])[] = [
+          [
+            {
+              kind: 'corroborated',
+              readings: [],
+              overlap: 1,
+            },
+            true,
+          ],
+          [
+            {
+              kind: 'no-text',
+              characters: 0,
+            },
+            true,
+          ],
+          [
+            {
+              kind: 'unavailable',
+              reason: 'no-reader-available',
+              perReader: ['hf:cat/Tabby: model-does-not-read-images',],
+              transient: false,
+            },
+            true,
+          ],
+          [
+            {
+              kind: 'unavailable',
+              reason: 'one-reader-only',
+              perReader: ['hf:cat/Tabby: reader-failed',],
+              transient: true,
+            },
+            false,
+          ],
+        ];
+        for (const [reading, resumable,] of cases)
+          expect(`${reading.kind}: ${String(isResumableReading({ reading, },),)}`,).toBe(`${reading.kind}: ${String(resumable,)}`,);
       },
     },),
   ],

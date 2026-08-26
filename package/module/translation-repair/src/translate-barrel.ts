@@ -255,6 +255,7 @@ export {
 } from './image-ocr.ts';
 export {
   type ImageReading,
+  isTransientReadingReason,
   readImageAsset,
 } from './image-reading-stage.ts';
 export { readDocumentPictures, } from './document-readings.ts';
@@ -266,6 +267,7 @@ export {
   type SlicePictures,
 } from './slice-pictures.ts';
 export {
+  isResumableReading,
   type ModelReading,
   type OcrReader,
   type PairedReading,

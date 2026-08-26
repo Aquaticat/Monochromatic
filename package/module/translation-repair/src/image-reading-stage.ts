@@ -113,6 +113,39 @@ export type ImageReading = {
 };
 
 /**
+ * Reasons that describe the provider's evening rather than the picture.
+ *
+ * A reader that threw, answered nothing, answered too little or refused may
+ * read the same picture tomorrow; a model that does not read images, a media
+ * type nobody names, and a file too large to send will not change. The split
+ * decides what a pair verdict built on the reason is allowed to remember.
+ */
+const TRANSIENT_READING_REASONS: ReadonlySet<string> = new Set([
+  'too-short',
+  'reads-as-refusal',
+  'empty-reply',
+  'reader-failed',
+],);
+
+/**
+ * Whether a reader's reason for producing nothing may not hold tomorrow.
+ *
+ * @param reason - why the reader produced nothing
+ *
+ * @returns Whether the reason describes the call rather than the picture
+ *
+ * @example
+ * ```ts
+ * const transient = isTransientReadingReason({ reason: 'reader-failed', },);
+ * ```
+ */
+export function isTransientReadingReason(
+  { reason, }: { readonly reason: Extract<ImageReading, { readonly kind: 'unavailable'; }>['reason']; },
+): boolean {
+  return TRANSIENT_READING_REASONS.has(reason,);
+}
+
+/**
  * Reads one picture with one model, screening what comes back.
  *
  * @param client - transport to the provider
