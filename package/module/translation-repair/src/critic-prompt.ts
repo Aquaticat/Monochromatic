@@ -5,6 +5,7 @@ import {
   ISSUE_SEVERITIES,
 } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
+import { selectFence, } from './prompt-fence.ts';
 
 //region Critic prompt
 // One strict prompt for every critic model: exact-quote evidence rules, the closed
@@ -12,10 +13,6 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 // lines; the fence is decorative for the model, not a security boundary, and the
 // deterministic quote resolver is what actually gates fabricated evidence.
 
-/**
- * Fence line separating instructions from document text.
- */
-const FENCE = '=====';
 
 /**
  * What the neighbouring blocks are for, stated inside the prompt.
@@ -140,13 +137,26 @@ export function buildCriticMessages(
   },
 ): readonly ChatMessage[] {
   /**
+   * Fence no enclosed text can reproduce, chosen against every text below.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      targetText,
+      identityContext ?? '',
+      neighbouringSourceText ?? '',
+      neighbouringIncumbentText ?? '',
+    ],
+  },);
+
+  /**
    * Identity block plus its fence, or nothing at all when undeclared.
    * Placed BEFORE the documents so the declarations are read as given facts
    * rather than as a footnote to evidence already weighed.
    */
   const identityBlock = ((identityContext === undefined) || (identityContext.length === 0))
     ? ''
-    : `${FENCE} IDENTITY ${FENCE}
+    : `${fence} IDENTITY ${fence}
 ${identityContext}
 `;
 
@@ -174,11 +184,11 @@ ${identityContext}
       && ((neighbouringIncumbentText === undefined)
         || (neighbouringIncumbentText === ''))
     ? ''
-    : `${FENCE} NEARBY ORIGINAL, CONTEXT ONLY ${FENCE}
+    : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}
-${FENCE} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${FENCE}
+${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
 ${neighbouringIncumbentText ?? ''}
-${FENCE} ${NEARBY_RULE} ${FENCE}
+${fence} ${NEARBY_RULE} ${fence}
 `;
 
   return [
@@ -188,11 +198,11 @@ ${FENCE} ${NEARBY_RULE} ${FENCE}
     },
     {
       role: 'user',
-      content: `${identityBlock}${FENCE} ORIGINAL ${FENCE}
+      content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
-${FENCE} TRANSLATION ${FENCE}
+${fence} TRANSLATION ${fence}
 ${targetText}
-${nearbyBlock}${FENCE} END ${FENCE}`,
+${nearbyBlock}${fence} END ${fence}`,
     },
   ];
 }

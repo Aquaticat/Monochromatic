@@ -14,6 +14,7 @@ export { repairChunk, } from './repair-chunk.ts';
 export {
   type ChunkVerdict,
   describeChunkSettlement,
+  settleChunkFromChecks,
   settleChunkVerdict,
 } from './repair-chunk-verdict.ts';
 export {

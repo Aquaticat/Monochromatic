@@ -3,6 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
+import { selectFence, } from './prompt-fence.ts';
 
 //region Editor prompt
 // One prompt per editor model per chunk: the document pair plus numbered
@@ -12,10 +13,6 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 // envelopes from the same plan that built the prompt, and the deterministic
 // apply gate proves every change stayed inside its envelope.
 
-/**
- * Fence line separating instructions from document text.
- */
-const EDITOR_FENCE = '=====';
 
 /**
  * What the neighbouring blocks are for, stated inside the editor sheet.
@@ -252,21 +249,6 @@ export function buildEditorMessages(
   },
 ): EditorPromptPlan {
   /**
-   * The passages either side, or nothing when this slice stands alone.
-   */
-  const nearbyBlock = ((neighbouringSourceText === undefined)
-      || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
-    ? ''
-    : `${EDITOR_FENCE} NEARBY ORIGINAL, CONTEXT ONLY ${EDITOR_FENCE}
-${neighbouringSourceText ?? ''}
-${EDITOR_FENCE} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${EDITOR_FENCE}
-${neighbouringIncumbentText ?? ''}
-${EDITOR_FENCE} ${NEARBY_RULE} ${EDITOR_FENCE}
-`;
-
-  /**
    * Rendered region blocks in envelope order.
    */
   const blocks = envelopes.map(function toBlock(
@@ -280,6 +262,35 @@ ${EDITOR_FENCE} ${NEARBY_RULE} ${EDITOR_FENCE}
       issues,
     },);
   },);
+
+  /**
+   * Fence no enclosed text can reproduce, chosen against every text below,
+   * the rendered regions included.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      targetText,
+      neighbouringSourceText ?? '',
+      neighbouringIncumbentText ?? '',
+      ...blocks,
+    ],
+  },);
+
+  /**
+   * The passages either side, or nothing when this slice stands alone.
+   */
+  const nearbyBlock = ((neighbouringSourceText === undefined)
+      || (neighbouringSourceText === ''))
+      && ((neighbouringIncumbentText === undefined)
+        || (neighbouringIncumbentText === ''))
+    ? ''
+    : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
+${neighbouringSourceText ?? ''}
+${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
+${neighbouringIncumbentText ?? ''}
+${fence} ${NEARBY_RULE} ${fence}
+`;
 
   /**
    * System prompt with the calibration addendum composed in as one more
@@ -302,13 +313,13 @@ ${EDITOR_REPLY_BLOCK}`;
       },
       {
         role: 'user',
-        content: `${EDITOR_FENCE} ORIGINAL ${EDITOR_FENCE}
+        content: `${fence} ORIGINAL ${fence}
 ${sourceText}
-${EDITOR_FENCE} TRANSLATION ${EDITOR_FENCE}
+${fence} TRANSLATION ${fence}
 ${targetText}
-${nearbyBlock}${EDITOR_FENCE} EDIT REGIONS ${EDITOR_FENCE}
+${nearbyBlock}${fence} EDIT REGIONS ${fence}
 ${blocks.join('\n\n',)}
-${EDITOR_FENCE} END ${EDITOR_FENCE}`,
+${fence} END ${fence}`,
       },
     ],
     envelopes,

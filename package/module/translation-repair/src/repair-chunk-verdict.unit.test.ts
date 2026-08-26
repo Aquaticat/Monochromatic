@@ -31,7 +31,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  type AdjudicatedIssue,
   type ChunkVerdict,
+  parseDocument,
+  settleChunkFromChecks,
   settleChunkVerdict,
 } from '../dist/final/node/index.mjs';
 
@@ -205,6 +208,72 @@ await describe({
         expect(verdict.repairedText,).toBe(INCUMBENT_TEXT,);
         expect(verdict.patchSelected,).toBe(false,);
         expect(verdict.droppedDeclaredNames,).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Accepted issue the checkers were asked about.
+ *
+ * @param issueId - id the tallies are keyed by
+ *
+ * @returns Issue with no claims, which is all the settlement reads
+ *
+ * @example
+ * ```ts
+ * const issue = acceptedIssue({ issueId: 'issue-1', },);
+ * ```
+ */
+function acceptedIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssue {
+  return {
+    issueId,
+    status: 'accepted' as const,
+    severity: 'major' as const,
+    claims: [],
+    tallies: {},
+  };
+}
+
+await describe({
+  name: settleChunkFromChecks.name,
+  children: [
+    it({
+      name: 'CREDITS exactly the creditable issues the checker majority confirmed fixed, in issue order, and '
+        + 'none the tallies refuse or omit',
+      fn: async () => {
+        const settled = settleChunkFromChecks({
+          sliceIndex: CHUNK_INDEX,
+          incumbentText: INCUMBENT_TEXT,
+          patchedText: KEEPS_EVERY_NAME,
+          appliedOperations: [],
+          creditableIssues: [
+            acceptedIssue({ issueId: 'issue-1', },),
+            acceptedIssue({ issueId: 'issue-2', },),
+            acceptedIssue({ issueId: 'issue-3', },),
+          ],
+          tallies: {
+            'issue-1': {
+              fixed: 2,
+              notFixed: 0,
+              worse: 0,
+              resolved: true,
+              regressed: false,
+            },
+            'issue-2': {
+              fixed: 0,
+              notFixed: 2,
+              worse: 0,
+              resolved: false,
+              regressed: false,
+            },
+          },
+          envelopes: [],
+          targetDocument: parseDocument({ text: INCUMBENT_TEXT, },),
+          declaredNames: DECLARED_NAMES,
+        },);
+
+        expect(settled.resolvedIssueIds,).toEqual(['issue-1',],);
       },
     },),
   ],

@@ -4,6 +4,7 @@ import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SpanAnchor, } from './issue-model.ts';
 import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
+import { selectFence, } from './prompt-fence.ts';
 
 //region Adjudication prompt
 // One prompt per panelist per chunk, covering every cluster in it. Claims are
@@ -11,10 +12,6 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 // unreliable models mistype. The prompt never names proposers: adjudication
 // is provenance-blind by design.
 
-/**
- * Fence line separating instructions from document text.
- */
-const ADJUDICATION_FENCE = '=====';
 
 /**
  * What the neighbouring blocks are for, stated inside the panel sheet.
@@ -170,25 +167,6 @@ export function buildAdjudicationMessages(
   },
 ): AdjudicationPromptPlan {
   /**
-   * The passages either side, or nothing when this slice stands alone.
-   *
-   * PLACED BEFORE THE CLAIMS AND AFTER THE PAIR, so a panelist reads the
-   * evidence in the order the question needs it: what is under review, then
-   * what sits beside it, then what is alleged about the first.
-   */
-  const nearbyBlock = ((neighbouringSourceText === undefined)
-      || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
-    ? ''
-    : `${ADJUDICATION_FENCE} NEARBY ORIGINAL, CONTEXT ONLY ${ADJUDICATION_FENCE}
-${neighbouringSourceText ?? ''}
-${ADJUDICATION_FENCE} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${ADJUDICATION_FENCE}
-${neighbouringIncumbentText ?? ''}
-${ADJUDICATION_FENCE} ${NEARBY_RULE} ${ADJUDICATION_FENCE}
-`;
-
-  /**
    * Claim ids in numbering order, filled while rendering.
    */
   const claimIds: string[] = [];
@@ -243,6 +221,39 @@ ${evidence}`;
     ].join('\n',);
   },);
 
+  /**
+   * Fence no enclosed text can reproduce, chosen against every text below,
+   * the rendered claims included.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      targetText,
+      neighbouringSourceText ?? '',
+      neighbouringIncumbentText ?? '',
+      ...groupBlocks,
+    ],
+  },);
+
+  /**
+   * The passages either side, or nothing when this slice stands alone.
+   *
+   * PLACED BEFORE THE CLAIMS AND AFTER THE PAIR, so a panelist reads the
+   * evidence in the order the question needs it: what is under review, then
+   * what sits beside it, then what is alleged about the first.
+   */
+  const nearbyBlock = ((neighbouringSourceText === undefined)
+      || (neighbouringSourceText === ''))
+      && ((neighbouringIncumbentText === undefined)
+        || (neighbouringIncumbentText === ''))
+    ? ''
+    : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
+${neighbouringSourceText ?? ''}
+${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
+${neighbouringIncumbentText ?? ''}
+${fence} ${NEARBY_RULE} ${fence}
+`;
+
   return {
     messages: [
       {
@@ -251,13 +262,13 @@ ${evidence}`;
       },
       {
         role: 'user',
-        content: `${ADJUDICATION_FENCE} ORIGINAL ${ADJUDICATION_FENCE}
+        content: `${fence} ORIGINAL ${fence}
 ${sourceText}
-${ADJUDICATION_FENCE} TRANSLATION ${ADJUDICATION_FENCE}
+${fence} TRANSLATION ${fence}
 ${targetText}
-${nearbyBlock}${ADJUDICATION_FENCE} CLAIMS ${ADJUDICATION_FENCE}
+${nearbyBlock}${fence} CLAIMS ${fence}
 ${groupBlocks.join('\n\n',)}
-${ADJUDICATION_FENCE} END ${ADJUDICATION_FENCE}`,
+${fence} END ${fence}`,
       },
     ],
     claimIds,

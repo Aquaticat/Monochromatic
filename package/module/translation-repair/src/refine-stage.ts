@@ -4,7 +4,10 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { applyPatchOperations, } from './apply-patch.ts';
+import {
+  applyPatchOperations,
+  type PatchOperation,
+} from './apply-patch.ts';
 import {
   type Candidate,
   producerModelIds,
@@ -32,6 +35,7 @@ import {
 } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import { restoreTypography, } from './restore-typography.ts';
 
 //region Refinement stage
 // One slice's naturalness pass over already-repaired text.
@@ -238,7 +242,7 @@ export async function runRefineStage(
        * unchanged and in order.
        */
       const gated = resolution.operations
-        .filter(function survivesGate(operation,) {
+        .flatMap(function survivesGate(operation,): readonly PatchOperation[] {
           /**
            * Paragraph this operation replaces.
            */
@@ -247,20 +251,36 @@ export async function runRefineStage(
               return candidate.envelopeId === operation.envelopeId;
             },);
           if (envelope === undefined)
-            return false;
+            return [];
+
+          /**
+           * Replacement as it will ship, quote style restored, so the gate
+           * reads the shipped bytes rather than text a later pass alters.
+           */
+          const candidate = restoreTypography({
+            replacement: operation.newText,
+            replaced: envelope.baseText,
+            convention: repairedText,
+          },);
 
           /**
            * Structural verdict over the proposed replacement.
            */
           const verdict = gateParagraphRewrite({
             base: envelope.baseText,
-            candidate: operation.newText,
+            candidate,
             definitions,
           },);
-          if (verdict.kind === 'preserved')
-            return true;
+          if (verdict.kind === 'preserved') {
+            return [
+              {
+                ...operation,
+                newText: candidate,
+              },
+            ];
+          }
           rl.info(`${voice.modelId}: ${verdict.detail}`,);
-          return false;
+          return [];
         },);
       if (gated.length === 0)
         return [];

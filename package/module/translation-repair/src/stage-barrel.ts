@@ -11,6 +11,7 @@ export {
   heardNobodyAbout,
   RepairUnheardError,
   type RepairVoiceRecord,
+  type UnheardClaim,
 } from './repair-unheard.ts';
 export {
   attemptStageCall,

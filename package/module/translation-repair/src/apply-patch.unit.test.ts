@@ -410,3 +410,93 @@ await describe({
     },),
   ],
 },);
+
+/**
+ * Curly-quoted document, the convention the restoration reads.
+ */
+const CURLY_TEXT = 'The cat’s bowl stays full. It chases red butterflies.';
+
+await describe({
+  name: 'typography before the gates',
+  children: [
+    it({
+      name: 'REJECTS as unchanged an edit whose only difference is a flattened apostrophe, since the restored '
+        + 'text is what ships and it equals the region; before, the edit was recorded as applied',
+      fn: async () => {
+        /** Envelope over the first sentence. */
+        const { envelopes, } = deriveEditableEnvelopes({
+          issues: [
+            issue({
+              suffix: 'bowl',
+              status: 'accepted',
+              spans: [span({ startOffset: 0, endOffset: 26, },),],
+            },),
+          ],
+          targetText: CURLY_TEXT,
+        },);
+        /** The one envelope. */
+        const [envelope,] = envelopes;
+        if (envelope === undefined)
+          throw new Error('fixture derivation failed',);
+
+        const outcome = applyPatchOperations({
+          targetText: CURLY_TEXT,
+          envelopes,
+          operations: [
+            {
+              envelopeId: envelope.envelopeId,
+              baseHash: envelope.baseHash,
+              newText: "The cat's bowl stays full.",
+            },
+          ],
+          preservation: { mode: 'skip', },
+        },);
+
+        expect(outcome.applied,).toHaveLength(0,);
+        expect(outcome.rejected.map(function toReason(rejection,): string {
+          return rejection.reason;
+        },),).toEqual(['unchanged-region',],);
+        expect(outcome.patchedText,).toBe(CURLY_TEXT,);
+      },
+    },),
+
+    it({
+      name: 'records and ships the restored text for a real edit written with straight quotes',
+      fn: async () => {
+        /** Envelope over the first sentence. */
+        const { envelopes, } = deriveEditableEnvelopes({
+          issues: [
+            issue({
+              suffix: 'bowl',
+              status: 'accepted',
+              spans: [span({ startOffset: 0, endOffset: 26, },),],
+            },),
+          ],
+          targetText: CURLY_TEXT,
+        },);
+        /** The one envelope. */
+        const [envelope,] = envelopes;
+        if (envelope === undefined)
+          throw new Error('fixture derivation failed',);
+
+        const outcome = applyPatchOperations({
+          targetText: CURLY_TEXT,
+          envelopes,
+          operations: [
+            {
+              envelopeId: envelope.envelopeId,
+              baseHash: envelope.baseHash,
+              newText: "The cat's dish stays full.",
+            },
+          ],
+          preservation: { mode: 'skip', },
+        },);
+
+        expect(outcome.applied.map(function toText(operation,): string {
+          return operation.newText;
+        },),).toEqual(['The cat’s dish stays full.',],);
+        expect(outcome.patchedText,).toBe('The cat’s dish stays full. It chases red butterflies.',);
+      },
+    },),
+  ],
+},);

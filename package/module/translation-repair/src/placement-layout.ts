@@ -26,27 +26,217 @@ import { isInsertionChunk, } from './chunk-placement.ts';
 // is wrong from the output alone.
 
 /**
+ * What is wrong with one slice's span, in offset and count terms only.
+ *
+ * @example
+ * ```ts
+ * const fault: PlacementFault = { kind: 'hollow-content', startOffset: 12, };
+ * ```
+ */
+export type PlacementFault = {
+  /**
+   * Offsets that are not both whole numbers.
+   */
+  readonly kind: 'fractional-offsets';
+
+  /**
+   * Start as carried.
+   */
+  readonly startOffset: number;
+
+  /**
+   * End as carried.
+   */
+  readonly endOffset: number;
+} | {
+  /**
+   * Span reaching past the document, which slicing would clamp rather than
+   * refuse.
+   */
+  readonly kind: 'past-document';
+
+  /**
+   * Start as carried.
+   */
+  readonly startOffset: number;
+
+  /**
+   * End as carried.
+   */
+  readonly endOffset: number;
+
+  /**
+   * Characters the document holds.
+   */
+  readonly documentLength: number;
+} | {
+  /**
+   * Span ending before it starts, which slicing would read as empty.
+   */
+  readonly kind: 'backwards';
+
+  /**
+   * Start as carried.
+   */
+  readonly startOffset: number;
+
+  /**
+   * End as carried.
+   */
+  readonly endOffset: number;
+} | {
+  /**
+   * Insertion that covers characters, wording or nodes; a place covers none.
+   */
+  readonly kind: 'fat-anchor';
+
+  /**
+   * Characters the span covers.
+   */
+  readonly covered: number;
+
+  /**
+   * Characters of wording it carries.
+   */
+  readonly wordingLength: number;
+
+  /**
+   * Nodes it carries.
+   */
+  readonly nodeCount: number;
+} | {
+  /**
+   * Wording the document does not hold between these offsets: stale, cut
+   * from another document, or misplaced.
+   */
+  readonly kind: 'foreign-text';
+
+  /**
+   * Start as carried.
+   */
+  readonly startOffset: number;
+
+  /**
+   * End as carried.
+   */
+  readonly endOffset: number;
+} | {
+  /**
+   * Content covering nothing, which is an insertion that does not say so.
+   */
+  readonly kind: 'hollow-content';
+
+  /**
+   * Where it sits.
+   */
+  readonly startOffset: number;
+} | {
+  /**
+   * Span starting before the slice before it ends.
+   */
+  readonly kind: 'overlaps-previous';
+
+  /**
+   * Start as carried.
+   */
+  readonly startOffset: number;
+
+  /**
+   * Where the slice before it runs to.
+   */
+  readonly boundary: number;
+};
+
+/**
+ * Sentence for one fault, from its numbers alone.
+ *
+ * @param fault - what is wrong
+ *
+ * @returns Sentence completing "slice at position N ..."
+ *
+ * @example
+ * ```ts
+ * const said = placementSentence({ fault, },);
+ * ```
+ */
+function placementSentence({ fault, }: { readonly fault: PlacementFault; },): string {
+  if (fault.kind === 'fractional-offsets') {
+    return `carries offsets ${String(fault.startOffset,)} and ${String(fault.endOffset,)}, which are not both `
+      + 'whole numbers';
+  }
+  if (fault.kind === 'past-document') {
+    return `spans ${String(fault.startOffset,)} to ${String(fault.endOffset,)} in a document of ${
+      String(fault.documentLength,)
+    }, and slicing a string CLAMPS rather than fails`;
+  }
+  if (fault.kind === 'backwards') {
+    return `ends at ${String(fault.endOffset,)} before it starts at ${String(fault.startOffset,)}, which slicing `
+      + 'reads as an empty span rather than as the mistake it is';
+  }
+  if (fault.kind === 'fat-anchor') {
+    return `says it is an insertion while covering ${String(fault.covered,)} characters, ${
+      String(fault.wordingLength,)
+    } of wording and ${String(fault.nodeCount,)} nodes; a place covers none of the three`;
+  }
+  if (fault.kind === 'foreign-text') {
+    return `carries text the document does not hold between ${String(fault.startOffset,)} and ${
+      String(fault.endOffset,)
+    }: these offsets, this wording and this document do not describe one passage, whether because the slices `
+      + 'are stale, cut from another document, or misplaced';
+  }
+  if (fault.kind === 'hollow-content') {
+    return `is content covering nothing at ${String(fault.startOffset,)}; an empty span is an insertion, and `
+      + 'saying so is what tells assembly to write INTO it';
+  }
+  return `starts at ${String(fault.startOffset,)} while the slice before it runs to ${String(fault.boundary,)}, `
+    + 'so writing one would move or overwrite the other';
+}
+
+/**
  * Thrown when target spans cannot be written back into their document.
  *
  * @example
  * ```ts
- * throw new PlacementLayoutError({ message: 'slice 3 starts before slice 2 ends', },);
+ * throw new PlacementLayoutError({ position: 3, fault: { kind: 'overlaps-previous', startOffset: 4, boundary: 9, }, },);
  * ```
  */
 export class PlacementLayoutError extends Error {
   /**
+   * Declares this message safe to print whole at a boundary: it is written
+   * here from a position, offsets and counts, and quotes nothing.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * What could not be placed, for a caller that reads the fault rather than
+   * the sentence.
+   */
+  readonly fault: PlacementFault;
+
+  /**
    * Builds failure naming what cannot be placed.
    *
-   * @param message - what is wrong, in slice and offset terms
+   * @param position - where the slice sits in the list
+   *
+   * @param fault - what is wrong, in offset and count terms
    *
    * @example
    * ```ts
-   * throw new PlacementLayoutError({ message: 'slice 3 runs past the document', },);
+   * throw new PlacementLayoutError({ position: 3, fault: { kind: 'past-document', ... }, },);
    * ```
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  public constructor(
+    {
+      position,
+      fault,
+    }: {
+      readonly position: number;
+      readonly fault: PlacementFault;
+    },
+  ) {
+    super(`slice at position ${String(position,)} ${placementSentence({ fault, },)}`,);
     this.name = 'PlacementLayoutError';
+    this.fault = fault;
   }
 }
 
@@ -95,9 +285,12 @@ function assertSpanShape(
   const { endOffset, } = span;
   if ((!Number.isInteger(startOffset,)) || (!Number.isInteger(endOffset,))) {
     throw new PlacementLayoutError({
-      message: `slice at position ${String(position,)} carries offsets ${
-        String(startOffset,)
-      } and ${String(endOffset,)}, which are not both whole numbers`,
+      position,
+      fault: {
+        kind: 'fractional-offsets',
+        startOffset,
+        endOffset,
+      },
     },);
   }
   /**
@@ -107,16 +300,23 @@ function assertSpanShape(
   if ((startOffset < 0)
     || (endOffset > documentLength)) {
     throw new PlacementLayoutError({
-      message: `slice at position ${String(position,)} spans ${String(startOffset,)} to ${
-        String(endOffset,)
-      } in a document of ${String(documentLength,)}, and slicing a string CLAMPS rather than fails`,
+      position,
+      fault: {
+        kind: 'past-document',
+        startOffset,
+        endOffset,
+        documentLength,
+      },
     },);
   }
   if (startOffset > endOffset) {
     throw new PlacementLayoutError({
-      message: `slice at position ${String(position,)} ends at ${String(endOffset,)} before it starts at ${
-        String(startOffset,)
-      }, which slicing reads as an empty span rather than as the mistake it is`,
+      position,
+      fault: {
+        kind: 'backwards',
+        startOffset,
+        endOffset,
+      },
     },);
   }
   if (isInsertionChunk(span,)) {
@@ -140,10 +340,13 @@ function assertSpanShape(
     if (covers
       || (nodeCount > 0)) {
       throw new PlacementLayoutError({
-        message: `slice at position ${String(position,)} says it is an insertion while covering ${
-          String(endOffset - startOffset,)
-        } characters, ${String(wordingLength,)} of wording and ${String(nodeCount,)} nodes; a place `
-          + 'covers none of the three',
+        position,
+        fault: {
+          kind: 'fat-anchor',
+          covered: endOffset - startOffset,
+          wordingLength,
+          nodeCount,
+        },
       },);
     }
     return;
@@ -153,17 +356,21 @@ function assertSpanShape(
     endOffset,
   )) {
     throw new PlacementLayoutError({
-      message: `slice at position ${String(position,)} carries text the document does not hold between ${
-        String(startOffset,)
-      } and ${String(endOffset,)}: these offsets, this wording and this document do not describe one `
-        + 'passage, whether because the slices are stale, cut from another document, or misplaced',
+      position,
+      fault: {
+        kind: 'foreign-text',
+        startOffset,
+        endOffset,
+      },
     },);
   }
   if (startOffset === endOffset) {
     throw new PlacementLayoutError({
-      message: `slice at position ${String(position,)} is content covering nothing at ${
-        String(startOffset,)
-      }; an empty span is an insertion, and saying so is what tells assembly to write INTO it`,
+      position,
+      fault: {
+        kind: 'hollow-content',
+        startOffset,
+      },
     },);
   }
 }
@@ -224,9 +431,12 @@ export function assertPlacementLayout(
     const { startOffset, } = slice.target;
     if (startOffset < boundary) {
       throw new PlacementLayoutError({
-        message: `slice at position ${String(position,)} starts at ${String(startOffset,)} while the `
-          + `slice before it runs to ${String(boundary,)}, so writing one would move or overwrite the `
-          + 'other',
+        position,
+        fault: {
+          kind: 'overlaps-previous',
+          startOffset,
+          boundary,
+        },
       },);
     }
   }

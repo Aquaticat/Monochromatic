@@ -7,6 +7,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { selectFence, } from './prompt-fence.ts';
 
 //region Resolution check
 // Region changed does not mean issue resolved (settled architecture): after
@@ -15,10 +16,6 @@ import {
 // answer with issue numbers and a closed verdict vocabulary; a strict
 // majority of `fixed` verdicts across checkers marks an issue resolved.
 
-/**
- * Fence line separating instructions from document text.
- */
-const RESOLUTION_FENCE = '=====';
 
 /**
  * Every verdict a checker may cast on one issue, closed vocabulary.
@@ -156,6 +153,17 @@ export function buildResolutionMessages(
 ${claimLines.join('\n',)}`;
   },);
 
+  /**
+   * Fence no enclosed text can reproduce.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      patchedText,
+      ...blocks,
+    ],
+  },);
+
   return {
     messages: [
       {
@@ -164,13 +172,13 @@ ${claimLines.join('\n',)}`;
       },
       {
         role: 'user',
-        content: `${RESOLUTION_FENCE} ORIGINAL ${RESOLUTION_FENCE}
+        content: `${fence} ORIGINAL ${fence}
 ${sourceText}
-${RESOLUTION_FENCE} REVISED TRANSLATION ${RESOLUTION_FENCE}
+${fence} REVISED TRANSLATION ${fence}
 ${patchedText}
-${RESOLUTION_FENCE} ISSUES ${RESOLUTION_FENCE}
+${fence} ISSUES ${fence}
 ${blocks.join('\n\n',)}
-${RESOLUTION_FENCE} END ${RESOLUTION_FENCE}`,
+${fence} END ${fence}`,
       },
     ],
     issueIds: issues.map(function toId(issue,) {

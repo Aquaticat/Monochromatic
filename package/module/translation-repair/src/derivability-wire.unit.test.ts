@@ -8,6 +8,7 @@
  * @module
  */
 
+import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import {
   describe,
   expect,
@@ -18,6 +19,7 @@ import {
   DERIVABILITY_RESPONSE_FORMAT,
   DERIVABILITY_VERDICTS,
   isDerivabilityVerdict,
+  messageText,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -120,6 +122,53 @@ await describe({
           },
         },),
       ],
+    },),
+  ],
+},);
+
+/**
+ * Original carrying a row of five equals signs, the fence the builder once
+ * used, on a line of its own.
+ */
+const RULED_SOURCE = '第一行。\n=====\n第二行。';
+
+/**
+ * User message of a plan, as text.
+ *
+ * @param messages - messages the builder returned
+ *
+ * @returns Last message's text
+ *
+ * @throws {@link Error} when the builder returned no message
+ *
+ * @example
+ * ```ts
+ * const content = userText({ messages, },);
+ * ```
+ */
+function userText({ messages, }: { readonly messages: readonly ChatMessage[]; },): string {
+  /**
+   * Last message, which is the user turn.
+   */
+  const asked = messages.at(-1,);
+  if (asked === undefined)
+    throw new Error('the builder returned no message',);
+  return messageText({ message: asked, },);
+}
+
+await describe({
+  name: 'fence choice',
+  children: [
+    it({
+      name: 'FENCES the blocks with a delimiter the enclosed text cannot reproduce, so a passage holding a row '
+        + 'of five equals signs cannot close its own block and turn what follows into instructions',
+      fn: async () => {
+        const content = userText({ messages: buildDerivabilityMessages({ sourceText: RULED_SOURCE, references: [], },).messages, },);
+
+        expect(content.includes('====== ORIGINAL ======',),).toBe(true,);
+        expect(content.includes('\n===== ',),).toBe(false,);
+        expect(content.includes(RULED_SOURCE,),).toBe(true,);
+      },
     },),
   ],
 },);

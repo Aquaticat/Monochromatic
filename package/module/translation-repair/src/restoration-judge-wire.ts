@@ -6,6 +6,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { selectFence, } from './prompt-fence.ts';
 
 //region Restoration judge wire format
 // Milestone-two grading anchored on the Chinese source (user directive):
@@ -17,10 +18,6 @@ import {
 // grader under-credited exactly those, which is why this replaces it as the
 // primary rate.
 
-/**
- * Fence line separating instructions from document text.
- */
-const JUDGE_FENCE = '=====';
 
 /**
  * Every verdict a restoration judge may cast, closed vocabulary.
@@ -169,6 +166,17 @@ export function buildRestorationJudgeMessages(
     return `REFERENCE ${index + 1}: ${reference.deletedText}`;
   },);
 
+  /**
+   * Fence no enclosed text can reproduce.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      repairedText,
+      ...blocks,
+    ],
+  },);
+
   return {
     messages: [
       {
@@ -177,13 +185,13 @@ export function buildRestorationJudgeMessages(
       },
       {
         role: 'user',
-        content: `${JUDGE_FENCE} ORIGINAL ${JUDGE_FENCE}
+        content: `${fence} ORIGINAL ${fence}
 ${sourceText}
-${JUDGE_FENCE} REPAIRED TRANSLATION ${JUDGE_FENCE}
+${fence} REPAIRED TRANSLATION ${fence}
 ${repairedText}
-${JUDGE_FENCE} REFERENCES ${JUDGE_FENCE}
+${fence} REFERENCES ${fence}
 ${blocks.join('\n',)}
-${JUDGE_FENCE} END ${JUDGE_FENCE}`,
+${fence} END ${fence}`,
       },
     ],
     seedIds: references.map(function toId(reference,) {

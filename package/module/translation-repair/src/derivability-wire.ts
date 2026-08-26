@@ -5,6 +5,7 @@ import type {
   JudgeReference,
   RestorationJudgeWire,
 } from './restoration-judge-wire.ts';
+import { selectFence, } from './prompt-fence.ts';
 
 //region Derivability probe wire format
 // Calibration question behind the stable-partial verdicts: when a deleted
@@ -16,10 +17,6 @@ import type {
 // the numbered-judgment-sheet wire shape of the restoration judge; only the
 // question, the verdict vocabulary, and the resolution differ.
 
-/**
- * Fence line separating instructions from document text.
- */
-const PROBE_FENCE = '=====';
 
 /**
  * Every verdict a derivability judge may cast, closed vocabulary.
@@ -138,6 +135,16 @@ export function buildDerivabilityMessages(
     return `CANDIDATE ${index + 1}: ${reference.deletedText}`;
   },);
 
+  /**
+   * Fence no enclosed text can reproduce.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      ...blocks,
+    ],
+  },);
+
   return {
     messages: [
       {
@@ -146,11 +153,11 @@ export function buildDerivabilityMessages(
       },
       {
         role: 'user',
-        content: `${PROBE_FENCE} ORIGINAL ${PROBE_FENCE}
+        content: `${fence} ORIGINAL ${fence}
 ${sourceText}
-${PROBE_FENCE} CANDIDATES ${PROBE_FENCE}
+${fence} CANDIDATES ${fence}
 ${blocks.join('\n',)}
-${PROBE_FENCE} END ${PROBE_FENCE}`,
+${fence} END ${fence}`,
       },
     ],
     seedIds: references.map(function toId(reference,) {

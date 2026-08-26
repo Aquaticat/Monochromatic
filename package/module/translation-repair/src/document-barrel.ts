@@ -19,6 +19,7 @@ export {
 } from './slice-indexing.ts';
 export {
   assertPlacementLayout,
+  type PlacementFault,
   PlacementLayoutError,
 } from './placement-layout.ts';
 export {

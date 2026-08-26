@@ -24,12 +24,31 @@
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
+ * What a silent slice may wrongly claim.
+ *
+ * @example
+ * ```ts
+ * const claim: UnheardClaim = 'change';
+ * ```
+ */
+export type UnheardClaim = 'foreign-wording' | 'change';
+
+/**
+ * Sentence ending for each claim, fixed text keyed by the literal.
+ */
+const UNHEARD_CLAIMS: Readonly<Record<UnheardClaim, string>> = {
+  'foreign-wording': 'carries a wording that is not the archive\'s, so something produced text no stage was '
+    + 'recorded as having produced',
+  'change': 'claims a change',
+};
+
+/**
  * Reports a slice the repair lane heard nobody about that carries a wording
  * anyway.
  *
  * @example
  * ```ts
- * throw new RepairUnheardError({ message: 'slice 3 heard nobody and carries a repair', },);
+ * throw new RepairUnheardError({ sliceIndex: 3, claim: 'foreign-wording', },);
  * ```
  */
 export class RepairUnheardError extends Error {
@@ -39,15 +58,31 @@ export class RepairUnheardError extends Error {
   public override readonly name = 'RepairUnheardError';
 
   /**
-   * @param message - what the outcome claimed, naming the slice
+   * Declares this message safe to print whole at a boundary: it names a slice
+   * index and one of two fixed claims, and quotes nothing.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * @param sliceIndex - slice nobody spoke about
+   *
+   * @param claim - what the outcome nevertheless claimed
    *
    * @example
    * ```ts
-   * new RepairUnheardError({ message: 'slice 3 heard nobody and claims a change', },);
+   * new RepairUnheardError({ sliceIndex: 3, claim: 'change', },);
    * ```
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  public constructor(
+    {
+      sliceIndex,
+      claim,
+    }: {
+      readonly sliceIndex: number;
+      readonly claim: UnheardClaim;
+    },
+  ) {
+    super(`slice ${String(sliceIndex,)} heard no critic and was never refined, and ${UNHEARD_CLAIMS[claim]}`,);
   }
 }
 
@@ -153,16 +188,16 @@ export function assertUnheardKeptArchive(
   /**
    * Where the contradiction is, for a message that names one slice.
    */
-  const at = `slice ${String(outcome.sliceIndex,)}`;
   if (outcome.repairedText !== incumbentText) {
     throw new RepairUnheardError({
-      message: `${at} heard no critic and was never refined, and carries a wording that is not the `
-        + 'archive`s, so something produced text no stage was recorded as having produced',
+      sliceIndex: outcome.sliceIndex,
+      claim: 'foreign-wording',
     },);
   }
   if (outcome.changed) {
     throw new RepairUnheardError({
-      message: `${at} heard no critic and was never refined, and claims a change`,
+      sliceIndex: outcome.sliceIndex,
+      claim: 'change',
     },);
   }
 }

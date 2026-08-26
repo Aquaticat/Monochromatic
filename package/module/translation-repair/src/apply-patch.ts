@@ -293,7 +293,27 @@ export function applyPatchOperations(
       },);
       continue;
     }
-    if (operation.newText === envelope.baseText) {
+    /**
+     * Replacement with the document's quote style restored, which is what
+     * ships and therefore what every check below reads.
+     *
+     * RESTORED BEFORE THE CHECKS rather than after them. Editors flatten curly
+     * quotes to straight ones often enough that a repaired paragraph ends up
+     * reading differently from every paragraph around it, so the restoration
+     * is deterministic and recorded; run last, it altered text the preservation
+     * gate had already judged, and an edit that only flattened quotes shipped
+     * as an applied operation. The convention comes from the WHOLE text, not
+     * the replaced region alone: regions run to a median of 75 characters, so
+     * most carry no quote to learn from, and a region-scoped rule stays silent
+     * exactly when an editor writes a fresh contraction into a curly-quoted
+     * document.
+     */
+    const restored = restoreTypography({
+      replacement: operation.newText,
+      replaced: envelope.baseText,
+      convention: targetText,
+    },);
+    if (restored === envelope.baseText) {
       rejected.push({
         operation,
         reason: 'unchanged-region',
@@ -301,24 +321,13 @@ export function applyPatchOperations(
       continue;
     }
     claimed.add(operation.envelopeId,);
-    // Quote style is restored deterministically before the operation is
-    // recorded as applied. Editors flatten curly quotes to straight ones often
-    // enough that a repaired paragraph ends up reading differently from every
-    // paragraph around it, and the difference accumulates with each edit.
-    // Recording the restored text rather than what the editor wrote keeps the
-    // region's record equal to what shipped.
-    //
-    // The convention comes from the WHOLE text, not the replaced region alone.
-    // Regions run to a median of 75 characters, so most carry no quote to learn
-    // from, and a region-scoped rule stays silent exactly when an editor writes
-    // a fresh contraction into a curly-quoted document.
     if (preservation.mode === 'enforce') {
       /**
        * Whether the edit kept everything no issue asked it to change.
        */
       const preserved = checkPreservation({
         before: envelope.baseText,
-        after: operation.newText,
+        after: restored,
         licensedQuotes: preservation.licensedQuotes
           .get(envelope.envelopeId,)
           ?? [],
@@ -343,11 +352,7 @@ export function applyPatchOperations(
 
     applied.push({
       ...operation,
-      newText: restoreTypography({
-        replacement: operation.newText,
-        replaced: envelope.baseText,
-        convention: targetText,
-      },),
+      newText: restored,
     },);
   }
 
