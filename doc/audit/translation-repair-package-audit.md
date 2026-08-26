@@ -330,6 +330,11 @@ The comment at `:384-385` asserts a pairing this path breaks;
 `provider-router.unit.test.ts:519` covers only the Synthetic-to-Hyper direction.
 Tracked as `#240`.
 
+FIXED 2026-08-26 in `fd8ac6c7e`: the re-ask takes a Synthetic slot right after the budget read, with no
+`await` between, so the release in `callOn` pairs with a take in both directions.
+Guard: a Hyper-to-Synthetic re-ask followed by two concurrent calls still splits one slot between the providers;
+with the take removed both calls land on Synthetic (2 failing lines); restored, passes.
+
 ### provider-3, MAJOR, verified: the roster-to-catalog proof is a type nothing instantiates
 
 `src/hyper-catalog.ts:329` exports `HyperOnlyNamesAreServed` and no other line in `src` names it,
