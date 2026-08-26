@@ -7,6 +7,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { readSettledArtifact, } from '../artifact-read.ts';
 import { repairLaneRecordsOf, } from '../artifact-repair-lane-records.ts';
 import {
   type IssueCategory,
@@ -368,17 +369,42 @@ export async function readArtifactRecords(
   const dir = await resolveRunsDir();
 
   /**
-   * Repair lane's issue records, read through the version 2 parser so the walk
-   * to them is type-checked.
-   *
-   * READ FROM THE LANE, NOT FROM THE ROOT. This asked for `artifact.issues`,
-   * which version 2 does not write, so every call refused a well-formed
-   * artifact for carrying no issues at all.
+   * Whole artifact as written, read once and dispatched by generation.
    */
-  const { issues, } = repairLaneRecordsOf({
-    value: await readRunJson({ path: `${dir}/artifacts/${entryId}.json`, },),
-    path: `artifact ${entryId}`,
-  },);
+  const artifactValue = await readRunJson({ path: `${dir}/artifacts/${entryId}.json`, },);
+
+  /**
+   * Which generation wrote it, which decides where its issue records live.
+   */
+  const reading = readSettledArtifact({ value: artifactValue, },);
+
+  /**
+   * Issue records, and the path a refusal names for one of them.
+   *
+   * ROOT FOR THE LEGACY GENERATIONS, LANE FOR VERSION 2. This once read
+   * `artifact.issues` only, which version 2 does not write, so every call
+   * refused a well-formed two-lane artifact; the move to the lane then refused
+   * every legacy artifact instead, which is what the round-three draw consists
+   * of (`#257`). The dispatching reader already knows which is which.
+   */
+  const { issues, recordPath, } = (reading.kind === 'version-2')
+    ? {
+      issues: repairLaneRecordsOf({
+        value: artifactValue,
+        path: `artifact ${entryId}`,
+      },).issues,
+      recordPath: `artifact ${entryId}.lanes.repair.result.issues[]`,
+    }
+    : {
+      issues: requireArray({
+        value: requireRecord({
+          value: artifactValue,
+          path: `artifact ${entryId}`,
+        },).issues,
+        path: `artifact ${entryId}.issues`,
+      },),
+      recordPath: `artifact ${entryId}.issues[]`,
+    };
 
   return issues
     .map(function toRecord(value,): ArtifactRecord {
@@ -387,7 +413,7 @@ export async function readArtifactRecords(
        */
       const record = requireRecord({
         value,
-        path: `artifact ${entryId}.lanes.repair.result.issues[]`,
+        path: recordPath,
       },);
 
       return {

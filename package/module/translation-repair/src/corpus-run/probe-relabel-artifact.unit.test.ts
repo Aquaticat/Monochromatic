@@ -363,6 +363,30 @@ async function runsDir(): Promise<{
 }
 
 /**
+ * Builds an artifact of the generation before schema versions, the shape the
+ * round-three draw consists of: no version field and the issue records at the
+ * root.
+ *
+ * @param issues - issue records to place at the root
+ *
+ * @returns Artifact as its JSON would parse
+ *
+ * @example
+ * ```ts
+ * const artifact = legacyArtifact({ issues: [], },);
+ * ```
+ */
+function legacyArtifact(
+  { issues, }: { readonly issues: readonly unknown[]; },
+): Record<string, unknown> {
+  return {
+    id: ENTRY_ID,
+    status: 'settled',
+    issues,
+  };
+}
+
+/**
  * Writes one artifact into a throwaway run and reads its records back.
  *
  * @param artifact - whole artifact value
@@ -435,6 +459,27 @@ await describe({
 
         expect(records[0]?.repairRegions.length,).toBe(1,);
         expect(records[0]?.repairRegions[0]?.envelopeId,).toBe(ENVELOPE_ID,);
+      },
+    },),
+    it({
+      name: 'READS the issues from the ROOT of a legacy artifact, which is what the round-three draw '
+        + 'consists of (`#257`)',
+      fn: async () => {
+        // The reader once looked only at the lane, so every artifact written
+        // before schema versions refused at its first field, and the two
+        // round-three instruments could not run against their own draw.
+        const records = await recordsOf({
+          artifact: legacyArtifact({ issues: [issueRecord({ withRegions: true, },),], },),
+        },);
+        expect(records.length,).toBe(1,);
+        expect(records[0]?.issue.issueId,).toBe(ISSUE_ID,);
+        expect(records[0]?.repairRegions[0]?.envelopeId,).toBe(ENVELOPE_ID,);
+      },
+    },),
+    it({
+      name: 'READS a legacy artifact with no issues as no records, not as a refusal',
+      fn: async () => {
+        expect(await recordsOf({ artifact: legacyArtifact({ issues: [], },), },),).toEqual([],);
       },
     },),
     it({
