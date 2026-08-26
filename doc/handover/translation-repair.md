@@ -42,6 +42,76 @@ and any measurement a reader would otherwise re-run.
 What belongs in the history: closed work whose conclusion is already encoded in the code,
 and superseded reasoning kept only for its evidence.
 
+## AUDIT IN PROGRESS: the whole package, before any new work (`#236`, 2026-08-26)
+
+The owner's instruction, sent mid-turn, verbatim:
+"Do an exhaustive audit of the package so far.
+Focus on existing issues rather than branching into new ones for now,
+until you're confident there are no big existing issues."
+And, separately: "Update handover more aggressively."
+Both are in force.
+No new feature, lever, or measurement run starts until the audit closes;
+fixing an existing defect is in scope, and `#235` is finding one.
+
+### Baseline, measured at `b20120fbb` before anything was touched
+
+- `lint:types`: exit 0.
+- `lint:oxlint`: 0 warnings, 0 errors, 965 files.
+- `buildAndTest`: exit 0, 750 suites `] PASS `, 0 `] FAIL `,
+  log `~/temp/agent/audit-buildAndTest-20260826T024842Z.log`.
+- Source: 532 files, 150304 lines.
+  Tests: 432 files, 146083 lines.
+- 138 source files have no sibling `<name>.unit.test.ts`.
+  That heuristic overcounts, since a test elsewhere may cover them;
+  it is refined per file during the audit rather than trusted.
+
+### Method
+
+The source is partitioned into ten slices, every file in exactly one:
+`provider`, `translate`, `repair`, `probes`, `calibrate`, `consolidate`, `document`,
+`artifact`, `slices`, `rendering`.
+File lists: `~/temp/agent/audit-slices/<slice>.txt`.
+Each slice is read in full by a forked reviewer under seven lenses:
+silent failure (the `#235` class), wrong output, resilience under provider failure,
+corpus or key leakage, contract drift between prose and code,
+repo-rule violations the linters cannot see, and test-coverage gaps.
+Reports land in `~/temp/agent/audit-<slice>.md`.
+Every BLOCKER and MAJOR finding is re-verified at the cited line by the main session before it is recorded;
+a reviewer's word is a lead, not evidence.
+The verified, ranked result lands in `doc/audit/translation-repair-package-audit.md`,
+one task per BLOCKER or MAJOR, fixes in rank order after that.
+
+### Prior-session claims overturned so far, each against a primary source
+
+1.  `#235` cause.
+    Recorded as "in `budget-routing.ts`, not yet located"; that file is correct.
+    The cause is `createRunClient`'s unkeyed-Hyper fallback plus a launch without secrets.
+    Details under the OPEN DEFECT section, which is corrected in place.
+2.  Round count.
+    Recorded as twenty-two; the log holds twenty-five, all `5/10`.
+3.  Subagents.
+    The compaction summary carried "no subagents unless the user asks".
+    The transcript holds the owner's standing instruction, verbatim:
+    "For speed: If you have work you can defer to a Sonnet 5 subagent in parallel, defer to it."
+    Forks carry the audit's reading; verification stays with the main session.
+
+### Found while auditing, unfixed, owed
+
+- `RunConfigError` (`src/corpus-run/run-config.ts:45-60`) carries no `messageNamesOnly` marker,
+  so at the CLI boundary a missing key prints `refused by RunConfigError` plus a fault stack and exits 5,
+  muting the one thing the operator needs, the variable name.
+  Its unit test checks the message at the unit level only.
+  Fix rides with `#235`: make it a stated refusal, exit 6.
+- This file is 3352 lines against its own 2000-line cap.
+  The trim into `translation-repair-history.md` is owed in the audit's documentation pass.
+
+### State of the tree
+
+Worktree `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`,
+clean at the start of the audit.
+No run is in flight, and none starts until the audit closes.
+The `#235` fix is designed and advisor-reviewed; nothing of it is built yet.
+
 ## OPEN DEFECT: half the roster is sent to a provider that cannot serve it (2026-08-25)
 
 This is the most important open item in this file, and it is unfixed.
@@ -57,7 +127,10 @@ It started at 01:54:46 UTC and ended at 02:15:58 UTC, about twenty-one minutes,
 and it exited cleanly: no refusal line, no fault line, all four slices reported.
 
 Every single round it logged heard five of ten voices.
-Twenty-two rounds, `5/10 heard` on all twenty-two, no exceptions.
+Twenty-five rounds, `5/10 heard` on all twenty-five, no exceptions.
+(Re-measured 2026-08-26 with `grep -oE 'round: [0-9]+/[0-9]+ heard'`.
+The first count here was twenty-two; it came from a narrower anchor that required a stage prefix,
+and every round is `5/10` under either anchor, so the substance stands.)
 
 The five that were lost are exactly the five Charm Hyper endpoint labels,
 the ones whose identifiers do not carry an `hf:` prefix,
@@ -102,14 +175,23 @@ That is the defect to fix, and it has two halves that should not be conflated:
 
 1.  **The routing half.**
     A model that only one provider serves must never be offered to the other one.
-    `src/budget-routing.ts` is the file; its module note says the policy is
-    Synthetic first, overflow to Hyper, Hyper alone when Synthetic is dry.
-    That note does not describe what to do with a model Synthetic cannot serve at all,
-    and the note's own promise, that
-    "a model that no live provider serves is an outcome, not a throw",
-    is about no provider serving it, not about the wrong provider being asked.
-    Read the body past line 60.
-    I had read only lines 1 to 60 when this was written, so the cause is NOT yet located.
+    CAUSE LOCATED 2026-08-26, and it is NOT `src/budget-routing.ts`.
+    That file and `src/roster-reach.ts` were read in full and are correct:
+    a bare Charm Hyper label derives `{ onSynthetic: false, onHyper: true }` and routes to Hyper.
+    The misroute is the single-provider fallback in `createRunClient`,
+    `src/corpus-run/run-config.ts:611-617`:
+    when `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY` is unset it returns the bare Synthetic client,
+    and that client sends whatever model id it is handed to the wire with no catalog check
+    (`src/synthetic-client.ts:265`).
+    The log proves the process had no Hyper key:
+    `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set` appears four times, once per slice,
+    and no `METERS ` line exists at all, because the routing client was never built.
+    How the key went missing: arm A was launched with `nohup env ... node dist/final/node/editor-calibrate.mjs 4`
+    directly from the fork worktree `~/worktrees/tr-overlap`,
+    which has no `.env.local.json`, so nothing injected secrets;
+    the process inherited whatever that shell happened to hold.
+    The earlier pointer at `budget-routing.ts` was written after reading sixty lines of it,
+    and was wrong.
 
 2.  **The silence half.**
     Losing five of ten voices for an entire run should be loud.
@@ -154,8 +236,14 @@ Recorded because each one cost real time in this session.
 
 ### Exactly where to pick this up
 
-- Read `package/module/translation-repair/src/budget-routing.ts` in full,
-  then its call sites, and find where a bare Charm Hyper label is offered to Synthetic.
+- The cause is `createRunClient` in `package/module/translation-repair/src/corpus-run/run-config.ts`;
+  the fix design (require the Hyper key, catalog guard in the Synthetic client,
+  process-scoped seat tally reported by `reportingRefusals`, `RunConfigError` as a stated refusal)
+  is recorded on `#235`, advisor-reviewed, and held until the `#236` audit closes.
+- Launch rule from now on: a run starts through `mise run //package/module/translation-repair:<task>`
+  from a worktree that holds `.env.local.json`, so sops injects BOTH keys.
+  A fork made with `git worktree add` has no secrets file.
+  Never `nohup env ... node dist/...`.
 - The fix needs a test proven per `GFP`:
   a non-`hf:` model with Synthetic live must never produce a Synthetic call,
   and the test must be shown to fail with the fix removed.
