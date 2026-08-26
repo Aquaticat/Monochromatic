@@ -22,6 +22,7 @@ import {
   parsePreGrades,
   scoreGradeAgreement,
   scoreGradedPrecision,
+  StatedRefusalError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -367,8 +368,84 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(caught,).toBeInstanceOf(Error,);
+        expect(caught,).toBeInstanceOf(StatedRefusalError,);
         expect((caught as Error).message,).toContain('not the same draw',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'stated refusals over graded sheets and pre-grades',
+  children: [
+    it({
+      name: 'REFUSES a pre-grade file that misses a sheet position, even when its count matches, since every '
+        + 'lookup would otherwise read as a disagreement rather than as a file fault',
+      fn: async () => {
+        expect(function comparesShifted(): void {
+          scoreGradeAgreement({
+            agent: [
+              {
+                index: 0,
+                verdict: 'real-defect',
+                note: '',
+              },
+              {
+                index: 1,
+                verdict: 'false-positive',
+                note: '',
+              },
+            ],
+            human: parseGradedSheet({
+              text: catSheet({
+                answers: [
+                  '[Y]',
+                  '[N]',
+                ],
+              },),
+            },),
+          },);
+        },).toThrow(StatedRefusalError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a pre-grades file that is not an array as a stated refusal, so the boundary prints the '
+        + 'sentence rather than a fault with frames',
+      fn: async () => {
+        expect(function parsesObject(): void {
+          parsePreGrades({ text: '{}', },);
+        },).toThrow(StatedRefusalError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a sheet whose printed item number disagrees with its position, since a heading added, '
+        + 'deleted or duplicated by hand would renumber every later item against the pre-grades',
+      fn: async () => {
+        /**
+         * Sheet whose second heading says 3.
+         */
+        const renumbered = catSheet({
+          answers: [
+            '[Y]',
+            '[N]',
+          ],
+        },)
+          .replace('### 2.', '### 3.',);
+
+        /**
+         * Failure the reader raised.
+         */
+        let caught: unknown;
+        try {
+          parseGradedSheet({ text: renumbered, },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(StatedRefusalError,);
+        expect((caught as Error).message,).toContain('is headed 3',);
       },
     },),
   ],
