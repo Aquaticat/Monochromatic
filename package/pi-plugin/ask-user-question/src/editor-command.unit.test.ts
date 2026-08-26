@@ -13,6 +13,23 @@ await describe({
   name: resolveEditorCommand.name,
   children: [
     it({
+      name: 'prefers user config over VISUAL and EDITOR',
+      fn: async () => {
+        expect(resolveEditorCommand({
+          configuredEditor: 'nano --nowrap',
+          env: {
+            VISUAL: 'code --wait',
+            EDITOR: 'hx',
+          },
+          platform: 'linux',
+        },),)
+          .toEqual([
+            'nano',
+            '--nowrap',
+          ],);
+      },
+    },),
+    it({
       name: 'prefers VISUAL with configured arguments',
       fn: async () => {
         expect(resolveEditorCommand({

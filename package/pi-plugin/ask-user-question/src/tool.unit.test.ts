@@ -168,7 +168,7 @@ await describe({
          * Default-extension registration harness.
          */
         const harness = createPiHarness();
-        askUserQuestionExtension(harness.api,);
+        await askUserQuestionExtension(harness.api,);
         const tool = registeredTool(harness,);
         expect(tool.name,)
           .toBe(ASK_USER_QUESTION_TOOL_NAME,);

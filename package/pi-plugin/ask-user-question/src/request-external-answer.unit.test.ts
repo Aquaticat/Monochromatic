@@ -33,10 +33,12 @@ function respondingLauncher(
   {
     answer,
     completion,
+    expectedEditorCommand,
     precedeWithWrongToken = false,
   }: {
     readonly answer: string;
     readonly completion?: HelperCompletion;
+    readonly expectedEditorCommand?: readonly string[];
     readonly precedeWithWrongToken?: boolean;
   },
 ): AnswerTerminalLauncher {
@@ -51,6 +53,9 @@ function respondingLauncher(
      * Private helper request produced by extension.
      */
     const request = await readHelperRequest({ requestPath, },);
+    if (expectedEditorCommand !== undefined)
+      expect(request.editorCommand,)
+        .toEqual(expectedEditorCommand,);
     await writeFile(
       request.answerPath,
       answer,
@@ -121,9 +126,11 @@ await describe({
         expect(await requestExternalAnswer({
           cwd: process.cwd(),
           registry,
+          editorCommand: ['nano',],
           launch: respondingLauncher({
             answer: 'first\r\nsecond\r\n',
             completion: { status: 'submitted', },
+            expectedEditorCommand: ['nano',],
             precedeWithWrongToken: true,
           },),
         },),)
@@ -131,6 +138,34 @@ await describe({
             status: 'answered',
             answer: 'first\r\nsecond',
           },);
+      },
+    },),
+    it({
+      name: 'warns when resolved terminal and editor are Ghostty with Helix',
+      fn: async () => {
+        /**
+         * Captured compatibility warning messages.
+         */
+        const warnings: string[] = [];
+        await requestExternalAnswer({
+          cwd: process.cwd(),
+          registry: createRequestRegistry(),
+          editorCommand: ['hx',],
+          resolveTerminalEntryId: async () => 'com.mitchellh.ghostty.desktop',
+          warn: function captureWarning(message: string,): void {
+            warnings.push(message,);
+          },
+          launch: respondingLauncher({
+            answer: 'answer',
+            completion: { status: 'submitted', },
+          },),
+        },);
+        expect(warnings,)
+          .toHaveLength(1,);
+        expect(warnings[0],)
+          .toContain('Ghostty',);
+        expect(warnings[0],)
+          .toContain('Helix',);
       },
     },),
     it({

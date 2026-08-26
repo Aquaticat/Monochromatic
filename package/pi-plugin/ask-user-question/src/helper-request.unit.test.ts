@@ -72,25 +72,33 @@ await describe({
     it({
       name: 'accepts complete request',
       fn: async () => {
-        await using fixture = await requestFixture('{"host":"127.0.0.1","port":1234,"token":"token","answerPath":"/tmp/ANSWER.md"}',);
+        await using fixture = await requestFixture('{"host":"127.0.0.1","port":1234,"token":"token","answerPath":"/tmp/ANSWER.md","editorCommand":["nano","--nowrap"]}',);
         expect(await readHelperRequest({ requestPath: fixture.path, }),)
           .toEqual({
             host: '127.0.0.1',
             port: 1_234,
             token: 'token',
             answerPath: '/tmp/ANSWER.md',
+            editorCommand: [
+              'nano',
+              '--nowrap',
+            ],
           },);
       },
     },),
     ...[
       'null',
       '{}',
-      '{"host":"","port":1234,"token":"token","answerPath":"/tmp/a"}',
-      '{"host":"127.0.0.1","port":0,"token":"token","answerPath":"/tmp/a"}',
-      '{"host":"127.0.0.1","port":1.5,"token":"token","answerPath":"/tmp/a"}',
-      '{"host":"127.0.0.1","port":"1234","token":"token","answerPath":"/tmp/a"}',
-      '{"host":"127.0.0.1","port":1234,"token":"","answerPath":"/tmp/a"}',
-      '{"host":"127.0.0.1","port":1234,"token":"token","answerPath":""}',
+      '{"host":"","port":1234,"token":"token","answerPath":"/tmp/a","editorCommand":["nano"]}',
+      '{"host":"127.0.0.1","port":0,"token":"token","answerPath":"/tmp/a","editorCommand":["nano"]}',
+      '{"host":"127.0.0.1","port":1.5,"token":"token","answerPath":"/tmp/a","editorCommand":["nano"]}',
+      '{"host":"127.0.0.1","port":"1234","token":"token","answerPath":"/tmp/a","editorCommand":["nano"]}',
+      '{"host":"127.0.0.1","port":1234,"token":"","answerPath":"/tmp/a","editorCommand":["nano"]}',
+      '{"host":"127.0.0.1","port":1234,"token":"token","answerPath":"","editorCommand":["nano"]}',
+      '{"host":"127.0.0.1","port":1234,"token":"token","answerPath":"/tmp/a"}',
+      '{"host":"127.0.0.1","port":1234,"token":"token","answerPath":"/tmp/a","editorCommand":[]}',
+      '{"host":"127.0.0.1","port":1234,"token":"token","answerPath":"/tmp/a","editorCommand":[""]}',
+      '{"host":"127.0.0.1","port":1234,"token":"token","answerPath":"/tmp/a","editorCommand":[42]}',
     ].map(function toInvalidRequestTest(text,) {
       return it({
         name: `rejects ${text}`,

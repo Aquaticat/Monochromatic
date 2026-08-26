@@ -153,7 +153,7 @@ export async function createAnswerWorkspace(): Promise<AnswerWorkspace> {
  *
  * @example
  * ```ts
- * await writeHelperRequest({ workspace, request: { host: '127.0.0.1', port: 1234, token: 'token', answerPath: workspace.answerPath } });
+ * await writeHelperRequest({ workspace, request: { host: '127.0.0.1', port: 1234, token: 'token', answerPath: workspace.answerPath, editorCommand: ['nano'] } });
  * ```
  */
 export async function writeHelperRequest(

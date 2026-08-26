@@ -1,6 +1,8 @@
 import { fileURLToPath, } from 'node:url';
 
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts';
+import { resolveTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts/resolve.ts';
+import { NO_TERMINAL, } from '@monochromatic-dev/cli-terminal-exec/ts/validate.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { createAnswerChannel, } from './answer-channel.ts';
@@ -13,6 +15,14 @@ import {
   isBlankAnswer,
   normalizeEditorAnswer,
 } from './answer-text.ts';
+import {
+  GHOSTTY_HELIX_WARNING,
+  isGhosttyHelixCombination,
+} from './editor-compatibility.ts';
+import {
+  editorEnvironmentFromProcess,
+  resolveEditorCommand,
+} from './editor-command.ts';
 import type { RequestRegistry, } from './request-registry.ts';
 
 //region Constants
@@ -25,7 +35,12 @@ const ANSWER_HELPER_FILENAME = 'answer-helper.mjs';
 /**
  * Terminal title documents save-and-exit submission gesture.
  */
-const ANSWER_TERMINAL_TITLE = 'Pi answer: save and exit to submit (:wq)';
+const ANSWER_TERMINAL_TITLE = 'Pi answer: save and exit to submit';
+
+/**
+ * Sentinel for terminal-exec finding no usable terminal identity.
+ */
+const TERMINAL_ENTRY_ID_UNAVAILABLE: unique symbol = Symbol('ask-user-question/terminal-entry-id-unavailable',);
 
 //endregion Constants
 
@@ -61,7 +76,46 @@ export type AnswerTerminalLauncher = (
   },
 ) => Promise<void>;
 
+/**
+ * Resolves terminal-exec selected entry identity for compatibility checks.
+ */
+export type AnswerTerminalEntryIdResolver = () => Promise<string | typeof TERMINAL_ENTRY_ID_UNAVAILABLE>;
+
+/**
+ * Emits one compatibility warning through production logger or test capture.
+ */
+export type AnswerCompatibilityWarner = (message: string) => void;
+
 //endregion Types
+
+//region Defaults
+
+/**
+ * Resolves default terminal identity through terminal-exec.
+ *
+ * @returns selected entry ID,
+ * or undefined when no terminal resolves
+ */
+async function resolveDefaultTerminalEntryId(): Promise<string | typeof TERMINAL_ENTRY_ID_UNAVAILABLE> {
+  /**
+   * terminal-exec resolution result.
+   */
+  const terminal = await resolveTerminal();
+  return terminal === NO_TERMINAL
+    ? TERMINAL_ENTRY_ID_UNAVAILABLE
+    : terminal.entryId;
+}
+
+/**
+ * Emits compatibility warning through tagged module logger.
+ *
+ * @param message - detected terminal and editor risk
+ */
+function logCompatibilityWarning(message: string,): void {
+  l.warn(message,);
+}
+
+//endregion Defaults
 
 //region Request
 
@@ -73,6 +127,12 @@ export type AnswerTerminalLauncher = (
  * @param signal - tool cancellation signal
  *
  * @param registry - session-scoped request cleanup registry
+ *
+ * @param editorCommand - effective editor command passed privately to helper
+ *
+ * @param resolveTerminalEntryId - injectable terminal identity resolver
+ *
+ * @param warn - injectable warning sink
  *
  * @param launch - injectable terminal launcher
  *
@@ -93,14 +153,32 @@ export async function requestExternalAnswer(
     cwd,
     signal,
     registry,
+    editorCommand = resolveEditorCommand({
+      env: editorEnvironmentFromProcess(process.env,),
+      platform: process.platform,
+    },),
+    resolveTerminalEntryId = resolveDefaultTerminalEntryId,
+    warn = logCompatibilityWarning,
     launch = launchTerminal,
   }: {
     readonly cwd: string;
     readonly signal?: AbortSignal;
     readonly registry: RequestRegistry;
+    readonly editorCommand?: readonly string[];
+    readonly resolveTerminalEntryId?: AnswerTerminalEntryIdResolver;
+    readonly warn?: AnswerCompatibilityWarner;
     readonly launch?: AnswerTerminalLauncher;
   },
 ): Promise<ExternalAnswerOutcome> {
+  /**
+   * terminal-exec selected terminal identity.
+   */
+  const terminalEntryId = await resolveTerminalEntryId();
+  if (((typeof terminalEntryId) !== 'symbol') && isGhosttyHelixCombination({
+    terminalEntryId,
+    editorCommand,
+  },))
+    warn(GHOSTTY_HELIX_WARNING,);
   /**
    * Session-scoped cancellation handle for pending helper.
    */
@@ -129,6 +207,7 @@ export async function requestExternalAnswer(
       port: channel.port,
       token: channel.token,
       answerPath: workspace.answerPath,
+      editorCommand,
     },
   },);
   /**

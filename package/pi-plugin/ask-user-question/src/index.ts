@@ -1,6 +1,14 @@
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import {
+  type AskUserQuestionConfig,
+  loadAskUserQuestionConfig,
+} from './config.ts';
+import {
+  editorEnvironmentFromProcess,
+  resolveEditorCommand,
+} from './editor-command.ts';
 import { createRequestRegistry, } from './request-registry.ts';
 import { requestExternalAnswer, } from './request-external-answer.ts';
 import {
@@ -24,6 +32,8 @@ const l = tagged({ tag: 'ask-user-question:index', },);
  *
  * @param pi - host extension API
  *
+ * @param config - optional loaded user configuration
+ *
  * @param requestAnswer - optional test requester
  *
  * @example
@@ -34,9 +44,11 @@ const l = tagged({ tag: 'ask-user-question:index', },);
 export function registerAskUserQuestionExtension(
   {
     pi,
+    config,
     requestAnswer,
   }: {
     readonly pi: ExtensionAPI;
+    readonly config?: AskUserQuestionConfig;
     readonly requestAnswer?: ExternalAnswerRequester;
   },
 ): void {
@@ -55,6 +67,11 @@ export function registerAskUserQuestionExtension(
       return requestExternalAnswer({
         cwd,
         registry,
+        editorCommand: config?.editorCommand
+          ?? resolveEditorCommand({
+            env: editorEnvironmentFromProcess(process.env,),
+            platform: process.platform,
+          },),
         ...(signal === undefined ? {} : { signal, }),
       },);
     });
@@ -81,8 +98,15 @@ export function registerAskUserQuestionExtension(
  * askUserQuestionExtension(pi);
  * ```
  */
-export default function askUserQuestionExtension(pi: ExtensionAPI,): void {
-  registerAskUserQuestionExtension({ pi, },);
+export default async function askUserQuestionExtension(pi: ExtensionAPI,): Promise<void> {
+  /**
+   * User-level editor override loaded once per Pi extension session.
+   */
+  const config = await loadAskUserQuestionConfig();
+  registerAskUserQuestionExtension({
+    pi,
+    config,
+  },);
 }
 
 //endregion Registration
@@ -95,6 +119,17 @@ export {
   isBlankAnswer,
   normalizeEditorAnswer,
 } from './answer-text.ts';
+export {
+  AskUserQuestionConfigError,
+  askUserQuestionConfigPath,
+  loadAskUserQuestionConfig,
+  type AskUserQuestionConfig,
+  type LoadAskUserQuestionConfigOptions,
+} from './config.ts';
+export {
+  GHOSTTY_HELIX_WARNING,
+  isGhosttyHelixCombination,
+} from './editor-compatibility.ts';
 export {
   resolveEditorCommand,
   EditorCommandError,
@@ -112,6 +147,8 @@ export {
 } from './helper-protocol.ts';
 export {
   requestExternalAnswer,
+  type AnswerCompatibilityWarner,
+  type AnswerTerminalEntryIdResolver,
   type AnswerTerminalLauncher,
   type ExternalAnswerOutcome,
 } from './request-external-answer.ts';

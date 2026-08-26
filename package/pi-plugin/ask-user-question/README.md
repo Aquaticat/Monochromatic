@@ -48,13 +48,29 @@ The extension resolves the preferred terminal through
 `@monochromatic-dev/cli-terminal-exec`.
 It resolves the editor in this order:
 
-1. `$VISUAL`
-2. `$EDITOR`
-3. `notepad.exe` on Windows or `vi` elsewhere
+1. `editor` in `~/.pi/agent/extensions/pi-ask-user-question.json`
+2. `$VISUAL`
+3. `$EDITOR`
+4. `notepad.exe` on Windows or `vi` elsewhere
 
+The user-level JSON config accepts an editor executable with optional quoted arguments:
+
+```json
+{
+  "editor": "nano"
+}
+```
+
+Unknown keys,
+blank commands,
+and unsupported shell syntax fail extension startup with the config path in the diagnostic.
 The editor command must remain attached until editing finishes.
 For graphical editors,
-configure a wait flag such as `code --wait` in `$VISUAL` or `$EDITOR`.
+configure a wait flag such as `code --wait`.
+
+When terminal-exec resolves Ghostty and the effective editor is `hx` or `helix`,
+the extension emits a warning-level logger message about intermittent Escape handling.
+Choose another editor through the user-level config to avoid that pairing.
 
 The editor opens an empty,
 answer-only UTF-8 file.
@@ -67,11 +83,15 @@ copying,
 and links remain available.
 
 Save and exit to submit.
+In Nano,
+use `Ctrl+O`,
+`Enter`,
+then `Ctrl+X`.
 In Helix,
 Vim,
 and Neovim,
 use `:wq`.
-The launched terminal title also carries the `:wq` reminder.
+The launched terminal title gives an editor-neutral save-and-exit reminder.
 
 An empty or whitespace-only file cancels.
 A nonzero editor exit,

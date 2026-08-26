@@ -22,6 +22,10 @@ export type HelperRequest = {
    * Empty file whose saved content becomes user answer.
    */
   readonly answerPath: string;
+  /**
+   * Effective editor executable and configured arguments.
+   */
+  readonly editorCommand: readonly string[];
 };
 
 //endregion Type
@@ -67,6 +71,10 @@ export async function readHelperRequest(
     answerPath: requireStringField({
       value,
       key: 'answerPath',
+    },),
+    editorCommand: requireStringArrayField({
+      value,
+      key: 'editorCommand',
     },),
   };
 }
@@ -115,6 +123,46 @@ function requireStringField(
   if (((typeof field) !== 'string') || (field.length === 0))
     throw new Error(`Answer helper request ${key} must be a nonempty string.`,);
   return field;
+}
+
+/**
+ * Reads required nonempty string-array field.
+ *
+ * @param value - validated JSON record
+ *
+ * @param key - required array field name
+ *
+ * @returns validated string tokens
+ *
+ * @throws when field is absent,
+ * empty,
+ * or contains non-string or empty tokens
+ */
+function requireStringArrayField(
+  {
+    value,
+    key,
+  }: {
+    readonly value: Readonly<Record<string, unknown>>;
+    readonly key: string;
+  },
+): readonly string[] {
+  /**
+   * Array candidate from decoded request.
+   */
+  const field = value[key];
+  if (!Array.isArray(field,))
+    throw new Error(`Answer helper request ${key} must be a nonempty string array.`,);
+  if (field.length === 0)
+    throw new Error(`Answer helper request ${key} must be a nonempty string array.`,);
+  /**
+   * Validated editor command tokens.
+   */
+  return field.map(function requireCommandToken(token,) {
+    if (((typeof token) !== 'string') || (token.length === 0))
+      throw new Error(`Answer helper request ${key} must be a nonempty string array.`,);
+    return token;
+  },);
 }
 
 /**

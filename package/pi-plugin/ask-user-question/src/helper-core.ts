@@ -75,6 +75,7 @@ export async function runAnswerHelper(
      */
     const status = await runEditor({
       answerPath: request.answerPath,
+      editorCommand: request.editorCommand,
       signal: controller.signal,
     },);
     await sendCompletion({

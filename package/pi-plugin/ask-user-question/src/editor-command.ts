@@ -48,11 +48,43 @@ export class EditorCommandError extends Error {
 //region Resolution
 
 /**
- * Resolves a blocking editor command from standard environment variables.
+ * Copies editor keys from process environment into narrow resolver input.
  *
- * `$VISUAL` takes precedence over `$EDITOR`.
+ * @param env - process environment supplied by host runtime
+ *
+ * @returns present VISUAL and EDITOR string values
+ *
+ * @example
+ * ```ts
+ * editorEnvironmentFromProcess(process.env);
+ * ```
+ */
+export function editorEnvironmentFromProcess(
+  env: Readonly<NodeJS.ProcessEnv>,
+): EditorEnvironment {
+  /**
+   * Optional visual editor value.
+   */
+  const visual = env.VISUAL;
+  /**
+   * Optional general editor value.
+   */
+  const editor = env.EDITOR;
+  return {
+    ...(visual === undefined ? {} : { VISUAL: visual, }),
+    ...(editor === undefined ? {} : { EDITOR: editor, }),
+  };
+}
+
+/**
+ * Resolves a blocking editor command from user config and standard environment variables.
+ *
+ * User config takes precedence over `$VISUAL`,
+ * then `$EDITOR`.
  * Windows falls back to `notepad.exe`;
  * other platforms fall back to `vi`.
+ *
+ * @param configuredEditor - optional user-level config override
  *
  * @param env - editor environment
  *
@@ -69,13 +101,19 @@ export class EditorCommandError extends Error {
  */
 export function resolveEditorCommand(
   {
+    configuredEditor,
     env,
     platform,
   }: {
+    readonly configuredEditor?: string;
     readonly env: EditorEnvironment;
     readonly platform: NodeJS.Platform;
   },
 ): readonly string[] {
+  if (((typeof configuredEditor) === 'string') && (configuredEditor.trim()
+    .length
+    > 0))
+    return parseEditorCommand({ command: configuredEditor.trim(), },);
   /**
    * Preferred visual editor from external process environment.
    */

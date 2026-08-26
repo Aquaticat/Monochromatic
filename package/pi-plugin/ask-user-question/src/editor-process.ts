@@ -6,8 +6,6 @@ import {
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { resolveEditorCommand, } from './editor-command.ts';
-
 //region Logger
 
 /**
@@ -33,6 +31,8 @@ export type EditorExit = 'submitted' | 'cancelled';
  *
  * @param answerPath - private answer file opened by editor
  *
+ * @param editorCommand - effective executable and configured arguments from Pi process
+ *
  * @param signal - cancellation signal from Pi channel
  *
  * @returns submitted for zero exit,
@@ -42,40 +42,20 @@ export type EditorExit = 'submitted' | 'cancelled';
  *
  * @example
  * ```ts
- * await runEditor({ answerPath: '/tmp/ANSWER.md', signal: new AbortController().signal });
+ * await runEditor({ answerPath: '/tmp/ANSWER.md', editorCommand: ['nano'], signal: new AbortController().signal });
  * ```
  */
 export async function runEditor(
   {
     answerPath,
+    editorCommand,
     signal,
   }: {
     readonly answerPath: string;
+    readonly editorCommand: readonly string[];
     readonly signal: AbortSignal;
   },
 ): Promise<EditorExit> {
-  /**
-   * Visual editor environment copied from host process.
-   */
-  const visual = process
-    .env
-    .VISUAL;
-  /**
-   * General editor environment copied from host process.
-   */
-  const editor = process
-    .env
-    .EDITOR;
-  /**
-   * Preferred editor executable and configured arguments.
-   */
-  const editorCommand = resolveEditorCommand({
-    env: {
-      ...(visual === undefined ? {} : { VISUAL: visual, }),
-      ...(editor === undefined ? {} : { EDITOR: editor, }),
-    },
-    platform: process.platform,
-  },);
   /**
    * Executable guaranteed by nonempty editor resolver result.
    */
@@ -83,7 +63,7 @@ export async function runEditor(
   if (executable === undefined)
     throw new Error('Resolved editor command did not contain an executable.',);
   l.info(`launching configured editor: ${executable}`,);
-  console.log('Write your answer, then save and exit to submit (:wq). Leave the file empty to cancel.',);
+  console.log('Write your answer, then save and exit to submit. Leave the file empty to cancel.',);
   /**
    * Editor process inherits detached terminal streams.
    */
