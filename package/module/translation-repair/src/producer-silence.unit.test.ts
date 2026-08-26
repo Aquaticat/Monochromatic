@@ -287,5 +287,26 @@ await describe({
         expect(lines[0],).toContain('covers 1 of 4 seats',);
       },
     },),
+
+    it({
+      name: 'POINTS AT THE SEAT LINES from the silent-seat sentence, since this line cannot tell a '
+        + 'budget refusal from a timeout from a seat failing every call and the seat report can '
+        + '(calibrate-1)',
+      fn: async () => {
+        /**
+         * Line about the silent models, which has to say where the per-seat
+         * counts are.
+         */
+        const lines = coverageGapLines({
+          coverage: readStandingCoverage({
+            roster: ROSTER,
+            standings: [standingOf({ modelId: JUDGED, },),],
+            produced: [JUDGED,],
+          },),
+        },);
+
+        expect(lines[0],).toContain('the SEAT lines at the end of this command',);
+      },
+    },),
   ],
 },);

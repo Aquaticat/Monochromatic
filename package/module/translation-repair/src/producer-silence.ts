@@ -221,9 +221,10 @@ export function coverageGapLines(
       : [
         `WROTE NOTHING AT ALL: ${silent}. No candidate of theirs reached any slate, so the table `
         + `covers ${String(described,)} of ${String(seats,)} seats. A provider out of budget, a `
-          + 'refused sheet and a call that timed out all look like this from here; the run log '
-          + 'names which. Re-run these seats before reading the table as a comparison of the '
-          + 'roster.',
+          + 'refused sheet and a call that timed out all look like this from here; the SEAT lines '
+          + 'at the end of this command say how often each seat was asked and how many answers '
+          + 'were usable, and the run log names the failure. Re-run these seats before reading '
+          + 'the table as a comparison of the roster.',
       ]),
   ];
 }
