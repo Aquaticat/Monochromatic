@@ -53,6 +53,14 @@ which is what the source says. Three defects remain:
 -   TYPOGRAPHY. "non-binary" was written with U+2011 NON-BREAKING HYPHEN rather than the ASCII hyphen the archive
     used. Measured across every published page on disk (14 pages): the characters pages introduce relative to the
     archive are U+2019 (4, in two pages) and U+2011 (1, this page). Nothing normalizes punctuation at assembly.
+    MEASURED CORPUS-WIDE at the pin, over all 92 archive `page.en.md` files, before deciding what that means: 85
+    pages carry typographic quotes (33 only typographic, 52 mixed with straight, 4 straight only, 3 neither), with
+    1173 U+2019, 525 U+201C, 528 U+201D, 228 U+2014 and 86 U+2026 in total; U+2011 occurs 11 times and U+2013 7.
+    So a U+2019 the pipeline writes is the archive's own majority convention, not a foreign character, and the
+    earlier wording "the archive never used" was true of the pages read and false of the corpus. What remains a
+    defect is the narrower class: a character whose difference from its plain counterpart a reader cannot see
+    (U+2011 against the hyphen, and by the same reasoning U+00A0 and U+00AD) written where neither source nor
+    archive page has it. That class is a normalization, not a house-style question for the owner.
 
 Everything else on the page is faithful and in places more faithful than the archive (the added "it could be very
 painful" in the quote is gone).
@@ -83,7 +91,8 @@ painful" in the quote is gone).
 2.  In-page terminology inconsistency.
 3.  Name rendering: handle where the source uses the alias.
 4.  Lexical ambiguity introduced by a change (伙伴 as "partner").
-5.  Punctuation characters introduced by models (U+2011, U+2019) with no normalization.
+5.  Invisible-variant punctuation introduced by models (U+2011 for the hyphen) with no normalization; U+2019 is
+    the archive's own majority convention and stays.
 6.  Source hyperlinks lost by inheriting an archive sentence.
 
 ## The fresh pass on the current build
