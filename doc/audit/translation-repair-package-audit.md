@@ -343,6 +343,12 @@ at run time as one `NoProviderForModelError` per call, converted by `attemptStag
 voice: the `#235` class again, one roster edit away.
 Tracked as `#241`.
 
+FIXED 2026-08-26 in `bbbd5f2c5` and `995b76f30`: the proof is a value (`HYPER_ONLY_NAMES_ARE_SERVED`) that fails
+the type check when the conditional resolves to `never`, `hyperServesLabel` reads the Hyper catalog under a
+label's exact spelling, and three cases open `roster-reach.unit.test.ts` pinning the roster against both catalogs.
+Guard: a bogus Hyper-only roster label makes `lint:types` fail at the value (TS2322) and the two roster cases
+fail naming the label; restored, passes.
+
 ### provider-4, MAJOR (mechanism verified, frequency unknown): text and tool deltas fold into one answer
 
 `src/anthropic-completion.ts:249-262` pushes both `text_delta` and `input_json_delta` fragments

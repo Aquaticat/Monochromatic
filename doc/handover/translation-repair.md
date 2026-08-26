@@ -166,8 +166,10 @@ necessary and not sufficient, because inventory-style suites read the whole sour
 The second whole-suite run, at `6d19c68a0`, passed 759 of 759.
 `#239` landed in `7103ae59c`: a sole-adopted envelope records an `adopted` round and keeps its authors;
 the whole suite passed 759 of 759 behind it.
-`#240` landed in `fd8ac6c7e` (HEAD): the re-ask takes the Synthetic slot it releases; a whole-suite run is in flight.
-Queue: `#241` onward in task order.
+`#240` landed in `fd8ac6c7e`: the re-ask takes the Synthetic slot it releases; the whole suite passed 759 of 759.
+`#241` landed in `bbbd5f2c5` and `995b76f30` (HEAD): the roster-to-catalog proof is a value and a test;
+a whole-suite run is in flight.
+Queue: `#242` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
