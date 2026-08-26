@@ -1250,6 +1250,11 @@ await describe({
 
         expect(refusalOfComparisonDisagrees,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfComparisonDisagrees as Error).message,).toContain('CatEntry1.comparison[0]',);
+        // The differing field is named; the stored row, which carries the archive
+        // text and both lanes' output, is not quoted into a marked message that
+        // every CLI prints (`#237`).
+        expect((refusalOfComparisonDisagrees as Error).message,).toContain('laneRelation',);
+        expect((refusalOfComparisonDisagrees as Error).message,).not.toContain('"repairText"',);
       },
     },),
     it({

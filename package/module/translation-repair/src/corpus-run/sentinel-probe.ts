@@ -1,3 +1,4 @@
+import { refusalText, } from '../refusal-text.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { repairTranslation, } from '../repair-entry.ts';
 import {
@@ -161,15 +162,14 @@ async function probeCorpusEntries(): Promise<void> {
     }
     catch (error) {
       /**
-       * Trimmed failure text for the PROBE line.
+       * Failure text for the PROBE line: a marked class in its own words,
+       * anything else by name only (`#237`); capped after that.
        */
-      const message = Error.isError(error,)
-        ? error.message
-          .slice(
+      const message = refusalText({ error, },)
+        .slice(
           0,
           ERROR_MESSAGE_CAP,
-        )
-        : String(error,);
+        );
       console.log(`PROBE ${id} status=ERROR ms=${String(Date.now() - t0,)} error=${message}`,);
     }
   }

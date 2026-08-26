@@ -6,7 +6,7 @@ import type {
   ArtifactSliceOutcome,
 } from './artifact-two-lane-vocabulary.ts';
 
-import { comparisonRowsEqual, } from './artifact-two-lane-row-equality.ts';
+import { comparisonRowDifferences, } from './artifact-two-lane-row-equality.ts';
 
 //region Artifact version 2 comparison
 // How version 2 decides what a comparison row SAYS, frozen the way its
@@ -277,7 +277,7 @@ export function compareLanes(
  * whether version 2 changed with them, which is a version 3, or whether the
  * change was a defect.
  *
- * COMPARED FIELD BY FIELD through {@link comparisonRowsEqual}, so key order
+ * COMPARED FIELD BY FIELD through {@link comparisonRowDifferences}, so key order
  * does not decide it: two rows carrying the same values in a different order
  * are the same row, and the reader comparing a recorded row read off disk
  * against a derived one needs exactly that reading.
@@ -323,14 +323,19 @@ export function assertDerivationsAgree(
         message: `the pipeline has no comparison row at position ${String(position,)}`,
       },);
     }
-    if (!comparisonRowsEqual({
+    /**
+     * Fields the two derivations disagree on, named and never quoted: the rows
+     * carry slice text, and this message reaches the pass's stdout (`#237`).
+     */
+    const differing = comparisonRowDifferences({
       left: row,
       right: theirs,
-    },)) {
+    },);
+    if (differing.length > 0) {
       throw new ArtifactComparisonError({
         message: `version 2 and the pipeline disagree about slice ${
           String(row.sliceIndex,)
-        }: version 2 says ${JSON.stringify(row,)} and the pipeline says ${JSON.stringify(theirs,)}. `
+        } on ${differing.join(', ',)}. `
           + 'One of them changed, and which artifacts mean what depends on which',
       },);
     }

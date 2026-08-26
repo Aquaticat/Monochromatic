@@ -17,6 +17,7 @@ import {
   prepareDocumentPair,
   type PreparedDocumentPair,
 } from '../document-preparation.ts';
+import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { verifyArtifactAgainstPreparation, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
@@ -201,7 +202,7 @@ function verifySettled(
   catch (error) {
     return {
       kind: 'refused',
-      detail: caughtValueText(error,),
+      detail: refusalText({ error, },),
     };
   }
 }

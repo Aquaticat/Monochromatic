@@ -140,17 +140,84 @@ export function decisionsEqual(
 }
 
 /**
- * Whether two comparison rows say the same thing.
+ * Names of the comparison-row fields that differ between two rows, in the
+ * order the row is written, empty when the rows agree.
+ *
+ * NAMES, NEVER VALUES: the rows carry the archive text and both lanes' output,
+ * and the callers put this into refusal messages that reach stdout (`#237`).
  *
  * @param left - one row
  *
- * @param right - the other
+ * @param right - the other row
  *
- * @returns Whether every field version 2 owns agrees
+ * @returns Field names that differ
  *
  * @example
  * ```ts
- * const same = comparisonRowsEqual({ left: frozen, right: recorded, },);
+ * const differing = comparisonRowDifferences({ left: stored, right: derived, },);
+ * ```
+ */
+export function comparisonRowDifferences(
+  {
+    left,
+    right,
+  }: {
+    readonly left: ArtifactComparisonRow;
+    readonly right: ArtifactComparisonRow;
+  },
+): readonly string[] {
+  /**
+   * Each field with whether the two rows agree on it.
+   */
+  const checks: readonly (readonly [string, boolean])[] = [
+    ['sliceIndex', left.sliceIndex === right.sliceIndex,],
+    ['incumbentKind', left.incumbentKind === right.incumbentKind,],
+    ['incumbentText', left.incumbentText === right.incumbentText,],
+    ['repairText', left.repairText === right.repairText,],
+    ['translateText', left.translateText === right.translateText,],
+    ['laneRelation', left.laneRelation === right.laneRelation,],
+    ['repairOutcome', outcomesEqual({
+      left: left.repairOutcome,
+      right: right.repairOutcome,
+    },),],
+    ['translateOutcome', outcomesEqual({
+      left: left.translateOutcome,
+      right: right.translateOutcome,
+    },),],
+    ['decisionComparison', decisionsEqual({
+      left: left.decisionComparison,
+      right: right.decisionComparison,
+    },),],
+    ['repairDelivery', deliveriesEqual({
+      left: left.repairDelivery,
+      right: right.repairDelivery,
+    },),],
+    ['translateDelivery', deliveriesEqual({
+      left: left.translateDelivery,
+      right: right.translateDelivery,
+    },),],
+  ];
+  return checks
+    .filter(function differs([, same,],): boolean {
+      return !same;
+    },)
+    .map(function toName([name,],): string {
+      return name;
+    },);
+}
+
+/**
+ * Whether two comparison rows agree on every field.
+ *
+ * @param left - one row
+ *
+ * @param right - the other row
+ *
+ * @returns Whether no field differs
+ *
+ * @example
+ * ```ts
+ * const same = comparisonRowsEqual({ left: stored, right: derived, },);
  * ```
  */
 export function comparisonRowsEqual(
@@ -162,32 +229,10 @@ export function comparisonRowsEqual(
     readonly right: ArtifactComparisonRow;
   },
 ): boolean {
-  return (left.sliceIndex === right.sliceIndex)
-    && (left.incumbentKind === right.incumbentKind)
-    && (left.incumbentText === right.incumbentText)
-    && (left.repairText === right.repairText)
-    && (left.translateText === right.translateText)
-    && (left.laneRelation === right.laneRelation)
-    && outcomesEqual({
-      left: left.repairOutcome,
-      right: right.repairOutcome,
-    },)
-    && outcomesEqual({
-      left: left.translateOutcome,
-      right: right.translateOutcome,
-    },)
-    && decisionsEqual({
-      left: left.decisionComparison,
-      right: right.decisionComparison,
-    },)
-    && deliveriesEqual({
-      left: left.repairDelivery,
-      right: right.repairDelivery,
-    },)
-    && deliveriesEqual({
-      left: left.translateDelivery,
-      right: right.translateDelivery,
-    },);
+  return comparisonRowDifferences({
+    left,
+    right,
+  },).length === 0;
 }
 
 //endregion Artifact version 2 row equality

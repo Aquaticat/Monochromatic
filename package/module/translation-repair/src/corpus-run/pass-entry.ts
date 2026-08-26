@@ -2,6 +2,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { refusalText, } from '../refusal-text.ts';
 import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { readDocumentPictures, } from '../document-readings.ts';
@@ -517,15 +518,15 @@ async function runEntryPipeline(
     const { aborted, } = deadline.callSignal;
 
     /**
-     * Trimmed failure text for the TALLY line.
+     * Failure text for the TALLY line: a class that declared its message
+     * quote-free says it, anything else is named and not quoted, since stdout
+     * is read, grepped, and pasted (`#237`); capped after that.
      */
-    const message = Error.isError(error,)
-      ? error.message
-        .slice(
-          0,
-          ERROR_MESSAGE_CAP,
-        )
-      : String(error,);
+    const message = refusalText({ error, },)
+      .slice(
+        0,
+        ERROR_MESSAGE_CAP,
+      );
     console.log(`TALLY ${entry.id} status=ERROR ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,);
     return { kind: 'failed', };
   }
@@ -639,13 +640,11 @@ export async function settleEntry(
     // nothing else: the next run skips the entry on its artifact.
     console.log(
       `CLEANUP ${entry.id} cache=retained error=${
-        Error.isError(error,)
-          ? error.message
-            .slice(
-              0,
-              ERROR_MESSAGE_CAP,
-            )
-          : String(error,)
+        refusalText({ error, },)
+          .slice(
+            0,
+            ERROR_MESSAGE_CAP,
+          )
       }`,
     );
   }

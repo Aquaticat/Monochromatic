@@ -1,7 +1,7 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { compareLanes, } from './artifact-two-lane-comparison.ts';
-import { comparisonRowsEqual, } from './artifact-two-lane-row-equality.ts';
+import { comparisonRowDifferences, } from './artifact-two-lane-row-equality.ts';
 import type {
   ArtifactComparisonRow,
   ArtifactDeliveryRow,
@@ -143,15 +143,21 @@ export function assertRecordedComparisonMatches(
     // FIELD BY FIELD rather than by serialized bytes, since these rows came off
     // disk in whatever key order the file wrote them and key order is not part
     // of what a row says.
-    if (!comparisonRowsEqual({
+    /**
+     * Fields on which the stored row and the derived one disagree. NAMES ONLY:
+     * the rows carry the archive text and both lanes' output, and this reason
+     * reaches a marked class whose message every CLI prints (`#237`).
+     */
+    const differing = comparisonRowDifferences({
       left: row,
       right: theirs,
-    },)) {
+    },);
+    if (differing.length > 0) {
       throw new ArtifactParseError({
         path: `${path}[${String(position,)}]`,
         reason: `what this version's rules derive for slice ${
           String(row.sliceIndex,)
-        } from the ledgers stored beside it, which is ${JSON.stringify(row,)}`,
+        } from the ledgers stored beside it; the stored row differs on ${differing.join(', ',)}`,
       },);
     }
   }

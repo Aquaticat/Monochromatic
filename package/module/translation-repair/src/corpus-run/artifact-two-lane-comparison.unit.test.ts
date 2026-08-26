@@ -29,6 +29,7 @@ import {
   type ArtifactDeliveryRow,
   assertDerivationsAgree,
   compareLanes,
+  comparisonRowDifferences,
   comparisonRowsEqual,
   decisionsEqual,
   deliveriesEqual,
@@ -463,6 +464,10 @@ await describe({
 
         expect(refusalOfDerivationsDiffer,).toBeInstanceOf(ArtifactComparisonError,);
         expect((refusalOfDerivationsDiffer as Error).message,).toContain('disagree about slice 0',);
+        // The field is named; the rows, which carry slice text, are not quoted.
+        expect((refusalOfDerivationsDiffer as Error).message,).toContain('laneRelation',);
+        expect((refusalOfDerivationsDiffer as Error).message,).not.toContain('"repairText"',);
+        expect((refusalOfDerivationsDiffer as Error).message,).not.toContain(ARCHIVE_NAP,);
       },
     },),
     it({
@@ -705,6 +710,85 @@ await describe({
         },),).toEqual(variants.map(function alwaysDifferent(): boolean {
           return false;
         },),);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: comparisonRowDifferences.name,
+  children: [
+    it({
+      name: 'NAMES no field for a row compared with itself',
+      fn: async () => {
+        /**
+         * Rows derived once from two agreeing ledgers.
+         */
+        const rows = compareLanes({
+          repair: [keptArchive({ sliceIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
+        },);
+        expect(rows.length,).toBe(1,);
+        /**
+         * The one row.
+         */
+        const row = rows[0] as ArtifactComparisonRow;
+        expect(comparisonRowDifferences({
+          left: row,
+          right: row,
+        },),).toStrictEqual([],);
+      },
+    },),
+    it({
+      name: 'NAMES the one field a retitled row differs on, and nothing else',
+      fn: async () => {
+        /**
+         * Rows derived once from two agreeing ledgers.
+         */
+        const rows = compareLanes({
+          repair: [keptArchive({ sliceIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
+        },);
+        /**
+         * The one row.
+         */
+        const row = rows[0] as ArtifactComparisonRow;
+        expect(comparisonRowDifferences({
+          left: row,
+          right: {
+            ...row,
+            laneRelation: 'both-agree',
+          },
+        },),).toStrictEqual(['laneRelation',],);
+      },
+    },),
+    it({
+      name: 'NAMES differing fields in row order, text before relation, and never a value (`#237`)',
+      fn: async () => {
+        /**
+         * Rows derived once from two agreeing ledgers.
+         */
+        const rows = compareLanes({
+          repair: [keptArchive({ sliceIndex: 0, },),],
+          translate: [keptArchive({ sliceIndex: 0, },),],
+        },);
+        /**
+         * The one row.
+         */
+        const row = rows[0] as ArtifactComparisonRow;
+        /**
+         * Names of the fields that differ.
+         */
+        const differing = comparisonRowDifferences({
+          left: row,
+          right: {
+            ...row,
+            repairText: 'Whiskers stayed on the sill.',
+            laneRelation: 'both-agree',
+          },
+        },);
+        expect(differing,).toStrictEqual(['repairText', 'laneRelation',],);
+        expect(differing.join(' ',),).not.toContain('Whiskers',);
       },
     },),
   ],

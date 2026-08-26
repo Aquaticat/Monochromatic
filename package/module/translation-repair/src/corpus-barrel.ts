@@ -71,6 +71,7 @@ export {
 } from './corpus-run/artifact-producer-read.ts';
 export { verifyArtifactAgainstPreparation, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
 export {
+  comparisonRowDifferences,
   comparisonRowsEqual,
   decisionsEqual,
   deliveriesEqual,
