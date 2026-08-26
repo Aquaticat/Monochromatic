@@ -1051,8 +1051,9 @@ fn fake_github_oauth_token() -> String {
 //           options at line start or after horizontal whitespace. The
 //           fixtures assemble option and credential fragments at runtime
 //           so the repository scanner does not flag its own test source.
-// Why:      Same-line curl commands, continuation lines, and deliberately
-//           broad non-curl option lines must retain credential detection.
+// Why:      Same-line curl commands, indented or column-zero continuation
+//           lines, and deliberately broad non-curl option lines must retain
+//           credential detection.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1068,6 +1069,7 @@ fn curl_auth_user_accepts_separate_option_tokens() {
         format!("curl -u {credential}"),
         format!("curl\t--user={credential}"),
         format!("  -u {credential} \\"),
+        format!("curl \\\n-u {credential}"),
         format!("other -u {credential}"),
     ]
     .join("\n");
@@ -1091,10 +1093,10 @@ fn curl_auth_user_accepts_separate_option_tokens() {
         .collect();
     assert_eq!(
         findings.len(),
-        5,
-        "expected one curl-auth-user finding per line: {stderr}",
+        6,
+        "expected one curl-auth-user finding per option line: {stderr}",
     );
-    for line in 1..=5 {
+    for line in [1, 2, 3, 4, 6, 7] {
         assert!(
             findings
                 .iter()

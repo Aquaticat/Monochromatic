@@ -165,11 +165,13 @@ Within the kept tail,
  and the trailing `\z` becomes `$`.
 
 ```text
-before: /\bcurl\b(?:.*|.*(?:[\r\n]{1,2}.*){1,5})[ \t\n\r](?:-u|--user)(?:=|[ \t]{0,5})("(: ... )|'( ... )'|( ... ))(?:\s|\z)/
-after:  /(?:^|[ \t])(?:(?:-u)|(?:--user))(?:=|[ \t]{0,5})(?: ... {3,512} ... )(?:\s|$)/
+before:  /\bcurl\b(?:.*|.*(?:[\r\n]{1,2}.*){1,5})[ \t\n\r](?:-u|--user)(?:=|[ \t]{0,5})("(: ... )|'( ... )'|( ... ))(?:\s|\z)/
+cutover: /(?:(?:-u)|(?:--user))(?:=|[ \t]{0,5})(?: ... {3,512} ... )(?:\s|$)/
+current: /(?:^|[ \t])(?:(?:-u)|(?:--user))(?:=|[ \t]{0,5})(?: ... {3,512} ... )(?:\s|$)/
 ```
 
-The full ported form is line 172 of `builtin-rules.ported.txt`.
+The full current form is line 179 of
+`package/cli/forbidden-strings/data/builtin-rules.txt`.
 Compared with the original,
  the reshape broadens the rule
  (it flags a separately tokenized `-u user:pass` credential on any single line,
