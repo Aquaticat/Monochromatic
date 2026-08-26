@@ -157,6 +157,32 @@ await describe({
         expect((refusalOfNewMember as Error).message,).toContain('lane outcome',);
       },
     },),
+
+    it({
+      name: 'NAMES THE FIELDS of an unknown member and none of their values. The '
+        + 'unions this guards carry text, and the message reaches the pass '
+        + 'stdout through the refusal path, so a stringified member would print '
+        + 'corpus wording on the day a union grows',
+      fn: async () => {
+        const refusalOfNewMember = caught(function newMember() {
+          toArtifactOutcome({
+            outcome: {
+              kind: 'napped',
+              acceptedText: DECIDED_SILL,
+            } as unknown as LaneSliceOutcome,
+          },);
+        },);
+
+        /**
+         * What the refusal says.
+         */
+        const said = (refusalOfNewMember as Error).message;
+
+        expect(said,).toContain('kind napped',);
+        expect(said,).toContain('fields [acceptedText, kind]',);
+        expect(said.includes(DECIDED_SILL,),).toBe(false,);
+      },
+    },),
   ],
 },);
 

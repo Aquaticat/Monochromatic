@@ -71,6 +71,39 @@ function isObjectId({ value, }: { readonly value: string; },): boolean {
 }
 
 /**
+ * Names a recorded value by its shape alone.
+ *
+ * THE VALUE ITSELF IS NEVER PRINTED. A malformed `id` or digest is not an entry
+ * id, it is whatever bytes a bad file carries, and `readPlacement` runs inside
+ * the pass as well as in the readers, so its lines reach a pass's stdout. This
+ * follows `readRunJson`: say what kind of thing was found and how large, which
+ * is what tells an operator a file was truncated or rewritten, and carry none
+ * of it across.
+ *
+ * @param value - field as the artifact recorded it, possibly absent
+ *
+ * @returns Type name, with the length for a string
+ *
+ * @example
+ * ```ts
+ * const shape = shapeOf({ value: recordedId, },);
+ * ```
+ */
+function shapeOf({ value, }: { readonly value: unknown; },): string {
+  if (value === undefined)
+    return 'absent';
+  if (value === null)
+    return 'null';
+  if ((typeof value) === 'string')
+    return `a string of ${String(value.length,)} characters`;
+  if (Array.isArray(value,))
+    return 'an array';
+  if ((typeof value) === 'object')
+    return 'an object';
+  return `a ${typeof value}`;
+}
+
+/**
  * How one artifact places into a generation.
  *
  * @example
@@ -239,11 +272,14 @@ export async function readPlacement(
      */
     const recordedId: unknown = ('id' in parsed) ? parsed.id : undefined;
 
+    // NAMED BY SHAPE, never echoed: the recorded id of a file that fails this
+    // check is not an entry id, so the license every other reader has to print
+    // one deliberately does not reach it.
     if (recordedId !== keyedId) {
       console.log(
-        `POOL ${name} records id ${
-          recordedId === undefined ? '(absent)' : JSON.stringify(recordedId,)
-        }, which is not its file name; treating it as unplaceable`,
+        `POOL ${name} records an id that is not its file name (${
+          shapeOf({ value: recordedId, },)
+        }); treating it as unplaceable`,
       );
       return { kind: 'untagged', };
     }
@@ -272,8 +308,9 @@ export async function readPlacement(
 
     if ((typeof pipelineDigest) !== 'string') {
       console.log(
-        `POOL ${name} records a pipeline digest that is not a string; treating `
-          + 'it as unplaceable',
+        `POOL ${name} records a pipeline digest that is not a string (${
+          shapeOf({ value: pipelineDigest, },)
+        }); treating it as unplaceable`,
       );
       return { kind: 'untagged', };
     }
@@ -286,8 +323,9 @@ export async function readPlacement(
     // operator to delete good work.
     if (!isDigestShaped({ value: pipelineDigest, },)) {
       console.log(
-        `POOL ${name} records a pipeline digest this build cannot read `
-          + `(${JSON.stringify(pipelineDigest,)}); treating it as legacy`,
+        `POOL ${name} records a pipeline digest this build cannot read (${
+          shapeOf({ value: pipelineDigest, },)
+        }); treating it as legacy`,
       );
       return {
         kind: 'legacy',

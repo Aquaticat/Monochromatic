@@ -13,6 +13,7 @@ export {
   censusByGeneration,
   type GenerationCensus,
   type GenerationGroup,
+  resolveCommit,
   tipContains,
 } from './corpus-run/artifact-generation.ts';
 export {
@@ -24,7 +25,10 @@ export {
   type EligibleEntries,
   selectEligible,
 } from './corpus-run/artifact-eligible.ts';
-export { resolvePool, } from './corpus-run/artifact-pool.ts';
+export {
+  keepEligible,
+  resolvePool,
+} from './corpus-run/artifact-pool.ts';
 export {
   EmptyPoolError,
   generationLines,

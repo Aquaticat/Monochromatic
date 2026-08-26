@@ -44,6 +44,12 @@ import type {
  * at each of their tails is what guarantees: this runs only if someone widens a
  * live union and silences that binding with an assertion.
  *
+ * NAMES THE SHAPE AND NOT THE VALUE. The unions this guards carry text fields
+ * (`acceptedText`, and the ledger rows around them), and this message reaches
+ * the pass's stdout through the refusal path, so the member is described by
+ * its discriminant and its field names only. Stringifying it would print
+ * corpus wording on the day a union grows.
+ *
  * @param what - which union was being projected, for the message
  *
  * @param member - unhandled value, typed `never` so a widened union fails to
@@ -65,8 +71,34 @@ function refuseUnknownMember(
     readonly member: never;
   },
 ): never {
+  /**
+   * Member as a value, since `never` admits no property reads.
+   */
+  const carried: unknown = member;
+
+  if (((typeof carried) !== 'object') || (carried === null)) {
+    throw new Error(
+      `unreachable: ${what} carries a member version 2 does not describe: a ${typeof carried}`,
+    );
+  }
+
+  /**
+   * Discriminant the member carries, a name this package chose rather than
+   * text, or a note that it carries none.
+   */
+  const kind = (('kind' in carried) && ((typeof carried.kind) === 'string'))
+    ? carried.kind
+    : '(no kind)';
+
+  /**
+   * Field names only, sorted so the message is stable.
+   */
+  const fields = Object.keys(carried,)
+    .toSorted()
+    .join(', ',);
+
   throw new Error(
-    `unreachable: ${what} carries a member version 2 does not describe: ${JSON.stringify(member,)}`,
+    `unreachable: ${what} carries a member version 2 does not describe: kind ${kind}, fields [${fields}]`,
   );
 }
 

@@ -15,6 +15,13 @@
  * declines. Measured before these were written: six settled artifacts from four
  * earlier runs all read, all six report `unrecorded`, none refused.
  *
+ * THE CONTEST BOUNDS A SETTLED STAGE. The driver writes one record at every
+ * slice the contest settled, walking the comparison rows, so a settled stage is
+ * held to exactly the contest's slices in its order, the way the contest is held
+ * to the comparison. Measured before those cases were written: all 28 artifacts
+ * on this machine carrying the field name exactly their contest's slices in its
+ * order, one of them naming none.
+ *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
@@ -27,6 +34,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactContestSlice,
+  type ArtifactLaneSelection,
   SLICE_SPELLED_KEYS,
   parseConsolidation,
 } from '../../dist/final/node/index.mjs';
@@ -85,9 +94,51 @@ const FLOORED_SLICE = {
 };
 
 /**
+ * Contest that settled exactly these slices, in this order, each on the
+ * verdict that ships nothing so the fixture carries no lane text.
+ *
+ * @param sliceIndexes - slices the contest answered
+ *
+ * @returns Selection as the pass records it
+ *
+ * @example
+ * ```ts
+ * const selection = contestOf({ sliceIndexes: [0, 1,], },);
+ * ```
+ */
+function contestOf(
+  { sliceIndexes, }: { readonly sliceIndexes: readonly number[]; },
+): ArtifactLaneSelection {
+  return {
+    kind: 'contested',
+    slices: sliceIndexes.map(function settle(sliceIndex,): ArtifactContestSlice {
+      return {
+        sliceIndex,
+        verdict: { kind: 'settled-neither', },
+        ballots: [],
+        usable: 0,
+      };
+    },),
+  };
+}
+
+/**
+ * Contest that settled the two slices the fixtures answer, in that order.
+ */
+const CONTEST_OF_TWO = contestOf({
+  sliceIndexes: [
+    0,
+    1,
+  ],
+},);
+
+/**
  * Reads a consolidation field, reporting the refusal rather than raising it.
  *
  * @param value - field as an artifact would carry it
+ *
+ * @param laneSelection - contest recorded beside it, the two-slice one unless
+ * a case says otherwise
  *
  * @returns What was parsed, or the refusal text
  *
@@ -96,7 +147,15 @@ const FLOORED_SLICE = {
  * const read = readingOf({ value, },);
  * ```
  */
-function readingOf({ value, }: { readonly value: unknown; },): {
+function readingOf(
+  {
+    value,
+    laneSelection = CONTEST_OF_TWO,
+  }: {
+    readonly value: unknown;
+    readonly laneSelection?: ArtifactLaneSelection;
+  },
+): {
   readonly kind: string;
   readonly reason: string;
 } {
@@ -104,6 +163,7 @@ function readingOf({ value, }: { readonly value: unknown; },): {
     return {
       kind: parseConsolidation({
         value,
+        laneSelection,
         path: AT,
         keys: SLICE_SPELLED_KEYS,
       },).kind,
@@ -175,6 +235,7 @@ await describe({
               },
             ],
           },
+          laneSelection: contestOf({ sliceIndexes: [1,], },),
         },);
 
         expect(read.reason,).toBe('',);
@@ -340,6 +401,101 @@ await describe({
 
         expect(read.kind,).toBe('refused',);
         expect(read.reason.includes('heardTranslators',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'READS A SETTLED STAGE THAT NAMES NO SLICE beside a contest that settled none, which is '
+        + 'what a document whose lanes never differed records: the stage was asked and had nothing '
+        + 'to answer. One artifact on this machine has exactly this shape',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [],
+          },
+          laneSelection: contestOf({ sliceIndexes: [], },),
+        },);
+
+        expect(read.reason,).toBe('',);
+        expect(read.kind,).toBe('settled',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SETTLED STAGE MISSING A CONTESTED SLICE, mirroring the contest reader. The '
+        + 'driver writes one record at every slice the contest settled, so a consumer keying by '
+        + 'sliceIndex would otherwise read the missing slice as left with what the contest settled',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [SHIPPED_SLICE,],
+          },
+        },);
+
+        expect(read.kind,).toBe('refused',);
+        expect(read.reason.includes('slices [0,1]',),).toBe(true,);
+        expect(read.reason.includes('rather than [0]',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SETTLED STAGE NAMING A SLICE THE CONTEST NEVER SETTLED, since no run of this '
+        + 'pipeline consolidates a slice the two lanes did not leave differently worded',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              SHIPPED_SLICE,
+              FLOORED_SLICE,
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [0,], },),
+        },);
+
+        expect(read.kind,).toBe('refused',);
+        expect(read.reason.includes('slices [0]',),).toBe(true,);
+        expect(read.reason.includes('rather than [0,1]',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES RECORDS OUT OF CONTEST ORDER, because the driver walks the comparison rows and '
+        + 'a list in another order was not written by it; sorting it here would accept that file and '
+        + 'hide which run produced it',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              FLOORED_SLICE,
+              SHIPPED_SLICE,
+            ],
+          },
+        },);
+
+        expect(read.kind,).toBe('refused',);
+        expect(read.reason.includes('rather than [1,0]',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES RECORDS BESIDE A SELECTION NOBODY CONTESTED, since the stage runs after the '
+        + 'contest and answers only what it settled; a pending selection can sit beside a settled '
+        + 'stage only when that stage names nothing',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [FLOORED_SLICE,],
+          },
+          laneSelection: { kind: 'pending-human-decision', },
+        },);
+
+        expect(read.kind,).toBe('refused',);
+        expect(read.reason.includes('slices []',),).toBe(true,);
       },
     },),
   ],

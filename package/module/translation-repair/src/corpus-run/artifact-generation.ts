@@ -301,8 +301,16 @@ export async function censusByGeneration(
  * Artifact tips are already held to canonical object ids. This holds the
  * requirement to the same standard, at the one place it enters.
  *
+ * Exported through the barrel so the built bundle's tests can hand it a
+ * throwaway repository; the pool is its only caller.
+ *
+ * @internal
+ *
  * @param revision - whatever the invoker named: an id, an abbreviation, a
  * branch, or a revision expression
+ *
+ * @param repository - checkout to ask, this package's own worktree unless a
+ * test hands it a throwaway one
  *
  * @returns Full object id of the commit it names
  *
@@ -315,7 +323,13 @@ export async function censusByGeneration(
  * ```
  */
 export async function resolveCommit(
-  { revision, }: { readonly revision: string; },
+  {
+    revision,
+    repository = HERE,
+  }: {
+    readonly revision: string;
+    readonly repository?: string;
+  },
 ): Promise<string> {
   try {
     /**
@@ -325,7 +339,7 @@ export async function resolveCommit(
       await resolveGit(),
       [
         '-C',
-        HERE,
+        repository,
         'rev-parse',
         '--verify',
         `${revision}^{commit}`,
@@ -350,14 +364,18 @@ export async function resolveCommit(
  * Asked of the same checkout ancestry is resolved against, since that is the
  * one whose history can be short.
  *
+ * @param repository - checkout ancestry was just asked of
+ *
  * @returns Whether this is a shallow clone
  *
  * @example
  * ```ts
- * if (await isShallowRepository()) throw new Error('cannot decide',);
+ * if (await isShallowRepository({ repository, },)) throw new Error('cannot decide',);
  * ```
  */
-async function isShallowRepository(): Promise<boolean> {
+async function isShallowRepository(
+  { repository, }: { readonly repository: string; },
+): Promise<boolean> {
   /**
    * Git's own answer, `true` or `false` on one line.
    */
@@ -365,7 +383,7 @@ async function isShallowRepository(): Promise<boolean> {
     await resolveGit(),
     [
       '-C',
-      HERE,
+      repository,
       'rev-parse',
       '--is-shallow-repository',
     ],
@@ -411,10 +429,14 @@ function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
  *
  * @param commit - commit the draw requires
  *
+ * @param repository - checkout to ask, this package's own worktree unless a
+ * test hands it a throwaway one
+ *
  * @returns Whether `commit` is an ancestor of `tip`, or the same commit
  *
- * @throws When either commit is unknown to this repository, since a pool that
- * cannot be partitioned must not be silently narrowed
+ * @throws When either commit is unknown to this repository, or the repository
+ * is a shallow clone that cannot tell a negative from a cut history, since a
+ * pool that cannot be partitioned must not be silently narrowed
  *
  * @example
  * ```ts
@@ -425,9 +447,11 @@ export async function tipContains(
   {
     tip,
     commit,
+    repository = HERE,
   }: {
     readonly tip: string;
     readonly commit: string;
+    readonly repository?: string;
   },
 ): Promise<boolean> {
   try {
@@ -435,7 +459,7 @@ export async function tipContains(
       await resolveGit(),
       [
         '-C',
-        HERE,
+        repository,
         'merge-base',
         '--is-ancestor',
         commit,
@@ -453,7 +477,7 @@ export async function tipContains(
       //
       // Asked only here, on the negative path, so the ordinary answer costs no
       // extra process.
-      if (await isShallowRepository())
+      if (await isShallowRepository({ repository, },))
         throw new Error(
           `Cannot decide whether ${tip} contains ${commit}: this is a SHALLOW `
             + 'repository, and `git merge-base --is-ancestor` reports the same '

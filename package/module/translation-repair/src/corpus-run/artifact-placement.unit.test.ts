@@ -21,6 +21,12 @@
  * build cannot read is legacy rather than garbage, because the recorded value
  * names the scheme that produced it.
  *
+ * THE POOL LINES NAME A SHAPE AND NEVER A VALUE. A malformed id or digest is
+ * whatever bytes a bad file carries, and `readPlacement` runs inside the pass
+ * as well as in the readers, so those lines reach a pass's stdout. Four cases
+ * capture what is printed and pin both halves: the type and length are there,
+ * the recorded value is not.
+ *
  * DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp` directory
  * and nothing here reads a real run.
  *
@@ -132,6 +138,91 @@ async function placementOf(
   return await readPlacement({
     artifactsDir: await artifactsDirWith({ files: { [name]: JSON.stringify(body,), }, },),
     name,
+  },);
+}
+
+/**
+ * Captures what `readPlacement` prints, forwarding every line onward so a
+ * concurrent case, and the runner, still see their own.
+ *
+ * CHAINED RATHER THAN REPLACED, because the cases of one suite run at once:
+ * each capture wraps whatever reporter it finds, which may be another case's
+ * wrapper, and on disposal it stops recording and unwraps only if it is still
+ * the outermost. A capture that restored the real reporter outright would
+ * silently cut a sibling's capture out of the chain mid-case, which is how a
+ * first version of these cases captured nothing or six lines.
+ *
+ * Callers filter by their own file name, since the chain records everything.
+ *
+ * @param lines - where captured lines go
+ *
+ * @returns Captured lines, disposable
+ *
+ * @example
+ * ```ts
+ * using printed = collectingLogs({ lines: [], },);
+ * ```
+ */
+function collectingLogs(
+  { lines, }: { readonly lines: string[]; },
+): { readonly lines: readonly string[]; } & Disposable {
+  /**
+   * Reporter found on entry, which every line is forwarded to.
+   */
+  const previous = console.log;
+
+  /**
+   * Whether this capture is still recording.
+   */
+  const recording = { open: true, };
+
+  /**
+   * This capture's own wrapper, kept so disposal can tell whether it is still
+   * the outermost.
+   */
+  const mine = (...parts: readonly unknown[]): void => {
+    if (recording.open) {
+      lines.push(parts.map(String,)
+        .join(' ',),);
+    }
+    previous(...parts,);
+  };
+  console.log = mine;
+  return {
+    lines,
+    [Symbol.dispose]: () => {
+      recording.open = false;
+      if (console.log === mine)
+        console.log = previous;
+    },
+  };
+}
+
+/**
+ * Keeps the lines a placement printed about one file.
+ *
+ * @param lines - everything captured while the case ran
+ *
+ * @param name - file the case placed
+ *
+ * @returns Lines naming that file
+ *
+ * @example
+ * ```ts
+ * const own = linesAbout({ lines: printed.lines, name: 'Mismatch.json', },);
+ * ```
+ */
+function linesAbout(
+  {
+    lines,
+    name,
+  }: {
+    readonly lines: readonly string[];
+    readonly name: string;
+  },
+): readonly string[] {
+  return lines.filter(function names(line,): boolean {
+    return line.startsWith(`POOL ${name} `,);
   },);
 }
 
@@ -412,6 +503,118 @@ await describe({
           name: 'Mittens.json',
         },),)
           .toEqual({ kind: 'malformed', },);
+      },
+    },),
+
+    it({
+      name: 'NAMES A MISMATCHED ID BY SHAPE ALONE on the POOL line and never by '
+        + 'value: a malformed id is whatever bytes a bad file carries, and the '
+        + 'line reaches the pass stdout',
+      fn: async () => {
+        using printed = collectingLogs({ lines: [], },);
+
+        expect(await placementOf({
+          body: {
+            id: 'Whiskers',
+            tip: FIXED_TIP,
+            pipelineDigest: FIXED_DIGEST,
+          },
+          name: 'Mismatch.json',
+        },),)
+          .toEqual({ kind: 'untagged', },);
+        expect(linesAbout({
+          lines: printed.lines,
+          name: 'Mismatch.json',
+        },),)
+          .toEqual([
+            'POOL Mismatch.json records an id that is not its file name (a '
+              + 'string of 8 characters); treating it as unplaceable',
+          ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES AN ABSENT ID as absent on the POOL line',
+      fn: async () => {
+        using printed = collectingLogs({ lines: [], },);
+
+        expect(await placementOf({
+          body: {
+            tip: FIXED_TIP,
+            pipelineDigest: FIXED_DIGEST,
+          },
+          name: 'Absent.json',
+        },),)
+          .toEqual({ kind: 'untagged', },);
+        expect(linesAbout({
+          lines: printed.lines,
+          name: 'Absent.json',
+        },),)
+          .toEqual([
+            'POOL Absent.json records an id that is not its file name (absent); '
+              + 'treating it as unplaceable',
+          ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES A NON-STRING DIGEST BY SHAPE on the POOL line',
+      fn: async () => {
+        using printed = collectingLogs({ lines: [], },);
+
+        expect(await placementOf({
+          body: {
+            id: 'Digit',
+            tip: FIXED_TIP,
+            pipelineDigest: 7,
+          },
+          name: 'Digit.json',
+        },),)
+          .toEqual({ kind: 'untagged', },);
+        expect(linesAbout({
+          lines: printed.lines,
+          name: 'Digit.json',
+        },),)
+          .toEqual([
+            'POOL Digit.json records a pipeline digest that is not a string '
+              + '(a number); treating it as unplaceable',
+          ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES AN UNREADABLE DIGEST BY LENGTH ALONE on the POOL line, since '
+        + 'a value this build cannot read may be anything at all',
+      fn: async () => {
+        using printed = collectingLogs({ lines: [], },);
+
+        expect(await placementOf({
+          body: {
+            id: 'Unreadable',
+            tip: FIXED_TIP,
+            pipelineDigest: 'sha1-tree-v0:whiskers',
+          },
+          name: 'Unreadable.json',
+        },),)
+          .toEqual({
+            kind: 'legacy',
+            tip: FIXED_TIP,
+          },);
+
+        /**
+         * What was printed about this file.
+         */
+        const own = linesAbout({
+          lines: printed.lines,
+          name: 'Unreadable.json',
+        },);
+
+        expect(own,).toEqual([
+          'POOL Unreadable.json records a pipeline digest this build cannot '
+            + 'read (a string of 21 characters); treating it as legacy',
+        ],);
+        expect(own.join('\n',)
+          .includes('whiskers',),).toBe(false,);
       },
     },),
   ],

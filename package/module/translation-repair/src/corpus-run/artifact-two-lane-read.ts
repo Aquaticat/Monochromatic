@@ -405,6 +405,19 @@ export function parseSettledTwoLaneArtifact(
       .delivery,
     path: `${id}.comparison`,
   },);
+
+  /**
+   * Which lane ships, checked against both the ballots recorded beside it and
+   * the comparison, so a selection answering the wrong slices is refused
+   * rather than read. Named here because the consolidation is checked against
+   * it: the third rendering answers exactly the slices the contest settled.
+   */
+  const laneSelection = parseLaneSelection({
+    value: artifact.laneSelection,
+    comparison,
+    path: `${id}.laneSelection`,
+    keys,
+  },);
   return {
     id,
     tip: requireString({
@@ -434,23 +447,15 @@ export function parseSettledTwoLaneArtifact(
     preparation,
     lanes,
     comparison,
-
-    // WHICH LANE SHIPS, checked against both the ballots recorded beside it and
-    // the comparison above, so a selection answering the wrong slices is
-    // refused rather than read.
-    laneSelection: parseLaneSelection({
-      value: artifact.laneSelection,
-      comparison,
-      path: `${id}.laneSelection`,
-      keys,
-    },),
+    laneSelection,
 
     // WHAT THE THIRD RENDERING SETTLED, absent on every artifact written before
     // the field existed. That absence is NAMED rather than defaulted: a reader
     // counting how often the stage declined must not count the whole earlier
-    // archive as declines.
+    // archive as declines. A settled stage is held to the contest's slices.
     consolidation: parseConsolidation({
       value: artifact.consolidation,
+      laneSelection,
       path: `${id}.consolidation`,
       keys,
     },),

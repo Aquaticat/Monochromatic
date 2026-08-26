@@ -155,6 +155,11 @@ export async function resolvePool(
 /**
  * Keeps only the artifact file names an eligible entry owns.
  *
+ * Exported through the barrel so the built bundle's tests can hand it a pool
+ * directly; the four readers are its callers.
+ *
+ * @internal
+ *
  * @param names - artifact file names as read from disk
  *
  * @param eligible - resolved pool
