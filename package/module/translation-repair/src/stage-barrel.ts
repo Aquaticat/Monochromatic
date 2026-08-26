@@ -44,5 +44,10 @@ export {
   STRAGGLER_GRACE_MS,
 } from './stage-round.ts';
 export { UnpreparedSliceError, } from './unprepared-slice.ts';
+export {
+  mapOverlapped,
+  type OverlappedRow,
+  OverlapRefusedError,
+} from './overlapped-map.ts';
 
 //endregion Stage barrel
