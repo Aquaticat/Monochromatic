@@ -1534,9 +1534,9 @@ Build, `lint:oxlint` (0 warnings, 0 errors) and `lint:types` are all green at th
 and the two new suites pass.
 The last whole-suite run, before the two commits above, was 829 PASS, 0 FAIL, exit 0.
 
-### A corpus pass is running right now
+### A corpus pass ran and was stopped without settling anything
 
-Launched 2026-08-26 at 17:31:54Z from tip `907d14ea2`, still alive at 20:43Z:
+Launched 2026-08-26 at 17:31:54Z from tip `907d14ea2`, stopped with `SIGINT` at 20:47:24Z when the session ended:
 
 ```sh
 mise run //package/module/translation-repair:corpus-pass -- \
@@ -1549,15 +1549,37 @@ mise run //package/module/translation-repair:corpus-pass -- \
     `round: N/M heard`, `abandoned <ms>ms after quorum`, `TALLY <id> status=`,
     `DESTINATIONS <id> source= page= dropped=`, `INCOMPLETE`, `CLEANUP`, `ONLY ...`, `START tip=`.
     At 20:43Z: 145 rounds, 25 abandoned, no entry settled yet.
--   Rebuilding `dist` does not disturb it.
+-   Rebuilding `dist` did not disturb it.
     There are no dynamic imports, and this was verified rather than assumed.
     What a rebuild DOES change is what the next launch ships, since the pass task builds before it runs.
 
-Do not poll it in a loop.
-Check it when there is a reason to.
+In 3 hours and 15 minutes it settled NOTHING.
+The log carries no `TALLY` line, `artifacts` is empty, no `page.en.md` was published,
+and the run was still inside its first entry:
+147 stage rounds, 25 abandoned exchanges.
+That is the plainest argument for `#261` anyone has produced so far.
+
+The per-slice work it did buy is in `~/temp/agent/fresh-read-20260826/slice-cache`, 1.7 MiB of it,
+and it will NOT resume under a current build.
+The generation is a digest over the bytes in `dist/final/node`
+(`src/corpus-run/pipeline-digest.ts` explains why it is the built directory rather than the git tip),
+and `dist` has been rebuilt since, with modules that did not exist when the pass started.
+That cache resumes only for a tree checked out at `907d14ea2` and rebuilt.
+Treat a relaunch as a cold run, or accept the loss and read whatever a fresh pass settles.
+
+`pass.lock` in the runs directory still names process 2166853, which is gone.
+Nothing needs to be done about it:
+`src/corpus-run/runs-lock.ts` evicts a lock whose holder has exited, by atomic rename,
+and logs `taking over a stale lock in <dir> from gone process <pid>` when it does.
+
+To relaunch, follow `~/temp/agent/reading-instruments/launch-fresh-pass.txt`,
+which carries the whole invocation including the environment and the redirection.
+Launch it solo:
+a pass and a calibration arm running at once make each other's timings unreadable.
 
 ### What to do as each entry settles
 
+Nothing settled in the stopped run, so this is the procedure for the NEXT one.
 For every `TALLY <id> status=settled` line, in this order:
 
 1.  `python3 ~/temp/agent/reading-instruments/page-read.py <id> ~/temp/agent/fresh-read-20260826`
