@@ -21,7 +21,7 @@ import {
 import {
   judgedAuthors,
   type RosterModelId,
-  seatReportLines,
+  standingReportLines,
   type SelectionRound,
 } from '../../dist/final/node/index.mjs';
 
@@ -72,6 +72,7 @@ const VOTED_ROUND: SelectionRound = {
       best: 1,
       reason: 'scripted',
       weight: 1,
+      selfVote: false,
     },
   ],
 };
@@ -99,7 +100,7 @@ const COMPOSITE_ROUND: SelectionRound = {
 //endregion Fixtures
 
 await describe({
-  name: seatReportLines.name,
+  name: standingReportLines.name,
   children: [
     it({
       name: 'renders a heading and the no-rounds note when nothing was judged',
@@ -107,7 +108,7 @@ await describe({
         /**
          * Report for a seat that judged nothing on either slice.
          */
-        const lines = seatReportLines({
+        const lines = standingReportLines({
           seat: 'EDITOR',
           roster: ROSTER,
           perSlice: [
@@ -132,7 +133,7 @@ await describe({
          * Report for one voted round on the first of two slices, at a seat
          * that heard the writer and the judge and never the idle model.
          */
-        const lines = seatReportLines({
+        const lines = standingReportLines({
           seat: 'REFINER',
           roster: ROSTER,
           perSlice: [
@@ -168,7 +169,7 @@ await describe({
          * Report with a standing line and a coverage line to check the
          * indentation of.
          */
-        const lines = seatReportLines({
+        const lines = standingReportLines({
           seat: 'EDITOR',
           roster: ROSTER,
           perSlice: [[VOTED_ROUND,],],

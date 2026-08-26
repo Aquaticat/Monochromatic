@@ -23,9 +23,9 @@ import type { RosterModelId, } from './roster-id.ts';
 // slices separate it from a model that lost.
 //
 // WHO ANSWERED IS KNOWN ONLY WHERE THE STAGE CARRIES IT OUT. The refine stage
-// does; the editor stage carries only a count out of the chunk outcome. A seat
-// that cannot say who answered says so in its line rather than folding the
-// unknown into "wrote nothing", because that fold is exactly the misreport.
+// does; the editor and translate stages carry only a count out (`#266`). A
+// seat that cannot say who answered says so in its line rather than folding
+// the unknown into "wrote nothing", because that fold is exactly the misreport.
 //
 // SEATED ROSTER IN, so this file names no roster of its own. Both calibrations
 // pass the seats they filled, and a table describing seats a run never filled is
@@ -217,10 +217,14 @@ export function readStandingCoverage(
       return wrote.has(modelId,) && (!judged.has(modelId,));
     },),
     answeredUnslated: roster.filter(function answeredOnly(modelId,): boolean {
-      return heard.has(modelId,) && (!wrote.has(modelId,)) && (!judged.has(modelId,));
+      return heard.has(modelId,)
+        && (!wrote.has(modelId,))
+        && (!judged.has(modelId,));
     },),
     neverWrote: roster.filter(function stayedSilent(modelId,): boolean {
-      return (!heard.has(modelId,)) && (!wrote.has(modelId,)) && (!judged.has(modelId,));
+      return (!heard.has(modelId,))
+        && (!wrote.has(modelId,))
+        && (!judged.has(modelId,));
     },),
     answersRecorded: answered.kind === 'recorded',
   };

@@ -15,8 +15,8 @@
 export { readAskedCount, } from './corpus-run/asked-count.ts';
 export {
   judgedAuthors,
-  seatReportLines,
-} from './corpus-run/editor-calibrate-seat.ts';
+  standingReportLines,
+} from './corpus-run/editor-calibrate-standing.ts';
 export {
   shippedAuthors,
   type SliceRounds,

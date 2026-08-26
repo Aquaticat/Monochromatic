@@ -23,8 +23,8 @@ import {
 } from './bench-sample.ts';
 import {
   judgedAuthors,
-  seatReportLines,
-} from './editor-calibrate-seat.ts';
+  standingReportLines,
+} from './editor-calibrate-standing.ts';
 import {
   shippedAuthors,
   type SliceRounds,
@@ -471,7 +471,7 @@ async function main(): Promise<void> {
   },);
 
   for (
-    const line of seatReportLines({
+    const line of standingReportLines({
     seat: 'EDITOR',
     roster: RUN_ROSTER,
     perSlice: editorPerSlice,
@@ -495,7 +495,7 @@ async function main(): Promise<void> {
   }
 
   for (
-    const line of seatReportLines({
+    const line of standingReportLines({
     seat: 'REFINER',
     roster: RUN_ROSTER,
     perSlice: refinerPerSlice,

@@ -12,7 +12,7 @@ import {
 import type { RosterModelId, } from '../roster-id.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 
-//region Seat report
+//region Standing report
 // ONE SEAT'S STANDING, RENDERED AS LINES rather than printed, so the report can
 // be read by a test without capturing the console. `editor-calibrate.ts` is an
 // entry module and prints what this returns; it moved here when that file
@@ -65,11 +65,11 @@ export function judgedAuthors(
  *
  * @example
  * ```ts
- * for (const line of seatReportLines({ seat: 'EDITOR', roster, perSlice, produced, answered, },))
+ * for (const line of standingReportLines({ seat: 'EDITOR', roster, perSlice, produced, answered, },))
  *   console.log(line,);
  * ```
  */
-export function seatReportLines(
+export function standingReportLines(
   {
     seat,
     roster,
@@ -106,10 +106,10 @@ export function seatReportLines(
     return [
       heading,
       '  NO ROUNDS. This seat judged nothing across the sample, so it has no standing. '
-      + 'For the editor seat that means no slice carried an ACCEPTED issue: critics can '
-      + 'raise claims and the panel can adjudicate them and the lane still report '
-      + '"nothing to edit", which is what one live slice did. For the refiner seat it '
-      + 'means the naturalness lane proposed nothing. Draw more slices.',
+        + 'For the editor seat that means no slice carried an ACCEPTED issue: critics can '
+        + 'raise claims and the panel can adjudicate them and the lane still report '
+        + '"nothing to edit", which is what one live slice did. For the refiner seat it '
+        + 'means the naturalness lane proposed nothing. Draw more slices.',
     ];
   }
 
@@ -135,13 +135,15 @@ export function seatReportLines(
 
   return [
     heading,
-    ...rankStandings({ standings, },).map(function rendered(standing,): string {
-      return `  ${standingLine({ standing, },)}`;
-    },),
-    ...coverageGapLines({ coverage, },).map(function indented(line,): string {
-      return `  ${line}`;
-    },),
+    ...rankStandings({ standings, },)
+      .map(function rendered(standing,): string {
+        return `  ${standingLine({ standing, },)}`;
+      },),
+    ...coverageGapLines({ coverage, },)
+      .map(function indented(line,): string {
+        return `  ${line}`;
+      },),
   ];
 }
 
-//endregion Seat report
+//endregion Standing report

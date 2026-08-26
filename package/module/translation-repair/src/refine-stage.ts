@@ -339,9 +339,11 @@ export async function runRefineStage(
   /**
    * Refiners whose answer was usable, proposal or not.
    */
-  const heard = gather.voices.map(function answered(voice,): RosterModelId {
-    return voice.modelId;
-  },);
+  const heard = gather
+    .voices
+    .map(function answered(voice,): RosterModelId {
+      return voice.modelId;
+    },);
 
   /**
    * Telemetry every exit after the fan-out carries.
