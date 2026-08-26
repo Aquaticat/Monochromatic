@@ -1,6 +1,11 @@
 import { refusalText, } from '../refusal-text.ts';
 import { RunJsonUnreadableError, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import {
+  RUN_SEATS,
+  seatReportLines,
+  type SeatTally,
+} from '../seat-tally.ts';
 
 //region CLI refusal
 // Turns ANY failure out of a CLI body into a report that quotes nothing.
@@ -125,11 +130,38 @@ function framesOf({ error, }: { readonly error: unknown; },): string {
 }
 
 /**
+ * Prints the seat report to stderr when its scope ends, after whatever the
+ * command said, so the closing lines of every command name any seat that
+ * produced nothing usable (`#235`). Nothing at all when no seat was asked, so
+ * a command that never built a client prints nothing extra.
+ *
+ * @param seats - tally to render
+ *
+ * @returns Disposable printing the report on dispose
+ *
+ * @example
+ * ```ts
+ * using _report = printingSeatReport({ seats: RUN_SEATS, },);
+ * ```
+ */
+function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Disposable {
+  return {
+    [Symbol.dispose](): void {
+      for (const line of seatReportLines({ tally: seats, },))
+        console.error(line,);
+    },
+  };
+}
+
+/**
  * Runs a CLI body, reporting a refusal this package wrote rather than crashing.
  *
  * @param what - command name as an operator would type it, which starts the line
  *
  * @param run - CLI body to run
+ *
+ * @param seats - tally to print when the command ends; defaults to the
+ * run-wide one `createRunClient` counts into, and tests pass their own
  *
  * @example
  * ```ts
@@ -141,11 +173,20 @@ export async function reportingRefusals(
   {
     what,
     run,
+    seats = RUN_SEATS,
   }: {
     readonly what: string;
     readonly run: () => Promise<void>;
+    readonly seats?: SeatTally;
   },
 ): Promise<void> {
+  /**
+   * Prints the seat report when this scope ends, whatever happened inside it:
+   * under the refusal line on a refusal, alone on a clean run, so a seat that
+   * produced nothing usable is in the closing lines of every command (`#235`).
+   */
+  using _report = printingSeatReport({ seats, },);
+
   try {
     await run();
   } catch (error) {

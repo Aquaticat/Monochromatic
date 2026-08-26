@@ -417,11 +417,32 @@ and reading one as an instruction has cost this package a defect before.
 
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider, Charm Hyper.
-    OPTIONAL, and its absence is not an error:
-    `createRunClient` warns and returns a client that speaks to the first provider alone,
-    so a run without it still works and simply has nowhere to fail over to.
+    REQUIRED, exactly like the first:
+    `createRunClient` refuses to build a client without it,
+    as a stated refusal that names the variable and exits 6.
+    It used to warn and return a client that spoke to the first provider alone;
+    that client offered the five Charm-Hyper-only seats to a provider that cannot serve them,
+    quorum was met by the other five,
+    and a calibration settled clean with half its roster dark (`#235`).
+    There is no one-provider run to fall back to.
     Note the `CHARM` in the middle;
     a name missing it is read by nothing and reported by nothing.
+
+Both keys live in the sops-encrypted, gitignored `.env.local.json` at the repository root,
+which `mise run` decrypts into the task's environment.
+A worktree created with `git worktree add` starts without that file;
+copy the encrypted file into the worktree root (it stays encrypted at rest) or launch from the main worktree.
+Either way, launch under `mise run`:
+a bare `node dist/...` launch has neither key,
+and since `#235` it fails at once with the refusal instead of running half-dark.
+
+Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N` line per seat to stderr,
+and a `SEATS DARK:` line naming every seat that was asked and never once produced a usable answer.
+A dark seat is a provider that cannot serve it,
+a key that was never injected,
+or a model that answers nothing readable;
+the run log names which.
+Do not read a run with a dark seat as a comparison of the roster.
 
 #### Running out of budget is normal, and the two providers run out differently
 

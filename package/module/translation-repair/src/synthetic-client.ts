@@ -252,6 +252,13 @@ export function createSyntheticClient(
       .length;
 
     return limiterFor(request.modelId,)(async function performExchange() {
+      // BEFORE THE WIRE. A Charm Hyper endpoint label is not a name this
+      // provider hosts; asking anyway cost a 400 per call and a seat's whole
+      // voice for a run (`#235`). The two-provider client is where it belongs,
+      // and a caller that reached this client with it has been wired wrong.
+      if (!syntheticServes(request.modelId,))
+        throw new SyntheticModelNotServedError({ modelId: request.modelId, },);
+
       rl.debug(
         `-> ${request.modelId}: ${String(messageCount,)} messages`,
       );

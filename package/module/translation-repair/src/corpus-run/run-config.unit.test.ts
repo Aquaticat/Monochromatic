@@ -642,7 +642,7 @@ await describe({
           modelId: SHARED_SEAT,
         },);
 
-        expect(came instanceof Error,).toBe(false,);
+        expect(Error.isError(came,),).toBe(false,);
         expect(urls.some(isFirstProviderChat,),).toBe(true,);
         expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
       },

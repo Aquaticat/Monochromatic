@@ -21,9 +21,15 @@ import {
   ROSTER_MODEL_IDS,
 } from '../roster-reach.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
+import type { ModelTransport, } from '../synthetic-transport.ts';
 import { createHyperClient, } from '../hyper-client.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
 import { createRoutingClient, } from '../provider-router.ts';
+import {
+  RUN_SEATS,
+  seatTallyClient,
+} from '../seat-tally.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { resolveGit, } from './git-command.ts';
 
 //region Corpus-run configuration
@@ -42,7 +48,7 @@ import { resolveGit, } from './git-command.ts';
  * throw new RunConfigError({ message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set', },);
  * ```
  */
-export class RunConfigError extends Error {
+export class RunConfigError extends StatedRefusalError {
   /**
    * Builds refusal carrying what could not hold.
    *
@@ -54,7 +60,7 @@ export class RunConfigError extends Error {
    * ```
    */
   public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+    super({ says: message, },);
     this.name = 'RunConfigError';
   }
 }
@@ -550,7 +556,7 @@ export async function resolveRunsDir(): Promise<string> {
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Builds the client every run calls, over both providers where both are keyed.
+ * Builds the client every run calls, over both providers, counting every call.
  *
  * ONE FACTORY, so wiring the second provider here reaches every corpus-run
  * entrypoint at once rather than each one growing its own routing.
@@ -561,22 +567,39 @@ const l = tagged({ tag: 'translation-repair', },);
  * knowledge that `quotas` means the Synthetic meter belongs, and keeping the
  * method here leaves every existing caller and the bench recorder untouched.
  *
- * THE SECOND KEY IS OPTIONAL AND ITS ABSENCE IS LOUD. Refusing to start would
- * stop a run the first provider can serve on its own; starting silently would
- * hide a setup mistake until a 429 storm looked like a provider outage. The
- * warning names the variable so the fix is legible, and the run continues at
- * single-provider capacity.
+ * BOTH KEYS ARE REQUIRED, AND A MISSING SECOND ONE IS A REFUSAL. This used to
+ * warn and hand back the first provider's client alone, on the reasoning that
+ * refusing would stop a run the first provider could serve by itself. It
+ * cannot: five of the ten roster seats are Charm Hyper endpoint labels that
+ * Synthetic does not host, so the one-provider client offered them to a
+ * provider that answered 400 to every call, quorum was met on the nose by the
+ * other five, and a four-slice calibration settled clean with half its roster
+ * dark (`#235`). A run that cannot reach half its roster is not a run at
+ * single-provider capacity; it is a run whose result must not be read, and the
+ * time to say so is before the first call, not after the last.
  *
- * @returns Ready client, routed across both providers where both are keyed
+ * EVERY CALL IS COUNTED on `RUN_SEATS`, the process-wide tally the refusal
+ * boundary prints when the command ends, so a seat that produced nothing
+ * usable is named in the closing lines of every command rather than only in
+ * the calibration's coverage sentence.
  *
- * @throws {@link RunConfigError} when the first provider's key env var is unset
+ * @param transport - HTTP seam handed to both providers' clients; tests inject
+ * one to watch where a call goes, production leaves it absent for fetch
+ *
+ * @returns Ready client, routed across both providers and counted per seat
+ *
+ * @throws {@link RunConfigError} when either provider's key env var is unset
+ * or empty; it is a stated refusal, so a CLI repeats the variable name and
+ * exits 6 without frames
  *
  * @example
  * ```ts
  * const client = createRunClient();
  * ```
  */
-export function createRunClient(): SyntheticClient {
+export function createRunClient(
+  { transport, }: { readonly transport?: ModelTransport; } = {},
+): SyntheticClient {
   /**
    * Logger pre-tagged with this function's name.
    */
@@ -597,29 +620,40 @@ export function createRunClient(): SyntheticClient {
     },);
 
   /**
-   * First provider's client, which every path below uses.
-   */
-  const synthetic = createSyntheticClient({ apiKey, },);
-
-  /**
-   * Second provider's key, absent on a machine set up before it existed.
+   * Second provider's key, which half the roster cannot be reached without.
    */
   const hyperKey = process.env
     .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
     ?? '';
+  if (hyperKey === '')
+    throw new RunConfigError({
+      message: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set; run under mise so sops injects it. '
+        + 'Half the roster is served only by Charm Hyper, so there is no one-provider run to fall '
+        + 'back to (#235)',
+    },);
 
-  if (hyperKey === '') {
-    rl.warn(
-      'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set: running on one provider, '
-        + 'so a call refused for budget has nowhere to go and its voice is lost',
-    );
-    return synthetic;
-  }
+  /**
+   * Transport handed to both clients, absent when production's fetch is meant.
+   */
+  const seam = (transport === undefined)
+    ? {}
+    : { transport, };
+
+  /**
+   * First provider's client.
+   */
+  const synthetic = createSyntheticClient({
+    apiKey,
+    ...seam,
+  },);
 
   /**
    * Second provider's client.
    */
-  const hyper = createHyperClient({ apiKey: hyperKey, },);
+  const hyper = createHyperClient({
+    apiKey: hyperKey,
+    ...seam,
+  },);
 
   /**
    * Shared budget view both providers are routed by.
@@ -629,7 +663,10 @@ export function createRunClient(): SyntheticClient {
     hyper,
   },);
 
-  return {
+  /**
+   * Routed client with the first provider's meter as its `quotas`.
+   */
+  const routed: SyntheticClient = {
     ...createRoutingClient({
       synthetic,
       hyper,
@@ -637,6 +674,13 @@ export function createRunClient(): SyntheticClient {
     },),
     quotas: synthetic.quotas,
   };
+
+  rl.debug('both provider keys present; routing across both and counting every seat',);
+
+  return seatTallyClient({
+    inner: routed,
+    tally: RUN_SEATS,
+  },);
 }
 
 //endregion Corpus-run configuration
