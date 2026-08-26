@@ -394,5 +394,24 @@ await describe({
         },).not.toThrow();
       },
     },),
+    it({
+      name: 'WORDS its refusal from the fault alone, as a marked class the boundary may print',
+      fn: async () => {
+        const error = new DeliveryInvariantError({
+          fault: {
+            kind: 'unclaimed',
+            indices: [
+              2,
+              5,
+            ],
+          },
+        },);
+        expect(error.message,).toBe(
+          'ledger ships slices 2, 5 that the result does not name as changed, so one of the two describes '
+            + 'another run',
+        );
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

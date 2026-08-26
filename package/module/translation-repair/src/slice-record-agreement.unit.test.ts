@@ -197,5 +197,20 @@ await describe({
         expect(String(underClaimed,),).toContain('wording of a change',);
       },
     },),
+    it({
+      name: 'WORDS its refusal from the lane, index and flag alone, as a marked class',
+      fn: async () => {
+        const error = new SliceRecordContradictionError({
+          lane: 'translate',
+          sliceIndex: 2,
+          changed: false,
+        },);
+        expect(error.message,).toBe(
+          'translate slice 2 settled with changed=false and carries the wording of a change: the stage read '
+            + 'that flag off something other than its own text',
+        );
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

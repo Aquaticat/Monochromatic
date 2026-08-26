@@ -299,5 +299,24 @@ await describe({
         },).toThrow(SliceCoverageError,);
       },
     },),
+    it({
+      name: 'WORDS its refusal from the fault alone, naming positional block ids and never wording',
+      fn: async () => {
+        const error = new SliceCoverageError({
+          fault: {
+            kind: 'placement',
+            sliceIndex: 3,
+            side: 'source',
+            placement: {
+              kind: 'missing',
+              missing: ['block/6',],
+              expected: 7,
+            },
+          },
+        },);
+        expect(error.message,).toBe('slicing chunk 3: source 1 of 7 blocks reached no slice: block/6',);
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

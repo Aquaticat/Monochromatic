@@ -42,31 +42,63 @@ export type SliceRecordLane =
   | 'translate';
 
 /**
- * Raised when a lane settles a slice record that contradicts itself.
+ * Contradiction between a settled record's `changed` flag and its text.
  *
- * Separate from the assembly errors because it names a defect in the stage that
- * built the record, at the slice it was built for, rather than a disagreement
- * between a document and its change set.
+ * MARKED: its message names the lane, the slice index and the flag, in a
+ * sentence written here from those alone.
  *
  * @example
  * ```ts
- * throw new SliceRecordContradictionError({ message: 'repair slice 4 claims a change it did not make', },);
+ * throw new SliceRecordContradictionError({ lane: 'repair', sliceIndex: 4, changed: true, },);
  * ```
  */
 export class SliceRecordContradictionError extends Error {
   /**
-   * Builds the error with a message naming lane, slice and direction.
-   *
-   * @param message - what the record claimed and what it carried
-   *
-   * @example
-   * ```ts
-   * throw new SliceRecordContradictionError({ message: 'translate slice 2 denies a change it made', },);
-   * ```
+   * Declares this message safe to forward: a lane name, a slice index and a
+   * flag, in a sentence written here.
    */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * Lane whose record contradicts itself.
+   */
+  readonly lane: SliceRecordLane;
+
+  /**
+   * Slice the record settled.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   * Flag the record carried, which its text belies.
+   */
+  readonly changed: boolean;
+
+  /**
+   * @param lane - lane whose record contradicts itself
+   *
+   * @param sliceIndex - slice the record settled
+   *
+   * @param changed - flag the record carried, which its text belies
+   */
+  constructor(
+    {
+      lane,
+      sliceIndex,
+      changed,
+    }: {
+      readonly lane: SliceRecordLane;
+      readonly sliceIndex: number;
+      readonly changed: boolean;
+    },
+  ) {
+    super(`${lane} slice ${String(sliceIndex,)} settled with changed=${String(changed,)} and carries the ${
+      changed ? 'archive wording' : 'wording of a change'
+    }: the stage read that flag off something other than its own text`,);
     this.name = 'SliceRecordContradictionError';
+    this.lane = lane;
+    this.sliceIndex = sliceIndex;
+    this.changed = changed;
   }
 }
 
@@ -153,11 +185,9 @@ export function assertSettledRecordAgrees(
   },))
     return;
   throw new SliceRecordContradictionError({
-    message: `${lane} slice ${String(sliceIndex,)} settled with changed=${
-      String(changed,)
-    } and carries the ${
-      changed ? 'archive wording' : 'wording of a change'
-    }: the stage read that flag off something other than its own text`,
+    lane,
+    sliceIndex,
+    changed,
   },);
 }
 

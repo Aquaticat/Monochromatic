@@ -211,5 +211,23 @@ await describe({
         },).not.toThrow();
       },
     },),
+    it({
+      name: 'WORDS its refusal from the fault alone, as a marked class the boundary may print',
+      fn: async () => {
+        const error = new SliceIndexingError({
+          fault: {
+            kind: 'sides-disagree',
+            position: 1,
+            sourceIndex: 1,
+            targetIndex: 2,
+          },
+        },);
+        expect(error.message,).toBe(
+          'slice at position 1 carries source index 1 against target index 2, so which one names it '
+            + 'depends on who is asking',
+        );
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

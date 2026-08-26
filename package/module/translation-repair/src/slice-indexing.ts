@@ -14,27 +14,102 @@ import type { ChunkPair, } from './chunk-document.ts';
 // invariant the reshape has to preserve, and would catch the reshape breaking it.
 
 /**
- * Thrown when a preparation's slices are not indexed as the pipeline assumes.
+ * Why a slice list's indexing does not hold.
  *
  * @example
  * ```ts
- * throw new SliceIndexingError({ message: 'slice 3 sits at position 4', },);
+ * const fault: SliceIndexingFault = { kind: 'index-off-position', position: 4, targetIndex: 3, };
+ * ```
+ */
+export type SliceIndexingFault = {
+  /**
+   * Two sides of one slice carry different indices.
+   */
+  readonly kind: 'sides-disagree';
+
+  /**
+   * Where the slice sits in its list.
+   */
+  readonly position: number;
+
+  /**
+   * Index the source side carries.
+   */
+  readonly sourceIndex: number;
+
+  /**
+   * Index the target side carries.
+   */
+  readonly targetIndex: number;
+} | {
+  /**
+   * Slice's index is not its position.
+   */
+  readonly kind: 'index-off-position';
+
+  /**
+   * Where the slice sits in its list.
+   */
+  readonly position: number;
+
+  /**
+   * Index both sides carry.
+   */
+  readonly targetIndex: number;
+};
+
+/**
+ * Words an indexing fault, after the position the class prefixes.
+ *
+ * @param fault - what does not hold
+ *
+ * @returns Sentence composed from the fault's numbers alone
+ *
+ * @example
+ * ```ts
+ * const sentence = indexingSentence({ fault: { kind: 'index-off-position', position: 4, targetIndex: 3, }, },);
+ * ```
+ */
+export function indexingSentence({ fault, }: { readonly fault: SliceIndexingFault; },): string {
+  if (fault.kind === 'sides-disagree')
+    return `carries source index ${String(fault.sourceIndex,)} against target index ${
+      String(fault.targetIndex,)
+    }, so which one names it depends on who is asking`;
+  return `is indexed ${
+    String(fault.targetIndex,)
+  }, and every splice, lane result and comparison reads that index as the position`;
+}
+
+/**
+ * Failure of the slice indexing invariant.
+ *
+ * MARKED: its message is a position and the sentence `indexingSentence`
+ * writes from the fault's numbers.
+ *
+ * @example
+ * ```ts
+ * throw new SliceIndexingError({ fault: { kind: 'index-off-position', position: 4, targetIndex: 3, }, },);
  * ```
  */
 export class SliceIndexingError extends Error {
   /**
-   * Builds failure naming what is wrong with the indexing.
-   *
-   * @param message - what does not hold, in slice terms
-   *
-   * @example
-   * ```ts
-   * throw new SliceIndexingError({ message: 'sides disagree', },);
-   * ```
+   * Declares this message safe to forward: positions and indices in a
+   * sentence written here.
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * What does not hold.
+   */
+  readonly fault: SliceIndexingFault;
+
+  /**
+   * @param fault - what does not hold, in slice terms
+   */
+  public constructor({ fault, }: { readonly fault: SliceIndexingFault; },) {
+    super(`slice at position ${String(fault.position,)} ${indexingSentence({ fault, },)}`,);
     this.name = 'SliceIndexingError';
+    this.fault = fault;
   }
 }
 
@@ -137,16 +212,21 @@ export function assertSliceIndexing(
       .sliceIndex;
     if (sourceIndex !== targetIndex) {
       throw new SliceIndexingError({
-        message: `slice at position ${String(position,)} carries source index ${
-          String(sourceIndex,)
-        } against target index ${String(targetIndex,)}, so which one names it depends on who is asking`,
+        fault: {
+          kind: 'sides-disagree',
+          position,
+          sourceIndex,
+          targetIndex,
+        },
       },);
     }
     if (targetIndex !== position) {
       throw new SliceIndexingError({
-        message: `slice at position ${String(position,)} is indexed ${
-          String(targetIndex,)
-        }, and every splice, lane result and comparison reads that index as the position`,
+        fault: {
+          kind: 'index-off-position',
+          position,
+          targetIndex,
+        },
       },);
     }
   }

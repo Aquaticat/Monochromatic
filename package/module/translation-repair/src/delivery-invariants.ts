@@ -31,32 +31,115 @@ import {
 // would find it for content slices and fail for anchored ones.
 
 /**
- * Raised when a ledger and the document it describes disagree.
- *
- * SEPARATE FROM `SliceDeliveryError`, which is raised while building a ledger
- * from one lane's reports. This one is raised about a ledger that was built
- * successfully and does not describe the document it was joined to, which is a
- * different fault with a different remedy.
+ * What the ledger and the returned document disagree about.
  *
  * @example
  * ```ts
- * throw new DeliveryInvariantError({ message: 'ledger does not reassemble the returned document', },);
+ * const fault: DeliveryInvariantFault = { kind: 'unclaimed', indices: [2, 5,], };
+ * ```
+ */
+export type DeliveryInvariantFault = {
+  /**
+   * Ledger ships slices the result does not name as changed.
+   */
+  readonly kind: 'unclaimed';
+
+  /**
+   * Slices shipped and not claimed.
+   */
+  readonly indices: readonly number[];
+} | {
+  /**
+   * Result names slices as changed that the ledger does not ship.
+   */
+  readonly kind: 'unledgered';
+
+  /**
+   * Slices claimed and not shipped.
+   */
+  readonly indices: readonly number[];
+} | {
+  /**
+   * Writing the shipped rows over the archive gives another document.
+   */
+  readonly kind: 'reassembly-differs';
+
+  /**
+   * Rows the ledger ships.
+   */
+  readonly shippedRows: number;
+};
+
+/**
+ * Words a delivery invariant fault.
+ *
+ * @param fault - what the ledger and the document disagree about
+ *
+ * @returns Sentence composed from slice indices and counts alone
+ *
+ * @example
+ * ```ts
+ * const sentence = deliveryInvariantSentence({ fault: { kind: 'reassembly-differs', shippedRows: 3, }, },);
+ * ```
+ */
+export function deliveryInvariantSentence(
+  { fault, }: { readonly fault: DeliveryInvariantFault; },
+): string {
+  if (fault.kind === 'unclaimed') {
+    /**
+     * Slices shipped and not claimed.
+     */
+    const { indices, } = fault;
+    return `ledger ships slices ${
+      indices.join(', ',)
+    } that the result does not name as changed, so one of the two describes another run`;
+  }
+  if (fault.kind === 'unledgered') {
+    /**
+     * Slices claimed and not shipped.
+     */
+    const { indices, } = fault;
+    return `result names slices ${
+      indices.join(', ',)
+    } as changed and the ledger ships none of them, so one of the two describes another run`;
+  }
+  return `writing the ledger's ${
+    String(fault.shippedRows,)
+  } shipped rows over the archive produces a different document than the lane returned, so the rows do `
+    + 'not say what the document carries';
+}
+
+/**
+ * Failure of the delivery invariants: the ledger and the returned document
+ * disagree.
+ *
+ * MARKED: its message is the sentence `deliveryInvariantSentence` writes from
+ * slice indices and counts.
+ *
+ * @example
+ * ```ts
+ * throw new DeliveryInvariantError({ fault: { kind: 'unclaimed', indices: [4,], }, },);
  * ```
  */
 export class DeliveryInvariantError extends Error {
   /**
-   * Builds the failure naming what the ledger and the document disagree about.
-   *
-   * @param message - what the two say that cannot both be true
-   *
-   * @example
-   * ```ts
-   * throw new DeliveryInvariantError({ message: 'slice 4 is shipped by one and not the other', },);
-   * ```
+   * Declares this message safe to forward: slice indices and counts in a
+   * sentence written here.
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * What the ledger and the document disagree about.
+   */
+  readonly fault: DeliveryInvariantFault;
+
+  /**
+   * @param fault - what the two say that cannot both be true
+   */
+  public constructor({ fault, }: { readonly fault: DeliveryInvariantFault; },) {
+    super(deliveryInvariantSentence({ fault, },),);
     this.name = 'DeliveryInvariantError';
+    this.fault = fault;
   }
 }
 
@@ -181,16 +264,18 @@ export function assertDeliveryAgreesWithDocument(
   },);
   if (unclaimed.length > 0) {
     throw new DeliveryInvariantError({
-      message: `ledger ships slices ${
-        unclaimed.join(', ',)
-      } that the result does not name as changed, so one of the two describes another run`,
+      fault: {
+        kind: 'unclaimed',
+        indices: unclaimed,
+      },
     },);
   }
   if (unledgered.length > 0) {
     throw new DeliveryInvariantError({
-      message: `result names slices ${
-        unledgered.join(', ',)
-      } as changed and the ledger ships none of them, so one of the two describes another run`,
+      fault: {
+        kind: 'unledgered',
+        indices: unledgered,
+      },
     },);
   }
 
@@ -219,10 +304,10 @@ export function assertDeliveryAgreesWithDocument(
   },);
   if (reassembled !== documentText) {
     throw new DeliveryInvariantError({
-      message: `writing the ledger's ${
-        String(replacements.length,)
-      } shipped rows over the archive produces a different document than the lane returned, so the `
-        + 'rows do not say what the document carries',
+      fault: {
+        kind: 'reassembly-differs',
+        shippedRows: replacements.length,
+      },
     },);
   }
 }

@@ -14,8 +14,10 @@ export {
 } from './document-lanes.ts';
 export {
   assertSliceIndexing,
+  indexingSentence,
   reindexSlicePair,
   SliceIndexingError,
+  type SliceIndexingFault,
 } from './slice-indexing.ts';
 export {
   assertPlacementLayout,
@@ -37,7 +39,11 @@ export {
 } from './unwrap-container.ts';
 export {
   assertSliceCoverage,
+  type BlockPlacementFault,
+  blockPlacementSentence,
+  coverageSentence,
   SliceCoverageError,
+  type SliceCoverageFault,
 } from './slice-coverage.ts';
 export {
   assertSpanContiguity,
@@ -83,6 +89,8 @@ export {
 export {
   assertDeliveryAgreesWithDocument,
   DeliveryInvariantError,
+  type DeliveryInvariantFault,
+  deliveryInvariantSentence,
 } from './delivery-invariants.ts';
 export {
   assertWordingCoherent,
