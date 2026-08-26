@@ -250,7 +250,9 @@ function inlineShellSources(command: CommandInfo,): readonly string[] {
    * Shell source concatenated by eval before execution.
    */
   const evalSources = executableName(command.name,) === 'eval'
-    ? [command.args.join(' ',),]
+    ? [command
+      .args
+      .join(' ',),]
     : [];
   /**
    * Direct command followed by every argument-tail candidate for wrapped shell.
