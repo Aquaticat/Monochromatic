@@ -352,6 +352,24 @@ skill directories,
  or either agent scratch root still go through
 the normal signal and judge pipeline.
 
+## Virtual input hard guard
+
+Before bypass,
+flagger,
+or judge handling,
+a fixed guard parses Bash commands and blocks caller-scoped ydotool execution.
+ydotool sends key-down and key-up as separate datagrams.
+If injected input cancels its own Pi Bash caller,
+the persistent virtual device can retain the key-down until ydotoold restarts.
+
+The guard covers direct executable paths,
+common caller-scoped forwarding commands,
+and inline shell programs.
+Text searches that merely mention ydotool remain allowed.
+An independently supervised broker remains available for separately authorized live input.
+See
+[`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
+
 ## Logging
 
 The package uses tagged loggers from `@monochromatic-dev/module-logger`.
@@ -389,6 +407,7 @@ bypass shortcut must unbind or remap that action in `~/.pi/agent/keybindings.jso
 While bypass is enabled,
  auto-mode allows tool calls without flagger or judge
 evaluation.
+The fixed virtual-input guard remains active.
  The footer shows `auto-mode: bypass`,
  toggles are written as
 `auto-mode:bypass` session entries,
