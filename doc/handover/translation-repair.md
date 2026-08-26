@@ -7,7 +7,9 @@ is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
 every group from calibrate through rendering is landed (`acfc7ad22` to `8bffaba9b`) and `#236` is CLOSED;
 `#213`, `#230` and `#229` are measured; the readiness signal was put and REJECTED (see "The owner's answers"),
-so the pipeline's actual output is being read before anything else.
+so the pipeline's actual output is being read before anything else: arms A2 and D are running, the fresh
+pass over ten entries follows them, and two defects the reading found (`#263`, `#265`) are landed in source
+awaiting the build that the running arms forbid (see "Work while the arms ran").
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
 WHAT THIS FILE IS.
@@ -1841,6 +1843,65 @@ after the standing is read and the parked work is extracted.
 when the pipeline is production ready, say so with the `AskUserQuestion` tool,
 not in prose, because that is the signal the owner is waiting for
 before disabling branch protection to sanitize the committed corpus text.
+
+## Work while the arms ran (2026-08-26)
+
+Arms A2 and D (`bw9dhhs6c`) hold `dist` from 15:54Z; nothing below is built or tested yet. Source edits,
+`lint:oxlint` and `lint:types` ran (the type-check emits nothing under `dist/final/node`; it writes only a
+`.tsbuildinfo`, the tsconfig has `noEmit`). Every test file that imports the bundle type-errors against the stale
+bundle until the next build; those are the only lint findings left and they are not defects.
+
+THE ADVISOR CHECKPOINT ON THE READING PLAN (16:00Z, answered 16:02Z) changed the plan in four places, all done
+or scheduled: the fresh pass adds the hard cases (`Toka_ls`, `XIEPT2`, and `XingZ60` in a second launch after
+the ten, since `XingZ60` alone projects at 385 minutes against the 420 minute cap and the pass orders `--only`
+by the corpus listing); sol reads each fresh page as a second reader (`scratchpad/sol-read.py <entry> <runs-dir>`
+attaches the three whole files with `@file` arguments, which `pi --help` documents, and backgrounds the call);
+every fresh-page defect is traced into the artifact (slice, lane, ballots) before it is filed; and the reading
+document's preamble was made true (it quotes one rendering; it said it quoted none).
+
+`#264` WAS MEASURED INSTEAD OF ASKED. Over all 92 archive `page.en.md` files at the pin, 85 carry typographic
+quotes and the corpus holds 1173 U+2019, so a U+2019 the pipeline writes is house style; the defect narrows to
+invisible variants (U+2011, U+00A0, U+00AD) written where neither side has them. The decision, recorded in the
+reading document with veto invited: normalize that class at candidate intake, before the deciders judge, so both
+still judge the bytes that ship (`#162`). Not built yet.
+
+`#263` LANDED IN SOURCE (`d8a040edf`, `04f1ebafd`). The refine stage now returns `heard` (the refiners with a
+usable answer, proposal or not), `settleRefinedSlice` threads it out as `refinersHeard`, the calibration's slice
+record carries `refinerHeard`, and `readStandingCoverage` takes a fourth input, `answered: SeatAnswers`, which is
+`recorded` with ids or `unrecorded`. The coverage has a fourth state, `answeredUnslated`, with its own line
+(`ANSWERED AND WAS NEVER SLATED`); the silent line reads `ANSWERED NOTHING USABLE` where answers are recorded and
+`NO CANDIDATE OF THEIRS REACHED ANY SLATE ... this seat does not record who answered` where they are not. The
+editor and translate seats are unrecorded (`#266`): their stages carry only a heard count out, and the chunk
+outcome is persisted, so carrying ids needs the in-memory path `settleRefinedSlice` uses. The seat report moved
+to `editor-calibrate-standing.ts` as `standingReportLines`, which returns lines so a test reads it without the
+console; the first name chosen collided with `seat-tally.ts`'s `seatReportLines`, which the barrel union refused.
+Owed after the build: the suites, GFP on the producer-silence guard (remove the `answered` input from the
+refiner's `produced` wiring and see the `#263` cases fail), the whole suite solo, and a live `editor-calibrate`
+reading with the REFINER coverage line checked against its SEAT lines.
+
+`#265` LANDED IN SOURCE (`fd4f7546f`). `publishFixedPage` now takes `sourceText`, reads both sides' destinations
+off the pipeline's own parse (`parseBodyTolerant` is exported `@internal` from `parse-document.ts`; front matter
+split, invisible lines and HTML comments masked, strict MDX with the plain-markdown downgrade) unioned with a
+linear scan for `http://` and `https://` runs, and returns `{ path, destinations }`. The pass prints
+`DESTINATIONS <id> source=N page=M dropped=K` beside the tally (counts only; the addresses go to the run log at
+info, a warn line carries the count). A dropped destination is a finding, never a refusal: the page is what both
+deciders approved. `pass-entry.ts` reached its line budget and the capped failure text moved to
+`tally-error-text.ts`; the destination exports live in `publish-barrel.ts` because `corpus-barrel.ts` reached
+its budget too. Owed after the build: the suites, GFP (drop the union of the scan and see the bare-run cases
+fail), and a live reading of the `DESTINATIONS` lines on the fresh pass.
+
+THE SITE'S OWN PARSER, on the owner's pointer. The corpus repo (`~/one-among-us/data`, `package.json` at the
+pin) builds each `page.md` itself: `scripts/build.ts` rewrites `<!--` to `{/* ` and `-->` to ` */}`, splits
+front matter with `markdown-yaml-metadata-parser`, and `scripts/mdx.ts` compiles with `@mdx-js/mdx` `compileSync`
+under `remarkMath` and `rehypeKatex`, no GFM. `one-among-us/web` (cloned shallow to `~/temp/agent/oau-web-20260826`)
+renders the compiled page and uses `marked` only for metadata. The pipeline parses with `remark-mdx` plus
+`remark-gfm` after masking comments to whitespace. Measured at the pin: two or more `$` on 34 source pages,
+`[^` on 23, `<!--` on 17, a JSX component on 53. `#267` holds the reconciliation question (remark-math in the
+strict grammar; what the site renders for a footnote); the destination check is unaffected because it scans
+bare runs as well as the tree.
+
+Arms at 16:44Z: A2 at slice 3 of 4 after 50 minutes against arm A's 43.19 minutes for all four, which is the
+band showing itself before it is measured; D not started.
 
 ## Sections aged out into the history (2026-08-26)
 
