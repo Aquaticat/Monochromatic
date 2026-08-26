@@ -338,6 +338,24 @@ available. The boundary prints `refused by <Class>` and frames only (`framesOf` 
 real: an invariant violation reaches the operator without its slice index. The candidate fix is the calibrate-9 and
 repair-6 shape, typed fault unions with the sentence written in the class's module, per class.
 
+Whole-suite `buildAndTest` after `c2d2473db`: 800 PASS, 0 FAIL, exit 0.
+
+slices-6 part one LANDED 2026-08-26 in `9f0145fcb`, on the advisor's verdict (typed fault unions per class, the
+`DrawReconcileError` shape, smallest classes first, one commit per batch): `SliceRecordContradictionError` takes
+`{ lane, sliceIndex, changed }`; `SliceIndexingError` (`SliceIndexingFault`, `indexingSentence`),
+`SliceCoverageError` (`SliceCoverageFault`, `BlockPlacementFault`, `coverageSentence`, `blockPlacementSentence`)
+and `DeliveryInvariantError` (`DeliveryInvariantFault`, `deliveryInvariantSentence`) take a fault union and word
+it in their own module; all four marked and in the inventory, exported through `document-barrel.ts` and
+`pipeline-barrel.ts`. Block ids are the parser's positional `block/N` tokens (`document-node.ts:241`), recorded on
+the fault type. Each suite gained a `WORDS its refusal` case pinning the sentence and the marker. GFP: the marker
+removed from `SliceCoverageError` fails three inventory cases; a word dropped from `indexingSentence`, the two
+phrases swapped in the record class, and the separator changed in `deliveryInvariantSentence` each fail their
+suite's `WORDS` case (the record suite also fails `REFUSES rather than discards`); all restored, all five suites
+pass. Lint lesson: `super(\`${sentence(...)}\`)` trips `no-unnecessary-template-expression`; a class whose whole
+message is one sentence call passes it bare, and the inventory scanner treats a bare call as its own sentence with
+no parts to name. Remaining: `DeliveryCoherenceError` (10 sites), `LaneComparisonError` (11),
+`LaneSliceCoverageError` (13, three files), `AssemblyContractError` (13), `SliceDeliveryError` (17).
+
 Queue: the register's MINORs in register order (slices-4 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
