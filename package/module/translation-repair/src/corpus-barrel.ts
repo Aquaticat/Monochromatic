@@ -206,7 +206,9 @@ export {
 } from './corpus-run/editor-width-contest.ts';
 export { writeWidthReport, } from './corpus-run/editor-width-report.ts';
 export {
+  evictStaleLock,
   lockRunsDir,
+  releaseIfOwned,
   RunsDirectoryBusyError,
 } from './corpus-run/runs-lock.ts';
 export {

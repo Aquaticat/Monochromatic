@@ -15,6 +15,7 @@
 import {
   mkdtemp,
   readdir,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -27,7 +28,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  evictStaleLock,
   lockRunsDir,
+  releaseIfOwned,
   RunsDirectoryBusyError,
 } from '../../dist/final/node/index.mjs';
 
@@ -153,6 +156,125 @@ await describe({
         await using _lock = await lockRunsDir({ runsDir, },);
 
         expect(await readdir(runsDir,),).toEqual(['pass.lock',],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'stale-lock takeover under contention',
+  children: [
+    it({
+      name: 'EVICTS a stale lock exactly once when two starters race for it, since the eviction is a '
+        + 'rename and a rename is atomic (`#243`)',
+      fn: async () => {
+        const runsDir = await scratch();
+        /**
+         * Lock file both starters find stale.
+         */
+        const path = join(
+          runsDir,
+          'pass.lock',
+        );
+        await writeFile(
+          path,
+          `${JSON.stringify({
+            pid: GONE_PID,
+            startedAt: '2026-08-14T00:00:00.000Z',
+          },)}\n`,
+        );
+        /**
+         * What each concurrent eviction reported.
+         */
+        const outcomes = await Promise.all([
+          evictStaleLock({ path, },),
+          evictStaleLock({ path, },),
+        ],);
+        expect(outcomes.toSorted(),).toEqual(['evicted', 'gone',],);
+        expect(await readdir(runsDir,),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'KEEPS a lock it does not own on release, so a starter that lost a takeover cannot delete '
+        + 'the winner\'s lock on its way out (`#243`)',
+      fn: async () => {
+        const runsDir = await scratch();
+        /**
+         * Lock file under test.
+         */
+        const path = join(
+          runsDir,
+          'pass.lock',
+        );
+        /**
+         * Acquisition whose release is under test.
+         */
+        const lock = await lockRunsDir({ runsDir, },);
+        // Another holder took the file over underneath this acquisition.
+        await writeFile(
+          path,
+          `${JSON.stringify({
+            pid: process.pid,
+            startedAt: '2026-08-14T00:00:00.000Z',
+            token: 'somebody-else',
+          },)}\n`,
+        );
+        await lock[Symbol.asyncDispose]();
+        expect(await readdir(runsDir,),).toEqual(['pass.lock',],);
+        expect((await readFile(path, 'utf8',)).includes('somebody-else',),).toBe(true,);
+        expect(await releaseIfOwned({
+          path,
+          holder: {
+            pid: process.pid,
+            startedAt: '2026-08-14T00:00:00.000Z',
+            token: 'somebody-else',
+          },
+        },),).toBe('released',);
+      },
+    },),
+    it({
+      name: 'REFUSES the loser of two concurrent takeovers, and the winner still holds the lock '
+        + 'afterwards',
+      fn: async () => {
+        const runsDir = await scratch();
+        await writeFile(
+          join(
+            runsDir,
+            'pass.lock',
+          ),
+          `${JSON.stringify({
+            pid: GONE_PID,
+            startedAt: '2026-08-14T00:00:00.000Z',
+          },)}\n`,
+        );
+        /**
+         * Both starters, settled.
+         */
+        const settled = await Promise.allSettled([
+          lockRunsDir({ runsDir, },),
+          lockRunsDir({ runsDir, },),
+        ],);
+        /**
+         * The one that acquired.
+         */
+        const winners = settled.filter(function won(outcome,): boolean {
+          return outcome.status === 'fulfilled';
+        },);
+        /**
+         * The one that was refused.
+         */
+        const losers = settled.filter(function lost(outcome,): boolean {
+          return outcome.status === 'rejected';
+        },);
+        expect(winners.length,).toBe(1,);
+        expect(losers.length,).toBe(1,);
+        expect(
+          (losers[0]?.status === 'rejected') ? losers[0].reason : undefined,
+        ).toBeInstanceOf(RunsDirectoryBusyError,);
+        expect(await readdir(runsDir,),).toEqual(['pass.lock',],);
+        if (winners[0]?.status === 'fulfilled')
+          await winners[0].value[Symbol.asyncDispose]();
+        expect(await readdir(runsDir,),).toEqual([],);
       },
     },),
   ],

@@ -1,6 +1,8 @@
+import { randomUUID, } from 'node:crypto';
 import {
   mkdir,
   open,
+  rename,
   rm,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -52,6 +54,13 @@ type LockHolder = Readonly<{
    * When it took the lock, for a message a human can act on.
    */
   startedAt: string;
+
+  /**
+   * Random per-acquisition token, so a release removes only the lock this
+   * acquisition wrote and never a later holder's (`#243`). Empty on locks
+   * written before the token existed, which therefore never read as ours.
+   */
+  token: string;
 }>;
 
 /**
@@ -212,6 +221,7 @@ async function readHolder(
       holder: {
         pid: parsed.pid,
         startedAt: parsed.startedAt,
+        token: (('token' in parsed) && ((typeof parsed.token) === 'string')) ? parsed.token : '',
       },
     };
   }
@@ -318,6 +328,7 @@ export async function lockRunsDir(
   const holder: LockHolder = {
     pid: process.pid,
     startedAt: new Date().toISOString(),
+    token: randomUUID(),
   };
 
   if (!await claim({
@@ -350,14 +361,12 @@ export async function lockRunsDir(
     else
       console.log(`LOCK taking over an unreadable lock in ${runsDir}`,);
 
-    await rm(
-      path,
-      { force: true, },
-    );
+    await evictStaleLock({ path, },);
 
     // ONE retry, not a loop and not recursion. Two passes finding the same
-    // stale lock both remove it and both retry; exactly one create succeeds,
-    // and the loser now faces a live holder rather than a stale one, so
+    // stale lock both try to evict it; the eviction is a rename, so exactly
+    // one of them evicts and the other finds it gone, then exactly one create
+    // succeeds and the loser faces a live holder rather than a stale one, so
     // retrying again could only spin against a lock that is genuinely held.
     if (!await claim({
       path,
@@ -377,12 +386,109 @@ export async function lockRunsDir(
 
   return {
     async [Symbol.asyncDispose](): Promise<void> {
+      await releaseIfOwned({
+        path,
+        holder,
+      },);
+    },
+  };
+}
+
+/**
+ * Removes a stale lock so that exactly one of any number of concurrent
+ * starters does it.
+ *
+ * A RENAME, NOT A REMOVE. Two starters that both found the lock stale and both
+ * removed it could interleave as remove, claim, remove, claim, the second
+ * remove deleting the first starter's fresh lock, and both passes then ran in
+ * one directory (`#243`). A rename to a name only this call knows is atomic:
+ * the first starter's rename succeeds and the second's finds nothing to
+ * rename, so the second proceeds straight to a claim it will lose.
+ *
+ * @param path - lock file to evict
+ *
+ * @returns `evicted` when this call moved the lock aside, `gone` when another
+ * starter had already done so
+ *
+ * @example
+ * ```ts
+ * const outcome = await evictStaleLock({ path, },);
+ * ```
+ *
+ * @internal
+ */
+export async function evictStaleLock(
+  { path, }: { readonly path: string; },
+): Promise<'evicted' | 'gone'> {
+  /**
+   * Name only this call knows, so two evictions cannot collide on it either.
+   */
+  const asideName = `${path}.stale-${randomUUID()}`;
+  try {
+    await rename(
+      path,
+      asideName,
+    );
+  }
+  catch (error) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
+      return 'gone';
+    throw error;
+  }
+  await rm(
+    asideName,
+    { force: true, },
+  );
+  return 'evicted';
+}
+
+/**
+ * Removes the lock file only when it still carries this acquisition's token,
+ * so a starter that lost a takeover cannot delete the winner's lock on its
+ * way out (`#243`). Says so when it keeps one.
+ *
+ * @param path - lock file
+ *
+ * @param holder - holder this acquisition wrote
+ *
+ * @returns `released` when the file was ours and is gone, `kept` otherwise
+ *
+ * @example
+ * ```ts
+ * const outcome = await releaseIfOwned({ path, holder, },);
+ * ```
+ *
+ * @internal
+ */
+export async function releaseIfOwned(
+  {
+    path,
+    holder,
+  }: {
+    readonly path: string;
+    readonly holder: LockHolder;
+  },
+): Promise<'released' | 'kept'> {
+  /**
+   * Whoever holds the file now.
+   */
+  const current = await readHolder({ path, },);
+  if (current.kind === 'holder') {
+    /**
+     * Holder the file names now.
+     */
+    const { holder: found, } = current;
+    if (found.token === holder.token) {
       await rm(
         path,
         { force: true, },
       );
-    },
-  };
+      return 'released';
+    }
+  }
+  console.log(`LOCK ${path} is not this acquisition's any more; leaving it in place`,);
+  return 'kept';
 }
 
 //endregion Runs lock
