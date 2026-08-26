@@ -39,7 +39,7 @@ await describe({
       name: 'folds the no-break spaces to spaces and drops the soft hyphen and the zero-width joiners',
       fn: async () => {
         const folded = foldInvisibleVariants({
-          text: 'She\u00a0slept by\u202fthe till\u00ad, every\u200b day\u2060 long\ufeff.',
+          text: 'She\u00A0slept by\u202Fthe till\u00AD, every\u200B day\u2060 long\uFEFF.',
         },);
 
         expect(folded.text,).toBe('She slept by the till, every day long.',);
@@ -61,7 +61,7 @@ await describe({
          * Text carrying only visible typography, which is the archive's own
          * convention, plus a joined emoji.
          */
-        const text = '\u201cShe\u2019s ours\u201d \u2014 the shop \u2013 said\u2026 \u{1F469}\u200d\u{1F4BB}';
+        const text = '\u201CShe\u2019s ours\u201D \u2014 the shop \u2013 said\u2026 \u{1F469}\u200D\u{1F4BB}';
 
         expect(foldInvisibleVariants({ text, },),).toStrictEqual({
           text,

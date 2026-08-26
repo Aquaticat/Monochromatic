@@ -444,7 +444,7 @@ await describe({
             rewrites: [
               {
                 paragraph: 1,
-                newText: 'The cat\u00a0sleeps.',
+                newText: 'The cat\u00A0sleeps.',
               },
             ],
           },
