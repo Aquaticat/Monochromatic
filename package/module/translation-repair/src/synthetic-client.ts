@@ -20,6 +20,7 @@ import {
   SYNTHETIC_CHAT_BASE_URL,
   SYNTHETIC_QUOTAS_URL,
   type RosterModelId,
+  syntheticServes,
 } from './synthetic-catalog.ts';
 import {
   extractStreamedCompletion,
@@ -54,6 +55,52 @@ import {
  * Logger root for this package's model-facing shell.
  */
 const l = tagged({ tag: 'translation-repair', },);
+
+/**
+ * Raised when a roster model is addressed to Synthetic and Synthetic has no row for it.
+ *
+ * BEFORE THE WIRE, NOT AFTER. The provider answers such a request with an HTTP
+ * 400 saying the name should start with `hf:`, which the retry ladder does not
+ * retry and the stage layer records as one lost voice; over a run that is a
+ * seat failing every call while quorum is met by the rest (`#235`). Refusing
+ * here names the actual condition, and a routed client never reaches it
+ * because reach is decided before the provider is chosen.
+ *
+ * @example
+ * ```ts
+ * throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
+ * ```
+ */
+export class SyntheticModelNotServedError extends Error {
+  /**
+   * Declares this message safe to forward: a catalog id and our own words.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * Roster model this provider cannot serve.
+   */
+  public readonly modelId: RosterModelId;
+
+  /**
+   * Builds the refusal naming the model.
+   *
+   * @param modelId - roster model addressed to this provider
+   *
+   * @example
+   * ```ts
+   * throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
+   * ```
+   */
+  public constructor({ modelId, }: { readonly modelId: RosterModelId; },) {
+    super(
+      `Synthetic does not serve ${modelId}; it is a Charm Hyper endpoint label, so the call `
+        + 'must go through the two-provider client createRunClient builds',
+    );
+    this.name = 'SyntheticModelNotServedError';
+    this.modelId = modelId;
+  }
+}
 
 /**
  * Refuses a success reply whose server-sent stream stopped before its terminator.

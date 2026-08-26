@@ -161,4 +161,16 @@ export {
   ModelNotServedError,
 } from './hyper-client.ts';
 
+export { syntheticServes, } from './synthetic-catalog.ts';
+export { SyntheticModelNotServedError, } from './synthetic-client.ts';
+export {
+  createSeatTally,
+  RUN_SEATS,
+  type SeatCount,
+  type SeatOutcome,
+  seatReportLines,
+  type SeatTally,
+  seatTallyClient,
+} from './seat-tally.ts';
+
 //endregion Provider barrel

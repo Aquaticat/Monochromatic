@@ -1,4 +1,7 @@
-import type { SyntheticServedId, } from './roster-id.ts';
+import type {
+  RosterModelId,
+  SyntheticServedId,
+} from './roster-id.ts';
 
 //region Synthetic model catalog
 // Facts verified live on 2026-07-16 against `GET /openai/v1/models` (prices, context
@@ -229,6 +232,30 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModel
  * limit; the provider documents the baseline as its current default model.
  */
 export const SYNTHETIC_BASELINE_MODEL_ID: SyntheticServedId = 'hf:zai-org/GLM-5.2';
+
+/**
+ * Whether Synthetic serves a roster model at all.
+ *
+ * THE CHECK THE WIRE NEVER MADE. Five roster seats are Charm Hyper endpoint
+ * labels with no Synthetic spelling, and a client handed one of them used to
+ * send it anyway and collect an HTTP 400 per call (`#235`). This is the one
+ * question the catalog can answer before a request is built.
+ *
+ * @param modelId - roster model a caller wants to address
+ *
+ * @returns Whether `SYNTHETIC_MODELS` has a row for it
+ *
+ * @example
+ * ```ts
+ * if (!syntheticServes(modelId,)) throw new SyntheticModelNotServedError({ modelId, },);
+ * ```
+ */
+export function syntheticServes(modelId: RosterModelId,): modelId is SyntheticServedId {
+  return Object.hasOwn(
+    SYNTHETIC_MODELS,
+    modelId,
+  );
+}
 
 /**
  * Estimates five-hour-limit weight of one request to one model,
