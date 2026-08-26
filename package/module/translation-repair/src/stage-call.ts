@@ -229,7 +229,14 @@ export async function attemptStageCall<ValueT,>(
       l.warn(`${stage} ${modelId}: ${lostVoiceCause({ outcome, },)}, voice lost`,);
 
       // ANSWERED. Every non-`ok` kind carries `rawText`, so the model reached
-      // the end of its work and only the shape defeated the guard.
+      // the end of its work and only the shape defeated the guard. The kinds
+      // are `refusal-shaped` and `schema-mismatch`, and nothing else reaches
+      // here: a stream cut by the idle, runaway or degeneration guards throws
+      // and lands in the catch below as not answered, and a straggler the
+      // round abandons is classified in `stage-round.ts`, never here.
+      // CONFIRMED LIVE on the first recovery rounds (two calibration arms of
+      // 2026-08-26): all four re-asked voices were `schema-mismatch`, three
+      // came back readable, and none of the thirteen grace cuts was re-asked.
       return {
         heard: false,
         answered: true,
