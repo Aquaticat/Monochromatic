@@ -1,5 +1,9 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import {
+  type AssemblyContractFault,
+  assemblySentence,
+} from './assembly-contract-fault.ts';
+import {
   type SliceReplacement,
   spliceSlices,
 } from './splice-slices.ts';
@@ -28,28 +32,35 @@ import {
 // there.
 
 /**
- * Raised when assembly is handed, or produces, a document and a change set that
- * contradict each other.
+ * Refusal of an assembly whose change sets or document contradict each other.
+ *
+ * MARKED: its message is the sentence `assemblySentence` writes from set
+ * names, kinds and numbers.
  *
  * @example
  * ```ts
- * throw new AssemblyContractError({ message: 'slice 4 claims a change it does not make', },);
+ * throw new AssemblyContractError({ fault: { kind: 'changed-without-claim', }, },);
  * ```
  */
 export class AssemblyContractError extends Error {
   /**
-   * Builds the error with a message naming the contradiction.
-   *
-   * @param message - what disagreed, naming the slice where one exists
-   *
-   * @example
-   * ```ts
-   * throw new AssemblyContractError({ message: 'slice 4 claims a change it does not make', },);
-   * ```
+   * Declares this message safe to forward: set names, kinds and numbers in a
+   * sentence written here.
    */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * What the sets or document contradict.
+   */
+  readonly fault: AssemblyContractFault;
+
+  /**
+   * @param fault - what the sets or document contradict
+   */
+  constructor({ fault, }: { readonly fault: AssemblyContractFault; },) {
+    super(assemblySentence({ fault, },),);
     this.name = 'AssemblyContractError';
+    this.fault = fault;
   }
 }
 
@@ -103,13 +114,17 @@ export function assertReplacementsChange(
     const incumbentText = incumbentByIndex.get(replacement.sliceIndex,);
     if (incumbentText === undefined)
       throw new AssemblyContractError({
-        message: `replacement names slice ${
-          String(replacement.sliceIndex,)
-        }, which this preparation never produced`,
+        fault: {
+          kind: 'replacement-unproduced',
+          sliceIndex: replacement.sliceIndex,
+        },
       },);
     if (replacement.replacementText === incumbentText)
       throw new AssemblyContractError({
-        message: `slice ${String(replacement.sliceIndex,)} claims a change and carries the archive wording`,
+        fault: {
+          kind: 'replacement-unchanged',
+          sliceIndex: replacement.sliceIndex,
+        },
       },);
   }
 }
@@ -179,17 +194,33 @@ export function checkedChangeSets(
   for (const index of named) {
     if (!Number.isInteger(index,))
       throw new AssemblyContractError({
-        message: `change set holds ${String(index,)}, which is not a slice index`,
+        fault: {
+          kind: 'index-not-integer',
+          index,
+        },
       },);
     if (index < 0)
       throw new AssemblyContractError({
-        message: `change set names slice ${String(index,)}, and no slice is before the first`,
+        fault: {
+          kind: 'index-negative',
+          index,
+        },
       },);
   }
   if (new Set(shipped,).size !== shipped.length)
-    throw new AssemblyContractError({ message: 'shipped slices repeat', },);
+    throw new AssemblyContractError({
+      fault: {
+        kind: 'set-repeats',
+        set: 'shipped',
+      },
+    },);
   if (new Set(withdrawn,).size !== withdrawn.length)
-    throw new AssemblyContractError({ message: 'withdrawn slices repeat', },);
+    throw new AssemblyContractError({
+      fault: {
+        kind: 'set-repeats',
+        set: 'withdrawn',
+      },
+    },);
 
   /**
    * Slices claimed by both sets, which no slice can be.
@@ -199,7 +230,10 @@ export function checkedChangeSets(
   },);
   if (both.length > 0)
     throw new AssemblyContractError({
-      message: `slices ${both.join(', ',)} are named as both shipped and withdrawn`,
+      fault: {
+        kind: 'both-shipped-and-withdrawn',
+        indices: both,
+      },
     },);
 
   return {
@@ -279,7 +313,11 @@ export function orderedChangeSets(
   ) {
     if (index >= sliceCount)
       throw new AssemblyContractError({
-        message: `change set names slice ${String(index,)} of ${String(sliceCount,)} prepared`,
+        fault: {
+          kind: 'index-beyond-count',
+          index,
+          sliceCount,
+        },
       },);
   }
   return checked;
@@ -366,9 +404,10 @@ export function deriveShippedIndices(
   },);
   if (reconstructed !== assembledText)
     throw new AssemblyContractError({
-      message: `returned document is not what its ${
-        String(survivingReplacements.length,)
-      } surviving replacements assemble to`,
+      fault: {
+        kind: 'reassembly-differs',
+        survivors: survivingReplacements.length,
+      },
     },);
 
   /**
@@ -378,16 +417,13 @@ export function deriveShippedIndices(
     return replacement.sliceIndex;
   },);
   if ((assembledText !== incumbentText) && (shipped.length === 0))
-    throw new AssemblyContractError({
-      message: 'returned document differs from the archive while no slice is named as changed',
-    },);
+    throw new AssemblyContractError({ fault: { kind: 'changed-without-claim', }, },);
   if ((assembledText === incumbentText) && (shipped.length > 0))
     throw new AssemblyContractError({
-      message: `returned document equals the archive while slices ${
-        shipped.join(', ',)
-      } are named as changed: a set that reassembles to the archive is a net-zero `
-        + 'assembly, which `guardFootnoteAssembly` canonicalizes to no survivors, '
-        + 'so pass what the guard let stand rather than what a lane proposed',
+      fault: {
+        kind: 'unchanged-with-claims',
+        indices: shipped,
+      },
     },);
   return shipped;
 }

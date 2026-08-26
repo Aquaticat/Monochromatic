@@ -218,7 +218,10 @@ function outcomeOf(
     const acceptedText = byIndex.get(sliceIndex,);
     if ((typeof acceptedText) !== 'string')
       throw new LaneSliceCoverageError({
-        message: `lane decided slice ${String(sliceIndex,)} with no wording`,
+        fault: {
+          kind: 'decided-without-wording',
+          sliceIndex,
+        },
       },);
     return {
       kind: 'decided',
@@ -238,7 +241,10 @@ function outcomeOf(
     return { kind: 'not-applicable', };
   if (undecided === 'refuse')
     throw new LaneSliceCoverageError({
-      message: `lane left prepared slice ${String(sliceIndex,)} undecided`,
+      fault: {
+        kind: 'left-undecided',
+        sliceIndex,
+      },
     },);
   return { kind: 'not-evaluated', };
 }
@@ -326,20 +332,27 @@ export function buildLaneSliceTexts(
   // reused for one slice and lost for another.
   if (prepared.size !== slices.length)
     throw new LaneSliceCoverageError({
-      message: `preparation produced ${
-        String(slices.length,)
-      } slices under ${String(prepared.size,)} distinct indices`,
+      fault: {
+        kind: 'preparation-repeats',
+        slices: slices.length,
+        distinct: prepared.size,
+      },
     },);
   if (byIndex.size !== decided.length)
     throw new LaneSliceCoverageError({
-      message: `lane decided ${String(decided.length,)} times over ${
-        String(byIndex.size,)
-      } distinct slices`,
+      fault: {
+        kind: 'decisions-repeat',
+        decisions: decided.length,
+        distinct: byIndex.size,
+      },
     },);
   for (const one of decided) {
     if (!prepared.has(one.sliceIndex,))
       throw new LaneSliceCoverageError({
-        message: `lane decided slice ${String(one.sliceIndex,)}, which this preparation never produced`,
+        fault: {
+          kind: 'decided-unproduced',
+          sliceIndex: one.sliceIndex,
+        },
       },);
   }
 
@@ -358,24 +371,17 @@ export function buildLaneSliceTexts(
       {
         label: 'unfilled',
         indices: unfilledChunkIndices,
-        decidedClause: 'so what it accepted there is unstated',
         incumbent: 'absent',
-        incumbentClause: 'and the archive holds wording for it: '
-          + 'only a slice with none can be unfilled',
       },
       {
         label: 'unheard',
         indices: unheardChunkIndices,
-        decidedClause: 'so whether anyone answered for it is unstated',
         incumbent: 'present',
-        incumbentClause: 'and the archive holds no wording for it to fall back on',
       },
       {
         label: 'not-applicable',
         indices: notApplicableChunkIndices,
-        decidedClause: 'so whether this lane had anything to do there is unstated',
         incumbent: 'absent',
-        incumbentClause: 'and the archive holds wording for it, which is exactly what this lane works on',
       },
     ],
   },);
@@ -415,9 +421,10 @@ export function buildLaneSliceTexts(
     // resumed after stopping.
     if (stopped.already && (outcome.kind !== 'not-evaluated')) {
       throw new LaneSliceCoverageError({
-        message: `lane reports reaching slice ${
-          String(sliceIndex,)
-        } after leaving an earlier one unexamined, which no early stop produces`,
+        fault: {
+          kind: 'reached-after-stop',
+          sliceIndex,
+        },
       },);
     }
     if (outcome.kind === 'not-evaluated')

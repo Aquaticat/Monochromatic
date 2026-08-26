@@ -569,5 +569,21 @@ await describe({
         expect(String(caught,),).toContain('after leaving an earlier one unexamined',);
       },
     },),
+    it({
+      name: 'WORDS its refusal from the set label and fault alone, as a marked class the boundary may print',
+      fn: async () => {
+        const error = new LaneSliceCoverageError({
+          fault: {
+            kind: 'set-and-decided',
+            set: 'unfilled',
+            sliceIndex: 2,
+          },
+        },);
+        expect(error.message,).toBe(
+          'lane reports slice 2 as unfilled and decided at once, so what it accepted there is unstated',
+        );
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

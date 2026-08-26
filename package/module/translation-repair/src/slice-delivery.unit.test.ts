@@ -656,5 +656,20 @@ await describe({
         expect((refusalOfShippedWhileBlocked as Error).message,).toContain('shipped by a blocked run',);
       },
     },),
+    it({
+      name: 'WORDS its refusal from the fault alone, as a marked class the boundary may print',
+      fn: async () => {
+        const error = new SliceDeliveryError({
+          fault: {
+            kind: 'wording-index-differs',
+            position: 1,
+            sliceIndex: 1,
+            wordingIndex: 2,
+          },
+        },);
+        expect(error.message,).toBe('slice at position 1 is indexed 1 and its wording names slice 2',);
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

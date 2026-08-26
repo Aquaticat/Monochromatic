@@ -4,6 +4,10 @@ import type {
 } from './lane-slice-text.ts';
 import type { PreparationIdentity, } from './preparation-identity.ts';
 import { assertDeliveryCoherent, } from './delivery-coherence.ts';
+import {
+  comparisonSentence,
+  type LaneComparisonFault,
+} from './lane-comparison-fault.ts';
 import type {
   SliceDelivery,
   SliceDeliveryRecord,
@@ -237,28 +241,35 @@ export type LaneComparison = {
 };
 
 /**
- * Raised when two lane results cannot be compared because they do not describe
- * the same preparation.
+ * Refusal to compare two ledgers that were not built over one preparation.
+ *
+ * MARKED: its message is the sentence `comparisonSentence` writes from lane
+ * names, kinds and numbers.
  *
  * @example
  * ```ts
- * throw new LaneComparisonError({ message: 'slice 4 differs', },);
+ * throw new LaneComparisonError({ fault: { kind: 'different-slicings', }, },);
  * ```
  */
 export class LaneComparisonError extends Error {
   /**
-   * Builds the error with a message naming what disagreed.
-   *
-   * @param message - which slice disagreed and how
-   *
-   * @example
-   * ```ts
-   * throw new LaneComparisonError({ message: 'slice 4 differs', },);
-   * ```
+   * Declares this message safe to forward: lane names, kinds and numbers in
+   * a sentence written here.
    */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * Why the ledgers cannot be compared.
+   */
+  readonly fault: LaneComparisonFault;
+
+  /**
+   * @param fault - why the ledgers cannot be compared
+   */
+  constructor({ fault, }: { readonly fault: LaneComparisonFault; },) {
+    super(comparisonSentence({ fault, },),);
     this.name = 'LaneComparisonError';
+    this.fault = fault;
   }
 }
 
@@ -401,9 +412,7 @@ export function compareDocumentLanes(
   // from different artifacts of the same entry line up perfectly and describe
   // different passages.
   if (repair.preparationIdentity !== translate.preparationIdentity)
-    throw new LaneComparisonError({
-      message: 'the two ledgers name different slicings, so their slice indices number different passages',
-    },);
+    throw new LaneComparisonError({ fault: { kind: 'different-slicings', }, },);
 
   /**
    * Slicing both ledgers name, now proven to be one.
@@ -421,9 +430,11 @@ export function compareDocumentLanes(
   const { records: translateRecords, } = translate;
   if (repairRecords.length !== translateRecords.length)
     throw new LaneComparisonError({
-      message: `lanes report ${String(repairRecords.length,)} and ${
-        String(translateRecords.length,)
-      } slices, so they ran over different preparations`,
+      fault: {
+        kind: 'slice-counts-differ',
+        repair: repairRecords.length,
+        translate: translateRecords.length,
+      },
     },);
 
   /**
@@ -446,9 +457,12 @@ export function compareDocumentLanes(
   // on either side produces that same wrong answer from the other end.
   if (translateByIndex.size !== translateRecords.length)
     throw new LaneComparisonError({
-      message: `translate lane reports ${String(translateRecords.length,)} rows over ${
-        String(translateByIndex.size,)
-      } distinct slices`,
+      fault: {
+        kind: 'rows-repeat',
+        lane: 'translate',
+        rows: translateRecords.length,
+        distinct: translateByIndex.size,
+      },
     },);
 
   /**
@@ -459,9 +473,12 @@ export function compareDocumentLanes(
   },),).size;
   if (repairDistinct !== repairRecords.length)
     throw new LaneComparisonError({
-      message: `repair lane reports ${String(repairRecords.length,)} rows over ${
-        String(repairDistinct,)
-      } distinct slices`,
+      fault: {
+        kind: 'rows-repeat',
+        lane: 'repair',
+        rows: repairRecords.length,
+        distinct: repairDistinct,
+      },
     },);
   return {
     preparationIdentity,
@@ -475,7 +492,10 @@ export function compareDocumentLanes(
       const theirs = translateByIndex.get(mine.sliceIndex,);
       if (theirs === undefined)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.sliceIndex,)} is missing from the translate lane`,
+          fault: {
+            kind: 'missing-from-translate',
+            sliceIndex: mine.sliceIndex,
+          },
         },);
       /**
        * Row the other ledger holds at this POSITION, as against the one it
@@ -485,19 +505,25 @@ export function compareDocumentLanes(
       const alongside = translateRecords[position];
       if (theirs.sliceIndex !== alongside?.sliceIndex)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.sliceIndex,)} sits at position ${
-            String(position,)
-          } in one ledger and elsewhere in the other, so the two are not in one document order`,
+          fault: {
+            kind: 'position-differs',
+            sliceIndex: mine.sliceIndex,
+            position,
+          },
         },);
       if (theirs.sourceText !== mine.sourceText)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.sliceIndex,)} covers a different original in each lane, `
-            + 'so the two results describe different preparations',
+          fault: {
+            kind: 'source-differs',
+            sliceIndex: mine.sliceIndex,
+          },
         },);
       if (theirs.incumbentText !== mine.incumbentText)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.sliceIndex,)} carries a different incumbent in each lane, `
-            + 'so the two results describe different preparations',
+          fault: {
+            kind: 'incumbent-differs',
+            sliceIndex: mine.sliceIndex,
+          },
         },);
 
       // TEXT IS NOT ENOUGH. A blank content slice and a place the archive never
@@ -506,11 +532,12 @@ export function compareDocumentLanes(
       // was taken from the repair lane, which decided the gap verdict for both.
       if (theirs.incumbentKind !== mine.incumbentKind)
         throw new LaneComparisonError({
-          message: `slice ${String(mine.sliceIndex,)} is ${
-            mine.incumbentKind
-          } of archive wording to the repair lane and ${
-            theirs.incumbentKind
-          } to the translate lane, so the two disagree about whether the archive translates it`,
+          fault: {
+            kind: 'incumbent-kind-differs',
+            sliceIndex: mine.sliceIndex,
+            repair: mine.incumbentKind,
+            translate: theirs.incumbentKind,
+          },
         },);
       assertWordingCoherent({ wording: mine, },);
       assertWordingCoherent({ wording: theirs, },);

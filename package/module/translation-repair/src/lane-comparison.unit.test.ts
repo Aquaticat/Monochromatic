@@ -653,5 +653,22 @@ await describe({
         expect(String(caught,),).toContain('no decision for the delivery to describe',);
       },
     },),
+    it({
+      name: 'WORDS its refusal from the fault alone, as a marked class the boundary may print',
+      fn: async () => {
+        const error = new LaneComparisonError({
+          fault: {
+            kind: 'position-differs',
+            sliceIndex: 3,
+            position: 1,
+          },
+        },);
+        expect(error.message,).toBe(
+          'slice 3 sits at position 1 in one ledger and elsewhere in the other, so the two are not in one '
+            + 'document order',
+        );
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

@@ -1,6 +1,9 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
-import { LaneSliceCoverageError, } from './lane-slice-coverage-error.ts';
+import {
+  LaneSliceCoverageError,
+  type NamedSliceSetLabel,
+} from './lane-slice-coverage-error.ts';
 
 //region Lane slice sets
 // The slices a lane NAMES as something other than decided, and the five checks
@@ -28,9 +31,7 @@ import { LaneSliceCoverageError, } from './lane-slice-coverage-error.ts';
  * const set: NamedSliceSet = {
  *   label: 'unfilled',
  *   indices: [3,],
- *   decidedClause: 'so what it accepted there is unstated',
  *   incumbent: 'absent',
- *   incumbentClause: 'and the archive holds wording for it: only a slice with none can be unfilled',
  * };
  * ```
  */
@@ -38,17 +39,12 @@ export type NamedSliceSet = {
   /**
    * What the lane calls these slices, which every message repeats.
    */
-  readonly label: string;
+  readonly label: NamedSliceSetLabel;
 
   /**
    * Slices named, by global index.
    */
   readonly indices: readonly number[];
-
-  /**
-   * What is lost when a slice is named here AND decided, as a clause.
-   */
-  readonly decidedClause: string;
 
   /**
    * Which side of the archive this list is legal at: `absent` for lists about
@@ -57,10 +53,6 @@ export type NamedSliceSet = {
    */
   readonly incumbent: 'absent' | 'present';
 
-  /**
-   * Why the other side is wrong, as a clause.
-   */
-  readonly incumbentClause: string;
 };
 
 /**
@@ -93,9 +85,12 @@ function distinctIndices(
     .length;
   if (distinct.size !== claimed) {
     throw new LaneSliceCoverageError({
-      message: `lane reports ${String(claimed,)} ${set.label} slices under ${
-        String(distinct.size,)
-      } distinct indices`,
+      fault: {
+        kind: 'set-repeats',
+        set: set.label,
+        claimed,
+        distinct: distinct.size,
+      },
     },);
   }
   return distinct;
@@ -146,13 +141,20 @@ function assertNamesLegalSlices(
     },);
     if (named === undefined) {
       throw new LaneSliceCoverageError({
-        message: `lane reports slice ${String(sliceIndex,)} ${set.label}, `
-          + 'which this preparation never produced',
+        fault: {
+          kind: 'set-names-unproduced',
+          set: set.label,
+          sliceIndex,
+        },
       },);
     }
     if (decidedIndices.has(sliceIndex,)) {
       throw new LaneSliceCoverageError({
-        message: `lane reports slice ${String(sliceIndex,)} as ${set.label} and decided at once, ${set.decidedClause}`,
+        fault: {
+          kind: 'set-and-decided',
+          set: set.label,
+          sliceIndex,
+        },
       },);
     }
   }
@@ -207,7 +209,11 @@ function assertArchiveAllows(
     const absent = (named !== undefined) && isInsertionChunk(named.target,);
     if ((named !== undefined) && (absent !== (set.incumbent === 'absent'))) {
       throw new LaneSliceCoverageError({
-        message: `lane reports slice ${String(sliceIndex,)} ${set.label}, ${set.incumbentClause}`,
+        fault: {
+          kind: 'set-against-archive',
+          set: set.label,
+          sliceIndex,
+        },
       },);
     }
   }
@@ -292,8 +298,12 @@ export function validateNamedSets(
       },);
       for (const sliceIndex of both) {
         throw new LaneSliceCoverageError({
-          message: `lane reports slice ${String(sliceIndex,)} as ${set.label} and ${other.label} `
-            + 'at once, so what it did there is stated twice and differently',
+          fault: {
+            kind: 'two-sets',
+            set: set.label,
+            other: other.label,
+            sliceIndex,
+          },
         },);
       }
     }

@@ -125,21 +125,6 @@ export {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 export {
-  compareDocumentLanes,
-  type DecisionComparison,
-  type IdentifiedDeliveryLedger,
-  type LaneComparison,
-  LaneComparisonError,
-  type SliceLaneComparison,
-  type SliceLaneVerdict,
-} from './lane-comparison.ts';
-export {
-  buildLaneSliceTexts,
-  LaneSliceCoverageError,
-  type LaneSliceOutcome,
-  type LaneSliceText,
-} from './lane-slice-text.ts';
-export {
   assertRostersConfigured,
   RosterConfigurationError,
 } from './roster-configuration.ts';

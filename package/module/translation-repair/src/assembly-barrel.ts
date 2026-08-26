@@ -16,6 +16,11 @@ export {
   orderedChangeSets,
 } from './assembly-invariant.ts';
 export {
+  type AssemblyContractFault,
+  assemblySentence,
+  type ChangeSetName,
+} from './assembly-contract-fault.ts';
+export {
   guardFootnoteAssembly,
   type GuardedAssembly,
   introducedFootnoteFindings,

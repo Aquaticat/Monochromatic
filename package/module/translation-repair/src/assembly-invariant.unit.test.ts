@@ -460,5 +460,19 @@ await describe({
         expect(String(caught,),).toContain('both shipped and withdrawn',);
       },
     },),
+    it({
+      name: 'WORDS its refusal from the fault alone, as a marked class the boundary may print',
+      fn: async () => {
+        const error = new AssemblyContractError({
+          fault: {
+            kind: 'index-beyond-count',
+            index: 9,
+            sliceCount: 4,
+          },
+        },);
+        expect(error.message,).toBe('change set names slice 9 of 4 prepared',);
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);

@@ -153,10 +153,7 @@ function unfilledSet(
   return {
     label: 'unfilled',
     indices,
-    decidedClause: 'so what it accepted there is unstated',
     incumbent: 'absent',
-    incumbentClause: 'and the archive holds wording for it: '
-      + 'only a slice with none can be unfilled',
   };
 }
 
@@ -179,9 +176,7 @@ function unheardSet(
   return {
     label: 'unheard',
     indices,
-    decidedClause: 'so whether anyone answered for it is unstated',
     incumbent: 'present',
-    incumbentClause: 'and the archive holds no wording for it to fall back on',
   };
 }
 
@@ -204,10 +199,7 @@ function notApplicableSet(
   return {
     label: 'not-applicable',
     indices,
-    decidedClause: 'so whether this lane had anything to do there is unstated',
     incumbent: 'absent',
-    incumbentClause: 'and the archive holds wording for it, '
-      + 'which is exactly what this lane works on',
   };
 }
 

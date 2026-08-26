@@ -76,6 +76,11 @@ export {
   type SliceDeliveryRecord,
 } from './slice-delivery.ts';
 export {
+  deliverySentence,
+  type DeliverySetName,
+  type SliceDeliveryFault,
+} from './slice-delivery-fault.ts';
+export {
   armSliceCost,
   SLICE_COST_MARKER,
   type SliceCostLane,
@@ -98,7 +103,9 @@ export {
 } from './wording-coherence.ts';
 export {
   assertDeliveryCoherent,
+  coherenceSentence,
   DeliveryCoherenceError,
+  type DeliveryCoherenceFault,
 } from './delivery-coherence.ts';
 export {
   assertPreparationIdentity,

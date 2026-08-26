@@ -307,5 +307,16 @@ await describe({
         expect((refusalOfGapWithText as Error).message,).toContain('carries wording anyway',);
       },
     },),
+    it({
+      name: 'WORDS its refusal from the slice and fault alone, as a marked class the boundary may print',
+      fn: async () => {
+        const error = new DeliveryCoherenceError({
+          sliceIndex: 4,
+          fault: { kind: 'gap-with-wording', },
+        },);
+        expect(error.message,).toBe('slice 4 reports a gap and carries wording anyway',);
+        expect(error.messageNamesOnly,).toBe(true,);
+      },
+    },),
   ],
 },);
