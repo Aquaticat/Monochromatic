@@ -1,7 +1,7 @@
 # Plan: tool-free Pi goal completion
 
 Status:
- implementation authorized on 2026-08-26 after two grilling rounds.
+ implemented and verified on 2026-08-26 after two grilling rounds.
 
 This plan supersedes the primary-model `goal_complete` interface and completion sections in
 `doc/planning/pi-goal-stop-hook.md`.

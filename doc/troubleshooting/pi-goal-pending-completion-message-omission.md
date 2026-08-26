@@ -1,4 +1,4 @@
-# `@monochromatic-dev/pi-goal@0.0.1` hides a final answer when it shares a message with `goal_complete`
+# Pre-fix `@monochromatic-dev/pi-goal@0.0.1` hides a final answer beside `goal_complete`
 
 ## Symptom
 
@@ -341,7 +341,9 @@ A user-question outcome must wait for user input instead of forcing autonomous c
 
 The accepted design is recorded in
 `doc/planning/pi-goal-tool-free-completion.md`.
-It has not been implemented or runtime-verified in this diagnosis session.
+It is implemented in `package/pi-plugin/goal/` and verified through unit,
+built-extension,
+and disposable Pi runtime checks.
 
 ## Upstream filing decision
 
@@ -393,8 +395,7 @@ Not applicable because the correction belongs in this repository.
 
 No external prototype is appropriate.
 The external contribution gate already fails at constraint 1.
-The diagnosis session was limited to deliberation and documentation,
-so the internal runtime redesign remains a later implementation task.
+The internal tool-free settlement redesign was subsequently implemented and verified in this repository.
 
 ### Filing artifact
 
