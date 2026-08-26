@@ -1,3 +1,5 @@
+import pLimit from 'p-limit';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { producerModelIds, } from '../candidate-select-model.ts';
@@ -26,11 +28,16 @@ import {
   sampleBenchSlices,
 } from './bench-sample.ts';
 import {
+  type SliceRounds,
+  sliceProgressLine,
+} from './editor-calibrate-slice.ts';
+import {
   createRunClient,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
 import { readAskedCount, } from './asked-count.ts';
+import { readOverlap, } from './slice-overlap.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Editor calibrate
@@ -104,58 +111,6 @@ import { reportingRefusals, } from './cli-refusal.ts';
  * whole lane rather than one stage.
  */
 const DEFAULT_SLICES = 6;
-
-/**
- * Rounds one slice produced, split by the seat that produced them.
- */
-type SliceRounds = {
-  /**
-   * Rounds the editors' candidates were judged in.
-   */
-  readonly editor: readonly SelectionRound[];
-
-  /**
-   * Rounds the refiners' candidates were judged in.
-   */
-  readonly refiner: readonly SelectionRound[];
-
-  /**
-   * Whether the naturalness lane found anything on this slice eligible to
-   * rewrite at all.
-   *
-   * THE REFINER STANDING'S DENOMINATOR. A paragraph under the eligibility
-   * floor is never offered to a rewriter, so a slice can run the whole lane
-   * and reach no refiner. Without this, an empty refiner standing cannot be
-   * told from a rewriter roster that answered nothing.
-   */
-  readonly refineAsked: boolean;
-
-  /**
-   * Models that wrote the repair this slice shipped, BEFORE refinement.
-   *
-   * SEPARATE FROM THE ROUNDS, AND NOT A PREFERENCE. Nobody chose between
-   * alternatives on a slice where every editor proposed the same text, so
-   * shipping there says the ensemble agreed and says nothing about who would
-   * have won a vote. Counted anyway, because without it such a slice is
-   * invisible: it repaired, and the standing records nothing.
-   *
-   * READ OFF THE PRE-REFINEMENT OUTCOME ON PURPOSE. `collectRefinedAuthors`
-   * unions the editors with any refiner whose rewrite won, so the refined
-   * outcome's authorship credits both seats in one list and cannot be split
-   * back apart. Taking it from the accuracy lane's own outcome keeps this
-   * column about editors, which is what a reader of an EDITOR report assumes.
-   */
-  readonly editorShipped: readonly RosterModelId[];
-
-  /**
-   * Models whose rewrite is in the text this slice shipped.
-   *
-   * THE REFINER SEAT'S EQUIVALENT, and the reason `settleRefinedSlice` returns
-   * `refinedBy` at all. Empty on every slice where no rewrite shipped, which
-   * includes a rewrite the recheck rolled back.
-   */
-  readonly refinerShipped: readonly RosterModelId[];
-};
 
 /**
  * Every model credited with writing text that shipped on one slice.
@@ -537,23 +492,26 @@ async function main(): Promise<void> {
   },);
 
   /**
+   * How many slices may be in flight at once.
+   *
+   * READ FROM THE ENVIRONMENT so one build serves both arms of the `#213`
+   * comparison. `1` reproduces the sequential driver exactly, which is what
+   * makes the sequential arm a control rather than a different program. Read
+   * before the sample is drawn, so a value nothing can read refuses before
+   * any work is done.
+   */
+  const overlap = readOverlap();
+
+  /**
    * Slices every model edits.
    */
   const sample = await sampleBenchSlices({ count: wanted, },);
 
   console.log(
     `editor-calibrate: ${String(sample.length,)} slices, `
-      + `${String(RUN_ROSTER.length,)} models editing and judging each`,
+      + `${String(RUN_ROSTER.length,)} models editing and judging each, `
+      + `${String(overlap,)} slices in flight`,
   );
-
-  /**
-   * What every slice produced.
-   *
-   * SEQUENTIAL RATHER THAN FANNED OUT. One slice already fans ten models
-   * across several stages, and stacking whole lanes on top of that would
-   * queue behind the per-model concurrency the client enforces anyway.
-   */
-  const perSlice: SliceRounds[] = [];
 
   /**
    * Client every slice shares, built once for the run.
@@ -562,51 +520,65 @@ async function main(): Promise<void> {
    * the meter caches and the per-model limiters: built per slice, a provider
    * held out on one slice was re-asked immediately on the next, and every
    * slice re-read the meters. The two probes already build theirs in `main`.
+   *
+   * SHARED ACROSS SLICES IN FLIGHT TOO, on purpose. The per-model limiter is
+   * what production routes through, so a slice overlapping another meets the
+   * same slot rule a corpus pass would, and the comparison describes the
+   * program that would ship rather than one with the limiter taken out.
    */
   const client = createRunClient();
 
-  for (const slice of sample) {
-    /* oxlint-disable no-await-in-loop -- slices run one at a time on purpose;
-       see the note on `perSlice`. */
-    /**
-     * Rounds this slice produced, both seats.
-     */
-    const rounds = await runOne({
+  /**
+   * Admits at most `overlap` slices at a time.
+   */
+  const inFlight = pLimit(overlap,);
+
+  /**
+   * What every slice produced, IN SAMPLE ORDER rather than completion order.
+   *
+   * ORDER MATTERS HERE AND NOWHERE ELSE IN THE RUN. Every standing below is
+   * computed off this array, so a report that depended on which slice happened
+   * to finish first would not be comparable between two runs of one sample,
+   * which is exactly what the overlap dial measures. `Promise.all` keeps input
+   * order whatever order the work completes in.
+   *
+   * WHAT THE SEQUENTIAL DRIVER'S NOTE SAID, kept because it is the claim under
+   * test: slices ran one at a time because one slice already fans ten models
+   * across several stages, and stacking whole lanes was expected to queue
+   * behind the per-model concurrency the client enforces anyway. That was
+   * written before the multi-provider routing existed, and the run `#215`
+   * measured spends 87.2% of its round time waiting after quorum, at a mean of
+   * 2.56 calls in flight.
+   */
+  const perSlice: readonly SliceRounds[] = await Promise.all(
+    sample.map(function runSlice(
       slice,
-      client,
-    },);
-    /* oxlint-enable no-await-in-loop */
+      position,
+    ): Promise<SliceRounds> {
+      return inFlight(async function admitted(): Promise<SliceRounds> {
+        /**
+         * Rounds this slice produced, both seats.
+         */
+        const rounds = await runOne({
+          slice,
+          client,
+        },);
 
-    perSlice.push(rounds,);
+        // PER SLICE RATHER THAN ONLY AT THE END. A whole lane per slice makes
+        // this a long run, and a report that arrives only on completion is
+        // unreadable while it matters most: a reader watching an outage needs
+        // to know whether rounds are accumulating at all.
+        console.log(sliceProgressLine({
+          position,
+          total: sample.length,
+          slice,
+          rounds,
+        },),);
 
-    /**
-     * How many rounds the editors were judged in on this slice.
-     */
-    const editorCount = rounds
-      .editor
-      .length;
-
-    /**
-     * How many the refiners were judged in.
-     */
-    const refinerCount = rounds
-      .refiner
-      .length;
-
-    // PER SLICE RATHER THAN ONLY AT THE END. A whole lane per slice makes this
-    // a long run, and a report that arrives only on completion is unreadable
-    // while it matters most: a reader watching an outage needs to know whether
-    // rounds are accumulating at all.
-    console.log(
-      `  slice ${String(perSlice.length,)} of ${String(sample.length,)} `
-        + `(${slice.entryId} chunk ${String(slice.index,)}): `
-        + `${String(editorCount,)} editor rounds, `
-        + `${String(refinerCount,)} refiner rounds`
-        + `${rounds.refineAsked ? '' : ' (nothing eligible to rewrite)'}, `
-        + `${String(rounds.editorShipped
-          .length,)} editors shipping`,
-    );
-  }
+        return rounds;
+      },);
+    },),
+  );
 
   /**
    * Editor rounds, grouped by the slice that bought them.

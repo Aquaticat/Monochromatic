@@ -131,7 +131,7 @@ depends = ["build"]
 run = "node dist/final/node/displacement-probe.mjs"
 
 [tasks."editor-calibrate"]
-description = "#200: rank every model on the EDITOR's own job by driving the whole repair lane, all ten editing and judging each slice, and report the refiner standing off the same spend; SPENDS QUOTA (pass a slice count after --, default 6)"
+description = "#200: rank every model on the EDITOR's own job by driving the whole repair lane, all ten editing and judging each slice, and report the refiner standing off the same spend; SPENDS QUOTA (pass a slice count after --, default 6; TRANSLATION_REPAIR_SLICE_OVERLAP=N runs N slices at once, default 1)"
 depends = ["build"]
 run = "node dist/final/node/editor-calibrate.mjs"
 
