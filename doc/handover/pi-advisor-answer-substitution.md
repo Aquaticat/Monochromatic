@@ -173,14 +173,57 @@ Prevention has distinct layers with different guarantees:
 - **Strict parsing** can reject unknown fields,
   invalid evidence references,
   excessive findings,
-  and overlong strings.
-- **Bounded rendering** can expose only validated findings to the primary model.
-- **Finding semantics** remain model-dependent unless a separate semantic classifier is added.
-  A classifier would add another fallible model call rather than create proof.
+  and inconsistent discriminated-union states.
+- **Fixed rendering** can expose only locally generated relation text to the primary model.
+- **Finding selection** remains model-dependent.
+  A separate semantic classifier would add another fallible model call rather than create proof.
 
-The strongest practical design therefore combines deterministic grammar and output-shape constraints with positive reviewer-role
-prompting.
+The strongest practical design therefore combines deterministic input grammar,
+a symbolic output contract,
+and positive reviewer-role prompting.
 No single prompt sentence can supply the guarantee.
+
+## Independent review recovery
+
+Three isolated Pi CLI design processes were restarted with absolute executable paths after the original `PATH` failure.
+They produced only model-scope warnings,
+left stdout empty,
+and retained stale `running` states while no matching operating-system process remained.
+Their logs had not changed since startup.
+They were stopped and cleared without attributing an unverified root cause.
+
+The design comparison was recovered through separate Advisor calls to:
+
+- `synthetic/hf:moonshotai/Kimi-K3` for the minimal interface;
+- `openai-codex/gpt-5.6-terra` for the typed-focus interface;
+- `synthetic/hf:Qwen/Qwen3.6-27B` for cross-option ranking.
+
+All three independent reviews ranked typed focus ahead of no focus,
+and no focus ahead of a free-form intent gate.
+They converged on these corrections:
+
+- Keep arbitrary prose out of public input,
+  but preserve focus with required enumerated dimensions and a mechanically defined transcript target.
+- Apply one parser and renderer to both the tool and `/advisor` command paths.
+- Reject unknown input fields,
+  including legacy `question`,
+  before provider dispatch.
+- Fail closed for malformed,
+  refused,
+  truncated,
+  empty,
+  or tool-omitting output,
+  without copying rejected provider text into errors.
+- Do not call bounded natural-language fields deterministic prevention.
+  A complete answer can fit inside `concern` or `requiredCheck`.
+- Use evidence IDs generated locally,
+  and reject references outside the selected target or evidence inventory.
+- Keep output-cap changes and tool renaming separate from role enforcement.
+
+Two reviews explicitly proposed a missing option:
+a symbolic findings contract containing only enums and evidence relations.
+The third said the same constraint is required for a hard guarantee,
+while preferring bounded prose if richer explanations are required.
 
 ## Candidate interfaces under comparison
 
@@ -199,22 +242,27 @@ and keeps empty parameters safe.
 Its cost is loss of per-call focused review.
 The advisor must infer relevant review dimensions from the transcript.
 
-### Anchored multidimensional review
+### Typed focus and mechanical target
 
 ```typescript
 type AdvisorInput = {
   readonly model?: string;
   readonly focus?: {
     readonly dimensions: readonly AdvisorDimension[];
-    readonly target: 'latest-candidate' | 'changes' | 'verification-output' | 'whole-session';
+    readonly target: 'latest-primary-message' | 'latest-tool-result' | 'current-turn' | 'session';
   };
 };
 ```
 
-This preserves more precision without accepting task instructions.
-Its interface is wider,
-the primary model must choose target semantics correctly,
-and it departs from the no-input external precedent.
+When `focus` is absent,
+the canonical default is every dimension against `current-turn`.
+When present,
+both fields are required;
+`dimensions` must be nonempty and duplicate-free.
+Targets describe transcript positions the implementation can select mechanically,
+not semantic labels such as `latest-candidate` that would require another model judgment.
+This preserves precision without accepting task instructions.
+Its interface is wider than the minimal candidate and departs from the no-input external precedent.
 
 ### Free-form focus with local intent gate
 
@@ -225,37 +273,93 @@ regular expressions,
 and model classifiers all leave bypasses or false positives.
 This candidate currently ranks last.
 
-## Candidate structured result
+## Candidate structured results
 
-A review result should contain no general answer field.
-The current candidate shape is:
+### Bounded cited prose
+
+The original structured candidate contained `concern` and `requiredCheck` strings.
+It would close raw-output transport but not semantic substitution.
+A malicious or confused model could place the complete requested answer inside those bounded fields.
+String limits reduce output volume;
+they do not classify reviewer intent.
+
+### Symbolic evidence relations
+
+The stronger candidate returns no arbitrary provider-authored prose:
 
 ```typescript
-type AdvisorReview = {
-  readonly assessment: 'clear' | 'findings' | 'insufficient-evidence';
-  readonly findings: readonly {
-    readonly category: AdvisorDimension;
-    readonly evidenceRefs: readonly number[];
-    readonly concern: string;
-    readonly requiredCheck: string;
-  }[];
-};
+type AdvisorReview =
+  | {
+      readonly assessment: 'clear';
+      readonly findings: readonly [];
+    }
+  | {
+      readonly assessment: 'insufficient-evidence';
+      readonly findings: readonly [];
+      readonly missing: readonly EvidenceKind[];
+    }
+  | {
+      readonly assessment: 'findings';
+      readonly findings: readonly AdvisorFinding[];
+    };
+
+type AdvisorFinding =
+  | {
+      readonly kind: 'unsupported-claim';
+      readonly subjectRef: number;
+      readonly supportRefs: readonly number[];
+    }
+  | {
+      readonly kind: 'contradiction';
+      readonly firstRef: number;
+      readonly secondRef: number;
+    }
+  | {
+      readonly kind: 'requirement-gap';
+      readonly requirementRef: number;
+      readonly subjectRef: number;
+    }
+  | {
+      readonly kind: 'verification-gap';
+      readonly subjectRef: number;
+      readonly check: AdvisorCheck;
+    }
+  | {
+      readonly kind: 'scope-drift';
+      readonly objectiveRef: number;
+      readonly subjectRef: number;
+    }
+  | {
+      readonly kind: 'risk';
+      readonly subjectRef: number;
+      readonly risk: AdvisorRisk;
+      readonly check: AdvisorCheck;
+    };
 ```
 
-The parser must bound array sizes and string lengths,
-validate every evidence reference against serialized context,
-and reject unknown fields.
-The renderer,
-not the provider,
-creates final review prose.
-`requiredCheck` names evidence the primary agent must obtain;
-it is deliberately narrower than a replacement or suggested-answer field.
+`EvidenceKind`,
+`AdvisorCheck`,
+and `AdvisorRisk` are finite enums.
+The exact enum vocabulary should be validated against representative existing Advisor reviews before implementation.
+Locally generated evidence IDs identify transcript content blocks.
+The parser validates every reference against the inventory and selected target,
+reconciles assessment with finding count,
+and rejects unknown fields.
+The local renderer turns each relation into fixed prose.
 
-The exact incident would fail at two deterministic seams:
-`question` would be unsupported,
-and a free-text five-part answer would not be a valid review result.
-A malicious or confused model could still place answer content inside a bounded `concern`,
-so field bounds and evidence references remain required defense.
+This sacrifices model-written explanations.
+It preserves reviewer utility by naming the affected evidence,
+relation,
+risk class,
+and required verification class.
+The primary agent must inspect the cited evidence and perform the correction itself.
+That trade is what converts output containment from a bounded-prose claim into a deterministic interface property.
+
+The exact incident then fails at two deterministic seams:
+legacy `question` is unsupported,
+and the provider has no arbitrary text field in which to return five explanations.
+A provider can still choose inaccurate enums or references,
+but fixed rendering does not decode those choices into a replacement answer.
 
 ## Verification design
 
@@ -269,9 +373,13 @@ Required negative cases:
   Assert that text never reaches the returned Advisor tool content.
 - Return a review object with unknown properties and assert strict parser rejection.
 - Return excessive findings,
-  overlong text,
-  invalid assessment and category values,
-  and nonexistent evidence references.
+  invalid assessment,
+  finding,
+  risk,
+  check,
+  and evidence-kind values,
+  incompatible union fields,
+  and nonexistent or out-of-target evidence references.
   Assert client validation rejects each even when a provider schema accepted it.
 - Return refusal,
   token-limit,
@@ -281,7 +389,7 @@ Required negative cases:
 
 Required positive controls:
 
-- A valid structured finding must cross the public Advisor interface and appear in rendered tool content.
+- Every valid symbolic finding variant must cross the public Advisor interface and appear through fixed local rendering.
 - A `clear` assessment must remain distinguishable from missing or invalid output.
 - An `insufficient-evidence` assessment must report the absence of a reviewable candidate without supplying one.
 - Explicit valid model selection must retain current scope and output-capacity checks.
@@ -294,7 +402,7 @@ Required user-boundary probe after implementation:
 - Run the built extension in a disposable Pi session with a deterministic provider adapter.
 - Present the exact primality incident request.
 - Confirm the public tool rejects `question`,
-  a valid no-question call returns only validated review findings,
+  a valid typed-focus call returns only fixed rendering of validated symbolic findings,
   and no five-part answer text enters the primary model context.
 - Run the guard test red by temporarily removing each deterministic gate after its test is committed,
   rebuild,
@@ -304,17 +412,21 @@ Required user-boundary probe after implementation:
 A live provider matrix can measure the `2048` cap candidate and semantic behavior,
 but nondeterministic model compliance is supplementary evidence rather than the deterministic completion gate.
 
-## Investigation questions
+## Remaining implementation questions
 
-- Which caller guidance would cause the primary model to ask defect-seeking questions only after concrete evidence exists?
-- Should the public parameter remain `question`, become a narrower review-request type, or disappear?
-- Can a structured result contract express verdict, findings, evidence, and next checks without becoming a shallow interface?
-- Should Advisor transform task-performing focus text into a review rubric, reject it locally, or ask the model to reject it?
-- Which positive prompt wording keeps review behavior salient without repeating answer-generation concepts through negation?
-- Which protections are deterministic, and which still depend on model instruction following?
-- What red tests reproduce the observed caller request and answer-substitution output shape?
-- Which shared model-review module can be reused without coupling Advisor to goal behavior?
-- How should default cost and reasoning policy change, if at all, for low-risk review calls?
+- Which finite risk,
+  check,
+  and missing-evidence vocabulary covers representative existing Advisor findings without creating a general text field?
+- Should evidence IDs identify complete context entries or individual content blocks?
+  This needs a prototype against real stored sessions.
+- Should direct-JSON recovery remain as a separately named,
+  strictly parsed fallback,
+  or should Advisor fail after a forced-tool omission?
+  Measure provider compatibility before deciding.
+- Which positive prompt wording most consistently selects useful evidence relations?
+  Live-provider behavior is supplementary evidence,
+  not the deterministic acceptance gate.
+- Does a `2048` output cap preserve a complete symbolic result across the eligible provider matrix?
 
 ## Constraints
 
@@ -327,20 +439,74 @@ but nondeterministic model compliance is supplementary evidence rather than the 
 - Do not claim prevention from a test that only checks static prompt text.
 - Verify behavioral protections with a model or deterministic transport capable of emitting forbidden replacement content.
 
-## Current hypotheses
+## Recommendation and rankings
 
-These are hypotheses, not decisions:
+The recommended design combines two complementary decisions.
 
-1. Replace open-ended `question` semantics with a review contract that asks for defects against supplied evidence.
-2. Add a local intent gate that rejects or normalizes task-performing review requests before provider spending.
-3. Use structured Advisor output with bounded fields for verdict, findings, evidence references, and primary-agent next checks.
-4. Keep the system prompt as defense in depth, rewritten around positive reviewer actions.
-5. Add characterization tests for the exact observed focus question and result shape.
-6. Reconsider highest-expected-cost and maximum-reasoning defaults separately from role enforcement.
-7. Treat the official `2048` output cap as a cross-provider probe candidate,
-   not a proven local default.
-8. Consider whether the reviewer-only role warrants renaming the tool,
-   because official Advisor precedent explicitly produces plans and course corrections.
+### Input ranking
+
+1. **Typed focus and mechanical target**
+   - Pros: preserves focused review,
+     closes arbitrary call instructions,
+     and permits deterministic pre-dispatch validation.
+   - Cons: adds enum and target semantics that must remain stable and mechanically defined.
+2. **No focus input**
+   - Pros: narrowest public input and alignment with Anthropic's empty-input precedent.
+   - Cons: forces the reviewer to infer scope,
+     increasing irrelevant or broad review.
+3. **Free-form focus with an intent gate**
+   - Pros: preserves arbitrary caller expression.
+   - Cons: natural-language classification cannot reliably separate review from task execution,
+     so the original role conflict remains representable.
+
+Ranking: typed focus > no focus > free-form gate,
+because typed focus preserves the utility lost by no focus without reopening arbitrary prose;
+no focus ranks ahead of a gate because structural absence is stronger than heuristic intent classification.
+
+### Output ranking
+
+1. **Symbolic evidence relations**
+   - Pros: no arbitrary provider prose reaches the primary model;
+     local rendering and strict reference validation create deterministic output confinement.
+   - Cons: a finite taxonomy cannot explain every novel defect,
+     so the primary agent must inspect cited evidence itself.
+2. **Bounded cited prose**
+   - Pros: richer and more immediately actionable findings.
+   - Cons: an answer can still be placed inside a valid string field,
+     so prevention remains model-dependent.
+3. **Unrestricted provider text**
+   - Pros: maximum expressive flexibility.
+   - Cons: directly reproduces the incident's answer-substitution path.
+
+Ranking: symbolic relations > bounded prose > unrestricted text,
+because symbolic relations are the only candidate that removes the semantic text channel;
+bounded prose ranks ahead of unrestricted text because it still constrains shape,
+volume,
+and evidence linkage.
+
+The full recommended stack is:
+
+1. Replace `question` with optional typed `focus` and reject unknown fields before dispatch.
+2. Generate a local evidence inventory and apply mechanical target projection.
+3. Ask the reviewer to submit only symbolic findings through the shared model-review transport.
+4. Strictly parse one result contract,
+   including any separately identified direct-JSON recovery path,
+   and never relay rejected payloads.
+5. Render fixed local prose for both the tool and `/advisor` command.
+6. Rewrite caller guidance so Advisor reviews an existing candidate or evidence on a multi-step task.
+   Simple factual and arithmetic tasks should not invoke it.
+7. Keep positive reviewer prompting as defense in depth.
+8. Probe a `2048` output cap across eligible providers separately;
+   do not bundle that unverified local default with role enforcement.
+9. Defer renaming.
+   A rename does not add an enforcement seam and would distract from the contract change.
+
+The deterministic claim should be precise:
+this design closes the free-form call channel and prevents arbitrary provider-generated prose from entering the primary model
+through Advisor results.
+Finding accuracy,
+evidence relevance,
+and correct reviewer judgment remain model-dependent.
 
 ## Rejected conclusions
 
@@ -348,21 +514,23 @@ These are hypotheses, not decisions:
   Stored details record `truncated: false`.
 - `openai-codex/gpt-5.6-sol` was not explicitly requested.
   Default selection chose it.
-- The Advisor extension is not designed to provide final answers.
+- The local Advisor extension is not designed to provide final answers.
   Its source prompt says the opposite.
 - The incident is not only a provider-model defect.
   The caller interface admitted and encouraged an answer-generating focus question.
 
 ## Exact next action
 
-Collect the independent interface sketches already running in isolated,
-tool-free Pi subprocesses.
-Compare them by depth,
-locality,
-seam placement,
-and exact-incident prevention.
-Then define red tests and rank the final options.
+Obtain user acceptance or delegated authority for the recommended typed-focus and symbolic-findings contract.
+Then implement it test-first inside `package/pi-plugin/advisor`,
+reusing `package/pi-shared/model-review` without importing goal behavior.
+Start with the exact incident input-rejection test and provider-free-text leak test.
 
 ## Commits
 
 - `d159018a8`, `docs(advisor): start answer-substitution handover`, created this live investigation record.
+- `f4ed2cb9f`, `docs(advisor): record handover checkpoint`, recorded incident measurements and constraints.
+- `645d23b63`, `docs(advisor): trace answer-substitution interface`, traced the conflicting production seams.
+- `16c7dc330`, `docs(advisor): map role-enforcement layers`, recorded layered guarantees and initial candidates.
+- `40f26273a`, `docs(advisor): record official Advisor precedent`, added current Anthropic evidence.
+- `137dac233`, `docs(advisor): define prevention verification`, defined negative cases and positive controls.
