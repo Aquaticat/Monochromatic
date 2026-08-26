@@ -214,7 +214,11 @@ await describe({
               return [primary, lower, higher,];
             },
             async getApiKeyAndHeaders() {
-              return { ok: true, apiKey: 'key', };
+              return {
+                ok: true,
+                apiKey: 'key',
+                headers: { 'x-delete': null, },
+              };
             },
           },
         } as unknown as ExtensionContext;
@@ -229,6 +233,7 @@ await describe({
         expect(pool.candidates.map(function identity(candidate: GoalReviewerCandidate,) {
           return `${candidate.model.provider}/${candidate.model.id}`;
         },),).toEqual(['review/higher', 'review/lower',],);
+        expect(pool.candidates[0]?.auth.headers,).toEqual({ 'x-delete': null, },);
         expect(rankPromptedReviewers(pool.candidates.map(function prompted(candidate,) {
           return {
             model: candidate.model,

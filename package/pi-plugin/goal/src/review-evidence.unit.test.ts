@@ -179,6 +179,66 @@ await describe({
         expect(evidence,).not.toHaveProperty('summary',);
       },
     },),
+    it({
+      name: 'keeps advisor exploration subordinate when finalized answer is absent',
+      fn: async () => {
+        /** Branch containing only private state and abandoned exploratory evidence. */
+        const branch: SessionEntry[] = [
+          {
+            type: 'custom',
+            customType: 'goal:state',
+            id: 'start',
+            parentId: null,
+            timestamp: STARTED_AT,
+            data: {
+              kind: 'run_started',
+              runId: 'run-1',
+              generationId: 'generation-1',
+              objective: 'Explain why 67 is prime in five ways',
+              startedAt: STARTED_AT,
+              startBoundary: 'leaf-before-start',
+              continuationSequence: 0,
+              transitionedAt: STARTED_AT,
+            },
+          },
+          {
+            type: 'message',
+            id: 'advisor',
+            parentId: 'start',
+            timestamp: COMPLETED_AT,
+            message: {
+              role: 'toolResult',
+              toolCallId: 'advisor-call',
+              toolName: 'advisor',
+              content: [{ type: 'text', text: 'Use an elliptic-curve method.', },],
+              isError: false,
+              timestamp: 1,
+            },
+          },
+          {
+            type: 'message',
+            id: 'points',
+            parentId: 'advisor',
+            timestamp: COMPLETED_AT,
+            message: {
+              role: 'toolResult',
+              toolCallId: 'bash-call',
+              toolName: 'bash',
+              content: [{ type: 'text', text: 'points 0', },],
+              isError: false,
+              timestamp: 2,
+            },
+          },
+        ];
+        const evidence = buildGoalReviewEvidence({
+          branch,
+          request: evidenceRequest(),
+        },);
+        expect(evidence.objective,).toBe('Explain why 67 is prime in five ways',);
+        expect(evidence.transcriptChunks.join('\n',),).toContain('points 0',);
+        expect(evidence.transcriptChunks.join('\n',),).not.toContain(INCIDENT_ANSWER,);
+      },
+    },),
   ],
 },);
 

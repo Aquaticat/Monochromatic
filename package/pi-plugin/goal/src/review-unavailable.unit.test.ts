@@ -16,6 +16,7 @@ import {
   createGoalReviewerUnavailableHandler,
   reduceGoalEvents,
   type GoalControllerState,
+  type GoalEffect,
   type GoalLifecycleHandle,
   type GoalSettlementReviewRequest,
   type ManualGoalReviewDecision,
@@ -75,7 +76,7 @@ function fallbackHarness(mode: GoalTestMode,): {
   readonly leaf: { value: string; };
   readonly context: ExtensionContext;
   readonly lifecycle: GoalLifecycleHandle;
-  readonly effects: unknown[];
+  readonly effects: GoalEffect[];
 } {
   /** Current controller cursor. */
   const state: { value: GoalControllerState; } = {
@@ -89,7 +90,7 @@ function fallbackHarness(mode: GoalTestMode,): {
   /** Current selected branch leaf. */
   const leaf = { value: 'leaf-current', };
   /** Applied transition effects. */
-  const effects: unknown[] = [];
+  const effects: GoalEffect[] = [];
   /** Fake lifecycle seam. */
   const lifecycle: GoalLifecycleHandle = {
     currentController() {
@@ -142,9 +143,9 @@ await describe({
           },);
           expect(result,).toBe('review_unavailable',);
           expect(harness.state.value.goal.phase,).toBe('review_unavailable',);
-          expect(harness.effects,).toContainEqual(expect.objectContaining({
-            type: 'persist_review_unavailable_diagnostic',
-          }),);
+          expect(harness.effects.some(function isUnavailableDiagnostic(effect,) {
+            return effect.type === 'persist_review_unavailable_diagnostic';
+          },),).toBe(true,);
         },
       },);
     },),
@@ -168,9 +169,9 @@ await describe({
         },);
         expect(result,).toBe('approved',);
         expect(harness.state.value.goal.phase,).toBe('completed',);
-        expect(harness.effects,).toContainEqual(expect.objectContaining({
-          type: 'persist_completion_diagnostic',
-        }),);
+        expect(harness.effects.some(function isCompletionDiagnostic(effect,) {
+          return effect.type === 'persist_completion_diagnostic';
+        },),).toBe(true,);
       },
     },),
     it({
@@ -195,10 +196,12 @@ await describe({
           request: fallbackRequest(),
           context: reasoned.context,
         },),).toBe('continued',);
-        expect(reasoned.effects,).toContainEqual(expect.objectContaining({
-          type: 'send_message',
-          message: expect.objectContaining({ content: 'Run the integration test.', }),
-        }),);
+        const reasonedMessage = reasoned.effects.find(function isMessageEffect(effect,) {
+          return effect.type === 'send_message';
+        },);
+        if (reasonedMessage?.type !== 'send_message')
+          throw new Error('reasoned manual rejection omitted task message',);
+        expect(reasonedMessage.message.content,).toBe('Run the integration test.',);
         /** Empty rejection fallback harness. */
         const empty = fallbackHarness('tui',);
         const emptyHandler = createGoalReviewerUnavailableHandler({
@@ -218,12 +221,14 @@ await describe({
           request: fallbackRequest(),
           context: empty.context,
         },);
-        expect(empty.effects,).toContainEqual(expect.objectContaining({
-          type: 'send_message',
-          message: expect.objectContaining({
-            content: 'Continue working on the current user objective.',
-          }),
-        }),);
+        const emptyMessage = empty.effects.find(function isMessageEffect(effect,) {
+          return effect.type === 'send_message';
+        },);
+        if (emptyMessage?.type !== 'send_message')
+          throw new Error('empty manual rejection omitted fallback task message',);
+        expect(emptyMessage.message.content,).toBe(
+          'Continue working on the current user objective.',
+        );
       },
     },),
     it({

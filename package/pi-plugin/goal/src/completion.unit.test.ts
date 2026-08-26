@@ -92,6 +92,7 @@ function executionHarness(): {
   readonly context: ExtensionContext;
   readonly transitions: GoalControllerState[];
   readonly messages: unknown[];
+  readonly leaf: { value: string; };
 } {
   /** Runtime controller cursor. */
   const state = { value: completionController(), };
@@ -132,6 +133,7 @@ function executionHarness(): {
     context,
     transitions,
     messages,
+    leaf,
   };
 }
 
@@ -174,6 +176,41 @@ await describe({
         expect(harness.messages[0],).toMatchObject({
           content: 'Add and run the integration test.',
         },);
+      },
+    },),
+    it({
+      name: 'ignores approval after selected branch changes during review',
+      fn: async () => {
+        const harness = executionHarness();
+        const outcome = await executeGoalSettlementReview({
+          request: settlementRequest(),
+          context: harness.context,
+          lifecycle: harness.lifecycle,
+          reviewer() {
+            harness.leaf.value = 'changed-leaf';
+            return Promise.resolve({
+              verdict: {
+                approved: true,
+                rationale: 'Every requirement is supported.',
+                remainingWork: '',
+              },
+              reviewerIdentity: 'review/model',
+              attemptedReviewerIdentities: ['review/model',],
+              transcriptTruncated: false,
+            },);
+          },
+          handleReviewerUnavailable() {
+            return Promise.reject(new Error('unexpected unavailable fallback',),);
+          },
+          createId() {
+            return 'unused-marker';
+          },
+          now() {
+            return COMPLETED_AT;
+          },
+        },);
+        expect(outcome,).toBe('stale',);
+        expect(harness.transitions,).toHaveLength(0,);
       },
     },),
     it({
@@ -294,13 +331,15 @@ await describe({
             return COMPLETED_AT;
           },
         },);
+        /** Whether human input already owns next turn. */
+        const pending = { value: true, };
         /** Focused final-settlement context. */
         const context = {
           isIdle() {
             return true;
           },
           hasPendingMessages() {
-            return false;
+            return pending.value;
           },
           sessionManager: {
             getLeafId() {
@@ -311,6 +350,9 @@ await describe({
         const settled = handlers.get('agent_settled',)?.[0];
         if (settled === undefined)
           throw new Error('agent_settled handler missing',);
+        await settled({ type: 'agent_settled', }, context,);
+        expect(reviews.value,).toBe(0,);
+        pending.value = false;
         await settled({ type: 'agent_settled', }, context,);
         await settled({ type: 'agent_settled', }, context,);
         expect(registeredTools.value,).toBe(0,);
