@@ -31,6 +31,11 @@ export {
 } from './stage-silence.ts';
 export { cacheRefusalsOf, } from './repair-cache-gate.ts';
 export {
+  graceOverrideNote,
+  resolveStragglerGraceMs,
+  STRAGGLER_GRACE_VAR,
+} from './grace-override.ts';
+export {
   type RoundOutcome,
   runGatherRound,
   STRAGGLER_GRACE_MS,

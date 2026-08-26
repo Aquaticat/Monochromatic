@@ -19,8 +19,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  type IssueAuthorship,
   type RosterModelId,
   type SelectionRound,
+  shippedAuthors,
   type SliceRounds,
   sliceProgressLine,
 } from '../../dist/final/node/index.mjs';
@@ -207,6 +209,45 @@ await describe({
         expect(unreached,).toContain('0 refiner rounds (nothing eligible to rewrite),',);
         expect(reached,).toContain('0 refiner rounds,',);
         expect(reached,).not.toContain('nothing eligible',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: shippedAuthors.name,
+  children: [
+    it({
+      name: 'CREDITS both halves of the authorship once each, whole-chunk writers first, so a model '
+        + 'that wrote the chunk and served an issue inside it is one shipper rather than two',
+      fn: async () => {
+        /**
+         * Authorship where one model wrote the whole chunk and also served an
+         * issue, and another served an issue only.
+         */
+        const authorship: IssueAuthorship = {
+          everyIssue: [SHIPPERS[0] as RosterModelId,],
+          perIssue: {
+            'issue-1': [
+              SHIPPERS[0] as RosterModelId,
+              SHIPPERS[1] as RosterModelId,
+            ],
+          },
+        };
+
+        expect(shippedAuthors({ authorship, },),).toStrictEqual(SHIPPERS,);
+      },
+    },),
+
+    it({
+      name: 'CREDITS nobody on a slice that shipped no repair, so the driver counts it as unshipped',
+      fn: async () => {
+        expect(shippedAuthors({
+          authorship: {
+            everyIssue: [],
+            perIssue: {},
+          },
+        },),).toStrictEqual([],);
       },
     },),
   ],

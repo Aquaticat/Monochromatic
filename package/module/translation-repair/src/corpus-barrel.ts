@@ -14,6 +14,7 @@
 
 export { readAskedCount, } from './corpus-run/asked-count.ts';
 export {
+  shippedAuthors,
   type SliceRounds,
   sliceProgressLine,
 } from './corpus-run/editor-calibrate-slice.ts';

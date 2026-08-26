@@ -13,6 +13,7 @@ import {
 } from './stage-call.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { describeAbandon, } from './abandon-kind.ts';
+import { resolveStragglerGraceMs, } from './grace-override.ts';
 
 //region Stage round
 // ONE fan-out round, and the rule that a stage never finishes later than its
@@ -180,8 +181,9 @@ async function awaitHeard<ValueT,>(
  * @param heardNeeded - voices still needed for quorum, which starts the grace
  *
  * @param graceMs - window granted after quorum before stragglers are abandoned;
- * defaults to {@link STRAGGLER_GRACE_MS} and exists so a test can bound its own
- * wall time
+ * defaults to {@link STRAGGLER_GRACE_MS}, or to what
+ * `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` overrides it with, and exists so a
+ * test can bound its own wall time
  *
  * @returns One outcome per model asked, in roster order
  *
@@ -203,7 +205,7 @@ export async function runGatherRound<ValueT,>(
     stage,
     l,
     heardNeeded,
-    graceMs = STRAGGLER_GRACE_MS,
+    graceMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];

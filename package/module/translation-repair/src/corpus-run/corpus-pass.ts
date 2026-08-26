@@ -9,6 +9,11 @@ import {
   listCorpusPeople,
 } from '../corpus-source.ts';
 import {
+  graceOverrideNote,
+  resolveStragglerGraceMs,
+} from '../grace-override.ts';
+import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
+import {
   type AttemptMap,
   readAttemptMap,
 } from './attempt-store.ts';
@@ -191,6 +196,18 @@ const PLAN_PREVIEW_COUNT = 5;
  * ```
  */
 async function runCorpusPass(): Promise<void> {
+  /**
+   * Note naming the straggler window when it is not the built-in one.
+   *
+   * RESOLVED FIRST, before the lock and before anything is read, so an
+   * unreadable override refuses the pass before it claims a directory or
+   * spends anything. Printed after START, where the cap note is.
+   */
+  const graceNote = graceOverrideNote({
+    effectiveMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
+    builtInMs: STRAGGLER_GRACE_MS,
+  },);
+
   /**
    * Durable, gitignored output root for this run.
    */
@@ -458,6 +475,12 @@ async function runCorpusPass(): Promise<void> {
       } minutes rather than the built-in ${String(HARD_CAP_MINUTES,)}`,
     );
   }
+
+  // Nor which straggler window, for the same reason: rounds under a longer
+  // window hear voices the shipped window cuts, and their artifacts are not
+  // comparable with ones settled under it.
+  if (graceNote !== '')
+    console.log(graceNote,);
 
   if (!capOutlastsOneCall({
     capMs: HARD_CAP_MS,

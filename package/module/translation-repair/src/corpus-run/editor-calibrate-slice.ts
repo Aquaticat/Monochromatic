@@ -1,3 +1,4 @@
+import type { IssueAuthorship, } from '../resolution-authorship.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import type { RosterModelId, } from '../roster-id.ts';
 import type { SelectionRound, } from '../self-preference.ts';
@@ -132,6 +133,34 @@ export function sliceProgressLine(
     + `${String(editorCount,)} editor rounds, `
     + `${String(refinerCount,)} refiner rounds${reachNote}, `
     + `${String(shipping,)} editors shipping`;
+}
+
+/**
+ * Every model credited with writing text that shipped on one slice.
+ *
+ * BOTH HALVES OF THE AUTHORSHIP. A model can write a whole chunk or serve one
+ * issue inside it, and either is having written what shipped.
+ *
+ * @param authorship - what the lane recorded about who wrote the repair
+ *
+ * @returns Models credited, each once
+ *
+ * @example
+ * ```ts
+ * const authors = shippedAuthors({ authorship: outcome.authorship, },);
+ * ```
+ */
+export function shippedAuthors(
+  { authorship, }: { readonly authorship: IssueAuthorship; },
+): readonly RosterModelId[] {
+  return [
+    ...new Set([
+      ...authorship.everyIssue,
+      ...Object
+        .values(authorship.perIssue,)
+        .flat(),
+    ],),
+  ];
 }
 
 //endregion Editor calibrate slice

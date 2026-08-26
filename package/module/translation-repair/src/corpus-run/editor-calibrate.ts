@@ -3,6 +3,10 @@ import pLimit from 'p-limit';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { producerModelIds, } from '../candidate-select-model.ts';
+import {
+  graceOverrideNote,
+  resolveStragglerGraceMs,
+} from '../grace-override.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import {
   coverageGapLines,
@@ -15,12 +19,12 @@ import {
 } from '../producer-standing-report.ts';
 import { repairChunk, } from '../repair-chunk.ts';
 import { settleRefinedSlice, } from '../refine-slice-settle.ts';
+import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
 import {
   EDITOR_ROUND_STAGES,
   REFINER_ROUND_STAGES,
   selectionRoundsFor,
 } from '../repair-selection-rounds.ts';
-import type { IssueAuthorship, } from '../resolution-authorship.ts';
 import type { RosterModelId, } from '../roster-id.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import {
@@ -28,6 +32,7 @@ import {
   sampleBenchSlices,
 } from './bench-sample.ts';
 import {
+  shippedAuthors,
   type SliceRounds,
   sliceProgressLine,
 } from './editor-calibrate-slice.ts';
@@ -111,34 +116,6 @@ import { reportingRefusals, } from './cli-refusal.ts';
  * whole lane rather than one stage.
  */
 const DEFAULT_SLICES = 6;
-
-/**
- * Every model credited with writing text that shipped on one slice.
- *
- * BOTH HALVES OF THE AUTHORSHIP. A model can write a whole chunk or serve one
- * issue inside it, and either is having written what shipped.
- *
- * @param authorship - what the lane recorded about who wrote the repair
- *
- * @returns Models credited, each once
- *
- * @example
- * ```ts
- * const authors = shippedAuthors({ authorship: outcome.authorship, },);
- * ```
- */
-function shippedAuthors(
-  { authorship, }: { readonly authorship: IssueAuthorship; },
-): readonly RosterModelId[] {
-  return [
-    ...new Set([
-      ...authorship.everyIssue,
-      ...Object
-        .values(authorship.perIssue,)
-        .flat(),
-    ],),
-  ];
-}
 
 /**
  * Runs one slice through the whole repair lane, every model editing and
@@ -512,6 +489,21 @@ async function main(): Promise<void> {
       + `${String(RUN_ROSTER.length,)} models editing and judging each, `
       + `${String(overlap,)} slices in flight`,
   );
+
+  /**
+   * Note naming the straggler window when it is not the built-in one.
+   *
+   * RESOLVED HERE, before any round, so an unreadable override refuses the run
+   * before it spends anything, and printed so the log says which window this
+   * run was under whether or not a voice was ever cut.
+   */
+  const graceNote = graceOverrideNote({
+    effectiveMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
+    builtInMs: STRAGGLER_GRACE_MS,
+  },);
+
+  if (graceNote !== '')
+    console.log(graceNote,);
 
   /**
    * Client every slice shares, built once for the run.
