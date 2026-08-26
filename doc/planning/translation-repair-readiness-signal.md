@@ -1,0 +1,62 @@
+# Translation repair: the production readiness signal, and what it rests on
+
+Proposal for the owner, written 2026-08-26 ahead of the `AskUserQuestion` call that `#219` prescribes.
+The signal is the owner's cue to disable branch protection temporarily so the corpus text committed along
+the way can be sanitized (`doc/handover/translation-repair.md`, "Corpus exposure is not a blocker").
+This document is the evidence behind the question and the decisions the question bundles apart.
+
+## What "ready" rests on
+
+-   The whole-package audit (`#236`) is closed on a measured tally:
+    every register entry carries a FIXED, CLOSED, folded or tracked marker, 3 BLOCKER, 28 MAJOR, 35 MINOR
+    (`doc/audit/translation-repair-package-audit.md`, "Closing tally").
+-   Every MAJOR (`#237` to `#257`) and every MINOR group landed with a guard shown to fail when its fix is removed.
+-   Whole-suite `buildAndTest` after `4c070f729`: 819 PASS, 0 FAIL, exit 0.
+-   All 38 built commands a `mise.toml` task invokes carry their `import.meta.main` guard (measured, not assumed).
+-   The provider resilience the owner asked for is verified live:
+    both keys are required, a half-dark roster is loud (`SEAT` lines end every command), and the two
+    calibration arms of 2026-08-26 ran the full ten-model roster with 304 and 302 of 312 voices heard.
+-   The three measurements the queue held open are paid:
+    `#213` (overlap), `#230` (recovery rate) and `#229` lever 1 (arm C, recorded in the handover when it ends).
+
+## What is known and not done
+
+-   Guards recorded as owed inside FIXED blocks are proven by the type check or by measurement rather than by
+    a mutation: repair-8's typography half, consolidate-5, probes-10 and probes-11, calibrate-5 and calibrate-8,
+    repair-2, document-11, slices-5 and slices-8.
+    They are coverage debts, not defects, and each entry says so.
+-   The straggler window decision (`doc/decision/translation-repair-straggler-grace.md`) stands at 180000 ms
+    until arm C is read.
+
+## Sanitization inventory
+
+-   Tracked tree, measured 2026-08-26 with the standalone scanner against the built deny-list of 10206 corpus
+    sentences (`~/temp/agent/deny-rules.txt`, from `doc/decision/corpus-deny-list-for-forbidden-strings.md`):
+    zero findings over the whole worktree walk.
+    The probe was proven able to fire first: one rule written into a throwaway file fired as `rule=0` both when
+    named explicitly and through the same `--all` walk from inside the worktree.
+    The deny-list subtracted the 8 corpus sentences the tree already held on 2026-08-25, so the zero means no
+    further sentence of 24 or more characters has entered the tracked tree since.
+-   History: the branch carries 2342 commits beyond `main` (merge base `88ba0ae2e`, first commit 2026-07-16),
+    and `main` carries 657 the branch lacks.
+    Corpus text quoted in earlier commits and later removed lives only in that history.
+-   Outside the repository, corpus-bearing and never committed: run directories under `~/temp/agent/` and
+    `~/translation-repair-runs-*`, including `<runs dir>/rendering-audit-settled/*.json` (document spans and
+    model prose in every row's `report`), calibration logs, and the deny-list itself.
+
+## The decisions the question keeps apart
+
+Each is its own question, because answering "yes" to all of them in order must be reachable.
+
+1.  Readiness: disable branch protection now and sanitize, or name what is still missing.
+2.  Calibration overlap default: `TRANSLATION_REPAIR_SLICE_OVERLAP` stays opt-in at 1, or the calibrations
+    default to overlapping slices. Measured on matched arms: overlap 4 ran the same 1.74 h of calls in 24.19 min
+    instead of 43.19, voices 302 against 304 of 312 (one run per arm; the run-to-run band is unmeasured).
+3.  Corpus pass slice overlap: the pass's drivers run slices sequentially by a recorded rationale
+    (`lane-contest-driver.ts`: "the client's limiter grants one stream per model, so contesting two slices at
+    once queues behind the same slot rather than doubling throughput"; `translate-document.ts`: "aggregate
+    concurrency beyond one stream per model collapses throughput on this plan").
+    The calibration arms contradict the first premise under the same limiter, and the second predates the
+    multi-provider routing. Building the dial into the pass is a design change; the proposal is to measure it
+    on the pass the same way before any default moves.
+4.  Straggler window: keep 180000 ms or move it, decided on arm C against arm A.
