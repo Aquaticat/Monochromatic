@@ -17,7 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { readOnlyIds, } from '../../dist/final/node/index.mjs';
+import {
+  readOnlyIds,
+  StatedRefusalError,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Builds an argv with the runtime and script path a real invocation carries.
@@ -90,7 +93,7 @@ await describe({
       fn: async () => {
         expect(function readTrailingFlag() {
           readOnlyIds({ argv: argvWith({ rest: ['--only',], },), },);
-        },).toThrow();
+        },).toThrow(StatedRefusalError,);
       },
     },),
 
@@ -101,7 +104,7 @@ await describe({
       fn: async () => {
         expect(function readMissingValue() {
           readOnlyIds({ argv: argvWith({ rest: ['--only', '--plan',], },), },);
-        },).toThrow();
+        },).toThrow(StatedRefusalError,);
       },
     },),
 
@@ -112,7 +115,7 @@ await describe({
       fn: async () => {
         expect(function readEmptyList() {
           readOnlyIds({ argv: argvWith({ rest: ['--only', ' , , ',], },), },);
-        },).toThrow();
+        },).toThrow(StatedRefusalError,);
       },
     },),
   ],
