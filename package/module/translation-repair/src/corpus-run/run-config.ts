@@ -45,22 +45,28 @@ import { resolveGit, } from './git-command.ts';
  *
  * @example
  * ```ts
- * throw new RunConfigError({ message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set', },);
+ * throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
  * ```
  */
 export class RunConfigError extends StatedRefusalError {
   /**
-   * Builds refusal carrying what could not hold.
+   * Declared here as well as inherited, so the source scan that keeps the
+   * marked-class inventory sees it: the message names a variable and a fix.
+   */
+  override readonly messageNamesOnly: true = true;
+
+  /**
+   * Builds refusal naming the variable that could not be read.
    *
-   * @param message - which setting is missing, and where runs ordinarily get it
+   * @param variable - environment variable name a run cannot start without
    *
    * @example
    * ```ts
-   * throw new RunConfigError({ message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set', },);
+   * throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
    * ```
    */
-  public constructor({ message, }: { readonly message: string; },) {
-    super({ says: message, },);
+  public constructor({ variable, }: { readonly variable: string; },) {
+    super({ says: `${variable} is not set; run under mise so sops injects it`, },);
     this.name = 'RunConfigError';
   }
 }
@@ -615,9 +621,7 @@ export function createRunClient(
     .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
     ?? '';
   if (apiKey === '')
-    throw new RunConfigError({
-      message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set; run under mise so sops injects it',
-    },);
+    throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
 
   /**
    * Second provider's key, which half the roster cannot be reached without.
@@ -626,11 +630,9 @@ export function createRunClient(
     .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
     ?? '';
   if (hyperKey === '')
-    throw new RunConfigError({
-      message: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set; run under mise so sops injects it. '
-        + 'Half the roster is served only by Charm Hyper, so there is no one-provider run to fall '
-        + 'back to (#235)',
-    },);
+    // No one-provider run to fall back to: half the roster is served only by
+    // Charm Hyper (`#235`). The refusal names the variable and the fix.
+    throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY', },);
 
   /**
    * Transport handed to both clients, absent when production's fetch is meant.

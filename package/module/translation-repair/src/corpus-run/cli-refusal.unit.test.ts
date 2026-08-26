@@ -195,10 +195,15 @@ function fixtureRefusal(): RunJsonUnreadableError {
 }
 
 /**
- * Message a run configuration refusal carries: a variable name and a fix,
- * which is all that class may ever say.
+ * Variable a run configuration refusal names.
  */
-const CONFIG_MESSAGE = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set; run under mise so sops injects it';
+const CONFIG_VARIABLE = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
+
+/**
+ * Message that refusal carries: the variable name and a fix, which is all
+ * that class may ever say.
+ */
+const CONFIG_MESSAGE = `${CONFIG_VARIABLE} is not set; run under mise so sops injects it`;
 
 /**
  * Empties the run-wide seat tally for the life of a scope and again on exit,
@@ -452,7 +457,7 @@ await describe({
         await reportingRefusals({
           what: 'editor-calibrate',
           run: async () => {
-            throw new RunConfigError({ message: CONFIG_MESSAGE, },);
+            throw new RunConfigError({ variable: CONFIG_VARIABLE, },);
           },
           seats: createSeatTally(),
         },);
