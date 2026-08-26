@@ -512,6 +512,97 @@ direct case are `translate-retry.ts:200-228`, `translate-slice-attempt.ts:182-18
 withdrawn index sets in `translate-assemble.ts`, every `blankAgainst` branch in `translate-absence.ts`,
 and the three-voice pairing case translate-1 needs.
 
+### probes-1, BLOCKER, verified: the sensitivity instrument labels an arm `prior=shown` that shows nothing
+
+`src/corpus-run/probe-sensitivity.ts:92-103` calls `runIntroducedDefectProbe` with `issues` and no
+`disclosure`; the probe's default is `'withheld'` (`src/introduced-defect-probe.ts:155`), and the sheet
+renders the "PRE-EXISTING DEFECTS THIS EDIT TARGETED" block only under `disclosure === 'rendered'`
+(`src/introduced-defect-wire.ts:438`), whose own default is `'rendered'` (`:365`).
+So the `condition: 'shown'` arm (`:172`) and the `'absent'` arm (`:168`) send byte-identical prompts
+and differ only in what the deterministic screen dismisses, while the closing NOTE (`:243-247`)
+tells the reader a stage that "goes quiet with prior=shown is one the production prompt silences".
+Production withholds explicitly (`src/repair-chunk.ts:389`), so the counts describe production;
+the labels, the comments, and the NOTE do not, and the instrument cannot detect a regression in the
+rendered prompt at all.
+No recorded decision rests on a post-flip run; any rerun would mislead.
+Tracked as `#247`.
+
+### probes-2, MAJOR, verified: the relabel instrument's "shown" arm shows nothing either
+
+`src/corpus-run/probe-relabel.ts:78-88` passes no `disclosure`, and `:150` labels the arm
+"Production condition: the issue list is shown". Same mechanism; folded into `#247`.
+
+### probes-3, MAJOR, verified: the damage sheet tells the grader every item was flagged
+
+`src/corpus-run/probe-verify-sheet.ts:303-304` prints, unconditionally, that "an automated reviewer
+claims each one introduced a defect", while `src/corpus-run/damage-sample.ts:333-357` builds the
+sheet from `probe-flagged` AND `probe-silent` items with every claim stripped.
+`score-verify.ts` reads a Y on a silent item as damage the probe missed, so the preamble primes the
+grader toward Y on exactly the partition scored as probe misses.
+The 20-item damage sheet of 2026-08-17 is still ungraded, so this can still be fixed before it costs a grade.
+Tracked as `#248`.
+
+### probes-4, MAJOR, verified: two probes carve with the deterministic pairer the pass no longer uses
+
+`src/corpus-run/judge-fidelity-probe.ts:384` and `src/corpus-run/displacement-probe.ts:198` call the
+bare `prepareDocumentPair` under a comment reading "Slices exactly as the lanes would see them",
+while the pass carves through `prepareDocumentPairWithRoster` (`src/corpus-run/pass-entry.ts:267`),
+whose LLM-assisted pairing took one entry from zero slices to nine (`#189`) and whose deterministic
+fallback slid whole documents (`#71`).
+Fidelity trials therefore run on pairs the lanes never see, and the displacement census counts the
+deterministic aligner's slides as translation displacement.
+Tracked as `#249`.
+
+### probes-5, MAJOR, verified: the recall scorecard is overwritten in place, non-atomically
+
+`src/corpus-run/recall-benchmark.ts:332-335`: plain `writeFile` to the fixed name `recall-scorecard.json`.
+`src/corpus-run/probe-store.ts` states the repo's own rule for repeated measurements (stamped names,
+atomic writes); a twelve-hour run replaces the previous one with no trace.
+Tracked as `#250`.
+
+### probes-6 to probes-13, MINOR, verified where cited
+
+The derivability sheet's fixed `=====` fence (`src/derivability-wire.ts:22`; zero collisions in the
+pinned corpus, measured by the reviewer with `git grep --count`); stale six-model roster prose in
+`src/corpus-run/judge-independence.ts:7-11` and the NOTE pasted into verdicts by
+`src/corpus-run/score-crosscheck.ts:363-366`; per-region tallies counting checks rather than probers
+(`src/introduced-defect-screen.ts:504-513`); damage sheet and manifest written with plain
+`writeFile` to fixed names (`damage-sample.ts:347-365`, `probe-verify.ts:210-219`); the relabel
+control stamping `baseIndex: index` (`probe-relabel-control.ts:234`); `coverage-probe` and
+`judge-fidelity-probe` printing rows that carry corpus-derived text to stdout by design
+(`coverage-probe.ts:463-467`, `judge-fidelity-probe.ts:501`); caught error text persisted into bench
+rows (`bench-record.ts:289-290`, `benchmark.ts:415-424`); `writeBenchReport` named by no test.
+Full text in `~/temp/agent/audit-probes.md`.
+
+### consolidate-1, MAJOR, verified: a slice with no standing text buys a producer round it then discards
+
+`src/consolidate-driver.ts:333-338` computes `standingText`, which `standingTextFor`
+(`src/consolidate-standing.ts:40-44`) answers as `''` for a `settled-neither` or `quorum-not-met`
+contest; `settleFresh` then builds the producer input (`:378-405`) and calls `produceConsolidations`
+unconditionally, and `settleConsolidation`'s first exit (`src/consolidate-settle.ts:407-412`) refuses
+with `no-standing-text` before judging anything.
+One roster of producer calls plus up to one roster of repair calls per deadlocked slice, with no
+possible effect on output; on a night the contest loses quorum, every contested slice pays it.
+Whether such a slice should instead be judged against both lane renderings is a design question the
+reviewer raised separately; the spend is a defect regardless.
+Tracked as `#251`.
+
+### consolidate-2 to consolidate-10, MINOR, verified where cited
+
+Bare `Error` for operator refusals in `src/grade-agreement.ts:170-184,266-269`; the agreement guard
+checks count but not index presence (`:238-268`); sheet items indexed by position, not by printed
+number (`src/grade-sheet-read.ts:252-265`); the scorecard prints 0 for an empty denominator
+(`src/scorecard.ts:397-399,447-452`); an internal invariant thrown as bare `Error`
+(`src/consolidate-driver.ts:322-326`); `describeAbandon` falling back to `String(error)` into a warn
+line (`src/abandon-kind.ts:76-77`); four prose drifts; `consolidate-produce.ts` and `tally-claim.ts`
+reached only through callers; a gate ballot lost whole when one list field is not an array
+(`src/consolidate-gate-wire.ts:132-146`).
+The reviewer also answered calibrate's open question: `candidate-select.ts:159` sets `judges` to the
+SEATED roster, so a half-dark panel is correctly excluded by the window trial's full-panel filter.
+Open question it raised for the main session: the consolidation gate's bar is absolute
+(`CONSOLIDATE_GATE_QUORUM = 2`, `HEARD_NEEDED = 2`), so two of ten ballots against one can replace a
+memorial page's wording and be cached as settled; whether that bar is intended is recorded here, undecided.
+
 ## Slice reports
 
 Each entry records the reviewer's coverage claim, then what the main session verified.
@@ -525,7 +616,8 @@ Each entry records the reviewer's coverage claim, then what the main session ver
 - `repair`: reviewer read 65 of 65 files (17544 lines), none unread; reported 3 MAJOR, 6 MINOR;
   eight re-verified as reported, one (repair-2) downgraded after the abort path was traced through
   `stage-round.ts`, `stage-call.ts`, and `stream-drain.ts`.
-- `probes`: pending.
+- `probes`: reviewer read 63 of 63 files (20031 lines), none unread; reported 1 BLOCKER, 4 MAJOR, 8 MINOR;
+  the BLOCKER and every MAJOR re-verified at the cited lines; MINORs spot-verified.
 - `calibrate`: reviewer read 33 of 33 files (10042 lines), none unread;
   reported 2 MAJOR and 9 MINOR, all eleven re-verified at the cited lines and recorded;
   the reviewer named the `#235` fallback and the `RunConfigError` gap unprompted
@@ -534,11 +626,12 @@ Each entry records the reviewer's coverage claim, then what the main session ver
   whether `candidate-select.ts:347` `judgesAvailable` counts seated or reachable judges (`consolidate`),
   whether `producer-calibrate.ts` also builds a client per slice (`translate`),
   and whether any consumer prints the `reason` field `pass-schema-census.ts` stores from a `SyntaxError`.
-- `consolidate`: not started (queued behind the concurrency cap).
-- `document`: not started.
-- `artifact`: not started.
-- `slices`: not started.
-- `rendering`: not started.
+- `consolidate`: reviewer read 28 of 28 files (7408 lines), none unread; reported 1 MAJOR, 9 MINOR;
+  the MAJOR re-verified; it answered calibrate's `judgesAvailable` question (seated roster).
+- `document`: in progress.
+- `artifact`: in progress.
+- `slices`: in progress.
+- `rendering`: in progress.
 
 ## What this audit does not cover
 
