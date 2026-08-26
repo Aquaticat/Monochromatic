@@ -1900,8 +1900,27 @@ renders the compiled page and uses `marked` only for metadata. The pipeline pars
 strict grammar; what the site renders for a footnote); the destination check is unaffected because it scans
 bare runs as well as the tree.
 
-Arms at 16:44Z: A2 at slice 3 of 4 after 50 minutes against arm A's 43.19 minutes for all four, which is the
-band showing itself before it is measured; D not started.
+ARM A2 IS IN (`#260`), and the band is wider than one of the two effects it was meant to size. Wall clock from
+the log's first to last timestamp (the `run-timing-report` task depends on `build`, which arm D forbids, so the
+span was read with a timestamp scan): A 43.18 min, A2 58.95 min, on an unchanged build over the same four
+slices. That is a run-to-run band of at least 15.8 min, 37% of A, and the calls themselves were slower, not the
+pipeline: stream sum 9294 s against 6312 s, p50 7017 ms against 5260 ms, p95 136 s against 78 s, 8 cut voices
+against 6 (all `qwen3.8-max` and `hf:Qwen/Qwen3.8-27B`), 312 of 320 voices heard against 304 of 312, no
+recovery round against two. Provider speed between 11:08Z and 15:54Z moved more than any dial did.
+
+NORMALIZED AGAINST CALL TIME the picture is clean. Wall clock over stream sum: A 0.41, A2 0.38 (band about
+0.03), C 0.43, B 0.23. Overlap 4 (B) sits 0.18 below A, six times the band, so the overlap effect stands.
+The 300000 ms window (C) sits 0.02 above A, inside the band, so its cost is UNMEASURED at this scale rather
+than the +24.7% a single pair of runs suggested; the 2-of-6 voices it bought back is also inside what
+provider speed alone moved (A2 lost 8 with no window change). Arm D (overlap 4 at 300000 ms) is running; read
+it the same two ways. What goes back to the owner with D: the overlap default can be decided on this evidence;
+the window cannot be decided on single runs, and the honest options are interleaved repeats (A, C, A, C on one
+afternoon) or leaving it at 180000 ms with the dial available.
+
+THE `#263` MISREPORT RECURRED IN A2, now on two seats: `WROTE NOTHING AT ALL: minimax-m3,
+deepseek-v4-flash-0731` beside `SEAT minimax-m3 asked=32 usable=32` and `SEAT deepseek-v4-flash-0731 asked=32
+usable=32`. The landed fix reports them as answered-but-unslated; the live check after the build reads this
+same line on a fresh calibration.
 
 ## Sections aged out into the history (2026-08-26)
 
