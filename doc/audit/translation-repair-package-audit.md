@@ -601,6 +601,14 @@ The symmetric check is still owed as a guard against a future path that turns an
 outcome, and `refine-phase.unit.test.ts` has no abort case.
 Folded into `#238`.
 
+FIXED 2026-08-26 in `d7c707cc3`: `refine-phase.ts` calls `signal.throwIfAborted()` before its persist, the check
+`repair-translation.ts` makes before its own write, and `refine-phase.unit.test.ts` has an abort case: a client that
+aborts the run from inside its first exchange and still answers leaves the cache empty and the phase rejected.
+GFP, reported as measured: with the new line removed the abort case STILL PASSES, because the stage machinery already
+throws on an aborted signal before the phase reaches its write, exactly as the entry's mechanism paragraph says.
+The line is the symmetric guard the entry asked for against a future path that settles an aborted call; the case
+pins the behaviour, not the line, and this paragraph says so rather than claiming a guard it cannot show failing.
+
 ### repair-3, MAJOR, verified: envelopes adopted without a vote lose their authors
 
 `src/editor-ensemble.ts:232-243`: the sole-proposal path pushes the winner and its contributors but
@@ -626,6 +634,12 @@ removed (2 lines); both restored and passing.
 `src/repair-refine-step.ts:150-157` throws for that state after the phase, so the tolerance buys
 model calls before a refusal that comes anyway. Unreachable through `repairPreparedDocument` today.
 
+FIXED 2026-08-26 in `d7c707cc3`: the phase refuses an outcome naming a slice the preparation never produced before
+any call, as `UnpreparedSliceError` (`unprepared-slice.ts`, marked, one slice index in its message), and
+`repair-refine-step.ts` throws the same class for the same fault instead of a bare `Error`; the `??` fallbacks are gone.
+Guard: with the refusal removed, the case
+`REFUSES an outcome naming a slice the preparation never produced before buying any call` fails; restored, passes.
+
 ### repair-5, MINOR, verified: six prompts fence document text with a fixed `=====`
 
 `src/edit-prompt.ts:18`, `src/critic-prompt.ts:18`, `src/adjudicate-prompt.ts:17`,
@@ -645,6 +659,9 @@ carry no `messageNamesOnly` and quote nothing, so the slice they name is muted a
 `src/repair-translation.ts:536`: "A blocked document already returned above" against the module
 note at `:47-56` ("NOTHING BLOCKS THE DOCUMENT ANY MORE").
 
+FIXED 2026-08-26 in `d7c707cc3`: the comment says nothing blocks a document any more and points at the module note.
+Prose only.
+
 ### repair-8, MINOR, verified: typography restoration runs after the structural gate
 
 `src/apply-patch.ts:346` applies `restoreTypography` to `newText` after every check, while
@@ -658,6 +675,19 @@ No abort case in `refine-phase.unit.test.ts`; the only silence-and-cache case in
 `issue-authors.unit.test.ts`; `repair-not-applicable`, `assertUnheardKeptArchive`, `heardNobodyAbout`,
 `settleChunkFromChecks`, `collectEnvelopeProposals` are named by 0 test files;
 `src/refine-slice-settle.ts:149` types the refiner roster as `RepairModels['checkerModelIds']`.
+
+FIXED IN PART 2026-08-26 in `d7c707cc3`: the abort case (repair-2), the refiner roster typed as
+`readonly RosterModelId[]` rather than as the checker seats (the borrowed type was the only non-optional one),
+and suites for `repair-not-applicable` (the anchor never counts toward the non-translation block; every count zero;
+the finding's wording), `repair-unheard` (`heardNobodyAbout` on all three inputs; `assertUnheardKeptArchive` refuses
+a foreign wording and a claimed change, accepts the archive wording, asks nothing of a slice somebody spoke about)
+and `editor-proposals` (a duplicate merges its writer into the first proposal; distinct texts stay apart in roster
+order; a silent model contributes nothing).
+The sole-envelope composite landed with `#239` and the silence-and-cache cases with `#238`.
+Guards: the claimed-change refusal removed fails `REFUSES a silent slice that claims a change`; the merge disabled
+fails `MERGES a duplicate proposal into the first one`; the anchor counted as standing fails
+`REFUSES to count an anchor toward the non-translation block`; each restored, passes.
+Still owed: a suite naming `settleChunkFromChecks`, which lands with the rest of this group.
 
 ### translate-1, MAJOR, verified: pairing agreement is filtered from the first usable voice's reply only
 

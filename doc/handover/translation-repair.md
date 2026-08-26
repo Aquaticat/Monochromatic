@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-the calibrate group landed in `acfc7ad22` and the provider group in `2376b7d14`, repair-2 is next;
+the calibrate group landed in `acfc7ad22`, the provider group in `2376b7d14`, half the repair group in `d7c707cc3`;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -270,7 +270,15 @@ Whole-suite `buildAndTest` after `2376b7d14`: exit 1, 782 PASS, 2 FAIL. The sink
 lock's unreadable line off `console.log`, which provider-12 had moved to the tagged logger; `c7f2a5075` makes its
 collector wrap the logger's console methods. The register's provider-12 paragraph had claimed no test read the
 line, on a search anchored on the old prefix; corrected there.
-Queue: the register's MINORs in register order (repair-2 next), which close `#236`; then `#213` (arm A and arm B
+Whole-suite `buildAndTest` after `c7f2a5075`: 782 PASS, 0 FAIL, exit 0 (solo run).
+Repair MINORs, first half (repair-2, repair-4, repair-7, half of repair-9) LANDED 2026-08-26 in `d7c707cc3`:
+the phase's abort check before its persist (whose case pins the behaviour but cannot show the line failing, since
+the stages already throw on an aborted signal; recorded as such), `UnpreparedSliceError` refusing an unprepared
+outcome before any call in both the phase and the step, the stale comment, the refiner roster's honest type, and
+suites for `repair-not-applicable`, `repair-unheard` and `editor-proposals` (GFP: 1 case each under mutation).
+Next: repair-5 (six fixed fences), repair-6 (two unmarked position-only classes), repair-8 (typography before the
+gate) and the `settleChunkFromChecks` suite, then translate-3 onward.
+Queue: the register's MINORs in register order (repair-5 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 
