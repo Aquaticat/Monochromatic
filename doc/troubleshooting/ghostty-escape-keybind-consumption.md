@@ -27,13 +27,19 @@ Observed PTY bytes for injected `a`,
 Escape,
 then `b`:
 
-- Stock Ghostty defaults: `61 1b 62`.
-- Current `~/.config/ghostty/config`: `61 1b 62`.
-- Explicit `performable:escape=end_search`: `61 1b 62`.
-- Explicit bare `escape=end_search`: `61 62`.
-- Active Ghostty search with the stock binding: `61 62` for the first Escape,
+- Stock Ghostty defaults:
+   `61 1b 62`.
+- Current `~/.config/ghostty/config`:
+   `61 1b 62`.
+- Explicit `performable:escape=end_search`:
+   `61 1b 62`.
+- Explicit bare `escape=end_search`:
+   `61 62`.
+- Active Ghostty search with the stock binding:
+   `61 62` for the first Escape,
   because that press closes search by design.
-- Kitty keyboard protocol flag 1 active: `61 1b 5b 32 37 75 62`.
+- Kitty keyboard protocol flag 1 active:
+   `61 1b 5b 32 37 75 62`.
   Escape reached the PTY as `CSI 27 u`,
   not as one `1b` byte.
 
