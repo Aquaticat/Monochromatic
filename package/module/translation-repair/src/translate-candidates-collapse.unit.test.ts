@@ -126,5 +126,32 @@ await describe({
           },),).toContain('    The cat sleeps on the windowsill.',);
       },
     },),
+
+    it({
+      name: 'FOLDS an invisible variant out of a translation at intake, names it with its author, '
+        + 'and collapses the folded rendering into a plain one that says the same (#264)',
+      fn: async () => {
+        const set = buildTranslateCandidates({
+          voices: [
+            voiceOf({
+              at: 0,
+              translation: 'A part\u2011time shop cat.',
+            },),
+            voiceOf({
+              at: 1,
+              translation: 'A part-time shop cat.',
+            },),
+          ],
+          translatorModelIds: TRANSLATORS,
+          incumbentText: '',
+        },);
+
+        expect(set.candidates,).toHaveLength(1,);
+        expect(set.candidates[0]?.rendered,).toBe('A part-time shop cat.',);
+        expect(set.findings,).toStrictEqual([
+          `invisible-variant-folded (U+2011 x1) (${TRANSLATORS[0] ?? ''})`,
+        ],);
+      },
+    },),
   ],
 },);

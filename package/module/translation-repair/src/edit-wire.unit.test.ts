@@ -304,5 +304,25 @@ await describe({
         expect(operations[0]?.newText,).toBe('kitten dozes',);
       },
     },),
+
+    it({
+      name: 'FOLDS an invisible variant out of an edit at intake and names it, so the checkers '
+        + 'judge the bytes that ship (#264)',
+      fn: async () => {
+        const { operations, findings, } = resolveEditorEdits({
+          wire: {
+            edits: [
+              {
+                region: 1,
+                newText: 'a part\u2011time kitten',
+              },
+            ],
+          },
+          envelopes: ENVELOPES,
+        },);
+        expect(operations[0]?.newText,).toBe('a part-time kitten',);
+        expect(findings,).toStrictEqual(['invisible-variant-folded (U+2011 x1)',],);
+      },
+    },),
   ],
 },);

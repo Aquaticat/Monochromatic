@@ -61,6 +61,11 @@ which is what the source says. Three defects remain:
     defect is the narrower class: a character whose difference from its plain counterpart a reader cannot see
     (U+2011 against the hyphen, and by the same reasoning U+00A0 and U+00AD) written where neither source nor
     archive page has it. That class is a normalization, not a house-style question for the owner.
+    LANDED IN SOURCE (`8e8b7bd6e`, unbuilt while the arms hold `dist`): `foldInvisibleVariants` in
+    `invisible-variants.ts` folds U+2011, U+00A0, U+202F, U+00AD, U+200B, U+2060 and U+FEFF at the point where
+    each lane turns an answer into a candidate (edit and refine operations, translate and consolidate
+    candidates), before any decider judges, and records `invisible-variant-folded (<code point> xN)` as a
+    finding. Typographic quotes, dashes, the ellipsis and the emoji joiner pass through.
 
 Everything else on the page is faithful and in places more faithful than the archive (the added "it could be very
 painful" in the quote is gone).

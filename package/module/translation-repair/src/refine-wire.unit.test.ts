@@ -434,5 +434,26 @@ await describe({
         expect(findings,).toStrictEqual(['refine-unknown-paragraph (1)',],);
       },
     },),
+
+    it({
+      name: 'FOLDS an invisible variant out of a rewrite at intake and names it, so the judges see '
+        + 'the bytes that ship (#264)',
+      fn: async () => {
+        const { operations, findings, } = resolveRefineRewrites({
+          wire: {
+            rewrites: [
+              {
+                paragraph: 1,
+                newText: 'The cat\u00a0sleeps.',
+              },
+            ],
+          },
+          envelopes: ENVELOPES,
+        },);
+
+        expect(operations[0]?.newText,).toBe('The cat sleeps.',);
+        expect(findings,).toStrictEqual(['invisible-variant-folded (U+00A0 x1)',],);
+      },
+    },),
   ],
 },);
