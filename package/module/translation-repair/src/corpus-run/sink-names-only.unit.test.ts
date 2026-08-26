@@ -326,7 +326,24 @@ async function unopenable(
 }
 
 /**
- * Collects what would have gone to stdout, restoring the real one on disposal.
+ * Console methods a sink may write through: `console.log` for a command's own
+ * stdout lines, and the three the tagged logger's console sink resolves by
+ * level at flush time.
+ */
+const CONSOLE_METHODS = [
+  'log',
+  'info',
+  'warn',
+  'error',
+] as const;
+
+/**
+ * Collects what would have gone to the console on any of those methods,
+ * restoring the real ones on disposal.
+ *
+ * THE LOGGER IS CAPTURED TOO, because the lock speaks through a tagged logger
+ * since provider-12, whose console sink resolves `console.warn` lazily and
+ * flushes on a microtask, so a wrapper installed before the call sees the line.
  *
  * @param lines - collector the caller reads afterwards
  *
@@ -341,18 +358,30 @@ function collectingLogs(
   { lines, }: { readonly lines: string[]; },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   * Real reporter, put back on disposal.
+   * Real reporters, put back on disposal.
    */
-  const reported = console.log;
+  const reported = new Map(CONSOLE_METHODS.map(function keep(method,): [
+    typeof method,
+    (...parts: readonly unknown[]) => void,
+  ] {
+    return [
+      method,
+      console[method],
+    ];
+  },),);
 
-  console.log = (...parts: readonly unknown[]) => {
-    lines.push(parts.map(String,)
-      .join(' ',),);
-  };
+  for (const method of CONSOLE_METHODS) {
+    console[method] = (...parts: readonly unknown[]) => {
+      lines.push(parts.map(String,)
+        .join(' ',),);
+    };
+  }
   return {
     lines,
     [Symbol.dispose]: () => {
-      console.log = reported;
+      for (const [method, real,] of reported) {
+        console[method] = real;
+      }
     },
   };
 }
@@ -497,7 +526,7 @@ await describe({
         const said = printed.lines.join('\n',);
 
         expect(said.includes(
-          `LOCK ${lockPath} unreadable (${namedRefusal({ file: LOCK_FILE, },)})`,
+          `${lockPath} unreadable (${namedRefusal({ file: LOCK_FILE, },)})`,
         ),).toBe(true,);
         expect(said.includes(LEAKED_OPENING,),).toBe(false,);
       },
