@@ -96,6 +96,10 @@ The role conflict is therefore produced by the Advisor interface,
 not only by one unfortunate model call.
 The negative system-prompt guard competes with repeated positive `answer` framing closer to the focus text.
 
+The `/advisor` command has no focus parameter,
+but it uses the same unrestricted provider completion and text extraction.
+Removing tool `question` would close the incident's direct instruction channel without breaking the manual command path.
+
 The test surface currently proves transport rather than role preservation:
 
 - `package/pi-plugin/advisor/src/advisor-client.unit.test.ts:205` uses unconstrained fixture text `advisor answer`;
@@ -112,6 +116,47 @@ and interpretation with the caller.
 Advisor can reuse that transport without importing goal behavior.
 A structured contract would deterministically constrain response shape,
 but string fields would still need bounded semantics because a schema alone cannot prove that prose is not a replacement answer.
+
+## Current external precedent
+
+Anthropic's current [Advisor tool documentation](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/advisor-tool),
+fetched on 2026-08-26,
+changes the design reading in several important ways:
+
+- Anthropic Advisor is a strategic planner and course-correction model,
+  not a findings-only independent reviewer.
+- Its executor call input is always empty.
+  Nothing the executor places in tool input reaches Advisor.
+- It is explicitly a weak fit for single-turn question answering because there is nothing to plan.
+- Anthropic reports typical output around 400 to 700 visible text tokens and 1,400 to 1,800 total tokens including
+  thinking.
+- Anthropic recommends starting with a 2,048-token hard cap.
+  Its reported hard-reasoning probe used 40 calls per configuration,
+  found about 630 to 840 mean output tokens at that cap,
+  near-zero truncation,
+  and no detectable quality loss within that sample.
+
+The local package description says it is modeled after Claude Code Advisor,
+but the local system prompt defines a stricter reviewer role.
+The name therefore imports planner expectations that conflict with the local contract.
+This does not justify accepting answer substitution because the user requires reviewer behavior.
+It does mean the implementation must enforce that divergence rather than rely on the word `Advisor`.
+
+Anthropic's [structured outputs documentation](https://docs.anthropic.com/en/docs/build-with-claude/structured-outputs)
+states that constrained decoding guarantees schema shape,
+not semantic intent.
+It also identifies refusal and token-limit exceptions.
+Client validation remains necessary for array and string bounds because SDK schema transforms can remove `minLength`,
+`maxLength`,
+`minimum`,
+and `maximum` before provider dispatch.
+
+The external precedent supports three local changes:
+
+1. Remove free-form call input rather than improve its wording.
+2. Reject Advisor use on simple single-turn factual or arithmetic tasks through main-model call guidance.
+3. Treat `2048` as a measured starting cap for a structured reviewer,
+   then verify it across the locally eligible provider set before making it default.
 
 ## Enforcement layers
 
@@ -139,18 +184,20 @@ No single prompt sentence can supply the guarantee.
 
 ## Candidate interfaces under comparison
 
-### Minimal typed review
+### Minimal evidence review
 
 ```typescript
 type AdvisorInput = {
   readonly model?: string;
-  readonly focus?: 'assumptions' | 'correctness' | 'verification' | 'risk' | 'scope';
 };
 ```
 
 The implementation returns validated findings rather than provider prose.
-This removes the free-form instruction channel and keeps empty parameters safe.
-Its cost is loss of arbitrary natural-language focus.
+This removes the free-form instruction channel,
+matches Anthropic's empty-input precedent apart from local model selection,
+and keeps empty parameters safe.
+Its cost is loss of per-call focused review.
+The advisor must infer relevant review dimensions from the transcript.
 
 ### Anchored multidimensional review
 
@@ -166,7 +213,8 @@ type AdvisorInput = {
 
 This preserves more precision without accepting task instructions.
 Its interface is wider,
-and the primary model must choose target semantics correctly.
+the primary model must choose target semantics correctly,
+and it departs from the no-input external precedent.
 
 ### Free-form focus with local intent gate
 
@@ -242,6 +290,10 @@ These are hypotheses, not decisions:
 4. Keep the system prompt as defense in depth, rewritten around positive reviewer actions.
 5. Add characterization tests for the exact observed focus question and result shape.
 6. Reconsider highest-expected-cost and maximum-reasoning defaults separately from role enforcement.
+7. Treat the official `2048` output cap as a cross-provider probe candidate,
+   not a proven local default.
+8. Consider whether the reviewer-only role warrants renaming the tool,
+   because official Advisor precedent explicitly produces plans and course corrections.
 
 ## Rejected conclusions
 
