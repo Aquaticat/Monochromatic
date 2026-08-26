@@ -181,7 +181,17 @@ the whole suite passed 762 of 762.
 the whole suite passed 763 of 763.
 `#248` landed in `b88d6a947` (HEAD): the damage sheet tells its grader it mixes flagged and silent items,
 and the two ungraded sheets on disk were reframed in place; a whole-suite run is in flight.
-Queue: `#249` onward in task order.
+EXPECTED REBUY, not a cache defect: `#245` changed what the pairing stages emit, so the pipeline digest moves and
+every pairing cache (`pairing.` and `section-pair.` namespaces) retires on the next run; the first run after it
+buys every pairing round again, once.
+Advisor checkpoint 2026-08-26 (after `#248`): the queue through `#248` needs no reopening; for `#249` and `#255`
+record the section pairing in the artifact the way `blockPairing` was recorded (omitted when nobody was asked,
+named absence on read, no generation bump if exact-keys tolerates an absent listed key), carve the two probes
+from settled artifacts through one shared helper, give the rendering verifier a third outcome `unverifiable`
+for artifacts without a stored section pairing, and label the census's artifact-less rows as the deterministic
+baseline. Build order: the preparation field and helper, then `#255`, then `#249`, then `#250`.
+The owed doc passes (A-4, A-5, A-6) stay queued behind the MAJORs and close `#236`.
+Queue: `#249` and `#255` together as above, then `#250` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
