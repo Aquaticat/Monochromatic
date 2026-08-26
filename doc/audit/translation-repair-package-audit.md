@@ -648,11 +648,25 @@ against `src/refine-prompt.ts`, whose note calls the fixed value forgeable (a se
 picks its fence against the content with `selectFence`.
 A page carrying a `=====` line closes the instruction block early; every gated stage bounds the damage.
 
+FIXED 2026-08-26 in `9135037e8`: all six builders choose their fence through `selectFence` against every text they
+enclose, the rendered claim, issue, region and reference blocks included; the adjudication and editor prompts render
+their blocks before the nearby block so the fence can see them; the six constants are gone.
+Guard: each builder put back on a fixed `=====` fails its case
+`FENCES the blocks with a delimiter the enclosed text cannot reproduce` (six suites, one case each;
+`edit-prompt.unit.test.ts` is new, the builder having had no suite); restored, passes.
+
 ### repair-6, MINOR, verified: two unmarked classes whose messages hold positions only
 
 `src/repair-unheard.ts` (`RepairUnheardError`) and `src/placement-layout.ts` (`PlacementLayoutError`)
 carry no `messageNamesOnly` and quote nothing, so the slice they name is muted at the boundary.
 `repair-unheard.ts:160` spells `archive\`s` with a backtick for an apostrophe.
+
+FIXED 2026-08-26 in `9135037e8`: `RepairUnheardError` takes a slice index and an `UnheardClaim`,
+`PlacementLayoutError` a position and a `PlacementFault` of seven kinds, and each writes its sentence from indices,
+offsets and counts; both carry the marker and the inventory names their parts. The backtick apostrophe went with the
+message it sat in.
+Guard: with either marker removed the inventory cases `KEEPS exactly the classes the inventory records` and
+`KEEPS a reason for every class that writes its sentence and stays unmarked` fail; restored, passes.
 
 ### repair-7, MINOR, verified: a stale comment names an exit that no longer exists
 
@@ -667,6 +681,15 @@ Prose only.
 `src/apply-patch.ts:346` applies `restoreTypography` to `newText` after every check, while
 `src/refine-stage.ts:255` gated the raw `operation.newText`, so a protected atom holding a straight
 quote between word characters can be altered by text no gate saw. Low frequency.
+
+FIXED 2026-08-26 in `9135037e8`: `applyPatchOperations` restores typography before its checks, so the
+unchanged-region and preservation gates read the text that ships and the applied record equals it; `refine-stage.ts`
+restores a rewrite before `gateParagraphRewrite` reads it and forwards the restored text.
+Guard: the apply gate reading the raw text again fails
+`REJECTS as unchanged an edit whose only difference is a flattened apostrophe`; restored, passes.
+NO GUARD for the refine half: with its gate reading the raw text again the refine suite still passes, because no case
+there turns on quote style; the register's scenario (a protected atom holding a straight quote between word characters)
+is what such a case would need, and it is owed.
 
 ### repair-9, MINOR, verified: the guards the three MAJORs need do not exist
 
@@ -687,7 +710,9 @@ The sole-envelope composite landed with `#239` and the silence-and-cache cases w
 Guards: the claimed-change refusal removed fails `REFUSES a silent slice that claims a change`; the merge disabled
 fails `MERGES a duplicate proposal into the first one`; the anchor counted as standing fails
 `REFUSES to count an anchor toward the non-translation block`; each restored, passes.
-Still owed: a suite naming `settleChunkFromChecks`, which lands with the rest of this group.
+COMPLETED 2026-08-26 in `9135037e8`: `settleChunkFromChecks` reaches the bundle and has a case.
+Guard: with the credit inverted the case `CREDITS exactly the creditable issues the checker majority confirmed fixed`
+fails; restored, passes.
 
 ### translate-1, MAJOR, verified: pairing agreement is filtered from the first usable voice's reply only
 

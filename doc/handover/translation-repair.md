@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-the calibrate group landed in `acfc7ad22`, the provider group in `2376b7d14`, half the repair group in `d7c707cc3`;
+calibrate in `acfc7ad22`, provider in `2376b7d14`, repair in `d7c707cc3` and `9135037e8`, translate is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -276,9 +276,15 @@ the phase's abort check before its persist (whose case pins the behaviour but ca
 the stages already throw on an aborted signal; recorded as such), `UnpreparedSliceError` refusing an unprepared
 outcome before any call in both the phase and the step, the stale comment, the refiner roster's honest type, and
 suites for `repair-not-applicable`, `repair-unheard` and `editor-proposals` (GFP: 1 case each under mutation).
-Next: repair-5 (six fixed fences), repair-6 (two unmarked position-only classes), repair-8 (typography before the
-gate) and the `settleChunkFromChecks` suite, then translate-3 onward.
-Queue: the register's MINORs in register order (repair-5 next), which close `#236`; then `#213` (arm A and arm B
+Repair MINORs, second half (repair-5, repair-6, repair-8, the rest of repair-9) LANDED 2026-08-26 in `9135037e8`:
+six prompts fence by content through `selectFence` (each with a setext-underline case; `edit-prompt` gets its
+first suite), the two position-only refusals write their sentences from typed claims and faults and carry the
+marker, typography is restored before the apply gate's checks and before the refine gate reads a rewrite, and
+`settleChunkFromChecks` has a case. GFP: six fence cases, two inventory cases, the apply-gate case and the credit
+case each fail under their mutation and pass restored; the refine gate's half has no case that turns on quote
+style and is recorded as owed in the register. A first attempt exported `ChatMessage` from the package's own
+index and broke the build (the type belongs to `module-llm-type`; the suites import it from there now).
+Queue: the register's MINORs in register order (translate-3 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 
