@@ -188,8 +188,10 @@ No single prompt sentence can supply the guarantee.
 Three isolated Pi CLI design processes were restarted with absolute executable paths after the original `PATH` failure.
 They produced only model-scope warnings,
 left stdout empty,
-and retained stale `running` states while no matching operating-system process remained.
+and retained `running` states after process searches found no command-line match for the Pi invocations.
 Their logs had not changed since startup.
+The installed process manager checks process-group liveness rather than the original command line,
+so an unobserved descendant could have retained the group.
 They were stopped and cleared without attributing an unverified root cause.
 
 The design comparison was recovered through separate Advisor calls to:
@@ -224,6 +226,29 @@ Two reviews explicitly proposed a missing option:
 a symbolic findings contract containing only enums and evidence relations.
 The third said the same constraint is required for a hard guarantee,
 while preferring bounded prose if richer explanations are required.
+
+A final independent review by `openai-codex/gpt-5.6-sol` gave a conditional pass on the narrowed transport claim.
+It identified residual structured channels and required:
+
+- canonical finding order,
+  bounded cardinality,
+  and duplicate rejection;
+- provenance-aware evidence references,
+  with Advisor calls and results excluded from reviewable evidence;
+- opaque structural evidence locators rather than provider-selected excerpts;
+- finite local failure codes without raw provider bodies,
+  values,
+  selector strings,
+  or validator payloads;
+- one shared request,
+  transport,
+  parser,
+  failure,
+  and renderer path for tool and command;
+- explicit acceptance that a finite taxonomy reduces general reviewer expressiveness.
+
+A preceding `hyper/deepseek-v4-pro-0813` probe returned only an attempted unavailable tool call and supplied no review.
+It is excluded from the evidence count.
 
 ## Candidate interfaces under comparison
 
@@ -341,11 +366,21 @@ type AdvisorFinding =
 `AdvisorCheck`,
 and `AdvisorRisk` are finite enums.
 The exact enum vocabulary should be validated against representative existing Advisor reviews before implementation.
-Locally generated evidence IDs identify transcript content blocks.
-The parser validates every reference against the inventory and selected target,
-reconciles assessment with finding count,
-and rejects unknown fields.
-The local renderer turns each relation into fixed prose.
+Locally generated evidence IDs identify transcript content blocks and carry provenance roles such as objective,
+requirement,
+primary candidate,
+tool result,
+and verification.
+Advisor calls and Advisor results are not reviewable evidence.
+The parser validates membership,
+selected target,
+field-specific provenance,
+cardinality,
+canonical order,
+and uniqueness;
+it also reconciles assessment with finding count and rejects unknown fields.
+The local renderer turns each relation into fixed prose with opaque structural locators.
+It does not include provider-selected evidence excerpts.
 
 This sacrifices model-written explanations.
 It preserves reviewer utility by naming the affected evidence,
@@ -359,7 +394,9 @@ The exact incident then fails at two deterministic seams:
 legacy `question` is unsupported,
 and the provider has no arbitrary text field in which to return five explanations.
 A provider can still choose inaccurate enums or references,
-but fixed rendering does not decode those choices into a replacement answer.
+and valid structured selections remain a limited information channel.
+The interface prevents unrestricted answer prose;
+it cannot make every valid reviewer judgment semantically unrelated to the primary task.
 
 ## Verification design
 
@@ -372,6 +409,11 @@ Required negative cases:
 - Script a provider to emit the five-part answer as free text instead of the forced review tool.
   Assert that text never reaches the returned Advisor tool content.
 - Return a review object with unknown properties and assert strict parser rejection.
+- Return reordered or duplicate findings and references and assert canonicalization rules reject them.
+- Cite an evidence ID through the wrong provenance field,
+  outside the selected target,
+  or from an earlier Advisor call or result.
+  Assert each is rejected.
 - Return excessive findings,
   invalid assessment,
   finding,
@@ -390,9 +432,12 @@ Required negative cases:
 Required positive controls:
 
 - Every valid symbolic finding variant must cross the public Advisor interface and appear through fixed local rendering.
+  The rendering must identify evidence structurally without quoting provider-selected content.
 - A `clear` assessment must remain distinguishable from missing or invalid output.
 - An `insufficient-evidence` assessment must report the absence of a reviewable candidate without supplying one.
-- Explicit valid model selection must retain current scope and output-capacity checks.
+- Explicit valid model selection must retain current scope and output-capacity checks,
+  remain routing-only,
+  and never appear in provider prompts or raw error rendering.
 - Default model selection must remain non-current when another eligible model exists.
 - Conversation and project context must still reach the reviewer adapter.
 - A forced-tool omission followed by valid direct JSON must recover without exposing first-attempt free text.
@@ -418,7 +463,8 @@ but nondeterministic model compliance is supplementary evidence rather than the 
   check,
   and missing-evidence vocabulary covers representative existing Advisor findings without creating a general text field?
 - Should evidence IDs identify complete context entries or individual content blocks?
-  This needs a prototype against real stored sessions.
+  This needs a prototype against real stored sessions,
+  including verification that provenance roles are mechanically assigned.
 - Should direct-JSON recovery remain as a separately named,
   strictly parsed fallback,
   or should Advisor fail after a forced-tool omission?
@@ -487,12 +533,18 @@ and evidence linkage.
 The full recommended stack is:
 
 1. Replace `question` with optional typed `focus` and reject unknown fields before dispatch.
-2. Generate a local evidence inventory and apply mechanical target projection.
-3. Ask the reviewer to submit only symbolic findings through the shared model-review transport.
+2. Generate a provenance-aware local evidence inventory,
+   exclude Advisor-generated entries,
+   and apply mechanical target projection.
+3. Ask the reviewer to submit only canonical symbolic findings through the shared model-review transport.
 4. Strictly parse one result contract,
    including any separately identified direct-JSON recovery path,
-   and never relay rejected payloads.
-5. Render fixed local prose for both the tool and `/advisor` command.
+   and map every failure to a finite local code without relaying rejected values.
+5. Route the tool and `/advisor` command through the same request,
+   transport,
+   parser,
+   failure,
+   and fixed-rendering pipeline.
 6. Rewrite caller guidance so Advisor reviews an existing candidate or evidence on a multi-step task.
    Simple factual and arithmetic tasks should not invoke it.
 7. Keep positive reviewer prompting as defense in depth.
@@ -502,10 +554,13 @@ The full recommended stack is:
    A rename does not add an enforcement seam and would distract from the contract change.
 
 The deterministic claim should be precise:
-this design closes the free-form call channel and prevents arbitrary provider-generated prose from entering the primary model
-through Advisor results.
+this design eliminates free-form per-call review instructions and prevents provider-authored free-form text from entering primary
+context through Advisor results.
+Valid structured selections may still convey or coincide with primary-task information.
 Finding accuracy,
+completeness,
 evidence relevance,
+provenance interpretation,
 and correct reviewer judgment remain model-dependent.
 
 ## Rejected conclusions
@@ -534,3 +589,4 @@ Start with the exact incident input-rejection test and provider-free-text leak t
 - `16c7dc330`, `docs(advisor): map role-enforcement layers`, recorded layered guarantees and initial candidates.
 - `40f26273a`, `docs(advisor): record official Advisor precedent`, added current Anthropic evidence.
 - `137dac233`, `docs(advisor): define prevention verification`, defined negative cases and positive controls.
+- `bb8a9cd17`, `docs(advisor): recommend symbolic review contract`, recorded independent ranking and recommendation.
