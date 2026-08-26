@@ -704,6 +704,13 @@ diagnoses,
 and other valid artifacts;
 and same-call artifact submission does not establish prior ownership.
 
+A final review by `synthetic/hf:moonshotai/Kimi-K3` found no fatal interface flaw.
+It confirmed that the protocol reaches the deterministic ceiling compatible with unrestricted prose,
+then required the final wording to distinguish tool-call provenance from authorship,
+state that criteria can carry the same task instruction one interaction earlier,
+and record the manual-command usability regression.
+Those qualifications are incorporated in the corrected recommendation.
+
 ### Revised design direction
 
 Replace Candidate A's inline object with a persisted checkpoint whose artifact and criteria are unrestricted strings.
@@ -912,3 +919,4 @@ Do not change `package/pi-plugin/goal`.
 - `b298fbf49`, `docs(advisor): require expressive review output`, recorded the user's correction.
 - `8c2124313`, `docs(advisor): redesign around artifact ownership`, defined expressive candidates and tests.
 - `6e70c303c`, `docs(advisor): review expressive ownership design`, recorded independent design corrections.
+- `a78a5a825`, `docs(advisor): recommend expressive checkpoint protocol`, recorded the corrected ranking and interface.
