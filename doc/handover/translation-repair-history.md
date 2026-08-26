@@ -19957,3 +19957,1853 @@ The candidate ledger from `#212` records which model produced each candidate
 and which cast each ballot, with no timing correlation involved.
 The first run carrying a ledger answers this without a single extra call.
 Until then the honest state is: measured, unexplained, nine events, and not folded into `#211`.
+
+## Aged out of the current handover on 2026-08-26 (register item A-5)
+
+The sections below moved here verbatim from `doc/handover/translation-repair.md` on 2026-08-26,
+when that file stood 1586 lines over its cap. Nothing in them was edited; each is closed work whose
+conclusion is encoded in the code or in a decision record, kept here for its evidence.
+
+## The settled artifacts already carry editor rounds, and they do not support the reseat
+
+2026-08-24, found while checking whether an artifact records who was reachable.
+
+### The premise that was wrong
+
+`#200`'s section above says a settled artifact "exposes neither the envelopes nor
+the issues an editor worked from".
+That is true, and it is about the editor's INPUTS.
+What it does not say, and what I had recorded elsewhere as a reason replay was impossible,
+is that the OUTPUTS are absent too.
+They are not.
+Every repair chunk carries `rounds`,
+each with the slate judges saw, each candidate's producer, and every ballot cast:
+
+```text
+stage envelope  slate [(1, Kimi-K3), (2, GLM-5.2)]
+ballots [(GLM-5.2, 2), (Qwen3.8-27B, 2), (Kimi-K3, 2), (Nemotron, 2), (gpt-oss-120b, 1)]
+```
+
+That is exactly what `repair-selection-rounds.ts` projects and `producerStandings` counts.
+So an editor standing can be computed over work already paid for, spending nothing.
+
+### What the existing record says
+
+230 rounds across 18 artifacts, fragmented over nine pipeline digests.
+Pooling across digests is what `artifact-pool.ts` exists to refuse,
+so each is reported alone.
+EDITOR standing, by digest, largest first:
+
+-   `b998af64`, 4 entries, 61 rounds:
+    Kimi-K3 40.9%, GLM-5.2 38.9%, GLM-4.7-Flash 13.1%.
+-   `2384524b`, 6 entries, 36 rounds:
+    Kimi-K3 39.5%, GLM-5.2 36.5%, GLM-4.7-Flash 19.6%.
+-   `6b21df94`, 1 entry, 33 rounds:
+    Kimi-K3 50.3%, GLM-5.2 41.0%, GLM-4.7-Flash 11.4%.
+-   `3850dc98`, 2 entries, 31 rounds:
+    GLM-5.2 47.0%, Kimi-K3 33.7%, GLM-4.7-Flash 16.6%.
+-   `266fca75`, 1 entry, 11 rounds:
+    GLM-5.2 39.3%, GLM-4.7-Flash 25.4%, Kimi-K3 24.6%.
+-   `851f8020`, 1 entry, 5 rounds:
+    Kimi-K3 60.9%, GLM-5.2 25.0%, GLM-4.7-Flash 8.0%.
+
+### The reading
+
+GLM-4.7-Flash is last on five of six digests and never above 25.4%.
+That is consistent and it is the one thing here worth calling a result.
+
+KIMI-K3 AND GLM-5.2 ARE NOT SEPARABLE BY THIS RECORD.
+They alternate first place across digests,
+which is what noise looks like,
+and no digest carries enough independent entries to say otherwise.
+
+THAT IS THE POINT, because on 2026-08-24 GLM-5.2 was removed from both writing seats
+on the strength of the 40-round producer calibration,
+which measures WRITING.
+`#200` exists because editing is a different job.
+The editing record already on disk does not show GLM-5.2 as a weaker editor than the model that kept the seat.
+It does not show it as stronger either.
+It shows the reseat was made on evidence that does not speak to this seat,
+and that the seat is still unmeasured.
+
+Its replacement, Qwen3.8-27B, appears in one digest only,
+`f24b27e5`, one entry, 8 rounds, 60.0% of 35 disinterested ballots.
+Too thin to read as anything.
+
+### What this record cannot do
+
+-   IT IS OBSERVATIONAL. Only seated models ever wrote a candidate,
+    so it ranks the three that held the seat and is silent about the other seven.
+    `gemma-4-26b-a4b-it`, seated on 08-24, has never written an editor candidate at all.
+-   ROUNDS INSIDE ONE ENTRY ARE CORRELATED.
+    Entry counts are 1 to 6, so the effective sample is far smaller than the round counts.
+-   JUDGES VARIED between runs, and nothing here holds them fixed.
+
+So it corroborates and it cross-checks; it does not replace the controlled calibration.
+It raises the value of finishing `#200`, and it lowers the confidence in the current seating.
+
+## Zero editor rounds does not mean nothing was repaired (`#200`)
+
+2026-08-24, found by watching the partial calibration rather than by reading code.
+
+### What the log showed
+
+Slice 2 of the run, `coin` chunk 3:
+
+```text
+panel stage: 5/10 heard, 7 issues
+[selectChunkPatch] every proposal was identical; shipping composite(...)
+editor stage: 1 applied, 0 rejected across 1 distinct candidates
+chunk 3: repaired, 1/1 served accepted issues resolved (1 accepted, 0 unenveloped)
+  slice 2 of 14 (coin chunk 3): 0 editor rounds, 0 refiner rounds
+```
+
+The slice REPAIRED and the standing counted nothing.
+
+### Why
+
+`selectChunkPatch` ships outright when every editor proposes the same text.
+There is nothing to choose between,
+so no ballot is cast and no judged round is recorded.
+A standing counts rounds,
+so a slice decided by consensus is invisible to it.
+
+THIS CORRECTS THE `#200` NOTE ABOVE.
+That note said zero rounds meant no issue was ACCEPTED,
+which was true of the one slice it was written from
+and is not true in general.
+Zero rounds has two causes and they are opposite:
+nothing was accepted, or everything agreed.
+
+### What it changes about the measurement
+
+-   A model whose text the rest of the ensemble reproduces word for word
+    wins nothing and appears nowhere.
+    The old `WROTE NOTHING` line would have named it beside a model
+    whose provider was out of budget, which are opposite facts.
+-   The blind spot is not rare.
+    It fired on slice 2 of 14,
+    on a slice that had seven adjudicated issues to work from.
+-   Convergence is plausibly MORE likely on the halved roster this run had,
+    since five models leave fewer distinct proposals than ten,
+    so the partial run understates rounds for a second reason.
+
+### What landed, in `4fdb9391c`
+
+Each slice now carries the authorship of what shipped,
+and the report says how many slices shipped with no editor round judged.
+Kept apart from the standing and labelled,
+because nobody preferred that text to anything:
+shipping by consensus is not winning a vote,
+and the two must never be divided by each other.
+
+The silent line now reads `NO JUDGED CANDIDATE`
+and points at the shipped lines to separate the two causes.
+
+### Consequence for the running measurement
+
+The partial run in flight was launched before this landed,
+so its report will carry the old wording and no shipped lines.
+Read its zero-round slices against this section,
+and treat the full-roster re-run as the one that reports both.
+
+## How many slices an editor calibration needs, measured from production
+
+2026-08-24. Read off the archive, spending nothing.
+
+### The rate
+
+Across every settled artifact carrying rounds,
+109 repair chunks,
+counting `envelope` and `chunk-patch` rounds only:
+
+-   55 of 109 chunks, half of them, produced any editor round at all.
+-   1.76 editor rounds per chunk overall.
+-   3.49 per chunk that produced any.
+
+Per digest, chunks / contributing / rounds:
+
+-   `19244`: 32 / 2 (6%) / 4.
+    The outlier, and it is `xiept2-anchorfix`:
+    most of its chunks changed nothing.
+-   `b998a`: 21 / 17 (81%) / 61.
+-   `23845`: 18 / 11 (61%) / 36.
+-   `3850d`: 16 / 11 (69%) / 31.
+-   `6b21d`: 10 / 7 (70%) / 33.
+-   The four smallest run 50% to 67%, 1.25 to 3.67 rounds per chunk.
+
+### What it means for sizing a run
+
+HALF OF EVERY SLICE BOUGHT CONTRIBUTES NOTHING TO AN EDITOR STANDING,
+and that is normal rather than a fault:
+a chunk carrying no accepted issue never asks an editor to write,
+and a chunk where every editor agreed ships without a ballot.
+Both are paid for in full.
+
+At production's rate,
+14 slices should yield around 25 editor rounds.
+To reach the 61-round pool that is the largest thing on disk,
+a run wants closer to 35 or 40.
+That is the number to use for the full-roster re-run,
+not the default of six.
+
+### What it does NOT establish
+
+The partial run in flight is at 4 slices,
+1 of them contributing, 2 editor rounds.
+That is a lower rate than production,
+but 25% against 50% on four slices is inside the noise,
+and production's own per-digest spread runs 6% to 81%,
+which is wider than the gap.
+NOTHING HERE SAYS THE HALVED ROSTER YIELDS LESS.
+It is a plausible mechanism, since five models leave fewer distinct proposals
+than ten and consensus ships without a round,
+and it is not measured.
+The full-roster run is what would measure it.
+
+### The efficiency this does establish
+
+A settled entry of ten chunks leaves about eighteen editor rounds on disk,
+for nothing, as a side effect of work already bought.
+`editor-standing-read` reads them.
+It ranks only the three models that held the seat,
+so it cannot replace a calibration that seats ten,
+but any release pass now pays for an observational standing as a by-product.
+
+## The 14-slice editor calibration finished, and it settles no seat (`#200`)
+
+Ran 2026-08-24 into `~/temp/agent/editor-calibrate-synthetic-2026-08-24`,
+finished in 9496 seconds, exit 0.
+
+### What it measured
+
+29 judged editor rounds, from 10 of 14 slices, across 492 disinterested ballots.
+
+    hf:Qwen/Qwen3.8-27B                  34.7%  (34 of 98)
+    hf:moonshotai/Kimi-K3                27.9%  (29 of 104)
+    hf:zai-org/GLM-5.2                   25.0%  (23 of 92)
+    hf:nvidia/NVIDIA-Nemotron-3-Super    15.5%  (15 of 97)
+    hf:openai/gpt-oss-120b                7.9%  (8 of 101)
+
+The refiner seat produced zero rounds,
+because the binary that ran predates the fix that made the runner drive the naturalness lane at all.
+That fix is in source and will take effect on the next run.
+
+### Why it settles nothing
+
+FIVE MODELS, NOT TEN. Charm Hyper held a zero balance for the whole run,
+confirmed live against `GET /v1/credits` before, during and after,
+so `qwen3.8-max`, `minimax-m3`, `gemma-4-26b-a4b-it`,
+`deepseek-v4-pro-0813` and `deepseek-v4-flash-0731` wrote nothing.
+`gemma-4-26b-a4b-it` currently HOLDS an editor seat,
+so the run is silent about one of the three incumbents it was meant to test.
+
+AND THE FIVE IT DID MEASURE DO NOT SEPARATE.
+Against the pooled null of 22.15 percent,
+`hf:Qwen/Qwen3.8-27B` reaches z 2.99 and `hf:openai/gpt-oss-120b` z -3.44,
+both past the Bonferroni threshold of 2.58 for five comparisons.
+But those 29 rounds come from 10 slices, 2.9 rounds per slice,
+and rounds inside one slice are correlated.
+Charging the worst case, that all rounds within a slice are one observation,
+divides every z by sqrt(2.9) and NOTHING clears:
+Qwen falls to 1.76 and gpt-oss to 2.02.
+
+The truth is between those two readings and this run cannot say where.
+No seat changes on it.
+
+### What it is good for
+
+It is directionally consistent with the writer calibration of the same day,
+where `hf:Qwen/Qwen3.8-27B` also led and `hf:zai-org/GLM-5.2` sat below the null.
+It also confirms the instrument works end to end on a real repair lane:
+critics, panel, editors, judges and checkers all ran,
+and 10 of 14 slices carried an accepted issue, which is the yield the sizing note predicted.
+
+### What is still owed
+
+A full-roster run, once Charm Hyper has credit.
+The owner cannot reset that provider on demand,
+so this waits on the provider's own schedule rather than on anything askable.
+Sizing from production yield says 35 to 40 slices, not 14.
+
+## What the suite actually reaches, measured (2026-08-24)
+
+Run after `#204` closed, to answer the package-completeness rule with a number instead of a feeling.
+
+Over all 507 source modules of the package:
+
+-   386 are DIRECTLY exercised: they have a sibling `.unit.test.ts`,
+    or one of their exports is named somewhere in the suite.
+-   53 are reached only through an exercised importer.
+-   40 are reached by NOTHING.
+
+Of those 40, 37 are `corpus-run/` operator CLIs and probes.
+Each ends in a top-level entry call and is exercised by being run,
+which is a different kind of evidence and not one the suite can give.
+
+The other three were the finding:
+
+-   `repair-blocked-exit.ts`, dead since `#110`, deleted as `#207`.
+-   `producer-standing-report.ts`, live but reachable only through calibration CLIs no test drives.
+    It renders the share of disinterested ballots each model won,
+    which is what `#199` seated the writers on.
+    Covered now, and the ordering rule is GFP-proven:
+    treating an UNJUDGED model as a zero share fails the case,
+    because a model with no evidence and a model measured at zero are different findings.
+-   `coverage-candidates.ts`, same shape.
+    Covered now at both scales, and GFP-proven:
+    dropping the block scale from the list fails the case.
+
+### Two other layers, while looking
+
+ZERO real TODO, FIXME, HACK or deprecation markers in the package.
+The two apparent hits are a `U+XXXX` doc example
+and a case-insensitive match inside the identifier `toDocumentNode`.
+
+66 lint suppressions, of which ZERO are bare:
+every one carries a ` -- ` justification, which is what `LN5` asks for.
+
+## `#217` is built, GFP-proven and parked (2026-08-25)
+
+Built in the fork worktree `/var/home/user/worktrees/verify-empty`, checked out at `e8430d094`,
+because the change edits `src/` and the calibration's slice cache is keyed on the pipeline digest.
+It cannot be committed from there:
+that worktree has no `node_modules/.bin/git`, so the policy wrapper is absent.
+It is parked as `~/temp/agent/verify-empty-217-218.tar.gz`, which carries `#218` as well,
+and is applied over the main worktree in the landing sequence.
+The tarball was checked against the main worktree before parking:
+all six modified files are byte-identical to the fork's base commit,
+and all three new files are absent there, so it applies without clobbering anything.
+
+### What was wrong
+
+`namesUnder` answered an absent directory with an empty array and printed the absence with `console.error`.
+Stdout therefore read `verify-published: matched=0 settledWithNoPage=0 pageWithNoArtifact=0`,
+then `verify-published: 0 of 0 pages carry every wording their artifact promised`,
+and `process.exitCode` stayed 0.
+An empty runs directory and a run whose every page agreed produced the same report and the same exit code,
+so a mistyped `TRANSLATION_REPAIR_RUNS_DIR` read as a green run.
+
+`errorName` compounded it.
+It answers `error.name`, which is `Error` for every filesystem failure,
+so a directory that was never created and one at mode 000 printed the same `(Error)`.
+
+### What landed
+
+Absence became a kind rather than an empty list, in two new modules.
+
+-   `src/corpus-run/directory-listing.ts` holds `DirectoryReading`, `namesIn` and `filesystemReason`.
+    `filesystemReason` reads `error.code`, so the report says `ENOENT` or `ENOTDIR` instead of `Error`.
+-   `src/corpus-run/published-tree-listing.ts` holds `settledEntryIds`, `publishedEntryIds`
+    and the verdict `whatThereIsToVerify`.
+
+`verify-published.ts` gained a second exit code, `NOTHING_WAS_VERIFIED = 2`,
+kept separate from `PUBLISHED_TREE_DISAGREES = 1`:
+a disagreement says the run shipped something wrong,
+while the new code says the run was never examined,
+and a gate that treats those alike either ships an unchecked run or refuses a good one.
+
+An absent published tree is deliberately NOT one of the nothing-verified cases.
+Beside real artifacts it means every settled entry is unpublished,
+which is the most serious finding this check can make,
+so it stays a finding with a count rather than collapsing into silence.
+
+### The lister already had a second copy
+
+`editor-standing-read.ts` carried its own `DirectoryReading` union and its own `namesIn`,
+with the same `errorName` weakness and the same `console.error` plus empty-list shape.
+Both now call the shared module, following the rule `error-name.ts` records for itself:
+lift at the point a further caller would be written.
+Its one refusal message now names `ENOENT` rather than `Error`.
+
+### Evidence
+
+Boundary cases, run against the built CLI on `mktemp` fixtures:
+
+```text
+absent runs directory        exit 2   NOTHING VERIFIED, no artifacts directory under the run (ENOENT)
+run dir with no artifacts/   exit 2   NOTHING VERIFIED, no artifacts directory under the run (ENOENT)
+artifacts/ present, empty    exit 2   NOTHING VERIFIED, the artifacts directory holds no settled artifact
+artifacts, no published tree exit 1   NO PUBLISHED TREE (ENOENT). All 2 entries the run settled are unpublished
+six agreeing pages           exit 0   matched=6, 6 of 6 pages carry every wording
+```
+
+The last row is the positive control, and it is not invented:
+it uses the six real artifacts from `~/translation-repair-runs-20260817`,
+with each page synthesised from that artifact's own `shippableReplacements`
+and checked with `pageCarriesEveryWording` before being written.
+Without it, every non-zero exit above would prove only that the check can refuse.
+
+GFP: with the verdict reverted to reading an unreadable listing as an empty one,
+the two guard cases fail and the CLI reproduces `#217` exactly,
+printing `0 of 0 pages carry every wording` and exiting 0 on an empty run.
+Restored from copies kept in `~/temp/agent/217-gfp/`, rebuilt, and both pass again.
+
+`published-tree-listing.unit.test.ts` covers 14 cases across five suites:
+`namesIn` on a present directory, an absent one and a file;
+`filesystemReason` on a coded error, an uncoded error and a thrown string;
+both id listers on present and absent directories;
+and all four verdict branches.
+
+### One unrelated fix came with it
+
+`probe-telemetry-report.unit.test.ts` imported `@monochromatic-dev/module-test`
+rather than the `/ts` subpath every other test file uses, which is what `ST3` requires.
+It was the only such file in the package.
+The fork exposed it because only this package's `dist/` is built there,
+so the non-`/ts` path had nothing to resolve to:
+one `TS2307` that cascaded into 12 `no-unsafe-call` and `no-unsafe-member-access` warnings.
+Adding `/ts` cleared all 13.
+
+## The parked work is now build-and-test verified together, not just apply-clean (2026-08-25)
+
+`#210`, `#211`, `#212`, `#217` and `#218` were each parked separately,
+and each was checked only for whether its files applied cleanly over the main worktree.
+Applying cleanly is not the same as compiling, and none of them had ever been built together.
+
+All five are now extracted into `/var/home/user/worktrees/verify-empty` on top of `e8430d094`,
+and the combined tree was taken through the whole gate:
+
+```text
+build      exit 0
+lint       exit 0   0 warnings, 0 errors  (oxlint type-aware plus tsc)
+test:unit  exit 0   668 PASS, 0 FAIL
+```
+
+Six hundred and sixty-eight suites is nine more than the `#217` tree alone,
+which is the `#210` and `#212` suites arriving.
+
+The combined tarball is `~/temp/agent/parked-combined-20260825.tar.gz`, 42 files,
+and it SUPERSEDES both `~/temp/agent/spend-telemetry-210.tar.gz`
+and `~/temp/agent/verify-empty-217-218.tar.gz`.
+Extract only the combined one; extracting an older tarball afterwards would
+overwrite files with their pre-combination contents.
+
+### Why they were combined rather than kept apart
+
+`#210` touches `provider-barrel.ts`, `pipeline-barrel.ts`, `ballot-barrel.ts`,
+`candidate-select.ts`, `editor-ensemble.ts`, `judge-fidelity.ts`, `refine-stage.ts`
+and `translate-judge.ts`, all of which further work is likely to touch.
+Building each item against the same untouched base and landing them in sequence
+would have let a later tarball silently overwrite an earlier one's edits to a shared file,
+because a tarball carries whole files rather than a diff.
+Building each item on top of the previous removes that hazard entirely.
+
+No source file changed on the branch between the `#210` tarball's base and `e8430d094`:
+the last commit touching `package/module/translation-repair/src/` is `91fe0d0e6`,
+and everything after it is documentation.
+So extracting the older tarballs onto this base discarded nothing.
+
+### The landing sequence is correspondingly shorter
+
+Read the standing, extract `parked-combined-20260825.tar.gz`, build, lint, types, test,
+then commit in item order so each item keeps its own message.
+The build, lint and test steps have now been run once already and passed,
+so a failure there after landing would mean the main worktree differs from this fork,
+which is itself the thing worth knowing.
+
+## `#216` was half wrong, and reading the source before building found it (2026-08-25)
+
+`#216` was opened on the finding that seventeen modules build a `role: 'system'` message
+and not one of them puts its response schema into that message.
+That is true of the PROMPT BUILDERS and false of what a model actually receives on Charm Hyper.
+
+`anthropic-request.ts` routes every schema-bearing call through `renderToolSystemPrompt`,
+which prints the whole schema into the Anthropic `system` field under
+"THE EXACT SCHEMA OF THAT OBJECT", followed by seven format rules.
+One of those rules reads
+"Pass the object itself. Do not pass a string that contains JSON, and do not escape its braces",
+which is exactly the failure `#216` cited as evidence that the schema was missing.
+
+So the correlation runs the opposite way to the mechanism the task assumed:
+
+```text
+Charm Hyper   schema IS in the system prompt    6 of 6 measured schema failures
+Synthetic     schema is NOT in the prompt       0 measured schema failures
+```
+
+The owner's instruction was already implemented on the provider where the failures are.
+This is worth stating plainly because the task's own evidence section reads as though
+it were about to conclude the opposite, and a later session would have believed it.
+
+### What was genuinely missing
+
+The Synthetic path had nothing of the kind.
+`synthetic-client.ts` builds an OpenAI-compatible body carrying only the API-level
+`response_format` field, which a model that does not honour it never sees.
+That is a real gap against the instruction, and it is the half that was built.
+
+`src/schema-prompt.ts` renders a block from the same `JsonSchemaResponseFormat`
+the request puts on the wire, so the prompt and the wire cannot drift.
+It is idempotent, it adds a system message where a call has none
+rather than dropping the schema on the calls that state least,
+and it handles a system message carrying parts
+so a call that also sends a picture is not the one that loses its schema.
+Its rules list is carried over from the Anthropic renderer,
+which is the wording this codebase has already run in production.
+
+`hyper-client.ts` is deliberately unchanged, with a comment at the seam saying why.
+An edit there was written and then reverted:
+it would have stated the schema twice on every Hyper call.
+
+### Why the client seam rather than the seventeen prompts
+
+The task proposed editing each prompt builder to append a rendered block.
+The seam is strictly better.
+It derives the text from the exact value going on the wire,
+it covers every caller that exists and every caller written later,
+and there is no eighteenth prompt to remember.
+
+### What is owed, stated as an open question rather than a prediction
+
+The after-measurement.
+Adding schema text lengthens every Synthetic system prompt, which costs tokens
+and could hurt as well as help.
+Synthetic's schema-failure count is already zero,
+so this change CANNOT be validated by that number falling.
+What it can be measured on is a first Synthetic schema failure never appearing under load,
+and the token cost, which the `#210` spend ledger now makes readable.
+Record the outcome; do not claim an improvement.
+
+## `#215`: a run now says where its wall-clock went, and a CLI reads it back
+
+The task's own text quoted the owner's standing instruction:
+"If you found out we're not logging enough, you should change the pipeline to log enough."
+Following that instruction found a second gap the task had not named.
+
+### What the log could not say, measured before changing anything
+
+The live full-roster calibration log was surveyed for every line shape it carries.
+Three tags appear in it and no others:
+`reportStreamProgress` on 2405 lines, `takeReading` on 161, `exchangeWithRetry` on 4.
+`takeReading` is the availability meter, polled every minute or two.
+There is no dispatch line, and there is no round boundary line.
+
+So the log records when each call ENDED and nothing else about time.
+A call's start is not recoverable, a round's extent is not recoverable,
+and the question the audit `doc/audit/every-volume-guard-is-blind-to-one-model.md`
+opened on has no answer in the data.
+
+A lower bound was computable and was computed, before the fix, as a control.
+Each completion line carries `firstByte` and `maxGap`, and the largest gap falls
+strictly after the first byte, so their sum bounds the call's duration from below.
+Intervals built from that sum are subsets of the true ones, so overlaps counted on them
+can only undercount:
+
+```text
+calls                        2405 (2349 completed, 56 cut)
+log span                     6.15 h
+summed duration FLOOR        2.37 h
+mean concurrency FLOOR       0.39
+peak concurrency FLOOR       9
+```
+
+Read that as a floor and nothing more.
+It says at least nine calls were once in flight together,
+and it cannot say what the figure actually is.
+
+A method note worth keeping:
+the first version of this sweep matched 1043 of 2405 lines and reported a peak of 5.
+The label pattern required a colon, so it silently dropped every non-`hf:` model.
+An uncapped `grep --count` on the raw marker is what caught it,
+which is the `QRY` rule paying for itself.
+
+### The two lines that landed
+
+`StreamProgress` gained `elapsedMs`, computed as `Date.now() - state.armedAt` in
+`armIdleGuard`'s `progress()`, and `reportStreamProgress` prints it directly after
+the outcome.
+With the line's own timestamp that gives every call an interval, which is what an
+overlap count needs and what no completion line carried before.
+
+`runGatherRound` now writes a round line, which nothing did:
+
+```text
+editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace
+```
+
+The split is the point.
+Time before quorum is the round doing its work; time after it is the round waiting on
+voices it may never hear.
+Only the second is straggler cost, and one round duration cannot tell them apart.
+The audit could bound that cost only from above, at the grace window times the number of
+cut events, and recorded that confirming it "needs the dispatch timestamps the run does
+not currently record".
+
+Both lines carry ids, counts and durations only.
+No corpus wording enters either.
+
+### The reader, because a log nothing reads is not a measurement
+
+`run-timing-parse.ts`, `run-timing-read.ts` and `run-timing-report.ts`, with the
+`run-timing-report` mise task, mirror the `spend-` and `ledger-` families.
+
+Every read names what it found rather than returning an absence.
+A completion line with no duration and a line that is not a completion at all are
+different facts about a log: the first says the run predates `#215`.
+Folding them together would let a mixed archive's readable half be reported as the whole,
+which is the shape of error this project has hit before.
+The house `no-nullish-union` rule is what forced the discriminated union, and it made the
+reader better: `readRunTiming` used to check `undefined` and then re-inspect the text to
+count untimed lines, and now one read decides all three outcomes.
+
+Boundary verification, all three states:
+
+```text
+new-format fixture   2 rounds, 29.0% of round time in grace, 1 voice lost,
+                     mean 1.05 in flight, peak 2, 21.00s of calls across 20.00s of run
+live pre-215 log     NO ROUND LINE, 2533 completion lines carry no elapsed field,
+                     NO TIMED CALL
+no argument          throws, naming the usage
+```
+
+Every figure in the fixture row is hand-computed from three intervals at
+`[0,10]`, `[2,8]` and `[15,20]` seconds, not recorded from a run,
+so a change in the sweep fails the case instead of moving the target.
+
+### GFP
+
+Both new guards were shown to fail with the guard removed and to pass with it restored.
+
+```text
+elapsedMs set to 0            stream-cut and stream-idle-guard both exit 1
+                              "expected +0 to be at least 20"
+round line deleted            stage-round exits 1, both cases
+                              "expected exactly one round line, got 0"
+```
+
+The idle-guard failure is non-vacuous: `firstByteMs` read 20 from a real wait,
+so the assertion compared a measurement against a constant rather than zero against zero.
+
+### What is owed
+
+The measurement itself.
+Achieved concurrency and the real straggler cost cannot be computed until a run emits the
+new lines, and the calibration now running was launched from the old build.
+The audit's 1.45 hour figure stays an upper bound until then.
+This is recorded as owed, not predicted:
+the point of the two lines is that the answer was unknown, and it still is.
+
+### Suite
+
+676 PASS, 0 FAIL, exit 0. Lint 0 warnings 0 errors. Build clean.
+
+## `#205`: the two-lane artifact family is named for its shape, not a version
+
+The owner delegated the naming ("you decide, this isn't a design decision")
+and chose to leave the version-1 family where it is.
+Measuring first changed the answer twice, so both measurements are recorded.
+
+### The task's own candidate was refuted
+
+`#205` proposed `artifact-lanes-*` and `SettledArtifactLanes`,
+noting neither had been checked.
+Checking them killed both:
+`ArtifactLaneRelationV2` and `ArtifactLaneSelectionV2` already use `Lane`
+for PER-LANE concepts, so a family-wide `Lanes` would name the whole thing
+with the word its own parts already use for one part.
+
+### The plain names belong to the older shape
+
+Dropping the suffix outright collides on exactly six names,
+and all six live in `artifact-v1-read.ts`:
+`parseSettledArtifact`, `ParsedArtifact`, `buildSettledArtifact`,
+`judgeSlice`, `compareDecisions`, `collectShippedRegions`.
+
+That is worse than `#205` recorded.
+The plainest names point at the OLDEST shape,
+and the shape the pipeline actually writes wears a version number
+that has been wrong since generation 3.
+The v1 arm is still reachable, so this is a naming problem rather than dead code:
+`artifact-read.ts` routes unversioned and version-1 artifacts to it.
+The owner chose to leave it, and it is filed rather than fixed here.
+
+### The rule, which the measurement chose rather than taste
+
+A marker belongs exactly where two shapes are distinguished.
+
+-   Six symbols have a version-1 counterpart, so those six say `TwoLane`:
+    `parseSettledTwoLaneArtifact`, `ParsedTwoLaneArtifact`,
+    `buildSettledTwoLaneArtifact`, `judgeTwoLaneSlice`,
+    `compareTwoLaneDecisions`, `collectTwoLaneShippedRegions`.
+-   Fifty-six have no counterpart at all,
+    so their suffix asserted a version they do not carry and they simply lose it.
+-   `ARTIFACT_SCHEMA_VERSION_V2` is untouched.
+    It denotes the integer 2, and a version constant should carry a version number.
+-   Forty files move from `artifact-v2-*` to `artifact-two-lane-*`.
+
+### The sweep missed three names, and only the built artifact showed it
+
+The first pass matched `[A-Za-z0-9_]*V2\b`,
+which requires a word boundary after the digit.
+`DamageRegionV2Error`, `ArtifactComparisonV2Error` and
+`verifyArtifactV2AgainstPreparation` carry `V2` in the MIDDLE,
+so the scan never saw them, the rewrite never touched them,
+and a residue check built on the same assumption reported the work complete.
+
+Reading `dist/final/node/index.d.mts` is what found them.
+That is the rule this pays for:
+a rename is checked at the artifact, never only in the source it was applied to.
+
+A method note on the check itself.
+The first probe of the built types returned zero for every name including ones
+that certainly exist, because it read `dist/final/types/index.d.mts`,
+which is not where the declarations land.
+A positive control on a name known to be present is what caught it,
+before the zero could be read as "the rename dropped everything".
+
+The two error classes carry their own name as a string as well,
+and both halves moved together
+so a `name` assertion cannot pass against a class that no longer answers to it.
+
+### Two test labels were lying
+
+`artifact-change-sets.unit.test.ts` wrapped two assertions in
+`caught(function parseTwoLaneArtifact() {...})` and
+`caught(function readTwoLaneArtifact() {...})`,
+and both bodies call the SINGLE-lane side.
+The labels were chosen to dodge self-shadowing,
+since a named function expression binds its own name inside its body,
+and the dodge picked a name that says the opposite of what the code does.
+They now name the assertion:
+`singleLaneParseOfVersionTwo` and `changeSetReadOfVersionTwo`.
+
+### Verification
+
+```text
+build          clean
+lint           0 warnings, 0 errors
+suite          676 PASS, 0 FAIL, exit 0
+```
+
+676 is the same count as before the rename, which is what a pure rename must produce.
+The shipped `index.d.mts` carries every renamed export
+and `ARTIFACT_SCHEMA_VERSION_V2` as the only surviving `V2`,
+and the six version-1 names are still present and untouched.
+
+### Landing note
+
+The 40 file renames mean the parked tarball is no longer sufficient on its own:
+extracting new paths would leave the old ones in place.
+`~/temp/agent/parked-deletions-20260825.txt` lists the 40 paths to delete,
+and `~/temp/agent/parked-status-20260825.txt` holds the full status this park was cut from.
+
+## The landing was rehearsed on a throwaway, and it works
+
+The parked work had never been tested as a LANDING, only as a working tree.
+That gap mattered more after `#205`, because 40 file renames mean the tarball
+alone is no longer sufficient: extracting new paths leaves the old ones in place.
+
+A worktree was cut from the current main HEAD, `9569f9d79`,
+dependencies installed off the shared store,
+and the park applied exactly the way a real landing would apply it:
+
+```text
+tar --extract   124 files
+delete          40 superseded paths from parked-deletions-20260825.txt
+status          67 new, 40 deleted, 57 modified
+artifact-v2-*   0 files remain
+```
+
+The counts reconcile with the fork's own status,
+where the same change reads as 27 new plus 40 renames plus 57 modified:
+a rename lands as one new file and one deletion.
+
+Then the whole gate, on that fresh tree:
+
+```text
+build       clean
+lint        0 warnings, 0 errors
+suite       676 PASS, 0 FAIL, exit 0
+```
+
+And the new CLI through its own task, which is the user boundary rather than a
+node invocation of a bundle:
+
+```text
+mise run //package/module/translation-repair:run-timing-report -- <log>
+  rounds                 2, 1.72min in total
+    waiting after quorum 30.01s, 29.0% of round time
+    voices never heard   1
+  calls in flight        mean 1.05, peak 2
+    busy against span    21.00s of calls across 20.00s of run
+```
+
+The worktree was removed afterwards.
+What this buys is that the landing, when the calibration exits, is a rehearsed
+procedure rather than a first attempt on the main worktree.
+
+### The landing procedure, in the order it must happen
+
+1.  Confirm the calibration has exited, and collect its standing first.
+2.  In the main worktree, extract `~/temp/agent/parked-combined-20260825.tar.gz`.
+3.  Delete every path in `~/temp/agent/parked-deletions-20260825.txt`.
+4.  Build, lint, and run the suite. Expect 676 PASS and 0 FAIL.
+5.  Commit with scoped pathspecs, naming every new file (CPN),
+    and remember the 40 deletions are part of the same change.
+
+## The three report CLIs are documented, and the landing was re-checked for collisions
+
+Opened by asking what `#219` actually requires before production readiness can be
+signalled, and answering it by measurement rather than by assumption.
+
+### What the measurement found
+
+Of 47 mise tasks the package will carry after the landing, the README named 6.
+It did not name `corpus-pass`, the primary entry point, and it did not link
+`doc/runbook/translation-repair-corpus-pass.md`, which exists and carries the whole
+operating procedure. A reader of the design document had no route to running anything.
+
+None of the three CLIs the landing adds, `ledger-report`, `run-timing-report` and
+`spend-report`, appeared in the README or the runbook. Three user-facing tools were about
+to land undocumented, which is exactly what PKG exists to catch.
+
+### How the documented output was obtained
+
+Not from memory. A throwaway worktree was cut at `852e84f3a`, the parked tarball extracted,
+the 40 recorded deletions applied, and the package built clean. Every block now quoted in
+the runbook is output captured from that build.
+
+For the populated cases the inputs were fixtures, because the two run directories on disk
+both predate the writers. The timing fixture was hand-computed first: rounds of 60000 and
+30000 milliseconds with 40000 in grace, and call intervals of `[0,10]`, `[2,8]` and
+`[15,20]` seconds. The tool returned `1.50min`, `40.00s` at `44.4%`, `mean 1.05` and
+`peak 2`, matching the hand computation exactly.
+
+THAT DOUBLES AS THE POSITIVE CONTROL. It proves the reader can report non-zero, so
+`NO ROUND LINE` on the live calibration log is a true absence rather than a broken parser.
+Without it the zero would have been an unvalidated null.
+
+### Two things worth knowing before operating them
+
+The three tools disagree on the exit code for "nothing recorded", and the difference is
+deliberate rather than an oversight. `ledger-report` exits 1, while `run-timing-report` and
+`spend-report` exit 0. An empty ledger usually means `TRANSLATION_REPAIR_RUNS_DIR` was never
+set, which is operator error worth failing on. A log with no `SPEND` or round lines is
+simply an older log and says nothing about the operator. The runbook explains this rather
+than smoothing it over.
+
+`ledger-report --model <id>` prints candidate text verbatim, which on a real run is corpus
+wording from an unlicensed archive, together with judges' reasons quoting it. The runbook
+now says plainly that its output must not be pasted anywhere. The summary view carries only
+model identifiers and counts and is safe to share.
+
+### A rough edge found while capturing the output, filed as `#220`
+
+A ledger file whose top level is an array rather than a single round object, which is the
+shape a reader would guess, aborts the entire report with an uncaught `LedgerShapeError`,
+a page of minified JavaScript, and exit 1. The message itself is good and names both the
+file and the field. Nothing catches it, and `reportLedger` reads every file through one
+`Promise.all`, so a single truncated write destroys a report over every good file beside it.
+A truncated write is the expected failure, because the ledger is written during a run that
+can be killed at any moment.
+
+Not fixed now, deliberately: editing `ledger-report.ts` would invalidate the rehearsed
+landing for a rough edge that costs nothing while the ledger is machine-written.
+
+### The landing is still safe, and this was verified rather than assumed
+
+The parked tarball was cut before the last doc commits, which raised the question of whether
+extracting it would clobber them. It does not. The tarball holds 124 entries under exactly
+three prefixes, all inside `package/module/translation-repair`, and contains no `doc/` path
+at all. The only file changed on the branch since the rehearsal base `9569f9d79` is
+`doc/handover/translation-repair.md`. The intersection is empty, so step 2 of the landing
+procedure cannot overwrite a doc commit.
+
+The landing procedure itself is unchanged.
+
+### The runbook was audited against the source, and nothing in it is stale
+
+Every environment variable it names exists in source: both API keys,
+`TRANSLATION_REPAIR_RUNS_DIR`, and `TRANSLATION_REPAIR_HARD_CAP_MINUTES`.
+Both flags it uses exist: `--plan` at `src/corpus-run/corpus-pass.ts:513`,
+and `--only` at `src/corpus-run/entry-filter.ts:24`, read at `src/corpus-run/corpus-pass.ts:318`.
+Every mise task it names exists, apart from the three arriving with the parked work.
+
+Every string it tells the operator to watch for is emitted by non-test source:
+
+-   `PLAN ok tip=` at `src/corpus-run/corpus-pass.ts:515`,
+    carrying exactly the `pipeline=`, `client=constructed`, `pending=` and `first=`
+    fields the runbook claims it does.
+-   `ONLY` at `src/corpus-run/corpus-pass.ts:328`.
+-   `CAP OVERRIDDEN` at `src/corpus-run/corpus-pass.ts:491`.
+-   `CAP TOO TIGHT` at `src/corpus-run/cap-override.ts:156`.
+-   `REATTEMPT` and `STALLED` at `src/corpus-run/entry-attempt-queue.ts:109` and `:116`.
+-   `METERS` at `src/provider-budget.ts:14`.
+
+`RUNDIR` is set in Steps, before What to check uses it, so the additions are reachable
+by a reader working through the document in order.
+
+TWO SEARCHES LIED BEFORE THIS SETTLED, both toward a false absence.
+`rg --fixed-strings "--plan"` returned zero hits because `rg` read the pattern as its own
+flag rather than as text. An `ONLY` search capped with `head` at five lines hid the one
+real emission behind four unrelated prompt strings.
+
+Either would have read as "the runbook names something that does not exist", and acting on
+either would have meant editing a correct instruction into a wrong one. Both are the QRY
+failure mode exactly as it is written down, and the uncapped, flag-safe re-runs found
+everything. Worth remembering that the dangerous direction here is the empty result, not
+the noisy one.
+
+## The refiner column is thinner than the editor column, by about four times
+
+Measured on the live calibration at 33 of 40 slices, while checking why one slice reported
+zero refiner rounds.
+
+### The first version of this section was wrong by an order of magnitude
+
+It claimed the two columns differ by "roughly fifty times in round count". That compared
+1023 LOG LINES against 20 ROUNDS, which are not the same unit. `selectBestCandidate` emits
+three different line shapes, and only one of them is a round:
+
+```text
+918 per-judge ballots      "<model> chose candidate N at weight N: <reason>"
+ 90 decided rounds         "candidate N from <model> won weight N across N ballots"
+ 14 tied rounds            "judges tied at weight N; keeping the fallback"
+```
+
+The error was counting all three as if each were a vote. Recorded rather than quietly
+corrected, because the wrong number pointed at a real and expensive action.
+
+### What the rounds actually are
+
+`runRefineStage` judges through the SAME `selectBestCandidate` (`src/refine-stage.ts:328`)
+with the whole roster as judges, so refiner rounds are already inside those counts:
+
+```text
+104 rounds total   (90 decided + 14 tied) at 33 slices
+ 20 refiner rounds (15 with a winner, 5 tied or declined by every judge)
+ 84 editor rounds  by subtraction
+```
+
+That is about 4.2 editor rounds per refiner round, not 50.
+
+Every decided round carries a real panel: 865 ballots over 90 rounds, mean 9.6, min 7,
+max 10. Refiner rounds draw from the same roster, so 20 of them is on the order of 190
+ballots at 33 slices, projecting to roughly 230 at 40.
+
+The reason the refiner ballot count looked absent is that `runRefineStage` puts it in a
+FINDING string rather than its log line (`src/refine-stage.ts:436` writes
+`refine-selected (weight N of N ballots)`), while the log line carries only the winning
+weight. Nothing was missing; it was being read in the wrong place.
+
+### What that changes
+
+The alarm was overstated. A column with roughly 230 ballots is not obviously short, and
+there is no longer a prior that a second batch is needed before the landing.
+
+STILL READ THE ACTUAL STANDING AT EXIT rather than this projection. Ballots are not
+independent within a round, `#200` already records a sqrt(2.9) within-slice deflation for
+exactly that reason, and 15 decided refiner rounds spread across six seats is a thin base
+for a ten-seat Bonferroni comparison however many ballots sit under it.
+
+So the exit order is unchanged from the rehearsed procedure, with one added reading:
+if the refiner standing's own denominator turns out short, `#200` records that the remedy is
+a second batch of 80 poolable slices, and that pooling needs no drift opt-in only while the
+build does not change. The landing changes the build. That constraint is real and worth
+keeping in view; what has changed is that it is now unlikely to bind.
+
+## The run's power inputs, measured at 38 of 40 slices
+
+`#200` projected from a 16-slice reading. These are the figures the standing will actually
+rest on, measured rather than projected, and two of them moved in opposite directions.
+
+```text
+slices seen                     38
+contributing (>= 1 round)       31   82%
+empty (0 rounds, nothing to edit) 7
+total judged rounds            131
+rounds per contributing slice  4.23
+```
+
+Seven empty slices is not a fault. `editor-calibrate.ts` names this case explicitly: a slice
+can buy the whole accuracy lane and have nothing to edit. `#200` recorded one live slice
+doing it; there are now seven, and they simply contribute nothing to either column.
+
+### Both inputs moved, and they largely cancel
+
+The 16-slice reading had 75 percent yield and 2.54 rounds per slice; the 14-slice selftest
+had 2.90 rounds per contributing slice, giving a sqrt(2.90) = 1.70x deflation.
+
+Now yield is BETTER at 82 percent, and rounds per contributing slice is WORSE for power at
+4.23, because within-slice correlation deflates by sqrt of that: 2.06x rather than 1.70x.
+
+These are not independent problems. Raw z grows as sqrt(total rounds), and the deflation
+divides by sqrt(rounds per contributing slice), so the deflated z grows as
+
+    sqrt(total rounds / rounds per slice) = sqrt(contributing slices)
+
+THE EFFECTIVE SAMPLE IS THE NUMBER OF INDEPENDENT SLICES, NOT ROUNDS. Extra rounds bought
+inside one slice buy precision about that slice, not about the roster. So the figure that
+decides the standing is 31 contributing slices, on track for roughly 33 at 40, against the
+10 that produced a deflated best z of 1.76 in the selftest.
+
+### Do not turn that into a prediction
+
+`#200` already refused this, and its reason still holds: the effect size being scaled was
+measured on FIVE models, and the pooled preference rate roughly halves at ten seats, so the
+implied z can move either way. `standing-from-log.mjs` derives the Bonferroni critical value
+from the row count, so it will use the ten-seat threshold rather than the selftest's 2.58,
+and it applies the deflation itself.
+
+Read the printed standing. The value of these numbers is that they make it INTERPRETABLE:
+when a seat clears or fails, the reason is 31 independent slices deflated by 2.06x, and both
+halves are now measured rather than assumed.
+
+## An unreadable run file printed itself, and the fix was a whole class rather than one CLI
+
+Filed as `#220` during the calibration, deferred until the landing cleared, then reproduced
+on 2026-08-25.
+It was filed as a crash with a minified stack.
+Reproducing it showed something worse.
+
+V8 gives a `JSON.parse` refusal a synthetic script whose source IS the text it was handed,
+so Node's uncaught-exception report prints that line.
+Against a throwaway ledger, `ledger-report` printed a whole contest ahead of the stack trace:
+
+```text
+<anonymous_script>:1
+{ "task": "whiskerfield-1", "at": "2026-08-25T00:01:00.000Z", "candidates": [ { "index": 0, "producers": ["tab
+
+SyntaxError: Bad control character in string literal in JSON at position 110 (line 1 column 111)
+```
+
+A real ledger file holds candidate renderings and a person's entry id.
+A garbled one published both to a terminal.
+
+The package already stated the rule this broke.
+`error-name.ts` records that a message is uncontrolled and that a run directory path can name
+a person; `LedgerShapeError` says outright that it NAMES, NEVER QUOTES.
+Nothing had applied either to the parse step.
+
+### The class was twelve times larger than the report
+
+Counting `JSON.parse` sites that no `try` encloses found 25 matches, which is not the answer:
+11 are TSDoc `@example` text and one parses a string on the write path.
+The real class was 12 file-reading sites across 11 files, every one under a run directory.
+
+Fixing only the one that happened to be tripped would have left eleven instances of the same
+contract violation, which is the layer-1-only mistake `ELR` warns about.
+
+`readRunJson` in `run-json-read.ts` is now the only way a run file is read.
+It refuses with `RunJsonUnreadableError`, naming the file's basename and the failure and
+carrying no text from it.
+A parse offset survives as a number, because a truncation point is what tells an operator what
+happened and it is content-free.
+`parseRunJson` splits out for the two callers that hold text rather than a path.
+
+`slice-cache-namespace.ts` is deliberately left alone.
+Its `serialized` argument arrives from `persistSlice` on the WRITE path as a lane's own
+in-memory serialization, so it never reads a file.
+That was traced to the call site rather than assumed.
+
+### Two lint rules disagreed, and the answer was to delete the code
+
+Reading the digit run by hand needed either a mutable cursor or a character array.
+`no-function-root-let` forbids the first, and `prefer-spread` and `no-misused-spread` forbid
+each other on the second.
+Per `LN1` the remedy is structural, not picking a surface to silence:
+`Number.parseInt` already reads a leading digit run and stops, so the hand-written scan is gone.
+
+### The test that could not have failed
+
+Writing the absence assertion exposed a trap worth remembering.
+V8 quotes only the FIRST TEN CHARACTERS of a file back inside its refusal message, so a fixture
+word of `Marmaladeslept` appears as `Marmalades`, and a test asserting the full word absent
+passes even against a reader that forwards the message whole.
+
+The fixtures now lead with `Bixbyfluff`, exactly ten characters, confirmed against `JSON.parse`
+directly to appear in the message it produces.
+The same measurement corrected a truncation offset guessed at 30 to the real 27.
+
+GFP-proven: breaking both guards, so `readRunJson` forwards V8's message and `refusalOf`
+forwards every class's, fails `readRunJson` on two children and `refusalOf` on exactly the
+foreign-message case, exit 1.
+Restoring returns 680 PASS, 0 FAIL.
+
+### What the boundary check found that the unit tests could not
+
+Driving `rendering-audit-settled-report --run` against a malformed file confirmed the leak is
+closed there too: zero hits for the fixture's distinctive word, with the file's name appearing
+twice as a positive control that the parse was genuinely reached.
+
+It also showed the OTHER half of `#220`, which `#222` did not close:
+the refusal was safe but still uncaught, so Node printed the minified bundle line,
+around three thousand characters of it, around a correct one-line message.
+
+`reportingRefusals` closes that.
+It catches ONLY `RunJsonUnreadableError`, because catching every `Error` would hide the stack
+of a genuine programming fault, and the forwarding case is tested to hold that line.
+
+Which CLIs needed it was measured off the built bundles' own import graph rather than guessed:
+11 of 39 entry bundles can reach the reader, one is the library barrel, one is `ledger-report`
+which reports its unreadable files as a shortfall inside its own output, and the other nine are
+wrapped.
+The same throwaway now yields two lines and 211 characters at exit 4.
+
+### The test suite taught something about its own runner
+
+Written with three sibling cases, the suite failed.
+`describe` runs children concurrently by default, and all three cases swap process-global state:
+one saw zero captured lines because a sibling had already restored `console.error`, and another
+read `undefined` where it had just written zero.
+`concurrency: 1` is documented for exactly this.
+Both swaps are process-wide, and the runner spawns `node` once per test FILE, so nothing outside
+the file was ever at risk.
+
+A grep counting `PASS` and `FAIL` lines reported 681 passes and zero failures on that failing
+run, because the runner reports a file-level failure in its own line.
+The exit code was right and the count was wrong, which is what `TLY` says to expect.
+
+Landed as `768d26b18`, `ba83d021c`, `7a4f27db0` and `a72d9b6fb`.
+
+### One observation recorded rather than acted on
+
+The suite output shows the pipeline's own warn logs forwarding a model's raw non-JSON answer,
+`raw="not json at all"`, alongside the `SyntaxError` message that quotes it.
+That is the same shape as the unguarded-parse defect, but the exposure is different:
+those lines go to a run log inside a run directory that already holds corpus wording, and the
+owner's instruction is to log more rather than less.
+Naming it here so the difference is a decision rather than an oversight.
+
+## A second calibration is in flight, to pay four measurements the landing left owed
+
+Launched 2026-08-25T14:14Z, detached, 40 slices, the same command the first calibration used:
+
+```sh
+TRANSLATION_REPAIR_RUNS_DIR=~/temp/agent/editor-calibrate-postguard-20260825 \
+  mise run //package/module/translation-repair:editor-calibrate -- 40
+```
+
+Log at `~/temp/agent/editor-calibrate-postguard-20260825.log`.
+
+THE SHAPE IS COPIED DELIBERATELY. Two of the four things this run owes are RE-derivations
+rather than first measurements, and a re-derivation against a differently shaped population
+answers a different question than the one asked.
+Matching slice count, roster and command is what makes the comparison legible.
+
+Meters before launch, from `budget-sample`:
+
+```text
+METERS synthetic=wet hyper=wet syntheticWeekly=91.03581431818182% syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=9683
+```
+
+### What to read off it
+
+-   `#215`'s achieved concurrency, from `run-timing-report`.
+    The first calibration could not answer this: the round lines it reads did not exist
+    until `#215` landed in `b6ea1cc51`, so `NO ROUND LINE` on that log was a true absence
+    rather than a quiet zero.
+    This replaces the audit's 1.45 hour straggler upper bound with a measurement.
+-   `#214`'s straggler window, re-derived against a population that now contains runaways.
+-   `#221`'s zero-content recount per seat.
+    The number to beat is `deepseek-v4-pro-0813` at 36 of 356 completed streams.
+    Falling to zero confirms one reading of that row; staying near 36 confirms the other.
+    `qwen3.8-max` is expected to stay high and to be an accounting artifact either way,
+    since it is the sole `toolChoice: 'auto'` seat and its answer arrives as tool-call
+    arguments that `generatedChars.content` does not count.
+-   `#213`'s serialization question, which was blocked on `#211` and `#215` and is now free.
+
+### While it runs
+
+Nothing goes through `mise`, per the corpus-pass runbook's step 4: every pass and probe task
+declares `depends = ["build"]`, so invoking one rewrites `dist/final/node` underneath the
+running pass.
+Read the log with built entry points directly instead.
+
+The pass was launched from `a93c0892d`, with the working tree clean and the field confirmed
+clear beforehand by argument-vector inspection rather than by a recorded pid.
+
+## The same defect had a second half, reaching a sink through a catch (`#224`, 2026-08-25)
+
+`#222` claimed every run-file read goes through the guarded reader.
+That claim is true as it was scoped, and the scope was narrower than it sounds:
+it covered parses that NO `try` encloses,
+which are the ones V8's uncaught-exception reporter prints whole.
+
+Re-reading the sweep found the other half.
+V8's `SyntaxError` MESSAGE quotes the text as well,
+and four handlers forwarded that message to somewhere it could be read.
+Catching the error prevents the whole file being printed;
+it does not prevent the ten characters the message carries.
+
+### What was leaking, and to where
+
+Three of the four read artifacts, which hold corpus renderings:
+
+-   `corpus-run/editor-standing-read.ts` parsed an artifact and printed
+    `caughtValueText(error)` to stderr.
+    `caughtValueText` returns `error.message` for an Error,
+    which is the whole mechanism in one call.
+-   `corpus-run/attribution-read.ts` parsed an artifact and STORED the same text
+    as the `reason` on a `MalformedArtifact` record that travels to its caller.
+    This one does not merely print, it persists.
+-   `corpus-run/artifact-placement.ts` printed it on the `POOL malformed` line.
+
+The fourth, `corpus-run/runs-lock.ts`, parses a lock file holding a pid and a timestamp,
+so nothing corpus-bearing was ever exposed there.
+It is fixed for one contract rather than four.
+
+### Two things measured rather than assumed
+
+V8 quotes only where the text stops being JSON near its start.
+A file truncated at its tail yields a positional message that quotes nothing:
+
+```text
+"Pouncewick not json at all"  ->  Unexpected token 'P', "Pouncewick"... is not valid JSON
+'{ "tail": "Pouncewick" '     ->  Expected ',' or '}' after property value in JSON at position 23
+```
+
+That matters for the test as much as for the defect:
+a fixture that fails late would have tested nothing while appearing to test the guard.
+The fixture word is ten characters, exactly V8's quote window,
+so it is neither padded nor truncated for a reason unrelated to the guard.
+
+### What was correctly excluded, each checked rather than waved through
+
+`attempt-store.ts` and `slice-cache-namespace.ts` catch and branch on the class,
+printing no message.
+Both are deliberately left unconverted:
+each treats `error instanceof SyntaxError` as "half-written file, recompute",
+and routing them through the guarded reader would change the thrown class
+so that branch silently stopped matching.
+`verify-published.ts` reports `errorName`, which is a class name.
+`pass-schema-census.ts` has no parse inside its `try` and forwards only `ArtifactParseError`.
+`runner-closure.ts` reads our own built bundle.
+
+### The shape of the fix
+
+`src/refusal-text.ts` holds the decision.
+`refusalText({ error })` repeats a message only from a class that DECLARES its message
+names rather than quotes, and otherwise renders `refused by <class>`.
+`RunJsonUnreadableError` and `LedgerShapeError` declare it;
+`ledger-directory.ts`'s `refusalOf` now delegates rather than keeping its own copy of the list.
+
+A declared field rather than a symbol, for a measured reason:
+`--isolatedDeclarations` rejects a computed property name on a class (TS9038),
+and the `Error.isError` gate already refuses every plain object a run file could carry.
+What a symbol would have added is refusing a forged marker on a real Error,
+which is the same trust a symbol import gives anyway.
+
+It fails closed.
+An unmarked class, a foreign Error and a thrown non-Error all take the naming branch,
+so the only way to leak through here is to mark a class whose message quotes.
+
+### State
+
+Landed in `2e8dd62f3`, tests in `3c53df242`.
+Type-check clean, lint clean at 0 warnings and 0 errors over 908 files.
+
+NOT YET RUN, and this is the honest gap:
+the suite imports the built bundle, and the calibration in flight owns `dist/final/node`,
+so the new cases resolve only after a build.
+Lint on the test file reports two `TS2305` errors on that import
+plus 14 warnings cascading from them, and nothing else.
+Running the suite and proving both guards per GFP is the remaining work on `#224`.
+
+`mise tasks deps` was used to establish that `lint:types`, `lint:oxlint` and `test:unit`
+carry no build dependency, which is what made checking anything mid-pass possible.
+The type-check writes `dist/final/types/` only, never the node bundle the pass is running.
+
+## A third shape, found by asking which other parsers quote (`#225`, 2026-08-25)
+
+`#220` and `#224` were both about `JSON.parse`.
+The question that found this one was smaller and better:
+which OTHER parsers does this package hand corpus text to,
+and what do their refusals say?
+
+Two, and they answered differently.
+
+### YAML quotes, every way it was asked
+
+The `yaml` package raises `YAMLParseError` carrying a source code frame:
+
+```text
+Nested mappings are not allowed in compact mappings at line 1, column 7:
+
+name: Pouncewick
+      ^
+```
+
+That is a whole line where V8 gives ten characters,
+and five failure shapes were tried rather than one:
+nested mapping, duplicate key, unclosed flow sequence, tab indentation, and bad block indent.
+All five reproduced the frame.
+Front matter holds a person's name, their dates and their links.
+
+WRAPPING IT DID NOT CONTAIN IT.
+`FrontMatterParseError` carried the parser error as `cause`,
+and Node's uncaught-exception reporter renders a cause chain,
+so the frame printed under `[cause]:`.
+Measured end to end by throwing a wrapped error from `node` and reading the terminal.
+
+Reachable two ways:
+`corpus-run/recall-benchmark.ts` calls `splitFrontMatter` and is not one of the nine CLIs `#223` wrapped,
+and `parse-document.ts` runs inside the pass, which writes to a terminal when run interactively.
+
+### MDX was the near miss, and the first probe called it safe
+
+Four of five MDX failure shapes report a position and an expectation and quote nothing.
+On that evidence the module was written off as already safe.
+Widening the probe found the fifth:
+
+```text
+1:1: Expected a closing tag for `<Pouncewick>` (1:1-1:13)
+```
+
+It quotes the tag name.
+Narrow, but `parse-document.ts` stringified that cause into a `ParseFinding.detail`,
+which is STORED in the artifact rather than printed and forgotten,
+and `mdx-downgraded` is a routine tolerance rather than a corruption path.
+
+The lesson is the one `RXH` states:
+the narrowest query returning nothing is not evidence of nothing.
+One probe produced a clean negative that a fifth case refuted.
+
+### What both errors say now
+
+Position and fault code, which is the whole of what a reader acts on:
+
+```text
+Front matter fence pair found but YAML inside refused to parse at line 1 column 7
+(BLOCK_AS_IMPLICIT_KEY); corpus metadata parses upstream, so this signals corruption.
+
+MDX body refused to parse at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch); corpus documents
+compile as MDX upstream, so failure signals corruption or an unsupported construct.
+```
+
+Neither carries the parser error as `cause` any more.
+Nothing is lost that a reader acts on:
+the file is on disk to open at that line.
+
+### A recorded decision reversed, with its reasoning answered
+
+`cli-refusal.ts` caught only `RunJsonUnreadableError`, and its note argued for that:
+catching every `Error` would destroy the stack of a genuine programming fault,
+trading a rare ugly report for a permanently undiagnosable one.
+
+That reasoning was right about the cost and wrong about the choice,
+because the two are separable.
+Everything is caught now, and the frames are kept anyway.
+What is dropped is the message line and the cause chain, which is where text travels;
+what is kept is the frames, which name files inside our own `dist`.
+An unexpected fault exits 5, distinct from 4,
+because one is a bug report and the other is a re-run.
+
+The old forwarding test pinned the old contract, so it was replaced rather than left to fail.
+Three cases now hold the design from both sides:
+the message must not appear anywhere the reporter writes,
+and the frames must still be there.
+Either assertion alone is satisfiable by a wrong implementation.
+
+### State
+
+Source landed in `7b81a95c3`, tests in `9145cc8aa` and `1e862f9e5`.
+Type-check clean, and every source file lints clean.
+
+NOT YET RUN.
+Every new suite imports the built bundle,
+and the calibration in flight owns `dist/final/node`.
+Lint reports 20 findings across the three test files,
+all four errors being `TS2305` on symbols the rebuild will supply.
+Running them, and proving each guard by removing it, is what `#224` and `#225` still owe.
+
+## Does any error class quote what it was handed? Scanned, not sampled (2026-08-25)
+
+Three disclosure defects were found by hand, one after another,
+which is a bad way to learn a class is closed.
+So the question was asked mechanically instead:
+of every error class this package defines, which builds a message that interpolates a value
+that could be corpus text?
+
+Seventy-five files define an `Error` subclass.
+Scanning each class's `super(...)` call for interpolated identifiers whose names are text-shaped
+(`text`, `raw`, `body`, `content`, `passage`, `wording`, `rendering`, `answer`, `source`,
+`slice`, `value`, `excerpt`, `snippet`, `output`, `reply`, `message`)
+returns three, and reading all three settles them.
+
+-   `WordingCoherenceError` takes a caller-supplied message and forwards it.
+    All four call sites build `${at} reports ...`, where `at` is a slice locator,
+    and none interpolates the wording.
+    The scan flagged it on a neighbouring `@param wording`, not on the message.
+
+-   `HardCapOverrideError` quotes what the hard-cap environment variable held.
+    That is an operator's own input, not corpus text, and quoting it is the point:
+    an operator who set a ceiling believes the run is bounded the way they asked.
+
+-   `SyntheticHttpError` carries 600 characters of a provider's HTTP error body.
+
+### The third is a judgment, and it is being recorded rather than changed
+
+A provider's error body is the provider's text, not ours.
+The one instance recorded in this handover is
+`{"error":"You've exceeded your subscription rate limits. Upgrade, or try again later..."}`,
+which echoes nothing.
+A provider COULD echo part of a request in a 400,
+and a request carries corpus wording, so the path is not impossible.
+
+It stays as it is, for two reasons the owner has already stated.
+Provider issues are normal and expected and the pipeline must stay diagnosable through them,
+and the standing instruction on logging is to add more where it is thin, not less.
+An excerpt bounded at 600 characters is the diagnostic that makes a provider fault legible.
+
+Recorded here so it reads as a decision rather than an oversight,
+which is the same treatment the `raw=` warn logs already have.
+
+### What this closes
+
+The three defects found by hand (`#220`, `#224`, `#225`) all came from a parser's own message
+or from a cause chain, never from a class this package wrote.
+That is now a measured statement about all seventy-five rather than an impression from three.
+
+## Every entry point now reports its refusals, settled by measurement (`#226`, 2026-08-25)
+
+`#223` wrapped nine CLIs when `reportingRefusals` caught exactly one class.
+It now catches everything, so the list should be every entry point, and now is:
+29 more were wrapped, in `f92df6042`.
+
+This section keeps the argument that held the change back for a day,
+because the argument was sound and the thing that resolved it was evidence,
+not a better argument.
+
+`refusalText` forwards a message only from a class that declares it quote-free,
+and four classes declare it:
+`RunJsonUnreadableError`, `LedgerShapeError`, `FrontMatterParseError`, `MdxParseError`.
+Wrapping a CLI therefore turns
+`ArtifactParseError: <what it says>` into `refused by ArtifactParseError` plus frames.
+For a report CLI that is a small loss.
+For `corpus-pass`, the production driver, it is the diagnostic that matters most.
+
+The scan of all seventy-five error classes cuts both ways here.
+It says none of them quotes, so forwarding their messages would be safe today,
+which makes the conservative default look like pure cost.
+It also says nothing about the seventy-sixth,
+and a library added later reintroduces the risk silently,
+which is the whole reason the default fails closed.
+
+Three ways out, and they are not equally good:
+
+-   Mark all seventy-five classes. Restores every message, and makes the marker mean
+    "audited" rather than "constructed safe", which is a weaker claim than the marker
+    currently makes.
+-   Wrap only the report and probe CLIs, and leave `corpus-pass` alone with its reason
+    recorded, the way `ledger-report` is already excluded for a reason of its own.
+-   Wrap everything and accept that an unexpected fault is located by frames rather than
+    described by a message.
+
+### The premise that it needed the suite was wrong
+
+The sentence this section used to end on said deciding without the suite
+would be guessing at what the output reads like.
+That was a refusal with an unconsidered bridge behind it.
+`node --experimental-strip-types` runs the package source directly,
+so the output could be read at any point without building anything,
+and the whole decision took one throwaway fixture under `~/temp/agent`.
+
+The same bridge answered a question the section never thought to ask,
+and answered it against the section's own numbers.
+
+### What the census actually was
+
+Twenty-five was wrong. There are 38 entry points, 9 of them wrapped.
+The count was low because the search looked for `if (import.meta.main)`,
+and 13 entry points did not have it:
+they ended in a bare top-level `await main();`, which runs on import.
+Nothing value-imports any of them today,
+and the one import that exists takes only a type from `roster-bench`, which erases,
+so this was a latent hazard rather than a live defect.
+They now carry the guard the other 16 had.
+
+### The four cells
+
+Each cell is one process, source run on a throwaway fixture,
+stderr measured in bytes:
+
+```text
+bare, marked error        exit 1, 708 bytes   stack dump, plus Node spilling the
+                                              error's own fields as an object literal
+wrapped, marked error     exit 4, 193 bytes   the message, and what to do next
+bare, unmarked error      exit 1, 554 bytes   class, message and stack
+wrapped, unmarked error   exit 5, 662 bytes   class and frames, message dropped
+```
+
+Read against the three options, this picks the third and weakens the case for the first.
+
+Wrapping is an outright win on the refusal path:
+708 bytes of stack and spilled fields become 193 bytes that say what happened.
+On the fault path it costs the message and buys a code.
+That code is the part the options list undervalued:
+unwrapped, a refusal, a fault and the command's own verdict are all `1`,
+and no gate or operator can tell them apart.
+
+Marking all seventy-five classes stays available and stays the lever
+that gets the message back on the paths where it matters.
+It is now an improvement to make on top of a working separation,
+rather than a precondition for making any change at all.
+
+### What was measured before the change rather than after
+
+That a wrapped CLI still leaves its own verdict alone.
+`reportingRefusals` sets `process.exitCode` only inside its catch,
+which the source says and a probe confirmed:
+`verify-published` on an unreadable run directory exits `2` either way,
+with byte-identical output.
+Reading that off the source would have been an inference about unchanged code.
+
+Type-check and lint carry the same 20 findings after the change as before,
+all of them in the three test files waiting on a rebuild,
+none in the 29 files touched.
+
+## The cause sweep, which the message scan had missed (2026-08-25)
+
+Scanning seventy-five error classes checked their `super()` MESSAGES.
+It said nothing about their causes,
+and a cause chain is exactly how `#225` travelled:
+a clean message carrying a quoting cause that Node's reporter renders anyway.
+
+So the same question was asked of causes.
+Every site constructing an error with `{ cause: error }`, and what that cause can hold:
+
+-   TWO PARSER CAUSES, `FrontMatterParseError` and `MdxParseError`.
+    Fixed in `7b81a95c3`; neither carries a cause any more.
+
+-   THREE PROVIDER-PARSE CAUSES: `completion-shape.ts`, `stream-completion.ts` and
+    `anthropic-completion.ts` each wrap a `JSON.parse` of a model's response as the cause of a
+    `MalformedCompletionError`.
+    V8 quotes ten characters, and a model's answer is a rendering of corpus text.
+
+-   TWO FILESYSTEM AND GIT CAUSES, in `ledger-directory.ts` and `artifact-generation.ts`.
+    One wraps `readdir`, the other a git revision resolution.
+    Their messages name a path and a revision, not content.
+
+-   ONE COMMAND CAUSE in `corpus-source.ts`, whose message carries the `git show` command line.
+    That names an entry id, which these tools print by design:
+    `ledger-report` and `verify-published` both report per entry.
+
+-   TWO ABORT CAUSES in `stream-cut.ts` and `stream-drain.ts`, carrying an abort reason.
+
+### The provider three are dominated, and that is measurable rather than arguable
+
+`stage-call.ts` already logs `raw=${JSON.stringify(opening,)}` on every lost-voice warning,
+bounded at `RAW_PREVIEW_CHARS = 120` grapheme clusters of the model's text.
+Its own note records why that bound exists and what it bought:
+the Kimi-K3 outage was a two-character channel marker,
+507 mismatches in one pass were explained by it,
+and its 2026-08-13 recurrence was explained the same way from `p|>` and `ep|>`.
+
+So the deliberate disclosure is 120 characters, on a routine warning, to the run log.
+The cause is ten characters of the same text, only when the answer is malformed JSON,
+and only if the error reaches a printer.
+Twelve times smaller, far rarer, same destination.
+
+They stay. Changing them would trade a diagnostic the owner asked for
+against an exposure strictly smaller than one already accepted beside it.
+
+### What this sweep does and does not cover
+
+It covers two channels: an error's own message, and its cause chain.
+It does not by itself cover a third,
+a value written into a persisted record rather than thrown,
+which is how `attribution-read` was leaking in `#224`.
+That one was found by reading call sites, and no mechanical scan has been built for it.
+Naming the gap here so a later session knows which of the three has no scanner.
+
+## A stream the provider cut short was the one transport failure that never retried (`#228`, 2026-08-25)
+
+Found by reading the running calibration's warnings rather than by suspecting anything:
+
+```text
+      4  MalformedCompletionError
+      2  SyntaxError
+```
+
+All four are `panel gemma-4-26b-a4b-it`, all four say
+`anthropic stream ended without message_stop, voice lost`.
+The two `SyntaxError` are the critic schema mismatches already recorded.
+With the 13 straggler cuts in the same log, the three classes account for every voice
+the run never heard, which is how this class was separated from the other two at all.
+
+### Why it never retried, which is more interesting than that it did not
+
+`hyper-client.ts` and `synthetic-client.ts` both call `exchangeWithRetry`
+and then extract the completion AFTER it returns.
+A truncated body arrives as HTTP 200.
+That status is not in `RETRYABLE_STATUSES`, so the ladder hands the reply straight back,
+and extraction throws with nothing left that could re-dispatch it.
+
+Every other transport failure carries a status the ladder recognises.
+This one wears a success status, which is exactly why it was invisible:
+the ladder was working correctly and the failure was outside it.
+
+### The fix follows a design that was already there
+
+`attemptExchange` catches a thrown failure and asks ONE predicate, `isSelfEndedStream`,
+whether we caused it, so that a runaway we cut is never re-dispatched.
+Running the caller's read inside that same `try` puts a truncated body on exactly that path:
+same catch, same predicate, same ladder.
+
+So the terminator pass moved out of each extractor into an exported check,
+`requireAnthropicTerminator` and `requireStreamTerminator`,
+and `attemptExchange` gained an optional `verify` it runs before returning.
+
+RULED OUT FIRST, because retrying our own deliberate cut would be a bug:
+the guards throw their own classes, `StreamStalledError` and `StreamCutShortError`,
+and an aborted drain THROWS with `partialText` rather than RETURNING a short body.
+The only `return bodyText` in `stream-drain.ts` is the normal completion path.
+
+### Measured from source, without a build
+
+`dist/final/node` is held by the calibration, so the boundary proof ran under
+`node --experimental-strip-types` against `src/`, with a fake transport and no key.
+Both providers, four cells each:
+
+```text
+  cut every time        attempts=5  MalformedCompletionError
+  cut once, then whole  attempts=2  answered
+  whole every time      attempts=1  answered
+  HTTP 400 error page   attempts=1  SyntheticHttpError
+```
+
+Row two is the voice that used to be lost.
+Rows three and four are the controls, and row four is the one worth naming:
+`wholeMessage` checks `isSuccessStatus` first, so a non-success reply is never read as a stream.
+Without that guard a 400 carrying an error page would report a parse failure
+instead of the HTTP code, which sends a reader to the prompt rather than to the provider.
+
+### What the suites now assert, and what is still owed
+
+Landed in `38a5178d7` (fix) and `05928328e` (tests).
+Each client suite gained the two cases, and the Hyper suite's existing terminator test
+gained the attempt count it had been missing:
+it ran on the production ladder, paying about seven seconds of real backoff
+to assert something the count now states outright.
+
+The third path needs no new test.
+Each suite already refuses a non-success reply whose body carries no terminator,
+`out of credits` and `{"error":"slow down"}`,
+so removing the `isSuccessStatus` guard inside `wholeMessage`
+turns both into a parse failure about an error page.
+
+NOT YET RUN. The suites import `../dist/final/node/index.mjs`,
+and rebuilding would swap the bundle out from under the pass in flight.
+Owed at the same moment as `#224` and `#225`: build once, run the suites,
+then prove each guard by removing it.
+
+## Which error messages may be repeated, decided by a rule rather than an audit (`#227`, 2026-08-25)
+
+`refusalText` repeats a message only from a class declaring `messageNamesOnly`, and four of
+eighty-five classes declared it. So an operator meeting a domain refusal at a CLI boundary
+read `refused by RosterConfigurationError` and learned nothing about what was wrong.
+
+The obvious move, marking all eighty-five, is the one to refuse.
+A 2026-08-25 scan did find that none of them quotes what it was handed,
+but marking on that basis makes the marker mean "audited on a Tuesday"
+rather than "constructed to name and never quote", which is a weaker claim than the marker
+already makes, and it decays silently.
+
+### The rule
+
+A class may declare the marker when the CLASS writes the sentence,
+and every value it interpolates is a number, one of our own names,
+or a value the operator supplied.
+
+A class whose constructor forwards a `message` parameter to `super` may not,
+however careful its throw sites are.
+The claim would then be about thirty call sites rather than about one class,
+and nothing could check it.
+`StatedRefusalError` is the deliberate exception and carries its own note saying so.
+
+That line is what makes the rest mechanical.
+Thirty-four classes forward a message. Fifty-one write their own sentence.
+
+### What the scan found, reading every site rather than sampling
+
+Across 490 construction sites outside the suites, the free-text fields turned out to be
+authored phrases almost everywhere:
+
+-   `ArtifactParseError` has 93 sites, and all 77 distinct `reason` values are shape
+    descriptions written by us, `a boolean`, `a record`, `distinct members`.
+-   `MalformedCompletionError`, `QuotaShapeError` and `CreditsShapeError` take a `detail`
+    that is an authored phrase at every site, naming which part of the protocol broke.
+    None carries a byte of the body.
+-   `TranslateAbsenceError` is the best case: its `reason` is typed `TranslateAbsenceReason`,
+    a closed union, so the type proves what the inventory would otherwise assert.
+
+Forty-two classes gained the marker, joining the five that had it.
+
+### Four that write their own sentence and still stay unmarked
+
+Recorded rather than left silent, because an absent marker looks identical to an oversight:
+
+-   `SyntheticHttpError` interpolates an excerpt of the provider response body, on purpose.
+-   `MislabelledArtifactError` takes `caughtValueText(error)`, which renders a caught error's
+    own message.
+-   `StreamCutShortError` reaches the message through `String` of an unknown abort reason.
+-   `ArtifactProvenanceError` interpolates `expected` and `observed`, whichever field
+    disagreed, which may be text.
+
+### The guard, and why it is a source scan
+
+`src/message-names-only.unit.test.ts` reads the source and checks four things:
+the marked set equals the recorded list, every interpolation in a marked message is named in
+an inventory that says what it holds, no forwarding class carries the marker, and every
+owning-but-unmarked class has a recorded reason.
+
+A behavioural test would have pinned today's wording, which is not the property worth
+guarding: rewording a sentence is fine, and interpolating a new value into it is the thing
+that needs a second look.
+
+GFP-PROVEN, four probes, each restored afterwards:
+
+```text
+  marked but not recorded    KEEPS exactly the classes ... FAIL   exit 1
+  message gains a new part   ACCEPTS only the message parts ... FAIL   exit 1
+  owning class unmarked      KEEPS exactly ... + KEEPS a reason ... FAIL   exit 1
+  withheld class marked      three of four FAIL                        exit 1
+```
+
+The second probe fails that assertion and no other, which is the isolation worth having.
+
+WHAT IT CANNOT CATCH. A field the inventory already names, such as `detail`, can be handed
+different text by a new throw site. The inventory records what each field holds today, and
+that kind of change is caught by reading, not by this file.
+The stronger form would put the rule in the type system, with the message built through a
+tagged template whose interpolated values are a closed union rather than `string`.
+That is a large refactor across the domain primitives and is not proposed here as part of
+this landing; it is written down as the direction if the inventory ever starts to strain.
+
+The guard imports no built artifact, so it runs from source while a pass holds the bundle.
+Landed in `f0f15f5c3`.
+
+## The guard proof found the guard was somewhere else (`#224`, 2026-08-25)
+
+`#224` routed four sinks through `refusalText` and owed a proof that the routing mattered.
+The proof was run the way the rule prescribes:
+revert the fix, rebuild, run the suite, see it fail.
+It did not fail.
+686 of 686 passed with all four sinks reverted to a bare `caughtValueText(error)`.
+
+A passing revert reads as missing coverage,
+and this session nearly recorded it as one.
+The reason it is not is that the probe could not have failed:
+a MALFORMED file reaches every sink through `parseRunJson`,
+which already wraps it in a class declaring its message quote-free,
+so `refusalText` returns that message and the bare expression returns the same message.
+The two are the same string.
+A null result from a probe that cannot show a difference means nothing,
+and the control that gives it meaning is a file that will not OPEN.
+
+### Two of the four opened without a guard
+
+Measured on a mode-`000` fixture in a throwaway directory:
+
+```text
+POOL malformed Basket.json: EACCES: permission denied, open '/tmp/sink-probe-OXYrhl/Basket.json'
+```
+
+`attribution-read.ts` and `artifact-placement.ts` called `readFile` directly
+and only PARSED through the guard,
+so a file that would not open arrived as an ordinary `Error`
+whose message quotes the whole path.
+`refusalText` refused to repeat it,
+which is the second layer doing its job,
+but the only thing left to say was `refused by Error`,
+and an operator reading that learns neither that the file exists nor that it is a permission fault.
+
+`#222` recorded that all twelve run-file reads went through the guarded reader.
+That was true of the parse and not of the open.
+A run directory path names the run,
+and under `artifacts/` a file's own stem is a person's entry id,
+so the path is the sensitive half.
+
+Landed in `f8a00627f`: both call `readRunJson`, which opens and parses behind one refusal:
+
+```text
+could not read Basket.json as JSON (EACCES)
+```
+
+`runs-lock.ts` and `editor-standing-read.ts` already said exactly that,
+so all four sinks now speak one vocabulary.
+
+### The suite that pins it, and the two-layer proof
+
+`src/corpus-run/sink-names-only.unit.test.ts` holds five cases,
+one per sink plus the case that reads the path back.
+It pairs with `message-names-only.unit.test.ts`:
+that one decides which CLASSES may repeat a message,
+this one checks that the SINKS actually ask.
+
+`editor-standing-read.ts` exports nothing,
+so its case runs the built command the way an operator does and reads its stderr.
+That is the first spawn in this package's suite.
+The command exits 1 on the fixture for its own `#217` reason, having recorded no rounds,
+so the helper reads both streams off a `spawnSync` status
+rather than treating a non-zero exit as a failure to run.
+
+Every fixture proves itself unreadable before any assertion runs.
+A suite run as root opens a mode-`000` file,
+which would leave all five cases exercising the happy path while reporting a pass.
+
+The two layers are proven separately, because they fail in different worlds:
+
+-   guarded open removed, policy call kept: 2 of 5 fail,
+    and the path-leak case PASSES, because `refusalText` is what keeps the path out there.
+-   both removed: 3 of 5 fail, the path-leak case included.
+-   restored: 5 of 5 pass, whole suite 687 of 687.
+
+## Four guard proofs, run once the bundle was free (`#225`, `#228`, 2026-08-25)
+
+The suites for `#224`, `#225`, `#226`, `#227` and `#228` all import the built bundle,
+and the bundle had been held by a live calibration since the day before.
+Rebuilding released all five at once.
+
+`#228`, both providers.
+Replacing `verify: wholeMessage` with a comment fails exactly two cases per provider:
+`REFUSES a stream that ended without its terminator` reports `expected 1 to equal 3`,
+one attempt spent instead of three,
+and `ACCEPTS the retry when only the first attempt was cut short`
+lets a `MalformedCompletionError` escape.
+Four failures across the two suites, no collateral.
+
+`#225`, parser half.
+Reverting `front-matter.ts` and `parse-mdx.ts` fails three cases in each suite:
+the position case, the no-cause case, and the marker case.
+The no-quoting case passes in both worlds,
+which is right rather than a gap:
+the pre-fix classes already wrapped, and the leak travelled through the CAUSE chain
+that Node's reporter renders whether asked to or not.
+
+`#225`, CLI half.
+Reverting `cli-refusal.ts` fails five of its seven cases,
+including the two added this session for `#226`'s stated-refusal branch
+and `#227`'s marked-class fault path,
+so both of those are boundary-proven here too.
+The survivors are the `RunJsonUnreadableError` report, which the old code already caught,
+and the clean run.
+
+### Rebuilding under a live pass, measured rather than argued
+
+`doc/runbook/translation-repair-corpus-pass.md` says to run nothing through `mise`
+while a pass is in flight, and gives the pipeline digest as the reason.
+That reason is sound and it is narrower than the rule.
+
+The pass in flight was `editor-calibrate`, which writes no artifacts and stamps no digest:
+its output is its log.
+Before rebuilding, three facts were checked on the running process rather than assumed:
+
+```text
+node dist/final/node/editor-calibrate.mjs 40    one process, zero children
+/proc/<pid>/fd                                  no descriptor under translation-repair/dist
+grep -o "import(" dist/.../editor-calibrate.mjs 0
+```
+
+A running pass never reads that directory again,
+so overwriting it cannot reach the process.
+The bundle was rebuilt eight times over the session,
+twice with deliberately broken source for a guard proof,
+and the calibration kept producing rounds throughout.
+
+This does not license rebuilding under a CORPUS pass.
+That one stamps a digest into every artifact it settles,
+and a rebuild leaves the run recording a digest that no longer describes what is on disk.
+The distinction is what the run WRITES, not whether the process would notice.

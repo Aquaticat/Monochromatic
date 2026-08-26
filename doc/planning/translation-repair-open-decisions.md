@@ -1,5 +1,27 @@
 # Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-19
 
+STATUS ON 2026-08-26: EVERY QUESTION BELOW IS ANSWERED, and this document is kept for the evidence behind
+the answers (register item A-4). A reader starting here decides nothing; the records are:
+
+-   Question 1, producing roster width: `doc/decision/translation-repair-question-answers.md`
+    ("Producing roster width: keep three, widen on evidence"), and the "RULED 2026-08-23" section under the
+    question here.
+-   Question 2, the transcribed-image class: the same record ("Transcribed images: send the image, fall back to
+    protecting the block"), and the "RULED, AND HALF-REFUSED ON MEASUREMENT" section here.
+-   Question 3, whether the critic stage survives: the same record ("Critics: keep them as evidence, remove
+    every early return").
+-   Question 4, a self-certifying checker's verdict: the same record ("Self-certifying checkers: a half,
+    matching selection").
+-   Question 5, the replacement rate: the same record ("Replacement rate: widen the judged window and re-read
+    it").
+-   Question 6, a thin roster's verdict and the cache: the same record ("Thin-roster slices: cache anything
+    examined at all").
+-   Question 7, the non-translation denominator: the same record ("Non-translation denominator: delegated").
+-   Question 8, where the rendering audit runs: "ANSWERED 2026-08-16: option B, standalone over EVERY settled
+    artifact", under the question here.
+-   Question 9, the straggler grace's one-model tax: `doc/decision/translation-repair-straggler-grace.md`.
+-   Question 10, re-arming the idle windows: `doc/decision/translation-repair-runaway-call-termination.md`.
+
 WHAT `#121` ADDED, 08-19. Two new questions, 9 and 10, and one correction that needed no question
 at all.
 

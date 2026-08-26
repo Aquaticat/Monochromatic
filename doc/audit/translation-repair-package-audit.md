@@ -200,10 +200,15 @@ Detail under the documentation layer.
 Fix: a status line per question at the top of the planning document pointing at the record
 that answered it.
 
+FIXED 2026-08-26: a status block under the title names the record answering each of the ten questions.
+
 ### A-5, MINOR, verified: the handover exceeds its own cap by 1440 lines
 
 Fix: move the oldest closed sections verbatim into `doc/handover/translation-repair-history.md`,
 per the rule the handover states in its preamble.
+
+FIXED 2026-08-26: 25 closed sections (1844 lines) moved verbatim into the history under a dated marker, checked
+by a line-multiset comparison of the two files before and after; the handover stands at 1775 lines.
 
 ### A-6, MINOR, verified: four test names carry an all-caps verdict word (`TNM`)
 
@@ -214,6 +219,10 @@ per the rule the handover states in its preamble.
 The runner's own verdict prefix is `] PASS `, so prefix-anchored counts are unaffected,
 but a bare-substring grep reports the opposite of the truth on these four.
 Fix: reword (`ACCEPTS`, `KEEPS`, `SKIPS`, `ROUTES TO HYPER`).
+
+FIXED 2026-08-26 in `70a520e7b`: the four names read RUN, CLEARED, SKIPS and SWITCHES TO HYPER, and two more
+found by a package-wide sweep (`PASSES quotas through`, `PASSES an unsettled ... answer through`) read FORWARDS;
+the sweep now finds no all-caps verdict word in any test name.
 
 ### calibrate-1, MAJOR, verified: the "nothing above warn" premise of `#235`'s silence half is wrong
 
