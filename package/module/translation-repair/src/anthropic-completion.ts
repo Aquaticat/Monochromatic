@@ -465,9 +465,6 @@ export function extractAnthropicCompletion(
   { bodyText, }: { readonly bodyText: string; },
 ): ExtractedCompletion {
   /**
-   * Everything the body accumulates across its frames.
-   */
-  /**
    * Logger pre-tagged with this function's name.
    */
   const rl = tagged({
