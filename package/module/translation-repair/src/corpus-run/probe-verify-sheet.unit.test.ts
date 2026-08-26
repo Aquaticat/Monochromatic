@@ -376,6 +376,28 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a blind grader that the reviewer flagged some items and not others, and never that '
+        + 'it flagged each, since the damage sheet mixes both with the claims stripped (`#248`)',
+      fn: async () => {
+        /**
+         * The damage sheet's page.
+         */
+        const sheet = formatVerifySheet({
+          items: household(),
+          framing: 'blind',
+        },);
+        expect(sheet.includes('claims each one introduced a defect',),).toBe(false,);
+        expect(sheet.includes('flagged some of them as damaging and stayed silent on the others',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'KEEPS the reviewer-claims framing by default, which is the verify sheet where every item '
+        + 'was flagged and its claims are printed',
+      fn: async () => {
+        expect(formatVerifySheet({ items: household(), },).includes('claims each one introduced a defect',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'REFUSES to name which partition an item came from, anywhere on the page',
       fn: async () => {
         /**

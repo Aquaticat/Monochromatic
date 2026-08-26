@@ -278,9 +278,28 @@ function renderItem(
 }
 
 /**
+ * What the sheet tells the grader about the reviewer.
+ *
+ * `reviewer-claims`: every item was flagged and the claims are printed, which
+ * is the verify sheet. `blind`: the items mix flagged and silent ones with the
+ * claims stripped, which is the damage sheet; telling that grader every item
+ * was flagged primed a Y on exactly the partition scored as probe misses
+ * (`#248`).
+ *
+ * @example
+ * ```ts
+ * const framing: SheetFraming = 'blind';
+ * ```
+ */
+export type SheetFraming = 'reviewer-claims' | 'blind';
+
+/**
  * Formats the whole blind verification sheet.
  *
  * @param items - items to judge, any order; ordering is applied here
+ *
+ * @param framing - what to tell the grader about the reviewer; the verify
+ * sheet keeps the default, the damage sheet is blind
  *
  * @returns Sheet markdown
  *
@@ -290,7 +309,13 @@ function renderItem(
  * ```
  */
 export function formatVerifySheet(
-  { items, }: { readonly items: readonly VerifyItem[]; },
+  {
+    items,
+    framing = 'reviewer-claims',
+  }: {
+    readonly items: readonly VerifyItem[];
+    readonly framing?: SheetFraming;
+  },
 ): string {
   /**
    * Items in blind order.
@@ -300,10 +325,20 @@ export function formatVerifySheet(
   return [
     '# Does the unlabelled probe find damage, or invent it?',
     '',
-    'Every item below is an edit the pipeline applied, and an automated reviewer',
-    'claims each one introduced a defect. Some of these claims are probably',
-    'right and some are probably wrong; the point of this sheet is to find out',
-    'which, and the items are deliberately in an order that tells you nothing.',
+    ...((framing === 'reviewer-claims')
+      ? [
+        'Every item below is an edit the pipeline applied, and an automated reviewer',
+        'claims each one introduced a defect. Some of these claims are probably',
+        'right and some are probably wrong; the point of this sheet is to find out',
+        'which, and the items are deliberately in an order that tells you nothing.',
+      ]
+      : [
+        'Every item below is an edit the pipeline applied. An automated reviewer',
+        'flagged some of them as damaging and stayed silent on the others; you are',
+        'not told which are which, the point of this sheet is to find out whether',
+        'it flagged the right ones, and the items are deliberately in an order that',
+        'tells you nothing.',
+      ]),
     '',
     'Judge only whether the EDIT damaged the translation. A passage that was',
     'already wrong before the edit is not damage the edit caused, and the',

@@ -131,6 +131,7 @@ export { gatherControlCases, } from './corpus-run/probe-relabel-control.ts';
 export {
   formatVerifyManifest,
   formatVerifySheet,
+  type SheetFraming,
   orderBlind,
   type VerifyItem,
 } from './corpus-run/probe-verify-sheet.ts';
