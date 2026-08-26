@@ -475,10 +475,17 @@ Before refusing,
  bridge:
  shell utils;
  web via `agent-browser`;
- GUI via `xdotool`/`wtype`/`ydotool`,
+ GUI via nested compositor,
  HTTP/IPC;
  auth via `expect`/tokens;
  hardware via CLI.
+
+VKI:
+ Synthetic key input:
+ use nested compositor or caller-independent broker.
+Never invoke `ydotool` from agent command;
+ its key-down can cancel caller before key-up,
+ wedging desktop input.
 
 BR2:
  Refuse/hand off only after attempting bridges + confirming no path exists;

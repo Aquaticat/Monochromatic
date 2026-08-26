@@ -272,6 +272,9 @@ For common issues:
 - **Escape does not reach applications inside Ghostty?
   ** →
   [Distinguish keybind consumption from PTY encoding](ghostty-escape-keybind-consumption.md)
+- **Escape fails across Firefox and Ghostty after agent input automation?
+  ** →
+  [Reset interrupted ydotool virtual-key state](ydotool-interrupted-key-release.md)
 - **Android `uiautomator dump` cannot get idle state while an app loads?
   ** →
   [Wait for stable rendered content](android-uiautomator-dump-idle-state.md)
