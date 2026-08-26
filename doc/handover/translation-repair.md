@@ -1517,3 +1517,161 @@ Moved on the evening of 2026-08-26, when this file stood at 1984 lines against t
     its register with every marker is `doc/audit/translation-repair-package-audit.md`, and the closing
     verification (814 PASS, every entry marked) stands in its "State of the tree" subsection, now in the
     history, and in the register.
+
+## Where this session stopped (2026-08-26 evening)
+
+Written for a fresh agent with no transcript, at the owner's request,
+because the session's remaining budget ran short.
+The in-flight code work has its own document:
+`doc/handover/translation-repair-overlap-dial.md`.
+
+### The state of the tree
+
+Worktree `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`, auto-push on.
+Tip is `748b54841`.
+The only untracked path is `.idea/.name`, which is not ours to touch.
+Build, `lint:oxlint` (0 warnings, 0 errors) and `lint:types` are all green at that commit,
+and the two new suites pass.
+The last whole-suite run, before the two commits above, was 829 PASS, 0 FAIL, exit 0.
+
+### A corpus pass is running right now
+
+Launched 2026-08-26 at 17:31:54Z from tip `907d14ea2`, still alive at 20:43Z:
+
+```sh
+mise run //package/module/translation-repair:corpus-pass -- \
+  --only ArtsEpiphany,gaoyanger,Zha_Ke,Weideriche_,keyword233,Acheron,wangzihao980,dogesir_,Toka_ls,XIEPT2
+```
+
+-   Log: `~/temp/agent/fresh-read-20260826.log`.
+-   Runs directory: `~/temp/agent/fresh-read-20260826`, holding `artifacts`, `fixed`, `ledger`, `slice-cache`.
+-   Progress is read from the pass's OWN template lines only, never by quoting the log:
+    `round: N/M heard`, `abandoned <ms>ms after quorum`, `TALLY <id> status=`,
+    `DESTINATIONS <id> source= page= dropped=`, `INCOMPLETE`, `CLEANUP`, `ONLY ...`, `START tip=`.
+    At 20:43Z: 145 rounds, 25 abandoned, no entry settled yet.
+-   Rebuilding `dist` does not disturb it.
+    There are no dynamic imports, and this was verified rather than assumed.
+    What a rebuild DOES change is what the next launch ships, since the pass task builds before it runs.
+
+Do not poll it in a loop.
+Check it when there is a reason to.
+
+### What to do as each entry settles
+
+For every `TALLY <id> status=settled` line, in this order:
+
+1.  `python3 ~/temp/agent/reading-instruments/page-read.py <id> ~/temp/agent/fresh-read-20260826`
+    writes the source, archive and published triplet, their diff, a code-point census
+    and the address counts under `~/temp/agent/read-<id>/`.
+2.  `python3 ~/temp/agent/reading-instruments/sol-read.py <id> ~/temp/agent/fresh-read-20260826`
+    sends the same triplet to the second reader and leaves its answer at `~/temp/agent/sol-<id>/answer.log`.
+    It is backgrounded and may take a long time.
+    Never poll it and never kill it;
+    read the answer later.
+3.  Read the `DESTINATIONS` line beside the tally.
+    This is the live check `#265` still owes.
+4.  Run `verify-published`, the rendering audit and the damage probe over the settled artifact.
+5.  Trace every defect the reading finds back into the artifact:
+    which slice, which lane, which ballots.
+    A defect nobody can trace to an artifact is not yet a finding.
+6.  Extend `doc/audit/translation-repair-output-reading-20260826.md`,
+    which holds the rules of the reading, the tooling, and the second reader's corrections.
+
+When the ten entries finish, launch the second pass over `XingZ60` into the SAME runs directory,
+following `~/temp/agent/reading-instruments/launch-fresh-pass.txt` verbatim.
+That entry is the one with the historically hardest section pairing, so it is read separately and on purpose.
+
+### What the reading method has to include
+
+The second reader found 15 items on a page where the first reading had found 2,
+which is why the method now says, explicitly:
+
+-   Read the front matter, not just the body.
+    `#269` came out of this:
+    the `desc` field is never translated or repaired and ships the archive's wording untouched.
+-   Check dates, ages and stated relationships as FACTS against the source, not as prose.
+-   Grade naturalness separately from accuracy.
+-   Record defects the archive already had (inherited) apart from defects this pipeline introduced.
+    Only the second kind is a regression;
+    the first kind is what the pipeline exists to fix and is a miss, not a break.
+
+### Two live checks are owed, and they are one run
+
+Both are paid by a single fresh `editor-calibrate` after the pass ends:
+
+-   `#263`: the REFINER seat's coverage line must be read against the SEAT lines in the same output.
+    A refiner that answered and was never slated must read as
+    "ANSWERED AND WAS NEVER SLATED", never as silent.
+-   The Qwen seat on Charm Hyper (`qwen3.8-27b`, added 2026-08-26 after the owner reported it available)
+    has been probed 3 of 3 under the forced tool shape but never measured in a calibration.
+
+The calibration now defaults to four slices in flight under a 300000 ms straggler window,
+so its header should read `4 slices in flight` and
+`straggler window 300000ms (calibration default)`.
+
+### The open register
+
+These numbers are this session's task list, NOT GitHub issues.
+Anything durable about them lives in this document, in the audit document, or in `doc/decision/`.
+
+-   `#219` readiness signal:
+    REJECTED by the owner on 2026-08-26 with "Not yet. You didn't even look at its actual output."
+    Re-signal only after the reading in `#259` is recorded.
+    The signal itself is put through `AskUserQuestion`, and the owner disables branch protection at that point.
+-   `#259` read the actual output:
+    in progress, gated on the running pass.
+    This is the task that gates `#219`.
+-   `#261` the overlap dial:
+    in progress, two commits landed.
+    See `doc/handover/translation-repair-overlap-dial.md`.
+-   `#263`, `#264`, `#265`:
+    all three landed and GFP-proven on 2026-08-26.
+    `#263` and `#265` still owe the live checks named above.
+    `#264` folds invisible variants (U+2011, U+00A0, U+202F, U+00AD, U+200B, U+2060, U+FEFF)
+    at all three model intakes and names each fold as a finding;
+    U+2019 stays, because it is the archive's own convention.
+-   `#266`: the editor seat cannot say who answered,
+    because heard editor ids stop at the editor stage, so its coverage line can only hedge.
+-   `#267`: the pipeline reads math as prose and footnotes as structure;
+    the site, verified with its own renderer, does the reverse.
+    Six source pages carry a `$...$` pair.
+-   `#268`: make the page reading reproducible as a package CLI
+    (triplet, diff, code-point census, address counts).
+    The Python instruments are throwaway and live outside the repository.
+-   `#269`: front matter is never translated or repaired.
+-   `#270`: `model-catalog` compares only Synthetic against the compiled catalog;
+    the Charm Hyper half has no drift check, and six price rows drifted in a single day.
+
+### Instruments, and where they live
+
+The session scratchpad is session-local and will vanish.
+Copies of everything worth keeping are at `~/temp/agent/reading-instruments/`:
+`page-read.py`, `sol-read.py`, `launch-fresh-pass.txt`, `gfp-three-landings.py`,
+`compare-arms.py`, `hyper-probe.ts`.
+`~/temp/agent/gfp-overlapped-map.py` is the guard-failure proof for the newest helper.
+`#268` exists because these should be a package command instead.
+
+### Standing constraints that outlive this session
+
+-   The corpus repository `one-among-us/data` is UNLICENSED.
+    Read it through `git show <sha>:<path>` from `~/one-among-us/data`, pinned at
+    `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
+    Entry ids may be named in commits and documents;
+    passages must not be quoted.
+    Never print raw run-log lines:
+    extract only the pipeline's own template fields.
+-   Never echo an API key value and never read `/proc/<pid>/environ`.
+    `TRANSLATION_REPAIR_SYNTHETIC_API_KEY` and `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`
+    are injected by the root `mise.toml` from `.env.local.json`;
+    launch through `mise run` or `mise exec` from the worktree.
+-   Never set `thinking`, `budget_tokens` or `reasoning_effort` on any model call.
+-   Never write `Closes #N` in a commit message:
+    the numbers here are not GitHub issues.
+-   The owner's standing instructions:
+    make non-design decisions yourself and prioritise quality over cost;
+    prototype and measure rather than argue;
+    nothing is blocked on the owner;
+    the pipeline must be resilient to provider trouble;
+    a full 92-entry pass is never needed;
+    the producers stay at three;
+    corpus text in commits is tolerated, and sanitization happens at the end.
