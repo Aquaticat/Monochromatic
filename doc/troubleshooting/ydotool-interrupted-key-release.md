@@ -271,10 +271,10 @@ including:
   and related shell programs.
 
 Text inspection such as `rg ydotool .` remains allowed.
-A `systemd-run` invocation is not classified as caller-scoped because systemd owns
-its child after the Pi Bash caller is canceled.
-Live global input still requires user authorization,
-and this incident did not validate a systemd-run injection against the desktop.
+Generic forwarding through `systemd-run` is blocked too.
+A caller-independent broker must expose a narrow input API and own key release internally,
+rather than accepting arbitrary ydotool commands from agent-authored shell.
+Live global input still requires user authorization.
 
 The hard guard runs even when auto-mode bypass is enabled.
 `package/pi-plugin/auto-mode/src/virtual-input-guard.unit.test.ts`
