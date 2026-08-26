@@ -6,7 +6,11 @@ import {
   describeSpread,
   REPORTED_PERCENTILES,
 } from './census-spread.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
+import {
+  resolveRunsDir,
+  RUN_CORPUS_PIN,
+} from './run-config.ts';
+import { readSettledRecipe, } from './settled-carve.ts';
 import {
   censusEntry,
   type EntryCensus,
@@ -49,6 +53,36 @@ const PROBE_TIMEOUT_CHARS = 4_641;
  */
 const UNPAIRED_ENTRIES_LISTED = 5;
 
+
+/**
+ * Counts the rows whose sizes describe one carve.
+ *
+ * @param rows - census rows
+ *
+ * @param carve - carve to count
+ *
+ * @returns How many rows carry it
+ *
+ * @example
+ * ```ts
+ * const complete = countCarve({ rows, carve: 'settled-complete', },);
+ * ```
+ */
+function countCarve(
+  {
+    rows,
+    carve,
+  }: {
+    readonly rows: readonly EntryCensus[];
+    readonly carve: EntryCensus['carve'];
+  },
+): number {
+  return rows
+    .filter(function carries(row,): boolean {
+      return row.carve === carve;
+    },)
+    .length;
+}
 
 /**
  * One entry with the largest single slice it produced.
@@ -97,10 +131,40 @@ async function main(): Promise<void> {
    * Ids missing one side, which is ordinary rather than a fault.
    */
   const incomplete: string[] = [];
+  /**
+   * Runs directory whose settled artifacts carry each entry's recipe.
+   */
+  const runsDir = await resolveRunsDir();
+
+  /**
+   * Entries whose artifact predates the recipe, carved deterministically.
+   */
+  const legacy: string[] = [];
   for (const entryId of entryIds) {
+    /**
+     * Recipe the entry's settled artifact records, if any.
+     */
+    /* oxlint-disable-next-line no-await-in-loop -- sequential by design: this reads git at a pinned commit and a fan-out would only contend for the same object store */
+    const settled = await readSettledRecipe({
+      entryId,
+      runsDir,
+    },);
+    if (settled.kind === 'legacy')
+      legacy.push(entryId,);
     try {
       /* oxlint-disable-next-line no-await-in-loop -- sequential by design: this reads git at a pinned commit and a fan-out would only contend for the same object store */
-      rows.push(await censusEntry({ entryId, },),);
+      rows.push(await censusEntry({
+        entryId,
+        ...((settled.kind === 'settled')
+          ? {
+            pin: {
+              cloneDir: RUN_CORPUS_PIN.cloneDir,
+              commitSha: settled.corpusSha,
+            },
+            recipe: settled.recipe,
+          }
+          : {}),
+      },),);
     }
     catch (error) {
       // A missing translation is the ordinary shape of an incomplete pair, and
@@ -128,6 +192,36 @@ async function main(): Promise<void> {
     `CENSUS ${String(rows.length,)} complete pairs, ${
       String(incomplete.length,)
     } incomplete, ${String(sourceChars.length,)} slices`,
+  );
+
+  /**
+   * Rows by which carve their sizes describe.
+   */
+  const carved = {
+    complete: countCarve({
+      rows,
+      carve: 'settled-complete',
+    },),
+    partial: countCarve({
+      rows,
+      carve: 'settled-partial',
+    },),
+    deterministic: countCarve({
+      rows,
+      carve: 'deterministic',
+    },),
+  };
+  // WHICH SLICING THE SIZES DESCRIBE, said before any size is. A settled entry
+  // is carved through its artifact's recipe, so its slices are the ones the
+  // lanes judged; an entry no artifact records is carved by the deterministic
+  // aligner, which is a baseline the pass no longer runs, and a reader sizing
+  // a lane over these numbers needs to know how many rows are which.
+  console.log(
+    `CENSUS carve: ${String(carved.complete,)} settled entries with a complete recipe, ${
+      String(carved.partial,)
+    } settled with a defaulted half, ${String(carved.deterministic,)} deterministic baseline (${
+      String(legacy.length,)
+    } of those hold a legacy artifact)`,
   );
   console.log(describeSpread({
     label: 'CENSUS slice source chars',

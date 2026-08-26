@@ -1,11 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  listCorpusPeople,
-  readCorpusFile,
-} from '../corpus-source.ts';
-import { prepareDocumentPair, } from '../document-preparation.ts';
-import {
   alterSharedNumber,
   type DamageAttempt,
   deleteOneSentence,
@@ -21,10 +16,16 @@ import {
 } from '../judge-fidelity.ts';
 import {
   createRunClient,
+  resolveRunsDir,
   RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import {
+  carveSettled,
+  listSettledEntryIds,
+  recipeLabel,
+} from './settled-carve.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
@@ -126,31 +127,6 @@ const ARRANGEMENTS: readonly {
     cleanFirst: false,
   },
 ];
-
-/**
- * Both sides of one entry, or the fact that it has only one.
- */
-type PairRead = {
-  /**
-   * Both files were there.
-   */
-  readonly kind: 'read';
-
-  /**
-   * Original document text.
-   */
-  readonly source: string;
-
-  /**
-   * Translation document text.
-   */
-  readonly target: string;
-} | {
-  /**
-   * One side is absent, which is an incomplete entry rather than a fault.
-   */
-  readonly kind: 'missing';
-};
 
 /**
  * One trial and what came back.
@@ -300,8 +276,11 @@ function readArguments(): {
 /**
  * Runs constructed comparisons past the production judges, up to the cap.
  *
- * READS THAT FAIL ARE SKIPPED AND LOGGED rather than thrown, since an entry with
- * only one side is an ordinary state of this corpus.
+ * OVER SETTLED ENTRIES ONLY, carved through the recipe each artifact records.
+ * The trials ask how the judges read a slice as the lanes see it, and the lanes
+ * see slices the roster shell carved; an entry the pass never settled has no
+ * such slicing, and the bare deterministic carve this used to run is a
+ * different instrument, not a cheaper approximation.
  *
  * @example
  * ```ts
@@ -340,12 +319,18 @@ async function main(): Promise<void> {
   const rows: FidelityRow[] = [];
 
   /**
-   * Entries to walk, filtered when the caller named some.
+   * Runs directory whose settled artifacts name the population.
    */
-  const entryIds = (await listCorpusPeople({ pin: RUN_CORPUS_PIN, },))
+  const runsDir = await resolveRunsDir();
+
+  /**
+   * Settled entries to walk, filtered when the caller named some.
+   */
+  const entryIds = (await listSettledEntryIds({ runsDir, },))
     .filter(function isWanted(entryId,): boolean {
       return (onlyIds.length === 0) || onlyIds.includes(entryId,);
     },);
+  log.info(`settled entries to walk: ${String(entryIds.length,)}`,);
   /* oxlint-disable no-await-in-loop -- Sequential on purpose: this probe exists
      to be read while it runs, and a fan-out would interleave several entries
      into one stream. */
@@ -354,37 +339,23 @@ async function main(): Promise<void> {
       break;
 
     /**
-     * Both sides at the pin, or nothing when this entry lacks one.
+     * Slices as the lanes saw them, rebuilt through the artifact's recipe.
      */
-    const texts = await (async function readPair(): Promise<PairRead> {
-      try {
-        return {
-          kind: 'read',
-          source: await readCorpusFile({
-            pin: RUN_CORPUS_PIN,
-            relPath: `people/${entryId}/page.md`,
-          },),
-          target: await readCorpusFile({
-            pin: RUN_CORPUS_PIN,
-            relPath: `people/${entryId}/page.en.md`,
-          },),
-        };
-      }
-      catch (error) {
-        log.info(`${entryId}: skipped, ${String(error,)}`,);
-        return { kind: 'missing', };
-      }
-    })();
-    if (texts.kind === 'missing')
+    const carve = await carveSettled({
+      entryId,
+      runsDir,
+      cloneDir: RUN_CORPUS_PIN.cloneDir,
+    },);
+    if (carve.kind !== 'settled') {
+      log.info(`${entryId}: skipped, ${carve.kind} artifact records no recipe`,);
       continue;
+    }
+    log.info(`${entryId}: carved from its settled artifact (${recipeLabel({ recipe: carve.recipe, },)})`,);
 
     /**
-     * Slices exactly as the lanes would see them.
+     * Slicing to draw trials from.
      */
-    const prepared = prepareDocumentPair({
-      sourceText: texts.source,
-      targetText: texts.target,
-    },);
+    const { prepared, } = carve;
     /**
      * Damaged pairs taken from this entry so far.
      */

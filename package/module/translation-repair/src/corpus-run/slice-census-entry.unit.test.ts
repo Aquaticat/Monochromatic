@@ -107,6 +107,43 @@ const FULL_TARGET_PAGE = [
 ].join('\n',);
 
 /**
+ * Original page with one section of three blocks, so a block pairing that
+ * declines the middle one changes what the slice carries.
+ */
+const BLOCKY_SOURCE_PAGE = [
+  '---',
+  'name: 小猫-whiskers',
+  '---',
+  '',
+  '## 日常',
+  '',
+  '猫猫喜欢晒太阳。',
+  '',
+  '它每天在窗台上睡午觉。',
+  '',
+  '大家都说它是一只很温柔的猫。',
+  '',
+].join('\n',);
+
+/**
+ * Translation of the same three blocks.
+ */
+const BLOCKY_TARGET_PAGE = [
+  '---',
+  'name: Whiskers',
+  '---',
+  '',
+  '## Daily life',
+  '',
+  'Whiskers likes to sun herself.',
+  '',
+  'She naps on the windowsill every day.',
+  '',
+  'Everyone says she is a very gentle cat.',
+  '',
+].join('\n',);
+
+/**
  * Translation that stops after the first section, so two go unpaired.
  */
 const SHORT_TARGET_PAGE = [
@@ -180,7 +217,13 @@ async function fixtureGit(
  * ```
  */
 async function throwawayCorpus(
-  { targetPage, }: { readonly targetPage: string; },
+  {
+    targetPage,
+    sourcePage = SOURCE_PAGE,
+  }: {
+    readonly targetPage: string;
+    readonly sourcePage?: string;
+  },
 ): Promise<
   AsyncDisposable & {
     readonly pin: {
@@ -225,7 +268,7 @@ async function throwawayCorpus(
       ENTRY_ID,
       'page.md',
     ),
-    SOURCE_PAGE,
+    sourcePage,
     'utf8',
   );
   await writeFile(
@@ -362,6 +405,116 @@ await describe({
           entryId: ENTRY_ID,
           pin: corpus.pin,
         },)).unpairedSourceSections,).toBe(0,);
+      },
+    },),
+    it({
+      name:
+        'CARVES the sections through a supplied recipe and labels the row settled, since the slice sizes '
+        + 'then describe the slicing the lanes judged rather than the deterministic baseline',
+      fn: async () => {
+        await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
+
+        /**
+         * Deterministic carve, which pairs the three equal-shaped sections by
+         * index and leaves nothing unpaired.
+         */
+        const baseline = await censusEntry({
+          entryId: ENTRY_ID,
+          pin: corpus.pin,
+        },);
+        expect(baseline.carve,).toBe('deterministic',);
+        expect(baseline.unpairedSourceSections,).toBe(0,);
+
+        /**
+         * Carve through a recipe whose section round paired the outer two
+         * sections and left the middle one unclaimed.
+         */
+        const settled = await censusEntry({
+          entryId: ENTRY_ID,
+          pin: corpus.pin,
+          recipe: {
+            sectionPairing: [
+              {
+                source: 0,
+                target: 0,
+              },
+              {
+                source: 2,
+                target: 2,
+              },
+            ],
+            unrecorded: [],
+          },
+        },);
+        expect(settled.carve,).toBe('settled-complete',);
+        // The recipe has to move the accounting, or this passes for the wrong
+        // reason.
+        expect(settled.unpairedSourceSections,).toBe(1,);
+        expect(settled.unpairedTargetSections,).toBe(1,);
+      },
+    },),
+    it({
+      name:
+        'CARVES the blocks through a supplied recipe, so a block the roster declined leaves the slice, '
+        + 'and labels a recipe with a defaulted half as partial',
+      fn: async () => {
+        await using corpus = await throwawayCorpus({
+          sourcePage: BLOCKY_SOURCE_PAGE,
+          targetPage: BLOCKY_TARGET_PAGE,
+        },);
+
+        /**
+         * Deterministic carve: one slice carrying all three blocks.
+         */
+        const baseline = await censusEntry({
+          entryId: ENTRY_ID,
+          pin: corpus.pin,
+        },);
+
+        /**
+         * Carve through a recipe that declines the middle block, recorded
+         * without a section decider.
+         */
+        const settled = await censusEntry({
+          entryId: ENTRY_ID,
+          pin: corpus.pin,
+          recipe: {
+            blockPairings: new Map([[
+              0,
+              [
+                {
+                  source: 0,
+                  target: 0,
+                },
+                {
+                  source: 2,
+                  target: 2,
+                },
+              ],
+            ],],),
+            unrecorded: ['sectionPairing',],
+          },
+        },);
+        expect(settled.carve,).toBe('settled-partial',);
+
+        /**
+         * Translation characters the two carves put into slices.
+         */
+        const [baselineChars, settledChars,] = [
+          baseline,
+          settled,
+        ].map(function totalTarget(row,): number {
+          return row.sliceTargetChars
+            .reduce(function add(
+              sum,
+              chars,
+            ): number {
+              return sum + chars;
+            }, 0,);
+        },);
+        // The declined block has to leave the slice, or the recipe reached
+        // subdivision as nothing.
+        expect(settledChars,).toBeLessThan(baselineChars ?? 0,);
       },
     },),
     it({

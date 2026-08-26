@@ -12,6 +12,7 @@ import {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
 } from '../slice-pair.ts';
+import type { PairingRecipe, } from './artifact-two-lane-rebuild.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Slice census entry
@@ -97,7 +98,24 @@ export type EntryCensus = {
    * split paragraph does not.
    */
   readonly targetOnlyBlockChars: readonly number[];
+
+  /**
+   * Which carve the slice sizes describe: the settled artifact's recipe, whole
+   * or with a defaulted half, or the deterministic baseline where no artifact
+   * records this entry.
+   */
+  readonly carve: CensusCarve;
 };
+
+/**
+ * Which slicing a census row measured.
+ *
+ * @example
+ * ```ts
+ * const carve: CensusCarve = 'deterministic';
+ * ```
+ */
+export type CensusCarve = 'settled-complete' | 'settled-partial' | 'deterministic';
 
 /**
  * Measures one corpus entry.
@@ -112,6 +130,10 @@ export type EntryCensus = {
  * passed rather than read so this is testable against a throwaway clone instead
  * of the unlicensed one
  *
+ * @param recipe - pairing recipe the entry's settled artifact records, which
+ * makes the slice sizes those of the slicing the lanes judged; absent, the
+ * deterministic aligner carves and the row says so
+ *
  * @example
  * ```ts
  * const row = await censusEntry({ entryId: 'Toka_ls', },);
@@ -121,9 +143,11 @@ export async function censusEntry(
   {
     entryId,
     pin = RUN_CORPUS_PIN,
+    recipe,
   }: {
     readonly entryId: string;
     readonly pin?: CorpusPin;
+    readonly recipe?: PairingRecipe;
   },
 ): Promise<EntryCensus> {
   /**
@@ -154,11 +178,18 @@ export async function censusEntry(
   const targetDocument = parseDocument({ text: targetText, },);
 
   /**
-   * Aligned section pairs, exactly as the pipeline cuts them.
+   * Section pairing the recipe supplies, absent under the deterministic carve.
+   */
+  const sectionPairing = recipe?.sectionPairing;
+
+  /**
+   * Aligned section pairs, as the pass cut them when a recipe is supplied and
+   * as the deterministic aligner cuts them otherwise.
    */
   const alignment = alignDocumentSections({
     source: sourceDocument,
     target: targetDocument,
+    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
   },);
 
   /**
@@ -193,7 +224,16 @@ export async function censusEntry(
    * Target characters of every slice.
    */
   const sliceTargetChars: number[] = [];
-  for (const pair of alignment.pairs) {
+  for (
+    const [pairIndex, pair,] of alignment.pairs
+      .entries()
+  ) {
+    /**
+     * Block pairing the recipe supplies for this section, absent under the
+     * deterministic carve and where the roster agreed nothing.
+     */
+    const blockPairing = recipe?.blockPairings
+      ?.get(pairIndex,);
     /**
      * Blocks each side carries.
      */
@@ -229,6 +269,7 @@ export async function censusEntry(
         targetText,
         baseIndex: sliceSourceChars.length,
         budget: SLICE_CHAR_BUDGET,
+        ...((blockPairing === undefined) ? {} : { blockPairing, }),
       },)
     ) {
       sliceSourceChars.push(slice.source
@@ -326,8 +367,21 @@ export async function censusEntry(
   const pairedSections = alignment.pairs
     .length;
 
+  /**
+   * Halves the recipe lacks, none at all under the deterministic carve.
+   */
+  const unrecorded = recipe?.unrecorded ?? [];
+
+  /**
+   * Which carve these sizes describe.
+   */
+  const carve: CensusCarve = (recipe === undefined)
+    ? 'deterministic'
+    : ((unrecorded.length === 0) ? 'settled-complete' : 'settled-partial');
+
   return {
     entryId,
+    carve,
     sliceSourceChars,
     sliceTargetChars,
     unpairedSourceSections: sourceSections.length - pairedSections,

@@ -34,6 +34,35 @@ import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.t
 export type RecipeHalf = 'sectionPairing' | 'blockPairing';
 
 /**
+ * The pairing recipe an artifact records, as the inputs `prepareDocumentPair`
+ * consumes, beside the halves the file does not record.
+ *
+ * @example
+ * ```ts
+ * const { sectionPairing, blockPairings, unrecorded, } = recipeOf({ artifact, },);
+ * ```
+ */
+export type PairingRecipe = {
+  /**
+   * Section pairing to supply, present only when the file records one as
+   * supplied.
+   */
+  readonly sectionPairing?: readonly SectionPair[];
+
+  /**
+   * Block pairings keyed by aligned section index, present only when the file
+   * records them.
+   */
+  readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
+
+  /**
+   * Recipe halves the artifact does not record, each to be rebuilt as the
+   * deterministic default; empty when the recipe is complete.
+   */
+  readonly unrecorded: readonly RecipeHalf[];
+};
+
+/**
  * A preparation carved from an artifact's recorded recipe, beside what the
  * recipe was missing.
  *
@@ -132,6 +161,58 @@ function blockPairingsOf(
 }
 
 /**
+ * Reads the pairing recipe an artifact records, as preparation inputs.
+ *
+ * SEPARATE FROM THE REBUILD because the slice census walks alignment and
+ * subdivision itself, for its section-level accounting, and needs the recipe
+ * pieces rather than a finished preparation.
+ *
+ * @param artifact - parsed artifact naming the recipe
+ *
+ * @returns Recipe halves the file records, and the names of those it lacks
+ *
+ * @example
+ * ```ts
+ * const recipe = recipeOf({ artifact, },);
+ * ```
+ */
+export function recipeOf(
+  { artifact, }: { readonly artifact: ParsedTwoLaneArtifact; },
+): PairingRecipe {
+  /**
+   * Section pairing to supply, when one was recorded as supplied.
+   */
+  const [sectionPairing,] = sectionPairingOf({ artifact, },);
+
+  /**
+   * Block pairings to supply, when the file records them.
+   */
+  const [blockPairings,] = blockPairingsOf({ artifact, },);
+
+  /**
+   * Halves the file does not say anything about.
+   */
+  const unrecorded: RecipeHalf[] = [];
+
+  /**
+   * What the artifact says about both halves, read once for the gap list.
+   */
+  const {
+    sectionPairing: recordedSections,
+    blockPairing: recordedBlocks,
+  } = artifact.preparation;
+  if (recordedSections.kind === 'unrecorded')
+    unrecorded.push('sectionPairing',);
+  if (recordedBlocks.kind === 'unrecorded')
+    unrecorded.push('blockPairing',);
+  return {
+    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
+    ...((blockPairings === undefined) ? {} : { blockPairings, }),
+    unrecorded,
+  };
+}
+
+/**
  * Carves a document pair with the recipe a settled artifact records.
  *
  * @param artifact - parsed artifact naming the recipe
@@ -159,32 +240,13 @@ export function rebuildPreparation(
   },
 ): RebuiltPreparation {
   /**
-   * Section pairing to supply, when one was recorded as supplied.
-   */
-  const [sectionPairing,] = sectionPairingOf({ artifact, },);
-
-  /**
-   * Block pairings to supply, when the file records them.
-   */
-  const [blockPairings,] = blockPairingsOf({ artifact, },);
-
-  /**
-   * Halves the file does not say anything about.
-   */
-  const unrecorded: RecipeHalf[] = [];
-
-  /**
-   * What the artifact says about both halves, read once for the gap list.
+   * Recipe the file records, and what it lacks.
    */
   const {
-    sectionPairing: recordedSections,
-    blockPairing: recordedBlocks,
-  } = artifact.preparation;
-  if (recordedSections.kind === 'unrecorded')
-    unrecorded.push('sectionPairing',);
-  if (recordedBlocks.kind === 'unrecorded')
-    unrecorded.push('blockPairing',);
-
+    sectionPairing,
+    blockPairings,
+    unrecorded,
+  } = recipeOf({ artifact, },);
   return {
     prepared: prepareDocumentPair({
       sourceText,

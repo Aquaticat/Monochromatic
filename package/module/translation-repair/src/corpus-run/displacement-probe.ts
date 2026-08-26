@@ -1,18 +1,22 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  CorpusReadError,
-  listCorpusPeople,
-  readCorpusFile,
-} from '../corpus-source.ts';
-import {
   classifyDisplacement,
   type DocumentDisplacement,
   type RelocationCandidate,
 } from '../displacement-class.ts';
 import { sliceSizeOf, } from '../displacement-ratio.ts';
-import { prepareDocumentPair, } from '../document-preparation.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
+import type { PreparedDocumentPair, } from '../document-preparation.ts';
+import {
+  resolveRunsDir,
+  RUN_CORPUS_PIN,
+} from './run-config.ts';
+import {
+  carveSettled,
+  listSettledEntryIds,
+  recipeLabel,
+  type SettledCarve,
+} from './settled-carve.ts';
 import { isMarkupOnly, } from './markup-slice.ts';
 import { sharesMedia, } from './transcription-suspect.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
@@ -92,87 +96,12 @@ type EntryDisplacement = {
 };
 
 /**
- * Both sides of one entry, or the fact that it has only one.
- */
-type PairRead = {
-  /**
-   * Both files were there.
-   */
-  readonly kind: 'read';
-
-  /**
-   * Original document text.
-   */
-  readonly source: string;
-
-  /**
-   * Translation document text.
-   */
-  readonly target: string;
-} | {
-  /**
-   * One side is absent, which is an incomplete entry rather than a fault.
-   */
-  readonly kind: 'missing';
-};
-
-/**
- * Reads one entry's two sides, or reports that it has only one.
- *
- * ONLY A CORPUS READ FAILURE IS "MISSING", which narrows the old catch without
- * closing it. An earlier version caught EVERY error here, so a decoding fault or
- * a programming mistake read as an entry that simply lacks a translation, and the
- * corpus-wide counts would quietly shrink. Those now propagate.
- *
- * WHAT IT STILL CONFLATES: `CorpusReadError` is thrown whenever git exits
- * non-zero, so an absent path, a bad pin, a permission problem and a broken git
- * invocation are one class here. Telling them apart needs a missing-object
- * discriminant on the error rather than a wider catch, which is `#432`.
- *
- * @param entryId - corpus entry to read
- *
- * @returns Both texts, or that one side is absent
- *
- * @throws Whatever the read threw, when it was not a corpus read failure
- *
- * @example
- * ```ts
- * const texts = await readPair({ entryId, },);
- * ```
- */
-async function readPair({ entryId, }: { readonly entryId: string; },): Promise<PairRead> {
-  try {
-    return {
-      kind: 'read',
-      source: await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${entryId}/page.md`,
-      },),
-      target: await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${entryId}/page.en.md`,
-      },),
-    };
-  }
-  catch (error) {
-    if (!(error instanceof CorpusReadError))
-      throw error;
-    // An entry with one side is an ordinary state of this corpus rather than a
-    // fault, so the reason is recorded and the walk continues.
-    tagged({ tag: 'displacement-probe', },)
-      .info(`${entryId}: skipped, ${String(error,)}`,);
-    return { kind: 'missing', };
-  }
-}
-
-/**
  * Reads one entry's slice sizes.
  *
  * @param entryId - corpus entry to read
  *
- * @param source - original document text
- *
- * @param target - translation document text
+ * @param prepared - slicing the lanes saw, carved through the entry's settled
+ * recipe
  *
  * @returns What the screen made of it
  *
@@ -184,22 +113,12 @@ async function readPair({ entryId, }: { readonly entryId: string; },): Promise<P
 function readEntry(
   {
     entryId,
-    source,
-    target,
+    prepared,
   }: {
     readonly entryId: string;
-    readonly source: string;
-    readonly target: string;
+    readonly prepared: PreparedDocumentPair;
   },
 ): EntryDisplacement {
-  /**
-   * Slices exactly as the lanes would see them.
-   */
-  const prepared = prepareDocumentPair({
-    sourceText: source,
-    targetText: target,
-  },);
-
   /**
    * Sizes of both sides per slice, classified.
    */
@@ -467,7 +386,32 @@ function corpusTotals(
 }
 
 /**
- * Walks the pinned corpus and reports what its size anomalies look like.
+ * One entry beside its carve, or the reason it has none.
+ *
+ * @example
+ * ```ts
+ * const entry: EntryCarve = { entryId: 'whiskers', carve: { kind: 'unsettled', }, };
+ * ```
+ */
+type EntryCarve = {
+  /**
+   * Corpus entry.
+   */
+  readonly entryId: string;
+
+  /**
+   * Its carve through the settled recipe, or why there is none.
+   */
+  readonly carve: SettledCarve;
+};
+
+/**
+ * Walks the settled entries and reports what their size anomalies look like.
+ *
+ * OVER SETTLED ENTRIES ONLY, carved through the recipe each artifact records,
+ * since the displacement this reads is a property of the slicing the lanes
+ * judged. Its first versions carved the whole corpus with the deterministic
+ * aligner and counted that aligner's own slides as translation displacement.
  *
  * @example
  * ```ts
@@ -481,34 +425,79 @@ async function main(): Promise<void> {
   const log = tagged({ tag: 'displacement-probe', },);
 
   /**
-   * Every entry at the pin.
+   * Runs directory whose settled artifacts name the population.
    */
-  const entryIds = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
+  const runsDir = await resolveRunsDir();
 
   /**
-   * Readings for every complete pair.
+   * Every settled entry.
    */
-  const rows = (await Promise.all(entryIds.map(async function toRow(entryId,) {
-    /**
-     * Both sides, or nothing when this entry lacks one.
-     */
-    const texts = await readPair({ entryId, },);
-    if (texts.kind === 'missing')
-      return undefined;
-    return readEntry({
-      entryId,
-      source: texts.source,
-      target: texts.target,
-    },);
-  },),))
-    .filter(function wasRead(row,): row is EntryDisplacement {
-      return row !== undefined;
-    },);
+  const entryIds = await listSettledEntryIds({ runsDir, },);
+
   /**
-   * Counts across every complete pair.
+   * Each entry carved through its recipe, or the reason it could not be.
+   */
+  const carves = await Promise.all(entryIds.map(async function toCarve(entryId,): Promise<EntryCarve> {
+    /**
+     * Slicing the lanes saw.
+     */
+    const carve = await carveSettled({
+      entryId,
+      runsDir,
+      cloneDir: RUN_CORPUS_PIN.cloneDir,
+    },);
+    if (carve.kind !== 'settled')
+      log.info(`${entryId}: skipped, ${carve.kind} artifact records no recipe`,);
+    return {
+      entryId,
+      carve,
+    };
+  },),);
+
+  /**
+   * Readings for every settled entry.
+   */
+  const rows = carves.flatMap(function toRow({
+    entryId,
+    carve,
+  },): readonly EntryDisplacement[] {
+    if (carve.kind !== 'settled')
+      return [];
+    return [readEntry({
+      entryId,
+      prepared: carve.prepared,
+    },),];
+  },);
+
+  /**
+   * Settled entries whose recipe had a defaulted half.
+   */
+  const defaulted = carves.filter(function wasDefaulted({ carve, },): boolean {
+    if (carve.kind !== 'settled')
+      return false;
+
+    /**
+     * Halves this recipe lacks.
+     */
+    const { unrecorded, } = carve.recipe;
+    return unrecorded.length > 0;
+  },);
+
+  /**
+   * Counts across every settled entry.
    */
   const totals = corpusTotals({ rows, },);
-  log.info(`complete pairs: ${String(rows.length,)}`,);
+  log.info(`settled entries carved: ${String(rows.length,)} of ${String(entryIds.length,)} artifacts`,);
+  log.info(`  with a defaulted recipe half: ${String(defaulted.length,)}`,);
+  for (
+    const {
+      entryId,
+      carve,
+    } of defaulted
+  ) {
+    if (carve.kind === 'settled')
+      log.info(`  ${entryId}: ${recipeLabel({ recipe: carve.recipe, },)}`,);
+  }
   log.info(`slices read: ${String(totals.slices,)}`,);
   log.info(`entries falling back to the corpus baseline: ${String(totals.fellBack,)}`,);
   log.info(`relocation candidates: ${String(totals.relocationCandidates,)}`,);

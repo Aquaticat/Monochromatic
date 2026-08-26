@@ -56,10 +56,20 @@ export {
   type SettledVerification,
 } from './corpus-run/rendering-audit-settled-input.ts';
 export {
+  type PairingRecipe,
   type RebuiltPreparation,
   rebuildPreparation,
   type RecipeHalf,
+  recipeOf,
 } from './corpus-run/artifact-two-lane-rebuild.ts';
+export {
+  carveSettled,
+  listSettledEntryIds,
+  readSettledRecipe,
+  recipeLabel,
+  type SettledCarve,
+  type SettledRecipe,
+} from './corpus-run/settled-carve.ts';
 export {
   identityOf,
   type SettledAuditSubject,
