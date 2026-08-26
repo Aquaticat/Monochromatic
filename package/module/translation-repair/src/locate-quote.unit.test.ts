@@ -147,7 +147,7 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (source) needle="狗狗喜欢游泳"',
+          reason: 'quote-not-found (source) needle=6 chars, 0 Latin tokens',
         },);
       },
     },),
@@ -269,13 +269,13 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (target) needle="狗在院子里跑步"',
+          reason: 'quote-not-found (target) needle=7 chars, 0 Latin tokens',
         },);
       },
     },),
     it({
-      name: 'TRUNCATES a paragraph-length needle, since a finding is a '
-        + 'scorecard line while critics quote whole paragraphs',
+      name: 'COUNTS a paragraph-length needle rather than quoting any of it, since a finding travels '
+        + 'into logs and artifacts where corpus text does not belong',
       fn: async () => {
         /**
          * Absent quote longer than the preview bound, built from one repeated
@@ -293,7 +293,7 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: `quote-not-found (target) needle="${'狗'.repeat(60,)}…"`,
+          reason: 'quote-not-found (target) needle=200 chars, 0 Latin tokens',
         },);
       },
     },),
@@ -311,7 +311,7 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (target) needle="狗在院子 里跑步"',
+          reason: 'quote-not-found (target) needle=8 chars, 0 Latin tokens',
         },);
       },
     },),

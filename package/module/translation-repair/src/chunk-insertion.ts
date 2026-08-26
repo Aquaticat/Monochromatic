@@ -4,6 +4,7 @@ import {
   admitWithinShortfall,
   pageShortfall,
 } from './coverage-corroboration.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 //region Chunk insertion placement
 // `#100` landing 5: which untranslated sections get an anchor to be written at,
@@ -208,9 +209,10 @@ export function placeInsertions(
     passages: anchored.map(function toPassage(step,) {
       return {
         where: String(step.sourceIndex,),
-        sourceText: sourceChunks[step.sourceIndex]
-          ?.text
-          ?? '',
+        // A step names a chunk that exists, by construction; an absent one is
+        // a fault to raise, not a passage to read as empty.
+        sourceText: nonNullishOrThrow(sourceChunks[step.sourceIndex],)
+          .text,
       };
     },),
   },),);

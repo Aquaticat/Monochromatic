@@ -195,11 +195,17 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
   const atoms: ProtectedAtom[] = [];
 
   /**
-   * Characters of the run currently open, and which kind it is.
+   * Cursor over the leaf, in UTF-16 units, shared with the flush so a run can
+   * be sliced once at its end rather than rebuilt per character.
+   */
+  const cursor = { at: 0, };
+
+  /**
+   * Where the run currently open starts, and which kind it is.
    */
   const run = {
     kind: 'none' as 'none' | 'number' | 'foreign',
-    chars: '',
+    start: 0,
   };
 
   /**
@@ -219,10 +225,12 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
       return;
     atoms.push({
       kind: run.kind === 'number' ? 'number' : 'foreign-run',
-      value: run.chars,
+      value: text.slice(
+        run.start,
+        cursor.at,
+      ),
     },);
     run.kind = 'none';
-    run.chars = '';
   }
 
   // Walked by CODE POINT rather than by UTF-16 unit or by spread. Han
@@ -230,11 +238,11 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
   // one character into two surrogates and read neither as foreign; spreading
   // the string would be correct here but breaks grapheme clusters in general.
   // `codePointAt` plus an explicit width is right for both.
-  for (let index = 0; index < text.length;) {
+  while (cursor.at < text.length) {
     /**
      * Code point at the cursor, present because the cursor is in range.
      */
-    const codePoint = text.codePointAt(index,) ?? 0;
+    const codePoint = text.codePointAt(cursor.at,) ?? 0;
 
     /**
      * UTF-16 units this code point occupies.
@@ -249,20 +257,22 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
     /**
      * Code point after this one, absent at the end of the leaf.
      */
-    const nextPoint = (index + width) < text.length
-      ? text.codePointAt(index + width,)
+    const nextPoint = (cursor.at + width) < text.length
+      ? text.codePointAt(cursor.at + width,)
       : undefined;
     if (isDigit(codePoint,)) {
-      if (run.kind !== 'number')
+      if (run.kind !== 'number') {
         flush();
+        run.start = cursor.at;
+      }
       run.kind = 'number';
-      run.chars += character;
     }
     else if (isForeign(codePoint,)) {
-      if (run.kind !== 'foreign')
+      if (run.kind !== 'foreign') {
         flush();
+        run.start = cursor.at;
+      }
       run.kind = 'foreign';
-      run.chars += character;
     }
     else if (
       (run.kind === 'number')
@@ -270,12 +280,12 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
         && (nextPoint !== undefined)
         && isDigit(nextPoint,)
     ) {
-      run.chars += character;
+      // A separator inside a number continues the run; nothing to record.
     }
     else {
       flush();
     }
-    index += width;
+    cursor.at += width;
   }
   flush();
   return atoms;

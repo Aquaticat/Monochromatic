@@ -86,9 +86,9 @@ export function scanFullwidthMarkers(
 
   while (cursor !== (-1)) {
     /**
-     * Digits collected between brackets, normalized to ASCII.
+     * Digits collected between brackets, normalized to ASCII, joined once.
      */
-    let digits = '';
+    const digitParts: string[] = [];
 
     /**
      * Cursor walking characters after opening bracket.
@@ -103,10 +103,14 @@ export function scanFullwidthMarkers(
       if (digitIndex === (-1))
         break;
 
-      digits = `${digits}${String(digitIndex % DECIMAL_BASE,)}`;
+      digitParts.push(String(digitIndex % DECIMAL_BASE,),);
       probe += 1;
     }
 
+    /**
+     * Identifier the digits spell.
+     */
+    const digits = digitParts.join('',);
     if ((digits !== '') && (slice[probe] === FULLWIDTH_CLOSE))
       hits.push({
         identifier: digits,
@@ -170,14 +174,14 @@ export function scanGfmReferenceLiterals(
 
   while (cursor !== (-1)) {
     /**
-     * Identifier characters collected before closing bracket.
+     * Where the identifier starts, just after the opening sequence.
      */
-    let identifier = '';
+    const identifierStart = cursor + GFM_REF_OPEN.length;
 
     /**
      * Cursor walking characters after opening sequence.
      */
-    let probe = cursor + GFM_REF_OPEN.length;
+    let probe = identifierStart;
 
     while (probe < slice.length) {
       /**
@@ -187,10 +191,16 @@ export function scanGfmReferenceLiterals(
       if ((character === GFM_REF_CLOSE) || GFM_IDENTIFIER_STOPPERS.includes(character,))
         break;
 
-      identifier = `${identifier}${character}`;
       probe += 1;
     }
 
+    /**
+     * Identifier characters collected before the closing bracket, sliced once.
+     */
+    const identifier = slice.slice(
+      identifierStart,
+      probe,
+    );
     if ((identifier !== '') && (slice[probe] === GFM_REF_CLOSE))
       hits.push({
         identifier,

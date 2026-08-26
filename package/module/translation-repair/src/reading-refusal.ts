@@ -147,22 +147,30 @@ export function latinWords({ text, }: { readonly text: string; },): readonly str
   const words: string[] = [];
 
   /**
-   * Word being built, empty between words.
+   * Characters of the word being built, empty between words; joined once when
+   * the word closes rather than rebuilt per character.
    */
-  let current = '';
+  const current: string[] = [];
+
+  /**
+   * Closes the word being built, if any.
+   */
+  function closeWord(): void {
+    if (current.length === 0)
+      return;
+    words.push(current.join('',)
+      .toLowerCase(),);
+    current.length = 0;
+  }
 
   for (const character of text) {
     if (continuesWord({ character, },)) {
-      current += (character === '’') ? '\'' : character;
+      current.push((character === '’') ? '\'' : character,);
       continue;
     }
-    if (current !== '') {
-      words.push(current.toLowerCase(),);
-      current = '';
-    }
+    closeWord();
   }
-  if (current !== '')
-    words.push(current.toLowerCase(),);
+  closeWord();
   return words;
 }
 

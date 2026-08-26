@@ -25,83 +25,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  quotedTranscript,
-  readingAnchors,
   readingMakesSense,
-  sharedAnchorCount,
 } from '../dist/final/node/index.mjs';
-
-await describe({
-  name: readingAnchors.name,
-  children: [
-    it({
-      name: 'KEEPS THE PARTS THAT SURVIVE PARAPHRASE, dates and handles and addresses, since two '
-        + 'readings of one picture share those even when every sentence around them differs',
-      fn: async () => {
-        /**
-         * Anchors of a short profile.
-         */
-        const anchors = readingAnchors({ text: 'Adopted 2019, handle @mittensdaily.', },);
-
-        expect(anchors.has('2019',),).toBe(true,);
-        expect(anchors.has('mittensdaily',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'DROPS RUNS TOO SHORT TO IDENTIFY ANYTHING, so a reading and a transcript sharing only '
-        + 'the word "the" are not taken to describe one picture',
-      fn: async () => {
-        /**
-         * Anchors of a sentence carrying no identifiers.
-         */
-        const anchors = readingAnchors({ text: 'The cat sat on the mat by it.', },);
-
-        expect(anchors.has('the',),).toBe(false,);
-        expect(anchors.has('cat',),).toBe(false,);
-        expect(anchors.has('mat',),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'SEPARATES A DIGIT RUN FROM THE LETTERS BESIDE IT, so a version and a word touching it '
-        + 'are two anchors rather than one string neither text would repeat',
-      fn: async () => {
-        const anchors = readingAnchors({ text: 'photo2019webp', },);
-        expect(anchors.has('photo',),).toBe(true,);
-        expect(anchors.has('2019',),).toBe(true,);
-        expect(anchors.has('webp',),).toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: sharedAnchorCount.name,
-  children: [
-    it({
-      name: 'COUNTS WHAT TWO READINGS OF ONE PICTURE HAVE IN COMMON, which stays high through '
-        + 'rewording because the identifiers do not reword',
-      fn: async () => {
-        expect(sharedAnchorCount({
-          left: 'Her name was Mittens. She was adopted in 2019.',
-          right: '> Name: Mittens.\n> Adopted 2019.',
-        },),).toBeGreaterThanOrEqual(2,);
-      },
-    },),
-
-    it({
-      name: 'FINDS NOTHING IN COMMON between readings of different pictures, which is the whole '
-        + 'signal: a reading of the wrong image shares no dates and no handles',
-      fn: async () => {
-        expect(sharedAnchorCount({
-          left: 'A screenshot of a train timetable, platform 9 at 14:05.',
-          right: '> Name: Mittens.\n> Handle @mittensdaily.',
-        },),).toBe(0,);
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: readingMakesSense.name,
@@ -175,29 +100,6 @@ await describe({
         expect(readingMakesSense({
           reading: 'A photograph of a railway timetable, platform 9, departures at 14:05 and 16:20.',
         },).kind,).toBe('usable',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: quotedTranscript.name,
-  children: [
-    it({
-      name: 'TAKES THE QUOTED BLOCKS AND NOTHING ELSE, reading a passage the same way the deletion '
-        + 'guard does, so the two never disagree about what a transcript is',
-      fn: async () => {
-        expect(quotedTranscript({
-          text: 'Her notes read:\n\n> Name: Mittens.\n\nShe kept them by the door.',
-        },),).toBe('> Name: Mittens.',);
-      },
-    },),
-
-    it({
-      name: 'REPORTS NOTHING for a passage carrying no quotation, which is what an archive that '
-        + 'never transcribed the picture looks like',
-      fn: async () => {
-        expect(quotedTranscript({ text: 'She kept notes by the door.', },),).toBe('',);
       },
     },),
   ],

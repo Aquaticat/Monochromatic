@@ -55,8 +55,14 @@ Nothing reads `footnoteGraph` outside `parse-document.ts`, which is why a
 
 ## The alignment mismatch finding is a false alarm 6 times out of 7
 
-Seven entries emit `structure-mismatch` and take the proportional fallback.
-Only ONE of them actually mispairs:
+Seven entries emitted `structure-mismatch` and, at the time, took a proportional fallback.
+THAT FALLBACK IS GONE: `chunk-document.ts` now computes `equalShape` (equal chunk counts and matching
+leading node kinds), pairs by index with no finding only when the shape is equal and no roster pairing
+was supplied (the `#98` blind spot the code documents), and otherwise runs `alignHeadingsForced`, which
+emits a pairing only where the affinity grid gives a unique partner in both directions; every unpaired
+section becomes a `structure-mismatch` finding and a source-only section is placed as an insertion or
+refused. The table below is the measurement as it was taken, kept for the blast-radius argument.
+Only ONE of the seven actually mispaired:
 
 ```text
   Aniloviraw    chunks  1/1   equal counts, leading kinds differ   pairs by index
@@ -68,11 +74,13 @@ Only ONE of them actually mispairs:
   XingZ60       chunks 15/13  counts differ                        SLIDES
 ```
 
-Five of the seven have EQUAL chunk counts and differ only in the leading node
- kind of the first chunk, which is what the mirrored test also checks; the
- proportional fallback then pairs them by index anyway and no harm is done.
-`XIEPT2` has unequal counts and still pairs by index.
-Only `XingZ60` slides.
+Five of the seven had EQUAL chunk counts and differed only in the leading node
+ kind of the first chunk, which is what the shape test (then `mirrored`, now
+ `equalShape`) also checks; the proportional fallback then paired them by index
+ anyway and no harm was done.
+`XIEPT2` had unequal counts and still paired by index.
+Only `XingZ60` slid, and sliding is no longer possible: a count mismatch goes to
+ the forced aligner rather than to a proportional merge.
 
 So the blast radius for genuine mispairing is one entry, and this is the right
  way to have established it.
@@ -904,7 +912,8 @@ The structures are declared different while both sides have exactly ONE chunk.
  something other than counts, and the code says exactly which:
 
 ```ts
-// package/module/translation-repair/src/chunk-document.ts:534
+// package/module/translation-repair/src/chunk-document.ts, the shape test as it stood;
+// today it is `equalShape` and reads the same two things
 const mirrored = (sourceChunks.length === targetChunks.length)
   && sourceChunks.every(function leadingKindMatches(chunk, index,) {
     return chunk.nodes[0]?.kind === targetChunks[index]?.nodes[0]?.kind;
@@ -912,13 +921,16 @@ const mirrored = (sourceChunks.length === targetChunks.length)
 ```
 
 With one chunk on each side, the count test passes by construction, so
- `mirrored` can be false for exactly one reason: the leading node kinds differ.
+ the shape test can be false for exactly one reason: the leading node kinds differ.
  One document opens with a heading and the other with a paragraph. That is the
  asymmetric preamble named in `#74`, confirmed from the source rather than
  inferred from a sample.
 
 The fallback did no harm HERE, because pairing one chunk to one chunk
- proportionally gives the same answer as pairing them directly. But it is the
+ proportionally gave the same answer as pairing them directly. But it was the
  same code path that shifted every section of `XingZ60` by two, and it fired on
  an entry where nothing was wrong with the document at all. A test that reports
  a mismatch on a forced pairing is reporting on the preamble, not the structure.
+ The proportional path has since been deleted (`chunk-document.ts` says so at
+ its head); an unequal shape now goes to `alignHeadingsForced`, and the finding
+ names the sections it could not pair rather than a fraction it aligned by.

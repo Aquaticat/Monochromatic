@@ -19,6 +19,47 @@ import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 // only the role says anything changed.
 
 /**
+ * Raised when one text carries more footnote markers than the guard counts.
+ *
+ * AN INPUT REFUSAL, not an invariant: a page really can carry them, and the
+ * boundary prints this whole because it names a count and a convention only.
+ *
+ * @example
+ * ```ts
+ * throw new FootnoteOverflowError({ count: 5000, convention: 'gfm-reference', },);
+ * ```
+ */
+export class FootnoteOverflowError extends Error {
+  /**
+   * Declares this message safe to print whole at a boundary: two counts and a
+   * convention name, nothing from the text.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * @param count - markers found
+   *
+   * @param convention - which marker convention overflowed
+   */
+  constructor(
+    {
+      count,
+      convention,
+    }: {
+      readonly count: number;
+      readonly convention: string;
+    },
+  ) {
+    super(
+      `${String(count,)} ${convention} footnote markers in one text, over the ${
+        String(MAX_SLICE_IDENTIFIERS,)
+      } this guard counts`,
+    );
+    this.name = 'FootnoteOverflowError';
+  }
+}
+
+/**
  * How many identifiers a scan may report before the text is refused as
  * pathological rather than counted.
  *
@@ -158,12 +199,11 @@ export function footnoteIdentifiers(
       FULLWIDTH_MARKER_PUNCTUATION,
     ],
   ] as const) {
-    if (hits.length > MAX_SLICE_IDENTIFIERS) {
-      throw new Error(
-        `${String(hits.length,)} ${convention} footnote markers in one text, `
-          + `over the ${String(MAX_SLICE_IDENTIFIERS,)} this guard counts`,
-      );
-    }
+    if (hits.length > MAX_SLICE_IDENTIFIERS)
+      throw new FootnoteOverflowError({
+        count: hits.length,
+        convention,
+      },);
     for (const hit of hits) {
       /**
        * Role this mention plays, which a bare identifier cannot say.

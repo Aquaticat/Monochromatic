@@ -31,7 +31,6 @@
 // names, handles and numbers. What survives here is per-reading and needs no
 // second text.
 
-import { topLevelBlocks, } from './markdown-blocks.ts';
 import { readsAsRefusal, } from './reading-refusal.ts';
 
 /**
@@ -40,7 +39,7 @@ import { readsAsRefusal, } from './reading-refusal.ts';
  * An image nobody could read comes back as an apology or as nothing, and both
  * are shorter than any transcript.
  */
-const MIN_READING_CHARS = 16;
+export const MIN_READING_CHARS = 16;
 
 /**
  * How much of a reading is examined for a refusal.
@@ -76,16 +75,6 @@ const REFUSAL_PHRASES: readonly string[] = [
 ];
 
 /**
- * Shortest Latin word that counts as an anchor.
- */
-const MIN_ANCHOR_WORD = 4;
-
-/**
- * Shortest run of digits that counts as an anchor.
- */
-const MIN_ANCHOR_DIGITS = 2;
-
-/**
  * Whether a character is an ASCII letter.
  *
  * @param character - character to weigh
@@ -116,120 +105,6 @@ function isLatin({ character, }: { readonly character: string; },): boolean {
  */
 function isDigit({ character, }: { readonly character: string; },): boolean {
   return (character >= '0') && (character <= '9');
-}
-
-/**
- * Parts of a transcription that survive translation and paraphrase.
- *
- * A DATE, A USERNAME, A VERSION, AN ADDRESS. Two readings of one picture share
- * these even when every sentence around them is worded differently, and two
- * readings of different pictures share none of them.
- *
- * NO REGEX, per `RG1`: the rule is "runs of letters, runs of digits", which one
- * linear pass states directly.
- *
- * @param text - reading or transcript to read
- *
- * @returns Distinct anchors, lowercased
- *
- * @example
- * ```ts
- * const anchors = readingAnchors({ text: 'posted by Mittens on 2019-04-07', },);
- * ```
- */
-export function readingAnchors({ text, }: { readonly text: string; },): ReadonlySet<string> {
-  /**
-   * Anchors found so far.
-   */
-  const found = new Set<string>();
-
-  /**
-   * Run being accumulated, and what kind it is.
-   */
-  const run = {
-    text: '',
-    digits: false,
-  };
-
-  /**
-   * Closes the current run, keeping it when it is long enough to be an anchor.
-   */
-  function close(): void {
-    if (run.text === '')
-      return;
-
-    /**
-     * How long a run of this kind has to be.
-     */
-    const floor = run.digits ? MIN_ANCHOR_DIGITS : MIN_ANCHOR_WORD;
-
-    /**
-     * The run itself, measured once.
-     */
-    const { text: accumulated, } = run;
-    if (accumulated.length >= floor)
-      found.add(accumulated.toLowerCase(),);
-    run.text = '';
-  }
-
-  for (const character of text) {
-    if (isDigit({ character, },)) {
-      if (!run.digits)
-        close();
-      run.digits = true;
-      run.text += character;
-      continue;
-    }
-    if (isLatin({ character, },)) {
-      if (run.digits)
-        close();
-      run.digits = false;
-      run.text += character;
-      continue;
-    }
-    close();
-  }
-  close();
-
-  return found;
-}
-
-/**
- * How many anchors two texts share.
- *
- * @param left - one text
- *
- * @param right - the other
- *
- * @returns Count of anchors present in both
- *
- * @example
- * ```ts
- * const shared = sharedAnchorCount({ left, right, },);
- * ```
- */
-export function sharedAnchorCount(
-  {
-    left,
-    right,
-  }: {
-    readonly left: string;
-    readonly right: string;
-  },
-): number {
-  /**
-   * Anchors of the second text, to test the first against.
-   */
-  const other = readingAnchors({ text: right, },);
-
-  /**
-   * Anchors present in both.
-   */
-  const shared = [...readingAnchors({ text: left, },),]
-    .filter(function inBoth(anchor,): boolean {
-      return other.has(anchor,);
-    },);
-  return shared.length;
 }
 
 /**
@@ -311,33 +186,6 @@ export function readingMakesSense(
   }
 
   return { kind: 'usable', };
-}
-
-/**
- * Transcript blocks an archive passage carries, joined.
- *
- * A TRANSCRIPT IS WRITTEN AS A BLOCKQUOTE in every case measured, which is the
- * same shape `quote-preservation.ts` guards, so both read the passage the same
- * way rather than disagreeing about what a transcript is.
- *
- * @param text - archive passage
- *
- * @returns Its quoted blocks joined, empty when it carries none
- *
- * @example
- * ```ts
- * const transcript = quotedTranscript({ text: slice.target.text, },);
- * ```
- */
-export function quotedTranscript({ text, }: { readonly text: string; },): string {
-  /**
-   * Blocks of the passage that are quotations.
-   */
-  const quotes = topLevelBlocks({ text, },)
-    .filter(function isQuote(block,): boolean {
-      return block.startsWith('>',);
-    },);
-  return quotes.join('\n\n',);
 }
 
 //endregion Image reading sense

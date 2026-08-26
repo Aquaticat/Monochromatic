@@ -1,3 +1,5 @@
+import { StatedRefusalError, } from '../stated-refusal.ts';
+
 //region Entry filter
 // Restricts a pass to named corpus entries.
 //
@@ -55,10 +57,9 @@ export function readOnlyIds(
    */
   const value = argv[flagIndex + 1];
   if ((value === undefined) || value.startsWith('--',)) {
-    throw new Error(
-      `${ONLY_FLAG} needs a comma-separated entry id list, for example `
-        + `${ONLY_FLAG} Toka_ls`,
-    );
+    throw new StatedRefusalError({
+      says: `${ONLY_FLAG} needs a comma-separated entry id list, for example ${ONLY_FLAG} Toka_ls`,
+    },);
   }
 
   /**
@@ -76,7 +77,7 @@ export function readOnlyIds(
   // A flag that parsed to nothing would silently run the WHOLE corpus, which is
   // the opposite of what was asked and expensive to discover afterwards.
   if (ids.length === 0)
-    throw new Error(`${ONLY_FLAG} matched no entry id in ${JSON.stringify(value,)}`,);
+    throw new StatedRefusalError({ says: `${ONLY_FLAG} matched no entry id in ${JSON.stringify(value,)}`, },);
 
   return new Set(ids,);
 }

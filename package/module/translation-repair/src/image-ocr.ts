@@ -15,6 +15,8 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import { extensionOf, } from './image-asset.ts';
+import { MIN_READING_CHARS, } from './image-reading-sense.ts';
+import { refusalText, } from './refusal-text.ts';
 
 //region Image OCR
 // READING A PICTURE WITHOUT ASKING A MODEL, which is the first thing to try and
@@ -54,28 +56,28 @@ import { extensionOf, } from './image-asset.ts';
  */
 const TESSERACT_LANGUAGES = 'chi_sim+eng';
 
-/**
- * Shortest OCR yield treated as text rather than as noise, in characters after
- * whitespace is removed.
- *
- * STATED AS A CHOICE, because the measurement does not make it for us. The
- * yield over 191 assets runs 0, then 1, 2, 4 and up through 2965 with no gap
- * anywhere: 119 assets return nothing and the remaining 72 form a continuum. So
- * there is no boundary to discover, only a line to draw.
- *
- * DRAWN AT `MIN_READING_CHARS`, the value `image-reading-sense.ts` already uses
- * for a model reading too short to be a reading. Reusing it keeps ONE notion of
- * "too short to be a transcription" rather than inventing a second that would
- * drift from it. At this line 60 assets read and 12 low-yield ones are called
- * textless.
- *
- * THE ERRORS ARE NOT SYMMETRIC, which is why the line sits where it does rather
- * than lower. Calling a caption textless loses a little evidence about a
- * picture that 79 of 1260 slices mention. Calling noise text spends model calls
- * on nothing and, worse, offers the corroboration stage two pieces of garbage
- * that may agree with each other.
- */
-const MIN_OCR_CHARS = 16;
+// THE TEXTLESS LINE IS `MIN_READING_CHARS`, IMPORTED rather than copied: the
+// copy this replaced was a literal 16 that could drift from the value it
+// claimed to be drawn from.
+// Shortest OCR yield treated as text rather than as noise, in characters after
+// whitespace is removed.
+// 
+// STATED AS A CHOICE, because the measurement does not make it for us. The
+// yield over 191 assets runs 0, then 1, 2, 4 and up through 2965 with no gap
+// anywhere: 119 assets return nothing and the remaining 72 form a continuum. So
+// there is no boundary to discover, only a line to draw.
+// 
+// DRAWN AT `MIN_READING_CHARS`, the value `image-reading-sense.ts` already uses
+// for a model reading too short to be a reading. Reusing it keeps ONE notion of
+// "too short to be a transcription" rather than inventing a second that would
+// drift from it. At this line 60 assets read and 12 low-yield ones are called
+// textless.
+// 
+// THE ERRORS ARE NOT SYMMETRIC, which is why the line sits where it does rather
+// than lower. Calling a caption textless loses a little evidence about a
+// picture that 79 of 1260 slices mention. Calling noise text spends model calls
+// on nothing and, worse, offers the corroboration stage two pieces of garbage
+// that may agree with each other.
 
 /**
  * Runs a command-line tool and waits for it, since every reader this module
@@ -227,20 +229,24 @@ export function solidCharacters({ text, }: { readonly text: string; },): number 
  *
  * @param png - where the decoded copy should land
  *
+ * @param l - logger the two decoder failures are recorded on
+ *
  * @returns Whether either decoder produced one
  *
  * @example
  * ```ts
- * const decoded = await decodeToPng({ source, png, },);
+ * const decoded = await decodeToPng({ source, png, l, },);
  * ```
  */
 async function decodeToPng(
   {
     source,
     png,
+    l,
   }: {
     readonly source: string;
     readonly png: string;
+    readonly l: Logger;
   },
 ): Promise<boolean> {
   try {
@@ -256,9 +262,9 @@ async function decodeToPng(
   }
   catch (error) {
     // Expected for every format that is not webp, which is what the fallback is
-    // for. Recorded rather than silent so a machine with neither decoder is
-    // diagnosable from a log.
-    void error;
+    // for. Recorded rather than silent so a machine with one decoder missing
+    // and one refusing the file is diagnosable from a log.
+    l.debug(`${source}: dwebp did not decode it (${refusalText({ error, },)})`,);
   }
 
   try {
@@ -272,7 +278,7 @@ async function decodeToPng(
     return true;
   }
   catch (error) {
-    void error;
+    l.debug(`${source}: magick did not decode it (${refusalText({ error, },)})`,);
     return false;
   }
 }
@@ -344,6 +350,7 @@ export async function readImageWithOcr(
   if (!await decodeToPng({
     source,
     png,
+    l: ol,
   },)) {
     ol.warn(`${assetName}: neither dwebp nor magick could decode it`,);
     return {
@@ -396,8 +403,8 @@ export async function readImageWithOcr(
    * How much of that is not whitespace, which is what the line is drawn on.
    */
   const characters = solidCharacters({ text, },);
-  if (characters < MIN_OCR_CHARS) {
-    ol.info(`${assetName}: no text (${String(characters,)} characters, under ${String(MIN_OCR_CHARS,)})`,);
+  if (characters < MIN_READING_CHARS) {
+    ol.info(`${assetName}: no text (${String(characters,)} characters, under ${String(MIN_READING_CHARS,)})`,);
     return {
       kind: 'no-text',
       characters,

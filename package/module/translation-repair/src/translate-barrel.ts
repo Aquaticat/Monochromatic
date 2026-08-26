@@ -242,11 +242,8 @@ export {
   encodeImageAsset,
 } from './image-asset.ts';
 export {
-  quotedTranscript,
-  readingAnchors,
   readingMakesSense,
   type ReadingVerdict,
-  sharedAnchorCount,
 } from './image-reading-sense.ts';
 export {
   latinWords,

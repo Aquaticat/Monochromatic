@@ -144,24 +144,38 @@ function bindQuoteRegion(
 }
 
 /**
- * Longest needle prefix a failure finding carries.
- * Bounded because a finding is a scorecard line rather than a log record, and
- * critics quote whole paragraphs.
+ * Whether a character belongs to a Latin token: an ASCII letter or digit.
+ *
+ * @param character - one character
+ *
+ * @returns Whether it continues a Latin token
+ *
+ * @example
+ * ```ts
+ * const inToken = isLatinTokenCharacter({ character: 'a', },);
+ * ```
  */
-const NEEDLE_PREVIEW_CHARS = 60;
+function isLatinTokenCharacter({ character, }: { readonly character: string; },): boolean {
+  return ((character >= 'a') && (character <= 'z'))
+    || ((character >= 'A') && (character <= 'Z'))
+    || ((character >= '0') && (character <= '9'));
+}
 
 /**
- * Renders the missed quote into the failure finding, so a miss can be
- * diagnosed rather than only counted.
+ * Describes the missed quote into the failure finding by its shape, so a miss
+ * can be diagnosed by size and script rather than only counted, and without
+ * writing corpus text into a finding.
  *
- * Without this the pipeline records THAT a quote failed and discards WHICH,
- * which stalled every attempt to explain why one entry missed at ten times the
- * corpus rate. Line breaks are collapsed so the preview stays one line, and it
- * is truncated so a paragraph-length quote cannot swamp the finding.
+ * NO TEXT, BY THE RULE FINDINGS LIVE UNDER. An earlier version quoted up to
+ * sixty characters of the needle; findings travel into logs, artifacts and any
+ * command that prints them, none of which may carry corpus text. The length,
+ * counted once over the one-line form, and the count of Latin tokens say what
+ * kind of quote missed (a paragraph, a name, a number) and nothing of its
+ * wording.
  *
  * @param needle - punctuation-normalized quote that was not found
  *
- * @returns Quoted preview prefixed with a space, ready to append to a reason
+ * @returns Shape note prefixed with a space, ready to append to a reason
  *
  * @example
  * ```ts
@@ -176,17 +190,28 @@ function needlePreview(
   },
 ): string {
   /**
-   * Needle flattened to one line, since a finding is a single line.
+   * Needle flattened to one line, the form a finding would have shown.
    */
   const flat = collapseLineBreaks({ text: needle, },);
-  if (flat.length <= NEEDLE_PREVIEW_CHARS)
-    return ` needle=${JSON.stringify(flat,)}`;
-  return ` needle=${
-    JSON.stringify(`${flat.slice(
-      0,
-      NEEDLE_PREVIEW_CHARS,
-    )}…`,)
-  }`;
+
+  /**
+   * Latin tokens in it, counted as runs of ASCII letters and digits in one
+   * linear pass.
+   */
+  const counted = {
+    tokens: 0,
+    inToken: false,
+  };
+  for (const character of flat) {
+    /**
+     * Whether this character continues a token.
+     */
+    const inToken = isLatinTokenCharacter({ character, },);
+    if (inToken && (!counted.inToken))
+      counted.tokens += 1;
+    counted.inToken = inToken;
+  }
+  return ` needle=${String(flat.length,)} chars, ${String(counted.tokens,)} Latin tokens`;
 }
 
 /**
