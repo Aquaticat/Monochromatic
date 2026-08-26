@@ -210,7 +210,10 @@ Whole-suite `buildAndTest` after `459482191`: 769 PASS, 0 FAIL, exit 0 (`~/temp/
 `#250` LANDED 2026-08-26 in `2c9886a55`: the recall scorecard is kept under `recall-scorecard/<stamp>-<tip>.json`,
 written atomically; GFP fails 4 of 4 cases under either mutation; plan mode verified at the boundary.
 Whole-suite `buildAndTest` after `2c9886a55`: 770 PASS, 0 FAIL, exit 0.
-Queue: `#251` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
+`#251` LANDED 2026-08-26 in `a8bc69508`: no slate is bought for a slice with no standing text; GFP fails 2 cases
+with the refusing client's throw when the purchase is restored.
+Whole-suite `buildAndTest` after `a8bc69508`: 770 PASS, 0 FAIL, exit 0.
+Queue: `#252` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

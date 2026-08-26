@@ -729,6 +729,13 @@ Whether such a slice should instead be judged against both lane renderings is a 
 reviewer raised separately; the spend is a defect regardless.
 Tracked as `#251`.
 
+FIXED 2026-08-26 in `a8bc69508`: `settleFresh` in `src/consolidate-driver.ts` hands the settle half an empty slate
+when the standing text is empty and asks no producer, so the `no-standing-text` terminal, its floor and its
+findings still come from `settleConsolidation` and the settlement still resumes.
+Guard: a `settled-neither` and a `quorum-not-met` contest each settle to `no-standing-text` under the driver
+test's refusing client, which throws on any call; restoring the purchase fails 2 cases with that throw.
+The design question (judge such a slice against both lane renderings instead) stays open and is not decided here.
+
 ### consolidate-2 to consolidate-10, MINOR, verified where cited
 
 Bare `Error` for operator refusals in `src/grade-agreement.ts:170-184,266-269`; the agreement guard
