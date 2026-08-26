@@ -4,8 +4,9 @@ Opened on the owner's rejection of the readiness signal: "Not yet. You didn't ev
 Every gate that signal rested on was a process gate.
 This document is the reading of what the pipeline produces, page by page, against the Chinese source and the
 archive English at the pinned corpus commit `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
-It joins `doc/audit/eight-entries-read-against-the-original.md` (2026-08-20, an older build) and quotes no
-passages; short lexical items appear only where naming a rendering is the only way to say what went wrong.
+It joins `doc/audit/eight-entries-read-against-the-original.md` (2026-08-20, an older build).
+It quotes a rendering only where the wording itself is the defect, under the owner's standing decision that
+corpus text in this repository is sanitized once at the end rather than avoided.
 
 ## Method
 
@@ -15,6 +16,16 @@ For each change the pipeline made, the question is whether the change is right a
 for each sentence it kept, whether keeping it inherited an archive error.
 Rendering is read as a reader sees it: grammar, tense, terminology within the page, punctuation characters,
 links, front matter untouched.
+
+Two rules for the fresh pass, added at the checkpoint before it:
+
+-   EVERY DEFECT IS TRACED INTO THE ARTIFACT before it is filed. The page cannot say whether a defect was
+    inherited or introduced, nor which lane shipped the slice; the settled artifact records the recipe, the
+    lane, and the ballots. A defect is filed as "slice N, lane L, ballots said X", which names a mechanism,
+    not as "the page says Y", which names a symptom.
+-   A SECOND READER. Each fresh page also goes to sol with the three whole files (source, archive, published)
+    and one focused question, because this project's own record says agent grading drifts. Disagreements
+    between the two readings are findings in their own right.
 
 ## Pages read so far, all from builds older than the current one
 
@@ -77,8 +88,12 @@ painful" in the quote is gone).
 
 ## The fresh pass on the current build
 
-Planned: `corpus-pass --only` over the six entries of the 2026-08-20 reading plus the two read here, into a
-throwaway runs directory, launched only after the calibration arms finish (a concurrent run would share provider
-slots and spoil the band measurement). Each published page is then read the same way, and the instruments
+Planned: `corpus-pass --only` at production defaults (overlap 1, the 180000 ms window) over the six entries of
+the 2026-08-20 reading, the two read here, and the hard cases this project's own history names (`Toka_ls`,
+whose editor once fabricated three lines; `XIEPT2`, whose pairing once collapsed to zero slices; `XingZ60`,
+whose sections once slid by two, if its measured cost allows), into a throwaway runs directory, launched only
+after the calibration arms finish (a concurrent run would share provider slots and spoil the band
+measurement). Eight short entries alone would answer whether the output is publishable on easy inputs, which
+is not the owner's question. Each published page is then read the same way, and the instruments
 (`verify-published`, the rendering audit, the damage probe) are run on the same pages so their verdicts can be
 compared with the reading.
