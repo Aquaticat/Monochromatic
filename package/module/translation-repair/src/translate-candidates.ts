@@ -3,6 +3,10 @@ import {
   mergeProducers,
   producerModelIds,
 } from './candidate-select-model.ts';
+import {
+  type FoldedText,
+  foldInvisibleVariants,
+} from './invisible-variants.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
@@ -182,6 +186,26 @@ export function buildTranslateCandidates(
   },);
 
   /**
+   * Translators that proposed text, each with its translation folded at
+   * intake so the judges see the bytes that would ship (`#264`).
+   */
+  const folded = ordered
+    .filter(function isUsable(voice,): boolean {
+      return proposesText({ text: voice.value
+        .translation, },);
+    },)
+    .map(function foldedVoice(voice,): {
+      readonly voice: HeardVoice<TranslateReportWire>;
+      readonly fold: FoldedText;
+    } {
+      return {
+        voice,
+        fold: foldInvisibleVariants({ text: voice.value
+          .translation, },),
+      };
+    },);
+
+  /**
    * Every proposal worth judging: the incumbent when it has text, then each
    * translator's own rendering.
    *
@@ -205,26 +229,22 @@ export function buildTranslateCandidates(
         } satisfies Candidate<TranslateCandidateValue>,
       ]
       : []),
-    ...ordered
-      .filter(function isUsable(voice,): boolean {
-        return proposesText({ text: voice.value
-          .translation, },);
-      },)
-      .map(function toCandidate(voice,): Candidate<TranslateCandidateValue> {
-        return {
-          producer: {
-            kind: 'model',
-            modelId: voice.modelId,
-          },
-          value: {
-            text: voice.value
-              .translation,
-            origin: 'fresh',
-          },
-          rendered: voice.value
-            .translation,
-        };
-      },),
+    ...folded.map(function toCandidate({
+      voice,
+      fold,
+    },): Candidate<TranslateCandidateValue> {
+      return {
+        producer: {
+          kind: 'model',
+          modelId: voice.modelId,
+        },
+        value: {
+          text: fold.text,
+          origin: 'fresh',
+        },
+        rendered: fold.text,
+      };
+    },),
   ];
 
   /**
@@ -281,6 +301,16 @@ export function buildTranslateCandidates(
       },),
       ...matchedIncumbent.map(function toMatchFinding(modelId,): string {
         return `translate-matched-incumbent (${modelId})`;
+      },),
+      ...folded.flatMap(function toFoldFindings({
+        voice,
+        fold,
+      },): readonly string[] {
+        return fold
+          .findings
+          .map(function named(finding,): string {
+            return `${finding} (${voice.modelId})`;
+          },);
       },),
     ],
   };

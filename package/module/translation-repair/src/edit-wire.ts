@@ -1,4 +1,5 @@
 import type { PatchOperation, } from './apply-patch.ts';
+import { foldInvisibleVariants, } from './invisible-variants.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import {
   isJsonArray,
@@ -207,10 +208,16 @@ export function resolveEditorEdits(
       continue;
     }
     seen.add(edit.region,);
+
+    /**
+     * Replacement text with invisible variants folded, and what was folded.
+     */
+    const folded = foldInvisibleVariants({ text: edit.newText, },);
+    findings.push(...folded.findings,);
     operations.push({
       envelopeId: envelope.envelopeId,
       baseHash: envelope.baseHash,
-      newText: edit.newText,
+      newText: folded.text,
     },);
   }
 

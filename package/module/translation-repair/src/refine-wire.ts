@@ -1,4 +1,5 @@
 import type { PatchOperation, } from './apply-patch.ts';
+import { foldInvisibleVariants, } from './invisible-variants.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -212,10 +213,16 @@ export function resolveRefineRewrites(
       continue;
     }
     seen.add(rewrite.paragraph,);
+
+    /**
+     * Rewrite with invisible variants folded, and what was folded.
+     */
+    const folded = foldInvisibleVariants({ text: rewrite.newText, },);
+    findings.push(...folded.findings,);
     operations.push({
       envelopeId: envelope.envelopeId,
       baseHash: envelope.baseHash,
-      newText: rewrite.newText,
+      newText: folded.text,
     },);
   }
   return {

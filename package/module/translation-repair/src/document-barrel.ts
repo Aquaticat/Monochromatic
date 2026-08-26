@@ -9,6 +9,10 @@ export {
   prepareDocumentPair,
 } from './document-preparation.ts';
 export {
+  type FoldedText,
+  foldInvisibleVariants,
+} from './invisible-variants.ts';
+export {
   type DocumentLanesResult,
   runDocumentLanes,
 } from './document-lanes.ts';
