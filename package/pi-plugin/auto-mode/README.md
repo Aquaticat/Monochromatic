@@ -362,11 +362,18 @@ ydotool sends key-down and key-up as separate datagrams.
 If injected input cancels its own Pi Bash caller,
 the persistent virtual device can retain the key-down until ydotoold restarts.
 
-The guard covers direct executable paths,
-common caller-scoped forwarding commands,
-and inline shell programs.
+The guard covers statically visible direct executable paths,
+generic forwarding commands,
+and direct or wrapper-nested inline shell programs.
 Text searches that merely mention ydotool remain allowed.
-An independently supervised broker remains available for separately authorized live input.
+Malformed shell containing ydotool fails closed.
+
+The guard cannot identify executable names hidden behind shell variables,
+commands loaded from script files or standard input,
+or custom interpreter code that spawns ydotool.
+`AGENTS.md` rule `VKI` remains the policy backstop for those forms.
+The guard exposes no live-input bypass.
+A separately deployed broker must own release events behind a narrow API.
 See
 [`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
 
