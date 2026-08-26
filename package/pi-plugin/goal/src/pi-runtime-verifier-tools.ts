@@ -24,6 +24,11 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { Type, } from 'typebox';
 
 import { registerInterruptionProvider, } from './pi-runtime-verifier-provider.ts';
+import {
+  goalContinuationMessageCount,
+  goalEventCount,
+  goalEventKinds,
+} from './pi-runtime-verifier-session.ts';
 
 /**
  * Expected provider calls before post-clear tool round.
@@ -112,76 +117,6 @@ function createVerificationEchoFactory(
       observedValues,
     },);
   };
-}
-
-/**
- * Count persisted goal events of selected kind.
- *
- * @param sessionManager - real disposable session manager
- *
- * @param kind - goal event kind under test
- *
- * @returns number of matching selected-branch events
- *
- * @example
- * ```ts
- * goalEventCount({ sessionManager, kind: 'run_cleared' });
- * ```
- */
-function goalEventCount(
-  {
-    sessionManager,
-    kind,
-  }: {
-    readonly sessionManager: SessionManager;
-    readonly kind: string;
-  },
-): number {
-  return sessionManager
-    .getBranch()
-    .filter(function matchesGoalEvent(
-      entry: ForeignBorrowed<ReturnType<SessionManager['getBranch']>[number]>,
-    ): boolean {
-      if ((entry.type !== 'custom') || (entry.customType !== 'goal:state'))
-        return false;
-      return (entry.data !== null)
-        && ((typeof entry.data) === 'object')
-        && ('kind' in entry.data)
-        && (entry.data
-          .kind
-          === kind);
-    },)
-    .length;
-}
-
-/**
- * Count extension-authored continuation messages in selected branch.
- *
- * @param sessionManager - real disposable session manager
- *
- * @returns number of persisted continuation messages
- *
- * @example
- * ```ts
- * goalContinuationMessageCount(sessionManager);
- * ```
- */
-function goalContinuationMessageCount(sessionManager: SessionManager,): number {
-  return sessionManager
-    .getBranch()
-    .filter(function matchesContinuation(
-      entry: ForeignBorrowed<ReturnType<SessionManager['getBranch']>[number]>,
-    ): boolean {
-      if ((entry.type !== 'custom_message') || (entry.customType !== 'goal'))
-        return false;
-      return (entry.details !== null)
-        && ((typeof entry.details) === 'object')
-        && ('kind' in entry.details)
-        && (entry.details
-          .kind
-          === 'continuation');
-    },)
-    .length;
 }
 
 /**
@@ -354,38 +289,22 @@ async function verifyOrdinaryToolsAfterAbort(
     kind: 'run_started',
   },) !== 2)
     throw new Error('real AgentSession replacement did not persist both run starts',);
-  /** Persisted unavailable-review events after settled model error. */
+  /**
+   * Persisted unavailable-review events after settled model error.
+   */
   const unavailableReviewEvents = goalEventCount({
     sessionManager,
     kind: 'review_unavailable',
   },);
   if (unavailableReviewEvents !== 1) {
-    /** Selected-branch custom event kinds for focused failure diagnostics. */
-    const selectedGoalEventKinds = sessionManager
-      .getBranch()
-      .flatMap(function selectedGoalKind(entry,) {
-        if ((entry.type !== 'custom') || (entry.customType !== 'goal:state'))
-          return [];
-        if ((entry.data === null)
-          || ((typeof entry.data) !== 'object')
-          || (!('kind' in entry.data))) {
-          return [];
-        }
-        return [String(entry.data.kind,),];
-      },);
-    /** All-session custom event kinds detecting active-leaf displacement. */
-    const allGoalEventKinds = sessionManager
-      .getEntries()
-      .flatMap(function allGoalKind(entry,) {
-        if ((entry.type !== 'custom') || (entry.customType !== 'goal:state'))
-          return [];
-        if ((entry.data === null)
-          || ((typeof entry.data) !== 'object')
-          || (!('kind' in entry.data))) {
-          return [];
-        }
-        return [String(entry.data.kind,),];
-      },);
+    /**
+     * Selected-branch goal event kinds for focused failure diagnostics.
+     */
+    const selectedGoalEventKinds = goalEventKinds(sessionManager.getBranch(),);
+    /**
+     * All-session goal event kinds detecting active-leaf displacement.
+     */
+    const allGoalEventKinds = goalEventKinds(sessionManager.getEntries(),);
     throw new Error(
       `settled model error unavailable-review count ${unavailableReviewEvents}; selected kinds ${selectedGoalEventKinds.join(', ')}; all kinds ${allGoalEventKinds.join(', ')}`,
     );
