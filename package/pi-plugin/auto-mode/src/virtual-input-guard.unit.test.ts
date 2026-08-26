@@ -28,14 +28,28 @@ const BLOCKED_COMMANDS = [
   'env YDOTOOL_SOCKET=/tmp/socket ydotool key 1:1 1:0',
   'command /usr/bin/ydotool key 1:1 1:0',
   'systemd-run --user --collect /usr/bin/ydotool key 1:1 1:0',
+  'timeout 5 ydotool key 1:1 1:0',
+  'nice ydotool key 1:1 1:0',
+  'stdbuf -o0 ydotool key 1:1 1:0',
+  'flock /tmp/input.lock ydotool key 1:1 1:0',
+  String.raw`printf '%s\n' ydotool | xargs ydotool`,
   'bash -c "ydotool key 1:1 1:0"',
   "sh -lc 'ydotool key 1:1 1:0'",
+  "sudo bash -c 'ydotool key 1:1 1:0'",
+  "env bash -c 'ydotool key 1:1 1:0'",
+  "nohup sh -c 'ydotool key 1:1 1:0'",
+  'ydotool key "unterminated',
 ] as const;
 
 /** Commands that inspect text or delegate execution to durable supervisor. */
 const ALLOWED_COMMANDS = [
   "rg --fixed-strings 'ydotool' AGENTS.md",
   String.raw`printf '%s\n' ydotool`,
+  'command -v ydotool',
+  'ls --format=long /usr/bin/ydotool',
+  'env INPUT_BROKER=/usr/bin/ydotool my-tool',
+  "gh issue list --search 'ydotool'",
+  String.raw`printf '%s\n' bash -c 'ydotool key 1:1 1:0'`,
 ] as const;
 
 /**

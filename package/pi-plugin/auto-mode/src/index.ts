@@ -17,7 +17,6 @@ import type {
   ExtensionContext,
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
   ForeignBorrowed,
   ForeignHostCapability,
@@ -37,6 +36,7 @@ import { buildProjectContext, } from './context.ts';
 import { evaluate, } from './evaluate.ts';
 import { createJudgeCallHistory, } from './judge-call-history.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
+import { entryPointLogger, } from './logger.ts';
 import { registerGuardCommand, } from './guard-command.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
 import { shouldFlag, } from './signals.ts';
@@ -53,24 +53,6 @@ import type {
   BatchEntry,
   SignalContext,
 } from './types.ts';
-
-/**
- * Logger root for auto-mode after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
- */
-const parentLogger = tagged({ tag: 'auto-mode', },);
-
-/**
- * Tagged logger for the auto-mode entry point.
- */
-const l = tagged({
-  tag: 'index',
-  l: parentLogger,
-},);
 
 /**
  * Auto-mode pi extension.
@@ -117,10 +99,7 @@ function initializeAutoMode(
   /**
    * Per-call sub-logger so registration log lines carry the entry-point name as a tag.
    */
-  const innerL = tagged({
-    tag: initializeAutoMode.name,
-    l,
-  },);
+  const innerL = entryPointLogger(initializeAutoMode.name,);
   innerL.debug('auto-mode active; registering handlers',);
   /**
    * Session-local logical judge outcome history and derived temporary blocklist.
@@ -398,8 +377,19 @@ function initializeAutoMode(
        * Non-bypassable policy for global virtual input tied to caller lifetime.
        */
       const virtualInputDecision = guardVirtualInput(event,);
-      if (virtualInputDecision.block)
+      if (virtualInputDecision.block) {
+        /**
+         * Human-readable action retained in audit logs and batch context.
+         */
+        const action = describeAction(event,);
+        innerL.warn(`hard deny: ${action}; ${virtualInputDecision.reason}`,);
+        denialInCurrentTurn = true;
+        currentTurnBatch[currentTurnBatch.length] = {
+          action,
+          verdict: 'deny',
+        };
         return virtualInputDecision;
+      }
 
       if (bypassEnabled) {
         /**

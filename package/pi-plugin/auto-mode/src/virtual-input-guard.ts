@@ -32,20 +32,30 @@ const l = tagged({ tag: 'virtual-input-guard', },);
 const YDOTOOL_COMMAND_NAME = 'ydotool';
 
 /**
- * Command wrappers that execute a following executable from agent-authored shell source.
+ * Commands whose arguments are evidence or output text rather than executables.
  *
- * Durable input brokers expose a narrow API and own key release internally;
- * forwarding ydotool through a generic process launcher is not that boundary.
+ * They keep source inspection such as `rg ydotool .` available while unknown
+ * wrappers fail closed when an argument names ydotool.
  */
-const CALLER_SCOPED_COMMAND_FORWARDERS = new Set([
-  'command',
-  'doas',
-  'env',
-  'exec',
-  'nohup',
-  'setsid',
-  'sudo',
-  'systemd-run',
+const NON_EXECUTING_ARGUMENT_COMMANDS = new Set([
+  'cat',
+  'echo',
+  'file',
+  'git',
+  'gh',
+  'grep',
+  'journalctl',
+  'ls',
+  'man',
+  'printf',
+  'readlink',
+  'realpath',
+  'rg',
+  'rpm',
+  'stat',
+  'type',
+  'whereis',
+  'which',
 ],);
 
 /**
@@ -100,10 +110,58 @@ function namesYdotool(name: string,): boolean {
 }
 
 /**
+ * Test whether argument is an executable-shaped ydotool word.
+ *
+ * Environment assignments are data even when their value points at ydotool.
+ *
+ * @param argument - Parsed shell argument.
+ *
+ * @returns Whether argument can name ydotool executable.
+ *
+ * @example
+ * ```typescript
+ * argumentNamesYdotool('/usr/bin/ydotool'); // true
+ * ```
+ */
+function argumentNamesYdotool(argument: string,): boolean {
+  if (argument.includes('=',))
+    return false;
+  return namesYdotool(argument,);
+}
+
+/**
+ * Test whether command treats executable-shaped arguments only as inspection data.
+ *
+ * @param command - Parsed simple shell command.
+ *
+ * @returns Whether ydotool-shaped arguments are non-executing for this command.
+ *
+ * @example
+ * ```typescript
+ * commandTreatsArgumentsAsData({ name: 'rg', args: ['ydotool'] } as CommandInfo);
+ * ```
+ */
+function commandTreatsArgumentsAsData(command: CommandInfo,): boolean {
+  /**
+   * Executable basename used by inspection-command policy.
+   */
+  const name = executableName(command.name,);
+  if (NON_EXECUTING_ARGUMENT_COMMANDS.has(name,))
+    return true;
+  if (name !== 'command')
+    return false;
+  return command
+    .args
+    .some(function isLookupFlag(argument,) {
+      return (argument === '-v') || (argument === '-V');
+    },);
+}
+
+/**
  * Test whether command invokes ydotool in current caller lifecycle.
  *
- * Direct executable names and generic forwarding wrappers are covered.
- * A release-completing broker uses its own narrow API rather than exposing ydotool.
+ * Direct command names always block. Outside a narrow inspection allowlist,
+ * executable-shaped arguments block too, covering generic process wrappers.
  *
  * @param command - Parsed simple shell command.
  *
@@ -117,29 +175,39 @@ function namesYdotool(name: string,): boolean {
 function commandInvokesYdotool(command: CommandInfo,): boolean {
   if (namesYdotool(command.name,))
     return true;
-  if (!CALLER_SCOPED_COMMAND_FORWARDERS.has(executableName(command.name,),))
+  if (commandTreatsArgumentsAsData(command,))
     return false;
   return command
     .args
-    .some(namesYdotool,);
+    .some(argumentNamesYdotool,);
 }
 
 /**
- * Extract inline shell programs from `sh -c`-family commands.
+ * Minimal shell invocation view used while scanning wrapper argument tails.
+ */
+type ShellInvocation = {
+  readonly name: string;
+  readonly args: readonly string[];
+};
+
+/**
+ * Extract inline program from one `sh -c`-family invocation view.
  *
- * @param command - Parsed simple shell command.
+ * @param invocation - Candidate shell executable and following arguments.
  *
- * @returns Inline program arguments requiring recursive shell analysis.
+ * @returns Inline command strings requiring another parser pass.
  *
  * @example
  * ```typescript
- * inlineShellSources({ name: 'sh', args: ['-c', 'ydotool key 1:1'] } as CommandInfo);
+ * inlineSourcesForInvocation({ name: 'sh', args: ['-c', 'ydotool key 1:1'] });
  * ```
  */
-function inlineShellSources(command: CommandInfo,): readonly string[] {
-  if (!INLINE_SHELL_INTERPRETERS.has(executableName(command.name,),))
+function inlineSourcesForInvocation(
+  invocation: ShellInvocation,
+): readonly string[] {
+  if (!INLINE_SHELL_INTERPRETERS.has(executableName(invocation.name,),))
     return [];
-  return command
+  return invocation
     .args
     .flatMap(function sourceAfterCommandFlag(
       argument,
@@ -155,11 +223,52 @@ function inlineShellSources(command: CommandInfo,): readonly string[] {
       /**
        * Inline shell program immediately following current command-string flag.
        */
-      const source = command.args[index + 1];
+      const source = invocation.args[index + 1];
       if (source === undefined)
         return [];
       return [source,];
     },);
+}
+
+/**
+ * Extract inline shell programs from direct or wrapper-nested shell invocations.
+ *
+ * @param command - Parsed simple shell command.
+ *
+ * @returns Inline program arguments requiring iterative shell analysis.
+ *
+ * @example
+ * ```typescript
+ * inlineShellSources({ name: 'sudo', args: ['sh', '-c', 'ydotool key 1:1'] } as CommandInfo);
+ * ```
+ */
+function inlineShellSources(command: CommandInfo,): readonly string[] {
+  if (commandTreatsArgumentsAsData(command,))
+    return [];
+  /**
+   * Direct command followed by every argument-tail candidate for wrapped shell.
+   */
+  const invocationCandidates: readonly ShellInvocation[] = [
+    {
+      name: command.name,
+      args: command.args,
+    },
+    ...command
+      .args
+      .map(function argumentTail(
+        name,
+        index,
+      ) {
+        return {
+          name,
+          args: command
+            .args
+            .slice(index + 1,),
+        };
+      },),
+  ];
+  return invocationCandidates
+    .flatMap(inlineSourcesForInvocation,);
 }
 
 /**
@@ -196,8 +305,11 @@ function hasCallerScopedYdotool(command: string,): boolean {
      * Structured shell analysis for current source.
      */
     const analysis = analyzeBashCommand(source,);
-    if (!analysis.parsed)
+    if (!analysis.parsed) {
+      if (source.includes(YDOTOOL_COMMAND_NAME,))
+        return true;
       continue;
+    }
     if (analysis
       .commands
       .some(commandInvokesYdotool,)) {
