@@ -79,6 +79,40 @@ Current source exposes a free-form optional `question` string and returns unrest
 The interface has no structural distinction between a review request and a request to perform the task.
 The prompt prohibition is not enforced by a result contract or postcondition.
 
+## Current interface trace
+
+The answer-generating instruction is reinforced at several seams:
+
+1. `package/pi-plugin/advisor/src/tool-params.ts:46` describes `question` as content for Advisor to `answer`.
+2. `package/pi-plugin/advisor/src/tool.ts:86` tells the primary model to use `question` when Advisor should `answer`
+   an uncertainty.
+3. `package/pi-plugin/advisor/src/constants.ts:63` tells Advisor to answer the focus question first,
+   then later in the same prompt tells it not to perform the primary task.
+4. `package/pi-plugin/advisor/src/advisor-request.ts:55` places the raw string beneath a `## Focus question` heading.
+5. `package/pi-plugin/advisor/src/advisor-client.ts:279` sends that text as the only provider user message.
+6. `package/pi-plugin/advisor/src/tool.ts:336` extracts all returned text without a semantic or structural check.
+
+The role conflict is therefore produced by the Advisor interface,
+not only by one unfortunate model call.
+The negative system-prompt guard competes with repeated positive `answer` framing closer to the focus text.
+
+The test surface currently proves transport rather than role preservation:
+
+- `package/pi-plugin/advisor/src/advisor-client.unit.test.ts:205` uses unconstrained fixture text `advisor answer`;
+- `package/pi-plugin/advisor/src/advisor-client.unit.test.ts:469` proves only that focus text reaches the provider;
+- `package/pi-plugin/advisor/src/advisor-request.unit.test.ts` proves heading placement;
+- no Advisor test rejects a task-performing focus request;
+- no Advisor test constrains the result to findings about existing evidence.
+
+`package/pi-shared/model-review` already supplies a forced-tool structured-review transport.
+Its interface leaves verdict schema,
+strict parsing,
+prompting,
+and interpretation with the caller.
+Advisor can reuse that transport without importing goal behavior.
+A structured contract would deterministically constrain response shape,
+but string fields would still need bounded semantics because a schema alone cannot prove that prose is not a replacement answer.
+
 ## Investigation questions
 
 - Which caller guidance would cause the primary model to ask defect-seeking questions only after concrete evidence exists?
@@ -126,12 +160,12 @@ These are hypotheses, not decisions:
 
 ## Exact next action
 
-Trace the complete Advisor interface from main-model guidance through parameter normalization,
-request construction,
-provider completion,
-result extraction,
-and tests.
-Record every enforceable seam and every prompt-only seam in this handover before comparing designs.
+Characterize the smallest Advisor review contract that removes answer-generating caller instructions while preserving focused review.
+Compare removal of free-form `question`,
+structured focus categories,
+structured findings output,
+and prompt-only hardening against the exact incident.
+Identify red tests at the public tool and provider transport seams.
 
 ## Commits
 
