@@ -125,8 +125,46 @@ method survives the session:
 -   `sol-read.py <entry> <runs-dir>` attaches the three whole files with `@file` arguments and asks sol for a
     numbered list of every place the page departs from the source, with the source words, whether the archive
     had the same defect, and a severity, ending with one sentence on publishability. Launched in the
-    background, never polled. Dry run on the same page launched 16:52Z; its answer is read when it lands.
+    background, never polled. Dry run on the same page launched 16:52Z; it answered by 17:02Z, read against the first reading in the next section.
 
 The pass itself: `corpus-pass --only` over the ten entries into `~/temp/agent/fresh-read-20260826`, then
 `XingZ60` alone into the same directory, at production defaults; the launch lines are in the scratchpad
 (`launch-fresh-pass.txt`) and in the corpus pass runbook.
+
+## The second reader on the older `wangzihao980` page, against the first
+
+sol returned 15 items on the same 2026-08-22 page this document's own reading found two remarks on. Counted
+by its own labels: 1 inherited blocker, 5 inherited majors, 5 inherited minors, 1 introduced major beside two
+introduced findings it rated major and minor, and one closing sentence: not publishable as it stands.
+
+WHAT THE FIRST READING MISSED, all of it inherited from the archive and left standing by that build:
+
+-   The front matter's `desc` field changes the tense of the source sentence, drops its opening word and adds
+    a clause the source does not have. The first reading never looked at the front matter.
+-   The day of death: the source places it in the early hours of THAT day, the page says the next day. The
+    second reader rated this the page's one blocker. The first reading did not check dates against the
+    source.
+-   The friend's statement sentence: the first reading caught the lost hyperlink (`#265`) and missed that the
+    same sentence also loses that the friend logged into the account and misstates what was published.
+-   The English of the translated note (a page-only transcription of an image the source shows): six items
+    of unnatural or wrong English, including a preposition wrong twice and right once on the same page, a
+    garbled temporal clause that appears twice, and a point-of-view error in how the officiant is to refer to
+    her.
+
+WHERE THE TWO DISAGREE: the closing sentence. The first reading called it faithful (it is; the archive had
+dropped the clause); the second reader called its English conspicuously unnatural and introduced. Both are
+right, and the second is the one a reader of the page meets. Faithfulness alone is not the reading.
+
+WHAT THE SECOND READER ADDED THAT IS NEW AS A CLASS: a restored link shipped inside a malformed sentence with
+a determiner missing and a terminology split ("last words" beside "suicide note") the archive had kept
+consistent. That is class 2 (in-page terminology) and class 1 (English regressions) arriving together with
+a repair, which no gate reads.
+
+WHAT THIS CHANGES FOR THE FRESH READING:
+
+-   The front matter is part of the page. `desc` is translated prose and the pipeline never touches front
+    matter (`#269`); every fresh page is read from its first line.
+-   Dates, times, days and relationships are checked against the source as facts, not as wording.
+-   Naturalness is graded beside faithfulness on every sentence.
+-   Inherited defects are recorded even though the pipeline did not cause them, because the owner's question
+    is whether the page is publishable, and the second reader's answer on a page carrying them was no.
