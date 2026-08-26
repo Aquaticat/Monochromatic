@@ -447,6 +447,22 @@ due before `#219`'s AskUserQuestion; none between `#213`, `#230` and `#229`.
 Queue: `#213` (arm A and arm B under `mise run` from a worktree carrying the secrets), `#230`'s recovery rate on the
 next run, `#229` lever 1, and `#219` (the readiness signal via AskUserQuestion).
 
+`#213` LANDING (2026-08-26). The overlap dial landed in `ce5ca2368`: `TRANSLATION_REPAIR_SLICE_OVERLAP` admits that
+many slices at a time through `p-limit` in `editor-calibrate.ts`, unset reproduces the sequential driver exactly, and
+an unreadable value or a value under one is a stated refusal read before the sample is drawn, so two sequential runs
+can never pass as an overlap comparison. The run client stays shared across slices in flight, on purpose: the saved
+prototype rebuilt it per slice, which predates `acfc7ad22`'s once-per-run client, and the per-model limiter is what
+production routes through. The progress line and the `SliceRounds` type moved to `editor-calibrate-slice.ts`, numbered
+by sample position rather than arrival, which keeps the entry module at 298 code lines and exports nothing from it.
+Guards: `slice-overlap.unit.test.ts` (four cases, one describe) and `editor-calibrate-slice.unit.test.ts` (three
+cases); four GFP rounds, one mutation each: an unreadable dial falling back to one fails only `REFUSES a value that is
+not a number`, zero admitted fails only `REFUSES zero`, numbering from zero fails `NUMBERS` and `RENDERS`, the reach
+note dropped fails only `SAYS`; restored, both suites pass. Boundary, keys stripped: a dial of `four` exits 6 with the
+refusal and no other output; a dial of `2` prints `1 slices, 10 models editing and judging each, 2 slices in flight`
+and then the key refusal; the built command keeps its `import.meta.main` guard. Next: the whole suite (in flight),
+then arm A (`TRANSLATION_REPAIR_SLICE_OVERLAP=1`) and arm B (`4`) back to back over four slices under `mise run` from
+this worktree, which carries `.env.local.json`; `mise env` here lists both key names.
+
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
 STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed,
@@ -1298,239 +1314,6 @@ peers at another, so a producer table cannot seat or unseat an editor.
 When the run lands, the analyser names candidates and the cut rates say which of
 them are real.
 
-## The pipeline now keeps what each model wrote (`#212`, 2026-08-25)
-
-### The gap, found by hitting it
-
-Asked to confirm or reject that one seat was weak for this job,
-the honest answer available from the archive was that nothing could answer it.
-No run this project has ever made kept a single line any model produced.
-
-The producer standing says a seat was preferred on 3.0% of disinterested ballots.
-It cannot say whether that seat wrote something WRONG
-or merely something nobody picked as the single best of ten.
-Those are different findings with different remedies.
-Every archived artifact predates model attribution,
-neither calibration writes candidates to its run directory,
-and the log names only the WINNING candidate's author,
-so a losing candidate cannot be joined to the model that wrote it.
-
-Re-deriving the evidence meant buying fresh calls for something a finished run had already paid for.
-
-### What now records it
-
-`candidate-ledger.ts` writes one JSON file per judged contest into
-`${TRANSLATION_REPAIR_RUNS_DIR}/ledger/`,
-holding every candidate's exact rendered text, every model behind it with composites expanded,
-every ballot with its reason verbatim, and the winning position or that the round declined.
-
-ONE HOOK COVERS EVERY CONTEST.
-The translate lane, both editor paths, the refiner and the fidelity judge all route through
-`selectBestCandidate`, so nothing has to be remembered per caller.
-
-### Two shapes this had to take, and why
-
-A WRAPPER, NOT A HOOK IN THE CASCADE.
-The deciding function leaves by six returns, five of them declines.
-Threading a write through each would be five chances to miss the sixth.
-`candidate-select.ts` now exports `decideBestCandidate` with its logic untouched,
-and `candidate-select-record.ts` wraps it.
-The wrapper lives in its own module because `candidate-select.ts` sits at 269 of its 300 permitted
-code lines and restating the request type there would breach the cap;
-`Parameters<typeof ...>` borrows the signature instead of copying it.
-
-IT NEVER RAISES INTO THE SELECTION PATH.
-A pipeline that failed a slice because its telemetry could not write would be worse than one with
-no telemetry, so every failure is caught, named and swallowed.
-The test for that matters more than the success cases:
-it points the run directory at a path where a FILE sits where the directory belongs,
-and asserts the caller is undisturbed.
-
-WITH NO RUN DIRECTORY NAMED, NOTHING IS WRITTEN.
-That is the ordinary path for every unit run and every probe, not an edge case.
-
-### What it holds, and where it must not go
-
-Candidate text is a rendering of a corpus passage,
-so the ledger holds unlicensed corpus wording exactly as the settled artifacts already do.
-It lands under the run directory, outside this repository, and must never be committed.
-
-### The current run gets none of this
-
-The calibration in flight started on a build that predates the ledger,
-and rebuilding `dist/` mid-run would invalidate every cached slice and re-buy the whole run.
-So the roster question that prompted this stays unanswerable from the archive,
-and the next run answers it without a single extra call.
-
-## The ledger has a reader, and writing it found a real gap (`#212`, 2026-08-25)
-
-Written for the same reason the spend reader was:
-`#210`'s writer looked finished until its reader was built,
-and building the reader found two real defects in the writer.
-A writer with no reader has never been checked against anything.
-
-### The join is the whole point
-
-A ballot names a POSITION, not a model.
-Nothing before this could say which model a judge was talking about
-when it explained why it did not pick something,
-which is exactly the evidence a roster question needs.
-`candidates[best - 1].producers` in `src/corpus-run/ledger-read.ts` is that join,
-one-based because the slate the judges saw was.
-
-`summariseLedger` returns per-seat counts:
-candidates written (composites credit both authors),
-contests won,
-votes from judges with no stake,
-the denominator of ballots those judges could cast,
-and self-votes counted apart.
-`workOfModel` returns one seat's candidate text beside every disinterested judge's verbatim reason.
-
-Two ballot faults are counted separately and neither is dropped:
-an abstention names nothing,
-and a ballot naming a position the slate does not hold is a fault in the judge.
-Folding them together would report one count of two where a contest had one of each.
-
-### The parser refuses rather than filling in
-
-`src/corpus-run/ledger-parse.ts` turns a file into a shape the reader can trust,
-raising `LedgerShapeError` on anything else.
-A truncated file quietly read as a contest with no ballots
-would report a seat as unjudged when the record was simply lost.
-
-Model ids are read as plain strings, deliberately, not as the catalog union the writer held.
-A ledger is read to ask questions ABOUT the roster,
-including about a seat since dropped,
-so narrowing a recorded id back into today's catalog would be a claim the reader cannot support.
-
-`weight` and `selfVote` are not read at all.
-The reader works out who had a stake from the producer lists,
-because it needs that for EVERY candidate and `selfVote` speaks only about the one its ballot named.
-Reading it as a cross-check would prove nothing either:
-`candidate-select.ts` and `candidate-ledger.ts` both derive their answer
-from `producerModelIds` on the same producer in one process,
-so the two can never disagree.
-That was checked before being skipped.
-
-### GFP found a gap the first twenty cases missed
-
-Five mutations, and the first one survived:
-changing the join to `candidates[best]` left every test green.
-Every ballot naming a middle position resolves under either indexing,
-and so does a ballot past the end;
-only a ballot naming the LAST candidate on a slate tells the two apart,
-and no case named one.
-
-The added case reads the declined contest,
-which holds exactly one candidate whose only judge names it.
-All five mutations are red now:
-the join off-by-one,
-ignoring stake in the denominator,
-folding the two ballot faults together,
-keeping an author's remark about its own work,
-and tolerating an absent array in the parser.
-
-### Verified at the boundary, in three states
-
-The production writer wrote a real ledger into a throwaway run directory,
-and the CLI read it back:
-
--   A real ledger prints the per-seat summary,
-    and `--model <id>` prints that seat's text with the judges' verbatim reasons.
-    Every number was checked by hand against the fixture.
--   An absent ledger (`ENOENT`) prints `NOTHING RECORDED` and exits non-zero.
--   An unreadable ledger (`EACCES`) now RAISES instead of reporting an empty run.
-
-That last one was a real defect found by running the control.
-Any `readdir` failure previously read as "this run recorded nothing",
-so a permissions problem would have been reported as an answered roster question.
-The refusal names the filesystem code rather than the message,
-because a code carries no path and a run directory path can name a person.
-
-The task is `mise run //package/module/translation-repair:ledger-report`,
-with the run directory taken from `TRANSLATION_REPAIR_RUNS_DIR`
-through the same `resolveRunsDir` every other reader in this family uses.
-
-### State
-
-Built, lint clean, types clean, 663 suites passing, zero failures.
-Parked in `~/temp/agent/spend-telemetry-210.tar.gz` with the `#210` spend work,
-thirty-one files, repo-relative paths, untarred over the repo root to apply.
-
-## `#211` is proved at the wire, and the fix is in (2026-08-25)
-
-One call to `qwen3.8-max` on Charm Hyper, shaped exactly like a production ballot request,
-with the untouched SSE bytes kept at `~/temp/agent/capture-211.sse`.
-HTTP 200, 17612 raw characters, 128 frames.
-
-### What the provider actually sends
-
-The diagnosis guessed the model declares a thinking block carrying its answer deltas.
-The wire is narrower and stranger than that:
-
-```text
-content_block_start  index 0  {"type":"thinking"}
-  ... 106 thinking_delta frames ...
-content_block_stop   index 0
-content_block_start  index 1  {"type":"tool_use","name":"candidate_ballot"}
-content_block_start  index 1  {"type":"thinking"}          <- SAME INDEX, no stop between
-  ... thinking_delta and input_json_delta interleaved, 17 of the latter ...
-```
-
-The provider opens index 1 as a tool call and then opens THE SAME INDEX again as thinking.
-`openBlock` in `anthropic-delta-scan.ts` sets the block map unconditionally,
-so the later declaration wins,
-and `channelFor` then files every index 1 delta as reasoning,
-including the `input_json_delta` frames carrying `{"best": 2 ...`, which is the ballot.
-
-That is the whole of the 70-zero-content-against-71-ballots signature.
-The extractor in `anthropic-completion.ts` ignores blocks,
-so it recovers the answer and the vote lands;
-only the scanner that feeds the progress line and the runaway guard is fooled.
-
-### The fix, and why this shape rather than the other one
-
-`ANSWER_DELTAS` in `anthropic-delta-scan.ts` now exempts `input_json_delta`
-from the thinking-block override.
-A tool-call argument fragment cannot be deliberation:
-it is the structured answer by construction, filling a schema this pipeline sent.
-`text_delta` is deliberately NOT exempt,
-so the case the override was added for, plain text deltas inside a thinking block,
-still routes to reasoning.
-
-The alternative was to keep the FIRST declaration in the block map.
-That also routes this capture correctly,
-but only because `tool_use` happened to arrive first.
-The chosen shape holds whichever order the two declarations come in.
-
-GFP-proven: removing the carve-out turns the new case red, restoring it turns it green.
-The test fixture is the captured frame order, duplicate `content_block_start` included.
-
-### Measured on the captured bytes, before against after
-
-The same 17612 characters replayed through the same scanner, the carve-out being the only difference:
-
--   Without it: `content 0 chars, reasoning 1488 chars, unreadable 0`.
--   With it: `content 218 chars, reasoning 1270 chars, unreadable 0`.
-
-The before state reproduces the production symptom exactly,
-which is the zero content chars the log reports for 98 of this seat's 100 calls.
-The 218 characters that move are the ballot,
-and 218 plus 1270 equals 1488, so nothing was invented or dropped: it was only filed under the wrong heading.
-
-### What it should buy on the next run
-
-`stream-runaway-watch.ts` bounds the content channel and leaves reasoning alone,
-so an answer filed as reasoning escaped the volume cap and ran to the straggler deadline.
-`qwen3.8-max` was cut 12 times in 71, the highest on the roster by two and a half times.
-The prediction is that its cut rate falls toward the roster's.
-NOT YET MEASURED: the run in flight predates the fix.
-
-### State
-
-Parked with `#210` and `#212` in `~/temp/agent/spend-telemetry-210.tar.gz`, now thirty-three files.
-Lint clean, types clean, 663 suites passing, zero failures.
-
 ## No volume guard can see `qwen3.8-max`, and stragglers may cost more than serialization (2026-08-25)
 
 Measured on the live full-roster calibration at 15 of 40 slices, from the run log alone.
@@ -1982,3 +1765,6 @@ encoded in the code or in a decision record. Their headings, in the order they n
 -   Which error messages may be repeated, decided by a rule rather than an audit (`#227`, 2026-08-25)
 -   The guard proof found the guard was somewhere else (`#224`, 2026-08-25)
 -   Four guard proofs, run once the bundle was free (`#225`, `#228`, 2026-08-25)
+-   The pipeline now keeps what each model wrote (`#212`, 2026-08-25)
+-   The ledger has a reader, and writing it found a real gap (`#212`, 2026-08-25)
+-   `#211` is proved at the wire, and the fix is in (2026-08-25)
