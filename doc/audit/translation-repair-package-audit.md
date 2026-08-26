@@ -133,6 +133,12 @@ measurements to be wrong, in which case it is scheduled as its own item.
 
 ## Findings register
 
+Tally as of 2026-08-26, after all ten slices reported:
+2 BLOCKER (A-1 fixed, probes-1 open as `#247`),
+21 MAJOR of which 1 fixed (A-2), 14 open as their own tasks (`#237` to `#246`, `#248` to `#251`, `#252` to `#257`),
+and 6 folded into those tasks (slices-1 to slices-3, artifact-1, artifact-2, rendering-2),
+and roughly seventy MINOR, verified where cited and queued after the MAJORs.
+
 Severity:
 BLOCKER is wrong or missing output, silent failure, data loss, or corpus/key leakage;
 MAJOR is a contract violation or resilience gap likely to bite in a real run;
@@ -150,6 +156,18 @@ so the five Charm-Hyper-only roster labels fail every call with HTTP 400 while q
 Evidence and the fix design are on `#235`;
 the launch that triggered it ran `node dist/...` directly from a fork worktree without secrets.
 
+FIXED 2026-08-26: guards in `e0010019f`, fix in `8b289c3ab`.
+`createRunClient` requires both keys (a missing one is a stated refusal naming the variable, exit 6),
+the Synthetic client refuses any id outside its catalog before the wire on both surfaces,
+every call through the factory's client is counted on `RUN_SEATS`,
+and `reportingRefusals` prints `SEAT` lines plus a `SEATS DARK:` line at the end of every command.
+Each of five fix lines was removed in turn, rebuilt, and its suite failed (2, 3, 2, 4, 2 failing lines);
+each was then restored and passed.
+Negative control: a bare `node` launch with no Hyper key exits 6 with the variable name, no frames, no `SEAT` lines.
+Live verification: a one-slice `editor-calibrate` under `mise run`, recorded in the handover when it lands.
+Correction to the earlier diagnosis: the fork worktree carries an encrypted `.env.local.json` byte-identical to the main one;
+the half-dark run had been launched with bare `node`, which is what left the key unset.
+
 ### A-2, MAJOR, verified: a missing key is reported as a fault, and its name is muted
 
 `src/corpus-run/run-config.ts:45-60`: `RunConfigError` carries no `messageNamesOnly` marker,
@@ -158,10 +176,16 @@ plus a fault stack and exits 5.
 The variable name, the one thing the operator needs, never reaches the terminal.
 Fix: make it a stated refusal (exit 6), with the `#235` change.
 
+FIXED 2026-08-26 in `8b289c3ab`:
+`RunConfigError` extends `StatedRefusalError`, so the variable name is repeated at exit 6.
+
 ### A-3, MINOR, verified: the README documents the `#235` defect as a feature
 
 `README.md:418-423`, quoted under the documentation layer.
 Fixed with `#235`.
+
+FIXED 2026-08-26 in `8b289c3ab`:
+the credentials section now says the second key is required and documents the closing `SEAT` lines.
 
 ### A-4, MINOR, verified: the open-decisions document is stale against its own answers
 
@@ -603,6 +627,159 @@ Open question it raised for the main session: the consolidation gate's bar is ab
 (`CONSOLIDATE_GATE_QUORUM = 2`, `HEARD_NEEDED = 2`), so two of ten ballots against one can replace a
 memorial page's wording and be cached as settled; whether that bar is intended is recorded here, undecided.
 
+### document-1, MAJOR, verified: any corpus read failure silently drops the entry from a pass
+
+`src/corpus-run/corpus-pass.ts:392-396` continues past any `CorpusReadError`,
+and `src/corpus-source.ts:239-243` wraps every `execFile` rejection as one, with no kind field:
+a non-zero git exit, a spawn failure, and a `maxBuffer` overflow all read as the expected missing side.
+No line is written on either side, so the entry is absent from `pending=` and nothing says why;
+a resumed pass then ranks bands over a shrunken `settled`.
+No corpus-pass test references `CorpusReadError`.
+Tracked as `#252`.
+
+### document-2, MAJOR, verified: a transient reader failure is cached as a permanent `unavailable` verdict
+
+`src/document-readings.ts:166-183` persists every paired reading whatever its kind;
+`src/image-reading-pair.ts:380-388` records a reader that threw as `reader-failed` and counts it absent,
+and `:432-440` turns fewer than two readings into an `unavailable` pair verdict.
+On resume `:150-158` serves that verdict from the cache with only `resumed, unavailable` in the log,
+until the generation marker retires the cache on a rebuild, never on the provider's recovery.
+That is provider trouble degrading the pipeline durably, which the owner's standing rule forbids.
+Tracked as `#253`.
+
+### document-3, MAJOR, verified: a CRLF original silently disables the line-structure family
+
+`src/line-structure.ts:57-66` splits blocks on `\n\n`, which a CRLF document never contains,
+so every slice counts as one block, fails `MIN_BLOCKS`, and `isLineStructured` answers false:
+no editor addendum, no inheritance, no line-count guard.
+`src/markdown-blocks.ts:11-16` already measured the population:
+one of 184 files at the pin, `people/gqt/page.md`, the source side, which is the side the predicate reads.
+`src/mask-invisible-lines.ts:260` splits on `\n` alone,
+so an invisible line on that page keeps its `\r` and is never masked;
+`src/quote-normalize.ts:205-212` treats `\r\n` as two breaks,
+so every wrapped critic quote there is refused (document-4).
+Tracked as `#254`.
+
+### document-5 to document-12, MINOR, verified where cited
+
+The unread-signals doc describes a `mirrored` flag and a proportional fallback that `chunk-document.ts:425-444`
+no longer has (`equalShape` now, and the fallback is deleted);
+`entry-filter.ts:58,79` throws operator mistakes as bare `Error`;
+`image-reading-past-refusal.ts:76` justifies `REFUSAL_ASK_LIMIT` with the projection its own module note refutes;
+`locate-quote.ts:151,171,253` writes up to 60 characters of a critic's quote into a `quote-not-found` finding
+(corpus text in logs, no decision recorded);
+`readingAnchors`, `sharedAnchorCount`, and `quotedTranscript` have no production caller;
+per-character accumulator rebuilds in `footnote-graph.ts:106,190`, `image-reading-sense.ts:180,187`,
+`reading-refusal.ts:156`, and `protected-atom.ts:259-273` (`RG2`, linear in practice);
+bare `Error` for the footnote overflow refusal and several unreachable states, one defaulted with `?? ''`;
+`image-ocr.ts:261,275` discards both decoder errors with `void error` (`LG2`),
+and `MIN_OCR_CHARS` is a literal copy of `MIN_READING_CHARS`.
+
+### slices-1, MAJOR, verified: the slice-cache store cannot refuse a silence-settled record
+
+Folded into `#238` as its store side:
+`src/corpus-run/slice-cache-store.ts:48-66` and `:423-427` are shape-only guards ending in `Array.isArray(...)`,
+no guard reads `heardCriticIds.length` or a `stage-quorum-unmet` finding,
+and the artifact reviewer confirmed the owned artifact shape carries no per-stage heard count either,
+so the slice caches are the only place that decision lives.
+Contrast `lane-contest-driver.ts:56-60`, whose `worthResuming` persists only quorum-met outcomes.
+
+### slices-2, MAJOR, verified: the contest-ledger readers are blind to the ordinal collision
+
+Folded into `#246` as its reader side:
+`ledger-directory.ts:177-185` sorts by file name and asserts that is contest order,
+`ledger-read.ts:365` reports the file count as the contest count,
+and `ledger-parse.ts:494-498` reads the `at` stamp that no reader compares.
+
+### slices-3, MAJOR, verified at the call shape: the slice census carves with the abandoned pairer
+
+Folded into `#249`:
+`slice-census-entry.ts:159-162` aligns with `alignDocumentSections` and `:225-232` subdivides with no `blockPairing`,
+so the `CENSUS` lines size a translate lane over slices the pass no longer produces.
+
+### slices-4 to slices-9, MINOR, verified where cited
+
+Raw `console.log` in `slice-cache-namespace.ts:553-556`;
+the proportional merge loop at `slice-pair.ts:360-471` is unreachable while its TSDoc calls it the live fallback;
+nine index-and-count error classes across the delivery, coverage, comparison, and assembly modules lack
+`messageNamesOnly`, so the boundary prints only their names;
+the repetition containment rule (`assembly-repetition.ts:420-422`, `assembly-adjacent-repetition.ts:289-294`)
+compares space-joined strings with `includes`, so a phrase inside a longer span across word boundaries is dropped;
+`SpanAnchor` names two declarations and the explicit `index.ts:37` export shadows the rendering-audit one;
+`draw-entry-load.ts:162-189` throws its three reconcile refusals as bare `Error`, muting the counts they carry.
+
+### artifact-1 and artifact-2, MAJOR, verified: both comparison checks embed whole rows in their messages
+
+Folded into `#237`:
+`artifact-two-lane-read-comparison.ts:150-154` puts `JSON.stringify(row)` (archive English and both lanes' text)
+into an `ArtifactParseError`, a class marked `messageNamesOnly` at `artifact-guard.ts:26`,
+so `refusalText` forwards the row verbatim at every CLI that reads a settled artifact;
+`artifact-two-lane-comparison.ts:330-335` puts both rows into the unmarked `ArtifactComparisonError`,
+which the pass's TALLY and CLEANUP lines print 200 characters of.
+The trigger is a stored row disagreeing with the frozen rules, which is exactly what the guards exist to catch.
+
+### artifact-7, MAJOR, verified structurally: the round-three instruments cannot read their own draw
+
+`probe-relabel-artifact.ts:362-383` reads through `repairLaneRecordsOf` (`artifact-repair-lane-records.ts:83-121`),
+which calls `parseSettledTwoLaneArtifact` directly and refuses any artifact without a numeric schema version;
+the reviewer measured, with structural output only, that all 17 round-three entries are unversioned legacy
+artifacts that `readSettledArtifact` reads as `kind: 'legacy'`.
+Loud, not silent: exit 5 at the first item.
+Tracked as `#257`, to be decided with `#247` and `#249`.
+
+### artifact-3 to artifact-6, MINOR, verified where cited
+
+`artifact-two-lane-project.ts:68-70` stringifies a `never` member carrying text fields
+(unreachable while the unions stay exhaustive);
+the consolidation reader (`artifact-two-lane-read-consolidate.ts:368-375`) refuses only a duplicate index,
+never a missing or extra slice, unlike the contest and index-set readers;
+`artifact-placement.ts:243-247,288-291` echo a malformed `id` or digest whole to stdout;
+`resolveCommit`, `tipContains` (shallow-clone and unknown-commit throws), `keepEligible`, `parseRegionTally`,
+and the three placement stdout lines have no test.
+The reviewer also answered `#238`'s question:
+the owned artifact shape carries no per-stage heard or configured count and no `stage-quorum-unmet` marker;
+those strings travel only inside the tolerant raw lane result.
+
+### rendering-1, MAJOR, verified: the provenance verdict is wrong on every roster-paired artifact
+
+`rendering-audit-settled-input.ts:288` re-prepares with `prepareDocumentPair({ sourceText, targetText })`,
+no `blockPairings` and no `sectionPairing`, while production carves through `prepareDocumentPairWithRoster`;
+the identity check hashes every slice's placement and refuses on any difference,
+so every artifact whose roster pairing moved a slice reads `verification=refused`.
+The audited text is taken from the artifact itself, so every measurement column is right;
+only the guard is void, in the one case it exists for.
+Tracked as `#255`.
+
+### rendering-2, MAJOR by contract, verified: one stdout line prints an arbitrary caught message
+
+Folded into `#237`:
+`rendering-audit-settled.ts:292` prints `REFUSED: ${verification.detail}`,
+which `rendering-audit-settled-input.ts:204` fills with `caughtValueText(error)` and no marker check;
+bounded today to hashes and counts, but the verifier's `translating()` wrapper launders inner messages
+into the marked `ArtifactParseError`, the `#244` shape.
+
+### rendering-3, MAJOR, verified: `--run` and `--against` written last are read as absent
+
+`rendering-audit-settled-report.ts:190-197` returns `''` for both an absent flag and a valueless one,
+so `--run` written last reports the newest run and `--against` written last prints no across-run band;
+the sibling args module records the same collapse as a fixed defect for `--cap` and `--only`,
+and the report module has no test.
+Tracked as `#256`.
+
+### rendering-4 to rendering-12, MINOR, verified where cited
+
+`asked=` counts answered rows (`settled-read.ts:420`), so per-model voice loss is unreadable from the report;
+relocation candidates are counted per claim pair, not per slice pair (`settled-relocation.ts:161-183`);
+`auditOne` builds a client per subject (`settled.ts:122`, the calibrate-5 shape);
+four operator refusals thrown as bare `Error`
+(`settled.ts:428`, `settled-input.ts:391-392`, `settled-report.ts:96,161`);
+the row and digest notes say a run file carries no text while `report` persists document spans
+(`settled-row.ts:127-150`), which the `#219` sanitization must treat as corpus-bearing;
+a negative `--cap` audits the whole archive (`settled.ts:216`);
+model-supplied category and verdict words are stored verbatim in `dropped` (`rendering-audit-screen.ts:288,393`);
+`settled.ts` and `settled-report.ts` have no test;
+invariant throws are bare `Error`.
+
 ## Slice reports
 
 Each entry records the reviewer's coverage claim, then what the main session verified.
@@ -628,10 +805,28 @@ Each entry records the reviewer's coverage claim, then what the main session ver
   and whether any consumer prints the `reason` field `pass-schema-census.ts` stores from a `SyntaxError`.
 - `consolidate`: reviewer read 28 of 28 files (7408 lines), none unread; reported 1 MAJOR, 9 MINOR;
   the MAJOR re-verified; it answered calibrate's `judgesAvailable` question (seated roster).
-- `document`: in progress.
-- `artifact`: in progress.
-- `slices`: in progress.
-- `rendering`: in progress.
+- `document`: reviewer read 77 of 77 files (19246 lines), none unread; reported 3 MAJOR, 9 MINOR;
+  the three MAJORs re-verified at the cited lines, the population note in `markdown-blocks.ts` included;
+  MINORs spot-verified.
+  Its open questions go to the fix queue:
+  whether `screenNonTranslationVotes` findings joined into `l.warn` can quote text (`#237`),
+  whether `reindexSlicePair` restamps both sides of an insertion pair,
+  whether `#232`'s reachability measure counted test-only reach for `group-source-first.ts` and `reflow-orphans.ts`,
+  and whether the reading cache's generation marker is the pipeline digest (`#253`).
+- `artifact`: reviewer read 47 of 47 files, none unread; reported 3 MAJOR and 4 MINOR
+  (artifact-1 filed MAJOR by the reviewer's own call, BLOCKER by the brief's letter);
+  all three MAJORs re-verified at the cited lines;
+  it answered both extra questions: no per-stage quorum evidence in the owned artifact shape,
+  and the round-three draw is legacy artifacts the two-lane parser refuses.
+- `slices`: reviewer read 58 of 58 files, none unread; reported 3 MAJOR, 6 MINOR;
+  all three MAJORs re-verified at the cited lines; none needed a new task, they fold into `#238`, `#246`, `#249`.
+  Its open questions: whether `PreparationIdentity` is a branded primitive
+  (`lane-comparison.ts:403` compares with identity), whether a full-pass ledger reaches the open-file limit
+  under one `Promise.all`, and whether an entry id may appear in a boundary refusal at all.
+- `rendering`: reviewer read 32 of 32 files (19 source, 13 tests), none unread; reported 3 MAJOR, 9 MINOR;
+  all three MAJORs re-verified at the cited lines.
+  Its open questions: the population share of `verification=refused` (a kind-field count, `#255`),
+  and whether the writer-side mismatch errors that `translating()` wraps can quote slice text (`#237`).
 
 ## What this audit does not cover
 

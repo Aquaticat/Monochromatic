@@ -2,7 +2,9 @@
 
 Status:
 the two-lane pipeline is built and publishing;
-the full-roster editor calibration is the open measurement.
+the whole-package audit (`#236`) has reported on all ten slices and its fix queue is open;
+`#235` is fixed (`8b289c3ab`) and its live verification is in flight;
+the full-roster editor calibration (`#213`) re-runs once that verification lands.
 Read `doc/planning/translation-repair-open-decisions.md` for what is still undecided.
 
 WHAT THIS FILE IS.
@@ -84,14 +86,16 @@ That register is open as of `918d9a8b3` with the baseline, the whole-package mec
 (all clean: no forbidden request fields, zero debt markers, every suppression justified,
 no banned constructs, 38 of 38 CLIs wrapped), the documentation layer,
 and six verified findings `A-1` to `A-6`; read it before this section.
-Running tally, 2026-08-26 after five of ten slice reports (provider, translate, repair, probes pending, calibrate):
-1 BLOCKER (`#235`), 10 MAJOR, 27 MINOR, all verified at the cited line; one task per MAJOR:
-`#237` pass TALLY line prints any error's message; `#238` a stage that heard nobody is cached as a decision
-(retroactive, may already sit in caches); `#239` sole-adopted envelopes lose their authors;
-`#240` router slot count drifts negative on the re-ask; `#241` roster-to-catalog proof is an unused type;
-`#242` text and tool deltas fold into one answer; `#243` stale-lock takeover race;
-`#244` a marked class inherits a provider body excerpt; `#245` pairing agreement read off the first voice only;
-`#246` ledger files overwrite on relaunch.
+Running tally, 2026-08-26 after all ten slice reports, every BLOCKER and MAJOR re-verified at the cited line:
+2 BLOCKER (A-1 fixed as `#235`; probes-1 open as `#247`),
+21 MAJOR (A-2 fixed with `#235`; `#237` to `#246` and `#248` to `#251` from the first six slices;
+`#252` corpus read failures drop entries silently; `#253` a transient picture-reader failure is cached as permanent;
+`#254` a CRLF original disables the line-structure family;
+`#255` the rendering audit's provenance verdict is void on roster-paired artifacts;
+`#256` valueless `--run` and `--against` read as absent; `#257` the round-three instruments cannot read their own draw;
+six more folded into `#237`, `#238`, `#246`, `#249`),
+and roughly seventy MINOR, all in `doc/audit/translation-repair-package-audit.md`.
+Fix order after `#235`: `#247` (an instrument that lies), then the MAJORs in task order, then the MINORs.
 Advisor's adjustment, adopted: `#235` lands as soon as the `provider` and `calibrate` slice
 reports are verified, not after the whole audit, because those two slices hold every file the fix touches.
 
@@ -108,25 +112,39 @@ reports are verified, not after the whole audit, because those two slices hold e
     The transcript holds the owner's standing instruction, verbatim:
     "For speed: If you have work you can defer to a Sonnet 5 subagent in parallel, defer to it."
     Forks carry the audit's reading; verification stays with the main session.
+4.  Fork secrets.
+    Recorded as "fork worktrees have none";
+    this worktree's `.env.local.json` is byte-identical to the main worktree's (`cmp`, 2026-08-26).
+    The half-dark run was launched with bare `node`, which is what left the key unset;
+    `mise run` from this worktree injects both keys.
+5.  Silence.
+    Recorded as "nothing above warn";
+    the calibration's closing coverage line named the five seats
+    (`WROTE NOTHING AT ALL: ... covers 5 of 10 seats`), without counts or cause.
+    Recorded as calibrate-1 in the register.
 
 ### Found while auditing, unfixed, owed
 
-- `RunConfigError` (`src/corpus-run/run-config.ts:45-60`) carries no `messageNamesOnly` marker,
-  so at the CLI boundary a missing key prints `refused by RunConfigError` plus a fault stack and exits 5,
-  muting the one thing the operator needs, the variable name.
-  Its unit test checks the message at the unit level only.
-  Fix rides with `#235`: make it a stated refusal, exit 6.
-- This file is 3352 lines against its own 2000-line cap.
+- FIXED in `8b289c3ab`: `RunConfigError` extends `StatedRefusalError`,
+  so a missing key is repeated by name at exit 6 with no frames (negative control run, 2026-08-26).
+- This file is 3463 lines against its own 2000-line cap.
   The trim into `translation-repair-history.md` is owed in the audit's documentation pass.
 
 ### State of the tree
 
 Worktree `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`,
-clean at the start of the audit.
-No run is in flight, and none starts until the audit closes.
-The `#235` fix is designed and advisor-reviewed; nothing of it is built yet.
+HEAD `8b289c3ab` (the `#235` fix; its guards are `e0010019f`), clean.
+One run is in flight: the `#235` live verification, `editor-calibrate -- 1` under `mise run` from this worktree,
+with a throwaway runs directory whose path is in `~/temp/agent/vub-calibrate-current.txt`.
+What it must show: `METERS` lines, no `hf: prefix` refusal, heard fractions other than `5/10`,
+and closing `SEAT` lines with no `SEATS DARK:` line.
+Then `#235` closes, `#213` unblocks, and the fix queue starts at `#247`.
 
-## OPEN DEFECT: half the roster is sent to a provider that cannot serve it (2026-08-25)
+## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
+
+STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed;
+`doc/troubleshooting/synthetic-hf-prefix-misroute.md` holds the located cause and the fix.
+The body below is the diagnosis as it stood while the cause was being located, kept for its evidence.
 
 This is the most important open item in this file, and it is unfixed.
 It was found while running arm A of the `#213` overlap measurement, and it invalidates that run.

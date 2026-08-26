@@ -1,9 +1,9 @@
 # Synthetic refuses every Charm-Hyper-only model with an `hf:` prefix error
 
 Status:
-OPEN as of 2026-08-25.
-Filed as task `#235`.
-The cause is NOT yet located in the source.
+FIXED on 2026-08-26 in `8b289c3ab`, with the guards committed first in `e0010019f`; task `#235`.
+Kept because the symptom recurs the moment a run is launched without both keys,
+and because three instruments lied while it was being diagnosed.
 
 ## The symptom, as an operator sees it
 
@@ -73,15 +73,22 @@ rather than momentary, and say so.
 
 The result is a run that is completely well-formed and quietly worthless:
 a ten-model calibration carried out by five models.
-CORRECTED 2026-08-26: the calibration's closing coverage line did name the five seats
-(`WROTE NOTHING AT ALL: ... covers 5 of 10 seats`, from `producer-silence.ts:222`).
-It carries no counts and no cause, it is stdout prose under exit 0,
+The calibration's closing coverage line did name the five seats
+(`WROTE NOTHING AT ALL: ... covers 5 of 10 seats`, from `producer-silence.ts:222`),
+but it carries no counts and no cause, it is stdout prose under exit 0,
 and the pass and the other CLIs print nothing of the kind;
-that, not total silence, is the gap the fix closes.
+that, not total silence, was the gap the fix closed.
 
 ## How to check whether a run has this
 
-Count the distinct values of the heard fraction across the run.
+Since `8b289c3ab`, read the end of stderr.
+Every command prints one `SEAT <model> asked=N usable=N unusable=N threw=N` line per seat,
+and a `SEATS DARK: K of N seats asked produced nothing usable this run: ...` line when any seat never answered.
+A run with a `SEATS DARK:` line is not a comparison of the roster, whatever its exit code.
+A run launched without both keys no longer reaches a call at all:
+it exits 6 with `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set; run under mise so sops injects it`.
+
+For a log written before the fix, count the distinct values of the heard fraction across the run.
 One distinct value, below the roster size, for every round, is this defect.
 
 Attribute per model before concluding.
@@ -94,45 +101,44 @@ and the stream progress marker.
 Counting both per model gives the failure rate per seat,
 and this defect shows as a clean hundred percent on some seats and zero on the rest.
 
-## Where to look for the cause
+## The cause, located
 
-`package/module/translation-repair/src/budget-routing.ts`.
+`createRunClient` in `package/module/translation-repair/src/corpus-run/run-config.ts`
+read the second provider's key and, when it was empty, warned once and returned the Synthetic client alone.
+That single-provider client then received every roster id, the five Charm Hyper labels included,
+and the Synthetic client had no check that it serves the id it is asked for.
+`budget-routing.ts`, which the first draft of this document pointed at, never ran:
+the routing client was never built.
 
-Its module note states the intended policy:
-send everything to Synthetic until its per-model concurrency limit is reached,
-then overflow to Charm Hyper, which has no such limit;
-if Synthetic has run out of quota, use Hyper;
-if both are dry at once, throw and end the run.
+The key was empty because the run was launched with `node dist/final/node/editor-calibrate.mjs` directly,
+not under `mise run`, which is what decrypts `.env.local.json` into the task's environment.
+Both keys were in the worktree's encrypted file the whole time;
+an earlier draft of the handover claimed fork worktrees carry no secrets,
+and that was wrong (this worktree's file is byte-identical to the main worktree's).
+The one `warn` line that named the missing variable was the only trace, and nobody was grepping for it.
 
-That policy has a hole exactly where this defect sits.
-It describes what to do when a provider is unavailable,
-and it promises that
-"a model that no live provider serves is an outcome, not a throw".
-Both are about availability.
-Neither says what to do with a model that a live, healthy, funded provider
-is structurally incapable of serving,
-which is a different thing and is what these five models are to Synthetic.
+## What the fix did
 
-Only the first sixty lines of that file had been read when this was written,
-so the specific line that routes a bare label to Synthetic is still unidentified.
-Read the body and then the call sites.
+1.  `createRunClient` requires both keys.
+    A missing or empty one is a `RunConfigError`, which now extends `StatedRefusalError`,
+    so the CLI boundary repeats the variable name and exits 6 with no frames.
+    There is no one-provider run to fall back to, because half the roster is served only by Charm Hyper.
 
-## What a fix has to do
+2.  The Synthetic client refuses any id outside its catalog before the wire,
+    on both `chatText` and `chatJson` (`syntheticServes`, `SyntheticModelNotServedError`).
+    Serving capability is a property of the pair, so it is checked before any availability logic.
 
-Two separate things, and they should not be merged into one change.
+3.  Every call through the factory's client is counted on `RUN_SEATS` (`seat-tally.ts`),
+    and `reportingRefusals` prints the seat report at the end of every command, on every exit path.
 
-1.  Never offer a model to a provider that cannot serve it.
-    Serving capability is a property of the pair, not of the provider's health,
-    so it has to be consulted before the availability logic runs, not inside it.
+4.  `createRunClient({ transport })` is a seam for wiring tests:
+    a Charm Hyper label reaches `hyper.charm.land/v1/messages` and never `/chat/completions`,
+    with Synthetic live and its meter unreadable.
 
-2.  Make a seat that is dark for a whole run loud at the end of the run.
-    A per-call `warn` and a per-round fraction are both correct and both invisible.
-    Something that reads the whole run must say which seats produced nothing,
-    in the run's own closing summary.
-
-The guard for the first belongs under `GFP`:
-with Synthetic live and healthy, a non-`hf:` model must produce zero Synthetic calls,
-and the test must be shown to fail once the fix is removed.
+Each of five fix lines was removed in turn, the package rebuilt, and its suite failed
+(2, 3, 2, 4, and 2 failing lines), then the line was restored and the suite passed again (`GFP`).
+The negative control, a bare `node` launch with a fake Synthetic key and no Hyper key,
+exited 6 with the variable name, no frames, and no `SEAT` lines.
 
 ## Three instruments that lied while this was being diagnosed
 
