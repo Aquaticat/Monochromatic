@@ -2,10 +2,9 @@
 
 ## Status
 
-The first design comparison is complete,
-but its symbolic-findings recommendation was rejected by the user because it reduces Advisor expressiveness.
-The investigation is active again under a new hard requirement:
-preserve full natural-language review expressiveness.
+The corrected expressive design comparison and independent review are complete.
+The symbolic-findings recommendation remains rejected because it reduces Advisor expressiveness.
+The persisted two-phase checkpoint recommendation awaits user acceptance or delegated implementation authority.
 No Advisor production code was changed.
 This handover was created before further source investigation at
 `2026-08-25T23:58:24-04:00` from repository commit
@@ -407,9 +406,10 @@ and valid structured selections remain a limited information channel.
 The interface prevents unrestricted answer prose;
 it cannot make every valid reviewer judgment semantically unrelated to the primary task.
 
-## Verification design
+## Rejected symbolic verification design
 
-The implementation phase should start with red tests through the package's built interface.
+This test plan belongs to the rejected symbolic-output design and is retained only as design history.
+The implementation phase would have started with red tests through the package's built interface.
 Unit tests import `dist` and run through the package `mise` tasks.
 
 Required negative cases:
@@ -466,7 +466,9 @@ Required user-boundary probe after implementation:
 A live provider matrix can measure the `2048` cap candidate and semantic behavior,
 but nondeterministic model compliance is supplementary evidence rather than the deterministic completion gate.
 
-## Remaining implementation questions
+## Rejected symbolic implementation questions
+
+These questions are superseded by the expressiveness requirement.
 
 - Which finite risk,
   check,
@@ -595,7 +597,7 @@ which intentionally gives an executor unrestricted strategic plans early in a ta
 The official Advisor behavior is useful precedent for preserving advice expressiveness,
 not for enforcing the local reviewer boundary.
 
-### Candidate A: primary-owned artifact checkpoint
+### Candidate A: primary-artifact checkpoint
 
 ```typescript
 type AdvisorToolParams = {
@@ -621,7 +623,7 @@ exists.
 
 The provider request serializes objective,
 conversation evidence,
-primary-owned artifact,
+persisted primary artifact,
 and review criteria as separately labeled data.
 No interface description or prompt says to answer a focus question.
 A positive evaluator prompt asks for the most useful evaluation,
@@ -678,9 +680,10 @@ Its recommended correction is a two-phase protocol:
 3. Invoke Advisor later using only the opaque checkpoint ID and optional model routing.
 4. Return unrestricted review text associated with that checkpoint.
 
-This closes the live task-instruction channel at the review call while preserving both natural-language inputs at checkpoint time.
-It proves sequence and provenance,
-not substantive authorship.
+This removes fresh natural-language parameters from the review call while preserving both text channels at checkpoint time.
+Checkpoint criteria can still carry the incident instruction verbatim one interaction earlier.
+The protocol proves sequence and primary-assistant tool-call provenance,
+not substantive authorship or instruction elimination.
 
 `synthetic/hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` ranked the artifact checkpoint ahead of a
 blocking adjudicator.
@@ -727,25 +730,35 @@ or fixed renderer belongs in the corrected design.
 
 Deterministic tests must prove:
 
-- the exact legacy incident arguments fail before Advisor provider dispatch because no primary artifact exists;
-- blank artifacts fail before dispatch;
-- arbitrary multiline artifact and criteria text survive request construction without semantic rewriting;
+- the exact legacy incident arguments fail before Advisor provider dispatch because no completed checkpoint exists;
+- checkpoint creation rejects blank artifacts without an Advisor provider call;
+- missing,
+  unknown,
+  cross-session,
+  same-batch,
+  user-authored,
+  Advisor-authored,
+  and mutated checkpoint references fail before Advisor dispatch;
+- arbitrary multiline artifact and criteria text persist immutably and survive request construction without semantic rewriting;
 - accepted Advisor text containing detailed corrections,
   code,
   mathematics,
   quotations,
   and a full suggested rewrite returns byte-for-byte;
-- tool and `/advisor` command share candidate selection,
+- tool and `/advisor` command share checkpoint creation and resolution,
   request construction,
   transport,
   failure handling,
   and rendering;
 - prompt and tool descriptions contain evaluator ownership language rather than `answer` instructions;
-- error details record artifact identity and review stage without copying private artifact or review text.
+- error details record opaque checkpoint identity without copying private artifact,
+  criteria,
+  or review text.
 
 Behavioral evaluation must include:
 
-- the stored primality incident and its exact replacement response;
+- the stored primality incident and its exact replacement response,
+  measured as role-drift evidence rather than blocked runtime output;
 - a rich valid review that includes a complete suggested rewrite after evaluating a candidate;
 - approach review,
   completed-answer review,
@@ -762,6 +775,110 @@ any proposed role gate that rejects the incident must also accept rich answer-li
 primary artifact.
 Otherwise the gate has merely recreated the rejected expressiveness loss.
 
+## Corrected recommendation and rankings
+
+### Ownership protocol ranking
+
+1. **Persisted two-phase checkpoint**
+   - Pros: preserves arbitrary artifact,
+     criteria,
+     and review prose;
+     proves primary-assistant provenance and completed ordering;
+     removes fresh text parameters from the review call.
+   - Cons: adds one tool round trip and cannot prove artifact substance or review semantics.
+2. **Inline artifact on the Advisor call**
+   - Pros: preserves natural language and needs one call.
+   - Cons: the artifact is fresh same-call text,
+     so it does not establish prior ownership and remains an instruction channel.
+3. **Prompt-only evaluator framing**
+   - Pros: smallest interface change and unrestricted prose.
+   - Cons: preserves the exact incident call shape and supplies no deterministic ownership invariant.
+
+Ranking: persisted checkpoint > inline artifact > prompt-only framing,
+because persistence adds provenance and completed ordering without narrowing language;
+inline text ranks ahead of prompt-only framing because it at least requires an explicit review target.
+
+### Reviewer context ranking
+
+1. **Full objective,
+   evidence,
+   artifact,
+   and criteria**
+   - Pros: preserves every current review capability.
+   - Cons: gives Advisor enough information to generate task-completion prose.
+2. **Dual context with selected evidence**
+   - Pros: reduces unrelated instruction pressure.
+   - Cons: selection can hide the exact requirement or evidence Advisor should catch.
+3. **Blind artifact-only review**
+   - Pros: makes direct optimization for the original task harder.
+   - Cons: cannot reliably review completeness,
+     scope,
+     or requirement compliance.
+
+Ranking: full context > dual context > blind review,
+because the corrected requirement rejects capability loss as well as vocabulary loss;
+dual context ranks ahead of blind review because it retains some objective evidence.
+
+### Role adjudication ranking
+
+1. **Offline or non-blocking shadow measurement**
+   - Pros: builds evidence about semantic drift without withholding Advisor output.
+   - Cons: measures behavior but does not prevent it.
+2. **No adjudication**
+   - Pros: simplest path and no false-positive suppression.
+   - Cons: supplies no behavioral signal beyond prompt and observed incidents.
+3. **Blocking adjudication before measurement**
+   - Pros: can reject likely substitution while leaving the Advisor schema unrestricted.
+   - Cons: false positives withhold valid expressive reviews,
+     reproducing the user's rejected trade through a model gate.
+
+Ranking: shadow measurement > no adjudication > unmeasured blocking,
+because shadowing buys evidence without changing output;
+no adjudication ranks ahead of blocking because preserving valid rich review is a hard requirement.
+
+### Recommended interface
+
+```typescript
+type AdvisorCheckpointParams = {
+  readonly artifact: string;
+  readonly criteria?: string;
+};
+
+type AdvisorToolParams = {
+  readonly checkpoint: string;
+  readonly model?: string;
+};
+```
+
+`advisor_checkpoint` persists an immutable primary-assistant tool call and result,
+then returns an opaque ID.
+A later primary-model iteration calls `advisor` using only that ID and optional model routing.
+The Advisor runner resolves the checkpoint from the active session branch,
+encodes full context,
+artifact,
+and criteria as separately labeled data,
+and applies positive evaluator framing.
+Accepted Advisor text is returned byte-for-byte through the existing expressive rendering path.
+
+The manual `/advisor` adapter uses the latest unresolved explicit checkpoint when one exists.
+Otherwise it mechanically checkpoints the latest ordinary assistant text block after the latest user message,
+excluding tool-only blocks and Advisor messages.
+It reports no reviewable artifact when neither source exists.
+This is a usability regression from whole-session manual review in early or tool-only sessions,
+but it is required for the same provenance invariant.
+Both entry points then use the same internal runner.
+
+The deterministic guarantee is limited but real:
+every Advisor review is attached to primary-assistant text persisted before the review call,
+and the exact live task-delegation call shape from the incident is invalid.
+The same task-performing criteria can be laundered through a checkpoint.
+The design does not deterministically prevent a weak checkpoint,
+an answer-like Advisor review,
+or primary copying.
+Within the full-expressiveness constraint,
+there is no runtime semantic protection beyond ordering and evaluator framing;
+shadow scoring supplies only behavioral evidence.
+
 ## Rejected conclusions
 
 - The result was not caused by context truncation.
@@ -775,10 +892,11 @@ Otherwise the gate has merely recreated the rejected expressiveness loss.
 
 ## Exact next action
 
-Redesign prevention around ownership and orchestration rather than vocabulary restriction.
-Determine which guarantees are possible when focus and review output remain natural language,
-then obtain independent review and replace the rejected ranking.
-Do not implement production code before the new design is accepted or delegated.
+Obtain user acceptance or delegated authority for the persisted two-phase checkpoint design.
+Then implement it test-first inside `package/pi-plugin/advisor`,
+without output filtering or blocking role adjudication.
+Start with checkpoint provenance rejection and byte-for-byte expressive round-trip tests.
+Do not change `package/pi-plugin/goal`.
 
 ## Commits
 
@@ -791,3 +909,6 @@ Do not implement production code before the new design is accepted or delegated.
 - `bb8a9cd17`, `docs(advisor): recommend symbolic review contract`, recorded independent ranking and recommendation.
 - `fd1f3dc99`, `docs(advisor): qualify symbolic review guarantee`, incorporated final independent-review constraints.
 - `79b62b595`, `docs(advisor): close prevention design investigation`, closed the now-rejected first comparison.
+- `b298fbf49`, `docs(advisor): require expressive review output`, recorded the user's correction.
+- `8c2124313`, `docs(advisor): redesign around artifact ownership`, defined expressive candidates and tests.
+- `6e70c303c`, `docs(advisor): review expressive ownership design`, recorded independent design corrections.
