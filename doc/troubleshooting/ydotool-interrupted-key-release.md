@@ -258,24 +258,31 @@ systemctl --user list-units --all --type=service --no-pager \
 
 `package/pi-plugin/auto-mode/src/virtual-input-guard.ts` parses Bash tool calls
 before bypass or model-judge handling.
-It blocks caller-scoped ydotool execution,
+It blocks statically visible caller-scoped ydotool execution,
 including:
 
 - direct `ydotool` and `/usr/bin/ydotool` commands;
 - logical chains containing ydotool;
-- caller-scoped wrappers such as `env`,
-  `command`,
-  and `nohup`;
-- inline `bash -c`,
+- generic wrappers such as `env`,
+  `timeout`,
+  `nohup`,
+  and `systemd-run`;
+- direct and wrapper-nested `bash -c`,
   `sh -c`,
-  and related shell programs.
+  and related shell programs;
+- malformed shell source containing ydotool.
 
 Text inspection such as `rg ydotool .` remains allowed.
-Generic forwarding through `systemd-run` is blocked too.
 A caller-independent broker must expose a narrow input API and own key release internally,
 rather than accepting arbitrary ydotool commands from agent-authored shell.
+No such broker was validated or adopted during this incident.
 Live global input still requires user authorization.
 
+The static guard cannot identify executable names hidden behind shell variables,
+commands loaded from script files,
+heredocs or standard input,
+or custom interpreter code that spawns ydotool.
+`AGENTS.md` rule `VKI` is the policy backstop for those forms.
 The hard guard runs even when auto-mode bypass is enabled.
 `package/pi-plugin/auto-mode/src/virtual-input-guard.unit.test.ts`
 covers command classification.
@@ -353,6 +360,10 @@ and should include human review of the captured evidence.
   dated 2026-01-16:
   query status 10 means set and status 0 means unset.
 - Fedora `ydotool-1.0.4-8.fc44` package metadata.
+- [Fedora f44 `ydotool.spec`][fedora-ydotool-spec],
+  accessed 2026-08-26:
+  `Source0` is upstream `v1.0.4`,
+  and the spec applies no patch.
 - Upstream ydotool tag `v1.0.4`,
   commit `57ba7d0`:
   `Client/tool_key.c`,
@@ -365,5 +376,6 @@ and should include human review of the captured evidence.
 - [xdotool's upstream README][xdotool-readme],
   which identifies xdotool as X11 automation and documents its Wayland limitation.
 
+[fedora-ydotool-spec]: https://src.fedoraproject.org/rpms/ydotool/raw/f44/f/ydotool.spec
 [xdotool-readme]: https://github.com/jordansissel/xdotool#wayland
 [ydotool-170]: https://github.com/ReimuNotMoe/ydotool/issues/170
