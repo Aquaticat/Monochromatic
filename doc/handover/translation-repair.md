@@ -309,7 +309,7 @@ length and Latin token count and never its text, the three dead reading helpers 
 rebuilds are single passes, the footnote overflow is a marked class, and both image decoders log their refusals.
 GFP: six mutations (text quoting restored, identifier start shifted, closing `closeWord()` dropped, atom slice
 shortened, marker removed, bare `Error` restored) failed 5, 2, 2, 4, 3 and 4 cases in their own suites; all
-restored, all six suites pass. Whole-suite run after it is in flight. The advisor checkpoint owed since the calibrate
+restored, all six suites pass. Whole-suite `buildAndTest` after `b19bd23b0`: 800 PASS, 4 FAIL, exit 1: `benchmark.unit.test.ts` and `critic-wire.unit.test.ts` still pinned the quoted `quote-not-found` reason; both expectations moved to the counted form in `65cca20fc` (lesson: before landing a template change, `rg` the template across every suite, not only the suites of the touched modules). Whole-suite rerun after `65cca20fc` is in flight. The advisor checkpoint owed since the calibrate
 group was made at the start of this group's GFP; it confirmed the chain and asked only that the tightened test be
 committed before the mutation batch, which it was.
 
