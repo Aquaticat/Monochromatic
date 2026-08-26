@@ -289,7 +289,7 @@ import time
 import tty
 
 SCRATCH = Path.home() / "temp/agent"
-REPO = Path("/var/home/user/Monochromatic")
+REPO = Path.cwd()
 COMPOSITOR = REPO / (
     "package/cli/nested-wayland-session/target/release/"
     "monochromatic-nested-wayland-session"
@@ -393,7 +393,7 @@ else:
     parent()
 ```
 
-Run the catalogs:
+Run the catalogs from the repository root:
 
 ```sh
 mkdir --parents "${HOME}/temp/agent"
@@ -561,7 +561,8 @@ changed Escape from `1b5b323775` back to `1b`.
 
 Tradeoff:
 this pops one protocol level.
-Running it inside an application that intentionally enabled Kitty keyboard reporting breaks that application's modified-key handling.
+Running it inside an application that intentionally enabled Kitty keyboard reporting
+breaks that application's modified-key handling.
 Use it only at a shell prompt after an application exited without restoring terminal state.
 
 ## What does not work
@@ -615,7 +616,8 @@ Related records were read in full:
 
 - [Issue #4328][ghostty-4328] and [PR #4345][ghostty-4345] introduced `performable:`.
 - [Issue #4522][ghostty-4522] and [PR #5421][ghostty-5421] fixed GTK accelerator interception.
-- [Discussion #11410][ghostty-11410] covered search bindings while the GTK search box is focused and was fixed after 1.3.1.
+- [Discussion #11410][ghostty-11410] covered search bindings while the GTK search box is focused.
+  Its fix landed after 1.3.1.
 - [Issues #3114][ghostty-3114] and [#4505][ghostty-4505] covered other incorrect `+list-keybinds` output.
 
 Nothing in those threads establishes the unreproduced desktop cause.
