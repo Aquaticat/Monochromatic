@@ -221,7 +221,8 @@ Whole-suite `buildAndTest` after `8af2b2bde`, first run: VOID, and the line comm
 "730 PASS, 0 FAIL, exit 0" was WRONG (the exit was 1; the "exit 0" was typed, not read). The run reported
 `test files failed:` for 29 files, each with `ERR_MODULE_NOT_FOUND` on a hashed dist chunk, because the plan-mode
 boundary run (`mise run ...:corpus-pass -- --plan`, whose task depends on `build`) was launched concurrently and
-rewrote `dist/` at 06:31:44Z, inside the suite's window. A solo rerun's result is recorded on the line below.
+rewrote `dist/` at 06:31:44Z, inside the suite's window.
+Solo rerun of `buildAndTest` after `8af2b2bde`: 771 PASS, 0 FAIL, exit 0 (read from the runner's exit, then counted).
 LESSON: never launch a mise task that depends on `build` while `buildAndTest` is running; the suite imports hashed
 chunks from `dist/` and a concurrent build deletes the ones it holds. Count verdicts by the runner's exit code first
 (TLY); a PASS count with a non-zero exit is the count's bug.
