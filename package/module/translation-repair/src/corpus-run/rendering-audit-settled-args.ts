@@ -244,6 +244,78 @@ function readOnlyIds(
 }
 
 /**
+ * What the report was told to read and compare.
+ *
+ * @example
+ * ```ts
+ * const { run, against, } = readReportArguments({ argv: process.argv, },);
+ * ```
+ */
+export type ReportArguments = {
+  /**
+   * Run file named with `--run`, in a one-element list, empty when the
+   * report should read the newest kept run.
+   */
+  readonly run: readonly string[];
+
+  /**
+   * Earlier run file named with `--against`, in a one-element list, empty
+   * when no across-run band was asked for.
+   */
+  readonly against: readonly string[];
+};
+
+/**
+ * Reads the report's two flags with the same refusal the audit's flags get.
+ *
+ * SHARED RATHER THAN COPIED, because the report module had its own reader
+ * that collapsed absent and valueless into one empty string, which is exactly
+ * the defect this module records as fixed for `--cap` and `--only`: `--run`
+ * written last reported the newest run, and `--against` written last printed
+ * no across-run band, and neither said a word.
+ *
+ * @param argv - process arguments
+ *
+ * @returns Named files, each in a one-element list when written
+ *
+ * @throws StatedRefusalError when either flag was written with nothing usable
+ * after it
+ *
+ * @example
+ * ```ts
+ * const { run, } = readReportArguments({ argv: process.argv, },);
+ * ```
+ */
+export function readReportArguments(
+  { argv, }: { readonly argv: readonly string[]; },
+): ReportArguments {
+  /**
+   * Arguments after the script path.
+   */
+  const args = argv.slice(2,);
+
+  /**
+   * What `--run` named.
+   */
+  const run = valueAfter({
+    args,
+    flag: '--run',
+  },);
+
+  /**
+   * What `--against` named.
+   */
+  const against = valueAfter({
+    args,
+    flag: '--against',
+  },);
+  return {
+    run: (run.kind === 'written') ? [run.value,] : [],
+    against: (against.kind === 'written') ? [against.value,] : [],
+  };
+}
+
+/**
  * Reads what the command line asked for.
  *
  * @param argv - process arguments, passed rather than read so this is testable

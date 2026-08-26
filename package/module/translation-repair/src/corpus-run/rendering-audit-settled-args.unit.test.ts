@@ -35,6 +35,7 @@ import {
 
 import {
   readAuditArguments,
+  readReportArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
@@ -285,3 +286,72 @@ await describe({
 },);
 
 //endregion Settled rendering audit argument tests
+
+await describe({
+  name: readReportArguments.name,
+  children: [
+    it({
+      name: 'ANSWERS with two empty lists for a command line that named nothing, which is the newest '
+        + 'kept run and no across-run band',
+      fn: async () => {
+        expect(readReportArguments({ argv: commandLine({ typed: [], },), },),).toEqual({
+          run: [],
+          against: [],
+        },);
+      },
+    },),
+    it({
+      name: 'READS both files the operator named, in any order',
+      fn: async () => {
+        expect(readReportArguments({
+          argv: commandLine({
+            typed: [
+              '--against',
+              '/tmp/tabby-earlier.json',
+              '--run',
+              '/tmp/tabby-later.json',
+            ],
+          },),
+        },),).toEqual({
+          run: ['/tmp/tabby-later.json',],
+          against: ['/tmp/tabby-earlier.json',],
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES --run written at the end of the line with no value after it, which used to read as '
+        + 'absent and silently report the newest kept run',
+      fn: async () => {
+        expect(() => {
+          readReportArguments({ argv: commandLine({ typed: ['--run',], },), },);
+        },).toThrow('--run needs a value written after it',);
+      },
+    },),
+    it({
+      name: 'REFUSES --against followed by the next flag rather than by its value, which used to read as '
+        + 'absent and silently print no across-run band',
+      fn: async () => {
+        /**
+         * What the reader raised.
+         */
+        let raised: unknown;
+        try {
+          readReportArguments({
+            argv: commandLine({
+              typed: [
+                '--against',
+                '--run',
+                '/tmp/tabby-later.json',
+              ],
+            },),
+          },);
+        }
+        catch (error) {
+          raised = error;
+        }
+        expect(raised,).toBeInstanceOf(StatedRefusalError,);
+        expect((raised as Error).message,).toContain('--against needs a value written after it',);
+      },
+    },),
+  ],
+},);

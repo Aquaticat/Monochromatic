@@ -79,6 +79,8 @@ export {
 export {
   type AuditArguments,
   readAuditArguments,
+  readReportArguments,
+  type ReportArguments,
 } from './corpus-run/rendering-audit-settled-args.ts';
 export {
   printBand,

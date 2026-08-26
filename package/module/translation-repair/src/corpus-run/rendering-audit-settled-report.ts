@@ -10,6 +10,7 @@ import {
 } from '../artifact-guard.ts';
 
 import { reportingRefusals, } from './cli-refusal.ts';
+import { readReportArguments, } from './rendering-audit-settled-args.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { repeatBandOf, } from './rendering-audit-settled-band.ts';
 import {
@@ -166,38 +167,6 @@ async function newestRun({ runsDir, }: { readonly runsDir: string; },): Promise<
 }
 
 /**
- * Reads the run file named after a flag, when one was named.
- *
- * @param argv - process arguments
- *
- * @param flag - flag to look for
- *
- * @returns Path as written, empty when the flag was absent
- *
- * @example
- * ```ts
- * const named = namedRun({ argv: process.argv, flag: '--run', },);
- * ```
- */
-function namedRun(
-  {
-    argv,
-    flag,
-  }: {
-    readonly argv: readonly string[];
-    readonly flag: string;
-  },
-): string {
-  /**
-   * Where the flag was written.
-   */
-  const at = argv.indexOf(flag,);
-  if (at === (-1))
-    return '';
-  return argv[at + 1] ?? '';
-}
-
-/**
  * Counts slots in a phrase that reads correctly at one.
  *
  * @param count - how many slots
@@ -287,27 +256,26 @@ async function printAcross(
  */
 async function main(): Promise<void> {
   /**
-   * Run to read: whatever was named, else the newest kept.
+   * What the command line named, with a valueless flag refused rather than
+   * read as absent: `--run` written last used to report the newest run and
+   * `--against` written last used to print no across-run band, in silence.
    */
-  const named = namedRun({
-    argv: process.argv,
-    flag: '--run',
-  },);
+  const asked = readReportArguments({ argv: process.argv, },);
+
+  /**
+   * Run named with `--run`, absent when the newest kept run is meant.
+   */
+  const [named,] = asked.run;
 
   /**
    * File this report reads, which is the newest kept when none was named.
    */
-  const path = (named === '')
-    ? await newestRun({ runsDir: await resolveRunsDir(), },)
-    : named;
+  const path = named ?? await newestRun({ runsDir: await resolveRunsDir(), },);
 
   /**
    * Earlier run to pair against, empty when none was named.
    */
-  const against = namedRun({
-    argv: process.argv,
-    flag: '--against',
-  },);
+  const against = asked.against[0] ?? '';
 
   /**
    * Rows that run bought, and where it said it read them from.
