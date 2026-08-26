@@ -257,6 +257,53 @@ and a free-text five-part answer would not be a valid review result.
 A malicious or confused model could still place answer content inside a bounded `concern`,
 so field bounds and evidence references remain required defense.
 
+## Verification design
+
+The implementation phase should start with red tests through the package's built interface.
+Unit tests import `dist` and run through the package `mise` tasks.
+
+Required negative cases:
+
+- Pass the exact incident arguments containing `question` and assert rejection before provider dispatch.
+- Script a provider to emit the five-part answer as free text instead of the forced review tool.
+  Assert that text never reaches the returned Advisor tool content.
+- Return a review object with unknown properties and assert strict parser rejection.
+- Return excessive findings,
+  overlong text,
+  invalid assessment and category values,
+  and nonexistent evidence references.
+  Assert client validation rejects each even when a provider schema accepted it.
+- Return refusal,
+  token-limit,
+  empty,
+  and malformed direct-JSON outcomes.
+  Assert none become successful review prose.
+
+Required positive controls:
+
+- A valid structured finding must cross the public Advisor interface and appear in rendered tool content.
+- A `clear` assessment must remain distinguishable from missing or invalid output.
+- An `insufficient-evidence` assessment must report the absence of a reviewable candidate without supplying one.
+- Explicit valid model selection must retain current scope and output-capacity checks.
+- Default model selection must remain non-current when another eligible model exists.
+- Conversation and project context must still reach the reviewer adapter.
+- A forced-tool omission followed by valid direct JSON must recover without exposing first-attempt free text.
+
+Required user-boundary probe after implementation:
+
+- Run the built extension in a disposable Pi session with a deterministic provider adapter.
+- Present the exact primality incident request.
+- Confirm the public tool rejects `question`,
+  a valid no-question call returns only validated review findings,
+  and no five-part answer text enters the primary model context.
+- Run the guard test red by temporarily removing each deterministic gate after its test is committed,
+  rebuild,
+  observe the focused test fail,
+  then restore the guard.
+
+A live provider matrix can measure the `2048` cap candidate and semantic behavior,
+but nondeterministic model compliance is supplementary evidence rather than the deterministic completion gate.
+
 ## Investigation questions
 
 - Which caller guidance would cause the primary model to ask defect-seeking questions only after concrete evidence exists?
