@@ -1047,6 +1047,100 @@ fn fake_github_oauth_token() -> String {
     return format!("gho_{}", "a".repeat(36))
 }
 
+// What:     The builtin `curl-auth-user` rule accepts short and long user
+//           options at line start or after horizontal whitespace. The
+//           fixtures assemble option and credential fragments at runtime
+//           so the repository scanner does not flag its own test source.
+// Why:      Same-line curl commands, continuation lines, and deliberately
+//           broad non-curl option lines must retain credential detection.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test('curl auth user accepts separate option tokens', () => { ... });
+// ```
+#[test]
+fn curl_auth_user_accepts_separate_option_tokens() {
+    let dir = unique_tmp("curl-auth-user-separate-options");
+    let target = dir.join("options.txt");
+    let credential = ["alice", "secret"].join(":");
+    let content = [
+        format!("-u {credential}"),
+        format!("curl -u {credential}"),
+        format!("curl\t--user={credential}"),
+        format!("  -u {credential} \\"),
+        format!("other -u {credential}"),
+    ]
+    .join("\n");
+    fs::write(&target, format!("{content}\n")).expect("write option fixtures");
+
+    let output = Command::configured(BIN)
+        .args(["--builtin-rules", "options.txt"])
+        .current_dir(&dir)
+        .env_remove("FORBIDDEN_STRINGS_RULES")
+        .output()
+        .expect("spawn binary");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "separate credential options must produce findings; stderr: {stderr}",
+    );
+    let findings: Vec<&str> = stderr
+        .lines()
+        .filter(|line| return line.contains("rule=curl-auth-user"))
+        .collect();
+    assert_eq!(
+        findings.len(),
+        5,
+        "expected one curl-auth-user finding per line: {stderr}",
+    );
+    for line in 1..=5 {
+        assert!(
+            findings
+                .iter()
+                .any(|finding| return finding.contains(&format!("options.txt:{line} "))),
+            "missing curl-auth-user finding for line {line}: {stderr}",
+        );
+    }
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     The builtin `curl-auth-user` rule refuses `-u` text embedded
+//           inside a larger word or package-path task selector.
+// Why:      Option-like substrings must not become username-password pairs
+//           merely because a later colon-delimited task name has a valid
+//           credential shape.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test('curl auth user refuses embedded option substrings', () => { ... });
+// ```
+#[test]
+fn curl_auth_user_refuses_embedded_option_substrings() {
+    let dir = unique_tmp("curl-auth-user-embedded-substrings");
+    let target = dir.join("task-paths.txt");
+    let content = [
+        "mise run //package/pi-plugin/ask-user-question:build",
+        "mise run //package/pi-plugin/ask-user-question:lint",
+        "prefix-user-question:build",
+    ]
+    .join("\n");
+    fs::write(&target, format!("{content}\n")).expect("write embedded substring fixtures");
+
+    let output = Command::configured(BIN)
+        .args(["--builtin-rules", "task-paths.txt"])
+        .current_dir(&dir)
+        .env_remove("FORBIDDEN_STRINGS_RULES")
+        .output()
+        .expect("spawn binary");
+    assert!(
+        output.status.success(),
+        "embedded option substrings must scan cleanly; stderr: {}",
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let _ = fs::remove_dir_all(&dir);
+}
+
 // What:     `--builtin-rules` with NO rules file anywhere (empty cwd, no
 //           env var) must scan with the embedded baseline alone: a file
 //           containing a github-oauth-shaped token exits 1 with a
