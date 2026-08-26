@@ -48,6 +48,7 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  type DestinationCheck,
   type ChunkPair,
   fixedPagePath,
   publishFixedPage,
@@ -88,6 +89,12 @@ const CLOSING = '\n## Remembered by\n\nEveryone who came in out of the rain.\n';
  * to preserve it on the way in.
  */
 const ARCHIVE = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING}`;
+
+/**
+ * Source page the archive translates, linking nowhere, so the destination check
+ * has nothing to report unless a case says otherwise.
+ */
+const SOURCE_PAGE = '## 简介\n\n一只在书店陪了十一年的虎斑猫。\n';
 
 /**
  * Where the middle paragraph starts.
@@ -448,19 +455,25 @@ async function publishAndRead(
     artifact,
     publishDir,
     slices = documentSlices(),
+    sourceText = SOURCE_PAGE,
   }: {
     readonly artifact: WouldShipSource;
     readonly publishDir: string;
     readonly slices?: readonly ChunkPair[];
+    readonly sourceText?: string;
   },
-): Promise<{ readonly path: string; readonly text: string; }> {
+): Promise<{ readonly path: string; readonly text: string; readonly destinations: DestinationCheck; }> {
   /**
-   * Where the publisher put it.
+   * Where the publisher put it, and what the page carries of the source's links.
    */
-  const path = await publishFixedPage({
+  const {
+    path,
+    destinations,
+  } = await publishFixedPage({
     artifact,
     slices,
     archiveText: ARCHIVE,
+    sourceText,
     entryId: 'BookshopCat',
     publishDir,
     l: tagged({ tag: 'publish-test', },),
@@ -472,6 +485,7 @@ async function publishAndRead(
       path,
       'utf8',
     ),
+    destinations,
   };
 }
 
@@ -706,6 +720,7 @@ await describe({
               artifact: artifactOverstatingTheArchive(),
               slices: documentSlices(),
               archiveText: ARCHIVE,
+              sourceText: SOURCE_PAGE,
               entryId: 'BookshopCat',
               publishDir,
               l: tagged({ tag: 'publish-test', },),
@@ -730,6 +745,54 @@ await describe({
         },);
 
         expect(existsSync(wouldBeAt,),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${publishFixedPage.name} destinations`,
+  children: [
+    it({
+      name: 'REPORTS a source destination the published page lacks, without refusing the page',
+      fn: async () => {
+        await using tree = await throwawayTree();
+
+        /**
+         * Page published from a source that links to a home page the archive
+         * never carried, so the link is absent from what ships.
+         */
+        const published = await publishAndRead({
+          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+          publishDir: tree.publishDir,
+          sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
+        },);
+
+        expect(existsSync(published.path,),).toBe(true,);
+        expect(published.destinations.dropped,).toStrictEqual(['https://example.org/tabby',],);
+        expect(published.destinations.page,).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'reports nothing dropped for a source that links nowhere, which is the control',
+      fn: async () => {
+        await using tree = await throwawayTree();
+
+        /**
+         * Page published from the linkless source page.
+         */
+        const published = await publishAndRead({
+          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+          publishDir: tree.publishDir,
+        },);
+
+        expect(published.destinations,).toStrictEqual({
+          source: [],
+          page: [],
+          dropped: [],
+          findings: [],
+        },);
       },
     },),
   ],

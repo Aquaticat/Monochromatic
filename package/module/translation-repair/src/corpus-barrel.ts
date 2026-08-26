@@ -14,6 +14,10 @@
 
 export { readAskedCount, } from './corpus-run/asked-count.ts';
 export {
+  TALLY_ERROR_CAP,
+  tallyErrorText,
+} from './corpus-run/tally-error-text.ts';
+export {
   judgedAuthors,
   standingReportLines,
 } from './corpus-run/editor-calibrate-standing.ts';

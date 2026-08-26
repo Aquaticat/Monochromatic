@@ -2,7 +2,6 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { refusalText, } from '../refusal-text.ts';
 import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { readDocumentPictures, } from '../document-readings.ts';
@@ -21,8 +20,10 @@ import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
+import { destinationsLine, } from './destinations-line.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 import { settledTallyLine, } from './settled-tally.ts';
+import { tallyErrorText, } from './tally-error-text.ts';
 import {
   discardSliceCache,
   openPairingCache,
@@ -56,11 +57,6 @@ import {
 // the artifacts directory. Keeping the whole of that in one function is what
 // makes the rule checkable by reading, since the write is the last thing the
 // success path does and the failure path has no write at all.
-
-/**
- * Characters of an error message kept in a TALLY line.
- */
-const ERROR_MESSAGE_CAP = 200;
 
 /**
  * Whether an entry reached its artifact.
@@ -484,10 +480,14 @@ async function runEntryPipeline(
     // second, a crash between the two writes would leave that entry done forever
     // with no page ever produced; written first, every entry the pass calls
     // settled has its page, by construction rather than by luck.
-    await publishFixedPage({
+    /**
+     * Where the page went and what it carries of the source's destinations.
+     */
+    const published = await publishFixedPage({
       artifact,
       slices: prepared.slices,
       archiveText: entry.targetText,
+      sourceText: entry.sourceText,
       entryId: entry.id,
       publishDir,
       l: tagged({ tag: entry.id, },),
@@ -504,6 +504,11 @@ async function runEntryPipeline(
       )}\n`,
     },);
     console.log(tally,);
+    // COUNTS ONLY ON STDOUT; the addresses themselves are in the run log.
+    console.log(destinationsLine({
+      entryId: entry.id,
+      destinations: published.destinations,
+    },),);
     return { kind: 'settled', };
   }
   catch (error) {
@@ -518,15 +523,9 @@ async function runEntryPipeline(
     const { aborted, } = deadline.callSignal;
 
     /**
-     * Failure text for the TALLY line: a class that declared its message
-     * quote-free says it, anything else is named and not quoted, since stdout
-     * is read, grepped, and pasted (`#237`); capped after that.
+     * Failure text for the TALLY line, named or quoted per its class and capped.
      */
-    const message = refusalText({ error, },)
-      .slice(
-        0,
-        ERROR_MESSAGE_CAP,
-      );
+    const message = tallyErrorText({ error, },);
     console.log(`TALLY ${entry.id} status=ERROR ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,);
     return { kind: 'failed', };
   }
@@ -638,15 +637,7 @@ export async function settleEntry(
     // success line and every reader counting statuses saw one entry as both.
     // What is left behind is a stale cache directory, which costs disk and
     // nothing else: the next run skips the entry on its artifact.
-    console.log(
-      `CLEANUP ${entry.id} cache=retained error=${
-        refusalText({ error, },)
-          .slice(
-            0,
-            ERROR_MESSAGE_CAP,
-          )
-      }`,
-    );
+    console.log(`CLEANUP ${entry.id} cache=retained error=${tallyErrorText({ error, },)}`,);
   }
 }
 

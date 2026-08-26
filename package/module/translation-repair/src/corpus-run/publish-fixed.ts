@@ -27,6 +27,10 @@ import {
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
+import {
+  type DestinationCheck,
+  droppedDestinations,
+} from './dropped-destinations.ts';
 
 /**
  * Directory under a runs dir holding the published corpus tree.
@@ -189,20 +193,22 @@ export function shippableReplacements(
  *
  * @param archiveText - whole archive English this entry started from
  *
+ * @param sourceText - whole source page, read for the destinations it links to
+ *
  * @param entryId - person entry being published
  *
  * @param publishDir - root of the mirrored tree
  *
  * @param l - logger, tagged by the caller with this entry
  *
- * @returns Path written
+ * @returns Path written, and what the page carries of the source's destinations
  *
  * @throws {@link UnansweredContestSliceError} when a slice the contest was
  * obliged to decide is named nowhere in it, so no reading can say what ships
  *
  * @example
  * ```ts
- * const path = await publishFixedPage({ artifact, slices, archiveText, entryId, publishDir, l, },);
+ * const { path, } = await publishFixedPage({ artifact, slices, archiveText, sourceText, entryId, publishDir, l, },);
  * ```
  */
 export async function publishFixedPage(
@@ -210,6 +216,7 @@ export async function publishFixedPage(
     artifact,
     slices,
     archiveText,
+    sourceText,
     entryId,
     publishDir,
     l,
@@ -217,11 +224,15 @@ export async function publishFixedPage(
     readonly artifact: WouldShipSource;
     readonly slices: readonly ChunkPair[];
     readonly archiveText: string;
+    readonly sourceText: string;
     readonly entryId: string;
     readonly publishDir: string;
     readonly l: Logger;
   },
-): Promise<string> {
+): Promise<{
+  readonly path: string;
+  readonly destinations: DestinationCheck;
+}> {
   /**
    * What each slice contributes, silent slices included.
    */
@@ -270,7 +281,47 @@ export async function publishFixedPage(
     `publish: wrote ${String(replacements.length,)} slices into a page of `
       + `${String(pageText.length,)} characters`,
   );
-  return path;
+
+  /**
+   * What the page carries of the source's destinations.
+   *
+   * AFTER THE WRITE AND NEVER A REFUSAL: the page is what both deciders
+   * approved, and a link the pipeline cannot restore here is reported for
+   * the reading rather than holding the entry. See the module note in
+   * `dropped-destinations.ts`.
+   */
+  const destinations = droppedDestinations({
+    sourceText,
+    pageText,
+  },);
+
+  /**
+   * Source destinations the page lacks, counted for the log line.
+   */
+  const droppedCount = destinations
+    .dropped
+    .length;
+
+  /**
+   * Destinations the source carries, the denominator of that line.
+   */
+  const sourceCount = destinations
+    .source
+    .length;
+  if (droppedCount > 0) {
+    l.warn(
+      `publish: ${String(droppedCount,)} of ${String(sourceCount,)} `
+        + 'source destinations are absent from the page',
+    );
+    for (const url of destinations.dropped)
+      l.info(`publish: dropped destination ${url}`,);
+  }
+  for (const finding of destinations.findings)
+    l.warn(`publish: ${finding}`,);
+  return {
+    path,
+    destinations,
+  };
 }
 
 //endregion Publishing the settled entries as a corpus tree

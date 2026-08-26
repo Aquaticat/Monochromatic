@@ -9,7 +9,18 @@
 // it, and the three files form one chain: `would-ship-text.ts` says what a
 // slice contributes, `publish-fixed.ts` turns that into a page, and
 // `published-page-check.ts` reads the page back and refuses one that disagrees.
+// `dropped-destinations.ts` asks the page one more deliverable question, whether
+// it still links everywhere the source did, and `destinations-line.ts` prints
+// the answer's counts beside the tally.
 
+export { destinationsLine, } from './corpus-run/destinations-line.ts';
+export {
+  collectDestinations,
+  type DestinationCheck,
+  droppedDestinations,
+  markdownDestinations,
+  scanUrlRuns,
+} from './corpus-run/dropped-destinations.ts';
 export {
   ENGLISH_PAGE_FILE,
   FIXED_TREE_DIR,

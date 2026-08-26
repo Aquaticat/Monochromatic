@@ -137,6 +137,8 @@ export type RepairDocument = {
  * strict MDX first, plain markdown on grammar failure.
  * The downgrade is never silent; the finding carries the strict reason.
  *
+ * @internal
+ *
  * @param body - body text, comments already masked
  *
  * @param bodyOffset - absolute offset of body within the full document
@@ -148,7 +150,7 @@ export type RepairDocument = {
  * const { root, findings, } = parseBodyTolerant({ body: masked, bodyOffset: 0, },);
  * ```
  */
-function parseBodyTolerant(
+export function parseBodyTolerant(
   {
     body,
     bodyOffset,
