@@ -87,6 +87,7 @@ export type {
   HyperOnlyRosterId,
   SyntheticServedId,
 } from './roster-id.ts';
+export { HYPER_ONLY_ROSTER_IDS, } from './roster-id.ts';
 export {
   hyperIdFor,
   type HyperSpelling,
@@ -149,8 +150,10 @@ export {
   HYPER_MESSAGES_URL,
   HYPER_MODELS,
   HYPER_ONLY,
+  HYPER_ONLY_NAMES_ARE_SERVED,
   type HyperModelInfo,
   type HyperServedId,
+  hyperServesLabel,
   type HyperToolChoice,
   modelsServedByBoth,
   modelsServedOnlyHere,

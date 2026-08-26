@@ -328,4 +328,41 @@ export function modelsServedOnlyHere(): readonly HyperServedId[] {
  */
 export type HyperOnlyNamesAreServed = HyperOnlyRosterId extends HyperServedId ? true : never;
 
+/**
+ * The proof above, instantiated, so a roster label with no catalog row stops
+ * the type check instead of surfacing at run time as one lost voice per call
+ * (`#241`): when the conditional resolves to `never`, `true` is not assignable
+ * and `lint:types` fails on this line, naming the drift.
+ *
+ * @example
+ * ```ts
+ * expect(HYPER_ONLY_NAMES_ARE_SERVED,).toBe(true,);
+ * ```
+ */
+export const HYPER_ONLY_NAMES_ARE_SERVED: HyperOnlyNamesAreServed = true;
+
+/**
+ * Whether Charm Hyper's catalog carries a label under that exact spelling.
+ *
+ * A LABEL, NOT A ROSTER ID: the roster names shared models by their Synthetic
+ * spelling and reaches Hyper for them through `hyperIdFor`, so this answers
+ * only whether the given spelling is a Hyper row, which for the roster means
+ * the Hyper-only labels. `syntheticServes` is the roster-typed counterpart.
+ *
+ * @param label - spelling being looked up
+ *
+ * @returns Whether `HYPER_MODELS` has a row under it
+ *
+ * @example
+ * ```ts
+ * const served = hyperServesLabel('qwen3.8-max',);
+ * ```
+ */
+export function hyperServesLabel(label: string,): label is HyperServedId {
+  return Object.hasOwn(
+    HYPER_MODELS,
+    label,
+  );
+}
+
 //endregion Hyper catalog
