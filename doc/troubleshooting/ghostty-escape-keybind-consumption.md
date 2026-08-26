@@ -53,7 +53,7 @@ Ghostty 1.3.1 installs the Linux Escape binding with `performable = true`.
 The source at tag `v1.3.1`,
 commit `332b2aefc6e72d363aa93ab6ecfc86eeeeb5ed28`,
 sets the physical Escape key to `end_search`
-(`src/config/Config.zig:6738-6747`):
+(`src/config/Config.zig:6741-6746`):
 
 ```zig
 try self.set.putFlags(
@@ -232,9 +232,11 @@ The remaining boundaries are:
 
 - Ghostty search or GUI focus state in the affected surface.
   The first Escape is expected to close an active search.
-  Related GTK search-focus behavior was fixed after 1.3.1 in
-  [ghostty-org/ghostty#12492][ghostty-12492],
-  but the default Escape close action already worked in the reported 1.3.1 discussion.
+  [Discussion #11410][ghostty-11410] reports related GTK search-focus behavior.
+  Its selected answer points to [PR #12492][ghostty-12492],
+  but that PR changes only macOS files,
+  so its applicability to GTK is not established.
+  The discussion reports that the default Escape close action already worked on the tested 1.3.1 build.
 - Kitty keyboard protocol state left active by an application that exited without popping it.
   A later application that expects a raw `1b` byte can misread `CSI 27 u` as no Escape.
 - Modifiers or input-method state on the real event.
@@ -404,6 +406,7 @@ Run the catalogs from the repository root:
 ```sh
 mkdir --parents "${HOME}/temp/agent"
 chmod 700 "${HOME}/temp/agent"
+mise run //package/cli/nested-wayland-session:build
 
 python3 "${HOME}/temp/agent/ghostty-escape-probe.py" parent stock \
   --config-default-files=false --gtk-single-instance=false
@@ -623,7 +626,8 @@ Related records were read in full:
 - [Issue #4328][ghostty-4328] and [PR #4345][ghostty-4345] introduced `performable:`.
 - [Issue #4522][ghostty-4522] and [PR #5421][ghostty-5421] fixed GTK accelerator interception.
 - [Discussion #11410][ghostty-11410] covered search bindings while the GTK search box is focused.
-  Its fix landed after 1.3.1.
+  Its selected answer cites macOS-only [PR #12492][ghostty-12492],
+  so the GTK fix status is unclear.
 - [Issues #3114][ghostty-3114] and [#4505][ghostty-4505] covered other incorrect `+list-keybinds` output.
 
 Nothing in those threads establishes the unreproduced desktop cause.
