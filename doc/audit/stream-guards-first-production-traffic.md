@@ -328,3 +328,131 @@ so the two readings sit beside each other rather than in conflict.
 -   Voice loss in this window is two calls,
     one cut after quorum and one that answered with an empty string,
     and they want opposite remedies.
+
+## The same instruments at ten times the traffic, and the population is now countable
+
+Read 2026-08-25 from `~/temp/agent/editor-calibrate-postguard-20260825.log`,
+the completed forty-slice `editor-calibrate` run,
+14746 lines covering 3561 model streams plus 584 quota and credit polls.
+The 347-stream window recorded further up this document could count two lost voices;
+this one counts every stream every roster model opened.
+
+```text
+model streams   3561
+completed       3481
+cut               79
+overrun            1
+```
+
+`overrun` is the `#119` degeneration guard,
+and one firing in 3561 streams is the first time it has been seen on real traffic at all.
+
+## Every stream that finished produced content, and every stream that produced nothing was cut
+
+The cross-tabulation is total,
+with no cell needing a qualifier:
+
+```text
+completed, content > 0   3481
+cut,       content > 0      7
+cut,       content = 0     72
+overrun,   content > 0       1
+```
+
+There is no completed stream anywhere in the run with zero content characters.
+That single fact answers `#221` on a population seven times larger than the one that first refuted it,
+and answers it the same way:
+a model that reaches the end of its stream always wrote something.
+
+## The seventy-two are not silence, they are reasoning that never reached the answer
+
+All 72 of the zero-content streams carry reasoning characters greater than zero.
+Not one of them is a model that opened a connection and said nothing.
+Every one is a model that spent the whole straggler grace on the reasoning channel
+and was cut before it emitted its first content character.
+
+This is a third shape of voice loss,
+distinct from both shapes named earlier in this document:
+not a cut mid-reply after millions of delivered characters,
+and not an answer that arrived empty.
+
+It also concentrates,
+by model,
+far harder than the traffic does:
+
+```text
+qwen3.8-max          cut 57 of 357 (16.0%), zero content 55
+hf:zai-org/GLM-5.2   cut 16 of 356 ( 4.5%), zero content 13
+hf:Qwen/Qwen3.8-27B  cut  3 of 356 ( 0.8%), zero content  3
+deepseek-v4-pro-0813 cut  1 of 356 ( 0.3%), zero content  1
+gemma-4-26b-a4b-it   cut  2 of 356 ( 0.6%), zero content  0
+```
+
+The remaining five roster models were cut zero times in 356 streams each.
+
+## Losing a voice is not the same as the model being bad, and here the two point opposite ways
+
+`qwen3.8-max` looks like the obvious candidate to drop:
+it owns 55 of the 72 zero-content streams and 57 of the 79 cuts,
+while half the roster was never cut once.
+
+The run's own ledger says the opposite.
+Across 132 selection rounds,
+counting how often each model's candidate was the one selected:
+
+```text
+model                  selected / produced   availability adjusted
+hf:zai-org/GLM-5.2          51 / 134  38.1%   38.6%
+qwen3.8-max                 34 /  94  36.2%   25.8%
+hf:Qwen/Qwen3.8-27B         42 / 130  32.3%   31.8%
+deepseek-v4-pro-0813        35 / 126  27.8%   26.5%
+hf:moonshotai/Kimi-K3       36 / 132  27.3%   27.3%
+deepseek-v4-flash-0731      27 / 119  22.7%   20.5%
+hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
+                            23 / 137  16.8%   17.4%
+hf:openai/gpt-oss-120b      23 / 145  15.9%   17.4%
+gemma-4-26b-a4b-it          17 / 133  12.8%   12.9%
+minimax-m3                  12 / 119  10.1%    9.1%
+```
+
+Shares do not sum to one because identical candidates are credited to every model that wrote them.
+The adjusted column charges each model zero for rounds it never reached,
+which is the reading `#199` settled on.
+
+`qwen3.8-max` has the second best rate among the rounds it survived
+and sits fifth of ten once its absences are charged against it.
+It is not exceptionally bad.
+It is a model whose answers win when they arrive and whose answers are cut before they arrive one time in six,
+and the remedy for that is recovering the voice rather than removing the model.
+
+## The recovery round has still never run, and this is exactly the population it was built for
+
+`grep` for the recovery round's own line over the whole log returns nothing:
+
+```text
+<stage>: recovery round for <n> unreadable answers
+```
+
+The run directory was created at 10:14 local and the recovery round landed in `91f0c8ba5` at 13:57,
+so the bundle this run executed cannot contain it.
+The rate `#230` owes is therefore still owed,
+and the next run carrying the change is where it comes from.
+
+What this reading adds is the size of the prize.
+The 72 losses are 2.0% of all model streams,
+but they are 15.4% of one model's streams and 3.7% of another's,
+and both of those models are in the top three by selection rate.
+A recovery round that re-asks them buys back participation
+where participation is worth the most.
+
+## What the third shape changes about the grace
+
+Nothing here argues for a shorter straggler grace.
+Cut elapsed times for `qwen3.8-max` run from 76858 ms to 254000 ms with a median of 195939 ms,
+and its first byte arrives in 1467 ms to 4735 ms.
+The connection is healthy and fast to open;
+what runs long is the reasoning.
+Since this repository never sets a thinking parameter or a token budget,
+by standing instruction,
+the grace is the only dial that touches this population at all,
+and shortening it would convert answers that arrive into answers that do not.
