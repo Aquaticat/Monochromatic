@@ -266,6 +266,11 @@ anything else by name; the CLEANUP guard fails with the printer restored (2 fail
 so the boundary prints `refused by Error` plus a fault stack and exits 5;
 the sibling site `editor-width-probe.ts:139` already uses `StatedRefusalError`.
 
+FIXED 2026-08-26 in `acfc7ad22`: the refusal is a `StatedRefusalError`, so the boundary prints it in one line
+and exits 6, and the usable suite asserts the class.
+Guard: with the site throwing a bare `Error` again, the case
+`REFUSES a draw whose every slice holds one sentence` fails; restored, passes.
+
 ### calibrate-4, MINOR, verified: `MislabelledArtifactError` writes remedies nobody sees
 
 `src/corpus-run/pass-schema-guard.ts:229-277` builds an operator remedy ("Ways forward")
@@ -273,6 +278,12 @@ into a class that is correctly unmarked, because `reason` carries a parser's tex
 (`caughtValueText(error)` at `:378`), so the boundary prints only `refused by MislabelledArtifactError`.
 Fix: a marked class naming entry, generation, and the ways forward; the reader's reason goes
 to the log through `refusalText`.
+
+FIXED 2026-08-26 in `acfc7ad22`: `MislabelledArtifactError` carries `messageNamesOnly` and names the entry,
+the generation and the ways forward; the reader's own objection is logged at warn through `refusalText` at the
+throw site, and the inventory in `message-names-only.unit.test.ts` lists the class as marked.
+Guard: with the marker removed, the inventory cases `KEEPS exactly the classes the inventory records` and
+`KEEPS a reason for every class that writes its sentence and stays unmarked` fail; restored, passes.
 
 ### calibrate-5, MINOR, verified: `editor-calibrate` builds a client per slice
 
@@ -282,6 +293,10 @@ and a provider held out on slice N is re-asked immediately on slice N+1.
 `editor-width-probe.ts:94` and `window-trial-probe.ts:326` build once in `main`.
 This is also why the arm A log carries four `is not set` warnings.
 
+FIXED 2026-08-26 in `acfc7ad22`: `main` builds the client once, before the slice loop, and hands it to
+`runOne`; the only `createRunClient()` call left in the file is that one.
+No test observes client construction, so this one is verified by reading the diff rather than by a guard.
+
 ### calibrate-6, MINOR, verified: the refusal streak resets on slices the ledger already held
 
 `src/corpus-run/window-trial-probe.ts:410-416`: `bought.refusedInARow = 0` runs before
@@ -290,10 +305,20 @@ so on a resumed run a fault refusing every NEW slice never reaches `REFUSALS_BEF
 and each refusal still buys a producer slate.
 Fix: reset only when `rows.length > 0`.
 
+FIXED 2026-08-26 in `acfc7ad22`: the streak is a function, `streakAfter` in `window-trial-protocol.ts`,
+and a slice the ledger already held leaves it where it was; the loop reads it on both paths.
+Guard: with the held slice resetting the streak again, the cases
+`REFUSES to reset the streak on a slice the ledger already held` and
+`reaches the stop across a resumed run whose held slices interleave with refusals of every new one` fail;
+restored, passes.
+
 ### calibrate-7, MINOR, verified: the control's sentence cut needs a trailing space
 
 `src/corpus-run/editor-width-control.ts:38-43`: `TERMINATORS = ['。', '. ', '! ', '? ']`,
 so a passage with one sentence per line reads as one sentence and leaves the positive control.
+
+FIXED 2026-08-26 in `acfc7ad22`: `TERMINATORS` gains the three stops that end their line.
+Guard: with them removed, the case `REMOVES THE FIRST SENTENCE at a stop that ends its line` fails; restored, passes.
 
 ### calibrate-8, MINOR, verified: `verify-published` overclaims on unweighable entries
 
@@ -302,16 +327,45 @@ artifact predates the stored archive text, and the closing line at `:378-381` sa
 carries its wordings "at the length it implies" although no length was checked for them.
 The per-entry line does say `UNWEIGHED`; the summary does not.
 
+FIXED 2026-08-26 in `acfc7ad22`: `reportEntry` answers `agreed-weighed`, `agreed-unweighed` or `disagreed`,
+and the closing line reads
+`N of M pages carry every wording their artifact promised; K of those at the length it implies, U UNWEIGHED because
+the artifact predates the stored archive text`.
+Verified at the boundary: over the 2026-08-17 runs directory, which has no published tree, the line reads
+`0 of 0 ... 0 of those ... 0 UNWEIGHED` and the command exits 1;
+over an empty directory the command takes its `NOTHING VERIFIED` exit 2 before the line.
+No unit guard: `verify-published.ts` has no suite and the counting sits inside `main`; recorded as a gap, not claimed.
+
 ### calibrate-9, MINOR, verified: `PublishedPageDisagreesError` is unmarked
 
 `src/corpus-run/published-page-check.ts:499-507`: the class documents that it names slices
 and counts and quotes nothing, and carries no `messageNamesOnly`, so at a boundary it is muted.
+
+FIXED 2026-08-26 in `acfc7ad22`: the class moved to `published-page-disagreement.ts`, takes a typed
+`PageDisagreement` (wordings missing, or weight off) and writes its own sentence from indices and counts, which is
+what lets it carry the marker: the inventory refuses the marker to a class that forwards a caller's sentence, so the
+old shape could never have been marked.
+Guard: with the marker removed the same two inventory cases as calibrate-4 fail; restored, passes.
 
 ### calibrate-10, MINOR, verified: four modules in the slice are referenced by no test
 
 `pass-settled.ts` (whose module note records a past silent defect: a directory named `<id>.json`
 counted as settled), `editor-width-arm.ts`, `pass-schema-census.ts`, `window-trial-probe.ts`:
 `rg --files-with-matches` over `*.test.ts` finds 0 references for each.
+
+FIXED 2026-08-26 in `acfc7ad22`: suites for `pass-settled.ts` (a directory or a symlink named like an
+artifact is not counted, and the count agrees with the id set), `pass-schema-census.ts` (every classification, in name
+order, skipping the directory and the suffix-less file), `editor-width-arm.ts` (a blank arm with no producer, and a
+composite arm naming both editors as producers) and `window-trial-protocol.ts` (the digest and the streak, lifted out
+of the command so they reach the bundle), plus a boundary case in `window-trial-probe.unit.test.ts` that runs the built
+command with every provider key withheld and expects the stated refusal and exit 6.
+The census suite found a real defect on the way: a file holding a JSON array passed `isJsonRecord`, carried no version
+field, and was filed as an unversioned generation, a sound result to keep; it is `malformed` now.
+Guards: the listing filter answering true for every entry fails three pass-settled cases; the array check removed
+fails `classifies JSON that is not a record as malformed too`; the blank rule removed fails
+`reads an arm whose editors proposed nothing as BLANK with no producer`; each restored, passes.
+The scheduler's listing is renamed `artifactBackedIds`: the bundle already exported a `settledEntryIds` that lists
+the published tree, and the barrel refused the second.
 
 ### calibrate-11, note: the window-trial ledger stores model-produced English
 

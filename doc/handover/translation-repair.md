@@ -4,7 +4,8 @@ Status:
 the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
-the register's MINORs and the three doc passes (A-4, A-5, A-6) are being worked in register order;
+the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
+the calibrate group landed in `acfc7ad22`, provider-7 is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -241,9 +242,24 @@ Whole-suite `buildAndTest` after `7a2a21ed8`: 773 PASS, 0 FAIL, exit 0 (solo run
 reader; GFP fails 3 cases under a lenient reader; the CLI refuses `--run` written last with exit 6 and no frames.
 Whole-suite `buildAndTest` after `68062ccf7`: 774 PASS, 0 FAIL, exit 0 (solo run, nothing else building).
 EVERY MAJOR FROM THE AUDIT IS LANDED (`#237` to `#257`).
-Queue: the register's MINORs in register order, then the owed doc passes (A-4 open-decisions status lines, A-5 handover
-trim under the 2000-line cap, A-6 TNM renames) that close `#236`; then `#213` (arm A and arm B under `mise run`),
-`#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via AskUserQuestion).
+The three doc passes LANDED 2026-08-26: A-6 in `70a520e7b` (six test names lose their verdict word), A-4 and A-5 in
+`2e67f872a` (open-decisions status lines; twenty-five handover sections aged into the history).
+The calibrate MINORs (calibrate-3 to calibrate-10) LANDED 2026-08-26 in `acfc7ad22`, each recorded under its entry
+in the register: a stated refusal in the width control, `MislabelledArtifactError` and `PublishedPageDisagreesError`
+marked (the second rebuilt in `published-page-disagreement.ts` from a typed disagreement, because the inventory
+refuses the marker to a class that forwards a caller's sentence), one client per calibration run, the trial's streak
+as `streakAfter` in `window-trial-protocol.ts` (a held slice no longer resets it), line-ending stops in the control's
+cut, a three-way `verify-published` closing line, and suites for the four modules no test reached. GFP: the streak
+mutation fails 2 cases, each unmarking fails the same 2 inventory cases, the listing filter fails 3 pass-settled
+cases, the array check 1 census case, the blank rule 1 arm case, the terminators 1 control case and the bare `Error`
+1 usable case; every restore passes. The census suite found a JSON array filed as an unversioned generation; it is
+`malformed` now. `pass-settled.ts`'s listing is renamed `artifactBackedIds` (the bundle already exported a
+`settledEntryIds` for the published tree). calibrate-5 and calibrate-8 have no unit guard (client construction is
+unobservable; `verify-published` has no suite), and the register says so; the new closing line was read at the
+boundary over the 2026-08-17 directory (`0 of 0 ... 0 UNWEIGHED`, exit 1, no published tree there).
+Queue: the register's MINORs in register order (provider-7 next), which close `#236`; then `#213` (arm A and arm B
+under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
+AskUserQuestion).
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
