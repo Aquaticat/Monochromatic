@@ -42,6 +42,7 @@ await describe({
           'gpt-oss-120b',
           'kimi-k3',
           'minimax-m3',
+          'qwen3.8-27b',
           'qwen3.8-max',
         ],);
       },
@@ -63,7 +64,7 @@ await describe({
             return info.id !== 'qwen3.8-max';
           },);
 
-        expect(others.length,).toBe(7,);
+        expect(others.length,).toBe(8,);
         for (const info of others)
           expect(info.toolChoice,).toBe('forced',);
       },
@@ -90,13 +91,14 @@ await describe({
     },),
 
     it({
-      name: 'NAMES the three models both providers serve, which are the only ones a non-conformant '
-        + 'answer can be re-asked across',
+      name: 'NAMES the four models both providers serve, which are the only ones a non-conformant '
+        + 'answer can be re-asked across; the fourth arrived 2026-08-26 on the owner\'s word',
       fn: async () => {
         expect(modelsServedByBoth().toSorted(),).toEqual([
           'glm-5.2',
           'gpt-oss-120b',
           'kimi-k3',
+          'qwen3.8-27b',
         ],);
       },
     },),
@@ -135,12 +137,13 @@ await describe({
         expect(HYPER_MODELS['glm-5.2'].sharedWith,).toBe('hf:zai-org/GLM-5.2',);
         expect(HYPER_MODELS['kimi-k3'].sharedWith,).toBe('hf:moonshotai/Kimi-K3',);
         expect(HYPER_MODELS['gpt-oss-120b'].sharedWith,).toBe('hf:openai/gpt-oss-120b',);
+        expect(HYPER_MODELS['qwen3.8-27b'].sharedWith,).toBe('hf:Qwen/Qwen3.8-27B',);
         expect(HYPER_MODELS['minimax-m3'].sharedWith,).toBe(HYPER_ONLY,);
       },
     },),
 
     it({
-      name: 'REPORTS four image readers, which triples the width of the picture reading roster: '
+      name: 'REPORTS five image readers, which triples the width of the picture reading roster: '
         + 'the other provider serves exactly two, and widening that needed a different provider '
         + 'rather than a different configuration',
       fn: async () => {
@@ -160,6 +163,7 @@ await describe({
           'glm-5.2',
           'kimi-k3',
           'minimax-m3',
+          'qwen3.8-27b',
           'qwen3.8-max',
         ],);
       },

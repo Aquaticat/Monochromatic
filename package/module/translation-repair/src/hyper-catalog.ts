@@ -92,6 +92,7 @@ export type HyperToolChoice = 'forced' | 'auto';
  */
 export type HyperServedId =
   | 'qwen3.8-max'
+  | 'qwen3.8-27b'
   | 'minimax-m3'
   | 'kimi-k3'
   | 'gpt-oss-120b'
@@ -129,7 +130,7 @@ export type HyperModelInfo = {
    * Whether this model can be sent an image alongside its text.
    *
    * READ FROM `capabilities.vision` on this provider's own catalog endpoint.
-   * Four of the eight report true, which triples the width of the picture
+   * Five of the nine report true, which triples the width of the picture
    * reading roster: the other provider serves exactly two image readers, and
    * its catalog note correctly said widening that would need a different
    * provider rather than a different configuration.
@@ -178,6 +179,21 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
     // tried: streaming and not, with and without a system prompt, at its own
     // ceiling and below it. `auto` answers 20 of 20.
     toolChoice: 'auto',
+  },
+  'qwen3.8-27b': {
+    id: 'qwen3.8-27b',
+    // THE SAME SEAT AS `hf:Qwen/Qwen3.8-27B`, added 2026-08-26 when the owner
+    // reported it served here: that seat is one of the two the straggler window
+    // keeps cutting, and this provider has no per-model slot to saturate, so
+    // the router's overflow now has somewhere to send it. Fields from the
+    // catalog endpoint the same day (`max_output_tokens` 128000,
+    // `capabilities.vision` true); the tool-choice shape is the one every
+    // model but `qwen3.8-max` accepted, checked live by the probe recorded in
+    // the handover before the first run that could route here.
+    sharedWith: 'hf:Qwen/Qwen3.8-27B',
+    readsImages: true,
+    maxOutputLength: 128_000,
+    toolChoice: 'forced',
   },
   'minimax-m3': {
     id: 'minimax-m3',

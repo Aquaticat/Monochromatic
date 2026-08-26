@@ -32,7 +32,7 @@
  * SHIPPED WITH THE RATES rather than left to a comment, because every report
  * that prints a credit figure has to be able to say how old it is.
  */
-export const HYPER_PRICE_READ_ON = '2026-08-25';
+export const HYPER_PRICE_READ_ON = '2026-08-26';
 
 /**
  * What one model costs, in credits per million tokens.
@@ -106,21 +106,21 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 0.96,
   },
   'gemma-4-26b-a4b-it': {
-    input: 2.2,
-    output: 8.16,
-    cacheCreate: 1.1,
+    input: 2.4,
+    output: 8.4,
+    cacheCreate: 1.2,
     cacheHit: 0,
   },
   'glm-5': {
-    input: 17.2,
-    output: 55.68,
-    cacheCreate: 8.6,
+    input: 18.4,
+    output: 59.52,
+    cacheCreate: 9.2,
     cacheHit: 0,
   },
   'glm-5.1': {
-    input: 26.64,
-    output: 86.24,
-    cacheCreate: 13.32,
+    input: 25.8,
+    output: 84.4,
+    cacheCreate: 12.9,
     cacheHit: 0,
   },
   'glm-5.2': {
@@ -136,8 +136,8 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 0,
   },
   'kimi-k2.5': {
-    input: 10.89,
-    output: 57.1,
+    input: 10.88,
+    output: 55.2,
     cacheCreate: 5.44,
     cacheHit: 0,
   },
@@ -160,9 +160,9 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 6.53,
   },
   'llama-3.3-70b-instruct': {
-    input: 11.96,
-    output: 14.76,
-    cacheCreate: 5.98,
+    input: 12.76,
+    output: 15.36,
+    cacheCreate: 6.38,
     cacheHit: 0,
   },
   'llama-4-maverick-17b-128e-instruct-fp8': {
@@ -172,9 +172,9 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 0,
   },
   'minimax-m2.7': {
-    input: 8.2,
-    output: 30.4,
-    cacheCreate: 4.1,
+    input: 8.48,
+    output: 32.24,
+    cacheCreate: 4.24,
     cacheHit: 0,
   },
   'minimax-m3': {
@@ -182,6 +182,18 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     output: 26.13,
     cacheCreate: 0,
     cacheHit: 1.28,
+  },
+  'qwen3-coder-480b-a35b-instruct-int4-mixed-ar': {
+    input: 8.9,
+    output: 42.9,
+    cacheCreate: 4.45,
+    cacheHit: 0,
+  },
+  'qwen3-next-80b-a3b-instruct': {
+    input: 2.35,
+    output: 22.72,
+    cacheCreate: 1.17,
+    cacheHit: 0,
   },
   'qwen3.6-flash': {
     input: 20,
@@ -219,23 +231,29 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheCreate: 0,
     cacheHit: 4.8,
   },
-  'qwen3.8-max': {
+  'qwen3.8-2.4t-a95b': {
     input: 40,
     output: 120,
     cacheCreate: 0,
     cacheHit: 5,
   },
-  'qwen3-coder-480b-a35b-instruct-int4-mixed-ar': {
-    input: 8.9,
-    output: 42.9,
-    cacheCreate: 4.45,
-    cacheHit: 0,
+  'qwen3.8-27b': {
+    input: 10,
+    output: 60,
+    cacheCreate: 0,
+    cacheHit: 2,
   },
-  'qwen3-next-80b-a3b-instruct': {
-    input: 2.35,
-    output: 22.72,
-    cacheCreate: 1.17,
-    cacheHit: 0,
+  'qwen3.8-flash': {
+    input: 3.2,
+    output: 9.4,
+    cacheCreate: 0,
+    cacheHit: 0.32,
+  },
+  'qwen3.8-max': {
+    input: 40,
+    output: 120,
+    cacheCreate: 0,
+    cacheHit: 5,
   },
 };
 

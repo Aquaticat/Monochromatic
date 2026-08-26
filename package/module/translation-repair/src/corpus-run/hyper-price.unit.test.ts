@@ -66,7 +66,7 @@ await describe({
         + 'the figures it prints are',
       fn: async () => {
         expect(HYPER_PRICE_READ_ON,)
-          .toBe('2026-08-25',);
+          .toBe('2026-08-26',);
       },
     },),
 
@@ -127,7 +127,7 @@ await describe({
           completionTokens: 0,
         },),)
           .toEqual({
-            inputCredits: 1.1,
+            inputCredits: 1.2,
             outputCredits: 0,
           },);
       },
