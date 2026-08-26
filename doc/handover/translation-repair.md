@@ -207,7 +207,10 @@ fidelity trial ran over it with all ten seats usable (logs under `~/temp/agent/v
 Every artifact a future pass writes records `sectionPairing`, and `blockPairing` whenever the roster shell ran, so
 the complete-recipe path is exercised by the next settled pass; until then every rebuild names its defaulted halves.
 Whole-suite `buildAndTest` after `459482191`: 769 PASS, 0 FAIL, exit 0 (`~/temp/agent/buildAndTest-current.txt`).
-Queue: `#250` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
+`#250` LANDED 2026-08-26 in `2c9886a55`: the recall scorecard is kept under `recall-scorecard/<stamp>-<tip>.json`,
+written atomically; GFP fails 4 of 4 cases under either mutation; plan mode verified at the boundary.
+Whole-suite `buildAndTest` after `2c9886a55`: 770 PASS, 0 FAIL, exit 0.
+Queue: `#251` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

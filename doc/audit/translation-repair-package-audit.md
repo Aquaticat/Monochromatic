@@ -694,6 +694,14 @@ with all ten seats usable.
 atomic writes); a twelve-hour run replaces the previous one with no trace.
 Tracked as `#250`.
 
+FIXED 2026-08-26 in `2c9886a55`: `persistRecallScorecard` (`src/corpus-run/recall-scorecard-store.ts`) writes
+`recall-scorecard/<start stamp>-<tip>.json` through `writeFileAtomic`, the benchmark stamps its start and records
+`startedAt` and `finishedAt`, and the `SCORECARD kept at <path>` line names the file.
+Guards: two runs keep both files with their own rows, two builds started in the same instant keep two files, the
+name carries no colon; collapsing the name to the old fixed one or dropping the tip fails all 4 cases.
+Plan mode (`-- --plan`) still constructs the client and writes nothing.
+The old `recall-scorecard.json` files on disk are left where they are; nothing reads them programmatically.
+
 ### probes-6 to probes-13, MINOR, verified where cited
 
 The derivability sheet's fixed `=====` fence (`src/derivability-wire.ts:22`; zero collisions in the
