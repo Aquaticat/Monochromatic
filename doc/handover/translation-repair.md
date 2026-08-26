@@ -1431,7 +1431,15 @@ stopper and shed of trailing punctuation before comparison (`trimDestination`). 
 guard-removal rounds (`scratchpad/gfp-three-landings.py`, eight rounds) and a second whole-suite run follow
 serially, then the fresh pass. WHOLE SUITE AFTER `fbf23ceae`: 829 PASS, 0 FAIL, exit 0 (solo run, 17:29Z).
 The guard script's first launch crashed on a path it built wrong (`src/src/...`) before touching anything;
-relaunched after the fix.
+relaunched after the fix. GUARD ROUNDS (17:30Z): seven PROVEN, one NO SUITE. `#263`: removing the
+`answered` reading from the coverage split fails the two `#263` coverage cases and the standing-report case;
+removing the refine stage's heard list fails both refine-stage cases; the calibration's own wiring is an
+entry module with no suite and gets the live check. `#264`: removing the fold at each of the three intakes
+fails that intake's fold case. `#265`: dropping the bare-run scan from the union fails the destination case;
+emptying the publisher's source text fails the publish case. Tree restored and `dist` rebuilt after.
+THE FRESH PASS LAUNCHED at 17:31Z from `907d14ea2` (the task builds what it runs, so today's landings are in
+it): `--only` over the ten entries into `~/temp/agent/fresh-read-20260826`, log beside it, at production
+defaults, solo; `XingZ60` follows in a second launch. Every page is read twice as it lands.
 
 THE SECOND READER'S DRY RUN CHANGED THE READING METHOD. sol read the older `wangzihao980` page (2026-08-22
 build) and returned 15 items where this session's own reading had two: 1 inherited blocker (the day of death,
