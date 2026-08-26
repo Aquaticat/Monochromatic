@@ -288,7 +288,7 @@ await describe({
                   verdict: 'maybe',
                 },
               ],),
-              'unknown verdict',
+              'outside the vocabulary',
             ],
           ] as const
         ) {

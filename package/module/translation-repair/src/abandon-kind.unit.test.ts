@@ -114,12 +114,12 @@ await describe({
     },),
 
     it({
-      name: 'FALLS BACK TO THE ERROR\'S OWN TEXT for anything it does not recognise, rather than '
-        + 'to a catch-all name: an unfamiliar failure reading as "other" would be invisible in '
-        + 'exactly the way this exists to prevent',
+      name: 'NAMES THE CLASS of anything it does not recognise rather than rendering its text, since a '
+        + 'provider error\'s own message may carry a body excerpt and this lands in a warn line; the '
+        + 'class name still separates an unfamiliar failure from a catch-all "other"',
       fn: async () => {
         expect(describeAbandon({ error: new Error('the cat unplugged it',), },),)
-          .toBe('Error: the cat unplugged it',);
+          .toBe('refused by Error',);
       },
     },),
   ],

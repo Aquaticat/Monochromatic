@@ -70,6 +70,7 @@ const MARKED_CLASSES: readonly string[] = [
   'CallTimeoutError',
   'CheckerIndependenceError',
   'CheckerQuorumError',
+  'ConsolidationLedgerGapError',
   'CorpusReadError',
   'CreditsShapeError',
   'EmptyConversationError',

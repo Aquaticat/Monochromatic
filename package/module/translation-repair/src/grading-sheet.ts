@@ -17,6 +17,11 @@ import {
  * @param quotes - distinct quotes for one side
  *
  * @returns Display line for the side
+ *
+ * @example
+ * ```ts
+ * const line = quoteLine(['猫猫',],);
+ * ```
  */
 function quoteLine(quotes: readonly string[],): string {
   if (quotes.length === 0)
@@ -36,6 +41,11 @@ function quoteLine(quotes: readonly string[],): string {
  * @param index - 1-based position in the sheet
  *
  * @returns Markdown lines for the candidate
+ *
+ * @example
+ * ```ts
+ * const block = renderCandidate({ candidate, index: 1, },);
+ * ```
  */
 function renderCandidate(
   {

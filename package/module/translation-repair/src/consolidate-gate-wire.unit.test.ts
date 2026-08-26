@@ -287,3 +287,39 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'a list field the model did not write as a list',
+  children: [
+    it({
+      name: 'KEEPS the choice and reads the field as an empty list, since a wrong type is not a wording and no '
+        + 'wording of a finding may cost a voice',
+      fn: async () => {
+        /**
+         * Reply whose list fields are a null and a bare word.
+         */
+        const reply: unknown = {
+          choice: 'standing',
+          unsupported: null,
+          dropped: 'none',
+          reason: 'the original supports it',
+        };
+
+        expect(isConsolidateGateWire(reply,),).toBe(true,);
+        if (!isConsolidateGateWire(reply,))
+          throw new Error('the guard refused the reply it just accepted',);
+
+        /**
+         * Ballot read off it.
+         */
+        const ballot = readConsolidateGateBallot({ wire: reply, },);
+
+        expect(ballot.choice,).toBe('standing',);
+        expect(ballot.unsupported,).toEqual([],);
+        expect(ballot.unsupportedRaw,).toEqual([],);
+        expect(ballot.dropped,).toEqual([],);
+        expect(ballot.droppedRaw,).toEqual([],);
+      },
+    },),
+  ],
+},);

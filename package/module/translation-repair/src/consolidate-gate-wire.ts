@@ -106,8 +106,17 @@ export type GateBallot = {
  */
 export type GateWire = {
   readonly choice: string;
-  readonly unsupported: readonly string[];
-  readonly dropped: readonly string[];
+
+  /**
+   * Findings against the consolidation, a list of strings when the model
+   * followed the schema and whatever it wrote otherwise; the reader narrows.
+   */
+  readonly unsupported: unknown;
+
+  /**
+   * Findings of dropped content, read the same way.
+   */
+  readonly dropped: unknown;
   readonly reason: string;
 };
 
@@ -140,9 +149,11 @@ export function isConsolidateGateWire(value: unknown,): value is GateWire {
     return false;
   if (!('reason' in value))
     return false;
+  // THE LISTS ARE NOT CHECKED HERE. `contest-ballot-wire.ts` records that no
+  // wording of a finding may cost a voice; a wrong TYPE, a `null` from a model
+  // that ignored the schema, used to cost the whole ballot, choice included.
+  // The reader takes a non-list as an empty list and keeps the choice.
   return isGateChoice(value.choice,)
-    && isStringList(value.unsupported,)
-    && isStringList(value.dropped,)
     && ((typeof value.reason) === 'string');
 }
 
@@ -161,20 +172,30 @@ export function isConsolidateGateWire(value: unknown,): value is GateWire {
 export function readConsolidateGateBallot(
   { wire, }: { readonly wire: GateWire; },
 ): GateBallot {
+  /**
+   * Findings against the consolidation, empty where the model wrote no list.
+   */
+  const unsupported = isStringList(wire.unsupported,) ? wire.unsupported : [];
+
+  /**
+   * Findings of dropped content, read the same way.
+   */
+  const dropped = isStringList(wire.dropped,) ? wire.dropped : [];
+
   return {
     choice: isGateChoice(wire.choice,)
       ? wire.choice
       : CONTEST_REFUSAL,
     unsupported: readCandidateNames({
-      findings: wire.unsupported,
+      findings: unsupported,
       names: GATE_NAMES,
     },),
-    unsupportedRaw: wire.unsupported,
+    unsupportedRaw: unsupported,
     dropped: readCandidateNames({
-      findings: wire.dropped,
+      findings: dropped,
       names: GATE_NAMES,
     },),
-    droppedRaw: wire.dropped,
+    droppedRaw: dropped,
     reason: wire.reason,
   };
 }

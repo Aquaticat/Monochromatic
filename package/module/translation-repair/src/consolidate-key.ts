@@ -142,6 +142,12 @@ export function consolidateRunShape(
  * @param pictureContext - what the pictures this slice and its neighbours
  * show were read to say, absent where none were read
  *
+ * @param neighbouringSourceText - original of the passages either side, absent
+ * where the slice stands alone, since the window is shown to the producers
+ *
+ * @param neighbouringIncumbentText - archive rendering of the passages either
+ * side, absent for the same reason
+ *
  * @returns Hash keying this slice's settlement
  *
  * @example

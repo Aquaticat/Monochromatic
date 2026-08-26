@@ -30,6 +30,7 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { TranslateDecision, } from './translate-stage-result.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
 
 //region Consolidate driver
 // THE CONSOLIDATION OVER ONE DOCUMENT: which slices get a third rendering
@@ -188,7 +189,9 @@ function laneChoiceOf(
 }
 
 /**
- * Asks the roster for a third rendering at every slice the contest settled.
+ * Asks the roster for a third rendering at every slice the contest was asked
+ * about, settled or not; a slice the contest left with no standing text is
+ * settled as `no-standing-text` without a producer being asked.
  *
  * @param client - synthetic chat client
  *
@@ -321,11 +324,8 @@ export async function consolidateDocument(
      * Original of this slice, which every ledger row carries.
      */
     const sourceText = sourceTexts.get(row.sliceIndex,);
-    if (sourceText === undefined) {
-      throw new Error(
-        `consolidation: slice ${String(row.sliceIndex,)} was contested and does not appear in the repair ledger`,
-      );
-    }
+    if (sourceText === undefined)
+      throw new ConsolidationLedgerGapError({ sliceIndex: row.sliceIndex, },);
 
     /**
      * Wording that would ship without this stage.

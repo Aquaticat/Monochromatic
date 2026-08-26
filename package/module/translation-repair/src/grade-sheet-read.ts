@@ -2,6 +2,7 @@ import {
   opensWithVerdict,
   trimLeadingDelimiters,
 } from './verdict-letter.ts';
+import { StatedRefusalError, } from './stated-refusal.ts';
 
 //region Graded sheet reading
 // Reading a human's filled-in detection sheet back into verdicts.
@@ -253,6 +254,28 @@ export function parseGradedSheet(
       line,
       position,
     ): GradedItem {
+      /**
+       * Number the heading prints, which the pre-grades are keyed by.
+       *
+       * READ AND CHECKED rather than trusted from the position: a heading a
+       * grader deleted, duplicated or added by hand renumbers every later item
+       * silently against pre-grades keyed by the printed number.
+       */
+      const [numberText = '',] = line
+        .slice(ITEM_PREFIX.length,)
+        .split('.',);
+      /**
+       * That number, as a number; NaN when the heading carries none, which the
+       * comparison below refuses like any other disagreement.
+       */
+      const printed = Number(numberText.trim(),);
+      if (printed !== (position + 1))
+        throw new StatedRefusalError({
+          says: `sheet item at position ${String(position + 1,)} is headed ${
+            String(printed,)
+          }; a heading was added, deleted or duplicated by hand`,
+        },);
+
       /**
        * Verdict and note read off this heading.
        */

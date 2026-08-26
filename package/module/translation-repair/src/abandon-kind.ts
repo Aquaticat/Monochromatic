@@ -1,6 +1,7 @@
 import { StreamCutShortError, } from './stream-cut.ts';
 import { StreamDegenerateError, } from './stream-runaway-watch.ts';
 import { StreamOverrunError, } from './stream-overrun.ts';
+import { refusalText, } from './refusal-text.ts';
 
 //region Abandon kind
 // WHY A VOICE WAS LOST, in a form a run log can be grouped by.
@@ -73,8 +74,11 @@ export function describeAbandon({ error, }: { readonly error: unknown; },): stri
       + `${String(error.charsSeen,)} chars`;
   }
 
+  // Any class this does not recognise is named rather than rendered: a
+  // provider error's message may carry a body excerpt, and this line lands in a
+  // warn line beside the voice it lost.
   if (!(error instanceof StreamCutShortError))
-    return String(error,);
+    return refusalText({ error, },);
 
   /**
    * When the first byte arrived, negative when none ever did.

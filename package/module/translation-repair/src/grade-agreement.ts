@@ -4,6 +4,7 @@ import type {
 } from './grade-sheet-read.ts';
 import { parseRunJson, } from './run-json-read.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { StatedRefusalError, } from './stated-refusal.ts';
 
 //region Grade agreement
 // Scoring a blind pre-grade against the human's grades, and scoring precision
@@ -169,14 +170,14 @@ export function parsePreGrades(
     from: 'pre-grades file',
   },);
   if (!Array.isArray(raw,))
-    throw new Error('pre-grades file must hold an array of graded items.',);
+    throw new StatedRefusalError({ says: 'pre-grades file must hold an array of graded items', },);
 
   return raw.map(function toItem(
     value: unknown,
     position: number,
   ): GradedItem {
     if (!isJsonRecord(value,))
-      throw new Error(`pre-grade ${String(position,)} is not an object.`,);
+      throw new StatedRefusalError({ says: `pre-grade ${String(position,)} is not an object`, },);
 
     /**
      * Fields one recorded pre-grade carries.
@@ -187,11 +188,13 @@ export function parsePreGrades(
       note,
     } = value;
     if ((typeof index) !== 'number')
-      throw new Error(`pre-grade ${String(position,)} has no numeric index.`,);
+      throw new StatedRefusalError({ says: `pre-grade ${String(position,)} has no numeric index`, },);
     if (!isGradeVerdict(verdict,))
-      throw new Error(
-        `pre-grade ${String(index,)} carries an unknown verdict ${String(verdict,)}.`,
-      );
+      // THE VERDICT IS NOT QUOTED: the file is agent-written, and the rule that
+      // keeps text out of a refusal goes by class, not by trust.
+      throw new StatedRefusalError({
+        says: `pre-grade ${String(index,)} carries a verdict outside the vocabulary`,
+      },);
     return {
       index,
       verdict,
@@ -232,7 +235,7 @@ function unscoredPositions(
  *
  * @returns Agreement over the items the human scored
  *
- * @throws {@link Error} when the two sets cover different sheet positions,
+ * @throws {@link StatedRefusalError} when the two sets cover different sheet positions,
  * which would silently compare one round's grades against another's
  *
  * @example
@@ -259,10 +262,20 @@ export function scoreGradeAgreement(
     ] as const;
   },),);
   if (byIndex.size !== human.length)
-    throw new Error(
-      `pre-grades cover ${String(byIndex.size,)} items but the graded sheet has `
-        + `${String(human.length,)}; they are not the same draw.`,
-    );
+    throw new StatedRefusalError({
+      says: `pre-grades cover ${String(byIndex.size,)} items but the graded sheet has `
+        + `${String(human.length,)}; they are not the same draw`,
+    },);
+
+  // COUNT ALONE IS NOT ENOUGH: a pre-grade file indexed from zero, or shifted
+  // by one, has the right size and misses every sheet position, and every
+  // lookup below would then read as a disagreement rather than as a file fault.
+  for (const item of human) {
+    if (!byIndex.has(item.index,))
+      throw new StatedRefusalError({
+        says: `pre-grades carry no entry for sheet position ${String(item.index,)}; they do not index the same draw`,
+      },);
+  }
 
   /**
    * Items the human scored, which is the only population an agreement rate

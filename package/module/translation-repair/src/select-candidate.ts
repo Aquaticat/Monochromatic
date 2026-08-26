@@ -3,7 +3,8 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 //region Candidate selection
 // The last deterministic gate: the unchanged translation always competes,
 // and a repaired candidate wins only by the settled lexicographic order
-// (integrity, high-severity resolution, no regressions, preservation).
+// (integrity, high-severity resolution, no regressions, total resolution,
+// preservation), the order `compareCandidates` reads.
 // When nothing demonstrably beats the original, the original returns with
 // its unresolved issues; a repair pipeline that cannot prove improvement
 // must not ship its edit.
