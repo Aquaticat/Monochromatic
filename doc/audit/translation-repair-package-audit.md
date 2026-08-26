@@ -654,6 +654,12 @@ grader toward Y on exactly the partition scored as probe misses.
 The 20-item damage sheet of 2026-08-17 is still ungraded, so this can still be fixed before it costs a grade.
 Tracked as `#248`.
 
+FIXED 2026-08-26 in `b88d6a947`: `formatVerifySheet` takes a framing; the verify sheet keeps its wording and the
+damage sample writes the blind one, which says the reviewer flagged some items and stayed silent on others without
+saying which. Guard: the blind sheet never says "claims each one"; with the framings collapsed the case fails.
+The two ungraded damage sheets on disk (`damage-sheet.md`, `damage-sheet-agent-read.md` in this worktree's runs
+directory) had their preamble replaced in place with the blind wording, items untouched, so grading them now is safe.
+
 ### probes-4, MAJOR, verified: two probes carve with the deterministic pairer the pass no longer uses
 
 `src/corpus-run/judge-fidelity-probe.ts:384` and `src/corpus-run/displacement-probe.ts:198` call the

@@ -177,9 +177,11 @@ the whole suite passed 760 of 760.
 the whole suite passed 761 of 761.
 `#245` landed in `4eaa89ede`: pairing agreement is counted over every voice's pairs, strictly increasing;
 the whole suite passed 762 of 762.
-`#246` landed in `b00f9d3b2` (HEAD): ledger files are named per launch, so a relaunch appends;
-a whole-suite run is in flight.
-Queue: `#248` onward in task order (`#247` closed earlier).
+`#246` landed in `b00f9d3b2`: ledger files are named per launch, so a relaunch appends;
+the whole suite passed 763 of 763.
+`#248` landed in `b88d6a947` (HEAD): the damage sheet tells its grader it mixes flagged and silent items,
+and the two ungraded sheets on disk were reframed in place; a whole-suite run is in flight.
+Queue: `#249` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
