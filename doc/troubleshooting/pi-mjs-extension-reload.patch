@@ -28,7 +28,7 @@ index 94cb945..bcbe920 100644
  import { tmpdir } from "node:os";
  import { describe, it, expect } from "vitest";
  import { x } from "tinyexec";
- 
+
 +import { createJiti } from "../lib/jiti.mjs";
 +
  describe("esmEvalTempFile", () => {
@@ -37,7 +37,7 @@ index 94cb945..bcbe920 100644
 @@ -89,6 +97,27 @@ describe("esmEvalTempFile", () => {
      }
    });
- 
+
 +  it.each(["ts", "mjs"])(
 +    "reloads changed .%s modules when moduleCache is false",
 +    async (extension) => {
