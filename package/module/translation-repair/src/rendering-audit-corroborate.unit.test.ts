@@ -506,7 +506,12 @@ await describe({
           ],
         },);
 
-        // Pairs with the wide claim are allowed; a trio is not.
+        // Pairs with the wide claim are allowed; a trio is not. Measured on
+        // 2026-08-26 before this line was written: the wide claim pairs with
+        // each narrow one and the two narrow claims never join, so exactly
+        // two groups of two. Pinned first, because the loop below passes
+        // vacuously over an empty result.
+        expect(agreed,).toHaveLength(2,);
         for (const group of agreed) {
           expect(group.voices,).toBeLessThan(3,);
           expect(

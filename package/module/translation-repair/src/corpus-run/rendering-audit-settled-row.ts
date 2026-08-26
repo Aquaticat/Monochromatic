@@ -26,6 +26,15 @@ import type { SettledPageRelation, } from './rendering-audit-settled-relation.ts
 export const SLOT_SEPARATOR = '\u0000';
 
 /**
+ * Name the probe store collects runs of the settled audit under, shared by
+ * the command that writes them and the readers that open them.
+ *
+ * DELIBERATELY NOT `census`. It becomes a directory name that outlives every
+ * caveat written beside it, and two entries are not a census.
+ */
+export const SETTLED_AUDIT_PROBE = 'rendering-audit-settled';
+
+/**
  * Digests of the exact two texts one audit was shown.
  *
  * A TAGGED ABSENCE rather than two optional strings, because the question a

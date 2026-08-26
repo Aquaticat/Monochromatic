@@ -30,12 +30,12 @@ export {
   capped,
   eligibleSubjects,
   printPopulation,
-} from './corpus-run/rendering-audit-settled.ts';
+} from './corpus-run/rendering-audit-settled-buy.ts';
 export {
   newestRun,
   printAcross,
   readRunRows,
-} from './corpus-run/rendering-audit-settled-report.ts';
+} from './corpus-run/rendering-audit-settled-runs.ts';
 export { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 export {
   type AuditRepeatPair,
