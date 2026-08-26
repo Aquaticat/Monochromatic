@@ -148,9 +148,10 @@ and the screen moves nothing on any region.
 the round-three instruments read legacy artifacts from the root again.
 Note for the record: `f199b70cf`'s message overclaimed, one of its two legacy cases was failing when committed;
 `bab444350` fixed the fixture and says so in its message, per the no-amend rule.
-One run is in flight: `probe-relabel` under `mise run` against the round-three draw in the default runs directory
-(output under `~/temp/agent/vub-relabel-*`), which must print `RELABEL rebuilt N` with N above zero,
-three `issues-` lines per region (`issues-withheld`, `issues-rendered`, `issues-absent`), and closing `SEAT` lines.
+`#257` verified live 2026-08-26 (`probe-relabel` under `mise run` against the round-three draw, exit 0,
+output under `~/temp/agent/vub-relabel-*`): 5 damaged regions and 10 controls rebuilt, each under all three arms,
+three checker seats 45 of 45 usable, no dark seat; that run is also the relabel half of `#247`'s verification.
+No run is in flight.
 `#237` landed in `c19d203c6` (lint tidy `82db8fb4e`, HEAD): the four stdout printers go through `refusalText`,
 and the two comparison checks name differing fields instead of quoting rows.
 Queue after the run: `#238` (a silent stage must not be cached, nor resumed from caches already written),

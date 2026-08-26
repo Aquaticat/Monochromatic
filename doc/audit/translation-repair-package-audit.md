@@ -765,7 +765,14 @@ the lane for version 2 and the root for the legacy and version 1 generations, wi
 and the fixture lacked them),
 which `bab444350` fixed and says so.
 Guard shown to fail with the dispatch forced to the lane (both legacy cases refuse at `artifactSchemaVersion`),
-restored, passed. Live run of `probe-relabel` against the round-three draw: in flight.
+restored, passed.
+Live run of `probe-relabel` against the round-three draw, 2026-08-26, exit 0:
+`RELABEL rebuilt 5 distinct damaged regions`, `gathered 10 unflagged control regions`,
+fifteen regions each under `issues-withheld`, `issues-rendered`, and `issues-absent`, none under the old label,
+three checker seats asked 45 and usable 45, no dark seat.
+Summed over the fifteen regions the arms raised `removal` 1 (withheld), 3 (rendered), 1 (absent) and `corroborated` 0 each;
+on real regions carrying six to seventeen prior issues the rendered prompt raised more, not fewer, removal claims,
+the opposite of the cat fixture's direction, which is a fact for `#68`'s successor to read, not a verdict.
 
 ### artifact-3 to artifact-6, MINOR, verified where cited
 
