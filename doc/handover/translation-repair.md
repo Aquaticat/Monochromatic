@@ -506,6 +506,14 @@ with the log beside it; it is matched against arm A. The proof that the window r
 than 180000 `ms in grace` or an `abandoned 300000ms` line. Nothing may rebuild `dist` until it ends; the whole suite
 after `2829fd4da` (a comment-only commit that passed oxlint and `lint:types`) runs then.
 
+SANITIZATION INVENTORY (2026-08-26). The tracked tree was scanned with the standalone `forbidden-strings` binary
+against the built deny-list of 10206 corpus sentences (`~/temp/agent/deny-rules.txt`): zero findings over the whole
+`--all` walk, validated by a positive control first (one rule written into a throwaway file fired as `rule=0` both
+named explicitly and through the same walk from inside the worktree; the file was deleted at once). Findings print on
+stderr as `PATH:LINE rule=<token>`, never the text. The branch carries 2342 commits beyond `main` (merge base
+`88ba0ae2e`, since 2026-07-16). The proposal behind the `#219` question, with the four decisions it keeps apart, is
+`doc/planning/translation-repair-readiness-signal.md`.
+
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
 STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed,
