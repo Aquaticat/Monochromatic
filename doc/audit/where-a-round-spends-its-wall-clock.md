@@ -591,3 +591,36 @@ with a comment saying so.
 
 The owner's note that Charm Hyper appears to have no concurrency limit
 points at the same place from the provider side.
+
+## The reader agrees with an independent parse, and hands `#215` its number
+
+Every figure in the section above was computed by parsing the log directly.
+`run-timing-report`, which `#215` built, was then run over the same file and agrees to the digit:
+
+```text
+run-timing-report: 1 logs, 14747 lines
+rounds                 356, 10.83h in total
+  waiting after quorum 9.45h, 87.2% of round time
+  voices never heard   104
+calls in flight        mean 2.56, peak 10
+  busy against span    27.71h of calls across 10.83h of run
+```
+
+Two readings of one log by two different pieces of code,
+neither derived from the other,
+which is the only reason to trust either.
+The 104 voices never heard match 3560 asked minus 3456 heard exactly.
+
+THE CONCURRENCY LINE IS THE ONE `#215` OWED, and it says what the grace share implies:
+
+-   Mean calls in flight is 2.56.
+    Peak is 10, so ten concurrent calls are reachable and were reached.
+-   Calls are busy for 27.71 hours across a run spanning 10.83 hours,
+    which is 2.56 times over, the same number from the other side.
+
+The mean sat at 2.56 in the 51-round provisional reading too.
+Seven times the sample did not move it.
+
+A roster of ten that averages 2.56 in flight is a roster waiting,
+not a roster saturating anything.
+Whatever bounds this run, it is not the number of calls the client will carry.
