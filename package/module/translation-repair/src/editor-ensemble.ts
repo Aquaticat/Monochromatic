@@ -27,6 +27,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import {
   CHUNK_SCOPE_ENVELOPE,
+  describeAdoptedRound,
   describeJudgedRound,
   type RepairJudgedRound,
 } from './repair-round-record.ts';
@@ -233,6 +234,13 @@ export async function selectPerEnvelope(
     if ((proposals.length === 1) && (sole !== undefined)) {
       counters.sole += 1;
       winners.push(sole.value,);
+      // Recorded as a round of its own kind, so the authors of what shipped
+      // survive into the attribution and the artifact (`#239`).
+      rounds.push(describeAdoptedRound({
+        stage: 'envelope',
+        envelopeId: envelope.envelopeId,
+        candidate: sole,
+      },),);
       for (const modelId of producerModelIds(sole.producer,)) {
         if (seen.has(modelId,))
           continue;

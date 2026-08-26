@@ -592,6 +592,16 @@ await describe({
         expect(selection.judgedCount,).toBe(0,);
         expect(selection.operations.length,).toBe(1,);
         expect([...selection.contributors,],).toEqual(['hf:zai-org/GLM-5.2',],);
+        // Recorded as a round of its own kind, so the author survives into
+        // the attribution instead of vanishing with the vote that never was.
+        expect(selection.rounds.length,).toBe(1,);
+        expect(selection.rounds[0]?.kind,).toBe('adopted',);
+        expect(selection.rounds[0]?.envelopeId,).toBe(ENVELOPE.envelopeId,);
+        expect(selection.rounds[0]?.slate.length,).toBe(1,);
+        expect(selection.rounds[0]?.slate[0]?.producer,).toEqual({
+          kind: 'model',
+          modelId: 'hf:zai-org/GLM-5.2',
+        },);
       },
     },),
 

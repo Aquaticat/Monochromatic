@@ -209,6 +209,40 @@ function roundOf(
 }
 
 /**
+ * Builds an adopted round as the lane writes it: a slate of one, the index of
+ * that one, a reason, and nothing a vote would have produced.
+ *
+ * @param slate - the one entry
+ *
+ * @returns Round as its JSON would parse
+ *
+ * @example
+ * ```ts
+ * const round = adoptedRoundOf({ slate: [slateOf({ index: 1, },),], },);
+ * ```
+ */
+function adoptedRoundOf(
+  { slate, }: { readonly slate: readonly Record<string, unknown>[]; },
+): Record<string, unknown> {
+  return {
+    kind: 'adopted',
+    stage: 'envelope',
+    envelopeId: 'kept',
+    slate,
+    ballots: [],
+    tally: {
+      judgesAvailable: 0,
+      ballots: 0,
+      abstentions: 0,
+      selfVotes: 0,
+    },
+    perCandidate: [],
+    selectedIndex: 1,
+    reason: 'sole proposal, adopted without a vote',
+  };
+}
+
+/**
  * Builds a round that decided nothing, which records two fields the other
  * outcome does not.
  *
@@ -443,6 +477,40 @@ await describe({
       },
     },),
 
+    it({
+      name: 'READS an adopted round, which carries its one slate entry and index and nothing a vote '
+        + 'would have produced (`#239`)',
+      fn: async () => {
+        /**
+         * Rounds read back, one chunk holding one adopted round.
+         */
+        const perChunk = readRepairRounds({
+          raw: rawOf({
+            chunks: [[
+              adoptedRoundOf({
+                slate: [
+                  slateOf({
+                    index: 1,
+                    producer: {
+                      kind: 'model',
+                      modelId: SEATED,
+                    },
+                  },),
+                ],
+              },),
+            ],],
+          },),
+          path: PATH,
+        },);
+        /**
+         * The one round.
+         */
+        const round = perChunk[0]?.[0];
+        expect(round?.kind,).toBe('adopted',);
+        expect(round?.slate.length,).toBe(1,);
+        expect((round?.kind === 'adopted') ? round.selectedIndex : 0,).toBe(1,);
+      },
+    },),
     it({
       name: 'REFUSES a round recording nothing about what each position drew',
       fn: async () => {

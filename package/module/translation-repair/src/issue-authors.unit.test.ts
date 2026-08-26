@@ -134,6 +134,48 @@ function selectedRound(
 }
 
 /**
+ * Builds the record of an envelope whose sole proposal was adopted without a
+ * vote.
+ *
+ * @param envelopeId - envelope adopted
+ *
+ * @param slate - its one entry
+ *
+ * @returns Adopted round
+ *
+ * @example
+ * ```ts
+ * const round = adoptedRound({ envelopeId: 'kept', slate: [entry,], },);
+ * ```
+ */
+function adoptedRound(
+  {
+    envelopeId,
+    slate,
+  }: {
+    readonly envelopeId: string;
+    readonly slate: readonly RepairSlateEntry[];
+  },
+): RepairJudgedRound {
+  return {
+    kind: 'adopted',
+    stage: 'envelope',
+    envelopeId,
+    slate,
+    ballots: [],
+    tally: {
+      judgesAvailable: 0,
+      ballots: 0,
+      abstentions: 0,
+      selfVotes: 0,
+    },
+    perCandidate: [],
+    selectedIndex: 1,
+    reason: 'sole proposal, adopted without a vote',
+  };
+}
+
+/**
  * Builds the whole-chunk round as it looks when judges could not rank anything,
  * which is the round that records ballots and names no winner.
  */
@@ -320,6 +362,36 @@ await describe({
       },
     },),
 
+    it({
+      name: 'NAMES THE AUTHOR OF AN ENVELOPE ADOPTED WITHOUT A VOTE, so a checker who wrote that '
+        + 'text is discounted on it like any other winner (`#239`)',
+      fn: async function adoptedEnvelopesKeepTheirAuthors() {
+        expect(collectIssueAuthors({
+          editor: editorOf({
+            applied: [operationOf('kept',),],
+            rounds: [
+              adoptedRound({
+                envelopeId: 'kept',
+                slate: [
+                  slateEntryOf({
+                    index: 1,
+                    modelId: HELPER,
+                  },),
+                ],
+              },),
+            ],
+            shippedProducer: {
+              kind: 'composite',
+              contributors: [HELPER,],
+            },
+          },),
+          envelopes: KEPT,
+        },),).toEqual({
+          perIssue: { [WHISKER]: [HELPER,], },
+          everyIssue: [],
+        },);
+      },
+    },),
     it({
       name: 'NAMES NOBODY WHEN THE UNTOUCHED TRANSLATION SHIPS, since no model wrote it and no '
         + 'checker can be certifying its own work',

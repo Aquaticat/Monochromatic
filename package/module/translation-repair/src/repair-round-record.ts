@@ -196,6 +196,55 @@ export type RepairJudgedRound =
      * Whether judges could not agree or agreed to reject.
      */
     readonly disposition: SelectionDisposition;
+  }
+  | {
+    /**
+     * Sole distinct proposal, adopted without a vote: nothing to compare it
+     * against, so no judge was asked and no ballot exists (`#239`).
+     */
+    readonly kind: 'adopted';
+
+    /**
+     * Stage that adopted it.
+     */
+    readonly stage: RepairRoundStage;
+
+    /**
+     * Envelope it was the one proposal for.
+     */
+    readonly envelopeId: string;
+
+    /**
+     * The one entry, so the winner's authors are read the way a judged
+     * round's are.
+     */
+    readonly slate: readonly RepairSlateEntry[];
+
+    /**
+     * Empty: no judge was asked. Carried so every reader of a round finds
+     * the vote fields in every kind.
+     */
+    readonly ballots: readonly SelectionBallot[];
+
+    /**
+     * All zero, for the same reason.
+     */
+    readonly tally: SelectionTally;
+
+    /**
+     * Empty: nothing was drawn.
+     */
+    readonly perCandidate: readonly CandidateWeight[];
+
+    /**
+     * Index of that entry, always the first.
+     */
+    readonly selectedIndex: number;
+
+    /**
+     * Why no vote was held.
+     */
+    readonly reason: string;
   };
 
 /**
@@ -288,6 +337,57 @@ export function describeJudgedRound<ValueT,>(
     perCandidate: outcome.perCandidate,
     selectedIndex: outcome.selectedIndex,
     voteWeight: outcome.voteWeight,
+  };
+}
+
+/**
+ * Records an envelope's sole proposal being adopted without a vote.
+ *
+ * RECORDED AT ALL because `#239` found the sole path pushing no round, so
+ * `issue-authors` read no author for any issue such an envelope served: a
+ * checker who wrote that text voted on it at full weight and the artifact said
+ * nobody wrote it. The record is the same slate shape a judged round carries,
+ * minus everything a vote would have produced.
+ *
+ * @param stage - stage adopting it
+ *
+ * @param envelopeId - envelope it was the one proposal for
+ *
+ * @param candidate - the proposal
+ *
+ * @returns Round record naming the adopted candidate and its authors
+ *
+ * @example
+ * ```ts
+ * rounds.push(describeAdoptedRound({ stage: 'envelope', envelopeId, candidate: sole, },),);
+ * ```
+ */
+export function describeAdoptedRound<ValueT,>(
+  {
+    stage,
+    envelopeId,
+    candidate,
+  }: {
+    readonly stage: RepairRoundStage;
+    readonly envelopeId: string;
+    readonly candidate: Candidate<ValueT>;
+  },
+): RepairJudgedRound {
+  return {
+    kind: 'adopted',
+    stage,
+    envelopeId,
+    slate: describeRepairSlate({ candidates: [candidate,], },),
+    ballots: [],
+    tally: {
+      judgesAvailable: 0,
+      ballots: 0,
+      abstentions: 0,
+      selfVotes: 0,
+    },
+    perCandidate: [],
+    selectedIndex: 1,
+    reason: 'sole proposal, adopted without a vote',
   };
 }
 

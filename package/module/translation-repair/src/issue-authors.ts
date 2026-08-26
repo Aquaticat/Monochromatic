@@ -148,7 +148,8 @@ export function appliedIssuesByEnvelope(
  * ```
  */
 function roundWinnerAuthors(round: RepairJudgedRound,): readonly RosterModelId[] {
-  if (round.kind !== 'selected')
+  // A declined round chose nobody; a selected or adopted one names its winner.
+  if (round.kind === 'declined')
     return [];
 
   /**

@@ -62,6 +62,7 @@ const ROUND_STAGES: readonly RepairRoundStage[] = [
 const ROUND_KINDS = [
   'selected',
   'declined',
+  'adopted',
 ] as const;
 
 /**
@@ -168,6 +169,41 @@ function requireJudgedRound(
   },);
 
   /**
+   * Which of the three outcomes this round recorded, read before the vote
+   * fields because an adopted round has none.
+   */
+  const kind = requireOneOf({
+    value: record.kind,
+    path: `${path}.kind`,
+    allowed: ROUND_KINDS,
+  },);
+
+  /**
+   * Envelope the round decided.
+   */
+  const envelopeId = requireString({
+    value: record.envelopeId,
+    path: `${path}.envelopeId`,
+  },);
+
+  /**
+   * Slate as written, every entry checked.
+   */
+  const slate = requireArray({
+    value: record.slate,
+    path: `${path}.slate`,
+  },)
+    .map(function one(
+      entry,
+      index,
+    ): RepairSlateEntry {
+      return requireSlateEntry({
+        value: entry,
+        path: `${path}.slate[${String(index,)}]`,
+      },);
+    },);
+
+  /**
    * Tally as a record, whose four counts are read individually.
    */
   const tally = requireRecord({
@@ -184,23 +220,8 @@ function requireJudgedRound(
    */
   const common = {
     stage,
-    envelopeId: requireString({
-      value: record.envelopeId,
-      path: `${path}.envelopeId`,
-    },),
-    slate: requireArray({
-      value: record.slate,
-      path: `${path}.slate`,
-    },)
-      .map(function one(
-        entry,
-        index,
-      ): RepairSlateEntry {
-      return requireSlateEntry({
-        value: entry,
-        path: `${path}.slate[${String(index,)}]`,
-      },);
-    },),
+    envelopeId,
+    slate,
     ballots: requireArray({
       value: record.ballots,
       path: `${path}.ballots`,
@@ -251,11 +272,24 @@ function requireJudgedRound(
   // `reason` off a selected one would find nothing. Branching here is what
   // makes the returned round the same shape the lane wrote, rather than a
   // partial one every later reader has to re-check.
-  if (requireOneOf({
-    value: record.kind,
-    path: `${path}.kind`,
-    allowed: ROUND_KINDS,
-  },) === 'declined')
+  // AN ADOPTED ROUND HELD NO VOTE: its vote fields are present and empty, so
+  // they are read like any round's, and only the winner and the reason are
+  // its own (`#239`).
+  if (kind === 'adopted') {
+    return {
+      kind: 'adopted',
+      ...common,
+      selectedIndex: requireCount({
+        value: record.selectedIndex,
+        path: `${path}.selectedIndex`,
+      },),
+      reason: requireString({
+        value: record.reason,
+        path: `${path}.reason`,
+      },),
+    };
+  }
+  if (kind === 'declined')
     return {
       kind: 'declined',
       ...common,
