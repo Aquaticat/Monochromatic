@@ -708,3 +708,42 @@ WHAT WOULD SHOW THE OLD COMMENTS RIGHT:
 the overlapped arm finishing no faster,
 or finishing faster while losing more voices.
 Voices heard is recorded per arm for exactly that reason.
+
+## The control arm ran, finished, and is void (2026-08-25)
+
+Recorded so nobody reads a number off it later.
+
+The serial arm completed: four slices, 22 rounds, about twenty-one minutes,
+clean exit at 02:15:58 UTC, log at `~/temp/agent/overlap-arm-serial.log`.
+It measures nothing this audit can use, because every one of its 22 rounds heard
+five voices out of ten.
+
+The five it lost were the same five every round,
+the Charm Hyper endpoint labels that carry no `hf:` prefix,
+and each of them failed on a hundred percent of its calls,
+with Synthetic answering `HTTP 400` and saying the model name should start with `hf:`.
+The routing defect is filed as `#235` and is not yet located in the source.
+
+WHY THIS IS FATAL TO THE MEASUREMENT rather than merely unfortunate.
+The instrument this audit cares about is voices heard against wall clock.
+An arm that lost half its roster before the first slice
+has a wall clock shaped by five models rather than ten,
+and a voices-heard column pinned at five by a cause that has nothing to do with overlap.
+Both axes are compromised, so neither the arm nor the comparison survives.
+
+IT ALSO POISONS THE PLANNED COMPARISON, which is the part worth naming.
+Had the overlapped arm run in the same condition and finished faster,
+the honest reading would have been that four half-dark slices beat one half-dark slice,
+which is not the question.
+Had it lost more voices, the loss would have been unattributable:
+overlap and misroute both subtract voices, and nothing in the log separates them.
+This is the ordinary trap of measuring while a second variable moves.
+
+WHAT THE ARM DOES ESTABLISH, and it is not nothing:
+the pipeline runs a full four-slice calibration to a clean exit
+with half its roster returning nothing but errors,
+and reports success without ever saying so above `warn`.
+That is a finding about resilience and about silence, filed as the second half of `#235`.
+It belongs in this audit only as the reason the wall-clock question is still open.
+
+BOTH ARMS ARE STILL OWED, back to back, after `#235` lands.
