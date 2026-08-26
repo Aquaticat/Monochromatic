@@ -135,5 +135,4 @@ Record every enforceable seam and every prompt-only seam in this handover before
 
 ## Commits
 
-No handover commit exists yet.
-Commit this initial checkpoint before beginning the next investigation step.
+- `d159018a8`, `docs(advisor): start answer-substitution handover`, created this live investigation record.
