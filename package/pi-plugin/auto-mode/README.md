@@ -365,12 +365,15 @@ the persistent virtual device can retain the key-down until ydotoold restarts.
 The guard covers statically visible direct executable paths,
 generic forwarding commands,
 and direct or wrapper-nested inline shell programs.
-Text searches that merely mention ydotool remain allowed.
+Allowlisted inspection commands can mention ydotool as data.
+Commands with `-exec`-style capabilities fail closed instead.
 Malformed shell containing ydotool fails closed.
 
 The guard cannot identify executable names hidden behind shell variables,
 commands loaded from script files or standard input,
-or custom interpreter code that spawns ydotool.
+runtime-generated command-substitution output,
+configuration that later spawns ydotool,
+or custom interpreter code that spawns it.
 `AGENTS.md` rule `VKI` remains the policy backstop for those forms.
 The guard exposes no live-input bypass.
 A separately deployed broker must own release events behind a narrow API.
