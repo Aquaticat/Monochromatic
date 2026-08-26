@@ -136,7 +136,8 @@ measurements to be wrong, in which case it is scheduled as its own item.
 Tally as of 2026-08-26, after all ten slices reported:
 2 BLOCKER (A-1 fixed, probes-1 open as `#247`),
 21 MAJOR of which 1 fixed (A-2), 14 open as their own tasks (`#237` to `#246`, `#248` to `#251`, `#252` to `#257`),
-and 6 folded into those tasks (slices-1 to slices-3, artifact-1, artifact-2, rendering-2),
+and 6 folded into those tasks (slices-1 to slices-3, artifact-1, artifact-2, rendering-2);
+by the end of 2026-08-26 the MAJORs `#237` to `#249` and `#255` are fixed in place, each marked FIXED under its entry,
 and roughly seventy MINOR, verified where cited and queued after the MAJORs.
 
 Severity:
@@ -671,6 +672,21 @@ Fidelity trials therefore run on pairs the lanes never see, and the displacement
 deterministic aligner's slides as translation displacement.
 Tracked as `#249`.
 
+FIXED 2026-08-26 in `26f346de8`, `d2c580995` and `459482191`.
+The artifact now records the other half of its pairing recipe (`preparation.sectionPairing`, always written as
+`deterministic` or `supplied` with the pairs, read as `unrecorded` on older files), `rebuildPreparation` and
+`recipeOf` turn both halves back into the inputs `prepareDocumentPair` consumed, and `settled-carve.ts` lists a
+runs directory's settled entries and carves each over the pair at the artifact's own commit.
+Both probes walk that population and log `carved from its settled artifact (complete recipe)` or the halves the
+deterministic default stood in for; an entry with no two-lane artifact is skipped by name of its kind.
+Guards: the rebuild reproduces a crossed section pairing and a declined block, proved by the identity hash with the
+bare carve as positive control; removing either recipe half from the carve or the reader's generation check fails
+2 to 3 cases each.
+Measured at the boundary: this worktree's runs directory holds 56 legacy artifacts and both probes carve none;
+`TRANSLATION_REPAIR_RUNS_DIR` pointed at the 2026-08-17 runs directory carves 6 of 6 two-lane artifacts, every one
+with both halves defaulted since they predate the recorded pairing, and one capped fidelity trial ran over them
+with all ten seats usable.
+
 ### probes-5, MAJOR, verified: the recall scorecard is overwritten in place, non-atomically
 
 `src/corpus-run/recall-benchmark.ts:332-335`: plain `writeFile` to the fixed name `recall-scorecard.json`.
@@ -791,6 +807,14 @@ Folded into `#249`:
 `slice-census-entry.ts:159-162` aligns with `alignDocumentSections` and `:225-232` subdivides with no `blockPairing`,
 so the `CENSUS` lines size a translate lane over slices the pass no longer produces.
 
+FIXED 2026-08-26 in `459482191`: `censusEntry` takes the settled recipe, feeds the section pairing to alignment and
+each section's block pairing to subdivision, and labels every row `settled-complete`, `settled-partial` or
+`deterministic`; the driver reads each entry's recipe from the runs directory and opens with a `CENSUS carve:` line
+naming how many rows are which, legacy artifacts counted apart.
+Guards: a recipe that unpairs the middle section moves the unpaired counts, and one that declines the middle block
+shrinks the sliced translation characters; dropping either spread fails 2 cases.
+Measured: 92 complete pairs, 6 settled-partial rows against the 2026-08-17 runs directory and 86 baseline.
+
 ### slices-4 to slices-9, MINOR, verified where cited
 
 Raw `console.log` in `slice-cache-namespace.ts:553-556`;
@@ -865,6 +889,16 @@ so every artifact whose roster pairing moved a slice reads `verification=refused
 The audited text is taken from the artifact itself, so every measurement column is right;
 only the guard is void, in the one case it exists for.
 Tracked as `#255`.
+
+FIXED 2026-08-26 in `d2c580995` (on the recorded section pairing from `26f346de8`): `readArtifactSubjects`
+re-prepares through `rebuildPreparation`, so a roster-paired artifact rebuilds to its own identity and reads
+`verified`; the verdict gains `unverifiable`, carrying the recipe halves the file lacks, for a mismatch beside a
+gap, while a mismatch under a complete recipe stays `refused`; the driver prints the missing halves beside the
+objection.
+Guards: an artifact built over a crossed section pairing reads `verified` with the bare carve as positive control;
+an old-style file over a different pair reads `unverifiable` naming both halves; the moved-slicing case now carries a
+complete recipe and still reads `refused`.
+Removing the section half, the block half, or the gap rule fails 2 cases each.
 
 ### rendering-2, MAJOR by contract, verified: one stdout line prints an arbitrary caught message
 

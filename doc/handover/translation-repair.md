@@ -191,7 +191,23 @@ from settled artifacts through one shared helper, give the rendering verifier a 
 for artifacts without a stored section pairing, and label the census's artifact-less rows as the deterministic
 baseline. Build order: the preparation field and helper, then `#255`, then `#249`, then `#250`.
 The owed doc passes (A-4, A-5, A-6) stay queued behind the MAJORs and close `#236`.
-Queue: `#249` and `#255` together as above, then `#250` onward in task order.
+`#249` and `#255` LANDED 2026-08-26 in three commits, each GFP-proven and gated on types, oxlint and the touched
+suites before commit: `26f346de8` (the artifact records `preparation.sectionPairing` as `deterministic` or
+`supplied`, always written, read as `unrecorded` on older files; guards fail 2, 3 and 4/7 cases), `d2c580995`
+(`rebuildPreparation` and the three-outcome provenance verdict `verified`/`refused`/`unverifiable`; guards fail 2
+cases each), `459482191` (`settled-carve.ts`, both probes walk settled entries, the census labels its rows and
+opens with `CENSUS carve:`; guards fail 2, 3, 2 and 2 cases).
+POPULATION FACT learned at the boundary: this worktree's runs directory (`node_modules/.monochromatic/
+translation-repair-runs/artifacts`) holds 56 LEGACY artifacts, none two-lane, so the probes carve nothing there;
+`~/translation-repair-runs-20260817` holds 6 two-lane artifacts and `~/translation-repair-runs-flagged-20260818`
+holds 5, none with a recorded pairing half, and `~/translation-repair-v2-archive` holds 4 nested ones.
+Point an instrument at a population with `TRANSLATION_REPAIR_RUNS_DIR=<dir> mise run ...`; the 2026-08-17 directory
+carved 6 of 6 (all halves defaulted), the census reported 6 settled-partial rows and 86 baseline, and one capped
+fidelity trial ran over it with all ten seats usable (logs under `~/temp/agent/vub-*-current.txt`).
+Every artifact a future pass writes records `sectionPairing`, and `blockPairing` whenever the roster shell ran, so
+the complete-recipe path is exercised by the next settled pass; until then every rebuild names its defaulted halves.
+Whole-suite `buildAndTest` after `459482191`: 769 PASS, 0 FAIL, exit 0 (`~/temp/agent/buildAndTest-current.txt`).
+Queue: `#250` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
