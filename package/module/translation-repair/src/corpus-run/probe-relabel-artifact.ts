@@ -347,6 +347,75 @@ function readRecordedTallies(
 }
 
 /**
+ * Issue records of a version 2 artifact, which keeps them in the repair lane.
+ *
+ * @param artifactValue - artifact as its JSON parsed
+ *
+ * @param entryId - entry the artifact settles, for the refusal path
+ *
+ * @returns Records as written
+ *
+ * @example
+ * ```ts
+ * const issues = laneIssues({ artifactValue, entryId, },);
+ * ```
+ */
+function laneIssues(
+  {
+    artifactValue,
+    entryId,
+  }: {
+    readonly artifactValue: unknown;
+    readonly entryId: string;
+  },
+): readonly unknown[] {
+  /**
+   * Lane records, parsed by the version 2 reader so the walk is type-checked.
+   */
+  const { issues, } = repairLaneRecordsOf({
+    value: artifactValue,
+    path: `artifact ${entryId}`,
+  },);
+  return issues;
+}
+
+/**
+ * Issue records of a legacy or version 1 artifact, which keeps them at the root.
+ *
+ * @param artifactValue - artifact as its JSON parsed
+ *
+ * @param entryId - entry the artifact settles, for the refusal path
+ *
+ * @returns Records as written
+ *
+ * @example
+ * ```ts
+ * const issues = rootIssues({ artifactValue, entryId, },);
+ * ```
+ */
+function rootIssues(
+  {
+    artifactValue,
+    entryId,
+  }: {
+    readonly artifactValue: unknown;
+    readonly entryId: string;
+  },
+): readonly unknown[] {
+  /**
+   * Artifact as a record, which the dispatching reader already proved it is.
+   */
+  const artifact = requireRecord({
+    value: artifactValue,
+    path: `artifact ${entryId}`,
+  },);
+  return requireArray({
+    value: artifact.issues,
+    path: `artifact ${entryId}.issues`,
+  },);
+}
+
+/**
  * Reads one artifact into the records a rebuild needs.
  *
  * @param entryId - corpus entry id
@@ -379,7 +448,13 @@ export async function readArtifactRecords(
   const reading = readSettledArtifact({ value: artifactValue, },);
 
   /**
-   * Issue records, and the path a refusal names for one of them.
+   * Whether the issue records sit in the repair lane, which is where version 2
+   * keeps them, or at the root, which is where every earlier generation did.
+   */
+  const inLane = reading.kind === 'version-2';
+
+  /**
+   * Issue records where this generation keeps them.
    *
    * ROOT FOR THE LEGACY GENERATIONS, LANE FOR VERSION 2. This once read
    * `artifact.issues` only, which version 2 does not write, so every call
@@ -387,24 +462,22 @@ export async function readArtifactRecords(
    * every legacy artifact instead, which is what the round-three draw consists
    * of (`#257`). The dispatching reader already knows which is which.
    */
-  const { issues, recordPath, } = (reading.kind === 'version-2')
-    ? {
-      issues: repairLaneRecordsOf({
-        value: artifactValue,
-        path: `artifact ${entryId}`,
-      },).issues,
-      recordPath: `artifact ${entryId}.lanes.repair.result.issues[]`,
-    }
-    : {
-      issues: requireArray({
-        value: requireRecord({
-          value: artifactValue,
-          path: `artifact ${entryId}`,
-        },).issues,
-        path: `artifact ${entryId}.issues`,
-      },),
-      recordPath: `artifact ${entryId}.issues[]`,
-    };
+  const issues = inLane
+    ? laneIssues({
+      artifactValue,
+      entryId,
+    },)
+    : rootIssues({
+      artifactValue,
+      entryId,
+    },);
+
+  /**
+   * Path a refusal names for one record.
+   */
+  const recordPath = inLane
+    ? `artifact ${entryId}.lanes.repair.result.issues[]`
+    : `artifact ${entryId}.issues[]`;
 
   return issues
     .map(function toRecord(value,): ArtifactRecord {

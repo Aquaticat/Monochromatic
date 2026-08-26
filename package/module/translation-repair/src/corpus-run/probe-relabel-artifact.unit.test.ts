@@ -382,7 +382,16 @@ function legacyArtifact(
   return {
     id: ENTRY_ID,
     status: 'settled',
-    issues,
+    // The legacy generation recorded a repair beside every issue, and its
+    // parser requires the disposition and the refined flag once any repair
+    // field is present.
+    issues: issues.map(function withRepairFields(record,): unknown {
+      return {
+        ...(record as Record<string, unknown>),
+        refined: false,
+        repairDisposition: 'unchanged',
+      };
+    },),
   };
 }
 
