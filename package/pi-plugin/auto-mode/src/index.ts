@@ -48,6 +48,7 @@ import {
   isRelevantTool,
   serializeToolInputForJudge,
 } from './tool-helpers.ts';
+import { guardVirtualInput, } from './virtual-input-guard.ts';
 import type {
   BatchEntry,
   SignalContext,
@@ -393,6 +394,20 @@ function initializeAutoMode(
       event: ForeignBorrowed<ToolCallEvent>,
       ctx: ForeignHostCapability<ExtensionContext>,
     ) {
+      /** Non-bypassable policy for global virtual input tied to caller lifetime. */
+      const virtualInputDecision = guardVirtualInput(event,);
+      if (virtualInputDecision.block) {
+        /** Human-readable action retained in audit logs and batch context. */
+        const action = describeAction(event,);
+        innerL.warn(`hard deny: ${action}; ${virtualInputDecision.reason}`,);
+        denialInCurrentTurn = true;
+        currentTurnBatch[currentTurnBatch.length] = {
+          action,
+          verdict: 'deny',
+        };
+        return virtualInputDecision;
+      }
+
       if (bypassEnabled) {
         /**
          * Human-readable rendering of the tool call allowed without guardrail evaluation.

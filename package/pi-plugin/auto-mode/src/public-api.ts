@@ -36,6 +36,11 @@ export {
   JUDGE_SYSTEM_PROMPT,
 } from './system-prompt.ts';
 export {
+  CALLER_SCOPED_YDOTOOL_REASON,
+  guardVirtualInput,
+  hasCallerScopedYdotool,
+} from './virtual-input-guard.ts';
+export {
   type BudgetModel,
   type VerdictData,
   VERDICT_ENTRY_TYPE,

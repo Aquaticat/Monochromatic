@@ -17,6 +17,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { CALLER_SCOPED_YDOTOOL_REASON, } from '@monochromatic-dev/pi-plugin-auto-mode';
 import {
   BYPASS_ALLOW_KIND,
   BYPASS_ALLOW_REASON,
@@ -440,6 +441,43 @@ await describe({
             reason: BYPASS_ALLOW_REASON,
           },
         },);
+      },
+    },),
+
+    it({
+      name: 'keeps virtual-input hard guard active while bypass is enabled',
+      fn: async function keepsVirtualInputHardGuardActiveWhileBypassIsEnabled() {
+        const {
+          api,
+          registrations,
+          shortcuts,
+          entries,
+        } = createMockApi();
+        await autoMode(api,);
+        const shortcut = getBypassShortcut({ shortcuts, },);
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+        const { ctx, } = createMockContext({ branch: [], },);
+        const event = {
+          type: 'tool_call',
+          toolName: 'bash',
+          toolCallId: 'direct-ydotool',
+          input: {
+            command: 'ydotool key 1:1 1:0',
+          },
+        } as unknown as ToolCallEvent;
+
+        await shortcut(ctx,);
+        const result = await toolCallHandler(event, ctx,);
+
+        expect(result,).toEqual({
+          block: true,
+          reason: CALLER_SCOPED_YDOTOOL_REASON,
+        },);
+        expect(entries,).toHaveLength(1,);
+        expect(entries[0],).toHaveProperty('data.kind', BYPASS_TOGGLE_KIND,);
       },
     },),
   ],
