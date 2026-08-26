@@ -569,6 +569,148 @@ The rejected stack would have eliminated free-form per-call review instructions 
 That guarantee was purchased by removing the expressive review channel,
 so it does not satisfy the corrected requirement.
 
+## Expressive redesign
+
+### Compatibility boundary
+
+Full natural-language review expressiveness and deterministic semantic exclusion cannot both be supplied by an output grammar.
+The same passage can be a direct answer,
+a quoted defect,
+a corrected example,
+or a suggested rewrite depending on its relationship to the primary agent's work.
+Any local grammar that rejects every answer-like passage also rejects legitimate expressive review.
+Any grammar that accepts those legitimate passages admits the same text when a model uses it as a substitute.
+
+The prevention seam must therefore move from vocabulary to ownership and call sequence.
+The strongest deterministic claim available without narrowing language is that Advisor cannot run until the primary agent supplies
+an explicit review artifact.
+Whether that artifact is substantive,
+whether the review remains anchored to it,
+and whether the primary agent later copies advice remain semantic judgments.
+
+Anthropic's current [Building effective agents](https://www.anthropic.com/research/building-effective-agents) guidance names an
+evaluator-optimizer workflow in which one model first generates a response and another evaluates it with feedback.
+That candidate-first ordering matches the local reviewer role better than Anthropic's current Advisor tool,
+which intentionally gives an executor unrestricted strategic plans early in a task.
+The official Advisor behavior is useful precedent for preserving advice expressiveness,
+not for enforcing the local reviewer boundary.
+
+### Candidate A: primary-owned artifact checkpoint
+
+```typescript
+type AdvisorToolParams = {
+  readonly model?: string;
+  readonly artifact: {
+    readonly stage: 'approach' | 'result';
+    readonly content: string;
+  };
+  readonly criteria?: string;
+};
+```
+
+`artifact.content` and `criteria` remain unrestricted natural language.
+The result remains unrestricted Advisor text.
+`stage` identifies whether the primary model owns a proposed approach or a candidate result;
+it does not constrain either text channel.
+
+The tool rejects absent or blank artifacts before provider dispatch.
+The exact incident call therefore fails because it contains only a task-performing focus request.
+The primary model must first state the approach or result it wants reviewed.
+The manual `/advisor` command uses the latest non-Advisor primary text as its artifact and reports no-reviewable-artifact when none
+exists.
+
+The provider request serializes objective,
+conversation evidence,
+primary-owned artifact,
+and review criteria as separately labeled data.
+No interface description or prompt says to answer a focus question.
+A positive evaluator prompt asks for the most useful evaluation,
+including detailed reasoning,
+examples,
+corrections,
+and proposed rewrites when those improve the review.
+The primary agent remains owner of final synthesis.
+
+This candidate preserves current expressive power and deterministically enforces candidate-first ordering.
+It cannot prove that the candidate is substantive or that returned prose is review rather than task completion.
+
+### Candidate B: artifact checkpoint plus hidden role adjudication
+
+Candidate B adds a separate model call after the unrestricted review.
+A hidden structured adjudicator classifies the relationship among objective,
+artifact,
+criteria,
+and review as grounded evaluation,
+mixed,
+or task substitution.
+A grounded review is returned byte-for-byte.
+A rejected review is retried with adjudicator feedback;
+repeated rejection fails closed without exposing the rejected text.
+
+This adds behavioral protection without a finite Advisor vocabulary.
+It also adds model-dependent false positives and false negatives.
+The adjudicator preserves the expressive contract in principle,
+but a false positive can withhold a valid rich review.
+A representative evaluation corpus must measure that trade before this becomes a default gate.
+
+### Candidate C: prompt-only evaluator framing
+
+Candidate C keeps the current optional `question` contract and unrestricted output,
+then rewrites tool descriptions and prompts around positive evaluator actions.
+It preserves expressiveness and has the smallest interface change.
+It does not enforce candidate ownership,
+and the exact incident remains representable.
+Prompt wording alone is therefore insufficient.
+
+### Current design direction
+
+Candidate A is the compatible foundation.
+Candidate B is a possible defense-in-depth layer only after behavioral evaluation.
+Candidate C is retained as the lowest-protection baseline.
+No output taxonomy,
+prose truncation,
+answer-like string filter,
+or fixed renderer belongs in the corrected design.
+
+## Expressive verification requirements
+
+Deterministic tests must prove:
+
+- the exact legacy incident arguments fail before Advisor provider dispatch because no primary artifact exists;
+- blank artifacts fail before dispatch;
+- arbitrary multiline artifact and criteria text survive request construction without semantic rewriting;
+- accepted Advisor text containing detailed corrections,
+  code,
+  mathematics,
+  quotations,
+  and a full suggested rewrite returns byte-for-byte;
+- tool and `/advisor` command share candidate selection,
+  request construction,
+  transport,
+  failure handling,
+  and rendering;
+- prompt and tool descriptions contain evaluator ownership language rather than `answer` instructions;
+- error details record artifact identity and review stage without copying private artifact or review text.
+
+Behavioral evaluation must include:
+
+- the stored primality incident and its exact replacement response;
+- a rich valid review that includes a complete suggested rewrite after evaluating a candidate;
+- approach review,
+  completed-answer review,
+  code review,
+  diagnosis review,
+  and verification review;
+- deliberately empty,
+  copied-objective,
+  and token candidate artifacts;
+- repeated runs across eligible reviewer and adjudicator models before interpreting a null or isolated failure.
+
+The positive control is essential:
+any proposed role gate that rejects the incident must also accept rich answer-like corrections when they are grounded in a real
+primary artifact.
+Otherwise the gate has merely recreated the rejected expressiveness loss.
+
 ## Rejected conclusions
 
 - The result was not caused by context truncation.
