@@ -381,8 +381,8 @@ export function createRoutingClient(
     if (provider === 'hyper')
       return await hyper.chatText(request,);
 
-    // PAIRED WITH THE INCREMENT IN `chooseProvider`: every decision of
-    // `synthetic` takes one slot and reaches exactly one call here.
+    // PAIRED WITH THE INCREMENT IN `chooseProvider` AND IN THE RE-ASK: every
+    // decision of `synthetic` takes one slot and reaches exactly one call here.
     /**
      * Slot this call holds until it returns or raises.
      */
@@ -588,6 +588,18 @@ export function createRoutingClient(
     rl.info(
       `${request.modelId}: ${outcome.kind} on ${provider}, asking ${elsewhere} for the same model`,
     );
+
+    // THE SLOT IS TAKEN HERE FOR THE SAME REASON `chooseProvider` takes it at
+    // the decision: `callOn` releases one slot on every Synthetic call, and a
+    // re-ask that reached Synthetic without a take released a slot nothing
+    // held, so the count drifted negative and overflow to Hyper needed that
+    // many extra concurrent calls before it resumed (`#240`). No `await` sits
+    // between the budget read in `secondOpinionFrom` and this line.
+    if (elsewhere === 'synthetic')
+      countInFlight({
+        modelId: request.modelId,
+        by: 1,
+      },);
 
     /**
      * Same model, same question, the other serving stack.

@@ -10,6 +10,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   BothProvidersDryError,
   type BudgetView,
@@ -47,6 +48,12 @@ const PICTURE_MESSAGES = [
  * Abort signal every routed call in these tests carries.
  */
 const SIGNAL = new AbortController().signal;
+
+/**
+ * How long the slow first-provider stub holds its slot: long enough for a
+ * concurrent caller to find it busy, short enough not to slow the suite.
+ */
+const SLOT_HOLD_MS = 50;
 
 /**
  * Builds a pair of stub providers recording which took each call.
@@ -546,6 +553,83 @@ await describe({
       },
     },),
 
+    it({
+      name: 'PAIRS the re-ask\'s slot release with a take, so the Synthetic count does not drift '
+        + 'negative and overflow to Hyper keeps working afterwards (`#240`)',
+      fn: async () => {
+        /**
+         * Providers asked, in call order.
+         */
+        const called: string[] = [];
+        /**
+         * First provider, holding its one slot long enough for a concurrent
+         * caller to find it busy.
+         */
+        const synthetic = {
+          chatText: async function chatText() {
+            called.push('synthetic',);
+            await wait(SLOT_HOLD_MS,);
+            return { text: '{"spot":"windowsill"}', };
+          },
+        };
+        /**
+         * Second provider, answering at once and unparseably, so the caller
+         * re-asks the first.
+         */
+        const hyper = {
+          chatText: async function chatText() {
+            called.push('hyper',);
+            return { text: 'I will not do that.', };
+          },
+        };
+        /** Budget view with money on both sides. */
+        const { budgets, } = stubBudgets({},);
+        /** Router under test, one Synthetic slot per model. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets,
+          syntheticSlotsPerModel: 1,
+        },);
+
+        // Phase one: the first call holds the slot, the second finds it busy,
+        // goes to Hyper, gets nothing usable, and re-asks Synthetic. Before the
+        // fix that re-ask released a slot nothing had taken.
+        await Promise.all([
+          client.chatJson({
+            modelId: 'hf:moonshotai/Kimi-K3',
+            messages: MESSAGES,
+            signal: SIGNAL,
+            validate: isNapSpot,
+          },),
+          client.chatJson({
+            modelId: 'hf:moonshotai/Kimi-K3',
+            messages: MESSAGES,
+            signal: SIGNAL,
+            validate: isNapSpot,
+          },),
+        ],);
+        expect(called,).toEqual(['synthetic', 'hyper', 'synthetic',],);
+        called.splice(0,);
+
+        // Phase two: with every slot handed back, one concurrent call takes
+        // the slot and the other overflows. A count that had drifted to minus
+        // one would show both a free slot and put both on Synthetic.
+        await Promise.all([
+          client.chatText({
+            modelId: 'hf:moonshotai/Kimi-K3',
+            messages: MESSAGES,
+            signal: SIGNAL,
+          },),
+          client.chatText({
+            modelId: 'hf:moonshotai/Kimi-K3',
+            messages: MESSAGES,
+            signal: SIGNAL,
+          },),
+        ],);
+        expect(called.toSorted(),).toEqual(['hyper', 'synthetic',],);
+      },
+    },),
     it({
       name: 'REFUSES to re-ask a model the other provider does not serve',
       fn: async () => {
