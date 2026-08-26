@@ -86,41 +86,6 @@ function runToChunk(
   };
 }
 
-/**
- * Sums span characters across node runs for proportional pacing.
- *
- * @param runs - node runs whose spans accumulate
- *
- * @returns Total span characters across the runs
- *
- * @example
- * ```ts
- * const total = totalRunChars({ runs, },);
- * ```
- */
-function totalRunChars(
-  { runs, }: { readonly runs: readonly (readonly DocumentNode[])[]; },
-): number {
-  return runs.reduce(
-    function addRun(
-      sum,
-      run,
-    ) {
-      /**
-       * First node of the run for its opening offset.
-       */
-      const [first,] = run;
-
-      /**
-       * Last node of the run for its closing offset.
-       */
-      const last = run.at(-1,);
-      return sum + ((last?.endOffset ?? 0) - (first?.startOffset ?? 0));
-    },
-    0,
-  );
-}
-
 
 /**
  * Subdivides one aligned section pair into paragraph-bound slice pairs.
@@ -129,11 +94,11 @@ function totalRunChars(
  * a neighbour. Pairing by shared index was tried and is wrong: equal node
  * counts do NOT imply one-to-one correspondence, so a translation that drops
  * one block and gains another elsewhere kept its total while every pairing
- * after the drop compared a block against its neighbour. Only a side with no
- * blocks at all falls back to independent budget grouping, with the wider side
- * merged greedily by cumulative character fraction (the same Gale-Church-style
- * pacing section alignment uses). Paragraph-count mismatch within a section is
- * ordinary translation freedom, so subdivision emits no findings.
+ * after the drop compared a block against its neighbour. A section whose
+ * target is an insertion is sliced by the source alone, one slice per budget
+ * run, all written at the insertion boundary; any other pair with a side that
+ * has no blocks stays one slice, re-indexed. Paragraph-count mismatch within a
+ * section is ordinary translation freedom, so subdivision emits no findings.
  *
  * @param pair - aligned section pair to subdivide
  *
@@ -288,15 +253,6 @@ export function subdivideChunkPair(
       .nodes,
     budget: sourceBudget,
   },);
-
-  /**
-   * Target-side node runs within budget.
-   */
-  const targetRuns = groupNodes({
-    nodes: pair.target
-      .nodes,
-    budget,
-  },);
   // AN INSERTION HAS NO TARGET RUNS TO FRAME BY, so it is sliced by the SOURCE.
   //
   // This used to return the whole section as ONE slice, on the reasoning that a
@@ -332,143 +288,35 @@ export function subdivideChunkPair(
         },),
       };
     },);
-  if ((sourceRuns.length === 0) || (targetRuns.length === 0)) {
-    // RE-INDEXED, because the pair arrived carrying its SECTION index and
-    // every other path stamps the global one. Returning it untouched let two
-    // slices of one document share an index once any earlier section
-    // subdivided, and slice identity is what the cache key and the splice both
-    // rest on.
-    //
-    // STILL ONE SLICE where the target carries a span but no blocks, which is
-    // not an insertion: several pairs would have to replace one span rather
-    // than be written into a boundary, and that is a different question from
-    // the one above.
-    return [
-      {
-        source: {
-          ...pair.source,
-          sliceIndex: baseIndex,
-        },
-        target: {
-          ...pair.target,
-          sliceIndex: baseIndex,
-        },
+  // ONE SIDE HAS NO BLOCKS FROM HERE ON: both-sided pairs took
+  // `groupNodesAligned`, a run list is empty exactly when its side has no
+  // nodes, and an insertion returned just now. The proportional merge that
+  // once followed (the wider side merged greedily by cumulative character
+  // fraction) could therefore never run, and it was deleted rather than kept
+  // as the fallback its TSDoc promised.
+  //
+  // RE-INDEXED, because the pair arrived carrying its SECTION index and
+  // every other path stamps the global one. Returning it untouched let two
+  // slices of one document share an index once any earlier section
+  // subdivided, and slice identity is what the cache key and the splice both
+  // rest on.
+  //
+  // STILL ONE SLICE where the target carries a span but no blocks, which is
+  // not an insertion: several pairs would have to replace one span rather
+  // than be written into a boundary, and that is a different question from
+  // the one above.
+  return [
+    {
+      source: {
+        ...pair.source,
+        sliceIndex: baseIndex,
       },
-    ];
-  }
-
-  /**
-   * Whether the source side frames the pairing (fewer or equal runs).
-   */
-  const sourceIsFrame = sourceRuns.length <= targetRuns.length;
-
-  /**
-   * Framing side: one run per slice pair.
-   */
-  const frame = sourceIsFrame
-    ? sourceRuns
-    : targetRuns;
-
-  /**
-   * Wider side whose runs merge to keep pace with the frame.
-   */
-  const wide = sourceIsFrame
-    ? targetRuns
-    : sourceRuns;
-
-  /**
-   * Total span characters of the framing side.
-   */
-  const frameTotal = totalRunChars({ runs: frame, },);
-
-  /**
-   * Total span characters of the wider side.
-   */
-  const wideTotal = totalRunChars({ runs: wide, },);
-
-  /**
-   * Slice pairs accumulated in document order.
-   */
-  const slices: ChunkPair[] = [];
-
-  /**
-   * Frame characters consumed so far.
-   */
-  let frameConsumed = 0;
-
-  /**
-   * Wide characters consumed so far.
-   */
-  let wideConsumed = 0;
-
-  /**
-   * Next unconsumed wide run.
-   */
-  let cursor = 0;
-  for (const [sliceOffset, frameRun,] of frame.entries()) {
-    frameConsumed += totalRunChars({ runs: [frameRun,], },);
-
-    /**
-     * Fraction of the frame consumed through this slice.
-     */
-    const frameFraction = frameConsumed / frameTotal;
-
-    /**
-     * Start of this slice's wide run window.
-     */
-    const runStart = cursor;
-    wideConsumed += totalRunChars({ runs: [wide[cursor] ?? [],], },);
-    cursor += 1;
-    while (
-      ((wide.length - cursor) > (frame.length - sliceOffset
-        - 1))
-      && ((sliceOffset === (frame.length - 1))
-        || ((wideConsumed / wideTotal) < frameFraction))
-    ) {
-      wideConsumed += totalRunChars({ runs: [wide[cursor] ?? [],], },);
-      cursor += 1;
-    }
-
-    /**
-     * Wide-side nodes of this slice, flattened across its run window.
-     */
-    const wideNodes = wide
-      .slice(
-        runStart,
-        cursor,
-      )
-      .flat();
-
-    /**
-     * Frame-side chunk of the slice.
-     */
-    const frameChunk = runToChunk({
-      run: frameRun,
-      documentText: sourceIsFrame ? sourceText : targetText,
-      sliceIndex: baseIndex + sliceOffset,
-    },);
-
-    /**
-     * Wide-side chunk of the slice.
-     */
-    const wideChunk = runToChunk({
-      run: wideNodes,
-      documentText: sourceIsFrame ? targetText : sourceText,
-      sliceIndex: baseIndex + sliceOffset,
-    },);
-    slices.push(
-      sourceIsFrame
-        ? {
-          source: frameChunk,
-          target: wideChunk,
-        }
-        : {
-          source: wideChunk,
-          target: frameChunk,
-        },
-    );
-  }
-  return slices;
+      target: {
+        ...pair.target,
+        sliceIndex: baseIndex,
+      },
+    },
+  ];
 }
 
 //endregion Paragraph slicing

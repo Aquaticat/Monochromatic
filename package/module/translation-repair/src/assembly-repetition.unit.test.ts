@@ -87,6 +87,27 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS a phrase that is a character substring of a longer finding across a word boundary, '
+        + 'since `at the garden lantern` is no part of `cat the garden lanterns`',
+      fn: async () => {
+        // Both phrases carry two content words, which the content rule asks
+        // for, and the shorter sits inside the longer only as characters.
+        const findings = findIntroducedRepetitions({
+          archiveText: 'The kitten dozes. The end.',
+          shippedText: 'Then cat the garden lanterns were burning bright again. So cat the garden lanterns '
+            + 'were burning bright today. He stood at the garden lantern before dawn. She waited at the '
+            + 'garden lantern after dusk.',
+        },);
+        expect(findings.map(function phraseOf(finding,): string {
+          return finding.phrase;
+        },)
+          .toSorted(),).toStrictEqual([
+          'at the garden lantern',
+          'cat the garden lanterns were burning bright',
+        ],);
+      },
+    },),
+    it({
       name: 'REPORTS THE LONGEST FORM rather than every substring of it',
       fn: async () => {
         // A repeated eleven-word passage also repeats as eight four-word ones,

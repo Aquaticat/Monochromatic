@@ -108,6 +108,38 @@ export type RepetitionFinding = {
 };
 
 /**
+ * Whether one space-joined phrase holds another as whole words.
+ *
+ * PADDED ON BOTH SIDES before the substring test, so a phrase that is a
+ * character substring of a longer one across a word boundary (`at the garden
+ * gate` inside `cat the garden gates`) is not taken for a part of it. Both
+ * phrases come from `wordsOf` joined with single spaces, which is what makes
+ * the space a word boundary here.
+ *
+ * @param longer - phrase that may hold the other
+ *
+ * @param phrase - phrase looked for as whole words
+ *
+ * @returns Whether every word of `phrase` appears in `longer` in order, as words
+ *
+ * @example
+ * ```ts
+ * holdsPhrase({ longer: 'cat the garden gates', phrase: 'at the garden gate', },); // false
+ * ```
+ */
+export function holdsPhrase(
+  {
+    longer,
+    phrase,
+  }: {
+    readonly longer: string;
+    readonly phrase: string;
+  },
+): boolean {
+  return ` ${longer} `.includes(` ${phrase} `,);
+}
+
+/**
  * Splits text into words, collapsing every run of whitespace.
  *
  * LINE STRUCTURE IS DELIBERATELY DISCARDED. `#122` wraps shipped text
@@ -418,7 +450,10 @@ export function findIntroducedRepetitions(
       if (!carriesContent({ phrase, },))
         continue;
       if (covering.some(function contains(longer,): boolean {
-        return longer.includes(phrase,);
+        return holdsPhrase({
+          longer,
+          phrase,
+        },);
       },))
         continue;
       covering.push(phrase,);

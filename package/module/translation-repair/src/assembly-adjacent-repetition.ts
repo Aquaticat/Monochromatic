@@ -22,6 +22,7 @@
 
 import {
   countPhrases,
+  holdsPhrase,
   wordsOf,
 } from './assembly-repetition.ts';
 
@@ -288,9 +289,10 @@ function repeatsInPair(
         continue;
       if (kept
         .some(function contains(seen,): boolean {
-          return seen
-            .phrase
-            .includes(phrase,);
+          return holdsPhrase({
+            longer: seen.phrase,
+            phrase,
+          },);
         },))
         continue;
       kept.push({

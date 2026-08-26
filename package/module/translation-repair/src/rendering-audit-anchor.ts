@@ -64,10 +64,10 @@ export type AnchoredSpan = {
  *
  * @example
  * ```ts
- * const anchor: SpanAnchor = { anchored: false, reason: 'ambiguous-locator (source)', };
+ * const anchor: RenderingAuditSpanAnchor = { anchored: false, reason: 'ambiguous-locator (source)', };
  * ```
  */
-export type SpanAnchor = {
+export type RenderingAuditSpanAnchor = {
   /**
    * Both spans were found, and the focus sits inside the locator.
    */
@@ -215,7 +215,7 @@ export function anchorLocatedSpan(
     readonly focus: string;
     readonly side: string;
   },
-): SpanAnchor {
+): RenderingAuditSpanAnchor {
   /**
    * Text in the form quotes are matched against.
    */

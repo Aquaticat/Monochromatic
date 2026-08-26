@@ -83,7 +83,17 @@ function collectingInto(
    * Real logger, put back on disposal.
    */
   const printed = console.log;
+
+  /**
+   * `console.info` as it was, since the tagged logger's `info` sink resolves
+   * to it rather than to `console.log`.
+   */
+  const informed = console.info;
   console.log = (...parts: readonly unknown[]) => {
+    lines.push(parts.map(String,)
+      .join(' ',),);
+  };
+  console.info = (...parts: readonly unknown[]) => {
     lines.push(parts.map(String,)
       .join(' ',),);
   };
@@ -91,6 +101,7 @@ function collectingInto(
     lines,
     [Symbol.dispose]: () => {
       console.log = printed;
+      console.info = informed;
     },
   };
 }
@@ -225,11 +236,17 @@ await describe({
         /**
          * Lines announcing a discard, which is the only kind this asks about.
          */
+        // THROUGH THE LOGGER, so the line carries its level and tag prefix and
+        // the notice is found inside it rather than at its start.
         const announced = lines.filter(function isDiscard(line,): boolean {
-          return line.startsWith('SLICE discarding',);
+          return line.includes('SLICE discarding',);
         },);
 
         expect(announced.length,).toBe(1,);
+        // THE LOGGER'S TAG proves the notice went through the tagged logger
+        // rather than a bare console call, which is what lets it be filtered
+        // and attributed like every other cache line.
+        expect(announced[0],).toContain('[discardNamespace]',);
         expect(announced[0],).toContain('discarding 2 cached slices',);
         expect(announced[0],).toContain('filled by nap-3',);
         expect(left,).toStrictEqual([
@@ -252,7 +269,7 @@ await describe({
         },);
 
         expect(lines.filter(function isDiscard(line,): boolean {
-          return line.startsWith('SLICE discarding',);
+          return line.includes('SLICE discarding',);
         },),).toStrictEqual([],);
         expect(left,).toStrictEqual([OTHER_LANE_FILE,],);
       },

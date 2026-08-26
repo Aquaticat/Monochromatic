@@ -5,6 +5,7 @@ import { readRunJson, } from '../run-json-read.ts';
 import { parseSettledArtifact, } from '../artifact-read.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { isJsonRecord, } from '../json-guard.ts';
+import { DrawReconcileError, } from './draw-reconcile.ts';
 import type { EligibleEntries, } from './artifact-eligible.ts';
 import { assertArtifactProvenance, } from './artifact-provenance.ts';
 import {
@@ -159,34 +160,35 @@ export async function loadEntry(
   // artifact without it did not come from this pipeline, and this reader feeds
   // the precision gate where a short population is the exact harm.
   if (!isJsonRecord(raw,))
-    throw new Error(
-      `reconcile failed for ${parsed.id}: artifact is not an object, so the `
-        + 'accepted count it recorded cannot be read and the pool would be '
-        + 'built from an unverified entry.',
-    );
+    throw new DrawReconcileError({
+      entryId: parsed.id,
+      fault: { kind: 'not-an-object', },
+    },);
 
   /**
    * The accepted count the pipeline recorded when it wrote the artifact.
    */
   const declaredAccepted = raw.acceptedCount;
   if ((typeof declaredAccepted) !== 'number')
-    throw new Error(
-      `reconcile failed for ${parsed.id}: artifact records no numeric `
-        + `acceptedCount (found ${JSON.stringify(declaredAccepted,)}). Every `
-        + 'artifact this pipeline writes carries one, so its absence means the '
-        + 'file came from somewhere else and nothing can confirm the accepted '
-        + 'population is complete.',
-    );
+    throw new DrawReconcileError({
+      entryId: parsed.id,
+      fault: {
+        kind: 'no-numeric-count',
+        foundType: typeof declaredAccepted,
+      },
+    },);
   if (declaredAccepted
     !== parsed.acceptedIssues
     .length)
-    throw new Error(
-      `reconcile failed for ${parsed.id}: artifact acceptedCount `
-        + `${String(declaredAccepted,)} != parsed ${
-          String(parsed.acceptedIssues
-            .length,)
-        }; the accepted population would be silently short.`,
-    );
+    throw new DrawReconcileError({
+      entryId: parsed.id,
+      fault: {
+        kind: 'count-disagrees',
+        declared: declaredAccepted,
+        parsed: parsed.acceptedIssues
+          .length,
+      },
+    },);
 
   /**
    * The entry's zh source at the pinned corpus commit.

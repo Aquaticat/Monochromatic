@@ -49,7 +49,7 @@ export { buildRenderingAuditMessages, } from './rendering-audit-prompt.ts';
 export {
   type AnchoredSpan,
   anchorLocatedSpan,
-  type SpanAnchor,
+  type RenderingAuditSpanAnchor,
 } from './rendering-audit-anchor.ts';
 export {
   screenRenderingAudit,

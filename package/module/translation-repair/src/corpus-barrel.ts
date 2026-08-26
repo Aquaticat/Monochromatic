@@ -172,6 +172,12 @@ export {
 export { reportingRefusals, } from './corpus-run/cli-refusal.ts';
 export { StatedRefusalError, } from './stated-refusal.ts';
 export {
+  DrawReconcileError,
+  type DrawReconcileFault,
+  reconcileSentence,
+  type TypeofName,
+} from './corpus-run/draw-reconcile.ts';
+export {
   BenchDrawError,
   type DrawableSlice,
   orderBySourceSize,

@@ -500,7 +500,14 @@ export async function discardNamespace(
       },);
     },);
   if (owned.length > 0) {
-    console.log(
+    /**
+     * Logger pre-tagged with this function's name.
+     */
+    const dl = tagged({
+      tag: discardNamespace.name,
+      l,
+    },);
+    dl.info(
       `SLICE discarding ${String(owned.length,)} cached slices in ${dir}: `
         + `filled by ${cached === '' ? '(unstamped)' : cached}`,
     );

@@ -42,6 +42,7 @@ import {
 
 import {
   ArtifactProvenanceError,
+  DrawReconcileError,
   type EligibleEntries,
   loadEntry,
 } from '../../dist/final/node/index.mjs';
@@ -310,6 +311,25 @@ await describe({
           },
           eligible: pooled({ tip: POOL_TIP, },),
         },),).rejects.toThrow('acceptedCount 4 != parsed 1',);
+      },
+    },),
+    it({
+      name: 'REFUSES as DrawReconcileError, a marked class, so the boundary prints the entry and both '
+        + 'counts instead of the class name alone',
+      fn: async () => {
+        await expect(loadingFrom({
+          artifact: {
+            id: ENTRY_ID,
+            tip: POOL_TIP,
+            pipelineDigest: POOL_DIGEST,
+            corpusSha: 'sha/1',
+            status: 'repaired',
+            durationMs: 1,
+            acceptedCount: 4,
+            issues: [acceptedRecord({ issueId: 'adjudicated/purr', },),],
+          },
+          eligible: pooled({ tip: POOL_TIP, },),
+        },),).rejects.toThrow(DrawReconcileError,);
       },
     },),
     it({

@@ -62,6 +62,38 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS wording that is a character substring of longer shared wording across a word boundary',
+      fn: async () => {
+        const found = findAdjacentRepetitions({
+          archiveText: 'A kitten dozed. The end.',
+          shippedSlices: [
+            {
+              sliceIndex: 2,
+              text: 'Then cat the garden lanterns were burning bright again. He stood at the garden lantern '
+                + 'before dawn.',
+            },
+            {
+              sliceIndex: 3,
+              text: 'So cat the garden lanterns were burning bright today. She waited at the garden lantern '
+                + 'after dusk.',
+            },
+          ],
+        },);
+        // BY LENGTH, since an adjacent finding carries word counts and never
+        // wording: four words for `at the garden lantern`, seven for `cat the
+        // garden lanterns were burning bright`.
+        expect(found.map(function wordsOf(repeat,): number {
+          return repeat.words;
+        },)
+          .toSorted(function ascending(left, right,): number {
+            return left - right;
+          },),).toStrictEqual([
+          4,
+          7,
+        ],);
+      },
+    },),
+    it({
       name: 'NAMES wording the archive never carried at all',
       fn: async () => {
         const found = findAdjacentRepetitions({
