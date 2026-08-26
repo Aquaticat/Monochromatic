@@ -67,7 +67,6 @@ function settlementReviewKey(
     request.goal
       .generationId,
     request.branchLeafId,
-    request.settlementSequence,
   ],);
 }
 
@@ -179,7 +178,7 @@ function registerGoalSettlementReview(
         return;
       }
       /**
-       * Duplicate guard for exact runtime, generation, leaf, and sequence.
+       * Duplicate guard for exact runtime, generation, and finalized leaf.
        */
       const reviewKey = settlementReviewKey(request,);
       if (reviewKey === lastReviewedSettlementKey)
