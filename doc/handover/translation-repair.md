@@ -1451,7 +1451,15 @@ after the pass. Record: `doc/decision/translation-repair-calibration-overlap.md`
 THE OWNER ALSO REPORTED (17:40Z) that `qwen3.8-27b` is now available on Charm Hyper. The Synthetic seat
 `hf:Qwen/Qwen3.8-27B` is one of the two seats the window keeps cutting (1 to 2 per arm, beside `qwen3.8-max`),
 and Hyper has no slot limit, so routing that seat through Hyper is the next roster change; the catalog reading
-and the id check come first.
+and the id check come first. DONE (`d40ac07d3`): Hyper's public `/v1/models` lists `qwen3.8-27b` (1M context,
+128000 max output, vision, $0.5 in, $3 out, $0.1 cache hit per million; 10, 60 and 2 Hypercredits), so
+`HYPER_MODELS` pairs it with `hf:Qwen/Qwen3.8-27B` as one panelist and the router's overflow can send that seat
+to Hyper once its Synthetic slot saturates; a scratch probe under `mise exec` answered 3 of 3 with the forced
+tool shape in about 2 s each, so `toolChoice: 'forced'`. Regenerating the price table from the same endpoint
+found six rows drifted since 2026-08-25 (`gemma-4-26b-a4b-it` up about 9%, and five non-roster models), so
+every row is re-read and `HYPER_PRICE_READ_ON` is 2026-08-26. `model-catalog` compares only Synthetic against
+the compiled catalog; the Hyper half is `#270`. The route is not measured yet: the next calibration's SEAT and
+cut counts for that seat, read per provider, are the measurement.
 
 THE SECOND READER'S DRY RUN CHANGED THE READING METHOD. sol read the older `wangzihao980` page (2026-08-22
 build) and returned 15 items where this session's own reading had two: 1 inherited blocker (the day of death,
