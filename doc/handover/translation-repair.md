@@ -550,6 +550,17 @@ the window under overlap; the overlap dial built into the corpus pass's drivers,
 with matched runs. Both arms launch back to back and solo, since a concurrent run would share provider slots and spoil
 the band.
 
+THE OUTPUT READING (`#259`, 2026-08-26) is `doc/audit/translation-repair-output-reading-20260826.md`: four published
+pages from the 2026-08-22 and 08-24 builds read sentence by sentence against source and archive, six defect classes no
+gate measures (comma splices and present tense for the dead, in-page terminology drift, the handle used as a name, 伙伴
+rendered "partner", U+2011 and U+2019 introduced by models, a source hyperlink lost by inheriting an archive
+sentence), and tasks `#263` (the calibration coverage sentence misdiagnoses a seat that answered every ask as silent;
+found by reading arm A's printed report, whose SEAT line contradicts it), `#264` (introduced punctuation), `#265`
+(source hyperlinks lost). The four-slice EDITOR standing swings by twenty points between identical runs (GLM-5.2 52.2%
+in A, 26.7% in B, 10.0% in C), so a four-slice standing is noise; that goes into the band answer. Next: after the
+arms, a `corpus-pass --only` over the six entries of the 08-20 reading plus `wangzihao980` and `dogesir_` into a
+throwaway runs dir on the current build, read the same way.
+
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
 STATUS 2026-08-26: fixed in `8b289c3ab`, guards in `e0010019f`, each guard shown to fail with its fix line removed,
