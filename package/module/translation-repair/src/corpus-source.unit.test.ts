@@ -27,6 +27,7 @@ import {
 import spawn from 'nano-spawn';
 import {
   CorpusReadError,
+  isMissingCorpusObject,
   listCorpusPeople,
   readCorpusFile,
 } from '../dist/final/node/index.mjs';
@@ -229,7 +230,8 @@ await describe({
     },),
 
     it({
-      name: 'throws CorpusReadError for paths absent at the pinned commit',
+      name: 'throws CorpusReadError for paths absent at the pinned commit, and NAMES THE FAILURE a missing '
+        + 'object, which is the one failure a walk over the corpus may step past',
       fn: async () => {
         await using fixture = await makeThrowawayClone();
         /** Value caught from read of a path that never existed. */
@@ -247,11 +249,15 @@ await describe({
           caught = error;
         }
         expect(caught instanceof CorpusReadError,).toBe(true,);
+        expect((caught as CorpusReadError).kind,).toBe('missing-object',);
+        expect((caught as Error).message,).toContain('(missing-object)',);
+        expect(isMissingCorpusObject(caught,),).toBe(true,);
       },
     },),
 
     it({
-      name: 'throws CorpusReadError when the clone directory does not exist',
+      name: 'throws CorpusReadError when the clone directory does not exist, and NAMES THE FAILURE other: an '
+        + 'unreadable clone is a fault in the run, not a fact about the corpus, and no walk may step past it',
       fn: async () => {
         /** Value caught from read against a nonexistent clone. */
         let caught: unknown;
@@ -271,6 +277,33 @@ await describe({
           caught = error;
         }
         expect(caught instanceof CorpusReadError,).toBe(true,);
+        expect((caught as CorpusReadError).kind,).toBe('other',);
+        expect(isMissingCorpusObject(caught,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'NAMES A LISTING FAILURE other too, since the listing goes through the other subprocess layer and '
+        + 'a clone that cannot be listed is the same fault in the run',
+      fn: async () => {
+        /** Value caught from a listing against a nonexistent clone. */
+        let caught: unknown;
+        try {
+          await listCorpusPeople({
+            pin: {
+              cloneDir: join(
+                tmpdir(),
+                'translation-repair-no-such-clone',
+              ),
+              commitSha: 'deadbeef',
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof CorpusReadError,).toBe(true,);
+        expect((caught as CorpusReadError).kind,).toBe('other',);
       },
     },),
   ],

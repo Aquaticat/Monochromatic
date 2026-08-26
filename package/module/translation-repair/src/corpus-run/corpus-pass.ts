@@ -6,9 +6,7 @@ import { join, } from 'node:path';
 
 
 import {
-  CorpusReadError,
   listCorpusPeople,
-  readCorpusFile,
 } from '../corpus-source.ts';
 import {
   type AttemptMap,
@@ -17,12 +15,11 @@ import {
 import {
   countSettledPerBand,
   rankWithinBands,
-  type SizedEntry,
   smallBandIds,
 } from './band-order.ts';
 import { readOnlyIds, } from './entry-filter.ts';
+import { collectEligiblePairs, } from './pass-eligibility.ts';
 import {
-  type CorpusPair,
   settleEntry,
 } from './pass-entry.ts';
 import { FIXED_TREE_DIR, } from './publish-fixed.ts';
@@ -338,64 +335,31 @@ async function runCorpusPass(): Promise<void> {
   const sizer = new TextEncoder();
 
   /**
-   * Complete unsettled pairs; a missing side (only `tdor` here) drops out.
-   */
-  const eligible: CorpusPair[] = [];
-
-  /**
-   * Already-settled entries reduced to their sizes. Ordering needs these:
+   * Complete unsettled pairs, already-settled sizes (ordering needs these:
    * ranking runs over the REMAINING entries, so without knowing what each band
-   * already settled every run would restart each band at rank zero and hand
-   * itself to the same band forever.
+   * already settled every run would restart each band at rank zero), and the
+   * entries missing a side at the pin.
+   *
+   * ONLY A MISSING OBJECT DROPS OUT, and it is printed. Any other read
+   * failure propagates: until 2026-08-26 every read failure read as the
+   * expected missing side, so a clone that had gone away shrank the corpus
+   * to nothing without a line saying so.
    */
-  const settled: SizedEntry[] = [];
-  for (const id of onlyIds.size === 0 ? people : people.filter(function isChosen(candidate,): boolean {
-    return onlyIds.has(candidate,);
-  },)) {
-    try {
-      /**
-       * Original zh page text for this entry.
-       */
-      /* oxlint-disable-next-line no-await-in-loop -- corpus reads are sequential git shows; the list is small and this runs once at setup */
-      const sourceText = await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${id}/page.md`,
-      },);
-
-      /**
-       * Page-source size deciding this entry's band.
-       */
-      const sourceBytes = sizer.encode(sourceText,)
-        .length;
-      if (done.has(id,)) {
-        settled.push({
-          id,
-          sourceBytes,
-        },);
-        continue;
-      }
-
-      /**
-       * Translated en page text for this entry.
-       */
-      /* oxlint-disable-next-line no-await-in-loop -- pairs with its source read above; ordering is intentional */
-      const targetText = await readCorpusFile({
-        pin: RUN_CORPUS_PIN,
-        relPath: `people/${id}/page.en.md`,
-      },);
-      eligible.push({
-        id,
-        sourceText,
-        targetText,
-      },);
-    }
-    catch (error) {
-      // A missing side (only `tdor` at this commit) is an expected non-pair;
-      // any other read failure is a real fault and must surface.
-      if (!(error instanceof CorpusReadError))
-        throw error;
-    }
-  }
+  const {
+    eligible,
+    settled,
+    incomplete,
+  } = await collectEligiblePairs({
+    ids: (onlyIds.size === 0)
+      ? people
+      : people.filter(function isChosen(candidate,): boolean {
+        return onlyIds.has(candidate,);
+      },),
+    done,
+    pin: RUN_CORPUS_PIN,
+  },);
+  for (const gap of incomplete)
+    console.log(`INCOMPLETE ${gap.id}: ${gap.side} page absent at the pin (${gap.detail})`,);
 
   /**
    * Every eligible entry reduced to its id and page-source byte size, measured

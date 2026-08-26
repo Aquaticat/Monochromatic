@@ -137,6 +137,8 @@ export {
   CORPUS_COMMIT_SHA,
   type CorpusPin,
   CorpusReadError,
+  type CorpusReadFailure,
+  isMissingCorpusObject,
   listCorpusPeople,
   readCorpusBytes,
   readCorpusFile,

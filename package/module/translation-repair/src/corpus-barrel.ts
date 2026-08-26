@@ -222,6 +222,11 @@ export {
   type PipelineStamp,
 } from './corpus-run/pipeline-digest.ts';
 export {
+  collectEligiblePairs,
+  type IncompleteEntry,
+  type PassEligibility,
+} from './corpus-run/pass-eligibility.ts';
+export {
   persistProbeRun,
   type ProbeRun,
 } from './corpus-run/probe-store.ts';

@@ -4,7 +4,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ChunkPair, } from '../chunk-document.ts';
 import {
-  CorpusReadError,
+  isMissingCorpusObject,
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
@@ -274,7 +274,7 @@ async function readPairTexts(
     };
   }
   catch (error) {
-    if (!(error instanceof CorpusReadError))
+    if (!isMissingCorpusObject(error,))
       throw error;
     l.info(`${entryId}: skipped, ${String(error,)}`,);
     return { kind: 'missing', };

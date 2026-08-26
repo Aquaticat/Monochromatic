@@ -78,6 +78,97 @@ export type CorpusPin = {
 };
 
 /**
+ * What kind of failure a corpus read met.
+ *
+ * @example
+ * ```ts
+ * const failure: CorpusReadFailure = 'missing-object';
+ * ```
+ */
+export type CorpusReadFailure =
+  /**
+   * Git found the commit and the path is not in it, which is what an
+   * incomplete pair looks like: `fatal: path 'x' does not exist in 'sha'`.
+   */
+  | 'missing-object'
+  /**
+   * Anything else: an unreadable clone, a spawn failure, an oversized blob,
+   * a listing that failed.
+   */
+  | 'other';
+
+/**
+ * Stderr phrases with which git reports a path absent at a commit.
+ *
+ * MEASURED against git 2.55 rather than recalled: a missing path and an
+ * unknown commit both say `does not exist in`, and a path present in the
+ * working tree but not at the commit says `exists on disk, but not in`.
+ */
+const MISSING_OBJECT_PHRASES: readonly string[] = [
+  'does not exist in',
+  'exists on disk, but not in',
+];
+
+/**
+ * Reads which failure a subprocess error reports.
+ *
+ * BOTH SUBPROCESS SHAPES ARE READ. Blob reads go through `execFile`, whose
+ * promisified rejection carries `stderr` as a buffer; listings go through
+ * `nano-spawn`, whose error carries it as a string. Anything without a
+ * readable stderr is `other`, since nothing then says the object was missing.
+ *
+ * @param cause - underlying subprocess failure
+ *
+ * @returns Failure kind
+ *
+ * @example
+ * ```ts
+ * const kind = classifyCorpusReadFailure({ cause: error, },);
+ * ```
+ */
+function classifyCorpusReadFailure({ cause, }: { readonly cause: unknown; },): CorpusReadFailure {
+  if ((typeof cause) !== 'object')
+    return 'other';
+  if (cause === null)
+    return 'other';
+  if (!('stderr' in cause))
+    return 'other';
+
+  /**
+   * Whatever stderr the subprocess layer attached, as text.
+   */
+  const text = stderrText({ stderr: cause.stderr, },);
+
+  /**
+   * Whether git said the object is absent at the commit.
+   */
+  const missing = MISSING_OBJECT_PHRASES.some(function appears(phrase,): boolean {
+    return text.includes(phrase,);
+  },);
+  return missing ? 'missing-object' : 'other';
+}
+
+/**
+ * Reads a subprocess layer's stderr as text.
+ *
+ * @param stderr - whatever the layer attached
+ *
+ * @returns Text, or nothing when it is neither a buffer nor a string
+ *
+ * @example
+ * ```ts
+ * const text = stderrText({ stderr: error.stderr, },);
+ * ```
+ */
+function stderrText({ stderr, }: { readonly stderr: unknown; },): string {
+  if (Buffer.isBuffer(stderr,))
+    return stderr.toString('utf8',);
+  if ((typeof stderr) === 'string')
+    return stderr;
+  return '';
+}
+
+/**
  * Signals a corpus read that git refused:
  * missing clone, unknown commit, or absent path at the pinned commit.
  *
@@ -91,6 +182,17 @@ export class CorpusReadError extends Error {
    * Declares this message safe to forward: it names the corpus path and revision that were asked for, never what they hold.
    */
   readonly messageNamesOnly: true = true;
+
+  /**
+   * Which failure git reported, read off its stderr.
+   *
+   * THE FIELD EVERY CATCHER NEEDED. Until it existed a non-zero git exit, a
+   * spawn failure, an unreadable clone and an oversized blob all reached a
+   * caller as one class, and every caller read that class as the expected
+   * missing side of an incomplete pair: a pass whose clone had gone away
+   * dropped every entry in silence and ranked its bands over nothing.
+   */
+  readonly kind: CorpusReadFailure;
 
   /**
    * Builds failure naming what was read and why git refused.
@@ -113,13 +215,38 @@ export class CorpusReadError extends Error {
       readonly cause: unknown;
     },
   ) {
+    /**
+     * What git's stderr says the failure was.
+     */
+    const kind = classifyCorpusReadFailure({ cause, },);
     super(
-      `corpus read failed for ${detail};`
+      `corpus read failed for ${detail} (${kind});`
         + ' check that the clone exists and the pinned commit is present.',
       { cause, },
     );
     this.name = 'CorpusReadError';
+    this.kind = kind;
   }
+}
+
+/**
+ * Whether a caught value is a corpus read that failed because the object is
+ * not at the pin, which is the one failure a walk over the corpus may step
+ * past: an entry with one side is an ordinary state of this corpus.
+ *
+ * POSITIONAL, since a type predicate cannot narrow a destructured binding.
+ *
+ * @param error - caught value
+ *
+ * @returns Whether it is a missing-object corpus read failure
+ *
+ * @example
+ * ```ts
+ * if (!isMissingCorpusObject(error,)) throw error;
+ * ```
+ */
+export function isMissingCorpusObject(error: unknown,): error is CorpusReadError {
+  return (error instanceof CorpusReadError) && (error.kind === 'missing-object');
 }
 
 /**

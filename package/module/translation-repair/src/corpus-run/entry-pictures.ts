@@ -6,7 +6,7 @@ import {
 import type { ChunkPair, } from '../chunk-document.ts';
 import {
   type CorpusPin,
-  CorpusReadError,
+  isMissingCorpusObject,
   readCorpusBytes,
 } from '../corpus-source.ts';
 import {
@@ -113,7 +113,7 @@ export async function gatherEntryPictures(
       // NAMED RATHER THAN SWALLOWED, and not rethrown: a picture the corpus
       // does not carry is a fact about the corpus, and the slices showing it
       // report it as unread.
-      if (!(error instanceof CorpusReadError))
+      if (!isMissingCorpusObject(error,))
         throw error;
       gl.warn(`${entryId}/${assetName}: not in the corpus at this pin (${error.message})`,);
     }

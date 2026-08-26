@@ -1,5 +1,5 @@
 import {
-  CorpusReadError,
+  isMissingCorpusObject,
   listCorpusPeople,
 } from '../corpus-source.ts';
 import {
@@ -169,7 +169,7 @@ async function main(): Promise<void> {
     catch (error) {
       // A missing translation is the ordinary shape of an incomplete pair, and
       // the corpus has them. Anything else keeps propagating.
-      if (!(error instanceof CorpusReadError))
+      if (!isMissingCorpusObject(error,))
         throw error;
       incomplete.push(entryId,);
     }

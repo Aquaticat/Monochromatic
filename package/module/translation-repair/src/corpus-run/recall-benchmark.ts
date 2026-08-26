@@ -2,7 +2,7 @@ import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
-  CorpusReadError,
+  isMissingCorpusObject,
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
@@ -193,8 +193,9 @@ async function buildEntry(
     };
   }
   catch (error) {
-    // A missing side is an expected non-pair; anything else is a real fault.
-    if (!(error instanceof CorpusReadError))
+    // A missing side is an expected non-pair; anything else is a real fault,
+    // and since 2026-08-26 the error says which it was.
+    if (!isMissingCorpusObject(error,))
       throw error;
     return {
       kind: 'skipped',
