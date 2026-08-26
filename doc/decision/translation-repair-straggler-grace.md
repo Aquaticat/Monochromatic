@@ -273,3 +273,10 @@ The 2-of-6 recovery is inside what provider speed alone moved. So this decision 
 because the longer window was shown to cost too much, but because nothing about it is shown at this scale.
 What would show it: interleaved repeats (A, C, A, C) in one sitting, read normalized, or arm D's overlap-4
 reading (running as this is written), where the wait a longer window adds is what overlap fills.
+
+DECIDED 2026-08-26, LATER THE SAME DAY: the editor calibration runs under 300000 ms together with four slices
+in flight, by the owner's answer to question 12 in `doc/planning/translation-repair-open-decisions.md`, on arm
+D (29.31 min, 318 of 320 voices, 2 cut, normalized 0.23 against arm B's 0.23). `adoptCalibrationGrace` in
+`grace-override.ts` applies it through the same variable a launch can set. This value, 180000 ms, stays the
+pass's until `#261` gives the pass overlap; the two move together or not at all. Record:
+`doc/decision/translation-repair-calibration-overlap.md`.

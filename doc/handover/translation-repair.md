@@ -1441,6 +1441,18 @@ THE FRESH PASS LAUNCHED at 17:31Z from `907d14ea2` (the task builds what it runs
 it): `--only` over the ten entries into `~/temp/agent/fresh-read-20260826`, log beside it, at production
 defaults, solo; `XingZ60` follows in a second launch. Every page is read twice as it lands.
 
+THE TWO DIALS ARE DECIDED (owner, 17:35Z, both the recommended option): `editor-calibrate` defaults to
+overlap 4 (`CALIBRATION_OVERLAP`, `slice-overlap.ts`, whose `readOverlap` now takes the caller's fallback) and
+runs under 300000 ms (`CALIBRATION_STRAGGLER_GRACE_MS`, adopted by `adoptCalibrationGrace` through the variable
+a launch can set, printed as `straggler window <ms>ms (calibration default|override)`); the pass keeps 1 and
+180000 until `#261`. Landed in source after the fresh pass built, so the pass does not carry it; suites run
+after the pass. Record: `doc/decision/translation-repair-calibration-overlap.md`.
+
+THE OWNER ALSO REPORTED (17:40Z) that `qwen3.8-27b` is now available on Charm Hyper. The Synthetic seat
+`hf:Qwen/Qwen3.8-27B` is one of the two seats the window keeps cutting (1 to 2 per arm, beside `qwen3.8-max`),
+and Hyper has no slot limit, so routing that seat through Hyper is the next roster change; the catalog reading
+and the id check come first.
+
 THE SECOND READER'S DRY RUN CHANGED THE READING METHOD. sol read the older `wangzihao980` page (2026-08-22
 build) and returned 15 items where this session's own reading had two: 1 inherited blocker (the day of death,
 "the next day" where the source says the early hours of that day), 5 inherited majors, 5 inherited minors, and

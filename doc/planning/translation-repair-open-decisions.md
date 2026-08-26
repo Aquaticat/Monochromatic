@@ -1,8 +1,8 @@
 # Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-19
 
-STATUS ON 2026-08-26: EVERY QUESTION FROM 1 TO 10 IS ANSWERED, and this document is kept for the evidence behind
-the answers (register item A-4). Questions 11 and 12, opened the same day at the end of this file, are the two
-dials the readiness signal's rejection left with the owner; both wait on arm D. The records for 1 to 10 are:
+STATUS ON 2026-08-26: EVERY QUESTION IS ANSWERED, and this document is kept for the evidence behind the
+answers (register item A-4). Questions 11 and 12, opened and decided the same day at the end of this file, are
+recorded in `doc/decision/translation-repair-calibration-overlap.md`. The records for 1 to 10 are:
 
 -   Question 1, producing roster width: `doc/decision/translation-repair-question-answers.md`
     ("Producing roster width: keep three, widen on evidence"), and the "RULED 2026-08-23" section under the
@@ -2101,6 +2101,11 @@ C.  **Move both calibrations and the pass to overlap 4 together, after `#261` is
 A > B > C. A over B because the effect is measured and six bands wide, and the standing-noise objection
 applies equally at either overlap; B over C because C delays a decided question behind an undecided one.
 
+### DECIDED 2026-08-26: A, by the owner
+
+`CALIBRATION_OVERLAP = 4` in `slice-overlap.ts`; the dial's fallback is now the caller's, so the pass keeps
+1 until `#261`. Record: `doc/decision/translation-repair-calibration-overlap.md`.
+
 ## Question 12: whether the straggler window moves from 180000 ms
 
 `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (`grace-override.ts`, landed `4c070f729`) overrides the window for
@@ -2144,3 +2149,9 @@ D.  **Move the window to 300000 ms together with overlap 4 as the calibration de
 D > A > C > B. D over A because it is measured where A was waiting for the measurement; A over C and C over
 B as before. D is conditional on question 11 resolving to overlap 4; at overlap 1 the window stays at
 180000 ms.
+
+### DECIDED 2026-08-26: D, by the owner
+
+`CALIBRATION_STRAGGLER_GRACE_MS = 300_000` in `grace-override.ts`, adopted by the calibration through the
+variable; the built-in `STRAGGLER_GRACE_MS` stays 180000 for the pass until `#261`. Record:
+`doc/decision/translation-repair-calibration-overlap.md`.

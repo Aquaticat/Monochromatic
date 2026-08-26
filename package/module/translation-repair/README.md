@@ -709,6 +709,11 @@ a model writing English from Chinese
 with nothing in front of it but the source.
 
 `editor-calibrate` ranks EDITORS, and reports the refiner standing off the same spend.
+It keeps four slices in flight and waits 300000 ms on stragglers after quorum,
+both the owner's decisions of 2026-08-26 on the five calibration arms
+(`doc/decision/translation-repair-calibration-overlap.md`);
+`TRANSLATION_REPAIR_SLICE_OVERLAP` and `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` override either for one launch,
+and `1` and `180000` reproduce the pass's own settings, which stay where they were until `#261`.
 It drives the whole repair lane,
 so the claims an editor works from
 are claims models really raised about that passage rather than fixtures.

@@ -74,9 +74,12 @@ Each is its own question, because answering "yes" to all of them in order must b
 1.  Readiness: "Not yet. You didn't even look at its actual output."
     The signal rested on process gates; the output itself, the published pages and the shipped text, had not
     been read. That reading comes first, and readiness is not claimed again until it is recorded.
-2.  Overlap default: measure the run-to-run band first, by repeating arm A.
+2.  Overlap default: measure the run-to-run band first, by repeating arm A. DECIDED later the same day, on
+    arms A2 and D: `editor-calibrate` defaults to overlap 4.
 3.  Pass overlap: build the dial into the pass and measure it there; the default stays 1 until measured.
-4.  Window: run arm D (overlap 4 at 300000 ms) before moving it.
+4.  Window: run arm D (overlap 4 at 300000 ms) before moving it. DECIDED later the same day, on arm D: the
+    calibration runs under 300000 ms together with overlap 4; the pass keeps 180000 ms until `#261`.
+    Record: `doc/decision/translation-repair-calibration-overlap.md`.
 
 ## Since the answers (2026-08-26, updated the same day)
 
