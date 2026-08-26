@@ -501,3 +501,93 @@ a model answers unusably, is re-asked, and never returns.
 Removing the bound fails that one case and no other,
 and the suite takes thirty seconds instead of milliseconds while it does,
 which is the defect showing itself rather than an assertion describing it.
+
+## The final reading, at 356 rounds rather than 51
+
+The calibration finished on 2026-08-25 after 40 slices and 356 rounds,
+seven times the sample the provisional reading above was taken on,
+and every number in it survives.
+
+```text
+rounds                  356, 10.83h in total
+  to quorum             1.38h
+  waiting after quorum  9.45h, 87.2% of round time
+  voices heard          3456 of 3560
+```
+
+The share moved from 88.3% to 87.2%.
+The shape did not move at all.
+
+ROUNDS STILL DO NOT OVERLAP.
+Round wall clock sums to 10.83 hours inside a run that spans about the same,
+so the serialisation the provisional reading found is not an artifact of a short window.
+
+WAITING AFTER QUORUM BEATS REACHING IT IN 353 ROUNDS OF 356.
+Median time to quorum is 10340 ms.
+Median time in grace is 88695 ms.
+The grace is not a tail that occasionally costs something;
+it is where the run lives.
+
+Per stage, the share barely varies,
+which is what says this is structural rather than one stage behaving badly:
+
+```text
+stage                     rounds   median total   median grace   grace share   rounds losing a voice
+refiner                       22          81469          72786         93.2%                       4
+editor                        32          87584          80140         91.8%                       8
+select                       132         122736         104284         88.1%                      29
+checker                       47          57316          48381         87.7%                       2
+critic                        40         127369         108253         87.3%                      15
+introduced-defect-probe       46          34554          28973         87.3%                      10
+panel                         37         200859         179956         80.6%                      21
+```
+
+## What shortening the grace would actually buy, priced round by round
+
+A round that ends before the cap ended because its last voice arrived,
+so its recorded grace IS that voice's arrival time after quorum.
+That makes the cost curve exact rather than modelled:
+lowering the cap to G saves `max(0, grace - G)` on every round,
+and costs a voice on every round whose recorded grace exceeded G.
+
+```text
+cap (ms)   saved      of run   rounds newly losing at least one voice
+150000     0.68h       6.2%     18 of 356
+120000     1.60h      14.7%     59 of 356
+ 90000     2.85h      26.3%    103 of 356
+ 60000     4.54h      41.9%    162 of 356
+ 45000     5.59h      51.6%    193 of 356
+ 30000     6.74h      62.2%    216 of 356
+ 20000     7.58h      69.9%    241 of 356
+ 15000     8.02h      74.0%    250 of 356
+ 10000     8.48h      78.3%    266 of 356
+```
+
+Halving the run means taking a voice off more than half the rounds in it.
+`#214` said shortening the grace is expensive at 52 rounds;
+at 356 the price is written out, and it is worse than expensive, it is close to linear.
+
+The other end is measured too.
+73 rounds of 356 burned the full 180000 ms and still lost 87 voices between them.
+Those rounds are 20.5% of all rounds and 38.1% of all round wall clock.
+The 283 rounds that ended early lost 17 voices in total.
+So lengthening the cap would buy back voices only in the fifth of rounds
+that are already the most expensive ones in the run.
+
+## This is the whole argument for overlapping units, in one number
+
+`#213` was redirected away from fanning out inside a round
+and toward overlapping independent units.
+That redirect now has its number:
+
+87.2% of this run is a wait that another unit's work could be filling.
+
+Nothing about that requires a shorter grace,
+a different roster,
+or a provider that answers faster.
+It requires a second slice in flight while the first one waits,
+and the calibration driver deliberately does not do that,
+with a comment saying so.
+
+The owner's note that Charm Hyper appears to have no concurrency limit
+points at the same place from the provider side.
