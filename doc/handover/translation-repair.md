@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-calibrate in `acfc7ad22`, provider in `2376b7d14`, repair in `d7c707cc3` and `9135037e8`, translate is next;
+calibrate, provider, repair and translate are landed (`acfc7ad22` to `8e10cfa19`), probes is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -284,7 +284,11 @@ marker, typography is restored before the apply gate's checks and before the ref
 case each fail under their mutation and pass restored; the refine gate's half has no case that turns on quote
 style and is recorded as owed in the register. A first attempt exported `ChatMessage` from the package's own
 index and broke the build (the type belongs to `module-llm-type`; the suites import it from there now).
-Queue: the register's MINORs in register order (translate-3 next), which close `#236`; then `#213` (arm A and arm B
+Whole-suite `buildAndTest` after `9135037e8`: 794 PASS, 0 FAIL, exit 0 (solo run).
+Translate MINORs LANDED 2026-08-26: translate-4 and translate-5 in `732d7fb41` (the stage note and the version 6
+paragraph), translate-6 in `8e10cfa19` (retry, slice attempt and assembly suites on the branches the register
+named; GFP fails 2, 1 and 1 cases under mutation, passes restored); translate-3 was closed by `#237`.
+Queue: the register's MINORs in register order (probes-6 next), which close `#236`; then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 

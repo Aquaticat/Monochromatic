@@ -754,14 +754,27 @@ and files written before this fix already collided in a way no reader can undo.
 
 `src/corpus-run/sentinel-probe.ts:166-173`, the same shape as calibrate-2. Folded into `#237`.
 
+CLOSED by `#237` (translate-3 was folded into it): `sentinel-probe.ts` prints its error line through `refusalText`
+(line 168 at `8e10cfa19`), so a marked refusal prints whole and anything else prints its class name.
+Nothing further to land.
+
 ### translate-4, MINOR, verified: a stage note says a guard is missing that `translate-slice.ts` now runs
 
 `src/translate-stage.ts:31-33` against `src/translate-slice.ts` (`findDroppedDeclaredNames`, two sites).
+
+FIXED 2026-08-26 in `732d7fb41`: the stage note says where declared names are checked, in `translate-slice.ts`
+through `findDroppedDeclaredNames`, and keeps the cross-slice gap as the one thing the stage still does not do.
+Prose only.
 
 ### translate-5, MINOR, verified: the translate slice cache is at version 6 with a history ending at 5
 
 `src/translate-document-contract.ts:57` against the paragraphs at `:31-50`;
 nobody can tell what the bump to 6 discarded or why.
+
+FIXED 2026-08-26 in `732d7fb41`: the history has its version 6 paragraph, the bump from `973f7b47d` on 2026-08-22
+that carried the verse rule to the judges' sheet in both lanes, so every slice judged without the rule is re-judged;
+neither the record's shape nor its key changed.
+Prose only.
 
 ### translate-6, MINOR, verified: twenty-one files in the slice have no sibling unit test
 
@@ -769,6 +782,18 @@ Named in the reviewer's report (`~/temp/agent/audit-translate.md`); the branches
 direct case are `translate-retry.ts:200-228`, `translate-slice-attempt.ts:182-183`, the shipped and
 withdrawn index sets in `translate-assemble.ts`, every `blankAgainst` branch in `translate-absence.ts`,
 and the three-voice pairing case translate-1 needs.
+
+FIXED 2026-08-26 in `8e10cfa19`, on the branches the entry named rather than on file names: `translate-retry.ts`
+(a first decline followed by a decision keeps the decision and both rounds' findings with the retry marker; a first
+decision asks once; two declines settle as `no-candidate-backed` with one marker), `translate-slice-attempt.ts` (now
+exported: an insertion nobody could fill is reported `unfilled` with its reason and findings; a content slice nobody
+answered settles on its incumbent) and `translate-assemble.ts` (a replacement dropping a footnote marker is withdrawn
+at assembly, listed as withdrawn and not as changed, and the warning names the count). `blankAgainst`'s four branches
+were already held by `translate-absence-blank.unit.test.ts`, and the three-voice pairing case landed with `#245`.
+Guards: the retried-decline list emptied fails the first and third retry cases; the insertion backstop made to rethrow
+fails the unfilled case; the withdrawn set emptied fails the assembly case; each restored, passes.
+The slice-attempt fixture builds its insertion by hand the way the document suite does, because the deterministic
+aligner yields no slices at all for a heading-count mismatch (measured: 0 slices for a two-against-one pair).
 
 ### probes-1, BLOCKER, verified: the sensitivity instrument labels an arm `prior=shown` that shows nothing
 
