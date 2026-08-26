@@ -67,3 +67,12 @@ Each is its own question, because answering "yes" to all of them in order must b
     longer window bought back; four rounds burned the full 300 s and were cut anyway. About 5.3 min of wall
     clock per voice bought while slices run one at a time; under overlap the wait is what overlap fills, so a
     longer window under overlap 4 is the unrun arm that would reprice it.
+
+## The owner's answers (2026-08-26)
+
+1.  Readiness: "Not yet. You didn't even look at its actual output."
+    The signal rested on process gates; the output itself, the published pages and the shipped text, had not
+    been read. That reading comes first, and readiness is not claimed again until it is recorded.
+2.  Overlap default: measure the run-to-run band first, by repeating arm A.
+3.  Pass overlap: build the dial into the pass and measure it there; the default stays 1 until measured.
+4.  Window: run arm D (overlap 4 at 300000 ms) before moving it.

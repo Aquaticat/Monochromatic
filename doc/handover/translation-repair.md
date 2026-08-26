@@ -6,7 +6,8 @@ the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
 every group from calibrate through rendering is landed (`acfc7ad22` to `8bffaba9b`) and `#236` is CLOSED;
-`#213`, `#230` and `#229` are measured on matched arms and closed; `#219`, the readiness signal, is next.
+`#213`, `#230` and `#229` are measured; the readiness signal was put and REJECTED (see "The owner's answers"),
+so the pipeline's actual output is being read before anything else.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
 WHAT THIS FILE IS.
@@ -533,6 +534,21 @@ Whole-suite `buildAndTest` after `2829fd4da` (the last code commit), run after a
 readiness signal: 819 PASS, 0 FAIL, exit 0 (solo run). The advisor checkpoint before `#219` was made and asked
 for this verdict to be read first, the status head refreshed, the arm reader kept beside its logs, and question
 2 scoped to `editor-calibrate`; all four are in this commit.
+
+THE OWNER'S ANSWERS TO THE READINESS SIGNAL (2026-08-26, the first genuine user input since the audit began; quoted
+verbatim). Readiness: "Not yet. You didn't even look at its actual output." Overlap default: "Measure the run-to-run
+band first (repeat arm A)". Pass overlap: "Build the dial into the pass and measure it there; default stays 1 until
+measured". Window: "Run arm D (overlap 4 at 300000 ms) before moving it".
+
+WHAT THE REJECTION MEANS. Every gate the signal rested on was a process gate: guards, suites, wall clock, voices
+heard, scan results. Nobody in this session read what the pipeline PRODUCES, the published `*.en.md` pages and the
+shipped text inside settled artifacts, against the Chinese source and the archive English. That reading is now the
+first item, ahead of the three measurements the other answers authorize, and readiness is not to be claimed again
+until the output has been read and the reading recorded. The three authorized measurements: arm A repeated as arm A2
+(overlap 1, built-in window, same four slices) to size the run-to-run band; arm D (overlap 4, 300000 ms) to reprice
+the window under overlap; the overlap dial built into the corpus pass's drivers, default 1, then measured on the pass
+with matched runs. Both arms launch back to back and solo, since a concurrent run would share provider slots and spoil
+the band.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
