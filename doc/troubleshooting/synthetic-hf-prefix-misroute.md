@@ -54,9 +54,17 @@ it is the wrong provider being asked a question it cannot answer.
 
 ## Why the run does not fail, and why that is the worse half
 
-Quorum is five voices of ten.
-The five models that still work are exactly enough to meet it,
+Quorum is five voices of ten, and it is met on the nose.
+`package/module/translation-repair/src/stage-quorum.ts:167` sets
+`quorumNeeded = Math.ceil(modelIds.length / 2)`,
+and line 327 tests `voices.length >= quorumNeeded`.
+Ten models need five, and five is exactly what survives,
 so every round stands, every slice settles, and the command reports success.
+
+That is the arithmetic to check first on any roster change.
+A roster of ten tolerates losing one provider's half.
+A roster of nine or eleven would not have tolerated it,
+and this defect would have announced itself on the first round instead of hiding for a run.
 
 This is the multi-provider resilience from `#199` working as designed.
 It was built so a provider going away could not stop a run, and it does not stop one.
