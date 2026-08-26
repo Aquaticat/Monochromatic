@@ -2,7 +2,9 @@
 
 ## Status
 
-Investigation is active.
+Investigation and independent design comparison are complete.
+The recommended typed-focus and symbolic-findings contract awaits user acceptance or delegated implementation authority.
+No Advisor production code was changed.
 This handover was created before further source investigation at
 `2026-08-25T23:58:24-04:00` from repository commit
 `3210ce1ef86d3fbdd9e42afeef56b79c4ade2d24`.
@@ -590,3 +592,4 @@ Start with the exact incident input-rejection test and provider-free-text leak t
 - `40f26273a`, `docs(advisor): record official Advisor precedent`, added current Anthropic evidence.
 - `137dac233`, `docs(advisor): define prevention verification`, defined negative cases and positive controls.
 - `bb8a9cd17`, `docs(advisor): recommend symbolic review contract`, recorded independent ranking and recommendation.
+- `fd1f3dc99`, `docs(advisor): qualify symbolic review guarantee`, incorporated final independent-review constraints.
