@@ -35,6 +35,17 @@ const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，�
 const CANDIDATE_TEXT = 'Three cats live in the bookshop attic. They eat canned food, and drink warm milk.';
 
 /**
+ * Characters of a model-supplied word a drop reason may repeat, as the screen
+ * bounds it.
+ */
+const DROPPED_WORD_LIMIT = 32;
+
+/**
+ * Length of a single token that overruns that bound.
+ */
+const OVERLONG_LENGTH = 40;
+
+/**
  * Fields a case may replace on the sound finding.
  *
  * SPELLED OUT rather than derived from the wire type, because every property
@@ -244,6 +255,36 @@ await describe({
         const screened = screenOne({ overrides: { category: 'altered-whiskers', }, },);
         expect(screened.findings,).toEqual([],);
         expect(screened.dropped,).toEqual(['unknown-category (altered-whiskers)',],);
+      },
+    },),
+    it({
+      name: 'BOUNDS THE WORD IT REPEATS from an unknown category to its first token, since the drop '
+        + 'list is persisted in every run row and exists to say which word, not to store prose',
+      fn: async () => {
+        const screened = screenOne({
+          overrides: { category: 'altered whiskers, and then a whole sentence about the cat on the sill', },
+        },);
+        expect(screened.dropped,).toEqual(['unknown-category (altered)',],);
+      },
+    },),
+    it({
+      name: 'BOUNDS A LONG SINGLE TOKEN to the first characters of the limit, so no field can carry '
+        + 'prose through by leaving the spaces out',
+      fn: async () => {
+        const screened = screenOne({ overrides: { category: 'x'.repeat(OVERLONG_LENGTH,), }, },);
+        expect(screened.dropped,).toEqual([`unknown-category (${'x'.repeat(DROPPED_WORD_LIMIT,)})`,],);
+      },
+    },),
+    it({
+      name: 'BOUNDS AN UNKNOWN VERDICT the same way, since the verdict field is the other one a '
+        + 'model writes free text into',
+      fn: async () => {
+        const screened = screenOne({
+          overrides: {},
+          verdict: 'catastrophic failure of the whole rendering',
+        },);
+        expect(screened.verdict,).toBe('uncertain',);
+        expect(screened.dropped,).toEqual(['unknown-verdict (catastrophic)',],);
       },
     },),
     it({

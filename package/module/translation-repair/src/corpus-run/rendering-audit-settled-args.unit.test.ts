@@ -226,6 +226,32 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a cap below zero rather than reading it as every subject, since a mistyped '
+        + 'sign would audit the whole archive in silence',
+      fn: async () => {
+        expect(() => {
+          readAuditArguments({
+            argv: commandLine({
+              typed: [
+                '--cap',
+                '-3',
+              ],
+            },),
+          },);
+        },).toThrow(StatedRefusalError,);
+        expect(() => {
+          readAuditArguments({
+            argv: commandLine({
+              typed: [
+                '--cap',
+                '-3',
+              ],
+            },),
+          },);
+        },).toThrow('--cap cannot be below zero, and -3 is; leave it off to audit every subject',);
+      },
+    },),
+    it({
       name: 'REFUSES a flag written at the end of the line with no value after it',
       fn: async () => {
         expect(() => {

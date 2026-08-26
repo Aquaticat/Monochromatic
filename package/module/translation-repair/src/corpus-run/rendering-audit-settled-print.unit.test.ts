@@ -256,24 +256,28 @@ await describe({
   name: printVoices.name,
   children: [
     it({
-      name: 'PRINTS one row per auditor, keeping asked apart from spoke',
+      name: 'PRINTS one row per auditor, keeping asked, answered and the loss between them apart '
+        + 'from spoke, since asked= used to mean answered and per-model loss was unreadable',
       fn: async () => {
         using printed = collectingLines({ lines: [], },);
 
         /**
-         * Two auditors, one of which was asked more than it answered.
+         * Two auditors, one of which was lost on two subjects and quiet on two
+         * more.
          */
         const rates: readonly VoiceRate[] = [
           {
             modelId: AUDITOR,
             asked: 40,
-            spoke: 38,
+            answered: 38,
+            spoke: 36,
             claims: 31,
             dropped: 2,
           },
           {
             modelId: OTHER_AUDITOR,
             asked: 40,
+            answered: 40,
             spoke: 40,
             claims: 12,
             dropped: 0,
@@ -289,8 +293,8 @@ await describe({
 
         expect(said.includes(AUDITOR,),).toBe(true,);
         expect(said.includes(OTHER_AUDITOR,),).toBe(true,);
-        expect(said.includes('asked=40 spoke on=38 claims=31 dropped=2',),).toBe(true,);
-        expect(said.includes('asked=40 spoke on=40 claims=12 dropped=0',),).toBe(true,);
+        expect(said.includes('asked=40 answered=38 lost=2 spoke on=36 claims=31 dropped=2',),).toBe(true,);
+        expect(said.includes('asked=40 answered=40 lost=0 spoke on=40 claims=12 dropped=0',),).toBe(true,);
       },
     },),
     it({
@@ -313,7 +317,8 @@ await describe({
   name: printRelocations.name,
   children: [
     it({
-      name: 'COUNTS the candidates in its heading, then names each one',
+      name: 'COUNTS the candidates in its heading, claim pairs and slice pairs apart, then names '
+        + 'each one',
       fn: async () => {
         using printed = collectingLines({ lines: [], },);
 
@@ -338,9 +343,42 @@ await describe({
          */
         const said = printed.lines.join('\n',);
 
-        expect(said.includes('RELOCATION CANDIDATES (#107): 1',),).toBe(true,);
+        expect(said.includes('RELOCATION CANDIDATES (#107): claim pairs=1 slice pairs=1',),).toBe(true,);
         expect(said.includes(`${RUN_SET}/whiskers`,),).toBe(true,);
         expect(said.includes('omission at 3 <-> addition at 7',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'PRINTS FEWER SLICE PAIRS THAN CLAIM PAIRS when two voices filed on one move, so the '
+        + 'quotable number is the move and not the number of voices that saw it',
+      fn: async () => {
+        using printed = collectingLines({ lines: [], },);
+
+        /**
+         * Two voices' claims about one relocation.
+         */
+        const pairs: readonly AuditRelocationPair[] = [
+          {
+            runSet: RUN_SET,
+            entryId: 'whiskers',
+            omissionAt: 3,
+            additionAt: 4,
+            omissionReason: 'the passage about the windowsill is gone',
+            additionReason: 'the passage about the windowsill appears here',
+          },
+          {
+            runSet: RUN_SET,
+            entryId: 'whiskers',
+            omissionAt: 3,
+            additionAt: 4,
+            omissionReason: 'the windowsill line is missing',
+            additionReason: 'the windowsill line was added',
+          },
+        ];
+
+        printRelocations({ pairs, },);
+
+        expect((printed.lines[0] ?? '').includes('claim pairs=2 slice pairs=1',),).toBe(true,);
       },
     },),
     it({
@@ -351,7 +389,8 @@ await describe({
         printRelocations({ pairs: [], },);
 
         expect(printed.lines.length,).toBe(1,);
-        expect((printed.lines[0] ?? '').includes('RELOCATION CANDIDATES (#107): 0',),).toBe(true,);
+        expect((printed.lines[0] ?? '').includes('RELOCATION CANDIDATES (#107): claim pairs=0 slice pairs=0',),)
+          .toBe(true,);
       },
     },),
   ],

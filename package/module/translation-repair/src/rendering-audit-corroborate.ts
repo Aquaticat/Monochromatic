@@ -2,6 +2,7 @@ import type {
   ScreenedFinding,
   SideReading,
 } from './rendering-audit-screen.ts';
+import { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 import type { RenderingAuditCategory, } from './rendering-audit-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -316,7 +317,9 @@ export function corroborate(
       const [first,] = members;
 
       if (first === undefined)
-        throw new Error('a defect group with no members cannot occur, since groups are built from claims',);
+        throw new RenderingAuditInvariantError({
+          invariant: 'a defect group with no members cannot occur, since groups are built from claims',
+        },);
 
       return {
         category: first.finding
@@ -550,7 +553,9 @@ export function corroborateByOverlap(
       const [first,] = members;
 
       if (first === undefined)
-        throw new Error('an overlap group with no members cannot occur, since groups are grown from a seed',);
+        throw new RenderingAuditInvariantError({
+          invariant: 'an overlap group with no members cannot occur, since groups are grown from a seed',
+        },);
 
       return {
         category: first.finding

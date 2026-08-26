@@ -124,15 +124,23 @@ export type SettledAuditRow = {
   /**
    * What this audit was actually shown, by digest.
    *
-   * Carries NO TEXT. The corpus is licensed material that leaves this machine
-   * only for the production provider, and a run file is read, quoted and pasted
-   * freely. A digest answers the one question a reading needs, which is whether
-   * two rows saw identical characters, and answers nothing else.
+   * THIS FIELD carries no text: a digest answers the one question a repeat
+   * reading needs, which is whether two rows saw identical characters, and
+   * answers nothing else. It is the only field on the row built to carry
+   * none; see `report` for what the row does carry.
    */
   readonly textIdentity: AuditedTextIdentity;
 
   /**
    * Everything the instrument said, WHOLE and uninterpreted.
+   *
+   * CARRIES DOCUMENT SPANS. Every screened finding holds `locator.text` and
+   * `focus.text` sliced from the original and from the rendering under audit,
+   * and every voice's `reason` is model prose about them, so a persisted run
+   * of this probe is corpus-bearing and the `#219` sanitization must treat
+   * the runs directory's `rendering-audit-settled` files as such. An earlier
+   * version of this note claimed the row carried no text; that was true of
+   * `textIdentity` and never of this field.
    *
    * NOT SUMMARISED INTO COUNTS, which the first two-subject buy was bought to
    * find out. Counts read `corroborated=0 agreed=0 near=1` over two voices

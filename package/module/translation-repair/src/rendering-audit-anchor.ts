@@ -2,6 +2,7 @@ import {
   collapseSoftLineBreaks,
   normalizePunctuation,
 } from './quote-normalize.ts';
+import { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 
 //region Rendering audit anchoring
 // Where in a document one claimed defect actually is, as an interval rather
@@ -124,7 +125,9 @@ function canonicalize({ text, }: { readonly text: string; },): string {
   // characters off, so the invariant is worth more than the comment it used to
   // be.
   if (folded.length !== text.length)
-    throw new Error('quote canonicalization changed the length, so no offset in it indexes the text',);
+    throw new RenderingAuditInvariantError({
+      invariant: 'quote canonicalization changed the length, so no offset in it indexes the text',
+    },);
 
   return folded;
 }

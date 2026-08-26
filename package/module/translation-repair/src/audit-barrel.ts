@@ -21,7 +21,22 @@ export {
   splitFor,
   type VoiceRate,
 } from './corpus-run/rendering-audit-settled-read.ts';
-export { auditRelocationPairs, } from './corpus-run/rendering-audit-settled-relocation.ts';
+export {
+  auditRelocationPairs,
+  distinctSlicePairs,
+} from './corpus-run/rendering-audit-settled-relocation.ts';
+export {
+  auditOne,
+  capped,
+  eligibleSubjects,
+  printPopulation,
+} from './corpus-run/rendering-audit-settled.ts';
+export {
+  newestRun,
+  printAcross,
+  readRunRows,
+} from './corpus-run/rendering-audit-settled-report.ts';
+export { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 export {
   type AuditRepeatPair,
   auditRepeatsAcross,

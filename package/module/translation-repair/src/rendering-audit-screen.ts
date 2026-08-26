@@ -2,6 +2,7 @@ import {
   type AnchoredSpan,
   anchorLocatedSpan,
 } from './rendering-audit-anchor.ts';
+import { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 import {
   CANDIDATE_ONLY_CATEGORIES,
   PAIRED_CATEGORIES,
@@ -174,7 +175,9 @@ function quotesRequired(
   if (!PAIRED_CATEGORIES.some(function names(one,): boolean {
     return one === category;
   },))
-    throw new Error(`rendering audit category ${category} belongs to no anchoring rule`,);
+    throw new RenderingAuditInvariantError({
+      invariant: `rendering audit category ${category} belongs to no anchoring rule`,
+    },);
 
   return {
     needsSource: true,
@@ -248,6 +251,52 @@ function readSide(
 }
 
 /**
+ * Characters of a model-supplied word a drop reason may repeat.
+ */
+const DROPPED_WORD_LIMIT = 32;
+
+/**
+ * Bounds a word a model supplied to what a drop reason needs.
+ *
+ * THE DIAGNOSTIC EXISTS TO SAY WHICH WORD, not to store prose. A drop reason
+ * is persisted in every run row, and a model answering the category or verdict
+ * field with a sentence would put that sentence in the run file whole. One
+ * token, cut at a fixed length, names the word and carries nothing after it.
+ *
+ * @param word - category or verdict as the model wrote it
+ *
+ * @returns Its first whitespace-delimited token, at most the limit long
+ *
+ * @example
+ * ```ts
+ * const named = boundedWord({ word: 'altered whiskers, and more', },);
+ * ```
+ */
+function boundedWord({ word, }: { readonly word: string; },): string {
+  /**
+   * Tokens, after folding newlines and tabs to spaces so a line break cannot
+   * carry a second one through.
+   */
+  const tokens = word
+    .split('\n',)
+    .join(' ',)
+    .split('\t',)
+    .join(' ',)
+    .trim()
+    .split(' ',);
+
+  /**
+   * First of them, empty for an empty word.
+   */
+  const token = tokens[0] ?? '';
+
+  return token.slice(
+    0,
+    DROPPED_WORD_LIMIT,
+  );
+}
+
+/**
  * Screens one claimed finding against both texts.
  *
  * @param finding - claim as the auditor sent it
@@ -285,7 +334,7 @@ function screenFinding(
   },);
 
   if (category === undefined)
-    return { dropped: `unknown-category (${finding.category})`, };
+    return { dropped: `unknown-category (${boundedWord({ word: finding.category, },)})`, };
 
   /**
    * Which sides this category rests on.
@@ -390,7 +439,7 @@ export function screenRenderingAudit(
       return !('dropped' in one);
     },),
     dropped: [
-      ...((cast === undefined) ? [`unknown-verdict (${report.verdict})`,] : []),
+      ...((cast === undefined) ? [`unknown-verdict (${boundedWord({ word: report.verdict, },)})`,] : []),
       ...screened
         .filter(function fell(one,): one is { readonly dropped: string; } {
           return 'dropped' in one;

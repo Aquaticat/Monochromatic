@@ -21,6 +21,7 @@ import {
 import {
   rateByVoice,
   auditRelocationPairs,
+  distinctSlicePairs,
   type SettledAuditRow,
   splitFor,
 } from '../../dist/final/node/index.mjs';
@@ -346,6 +347,121 @@ await describe({
         const rates = rateByVoice({ rows, },);
         expect(rates.length,).toBe(1,);
         expect(rates[0]?.modelId,).toBe('hf:cat/Tabby-1',);
+        expect(rates[0]?.asked,).toBe(1,);
+        expect(rates[0]?.answered,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS A LOST VOICE AGAINST THE ROSTER the run recorded: asked is the subject count for '
+        + 'every member and answered is what arrived, so a member never heard is a row at zero '
+        + 'rather than an absence, because the run file says it was asked. The printed asked= '
+        + 'used to be answered, and per-model loss was unreadable from the report',
+      fn: async () => {
+        /**
+         * Two subjects; one voice answers both, one answers the first only,
+         * and one the roster names never answers.
+         */
+        const rows = [
+          rowFor({
+            runSet: 'first',
+            entryId: 'mittens',
+            sliceIndex: 0,
+            auditsArchiveText: false,
+            voices: [
+              voiceSaying({
+                modelId: 'hf:cat/Loud-1',
+                categories: ['omission',],
+                dropped: 0,
+              },),
+              voiceSaying({
+                modelId: 'hf:cat/Flaky-1',
+                categories: [],
+                dropped: 0,
+              },),
+            ],
+          },),
+          rowFor({
+            runSet: 'first',
+            entryId: 'mittens',
+            sliceIndex: 1,
+            auditsArchiveText: false,
+            voices: [voiceSaying({
+              modelId: 'hf:cat/Loud-1',
+              categories: [],
+              dropped: 0,
+            },),],
+          },),
+        ];
+
+        /**
+         * Rates over the recorded roster, in its order.
+         */
+        const rates = rateByVoice({
+          rows,
+          roster: [
+            'hf:cat/Loud-1',
+            'hf:cat/Flaky-1',
+            'hf:cat/Dark-1',
+          ],
+        },);
+
+        expect(rates.map(function named(rate,): string {
+          return rate.modelId;
+        },),).toEqual([
+          'hf:cat/Loud-1',
+          'hf:cat/Flaky-1',
+          'hf:cat/Dark-1',
+        ],);
+        expect(rates.map(function counted(rate,): readonly [number, number,] {
+          return [
+            rate.asked,
+            rate.answered,
+          ];
+        },),).toEqual([
+          [2, 2,],
+          [2, 1,],
+          [2, 0,],
+        ],);
+      },
+    },),
+
+    it({
+      name: 'APPENDS a voice the roster never listed after the roster, asked only where it answered, '
+        + 'since a run file that names a roster and then hears someone else is evidence about the '
+        + 'run rather than a reason to lose the rows',
+      fn: async () => {
+        /**
+         * One subject answered by a voice outside the recorded roster.
+         */
+        const rows = [rowFor({
+          runSet: 'first',
+          entryId: 'mittens',
+          sliceIndex: 0,
+          auditsArchiveText: false,
+          voices: [voiceSaying({
+            modelId: 'hf:cat/Stray-1',
+            categories: [],
+            dropped: 0,
+          },),],
+        },),];
+
+        /**
+         * Rates over a roster that names one member only.
+         */
+        const rates = rateByVoice({
+          rows,
+          roster: ['hf:cat/Loud-1',],
+        },);
+
+        expect(rates.map(function named(rate,): string {
+          return rate.modelId;
+        },),).toEqual([
+          'hf:cat/Loud-1',
+          'hf:cat/Stray-1',
+        ],);
+        expect(rates[1]?.asked,).toBe(1,);
+        expect(rates[1]?.answered,).toBe(1,);
       },
     },),
   ],
@@ -398,6 +514,61 @@ await describe({
         // the run it came from.
         expect(candidates[0]?.omissionReason,).toContain('omission',);
         expect(candidates[0]?.additionReason,).toContain('unsupported-addition',);
+        expect(distinctSlicePairs({ pairs: candidates, },),).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS CLAIM PAIRS AND SLICE PAIRS APART when several voices file on both slices: '
+        + 'three omissions beside two additions are six claim pairs over one pair of slices, and a '
+        + 'heading reading six would be quoted as six relocations',
+      fn: async () => {
+        /**
+         * Three voices calling one passage missing, two calling it invented
+         * next door.
+         */
+        const rows = [
+          rowFor({
+            runSet: 'first',
+            entryId: 'mittens',
+            sliceIndex: 3,
+            auditsArchiveText: true,
+            voices: [
+              'hf:cat/Tabby-1',
+              'hf:cat/Loud-1',
+              'hf:cat/Quiet-1',
+            ].map(function omitting(modelId,) {
+              return voiceSaying({
+                modelId,
+                categories: ['omission',],
+                dropped: 0,
+              },);
+            },),
+          },),
+          rowFor({
+            runSet: 'first',
+            entryId: 'mittens',
+            sliceIndex: 4,
+            auditsArchiveText: true,
+            voices: [
+              'hf:cat/Tabby-1',
+              'hf:cat/Loud-1',
+            ].map(function adding(modelId,) {
+              return voiceSaying({
+                modelId,
+                categories: ['unsupported-addition',],
+                dropped: 0,
+              },);
+            },),
+          },),
+        ];
+
+        /**
+         * Every claim pairing the rule names.
+         */
+        const candidates = auditRelocationPairs({ rows, },);
+        expect(candidates.length,).toBe(6,);
+        expect(distinctSlicePairs({ pairs: candidates, },),).toBe(1,);
       },
     },),
 

@@ -1,4 +1,5 @@
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
+import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import type { ArtifactSliceDelivery, } from './artifact-two-lane-vocabulary.ts';
 import {
@@ -246,7 +247,9 @@ export function subjectsOf(
       } = row;
 
       if (outcome.kind !== 'decided')
-        throw new Error(`slice ${row.sliceIndex} passed the decided filter and is not decided`,);
+        throw new RenderingAuditInvariantError({
+          invariant: `slice ${String(row.sliceIndex,)} passed the decided filter and is not decided`,
+        },);
 
       /**
        * What would stand at this slice.
@@ -258,9 +261,11 @@ export function subjectsOf(
        */
       const reading = readings.get(row.sliceIndex,);
       if (reading === undefined)
-        throw new Error(
-          `slice ${row.sliceIndex} was delivered by the translate lane and named by no comparison row`,
-        );
+        throw new RenderingAuditInvariantError({
+          invariant: `slice ${
+            String(row.sliceIndex,)
+          } was delivered by the translate lane and named by no comparison row`,
+        },);
 
       return {
         runSet,

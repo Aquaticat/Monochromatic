@@ -12,6 +12,7 @@ import {
 import { reportingRefusals, } from './cli-refusal.ts';
 import { readReportArguments, } from './rendering-audit-settled-args.ts';
 import { readRunJson, } from '../run-json-read.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { repeatBandOf, } from './rendering-audit-settled-band.ts';
 import {
   printBand,
@@ -61,25 +62,32 @@ const PROBE_NAME = 'rendering-audit-settled';
  * shape this module also writes would be two copies of one contract, and the
  * questions here are answered from a handful of fields.
  *
+ * Exported through the barrel for the built bundle's tests; `main` and
+ * `printAcross` are its callers.
+ *
+ * @internal
+ *
  * @param path - persisted run file
  *
- * @returns Rows as the probe wrote them, and the archive that run named
+ * @returns Rows as the probe wrote them, the archive that run named, and the
+ * roster it asked, empty for a run written before the roster was kept
  *
  * @throws {@link ArtifactParseError} when the file is not an object
  *
- * @throws {@link Error} when it carries no rows array, which means it is not a
- * run of this probe rather than that the run was quiet
+ * @throws {@link StatedRefusalError} when it carries no rows array, which
+ * means it is not a run of this probe rather than that the run was quiet
  *
  * @example
  * ```ts
- * const { rows, archiveDir, } = await readRunRows({ path, },);
+ * const { rows, archiveDir, roster, } = await readRunRows({ path, },);
  * ```
  */
-async function readRunRows(
+export async function readRunRows(
   { path, }: { readonly path: string; },
 ): Promise<{
   readonly rows: readonly SettledAuditRow[];
   readonly archiveDir: string;
+  readonly roster: readonly string[];
 }> {
   /**
    * Run as written.
@@ -94,7 +102,24 @@ async function readRunRows(
    */
   const rows: unknown = run.rows;
   if (!Array.isArray(rows,))
-    throw new Error(`${path} carries no rows array`,);
+    throw new StatedRefusalError({ says: `${path} carries no rows array`, },);
+
+  /**
+   * Roster the run asked, read tolerantly: the field was persisted from the
+   * first run of this probe, but a file that lacks it is still a run whose
+   * other readings all answer, and the voice rates then say only what the
+   * rows say.
+   */
+  const recordedRoster: unknown = run.roster;
+
+  /**
+   * Model ids the roster names, which is everything in it that is a string.
+   */
+  const roster = Array.isArray(recordedRoster,)
+    ? recordedRoster.filter(function isId(one: unknown,): one is string {
+      return (typeof one) === 'string';
+    },)
+    : [];
 
   /**
    * What that run was pointed at, in its own words.
@@ -115,6 +140,7 @@ async function readRunRows(
       value: subject.archiveDir,
       path: `${path}.subject.archiveDir`,
     },),
+    roster,
   };
 }
 
@@ -124,19 +150,24 @@ async function readRunRows(
  * Names sort lexically by the instant they carry, so the last name is the
  * newest run without reading a single file.
  *
+ * Exported through the barrel for the built bundle's tests; `main` is its
+ * only caller.
+ *
+ * @internal
+ *
  * @param runsDir - resolved runs directory
  *
  * @returns Path of the newest run
  *
- * @throws {@link Error} when the probe has never run, since reporting nothing
- * would look exactly like reporting a clean run
+ * @throws {@link StatedRefusalError} when the probe has never run, since
+ * reporting nothing would look exactly like reporting a clean run
  *
  * @example
  * ```ts
  * const path = await newestRun({ runsDir, },);
  * ```
  */
-async function newestRun({ runsDir, }: { readonly runsDir: string; },): Promise<string> {
+export async function newestRun({ runsDir, }: { readonly runsDir: string; },): Promise<string> {
   /**
    * Where runs of this probe collect.
    */
@@ -159,7 +190,7 @@ async function newestRun({ runsDir, }: { readonly runsDir: string; },): Promise<
    */
   const newest = kept.at(-1,);
   if (newest === undefined)
-    throw new Error(`${probeDir} holds no run of ${PROBE_NAME}`,);
+    throw new StatedRefusalError({ says: `${probeDir} holds no run of ${PROBE_NAME}`, },);
   return join(
     probeDir,
     newest,
@@ -189,6 +220,11 @@ function slotsPhrase(
 /**
  * Pairs this run against an earlier one and prints the spread.
  *
+ * Exported through the barrel for the built bundle's tests; `main` is its
+ * only caller.
+ *
+ * @internal
+ *
  * @param rows - rows of the run being reported
  *
  * @param against - path of the run to pair against
@@ -198,7 +234,7 @@ function slotsPhrase(
  * await printAcross({ rows, against, },);
  * ```
  */
-async function printAcross(
+export async function printAcross(
   {
     rows,
     against,
@@ -283,6 +319,7 @@ async function main(): Promise<void> {
   const {
     rows,
     archiveDir,
+    roster,
   } = await readRunRows({ path, },);
   console.log(`${path}\n${String(rows.length,)} subjects\n`,);
 
@@ -301,7 +338,12 @@ async function main(): Promise<void> {
   },);
 
   printRelations({ tallies: relationTallyOf({ rows, },), },);
-  printVoices({ rates: rateByVoice({ rows, },), },);
+  printVoices({
+    rates: rateByVoice({
+      rows,
+      roster,
+    },),
+  },);
   printRelocations({ pairs: auditRelocationPairs({ rows, },), },);
   printBand({
     band: repeatBandOf({ pairs: auditRepeatsWithin({ rows, },), },),

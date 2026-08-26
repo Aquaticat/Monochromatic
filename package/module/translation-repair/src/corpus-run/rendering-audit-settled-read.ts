@@ -77,7 +77,7 @@ export type AudienceSplit = {
  *
  * @example
  * ```ts
- * const rate: VoiceRate = { modelId: 'hf:cat/Tabby-1', asked: 40, spoke: 12, claims: 19, dropped: 2, };
+ * const rate: VoiceRate = { modelId: 'hf:cat/Tabby-1', asked: 40, answered: 38, spoke: 12, claims: 19, dropped: 2, };
  * ```
  */
 export type VoiceRate = {
@@ -87,9 +87,18 @@ export type VoiceRate = {
   readonly modelId: string;
 
   /**
-   * Subjects it answered on.
+   * Subjects the run put in front of this auditor: every subject of the run
+   * for a member of the roster the run recorded, and the subjects it answered
+   * on where the run recorded no roster and nothing more can be said.
    */
   readonly asked: number;
+
+  /**
+   * Subjects where this auditor's answer arrived, so `asked - answered` is
+   * how often the roster lost it. Printed apart from `asked` because the two
+   * used to be one number, and per-model loss was unreadable from the report.
+   */
+  readonly answered: number;
 
   /**
    * Subjects where it claimed at least one defect that anchored.
@@ -360,33 +369,59 @@ export function splitFor(
 /**
  * Reads how often each auditor thought a rendering was worth a claim.
  *
- * ONE ROW PER MODEL THAT ANSWERED AT LEAST ONCE, rather than per configured
- * model. A model that answered nothing has no rate to report, and inventing a
- * zero for it would say it was asked and stayed quiet, which is a different
- * claim from never having been reached.
+ * ONE ROW PER ROSTER MEMBER when the run recorded its roster, in roster order,
+ * so a member the roster lost on every subject is a row at zero rather than an
+ * absence: the run file says it was asked, and a reader of `#77`-class
+ * questions needs the loss on the page. Voices heard outside that roster are
+ * appended in first-seen order. Where the run recorded no roster, which every
+ * run written before the field existed did, one row per voice heard is all
+ * that can honestly be said, and `asked` equals `answered` there; inventing a
+ * zero for a name nobody recorded would claim it was asked from no evidence.
  *
  * @param rows - every audited slice
  *
- * @returns One rate per auditor, in first-seen order
+ * @param roster - models the run asked, in roster order, empty where the run
+ * recorded none
+ *
+ * @returns One rate per auditor
  *
  * @example
  * ```ts
- * const rates = rateByVoice({ rows, },);
+ * const rates = rateByVoice({ rows, roster, },);
  * ```
  */
 export function rateByVoice(
-  { rows, }: { readonly rows: readonly SettledAuditRow[]; },
+  {
+    rows,
+    roster = [],
+  }: {
+    readonly rows: readonly SettledAuditRow[];
+    readonly roster?: readonly string[];
+  },
 ): readonly VoiceRate[] {
   /**
-   * Running tallies, keyed by model, built in one pass so first-seen order is
-   * preserved by the map itself.
+   * Running tallies, keyed by model, seeded from the roster in its order and
+   * then filled in one pass, so the map's own order is roster first and
+   * first-seen after.
    */
   const byModel = new Map<string, {
-    asked: number;
+    answered: number;
     spoke: number;
     claims: number;
     dropped: number;
   }>();
+
+  roster.forEach(function seat(modelId,): void {
+    byModel.set(
+      modelId,
+      {
+        answered: 0,
+        spoke: 0,
+        claims: 0,
+        dropped: 0,
+      },
+    );
+  },);
 
   rows.forEach(function tallySubject(row,): void {
     /**
@@ -406,10 +441,11 @@ export function rateByVoice(
       } = voice;
 
       /**
-       * This model's running tally, started when it first answers.
+       * This model's running tally, started when it first answers unless the
+       * roster seated it already.
        */
       const running = byModel.get(modelId,) ?? {
-        asked: 0,
+        answered: 0,
         spoke: 0,
         claims: 0,
         dropped: 0,
@@ -417,7 +453,7 @@ export function rateByVoice(
       byModel.set(
         modelId,
         {
-          asked: running.asked + 1,
+          answered: running.answered + 1,
           spoke: running.spoke + ((findings.length > 0) ? 1 : 0),
           claims: running.claims + findings.length,
           dropped: running.dropped + dropped.length,
@@ -429,7 +465,10 @@ export function rateByVoice(
   return [...byModel.entries(),].map(function asRate([modelId, tally,],): VoiceRate {
     return {
       modelId,
-      asked: tally.asked,
+      // A roster member was put in front of every subject; a voice the run
+      // never listed can only be said to have been asked where it answered.
+      asked: roster.includes(modelId,) ? rows.length : tally.answered,
+      answered: tally.answered,
       spoke: tally.spoke,
       claims: tally.claims,
       dropped: tally.dropped,

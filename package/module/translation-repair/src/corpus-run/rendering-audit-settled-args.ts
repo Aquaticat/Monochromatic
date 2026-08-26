@@ -163,7 +163,8 @@ function valueAfter(
  *
  * @returns Cap as asked, or every subject when none was asked for
  *
- * @throws StatedRefusalError when a cap was named that is not a whole number
+ * @throws StatedRefusalError when a cap was named that is not a whole number,
+ * or is below zero
  *
  * @example
  * ```ts
@@ -191,6 +192,14 @@ function readCap(
   if (!Number.isFinite(asked,))
     throw new StatedRefusalError({
       says: `--cap needs a whole number, and ${capText.value} is not one`,
+    },);
+
+  // A NEGATIVE CAP IS REFUSED rather than read as "every subject". `capped`
+  // spells "every subject" with the internal `NO_CAP` sentinel, and letting a
+  // typed sign reach it meant `--cap -3` audited the whole archive in silence.
+  if (asked < 0)
+    throw new StatedRefusalError({
+      says: `--cap cannot be below zero, and ${capText.value} is; leave it off to audit every subject`,
     },);
 
   return asked;

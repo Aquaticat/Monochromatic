@@ -5,6 +5,7 @@ import type {
   VoiceRate,
 } from './rendering-audit-settled-read.ts';
 import type { PageRelationTally, } from './rendering-audit-settled-relation.ts';
+import { distinctSlicePairs, } from './rendering-audit-settled-relocation.ts';
 
 //region Settled audit printing
 // How a persisted run reads on a terminal.
@@ -113,24 +114,36 @@ export function printVoices({ rates, }: { readonly rates: readonly VoiceRate[]; 
     const {
       modelId,
       asked,
+      answered,
       spoke,
       claims,
       dropped,
     } = rate;
 
+    /**
+     * Subjects the roster lost this auditor on, which is the number a
+     * `#77`-class question reads and the one line used to hide.
+     */
+    const lost = asked - answered;
+
     console.log(
       `  ${modelId.padEnd(
         MODEL_COLUMN,
         ' ',
-      )} asked=${String(asked,)} spoke on=${String(spoke,)} claims=${
-        String(claims,)
-      } dropped=${String(dropped,)}`,
+      )} asked=${String(asked,)} answered=${String(answered,)} lost=${String(lost,)} spoke on=${
+        String(spoke,)
+      } claims=${String(claims,)} dropped=${String(dropped,)}`,
     );
   },);
 }
 
 /**
  * Prints the omission and addition pairs `#107` says are one relocation.
+ *
+ * TWO COUNTS IN THE HEADING, because the pairs are per claim: three voices
+ * each filing one omission beside two each filing one addition are six claim
+ * pairs over one pair of slices, and a heading saying `6` would be quoted as
+ * six relocations. The slice-pair count is the one a reader means.
  *
  * @param pairs - candidate relocations
  *
@@ -142,7 +155,11 @@ export function printVoices({ rates, }: { readonly rates: readonly VoiceRate[]; 
 export function printRelocations(
   { pairs, }: { readonly pairs: readonly AuditRelocationPair[]; },
 ): void {
-  console.log(`\nRELOCATION CANDIDATES (#107): ${String(pairs.length,)}`,);
+  console.log(
+    `\nRELOCATION CANDIDATES (#107): claim pairs=${String(pairs.length,)} slice pairs=${
+      String(distinctSlicePairs({ pairs, },),)
+    }`,
+  );
   pairs.forEach(function printPair(pair,): void {
     console.log(
       `  ${pair.runSet}/${pair.entryId}  omission at ${String(pair.omissionAt,)} <-> addition at ${

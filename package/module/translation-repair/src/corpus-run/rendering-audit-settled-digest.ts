@@ -9,12 +9,12 @@ import type {
 // Says whether two audit rows were shown the same characters, without keeping
 // the characters.
 //
-// WHY A DIGEST AND NOT THE TEXT. The corpus is licensed material. It goes to
-// the production provider, which is zero-retention, and nowhere else; run files
-// are read, grepped, quoted into docs and pasted into issues, so a run file is
-// the wrong place for it. The only question a repeat reading asks of the text
-// is whether two rows saw the same one, and a digest answers exactly that and
-// nothing more.
+// WHY A DIGEST AND NOT THE TEXT. The only question a repeat reading asks of
+// the text is whether two rows saw the same one, and a digest answers exactly
+// that and nothing more, so THIS FIELD carries none. That is a claim about the
+// identity field alone: the `report` beside it on the row persists document
+// spans and model prose, which the row module says, and a run file of this
+// probe is therefore corpus-bearing whatever this field holds.
 //
 // WHY BOTH SIDES. A repeat is only a repeat when the ORIGINAL and the RENDERING
 // both match. Two artifacts of one entry can carry identical source at a slice

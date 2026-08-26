@@ -1,7 +1,9 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import type { SyntheticClient, } from '../chat-contract.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
 import { readRunnerClosure, } from './runner-closure.ts';
@@ -77,17 +79,31 @@ const PROBE_NAME = 'rendering-audit-settled';
 /**
  * Audits one slice and keeps what the roster said, whole.
  *
+ * Exported through the barrel so the built bundle's tests can hand it a
+ * scripted client; `main` is its only caller.
+ *
+ * @internal
+ *
  * @param subject - slice under audit, with the identity its producing run had
+ *
+ * @param client - roster client, built once per run by the caller so every
+ * subject counts into one seat tally
  *
  * @returns One row: provenance, plus the report uninterpreted
  *
  * @example
  * ```ts
- * const row = await auditOne({ subject, },);
+ * const row = await auditOne({ subject, client, },);
  * ```
  */
-async function auditOne(
-  { subject, }: { readonly subject: SettledAuditSubject; },
+export async function auditOne(
+  {
+    subject,
+    client,
+  }: {
+    readonly subject: SettledAuditSubject;
+    readonly client: SyntheticClient;
+  },
 ): Promise<SettledAuditRow> {
   /**
    * Logger tagged for this slice, so a long run's stream says where it is.
@@ -119,7 +135,7 @@ async function auditOne(
    * a fabrication.
    */
   const report = await runRenderingAudit({
-    client: createRunClient(),
+    client,
     subject: {
       sourceText,
       candidateText,
@@ -159,6 +175,11 @@ async function auditOne(
  * `--only` left 30 selectable overstates what was skipped and understates the
  * coverage bought, and the line alone gives a reader no way to tell.
  *
+ * Exported through the barrel for the built bundle's tests; `main` is its
+ * only caller.
+ *
+ * @internal
+ *
  * @param readings - every artifact the archive holds
  *
  * @param onlyIds - entries to keep, empty for all
@@ -170,7 +191,7 @@ async function auditOne(
  * const eligible = eligibleSubjects({ readings, onlyIds, },);
  * ```
  */
-function eligibleSubjects(
+export function eligibleSubjects(
   {
     readings,
     onlyIds,
@@ -193,6 +214,12 @@ function eligibleSubjects(
 /**
  * Takes the prefix a cap allows.
  *
+ * Exported through the barrel for the built bundle's tests; `main` is its
+ * only caller. A negative cap reaches here only as the args module's own
+ * "every subject" sentinel, since `readCap` refuses a typed one.
+ *
+ * @internal
+ *
  * @param eligible - subjects the filter left, in a stable order
  *
  * @param cap - how many to buy, negative for all
@@ -204,7 +231,7 @@ function eligibleSubjects(
  * const buying = capped({ eligible, cap, },);
  * ```
  */
-function capped(
+export function capped(
   {
     eligible,
     cap,
@@ -224,6 +251,11 @@ function capped(
 /**
  * Reports what the archive holds, before anything is bought.
  *
+ * Exported through the barrel for the built bundle's tests; `main` is its
+ * only caller.
+ *
+ * @internal
+ *
  * @param readings - every artifact the archive holds
  *
  * @example
@@ -231,7 +263,7 @@ function capped(
  * printPopulation({ readings, },);
  * ```
  */
-function printPopulation(
+export function printPopulation(
   { readings, }: { readonly readings: readonly SettledArtifactReading[]; },
 ): void {
   readings.forEach(function describe(reading,): void {
@@ -381,8 +413,9 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
 /**
  * Reads the archive, audits what was asked for, and keeps the answers.
  *
- * @throws {@link Error} when the archive holds nothing to audit, which means
- * the run was pointed somewhere wrong rather than that everything is clean
+ * @throws {@link StatedRefusalError} when the archive holds nothing to audit,
+ * which means the run was pointed somewhere wrong rather than that everything
+ * is clean
  *
  * @example
  * ```ts
@@ -433,7 +466,7 @@ async function main(): Promise<void> {
   // pointed somewhere wrong, and a population report followed by `BUYING 0 of 0`
   // reads like a clean archive right up until the throw.
   if (readings.length === 0)
-    throw new Error(`no artifacts under ${asked.archiveDir}`,);
+    throw new StatedRefusalError({ says: `no artifacts under ${asked.archiveDir}`, },);
 
   printPopulation({ readings, },);
 
@@ -464,14 +497,27 @@ async function main(): Promise<void> {
    * long run offers a watcher.
    */
   const rows: SettledAuditRow[] = [];
-  for (const subject of buying) {
+  if (buying.length > 0) {
     /**
-     * What the roster said about this one.
+     * One client for the whole run, built here rather than per subject: a
+     * client carries the provider seats, and `#235`'s seat report reads one
+     * run-wide tally, so one client is what a run is. Built only once
+     * something is bought, so `--cap 0`, the wiring check that reads the
+     * archive and asks nobody, still needs no key.
      */
-    // oxlint-disable-next-line no-await-in-loop -- sequential by design: every subject shares one roster, and concurrent asks would interleave the progress stream a long run exists to be watched through
-    const row = await auditOne({ subject, },);
-    rows.push(row,);
-    printRow({ row, },);
+    const client = createRunClient();
+    for (const subject of buying) {
+      /**
+       * What the roster said about this one.
+       */
+      // oxlint-disable-next-line no-await-in-loop -- sequential by design: every subject shares one roster, and concurrent asks would interleave the progress stream a long run exists to be watched through
+      const row = await auditOne({
+        subject,
+        client,
+      },);
+      rows.push(row,);
+      printRow({ row, },);
+    }
   }
 
   /**

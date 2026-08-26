@@ -232,6 +232,8 @@ const NAMED_PARTS: Record<string, string> = {
  */
 const WITHHELD: Record<string, string> = {
   ArtifactProvenanceError: 'expected and observed carry whatever field disagreed, which may be text',
+  RenderingAuditInvariantError: 'forwards each site\'s own sentence, which names indexes and vocabulary '
+    + 'words and never text; unreachable by construction, so the boundary never has to print it',
   StreamCutShortError: 'the abort reason reaches the message through String of an unknown value',
   SyntheticHttpError: 'the message carries an excerpt of the provider response body, on purpose',
 };

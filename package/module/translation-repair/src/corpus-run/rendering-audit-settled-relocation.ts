@@ -190,4 +190,36 @@ export function auditRelocationPairs(
   },);
 }
 
+/**
+ * Counts the distinct pairs of slices the candidates sit on.
+ *
+ * THE NUMBER A READER MEANS BY "relocations". `auditRelocationPairs` pairs
+ * claims, one per omission finding and addition finding across every voice, so
+ * one moved passage that three voices noticed on each side is nine candidates.
+ * Keyed on the run set as well as the entry, for the reason the pairing is: two
+ * runs of one entry write the same indices.
+ *
+ * @param pairs - candidates as paired
+ *
+ * @returns How many distinct (run set, entry, omission slice, addition slice)
+ * tuples they cover
+ *
+ * @example
+ * ```ts
+ * const slicePairs = distinctSlicePairs({ pairs, },);
+ * ```
+ */
+export function distinctSlicePairs(
+  { pairs, }: { readonly pairs: readonly AuditRelocationPair[]; },
+): number {
+  return new Set(pairs.map(function keyOf(pair,): string {
+    return [
+      pair.runSet,
+      pair.entryId,
+      String(pair.omissionAt,),
+      String(pair.additionAt,),
+    ].join(SLOT_SEPARATOR,);
+  },),).size;
+}
+
 //endregion Relocation pairing

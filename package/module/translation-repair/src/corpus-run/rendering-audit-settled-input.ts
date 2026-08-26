@@ -15,6 +15,7 @@ import {
 } from '../corpus-source.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import { verifyArtifactAgainstPreparation, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
@@ -387,7 +388,7 @@ export async function readArtifactSubjects(
  *
  * @returns Locations sorted by run set then file
  *
- * @throws {@link Error} when artifacts sit at both levels
+ * @throws {@link StatedRefusalError} when artifacts sit at both levels
  *
  * @example
  * ```ts
@@ -440,13 +441,16 @@ async function locateSettledArtifacts(
     },)
     .toSorted();
 
+  // STATED, NOT FAULTED: the archive is the operator's, the path is what they
+  // typed, and the remedy is theirs, so `reportingRefusals` prints this line
+  // and exits 6 rather than printing frames for a bug that is not one.
   if ((loose.length > 0) && (runSets.length > 0))
-    throw new Error(
-      `${archiveDir} carries artifacts at its root AND in subdirectories`
+    throw new StatedRefusalError({
+      says: `${archiveDir} carries artifacts at its root AND in subdirectories`
         + ` (${String(loose.length,)} loose, ${String(runSets.length,)} run sets).`
         + ` Reading one and ignoring the other would report a smaller population than`
         + ` the archive holds. Move them together, then re-run.`,
-    );
+    },);
 
   if (loose.length > 0)
     return loose.map(function atRoot(artifactFile,): ArtifactLocation {

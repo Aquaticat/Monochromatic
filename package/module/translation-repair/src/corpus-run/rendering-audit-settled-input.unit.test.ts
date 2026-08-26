@@ -1168,6 +1168,9 @@ await describe({
         );
 
         expect(refusal.includes('at its root AND in subdirectories',),).toBe(true,);
+        // STATED, so the CLI boundary prints the line and exits 6 rather than
+        // printing frames for a bug that is not one.
+        expect(refusal.startsWith('StatedRefusalError:',),).toBe(true,);
       },
     },),
   ],
