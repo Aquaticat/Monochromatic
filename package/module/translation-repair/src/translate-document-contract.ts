@@ -53,6 +53,11 @@ import type { SliceSelection, } from './slice-selection.ts';
  * slice settled under version 4 may have shipped the loss of one of those and
  * would report itself decided. The widening loses none of the forms the old
  * comparison found, so no cached slice can be re-decided the other way.
+ *
+ * VERSION 6, on 2026-08-22 (`973f7b47d`), because the verse rule reached the
+ * judges' sheet in both lanes. A slice judged before it could have ranked a
+ * rendering the rule places lower, so every slice settled under version 5 is
+ * re-judged; nothing about the record's shape or key changed.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 6;
 

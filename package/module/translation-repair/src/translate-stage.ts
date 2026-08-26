@@ -28,9 +28,11 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // policy in it is anchored to an edit bounded by an envelope some accepted
 // issue named, and a whole-slice replacement has none.
 //
-// WHAT THIS STAGE STILL DOES NOT DO: check declared names, which needs the
-// identity block parsed rather than passed through, and check anything that
-// crosses a slice boundary, which is `#92`.
+// DECLARED NAMES ARE CHECKED ONE LEVEL UP, in `translate-slice.ts`
+// (`findDroppedDeclaredNames`), against the forms preparation parsed from the
+// front matter; this note once said the check was missing, from before it
+// existed. What this stage still does not do is check anything that crosses a
+// slice boundary, which is `#92`.
 
 
 /**
