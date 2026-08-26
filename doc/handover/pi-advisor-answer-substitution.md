@@ -662,11 +662,62 @@ It does not enforce candidate ownership,
 and the exact incident remains representable.
 Prompt wording alone is therefore insufficient.
 
-### Current design direction
+### Independent expressive-design review
 
-Candidate A is the compatible foundation.
-Candidate B is a possible defense-in-depth layer only after behavioral evaluation.
-Candidate C is retained as the lowest-protection baseline.
+Three independent reviews evaluated the corrected requirement.
+They agreed on the compatibility boundary:
+full prose permits both rich review and answer-like passages,
+so no deterministic semantic classifier follows from syntax alone.
+
+`openai-codex/gpt-5.6-terra` found that Candidate A's inline `artifact.content` is not provenance.
+It is another same-call string supplied by the primary model.
+Its recommended correction is a two-phase protocol:
+
+1. Persist unrestricted artifact and criteria in an immutable checkpoint with primary-assistant provenance.
+2. Complete that tool interaction before Advisor dispatch.
+3. Invoke Advisor later using only the opaque checkpoint ID and optional model routing.
+4. Return unrestricted review text associated with that checkpoint.
+
+This closes the live task-instruction channel at the review call while preserving both natural-language inputs at checkpoint time.
+It proves sequence and provenance,
+not substantive authorship.
+
+`synthetic/hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` ranked the artifact checkpoint ahead of a
+blocking adjudicator.
+Both reject the exact no-artifact incident,
+but only the adjudicator introduces false positives that can withhold valid expressive reviews.
+
+`synthetic/hf:Qwen/Qwen3.6-27B` stressed that ordering is not semantic prevention and identified additional architectures:
+
+- blind review that withholds the original objective;
+- dual-context review that sends only artifact and evidence;
+- consumer-boundary reconciliation before primary synthesis;
+- claim decomposition that makes ungrounded review additions observable.
+
+It also identified two defects in the initial Candidate A sketch:
+`stage: 'approach' | 'result'` excludes partial drafts,
+comparisons,
+diagnoses,
+and other valid artifacts;
+and same-call artifact submission does not establish prior ownership.
+
+### Revised design direction
+
+Replace Candidate A's inline object with a persisted checkpoint whose artifact and criteria are unrestricted strings.
+Do not require a closed stage enum.
+Advisor review accepts only checkpoint identity and model routing,
+then returns unrestricted prose unchanged.
+
+Add non-blocking shadow role adjudication only as measurement.
+A blocking gate remains undecided until a representative corpus demonstrates that it accepts rich answer-like corrections grounded
+in primary artifacts.
+Prompt-only framing remains the lowest-protection baseline.
+
+Blind and reduced-context review are not current recommendations because withholding objective or evidence removes review
+capabilities even though it leaves output vocabulary unrestricted.
+Claim decomposition is useful for some artifacts but not universal.
+Consumer reconciliation is complementary and needs a concrete enforcement seam before it can claim more than guidance.
+
 No output taxonomy,
 prose truncation,
 answer-like string filter,
