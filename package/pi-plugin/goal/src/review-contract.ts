@@ -21,7 +21,7 @@ import type {
 } from './completion-types.ts';
 
 /**
- * Forced reviewer tool name distinct from user-facing completion tool.
+ * Forced private reviewer tool name.
  */
 const GOAL_REVIEW_TOOL_NAME = 'submit_goal_review';
 
