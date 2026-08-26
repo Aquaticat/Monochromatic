@@ -16,7 +16,7 @@ A read-only `evtest` query then found `KEY_ESC` pressed only on `ydotoold virtua
 Restarting the user ydotool daemon recreated that device with no active keys.
 
 Background and source analysis are in
-[`doc/troubleshooting/ghostty-escape-keybind-consumption.md`](../troubleshooting/ghostty-escape-keybind-consumption.md).
+[the ydotool interruption diagnosis](../troubleshooting/ydotool-interrupted-key-release.md).
 
 ## Setup
 
