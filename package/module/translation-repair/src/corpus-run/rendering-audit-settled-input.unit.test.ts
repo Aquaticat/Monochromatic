@@ -382,23 +382,43 @@ function replacedFirstSlice(
         .text;
 
       /**
-       * Wording the lane decided on, which differs only at the first slice.
+       * Whether the archive holds wording here at all.
+       *
+       * A PAIRED PREPARATION LEAVES INSERTIONS: a section the pairing did not
+       * claim is placed as an insertion slice whose archive wording is absent,
+       * and the builder refuses a row calling that wording present. Such a
+       * slice ships fresh wording, as the lanes do.
        */
-      const acceptedText = position === 0 ? `${incumbentText} It purrs.` : incumbentText;
+      const absent = slice.target
+        .kind === 'insertion';
+
+      /**
+       * Whether this row ships a replacement: every insertion, and the first
+       * slice.
+       */
+      const replaced = absent || (position === 0);
+
+      /**
+       * Wording the lane decided on, which differs at the first slice and at
+       * every insertion.
+       */
+      const acceptedText = absent
+        ? 'The cat has been given a line.'
+        : ((position === 0) ? `${incumbentText} It purrs.` : incumbentText);
 
       return {
         sliceIndex: slice.target
           .sliceIndex,
         sourceText: slice.source
           .text,
-        incumbentKind: 'present',
+        incumbentKind: absent ? 'absent' : 'present',
         incumbentText,
         outcome: {
           kind: 'decided',
           acceptedText,
         },
         shippedText: acceptedText,
-        delivery: position === 0
+        delivery: replaced
           ? { kind: 'replacement-shipped', }
           : { kind: 'incumbent-retained', },
       };
@@ -476,12 +496,14 @@ async function writeArtifact(
     prepared,
     corpusSha,
     entryId,
+    strip = [],
   }: {
     readonly archiveDir: string;
     readonly runSet: string;
     readonly prepared: PreparedDocumentPair;
     readonly corpusSha: string;
     readonly entryId: string;
+    readonly strip?: readonly string[];
   },
 ): Promise<void> {
   /**
@@ -530,24 +552,48 @@ async function writeArtifact(
     dir,
     { recursive: true, },
   );
+  /**
+   * Artifact as the builder writes it, in its serialized form: what a reader
+   * holds is the bytes a file carries, and a clone would keep things JSON drops.
+   */
+  const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
+    entryId,
+    tip: 'a'.repeat(40,),
+    pipelineDigest: DIGEST,
+    corpusSha,
+    callConfig: { perCallTimeoutMs: 600_000, },
+    durationMs: 1_234,
+    prepared,
+    lanes,
+    laneSelection: { kind: 'pending-human-decision', },
+    consolidation: { kind: 'not-run', },
+  },),);
+
+  /**
+   * Those bytes read back.
+   */
+  const written = JSON.parse(serialized,) as Record<string, unknown>;
+
+  /**
+   * Preparation record with the named keys removed, which is how a file
+   * written before those fields existed looks to a reader.
+   */
+  const preparation = Object.fromEntries(
+    Object.entries(written.preparation as Record<string, unknown>,)
+      .filter(function kept([key,],): boolean {
+        return !strip.includes(key,);
+      },),
+  );
   await writeFile(
     join(
       dir,
       `${entryId}.json`,
     ),
     JSON.stringify(
-      buildSettledTwoLaneArtifact({
-        entryId,
-        tip: 'a'.repeat(40,),
-        pipelineDigest: DIGEST,
-        corpusSha,
-        callConfig: { perCallTimeoutMs: 600_000, },
-        durationMs: 1_234,
-        prepared,
-        lanes,
-        laneSelection: { kind: 'pending-human-decision', },
-        consolidation: { kind: 'not-run', },
-      },),
+      {
+        ...written,
+        preparation,
+      },
       undefined,
       2,
     ),
@@ -800,12 +846,16 @@ await describe({
 
         // Written over a DIFFERENT pair than the one the entry id resolves to,
         // which is what a moved slicing looks like from the reader's side.
+        // WITH A COMPLETE RECIPE: the block rounds were asked and agreed
+        // nothing, so the file records both halves and a mismatch is a
+        // refusal rather than a gap.
         await writeArtifact({
           archiveDir: archive.archiveDir,
           runSet: 'first',
           prepared: prepareDocumentPair({
             sourceText: BARE_SOURCE_PAGE,
             targetText: BARE_TARGET_PAGE,
+            blockPairings: new Map(),
           },),
           corpusSha: corpus.commitSha,
           entryId: ENTRY_ID,
@@ -826,6 +876,110 @@ await describe({
           .kind,).toBe('refused',);
         // The rows still arrive. They are what the run actually judged.
         expect(reading.subjects.length > 0,).toBe(true,);
+      },
+    },),
+    it({
+      name:
+        'VERIFIES an artifact built over a roster-paired preparation, by rebuilding with the recipe it '
+        + 'records: the bare carve disagrees with it, and until the rebuild every such artifact read '
+        + 'refused, on exactly the artifacts the check exists for',
+      fn: async () => {
+        await using corpus = await makeCorpus();
+        await using archive = await makeArchive();
+
+        /**
+         * How a roster run carved it: sections crossed, block rounds asked.
+         */
+        const paired = prepareDocumentPair({
+          sourceText: SOURCE_PAGE,
+          targetText: TARGET_PAGE,
+          sectionPairing: [{
+            source: 0,
+            target: 1,
+          },],
+          blockPairings: new Map(),
+        },);
+
+        // POSITIVE CONTROL: the bare carve has to disagree, or this would be
+        // verifying an artifact the deterministic rebuild reproduces anyway.
+        expect(preparationIdentity({ prepared: paired, },),).not
+          .toBe(preparationIdentity({
+            prepared: prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },),
+          },),);
+        await writeArtifact({
+          archiveDir: archive.archiveDir,
+          runSet: 'first',
+          prepared: paired,
+          corpusSha: corpus.commitSha,
+          entryId: ENTRY_ID,
+        },);
+
+        /**
+         * Artifact read against the corpus with its own recipe.
+         */
+        const reading = await readArtifactSubjects({
+          archiveDir: archive.archiveDir,
+          runSetDir: 'first',
+          runSet: 'first',
+          artifactFile: `${ENTRY_ID}.json`,
+          cloneDir: corpus.cloneDir,
+        },);
+        expect(reading.verification
+          .kind,).toBe('verified',);
+      },
+    },),
+    it({
+      name:
+        'REPORTS a mismatch beside a missing recipe half as unverifiable rather than refused, naming the '
+        + 'halves the file lacks: the rebuild guessed those halves, so the disagreement may be the guess '
+        + 'rather than a moved slicing, which is the honest verdict for every artifact settled before '
+        + 'the recipe was recorded',
+      fn: async () => {
+        await using corpus = await makeCorpus();
+        await using archive = await makeArchive();
+
+        // Written over a DIFFERENT pair, as an old file: no recipe at all.
+        await writeArtifact({
+          archiveDir: archive.archiveDir,
+          runSet: 'first',
+          prepared: prepareDocumentPair({
+            sourceText: BARE_SOURCE_PAGE,
+            targetText: BARE_TARGET_PAGE,
+          },),
+          corpusSha: corpus.commitSha,
+          entryId: ENTRY_ID,
+          strip: [
+            'sectionPairing',
+            'blockPairing',
+          ],
+        },);
+
+        /**
+         * Artifact read against a pair it does not describe, with no recipe.
+         */
+        const reading = await readArtifactSubjects({
+          archiveDir: archive.archiveDir,
+          runSetDir: 'first',
+          runSet: 'first',
+          artifactFile: `${ENTRY_ID}.json`,
+          cloneDir: corpus.cloneDir,
+        },);
+
+        /**
+         * Verdict, narrowed for its fields.
+         */
+        const { verification, } = reading;
+        expect(verification.kind,).toBe('unverifiable',);
+        if (verification.kind !== 'unverifiable')
+          throw new Error('unreachable: the kind was checked',);
+        expect(verification.unrecorded,).toEqual([
+          'sectionPairing',
+          'blockPairing',
+        ],);
+        expect(verification.detail,).toContain('preparation.identity',);
       },
     },),
   ],

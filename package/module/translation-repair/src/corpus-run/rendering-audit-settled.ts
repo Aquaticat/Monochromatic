@@ -290,6 +290,14 @@ function printPopulation(
     );
     if (verification.kind === 'refused')
       console.log(`   REFUSED: ${verification.detail}`,);
+    if (verification.kind === 'unverifiable') {
+      /**
+       * Recipe halves the file lacks, which the rebuild had to guess.
+       */
+      const missing = verification.unrecorded
+        .join(', ',);
+      console.log(`   UNVERIFIABLE (records no ${missing}): ${verification.detail}`,);
+    }
   },);
 }
 

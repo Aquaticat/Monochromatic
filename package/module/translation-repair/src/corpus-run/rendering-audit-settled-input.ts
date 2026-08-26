@@ -13,15 +13,16 @@ import {
   type CorpusPin,
   readCorpusFile,
 } from '../corpus-source.ts';
-import {
-  prepareDocumentPair,
-  type PreparedDocumentPair,
-} from '../document-preparation.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { verifyArtifactAgainstPreparation, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
+import {
+  type RebuiltPreparation,
+  rebuildPreparation,
+  type RecipeHalf,
+} from './artifact-two-lane-rebuild.ts';
 import {
   identityOf,
   type SettledAuditSubject,
@@ -60,10 +61,25 @@ import {
 //     the recorded preparation identity describes these two documents, since
 //     the artifact stores measurements of the pair rather than the pair.
 //
+// RE-PREPARED WITH THE RECIPE THE ARTIFACT RECORDS, through
+// `rebuildPreparation`, never with the bare deterministic carve. The pass
+// carves through the roster shell, whose section and block rounds move slices,
+// so a bare re-preparation disagreed with every roster-paired artifact and the
+// provenance verdict read `refused` on exactly the artifacts it existed to
+// verify. An artifact that records only part of the recipe is rebuilt with the
+// deterministic default for the rest, and the gap is named.
+//
 // A REFUSAL IS A FINDING, NOT A STOP. Verification answering no would say the
 // slicing moved under a settled artifact, which is worth recording loudly; it
 // does not make that artifact's rows unreadable, because they are what the run
 // actually judged. So it is carried as a value.
+//
+// A MISMATCH BESIDE A NAMED GAP IS NOT A REFUSAL. When the artifact does not
+// record a recipe half, the rebuild guessed it, and a disagreement may be the
+// guess rather than a moved slicing. That reads `unverifiable`, which is the
+// honest verdict for every artifact settled before the recipe was recorded.
+// A MATCH is evidence either way: the identity hashes every slice's placement
+// and text, so a rebuild that reproduces it reproduced the slicing.
 //
 // THE PIN COMES FROM THE ARTIFACT, never from `RUN_CORPUS_PIN`. The run pin can
 // move; a file naming its own corpus commit answers for itself forever. The
@@ -91,6 +107,24 @@ export type SettledVerification = {
 
   /**
    * What the check objected to, kept as text since nothing reads it by field.
+   */
+  readonly detail: string;
+} | {
+  /**
+   * It did not, and the artifact records only part of the recipe the rebuild
+   * needed, so the disagreement may be the defaulted half rather than a
+   * moved slicing.
+   */
+  readonly kind: 'unverifiable';
+
+  /**
+   * Recipe halves the artifact does not record.
+   */
+  readonly unrecorded: readonly RecipeHalf[];
+
+  /**
+   * What the check objected to, for a reader deciding whether the gap
+   * explains it.
    */
   readonly detail: string;
 };
@@ -174,35 +208,51 @@ type ArtifactLocation = {
  *
  * @param artifact - parsed artifact
  *
- * @param prepared - preparation recomputed from the corpus
+ * @param rebuilt - preparation rebuilt from the corpus with the artifact's
+ * recorded recipe, beside the recipe halves it lacked
  *
  * @returns Answer, never a throw
  *
  * @example
  * ```ts
- * const verification = verifySettled({ artifact, prepared, },);
+ * const verification = verifySettled({ artifact, rebuilt, },);
  * ```
  */
 function verifySettled(
   {
     artifact,
-    prepared,
+    rebuilt,
   }: {
     readonly artifact: ParsedTwoLaneArtifact;
-    readonly prepared: PreparedDocumentPair;
+    readonly rebuilt: RebuiltPreparation;
   },
 ): SettledVerification {
   try {
     verifyArtifactAgainstPreparation({
       artifact,
-      prepared,
+      prepared: rebuilt.prepared,
     },);
     return { kind: 'verified', };
   }
   catch (error) {
+    /**
+     * What the check objected to.
+     */
+    const detail = refusalText({ error, },);
+
+    /**
+     * Recipe halves the rebuild had to guess.
+     */
+    const { unrecorded, } = rebuilt;
+    if (unrecorded.length === 0)
+      return {
+        kind: 'refused',
+        detail,
+      };
     return {
-      kind: 'refused',
-      detail: refusalText({ error, },),
+      kind: 'unverifiable',
+      unrecorded,
+      detail,
     };
   }
 }
@@ -283,10 +333,12 @@ export async function readArtifactSubjects(
   ],);
 
   /**
-   * Preparation recomputed from that pair, wanted for its identity block and
-   * for the provenance check, NOT for slice text.
+   * Preparation rebuilt from that pair with the recipe the artifact records,
+   * wanted for its identity block and for the provenance check, NOT for slice
+   * text.
    */
-  const prepared = prepareDocumentPair({
+  const rebuilt = rebuildPreparation({
+    artifact,
     sourceText,
     targetText,
   },);
@@ -298,12 +350,12 @@ export async function readArtifactSubjects(
     artifactDigest: artifact.pipelineDigest,
     verification: verifySettled({
       artifact,
-      prepared,
+      rebuilt,
     },),
     subjects: subjectsOf({
       artifact,
       runSet,
-      identity: identityOf({ prepared, },),
+      identity: identityOf({ prepared: rebuilt.prepared, },),
     },),
   };
 }
