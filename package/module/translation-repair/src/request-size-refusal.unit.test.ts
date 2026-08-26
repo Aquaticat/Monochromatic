@@ -125,7 +125,8 @@ await describe({
       name: 'CARRIES BOTH NUMBERS AND A WAY OUT IN THE MESSAGE, because whoever reads this in a log '
         + 'gets one line and no debugger. It states what was sent, what passes, how far over the '
         + 'request was, what to do about it, and where the measurement lives, and it keeps the '
-        + 'gateway\'s own words at the end so nothing a reader had before is taken away',
+        + 'gateway\'s own words OFF the line, which a class that declares its message quote-free '
+        + 'may not repeat (`#244`)',
       fn: async () => {
         /**
          * Message composed for a body 699575 bytes past the passing size.
@@ -143,7 +144,25 @@ await describe({
         expect(
           message.includes('doc/troubleshooting/synthetic-request-body-size-cap.md',),
         ).toBe(true,);
-        expect(message.includes('Unterminated string',),).toBe(true,);
+        expect(message.includes('Unterminated string',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'KEEPS whatever the gateway echoed on the excerpt for the log and out of the message, so a '
+        + 'gateway that repeats request bytes cannot put corpus text on a CLI line (`#244`)',
+      fn: async () => {
+        /**
+         * Refusal built from a gateway body that echoes something of ours.
+         */
+        const failure = failureForReply({
+          status: 400,
+          bodyText: `${PARSE_FAILURE} whiskers-gateway-echo`,
+          requestBodyBytes: 11_185_335,
+        },);
+        expect(failure.message.includes('whiskers-gateway-echo',),).toBe(false,);
+        expect(
+          (failure instanceof SyntheticHttpError) ? failure.bodyExcerpt.includes('whiskers-gateway-echo',) : false,
+        ).toBe(true,);
       },
     },),
   ],

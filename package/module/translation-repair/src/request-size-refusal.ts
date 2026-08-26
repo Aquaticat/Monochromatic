@@ -103,17 +103,20 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
     super({
       status,
       bodyText,
-      // THE GATEWAY'S OWN WORDS STILL FOLLOW THIS, appended by the parent.
-      // They are the misleading half, but removing them would take away the
-      // one thing a reader could search a provider status page for.
+      // THE GATEWAY'S OWN WORDS ARE KEPT OFF THIS MESSAGE. This class declares
+      // its message quote-free, and a gateway that echoed request bytes would
+      // otherwise print corpus text at every CLI boundary (`#244`); the words
+      // stay on `bodyExcerpt` for the log, where the searchable byte position
+      // still is.
+      excerpt: 'withheld',
       summary: `Synthetic API refused a request body of ${String(bodyBytes,)} bytes, `
         + `${String(bodyBytes - PASSING_BODY_BYTES,)} above the ${String(PASSING_BODY_BYTES,)} `
         + `measured to pass. It answered HTTP ${String(status,)} naming a JSON parse failure, `
         + `which describes the body we serialised rather than its size, and that body is `
         + `well-formed. Send less in one call: fewer or smaller pictures, a shorter `
         + `instruction, or a smaller slice. `
-        + `doc/troubleshooting/synthetic-request-body-size-cap.md records the measurement. `
-        + `Gateway said:`,
+        + `doc/troubleshooting/synthetic-request-body-size-cap.md records the measurement; `
+        + `the gateway's own words are in the run log, not here`,
     },);
     this.name = 'SyntheticRequestTooLargeError';
     this.bodyBytes = bodyBytes;

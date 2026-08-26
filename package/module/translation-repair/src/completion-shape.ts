@@ -73,19 +73,27 @@ export class SyntheticHttpError extends Error {
       status,
       bodyText,
       summary,
+      excerpt = 'quoted',
     }: {
       readonly status: number;
       readonly bodyText: string;
       readonly summary?: string;
+      readonly excerpt?: 'quoted' | 'withheld';
     },
   ) {
+    // THE EXCERPT IS QUOTED INTO THE MESSAGE ON PURPOSE for this class, which
+    // stays unmarked for that reason; a subclass that declares its message
+    // quote-free withholds it (`#244`) and keeps it on `bodyExcerpt` for the
+    // log alone.
     super(
-      `${summary ?? `provider API returned HTTP ${String(status,)}:`} ${
-        bodyText.slice(
-          0,
-          BODY_EXCERPT_LIMIT,
-        )
-      }`,
+      (excerpt === 'withheld')
+        ? (summary ?? `provider API returned HTTP ${String(status,)}`)
+        : `${summary ?? `provider API returned HTTP ${String(status,)}:`} ${
+          bodyText.slice(
+            0,
+            BODY_EXCERPT_LIMIT,
+          )
+        }`,
     );
     this.name = 'SyntheticHttpError';
     this.status = status;
