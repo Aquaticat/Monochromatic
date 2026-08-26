@@ -1,8 +1,8 @@
-import { writeFile, } from 'node:fs/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { reportingRefusals, } from './cli-refusal.ts';
+import { writeSheetPair, } from './sheet-write.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import type { ScreenedDefectClaim, } from '../introduced-defect-screen.ts';
 import {
@@ -207,16 +207,13 @@ async function main(): Promise<void> {
     },),
   ];
 
-  await writeFile(
-    `${dir}/probe-verify-sheet.md`,
-    formatVerifySheet({ items, },),
-    'utf8',
-  );
-  await writeFile(
-    `${dir}/probe-verify-manifest.json`,
-    formatVerifyManifest({ items, },),
-    'utf8',
-  );
+  await writeSheetPair({
+    dir,
+    sheetName: 'probe-verify-sheet.md',
+    manifestName: 'probe-verify-manifest.json',
+    sheet: formatVerifySheet({ items, },),
+    manifest: formatVerifyManifest({ items, },),
+  },);
 
   console.log(
     `VERIFY wrote ${String(items.length,)} items to ${dir}/probe-verify-sheet.md`,

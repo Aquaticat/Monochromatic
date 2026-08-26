@@ -10,6 +10,7 @@ import type {
   SyntheticClient,
 } from '../chat-contract.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
+import { refusalText, } from '../refusal-text.ts';
 
 //region Bench record
 // What one bench run costs, measured rather than asserted.
@@ -284,9 +285,10 @@ export function recordingClient(
       // transport failure after several retries. Recording it before rethrowing
       // keeps the row and leaves the stage's own handling alone.
       /**
-       * What failed, trimmed so a summary row carries no stack.
+       * What failed, as its class name or its marked message, so a row never
+       * carries a provider body.
        */
-      const detail = String(error,)
+      const detail = refusalText({ error, },)
         .slice(
           0,
           FAILURE_DETAIL_CHARS,

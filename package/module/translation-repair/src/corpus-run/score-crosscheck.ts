@@ -361,9 +361,10 @@ async function main(): Promise<void> {
   );
   console.log(
     'NOTE this crosscheck can bar a claim\'s AUTHORS and cannot bar its '
-      + 'adjudicators: the same six models sit as critics, panel and judges, '
-      + 'and the provider serves no seventh. It measures whether a verdict '
-      + 'survives being re-asked without its author, never precision.',
+      + 'adjudicators: the whole roster sits as critics, panel and judges, '
+      + 'so no seat outside the panel exists to bar one with. It measures '
+      + 'whether a verdict survives being re-asked without its author, never '
+      + 'precision.',
   );
   if (unjudgeable.length > 0) {
     console.log(

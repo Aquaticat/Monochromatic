@@ -1,11 +1,9 @@
 import { createHash, } from 'node:crypto';
-import {
-  writeFile,
-} from 'node:fs/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { reportingRefusals, } from './cli-refusal.ts';
+import { writeSheetPair, } from './sheet-write.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
 import {
@@ -344,11 +342,13 @@ async function main(): Promise<void> {
   }
   /* oxlint-enable no-await-in-loop */
 
-  await writeFile(
-    `${dir}/damage-sheet.md`,
+  await writeSheetPair({
+    dir,
+    sheetName: 'damage-sheet.md',
+    manifestName: 'damage-manifest.json',
     // Claims are stripped so the sheet shows the reader nothing the probe
     // concluded. The manifest keeps them for scoring.
-    formatVerifySheet({
+    sheet: formatVerifySheet({
       items: items.map(function withoutClaims(item,) {
         return {
           ...item,
@@ -359,13 +359,8 @@ async function main(): Promise<void> {
       // is coming and nothing about which is which (`#248`).
       framing: 'blind',
     },),
-    'utf8',
-  );
-  await writeFile(
-    `${dir}/damage-manifest.json`,
-    formatVerifyManifest({ items, },),
-    'utf8',
-  );
+    manifest: formatVerifyManifest({ items, },),
+  },);
   console.log(
     `DAMAGE wrote ${String(items.length,)} items to ${dir}/damage-sheet.md`,
   );

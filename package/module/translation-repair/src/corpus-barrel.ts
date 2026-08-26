@@ -163,6 +163,7 @@ export {
   markupFraction,
 } from './corpus-run/markup-slice.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
+export { writeSheetPair, } from './corpus-run/sheet-write.ts';
 export {
   parseRunJson,
   readRunJson,
@@ -185,6 +186,7 @@ export {
   BenchReportError,
   benchWidths,
   summarizeBench,
+  writeBenchReport,
 } from './corpus-run/bench-report.ts';
 export type { BenchRow, } from './corpus-run/roster-bench.ts';
 export {

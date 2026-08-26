@@ -280,6 +280,12 @@ Findings carry the slice pair and the measurements and never the wording,
 because a findings list travels into logs and artifacts
 where corpus text does not belong.
 
+Two instruments are the exception, by design, and their standard output is an artifact rather than a summary:
+`coverage-probe` prints its rows as JSON, whose `evidence` is the document's own matched text,
+and `judge-fidelity-probe` prints per-trial judge `reasons`, which are model prose quoting candidates.
+Redirect both to a file under the runs directory and never paste either into a log, a commit, or a chat;
+both also persist their rows through the probe store, so the redirect is a convenience rather than the record.
+
 ## Design commitments
 
 - **No single model output is a decision point.**

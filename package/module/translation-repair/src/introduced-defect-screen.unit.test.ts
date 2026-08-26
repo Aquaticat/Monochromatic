@@ -444,3 +444,33 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'one check per prober per region',
+  children: [
+    it({
+      name: 'COUNTS a prober once on a region however many checks it cast there, and counts a prober that '
+        + 'skipped the region as uncertain, so the tallies never exceed nor undercount the probers heard',
+      fn: async () => {
+        /**
+         * Tally of the one region under two probers: one answering twice, one
+         * saying nothing about it.
+         */
+        const [tally,] = screenIntroducedDefects({
+          regions: [REGION,],
+          ballots: {
+            'hf:cat/Cat-A': [
+              catCheck({ verdict: 'no-introduced-defect-found', },),
+              catCheck({ verdict: 'no-introduced-defect-found', },),
+            ],
+            'hf:cat/Cat-B': [],
+          },
+        },);
+
+        expect(tally?.noneFound,).toBe(1,);
+        expect(tally?.uncertain,).toBe(1,);
+        expect(tally?.claims,).toEqual([],);
+      },
+    },),
+  ],
+},);

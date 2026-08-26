@@ -27,7 +27,13 @@ import {
   recipeLabel,
 } from './settled-carve.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
+import { digestPipeline, } from './pipeline-digest.ts';
+import { persistProbeRun, } from './probe-store.ts';
+import { readRunnerClosure, } from './runner-closure.ts';
+import {
+  DAMAGE_KINDS,
+  readFidelityArguments,
+} from './judge-fidelity-args.ts';
 
 //region Judge fidelity probe
 // `#84`: before the translate-and-select shape decides a corpus, can its judges
@@ -49,14 +55,6 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // rows as JSON on standard output for a caller to keep.
 
 /**
- * How many trials one invocation runs by default.
- *
- * COUNTED IN ATTEMPTS, not in successes, so a failing roster cannot spend
- * without bound while the count a reader checks stays small.
- */
-const DEFAULT_TRIAL_CAP = 16;
-
-/**
  * Shortest English slice worth damaging.
  *
  * Below this a deleted sentence is most of the passage, which asks a far easier
@@ -74,34 +72,6 @@ const MIN_SLICE_CHARS = 400;
  * cheaper to avoid here than to caveat later.
  */
 const PAIRS_PER_ENTRY = 1;
-
-/**
- * Defects built for every pair when the caller names none.
- *
- * DELETION FIRST, since it is the reading already recorded and the one an
- * insertion result is compared against.
- */
-const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
-  'deletion',
-  'insertion',
-  'alteration',
-];
-
-/**
- * Defects each `--damage` spelling asks for.
- *
- * BOTH BY DEFAULT, because either fixture alone leaves a habit unmeasured: the
- * deletion cannot separate reading from preferring length, and the insertion
- * alone would not say the roster sees an omission at all. An unlisted spelling
- * reads as absent and the caller is told, rather than silently running
- * something it did not ask for.
- */
-const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = {
-  '': DAMAGE_KINDS,
-  deletion: ['deletion',],
-  insertion: ['insertion',],
-  alteration: ['alteration',],
-};
 
 /**
  * Ballot arrangements every pair is run through.
@@ -197,83 +167,6 @@ type FidelityRow = {
 };
 
 /**
- * Reads `--only`, `--cap` and `--damage` from the command line.
- *
- * @returns Entry ids to trial, empty for every entry, the trial cap, and which
- * defects to build
- *
- * @example
- * ```ts
- * const { onlyIds, cap, damageKinds, } = readArguments();
- * ```
- */
-function readArguments(): {
-  readonly onlyIds: readonly string[];
-  readonly cap: number;
-  readonly damageKinds: readonly FidelityDamageKind[];
-  readonly withContext: boolean;
-} {
-  /**
-   * Arguments after the script path.
-   */
-  const args = process.argv
-    .slice(2,);
-
-  /**
-   * Entry ids named after `--only`, comma separated.
-   */
-  const onlyAt = args.indexOf('--only',);
-
-  /**
-   * Cap named after `--cap`.
-   */
-  const capAt = args.indexOf('--cap',);
-
-  /**
-   * Cap as written, when one was named.
-   */
-  const capText = (capAt === (-1)) ? '' : (args[capAt + 1] ?? '');
-
-  /**
-   * Cap as a number, falling back when it is not one.
-   */
-  const cap = (capText === '')
-    ? Number.NaN
-    : Math.trunc(Number(capText,),);
-
-  /**
-   * Defect named after `--damage`, absent for both.
-   */
-  const damageAt = args.indexOf('--damage',);
-
-  /**
-   * Defect as written, when one was named.
-   */
-  const damageText = (damageAt === (-1)) ? '' : (args[damageAt + 1] ?? '');
-
-  /**
-   * Defects that spelling asks for, absent when it names none this probe builds.
-   */
-  const damageKinds = DAMAGE_BY_NAME[damageText];
-  if (damageKinds === undefined)
-    throw new StatedRefusalError({ says: `--damage takes deletion, insertion or alteration, not ${damageText}`, },);
-  return {
-    // `#107`: whether the sheet also carries the neighbouring sections' original,
-    // which is the one thing that differs between a narrow run and a wide one.
-    withContext: args.includes('--context',),
-    damageKinds,
-    onlyIds: (onlyAt === (-1))
-      ? []
-      : (args[onlyAt + 1] ?? '')
-        .split(',',)
-        .filter(function isNamed(id,): boolean {
-          return id !== '';
-        },),
-    cap: Number.isNaN(cap,) ? DEFAULT_TRIAL_CAP : cap,
-  };
-}
-
-/**
  * Runs constructed comparisons past the production judges, up to the cap.
  *
  * OVER SETTLED ENTRIES ONLY, carved through the recipe each artifact records.
@@ -301,7 +194,7 @@ async function main(): Promise<void> {
     cap,
     damageKinds,
     withContext,
-  } = readArguments();
+  } = readFidelityArguments();
 
   /**
    * Client for every exchange.
@@ -317,6 +210,21 @@ async function main(): Promise<void> {
    * Rows accumulated across trials, one per attempt.
    */
   const rows: FidelityRow[] = [];
+
+  /**
+   * When this run started, for the kept record.
+   */
+  const startedAt = new Date().toISOString();
+
+  /**
+   * Digest of the pipeline these trials ran under.
+   */
+  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
+
+  /**
+   * Chunks this entry imports, read at run start.
+   */
+  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
 
   /**
    * Runs directory whose settled artifacts name the population.
@@ -517,6 +425,34 @@ async function main(): Promise<void> {
       } chose the complete text`,
     );
   }
+  /**
+   * Where the rows were kept, so the standard output below is a convenience
+   * and not the record: these rows carry judge prose quoting candidates.
+   */
+  const keptAt = await persistProbeRun({
+    runsDir,
+    probeName: 'judge-fidelity-probe',
+    run: {
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      pipelineDigest,
+      runnerClosure,
+      roster: RUN_ROSTER,
+      subject: {
+        corpusPin: RUN_CORPUS_PIN.commitSha,
+        entriesWalked: entryIds,
+        entriesRequested: onlyIds,
+        trialCap: cap,
+        damageKinds,
+        withContext,
+      },
+      rows,
+    },
+  },);
+  log.info(`kept ${String(rows.length,)} rows at ${keptAt}`,);
+
+  // STANDARD OUTPUT STAYS, as an artifact: it quotes model prose about
+  // candidates, so it is redirected to a file and never pasted (README).
   process.stdout
     .write(`${
       JSON.stringify(

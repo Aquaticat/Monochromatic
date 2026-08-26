@@ -25,6 +25,7 @@ import {
   type SeededErrorApplication,
 } from './seeded-error.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import { refusalText, } from './refusal-text.ts';
 
 export type { BenchmarkEntry, } from './prepare-entry.ts';
 
@@ -416,7 +417,7 @@ export async function runCriticBenchmark(
             modelId,
             entryId: entry.entryId,
             outcomeKind: 'http-error',
-            detail: `transport: ${String(error,)}`,
+            detail: `transport: ${refusalText({ error, },)}`,
             resolvedClaimCount: 0,
             unresolvedReasons: [],
             seededHitIds: [],

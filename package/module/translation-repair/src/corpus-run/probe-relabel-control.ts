@@ -17,6 +17,10 @@ import {
 } from './probe-relabel-artifact.ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
+import {
+  assertSliceIndexing,
+  reindexSlicePair,
+} from '../slice-indexing.ts';
 
 //region Probe relabel control
 // Builds the arm that decides whether the damaged-region result means anything.
@@ -221,18 +225,27 @@ export async function gatherControlCases(
       target: parseDocument({ text: targetText, },),
     },)
       .pairs
-      .flatMap(function toSlices(
-        pair,
-        index,
-      ) {
+      .flatMap(function toSlices(pair,) {
         return subdivideChunkPair({
           pair,
           sourceText,
           targetText,
-          baseIndex: index,
+          // Overwritten below; see `probe-relabel-case.ts`, which documents
+          // the pair-index mistake this used to make too.
+          baseIndex: 0,
           budget: SLICE_CHAR_BUDGET,
         },);
+      },)
+      .map(function stamp(
+        slice,
+        slicePosition,
+      ) {
+        return reindexSlicePair({
+          slice,
+          slicePosition,
+        },);
       },);
+    assertSliceIndexing({ slices, },);
 
     /**
      * Replaced length of this entry's damaged region, the length to match.

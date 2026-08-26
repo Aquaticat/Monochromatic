@@ -499,29 +499,53 @@ export function screenIntroducedDefects(
       issues,
     },);
     /**
-     * Every check cast on this region, paired with its prober.
+     * One check per prober on this region, paired with its prober.
+     *
+     * ONE PER PROBER, THE FIRST WITH A VERDICT THE SCREEN KNOWS. The sheet asks
+     * for one check per region; a prober answering twice used to count twice
+     * and a prober skipping the region counted nowhere, so the printed tallies
+     * could exceed the probers heard or fall short of them.
      */
     const cast = Object
       .entries(ballots,)
       .flatMap(function toChecks([
         modelId,
         checks,
-      ],) {
-        return checks
-          .filter(function isThisRegion(check,) {
-            return check.region === (index + 1);
-          },)
-          .map(function withSpeaker(check,): CastCheck {
-            return {
+      ],): readonly CastCheck[] {
+        /**
+         * First check this prober cast here with a known verdict.
+         */
+        const first = checks.find(function isThisRegion(check,): boolean {
+          return (check.region === (index + 1))
+            && isIntroducedDefectVerdict(check.verdict,);
+        },);
+        return (first === undefined)
+          ? []
+          : [
+            {
               modelId,
-              check,
-            };
-          },);
-      },)
-      .filter(function hasKnownVerdict(entry,) {
-        return isIntroducedDefectVerdict(entry.check
-          .verdict,);
+              check: first,
+            },
+          ];
       },);
+
+    /**
+     * Probers that cast no check on this region at all, counted as uncertain:
+     * a prober that skipped a region has not cleared it. A prober whose only
+     * check here carried a verdict outside the vocabulary is schema noise, not
+     * doubt, and stays dropped as before.
+     */
+    const silentProbers = Object
+      .entries(ballots,)
+      .filter(function castNothingHere([
+        ,
+        checks,
+      ],): boolean {
+        return !checks.some(function isThisRegion(check,): boolean {
+          return check.region === (index + 1);
+        },);
+      },)
+      .length;
 
     /**
      * Screened claims of introduced damage on this region.
@@ -616,7 +640,8 @@ export function screenIntroducedDefects(
           .verdict
           === 'uncertain';
       },)
-        .length,
+        .length
+        + silentProbers,
       claims,
     };
   },);

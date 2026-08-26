@@ -4,11 +4,12 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 // Who may re-examine an accepted issue, given who proposed it.
 //
 // WHAT THIS CAN AND CANNOT ESTABLISH, stated here because the number it feeds
-// will be read by someone who did not run it. `RUN_MODELS` seats the SAME six
-// models as critics, as adjudication panel, and as judges, and
-// `mise run //package/module/translation-repair:model-catalog` confirmed on
-// 2026-08-13 that the provider serves no seventh: six distinct models and four
-// aliases onto four of them.
+// will be read by someone who did not run it. `RUN_MODELS` seats the WHOLE
+// roster as critics, as adjudication panel, and as judges: six models from one
+// provider when this was written on 2026-08-13 (`model-catalog` confirmed that
+// provider served no seventh), ten across two providers since 2026-08-24. The
+// count moved; the shape did not, and the shape is what matters here: there is
+// no seat outside the panel to bar an adjudicator with.
 //
 // So a judge can be independent of a claim's AUTHORSHIP and cannot be
 // independent of its ADJUDICATION. Every candidate judge already voted on the

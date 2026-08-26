@@ -9,6 +9,44 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 // instead, so only the exchange itself counts against the budget.
 
 /**
+ * Reason a call is forfeited at its deadline.
+ *
+ * A CLASS RATHER THAN A BARE ERROR, so a bench row or a log line can carry the
+ * deadline through `refusalText` and still say what happened: the message
+ * names the call's label, which is a model id or a stage name, and a count.
+ *
+ * @example
+ * ```ts
+ * controller.abort(new CallTimeoutError({ label: modelId, timeoutMs: 600_000, },),);
+ * ```
+ */
+export class CallTimeoutError extends Error {
+  /**
+   * Declares this message safe to print whole: a label the pipeline chose and
+   * a millisecond count, nothing read from any text.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   * @param label - what the call was for, a model id or a stage name
+   *
+   * @param timeoutMs - deadline the call exceeded
+   */
+  constructor(
+    {
+      label,
+      timeoutMs,
+    }: {
+      readonly label: string;
+      readonly timeoutMs: number;
+    },
+  ) {
+    super(`Timeout: ${label} exceeded its ${String(timeoutMs,)}ms deadline`,);
+    this.name = 'CallTimeoutError';
+  }
+}
+
+/**
  * Deadline handle armed for one model call.
  */
 export type CallDeadline = Disposable & {
@@ -84,9 +122,10 @@ export function armCallDeadline(
    */
   const deadline = setTimeout(
     function onDeadline() {
-      callController.abort(new Error(
-        `Timeout: ${label} exceeded its ${String(timeoutMs,)}ms deadline`,
-      ),);
+      callController.abort(new CallTimeoutError({
+        label,
+        timeoutMs,
+      },),);
     },
     timeoutMs,
   );
