@@ -393,6 +393,11 @@ The observed gateway wording carries only a byte position, so nothing has leaked
 a gateway that echoes request bytes would print corpus text at the boundary.
 Tracked as `#244`.
 
+FIXED 2026-08-26 in `0fb6a8ad8`: `SyntheticHttpError` takes an excerpt policy, the marked subclass withholds the
+gateway's words from its message and keeps them on `bodyExcerpt` for the log.
+Guard: a gateway body echoing a sentinel leaves the message clean and the excerpt carrying it;
+with the excerpt quoted again two cases fail; restored, passes.
+
 ### provider-7, MINOR, verified: a budget refusal during the re-ask is not caught
 
 `src/provider-router.ts:590-604` calls `callOn` bare for the second opinion; a 429 or 402 there

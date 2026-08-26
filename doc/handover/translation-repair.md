@@ -171,9 +171,11 @@ the whole suite passed 759 of 759 behind it.
 the whole suite passed 760 of 760.
 `#242` landed in `3bc37b4f1`: a tool answer is kept apart from the prose written before it;
 the whole suite passed 760 of 760.
-`#243` landed in `caee057fd` (HEAD): stale-lock eviction is a rename and release is owner-checked;
+`#243` landed in `caee057fd`: stale-lock eviction is a rename and release is owner-checked;
+the whole suite passed 760 of 760.
+`#244` landed in `0fb6a8ad8` (HEAD): the marked size refusal keeps the gateway's words off its message;
 a whole-suite run is in flight.
-Queue: `#244` onward in task order.
+Queue: `#245` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
