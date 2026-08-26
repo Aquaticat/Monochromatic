@@ -80,6 +80,12 @@ Every BLOCKER and MAJOR finding is re-verified at the cited line by the main ses
 a reviewer's word is a lead, not evidence.
 The verified, ranked result lands in `doc/audit/translation-repair-package-audit.md`,
 one task per BLOCKER or MAJOR, fixes in rank order after that.
+That register is open as of `918d9a8b3` with the baseline, the whole-package mechanical sweeps
+(all clean: no forbidden request fields, zero debt markers, every suppression justified,
+no banned constructs, 38 of 38 CLIs wrapped), the documentation layer,
+and six verified findings `A-1` to `A-6`; read it before this section.
+Advisor's adjustment, adopted: `#235` lands as soon as the `provider` and `calibrate` slice
+reports are verified, not after the whole audit, because those two slices hold every file the fix touches.
 
 ### Prior-session claims overturned so far, each against a primary source
 
