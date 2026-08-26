@@ -753,7 +753,8 @@ FIXED 2026-08-26 in `f199b70cf` and `bab444350`:
 `readArtifactRecords` dispatches on the generation through `readSettledArtifact`,
 the lane for version 2 and the root for the legacy and version 1 generations, with two cases pinning the legacy path.
 `f199b70cf`'s message claimed both cases passed; one was failing at commit time
-(the legacy parser requires `repairDisposition` and `refined` once a record carries regions, and the fixture lacked them),
+(the legacy parser requires `repairDisposition` and `refined` once a record carries regions,
+and the fixture lacked them),
 which `bab444350` fixed and says so.
 Guard shown to fail with the dispatch forced to the lane (both legacy cases refuse at `artifactSchemaVersion`),
 restored, passed. Live run of `probe-relabel` against the round-three draw: in flight.

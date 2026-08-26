@@ -144,7 +144,8 @@ its throwaway runs directory is named in `~/temp/agent/vub-calibrate-current.txt
 usable eighteen of eighteen, no dark seat; the rendered prompt measurably silences two of three probers on
 `deletion/mislabelled` (`removal=1`, `preExisting=2`) where the withheld prompt raises `removal=3`,
 and the screen moves nothing on any region.
-`#257` landed in `f199b70cf` and `bab444350` (HEAD): the round-three instruments read legacy artifacts from the root again.
+`#257` landed in `f199b70cf` and `bab444350` (HEAD):
+the round-three instruments read legacy artifacts from the root again.
 Note for the record: `f199b70cf`'s message overclaimed, one of its two legacy cases was failing when committed;
 `bab444350` fixed the fixture and says so in its message, per the no-amend rule.
 One run is in flight: `probe-relabel` under `mise run` against the round-three draw in the default runs directory
