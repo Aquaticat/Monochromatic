@@ -478,6 +478,12 @@ and the weighting becomes wrong on the first overlapping roster.
 `issue-authors.unit.test.ts` has no composite built from a sole envelope.
 Tracked as `#239`.
 
+FIXED 2026-08-26 in `7103ae59c`: a sole adoption is a round of its own kind, `adopted`, carrying the one slate
+entry, its index, a reason, and empty vote fields so every reader of a round keeps its shape;
+`issue-authors` treats it like a selected round and the artifact rounds reader parses it.
+Guards: the authors case fails with the kind check reverted (2 lines), the selection case fails with the push
+removed (2 lines); both restored and passing.
+
 ### repair-4, MINOR, verified: an outcome with no prepared slice is refined against an empty original
 
 `src/refine-phase.ts:219` (`prepared?.source.text ?? ''`) and `:236` (`?? outcome.repairedText`);

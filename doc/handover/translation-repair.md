@@ -163,7 +163,10 @@ test asked the Synthetic client for a Charm Hyper label. Fixed in `6d19c68a0` (`
 sentence from a variable name); a second whole-suite run is in flight to confirm 0 failures.
 LESSON, in force: a fix is not landed until `buildAndTest` passes whole; the per-suite runs after each commit are
 necessary and not sufficient, because inventory-style suites read the whole source.
-Queue: `#239` onward in task order.
+The second whole-suite run, at `6d19c68a0`, passed 759 of 759.
+`#239` landed in `7103ae59c` (HEAD): a sole-adopted envelope records an `adopted` round and keeps its authors;
+a whole-suite run is in flight behind it.
+Queue: `#240` onward in task order.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 
