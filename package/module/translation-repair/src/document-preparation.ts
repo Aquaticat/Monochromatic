@@ -140,6 +140,20 @@ export type PreparedDocumentPair = {
    * {@link PreparedDocumentPair.alignmentFindings}, not from here.
    */
   readonly blockPairing?: readonly SectionBlockPairing[];
+
+  /**
+   * Section pairing this alignment was built on, echoed back the same way and
+   * for the same reason as {@link PreparedDocumentPair.blockPairing}: the
+   * artifact records the value slicing consumed, not a copy assembled beside it.
+   *
+   * ABSENT WHEN THE DETERMINISTIC ALIGNER DECIDED THE SECTIONS, present when a
+   * supplied pairing did. The roster shell supplies one only when its section
+   * round agreed on at least one pair, so a present list is non-empty in
+   * production; a direct caller's empty list is echoed as consumed rather than
+   * normalised away, because an empty supplied pairing aligns nothing and the
+   * deterministic path aligns by shape, and those are different slicings.
+   */
+  readonly sectionPairing?: readonly SectionPair[];
 };
 
 /**
@@ -451,6 +465,12 @@ export function prepareDocumentPair(
     // and a roster that agreed nothing are different facts, and both would read
     // as an empty list if absence were spelled that way.
     ...((blockPairings === undefined) ? {} : { blockPairing: sectionPairingsOf({ blockPairings, },), }),
+
+    // ECHOED AS CONSUMED, for the rebuild an artifact reader performs: with
+    // this and the block pairing, `prepareDocumentPair` over the same two
+    // texts reproduces this exact slicing, and without it a reader can only
+    // guess whether the aligner or a roster chose the sections.
+    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
   };
 }
 

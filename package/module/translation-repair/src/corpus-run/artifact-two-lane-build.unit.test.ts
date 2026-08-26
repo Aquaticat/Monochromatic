@@ -732,5 +732,64 @@ await describe({
         },],);
       },
     },),
+    it({
+      name:
+        'ALWAYS WRITES which decider chose the sections, as deterministic when the preparation consumed '
+        + 'no section pairing: unlike the block pairing, the deterministic path is the ordinary case, so '
+        + 'an omitted field could not tell "the aligner decided" from "written before the field"',
+      fn: async () => {
+        expect(catArtifact().preparation
+          .sectionPairing,).toEqual({ kind: 'deterministic', },);
+      },
+    },),
+    it({
+      name:
+        'WRITES the supplied section pairing the preparation was built on, pairs and all, since the block '
+        + 'pairing is keyed by aligned section and those keys only mean something under this alignment',
+      fn: async () => {
+        /**
+         * Preparation carrying a section pairing, as the roster shell returns
+         * one when its section round agreed.
+         */
+        const sectioned = {
+          ...catPreparation(),
+          sectionPairing: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 2,
+              target: 1,
+            },
+          ],
+        };
+        expect(buildSettledTwoLaneArtifact({
+          entryId: 'CatEntry1',
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          corpusSha: 'b'.repeat(40,),
+          callConfig: {},
+          durationMs: 1,
+          prepared: sectioned,
+          lanes: catLanes(),
+          laneSelection: { kind: 'pending-human-decision', },
+          consolidation: { kind: 'not-run', },
+        },).preparation
+          .sectionPairing,).toEqual({
+          kind: 'supplied',
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 2,
+              target: 1,
+            },
+          ],
+        },);
+      },
+    },),
   ],
 },);

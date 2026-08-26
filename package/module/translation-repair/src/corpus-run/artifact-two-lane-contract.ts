@@ -202,6 +202,73 @@ export type SettledPreparation = {
    * have fallen back to scoring, or its round may have gone unanswered.
    */
   readonly blockPairing?: readonly ArtifactSectionPairing[];
+
+  /**
+   * Which decider chose the aligned sections, and what it chose.
+   *
+   * THE OTHER HALF OF THE PAIRING RECIPE. `blockPairing` above is keyed by
+   * aligned section index, and those indices only mean something under the
+   * section alignment that was in force. A reader rebuilding the slicing
+   * needs both, and until this field it had one.
+   *
+   * ALWAYS WRITTEN BY THE BUILDER, unlike `blockPairing`: the deterministic
+   * aligner deciding the sections is the ordinary production case, so an
+   * absent field could not tell "the aligner decided" from "written before
+   * the field existed". Optional here only because every artifact settled
+   * before it was added lacks it, which a reader reports as unrecorded.
+   */
+  readonly sectionPairing?: ArtifactSectionAlignment;
+};
+
+/**
+ * One committed correspondence between the two sides' sections, as version 2
+ * records it.
+ *
+ * FROZEN UNDER A VERSION 2 NAME rather than reusing the live `SectionPair`,
+ * for the reason {@link ArtifactSectionPairing} gives.
+ *
+ * @example
+ * ```ts
+ * const pair: ArtifactSectionCorrespondence = { source: 2, target: 3, };
+ * ```
+ */
+export type ArtifactSectionCorrespondence = {
+  /**
+   * Original-side section index.
+   */
+  readonly source: number;
+
+  /**
+   * Translation-side section index.
+   */
+  readonly target: number;
+};
+
+/**
+ * How the aligned sections were decided, as version 2 records it.
+ *
+ * @example
+ * ```ts
+ * const alignment: ArtifactSectionAlignment = { kind: 'deterministic', };
+ * ```
+ */
+export type ArtifactSectionAlignment = {
+  /**
+   * The deterministic aligner chose the sections, by shape or by heading
+   * scoring; no pairing was supplied.
+   */
+  readonly kind: 'deterministic';
+} | {
+  /**
+   * A supplied pairing chose them, which in production is the roster's
+   * section round.
+   */
+  readonly kind: 'supplied';
+
+  /**
+   * Correspondences it committed to, in document order.
+   */
+  readonly pairs: readonly ArtifactSectionCorrespondence[];
 };
 
 /**

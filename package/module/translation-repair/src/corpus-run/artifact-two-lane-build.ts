@@ -9,6 +9,8 @@ import { projectLanes, } from './artifact-two-lane-derive.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V4,
   type ArtifactJsonValue,
+  type ArtifactSectionAlignment,
+  type ArtifactSectionCorrespondence,
   type SettledArtifact,
 } from './artifact-two-lane-contract.ts';
 import {
@@ -41,6 +43,41 @@ import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 // So the parameters are exactly what cannot be computed from the run: which
 // entry it was, which commit and pipeline produced it, which corpus commit the
 // texts came from, how the models were called, and how long it took.
+
+/**
+ * Records which decider chose the aligned sections.
+ *
+ * DERIVED FROM PRESENCE rather than carried as a third state on the
+ * preparation, because on the preparation absence already means exactly one
+ * thing: `prepareDocumentPair` ran its deterministic aligner. The artifact
+ * cannot afford the same spelling, since there absence also means "written
+ * before the field", so the builder says it out loud.
+ *
+ * @param prepared - preparation the artifact records
+ *
+ * @returns Deterministic when no pairing was supplied, else the pairs consumed
+ *
+ * @example
+ * ```ts
+ * const alignment = sectionAlignmentOf({ prepared, },);
+ * ```
+ */
+function sectionAlignmentOf(
+  { prepared, }: { readonly prepared: PreparedDocumentPair; },
+): ArtifactSectionAlignment {
+  if (prepared.sectionPairing === undefined)
+    return { kind: 'deterministic', };
+  return {
+    kind: 'supplied',
+    pairs: prepared.sectionPairing
+      .map(function frozen(pair,): ArtifactSectionCorrespondence {
+        return {
+          source: pair.source,
+          target: pair.target,
+        };
+      },),
+  };
+}
 
 /**
  * Assembles one settled entry's version 2 artifact.
@@ -260,6 +297,12 @@ export function buildSettledTwoLaneArtifact(
       ...((prepared.blockPairing === undefined)
         ? {}
         : { blockPairing: [...prepared.blockPairing,], }),
+
+      // WHICH DECIDER CHOSE THE SECTIONS, always written. Unlike the block
+      // pairing, the deterministic path is the ordinary case here, so an
+      // omitted field would not tell "the aligner decided" from "written
+      // before the field", and a rebuild has to know which.
+      sectionPairing: sectionAlignmentOf({ prepared, },),
     },
     lanes: {
       repair: {

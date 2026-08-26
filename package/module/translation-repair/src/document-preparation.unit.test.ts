@@ -308,5 +308,57 @@ The cat comes home
         expect(spansOf(unpaired,),).toStrictEqual(spansOf(scorer,),);
       },
     },),
+    it({
+      name:
+        'ECHOES the section pairing it consumed and OMITS the field when the deterministic aligner decided, '
+        + 'so an artifact records the value slicing was built on rather than a copy assembled beside it',
+      fn: async () => {
+        /**
+         * Prepared by the deterministic aligner, which supplies no pairing.
+         */
+        const deterministic = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },);
+        expect(Object.hasOwn(
+          deterministic,
+          'sectionPairing',
+        ),).toBe(false,);
+
+        /**
+         * Pairing a caller supplies, crossing the sections on purpose so the
+         * echo cannot be mistaken for the aligner's own index order.
+         */
+        const supplied = [
+          {
+            source: 0,
+            target: 1,
+          },
+          {
+            source: 1,
+            target: 1,
+          },
+        ].slice(
+          0,
+          1,
+        );
+
+        /**
+         * Prepared on that pairing.
+         */
+        const paired = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          sectionPairing: supplied,
+        },);
+        expect(paired.sectionPairing,).toEqual(supplied,);
+
+        // POSITIVE CONTROL: the supplied pairing has to change the slicing, or
+        // the echo would be the only visible difference and a preparation that
+        // ignored the pairing while echoing it would pass.
+        expect(paired.slices.length,).not
+          .toBe(deterministic.slices.length,);
+      },
+    },),
   ],
 },);

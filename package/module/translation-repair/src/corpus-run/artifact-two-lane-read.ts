@@ -30,6 +30,7 @@ import type {
 import { parseLanes, } from './artifact-two-lane-read-lanes.ts';
 import { parseConsolidation, } from './artifact-two-lane-read-consolidate.ts';
 import { parseBlockPairing, } from './artifact-two-lane-read-pairing.ts';
+import { parseSectionPairing, } from './artifact-two-lane-read-section-pairing.ts';
 import { parseComparisonRow, } from './artifact-two-lane-read-rows.ts';
 import {
   assertPipelineDigest,
@@ -187,6 +188,7 @@ function parsePreparation(
       'alignmentPairCount',
       'alignmentFindings',
       'blockPairing',
+      'sectionPairing',
     ],
     path,
   },);
@@ -246,6 +248,11 @@ function parsePreparation(
       value: record.blockPairing,
       alignmentPairCount,
       path: `${path}.blockPairing`,
+    },),
+    sectionPairing: parseSectionPairing({
+      value: record.sectionPairing,
+      alignmentPairCount,
+      path: `${path}.sectionPairing`,
     },),
     alignmentFindings: requireArray({
       value: record.alignmentFindings,

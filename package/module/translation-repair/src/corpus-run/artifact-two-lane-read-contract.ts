@@ -3,6 +3,7 @@ import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { ParsedConsolidation, } from './artifact-two-lane-read-consolidate.ts';
 import type { ArtifactJsonValue, } from './artifact-two-lane-contract.ts';
 import type { ParsedBlockPairing, } from './artifact-two-lane-read-pairing.ts';
+import type { ParsedSectionPairing, } from './artifact-two-lane-read-section-pairing.ts';
 import type {
   ArtifactComparisonRow,
   ArtifactDeliveryRow,
@@ -293,6 +294,12 @@ export type ParsedPreparation = {
    * none.
    */
   readonly blockPairing: ParsedBlockPairing;
+
+  /**
+   * Which decider chose the aligned sections, or a statement that the file
+   * records none.
+   */
+  readonly sectionPairing: ParsedSectionPairing;
 };
 
 /**

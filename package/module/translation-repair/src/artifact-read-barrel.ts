@@ -27,6 +27,10 @@ export {
   type ParsedBlockPairing,
 } from './corpus-run/artifact-two-lane-read-pairing.ts';
 export {
+  parseSectionPairing,
+  type ParsedSectionPairing,
+} from './corpus-run/artifact-two-lane-read-section-pairing.ts';
+export {
   parseRepairEvidence,
   parseTranslateEvidence,
 } from './corpus-run/artifact-two-lane-read-evidence.ts';

@@ -28,6 +28,8 @@ export {
 export {
   ARTIFACT_SCHEMA_VERSION_V2,
   type ArtifactJsonValue,
+  type ArtifactSectionAlignment,
+  type ArtifactSectionCorrespondence,
   type SettledArtifact,
   type SettledLane,
   type SettledPreparation,
