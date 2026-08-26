@@ -125,7 +125,8 @@ method survives the session:
 -   `sol-read.py <entry> <runs-dir>` attaches the three whole files with `@file` arguments and asks sol for a
     numbered list of every place the page departs from the source, with the source words, whether the archive
     had the same defect, and a severity, ending with one sentence on publishability. Launched in the
-    background, never polled. Dry run on the same page launched 16:52Z; it answered by 17:02Z, read against the first reading in the next section.
+    background, never polled. Dry run on the same page launched 16:52Z; it answered by 17:02Z, and is read
+    against the first reading in the next section.
 
 The pass itself: `corpus-pass --only` over the ten entries into `~/temp/agent/fresh-read-20260826`, then
 `XingZ60` alone into the same directory, at production defaults; the launch lines are in the scratchpad

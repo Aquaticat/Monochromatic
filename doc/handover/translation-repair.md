@@ -1933,6 +1933,16 @@ runbook (destinations check); `doc/planning/translation-repair-readiness-signal.
 `doc/audit/translation-repair-output-reading-20260826.md` (tooling, the second reader's dry run). `#268` holds
 the reading tooling's move into the package.
 
+THE SECOND READER'S DRY RUN CHANGED THE READING METHOD. sol read the older `wangzihao980` page (2026-08-22
+build) and returned 15 items where this session's own reading had two: 1 inherited blocker (the day of death,
+"the next day" where the source says the early hours of that day), 5 inherited majors, 5 inherited minors, and
+introduced findings including a restored link shipped inside a malformed sentence beside a terminology split;
+verdict, not publishable. The first reading had never looked at the front matter, never checked dates as facts,
+and graded faithfulness without naturalness. All three are now in the method
+(`doc/audit/translation-repair-output-reading-20260826.md`, "The second reader on the older page"). One new
+scope gap fell out: the front matter's `desc` is translated prose and no stage ever reads or repairs it
+(`#269`; `document-preparation.ts` reads front matter as identity data only).
+
 THE `#263` MISREPORT RECURRED IN A2, now on two seats: `WROTE NOTHING AT ALL: minimax-m3,
 deepseek-v4-flash-0731` beside `SEAT minimax-m3 asked=32 usable=32` and `SEAT deepseek-v4-flash-0731 asked=32
 usable=32`. The landed fix reports them as answered-but-unslated; the live check after the build reads this
