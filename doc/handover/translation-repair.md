@@ -1409,6 +1409,17 @@ runbook (destinations check); `doc/planning/translation-repair-readiness-signal.
 `doc/audit/translation-repair-output-reading-20260826.md` (tooling, the second reader's dry run). `#268` holds
 the reading tooling's move into the package.
 
+ARM D IS IN (`#262`): overlap 4 at a 300000 ms window, same four slices, launched 16:53Z after A2, solo.
+Wall clock 29.31 min (log first to last timestamp) against B's 24.18 at the built-in window, with calls that
+were slower than B's (stream sum 7591 s against 6249 s, p50 5839 ms against 5318, p95 101 s against 89 s), so
+normalized as wall clock over stream sum D is 0.23, the same as B. Voices heard 318 of 320 against B's 302
+of 312; cut 2 (one `qwen3.8-max`, one `hf:Qwen/Qwen3.8-27B`) against B's 7, A's 6, A2's 8 and C's 4; no
+recovery round. Time in grace was 4591 s against B's 2819 s, and overlap filled it: rounds waited up to 300 s
+and the other three slices used the wait. So under overlap the longer window costs nothing measurable and
+buys the fewest cut voices of any arm, which is the pairing the question 12 ranking in
+`doc/planning/translation-repair-open-decisions.md` did not have when it was written; it now does. The
+`#263` coverage line did not fire in D: every seated model drew a row in both tables.
+
 THE SECOND READER'S DRY RUN CHANGED THE READING METHOD. sol read the older `wangzihao980` page (2026-08-22
 build) and returned 15 items where this session's own reading had two: 1 inherited blocker (the day of death,
 "the next day" where the source says the early hours of that day), 5 inherited majors, 5 inherited minors, and
