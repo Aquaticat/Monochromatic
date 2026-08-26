@@ -394,19 +394,12 @@ function initializeAutoMode(
       event: ForeignBorrowed<ToolCallEvent>,
       ctx: ForeignHostCapability<ExtensionContext>,
     ) {
-      /** Non-bypassable policy for global virtual input tied to caller lifetime. */
+      /**
+       * Non-bypassable policy for global virtual input tied to caller lifetime.
+       */
       const virtualInputDecision = guardVirtualInput(event,);
-      if (virtualInputDecision.block) {
-        /** Human-readable action retained in audit logs and batch context. */
-        const action = describeAction(event,);
-        innerL.warn(`hard deny: ${action}; ${virtualInputDecision.reason}`,);
-        denialInCurrentTurn = true;
-        currentTurnBatch[currentTurnBatch.length] = {
-          action,
-          verdict: 'deny',
-        };
+      if (virtualInputDecision.block)
         return virtualInputDecision;
-      }
 
       if (bypassEnabled) {
         /**

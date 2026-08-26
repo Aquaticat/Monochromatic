@@ -35,7 +35,7 @@ const BLOCKED_COMMANDS = [
 /** Commands that inspect text or delegate execution to durable supervisor. */
 const ALLOWED_COMMANDS = [
   "rg --fixed-strings 'ydotool' AGENTS.md",
-  "printf '%s\\n' ydotool",
+  String.raw`printf '%s\n' ydotool`,
 ] as const;
 
 /**
@@ -89,7 +89,13 @@ await describe({
         it({
           name: 'returns fixed hard-block reason for Bash invocation',
           fn: async () => {
-            expect(guardVirtualInput(bashEvent('ydotool key 1:1 1:0',),),).toEqual({
+            /**
+             * Hard-guard decision for direct caller-scoped injection.
+             */
+            const decision = guardVirtualInput(
+              bashEvent('ydotool key 1:1 1:0',),
+            );
+            expect(decision,).toEqual({
               block: true,
               reason: CALLER_SCOPED_YDOTOOL_REASON,
             },);
@@ -98,7 +104,13 @@ await describe({
         it({
           name: 'allows Bash text inspection',
           fn: async () => {
-            expect(guardVirtualInput(bashEvent("rg 'ydotool' .",),),).toEqual({ block: false, },);
+            /**
+             * Guard decision for text-only ydotool inspection.
+             */
+            const decision = guardVirtualInput(
+              bashEvent("rg 'ydotool' .",),
+            );
+            expect(decision,).toEqual({ block: false, },);
           },
         },),
         it({

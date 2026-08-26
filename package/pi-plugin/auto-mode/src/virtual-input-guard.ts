@@ -11,6 +11,7 @@
 import { basename, } from 'node:path';
 
 import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { analyzeBashCommand, } from './command-parser.ts';
@@ -20,7 +21,14 @@ import type {
   GuardDecision,
 } from './types.ts';
 
-/** Executable name whose persistent virtual device can retain interrupted key presses. */
+/**
+ * Module logger for hard virtual-input decisions.
+ */
+const l = tagged({ tag: 'virtual-input-guard', },);
+
+/**
+ * Executable name whose persistent virtual device can retain interrupted key presses.
+ */
 const YDOTOOL_COMMAND_NAME = 'ydotool';
 
 /**
@@ -40,7 +48,9 @@ const CALLER_SCOPED_COMMAND_FORWARDERS = new Set([
   'systemd-run',
 ],);
 
-/** Shell interpreters whose inline command source needs another parser pass. */
+/**
+ * Shell interpreters whose inline command source needs another parser pass.
+ */
 const INLINE_SHELL_INTERPRETERS = new Set([
   'bash',
   'dash',
@@ -48,9 +58,13 @@ const INLINE_SHELL_INTERPRETERS = new Set([
   'zsh',
 ],);
 
-/** Guidance returned when direct ydotool execution is blocked. */
-const CALLER_SCOPED_YDOTOOL_REASON =
-  'Direct ydotool invocation is blocked because an injected key can cancel its own Bash caller before key-up. Use nested-wayland-session, or an independently supervised input broker after user authorization.';
+/**
+ * Guidance returned when direct ydotool execution is blocked.
+ */
+const CALLER_SCOPED_YDOTOOL_REASON = [
+  'Direct ydotool invocation is blocked because an injected key can cancel its own Bash caller before key-up.',
+  'Use nested-wayland-session, or an independently supervised input broker after user authorization.',
+].join(' ',);
 
 /**
  * Reduce command path to executable basename.
@@ -105,7 +119,9 @@ function commandInvokesYdotool(command: CommandInfo,): boolean {
     return true;
   if (!CALLER_SCOPED_COMMAND_FORWARDERS.has(executableName(command.name,),))
     return false;
-  return command.args.some(namesYdotool,);
+  return command
+    .args
+    .some(namesYdotool,);
 }
 
 /**
@@ -123,12 +139,22 @@ function commandInvokesYdotool(command: CommandInfo,): boolean {
 function inlineShellSources(command: CommandInfo,): readonly string[] {
   if (!INLINE_SHELL_INTERPRETERS.has(executableName(command.name,),))
     return [];
-  return command.args
-    .flatMap(function sourceAfterCommandFlag(argument, index,) {
+  return command
+    .args
+    .flatMap(function sourceAfterCommandFlag(
+      argument,
+      index,
+    ) {
       if (!argument.startsWith('-',))
         return [];
-      if (!argument.slice(1,).includes('c',))
+      if (!argument
+        .slice(1,)
+        .includes('c',)) {
         return [];
+      }
+      /**
+       * Inline shell program immediately following current command-string flag.
+       */
       const source = command.args[index + 1];
       if (source === undefined)
         return [];
@@ -153,21 +179,30 @@ function inlineShellSources(command: CommandInfo,): readonly string[] {
  * ```
  */
 function hasCallerScopedYdotool(command: string,): boolean {
-  /** Shell sources awaiting analysis, extended by inline interpreter arguments. */
+  /**
+   * Shell sources awaiting analysis, extended by inline interpreter arguments.
+   */
   const pendingSources = [command,];
-  /** Sources already analyzed, preventing duplicate nested work. */
+  /**
+   * Sources already analyzed, preventing duplicate nested work.
+   */
   const visitedSources = new Set<string>();
 
   for (const source of pendingSources) {
     if (visitedSources.has(source,))
       continue;
     visitedSources.add(source,);
-    /** Structured shell analysis for current source. */
+    /**
+     * Structured shell analysis for current source.
+     */
     const analysis = analyzeBashCommand(source,);
     if (!analysis.parsed)
       continue;
-    if (analysis.commands.some(commandInvokesYdotool,))
+    if (analysis
+      .commands
+      .some(commandInvokesYdotool,)) {
       return true;
+    }
     for (const parsedCommand of analysis.commands) {
       pendingSources.push(...inlineShellSources(parsedCommand,));
     }
@@ -201,8 +236,20 @@ function guardVirtualInput(
 ): GuardDecision {
   if (!isBashToolEvent(event,))
     return { block: false, };
-  if (!hasCallerScopedYdotool(event.input.command,))
+  if (!hasCallerScopedYdotool(
+    event.input
+      .command,
+  )) {
     return { block: false, };
+  }
+  /**
+   * Function-boundary logger for non-bypassable denial.
+   */
+  const innerL = tagged({
+    tag: guardVirtualInput.name,
+    l,
+  },);
+  innerL.warn('blocking caller-scoped ydotool command',);
   return {
     block: true,
     reason: CALLER_SCOPED_YDOTOOL_REASON,
