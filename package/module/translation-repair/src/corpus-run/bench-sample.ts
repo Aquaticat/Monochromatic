@@ -1,5 +1,6 @@
 import { alignDocumentSections, } from '../chunk-document.ts';
 import {
+  type CorpusPin,
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
@@ -77,18 +78,24 @@ export type BenchSlice = {
  * ```
  */
 async function sliceEntry(
-  { entryId, }: { readonly entryId: string; },
+  {
+    entryId,
+    pin,
+  }: {
+    readonly entryId: string;
+    readonly pin: CorpusPin;
+  },
 ): Promise<readonly BenchSlice[]> {
   /**
    * Both sides at the pin; an entry missing either is simply not sampled.
    */
   const [sourceText, targetText,] = await Promise.all([
     readCorpusFile({
-      pin: RUN_CORPUS_PIN,
+      pin,
       relPath: `people/${entryId}/page.md`,
     },),
     readCorpusFile({
-      pin: RUN_CORPUS_PIN,
+      pin,
       relPath: `people/${entryId}/page.en.md`,
     },),
   ],);
@@ -143,20 +150,36 @@ async function sliceEntry(
  * @param count - slices wanted; fewer come back only when the corpus holds
  * fewer
  *
+ * @param pin - corpus clone and commit to read, defaulting to the run pin;
+ * passed rather than read so this is testable against a throwaway clone instead
+ * of the unlicensed one
+ *
  * @returns Sample ordered by source size, smallest first
+ *
+ * @throws Error when the pinned corpus yields no slice at all, since a bench
+ * drawn over nothing would report widths as indistinguishable while having
+ * compared them on no work
  *
  * @example
  * ```ts
  * const sample = await sampleBenchSlices({ count: 12, },);
  * ```
+ *
+ * @internal
  */
 export async function sampleBenchSlices(
-  { count, }: { readonly count: number; },
+  {
+    count,
+    pin = RUN_CORPUS_PIN,
+  }: {
+    readonly count: number;
+    readonly pin?: CorpusPin;
+  },
 ): Promise<readonly BenchSlice[]> {
   /**
    * Entries at the pin, in the order the corpus lists them.
    */
-  const entryIds = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
+  const entryIds = await listCorpusPeople({ pin, },);
 
   /**
    * Every entry sliced, or reported as unreadable.
@@ -168,7 +191,10 @@ export async function sampleBenchSlices(
   const sliced = await Promise.all(
     entryIds.map(async function sliceOne(entryId,): Promise<readonly BenchSlice[]> {
       try {
-        return await sliceEntry({ entryId, },);
+        return await sliceEntry({
+          entryId,
+          pin,
+        },);
       }
       catch (error) {
         /**

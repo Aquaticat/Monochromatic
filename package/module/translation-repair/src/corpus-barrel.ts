@@ -184,7 +184,10 @@ export {
   summarizeBench,
 } from './corpus-run/bench-report.ts';
 export type { BenchRow, } from './corpus-run/roster-bench.ts';
-export type { BenchSlice, } from './corpus-run/bench-sample.ts';
+export {
+  type BenchSlice,
+  sampleBenchSlices,
+} from './corpus-run/bench-sample.ts';
 export {
   classifyWidths,
   type HeadToHeadVerdict,
