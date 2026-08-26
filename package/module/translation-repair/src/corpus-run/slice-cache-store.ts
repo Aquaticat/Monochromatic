@@ -1,6 +1,7 @@
 import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { everyStageHeard, } from '../stage-silence.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import type { PairedSectionRecord, } from '../pair-blocks-stage.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
@@ -189,7 +190,7 @@ export async function openSliceCache(
     dir,
     generation,
     namespace: REPAIR_SLICE_NAMESPACE,
-    isValue: isChunkRepairOutcome,
+    isValue: isResumableRepairOutcome,
   },);
 }
 
@@ -427,6 +428,41 @@ function isRefinedSliceSettlement(value: unknown,): value is RefinedSliceSettlem
 }
 
 /**
+ * Whether a stored repair outcome may be resumed: the shape is right AND every
+ * stage that settled it was heard. A record written while a stage fell short
+ * of quorum is an outage frozen as a decision, and is recomputed (`#238`).
+ *
+ * @param value - parsed cache file
+ *
+ * @returns True when the value is an outcome worth resuming
+ *
+ * @example
+ * ```ts
+ * if (isResumableRepairOutcome(parsed,)) resumed.set(key, parsed,);
+ * ```
+ */
+function isResumableRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
+  return isChunkRepairOutcome(value,) && everyStageHeard({ findings: value.findings, },);
+}
+
+/**
+ * Whether a stored refinement may be resumed, on the same rule as the repair
+ * outcome: right shape, every stage heard.
+ *
+ * @param value - parsed cache file
+ *
+ * @returns True when the value is a settlement worth resuming
+ *
+ * @example
+ * ```ts
+ * if (isResumableRefinement(parsed,)) resumed.set(key, parsed,);
+ * ```
+ */
+function isResumableRefinement(value: unknown,): value is RefinedSliceSettlement {
+  return isRefinedSliceSettlement(value,) && everyStageHeard({ findings: value.findings, },);
+}
+
+/**
  * Opens an entry's REFINEMENT cache.
  *
  * Separate from the repair lane's own cache because the naturalness lane runs
@@ -458,7 +494,7 @@ export async function openRefineSliceCache(
     dir,
     generation,
     namespace: REFINE_NAMESPACE,
-    isValue: isRefinedSliceSettlement,
+    isValue: isResumableRefinement,
   },);
 }
 

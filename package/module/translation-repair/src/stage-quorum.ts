@@ -7,6 +7,7 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import { runGatherRound, } from './stage-round.ts';
+import { stageQuorumUnmetFinding, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Stage quorum
@@ -372,7 +373,7 @@ export async function gatherStageVoices<ValueT,>(
       quorumMet,
       findings: [
         ...lostFindings,
-        `stage-quorum-unmet (${shortfall})`,
+        stageQuorumUnmetFinding({ shortfall, },),
       ],
     };
   }

@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { cacheRefusalsOf, } from './repair-cache-gate.ts';
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
@@ -450,9 +451,13 @@ export async function repairPreparedDocument(
         incumbentText: slice.target
           .text,
       },);
-      if (outcome.heardCritics === 0) {
+      /**
+       * Why this settlement may not be cached, empty when it may (`#238`).
+       */
+      const refusals = cacheRefusalsOf({ outcome, },);
+      if (refusals.length > 0) {
         rl.warn(
-          `chunk ${String(sliceIndex,)}: no critic was heard, so the slice ships `
+          `chunk ${String(sliceIndex,)}: ${refusals.join('; ',)}, so the slice ships `
             + 'unchanged and is NOT cached',
         );
       }

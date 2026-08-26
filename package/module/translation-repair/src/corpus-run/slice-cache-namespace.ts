@@ -1,13 +1,19 @@
 import {
   mkdir,
-  readdir,
   readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import type { SliceCache, } from '../slice-cache.ts';
+import {
+  readDirectoryNames,
+  readNamespaceGeneration,
+} from './slice-cache-dir-read.ts';
+
 
 //region Slice cache namespace
 // How two lanes share one per-entry cache directory without touching each
@@ -43,6 +49,16 @@ export {
   type SliceNamespace,
   TRANSLATE_SLICE_NAMESPACE,
 } from './slice-cache-claims.ts';
+// LIFTED for the line cap and re-exported for the same reason as the claims.
+export {
+  readDirectoryNames,
+  readNamespaceGeneration,
+} from './slice-cache-dir-read.ts';
+
+/**
+ * Logger root for the namespaced slice cache.
+ */
+const l = tagged({ tag: 'translation-repair', },);
 
 /**
  * File suffix every persisted slice carries.
@@ -266,6 +282,14 @@ export async function loadNamespacedSlices<ValueT,>(
   },
 ): Promise<Map<string, ValueT>> {
   /**
+   * Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: loadNamespacedSlices.name,
+    l,
+  },);
+
+  /**
    * Settled values keyed by slice key.
    */
   const resumed = new Map<string, ValueT>();
@@ -316,6 +340,11 @@ export async function loadNamespacedSlices<ValueT,>(
           key,
           record,
         );
+      else
+        // Said out loud, because a record the guard refuses is recomputed and
+        // paid for again, and since `#238` a refused record may be a settlement
+        // reached while a stage heard nobody rather than a shape drift.
+        rl.warn(`${namespace.marker}: ${name} is not a resumable value for this lane; it will be recomputed`,);
     }
     catch (error) {
       // A half-written file (SyntaxError) is recomputed; other faults surface.
@@ -326,85 +355,6 @@ export async function loadNamespacedSlices<ValueT,>(
   return resumed;
 }
 
-/**
- * Lists a directory, reporting an absent one as empty.
- *
- * @param dir - directory to list
- *
- * @returns File names, empty when the directory does not exist
- *
- * @example
- * ```ts
- * const names = await readDirectoryNames({ dir, },);
- * ```
- */
-export async function readDirectoryNames(
-  { dir, }: { readonly dir: string; },
-): Promise<readonly string[]> {
-  try {
-    return await readdir(dir,);
-  }
-  catch (error) {
-    // An absent directory (ENOENT) means no prior progress; anything else is a
-    // real fault and must surface.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return [];
-    throw error;
-  }
-}
-
-/**
- * Reads the pipeline that filled one lane's slices.
- *
- * @param dir - per-entry cache directory
- *
- * @param namespace - lane asking
- *
- * @returns Recorded digest, empty when this lane never wrote here
- *
- * @throws Error when the marker exists and cannot be read, since treating an
- * unreadable marker as absent would DELETE the lane's settled slices
- *
- * @example
- * ```ts
- * const cached = await readNamespaceGeneration({ dir, namespace, },);
- * ```
- */
-export async function readNamespaceGeneration(
-  {
-    dir,
-    namespace,
-  }: {
-    readonly dir: string;
-    readonly namespace: SliceNamespace;
-  },
-): Promise<string> {
-  try {
-    /**
-     * Raw marker text, including its trailing newline.
-     */
-    const text = await readFile(
-      join(
-        dir,
-        namespace.marker,
-      ),
-      'utf8',
-    );
-    return text.trim();
-  }
-  catch (error) {
-    // Absent is the ordinary state for a lane that has not written here yet.
-    // Anything else, a permission fault above all, must NOT read as absent:
-    // that answer discards every settled slice this lane owns.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return '';
-    throw error;
-  }
-}
 
 /**
  * Opens one lane's slice cache inside a shared entry directory.

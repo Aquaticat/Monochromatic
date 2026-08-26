@@ -1,6 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import {
+  everyStageHeard,
+  silentStagesOf,
+} from './stage-silence.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { parseDocument, } from './parse-document.ts';
@@ -332,14 +336,30 @@ export async function runRefinePhase(
       .push(...settled.findings,);
 
     // Persisted before the next slice starts, matching the accuracy pass, so an
-    // abort leaves settled refinements recoverable rather than rebought.
-    await refineCache?.persist({
-      key,
-      serialized: JSON.stringify({
-        outcome: settled.outcome,
-        findings: settled.findings,
-      } satisfies RefinedSliceSettlement,),
-    },);
+    // abort leaves settled refinements recoverable rather than rebought. NOT
+    // when a stage heard fewer than quorum: that settlement is an outage, not a
+    // decision, and cached it would resume on every later run (`#238`).
+    if (everyStageHeard({ findings: settled.findings, },)) {
+      await refineCache?.persist({
+        key,
+        serialized: JSON.stringify({
+          outcome: settled.outcome,
+          findings: settled.findings,
+        } satisfies RefinedSliceSettlement,),
+      },);
+    }
+    else {
+      /**
+       * Which stages fell short, for the warn line.
+       */
+      const silent = silentStagesOf({ findings: settled.findings, },)
+        .join('; ',);
+      l.warn(
+        `slice ${String(outcome.sliceIndex,)}: a stage heard fewer than quorum, so the refinement is NOT cached: ${
+          silent
+        }`,
+      );
+    }
     /* oxlint-enable no-await-in-loop */
   }
   return {

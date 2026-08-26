@@ -23,6 +23,13 @@ export {
   type StageGather,
 } from './stage-quorum.ts';
 export {
+  everyStageHeard,
+  silentStagesOf,
+  STAGE_QUORUM_UNMET_PREFIX,
+  stageQuorumUnmetFinding,
+} from './stage-silence.ts';
+export { cacheRefusalsOf, } from './repair-cache-gate.ts';
+export {
   type RoundOutcome,
   runGatherRound,
   STRAGGLER_GRACE_MS,

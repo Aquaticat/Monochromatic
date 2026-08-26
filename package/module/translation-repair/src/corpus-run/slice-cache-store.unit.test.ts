@@ -37,6 +37,7 @@ import {
   discardSliceCache,
   listResumableEntries,
   openSliceCache,
+  stageQuorumUnmetFinding,
   openTranslateSliceCache,
   TRANSLATE_SLICE_CACHE_VERSION,
 } from '../../dist/final/node/index.mjs';
@@ -212,6 +213,42 @@ await describe({
       },
     },),
 
+    it({
+      name: 'DISCARDS a persisted slice whose findings say a stage heard fewer than quorum, so an '
+        + 'outage is re-asked on the next run rather than resumed as a decision (`#238`)',
+      fn: async () => {
+        await using scratch = await scratchDir();
+        /**
+         * Entry directory for this case.
+         */
+        const dir = join(
+          scratch.path,
+          'Mittens',
+        );
+        /**
+         * Cache as a run that lost its critic stage would have written it.
+         */
+        const first = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+        await first.persist({
+          key: 'slice-hash-silent',
+          serialized: JSON.stringify({
+            ...catOutcome({ sliceIndex: 0, },),
+            findings: [stageQuorumUnmetFinding({ shortfall: 'critic 0/6', },),],
+          },),
+        },);
+        await first.persist({
+          key: 'slice-hash-heard',
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 1, },),),
+        },);
+        /**
+         * Cache reopened, which is what a resumed run does.
+         */
+        const second = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+        expect(second.resumed.size,).toBe(1,);
+        expect(second.resumed.has('slice-hash-heard',),).toBe(true,);
+        expect(second.resumed.has('slice-hash-silent',),).toBe(false,);
+      },
+    },),
     it({
       name: 'REFUSES a payload sitting under the wrong name, which is the check that replaced the '
         + 'slice-index one. A file name is what the loader derives a key from, so a record stored '
