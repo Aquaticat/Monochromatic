@@ -232,7 +232,11 @@ entry, its source page absent) beside `pending=92` and `PLAN ok`; that measureme
 `transient`, is not persisted, and is refused on resume together with every record from before the field; GFP fails
 3 and 2, 2, and 3 cases under the three mutations.
 Whole-suite `buildAndTest` after `17bcaf46c`: 772 PASS, 0 FAIL, exit 0 (solo run, nothing else building).
-Queue: `#254` onward in task order, then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
+`#254` LANDED 2026-08-26 in `7a2a21ed8`: CRLF is folded to LF at `readCorpusFile` (141 endings on the one such page,
+1 block before and 45 after), the block splitter folds again, and the invisible-line mask judges around the return;
+GFP fails 2 cases under each of the three mutations.
+Whole-suite `buildAndTest` after `7a2a21ed8`: 773 PASS, 0 FAIL, exit 0 (solo run, nothing else building).
+Queue: `#256` (the last open MAJOR task), then the MINORs, then the owed doc passes (A-4, A-5, A-6) that close `#236`.
 
 ## FIXED: half the roster was sent to a provider that cannot serve it (`#235`, 2026-08-25 to 2026-08-26)
 

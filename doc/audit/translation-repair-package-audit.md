@@ -807,6 +807,19 @@ so an invisible line on that page keeps its `\r` and is never masked;
 so every wrapped critic quote there is refused (document-4).
 Tracked as `#254`.
 
+FIXED 2026-08-26 in `7a2a21ed8`: `readCorpusFile` folds every CRLF to LF through `foldCarriageReturns`
+(`src/line-endings.ts`, which counts what it folded), `isLineStructured` folds again for callers that read text by
+other means, and the invisible-line mask judges each line without its carriage return and blanks around it, keeping
+the return and the length.
+Measured on the page at the pin: 141 endings folded, 1 block before the fold and 45 after; the page is prose, so the
+predicate answers false for the right reason now, and it carries no invisible-only line.
+Document-4 no longer meets corpus text, since the quote normalizer sees LF; its two-break reading of a literal CRLF
+stands for text read by other means and is recorded here rather than changed, because a length-preserving
+normalizer cannot collapse a two-unit ending to one space without an offset map.
+Guards: the fold counts and shrinks by exactly the count and leaves LF and a lone return alone; a CRLF page reads
+back LF; CRLF verse is line-structured; a CRLF invisible line is blanked with its return kept and the region
+covering the mark alone. Undoing the read fold, the splitter fold, or the mask's body judgement fails 2 cases each.
+
 ### document-5 to document-12, MINOR, verified where cited
 
 The unread-signals doc describes a `mirrored` flag and a proportional fallback that `chunk-document.ts:425-444`
