@@ -5,7 +5,7 @@ the two-lane pipeline is built and publishing;
 the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
 is landed, GFP-proven and recorded under "State of the tree";
 the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-calibrate through artifact are landed (`acfc7ad22` to `12b2af6c1`), rendering is next;
+every group from calibrate through rendering is landed (`acfc7ad22` to `50ffffc07`), closing `#236` is next;
 `#213` (both arms under `mise run`), `#230`'s recovery rate, `#229` lever 1 and `#219` follow.
 `doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
 
@@ -401,7 +401,27 @@ capture must chain and forward rather than replace and restore, and each case mu
 Whole-suite `buildAndTest` after `12b2af6c1`: 804 PASS, 0 FAIL, exit 0 (solo run; the three new suites add four
 describes).
 
-Queue: the register's MINORs in register order (rendering-4 next), which close `#236`; then `#213` (arm A and arm B
+rendering-4 to rendering-12 LANDED 2026-08-26 in `744890056` (rendering-4, 5, 6, 7, 8, 9, 10, 12) and `50ffffc07`
+(rendering-11): voice rates read the run's roster and print `asked= answered= lost=`; relocation candidates print
+claim pairs and slice pairs apart; one client per run; the four operator refusals are `StatedRefusalError`; the row
+and digest notes say `report` carries document spans; a negative `--cap` is refused; unknown category and verdict
+words are bounded to one token; `RenderingAuditInvariantError` stands at the six invariant sites; two new suites
+cover the driver and the report and run both built commands at the boundary. Gates on both commits: oxlint `Found 0
+warnings and 0 errors`, `lint:types` exit 0. GFP is attributed guard by guard in the register block.
+
+REGRESSION SHIPPED AND FIXED WITHIN THE HOUR: `744890056` exported the two CLI entry modules through the audit
+barrel, which made the bundler fold each into a shared chunk and left the built commands as re-exports whose
+`import.meta.main` read false; `mise run rendering-audit-settled` and `rendering-audit-settled-report` printed
+nothing and exited 0 for that one commit. The boundary cases written for rendering-11 found it; `50ffffc07` fixed it
+by moving the testable halves into `rendering-audit-settled-buy.ts` and `rendering-audit-settled-runs.ts`. Rule:
+nothing an entry module declares may be exported through a barrel; the boundary cases guard it, and a marker export
+re-added to the barrel fails them.
+
+Two lessons for guards: a failing `describe` rejects and stops its suite, so one GFP round may mutate at most one
+describe per suite file or later describes never report; and `it` children of one describe run concurrently, so a
+console capture must chain and forward (recorded under the artifact group).
+
+Queue: close `#236` after the advisor checkpoint (register tally, handover, the issue itself); then `#213` (arm A and arm B
 under `mise run`), `#230`'s recovery rate on the next run, `#229` lever 1, and `#219` (the readiness signal via
 AskUserQuestion).
 
@@ -1876,6 +1896,13 @@ The corpus is still read at runtime from the pinned clone,
 corpus files are still never committed as corpus files,
 and artifacts and grading sheets still live under run directories outside the repository.
 The change is that quoting inside our own documents is now unremarkable.
+
+FOR THE SANITIZATION ITSELF (rendering-8, 2026-08-26):
+the persisted runs of the settled rendering audit, `<runs dir>/rendering-audit-settled/*.json`,
+carry document spans and model prose in every row's `report`
+(`locator.text`, `focus.text` on both sides, each voice's `reason`),
+so they are corpus-bearing whatever the `textIdentity` digest beside them says;
+the module notes that once claimed otherwise were corrected in `744890056`.
 
 ## Two source fixes found while the run was live, both owed (2026-08-25)
 

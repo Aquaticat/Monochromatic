@@ -1329,6 +1329,56 @@ model-supplied category and verdict words are stored verbatim in `dropped` (`ren
 `settled.ts` and `settled-report.ts` have no test;
 invariant throws are bare `Error`.
 
+FIXED 2026-08-26 in `744890056` (rendering-4, 5, 6, 7, 8, 9, 10, 12) and `50ffffc07` (rendering-11, and the
+regression `744890056` shipped).
+rendering-4: `rateByVoice({ rows, roster })` seats the run's recorded roster first, so `asked` is the subject count
+for every member and `answered` is what arrived; `VoiceRate` gains `answered`, the report reads `roster` off the run
+file (empty for a run written before it was kept) and `printVoices` prints `asked= answered= lost=`.
+Guard: `asked` collapsed onto `answered` fails `COUNTS A LOST VOICE AGAINST THE ROSTER`; restored, passes.
+rendering-5: `distinctSlicePairs` counts (run set, entry, omission slice, addition slice) tuples and the heading
+reads `claim pairs=N slice pairs=M`; the read suite carries the three-by-two case (six claim pairs, one slice pair).
+Guard: the slice-pair count made to add the claim count fails `COUNTS the candidates in its heading` and `PRINTS
+FEWER SLICE PAIRS THAN CLAIM PAIRS`; restored, passes.
+rendering-6: `main` builds one client per run, only once something is bought, and `auditOne` takes it.
+Guard: the roster emptied at the audit call fails `BUILDS ONE ROW` and `SHOWS THE ROSTER A DECLARED IDENTITY`,
+since the scripted client records who was asked; restored, passes.
+rendering-7: the four refusals are `StatedRefusalError`.
+Guards: the mixed-layout site reverted fails `REFUSES A DIRECTORY CARRYING BOTH LAYOUTS` (the class is asserted);
+the no-rows site reverted fails `REFUSES A FILE CARRYING NO ROWS ARRAY`, and the built report then exits 5 on a
+rowless run where it exits 6 restored; the newest-run site reverted fails `REFUSES A PROBE THAT HAS NEVER RUN`;
+the empty-archive site reverted fails `REFUSES AN EMPTY ARCHIVE` at the built command; all restored, pass.
+rendering-8: the row module says `report` carries document spans and model prose, so a persisted run of this
+probe is corpus-bearing and `textIdentity` is the one field built to carry none; the digest module's note is
+scoped to the identity field; the handover's `#219` section names the run files. Notes; no guard.
+rendering-9: `readCap` refuses a cap below zero with the operator's word repeated; `NO_CAP` stays internal.
+Guard: the refusal loosened fails `REFUSES a cap below zero`; restored, passes.
+rendering-10: `boundedWord` keeps the first token of a model-supplied category or verdict, at most 32 characters,
+in both drop reasons.
+Guard: the word repeated whole fails `BOUNDS THE WORD IT REPEATS`, `BOUNDS A LONG SINGLE TOKEN` and `BOUNDS AN
+UNKNOWN VERDICT`; restored, passes.
+rendering-11: `rendering-audit-settled.unit.test.ts` covers `capped`, `eligibleSubjects`, `printPopulation` and
+`auditOne` (scripted client, identity threading); `rendering-audit-settled-report.unit.test.ts` covers
+`readRunRows`, `newestRun` and `printAcross` on throwaway runs and runs both built commands at the boundary; the
+corroborate case that looped over a possibly empty result now pins two groups of two, measured first. Both `main`s
+are exercised only through the built commands.
+Guards: `capped` widened by one fails `BUYS NOTHING at zero` and `BUYS THE PREFIX`; the roster never read fails
+`READS the rows, the archive the run named and the roster it asked`; the REFUSED line dropped fails `SAYS WHAT A
+REFUSED VERIFICATION OBJECTED TO`; the identity withheld fails `SHOWS THE ROSTER A DECLARED IDENTITY`; all
+restored, pass.
+rendering-12: `RenderingAuditInvariantError` (`rendering-audit-invariant.ts`) at the six sites, unmarked and
+recorded in the inventory's withheld list.
+Guard: the class name dropped fails `NAMES ITSELF`; restored, passes.
+THE REGRESSION `744890056` SHIPPED: exporting the two CLI entry modules through the audit barrel made the bundler
+fold each into a shared chunk, and the built `rendering-audit-settled.mjs` and `rendering-audit-settled-report.mjs`
+became re-exports whose `import.meta.main` read false, so both commands printed nothing and exited 0 for that one
+commit. `50ffffc07` moves the testable halves to `rendering-audit-settled-buy.ts` and
+`rendering-audit-settled-runs.ts`, with the probe name shared from the row module, and keeps the entries as entries.
+Guard: a marker export from each entry re-added to the barrel fails `REPORTS A NAMED RUN and exits 0` and `REFUSES A
+FILE THAT IS NOT A RUN`, with both built files carrying no `import.meta.main`; restored, passes. Rule for the
+package: nothing an entry module declares may be exported through a barrel.
+Method note: a failing `describe` rejects and stops its suite, so the guards were proved one describe per suite
+file per round; the first round's two mutations masked six others until they were re-run singly.
+
 ## Slice reports
 
 Each entry records the reviewer's coverage claim, then what the main session verified.
