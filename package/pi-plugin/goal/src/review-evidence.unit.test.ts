@@ -311,7 +311,16 @@ await describe({
           rationale: 'Every requirement is supported.',
           remaining_work: '',
         },).approved,).toBe(true,);
-        expect(remainingWorkDescribesReview('This review cannot approve the result.',),).toBe(true,);
+        for (const leakedGuidance of [
+          'The reviewer could not verify integration tests.',
+          'A reviewer needs another result.',
+          'An independent review found missing verification.',
+          'Goal mode requires finalized output.',
+          'The stop hook needs a tool result.',
+          'The stop-hook needs a tool result.',
+        ]) {
+          expect(remainingWorkDescribesReview(leakedGuidance,),).toBe(true,);
+        }
         expect(() => parseGoalReviewVerdict({
           approved: false,
           rationale: 'Missing work.',

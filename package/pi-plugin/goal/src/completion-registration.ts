@@ -10,9 +10,11 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { registerBackgroundProcessMonitor, } from './background-process-monitor.ts';
+import { logger, } from './effects.ts';
 import {
   createGoalSettlementReviewRequest,
   executeGoalSettlementReview,
@@ -184,15 +186,20 @@ function registerGoalSettlementReview(
       if (reviewKey === lastReviewedSettlementKey)
         return;
       lastReviewedSettlementKey = reviewKey;
-      await executeGoalSettlementReview({
-        request,
-        context,
-        lifecycle,
-        reviewer,
-        handleReviewerUnavailable: unavailableHandler,
-        createId,
-        now,
-      },);
+      try {
+        await executeGoalSettlementReview({
+          request,
+          context,
+          lifecycle,
+          reviewer,
+          handleReviewerUnavailable: unavailableHandler,
+          createId,
+          now,
+        },);
+      }
+      catch (error) {
+        logger.error(`private settlement review application failed: ${caughtValueText(error,)}`,);
+      }
     },
   );
 }

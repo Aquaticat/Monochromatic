@@ -114,6 +114,8 @@ function revalidateSettlementReview(
     request,
   }))
     return { current: false, };
+  if ((!context.isIdle()) || context.hasPendingMessages())
+    return { current: false, };
   /**
    * Current branch leaf read only while runtime and generation match.
    */

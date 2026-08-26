@@ -18,6 +18,7 @@ import {
 import type { ScriptedStructuredReviewTransport, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 import {
+  buildBudgetedGoalReviewPrompt,
   rankPromptedReviewers,
   resolveGoalReviewerPool,
   runGoalReviewerPool,
@@ -309,6 +310,72 @@ await describe({
           'review/fallback-deny',
           'other/fallback-fail',
         ],);
+      },
+    },),
+    it({
+      name: 'approves incident answer and denies evidence without final answer',
+      fn: async () => {
+        const model = reviewerModel({
+          provider: 'review',
+          id: 'incident',
+          inputCost: 1,
+          outputCost: 1,
+        },);
+        /** Candidate prompt containing finalized five-way answer. */
+        const presentPrompt = buildBudgetedGoalReviewPrompt({
+          evidence: {
+            objective: 'Explain why 67 is prime in five ways',
+            transcriptChunks: [
+              'Assistant:\n67 is prime in these five ways:\n1. Trial division\n2. Sieve\n3. Wilson\n4. Lucas\n5. Residues',
+            ],
+          },
+          contextWindow: model.contextWindow,
+        },);
+        /** Candidate prompt containing only abandoned exploration. */
+        const absentPrompt = buildBudgetedGoalReviewPrompt({
+          evidence: {
+            objective: 'Explain why 67 is prime in five ways',
+            transcriptChunks: [
+              'Finalized tool result advisor:\nUse an elliptic curve.',
+              'Finalized tool result bash:\npoints 0',
+            ],
+          },
+          contextWindow: model.contextWindow,
+        },);
+        const present = await runGoalReviewerPool({
+          pool: {
+            candidates: [{
+              ...reviewerCandidate(model,),
+              systemPrompt: presentPrompt.systemPrompt,
+              userContent: presentPrompt.userContent,
+            },],
+            diagnostics: [],
+          },
+          testTransport: goalReviewTransport([goalVerdictStream({
+            approved: true,
+            rationale: 'Five finalized explanations are present.',
+            remainingWork: '',
+          },),],),
+        },);
+        const absent = await runGoalReviewerPool({
+          pool: {
+            candidates: [{
+              ...reviewerCandidate(model,),
+              systemPrompt: absentPrompt.systemPrompt,
+              userContent: absentPrompt.userContent,
+            },],
+            diagnostics: [],
+          },
+          testTransport: goalReviewTransport([goalVerdictStream({
+            approved: false,
+            rationale: 'Final answer absent.',
+            remainingWork: 'Provide five finalized primality explanations.',
+          },),],),
+        },);
+        expect(present.verdict.approved,).toBe(true,);
+        expect(absent.verdict.approved,).toBe(false,);
+        expect(presentPrompt.userContent,).toContain('67 is prime in these five ways',);
+        expect(absentPrompt.userContent,).not.toContain('67 is prime in these five ways',);
       },
     },),
   ],

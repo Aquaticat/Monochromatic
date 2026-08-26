@@ -32,11 +32,17 @@ function deliverPendingGoalKickoff(controller: GoalControllerState,): GoalContro
     };
   if (controller.goal
     .phase
-    !== 'active')
+    !== 'active') {
     return {
-      controller,
+      controller: {
+        goal: controller.goal,
+        runtimeEpoch: controller.runtimeEpoch,
+        settlementSequence: controller.settlementSequence,
+        shutdown: controller.shutdown,
+      },
       effects: [],
     };
+  }
   /**
    * Deferred kickoff captured while Pi was busy.
    */

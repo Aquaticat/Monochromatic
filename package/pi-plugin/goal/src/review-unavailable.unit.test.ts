@@ -107,6 +107,12 @@ function fallbackHarness(mode: GoalTestMode,): {
   /** Fake Pi context with selected leaf. */
   const context = {
     mode,
+    isIdle() {
+      return true;
+    },
+    hasPendingMessages() {
+      return false;
+    },
     sessionManager: {
       getLeafId() {
         return leaf.value;

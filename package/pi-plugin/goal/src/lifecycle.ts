@@ -265,11 +265,22 @@ function registerGoalLifecycle(
   function deliverPendingKickoff(context: ForeignBorrowed<ExtensionContext>,): boolean {
     if (controller.pendingKickoff === undefined)
       return false;
+    /**
+     * Pending-kickoff transition and delivery evidence.
+     */
+    const transition = deliverPendingGoalKickoff(controller,);
+    /**
+     * Whether transition emitted task kickoff.
+     */
+    const delivered = transition.effects
+      .some(function sendsKickoff(effect,) {
+      return effect.type === 'send_message';
+    },);
     applyTransition({
-      transition: deliverPendingGoalKickoff(controller,),
+      transition,
       context,
     },);
-    return true;
+    return delivered;
   }
 
   pi.registerCommand(

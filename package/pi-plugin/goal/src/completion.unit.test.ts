@@ -93,11 +93,14 @@ function executionHarness(): {
   readonly transitions: GoalControllerState[];
   readonly messages: unknown[];
   readonly leaf: { value: string; };
+  readonly pending: { value: boolean; };
 } {
   /** Runtime controller cursor. */
   const state = { value: completionController(), };
   /** Selected branch leaf cursor. */
   const leaf = { value: 'leaf-current', };
+  /** Whether human input owns next turn. */
+  const pending = { value: false, };
   /** Applied controller states. */
   const transitions: GoalControllerState[] = [];
   /** Task messages emitted by transition effects. */
@@ -122,6 +125,12 @@ function executionHarness(): {
   /** Fake Pi context exposing selected leaf. */
   const context = {
     mode: 'tui',
+    isIdle() {
+      return true;
+    },
+    hasPendingMessages() {
+      return pending.value;
+    },
     sessionManager: {
       getLeafId() {
         return leaf.value;
@@ -134,6 +143,7 @@ function executionHarness(): {
     transitions,
     messages,
     leaf,
+    pending,
   };
 }
 
@@ -179,7 +189,7 @@ await describe({
       },
     },),
     it({
-      name: 'ignores approval after selected branch changes during review',
+      name: 'ignores approval when human input becomes pending during review',
       fn: async () => {
         const harness = executionHarness();
         const outcome = await executeGoalSettlementReview({
@@ -187,7 +197,7 @@ await describe({
           context: harness.context,
           lifecycle: harness.lifecycle,
           reviewer() {
-            harness.leaf.value = 'changed-leaf';
+            harness.pending.value = true;
             return Promise.resolve({
               verdict: {
                 approved: true,
@@ -274,7 +284,7 @@ await describe({
   name: registerGoalSettlementReview.name,
   children: [
     it({
-      name: 'registers no tool and reviews exact settlement once',
+      name: 'registers no tool, waits for pending human input, and reviews leaf once',
       fn: async () => {
         /** Captured handlers by event name. */
         const handlers = new Map<string, ((event: unknown, context: ExtensionContext) => unknown)[]>();

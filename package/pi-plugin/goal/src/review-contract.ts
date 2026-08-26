@@ -49,6 +49,7 @@ The user objective and later user messages are requirements authority. Advisor t
 Approve only when every objective requirement is complete, verification claims are supported by finalized output, and no failure, blocker, TODO, or required work remains.
 For approval, provide a concise private rationale and an empty remaining_work string.
 For denial, provide a concise private rationale and non-empty remaining_work written only as direct task instructions for the primary model.
+When work needs human input, remaining_work must directly instruct the primary model to use ask_user_question.
 remaining_work must not mention this review, a reviewer, a verdict, evidence scoring, goal mode, a stop hook, or harness policy.
 Submit exactly the required structured verdict.`;
 
@@ -89,10 +90,16 @@ const GOAL_REVIEW_TOOL: Tool = {
 const FORBIDDEN_REMAINING_WORK_PHRASES = [
   'as the reviewer',
   'as a reviewer',
+  'the reviewer',
+  'a reviewer',
   'this review',
   'my review',
+  'independent review',
   'the verdict',
   'this verdict',
+  'goal mode',
+  'stop hook',
+  'stop-hook',
   'cannot approve',
   'not approved',
   'completion is denied',

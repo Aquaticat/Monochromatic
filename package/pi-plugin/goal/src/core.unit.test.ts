@@ -516,6 +516,29 @@ await describe({
           goal: activeGoal(),
         },);
         expect(deliverPendingGoalKickoff(restored.controller,).effects,).toHaveLength(0,);
+        /** Busy kickoff whose active generation rotated before settlement. */
+        const busy = startGoal({
+          controller: createGoalController(RUNTIME_EPOCH,),
+          objective: 'Rotated deferred goal',
+          runId: 'run-2',
+          generationId: 'generation-old',
+          startBoundary: 'boundary-2',
+          marker: 'stale-marker',
+          timestamp: STARTED_AT,
+          isIdle: false,
+          hasPendingMessages: false,
+        },);
+        if (busy.controller.goal.phase !== 'active')
+          throw new Error('expected active deferred goal',);
+        const mismatched = deliverPendingGoalKickoff({
+          ...busy.controller,
+          goal: {
+            ...busy.controller.goal,
+            generationId: 'generation-new',
+          },
+        },);
+        expect(mismatched.effects,).toHaveLength(0,);
+        expect(mismatched.controller.pendingKickoff,).toBeUndefined();
         /** Runtime shutdown transition. */
         const stopped = shutdownGoalController(restored.controller,);
         expect(stopped.effects,).toEqual([{ type: 'clear_footer', },],);
