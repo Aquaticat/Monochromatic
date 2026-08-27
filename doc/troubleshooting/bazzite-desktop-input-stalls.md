@@ -438,6 +438,20 @@ All three user-reported Plasma-centered episodes therefore have a cleanup associ
 unlike the earlier assessment based only on timeline creation.
 This is repeated temporal evidence,
 not a demonstrated call path.
+
+Snapper prints the deletion message immediately before a blocking DBus `DeleteSnapshots` request
+(`client/proxy/commands.cc:277-296`).
+The next cleanup-phase message appears only after that request returns.
+The 18:38 episode's three failed probe starts all fell inside the request from 18:37:22 through 18:41:21.
+The kernel logged its qgroup scan completion at 18:37:22.159,
+just before Snapper submitted the deletion at 18:37:22.189.
+The server path can unmount the snapshot and call Btrfs subvolume deletion
+(`snapper/Snapshot.cc:655-660`,
+`snapper/Btrfs.cc:411-431`,
+and `snapper/BtrfsUtils.cc:221-236`).
+The available logs do not identify which server-side step occupied the request interval
+or how it could block Plasma and Helium selectively.
+
 No I/O-pressure interval,
 KWin delay,
 or system-wide input failure accompanied the failed Plasma probe.
