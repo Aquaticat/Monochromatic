@@ -77,8 +77,12 @@ export function assertPublishableTranslation(
     readonly unfilled: readonly UnfilledSlice[];
   },
 ): void {
-  void entryId;
-  void unfilled;
+  if (unfilled.length === 0)
+    return;
+  throw new UnfilledPageError({
+    entryId,
+    unfilled,
+  },);
 }
 
 //endregion Publication completeness

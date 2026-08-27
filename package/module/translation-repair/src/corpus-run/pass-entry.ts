@@ -22,6 +22,7 @@ import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
+import { assertPublishableTranslation, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
@@ -346,6 +347,16 @@ async function runEntryPipeline(
     // half-run to report, not an artifact.
     deadline.callSignal
       .throwIfAborted();
+
+    // A KNOWN GAP IS NOT A SETTLED PAGE. The translate lane records unfilled
+    // source passages so a caller can choose whether to retain the archive's
+    // omission. The corpus pass has no such choice: publishing that page would
+    // knowingly omit source content, so it fails the entry and keeps every
+    // bought slice in cache for a later attempt.
+    assertPublishableTranslation({
+      entryId: entry.id,
+      unfilled: lanes.translate.unfilled,
+    },);
 
     /**
      * Both ledgers as version 2 rows, beside the comparison they derive.
