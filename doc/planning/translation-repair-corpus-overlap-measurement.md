@@ -78,19 +78,29 @@ The result is a positive control, not the fallback decision:
 only two slices could overlap, and refinement's no-memo caveat was not exercised observably.
 Logs and roots begin `~/temp/agent/corpus-overlap-smoke-`.
 
-### `Toka_ls` pair status, 2026-08-27
+### `Toka_ls` pair result, 2026-08-27
 
-Overlap `4` settled 15 slices in 104.37 minutes over 11.82 hours of calls,
-normalized `0.147`, with 61 voices unheard and peak 37 calls in flight.
-Both providers remained wet and `verify-published` matched artifact to page.
-The matched overlap `1` arm is running from same digest
+Both arms settled 15 slices on digest
 `sha256-tree-v1:711ef62a473323e52f727b29ea62bd0d481ae10a0b616e508379c5a43d15f068`.
+Both providers remained wet throughout both arms,
+each arm lost 61 voices,
+and `verify-published` matched one artifact to one page while exposing one promised silent passage.
+
+-   Overlap `1`: 313.24 minutes wall over 12.44 hours of calls,
+    normalized `0.420`, peak 10 calls in flight.
+-   Overlap `4`: 104.37 minutes wall over 11.82 hours of calls,
+    normalized `0.147`, peak 37 calls in flight.
+
+Overlap `4` used 66.7 percent less wall time and 64.9 percent less normalized wall time.
+Its call sum was 5.0 percent lower,
+while metered Hyper spend was 104.2 percent higher because added concurrency overflowed subscription seats to Hyper.
+Price is not decision constraint under provider authorization,
+but routing is measured consequence rather than hidden cost.
 
 Output reading found blocker independent of overlap:
-source-only factual death paragraph was recorded unfilled and knowingly published.
-The same-digest serial arm continues solely to preserve timing attribution.
+source-only factual death paragraph was recorded unfilled and knowingly published in both artifacts.
 No page from either old-digest arm is readiness evidence.
-After pair finishes, live coverage control and a fixed-build `Toka_ls` rerun precede further decision arms.
+Live coverage control and fixed-build `Toka_ls` rerun precede further decision arms.
 
 ## Readings per pair
 

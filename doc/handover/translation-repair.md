@@ -15,8 +15,13 @@ admission requires verdict `absent` plus page shortfall or missing destination;
 any remaining unfilled passage fails before artifact and publication.
 Inherited invisible variants are folded before preparation.
 Focused suites, lint and five guard-failure mutations are green.
-The same-old-digest serial `Toka_ls` arm is running solely to finish matched overlap measurement.
-After it ends: whole suite, current ten-model coverage control,
+The matched old-digest serial `Toka_ls` arm settled in 313.24 minutes at normalized `0.420`;
+overlap 4 reduced wall time 66.7 percent and normalized wall time 64.9 percent,
+with same 61 unheard voices in both arms.
+First whole-package suite exposed `UnfilledPageError` missing from names-only message inventory;
+`d5b448754` classified its entry id, counts and slice indexes, and focused guard now passes.
+Whole-package rerun and independent serial-page reading are running.
+After suite: current ten-model coverage control,
 then fixed-build `Toka_ls` rerun and full page reread.
 No old-digest `Toka_ls` page is readiness evidence.
 `doc/audit/translation-repair-output-reading-20260826.md` carries full trace;

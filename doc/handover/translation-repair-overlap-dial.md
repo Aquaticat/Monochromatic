@@ -296,13 +296,17 @@ but two slices are only the positive control, not enough to change the fallback.
 The matched decision pairs and output reading continue under
 `doc/planning/translation-repair-corpus-overlap-measurement.md`.
 
-`Toka_ls` overlap `4` then settled 15 slices in 104.37 minutes over 11.82 hours of calls,
-normalized `0.147`, with 61 voices unheard and peak 37 calls in flight.
-Its matched serial arm is running on same digest.
-The page itself is not readiness evidence:
-reading found an omitted linked death paragraph recorded as `gap-remains`.
-The fix landed while serial bundle runs unaffected;
-coverage control and fixed-build rerun come after timing pair.
+The matched same-digest `Toka_ls` pair then settled 15 slices in both arms.
+Overlap `1` took 313.24 minutes over 12.44 call-hours,
+normalized `0.420`, with 61 voices unheard and peak 10 calls in flight.
+Overlap `4` took 104.37 minutes over 11.82 call-hours,
+normalized `0.147`, with same 61 voices unheard and peak 37 calls in flight.
+That is 66.7 percent less wall time and 64.9 percent less normalized wall time at overlap `4`.
+Call sum fell 5.0 percent,
+but metered Hyper spend rose 104.2 percent because concurrency overflowed subscription seats to Hyper.
+Both pages remain timing evidence only:
+each artifact recorded same omitted linked death paragraph as `gap-remains`.
+The fixed-build coverage control and rerun follow.
 Record: `doc/audit/translation-repair-output-reading-20260826.md`.
 
 ## Do not land a driver into a live pass launch
