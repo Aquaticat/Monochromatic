@@ -597,15 +597,21 @@ or Panel Colorizer.
 
 ### Original global-input episode
 
-1. **Is it really upstream's fault?** Unknown.
-   There is no captured failing component.
-2. **Can upstream fix it?** Unknown until the failure boundary is identified.
-3. **Are they supporting this use case?** The desktop and input path are supported,
-   but the responsible project is unknown.
-4. **Would the repository welcome a contribution?** No repository can be selected yet.
-5. **Will they likely fix it?** Unknown without a project or reproduction.
-6. **Has a minimal compatible fix been prototyped?** No.
-   There is no diagnosed call path to fix.
+1.  **Is it really upstream's fault?**
+    Unknown.
+    There is no captured failing component.
+2.  **Can upstream fix it?**
+    Unknown until the failure boundary is identified.
+3.  **Are they supporting this use case?**
+    The desktop and input path are supported,
+    but the responsible project is unknown.
+4.  **Would the repository welcome a contribution?**
+    No repository can be selected yet.
+5.  **Will they likely fix it?**
+    Unknown without a project or reproduction.
+6.  **Has a minimal compatible fix been prototyped?**
+    No.
+    There is no diagnosed call path to fix.
 
 Decision:
 do not file.
@@ -613,21 +619,27 @@ There is no responsible upstream or reproducible report yet.
 
 ### Separate Plasma panel episode
 
-1. **Is it really upstream's fault?** Unconfirmed.
-   Four instances were active,
-   but no live stack tied the freeze to their code.
-2. **Can upstream fix it?** Possibly,
-   if a current-version reproduction identifies a panel-mask or helper path.
-3. **Are they supporting this use case?** Yes.
-   The project customizes Plasma panels and documents bug reporting.
-4. **Would the repository welcome a contribution?** Yes.
-   `CONTRIBUTING.md` and the bug template accept focused reports after duplicate search.
-   No AI-assistance prohibition was found.
-5. **Will they likely fix it?** Unknown.
-   Similar issue #100 was fixed,
-   but this machine used 6.5.0 while upstream had released 8.0.0.
-6. **Has a minimal compatible fix been prototyped?** No.
-   The installed package was removed before a reproducible current-version failure or source boundary existed.
+1.  **Is it really upstream's fault?**
+    Unconfirmed.
+    Four instances were active,
+    but no live stack tied the freeze to their code.
+2.  **Can upstream fix it?**
+    Possibly,
+    if a current-version reproduction identifies a panel-mask or helper path.
+3.  **Are they supporting this use case?**
+    Yes.
+    The project customizes Plasma panels and documents bug reporting.
+4.  **Would the repository welcome a contribution?**
+    Yes.
+    `CONTRIBUTING.md` and the bug template accept focused reports after duplicate search.
+    No AI-assistance prohibition was found.
+5.  **Will they likely fix it?**
+    Unknown.
+    Similar issue #100 was fixed,
+    but this machine used 6.5.0 while upstream had released 8.0.0.
+6.  **Has a minimal compatible fix been prototyped?**
+    No.
+    The installed package was removed before a reproducible current-version failure or source boundary existed.
 
 Decision:
 do not file.
