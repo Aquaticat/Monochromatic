@@ -1381,6 +1381,38 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
     },),
 
     it({
+      name: 'SURFACES the exact caller abort reason with two accuracy slices in flight, '
+        + 'rather than whichever torn-down exchange reports first',
+      fn: async () => {
+        /**
+         * Critic calls attempted across both slices.
+         */
+        const calls = { critic: 0, };
+
+        /**
+         * Run steering the client aborts after both slices have entered accuracy work.
+         */
+        const controller = new AbortController();
+        await expect(repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+            controller,
+            calls,
+            abortAfterCriticCalls: MODELS.criticModelIds
+              .length,
+          },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: controller.signal,
+          overlap: 2,
+        },),)
+          .rejects
+          .toBe(ENTRY_DEADLINE_FAILURE,);
+      },
+    },),
+
+    it({
       name: 'THROWS on an abort that lands during REFINEMENT, which the slice '
         + 'loop cannot see. Refinement runs after every slice settled, and its '
         + 'abandoned exchanges reach the stage as silence exactly like the '
