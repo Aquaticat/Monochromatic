@@ -961,6 +961,16 @@ await describe({
         const cleanups = mine.filter(function isCleanup(line,): boolean {
           return line.startsWith('CLEANUP ',);
         },);
+
+        /**
+         * Slice-overlap launch lines it produced.
+         */
+        const overlaps = mine.filter(function isOverlap(line,): boolean {
+          return line.startsWith('OVERLAP ',);
+        },);
+        expect(overlaps,).toEqual([
+          `OVERLAP ${CLEANUP_ENTRY.id} value=1 source=fallback`,
+        ],);
         expect(cleanups.length,).toBe(1,);
         expect(cleanups[0]?.includes('cache=retained',),).toBe(true,);
         // The unlink failure is an unmarked Node error, so the line names its
