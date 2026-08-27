@@ -752,8 +752,8 @@ await describe({
           'chunkIndex',
         ),).toBe(false,);
         // A CONTEST THAT RAN AND DECIDED, end to end through the pass. The two
-        // lanes disagree at one slice by construction, so exactly one is worth
-        // asking about, and the scripted roster backs the translate candidate.
+        // lanes disagree at both slices by construction, and the scripted
+        // roster backs each translate candidate.
         /**
          * Contest as the file records it, read structurally like the rest.
          */
@@ -761,20 +761,21 @@ await describe({
           laneSelection: {
             kind: string;
             slices: readonly {
-              verdict: object;
+              verdict: {
+                readonly kind: string;
+                readonly lane?: string;
+              };
               ballots: readonly unknown[];
             }[];
           };
         }).laneSelection;
         expect(selection.kind,).toBe('contested',);
         expect(selection.slices
-          .length,).toBe(1,);
-        expect(selection.slices
-          .at(0,)
-          ?.verdict,).toEqual({
-          kind: 'lane-won',
-          lane: 'translate',
-        },);
+          .length,).toBe(2,);
+        expect(selection.slices.every(function choseTranslate(slice,) {
+          return (slice.verdict.kind === 'lane-won')
+            && (slice.verdict.lane === 'translate');
+        },),).toBe(true,);
         // AND THE BALLOTS REACHED THE FILE, which is the half a verdict alone
         // does not prove: a reader asking why this slice went to the translate
         // lane needs the reasons the judges gave, not just the count.
