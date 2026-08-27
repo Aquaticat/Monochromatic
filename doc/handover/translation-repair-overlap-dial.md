@@ -94,6 +94,14 @@ and auto-push is on.
     settled and unsettled twins at overlap `1` and `2`,
     a mixed resume-and-buy run,
     and abort-safe persistence.
+-   `973bf4016` through `0ebcbf53b`:
+    `settleEntry` now calls `readPassOverlap` once before entry work,
+    logs `OVERLAP <entry> value=<n> source=<fallback-or-variable>`,
+    and passes that one value through both document lanes, contest and consolidation.
+    Corpus fallback remains `1`.
+    Environment input now refuses fractional and non-canonical numeric spellings instead of truncating or canonicalizing them.
+    Runtime instruments prove overlap `2` reaches repair, refinement, translation, contest and consolidation from the entry boundary.
+    Separate document-lane instruments pin both lane handoffs.
 
 ## The twin memo, which is the part that is easy to get wrong
 
@@ -225,13 +233,16 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     log: `~/temp/agent/buildAndTest-consolidate-overlap-20260827T075438Z.log`.
     A transient `commit_refs` auto-push rejection on `78215439d` recovered on a later commit;
     measured upstream divergence is zero in both directions.
-6.  Thread the dial:
-    `settleEntry` in `src/corpus-run/pass-entry.ts` reads
-    `readOverlap({ fallback: PASS_OVERLAP, },)` ONCE (with `PASS_OVERLAP = 1`),
-    logs one line naming the value and where it came from
-    (`editor-calibrate.ts` prints exactly such a line and is worth copying),
-    and passes it to `runDocumentLanes` and to the contest and consolidation calls.
-    `runDocumentLanes` (`src/document-lanes.ts`, line 240) passes it to both lanes.
+6.  Corpus-pass overlap dial: DONE in `973bf4016` through `0ebcbf53b`.
+    `readPassOverlap` reads and logs one value per entry with fallback `1`.
+    `runDocumentLanes` hands it to repair, refinement and translation;
+    the entry hands it to contest and consolidation.
+    Build, focused suites, `lint:oxlint` and `lint:types` pass.
+    Forcing either document lane or any of the entry's three driver handoffs to overlap one failed its runtime guard.
+    Every mutation was restored and rebuilt;
+    logs begin `~/temp/agent/gfp-lanes-` or `~/temp/agent/gfp-pass-` and name each handoff.
+    Whole-package `buildAndTest` is running as process
+    `translation-repair-whole-suite-overlap-dial` (`proc_095a`).
 7.  Measure, then record the result in
     `doc/decision/translation-repair-calibration-overlap.md`
     and in the open-decisions register.
@@ -258,8 +269,10 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
 Arms must be matched the way the calibration arms were, because a single run resolves nothing:
 
 -   Same entries, same build, back to back, nothing else running.
--   A THROWAWAY runs directory per arm.
-    A shared directory would resume arm one's slices into arm two and measure the cache, not the dial.
+-   A THROWAWAY runs directory per arm, including separate artifact, publish and slice-cache roots.
+    A shared cache would resume arm one's slices into arm two and measure the cache, not the dial.
+    Artifacts do not carry overlap metadata, so each arm's separate root and its
+    `OVERLAP <entry> value=<n> source=<...>` log lines are also the attribution record.
 -   Read the result as wall clock over the sum of stream time,
     not as wall clock alone.
     The unnormalized numbers move 37% run to run on provider speed.
