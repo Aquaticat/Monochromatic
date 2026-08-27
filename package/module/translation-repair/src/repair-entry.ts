@@ -50,6 +50,9 @@ import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
  * @param sliceCache - optional cross-run cache; resumes finished slices
  * and persists newly finished ones so a large document survives aborts
  *
+ * @param overlap - most slices in flight; defaults to one, while corpus pass
+ * owns its environment-backed dial separately
+ *
  * @returns Repaired candidate plus adjudicated issues and completion status
  *
  * @example
@@ -74,6 +77,7 @@ export async function repairTranslation(
     perCallTimeoutMs,
     sliceCharBudget = SLICE_CHAR_BUDGET,
     sliceCache,
+    overlap = 1,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly sourceText: string;
@@ -84,6 +88,7 @@ export async function repairTranslation(
     readonly perCallTimeoutMs?: number;
     readonly sliceCharBudget?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
+    readonly overlap?: number;
   }>,
 ): Promise<RepairTranslationResult> {
   return await repairPreparedDocument({
@@ -98,6 +103,7 @@ export async function repairTranslation(
     signal,
     ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
     ...(sliceCache === undefined ? {} : { sliceCache, }),
+    overlap,
   },);
 }
 

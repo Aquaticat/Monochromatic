@@ -4,46 +4,28 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { cacheRefusalsOf, } from './repair-cache-gate.ts';
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { isInsertionChunk, } from './chunk-placement.ts';
-import {
-  neighbouringIncumbent,
-  neighbouringSource,
-} from './fidelity-window.ts';
-import { notApplicableRepair, } from './repair-not-applicable.ts';
-import {
-  type PreparedDocumentPair,
-  prepareDocumentPair,
-} from './document-preparation.ts';
+import type { PreparedDocumentPair, } from './document-preparation.ts';
 import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
 import { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
-import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
-import { refineSettledSlices, } from './repair-refine-step.ts';
-import {
-  repairRunShape,
-  repairSliceKey,
-} from './repair-slice-key.ts';
-import {
-  assertSettledRecordAgrees,
-  resumedSliceDiscardFinding,
-  sliceRecordAgrees,
-} from './slice-record-agreement.ts';
-import { repairChunk, } from './repair-chunk.ts';
-import { assertRostersConfigured, } from './roster-configuration.ts';
-import type { SliceCache, } from './slice-cache.ts';
-import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
-import { armSliceCost, } from './slice-cost-log.ts';
+import { mapOverlapped, } from './overlapped-map.ts';
 import { assembleRepair, } from './repair-assemble.ts';
-import type { RepairTranslationResult, } from './repair-result.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
 } from './repair-contract.ts';
+import { refineSettledSlices, } from './repair-refine-step.ts';
+import type { RepairTranslationResult, } from './repair-result.ts';
+import { repairRunShape, } from './repair-slice-key.ts';
+import { settleRepairSlice, } from './repair-slice-settle.ts';
+import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
+import { assertRostersConfigured, } from './roster-configuration.ts';
+import type { SliceCache, } from './slice-cache.ts';
+import type { TwinMemo, } from './twin-memo.ts';
 
 export {
   type RepairStatus,
@@ -51,50 +33,37 @@ export {
 } from './repair-result.ts';
 
 //region Repair translation
-// The batch driver over the whole loop: parse, align into chunk pairs, run
-// each pair through the repair stages, splice winning chunks back into the
-// document. Everything degrades chunk by chunk, never document-wide.
+// The batch driver over an already prepared document: every slice settles under
+// bounded overlap, then dominance is reported, naturalness runs and final text
+// is assembled. Everything degrades slice by slice, never document-wide.
 //
-// NOTHING BLOCKS THE DOCUMENT ANY MORE. Ensemble-agreed critical
-// non-translation used to end the run and return the input unchanged, which
-// discarded every slice already repaired; on a sparse target that was the
-// common outcome rather than the rare one. Question 3 answer B keeps the
-// critics as evidence and takes away every early return they owned, so the
-// dominance reading is reported in the findings and decides nothing. See
-// `doc/decision/translation-repair-question-answers.md` and
-// `non-translation-evidence.ts`.
+// NOTHING BLOCKS THE DOCUMENT. Ensemble-agreed critical non-translation used
+// to end the run and discard every slice already repaired. Question 3 answer B
+// keeps critics as evidence and takes away every early return they owned. See
+// `doc/decision/translation-repair-question-answers.md`.
+//
+// OVERLAP CHANGES WHEN INDEPENDENT SLICES RUN, NOT ARTIFACT ORDER. Each slice
+// returns its outcome and driver finding as one settlement; `mapOverlapped`
+// returns those settlements in slice order however providers answered.
 
 /**
- * Logger root for the repair pipeline.
+ * Logger root for repair pipeline.
  */
 const l = tagged({ tag: 'translation-repair-pipeline', },);
 
 /**
- * Default per-call deadline for pipeline exchanges;
- * chunk-scale calls complete in well under this.
+ * Default per-call deadline for pipeline exchanges.
  */
 const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
 
-
 /**
- * Repairs one ALREADY PREPARED document pair.
- * Stages are pure `(state, responses) -> newState`; this driver is the
- * imperative shell that owns model calls, chunk order, and reassembly.
- * Chunks run sequentially because aggregate concurrency beyond one stream
- * per model collapses throughput on this plan, and each stage already fans
- * out one call per model inside the chunk.
- *
- * Takes the preparation rather than the two texts, so a caller running both
- * lanes over one document prepares ONCE and hands the same slices to each. Two
- * lanes preparing separately would drift the moment either changed a budget,
- * and each would still report slices that look right on their own.
+ * Repairs one already prepared document pair.
  *
  * @param client - injected model client
  *
- * @param prepared - slices, governance, declared names and alignment findings,
- * from `prepareDocumentPair`
+ * @param prepared - slices, governance, declared names and alignment findings
  *
- * @param models - role roster
+ * @param models - repair role roster
  *
  * @param adjudicationConfig - tally thresholds and weights
  *
@@ -102,20 +71,18 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  *
  * @param perCallTimeoutMs - deadline per exchange
  *
- * @param sliceCache - optional cross-run cache; resumes finished slices
- * and persists newly finished ones so a large document survives aborts
+ * @param sliceCache - optional cross-run cache for accuracy outcomes
  *
- * @param refineCache - optional cross-run cache for the naturalness lane, which
- * runs after `sliceCache` has already persisted and so cannot ride in it
+ * @param refineCache - optional cross-run cache for naturalness settlements
  *
- * @param parentLogger - logger this lane tags under, so a caller running both
- * lanes over one document can put them under one entry; defaults to the
- * pipeline root for a standalone call
+ * @param overlap - most accuracy slices in flight; one reproduces former loop
+ *
+ * @param parentLogger - logger this lane tags under
  *
  * @returns Repaired candidate plus adjudicated issues and completion status
  *
- * @throws Whatever `signal.reason` carries, once the caller aborts with slices
- * still unbought; nothing settled under that abort is cached
+ * @throws Whatever `signal.reason` carries once caller aborts with slices still
+ * unbought; nothing settled under that abort is cached
  *
  * @example
  * ```ts
@@ -124,6 +91,7 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  *   prepared,
  *   models,
  *   signal,
+ *   overlap: 4,
  * },);
  * ```
  */
@@ -137,6 +105,7 @@ export async function repairPreparedDocument(
     perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
     sliceCache,
     refineCache,
+    overlap = 1,
     parentLogger = l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -147,21 +116,12 @@ export async function repairPreparedDocument(
     readonly perCallTimeoutMs?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
+    readonly overlap?: number;
     readonly parentLogger?: Logger;
   }>,
 ): Promise<RepairTranslationResult> {
-  // FIRST, before the run shape, before the cache lookup, before any slice
-  // work: a fully cached document must not make an invalid configuration
-  // valid. Placed HERE rather than in `repairTranslation`, because the combined
-  // driver calls this function directly and a check one level up is bypassed.
-  //
-  // CRITICS ARE IN THIS LIST SINCE QUESTION 3 ANSWERED B: the stage stays, as
-  // evidence for the judges, so an empty critic roster is a misconfiguration
-  // rather than a shape anyone might mean. While the question was open, guarding
-  // it would have refused a configuration the user was about to choose.
-  //
-  // `refinerModelIds` stays absent for a different and settled reason: its empty
-  // list IS how the naturalness lane is turned off.
+  // A fully cached document must not make invalid configuration valid. Refiner
+  // stays absent because an empty refiner list deliberately turns that lane off.
   assertRostersConfigured({
     lane: 'repair',
     roles: {
@@ -182,18 +142,9 @@ export async function repairPreparedDocument(
   },);
 
   /**
-   * Translation under repair, which every unchanged path returns and which
-   * assembly splices into.
+   * Translation under repair.
    */
   const { targetText, } = prepared;
-
-  /**
-   * Identity block spread into the chunk call, omitted entirely when nothing
-   * is declared so the prompt never carries an empty heading.
-   */
-  const identityFragment = prepared.identityContext === undefined
-    ? {}
-    : { identityContext: prepared.identityContext, };
 
   /**
    * Alignment findings in scorecard-stable wording.
@@ -201,13 +152,12 @@ export async function repairPreparedDocument(
   const { alignmentFindings, } = prepared;
 
   /**
-   * Paragraph-bound slice pairs across every aligned section, indexed globally
-   * in document order.
+   * Paragraph-bound slice pairs in document order.
    */
   const { slices, } = prepared;
 
   /**
-   * Slices the line-structure rule governs, inherited from their chunk.
+   * Slices governed by line-structure rule.
    */
   const lineStructuredSlices = prepared.lineStructuredSliceIndices;
   rl.info(
@@ -217,289 +167,73 @@ export async function repairPreparedDocument(
   );
 
   /**
-   * Everything about this run that changes what the models are ASKED, folded
-   * into every cache key.
+   * Identity context spread into run shape and naturalness call.
+   */
+  const identityFragment = (prepared.identityContext === undefined)
+    ? {}
+    : { identityContext: prepared.identityContext, };
+
+  /**
+   * Model-facing governance folded into every repair key.
    */
   const runShape = repairRunShape({
     models,
-    ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
+    ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
     ...identityFragment,
   },);
 
   /**
-   * Slice outcomes in document order; sequential by design (see TSDoc).
+   * Cache-eligible purchases in this run, shared by every slice.
    */
-  const outcomes: ChunkRepairOutcome[] = [];
+  const twins: TwinMemo<ChunkRepairOutcome> = new Map();
 
   /**
-   * Cached outcomes refused for contradicting themselves, named in the result
-   * so a recomputed slice is distinguishable from one that was never cached.
+   * Every accuracy settlement, returned in slice order.
    */
-  const refusedCacheFindings: string[] = [];
+  const settlements = await mapOverlapped({
+    items: slices,
+    overlap,
+    oneItem: async function settleOne({
+      item: slice,
+      position: slicePosition,
+    },) {
+      return await settleRepairSlice({
+        client,
+        prepared,
+        models,
+        ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
+        slice,
+        slicePosition,
+        runShape,
+        ...((sliceCache === undefined) ? {} : { sliceCache, }),
+        twins,
+        signal,
+        perCallTimeoutMs,
+        l: rl,
+      },);
+    },
+  },);
 
   /**
-   * Outcomes this run settled, by the key they answer.
-   *
-   * WITHIN one run, for the same reason the cache holds them across runs: two
-   * slices carrying identical source, target and governance ask one question,
-   * and since version 26 the key says so. Without this a COLD run would ask the
-   * models twice, keep two different answers and persist both under one key,
-   * while the next WARM run resumed a single outcome for both slices, so the
-   * same document settled differently depending on whether a cache existed.
+   * Accuracy outcomes in document order.
    */
-  const settledByKey = new Map<string, ChunkRepairOutcome>();
-  for (const [slicePosition, slice,] of slices.entries()) {
-    /**
-     * Global index of this slice, which every outcome and every replacement
-     * names. NOT part of the cache key since version 26: a key says what the
-     * stages are asked, and where a slice sits is not part of that question.
-     */
-    const { sliceIndex, } = slice.target;
-
-    /**
-     * Original of the passages either side, and the archive English of the same
-     * two, which is the half a relocation shows: the Chinese says each thing
-     * once in its own place while the English says it next door.
-     *
-     * ITERATED BY POSITION RATHER THAN READ FROM `sliceIndex`, which is the trap
-     * `#99` named and {@link neighbouringSource} throws on. `sliceIndex` is
-     * STAMPED, so on any entry where the two spaces differ it would either throw
-     * or, worse, address someone else's neighbours.
-     *
-     * COMPUTED HERE RATHER THAN INSIDE THE STAGES, so the cache key and the
-     * calls are provably given the same window. `#107` records that this exact
-     * separation let the translate lane's key and call disagree for weeks while
-     * nothing failed.
-     */
-    const neighbouringSourceText = neighbouringSource({
-      slices,
-      slicePosition,
-    },);
-
-    /**
-     * {@inheritDoc neighbouringSourceText}
-     */
-    const neighbouringIncumbentText = neighbouringIncumbent({
-      slices,
-      slicePosition,
-    },);
-
-    /**
-     * What this slice cost, reported however this loop body is left.
-     */
-    using cost = armSliceCost({
-      l: rl,
-      lane: 'repair',
-      sliceIndex,
-      sourceChars: slice.source
-        .text
-        .length,
-      signal,
-    },);
-
-    if (isInsertionChunk(slice.target,)) {
-      // NOTHING TO REPAIR, and nothing bought to discover that. Every stage of
-      // this lane reads existing wording, so an anchor would have critics
-      // filing complaints about a blank at full roster cost.
-      //
-      // The dominance check below is skipped with it, which is sound rather
-      // than convenient: the tally reads `outcomes` by position, and this
-      // outcome contributes zero target characters, no standing vote and no
-      // anchoring evidence, which is exactly what a missing entry contributes.
-      // The verdict would be the one the previous slice already produced.
-      rl.info(
-        `chunk ${String(sliceIndex,)}: no translation to repair; `
-          + 'the translate lane owns this passage',
-      );
-      outcomes.push(notApplicableRepair({ sliceIndex, },),);
-      cost.left({ exit: 'no-translation', },);
-      continue;
-    }
-
-    /**
-     * Cross-run key for this slice.
-     */
-    const sliceKey = repairSliceKey({
-      runShape,
-      sourceText: slice.source
-        .text,
-      targetText: slice.target
-        .text,
-      lineStructured: lineStructuredSlices.has(sliceIndex,),
-      neighbouringIncumbentText,
-      neighbouringSourceText,
-    },);
-
-    /**
-     * Outcome already settled for this exact question, exactly as it was
-     * stored, whether by a previous run or earlier in this one.
-     */
-    const stored = sliceCache?.resumed
-      .get(sliceKey,)
-      ?? settledByKey.get(sliceKey,);
-
-    /**
-     * That outcome RE-STAMPED with the index this run asked under.
-     *
-     * Since version 26 the key is the texts and the run shape, so an identical
-     * slice elsewhere in the document legitimately answers here, and the index
-     * it was computed with would name the wrong slice in every issue record and
-     * replacement built from it.
-     */
-    const cached = (stored === undefined) ? undefined : {
-      ...stored,
-      sliceIndex,
-    };
-
-    /**
-     * Whether that outcome's changed flag agrees with its own text, which is
-     * the one thing a cached record can be checked against without asking
-     * anybody. A record that disagrees is refused HERE rather than at assembly,
-     * where the same contradiction fails the whole document after every other
-     * slice has been bought.
-     */
-    const trustworthy = (cached === undefined)
-      || sliceRecordAgrees({
-        changed: cached.changed,
-        decidedText: cached.repairedText,
-        incumbentText: slice.target
-          .text,
-      },);
-    if ((cached !== undefined) && (!trustworthy)) {
-      /**
-       * Why this slice was recomputed, which a cache miss would not explain.
-       */
-      const discarded = resumedSliceDiscardFinding({
-        lane: 'repair',
-        sliceIndex,
-        changed: cached.changed,
-      },);
-      rl.warn(discarded,);
-      refusedCacheFindings.push(discarded,);
-    }
-
-    /**
-     * Outcome this run may reuse, absent when there is none to reuse.
-     */
-    const resumed = trustworthy ? cached : undefined;
-
-    // Named here rather than at the bottom, because this path buys nothing and
-    // falls through the same exit as a slice that bought a full roster. Its
-    // near-zero time prices the cache, not the work.
-    if (resumed !== undefined)
-      cost.left({ exit: 'resumed', },);
-
-    // A stopped run cannot BUY the slices it is missing, and every abandoned
-    // exchange reaches the stages as silence rather than as a failure: a critic
-    // phase that heard nothing files no claims, which reads exactly like a
-    // clean slice. Checked here rather than at the top, so a document whose
-    // every slice is already cached still finishes.
-    if (resumed === undefined)
-      signal.throwIfAborted();
-
-    /* oxlint-disable no-await-in-loop -- sequential by design: aggregate concurrency beyond one stream per model collapses throughput on this plan, and each stage already fans out per model inside the chunk */
-    /**
-     * Repair outcome of this slice pair, recomputed only when not resumed.
-     */
-    const outcome = resumed ?? await (async function repairUnderSignal(): Promise<ChunkRepairOutcome> {
-      try {
-        return await repairChunk({
-          client,
-          sliceIndex,
-          sourceText: slice.source
-            .text,
-          targetText: slice.target
-            .text,
-          lineStructured: lineStructuredSlices.has(sliceIndex,),
-          declaredNames: prepared.declaredNames,
-          neighbouringIncumbentText,
-          neighbouringSourceText,
-          models,
-          ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
-          ...identityFragment,
-          signal,
-          perCallTimeoutMs,
-          l: rl,
-        },);
-      }
-      catch (error) {
-        // An aborted run fails BECAUSE it was aborted; whichever torn-down
-        // exchange happened to surface is a symptom. A spent deadline and a
-        // provider fault deserve different responses from the caller.
-        if (!signal.aborted)
-          throw error;
-        rl.warn(
-          `chunk ${String(sliceIndex,)}: abandoned by the caller's abort (${String(error,)})`,
-        );
-        throw signal.reason;
-      }
-    })();
-    if (resumed === undefined) {
-      signal.throwIfAborted();
-
-      // Checked on the way OUT of the stage as well as on the way back in from
-      // the cache, and before the write either way, so nothing contradicting
-      // itself is ever stored. `repairChunk` derives `changed` from its own
-      // text today, which makes this vacuous by construction; what it pins is
-      // that it keeps doing so, and that is a derivation no test can otherwise
-      // hold in place.
-      assertSettledRecordAgrees({
-        lane: 'repair',
-        sliceIndex,
-        changed: outcome.changed,
-        decidedText: outcome.repairedText,
-        incumbentText: slice.target
-          .text,
-      },);
-      /**
-       * Why this settlement may not be cached, empty when it may (`#238`).
-       */
-      const refusals = cacheRefusalsOf({ outcome, },);
-      if (refusals.length > 0) {
-        rl.warn(
-          `chunk ${String(sliceIndex,)}: ${refusals.join('; ',)}, so the slice ships `
-            + 'unchanged and is NOT cached',
-        );
-      }
-      else {
-        await sliceCache?.persist({
-          key: sliceKey,
-          serialized: JSON.stringify(
-            outcome,
-            undefined,
-            2,
-          ),
-        },);
-
-        // MEMOIZED EXACTLY WHERE IT IS PERSISTED, which is the point of the
-        // memoization: a warm run can only resume what reached the cache, so an
-        // in-run twin must reuse only what a warm run would have found. Doing it
-        // unconditionally reused an outcome this lane deliberately refused to
-        // store, and broke the cold-warm agreement it exists to keep. A RESUMED
-        // outcome needs no entry either: it came from a map that still holds it.
-        settledByKey.set(
-          sliceKey,
-          outcome,
-        );
-      }
-    }
-    /* oxlint-enable no-await-in-loop */
-    outcomes.push(outcome,);
-  }
+  const outcomes = settlements.map(function toOutcome(
+    settlement,
+  ): ChunkRepairOutcome {
+    return settlement.outcome;
+  },);
 
   /**
-   * Non-translation dominance over the whole run, computed ONCE.
-   *
-   * IT REPORTS AND DOES NOT DECIDE, which is question 3 answer B. Until
-   * 2026-08-16 this ran after every slice so the earliest crossing could
-   * abandon the document and return the archive untouched, discarding every
-   * slice already repaired. On a sparse target that was the common outcome
-   * rather than the rare one, so the exit spent the quota and then threw the
-   * results away.
-   *
-   * ONCE RATHER THAN PER SLICE now that nothing exits early: the reading only
-   * had to be incremental because the crossing had to be caught at its earliest
-   * point. One pass over settled outcomes says the same thing.
+   * Cached outcomes refused for contradicting their text, in document order.
+   */
+  const refusedCacheFindings = settlements.flatMap(function toFindings(
+    settlement,
+  ): readonly string[] {
+    return settlement.refusedCacheFindings;
+  },);
+
+  /**
+   * Non-translation dominance over whole run, reported and never deciding.
    */
   const dominance = assessNonTranslationDominance({
     slices: slices.map(function toTally(
@@ -527,21 +261,14 @@ export async function repairPreparedDocument(
   }
 
   /**
-   * Dominance as a finding, carried only when the reading crossed.
+   * Dominance finding, present only when reading crossed.
    */
   const dominanceFindings = dominance.blocked
     ? [nonTranslationDominanceFinding(dominance,),]
     : [];
 
   /**
-   * Naturalness lane over every settled slice.
-   *
-   * Runs HERE, after every accuracy outcome settled and after the
-   * non-translation dominance decision, and before anything below reads
-   * `changed`. Nothing blocks a document any more (see the module note), so
-   * every settled slice reaches the rewriters, and a refinement-only change
-   * reaches `changedOutcomes` and `anyChanged` because those are computed from these
-   * final outcomes rather than from the accuracy ones.
+   * Naturalness lane over every accuracy-settled slice.
    */
   const phase = await refineSettledSlices({
     client,
@@ -551,14 +278,14 @@ export async function repairPreparedDocument(
     models,
     declaredNames: prepared.declaredNames,
     ...identityFragment,
-    ...(refineCache === undefined ? {} : { refineCache, }),
+    ...((refineCache === undefined) ? {} : { refineCache, }),
     signal,
     perCallTimeoutMs,
     l: rl,
   },);
 
   /**
-   * Final per-slice outcomes, accuracy plus any refinement that survived.
+   * Final outcomes after optional naturalness rewrites.
    */
   const finalOutcomes = phase.outcomes;
 
@@ -579,6 +306,5 @@ export async function repairPreparedDocument(
     l: rl,
   },);
 }
-
 
 //endregion Repair translation
