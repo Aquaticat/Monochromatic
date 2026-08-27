@@ -140,6 +140,11 @@ function emptyPassConcurrency(): PassConcurrency {
 const FRESH = 'The cat naps on the windowsill.';
 
 /**
+ * Sentence every translator returns for second section.
+ */
+const BIRD_FRESH = 'A bird sits on the windowsill.';
+
+/**
  * Original document: two sections, each one paragraph.
  */
 const SOURCE_TEXT = `## 第一节
@@ -202,7 +207,7 @@ function renderingFor({ content, }: { readonly content: string; },): string {
   if (content.includes('第一节',))
     return `## Section one\n\n${FRESH}`;
   if (content.includes('第二节',))
-    return '## Section two\n\nA bird sits on the windowsill.';
+    return `## Section two\n\n${BIRD_FRESH}`;
   return FRESH;
 }
 
@@ -233,7 +238,8 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
      * Number the heading states.
      */
     const index = Math.trunc(Number(heading,),);
-    if (Number.isInteger(index,) && block.includes(FRESH,))
+    if (Number.isInteger(index,)
+      && (block.includes(FRESH,) || block.includes(BIRD_FRESH,)))
       return index;
   }
   return 0;
