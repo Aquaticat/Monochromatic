@@ -1069,6 +1069,11 @@ Mechanical page verification still passed all four promised wordings and destina
 so current completeness gate is blind to visual-source content and unmatched archive text
 even when alignment names unclaimed target blocks.
 Page is not publishable and pipeline cannot be production-ready until that path is handled.
+Static pinned-corpus inventory found 50 source entries with visual references.
+Three have English-only details blocks absent from source Markdown:
+`Chinatsu_Suzuki`, `Zha_Ke` and `shihai4h`.
+This proves bypass pattern is not entry-unique;
+it does not establish which remaining visual assets contain source text.
 
 Remaining corpus arms, hard-case output reading, live calibration checks,
 front matter and site-grammar gaps,
