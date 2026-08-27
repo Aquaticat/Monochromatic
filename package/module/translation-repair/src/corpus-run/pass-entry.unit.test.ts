@@ -166,11 +166,11 @@ const SOURCE_TEXT = `## 第一节
  */
 const TARGET_TEXT = `## Section one
 
-The cat is doing the sleeping on the windowsill.
+The cat is doing the sleeping on the windowsill throughout the quiet afternoon while the sunlight is moving slowly across the room.
 
 ## Section two
 
-On the windowsill there is being a bird.
+On the windowsill there is being a bird that is watching the garden for a long time while the cat continues sleeping nearby.
 `;
 
 /**
