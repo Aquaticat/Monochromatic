@@ -6,7 +6,6 @@ import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { readDocumentPictures, } from '../document-readings.ts';
 import { readImageWithOcr, } from '../image-ocr.ts';
-import { foldInvisibleVariants, } from '../invisible-variants.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
@@ -24,6 +23,7 @@ import type {
   EntryOutcome,
 } from './pass-entry-contract.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
+import { passArchiveText, } from './pass-archive.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
 import { persistSettledEntry, } from './pass-entry-persist.ts';
@@ -135,8 +135,7 @@ async function runEntryPipeline(
    * Archive bytes both deciders judge, normalized before preparation so spans,
    * candidates, artifact and published page all describe same visible text.
    */
-  const archiveText = foldInvisibleVariants({ text: entry.targetText, })
-    .text;
+  const archiveText = passArchiveText({ text: entry.targetText, });
 
   /**
    * Per-entry hard-cap deadline. Disposal at return defuses the timer and
