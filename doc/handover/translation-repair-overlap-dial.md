@@ -74,6 +74,15 @@ and auto-push is on.
     Direct tests pin overlap activity, order, any-asked aggregation,
     silent-stage cache refusal, abort-safe persistence and disabled-lane validation.
     A repair-driver test separately pins the overlap threading into this phase.
+-   `c4b2d60d1` through `c52d4d6ab`:
+    `contestDocumentLanes` now filters eligible comparison rows before calling `mapOverlapped`,
+    defaults `overlap` to `1`,
+    and returns artifact rows in comparison order.
+    It resumes without writing back,
+    persists only quorum-complete outcomes under a live signal,
+    and shares cache-eligible identical questions through the promise twin memo.
+    Twin tests at overlap `1` and `2` prove a settled question is asked once and an unheard question is asked again.
+    A mixed resume-and-buy case pins ordered aggregation and one fresh persistence at overlap `2`.
 
 ## The twin memo, which is the part that is easy to get wrong
 
@@ -112,6 +121,15 @@ so two twins with the same refused record each bought and each persisted under o
 Both twins now reach the memo after refusing the cache,
 so the second reuses what the first persisted, which is what the warm run does.
 
+Contest now follows the same rule even though its former loop did not.
+Its position-free key names exactly what the roster sees,
+and `LaneContestOutcome` carries no slice index requiring restamping.
+Without the memo,
+two identical contests could buy contradictory ballots and race to overwrite one cache file at higher overlap.
+The new memo makes one cold-run answer match the one answer a warm run resumes.
+The pre-persistence abort check is also new:
+a gather that retained quorum before caller abort can no longer make an abandoned contest look complete or become warm-run evidence.
+
 Refinement is the deliberate exception.
 Its former loop had no in-run memo,
 and the disk cache's `resumed` map is a snapshot that persistence does not mutate.
@@ -127,6 +145,7 @@ but corpus measurement must check this before raising the fallback or refinement
 At overlap greater than one,
 a lower-position failure stops new slices from starting but lets already active slices finish.
 Up to `overlap - 1` later slices may therefore spend after a sequential run would have stopped.
+Independent later slices may also persist answers that a sequential run would never have reached.
 This is a deliberate consequence of bounded parallelism,
 not semantic equivalence with overlap one after the failure point.
 Measurement arms and production readings must report failures and spend beside wall-clock results.
@@ -168,9 +187,15 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     matching restored logs sit beside them.
     Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
     log: `~/temp/agent/buildAndTest-refine-overlap-20260827T064814Z.log`.
-4.  `contestDocumentLanes` (`src/lane-contest-driver.ts`, loop at line 159):
-    smallest of the five;
-    `worthResuming` decides persistence, and only eligible rows are visited.
+4.  `contestDocumentLanes`: DONE in `c4b2d60d1` through `c52d4d6ab`.
+    Build, focused suites, `lint:oxlint` and `lint:types` pass.
+    Forcing overlap one failed the successful-call concurrency guard.
+    Removing the shared twin memo failed the overlap-two ASKS ONCE case.
+    Caching an unheard roster and removing abort-safe persistence each failed its own guard.
+    Every mutation was restored and rebuilt;
+    logs begin `~/temp/agent/gfp-contest-` and name each mutation.
+    Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
+    log: `~/temp/agent/buildAndTest-contest-overlap-20260827T072222Z.log`.
 5.  `consolidateDocument` (`src/consolidate-driver.ts`, 230 code lines, loop at line 315):
     same shape, `consolidationWorthResuming` decides persistence.
 6.  Thread the dial:
