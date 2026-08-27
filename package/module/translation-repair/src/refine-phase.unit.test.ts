@@ -20,6 +20,7 @@ import {
   type ChunkRepairOutcome,
   type IssueAuthorship,
   messageText,
+  persistRefinePhaseSlice,
   type RefinedSliceSettlement,
   type RepairModels,
   type RosterModelId,
@@ -930,6 +931,41 @@ await describe({
           perCallTimeoutMs: 1_000,
           l,
         },),).rejects.toThrow(Error,);
+        expect(stored.size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES persistence after caller abort even when model work returned a '
+        + 'complete settlement, preserving the final defense against future stages that settle silence',
+      fn: async () => {
+        /**
+         * Exact caller abort reason whose identity must surface.
+         */
+        const stopped = new Error('caller stopped refinement',);
+        const controller = new AbortController();
+        controller.abort(stopped,);
+
+        /**
+         * Cache that aborted settlement must not reach.
+         */
+        const stored = new Map<string, RefinedSliceSettlement>();
+        await expect(persistRefinePhaseSlice({
+          key: 'refine-persistence-guard-fixture',
+          settled: {
+            outcome: settledOutcome({
+              resolvedIssueIds: [],
+              authorship: NO_MODEL_WROTE_THE_FIXTURE,
+            },),
+            findings: [],
+          },
+          sliceIndex: 0,
+          refineCache: memoryRefineCache({ stored, },),
+          signal: controller.signal,
+          l,
+        },),)
+          .rejects
+          .toBe(stopped,);
         expect(stored.size,).toBe(0,);
       },
     },),
