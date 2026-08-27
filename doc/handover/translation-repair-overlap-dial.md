@@ -103,7 +103,8 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     Removing the overlap argument made the driver suite fail,
     and replacing the shared twin memo with one memo per slice made it fail too;
     both mutations were restored and rebuilt.
-    The post-handover whole suite is running after its first run found and fixed the three stale expectations above.
+    The post-handover whole suite passed with 832 PASS, 0 FAIL and exit 0
+    after its first run found and fixed the three stale expectations above.
 2.  `repairPreparedDocument` (`src/repair-translation.ts`, 293 code lines, loop at line 251):
     the same shape.
     Its `settledByKey` is the twin memo;
