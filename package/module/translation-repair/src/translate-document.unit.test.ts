@@ -382,6 +382,8 @@ function laneClient(
  * @param silentTranslators - whether every translate call fails while the signal
  * stays live
  *
+ * @param overlap - most slices the driver may run at once
+ *
  * @param persisted - map the run writes settled records into; passed in so a
  * case that expects a REJECTION can still read what reached the cache
  *
@@ -403,6 +405,7 @@ async function runDriver(
     silentTranslators = false,
     silentForSource = SILENT_FOR_NOTHING,
     anchorSource,
+    overlap = 1,
     persisted = new Map<string, TranslateSliceRecord>(),
     calls = {
       translate: 0,
@@ -418,6 +421,7 @@ async function runDriver(
     readonly silentTranslators?: boolean;
     readonly silentForSource?: string;
     readonly anchorSource?: string;
+    readonly overlap?: number;
     readonly persisted?: Map<string, TranslateSliceRecord>;
     readonly calls?: CallLog;
   },
@@ -482,6 +486,7 @@ async function runDriver(
     models: MODELS,
     signal: controller.signal,
     perCallTimeoutMs: 1_000,
+    overlap,
     sliceCache: {
       resumed,
       persist: async ({
@@ -711,24 +716,29 @@ await describe({
         + 'run that answered it twice would keep two different answers, persist both under one key, '
         + 'and settle differently from the resumed run that reads one record back for both',
       fn: async () => {
-        /** Two byte-identical sections on both sides. */
-        const twinSource = '## 第一节\n\n猫猫在窗台上打盹。\n\n## 第一节\n\n猫猫在窗台上打盹。\n';
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          /** Two byte-identical sections on both sides. */
+          const twinSource = '## 第一节\n\n猫猫在窗台上打盹。\n\n## 第一节\n\n猫猫在窗台上打盹。\n';
 
         /** Their translation, identical for the same reason. */
         const twinTarget = '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n\n'
           + '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n';
 
         /** Run over the twin document. */
-        const twins = await runDriver({
-          sourceText: twinSource,
-          targetText: twinTarget,
-        },);
+          const twins = await runDriver({
+            sourceText: twinSource,
+            targetText: twinTarget,
+            overlap,
+          },);
 
-        /** Run over one of those sections alone, for the call count of one question. */
-        const single = await runDriver({
-          sourceText: '## 第一节\n\n猫猫在窗台上打盹。\n',
-          targetText: '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n',
-        },);
+          /** Run over one of those sections alone, for the call count of one question. */
+          const single = await runDriver({
+            sourceText: '## 第一节\n\n猫猫在窗台上打盹。\n',
+            targetText: '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n',
+            overlap,
+          },);
         expect(twins.result
           .sliceCount,).toBe(2,);
         expect(single.result
@@ -743,14 +753,15 @@ await describe({
           ?.outputText,).toBe(twins.result
           .slices[1]
           ?.outputText,);
-        expect(twins.result
-          .slices
-          .map(function toIndex(record,): number {
-            return record.sliceIndex;
-          },),).toEqual([
-          0,
-          1,
-        ],);
+          expect(twins.result
+            .slices
+            .map(function toIndex(record,): number {
+              return record.sliceIndex;
+            },),).toEqual([
+            0,
+            1,
+          ],);
+        },),);
       },
     },),
 
@@ -1176,7 +1187,10 @@ But we must remember that the cat sleeping on the windowsill has been there `
         + 'hold what a warm run could resume and this slice is deliberately not cached. Reusing it '
         + 'would make a cold run settle on a silence a warm run would have re-asked',
       fn: async () => {
-        /** Section written twice, so both slices ask one question. */
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          /** Section written twice, so both slices ask one question. */
         const SECTION = `## 第一节
 
 猫猫在窗台上打盹。
@@ -1195,31 +1209,34 @@ The cat is doing the sleeping on the windowsill.
          * count per slice is a property of the gather rather than of the
          * translator list length.
          */
-        const single = await runDriver({
-          sourceText: SECTION,
-          targetText: RENDERED,
-          silentTranslators: true,
-        },);
+          const single = await runDriver({
+            sourceText: SECTION,
+            targetText: RENDERED,
+            silentTranslators: true,
+            overlap,
+          },);
 
-        /**
-         * The same section twice.
-         */
-        const twin = await runDriver({
-          sourceText: `${SECTION}\n${SECTION}`,
-          targetText: `${RENDERED}\n${RENDERED}`,
-          silentTranslators: true,
-        },);
+          /**
+           * Same section twice.
+           */
+          const twin = await runDriver({
+            sourceText: `${SECTION}\n${SECTION}`,
+            targetText: `${RENDERED}\n${RENDERED}`,
+            silentTranslators: true,
+            overlap,
+          },);
         expect(single.result
           .sliceCount,).toBe(1,);
         expect(twin.result
           .sliceCount,).toBe(2,);
         expect(single.calls
           .translateAttempts,).toBeGreaterThan(0,);
-        expect(twin.calls
-          .translateAttempts,).toBe(single.calls
-          .translateAttempts * 2,);
-        expect(twin.persisted
-          .size,).toBe(0,);
+          expect(twin.calls
+            .translateAttempts,).toBe(single.calls
+            .translateAttempts * 2,);
+          expect(twin.persisted
+            .size,).toBe(0,);
+        },),);
       },
     },),
 
