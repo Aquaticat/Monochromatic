@@ -26,6 +26,7 @@ import {
   contestDocumentLanes,
   createSyntheticClient,
   type LaneContestOutcome,
+  persistLaneContestOutcome,
   type ProjectedLanes,
   type SliceCache,
   type SyntheticClient,
@@ -559,8 +560,8 @@ await describe({
       },
     },),
     it({
-      name: 'THROWS the caller abort reason after a quorum answered but before persistence, '
-        + 'so an abandoned contest cannot look complete or become warm-run evidence',
+      name: 'THROWS the caller abort reason while the roster is in flight, even after '
+        + 'the first voices answered',
       fn: async () => {
         await expect(drive({
           pairs: [
@@ -574,6 +575,60 @@ await describe({
         },),)
           .rejects
           .toBe(CONTEST_ABORT,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES persistence under an already aborted caller after a quorum-complete '
+        + 'outcome returned, preserving the final pre-write defense',
+      fn: async () => {
+        /**
+         * Exact caller reason helper must surface.
+         */
+        const stopped = new Error('caller abandoned completed contest',);
+        const controller = new AbortController();
+        controller.abort(stopped,);
+
+        /**
+         * Writes attempted after abort.
+         */
+        const persisted: string[] = [];
+        await expect(persistLaneContestOutcome({
+          key: 'lane-contest-persistence-guard-fixture',
+          outcome: {
+            choice: 'repair',
+            ballots: [
+              {
+                choice: 'repair',
+                unsupported: [],
+                unsupportedRaw: [],
+                dropped: [],
+                droppedRaw: [],
+                reason: 'first corroborating ballot',
+              },
+              {
+                choice: 'repair',
+                unsupported: [],
+                unsupportedRaw: [],
+                dropped: [],
+                droppedRaw: [],
+                reason: 'second corroborating ballot',
+              },
+            ],
+            usable: 2,
+            findings: [],
+          },
+          cache: {
+            resumed: new Map<string, LaneContestOutcome>(),
+            persist: async ({ key, },) => {
+              persisted.push(key,);
+            },
+          },
+          signal: controller.signal,
+        },),)
+          .rejects
+          .toBe(stopped,);
+        expect(persisted,).toEqual([],);
       },
     },),
 
