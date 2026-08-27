@@ -1699,6 +1699,10 @@ Anything durable about them lives in this document, in the audit document, or in
 -   `#269`: front matter is never translated or repaired.
 -   `#270`: `model-catalog` compares only Synthetic against the compiled catalog;
     the Charm Hyper half has no drift check, and six price rows drifted in a single day.
+-   `#271`: contest can decline archive and settle on neither lane,
+    consolidation calls that `no-standing-text` and buys nothing,
+    then final assembly revives archive.
+    Fixed `Toka_ls` reproduced this with 9 of 10 voices calling archive flawed on one slice.
 
 ### Instruments, and where they live
 
