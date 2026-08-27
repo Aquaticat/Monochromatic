@@ -306,7 +306,9 @@ Call sum fell 5.0 percent,
 but metered Hyper spend rose 104.2 percent because concurrency overflowed subscription seats to Hyper.
 Both pages remain timing evidence only:
 each artifact recorded same omitted linked death paragraph as `gap-remains`.
-The fixed-build coverage control and rerun follow.
+Current ten-model coverage control then passed with absence votes only on targeted damage,
+never equal-size decoys.
+Fixed-build overlap-4 `Toka_ls` rerun is active.
 Record: `doc/audit/translation-repair-output-reading-20260826.md`.
 
 ## Do not land a driver into a live pass launch

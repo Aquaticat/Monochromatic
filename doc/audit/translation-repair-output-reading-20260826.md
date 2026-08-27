@@ -200,7 +200,13 @@ Commits run from `c151e57ca` through `598401349`;
 focused tests, lint and guard-failure proofs are green.
 A link-free local omission hidden by aggregate length remains unrepairable,
 but now fails entry rather than publishing silently.
-Current ten-model coverage roster must pass live absence control before rerun is readiness evidence.
+Current ten-model coverage roster passed live absence control on 2026-08-27.
+Two targeted cuts flipped from `carried` to `absent` with 10 and 9 votes,
+third moved to `partly-carried`,
+and three equal-size decoys drew zero absence votes.
+Both providers stayed wet.
+Fixed-build overlap-4 rerun is active in
+`~/temp/agent/corpus-fixed-Toka_ls-four-20260827`.
 
 ## Tooling for the fresh pass, and the second reader's dry run
 

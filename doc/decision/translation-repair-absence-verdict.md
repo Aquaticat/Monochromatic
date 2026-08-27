@@ -101,8 +101,14 @@ coverage-absence conjunct or archive normalization makes its named guard test fa
 Logs: `~/temp/agent/gfp-toka-gap-*.log`.
 Whole-package suite passed 834 cases with zero failures after names-only inventory correction;
 log `~/temp/agent/buildAndTest-toka-gap-fix-v2-20260827.log`.
-The widened current production roster still needs live absence-control revalidation
-before this addendum closes production readiness.
+The widened current production roster passed live absence control on 2026-08-27.
+Over three damageable cases it moved two targeted cuts from `carried` to `absent`
+with 10 and 9 of 10 absence votes,
+moved third to `partly-carried`,
+and cast zero absence votes on all three equal-size decoys.
+Both providers were wet throughout.
+Log: `~/temp/agent/coverage-control-current-roster-20260827.log`.
+Current fixed-build `Toka_ls` rerun is publication validation for this addendum.
 
 ## What this supersedes
 

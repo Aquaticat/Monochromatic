@@ -100,7 +100,12 @@ but routing is measured consequence rather than hidden cost.
 Output reading found blocker independent of overlap:
 source-only factual death paragraph was recorded unfilled and knowingly published in both artifacts.
 No page from either old-digest arm is readiness evidence.
-Live coverage control and fixed-build `Toka_ls` rerun precede further decision arms.
+Current ten-model roster passed live coverage control on three damageable cases:
+two targeted cuts flipped to `absent`,
+third to `partly-carried`,
+and all three equal-size decoys stayed `carried` with zero absence votes.
+Fixed-build overlap-4 `Toka_ls` rerun is active;
+it precedes further decision arms.
 
 ## Readings per pair
 

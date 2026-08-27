@@ -22,8 +22,13 @@ First whole-package suite exposed `UnfilledPageError` missing from names-only me
 `d5b448754` classified its entry id, counts and slice indexes.
 Rerun passed 834 cases with zero failures;
 log `~/temp/agent/buildAndTest-toka-gap-fix-v2-20260827.log`.
-Current ten-model coverage control and independent serial-page reading are running.
-After coverage control: fixed-build `Toka_ls` rerun and full page reread.
+Current ten-model coverage control passed:
+two targeted cuts flipped from `carried` to `absent` with 10 and 9 votes,
+third moved to `partly-carried`,
+and all three equal-size decoys received zero absence votes.
+Both providers stayed wet.
+Fixed-build `Toka_ls` overlap-4 rerun and independent serial-page reading are running.
+Next gate is full fixed-page reread.
 No old-digest `Toka_ls` page is readiness evidence.
 `doc/audit/translation-repair-output-reading-20260826.md` carries full trace;
 `doc/planning/translation-repair-corpus-overlap-measurement.md` carries arm protocol.
