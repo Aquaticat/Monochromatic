@@ -227,8 +227,16 @@ translate lane retained archive.
 Contest heard 8 of 10 and split 4 repair to 4 translate,
 while 5 ballots independently called archive flawed.
 Tie settled neither and therefore retained archive.
+Contest artifact marks archive `declined`.
+Consolidation then records `no-standing-text` and buys no third rendering,
+even though final assembly revives archive as actual floor.
+Slice 11 is stronger same contradiction:
+all 10 contest ballots call archive flawed,
+8 choose neither,
+and consolidation still buys nothing before assembly restores archive.
 This is not overlap ordering defect,
-but known-flawed tie fallback is not semantic approval.
+but known-flawed fallback is not semantic approval.
+It exposes unresolved seam between contest standing text and publication fallback.
 
 MINOR, introduced:
 letter opening lost trailing tilde source and archive both carry.
