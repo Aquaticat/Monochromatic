@@ -83,6 +83,17 @@ and auto-push is on.
     and shares cache-eligible identical questions through the promise twin memo.
     Twin tests at overlap `1` and `2` prove a settled question is asked once and an unheard question is asked again.
     A mixed resume-and-buy case pins ordered aggregation and one fresh persistence at overlap `2`.
+-   `e8f6e78e9` through `31d61e495`:
+    `consolidateDocument` now pairs comparison rows with their contest records before calling `mapOverlapped`,
+    defaults `overlap` to `1`,
+    and returns artifact rows in comparison order.
+    Fresh slate production moved to `buyConsolidationSlice`.
+    Stable settlements persist only under a live signal,
+    and identical position-free questions share one cache-eligible purchase through the promise twin memo.
+    Tests pin overlap activity and order,
+    settled and unsettled twins at overlap `1` and `2`,
+    a mixed resume-and-buy run,
+    and abort-safe persistence.
 
 ## The twin memo, which is the part that is easy to get wrong
 
@@ -129,6 +140,14 @@ two identical contests could buy contradictory ballots and race to overwrite one
 The new memo makes one cold-run answer match the one answer a warm run resumes.
 The pre-persistence abort check is also new:
 a gather that retained quorum before caller abort can no longer make an abandoned contest look complete or become warm-run evidence.
+
+Consolidation now follows that same contest rule even though its former loop did not.
+Its position-free key names everything the producer, judges and gate see,
+and `ConsolidationSettlement` also carries no slice index requiring restamping.
+One settled twin is shared and one unsettled twin is re-bought.
+The new pre-persistence abort check keeps a stable settlement returned after caller abort out of both disk cache and twin memo.
+`pass-entry.ts` still describes every settled slice as persisted before the next begins;
+update that comment when the dial is threaded because overlap and the new abort check both make it stale.
 
 Refinement is the deliberate exception.
 Its former loop had no in-run memo,
@@ -196,8 +215,16 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     logs begin `~/temp/agent/gfp-contest-` and name each mutation.
     Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
     log: `~/temp/agent/buildAndTest-contest-overlap-20260827T072222Z.log`.
-5.  `consolidateDocument` (`src/consolidate-driver.ts`, 230 code lines, loop at line 315):
-    same shape, `consolidationWorthResuming` decides persistence.
+5.  `consolidateDocument`: DONE in `e8f6e78e9` through `31d61e495`.
+    Build, focused suites, `lint:oxlint` and `lint:types` pass.
+    Forcing overlap one and replacing the shared twin memo each failed the corresponding concurrency or ASKS ONCE guard.
+    Caching an unsettled gate and removing abort-safe persistence each failed its own guard.
+    Every mutation was restored and rebuilt;
+    logs begin `~/temp/agent/gfp-consolidate-` and name each mutation.
+    Whole-package `buildAndTest` is running as process
+    `translation-repair-whole-suite-consolidate-driver` (`proc_782d`).
+    A transient `commit_refs` auto-push rejection on `78215439d` recovered on a later commit;
+    measured upstream divergence is zero in both directions.
 6.  Thread the dial:
     `settleEntry` in `src/corpus-run/pass-entry.ts` reads
     `readOverlap({ fallback: PASS_OVERLAP, },)` ONCE (with `PASS_OVERLAP = 1`),
