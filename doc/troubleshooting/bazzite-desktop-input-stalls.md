@@ -778,6 +778,19 @@ Tradeoffs:
 - Single-profile file data has no second Btrfs copy from which scrub can repair corruption.
 - A throughput limit reduces foreground contention but lengthens the scrub.
 
+The user prioritized integrity verification over preserving the remaining clean desktop observation.
+A foreground scrub started around 06:14 local time with:
+
+```sh
+# doc/troubleshooting/bazzite-desktop-input-stalls.md
+sudo btrfs scrub start -B --limit 100M /var/mnt/encrypted
+```
+
+The starting `corruption_errs` value was preserved at 405,004.
+Desktop resource measurements after scrub start are workload-contaminated and cannot represent natural idle behavior.
+The Plasma and KWin event-loop probes remain useful for detecting service boundaries,
+but any overlap with scrub requires explicit classification.
+
 ## What does not work
 
 ### Treating the panel episode as the original stutter
