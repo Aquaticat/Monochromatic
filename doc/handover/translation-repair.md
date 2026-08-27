@@ -1,16 +1,26 @@
 # Translation repair session handover
 
 Status:
-the two-lane pipeline is built and publishing;
-the whole-package audit (`#236`) has reported on all ten slices, and every MAJOR it filed (`#237` to `#257`)
-is landed, GFP-proven and recorded under "State of the tree" (now in the history, with the audit section);
-the three doc passes (A-4, A-5, A-6) are done, and the register's MINORs are being worked in register order:
-every group from calibrate through rendering is landed (`acfc7ad22` to `8bffaba9b`) and `#236` is CLOSED;
-`#213`, `#230` and `#229` are measured; the readiness signal was put and REJECTED (see "The owner's answers"),
-so the pipeline's actual output is being read before anything else: arms A2 and D are running, the fresh
-pass over ten entries follows them, and two defects the reading found (`#263`, `#265`) are landed in source
-awaiting the build that the running arms forbid (see "Work while the arms ran").
-`doc/planning/translation-repair-open-decisions.md` has every question answered; it is kept for the evidence.
+the two-lane pipeline and all five per-slice overlap drivers are built;
+whole-package suite passed 832 cases before live measurement.
+The corpus overlap smoke pair settled and verified `keyword233` at overlap 1 and 4;
+overlap 4 reduced normalized wall time from `0.383` to `0.291`.
+The `Toka_ls` overlap-4 arm then settled 15 slices at normalized `0.147`,
+but actual output reading found page not publishable:
+linked death paragraph was recorded `gap-remains` and knowingly omitted.
+
+That blocker is fixed in source.
+Pass now asks whole-document coverage roster about every source-only slice;
+admission requires verdict `absent` plus page shortfall or missing destination;
+any remaining unfilled passage fails before artifact and publication.
+Inherited invisible variants are folded before preparation.
+Focused suites, lint and five guard-failure mutations are green.
+The same-old-digest serial `Toka_ls` arm is running solely to finish matched overlap measurement.
+After it ends: whole suite, current ten-model coverage control,
+then fixed-build `Toka_ls` rerun and full page reread.
+No old-digest `Toka_ls` page is readiness evidence.
+`doc/audit/translation-repair-output-reading-20260826.md` carries full trace;
+`doc/planning/translation-repair-corpus-overlap-measurement.md` carries arm protocol.
 
 WHAT THIS FILE IS.
 What a session starting today needs, and nothing else.

@@ -66,6 +66,40 @@ sharpest there, which is precisely what the corroboration gate is for:
 a merge leaves the content somewhere in a page of normal length,
 so a merged pair fails the length test even when the roster is unsure.
 
+## Addendum: local destination corroboration and publication refusal, 2026-08-27
+
+The current-build `Toka_ls` output falsified one premise of page-wide shortfall:
+a page of ordinary aggregate length does not imply every passage was merged somewhere.
+Verbose translations elsewhere hid an entirely absent linked paragraph naming death date,
+time, cause, location and age.
+The artifact recorded source-only slice 13 as `not-corroborated`, bought no translation,
+and published a known `gap-remains` page.
+
+The decision is therefore refined:
+
+-   The whole-document coverage roster must call source-only passage `absent`.
+-   Independent deterministic corroboration is either remaining page-wide shortfall budget
+    or a destination carried by that passage and absent from whole target page.
+-   `carried`, `partly-carried`, `split` and `inconclusive` all refuse insertion.
+-   Any passage still unfilled makes corpus entry fail before contest, artifact and publication.
+    A known omission is evidence for retry or diagnosis, never settled output.
+
+The destination path reuses `dropped-destinations.ts`, including Markdown definitions,
+bare addresses and trailing-slash equivalence.
+It cannot repair a link-free omission hidden by aggregate length;
+the publication refusal makes that residual class loud rather than silent.
+
+Implemented in commits `c151e57ca` through `598401349`.
+Unit cases cover both corroborators and all coverage verdict classes;
+pass-level cases prove evidence reaches translation,
+the linked passage reaches page,
+and an unresolved gap writes neither page nor artifact.
+Removing publication guard, pass handoff, destination corroborator,
+coverage-absence conjunct or archive normalization makes its named guard test fail.
+Logs: `~/temp/agent/gfp-toka-gap-*.log`.
+The widened current production roster still needs live absence-control revalidation
+before this addendum closes production readiness.
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D

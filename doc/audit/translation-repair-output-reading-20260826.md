@@ -144,6 +144,64 @@ This is an editorial-choice finding, not an overlap mechanism finding:
 ordering, slice seams, assembly and publication are intact,
 and a two-slice stochastic pair cannot attribute wording to concurrency.
 
+### `Toka_ls` on the current build, overlap-4 decision arm
+
+Not publishable.
+The arm settled 15 slices in 104.37 minutes over 11.82 hours of calls,
+normalized `0.147`, with both providers wet.
+`verify-published` passed one artifact and one page,
+but that process gate checked only that page carried what artifact promised.
+Artifact promised one silent source gap.
+
+BLOCKER, inherited and knowingly left standing:
+the entire factual paragraph after final quoted letter is absent.
+The page omits that she wrote linked final letter on afternoon of October 9, 2024;
+died in Shanghai at 4 p.m. after unsuccessful resuscitation for hemorrhagic shock;
+and was 26.
+It also loses source link.
+These are central memorial facts, so page cannot ship.
+
+ARTIFACT TRACE.
+Source-only slice 13 carries that exact paragraph and target placement with no incumbent.
+Repair records `not-applicable`; translation records `unfilled`, reason `not-corroborated`,
+with no model findings because no translation round was bought.
+Both delivery ledgers say `gap-remains` and ship empty text.
+Whole-page shortfall gate saw ordinary aggregate English length,
+because verbose passages elsewhere masked local omission,
+and treated likely merge as certainty.
+That premise is false on this page.
+
+Other findings from first and independent sol readings:
+
+-   Source front matter designates Chinese alias while page front matter keeps `Nonamev`;
+    source body supports that name, so this is minor metadata displacement rather than fabrication.
+-   Poem shifts from past opening to present `brings`, and contains several inherited or revised
+    unnatural phrases: companion `of the mortal world`, wings `from then on`,
+    `narrow and long Big Dipper`, `dynamic musical notes` and `no wind by her ears`.
+-   `life may be temporarily absent` adds uncertainty;
+    `sprout and bloom` adds blooming.
+-   Parallel poetic sequence mixes period and semicolon endings without source reason.
+-   Biography says `a neat regulated meter is left behind`,
+    which is conspicuously unnatural for writing regulated verse.
+-   Final letter retains conspicuously unnatural English:
+    remaining in memories, spending unknown time, being squeezed out,
+    hearing everyone's thank you and working together `so much` rather than for so long.
+-   One inherited U+FEFF ZERO WIDTH NO-BREAK SPACE remains.
+    Archive had three and changed slices happened to remove two;
+    candidate-only normalization could not touch unchanged archive bytes.
+
+FIXED AFTER READING.
+The corpus pass now refuses every unfilled translation before contest, artifact and publication.
+Production insertion admission now requires whole-document coverage verdict `absent`
+plus either page shortfall or destination missing from target.
+The destination comparison reuses package Markdown and bare-address readers.
+Archive English is folded before preparation, so deciders, artifact and page share visible bytes.
+Commits run from `c151e57ca` through `598401349`;
+focused tests, lint and guard-failure proofs are green.
+A link-free local omission hidden by aggregate length remains unrepairable,
+but now fails entry rather than publishing silently.
+Current ten-model coverage roster must pass live absence control before rerun is readiness evidence.
+
 ## Tooling for the fresh pass, and the second reader's dry run
 
 Two helpers in the session scratchpad (`page-read.py`, `sol-read.py`), owed as a package CLI (`#268`) so the

@@ -78,6 +78,20 @@ The result is a positive control, not the fallback decision:
 only two slices could overlap, and refinement's no-memo caveat was not exercised observably.
 Logs and roots begin `~/temp/agent/corpus-overlap-smoke-`.
 
+### `Toka_ls` pair status, 2026-08-27
+
+Overlap `4` settled 15 slices in 104.37 minutes over 11.82 hours of calls,
+normalized `0.147`, with 61 voices unheard and peak 37 calls in flight.
+Both providers remained wet and `verify-published` matched artifact to page.
+The matched overlap `1` arm is running from same digest
+`sha256-tree-v1:711ef62a473323e52f727b29ea62bd0d481ae10a0b616e508379c5a43d15f068`.
+
+Output reading found blocker independent of overlap:
+source-only factual death paragraph was recorded unfilled and knowingly published.
+The same-digest serial arm continues solely to preserve timing attribution.
+No page from either old-digest arm is readiness evidence.
+After pair finishes, live coverage control and a fixed-build `Toka_ls` rerun precede further decision arms.
+
 ## Readings per pair
 
 Read only package-owned templates from logs.

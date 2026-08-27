@@ -296,6 +296,15 @@ but two slices are only the positive control, not enough to change the fallback.
 The matched decision pairs and output reading continue under
 `doc/planning/translation-repair-corpus-overlap-measurement.md`.
 
+`Toka_ls` overlap `4` then settled 15 slices in 104.37 minutes over 11.82 hours of calls,
+normalized `0.147`, with 61 voices unheard and peak 37 calls in flight.
+Its matched serial arm is running on same digest.
+The page itself is not readiness evidence:
+reading found an omitted linked death paragraph recorded as `gap-remains`.
+The fix landed while serial bundle runs unaffected;
+coverage control and fixed-build rerun come after timing pair.
+Record: `doc/audit/translation-repair-output-reading-20260826.md`.
+
 ## Do not land a driver into a live pass launch
 
 The `corpus-pass` mise task BUILDS the tree it then runs.

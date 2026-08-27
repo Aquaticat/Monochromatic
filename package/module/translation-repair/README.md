@@ -37,9 +37,12 @@ The pass also prints, beside each settled entry's `TALLY` line,
 how many distinct web addresses the source page links to, how many the published page carries,
 and how many of the source's the page lacks (`#265`).
 The addresses themselves go to the run log at info, never to stdout.
-A dropped destination is a finding, not a refusal:
-the page is what both deciders approved, and a link the pipeline cannot restore at publish time
-is reported for the reading rather than holding the entry.
+A dropped destination from a wording both deciders approved is a finding, not a late publish rewrite.
+A different rule protects a source-only passage:
+whole-document coverage must call it absent,
+then page shortfall or a destination missing from target admits translation.
+Any source passage still unfilled fails entry before contest, artifact and publication;
+a known gap never becomes settled page.
 
 ## Contract
 
@@ -246,10 +249,12 @@ and a translation-only window carrying the same text cannot collide.
 A slice whose neighbours change is asked a new question and is recomputed;
 a slice with no neighbours keys exactly as before and resumes.
 
-## What is folded out of a model's text at intake
+## What is folded out of candidate and archive text at intake
 
 Characters a reader cannot tell from their plain counterpart are folded
-where each lane turns an answer into a candidate (`#264`):
+where each lane turns an answer into a candidate (`#264`).
+Corpus pass applies same fold to archive before preparation,
+so incumbent, candidates, spans, artifact and page share visible bytes:
 U+2011 to the hyphen, U+00A0 and U+202F to the space,
 and U+00AD, U+200B, U+2060 and U+FEFF dropped.
 The fold runs before any decider judges,
