@@ -221,8 +221,8 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     Caching an unsettled gate and removing abort-safe persistence each failed its own guard.
     Every mutation was restored and rebuilt;
     logs begin `~/temp/agent/gfp-consolidate-` and name each mutation.
-    Whole-package `buildAndTest` is running as process
-    `translation-repair-whole-suite-consolidate-driver` (`proc_782d`).
+    Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
+    log: `~/temp/agent/buildAndTest-consolidate-overlap-20260827T075438Z.log`.
     A transient `commit_refs` auto-push rejection on `78215439d` recovered on a later commit;
     measured upstream divergence is zero in both directions.
 6.  Thread the dial:
