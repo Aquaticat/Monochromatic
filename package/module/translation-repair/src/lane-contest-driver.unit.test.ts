@@ -12,6 +12,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -47,6 +48,15 @@ const l = tagged({ tag: 'lane-contest-driver-test', },);
  * Per-call bound, generous because the transport answers instantly.
  */
 const PER_CALL_TIMEOUT_MS = 5_000;
+
+/**
+ * Successful contest calls in flight and peak observed by fixture.
+ */
+type ContestConcurrency = {
+  now: number;
+  peak: number;
+  started: number;
+};
 
 /**
  * Original of the slice the two lanes disagree about.
@@ -244,6 +254,10 @@ type CatRig = {
  *
  * @param resumed - ballots an earlier run already bought
  *
+ * @param overlap - most contested slices in flight
+ *
+ * @param activity - optional successful-call overlap instrument
+ *
  * @returns What the driver called, persisted and recorded
  *
  * @example
@@ -256,6 +270,8 @@ async function drive(
     pairs,
     answering,
     resumed = new Map<string, LaneContestOutcome>(),
+    overlap = 1,
+    activity,
   }: {
     readonly pairs: readonly (readonly [
       string,
@@ -263,6 +279,8 @@ async function drive(
     ])[];
     readonly answering: boolean;
     readonly resumed?: ReadonlyMap<string, LaneContestOutcome>;
+    readonly overlap?: number;
+    readonly activity?: ContestConcurrency;
   },
 ): Promise<CatRig> {
   /**
@@ -298,6 +316,20 @@ async function drive(
           bodyText: 'the bookshop is closed',
         };
       }
+      if (activity !== undefined) {
+        /**
+         * Start position making second slice finish before first under overlap.
+         */
+        const startPosition = activity.started;
+        activity.started += 1;
+        activity.now += 1;
+        activity.peak = Math.max(
+          activity.peak,
+          activity.now,
+        );
+        await wait(startPosition < ROSTER.length ? 20 : 5,);
+        activity.now -= 1;
+      }
       return {
         status: 200,
         bodyText: `data: ${
@@ -331,6 +363,7 @@ async function drive(
     cache,
     signal: AbortSignal.timeout(30_000,),
     perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
+    overlap,
     l,
   },);
   return {
@@ -405,6 +438,65 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'runs two contested slices at once at overlap 2, after a serial positive '
+        + 'control proves the successful-call instrument distinguishes one from two, '
+        + 'and returns records in comparison order when the second slice finishes first',
+      fn: async () => {
+        /**
+         * Distinct questions preventing cache-key aliasing from affecting order.
+         */
+        const pairs = [
+          [
+            REPAIR_NAP,
+            TRANSLATE_NAP,
+          ],
+          [
+            `${REPAIR_NAP} Again.`,
+            `${TRANSLATE_NAP} Again.`,
+          ],
+        ] as const;
+
+        /**
+         * Serial positive-control activity.
+         */
+        const serial: ContestConcurrency = {
+          now: 0,
+          peak: 0,
+          started: 0,
+        };
+        await drive({
+          pairs,
+          answering: true,
+          overlap: 1,
+          activity: serial,
+        },);
+
+        /**
+         * Two-slice activity.
+         */
+        const overlapped: ContestConcurrency = {
+          now: 0,
+          peak: 0,
+          started: 0,
+        };
+        const rig = await drive({
+          pairs,
+          answering: true,
+          overlap: 2,
+          activity: overlapped,
+        },);
+        expect(serial.peak,).toBe(ROSTER.length,);
+        expect(overlapped.peak,).toBe(ROSTER.length * 2,);
+        expect(rig.slices.map(function toIndex(slice,) {
+          return slice.sliceIndex;
+        },),).toEqual([
+          0,
+          1,
+        ],);
+      },
+    },),
+
     it({
       name: 'PERSISTS a settled verdict, since ballots are the purchased thing and the next resume must not re-buy them',
       fn: async () => {
