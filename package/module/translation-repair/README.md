@@ -1050,6 +1050,19 @@ while final assembly revives archive.
 One slice reached that path after 9 of 10 contest voices called archive flawed.
 A favourable page does not close mechanism that can recur on next entry.
 
+Fixed-build overlap-4 `Zha_Ke` exposed separate readiness blocker, `#272`.
+Source Markdown carries central letter only as image asset,
+while archive carries English transcription inside unmatched block.
+Preparation paired four surrounding Markdown slices and final assembly preserved unmatched block verbatim;
+no repair, translation, contest or consolidation stage read letter.
+Direct image comparison found source will has seven numbered provisions
+while published transcription has six;
+one provision is absent and two others materially change source meaning.
+Published central letter also retains repeated grammatical defects.
+Mechanical page verification still passed all four promised wordings and destination,
+so current completeness gate is blind to visual-source content and unmatched archive text.
+Page is not publishable and pipeline cannot be production-ready until that path is handled.
+
 Remaining corpus arms, hard-case output reading, live calibration checks,
 front matter and site-grammar gaps,
 package reading CLI,
