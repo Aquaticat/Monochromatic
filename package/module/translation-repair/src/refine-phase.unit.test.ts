@@ -6,6 +6,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -118,6 +119,67 @@ const NO_MODEL_WROTE_THE_FIXTURE: IssueAuthorship = {
   perIssue: {},
   everyIssue: [],
 };
+
+/**
+ * Successful refiner calls in flight and peak observed by fixture.
+ */
+type RefinerConcurrency = {
+  now: number;
+  peak: number;
+  started: number;
+};
+
+/**
+ * Delays refiner answers so a test can observe driver overlap.
+ *
+ * First refiner waits longer than second, making completion order differ from
+ * input order when both are active.
+ *
+ * @param inner - client providing scripted answers
+ *
+ * @param activity - mutable test instrument for active refiner calls
+ *
+ * @returns Client forwarding every call after measuring refiners
+ *
+ * @example
+ * ```ts
+ * const client = measuringRefiners({ inner, activity, },);
+ * ```
+ */
+function measuringRefiners(
+  {
+    inner,
+    activity,
+  }: {
+    readonly inner: SyntheticClient;
+    readonly activity: RefinerConcurrency;
+  },
+): SyntheticClient {
+  return {
+    chatText: inner.chatText,
+    chatJson: async (request) => {
+      if (request.responseFormat
+        ?.json_schema
+        .name
+        === 'refine_report') {
+        /**
+         * Start position deciding deterministic delay.
+         */
+        const startPosition = activity.started;
+        activity.started += 1;
+        activity.now += 1;
+        activity.peak = Math.max(
+          activity.peak,
+          activity.now,
+        );
+        await wait(startPosition === 0 ? 20 : 5,);
+        activity.now -= 1;
+      }
+      return await inner.chatJson(request,);
+    },
+    quotas: inner.quotas,
+  };
+}
 
 /**
  * Builds one settled accuracy outcome.
@@ -571,6 +633,165 @@ await describe({
         expect(phase.outcomes[0]?.repairedText,).toBe(REPAIRED_TEXT,);
         expect(phase.outcomes[0]?.changed,).toBe(false,);
         expect(phase.findings.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'runs two refinement slices at once when overlap is 2, after a serial '
+        + 'positive control proves the refiner instrument distinguishes one from two, '
+        + 'and still returns outcomes in input order when the second refiner answers first',
+      fn: async () => {
+        /**
+         * Two prepared slices carrying independently refinable paragraphs.
+         */
+        const twoSlices: readonly ChunkPair[] = [
+          ...SLICES,
+          {
+            source: {
+              sliceIndex: 1,
+              text: SOURCE_TEXT,
+              startOffset: SOURCE_TEXT.length + 2,
+              endOffset: (SOURCE_TEXT.length * 2) + 2,
+              nodes: [],
+            },
+            target: {
+              sliceIndex: 1,
+              text: REPAIRED_TEXT,
+              startOffset: REPAIRED_TEXT.length + 2,
+              endOffset: (REPAIRED_TEXT.length * 2) + 2,
+              nodes: [],
+            },
+          },
+        ];
+
+        /**
+         * Accuracy outcomes corresponding to prepared input order.
+         */
+        const firstOutcome = settledOutcome({
+          resolvedIssueIds: [],
+          authorship: NO_MODEL_WROTE_THE_FIXTURE,
+        },);
+        const outcomes: readonly ChunkRepairOutcome[] = [
+          firstOutcome,
+          {
+            ...firstOutcome,
+            sliceIndex: 1,
+          },
+        ];
+
+        /**
+         * Serial positive-control activity.
+         */
+        const serial: RefinerConcurrency = {
+          now: 0,
+          peak: 0,
+          started: 0,
+        };
+        await runRefinePhase({
+          declaredNames: [],
+          client: measuringRefiners({
+            inner: scriptedPhase({ checkerVerdict: 'fixed', },),
+            activity: serial,
+          },),
+          targetText: `${REPAIRED_TEXT}\n\n${REPAIRED_TEXT}`,
+          slices: twoSlices,
+          outcomes,
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          overlap: 1,
+          l,
+        },);
+
+        /**
+         * Overlapped activity.
+         */
+        const overlapped: RefinerConcurrency = {
+          now: 0,
+          peak: 0,
+          started: 0,
+        };
+        const phase = await runRefinePhase({
+          declaredNames: [],
+          client: measuringRefiners({
+            inner: scriptedPhase({ checkerVerdict: 'fixed', },),
+            activity: overlapped,
+          },),
+          targetText: `${REPAIRED_TEXT}\n\n${REPAIRED_TEXT}`,
+          slices: twoSlices,
+          outcomes,
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          overlap: 2,
+          l,
+        },);
+        expect(serial.peak,).toBe(1,);
+        expect(overlapped.peak,).toBe(2,);
+        expect(phase.outcomes.map(function toIndex(outcome,) {
+          return outcome.sliceIndex;
+        },),).toEqual([
+          0,
+          1,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'reports rewriters asked when ANY overlapped slice asked, even when '
+        + 'the last slice in document order was ineligible and asked nobody',
+      fn: async () => {
+        /**
+         * Eligible first outcome followed by non-translation standing outcome.
+         */
+        const eligible = settledOutcome({
+          resolvedIssueIds: [],
+          authorship: NO_MODEL_WROTE_THE_FIXTURE,
+        },);
+        const ineligible: ChunkRepairOutcome = {
+          ...eligible,
+          sliceIndex: 1,
+          nonTranslationStanding: true,
+        };
+
+        /**
+         * Second prepared pair matching ineligible outcome index.
+         */
+        const second: ChunkPair = {
+          source: {
+            sliceIndex: 1,
+            text: SOURCE_TEXT,
+            startOffset: SOURCE_TEXT.length + 2,
+            endOffset: (SOURCE_TEXT.length * 2) + 2,
+            nodes: [],
+          },
+          target: {
+            sliceIndex: 1,
+            text: REPAIRED_TEXT,
+            startOffset: REPAIRED_TEXT.length + 2,
+            endOffset: (REPAIRED_TEXT.length * 2) + 2,
+            nodes: [],
+          },
+        };
+        const phase = await runRefinePhase({
+          declaredNames: [],
+          client: scriptedPhase({ checkerVerdict: 'fixed', },),
+          targetText: `${REPAIRED_TEXT}\n\n${REPAIRED_TEXT}`,
+          slices: [
+            ...SLICES,
+            second,
+          ],
+          outcomes: [
+            eligible,
+            ineligible,
+          ],
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          overlap: 2,
+          l,
+        },);
+        expect(phase.askedRewriters,).toBe(true,);
       },
     },),
 
