@@ -53,6 +53,77 @@ export type RefinePhaseSliceResult = RefinedSliceSettlement & {
 };
 
 /**
+ * Persists one naturalness settlement only when caller remains live and every
+ * stage reached quorum.
+ *
+ * Separated from model work so abort-safe persistence is directly testable:
+ * transport usually throws before settlement returns, which otherwise makes
+ * this final defense unreachable in a model-client fixture.
+ *
+ * @param key - exact question this settlement answers
+ *
+ * @param settled - outcome and findings eligible for serialization
+ *
+ * @param sliceIndex - index named in refusal warning
+ *
+ * @param refineCache - naturalness persistence boundary, when configured
+ *
+ * @param signal - caller abort checked before write
+ *
+ * @param l - phase logger receiving eligibility warning
+ *
+ * @throws Whatever caller abort reason or persistence throws
+ *
+ * @example
+ * ```ts
+ * await persistRefinePhaseSlice({ key, settled, sliceIndex, refineCache, signal, l, },);
+ * ```
+ *
+ * @internal
+ */
+export async function persistRefinePhaseSlice(
+  {
+    key,
+    settled,
+    sliceIndex,
+    refineCache,
+    signal,
+    l,
+  }: ForeignBorrowed<{
+    readonly key: string;
+    readonly settled: RefinedSliceSettlement;
+    readonly sliceIndex: number;
+    readonly refineCache?: SliceCache<RefinedSliceSettlement>;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+  }>,
+): Promise<void> {
+  signal.throwIfAborted();
+
+  if (everyStageHeard({ findings: settled.findings, },)) {
+    await refineCache?.persist({
+      key,
+      serialized: JSON.stringify({
+        outcome: settled.outcome,
+        findings: settled.findings,
+      } satisfies RefinedSliceSettlement,),
+    },);
+    return;
+  }
+
+  /**
+   * Stages whose silence makes this settlement ineligible for reuse.
+   */
+  const silent = silentStagesOf({ findings: settled.findings, },)
+    .join('; ',);
+  l.warn(
+    `slice ${String(sliceIndex,)}: a stage heard fewer than quorum, so the refinement is NOT cached: ${
+      silent
+    }`,
+  );
+}
+
+/**
  * Resumes or buys one naturalness settlement and persists only decisions a warm
  * run may reuse.
  *
@@ -222,29 +293,14 @@ export async function settleRefinePhaseSlice(
 
   // An abandoned exchange must never become warm-run evidence, even if a later
   // settlement path converts transport failure into stage silence.
-  signal.throwIfAborted();
-
-  if (everyStageHeard({ findings: settled.findings, },)) {
-    await refineCache?.persist({
-      key,
-      serialized: JSON.stringify({
-        outcome: settled.outcome,
-        findings: settled.findings,
-      } satisfies RefinedSliceSettlement,),
-    },);
-  }
-  else {
-    /**
-     * Stages whose silence makes this settlement ineligible for reuse.
-     */
-    const silent = silentStagesOf({ findings: settled.findings, },)
-      .join('; ',);
-    l.warn(
-      `slice ${String(outcome.sliceIndex,)}: a stage heard fewer than quorum, so the refinement is NOT cached: ${
-        silent
-      }`,
-    );
-  }
+  await persistRefinePhaseSlice({
+    key,
+    settled,
+    sliceIndex: outcome.sliceIndex,
+    ...((refineCache === undefined) ? {} : { refineCache, }),
+    signal,
+    l,
+  },);
 
   return {
     outcome: settled.outcome,

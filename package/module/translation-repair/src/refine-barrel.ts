@@ -46,6 +46,7 @@ export {
   type RefinePhaseResult,
   runRefinePhase,
 } from './refine-phase.ts';
+export { persistRefinePhaseSlice, } from './refine-phase-slice.ts';
 export { refineSettledSlices, } from './repair-refine-step.ts';
 export { assembleRepair, } from './repair-assemble.ts';
 export { repairReplacements, } from './repair-replacements.ts';
