@@ -107,7 +107,9 @@ Plasma's 05:27:51 probe took 22.0 ms,
 compared with the 4.9 to 6.2 ms startup range,
 but remained below the 250 ms incident boundary.
 The user continued to perceive some Helium scrolling delay after the panel recovered.
-That continuation keeps Helium's client-local behavior separate from the measured Plasma event-loop stall.
+At 05:54,
+the user confirmed that Helium and the panel were both working normally again.
+The temporary continuation keeps Helium's client-local behavior separate from the measured Plasma event-loop stall.
 
 ## Root cause
 
