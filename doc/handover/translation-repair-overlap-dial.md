@@ -133,8 +133,8 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     `~/temp/agent/gfp-repair-twin-memo.log`,
     and `~/temp/agent/gfp-repair-abort-normalization.log`,
     with matching restored logs beside them.
-    Whole-package `buildAndTest` is running as process
-    `translation-repair-whole-suite-repair-driver` (`proc_821a`).
+    Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
+    log: `~/temp/agent/buildAndTest-repair-overlap-20260827T062031Z.log`.
 3.  `runRefinePhase` (`src/refine-phase.ts`, 189 code lines, loop at line 211):
     no twin memo (this lane caches but never memoized in-run),
     and its persist condition is `everyStageHeard({ findings, })`.
