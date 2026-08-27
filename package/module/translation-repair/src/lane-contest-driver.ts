@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { mapOverlapped, } from './overlapped-map.ts';
 import {
   type ArtifactContestSlice,
   contestEligibleIndexes,
@@ -77,6 +78,8 @@ function worthResuming(
  *
  * @param perCallTimeoutMs - per-call ceiling
  *
+ * @param overlap - most contested slices in flight; one reproduces former loop
+ *
  * @param l - logger to tag
  *
  * @returns One record per contested slice, in comparison-row order
@@ -95,6 +98,7 @@ export async function contestDocumentLanes(
     cache,
     signal,
     perCallTimeoutMs,
+    overlap = 1,
     l,
   }: {
     readonly client: SyntheticClient;
@@ -104,6 +108,7 @@ export async function contestDocumentLanes(
     readonly cache: SliceCache<LaneContestOutcome>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
+    readonly overlap?: number;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
@@ -145,9 +150,12 @@ export async function contestDocumentLanes(
   },);
 
   /**
-   * One record per contested slice, in comparison-row order.
+   * Comparison rows whose lane wordings differ, in document order.
    */
-  const slices: ArtifactContestSlice[] = [];
+  const eligibleRows = projected.comparison
+    .filter(function isEligible(row,): boolean {
+      return eligible.has(row.sliceIndex,);
+    },);
 
   /**
    * Slices the two lanes covered at all, which the eligible count is read
@@ -156,71 +164,75 @@ export async function contestDocumentLanes(
   const compared = projected.comparison
     .length;
   dl.info(`lane contest: ${String(eligible.size,)}/${String(compared,)} slices differ`,);
-  for (const row of projected.comparison) {
-    if (!eligible.has(row.sliceIndex,))
-      continue;
 
-    /**
-     * Original of this slice, which every ledger row carries.
-     */
-    const sourceText = sourceTexts.get(row.sliceIndex,);
-    if (sourceText === undefined) {
-      throw new Error(
-        `lane contest: slice ${String(row.sliceIndex,)} is compared and does not appear in the repair ledger`,
-      );
-    }
+  return await mapOverlapped({
+    items: eligibleRows,
+    overlap,
+    oneItem: async function contestOne({ item: row, }): Promise<ArtifactContestSlice> {
+      /**
+       * Original of this slice, which every ledger row carries.
+       */
+      const sourceText = sourceTexts.get(row.sliceIndex,);
+      if (sourceText === undefined) {
+        throw new Error(
+          `lane contest: slice ${String(row.sliceIndex,)} is compared and does not appear in the repair ledger`,
+        );
+      }
 
-    /**
-     * Key these ballots resume under.
-     */
-    const key = laneContestSliceKey({
-      runShape,
-      sourceText,
-      incumbentText: row.incumbentText,
-      incumbentKind: row.incumbentKind,
-      repairText: row.repairText,
-      translateText: row.translateText,
-    },);
-
-    /**
-     * Ballots an earlier run already bought for this slice, if any.
-     */
-    const resumed = cache
-      .resumed
-      .get(key,);
-
-    /* oxlint-disable no-await-in-loop -- sequential by design, matching `translateDocument` and `readDocumentPictures`: the client`s limiter grants one stream per model, so contesting two slices at once queues behind the same slot rather than doubling throughput, and settling one slice before starting the next is what makes an aborted run resumable to the slice it reached */
-
-    /**
-     * What the roster settled here, bought or resumed.
-     */
-    const outcome = resumed ?? await contestLaneSlice({
-      client,
-      modelIds,
-      subject: {
+      /**
+       * Key these ballots resume under.
+       */
+      const key = laneContestSliceKey({
+        runShape,
         sourceText,
         incumbentText: row.incumbentText,
+        incumbentKind: row.incumbentKind,
         repairText: row.repairText,
         translateText: row.translateText,
-        ...((identityContext === undefined) ? {} : { identityContext, }),
-      },
-      signal,
-      exchangeTimeoutMs: perCallTimeoutMs,
-      l: dl,
-    },);
-    if ((resumed === undefined) && worthResuming({ outcome, },)) {
-      await cache.persist({
-        key,
-        serialized: JSON.stringify(outcome,),
       },);
-    }
-    /* oxlint-enable no-await-in-loop */
-    slices.push(describeContestSlice({
-      sliceIndex: row.sliceIndex,
-      outcome,
-    },),);
-  }
-  return slices;
+
+      /**
+       * Ballots an earlier run already bought for this slice, if any.
+       */
+      const resumed = cache
+        .resumed
+        .get(key,);
+
+      /**
+       * What the roster settled here, bought or resumed.
+       */
+      const outcome = resumed ?? await contestLaneSlice({
+        client,
+        modelIds,
+        subject: {
+          sourceText,
+          incumbentText: row.incumbentText,
+          repairText: row.repairText,
+          translateText: row.translateText,
+          ...((identityContext === undefined) ? {} : { identityContext, }),
+        },
+        signal,
+        exchangeTimeoutMs: perCallTimeoutMs,
+        l: dl,
+      },);
+      if (resumed === undefined) {
+        // Gather rounds degrade torn-down calls to silence. A quorum that
+        // arrived before the abort must not make the abandoned entry look done
+        // or become warm-run evidence.
+        signal.throwIfAborted();
+        if (worthResuming({ outcome, })) {
+          await cache.persist({
+            key,
+            serialized: JSON.stringify(outcome,),
+          },);
+        }
+      }
+      return describeContestSlice({
+        sliceIndex: row.sliceIndex,
+        outcome,
+      },);
+    },
+  },);
 }
 
 //endregion Lane contest driver
