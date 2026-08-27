@@ -372,6 +372,12 @@ function entryClient(
         .join('\n',);
 
       /**
+       * Whether shared translation schema belongs to consolidation producer.
+       */
+      const isConsolidation = (schema === 'translation_report')
+        && content.includes('Two English renderings of this passage already exist',);
+
+      /**
        * Instrument matching this request's per-slice driver.
        */
       const stageActivity = schema === 'critic_report'
@@ -380,8 +386,7 @@ function entryClient(
         ? activity?.refine
         : schema === 'lane_contest'
         ? activity?.contest
-        : (schema === 'translation_report'
-          && content.includes('Two English renderings of this passage already exist',))
+        : isConsolidation
         ? activity?.consolidate
         : schema === 'translation_report'
         ? activity?.translate
