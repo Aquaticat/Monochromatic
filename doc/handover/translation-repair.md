@@ -19,10 +19,11 @@ The matched old-digest serial `Toka_ls` arm settled in 313.24 minutes at normali
 overlap 4 reduced wall time 66.7 percent and normalized wall time 64.9 percent,
 with same 61 unheard voices in both arms.
 First whole-package suite exposed `UnfilledPageError` missing from names-only message inventory;
-`d5b448754` classified its entry id, counts and slice indexes, and focused guard now passes.
-Whole-package rerun and independent serial-page reading are running.
-After suite: current ten-model coverage control,
-then fixed-build `Toka_ls` rerun and full page reread.
+`d5b448754` classified its entry id, counts and slice indexes.
+Rerun passed 834 cases with zero failures;
+log `~/temp/agent/buildAndTest-toka-gap-fix-v2-20260827.log`.
+Current ten-model coverage control and independent serial-page reading are running.
+After coverage control: fixed-build `Toka_ls` rerun and full page reread.
 No old-digest `Toka_ls` page is readiness evidence.
 `doc/audit/translation-repair-output-reading-20260826.md` carries full trace;
 `doc/planning/translation-repair-corpus-overlap-measurement.md` carries arm protocol.

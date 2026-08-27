@@ -99,6 +99,8 @@ and an unresolved gap writes neither page nor artifact.
 Removing publication guard, pass handoff, destination corroborator,
 coverage-absence conjunct or archive normalization makes its named guard test fail.
 Logs: `~/temp/agent/gfp-toka-gap-*.log`.
+Whole-package suite passed 834 cases with zero failures after names-only inventory correction;
+log `~/temp/agent/buildAndTest-toka-gap-fix-v2-20260827.log`.
 The widened current production roster still needs live absence-control revalidation
 before this addendum closes production readiness.
 
