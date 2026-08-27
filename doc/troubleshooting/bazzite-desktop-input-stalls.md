@@ -22,6 +22,15 @@ and Plasma Shell was restarted.
 This is a verified removal,
 not proof that Panel Colorizer caused either incident class.
 
+At about 05:25,
+a related but not identical episode occurred after that removal and Plasma restart.
+The panel and Helium scrolling were delayed,
+while other applications remained responsive.
+A watchdog independently captured a Plasma event-loop timeout during the report.
+This recurrence establishes that Panel Colorizer was not required for this later episode.
+It does not establish that the 04:25 and 05:25 episodes had one cause,
+or that Helium and Plasma shared one cause.
+
 ## Symptom
 
 ### Original global-input episode
@@ -42,7 +51,7 @@ The available negative evidence is:
   but no memory-pressure or GPU-failure event coincided with a user-visible episode.
 - The user could not reproduce the global-input delay during the initial investigation.
 
-### Separate Plasma panel episode
+### Separate Plasma-centered episodes
 
 During the 2026-08-27 panel episode:
 
@@ -75,6 +84,25 @@ Both Plasma Shell and KWin answered a DBus peer ping immediately at 04:27:03,
 near the end of the episode.
 That probe was too late to prove whether Plasma's event loop had been blocked earlier.
 
+During the later episode around 05:25:
+
+- The panel and Helium scrolling were delayed.
+- Other applications remained responsive.
+- Plasma Shell failed a 1.5-second DBus probe.
+- KWin answered its control probe in 5.8 ms.
+- KWin scheduler wait stayed at 0.0 ms in the sampled interval.
+- CPU pressure was 10.5 ms or less in the surrounding sampled intervals.
+- I/O pressure was at or below 0.1 ms.
+- Memory pressure remained 0.0 ms.
+- No kernel,
+  DRM,
+  or AMDGPU fault was emitted.
+
+The watchdog declared Plasma responsive after three later probes,
+and the user placed visible recovery around 05:27.
+The user continued to perceive some Helium scrolling delay after the panel recovered.
+That continuation keeps Helium's client-local behavior separate from the measured Plasma event-loop stall.
+
 ## Root cause
 
 ### Original global-input episode: unknown
@@ -87,12 +115,72 @@ or application stack.
 The investigation therefore cannot assign an original root cause.
 
 A direct event-loop watchdog now probes Plasma Shell and KWin every five seconds.
-If either fails a measured latency boundary,
-it captures both processes' thread wait channels and stacks.
-This closes a gap in the initial procfs-only observer,
-which could miss a busy event loop with low scheduler wait time.
+Its first failure captured both process states and a Plasma stack.
+A second stack was also captured,
+but the stack collector pauses the target process and can prolong an existing stall.
+The replacement watchdog therefore records only probe results and kernel wait channels.
+This closes part of the initial procfs-only observer gap without repeatedly stopping Plasma.
 
 ## Diagnostic interpretation
+
+### The later panel episode crossed Plasma's event-loop boundary while KWin remained responsive
+
+The first failed probe began around 05:25:23 and reached its 1.5-second limit.
+KWin answered in 5.8 ms in the same watchdog pass.
+The Plasma GUI thread stack was:
+
+```text
+QWaitCondition::wait
+QSGThreadedRenderLoop::polishAndSync
+QSGThreadedRenderLoop::handleExposure
+QWindow::event
+QtWaylandClient::QWaylandWindow::updateExposure
+```
+
+The exact Qt source is `qtdeclarative` tag `v6.11.1`.
+Its threaded-render-loop comment states that the GUI thread initiates `polishAndSync`,
+then blocks until the render thread finishes synchronization
+([`qsgthreadedrenderloop.cpp:45-59`](https://code.qt.io/cgit/qt/qtdeclarative.git/tree/src/quick/scenegraph/qsgthreadedrenderloop.cpp?h=v6.11.1#n45)).
+The implementation first polishes QML items,
+then posts a synchronization event and waits on the render thread
+([`qsgthreadedrenderloop.cpp:1546-1681`](https://code.qt.io/cgit/qt/qtdeclarative.git/tree/src/quick/scenegraph/qsgthreadedrenderloop.cpp?h=v6.11.1#n1546)):
+
+```cpp
+d->polishItems();
+
+w->thread->postEvent(new WMSyncEvent(window, inExpose, w->forceRenderPass, scProxyData));
+
+w->thread->waitCondition.wait(&w->thread->mutex);
+```
+
+A later failed probe at 05:31:43 again timed out Plasma while KWin answered in 5.5 ms.
+That Plasma stack was earlier in the same render-loop path:
+
+```text
+surfaceForWindow
+WindowEffects::installBlur
+PlasmaQuick::PlasmaWindow::resizeEvent
+QQuickGridLayoutBase::rearrange
+QQuickLayout::updatePolish
+QQuickWindowPrivate::polishItems
+QSGThreadedRenderLoop::polishAndSync
+QSGThreadedRenderLoop::handleExposure
+```
+
+The second event is observer-contaminated.
+A manual Helium stack capture had started shortly before it,
+and OpenSnitch processed that `eu-stack` invocation.
+It is retained as a compatible Plasma path,
+not counted as an independent natural reproduction.
+
+These captures establish a Plasma GUI event loop occupied in QML polish,
+window effects,
+and render-thread synchronization during exposure handling.
+They do not identify which Plasma window was exposed,
+which QML item initiated the resize,
+or why Helium scrolling remained delayed.
+A kernel GPU fault is not required for this Qt path to block,
+and no such fault appeared here.
 
 ### AMDGPU `REG_WAIT` messages are real timeouts but have not occurred at runtime here
 
@@ -234,9 +322,21 @@ Plasma Shell answered in 5.6 ms and KWin answered in 5.4 ms.
 No user symptom marker accompanied this cycle,
 so these measurements establish responsive sampled services rather than absence of a subjective symptom.
 
-These clean measurements weaken Snapper as an immediate trigger.
-It does not rule out a timing-dependent interaction during another cycle.
-No historical user-visible stutter timestamps exist for comparison with retained rescan windows.
+The later Plasma event occurred during `snapper-cleanup.service`,
+not the clean hourly timeline-creation cases.
+The cleanup logged deletion of snapshot 970 at 05:24:49,
+about 34 seconds before Plasma's failed probe.
+It logged deletion of snapshot 971 at 05:31:02,
+about 41 seconds before the observer-contaminated second failed probe.
+The first deletion began as the qgroup scan reported completion.
+
+This is temporal correlation with the separate Plasma-centered incident,
+not a demonstrated call path.
+No I/O-pressure interval,
+KWin delay,
+or system-wide input failure accompanied the failed Plasma probes.
+The clean timeline-creation measurements still weaken Snapper as a simple immediate trigger.
+A cleanup-specific interaction remains unconfirmed and requires another uncontaminated recurrence.
 
 ## Environment findings
 
@@ -332,9 +432,14 @@ eight `tail -f` processes,
 and their shell wrappers were present before removal.
 
 This proves that the apparently disabled widgets still ran helper infrastructure.
-It does not prove that those helpers caused the transient panel freeze or original global-input stalls.
-No live Plasma stack was captured during the panel episode,
+It does not prove that those helpers caused the 04:25 panel freeze or original global-input stalls.
+No live Plasma stack was captured during the 04:25 episode,
 and the removal made same-configuration recurrence unavailable.
+The later Plasma-centered episode occurred while the package,
+widget references,
+helpers,
+and live settings were absent.
+Panel Colorizer was therefore not required for that later recurrence.
 
 ### AMDGPU VM-memory warnings are teardown warnings and remain a watch item
 
@@ -454,6 +559,45 @@ Unverified case:
 
 - No original global-input episode has a timestamp that can be compared with another rescan.
 
+### Plasma event-loop capture
+
+The watchdog measured an ordinary startup range of 4.9 to 6.2 ms,
+then used 250 ms as its incident boundary.
+Its classifier self-test exercised both slow-success and failed-probe branches before observation.
+
+The first natural failure record was:
+
+```json
+{
+  "timestamp": "2026-08-27T09:25:25.295Z",
+  "plasmaProbe": { "elapsedMs": 1501.350116, "succeeded": false },
+  "kwinProbe": { "elapsedMs": 5.808578, "succeeded": true }
+}
+```
+
+The raw state is in scratch storage:
+
+```text
+/var/home/user/temp/agent/plasma-stall-captures/2026-08-27T09-25-25.295Z
+```
+
+The second observer-contaminated state is:
+
+```text
+/var/home/user/temp/agent/plasma-stall-captures/2026-08-27T09-31-43.612Z
+```
+
+`eu-stack` 0.195 attaches to each live thread with `PTRACE_ATTACH`
+([`libdwfl/linux-pid-attach.c:73-117`](https://sourceware.org/elfutils/ftp/0.195/elfutils-0.195.tar.bz2)),
+which stops that thread while its state is read.
+The all-thread collector was removed from the active watchdog after the two captures.
+Current incident collection retains only DBus timings and procfs wait channels.
+
+A Helium snapshot taken while scrolling still felt delayed found its browser main loop polling normally
+and its GPU-process main thread waiting on a timed condition.
+No symbols identified an active Helium call path,
+so this is not a Helium root-cause capture.
+
 ### Panel Colorizer removal verification
 
 Upstream recommends removing the widget and restarting Plasma Shell for troubleshooting
@@ -565,10 +709,23 @@ Changing display-core or power parameters now would add an uncontrolled variable
 
 ### Attributing the panel freeze to Panel Colorizer from presence or removal
 
-Panel Colorizer was present on every panel during the separate episode,
+Panel Colorizer was present on every panel during the 04:25 episode,
 and it was later removed at the user's request.
 Neither fact establishes cause.
-Non-recurrence after removal would also be insufficient remediation evidence without a controlled reproduction.
+The broad Plasma-centered symptom later recurred while it was absent,
+which establishes only that Panel Colorizer was not required for the later event.
+That recurrence does not prove whether it contributed to the earlier event.
+
+### Forcing Qt Quick's basic render loop as a presumed fix
+
+The captured process used Qt Quick's threaded render loop without a `QSG_RENDER_LOOP` environment override.
+KDE previously
+[forced the basic loop on Wayland](https://invent.kde.org/plasma/plasma-workspace/-/commit/9c998d3083f622a1677782248d4c8e238c935dc2),
+then
+[reverted that change](https://invent.kde.org/plasma/plasma-workspace/-/commit/c97448ebe5987acd08da9475733f92931c074b95)
+because the basic loop reused one OpenGL context across windows with incompatible EGL configurations.
+A forced-basic session is therefore an untested diagnostic experiment with known tradeoffs,
+not a verified fix.
 
 ### Calling Snapper the cause from qgroup warnings alone
 
@@ -591,13 +748,16 @@ Panel Colorizer issue
 describes taskbar items becoming unclickable and queued or misdirected click regions,
 but it concerned version 1.0.0 and a reproducible panel-mask condition.
 The workaround was merged in 2024.
-The current transient episode on 6.5.0 did not capture a stack or panel-mask state.
+The 04:25 episode on 6.5.0 did not capture a stack or panel-mask state.
+The later Plasma-centered episode recurred after the package and helpers were absent,
+so it adds no evidence for a Panel Colorizer defect.
 
 Issue
 [luisbocanegra/plasma-panel-colorizer#556](https://github.com/luisbocanegra/plasma-panel-colorizer/issues/556)
 describes lag from repeated full `panelWidgets` configuration writes.
-The current panel episode had no matching dm-0 or PSI stall,
-so there is no additive evidence for that thread.
+The 04:25 episode had no matching dm-0 or PSI stall,
+and the later recurrence had no Panel Colorizer process that could write this setting.
+There is no additive evidence for that thread.
 
 ## Upstream filing decision
 
@@ -631,15 +791,13 @@ Decision:
 do not file.
 There is no responsible upstream or reproducible report yet.
 
-### Separate Plasma panel episode
+### Panel Colorizer
 
 1.  **Is it really upstream's fault?**
-    Unconfirmed.
-    Four instances were active,
-    but no live stack tied the freeze to their code.
+    No evidence establishes that.
+    The later Plasma-centered episode recurred without Panel Colorizer.
 2.  **Can upstream fix it?**
-    Possibly,
-    if a current-version reproduction identifies a panel-mask or helper path.
+    No Panel Colorizer failure path has been identified.
 3.  **Are they supporting this use case?**
     Yes.
     The project customizes Plasma panels and documents bug reporting.
@@ -648,24 +806,58 @@ There is no responsible upstream or reproducible report yet.
     `CONTRIBUTING.md` and the bug template accept focused reports after duplicate search.
     No AI-assistance prohibition was found.
 5.  **Will they likely fix it?**
-    Unknown.
-    Similar issue #100 was fixed,
-    but this machine used 6.5.0 while upstream had released 8.0.0.
+    Unknown because no defect in their current version is reproduced.
 6.  **Has a minimal compatible fix been prototyped?**
     No.
-    The installed package was removed before a reproducible current-version failure or source boundary existed.
+    There is no diagnosed Panel Colorizer call path to change.
 
 Decision:
 do not file.
 Constraints 1,
+2,
 5,
 and 6 fail.
 The upstream template also asks reporters to verify the latest release,
 which cannot be done against the removed 6.5.0 configuration.
-Existing issues #100 and #556 already cover the nearest known behaviors,
-and this investigation has no additive stack,
-reproduction,
-or fix.
+Existing issues #100 and #556 cover the nearest known behaviors,
+but neither receives additive evidence from this investigation.
 
-There is therefore no upstream issue or comment draft to preserve.
-Nothing responsible can be added with the current evidence.
+### Plasma or Qt Quick
+
+KDE bug
+[449163](https://bugs.kde.org/show_bug.cgi?id=449163)
+describes superficially similar Wayland panel freezes,
+but it was closed for an older Qt Wayland root cause.
+KDE maintainers explicitly asked reporters to file focused new reports because similar freezes can have different causes.
+Qt bug
+[QTBUG-37677](https://bugreports.qt.io/browse/QTBUG-37677)
+documents input queuing when rendering is blocked,
+but concerns Qt 5 on Mir and X11 rather than this Qt 6 Wayland path.
+Neither is a demonstrated duplicate.
+
+1.  **Is it really upstream's fault?**
+    The failed boundary is inside Plasma and Qt Quick,
+    but the initiating Plasma window and underlying trigger remain unknown.
+2.  **Can upstream fix it?**
+    Possibly after an uncontaminated reproducible trigger identifies the affected window or item.
+3.  **Are they supporting this use case?**
+    Yes.
+    Plasma panels and Qt Quick's Wayland threaded render loop are supported paths.
+4.  **Would the repository welcome a contribution?**
+    KDE accepts focused plasmashell performance reports,
+    and Qt accepts Qt Quick reports.
+5.  **Will they likely fix it?**
+    Unknown without a repeatable trigger or responsible project boundary.
+6.  **Has a minimal compatible fix been prototyped?**
+    No.
+    Switching render loops was not treated as a fix because Plasma previously reverted a forced-basic workaround after it caused other Wayland rendering failures.
+
+Decision:
+do not file yet.
+Constraints 1,
+5,
+and 6 remain incomplete.
+The captured stacks are additive evidence,
+but the responsible project and minimal reproduction are not established.
+
+There is therefore no upstream issue or comment draft to preserve yet.
