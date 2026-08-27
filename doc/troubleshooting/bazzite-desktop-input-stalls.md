@@ -924,6 +924,82 @@ and cannot represent natural idle behavior.
 The Plasma and KWin event-loop probes remained useful for detecting service boundaries,
 but every overlap with scrub requires explicit classification.
 
+## Proposed targeted diagnostic stage
+
+Do not extend the current passive observation indefinitely.
+If the user chooses to investigate the Plasma-plus-Helium incident after the original-symptom window closes,
+use staged instrumentation rather than another unchanged observation window.
+
+First,
+arm a conditional collector when `snapper-cleanup.service` becomes active.
+Discover the transient `systemd-helper` and DBus-activated Snapper process instead of retaining fixed process IDs.
+Keep a ring buffer in `/run/user/1000`,
+which is a measured `tmpfs`,
+and persist it only after a Plasma probe failure or another declared incident.
+For Snapper,
+Plasma,
+KWin,
+and Helium threads,
+record `/proc` wait channels,
+current syscalls,
+kernel stacks,
+scheduler counters,
+and I/O counters alongside PSI and existing DBus timings.
+The collector must run with the access needed for `/proc/<pid>/stack` and `/proc/<pid>/syscall`.
+Those files are ptrace-gated and expose kernel stacks or current syscall state,
+not a complete userspace call path.
+Validate the collector on a responsive cleanup before interpreting an incident capture.
+
+Second,
+develop and validate any deeper tracing against a disposable loop-backed Btrfs filesystem.
+Use matched cases with qgroups disabled,
+qgroups enabled without deletion,
+and qgroups enabled with snapshot deletion.
+Use a separate canary with an intentional delay to prove that the detector can observe delay.
+This fixture can validate tools and show that a mechanism is possible,
+but a negative result cannot exclude behavior on the production root filesystem.
+The fixture must have explicit storage,
+CPU,
+memory,
+and duration limits and must never use either mounted production filesystem as its Btrfs target.
+
+Third,
+if procfs evidence remains inconclusive,
+consider bounded scheduler and off-CPU tracing during a natural cleanup.
+Upstream `perf sched` can report task runtime,
+runnable delay,
+and sleep intervals;
+`perf record` can collect call graphs and off-CPU samples.
+`bpftrace` can observe scheduler and block-I/O tracepoints.
+None of `perf`,
+`bpftrace`,
+or `trace-cmd` is installed on this host as of 2026-08-27,
+so this stage would first require a separately reviewed installation and smoke test.
+Establish a responsive cleanup-duration control before treating a traced incident as natural evidence.
+
+Do not attach GDB or `eu-stack` to Plasma or KWin during another natural incident.
+The earlier all-thread collection paused Plasma and contaminated the recovery boundary.
+If the preceding stages narrow the suspect operation,
+a final fallback is a syscall-filtered `strace` of Snapper's helper or daemon only,
+never an unrestricted trace of the desktop processes.
+
+Ranking:
+conditional procfs capture,
+then disposable-fixture tool validation,
+then bounded `perf` or BPF tracing,
+then Snapper-only `strace`.
+The ordering preserves the production incident first,
+validates each more intrusive observer before use,
+and leaves process-stopping attachment out of natural captures.
+
+Sources:
+
+- [`proc_pid_stack(5)`](https://man7.org/linux/man-pages/man5/proc_pid_stack.5.html)
+- [`proc_pid_syscall(5)`](https://man7.org/linux/man-pages/man5/proc_pid_syscall.5.html)
+- [`perf-sched(1)`](https://www.man7.org/linux/man-pages/man1/perf-sched.1.html)
+- [Upstream `perf-record(1)` source documentation](https://github.com/torvalds/linux/blob/master/tools/perf/Documentation/perf-record.txt)
+- [bpftrace one-line tutorial](https://bpftrace.org/tutorial-one-liners)
+
 ## What does not work
 
 ### Foreground scrub limit resets before completion
