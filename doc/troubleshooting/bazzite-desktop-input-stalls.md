@@ -360,14 +360,25 @@ No I/O-pressure interval,
 KWin delay,
 or system-wide input failure accompanied the failed Plasma probe.
 The 04:00 and 05:00 clean timeline-creation measurements still oppose a simple snapshot-creation trigger.
-A cleanup-specific interaction is now a focused hypothesis for the Plasma-centered episodes,
-but it requires another uncontaminated cleanup cycle with a snapshot deletion
-to distinguish recurrence from coincidence.
 
 The 06:22 cleanup ran during the encrypted-filesystem scrub and deleted no snapshot.
 It completed at 06:25 without a Plasma or KWin probe delay.
 The 07:00 timeline creation also left both probes responsive while the scrub was active.
 These are scrub-contaminated cases and do not test the deletion-specific association.
+
+Later post-scrub controls did exercise deletion without the encrypted scrub or loop-device tests:
+
+- The 11:27 cleanup deleted snapshots 964 and 965 at 11:30:39 and 11:34:55.
+- The 12:28 cleanup deleted snapshot 964 at 12:31:10.
+- The 13:29 cleanup deleted snapshot 964 at 13:32:15.
+- The 14:30 cleanup deleted snapshot 964 at 14:33:18.
+
+Neither desktop observer recorded an incident candidate or event-loop stall across those cycles.
+Plasma and KWin DBus heartbeats remained successful,
+and the one-second observer reported no KWin wait accumulation around the deletions.
+These repeated deletion controls weaken a simple cleanup-deletion trigger.
+They do not prove that cleanup can never participate in a rarer interaction,
+but the original two-event timing is no longer sufficient grounds for changing `snapper-cleanup.timer`.
 
 ## Environment findings
 
