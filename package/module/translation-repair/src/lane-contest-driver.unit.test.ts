@@ -541,6 +541,88 @@ await describe({
     },),
 
     it({
+      name: 'ASKS ONCE for two contested slices carrying the same question at overlap 1 and 2, '
+        + 'so a cold run cannot settle contradictory ballots where a warm run resumes one record',
+      fn: async () => {
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          const rig = await drive({
+            pairs: [
+              [
+                REPAIR_NAP,
+                TRANSLATE_NAP,
+              ],
+              [
+                REPAIR_NAP,
+                TRANSLATE_NAP,
+              ],
+            ],
+            answering: true,
+            overlap,
+          },);
+          expect(rig.calls.length,).toBe(ROSTER.length,);
+          expect(rig.persisted.length,).toBe(1,);
+          expect(rig.slices.map(function toIndex(slice,) {
+            return slice.sliceIndex;
+          },),).toEqual([
+            0,
+            1,
+          ],);
+          expect(rig.slices.map(function toVerdict(slice,) {
+            return slice.verdict;
+          },),).toEqual([
+            {
+              kind: 'lane-won',
+              lane: 'translate',
+            },
+            {
+              kind: 'lane-won',
+              lane: 'translate',
+            },
+          ],);
+        },),);
+      },
+    },),
+
+    it({
+      name: 'ASKS AGAIN for a twin whose contest roster was unheard at overlap 1 and 2, '
+        + 'because the in-run memo may hold only what a warm run can resume',
+      fn: async () => {
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          const single = await drive({
+            pairs: [
+              [
+                REPAIR_NAP,
+                TRANSLATE_NAP,
+              ],
+            ],
+            answering: false,
+            overlap,
+          },);
+          const twin = await drive({
+            pairs: [
+              [
+                REPAIR_NAP,
+                TRANSLATE_NAP,
+              ],
+              [
+                REPAIR_NAP,
+                TRANSLATE_NAP,
+              ],
+            ],
+            answering: false,
+            overlap,
+          },);
+          expect(twin.calls.length,).toBe(single.calls.length * 2,);
+          expect(twin.persisted,).toEqual([],);
+        },),);
+      },
+    },),
+
+    it({
       name: 'PERSISTS a settled verdict, since ballots are the purchased thing and the next resume must not re-buy them',
       fn: async () => {
         /**
