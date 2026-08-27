@@ -322,6 +322,10 @@ source destination and protected memorial facts retained,
 no invisible bytes.
 One pair does not decide grace default;
 remaining overlap decision arms continue at built-in grace.
+`ArtsEpiphany` null pair then settled one unchanged slice in both arms,
+zero unheard voices and byte-identical pages.
+Normalized `0.268` at overlap `1` and `0.325` at overlap `4`
+measure provider variation because one slice cannot overlap.
 Record: `doc/audit/translation-repair-output-reading-20260826.md`.
 
 ## Do not land a driver into a live pass launch

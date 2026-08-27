@@ -122,6 +122,23 @@ It also does not close declined-archive consolidation seam,
 which remains visible on two other slices.
 Proceed to remaining decision arms at built-in grace.
 
+### `ArtsEpiphany` one-slice null pair, 2026-08-27
+
+Both arms settled one unchanged slice with zero unheard voices,
+verified one complete page,
+and produced byte-identical pages with zero archive diff hunks.
+No driver had second slice to overlap.
+
+-   Overlap `1`: 9.88 seconds wall over 36.93 call-seconds,
+    normalized `0.268`.
+-   Overlap `4`: 14.87 seconds wall over 45.73 call-seconds,
+    normalized `0.325`.
+
+This is expected null control:
+dial attribution holds,
+output holds,
+and timing difference where no work could overlap is provider variation rather than overlap effect.
+
 ## Readings per pair
 
 Read only package-owned templates from logs.
