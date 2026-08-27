@@ -314,7 +314,14 @@ Strict read still found one inherited major person error:
 repair corrected it,
 translate retained it,
 and contest heard 8 of 10 then tied 4 to 4.
-Same-digest overlap-4 300-second-grace arm is active to test two cut voices.
+Same-digest overlap-4 300-second-grace arm settled in 127.43 minutes,
+normalized `0.140`, with 35 voices unheard against 72.
+Its page is publishable as-is:
+first-person major gone,
+source destination and protected memorial facts retained,
+no invisible bytes.
+One pair does not decide grace default;
+remaining overlap decision arms continue at built-in grace.
 Record: `doc/audit/translation-repair-output-reading-20260826.md`.
 
 ## Do not land a driver into a live pass launch

@@ -107,10 +107,20 @@ and all three equal-size decoys stayed `carried` with zero absence votes.
 Fixed-build overlap-4 `Toka_ls` at 180-second grace settled complete page in 114.72 minutes,
 normalized `0.132`, with both providers wet.
 Omission blocker, destination loss and invisible bytes are fixed.
-Strict output gate still fails one inherited major:
+Strict output gate still failed one inherited major:
 first-person intrusion that repair corrected but translate retained;
 contest heard 8 of 10 and tied 4 to 4, retaining archive.
-Fresh same-digest overlap-4 300-second-grace arm is active before further decision arms.
+
+Same-digest overlap-4 arm at 300-second grace settled in 127.43 minutes over 15.15 call-hours,
+normalized `0.140`, with both providers wet and 35 voices unheard against 72 at 180 seconds.
+Strict first and independent readings find no blocker or major;
+page is publishable as-is.
+The arm retained date, time, place, age and destination;
+medical-cause generalization follows pinned corpus reader-protection policy.
+This is one observation and does not decide grace default.
+It also does not close declined-archive consolidation seam,
+which remains visible on two other slices.
+Proceed to remaining decision arms at built-in grace.
 
 ## Readings per pair
 

@@ -280,3 +280,20 @@ D (29.31 min, 318 of 320 voices, 2 cut, normalized 0.23 against arm B's 0.23). `
 `grace-override.ts` applies it through the same variable a launch can set. This value, 180000 ms, stays the
 pass's until `#261` gives the pass overlap; the two move together or not at all. Record:
 `doc/decision/translation-repair-calibration-overlap.md`.
+
+## Addendum 2026-08-27: one same-digest hard-page pair
+
+Fixed-build `Toka_ls` ran at overlap 4 under both windows.
+At 180 seconds it took 114.72 minutes,
+normalized `0.132`, and lost 72 voices.
+At 300 seconds it took 127.43 minutes,
+normalized `0.140`, and lost 35 voices.
+The longer arm produced page with no blocker or major;
+shorter arm retained inherited major after 8-voice contest tied 4 to 4.
+
+This does not change built-in value.
+Live ballots differed in issue inventory and stream count,
+so one arm each cannot attribute output or timing difference to grace.
+It does establish next repeated matched comparison has positive control:
+same hard page, overlap 4, fresh roots,
+with contest completeness and actual page quality read beside normalized runtime.

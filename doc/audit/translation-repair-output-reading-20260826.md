@@ -246,10 +246,36 @@ An independent reviewer first called page publishable against regression-only ba
 then strict-readiness review corrected verdict:
 inherited identifies provenance, not acceptability.
 
-Fresh same-digest overlap-4 rerun with 300-second grace is active at
-`~/temp/agent/corpus-fixed-Toka_ls-four-grace300-20260827`.
-It tests whether two cut contest voices caused tie;
-it does not by itself decide default grace.
+### `Toka_ls` on fixed build, overlap 4 and 300-second grace
+
+Publishable as-is under strict actual-output gate.
+Run settled 15 slices in 127.43 minutes over 15.15 call-hours,
+normalized `0.140`, with 35 voices unheard and both providers wet.
+This recovered 37 voices against 180-second arm,
+while wall rose 11.1 percent and normalized wall rose from `0.132` to `0.140`.
+Different live ballots produced fewer streams and different issue inventory,
+so one pair does not attribute those changes to grace.
+
+First-person major is gone:
+biography now uses passive third-person-compatible rendering for regulated verse.
+Letter retains trailing tilde.
+Final paragraph preserves date, time, place, age and link.
+It generalizes hemorrhagic shock to failed lifesaving efforts,
+which follows primary corpus policy at pinned `CODE_OF_CONDUCT.md:14`:
+suicide method detail is deliberately softened.
+Independent reread found no blocker and no major.
+Remaining findings are minor:
+inherited poem tense and punctuation irregularity,
+three English renderings of final-note term,
+and source-supported alias choice at signature.
+
+Declined-archive seam remains despite publishable page.
+Slices 3 and 11 ended `settled-neither` with archive `declined`;
+slice 11 had 9 of 10 archive-flawed ballots.
+Consolidation bought nothing at both,
+then assembly restored archive.
+Favourable output does not repair structural path.
+One 300-second observation also does not decide default grace.
 
 ## Tooling for the fresh pass, and the second reader's dry run
 

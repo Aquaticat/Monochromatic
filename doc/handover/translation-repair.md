@@ -30,11 +30,20 @@ Both providers stayed wet.
 Fixed-build `Toka_ls` overlap-4 rerun restored linked paragraph,
 settled 15 wordings with zero silent,
 retained source URL and removed all U+FEFF.
-Strict reread still says not publishable:
-inherited first-person intrusion survived because repair fixed it,
+At 180-second grace strict reread still failed inherited first-person intrusion:
+repair fixed it,
 translate retained it,
 and 8 heard contest voices split 4 to 4.
-Fresh same-digest overlap-4 rerun at 300-second grace is active to test two cut voices.
+Same-digest overlap-4 rerun at 300-second grace recovered page:
+15 complete slices, 35 voices unheard,
+127.43 minutes wall over 15.15 call-hours,
+normalized `0.140`, with both providers wet.
+Strict first and independent readings find no blocker or major;
+page is publishable as-is.
+Declined-archive seam remains open:
+slices 3 and 11 had archive declined,
+consolidation bought nothing,
+and assembly revived archive.
 No old-digest `Toka_ls` page is readiness evidence.
 `doc/audit/translation-repair-output-reading-20260826.md` carries full trace;
 `doc/planning/translation-repair-corpus-overlap-measurement.md` carries arm protocol.
