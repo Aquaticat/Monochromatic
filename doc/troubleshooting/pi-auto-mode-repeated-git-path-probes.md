@@ -384,6 +384,8 @@ add the required dependency,
 and test whether common-path priority or first-real-Git `PATH` order is intended.
 Real-Git resolution and worktree metadata also need separate cache-scope decisions.
 No source fix was applied during this diagnosis.
+The recommended design is recorded in
+[`doc/planning/pi-auto-mode-real-git-resolution.md`](../planning/pi-auto-mode-real-git-resolution.md).
 
 ## What does not work
 
