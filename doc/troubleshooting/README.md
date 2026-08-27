@@ -85,6 +85,15 @@ Security guardrail false positives and judge model selection:
    NixOS)
 - pi-budget-model fails to find a judge model when the active model is the latest major version
 
+### [Pi auto-mode repeated Git path probes](pi-auto-mode-repeated-git-path-probes.md)
+
+Why guarded reads emit missing-Git debug records for expected workspace bin paths:
+
+- auto-mode probes every `PATH` directory concurrently before selecting real Git
+- linked-worktree allowlist discovery repeats resolution for each guarded read
+- broad workspace-bin `PATH` inheritance is expected and needed,
+   not the defect
+
 ### [Pi goal stale global blocker](pi-goal-stale-global-blocker.md)
 
 Retired `@narumitw/pi-goal` behavior and migration:
