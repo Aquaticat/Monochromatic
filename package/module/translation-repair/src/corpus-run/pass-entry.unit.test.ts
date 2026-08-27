@@ -380,8 +380,8 @@ function entryClient(
         ? activity?.refine
         : schema === 'lane_contest'
         ? activity?.contest
-        : schema === 'translation_report'
-          && content.includes('Two English renderings of this passage already exist',)
+        : (schema === 'translation_report'
+          && content.includes('Two English renderings of this passage already exist',))
         ? activity?.consolidate
         : schema === 'translation_report'
         ? activity?.translate
