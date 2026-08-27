@@ -314,6 +314,11 @@ QNB:
 Single runs resolve nothing smaller than that spread;
  smaller differences are noise you will credit to a change.
 
+QET:
+ Runtime estimates use same pipeline digest and stage inventory.
+Older runs need explicit mismatch warning;
+active elapsed beyond observed range requires immediate remeasurement.
+
 ASK:
  **Non-measurable facts:
  ask.
