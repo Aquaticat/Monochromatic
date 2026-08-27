@@ -817,5 +817,91 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'mixes one resumed row with one fresh row at overlap 2, buying and persisting '
+        + 'only the fresh question while returning both in comparison order',
+      fn: async () => {
+        /**
+         * Two distinct contest questions.
+         */
+        const pairs = [
+          [
+            REPAIR_NAP,
+            TRANSLATE_NAP,
+          ],
+          [
+            `${REPAIR_NAP} Again.`,
+            `${TRANSLATE_NAP} Again.`,
+          ],
+        ] as const;
+
+        /**
+         * Fresh pass used only to derive both production keys.
+         */
+        const learned = await drive({
+          pairs,
+          answering: true,
+        },);
+
+        /**
+         * Quorum-complete first-row outcome already on disk.
+         */
+        const bought: LaneContestOutcome = {
+          choice: 'repair',
+          ballots: [
+            {
+              choice: 'repair',
+              unsupported: [],
+              unsupportedRaw: [],
+              dropped: [],
+              droppedRaw: [],
+              reason: 'first stored ballot',
+            },
+            {
+              choice: 'repair',
+              unsupported: [],
+              unsupportedRaw: [],
+              dropped: [],
+              droppedRaw: [],
+              reason: 'second stored ballot',
+            },
+          ],
+          usable: 2,
+          findings: [],
+        };
+        const rig = await drive({
+          pairs,
+          answering: true,
+          overlap: 2,
+          resumed: new Map([
+            [
+              learned.persisted.at(0,) ?? '',
+              bought,
+            ],
+          ],),
+        },);
+        expect(rig.admitted,).toBe(ROSTER.length,);
+        expect(rig.persisted.length,).toBe(1,);
+        expect(rig.slices.map(function toIndex(slice,) {
+          return slice.sliceIndex;
+        },),).toEqual([
+          0,
+          1,
+        ],);
+        expect(rig.slices.map(function toVerdict(slice,) {
+          return slice.verdict;
+        },),).toEqual([
+          {
+            kind: 'lane-won',
+            lane: 'repair',
+          },
+          {
+            kind: 'lane-won',
+            lane: 'translate',
+          },
+        ],);
+      },
+    },),
   ],
 },);
