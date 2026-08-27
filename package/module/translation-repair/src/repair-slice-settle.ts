@@ -71,7 +71,11 @@ export type RepairSliceSettlement = {
 function storedOutcome(
   outcome: ChunkRepairOutcome,
 ): TwinStored<ChunkRepairOutcome> {
-  return (cacheRefusalsOf({ outcome, },).length === 0)
+  /**
+   * Reasons warm run could not resume this purchase.
+   */
+  const refusals = cacheRefusalsOf({ outcome, },);
+  return (refusals.length === 0)
     ? {
       kind: 'stored',
       record: outcome,

@@ -100,42 +100,43 @@ export async function buyRepairSlice(
   signal.throwIfAborted();
 
   /**
-   * Fresh outcome from full repair stage sequence.
+   * Fresh outcome from full repair stage sequence, normalizing an abort to its
+   * own reason rather than whichever torn-down exchange surfaced first.
    */
-  let outcome: ChunkRepairOutcome;
-  try {
-    outcome = await repairChunk({
-      client,
-      sliceIndex,
-      sourceText: slice.source
-        .text,
-      targetText: slice.target
-        .text,
-      lineStructured: prepared.lineStructuredSliceIndices
-        .has(sliceIndex,),
-      declaredNames: prepared.declaredNames,
-      neighbouringIncumbentText,
-      neighbouringSourceText,
-      models,
-      ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
-      ...((prepared.identityContext === undefined)
-        ? {}
-        : { identityContext: prepared.identityContext, }),
-      signal,
-      perCallTimeoutMs,
-      l,
-    },);
-  }
-  catch (error) {
-    // A spent deadline is cause, while whichever torn-down exchange surfaced
-    // is only symptom. Provider faults under a live signal keep their identity.
-    if (!signal.aborted)
-      throw error;
-    l.warn(
-      `chunk ${String(sliceIndex,)}: abandoned by the caller's abort (${String(error,)})`,
-    );
-    throw signal.reason;
-  }
+  const outcome = await (async function repairUnderSignal(): Promise<ChunkRepairOutcome> {
+    try {
+      return await repairChunk({
+        client,
+        sliceIndex,
+        sourceText: slice.source
+          .text,
+        targetText: slice.target
+          .text,
+        lineStructured: prepared.lineStructuredSliceIndices
+          .has(sliceIndex,),
+        declaredNames: prepared.declaredNames,
+        neighbouringIncumbentText,
+        neighbouringSourceText,
+        models,
+        ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
+        ...((prepared.identityContext === undefined)
+          ? {}
+          : { identityContext: prepared.identityContext, }),
+        signal,
+        perCallTimeoutMs,
+        l,
+      },);
+    }
+    catch (error) {
+      // A provider fault under a live signal keeps its own identity.
+      if (!signal.aborted)
+        throw error;
+      l.warn(
+        `chunk ${String(sliceIndex,)}: abandoned by the caller's abort (${String(error,)})`,
+      );
+      throw signal.reason;
+    }
+  })();
 
   // Every abandoned exchange reaches stages as silence. Without this check a
   // spent run could persist an ordinary unchanged outcome nobody decided on.
