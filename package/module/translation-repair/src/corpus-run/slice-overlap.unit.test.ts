@@ -25,6 +25,7 @@ import {
 import {
   CALIBRATION_OVERLAP,
   readOverlap,
+  readOverlapSetting,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
@@ -85,6 +86,10 @@ await describe({
         using dial = dialSaying({},);
 
         expect(readOverlap({ fallback: 1, },),).toBe(1,);
+        expect(readOverlapSetting({ fallback: 1, },),).toEqual({
+          overlap: 1,
+          source: 'fallback',
+        },);
         expect(process.env[OVERLAP_VAR],).toBe(undefined,);
         expect(dial,).not.toBe(undefined,);
       },
@@ -96,6 +101,10 @@ await describe({
         using dial = dialSaying({ says: '4', },);
 
         expect(readOverlap({ fallback: 1, },),).toBe(4,);
+        expect(readOverlapSetting({ fallback: 1, },),).toEqual({
+          overlap: 4,
+          source: OVERLAP_VAR,
+        },);
         expect(dial,).not.toBe(undefined,);
       },
     },),
@@ -122,7 +131,22 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES zero, which is not a smaller amount of work but no work at all: a limit of zero '
+      name: 'REFUSES a fractional value rather than truncating it into another arm, '
+        + 'because overlap 1.5 is neither overlap 1 nor overlap 2',
+      fn: async () => {
+        using dial = dialSaying({ says: '1.5', },);
+        const refusal = caught(function readsFraction() {
+          readOverlap({ fallback: 1, },);
+        },);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toContain('whole number',);
+        expect((refusal as Error).message,).toContain('1.5',);
+        expect(dial,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES zero, which is not a smaller amount of work but no work at all: a limit of zero 
         + 'admits nothing and the run would wait forever having said nothing about why',
       fn: async () => {
         using dial = dialSaying({ says: '0', },);
