@@ -44,8 +44,17 @@ and auto-push is on.
 
 -   `748b54841`:
     `src/twin-memo.ts` plus its suite, and `src/translate-slice-settle.ts` plus `src/translate-slice-buy.ts`.
-    Nothing calls the last two yet;
-    `translateDocument` still runs its own loop.
+-   `e7e017a36` through `9f1c843d6`:
+    `translateDocument` now calls `mapOverlapped` over `settleTranslateSlice`, defaults `overlap` to `1`,
+    aggregates records, unfilled passages and findings in slice order,
+    counts only records resumed from disk,
+    and runs both twin cases at overlap `1` and `2`.
+    A successful-call instrument proves `overlap: 2` puts two slices in flight.
+-   `1c4a8b78e`:
+    the first whole-suite run exposed three expectations left stale by earlier committed changes.
+    The message inventory now names `OverlapRefusedError`,
+    the one-provider router case uses the still Synthetic-only Nemotron seat rather than the newly dual-routed Qwen seat,
+    and spend-cost expectations follow the 2026-08-26 Hyper rates.
 
 ## The twin memo, which is the part that is easy to get wrong
 
@@ -89,14 +98,12 @@ so the second reuses what the first persisted, which is what the warm run does.
 Order matters only in that each driver should be green and committed before the next one starts,
 so the tree is shippable at any moment (see "Do not land a driver into a live pass launch").
 
-1.  `translateDocument` (`src/translate-document.ts`, 269 code lines):
-    replace the `for (const [slicePosition, slice,] of prepared.slices.entries())` body
-    with a `mapOverlapped` call over `settleTranslateSlice`,
-    which is already written and exported from `src/translate-slice-settle.ts`.
-    Aggregate the returned settlements in slice order:
-    `settled` records, `unfilled` entries, `refusedCacheFindings`, `unfilledFindings`,
-    and the resumed count (`resumedFromDisk` only, never a twin's reuse).
-    Take `overlap?: number` defaulting to `1`.
+1.  `translateDocument`: DONE in `e7e017a36` through `9f1c843d6`.
+    Build, focused suites, `lint:oxlint` and `lint:types` pass.
+    Removing the overlap argument made the driver suite fail,
+    and replacing the shared twin memo with one memo per slice made it fail too;
+    both mutations were restored and rebuilt.
+    The post-handover whole suite is running after its first run found and fixed the three stale expectations above.
 2.  `repairPreparedDocument` (`src/repair-translation.ts`, 293 code lines, loop at line 251):
     the same shape.
     Its `settledByKey` is the twin memo;
