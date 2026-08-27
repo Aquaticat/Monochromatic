@@ -406,15 +406,19 @@ export async function consolidateDocument(
   /**
    * Comparison rows beside contests that selected them, in document order.
    */
-  const eligibleRows = projected.comparison.flatMap(function withContest(row,) {
-    /**
-     * What the contest settled here, absent where it never ran.
-     */
-    const contest = contestBySlice.get(row.sliceIndex,);
-    return (contest === undefined)
-      ? []
-      : [{ row, contest, },];
-  },);
+  const eligibleRows = projected.comparison
+    .flatMap(function withContest(row,) {
+      /**
+       * What the contest settled here, absent where it never ran.
+       */
+      const contest = contestBySlice.get(row.sliceIndex,);
+      return (contest === undefined)
+        ? []
+        : [{
+          row,
+          contest,
+        },];
+    },);
 
   /**
    * Cache-eligible purchases in this document, shared by identical questions.
