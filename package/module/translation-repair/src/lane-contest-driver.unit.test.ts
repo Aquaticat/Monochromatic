@@ -51,6 +51,11 @@ const l = tagged({ tag: 'lane-contest-driver-test', },);
 const PER_CALL_TIMEOUT_MS = 5_000;
 
 /**
+ * Exact caller abort reason used by driver guard case.
+ */
+const CONTEST_ABORT = new Error('caller stopped lane contest',);
+
+/**
  * Successful contest calls in flight and peak observed by fixture.
  */
 type ContestConcurrency = {
@@ -259,6 +264,8 @@ type CatRig = {
  *
  * @param activity - optional successful-call overlap instrument
  *
+ * @param abortOnCall - one-based admitted call that aborts caller signal
+ *
  * @returns What the driver called, persisted and recorded
  *
  * @example
@@ -273,6 +280,7 @@ async function drive(
     resumed = new Map<string, LaneContestOutcome>(),
     overlap = 1,
     activity,
+    abortOnCall,
   }: {
     readonly pairs: readonly (readonly [
       string,
@@ -282,6 +290,7 @@ async function drive(
     readonly resumed?: ReadonlyMap<string, LaneContestOutcome>;
     readonly overlap?: number;
     readonly activity?: ContestConcurrency;
+    readonly abortOnCall?: number;
   },
 ): Promise<CatRig> {
   /**
@@ -344,23 +353,41 @@ async function drive(
    * Client-level activity instrument, outside provider slot limiting so it
    * measures slices admitted by the driver rather than transport concurrency.
    */
-  const client: SyntheticClient = (activity === undefined)
+  /**
+   * Caller signal a fixture may abort after enough contest calls were admitted.
+   */
+  const controller = new AbortController();
+
+  /**
+   * Calls admitted at client boundary.
+   */
+  const admitted = { count: 0, };
+
+  /**
+   * Client-level fixture outside provider slot limiting.
+   */
+  const client: SyntheticClient = ((activity === undefined) && (abortOnCall === undefined))
     ? inner
     : {
       chatText: inner.chatText,
       chatJson: async (request) => {
-        /**
-         * Start position making second slice finish before first under overlap.
-         */
-        const startPosition = activity.started;
-        activity.started += 1;
-        activity.now += 1;
-        activity.peak = Math.max(
-          activity.peak,
-          activity.now,
-        );
-        await wait(startPosition < ROSTER.length ? 20 : 5,);
-        activity.now -= 1;
+        admitted.count += 1;
+        if (admitted.count === abortOnCall)
+          controller.abort(CONTEST_ABORT,);
+        if (activity !== undefined) {
+          /**
+           * Start position making second slice finish before first under overlap.
+           */
+          const startPosition = activity.started;
+          activity.started += 1;
+          activity.now += 1;
+          activity.peak = Math.max(
+            activity.peak,
+            activity.now,
+          );
+          await wait(startPosition < ROSTER.length ? 20 : 5,);
+          activity.now -= 1;
+        }
         return await inner.chatJson(request,);
       },
       quotas: inner.quotas,
@@ -374,7 +401,9 @@ async function drive(
     projected: catProjection({ pairs, },),
     modelIds: ROSTER,
     cache,
-    signal: AbortSignal.timeout(30_000,),
+    signal: (abortOnCall === undefined)
+      ? AbortSignal.timeout(30_000,)
+      : controller.signal,
     perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
     overlap,
     l,
@@ -529,6 +558,25 @@ await describe({
           .length,).toBe(1,);
       },
     },),
+    it({
+      name: 'THROWS the caller abort reason after a quorum answered but before persistence, '
+        + 'so an abandoned contest cannot look complete or become warm-run evidence',
+      fn: async () => {
+        await expect(drive({
+          pairs: [
+            [
+              REPAIR_NAP,
+              TRANSLATE_NAP,
+            ],
+          ],
+          answering: true,
+          abortOnCall: ROSTER.length,
+        },),)
+          .rejects
+          .toBe(CONTEST_ABORT,);
+      },
+    },),
+
     it({
       name:
         'REFUSES TO PERSIST an unheard roster, because a provider down for one night is not a property '
