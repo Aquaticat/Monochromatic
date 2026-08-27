@@ -23,7 +23,7 @@ This is a verified removal,
 not proof that Panel Colorizer caused either incident class.
 
 At about 05:25,
-a related but not identical episode occurred after that removal and Plasma restart.
+a later episode with overlapping symptoms occurred after that removal and Plasma restart.
 The panel and Helium scrolling were delayed,
 while other applications remained responsive.
 A watchdog independently captured a Plasma event-loop timeout during the report.
@@ -100,6 +100,12 @@ During the later episode around 05:25:
 
 The watchdog declared Plasma responsive after three later probes,
 and the user placed visible recovery around 05:27.
+Those recovery probes began only after all-thread stack collection finished,
+so they do not measure the natural duration of the event.
+The collector itself may account for part of the visible duration.
+Plasma's 05:27:51 probe took 22.0 ms,
+compared with the 4.9 to 6.2 ms startup range,
+but remained below the 250 ms incident boundary.
 The user continued to perceive some Helium scrolling delay after the panel recovered.
 That continuation keeps Helium's client-local behavior separate from the measured Plasma event-loop stall.
 
@@ -125,8 +131,10 @@ This closes part of the initial procfs-only observer gap without repeatedly stop
 
 ### The later panel episode crossed Plasma's event-loop boundary while KWin remained responsive
 
-The first failed probe began around 05:25:23 and reached its 1.5-second limit.
+The first failed probe began at approximately 05:25:23.8 and reached its 1.5-second limit around 05:25:25.3.
 KWin answered in 5.8 ms in the same watchdog pass.
+The user's `now` marker arrived around 05:25:52,
+so autonomous detection preceded the marker and the later evidence commands.
 The Plasma GUI thread stack was:
 
 ```text
@@ -167,20 +175,28 @@ QSGThreadedRenderLoop::polishAndSync
 QSGThreadedRenderLoop::handleExposure
 ```
 
-The second event is observer-contaminated.
-A manual Helium stack capture had started shortly before it,
-and OpenSnitch processed that `eu-stack` invocation.
-It is retained as a compatible Plasma path,
-not counted as an independent natural reproduction.
+The second event is observer-contaminated by at least:
 
-These captures establish a Plasma GUI event loop occupied in QML polish,
-window effects,
-and render-thread synchronization during exposure handling.
-They do not identify which Plasma window was exposed,
-which QML item initiated the resize,
+- Manual `eu-stack` attachment to Helium's multi-threaded browser and GPU processes.
+- OpenSnitch rule creation and audit activity for `eu-stack`.
+- OpenSnitch BPF unload and load activity.
+- A Plasma invalid-XML notification diagnostic at 05:31:01.
+
+The `WindowEffects::installBlur` frame is one momentary sample during that contaminated window.
+It is retained as raw evidence,
+not used to identify an initiating component or counted as an independent natural reproduction.
+
+The failed DBus probe establishes that Plasma's GUI event loop did not service the request within 1.5 seconds.
+The first stack shows that the GUI thread was at Qt's normal render-synchronization wait point.
+All sampled render threads were later idle in `processEventsAndWaitForMore`,
+so the sequential stack snapshot does not identify what delayed the earlier synchronization.
+The second stack likewise cannot establish that ordinary layout,
+blur installation,
+or dynamic-cast work was unusually slow.
+The captures do not identify which Plasma window was exposed,
+which QML item initiated a resize,
 or why Helium scrolling remained delayed.
-A kernel GPU fault is not required for this Qt path to block,
-and no such fault appeared here.
+No kernel GPU fault appeared during either interval.
 
 ### AMDGPU `REG_WAIT` messages are real timeouts but have not occurred at runtime here
 
@@ -241,7 +257,7 @@ but the functions can also participate in later display mode transitions.
 The messages must not be called harmless solely because they happened early.
 The narrower verified statement is that no matching runtime timeout coincided with the reported desktop symptoms here.
 
-### Snapper triggers full Btrfs qgroup rescans but one observed cycle was symptom-free
+### Timeline creation was clean, while cleanup aligned with both natural panel events
 
 The exact Snapper source is tag `v0.13.0`,
 commit `3a3bd97083976d28538d402284ff947b4aab5b8f`.
@@ -322,21 +338,28 @@ Plasma Shell answered in 5.6 ms and KWin answered in 5.4 ms.
 No user symptom marker accompanied this cycle,
 so these measurements establish responsive sampled services rather than absence of a subjective symptom.
 
-The later Plasma event occurred during `snapper-cleanup.service`,
-not the clean hourly timeline-creation cases.
-The cleanup logged deletion of snapshot 970 at 05:24:49,
-about 34 seconds before Plasma's failed probe.
-It logged deletion of snapshot 971 at 05:31:02,
-about 41 seconds before the observer-contaminated second failed probe.
-The first deletion began as the qgroup scan reported completion.
+The installed `snapper-cleanup.timer` runs hourly with `OnUnitActiveSec=1h`.
+The 04:25 and 05:25 natural Plasma-centered events both occurred while that cleanup service was active:
 
-This is temporal correlation with the separate Plasma-centered incident,
+- The 04:20:34 cleanup logged deletion of snapshot 969 at 04:23:50.
+  The user reported the first panel episode around 04:25.
+  Cleanup completed at 04:29:57.
+- The 05:21:32 cleanup logged deletion of snapshot 970 at 05:24:49.
+  Plasma's failed probe began about 34 seconds later.
+  Cleanup completed at 05:34:56.
+- The same cleanup logged deletion of snapshot 971 at 05:31:02.
+  The observer-contaminated second probe began about 41 seconds later.
+
+Both uncontaminated symptom reports therefore have a cleanup association,
+unlike the earlier assessment based only on timeline creation.
+This is repeated temporal evidence,
 not a demonstrated call path.
 No I/O-pressure interval,
 KWin delay,
-or system-wide input failure accompanied the failed Plasma probes.
-The clean timeline-creation measurements still weaken Snapper as a simple immediate trigger.
-A cleanup-specific interaction remains unconfirmed and requires another uncontaminated recurrence.
+or system-wide input failure accompanied the failed Plasma probe.
+The 04:00 and 05:00 clean timeline-creation measurements still oppose a simple snapshot-creation trigger.
+A cleanup-specific interaction is now a focused hypothesis for the Plasma-centered episodes,
+but it requires another uncontaminated cleanup cycle to distinguish recurrence from coincidence.
 
 ## Environment findings
 
@@ -542,6 +565,13 @@ journalctl --since='2026-08-27 03:59:50' \
   --output=short-iso \
   --unit=snapper-timeline.service \
   --unit=snapperd.service
+
+journalctl --boot=0 \
+  --unit=snapper-cleanup.service \
+  --no-pager \
+  --output=short-iso
+
+systemctl cat snapper-cleanup.timer
 ```
 
 Clean visible case:
@@ -555,9 +585,18 @@ Clean instrumentation case:
 - The user did not mark a symptom during this cycle,
   so it is not classified as a clean subjective case.
 
+Cleanup-associated cases:
+
+- The 04:25 panel report occurred during the 04:20:34 to 04:29:57 cleanup.
+- The 05:25 Plasma and Helium report occurred during the 05:21:32 to 05:34:56 cleanup.
+- Both reports followed a snapshot-deletion log.
+- No failed Plasma probe,
+  I/O-pressure interval,
+  or user symptom marker was captured for retained cleanup runs before the watchdog existed.
+
 Unverified case:
 
-- No original global-input episode has a timestamp that can be compared with another rescan.
+- No original global-input episode has a timestamp that can be compared with another rescan or cleanup.
 
 ### Plasma event-loop capture
 
@@ -587,6 +626,17 @@ The second observer-contaminated state is:
 /var/home/user/temp/agent/plasma-stall-captures/2026-08-27T09-31-43.612Z
 ```
 
+KWin's DBus probes succeeded,
+but its stack collection failed with `dwfl_linux_proc_report pid 3768: Permission denied`.
+The KWin control therefore has latency and procfs wait-channel evidence,
+not a userspace stack.
+
+The procfs wait-channel and userspace stack captures were sequential rather than atomic.
+For example,
+the first main-thread wait channel was `0`,
+while the later userspace stack showed `QWaitCondition::wait`.
+That difference prevents treating either snapshot as a full interval trace.
+
 `eu-stack` 0.195 attaches to each live thread with `PTRACE_ATTACH`
 ([`libdwfl/linux-pid-attach.c:73-117`](https://sourceware.org/elfutils/ftp/0.195/elfutils-0.195.tar.bz2)),
 which stops that thread while its state is read.
@@ -595,6 +645,9 @@ Current incident collection retains only DBus timings and procfs wait channels.
 
 A Helium snapshot taken while scrolling still felt delayed found its browser main loop polling normally
 and its GPU-process main thread waiting on a timed condition.
+One contextual spot read reported 58% GPU busy and 6,959,525,888 of 8,573,157,376 VRAM bytes used,
+or 81.2%.
+Those single values have no unchanged-run band and are not attributed to the delay.
 No symbols identified an active Helium call path,
 so this is not a Helium root-cause capture.
 
@@ -857,7 +910,8 @@ do not file yet.
 Constraints 1,
 5,
 and 6 remain incomplete.
-The captured stacks are additive evidence,
-but the responsible project and minimal reproduction are not established.
+The first failed probe and stack are additive evidence.
+The second stack is excluded from component attribution because its window was observer-contaminated.
+The responsible project and minimal reproduction are not established.
 
 There is therefore no upstream issue or comment draft to preserve yet.
