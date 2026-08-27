@@ -83,6 +83,8 @@ The decision is therefore refined:
 -   `carried`, `partly-carried`, `split` and `inconclusive` all refuse insertion.
 -   Any passage still unfilled makes corpus entry fail before contest, artifact and publication.
     A known omission is evidence for retry or diagnosis, never settled output.
+    This includes admitted passage whose translator roster loses every voice;
+    provider outage retains cache and reports entry error rather than publishing gap.
 
 The destination path reuses `dropped-destinations.ts`, including Markdown definitions,
 bare addresses and trailing-slash equivalence.

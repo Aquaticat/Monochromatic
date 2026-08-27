@@ -43,6 +43,8 @@ whole-document coverage must call it absent,
 then page shortfall or a destination missing from target admits translation.
 Any source passage still unfilled fails entry before contest, artifact and publication;
 a known gap never becomes settled page.
+This includes a passage admitted for translation when provider outage leaves every translator unheard:
+entry reports error and keeps slice cache for retry.
 
 ## Contract
 
