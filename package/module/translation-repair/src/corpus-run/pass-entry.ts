@@ -23,10 +23,9 @@ import type {
   EntryOutcome,
 } from './pass-entry-contract.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
-import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
-import { publishFixedPage, } from './publish-fixed.ts';
+import { persistSettledEntry, } from './pass-entry-persist.ts';
 import { assertPublishableTranslation, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
@@ -483,31 +482,21 @@ async function runEntryPipeline(
     /**
      * Where the page went and what it carries of the source's destinations.
      */
-    const published = await publishFixedPage({
+    const destinations = await persistSettledEntry({
       artifact,
       slices: prepared.slices,
       archiveText: entry.targetText,
       sourceText: entry.sourceText,
       entryId: entry.id,
       publishDir,
+      artifactsDir,
       l: tagged({ tag: entry.id, },),
-    },);
-    await writeFileAtomic({
-      path: join(
-        artifactsDir,
-        `${entry.id}.json`,
-      ),
-      text: `${JSON.stringify(
-        artifact,
-        undefined,
-        2,
-      )}\n`,
     },);
     console.log(tally,);
     // COUNTS ONLY ON STDOUT; the addresses themselves are in the run log.
     console.log(destinationsLine({
       entryId: entry.id,
-      destinations: published.destinations,
+      destinations,
     },),);
     return { kind: 'settled', };
   }

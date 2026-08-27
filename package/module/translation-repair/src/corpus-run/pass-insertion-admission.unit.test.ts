@@ -9,7 +9,7 @@
  * @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -57,12 +57,7 @@ type ScriptedCoverageOutcome = ScriptedCoverage | typeof COVERAGE_VOICE_LOST;
 /**
  * No-op logger accepted by production module.
  */
-const l: Logger = {
-  debug: () => undefined,
-  error: () => undefined,
-  info: () => undefined,
-  warn: () => undefined,
-};
+const l = tagged({ tag: 'pass-insertion-admission-test', },);
 
 /**
  * Whole target carrying enough unrelated prose to defeat page shortfall.
@@ -150,10 +145,10 @@ function coverageClient(
        * Next scripted seat outcome, which must exist for every requested seat.
        */
       const next = responses.next();
-      if (next.done)
+      if (next.done === true)
         throw new Error('coverage stage asked beyond scripted roster',);
       const { value: reply, } = next;
-      if (typeof reply === 'symbol') {
+      if ((typeof reply) === 'symbol') {
         if (reply === COVERAGE_VOICE_LOST)
           throw new Error('scripted lost coverage voice',);
         throw new Error('unknown scripted coverage outcome',);

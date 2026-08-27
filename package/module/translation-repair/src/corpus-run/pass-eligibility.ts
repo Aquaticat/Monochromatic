@@ -4,7 +4,7 @@ import {
   readCorpusFile,
 } from '../corpus-source.ts';
 import type { SizedEntry, } from './band-order.ts';
-import type { CorpusPair, } from './pass-entry.ts';
+import type { CorpusPair, } from './pass-entry-contract.ts';
 
 //region Pass eligibility
 // Which entries a pass may work on, and which it cannot, said out loud.
