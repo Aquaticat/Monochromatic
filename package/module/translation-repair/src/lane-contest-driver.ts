@@ -87,6 +87,29 @@ type BoughtLaneContest = {
 };
 
 /**
+ * Reads cache-eligible record from fresh contest purchase.
+ *
+ * @param bought - fresh result beside persistence status
+ *
+ * @returns Record a twin may reuse, or deliberate nothing
+ *
+ * @example
+ * ```ts
+ * const stored = storedContestOf({ outcome, persisted: true, },);
+ * ```
+ */
+function storedContestOf(
+  bought: BoughtLaneContest,
+): TwinStored<LaneContestOutcome> {
+  return bought.persisted
+    ? {
+      kind: 'stored',
+      record: bought.outcome,
+    }
+    : { kind: 'nothing', };
+}
+
+/**
  * Persists a bought contest only when caller remains live and quorum made its
  * ballots reusable.
  *
@@ -285,6 +308,9 @@ export async function contestDocumentLanes(
       const outcome = await (async function resumeOrBuy(): Promise<LaneContestOutcome> {
         if (resumed !== undefined)
           return resumed;
+        /**
+         * Twin's persisted ballots or this row's fresh purchase.
+         */
         const asked = await reuseTwinOrBuy({
           key,
           memo: twins,
@@ -309,6 +335,9 @@ export async function contestDocumentLanes(
             // Gather rounds degrade torn-down calls to silence. A quorum that
             // arrived before the abort must not make the abandoned entry look
             // done or become warm-run evidence.
+            /**
+             * Whether this purchase became reusable evidence.
+             */
             const persisted = await persistLaneContestOutcome({
               key,
               outcome: bought,
@@ -320,19 +349,13 @@ export async function contestDocumentLanes(
               persisted,
             };
           },
-          persistedOf: function storedOf(
-            bought,
-          ): TwinStored<LaneContestOutcome> {
-            return bought.persisted
-              ? {
-                kind: 'stored',
-                record: bought.outcome,
-              }
-              : { kind: 'nothing', };
-          },
+          persistedOf: storedContestOf,
           l: dl,
         },);
-        return (asked.kind === 'reused') ? asked.twin : asked.bought.outcome;
+        if (asked.kind === 'reused')
+          return asked.twin;
+        return asked.bought
+          .outcome;
       })();
       return describeContestSlice({
         sliceIndex: row.sliceIndex,
