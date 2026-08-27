@@ -796,6 +796,14 @@ await describe({
             targetText: '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n',
             overlap,
           },);
+
+          /** Warm run over both twins, reading one shared record from disk. */
+          const warm = await runDriver({
+            sourceText: twinSource,
+            targetText: twinTarget,
+            resumed: twins.persisted,
+            overlap,
+          },);
           expect(twins.result
             .sliceCount,).toBe(2,);
           expect(single.result
@@ -805,6 +813,10 @@ await describe({
             .translate,);
           expect(twins.persisted
             .size,).toBe(1,);
+          expect(twins.result
+            .resumedSliceCount,).toBe(0,);
+          expect(warm.result
+            .resumedSliceCount,).toBe(2,);
           expect(twins.result
             .slices[0]
             ?.outputText,).toBe(twins.result
