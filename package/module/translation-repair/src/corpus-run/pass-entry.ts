@@ -23,7 +23,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 import { settledTallyLine, } from './settled-tally.ts';
-import { readOverlapSetting, } from './slice-overlap.ts';
+import { readPassOverlap, } from './pass-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
 import {
   discardSliceCache,
@@ -58,13 +58,6 @@ import {
 // the artifacts directory. Keeping the whole of that in one function is what
 // makes the rule checkable by reading, since the write is the last thing the
 // success path does and the failure path has no write at all.
-
-/**
- * Corpus-pass slice overlap when invocation sets no environment override.
- *
- * One remains the control until matched corpus arms decide otherwise.
- */
-const PASS_OVERLAP = 1;
 
 /**
  * Whether an entry reached its artifact.
@@ -615,10 +608,7 @@ export async function settleEntry(
   /**
    * Slice overlap read once for this entry and shared by every per-slice driver.
    */
-  const overlapSetting = readOverlapSetting({ fallback: PASS_OVERLAP, },);
-  console.log(
-    `OVERLAP ${entry.id} value=${String(overlapSetting.overlap,)} source=${overlapSetting.source}`,
-  );
+  const overlap = readPassOverlap({ entryId: entry.id, },);
 
   /**
    * Per-entry slice-cache directory; earlier runs' finished slices live here so
@@ -642,7 +632,7 @@ export async function settleEntry(
     pipelineDigest,
     hardCapMs,
     baseSignal,
-    overlap: overlapSetting.overlap,
+    overlap,
   },);
   if (outcome.kind === 'failed') {
     // The cache is what makes the next attempt cheaper, so a failed entry keeps

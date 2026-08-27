@@ -146,7 +146,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES zero, which is not a smaller amount of work but no work at all: a limit of zero 
+      name: 'REFUSES zero, which is not a smaller amount of work but no work at all: a limit of zero '
         + 'admits nothing and the run would wait forever having said nothing about why',
       fn: async () => {
         using dial = dialSaying({ says: '0', },);
