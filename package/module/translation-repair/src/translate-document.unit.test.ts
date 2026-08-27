@@ -373,12 +373,18 @@ function laneClient(
       calls.select += 1;
 
       /**
+       * Fresh rendering belonging to ordinary or admitted insertion slice.
+       */
+      const wantedRendering = content.includes(MISSING_FRESH,)
+        ? MISSING_FRESH
+        : FRESH;
+      /**
        * Ballot naming the fresh rendering.
        */
       const ballot: unknown = {
         best: pickCandidate({
           content,
-          needle: FRESH,
+          needle: wantedRendering,
         },),
         reason: 'scripted',
       };
