@@ -1037,11 +1037,26 @@ to fail when its fix is removed.
 The production readiness signal was then put to the owner and REJECTED,
 because the published pages had not been read by anyone:
 "Not yet. You didn't even look at its actual output."
-The reading is now the gate.
-Four older-build pages read against source and archive found six defect classes no gate measured
-(`doc/audit/translation-repair-output-reading-20260826.md`);
-three are landed in source and await a build (`#263`, `#264`, `#265`, described in this file),
-and a fresh pass over ten entries, the hard cases among them, is read next, twice, with every defect traced
-into its artifact before it is filed.
-Read the milestone figures above as history:
-they were measured under earlier shapes of the pipeline and none of them is the readiness claim.
+The pipeline is not production-ready.
+Reading is now gate,
+and one page passing that gate validates only artifact from that run,
+not package or pipeline.
+
+Fixed-build `Toka_ls` under overlap 4 and 300-second grace produced page with no blocker or major,
+but same run still exposed systemic unresolved path:
+contest can decline archive and settle on neither lane,
+consolidation then records `no-standing-text` and buys no third rendering,
+while final assembly revives archive.
+One slice reached that path after 9 of 10 contest voices called archive flawed.
+A favourable page does not close mechanism that can recur on next entry.
+
+Remaining corpus arms, hard-case output reading, live calibration checks,
+front matter and site-grammar gaps,
+package reading CLI,
+Hyper catalog drift check,
+and declined-archive seam remain open.
+Read milestone figures as history:
+they were measured under earlier pipeline shapes and none is readiness claim.
+Current evidence and traces are in
+`doc/audit/translation-repair-output-reading-20260826.md`
+and `doc/planning/translation-repair-corpus-overlap-measurement.md`.
