@@ -234,9 +234,14 @@ function catProjection(
  */
 type CatRig = {
   /**
-   * Calls the transport served, one label per model call.
+   * Calls the transport served, including provider retries.
    */
   readonly calls: readonly string[];
+
+  /**
+   * Model calls admitted by contest stage before provider retries.
+   */
+  readonly admitted: number;
 
   /**
    * Keys the driver asked to persist.
@@ -367,32 +372,30 @@ async function drive(
   /**
    * Client-level fixture outside provider slot limiting.
    */
-  const client: SyntheticClient = ((activity === undefined) && (abortOnCall === undefined))
-    ? inner
-    : {
-      chatText: inner.chatText,
-      chatJson: async (request) => {
-        admitted.count += 1;
-        if (admitted.count === abortOnCall)
-          controller.abort(CONTEST_ABORT,);
-        if (activity !== undefined) {
-          /**
-           * Start position making second slice finish before first under overlap.
-           */
-          const startPosition = activity.started;
-          activity.started += 1;
-          activity.now += 1;
-          activity.peak = Math.max(
-            activity.peak,
-            activity.now,
-          );
-          await wait(startPosition < ROSTER.length ? 20 : 5,);
-          activity.now -= 1;
-        }
-        return await inner.chatJson(request,);
-      },
-      quotas: inner.quotas,
-    };
+  const client: SyntheticClient = {
+    chatText: inner.chatText,
+    chatJson: async (request) => {
+      admitted.count += 1;
+      if (admitted.count === abortOnCall)
+        controller.abort(CONTEST_ABORT,);
+      if (activity !== undefined) {
+        /**
+         * Start position making second slice finish before first under overlap.
+         */
+        const startPosition = activity.started;
+        activity.started += 1;
+        activity.now += 1;
+        activity.peak = Math.max(
+          activity.peak,
+          activity.now,
+        );
+        await wait(startPosition < ROSTER.length ? 20 : 5,);
+        activity.now -= 1;
+      }
+      return await inner.chatJson(request,);
+    },
+    quotas: inner.quotas,
+  };
 
   /**
    * Records the driver produced.
@@ -411,6 +414,7 @@ async function drive(
   },);
   return {
     calls,
+    admitted: admitted.count,
     persisted,
     slices,
   };
@@ -616,7 +620,8 @@ await describe({
             answering: false,
             overlap,
           },);
-          expect(twin.calls.length,).toBe(single.calls.length * 2,);
+          expect(single.admitted,).toBe(ROSTER.length,);
+          expect(twin.admitted,).toBe(single.admitted * 2,);
           expect(twin.persisted,).toEqual([],);
         },),);
       },
