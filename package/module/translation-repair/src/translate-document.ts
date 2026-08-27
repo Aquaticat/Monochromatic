@@ -198,8 +198,12 @@ export async function translateDocument(
   const settled = settlements.flatMap(function toSettled(
     settlement,
   ): readonly TranslateSliceRecord[] {
-    return (settlement.outcome.kind === 'settled')
-      ? [settlement.outcome.record,]
+    return (settlement
+      .outcome
+      .kind === 'settled')
+      ? [settlement
+        .outcome
+        .record,]
       : [];
   },);
 
@@ -209,20 +213,30 @@ export async function translateDocument(
   const unfilled = settlements.flatMap(function toUnfilled(
     settlement,
   ): readonly UnfilledSlice[] {
-    return (settlement.outcome.kind === 'unfilled')
-      ? [settlement.outcome.unfilled,]
+    return (settlement
+      .outcome
+      .kind === 'unfilled')
+      ? [settlement
+        .outcome
+        .unfilled,]
       : [];
   },);
 
   /**
    * Slices recovered from disk, excluding twins reused within this run.
    */
-  const resumedSliceCount = settlements.filter(function resumedFromDisk(
-    settlement,
-  ): boolean {
-    return (settlement.outcome.kind === 'settled')
-      && settlement.outcome.resumedFromDisk;
-  },).length;
+  const resumedSliceCount = settlements
+    .filter(function resumedFromDisk(
+      settlement,
+    ): boolean {
+      return (settlement
+        .outcome
+        .kind === 'settled')
+        && settlement
+          .outcome
+          .resumedFromDisk;
+    },)
+    .length;
 
   /**
    * Cache refusals and unfilled evidence, grouped in document order.

@@ -722,37 +722,37 @@ await describe({
           /** Two byte-identical sections on both sides. */
           const twinSource = '## 第一节\n\n猫猫在窗台上打盹。\n\n## 第一节\n\n猫猫在窗台上打盹。\n';
 
-        /** Their translation, identical for the same reason. */
-        const twinTarget = '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n\n'
-          + '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n';
+          /** Their translation, identical for same reason. */
+          const twinTarget = '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n\n'
+            + '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n';
 
-        /** Run over the twin document. */
+          /** Run over twin document. */
           const twins = await runDriver({
             sourceText: twinSource,
             targetText: twinTarget,
             overlap,
           },);
 
-          /** Run over one of those sections alone, for the call count of one question. */
+          /** Run over one section alone, for call count of one question. */
           const single = await runDriver({
             sourceText: '## 第一节\n\n猫猫在窗台上打盹。\n',
             targetText: '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n',
             overlap,
           },);
-        expect(twins.result
-          .sliceCount,).toBe(2,);
-        expect(single.result
-          .sliceCount,).toBe(1,);
-        expect(twins.calls
-          .translate,).toBe(single.calls
-          .translate,);
-        expect(twins.persisted
-          .size,).toBe(1,);
-        expect(twins.result
-          .slices[0]
-          ?.outputText,).toBe(twins.result
-          .slices[1]
-          ?.outputText,);
+          expect(twins.result
+            .sliceCount,).toBe(2,);
+          expect(single.result
+            .sliceCount,).toBe(1,);
+          expect(twins.calls
+            .translate,).toBe(single.calls
+            .translate,);
+          expect(twins.persisted
+            .size,).toBe(1,);
+          expect(twins.result
+            .slices[0]
+            ?.outputText,).toBe(twins.result
+            .slices[1]
+            ?.outputText,);
           expect(twins.result
             .slices
             .map(function toIndex(record,): number {
@@ -1191,24 +1191,23 @@ But we must remember that the cat sleeping on the windowsill has been there `
           overlap,
         ): Promise<void> {
           /** Section written twice, so both slices ask one question. */
-        const SECTION = `## 第一节
+          const SECTION = `## 第一节
 
 猫猫在窗台上打盹。
 `;
 
-        /** Its archive wording, likewise written twice. */
-        const RENDERED = `## Section one
+          /** Its archive wording, likewise written twice. */
+          const RENDERED = `## Section one
 
 The cat is doing the sleeping on the windowsill.
 `;
 
-        /**
-         * One slice of it, which calibrates what asking once costs.
-         *
-         * Measured rather than assumed: the roster retries a lost voice, so the
-         * count per slice is a property of the gather rather than of the
-         * translator list length.
-         */
+          /**
+           * One slice, which calibrates what asking once costs.
+           *
+           * Measured rather than assumed: roster retries a lost voice, so count
+           * per slice is property of gather rather than translator list length.
+           */
           const single = await runDriver({
             sourceText: SECTION,
             targetText: RENDERED,
@@ -1225,12 +1224,12 @@ The cat is doing the sleeping on the windowsill.
             silentTranslators: true,
             overlap,
           },);
-        expect(single.result
-          .sliceCount,).toBe(1,);
-        expect(twin.result
-          .sliceCount,).toBe(2,);
-        expect(single.calls
-          .translateAttempts,).toBeGreaterThan(0,);
+          expect(single.result
+            .sliceCount,).toBe(1,);
+          expect(twin.result
+            .sliceCount,).toBe(2,);
+          expect(single.calls
+            .translateAttempts,).toBeGreaterThan(0,);
           expect(twin.calls
             .translateAttempts,).toBe(single.calls
             .translateAttempts * 2,);
