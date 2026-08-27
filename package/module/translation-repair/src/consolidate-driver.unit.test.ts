@@ -39,6 +39,7 @@ import {
   type ConsolidationTerminal,
   consolidationWorthResuming,
   createSyntheticClient,
+  persistConsolidationSettlement,
   type ProjectedLanes,
   type SliceCache,
   type SliceNeighbourContext,
@@ -603,6 +604,38 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES persistence under an already aborted caller after a stable '
+        + 'consolidation returned, preserving the final pre-write defense',
+      fn: async () => {
+        /**
+         * Exact caller reason helper must surface.
+         */
+        const stopped = new Error('caller abandoned completed consolidation',);
+        const controller = new AbortController();
+        controller.abort(stopped,);
+
+        /**
+         * Writes attempted after abort.
+         */
+        const written: string[] = [];
+        await expect(persistConsolidationSettlement({
+          key: 'consolidation-persistence-guard-fixture',
+          settlement: settlementReaching({ terminal: 'incumbent-only', },),
+          cache: {
+            resumed: new Map<string, ConsolidationSettlement>(),
+            persist: async ({ key, },) => {
+              written.push(key,);
+            },
+          },
+          signal: controller.signal,
+        },),)
+          .rejects
+          .toBe(stopped,);
+        expect(written,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'runs two consolidation slices at once at overlap 2, after a serial '
         + 'positive control proves the successful-call instrument distinguishes one from two, '
         + 'and returns records in comparison order when the second producer answers first',
@@ -647,6 +680,51 @@ await describe({
         expect(serial.peak,).toBe(1,);
         expect(overlapped.peak,).toBe(2,);
         expect(slices.map(function toIndex(slice,) {
+          return slice.sliceIndex;
+        },),).toEqual([
+          0,
+          1,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'mixes one resumed row with one fresh row at overlap 2, buying and persisting '
+        + 'only the fresh consolidation while returning both in comparison order',
+      fn: async () => {
+        /**
+         * Fresh pass used only to derive production keys for both rows.
+         */
+        const learningClient = recordingClient();
+        const learned = await driveWith({
+          client: learningClient.client,
+          contests: [
+            contestSettling({ sliceIndex: 0, lane: 'repair', },),
+            contestSettling({ sliceIndex: 1, lane: 'translate', },),
+          ],
+        },);
+
+        /**
+         * Second pass resuming first row and buying second.
+         */
+        const freshClient = recordingClient();
+        const mixed = await driveWith({
+          client: freshClient.client,
+          contests: [
+            contestSettling({ sliceIndex: 0, lane: 'repair', },),
+            contestSettling({ sliceIndex: 1, lane: 'translate', },),
+          ],
+          resumed: new Map([
+            [
+              learned.written.at(0,) ?? '',
+              settlementReaching({ terminal: 'incumbent-only', },),
+            ],
+          ],),
+          overlap: 2,
+        },);
+        expect(freshClient.bodies.length,).toBeGreaterThan(0,);
+        expect(mixed.written.length,).toBe(1,);
+        expect(mixed.slices.map(function toIndex(slice,) {
           return slice.sliceIndex;
         },),).toEqual([
           0,
