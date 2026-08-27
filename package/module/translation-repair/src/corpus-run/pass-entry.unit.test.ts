@@ -1049,6 +1049,34 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES publication when coverage admits a source gap but every translator voice is lost, '
+        + 'because provider outage cannot turn known missing content into settled page',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        const served: string[] = [];
+        await settleEntry({
+          client: entryClient({
+            served,
+            failOnSchema: 'translation_report',
+            coverageScript: 'absent',
+          },),
+          entry: GAP_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        expect(served,).toContain('coverage_report',);
+        expect(served,).not.toContain('lane_contest',);
+        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([],);
+        expect(await artifactNames({ artifactsDir: dirs.publishDir, },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'ADMITS and publishes a linked factual source gap when production coverage says it is absent, '
         + 'proving admission reaches translate lane rather than stopping at pass preparation',
       fn: async () => {
@@ -1075,6 +1103,10 @@ await describe({
         expect(served,).toContain('coverage_report',);
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),)
           .toEqual(['CatEntryGapRecovered.json',],);
+        const artifact = await readFile(
+          join(dirs.artifactsDir, 'CatEntryGapRecovered.json',),
+          'utf8',
+        );
         const page = await readFile(
           fixedPagePath({
             publishDir: dirs.publishDir,
@@ -1082,6 +1114,7 @@ await describe({
           },),
           'utf8',
         );
+        expect(artifact,).toContain('insertion-corroboration',);
         expect(page,).toContain(GAP_FRESH,);
       },
     },),
