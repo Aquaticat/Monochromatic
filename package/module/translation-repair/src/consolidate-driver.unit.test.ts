@@ -24,6 +24,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -61,6 +62,15 @@ const ROSTER = ['hf:zai-org/GLM-5.2',] as const;
  * Per-call bound, never reached because nothing here buys a call.
  */
 const CALL_TIMEOUT_MS = 5_000;
+
+/**
+ * Successful consolidation calls in flight and peak observed by fixture.
+ */
+type ConsolidationConcurrency = {
+  now: number;
+  peak: number;
+  started: number;
+};
 
 /**
  * A client that refuses to be used, so any call at all is a failure rather
@@ -331,6 +341,10 @@ function settlementReaching(
  *
  * @param projected - both ledgers, overridable to test a ledger gap
  *
+ * @param overlap - most contested slices in flight
+ *
+ * @param activity - optional successful-call overlap instrument
+ *
  * @returns Records the driver produced beside the keys it wrote
  *
  * @example
@@ -347,6 +361,8 @@ async function driveWith(
     lineStructuredSlices = new Set(),
     pictureContextBySlice = new Map(),
     neighbourContextBySlice = new Map(),
+    overlap = 1,
+    activity,
   }: {
     readonly contests: readonly ArtifactContestSlice[];
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
@@ -355,6 +371,8 @@ async function driveWith(
     readonly lineStructuredSlices?: ReadonlySet<number>;
     readonly pictureContextBySlice?: ReadonlyMap<number, string>;
     readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
+    readonly overlap?: number;
+    readonly activity?: ConsolidationConcurrency;
   },
 ) {
   /**
@@ -372,14 +390,40 @@ async function driveWith(
     },
   };
 
+  /**
+   * Client-level activity instrument outside provider slot limiting.
+   */
+  const measuredClient: SyntheticClient = (activity === undefined)
+    ? client
+    : {
+      chatText: client.chatText,
+      chatJson: async (request) => {
+        /**
+         * Start position making second slice answer before first under overlap.
+         */
+        const startPosition = activity.started;
+        activity.started += 1;
+        activity.now += 1;
+        activity.peak = Math.max(
+          activity.peak,
+          activity.now,
+        );
+        await wait(startPosition === 0 ? 20 : 5,);
+        activity.now -= 1;
+        return await client.chatJson(request,);
+      },
+      quotas: client.quotas,
+    };
+
   const slices = await consolidateDocument({
-    client,
+    client: measuredClient,
     projected,
     contests,
     modelIds: ROSTER,
     cache,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
+    overlap,
     lineStructuredSlices,
     pictureContextBySlice,
     neighbourContextBySlice,
@@ -518,6 +562,59 @@ await describe({
         expect(slices[0]?.terminal,).toBe('incumbent-only',);
         expect(slices[0]?.gate.kind,).toBe('not-asked',);
         expect(written.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'runs two consolidation slices at once at overlap 2, after a serial '
+        + 'positive control proves the successful-call instrument distinguishes one from two, '
+        + 'and returns records in comparison order when the second producer answers first',
+      fn: async () => {
+        /**
+         * Serial positive-control activity.
+         */
+        const serial: ConsolidationConcurrency = {
+          now: 0,
+          peak: 0,
+          started: 0,
+        };
+        const serialClient = recordingClient();
+        await driveWith({
+          client: serialClient.client,
+          contests: [
+            contestSettling({ sliceIndex: 0, lane: 'repair', },),
+            contestSettling({ sliceIndex: 1, lane: 'translate', },),
+          ],
+          overlap: 1,
+          activity: serial,
+        },);
+
+        /**
+         * Two-slice activity.
+         */
+        const overlapped: ConsolidationConcurrency = {
+          now: 0,
+          peak: 0,
+          started: 0,
+        };
+        const overlapClient = recordingClient();
+        const { slices, } = await driveWith({
+          client: overlapClient.client,
+          contests: [
+            contestSettling({ sliceIndex: 0, lane: 'repair', },),
+            contestSettling({ sliceIndex: 1, lane: 'translate', },),
+          ],
+          overlap: 2,
+          activity: overlapped,
+        },);
+        expect(serial.peak,).toBe(1,);
+        expect(overlapped.peak,).toBe(2,);
+        expect(slices.map(function toIndex(slice,) {
+          return slice.sliceIndex;
+        },),).toEqual([
+          0,
+          1,
+        ],);
       },
     },),
 
