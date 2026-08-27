@@ -933,6 +933,59 @@ await describe({
         expect(stored.size,).toBe(0,);
       },
     },),
+
+    it({
+      name: 'DOES NOT CACHE a refinement whose rewriter stage heard nobody, so a '
+        + 'provider outage is reconsidered rather than resumed as a decision',
+      fn: async () => {
+        /**
+         * Cache writes made by this run.
+         */
+        const stored = new Map<string, RefinedSliceSettlement>();
+
+        /**
+         * Refiner calls proving eligible work was attempted.
+         */
+        const calls = { count: 0, };
+
+        /**
+         * Scripted client with only rewriters unavailable.
+         */
+        const inner = scriptedPhase({ checkerVerdict: 'fixed', },);
+        const phase = await runRefinePhase({
+          declaredNames: [],
+          client: {
+            chatText: inner.chatText,
+            chatJson: async (request) => {
+              if (request.responseFormat
+                ?.json_schema
+                .name
+                === 'refine_report') {
+                calls.count += 1;
+                throw new Error('refiner provider is unavailable',);
+              }
+              return await inner.chatJson(request,);
+            },
+            quotas: inner.quotas,
+          },
+          targetText: REPAIRED_TEXT,
+          slices: SLICES,
+          outcomes: [settledOutcome({
+            resolvedIssueIds: [],
+            authorship: NO_MODEL_WROTE_THE_FIXTURE,
+          },),],
+          models: MODELS,
+          refineCache: memoryRefineCache({ stored, },),
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          overlap: 2,
+          l,
+        },);
+        expect(calls.count,).toBeGreaterThan(0,);
+        expect(phase.askedRewriters,).toBe(true,);
+        expect(stored.size,).toBe(0,);
+      },
+    },),
   ],
 },);
 
