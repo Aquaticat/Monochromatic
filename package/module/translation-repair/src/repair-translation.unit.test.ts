@@ -7,6 +7,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -72,6 +73,14 @@ const MODELS: RepairModels = {
  * wrapper built from the reason, which is the failure worth ruling out.
  */
 const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
+
+/**
+ * Successful critic calls in flight, and peak observed by fixture.
+ */
+type CriticConcurrency = {
+  now: number;
+  peak: number;
+};
 
 /**
  * One-based sheet numbers 1 through count.
@@ -260,6 +269,8 @@ function scriptedClient(
  * @param silentCritics - whether every critic call fails while the signal stays
  * live
  *
+ * @param criticConcurrency - optional successful-call overlap instrument
+ *
  * @returns Client honoring the steering
  *
  * @example
@@ -275,6 +286,7 @@ function steeringClient(
     abortAfterCriticCalls,
     abortOnStage,
     silentCritics = false,
+    criticConcurrency,
   }: {
     readonly base: SyntheticClient;
     readonly controller: AbortController;
@@ -282,6 +294,7 @@ function steeringClient(
     readonly abortAfterCriticCalls?: number;
     readonly abortOnStage?: string;
     readonly silentCritics?: boolean;
+    readonly criticConcurrency?: CriticConcurrency;
   },
 ): SyntheticClient {
   return {
@@ -305,6 +318,15 @@ function steeringClient(
           controller.abort(ENTRY_DEADLINE_FAILURE,);
         if (silentCritics)
           throw new Error('critic provider is down',);
+        if (criticConcurrency !== undefined) {
+          criticConcurrency.now += 1;
+          criticConcurrency.peak = Math.max(
+            criticConcurrency.peak,
+            criticConcurrency.now,
+          );
+          await wait(10,);
+          criticConcurrency.now -= 1;
+        }
       }
       if (request.signal
         .aborted)
@@ -1021,6 +1043,53 @@ Meow meow meow meow.
     },),
 
     it({
+      name: 'runs two accuracy slices at once when overlap is 2, after a serial positive control proves '
+        + 'the successful-critic instrument can distinguish one slice from two',
+      fn: async () => {
+        /** Successful critic calls under former sequential loop. */
+        const serial: CriticConcurrency = {
+          now: 0,
+          peak: 0,
+        };
+
+        /** Successful critic calls under two slices in flight. */
+        const overlapped: CriticConcurrency = {
+          now: 0,
+          peak: 0,
+        };
+        await repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+            controller: new AbortController(),
+            calls: { critic: 0, },
+            criticConcurrency: serial,
+          },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+          overlap: 1,
+        },);
+        await repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+            controller: new AbortController(),
+            calls: { critic: 0, },
+            criticConcurrency: overlapped,
+          },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+          overlap: 2,
+        },);
+        expect(serial.peak,).toBe(MODELS.criticModelIds
+          .length,);
+        expect(overlapped.peak,).toBeGreaterThan(serial.peak,);
+      },
+    },),
+
+    it({
       name: 'repairs a pair PREPARED BY THE CALLER, and reaches the same result '
         + 'as preparing it itself. This is what lets both lanes run over one '
         + 'preparation: two lanes slicing separately would drift the moment '
@@ -1436,14 +1505,94 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
     },),
 
     it({
+      name: 'ASKS ONCE for two slices carrying identical text, and settles both from that one outcome. '
+        + 'The shared key names one question, so a cold run and a warm run must not choose two answers',
+      fn: async () => {
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          /** Section written twice, so both slices ask one question. */
+          const SECTION = `## 甲
+
+猫猫喜欢在窗台上晒太阳。猫猫也喜欢追蝴蝶。
+`;
+
+          /** Archive wording written twice for same reason. */
+          const RENDERED = `## Alpha
+
+The cat loves sunbathing on the windowsill. The cat hates butterflies.
+`;
+
+          /** Critic calls one slice costs. */
+          const single = { critic: 0, };
+          await repairTranslation({
+            client: steeringClient({
+              base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+              controller: new AbortController(),
+              calls: single,
+            },),
+            sourceText: SECTION,
+            targetText: RENDERED,
+            models: MODELS,
+            signal: new AbortController().signal,
+            overlap,
+          },);
+
+          /** Critic calls twin document costs. */
+          const twin = { critic: 0, };
+
+          /** Cache records twin document persisted. */
+          const store = new Map<string, string>();
+          const result = await repairTranslation({
+            client: steeringClient({
+              base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+              controller: new AbortController(),
+              calls: twin,
+            },),
+            sourceText: `${SECTION}\n${SECTION}`,
+            targetText: `${RENDERED}\n${RENDERED}`,
+            models: MODELS,
+            signal: new AbortController().signal,
+            overlap,
+            sliceCache: {
+              resumed: new Map<string, ChunkRepairOutcome>(),
+              persist: async ({
+                key,
+                serialized,
+              },) => {
+                store.set(
+                  key,
+                  serialized,
+                );
+              },
+            },
+          },);
+          expect(result.sliceCount,).toBe(2,);
+          expect(twin.critic,).toBe(single.critic,);
+          expect(store.size,).toBe(1,);
+          expect(result.chunks
+            .map(function toIndex(outcome,): number {
+              return outcome.sliceIndex;
+            },),).toEqual([
+            0,
+            1,
+          ],);
+        },),);
+      },
+    },),
+
+    it({
       name: 'ASKS AGAIN for a twin of a slice no critic answered. The in-run memo may only hold what a '
         + 'warm run could resume, and this slice is deliberately not cached, so reusing it would settle '
         + 'a cold run on a silence a warm run would have re-examined',
       fn: async () => {
-        /**
-         * Section written twice, so both slices ask one question.
-         */
-        const SECTION = `## 甲
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          /**
+           * Section written twice, so both slices ask one question.
+           */
+          const SECTION = `## 甲
 
 猫猫喜欢在窗台上晒太阳。猫猫也喜欢追蝴蝶。
 `;
@@ -1473,10 +1622,11 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: RENDERED,
           models: MODELS,
           signal: new AbortController().signal,
+          overlap,
         },);
 
         /**
-         * Critic calls the same section twice costs.
+         * Critic calls same section twice costs.
          */
         const twin = { critic: 0, };
 
@@ -1495,6 +1645,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           targetText: `${RENDERED}\n${RENDERED}`,
           models: MODELS,
           signal: new AbortController().signal,
+          overlap,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
             persist: async ({
@@ -1508,9 +1659,10 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             },
           },
         },);
-        expect(result.sliceCount,).toBe(2,);
-        expect(twin.critic,).toBe(single.critic * 2,);
-        expect(store.size,).toBe(0,);
+          expect(result.sliceCount,).toBe(2,);
+          expect(twin.critic,).toBe(single.critic * 2,);
+          expect(store.size,).toBe(0,);
+        },),);
       },
     },),
 
