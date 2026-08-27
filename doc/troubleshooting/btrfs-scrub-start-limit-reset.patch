@@ -1,0 +1,82 @@
+diff --git a/cmds/scrub.c b/cmds/scrub.c
+index 825b91d..c8b1962 100644
+--- a/cmds/scrub.c
++++ b/cmds/scrub.c
+@@ -1594,14 +1594,6 @@ static int scrub_start(const struct cmd_struct *cmd, int argc, char **argv,
+ 
+ 	err = 0;
+ 	for (i = 0; i < fi_args.num_devices; ++i) {
+-		/* Revert to the older scrub limit. */
+-		ret = write_scrub_device_limit(fdmnt, di_args[i].devid, sp[i].old_limit);
+-		if (ret < 0) {
+-			errno = -ret;
+-			warning("failed to reset scrub throughput limit on devid %llu: %m",
+-				di_args[i].devid);
+-		}
+-
+ 		if (sp[i].skip)
+ 			continue;
+ 		devid = di_args[i].devid;
+@@ -1645,6 +1637,16 @@ static int scrub_start(const struct cmd_struct *cmd, int argc, char **argv,
+ 			e_correctable++;
+ 	}
+ 
++	for (i = 0; i < fi_args.num_devices; ++i) {
++		/* Revert to the older scrub limit. */
++		ret = write_scrub_device_limit(fdmnt, di_args[i].devid, sp[i].old_limit);
++		if (ret < 0) {
++			errno = -ret;
++			warning("failed to reset scrub throughput limit on devid %llu: %m",
++				di_args[i].devid);
++		}
++	}
++
+ 	if (do_print) {
+ 		const char *append = "done";
+ 		u64 total_bytes_scrubbed = 0;
+diff --git a/tests/cli-tests/024-scrub-limit/test.sh b/tests/cli-tests/024-scrub-limit/test.sh
+index a417f31..7320b33 100755
+--- a/tests/cli-tests/024-scrub-limit/test.sh
++++ b/tests/cli-tests/024-scrub-limit/test.sh
+@@ -47,6 +47,41 @@ run_check "$TOP/btrfs" scrub limit "$TEST_MNT"
+ run_check $SUDO_HELPER "$TOP/btrfs" scrub limit -a -l 30m "$TEST_MNT"
+ run_check "$TOP/btrfs" scrub limit "$TEST_MNT"
+ 
++# Keep scrub start's temporary limit active until foreground scrub completion
++run_check $SUDO_HELPER dd if=/dev/zero of="$TEST_MNT/scrub-data" bs=1M count=8
++scrub_output=$(mktemp)
++$SUDO_HELPER "$TOP/btrfs" scrub start -B --limit 1m "$TEST_MNT" >"$scrub_output" 2>&1 &
++scrub_pid=$!
++scrub_running=false
++for attempt in {1..50}; do
++	status=$("$TOP/btrfs" scrub status "$TEST_MNT")
++	if printf '%s\n' "$status" | grep -q "Status:           running"; then
++		scrub_running=true
++		break
++	fi
++	if ! kill -0 "$scrub_pid" 2>/dev/null; then
++		break
++	fi
++	sleep 0.1
++done
++if [[ "$scrub_running" != true ]]; then
++	cat "$scrub_output"
++	_fail "foreground scrub did not remain active for its limit check"
++fi
++for i in "$sysfs"/devinfo/*/scrub_speed_max; do
++	limit=$(cat "$i")
++	[[ "$limit" == 1048576 ]] || _fail "temporary scrub limit is $limit, expected 1048576"
++done
++wait "$scrub_pid" || {
++	cat "$scrub_output"
++	_fail "foreground scrub failed"
++}
++for i in "$sysfs"/devinfo/*/scrub_speed_max; do
++	limit=$(cat "$i")
++	[[ "$limit" == 31457280 ]] || _fail "restored scrub limit is $limit, expected 31457280"
++done
++rm "$scrub_output"
++
+ run_check_umount_test_dev
+ 
+ cleanup_loopdevs
