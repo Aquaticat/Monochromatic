@@ -64,6 +64,16 @@ and auto-push is on.
     and normalizes torn-down in-flight calls to the caller's abort reason.
     Its twin tests run at overlap `1` and `2`,
     and a successful-critic instrument proves two slices are active at overlap `2`.
+-   `e65693c20` through `755b22612`:
+    `runRefinePhase` now calls `mapOverlapped` over `settleRefinePhaseSlice`,
+    defaults `overlap` to `1`,
+    and receives the repair document's overlap through `refineSettledSlices`.
+    It returns outcomes and findings in input order,
+    reports `askedRewriters` when any fresh slice asked,
+    and persists only quorum-complete settlements under a live signal.
+    Direct tests pin overlap activity, order, any-asked aggregation,
+    silent-stage cache refusal, abort-safe persistence and disabled-lane validation.
+    A repair-driver test separately pins the overlap threading into this phase.
 
 ## The twin memo, which is the part that is easy to get wrong
 
@@ -102,6 +112,16 @@ so two twins with the same refused record each bought and each persisted under o
 Both twins now reach the memo after refusing the cache,
 so the second reuses what the first persisted, which is what the warm run does.
 
+Refinement is the deliberate exception.
+Its former loop had no in-run memo,
+and the disk cache's `resumed` map is a snapshot that persistence does not mutate.
+Two identical uncached refinement questions therefore both buy at overlap one and may buy concurrently at higher overlap.
+The concurrency test uses such a pair and pins two simultaneous refiner calls.
+When both persist one key,
+overlap one deterministically leaves the later positional write while higher overlap leaves the later completion.
+No such pair is known in the measured corpus,
+but corpus measurement must check this before raising the fallback or refinement needs its own memo and record-restamping design.
+
 ## Bounded failure cost
 
 At overlap greater than one,
@@ -135,10 +155,19 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     with matching restored logs beside them.
     Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
     log: `~/temp/agent/buildAndTest-repair-overlap-20260827T062031Z.log`.
-3.  `runRefinePhase` (`src/refine-phase.ts`, 189 code lines, loop at line 211):
-    no twin memo (this lane caches but never memoized in-run),
-    and its persist condition is `everyStageHeard({ findings, })`.
-    Keep `askedRewriters` true if ANY slice asked.
+3.  `runRefinePhase`: DONE in `e65693c20` through `755b22612`.
+    Build, focused suites, `lint:oxlint` and `lint:types` pass.
+    Five direct mutations failed the intended guards:
+    forcing phase overlap one,
+    replacing any-asked with every-asked,
+    caching a silent stage,
+    removing abort-safe persistence,
+    and removing disabled-lane overlap validation.
+    Forcing the repair-to-refine handoff to overlap one failed its integration guard too.
+    Logs begin `~/temp/agent/gfp-refine-` and name each mutation;
+    matching restored logs sit beside them.
+    Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
+    log: `~/temp/agent/buildAndTest-refine-overlap-20260827T064814Z.log`.
 4.  `contestDocumentLanes` (`src/lane-contest-driver.ts`, loop at line 159):
     smallest of the five;
     `worthResuming` decides persistence, and only eligible rows are visited.
