@@ -102,15 +102,47 @@ painful" in the quote is gone).
 
 ## The fresh pass on the current build
 
-Planned: `corpus-pass --only` at production defaults (overlap 1, the 180000 ms window) over the six entries of
-the 2026-08-20 reading, the two read here, and the hard cases this project's own history names (`Toka_ls`,
-whose editor once fabricated three lines; `XIEPT2`, whose pairing once collapsed to zero slices; `XingZ60`,
-whose sections once slid by two, if its measured cost allows), into a throwaway runs directory, launched only
-after the calibration arms finish (a concurrent run would share provider slots and spoil the band
-measurement). Eight short entries alone would answer whether the output is publishable on easy inputs, which
-is not the owner's question. Each published page is then read the same way, and the instruments
-(`verify-published`, the rendering audit, the damage probe) are run on the same pages so their verdicts can be
-compared with the reading.
+The pass began on 2026-08-27 as matched overlap arms under the protocol in
+`doc/planning/translation-repair-corpus-overlap-measurement.md`.
+This lets the output-reading entries also answer the corpus overlap question without sharing artifacts,
+published pages or slice cache between arms.
+The hard cases remain `Toka_ls`, whose editor once fabricated three lines;
+`XIEPT2`, whose pairing once collapsed to zero slices;
+and a separate `XingZ60`, whose sections once slid by two.
+Eight short entries alone would answer whether the output is publishable on easy inputs,
+which is not the owner's question.
+Each published page is read the same way,
+and `verify-published`, the rendering audit and the damage probe run on the same pages
+so their verdicts can be compared with the reading.
+
+### `keyword233` on the current build, overlap-4 smoke arm
+
+The arm settled two slices and published a complete page.
+`verify-published` found one artifact, one page, every promised wording present,
+expected page length and no missing source address.
+The code-point census found no watched punctuation introduced.
+
+The first reading and the independent sol reading agree that the page is publishable as-is.
+It repairs the archive's invented timeframe, ungrammatical plural of laughter,
+dropped opening of the Telegram channel, dropped heartfelt reflections,
+dropped narrator opinion and ungrammatical closing.
+Names, pronouns, date, location and both links are right.
+There is one minor introduced nuance:
+`在我看来很棒` is rendered in past tense as `which I thought was wonderful`,
+where `which I find wonderful` would preserve the source's present viewpoint
+without the possible implication that the narrator changed their mind.
+
+ARTIFACT TRACE.
+This is slice 1.
+The repair lane introduced the wording while repairing a larger region.
+The lane contest settled on repair with 6 repair votes, 1 translate vote and 1 refusal.
+All 10 consolidation slate verdicts were valid;
+the final consolidation retained the phrase,
+and its gate accepted the consolidation by 9 votes to 1.
+The translate lane independently produced the same past-tense phrase.
+This is an editorial-choice finding, not an overlap mechanism finding:
+ordering, slice seams, assembly and publication are intact,
+and a two-slice stochastic pair cannot attribute wording to concurrency.
 
 ## Tooling for the fresh pass, and the second reader's dry run
 

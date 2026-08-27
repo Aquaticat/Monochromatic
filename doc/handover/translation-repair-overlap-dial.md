@@ -282,6 +282,20 @@ Arms must be matched the way the calibration arms were, because a single run res
     Arm D (overlap 4, 300000 ms window) heard 318 of 320 with 2 cut,
     the best of the five arms, so overlap is not obviously paid for in lost voices.
 
+### Measurement status, 2026-08-27
+
+The live `keyword233` smoke pair passed on the same final digest,
+with separate roots and explicit attributed settings.
+Overlap `1` took 38.50 minutes over 1.68 hours of calls,
+normalized `0.382`, with 9 voices unheard.
+Overlap `4` took 31.12 minutes over 1.78 hours of calls,
+normalized `0.291`, with 8 voices unheard.
+Both published pages verified.
+The overlap arm reduced wall time by 19.2 percent and normalized wall time by 23.9 percent,
+but two slices are only the positive control, not enough to change the fallback.
+The matched decision pairs and output reading continue under
+`doc/planning/translation-repair-corpus-overlap-measurement.md`.
+
 ## Do not land a driver into a live pass launch
 
 The `corpus-pass` mise task BUILDS the tree it then runs.

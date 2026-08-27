@@ -59,6 +59,25 @@ The smoke pair may count as `keyword233`'s decision pair only after its launch m
 If the paired normalized effects disagree or remain inside their own spread,
 repeat pairs interleaved rather than forcing a conclusion from one run each.
 
+### Smoke result, 2026-08-27
+
+Both `keyword233` arms settled two slices on pipeline digest
+`sha256-tree-v1:711ef62a473323e52f727b29ea62bd0d481ae10a0b616e508379c5a43d15f068`.
+Both providers were wet throughout, both entries settled without a pass error,
+and `verify-published` accepted both pages.
+
+- Overlap `1`: 38.50 minutes wall over 1.68 hours of calls, normalized `0.382`,
+  9 voices unheard and peak 10 calls in flight.
+- Overlap `4`: 31.12 minutes wall over 1.78 hours of calls, normalized `0.291`,
+  8 voices unheard and peak 19 calls in flight.
+
+The overlap arm used 19.2 percent less wall time and 23.9 percent less normalized wall time.
+It bought more calls because the live ballots produced more issues and rounds,
+so spend from this pair cannot be attributed to overlap.
+The result is a positive control, not the fallback decision:
+only two slices could overlap, and refinement's no-memo caveat was not exercised observably.
+Logs and roots begin `~/temp/agent/corpus-overlap-smoke-`.
+
 ## Readings per pair
 
 Read only package-owned templates from logs.
