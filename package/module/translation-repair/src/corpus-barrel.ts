@@ -28,7 +28,10 @@ export {
 } from './corpus-run/editor-calibrate-slice.ts';
 export {
   CALIBRATION_OVERLAP,
+  type OverlapSetting,
+  type OverlapSettingSource,
   readOverlap,
+  readOverlapSetting,
 } from './corpus-run/slice-overlap.ts';
 export { buildSettledArtifact, } from './corpus-run/artifact-build.ts';
 export { buildSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-build.ts';

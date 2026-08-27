@@ -210,6 +210,9 @@ function laneDelivery(
  * @param perCallTimeoutMs - deadline per exchange, passed to both lanes rather
  * than left to each lane's default, which differ
  *
+ * @param overlap - most slices either lane keeps in flight; lanes remain
+ * sequential relative to each other
+ *
  * @param repairSliceCache - repair lane's cache, in its own namespace
  *
  * @param refineSliceCache - naturalness lane's cache, in its own namespace; it
@@ -247,6 +250,7 @@ export async function runDocumentLanes(
     pictureReadings,
     signal,
     perCallTimeoutMs,
+    overlap = 1,
     repairSliceCache,
     refineSliceCache,
     translateSliceCache,
@@ -270,6 +274,7 @@ export async function runDocumentLanes(
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
+    readonly overlap?: number;
     readonly repairSliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly refineSliceCache?: SliceCache<RefinedSliceSettlement>;
     readonly translateSliceCache?: SliceCache<TranslateSliceRecord>;
@@ -327,6 +332,7 @@ export async function runDocumentLanes(
       : { adjudicationConfig, }),
     signal,
     perCallTimeoutMs,
+    overlap,
     ...((repairSliceCache === undefined)
       ? {}
       : { sliceCache: repairSliceCache, }),
@@ -349,6 +355,7 @@ export async function runDocumentLanes(
       : { pictureReadings, }),
     signal,
     perCallTimeoutMs,
+    overlap,
     ...((translateSliceCache === undefined)
       ? {}
       : { sliceCache: translateSliceCache, }),

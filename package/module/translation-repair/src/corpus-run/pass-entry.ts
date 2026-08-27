@@ -23,6 +23,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 import { settledTallyLine, } from './settled-tally.ts';
+import { readOverlapSetting, } from './slice-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
 import {
   discardSliceCache,
@@ -57,6 +58,13 @@ import {
 // the artifacts directory. Keeping the whole of that in one function is what
 // makes the rule checkable by reading, since the write is the last thing the
 // success path does and the failure path has no write at all.
+
+/**
+ * Corpus-pass slice overlap when invocation sets no environment override.
+ *
+ * One remains the control until matched corpus arms decide otherwise.
+ */
+const PASS_OVERLAP = 1;
 
 /**
  * Whether an entry reached its artifact.
@@ -133,6 +141,8 @@ export type CorpusPair = {
  *
  * @param baseSignal - abort this entry's deadline forwards from
  *
+ * @param overlap - most slices each per-slice driver keeps in flight
+ *
  * @returns Whether an artifact was written
  *
  * @example
@@ -151,6 +161,7 @@ async function runEntryPipeline(
     pipelineDigest,
     hardCapMs,
     baseSignal,
+    overlap,
   }: {
     readonly client: SyntheticClient;
     readonly entry: CorpusPair;
@@ -161,6 +172,7 @@ async function runEntryPipeline(
     readonly pipelineDigest: PipelineDigest;
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
+    readonly overlap: number;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -327,6 +339,7 @@ async function runEntryPipeline(
       pictureReadings,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      overlap,
       repairSliceCache: sliceCache,
       refineSliceCache,
       translateSliceCache,
@@ -366,6 +379,7 @@ async function runEntryPipeline(
       },),
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      overlap,
       l: tagged({ tag: entry.id, },),
     },);
 
@@ -375,11 +389,12 @@ async function runEntryPipeline(
      *
      * BOUNDED BY THE ENTRY'S OWN SIGNAL and nothing narrower. The stage buys a
      * slate, one judging and one gate per slice, each already bounded by
-     * `RUN_PER_CALL_TIMEOUT_MS` and by the client's stream guards, and every
-     * settled slice is persisted before the next begins. A separate
-     * per-settlement ceiling would therefore cut a round that the per-call
-     * bound is already cutting, and would cost the slice's bought work to do
-     * it. The entry ceiling is what stops a document that is going nowhere.
+     * `RUN_PER_CALL_TIMEOUT_MS` and by the client's stream guards. Each stable
+     * settlement persists when it finishes, while a caller abort blocks that
+     * write; under overlap, completion and persistence need not follow slice
+     * order. A separate per-settlement ceiling would cut a round the per-call
+     * bound already cuts and cost bought work. The entry ceiling is what stops
+     * a document that is going nowhere.
      */
     const consolidateSlices = await consolidateDocument({
       client,
@@ -410,6 +425,7 @@ async function runEntryPipeline(
       },),
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      overlap,
       l: tagged({ tag: entry.id, },),
     },);
 
@@ -565,6 +581,9 @@ async function runEntryPipeline(
  * @param baseSignal - abort every entry deadline forwards from; the pass never
  * aborts it, so only a per-entry timeout ever fires
  *
+ * @throws StatedRefusalError before entry work when overlap environment value
+ * is invalid launch configuration
+ *
  * @example
  * ```ts
  * await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
@@ -594,6 +613,14 @@ export async function settleEntry(
   },
 ): Promise<void> {
   /**
+   * Slice overlap read once for this entry and shared by every per-slice driver.
+   */
+  const overlapSetting = readOverlapSetting({ fallback: PASS_OVERLAP, },);
+  console.log(
+    `OVERLAP ${entry.id} value=${String(overlapSetting.overlap,)} source=${overlapSetting.source}`,
+  );
+
+  /**
    * Per-entry slice-cache directory; earlier runs' finished slices live here so
    * a large document resumes instead of restarting.
    */
@@ -615,6 +642,7 @@ export async function settleEntry(
     pipelineDigest,
     hardCapMs,
     baseSignal,
+    overlap: overlapSetting.overlap,
   },);
   if (outcome.kind === 'failed') {
     // The cache is what makes the next attempt cheaper, so a failed entry keeps
