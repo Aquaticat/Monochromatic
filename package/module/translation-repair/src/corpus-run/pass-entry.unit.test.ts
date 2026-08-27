@@ -68,6 +68,7 @@ type PassStageConcurrency = {
  */
 type PassConcurrency = {
   readonly repair: PassStageConcurrency;
+  readonly refine: PassStageConcurrency;
   readonly translate: PassStageConcurrency;
   readonly contest: PassStageConcurrency;
   readonly consolidate: PassStageConcurrency;
@@ -116,6 +117,10 @@ function overlapDial(
 function emptyPassConcurrency(): PassConcurrency {
   return {
     repair: {
+      now: 0,
+      peak: 0,
+    },
+    refine: {
       now: 0,
       peak: 0,
     },
@@ -371,6 +376,8 @@ function entryClient(
        */
       const stageActivity = schema === 'critic_report'
         ? activity?.repair
+        : schema === 'refine_report'
+        ? activity?.refine
         : schema === 'lane_contest'
         ? activity?.contest
         : schema === 'translation_report'
@@ -641,6 +648,8 @@ await describe({
 
         expect(serial.repair.peak,).toBeGreaterThan(0,);
         expect(overlapped.repair.peak,).toBeGreaterThan(serial.repair.peak,);
+        expect(serial.refine.peak,).toBeGreaterThan(0,);
+        expect(overlapped.refine.peak,).toBeGreaterThan(serial.refine.peak,);
         expect(serial.translate.peak,).toBeGreaterThan(0,);
         expect(overlapped.translate.peak,).toBeGreaterThan(serial.translate.peak,);
         expect(serial.contest.peak,).toBeGreaterThan(0,);

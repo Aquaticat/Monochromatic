@@ -90,9 +90,9 @@ export function readOverlapSetting(
    * Numeric value before whole-number validation.
    */
   const asked = Number(written,);
-  if (!Number.isInteger(asked,)) {
+  if ((!Number.isInteger(asked,)) || (String(asked,) !== written)) {
     throw new StatedRefusalError({
-      says: `${OVERLAP_VAR} must be a whole number, and ${written} is not one`,
+      says: `${OVERLAP_VAR} must be a canonical decimal whole number, and ${written} is not one`,
     },);
   }
   if (asked < MINIMUM_OVERLAP) {

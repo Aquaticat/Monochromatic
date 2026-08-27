@@ -146,6 +146,32 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES non-canonical numeric spellings rather than silently turning hexadecimal, '
+        + 'exponent, decimal-point, or padded input into another arm',
+      fn: async () => {
+        /**
+         * Numeric strings JavaScript would otherwise canonicalize.
+         */
+        const spellings = [
+          '0x2',
+          '1e1',
+          '2.0',
+          ' 2',
+        ];
+        for (const spelling of spellings) {
+          using dial = dialSaying({ says: spelling, },);
+          const refusal = caught(function readsNonCanonical() {
+            readOverlap({ fallback: 1, },);
+          },);
+          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+          expect((refusal as Error).message,).toContain('canonical decimal',);
+          expect((refusal as Error).message,).toContain(spelling,);
+          expect(dial,).not.toBe(undefined,);
+        }
+      },
+    },),
+
+    it({
       name: 'REFUSES zero, which is not a smaller amount of work but no work at all: a limit of zero '
         + 'admits nothing and the run would wait forever having said nothing about why',
       fn: async () => {
