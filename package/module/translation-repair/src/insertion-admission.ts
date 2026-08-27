@@ -25,6 +25,26 @@ import { admitWithinShortfall, } from './coverage-corroboration.ts';
 // pairing found a merge rather than an omission.
 
 /**
+ * Authoritative insertion positions beside evidence explaining their admission.
+ *
+ * @example
+ * ```ts
+ * const admission: InsertionAdmission = { positions: new Set([1,]), findings: [], };
+ * ```
+ */
+export type InsertionAdmission = {
+  /**
+   * Positions in prepared slice order that may be translated as insertions.
+   */
+  readonly positions: ReadonlySet<number>;
+
+  /**
+   * Count-only semantic and deterministic evidence for every candidate.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
  * Chooses which insertion slices the page has room to be missing.
  *
  * @param slices - every prepared slice, in document order

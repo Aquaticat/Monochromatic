@@ -18,6 +18,7 @@ import { consolidateDocument, } from '../consolidate-driver.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
 import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
+import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
@@ -323,6 +324,24 @@ async function runEntryPipeline(
     },);
 
     /**
+     * Semantic and deterministic proof for every source-only slice.
+     *
+     * BOUGHT BEFORE THE LANES so a known omission is either licensed for the
+     * translate lane to fill or remains unfilled and trips the publication
+     * guard. The coverage roster searches whole target, independent of pairing;
+     * page shortfall or a missing destination supplies second corroboration.
+     */
+    const translateInsertionAdmission = await decidePassInsertionAdmission({
+      client,
+      prepared,
+      modelIds: RUN_ROSTER,
+      overlap,
+      signal: deadline.callSignal,
+      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    /**
      * What both lanes made of that slicing, with neither preferred.
      */
     const lanes = await runDocumentLanes({
@@ -337,6 +356,7 @@ async function runEntryPipeline(
       repairSliceCache: sliceCache,
       refineSliceCache,
       translateSliceCache,
+      translateInsertionAdmission,
       l: tagged({ tag: entry.id, },),
     },);
 

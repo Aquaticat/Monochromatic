@@ -108,6 +108,7 @@ export {
   assertPublishableTranslation,
   UnfilledPageError,
 } from './corpus-run/publish-completeness.ts';
+export { decidePassInsertionAdmission, } from './corpus-run/pass-insertion-admission.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
 export {
   capOutlastsOneCall,

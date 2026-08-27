@@ -10,6 +10,7 @@ import type { ChunkPair, } from './chunk-document.ts';
 import { assertDeliveryAgreesWithDocument, } from './delivery-invariants.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import type { PairedReading, } from './image-reading-pair.ts';
+import type { InsertionAdmission, } from './insertion-admission.ts';
 import type { IdentifiedDeliveryLedger, } from './lane-comparison.ts';
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import { preparationIdentity, } from './preparation-identity.ts';
@@ -220,6 +221,9 @@ function laneDelivery(
  *
  * @param translateSliceCache - translate lane's cache, in its own namespace
  *
+ * @param translateInsertionAdmission - production evidence deciding which
+ * source-only slices translation may fill
+ *
  * @param l - logger both lanes tag under, so one entry reads as one run
  *
  * @returns Both lane results and the preparation's alignment findings
@@ -254,6 +258,7 @@ export async function runDocumentLanes(
     repairSliceCache,
     refineSliceCache,
     translateSliceCache,
+    translateInsertionAdmission,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -278,6 +283,7 @@ export async function runDocumentLanes(
     readonly repairSliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly refineSliceCache?: SliceCache<RefinedSliceSettlement>;
     readonly translateSliceCache?: SliceCache<TranslateSliceRecord>;
+    readonly translateInsertionAdmission?: InsertionAdmission;
     readonly l: Logger;
   }>,
 ): Promise<DocumentLanesResult> {
@@ -359,6 +365,9 @@ export async function runDocumentLanes(
     ...((translateSliceCache === undefined)
       ? {}
       : { sliceCache: translateSliceCache, }),
+    ...((translateInsertionAdmission === undefined)
+      ? {}
+      : { insertionAdmission: translateInsertionAdmission, }),
     l: dl,
   },);
   dl.info(

@@ -7,7 +7,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import type { PairedReading, } from './image-reading-pair.ts';
-import { admitInsertions, } from './insertion-admission.ts';
+import {
+  admitInsertions,
+  type InsertionAdmission,
+} from './insertion-admission.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
@@ -69,6 +72,9 @@ import type { TwinMemo, } from './twin-memo.ts';
  * @param sliceCache - resumable per-slice cache, absent when caller wants no
  * resumption
  *
+ * @param insertionAdmission - caller's authoritative production evidence for
+ * source-only slices; absent uses deterministic page shortfall
+ *
  * @param overlap - most slices in flight; one reproduces former sequential loop
  *
  * @param l - pipeline logger
@@ -104,6 +110,7 @@ export async function translateDocument(
     signal,
     perCallTimeoutMs,
     sliceCache,
+    insertionAdmission,
     overlap = 1,
     l,
   }: ForeignBorrowed<{
@@ -114,6 +121,7 @@ export async function translateDocument(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly sliceCache?: SliceCache<TranslateSliceRecord>;
+    readonly insertionAdmission?: InsertionAdmission;
     readonly overlap?: number;
     readonly l: Logger;
   }>,
@@ -153,11 +161,14 @@ export async function translateDocument(
    * Computed once because shortfall belongs to whole page rather than one
    * section, and spending it per section admits more than page is missing.
    */
-  const admitted = admitInsertions({
-    slices: prepared.slices,
-    sourceText: prepared.sourceText,
-    targetText: prepared.targetText,
-  },);
+  const admission = insertionAdmission ?? {
+    positions: admitInsertions({
+      slices: prepared.slices,
+      sourceText: prepared.sourceText,
+      targetText: prepared.targetText,
+    },),
+    findings: [],
+  };
 
   /**
    * Purchases in this run by shared key, exposing only persisted records.
@@ -180,7 +191,7 @@ export async function translateDocument(
         models,
         slice,
         slicePosition,
-        insertionAdmitted: admitted.has(slicePosition,),
+        insertionAdmitted: admission.positions.has(slicePosition,),
         pictureReadings,
         runShape,
         ...((sliceCache === undefined) ? {} : { sliceCache, }),
@@ -226,14 +237,17 @@ export async function translateDocument(
   /**
    * Cache refusals and unfilled evidence, grouped in document order.
    */
-  const findings = settlements.flatMap(function toFindings(
-    settlement,
-  ): readonly string[] {
-    return [
-      ...settlement.refusedCacheFindings,
-      ...settlement.unfilledFindings,
-    ];
-  },);
+  const findings = [
+    ...admission.findings,
+    ...settlements.flatMap(function toFindings(
+      settlement,
+    ): readonly string[] {
+      return [
+        ...settlement.refusedCacheFindings,
+        ...settlement.unfilledFindings,
+      ];
+    },),
+  ];
 
   return assembleTranslation({
     prepared,
