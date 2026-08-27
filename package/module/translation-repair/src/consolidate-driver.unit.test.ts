@@ -270,6 +270,43 @@ function twoSliceDocument(): ProjectedLanes {
 }
 
 /**
+ * Builds two rows asking an identical consolidation question.
+ *
+ * @returns Projection whose position-free consolidation keys match
+ *
+ * @example
+ * ```ts
+ * const projected = twinSliceDocument();
+ * ```
+ */
+function twinSliceDocument(): ProjectedLanes {
+  /**
+   * Same question stamped at both document positions.
+   */
+  const comparison = [0, 1,].map(function toRow(sliceIndex,) {
+    return {
+      sliceIndex,
+      incumbentKind: 'present',
+      incumbentText: 'The archive says the cat naps.',
+      repairText: 'The cat naps.',
+      translateText: 'The cat is napping.',
+    };
+  },);
+  return {
+    comparison,
+    delivery: {
+      repair: comparison.map(function toDelivery(row,) {
+        return {
+          sliceIndex: row.sliceIndex,
+          sourceText: '猫猫在打盹。',
+        };
+      },),
+      translate: [],
+    },
+  } as unknown as ProjectedLanes;
+}
+
+/**
  * Builds one contest record, as the contest wrote it for the artifact.
  *
  * @param sliceIndex - slice this answers
@@ -615,6 +652,86 @@ await describe({
           0,
           1,
         ],);
+      },
+    },),
+
+    it({
+      name: 'ASKS ONCE for two slices carrying the same consolidation question at overlap 1 and 2, '
+        + 'so cold and warm runs settle one reusable third rendering',
+      fn: async () => {
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          const fixture = recordingClient();
+          const { slices, written, } = await driveWith({
+            client: fixture.client,
+            projected: twinSliceDocument(),
+            contests: [
+              contestSettling({ sliceIndex: 0, lane: 'repair', },),
+              contestSettling({ sliceIndex: 1, lane: 'repair', },),
+            ],
+            overlap,
+          },);
+          expect(fixture.bodies.length,).toBe(ROSTER.length,);
+          expect(written.length,).toBe(1,);
+          expect(slices.map(function toIndex(slice,) {
+            return slice.sliceIndex;
+          },),).toEqual([
+            0,
+            1,
+          ],);
+        },),);
+      },
+    },),
+
+    it({
+      name: 'ASKS AGAIN for a twin whose consolidation gate did not reach quorum at overlap 1 and 2, '
+        + 'because the in-run memo may hold only what a warm run can resume',
+      fn: async () => {
+        await Promise.all(([1, 2,] as const).map(async function atOverlap(
+          overlap,
+        ): Promise<void> {
+          /**
+           * One unsettled consolidation as asks positive control.
+           */
+          const singleActivity: ConsolidationConcurrency = {
+            now: 0,
+            peak: 0,
+            started: 0,
+          };
+          const singleClient = answeringClient();
+          const single = await driveWith({
+            client: singleClient.client,
+            projected: twinSliceDocument(),
+            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+            overlap,
+            activity: singleActivity,
+          },);
+
+          /**
+           * Same unsettled question at both positions.
+           */
+          const twinActivity: ConsolidationConcurrency = {
+            now: 0,
+            peak: 0,
+            started: 0,
+          };
+          const twinClient = answeringClient();
+          const twin = await driveWith({
+            client: twinClient.client,
+            projected: twinSliceDocument(),
+            contests: [
+              contestSettling({ sliceIndex: 0, lane: 'repair', },),
+              contestSettling({ sliceIndex: 1, lane: 'repair', },),
+            ],
+            overlap,
+            activity: twinActivity,
+          },);
+          expect(singleActivity.started,).toBeGreaterThan(0,);
+          expect(single.written,).toEqual([],);
+          expect(twinActivity.started,).toBe(singleActivity.started * 2,);
+          expect(twin.written,).toEqual([],);
+        },),);
       },
     },),
 
