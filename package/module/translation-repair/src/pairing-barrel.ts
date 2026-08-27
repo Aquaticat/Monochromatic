@@ -72,7 +72,10 @@ export {
   settleArchiveBallots,
   settleLaneContestBallots,
 } from './lane-contest-stage.ts';
-export { contestDocumentLanes, } from './lane-contest-driver.ts';
+export {
+  contestDocumentLanes,
+  persistLaneContestOutcome,
+} from './lane-contest-driver.ts';
 export {
   LANE_CONTEST_CACHE_VERSION,
   laneContestRunShape,

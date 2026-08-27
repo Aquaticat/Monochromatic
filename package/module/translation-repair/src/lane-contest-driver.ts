@@ -2,6 +2,7 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
@@ -58,6 +59,53 @@ function worthResuming(
   { outcome, }: { readonly outcome: LaneContestOutcome; },
 ): boolean {
   return outcome.usable >= LANE_CONTEST_QUORUM;
+}
+
+/**
+ * Persists a bought contest only when caller remains live and quorum made its
+ * ballots reusable.
+ *
+ * Kept as a testable boundary because gather rounds normally surface an abort
+ * before returning, making the final pre-write defense unreachable in a
+ * transport fixture.
+ *
+ * @param key - exact contest question this outcome answers
+ *
+ * @param outcome - bought ballots and their settled choice
+ *
+ * @param cache - contest persistence boundary
+ *
+ * @param signal - caller abort checked before write
+ *
+ * @throws Whatever caller abort reason or persistence throws
+ *
+ * @example
+ * ```ts
+ * await persistLaneContestOutcome({ key, outcome, cache, signal, },);
+ * ```
+ *
+ * @internal
+ */
+export async function persistLaneContestOutcome(
+  {
+    key,
+    outcome,
+    cache,
+    signal,
+  }: ForeignBorrowed<{
+    readonly key: string;
+    readonly outcome: LaneContestOutcome;
+    readonly cache: SliceCache<LaneContestOutcome>;
+    readonly signal: AbortSignal;
+  }>,
+): Promise<void> {
+  signal.throwIfAborted();
+  if (!worthResuming({ outcome, }))
+    return;
+  await cache.persist({
+    key,
+    serialized: JSON.stringify(outcome,),
+  },);
 }
 
 /**
@@ -219,13 +267,12 @@ export async function contestDocumentLanes(
         // Gather rounds degrade torn-down calls to silence. A quorum that
         // arrived before the abort must not make the abandoned entry look done
         // or become warm-run evidence.
-        signal.throwIfAborted();
-        if (worthResuming({ outcome, })) {
-          await cache.persist({
-            key,
-            serialized: JSON.stringify(outcome,),
-          },);
-        }
+        await persistLaneContestOutcome({
+          key,
+          outcome,
+          cache,
+          signal,
+        },);
       }
       return describeContestSlice({
         sliceIndex: row.sliceIndex,
