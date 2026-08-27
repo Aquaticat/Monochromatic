@@ -340,6 +340,15 @@ Plasma Shell answered in 5.6 ms and KWin answered in 5.4 ms.
 No user symptom marker accompanied this cycle,
 so these measurements establish responsive sampled services rather than absence of a subjective symptom.
 
+At 15:00:00,
+another timeline snapshot emitted the same qgroup warning and triggered a measured root-filesystem I/O-pressure interval.
+The observer sampled 559.1 to 595.0 ms/s of I/O pressure,
+with dm-0 reading up to 20.08 MiB and writing up to 11.65 MiB in one-second intervals.
+KWin scheduler wait remained at zero.
+Plasma answered in 6.0 ms and KWin in 5.4 ms at 15:00:06,
+and neither observer classified a desktop incident.
+This positive-I/O control shows that the qgroup timeline path and measurable dm-0 pressure did not require a desktop stall.
+
 The installed `snapper-cleanup.timer` runs hourly with `OnUnitActiveSec=1h`.
 The 04:25 and 05:25 natural Plasma-centered events both occurred while that cleanup service was active:
 
