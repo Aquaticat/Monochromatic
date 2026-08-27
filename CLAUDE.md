@@ -291,6 +291,11 @@ CKB:
  or use separate reviewer.
 Never same-session self-review (`doc/agent/self-review.md`).
 
+XIC:
+ Similar or concurrent symptoms stay separate incidents until user-visible boundaries match.
+Removing a present component proves removal,
+not causation or remediation.
+
 ### Measure-vs-ask
 
 QF1:
