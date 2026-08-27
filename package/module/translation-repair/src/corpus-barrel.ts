@@ -100,10 +100,8 @@ export {
   toArtifactOutcome,
   toArtifactRow,
 } from './corpus-run/artifact-two-lane-project.ts';
-export {
-  type CorpusPair,
-  settleEntry,
-} from './corpus-run/pass-entry.ts';
+export type { CorpusPair, } from './corpus-run/pass-entry-contract.ts';
+export { settleEntry, } from './corpus-run/pass-entry.ts';
 export {
   assertPublishableTranslation,
   UnfilledPageError,

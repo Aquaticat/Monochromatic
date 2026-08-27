@@ -185,13 +185,19 @@ export async function translateDocument(
       item: slice,
       position: slicePosition,
     },) {
+      /**
+       * Whether production evidence permits filling this source-only slice.
+       */
+      const insertionAdmitted = admission
+        .positions
+        .has(slicePosition,);
       return await settleTranslateSlice({
         client,
         prepared,
         models,
         slice,
         slicePosition,
-        insertionAdmitted: admission.positions.has(slicePosition,),
+        insertionAdmitted,
         pictureReadings,
         runShape,
         ...((sliceCache === undefined) ? {} : { sliceCache, }),

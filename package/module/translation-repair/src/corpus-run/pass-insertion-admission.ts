@@ -22,6 +22,31 @@ import { droppedDestinations, } from './dropped-destinations.ts';
 // completeness guard rather than silently shipping a known gap.
 
 /**
+ * One source-only slice proposed by preparation.
+ *
+ * @example
+ * ```ts
+ * const candidate: InsertionCandidate = { position: 2, sliceIndex: 4, sourceText: '猫的记录。', };
+ * ```
+ */
+type InsertionCandidate = {
+  /**
+   * Position in prepared slice order.
+   */
+  readonly position: number;
+
+  /**
+   * Stable slice index recorded in artifacts.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   * Original passage proposed for insertion.
+   */
+  readonly sourceText: string;
+};
+
+/**
  * One source-only slice beside evidence deciding whether it may be translated.
  *
  * @example
@@ -126,15 +151,28 @@ export async function decidePassInsertionAdmission(
   /**
    * Source-only slices, in document order.
    */
-  const candidates = prepared.slices.flatMap(function toCandidate(slice, position,) {
-    return isInsertionChunk(slice.target,)
-      ? [{
+  const candidates: readonly InsertionCandidate[] = prepared
+    .slices
+    .flatMap(function toCandidate(
+      slice,
+      position,
+    ): readonly InsertionCandidate[] {
+      /**
+       * Placement on target side.
+       */
+      const { target, } = slice;
+      if (!isInsertionChunk(target,))
+        return [];
+      /**
+       * Source passage paired with that placement.
+       */
+      const { source, } = slice;
+      return [{
         position,
-        sliceIndex: slice.target.sliceIndex,
-        sourceText: slice.source.text,
-      },]
-      : [];
-  },);
+        sliceIndex: target.sliceIndex,
+        sourceText: source.text,
+      },];
+    },);
   if (candidates.length === 0) {
     return {
       positions: new Set(),
@@ -163,12 +201,26 @@ export async function decidePassInsertionAdmission(
     overlap,
     oneItem: async function readCandidate({ item: candidate, },): Promise<InsertionCoverageRow> {
       /**
+       * Candidate fields used by both evidence readers.
+       */
+      const {
+        sliceIndex,
+        sourceText,
+      } = candidate;
+
+      /**
        * Whether this passage carries a destination absent from whole target.
        */
       const destinations = droppedDestinations({
-        sourceText: candidate.sourceText,
+        sourceText,
         pageText: prepared.targetText,
       },);
+      /**
+       * Missing source destinations counted without exposing their values.
+       */
+      const missingDestinationCount = destinations
+        .dropped
+        .length;
 
       /**
        * Roster verdict independent of pairing and shortfall.
@@ -176,25 +228,31 @@ export async function decidePassInsertionAdmission(
       const answer = await runCoverageStage({
         client,
         modelIds,
-        sourcePassage: candidate.sourceText,
+        sourcePassage: sourceText,
         translation: target,
         signal,
         exchangeTimeoutMs: perCallTimeoutMs,
         l: al,
       },);
-      const { verdict, } = answer;
+      /**
+       * Coverage result fields persisted as counts and findings.
+       */
+      const {
+        verdict,
+        findings: stageFindings,
+      } = answer;
       al.info(
-        `slice ${String(candidate.sliceIndex,)}: coverage=${verdict.kind}, `
-          + `missingDestinations=${String(destinations.dropped.length,)}`,
+        `slice ${String(sliceIndex,)}: coverage=${verdict.kind}, `
+          + `missingDestinations=${String(missingDestinationCount,)}`,
       );
       return {
         ...candidate,
         verdictKind: verdict.kind,
-        missingDestinationCount: destinations.dropped.length,
-        coverageFinding: `insertion-coverage (slice ${String(candidate.sliceIndex,)}, verdict ${verdict.kind}, `
+        missingDestinationCount,
+        coverageFinding: `insertion-coverage (slice ${String(sliceIndex,)}, verdict ${verdict.kind}, `
           + `full ${String(verdict.anchoredFull,)}, partial ${String(verdict.anchoredPartial,)}, `
           + `absent ${String(verdict.absent,)}, heard ${String(verdict.heard,)} of ${String(verdict.asked,)})`,
-        stageFindings: answer.findings,
+        stageFindings,
         destinationFindings: destinations.findings,
       };
     },
@@ -211,31 +269,40 @@ export async function decidePassInsertionAdmission(
    * Absent candidates with no local destination proof, admitted only while
    * whole-page shortfall has budget for them.
    */
-  const shortfallAdmitted = new Set(admitWithinShortfall({
-    sourceText: prepared.sourceText,
-    targetText: prepared.targetText,
-    passages: absent
-      .filter(function needsShortfall(row,): boolean {
-        return row.missingDestinationCount === 0;
-      },)
-      .map(function toPassage(row,) {
-        return {
-          where: String(row.position,),
-          sourceText: row.sourceText,
-        };
-      },),
-  },).map(Number,),);
+  const shortfallPassages = absent
+    .filter(function needsShortfall(row,): boolean {
+      return row.missingDestinationCount === 0;
+    },)
+    .map(function toPassage(row,) {
+      return {
+        where: String(row.position,),
+        sourceText: row.sourceText,
+      };
+    },);
+  /**
+   * Positions admitted by remaining whole-page shortfall budget.
+   */
+  const shortfallAdmitted = new Set(
+    admitWithinShortfall({
+      sourceText: prepared.sourceText,
+      targetText: prepared.targetText,
+      passages: shortfallPassages,
+    },)
+      .map(Number,),
+  );
 
   /**
    * Positions backed by semantic absence and either deterministic signal.
    */
-  const positions = new Set(absent
-    .filter(function corroborated(row,): boolean {
-      return (row.missingDestinationCount > 0) || shortfallAdmitted.has(row.position,);
-    },)
-    .map(function toPosition(row,): number {
-      return row.position;
-    },),);
+  const positions = new Set(
+    absent
+      .filter(function corroborated(row,): boolean {
+        return (row.missingDestinationCount > 0) || shortfallAdmitted.has(row.position,);
+      },)
+      .map(function toPosition(row,): number {
+        return row.position;
+      },),
+  );
 
   return {
     positions,

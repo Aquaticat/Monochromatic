@@ -45,13 +45,22 @@ type ScriptedCoverage = {
 };
 
 /**
+ * Scripted provider voice that fails before returning coverage.
+ */
+const COVERAGE_VOICE_LOST: unique symbol = Symbol('scripted coverage voice lost',);
+
+/**
+ * One scripted seat outcome.
+ */
+type ScriptedCoverageOutcome = ScriptedCoverage | typeof COVERAGE_VOICE_LOST;
+
+/**
  * No-op logger accepted by production module.
  */
 const l: Logger = {
   debug: () => undefined,
   error: () => undefined,
   info: () => undefined,
-  log: () => undefined,
   warn: () => undefined,
 };
 
@@ -123,13 +132,13 @@ function coverageClient(
   {
     replies,
   }: {
-    readonly replies: readonly (ScriptedCoverage | undefined)[];
+    readonly replies: readonly ScriptedCoverageOutcome[];
   },
 ): SyntheticClient {
   /**
-   * Next roster-order reply.
+   * Iterator advancing one response per roster seat.
    */
-  let at = 0;
+  const responses = replies.values();
   return {
     chatText: async () => {
       throw new Error('chatText unused by coverage',);
@@ -137,10 +146,18 @@ function coverageClient(
     chatJson: async <ValueT,>(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
-      const reply = replies[at];
-      at += 1;
-      if (reply === undefined)
-        throw new Error('scripted lost coverage voice',);
+      /**
+       * Next scripted seat outcome, which must exist for every requested seat.
+       */
+      const next = responses.next();
+      if (next.done)
+        throw new Error('coverage stage asked beyond scripted roster',);
+      const { value: reply, } = next;
+      if (typeof reply === 'symbol') {
+        if (reply === COVERAGE_VOICE_LOST)
+          throw new Error('scripted lost coverage voice',);
+        throw new Error('unknown scripted coverage outcome',);
+      }
       const value: unknown = {
         ...reply,
         reason: 'scripted',
@@ -183,7 +200,7 @@ async function runAdmission(
   }: {
     readonly sourcePassage: string;
     readonly targetText: string;
-    readonly replies: readonly (ScriptedCoverage | undefined)[];
+    readonly replies: readonly ScriptedCoverageOutcome[];
   },
 ): Promise<InsertionAdmission> {
   return await decidePassInsertionAdmission({
@@ -284,7 +301,7 @@ await describe({
           replies: [
             { coverage: 'full', quote: 'The cat sleeps in warm sunlight.', },
             { coverage: 'none', quote: '', },
-            undefined,
+            COVERAGE_VOICE_LOST,
           ],
         },);
         expect([...admission.positions,],).toEqual([],);
@@ -296,7 +313,7 @@ await describe({
         const admission = await runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
           targetText: LONG_TARGET,
-          replies: [ undefined, undefined, undefined, ],
+          replies: [ COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, ],
         },);
         expect([...admission.positions,],).toEqual([],);
       },

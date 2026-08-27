@@ -19,6 +19,10 @@ export {
   prepareDocumentPairWithRoster,
 } from './prepare-with-pairing.ts';
 export {
+  admitInsertions,
+  type InsertionAdmission,
+} from './insertion-admission.ts';
+export {
   type BlockPairingOutcome,
   pairBlocksWithRoster,
   type PairedSectionRecord,

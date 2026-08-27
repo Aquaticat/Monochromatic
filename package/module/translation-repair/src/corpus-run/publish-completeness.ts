@@ -17,6 +17,11 @@ import type { UnfilledSlice, } from '../translate-document-contract.ts';
  */
 export class UnfilledPageError extends Error {
   /**
+   * Stable error class name after serialization.
+   */
+  public override readonly name = 'UnfilledPageError';
+
+  /**
    * Corpus entry whose page remains incomplete.
    */
   readonly entryId: string;
@@ -42,13 +47,15 @@ export class UnfilledPageError extends Error {
       readonly unfilled: readonly UnfilledSlice[];
     },
   ) {
+    /**
+     * Slice indexes carried in message and fields.
+     */
     const sliceIndices = unfilled.map(function toSliceIndex(passage,): number {
       return passage.sliceIndex;
     },);
     super(
       `entry ${entryId} retains ${String(sliceIndices.length,)} unfilled source passage(s) at slices ${sliceIndices.join(', ',)}`,
     );
-    this.name = UnfilledPageError.name;
     this.entryId = entryId;
     this.sliceIndices = sliceIndices;
   }

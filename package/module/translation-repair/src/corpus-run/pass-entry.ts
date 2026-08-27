@@ -18,6 +18,10 @@ import { consolidateDocument, } from '../consolidate-driver.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
 import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
+import type {
+  CorpusPair,
+  EntryOutcome,
+} from './pass-entry-contract.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
@@ -60,54 +64,6 @@ import {
 // the artifacts directory. Keeping the whole of that in one function is what
 // makes the rule checkable by reading, since the write is the last thing the
 // success path does and the failure path has no write at all.
-
-/**
- * Whether an entry reached its artifact.
- *
- * A NAMED RESULT RATHER THAN A FLAG the catch sets, because the only thing
- * downstream of it is a cache discard, and a discard is destructive: reading
- * "was this settled" off a mutable variable assigned in two branches is how a
- * failed entry ends up losing the slices it had already bought.
- *
- * @example
- * ```ts
- * const outcome: EntryOutcome = { kind: 'settled', };
- * ```
- */
-type EntryOutcome = {
-  /**
-   * Artifact was written: both lanes ran and what each produced is on disk.
-   *
-   * NOT that anything was decided. Under version 2 the pipeline settles an
-   * entry and chooses no lane, and the artifact says so in `laneSelection`.
-   */
-  readonly kind: 'settled';
-} | {
-  /**
-   * Entry raised or hit its ceiling, and no artifact exists for it.
-   */
-  readonly kind: 'failed';
-};
-
-/**
- * One eligible corpus pair with its text loaded.
- */
-export type CorpusPair = {
-  /**
-   * Person entry id.
-   */
-  readonly id: string;
-
-  /**
-   * Original zh page text.
-   */
-  readonly sourceText: string;
-
-  /**
-   * Translated en page text.
-   */
-  readonly targetText: string;
-};
 
 /**
  * Runs one chosen entry as far as its artifact, and says whether it got there.
@@ -373,9 +329,13 @@ async function runEntryPipeline(
     // omission. The corpus pass has no such choice: publishing that page would
     // knowingly omit source content, so it fails the entry and keeps every
     // bought slice in cache for a later attempt.
+    /**
+     * Source passages translation could not fill.
+     */
+    const { unfilled, } = lanes.translate;
     assertPublishableTranslation({
       entryId: entry.id,
-      unfilled: lanes.translate.unfilled,
+      unfilled,
     },);
 
     /**

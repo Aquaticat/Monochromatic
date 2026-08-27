@@ -213,10 +213,6 @@ export {
   judgeCoverage,
 } from './coverage-verdict.ts';
 export {
-  admitInsertions,
-  type InsertionAdmission,
-} from './insertion-admission.ts';
-export {
   admitWithinShortfall,
   type CandidatePassage,
   CORPUS_EXPANSION,
