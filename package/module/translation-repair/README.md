@@ -1053,14 +1053,21 @@ A favourable page does not close mechanism that can recur on next entry.
 Fixed-build overlap-4 `Zha_Ke` exposed separate readiness blocker, `#272`.
 Source Markdown carries central letter only as image asset,
 while archive carries English transcription inside unmatched block.
-Preparation paired four surrounding Markdown slices and final assembly preserved unmatched block verbatim;
-no repair, translation, contest or consolidation stage read letter.
+Artifact and image share pinned corpus commit `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
+Preparation paired four source Markdown blocks,
+one being image placeholder,
+and explicitly reported two target blocks, 3,672 characters, as unclaimed.
+No quality lane processed those blocks as source-aligned content.
+Final page's 3,673-character details block is byte-identical to archive.
 Direct image comparison found source will has seven numbered provisions
 while published transcription has six;
 one provision is absent and two others materially change source meaning.
+Those differences concern wishes and responsibility,
+not protected suicide method or drug detail.
 Published central letter also retains repeated grammatical defects.
 Mechanical page verification still passed all four promised wordings and destination,
-so current completeness gate is blind to visual-source content and unmatched archive text.
+so current completeness gate is blind to visual-source content and unmatched archive text
+even when alignment names unclaimed target blocks.
 Page is not publishable and pipeline cannot be production-ready until that path is handled.
 
 Remaining corpus arms, hard-case output reading, live calibration checks,
