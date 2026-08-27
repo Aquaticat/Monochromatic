@@ -26,6 +26,7 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
@@ -48,6 +49,90 @@ import {
  * Built pipeline these fixtures claim to have run under.
  */
 const DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}` as PipelineDigest;
+
+/**
+ * Environment variable selecting pass slice overlap.
+ */
+const OVERLAP_VAR = 'TRANSLATION_REPAIR_SLICE_OVERLAP';
+
+/**
+ * Successful model calls in flight for one pass stage.
+ */
+type PassStageConcurrency = {
+  now: number;
+  peak: number;
+};
+
+/**
+ * Per-slice driver activity observed at shared client boundary.
+ */
+type PassConcurrency = {
+  readonly repair: PassStageConcurrency;
+  readonly translate: PassStageConcurrency;
+  readonly contest: PassStageConcurrency;
+  readonly consolidate: PassStageConcurrency;
+};
+
+/**
+ * Sets overlap dial until disposal and restores invoking value.
+ *
+ * @param says - value one measurement arm requests
+ *
+ * @returns Disposable restoring prior environment
+ *
+ * @example
+ * ```ts
+ * using dial = overlapDial({ says: '2', },);
+ * ```
+ */
+function overlapDial(
+  { says, }: { readonly says: string; },
+): Disposable {
+  /**
+   * Invoking environment value restored on disposal.
+   */
+  const before = process.env[OVERLAP_VAR];
+  process.env[OVERLAP_VAR] = says;
+  return {
+    [Symbol.dispose]: () => {
+      if (before === undefined)
+        delete process.env.TRANSLATION_REPAIR_SLICE_OVERLAP;
+      else
+        process.env[OVERLAP_VAR] = before;
+    },
+  };
+}
+
+/**
+ * Builds zeroed instruments for one pass arm.
+ *
+ * @returns Independent activity counters per per-slice driver
+ *
+ * @example
+ * ```ts
+ * const activity = emptyPassConcurrency();
+ * ```
+ */
+function emptyPassConcurrency(): PassConcurrency {
+  return {
+    repair: {
+      now: 0,
+      peak: 0,
+    },
+    translate: {
+      now: 0,
+      peak: 0,
+    },
+    contest: {
+      now: 0,
+      peak: 0,
+    },
+    consolidate: {
+      now: 0,
+      peak: 0,
+    },
+  };
+}
 
 /**
  * Sentence every scripted translator returns for the first section.
@@ -228,6 +313,8 @@ function replyFor(
  * @param failOnSchema - schema every call of which throws, standing in for a
  * provider that is down for one stage; absent means the script never fails
  *
+ * @param activity - optional admission instrument for every per-slice driver
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -239,9 +326,11 @@ function entryClient(
   {
     served,
     failOnSchema,
+    activity,
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
+    readonly activity?: PassConcurrency;
   },
 ): SyntheticClient {
   return {
@@ -270,6 +359,29 @@ function entryClient(
           return messageText({ message, },);
         },)
         .join('\n',);
+
+      /**
+       * Instrument matching this request's per-slice driver.
+       */
+      const stageActivity = schema === 'critic_report'
+        ? activity?.repair
+        : schema === 'lane_contest'
+        ? activity?.contest
+        : schema === 'translation_report'
+          && content.includes('Two English renderings of this passage already exist',)
+        ? activity?.consolidate
+        : schema === 'translation_report'
+        ? activity?.translate
+        : undefined;
+      if (stageActivity !== undefined) {
+        stageActivity.now += 1;
+        stageActivity.peak = Math.max(
+          stageActivity.peak,
+          stageActivity.now,
+        );
+        await wait(10,);
+        stageActivity.now -= 1;
+      }
 
       /**
        * Reply for whichever stage asked, keyed by its schema.
@@ -458,7 +570,80 @@ async function capturedLines(
 
 await describe({
   name: settleEntry.name,
+  // Environment dial is process-wide, so matched arms and every other case in
+  // this file run one at a time rather than reading each other's settings.
+  concurrency: 1,
   children: [
+    it({
+      name: 'reads the environment overlap once per entry and threads it through repair, '
+        + 'translate, contest, and consolidation, after sequential positive controls prove '
+        + 'each stage instrument distinguishes one slice from two',
+      fn: async () => {
+        /**
+         * Activity with explicit sequential control arm.
+         */
+        const serial = emptyPassConcurrency();
+        {
+          using dial = overlapDial({ says: '1', },);
+          await using dirs = await throwawayDirs();
+          await settleEntry({
+            client: entryClient({
+              served: [],
+              activity: serial,
+            },),
+            entry: {
+              ...ENTRY,
+              id: 'CatOverlapSerial',
+            },
+            artifactsDir: dirs.artifactsDir,
+            publishDir: dirs.publishDir,
+            sliceCacheDir: dirs.sliceCacheDir,
+            tip: 'a'.repeat(40,),
+            pipelineDigest: DIGEST,
+            hardCapMs: 60_000,
+            baseSignal: new AbortController().signal,
+          },);
+          expect(dial,).not.toBe(undefined,);
+        }
+
+        /**
+         * Activity with two slices requested by environment.
+         */
+        const overlapped = emptyPassConcurrency();
+        {
+          using dial = overlapDial({ says: '2', },);
+          await using dirs = await throwawayDirs();
+          await settleEntry({
+            client: entryClient({
+              served: [],
+              activity: overlapped,
+            },),
+            entry: {
+              ...ENTRY,
+              id: 'CatOverlapTwo',
+            },
+            artifactsDir: dirs.artifactsDir,
+            publishDir: dirs.publishDir,
+            sliceCacheDir: dirs.sliceCacheDir,
+            tip: 'a'.repeat(40,),
+            pipelineDigest: DIGEST,
+            hardCapMs: 60_000,
+            baseSignal: new AbortController().signal,
+          },);
+          expect(dial,).not.toBe(undefined,);
+        }
+
+        expect(serial.repair.peak,).toBeGreaterThan(0,);
+        expect(overlapped.repair.peak,).toBeGreaterThan(serial.repair.peak,);
+        expect(serial.translate.peak,).toBeGreaterThan(0,);
+        expect(overlapped.translate.peak,).toBeGreaterThan(serial.translate.peak,);
+        expect(serial.contest.peak,).toBeGreaterThan(0,);
+        expect(overlapped.contest.peak,).toBeGreaterThan(serial.contest.peak,);
+        expect(serial.consolidate.peak,).toBeGreaterThan(0,);
+        expect(overlapped.consolidate.peak,).toBeGreaterThan(serial.consolidate.peak,);
+      },
+    },),
+
     it({
       name:
         'settles an entry into ONE artifact at schema version 4 carrying BOTH lanes over ONE '
