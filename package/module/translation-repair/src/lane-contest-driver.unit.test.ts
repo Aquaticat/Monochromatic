@@ -28,6 +28,7 @@ import {
   type LaneContestOutcome,
   type ProjectedLanes,
   type SliceCache,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -306,7 +307,7 @@ async function drive(
   /**
    * Client answering every judge the same way, or failing every call.
    */
-  const client = createSyntheticClient({
+  const inner = createSyntheticClient({
     apiKey: 'test-key',
     transport: async function cannedTransport(exchange,) {
       calls.push(exchange.label,);
@@ -315,20 +316,6 @@ async function drive(
           status: 500,
           bodyText: 'the bookshop is closed',
         };
-      }
-      if (activity !== undefined) {
-        /**
-         * Start position making second slice finish before first under overlap.
-         */
-        const startPosition = activity.started;
-        activity.started += 1;
-        activity.now += 1;
-        activity.peak = Math.max(
-          activity.peak,
-          activity.now,
-        );
-        await wait(startPosition < ROSTER.length ? 20 : 5,);
-        activity.now -= 1;
       }
       return {
         status: 200,
@@ -352,6 +339,32 @@ async function drive(
       };
     },
   },);
+
+  /**
+   * Client-level activity instrument, outside provider slot limiting so it
+   * measures slices admitted by the driver rather than transport concurrency.
+   */
+  const client: SyntheticClient = (activity === undefined)
+    ? inner
+    : {
+      chatText: inner.chatText,
+      chatJson: async (request) => {
+        /**
+         * Start position making second slice finish before first under overlap.
+         */
+        const startPosition = activity.started;
+        activity.started += 1;
+        activity.now += 1;
+        activity.peak = Math.max(
+          activity.peak,
+          activity.now,
+        );
+        await wait(startPosition < ROSTER.length ? 20 : 5,);
+        activity.now -= 1;
+        return await inner.chatJson(request,);
+      },
+      quotas: inner.quotas,
+    };
 
   /**
    * Records the driver produced.
