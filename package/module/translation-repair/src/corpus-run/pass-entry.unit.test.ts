@@ -226,6 +226,16 @@ const GAP_ENTRY = {
 };
 
 /**
+ * Rendering scripted for linked source-only paragraph once admitted.
+ */
+const GAP_FRESH = "The cat's final [record](https://example.test/cat-record) says she died at age 26.";
+
+/**
+ * Coverage behavior of pass fixture.
+ */
+type CoverageScript = 'lost' | 'absent';
+
+/**
  * Renders one slice the way a translator that respected block structure would.
  *
  * @param content - translator prompt, which carries the slice original
@@ -242,6 +252,8 @@ function renderingFor({ content, }: { readonly content: string; },): string {
     return `## Section one\n\n${FRESH}`;
   if (content.includes('第二节',))
     return `## Section two\n\n${BIRD_FRESH}`;
+  if (content.includes('cat-record',))
+    return GAP_FRESH;
   return FRESH;
 }
 
@@ -273,7 +285,9 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
      */
     const index = Math.trunc(Number(heading,),);
     if (Number.isInteger(index,)
-      && (block.includes(FRESH,) || block.includes(BIRD_FRESH,)))
+      && (block.includes(FRESH,)
+        || block.includes(BIRD_FRESH,)
+        || block.includes(GAP_FRESH,)))
       return index;
   }
   return 0;
@@ -291,6 +305,8 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
  *
  * @param content - everything the stage sent
  *
+ * @param coverageScript - whether coverage roster answers absent or loses voice
+ *
  * @returns Wire value for that stage
  *
  * @throws {@link Error} when a stage this script does not serve asks
@@ -304,9 +320,11 @@ function replyFor(
   {
     schema,
     content,
+    coverageScript,
   }: {
     readonly schema: string;
     readonly content: string;
+    readonly coverageScript: CoverageScript;
   },
 ): unknown {
   // THE PAIRING ROUND RUNS BEFORE EITHER LANE, so the script has to serve it or
@@ -318,6 +336,15 @@ function replyFor(
     return content.includes('cat-record',)
       ? { pairs: [{ source: 0, target: 0, },], }
       : { pairs: [], };
+  }
+  if (schema === 'coverage_report') {
+    if (coverageScript === 'lost')
+      throw new Error('scripted coverage voice lost',);
+    return {
+      coverage: 'none',
+      quote: '',
+      reason: 'scripted source passage absent',
+    };
   }
   if (schema === 'critic_report')
     return { issues: [], };
@@ -358,6 +385,8 @@ function replyFor(
  *
  * @param activity - optional admission instrument for every per-slice driver
  *
+ * @param coverageScript - whether coverage roster answers or loses every voice
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -370,10 +399,12 @@ function entryClient(
     served,
     failOnSchema,
     activity,
+    coverageScript = 'lost',
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
     readonly activity?: PassConcurrency;
+    readonly coverageScript?: CoverageScript;
   },
 ): SyntheticClient {
   return {
@@ -439,6 +470,7 @@ function entryClient(
       const value: unknown = replyFor({
         schema,
         content,
+        coverageScript,
       },);
       if (!request.validate(value,))
         throw new Error(`scripted ${schema} failed the wire guard`,);
@@ -973,6 +1005,43 @@ await describe({
         },);
         expect(tally,).toHaveLength(1,);
         expect(tally[0],).toContain('status=ERROR',);
+      },
+    },),
+    it({
+      name: 'ADMITS and publishes a linked factual source gap when production coverage says it is absent, '
+        + 'proving admission reaches translate lane rather than stopping at pass preparation',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        const served: string[] = [];
+        await settleEntry({
+          client: entryClient({
+            served,
+            coverageScript: 'absent',
+          },),
+          entry: {
+            ...GAP_ENTRY,
+            id: 'CatEntryGapRecovered',
+          },
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        expect(served,).toContain('coverage_report',);
+        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),)
+          .toEqual(['CatEntryGapRecovered.json',],);
+        const page = await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: 'CatEntryGapRecovered',
+          },),
+          'utf8',
+        );
+        expect(page,).toContain(GAP_FRESH,);
       },
     },),
     it({
