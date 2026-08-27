@@ -55,6 +55,15 @@ and auto-push is on.
     The message inventory now names `OverlapRefusedError`,
     the one-provider router case uses the still Synthetic-only Nemotron seat rather than the newly dual-routed Qwen seat,
     and spend-cost expectations follow the 2026-08-26 Hyper rates.
+-   `bb6883548` through `84ba6eecb`:
+    `repairPreparedDocument` now calls `mapOverlapped` over `settleRepairSlice`,
+    defaults `overlap` to `1`,
+    and exposes the optional argument through standalone `repairTranslation` without reading the environment there.
+    It aggregates accuracy outcomes and cache-refusal findings in slice order,
+    shares one eligibility-aware twin memo across the document,
+    and normalizes torn-down in-flight calls to the caller's abort reason.
+    Its twin tests run at overlap `1` and `2`,
+    and a successful-critic instrument proves two slices are active at overlap `2`.
 
 ## The twin memo, which is the part that is easy to get wrong
 
@@ -93,6 +102,15 @@ so two twins with the same refused record each bought and each persisted under o
 Both twins now reach the memo after refusing the cache,
 so the second reuses what the first persisted, which is what the warm run does.
 
+## Bounded failure cost
+
+At overlap greater than one,
+a lower-position failure stops new slices from starting but lets already active slices finish.
+Up to `overlap - 1` later slices may therefore spend after a sequential run would have stopped.
+This is a deliberate consequence of bounded parallelism,
+not semantic equivalence with overlap one after the failure point.
+Measurement arms and production readings must report failures and spend beside wall-clock results.
+
 ## What is left to do
 
 Order matters only in that each driver should be green and committed before the next one starts,
@@ -105,12 +123,18 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     both mutations were restored and rebuilt.
     The post-handover whole suite passed with 832 PASS, 0 FAIL and exit 0
     after its first run found and fixed the three stale expectations above.
-2.  `repairPreparedDocument` (`src/repair-translation.ts`, 293 code lines, loop at line 251):
-    the same shape.
-    Its `settledByKey` is the twin memo;
-    its refusal predicate is `cacheRefusalsOf({ outcome, })`, which is what `persistedOf` must read.
-    The file is at its line budget, so the per-slice body needs its own module,
-    following `translate-slice-settle.ts` plus `translate-slice-buy.ts`.
+2.  `repairPreparedDocument`: DONE in `bb6883548` through `84ba6eecb`.
+    Build, focused suites, `lint:oxlint` and `lint:types` pass.
+    Forcing the driver to overlap one failed the successful-critic concurrency case.
+    Replacing the shared twin memo with one map per slice failed the overlap-two ASKS ONCE case.
+    Returning the torn-down exchange instead of `signal.reason` failed the abort identity case.
+    All mutations were restored and rebuilt.
+    Logs are `~/temp/agent/gfp-repair-overlap-ignored.log`,
+    `~/temp/agent/gfp-repair-twin-memo.log`,
+    and `~/temp/agent/gfp-repair-abort-normalization.log`,
+    with matching restored logs beside them.
+    Whole-package `buildAndTest` is running as process
+    `translation-repair-whole-suite-repair-driver` (`proc_821a`).
 3.  `runRefinePhase` (`src/refine-phase.ts`, 189 code lines, loop at line 211):
     no twin memo (this lane caches but never memoized in-run),
     and its persist condition is `everyStageHeard({ findings, })`.
@@ -213,7 +237,7 @@ mise run //package/module/translation-repair:buildAndTest > "$LOG" 2>&1
 echo "exit=$? PASS=$(grep -c '\] PASS ' "$LOG") FAIL=$(grep -c '\] FAIL ' "$LOG")"
 ```
 
-The last whole-suite run before this work was 829 PASS, 0 FAIL, exit 0.
+The last whole-suite run before the repair driver was 832 PASS, 0 FAIL, exit 0.
 
 Guard-failure proof, per the repository rule that a guard proves nothing until it is shown to fail:
 remove the guard, rebuild, run the suite, restore, rebuild.
