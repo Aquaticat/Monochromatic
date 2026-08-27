@@ -23,6 +23,7 @@ import {
   absenceFinding,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type InsertionAdmission,
   makeInsertionChunk,
   messageText,
   prepareDocumentPair,
@@ -74,6 +75,11 @@ const FRESH = 'The cat naps on the windowsill.';
  * to.
  */
 const MISSING_SOURCE = '## 第三节\n\n猫猫也喜欢晒太阳。';
+
+/**
+ * Translation scripted for source-only third section once admitted.
+ */
+const MISSING_FRESH = '## Section three\n\nThe cat also likes basking in sunlight.';
 
 /**
  * Original of a page whose translation is measurably too short to hold it.
@@ -142,6 +148,8 @@ function renderingFor({ content, }: { readonly content: string; },): string {
     return `## Section one\n\n${FRESH}`;
   if (content.includes('第二节',))
     return '## Section two\n\nA bird sits on the windowsill.';
+  if (content.includes('第三节',))
+    return MISSING_FRESH;
   return FRESH;
 }
 
@@ -406,6 +414,8 @@ function laneClient(
  *
  * @param overlap - most slices the driver may run at once
  *
+ * @param insertionAdmission - caller evidence overriding deterministic insertion gate
+ *
  * @param translateConcurrency - optional successful-call overlap instrument
  *
  * @param persisted - map the run writes settled records into; passed in so a
@@ -430,6 +440,7 @@ async function runDriver(
     silentForSource = SILENT_FOR_NOTHING,
     anchorSource,
     overlap = 1,
+    insertionAdmission,
     translateConcurrency,
     persisted = new Map<string, TranslateSliceRecord>(),
     calls = {
@@ -447,6 +458,7 @@ async function runDriver(
     readonly silentForSource?: string;
     readonly anchorSource?: string;
     readonly overlap?: number;
+    readonly insertionAdmission?: InsertionAdmission;
     readonly translateConcurrency?: TranslateConcurrency;
     readonly persisted?: Map<string, TranslateSliceRecord>;
     readonly calls?: CallLog;
@@ -516,6 +528,7 @@ async function runDriver(
     signal: controller.signal,
     perCallTimeoutMs: 1_000,
     overlap,
+    ...((insertionAdmission === undefined) ? {} : { insertionAdmission, }),
     sliceCache: {
       resumed,
       persist: async ({
@@ -1373,6 +1386,28 @@ The cat is doing the sleeping on the windowsill.
         expect(result.changedSliceIndices,).not.toContain(anchorIndex,);
         expect(result.translatedText,).toContain(FRESH,);
         expect(result.translatedText,).not.toContain('晒太阳',);
+      },
+    },),
+
+    it({
+      name: 'HONORS authoritative production admission for a linked source gap that whole-page '
+        + 'shortfall alone would refuse, and carries admission evidence into result findings',
+      fn: async () => {
+        const { result, prepared, } = await runDriver({
+          anchorSource: MISSING_SOURCE,
+          insertionAdmission: {
+            positions: new Set([2,]),
+            findings: ['insertion-corroboration fixture admitted',],
+          },
+        },);
+        const anchorIndex = prepared.slices.length - 1;
+
+        expect(anchorIndex,).toBe(2,);
+        expect(result.status,).toBe('complete',);
+        expect(result.unfilled,).toEqual([],);
+        expect(result.changedSliceIndices,).toContain(anchorIndex,);
+        expect(result.translatedText,).toContain(MISSING_FRESH,);
+        expect(result.findings,).toContain('insertion-corroboration fixture admitted',);
       },
     },),
 
