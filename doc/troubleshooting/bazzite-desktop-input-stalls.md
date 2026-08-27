@@ -549,7 +549,21 @@ SMART health does not erase the historical Btrfs checksum failures
 or rule out corruption outside the drive,
 such as memory or data supplied before a write.
 No initiating cause has been established.
-A full scrub is still required before resetting the persistent counter.
+
+A full scrub checked 1.42 TiB from 06:14:26 through 09:42:27 local time in 3:28:01.
+The command and kernel both completed with status zero,
+and the scrub reported `Error summary: no errors found`.
+No `dm-1` checksum or I/O error appeared in the kernel journal during the scrub.
+The cumulative device statistics remained
+`wr 0, rd 0, flush 0, corrupt 405004, gen 0`,
+so the scrub added no corruption event.
+After recording that result and the historical count,
+`btrfs device stats --reset` established a new all-zero baseline.
+
+The clean scrub shows that currently allocated extents verified successfully.
+It does not identify the historical failure's cause,
+prove that deleted or CoW-replaced extents were sound,
+or repair historical `Data,single` corruption from another Btrfs copy.
 No captured desktop symptom was attributed to this filesystem.
 
 ## Verification
@@ -769,23 +783,14 @@ Tradeoffs:
 - DBus probes are not perfectly passive.
 - Procfs scheduler counters do not detect every blocked or busy event-loop failure.
 
-### Validate the encrypted SATA filesystem before resetting its error counter
+### Use the clean encrypted SATA scrub as a new baseline
 
-Preserve irreplaceable files from `/var/mnt/encrypted`,
-then run a full Btrfs scrub and inspect its `Corrected`,
-`Uncorrectable`,
-and `Unverified` counts.
-Only reset `btrfs device stats` after a clean scrub records a trustworthy baseline.
-The linked official Btrfs documentation estimates that scrub uses about 80% of idle device bandwidth by default.
-
-Tradeoffs:
-
-- Backup and scrub I/O can contaminate desktop-stall measurements if run during the same window.
-- Single-profile file data has no second Btrfs copy from which scrub can repair corruption.
-- A throughput limit reduces foreground contention but lengthens the scrub.
+Preserve irreplaceable files from `/var/mnt/encrypted` despite the clean scrub.
+Single-profile file data still has no second Btrfs copy from which scrub can repair future corruption.
+Monitor `btrfs device stats /var/mnt/encrypted` for any increment from the new all-zero baseline.
 
 The user prioritized integrity verification over preserving the remaining clean desktop observation.
-A foreground scrub started around 06:14 local time with:
+The foreground scrub ran with:
 
 ```sh
 # doc/troubleshooting/bazzite-desktop-input-stalls.md
@@ -794,10 +799,15 @@ sudo btrfs scrub start -B --limit 100M /var/mnt/encrypted
 
 The `--limit` option did not remain active;
 the verified live-limit workaround is documented in the "Foreground scrub limit resets before completion" section.
-The starting `corruption_errs` value was preserved at 405,004.
-Desktop resource measurements after scrub start are workload-contaminated and cannot represent natural idle behavior.
-The Plasma and KWin event-loop probes remain useful for detecting service boundaries,
-but any overlap with scrub requires explicit classification.
+The live workaround held the active limit at 100 MiB/s.
+The scrub checked 1.42 TiB in 3:28:01 and reported no errors.
+The starting `corruption_errs` value remained 405,004 until it was recorded and deliberately reset.
+The live scrub limit was then restored from 100 MiB/s to its prior sysfs value of `0`.
+
+Desktop resource measurements from 06:14:26 through 09:42:27 are scrub-contaminated
+and cannot represent natural idle behavior.
+The Plasma and KWin event-loop probes remained useful for detecting service boundaries,
+but every overlap with scrub requires explicit classification.
 
 ## What does not work
 
