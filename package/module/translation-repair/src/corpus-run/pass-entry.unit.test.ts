@@ -183,6 +183,15 @@ const ENTRY = {
 };
 
 /**
+ * Entry whose archive carries invisible separator outside replacements.
+ */
+const INVISIBLE_ENTRY = {
+  id: 'CatEntryInvisible',
+  sourceText: SOURCE_TEXT,
+  targetText: TARGET_TEXT.replace('## Section two', '\uFEFF## Section two',),
+};
+
+/**
  * Entry the cleanup case settles, under its own id.
  *
  * SEPARATE because that case reads what was PRINTED, and the runner runs cases
@@ -873,6 +882,38 @@ await describe({
         // lane's translators each ran.
         expect(served.includes('critic_report',),).toBe(true,);
         expect(served.includes('translation_report',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'FOLDS inherited invisible archive variants before preparation, so deciders, artifact and '
+        + 'published page all carry same visible bytes',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        await settleEntry({
+          client: entryClient({ served: [], },),
+          entry: INVISIBLE_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        const artifact = await readFile(
+          join(dirs.artifactsDir, `${INVISIBLE_ENTRY.id}.json`,),
+          'utf8',
+        );
+        const page = await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: INVISIBLE_ENTRY.id,
+          },),
+          'utf8',
+        );
+        expect(artifact,).not.toContain('\uFEFF',);
+        expect(page,).not.toContain('\uFEFF',);
       },
     },),
     it({

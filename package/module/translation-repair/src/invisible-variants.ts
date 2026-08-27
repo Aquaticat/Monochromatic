@@ -17,8 +17,9 @@
 //
 // APPLIED AT INTAKE, NOT AT PUBLISH. Both deciders judge the bytes that ship
 // (`#162`); folding after judging would ship bytes nobody judged. The fold is
-// therefore applied where each lane turns an answer into a candidate, so the
-// candidate the judges see is the candidate that ships.
+// therefore applied where each lane turns an answer into a candidate, and the
+// corpus pass folds archive English before preparation. Candidate, incumbent,
+// artifact and page all carry bytes the deciders saw.
 
 /**
  * Code point folded to its visible counterpart, with the reason.

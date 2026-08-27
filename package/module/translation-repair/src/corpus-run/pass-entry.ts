@@ -6,6 +6,7 @@ import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { readDocumentPictures, } from '../document-readings.ts';
 import { readImageWithOcr, } from '../image-ocr.ts';
+import { foldInvisibleVariants, } from '../invisible-variants.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
@@ -131,6 +132,13 @@ async function runEntryPipeline(
   const t0 = Date.now();
 
   /**
+   * Archive bytes both deciders judge, normalized before preparation so spans,
+   * candidates, artifact and published page all describe same visible text.
+   */
+  const archiveText = foldInvisibleVariants({ text: entry.targetText, })
+    .text;
+
+  /**
    * Per-entry hard-cap deadline. Disposal at return defuses the timer and
    * detaches its listener; the repo bans try/finally, so cleanup rides on
    * `using` instead.
@@ -242,7 +250,7 @@ async function runEntryPipeline(
         generation: pipelineDigest,
       },),
       sourceText: entry.sourceText,
-      targetText: entry.targetText,
+      targetText: archiveText,
       signal: deadline.callSignal,
       exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       l: tagged({ tag: entry.id, },),
@@ -485,7 +493,7 @@ async function runEntryPipeline(
     const destinations = await persistSettledEntry({
       artifact,
       slices: prepared.slices,
-      archiveText: entry.targetText,
+      archiveText,
       sourceText: entry.sourceText,
       entryId: entry.id,
       publishDir,
