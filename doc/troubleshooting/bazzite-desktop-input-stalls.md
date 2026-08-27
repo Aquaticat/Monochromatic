@@ -505,13 +505,35 @@ The encrypted SATA filesystem reported:
 bdev /dev/mapper/crypt_sda errs: wr 0, rd 0, flush 0, corrupt 405004, gen 0
 ```
 
-Retained logs included 434 visible checksum-failure lines and 41 suppression notices.
+Retained boot `-2` contained 434 visible checksum-failure lines from 2026-08-16 through 2026-08-18.
+The kernel also emitted 41 `btrfs_print_data_csum_error` suppression notices
+and 41 matching device-stat suppression notices.
+The visible failures covered 59 inode numbers and 358 inode-offset pairs in top-level subvolume 5.
+
+Current inode resolution mapped 52 of those inode numbers:
+50 were Steam game or compatibility files,
+and two were files in a clean Git checkout with a working public remote.
+Seven inode numbers no longer existed.
+Targeted 4 KiB reads then exercised the recorded offsets in every mapped file.
+The probe read 232 current ranges without `EIO`;
+one additional old offset was beyond the current shorter file length.
+The persistent corruption counter remained exactly 405,004 after that probe.
+This means the retained failures did not reproduce at the current mapped extents.
+It does not verify unrecorded extents or the rest of the 1.42 TiB of allocated data.
+
+The filesystem has one device,
+uses `Data,single`,
+and uses `Metadata,DUP`.
+`btrfs scrub status` reported no prior scrub statistics.
+Official [`btrfs-scrub(8)` documentation](https://btrfs.readthedocs.io/en/stable/btrfs-scrub.html)
+says scrub can repair only from another known-good replica,
+so this layout cannot reconstruct damaged single-profile file data.
 SATA SMART reported PASSED with zero reallocated,
 uncorrectable,
 program/erase,
 and CRC errors.
-SMART health does not erase the recorded Btrfs checksum failures.
-Important data on `/var/mnt/encrypted` should be backed up before separate scrub and device testing.
+SMART health does not erase the historical Btrfs checksum failures.
+A full scrub is still required before resetting the persistent counter.
 No captured desktop symptom was attributed to this filesystem.
 
 ## Verification
@@ -731,13 +753,20 @@ Tradeoffs:
 - DBus probes are not perfectly passive.
 - Procfs scheduler counters do not detect every blocked or busy event-loop failure.
 
-### Back up encrypted SATA data before integrity testing
+### Validate the encrypted SATA filesystem before resetting its error counter
 
-Back up irreplaceable files from `/var/mnt/encrypted` before running a scrub or extended device test.
-Those operations are intentionally separate from the clean desktop observation window.
+Preserve irreplaceable files from `/var/mnt/encrypted`,
+then run a full Btrfs scrub and inspect its `Corrected`,
+`Uncorrectable`,
+and `Unverified` counts.
+Only reset `btrfs device stats` after a clean scrub records a trustworthy baseline.
+The linked official Btrfs documentation estimates that scrub uses about 80% of idle device bandwidth by default.
 
-Tradeoff:
-backup and scrub I/O can contaminate desktop-stall measurements if run during the same window.
+Tradeoffs:
+
+- Backup and scrub I/O can contaminate desktop-stall measurements if run during the same window.
+- Single-profile file data has no second Btrfs copy from which scrub can repair corruption.
+- A throughput limit reduces foreground contention but lengthens the scrub.
 
 ## What does not work
 
