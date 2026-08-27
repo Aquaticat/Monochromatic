@@ -139,6 +139,7 @@ export {
 export {
   consolidateDocument,
   consolidationWorthResuming,
+  persistConsolidationSettlement,
 } from './consolidate-driver.ts';
 export { standingTextFor, } from './consolidate-standing.ts';
 export {

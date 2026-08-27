@@ -2,6 +2,7 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
@@ -9,12 +10,11 @@ import {
   consolidateSliceKey,
 } from './consolidate-key.ts';
 import { CONSOLIDATE_GATE_QUORUM, } from './consolidate-gate-stage.ts';
-import { produceConsolidations, } from './consolidate-produce.ts';
-import {
-  type ConsolidationSettlement,
-  type ConsolidationTerminal,
-  settleConsolidation,
+import type {
+  ConsolidationSettlement,
+  ConsolidationTerminal,
 } from './consolidate-settle.ts';
+import { buyConsolidationSlice, } from './consolidate-slice-buy.ts';
 import { standingTextFor, } from './consolidate-standing.ts';
 import {
   type ArtifactConsolidateSlice,
@@ -30,6 +30,12 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { TranslateDecision, } from './translate-stage-result.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import {
+  reuseTwinOrBuy,
+  type TwinMemo,
+  type TwinStored,
+} from './twin-memo.ts';
+import { mapOverlapped, } from './overlapped-map.ts';
 import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
 
 //region Consolidate driver
@@ -47,6 +53,11 @@ import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
 // directions, and at least one slice was found where each lane was better than
 // the other in a DIFFERENT PLACE of the same passage. No selection can produce
 // that slice's best text, because that text is neither candidate.
+//
+// IDENTICAL QUESTIONS SHARE ONE CACHE-ELIGIBLE PURCHASE. The position-free key
+// names everything the stages see, while `ConsolidationSettlement` carries no
+// slice index needing restamp. An unsettled panel is neither persisted nor
+// memoized, so its twin asks again exactly as a warm run would.
 
 /**
  * Judge decisions a second panel might change, so a cache must not freeze them.
@@ -162,6 +173,88 @@ export function consolidationWorthResuming(
 }
 
 /**
+ * Fresh consolidation beside whether it became warm-run evidence.
+ *
+ * @example
+ * ```ts
+ * const bought: BoughtConsolidation = { settlement, persisted: true, };
+ * ```
+ */
+type BoughtConsolidation = {
+  readonly settlement: ConsolidationSettlement;
+  readonly persisted: boolean;
+};
+
+/**
+ * Reads cache-eligible record from fresh consolidation.
+ *
+ * @param bought - fresh result beside persistence status
+ *
+ * @returns Record a twin may reuse, or deliberate nothing
+ *
+ * @example
+ * ```ts
+ * const stored = storedConsolidationOf({ settlement, persisted: true, },);
+ * ```
+ */
+function storedConsolidationOf(
+  bought: BoughtConsolidation,
+): TwinStored<ConsolidationSettlement> {
+  return bought.persisted
+    ? {
+      kind: 'stored',
+      record: bought.settlement,
+    }
+    : { kind: 'nothing', };
+}
+
+/**
+ * Persists a bought consolidation only while caller remains live and the
+ * settlement is stable enough for a warm run.
+ *
+ * @param key - exact consolidation question this settlement answers
+ *
+ * @param settlement - complete answer from model stages or deterministic floor
+ *
+ * @param cache - consolidation persistence boundary
+ *
+ * @param signal - caller abort checked before write
+ *
+ * @returns Whether settlement was persisted and may be reused by a twin
+ *
+ * @throws Whatever caller abort reason or persistence throws
+ *
+ * @example
+ * ```ts
+ * await persistConsolidationSettlement({ key, settlement, cache, signal, },);
+ * ```
+ *
+ * @internal
+ */
+export async function persistConsolidationSettlement(
+  {
+    key,
+    settlement,
+    cache,
+    signal,
+  }: ForeignBorrowed<{
+    readonly key: string;
+    readonly settlement: ConsolidationSettlement;
+    readonly cache: SliceCache<ConsolidationSettlement>;
+    readonly signal: AbortSignal;
+  }>,
+): Promise<boolean> {
+  signal.throwIfAborted();
+  if (!consolidationWorthResuming({ settlement, }))
+    return false;
+  await cache.persist({
+    key,
+    serialized: JSON.stringify(settlement,),
+  },);
+  return true;
+}
+
+/**
  * Reads which lane the contest backed out of the verdict it recorded.
  *
  * BOTH WAYS OF NOT SETTLING READ AS `neither`, deliberately. The record keeps
@@ -221,6 +314,8 @@ function laneChoiceOf(
  *
  * @param perCallTimeoutMs - per-call ceiling
  *
+ * @param overlap - most contested slices in flight; one reproduces former loop
+ *
  * @param l - logger to tag
  *
  * @returns One record per consolidated slice, in comparison-row order
@@ -246,6 +341,7 @@ export async function consolidateDocument(
     cache,
     signal,
     perCallTimeoutMs,
+    overlap = 1,
     l,
   }: {
     readonly client: SyntheticClient;
@@ -259,6 +355,7 @@ export async function consolidateDocument(
     readonly cache: SliceCache<ConsolidationSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
+    readonly overlap?: number;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
@@ -307,19 +404,33 @@ export async function consolidateDocument(
   },);
 
   /**
-   * One record per consolidated slice, in comparison-row order.
+   * Comparison rows beside contests that selected them, in document order.
    */
-  const slices: ArtifactConsolidateSlice[] = [];
-
-  dl.info(`consolidation: ${String(contests.length,)} contested slices to settle`,);
-  for (const row of projected.comparison) {
+  const eligibleRows = projected.comparison.flatMap(function withContest(row,) {
     /**
      * What the contest settled here, absent where it never ran.
      */
     const contest = contestBySlice.get(row.sliceIndex,);
-    if (contest === undefined)
-      continue;
+    return (contest === undefined)
+      ? []
+      : [{ row, contest, },];
+  },);
 
+  /**
+   * Cache-eligible purchases in this document, shared by identical questions.
+   */
+  const twins: TwinMemo<ConsolidationSettlement> = new Map();
+
+  dl.info(`consolidation: ${String(contests.length,)} contested slices to settle`,);
+  return await mapOverlapped({
+    items: eligibleRows,
+    overlap,
+    oneItem: async function consolidateOne({
+      item: {
+        row,
+        contest,
+      },
+    },): Promise<ArtifactConsolidateSlice> {
     /**
      * Original of this slice, which every ledger row carries.
      */
@@ -418,75 +529,63 @@ export async function consolidateDocument(
       .resumed
       .get(key,);
 
-    /* oxlint-disable no-await-in-loop -- sequential by design, matching `contestDocumentLanes` and `translateDocument`: the client`s limiter grants one stream per model, so consolidating two slices at once queues behind the same slot rather than doubling throughput, and settling one slice before starting the next is what makes an aborted run resumable to the slice it reached */
-
     /**
-     * What the roster settled here, bought or resumed.
+     * What the roster settled here, bought, resumed, or reused from a twin.
      */
-    const settlement = resumed ?? await (async function settleFresh(): Promise<ConsolidationSettlement> {
-      // NO STANDING TEXT BUYS NO SLATE. `settleConsolidation` refuses such a
-      // slice before judging anything, so a producer round bought for it, one
-      // roster of calls plus up to one roster of repairs, was discarded whole;
-      // on a night the contest lost quorum every contested slice paid it. The
-      // settlement is still taken from the settle half, handed an empty slate,
-      // so the terminal, its floor and its findings come from one place.
-      if (standingText === '') {
-        dl.info(`slice ${String(row.sliceIndex,)}: no standing text to consolidate against, so no slate is bought`,);
-        return settleConsolidation({
-          client,
-          roster: modelIds,
-          subject,
-          voices: [],
-          validity: [],
-          producedFindings: [],
-          standingText,
-          lineStructured,
-          signal,
-          perCallTimeoutMs,
-          l: dl,
-        },);
-      }
+    const settlement = await (async function resumeOrBuy(): Promise<ConsolidationSettlement> {
+      if (resumed !== undefined)
+        return resumed;
 
       /**
-       * Slate this run buys, produced once and judged once, per `#109`.
+       * Twin's persisted settlement or this row's fresh purchase.
        */
-      const produced = await produceConsolidations({
-        client,
-        roster: modelIds,
-        subject,
-        standingText,
-        signal,
-        perCallTimeoutMs,
-        l: dl,
-      },);
-
-      return settleConsolidation({
-        client,
-        roster: modelIds,
-        subject,
-        voices: produced.voices,
-        validity: produced.validity,
-        producedFindings: produced.findings,
-        standingText,
-        lineStructured,
-        signal,
-        perCallTimeoutMs,
-        l: dl,
-      },);
-    })();
-    if ((resumed === undefined) && consolidationWorthResuming({ settlement, },)) {
-      await cache.persist({
+      const asked = await reuseTwinOrBuy({
         key,
-        serialized: JSON.stringify(settlement,),
+        memo: twins,
+        buy: async function buyThisRow(): Promise<BoughtConsolidation> {
+          /**
+           * Settlement bought for this question.
+           */
+          const bought = await buyConsolidationSlice({
+            client,
+            roster: modelIds,
+            subject,
+            standingText,
+            lineStructured,
+            sliceIndex: row.sliceIndex,
+            signal,
+            perCallTimeoutMs,
+            l: dl,
+          },);
+
+          /**
+           * Whether purchase became reusable evidence.
+           */
+          const persisted = await persistConsolidationSettlement({
+            key,
+            settlement: bought,
+            cache,
+            signal,
+          },);
+          return {
+            settlement: bought,
+            persisted,
+          };
+        },
+        persistedOf: storedConsolidationOf,
+        l: dl,
       },);
-    }
-    /* oxlint-enable no-await-in-loop */
-    slices.push(describeConsolidateSlice({
+      if (asked.kind === 'reused')
+        return asked.twin;
+      return asked.bought
+        .settlement;
+    })();
+    return describeConsolidateSlice({
       sliceIndex: row.sliceIndex,
       settlement,
-    },),);
-  }
-  return slices;
+    },);
+    },
+  },);
 }
 
 //endregion Consolidate driver
