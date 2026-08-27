@@ -662,9 +662,24 @@ await describe({
         await Promise.all(([1, 2,] as const).map(async function atOverlap(
           overlap,
         ): Promise<void> {
-          const fixture = recordingClient();
+          /**
+           * Calls one copy of this question costs, measured rather than assumed
+           * because malformed structured replies are retried by transport.
+           */
+          const singleFixture = recordingClient();
+          const single = await driveWith({
+            client: singleFixture.client,
+            projected: twinSliceDocument(),
+            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+            overlap,
+          },);
+
+          /**
+           * Same question stamped at both positions.
+           */
+          const twinFixture = recordingClient();
           const { slices, written, } = await driveWith({
-            client: fixture.client,
+            client: twinFixture.client,
             projected: twinSliceDocument(),
             contests: [
               contestSettling({ sliceIndex: 0, lane: 'repair', },),
@@ -672,7 +687,9 @@ await describe({
             ],
             overlap,
           },);
-          expect(fixture.bodies.length,).toBe(ROSTER.length,);
+          expect(singleFixture.bodies.length,).toBeGreaterThan(0,);
+          expect(twinFixture.bodies.length,).toBe(singleFixture.bodies.length,);
+          expect(single.written.length,).toBe(1,);
           expect(written.length,).toBe(1,);
           expect(slices.map(function toIndex(slice,) {
             return slice.sliceIndex;
