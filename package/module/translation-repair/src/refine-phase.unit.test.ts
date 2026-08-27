@@ -20,6 +20,7 @@ import {
   type ChunkRepairOutcome,
   type IssueAuthorship,
   messageText,
+  OverlapRefusedError,
   persistRefinePhaseSlice,
   type RefinedSliceSettlement,
   type RepairModels,
@@ -634,6 +635,46 @@ await describe({
         expect(phase.outcomes[0]?.repairedText,).toBe(REPAIRED_TEXT,);
         expect(phase.outcomes[0]?.changed,).toBe(false,);
         expect(phase.findings.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES invalid overlap while the refiner lane is off, so disabling '
+        + 'work cannot make invalid caller configuration valid',
+      fn: async () => {
+        /**
+         * Calls made before refusal, which must stay at zero.
+         */
+        const calls = { count: 0, };
+
+        /**
+         * Roster turning naturalness lane off.
+         */
+        const laneOff: RepairModels = {
+          ...MODELS,
+          refinerModelIds: [],
+        };
+        await expect(runRefinePhase({
+          declaredNames: [],
+          client: countingClient({
+            inner: scriptedPhase({ checkerVerdict: 'fixed', },),
+            calls,
+          },),
+          targetText: REPAIRED_TEXT,
+          slices: SLICES,
+          outcomes: [settledOutcome({
+            resolvedIssueIds: [],
+            authorship: NO_MODEL_WROTE_THE_FIXTURE,
+          },),],
+          models: laneOff,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          overlap: 0,
+          l,
+        },),)
+          .rejects
+          .toThrow(OverlapRefusedError,);
+        expect(calls.count,).toBe(0,);
       },
     },),
 
