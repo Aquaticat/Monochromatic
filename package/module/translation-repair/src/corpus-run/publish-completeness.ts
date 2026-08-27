@@ -17,6 +17,11 @@ import type { UnfilledSlice, } from '../translate-document-contract.ts';
  */
 export class UnfilledPageError extends Error {
   /**
+   * Declares this message safe to forward: it names entry id, counts and slice indexes.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    * Stable error class name after serialization.
    */
   public override readonly name = 'UnfilledPageError';
