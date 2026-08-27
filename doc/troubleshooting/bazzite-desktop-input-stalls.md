@@ -227,7 +227,14 @@ KWin scheduler wait remained at or below 0.1 ms,
 and the user reported no stutter while actively trying to trigger one.
 The scans completed at 04:22:12 and 04:23:50.
 
-This single clean cycle weakens Snapper as an immediate trigger.
+A second qgroup warning occurred at 05:00:12.
+The procfs observer recorded no scheduler or resource-pressure threshold crossing around it.
+At 05:00:25,
+Plasma Shell answered in 5.6 ms and KWin answered in 5.4 ms.
+No user symptom marker accompanied this cycle,
+so these measurements establish responsive sampled services rather than absence of a subjective symptom.
+
+These clean measurements weaken Snapper as an immediate trigger.
 It does not rule out a timing-dependent interaction during another cycle.
 No historical user-visible stutter timestamps exist for comparison with retained rescan windows.
 
@@ -435,6 +442,13 @@ journalctl --since='2026-08-27 03:59:50' \
 Clean visible case:
 
 - The 04:00 cycle triggered qgroup rescans and dm-0 activity without a reported stutter.
+
+Clean instrumentation case:
+
+- The 05:00 cycle crossed no observer threshold,
+  and Plasma Shell and KWin answered normally at the sampled point.
+- The user did not mark a symptom during this cycle,
+  so it is not classified as a clean subjective case.
 
 Unverified case:
 
