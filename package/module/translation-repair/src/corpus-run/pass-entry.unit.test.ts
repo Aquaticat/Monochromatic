@@ -197,6 +197,35 @@ const CLEANUP_ENTRY = {
 };
 
 /**
+ * Original carrying a linked factual paragraph absent from archive.
+ */
+const GAP_SOURCE_TEXT = `${SOURCE_TEXT}
+> The cat said goodbye.
+>
+> Thank you all.
+
+The cat's final [record](https://example.test/cat-record) says she died at age 26.
+`;
+
+/**
+ * Archive preserving quoted letter and omitting factual paragraph after it.
+ */
+const GAP_TARGET_TEXT = `${TARGET_TEXT}
+> The cat said goodbye.
+>
+> Thank you all.
+`;
+
+/**
+ * Entry reproducing known source gap at publication seam.
+ */
+const GAP_ENTRY = {
+  id: 'CatEntryGap',
+  sourceText: GAP_SOURCE_TEXT,
+  targetText: GAP_TARGET_TEXT,
+};
+
+/**
  * Renders one slice the way a translator that respected block structure would.
  *
  * @param content - translator prompt, which carries the slice original
@@ -285,8 +314,11 @@ function replyFor(
   // round it could not cache. An empty pairing is a legal answer meaning nothing
   // corresponds, which keeps this fixture's slicing exactly as it was before the
   // stage existed.
-  if (schema === 'block_pairing')
-    return { pairs: [], };
+  if (schema === 'block_pairing') {
+    return content.includes('cat-record',)
+      ? { pairs: [{ source: 0, target: 0, },], }
+      : { pairs: [], };
+  }
   if (schema === 'critic_report')
     return { issues: [], };
   if (schema === 'refine_report')
@@ -904,6 +936,43 @@ await describe({
         // in it, so what landed is the document and not one settled slice.
         expect(published.includes('## Section one',),).toBe(true,);
         expect(published.includes('## Section two',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES artifact and page publication when coverage cannot corroborate a known source gap, '
+        + 'retaining caches and reporting one entry error instead of settling an incomplete memorial',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         * Schemas reached before completeness guard stops downstream stages.
+         */
+        const served: string[] = [];
+        const lines = await capturedLines({
+          body: async () => {
+            await settleEntry({
+              client: entryClient({ served, },),
+              entry: GAP_ENTRY,
+              artifactsDir: dirs.artifactsDir,
+              publishDir: dirs.publishDir,
+              sliceCacheDir: dirs.sliceCacheDir,
+              tip: 'a'.repeat(40,),
+              pipelineDigest: DIGEST,
+              hardCapMs: 60_000,
+              baseSignal: new AbortController().signal,
+            },);
+          },
+        },);
+
+        expect(served,).toContain('coverage_report',);
+        expect(served,).not.toContain('lane_contest',);
+        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([],);
+        expect(await artifactNames({ artifactsDir: dirs.publishDir, },),).toEqual([],);
+        expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual([GAP_ENTRY.id,],);
+        const tally = lines.filter(function forGapEntry(line,): boolean {
+          return line.startsWith(`TALLY ${GAP_ENTRY.id} `,);
+        },);
+        expect(tally,).toHaveLength(1,);
+        expect(tally[0],).toContain('status=ERROR',);
       },
     },),
     it({
