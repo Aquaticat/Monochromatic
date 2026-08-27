@@ -786,12 +786,63 @@ A foreground scrub started around 06:14 local time with:
 sudo btrfs scrub start -B --limit 100M /var/mnt/encrypted
 ```
 
+The `--limit` option did not remain active;
+the verified live-limit workaround is documented in the "Foreground scrub limit resets before completion" section.
 The starting `corruption_errs` value was preserved at 405,004.
 Desktop resource measurements after scrub start are workload-contaminated and cannot represent natural idle behavior.
 The Plasma and KWin event-loop probes remain useful for detecting service boundaries,
 but any overlap with scrub requires explicit classification.
 
 ## What does not work
+
+### Foreground scrub limit resets before completion
+
+The installed `btrfs-progs` is version 7.1,
+source tag `v7.1` commit `4ab0e80be9e3bb1db2e6038e6d4316d35fb7ba8b`.
+The requested `scrub start --limit 100M` did not persist:
+a live status showed 531.07 MiB/s,
+`btrfs scrub limit` displayed no limit,
+and the sysfs value was `0`.
+
+The source saves the old value and writes the requested value
+(`cmds/scrub.c:1411-1418`):
+
+```c
+sp[i].old_limit = read_scrub_device_limit(fdmnt, devid);
+ret = write_scrub_device_limit(fdmnt, devid, throughput_limit);
+```
+
+After creating the scrub and progress threads,
+it restores the old limit before joining the scrub thread
+(`cmds/scrub.c:1595-1608`):
+
+```c
+for (i = 0; i < fi_args.num_devices; ++i) {
+    /* Revert to the older scrub limit. */
+    ret = write_scrub_device_limit(fdmnt, di_args[i].devid, sp[i].old_limit);
+
+    if (sp[i].skip)
+        continue;
+    devid = di_args[i].devid;
+    ret = pthread_join(t_devs[i], NULL);
+```
+
+The same ordering remains in upstream commit `6797ce7600556138081382441bbc6104f35736e2`.
+No matching open or closed upstream issue or pull request was found using
+`scrub limit reset foreground`.
+
+The separate live command applied the requested limit:
+
+```sh
+# doc/troubleshooting/bazzite-desktop-input-stalls.md
+sudo btrfs scrub limit --all --limit 100M /var/mnt/encrypted
+```
+
+`btrfs scrub limit` then reported `100.00MiB`,
+the sysfs value became `104857600`,
+and subsequent block samples read 98.61 to 102.13 MiB per second.
+This workaround leaves the sysfs limit set after scrub completion,
+so it must be restored to its prior value of `0`.
 
 ### Treating the panel episode as the original stutter
 
