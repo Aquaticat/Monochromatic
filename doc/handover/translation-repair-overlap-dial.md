@@ -241,8 +241,8 @@ so the tree is shippable at any moment (see "Do not land a driver into a live pa
     Forcing either document lane or any of the entry's three driver handoffs to overlap one failed its runtime guard.
     Every mutation was restored and rebuilt;
     logs begin `~/temp/agent/gfp-lanes-` or `~/temp/agent/gfp-pass-` and name each handoff.
-    Whole-package `buildAndTest` is running as process
-    `translation-repair-whole-suite-overlap-dial` (`proc_095a`).
+    Whole-package `buildAndTest` passed with 832 PASS, 0 FAIL and exit 0;
+    log: `~/temp/agent/buildAndTest-overlap-dial-20260827T083706Z.log`.
 7.  Measure, then record the result in
     `doc/decision/translation-repair-calibration-overlap.md`
     and in the open-decisions register.
