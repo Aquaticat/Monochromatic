@@ -12,6 +12,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -130,6 +131,22 @@ const REPAIR_MODELS: RepairModels = {
 type SchemaLog = string[];
 
 /**
+ * Successful model calls in flight for one stage.
+ */
+type StageConcurrency = {
+  now: number;
+  peak: number;
+};
+
+/**
+ * Repair and translate activity observed at client boundary.
+ */
+type LaneConcurrency = {
+  readonly critic: StageConcurrency;
+  readonly translate: StageConcurrency;
+};
+
+/**
  * Client serving both lanes from one script.
  *
  * @param served - schema names appended in call order
@@ -139,6 +156,8 @@ type SchemaLog = string[];
  *
  * @param abortAfterCriticCalls - critic calls served before the script aborts;
  * absent means it never does
+ *
+ * @param activity - optional overlap instrument for both lane entry stages
  *
  * @returns Client honoring the script
  *
@@ -152,10 +171,12 @@ function lanesClient(
     served,
     controller,
     abortAfterCriticCalls,
+    activity,
   }: {
     readonly served: SchemaLog;
     readonly controller: AbortController;
     readonly abortAfterCriticCalls?: number;
+    readonly activity?: LaneConcurrency;
   },
 ): SyntheticClient {
   return {
@@ -182,6 +203,22 @@ function lanesClient(
         },)
         .join('\n',);
       served.push(schema,);
+
+      /**
+       * Instrument for this lane's entry stage, when requested.
+       */
+      const stageActivity = schema === 'critic_report'
+        ? activity?.critic
+        : (schema === 'translation_report' ? activity?.translate : undefined);
+      if (stageActivity !== undefined) {
+        stageActivity.now += 1;
+        stageActivity.peak = Math.max(
+          stageActivity.peak,
+          stageActivity.now,
+        );
+        await wait(10,);
+        stageActivity.now -= 1;
+      }
 
       /**
        * Critic calls served so far, which is what the script counts down to
@@ -340,6 +377,10 @@ function pickCandidate(
  *
  * @param abortAfterCriticCalls - critic calls served before the script aborts
  *
+ * @param overlap - most slices each lane keeps in flight
+ *
+ * @param activity - optional overlap instrument for both lane entry stages
+ *
  * @returns Both lane results
  *
  * @example
@@ -352,10 +393,14 @@ async function runLanes(
     served,
     abortAfterCriticCalls,
     repairSliceCache,
+    overlap = 1,
+    activity,
   }: {
     readonly served: SchemaLog;
     readonly abortAfterCriticCalls?: number;
     readonly repairSliceCache?: SliceCache<ChunkRepairOutcome>;
+    readonly overlap?: number;
+    readonly activity?: LaneConcurrency;
   },
 ) {
   /**
@@ -369,6 +414,7 @@ async function runLanes(
       ...((abortAfterCriticCalls === undefined)
         ? {}
         : { abortAfterCriticCalls, }),
+      ...((activity === undefined) ? {} : { activity, }),
     },),
     prepared: prepareDocumentPair({
       sourceText: SOURCE_TEXT,
@@ -378,6 +424,7 @@ async function runLanes(
     translateModels: TRANSLATE_MODELS,
     signal: controller.signal,
     perCallTimeoutMs: CALL_TIMEOUT_MS,
+    overlap,
     ...((repairSliceCache === undefined)
       ? {}
       : { repairSliceCache, }),
@@ -422,6 +469,54 @@ await describe({
           'translate',
           'translateDelivery',
         ],);
+      },
+    },),
+
+    it({
+      name: 'threads one overlap through BOTH repair and translate lanes, after serial '
+        + 'positive controls prove each stage instrument distinguishes one slice from two',
+      fn: async () => {
+        /**
+         * Activity under default sequential admission.
+         */
+        const serial: LaneConcurrency = {
+          critic: {
+            now: 0,
+            peak: 0,
+          },
+          translate: {
+            now: 0,
+            peak: 0,
+          },
+        };
+        await runLanes({
+          served: [],
+          overlap: 1,
+          activity: serial,
+        },);
+
+        /**
+         * Activity under two slices admitted per lane.
+         */
+        const overlapped: LaneConcurrency = {
+          critic: {
+            now: 0,
+            peak: 0,
+          },
+          translate: {
+            now: 0,
+            peak: 0,
+          },
+        };
+        await runLanes({
+          served: [],
+          overlap: 2,
+          activity: overlapped,
+        },);
+        expect(serial.critic.peak,).toBeGreaterThan(0,);
+        expect(overlapped.critic.peak,).toBeGreaterThan(serial.critic.peak,);
+        expect(serial.translate.peak,).toBeGreaterThan(0,);
+        expect(overlapped.translate.peak,).toBeGreaterThan(serial.translate.peak,);
       },
     },),
 
