@@ -104,8 +104,13 @@ Current ten-model roster passed live coverage control on three damageable cases:
 two targeted cuts flipped to `absent`,
 third to `partly-carried`,
 and all three equal-size decoys stayed `carried` with zero absence votes.
-Fixed-build overlap-4 `Toka_ls` rerun is active;
-it precedes further decision arms.
+Fixed-build overlap-4 `Toka_ls` at 180-second grace settled complete page in 114.72 minutes,
+normalized `0.132`, with both providers wet.
+Omission blocker, destination loss and invisible bytes are fixed.
+Strict output gate still fails one inherited major:
+first-person intrusion that repair corrected but translate retained;
+contest heard 8 of 10 and tied 4 to 4, retaining archive.
+Fresh same-digest overlap-4 300-second-grace arm is active before further decision arms.
 
 ## Readings per pair
 

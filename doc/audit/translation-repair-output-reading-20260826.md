@@ -205,8 +205,43 @@ Two targeted cuts flipped from `carried` to `absent` with 10 and 9 votes,
 third moved to `partly-carried`,
 and three equal-size decoys drew zero absence votes.
 Both providers stayed wet.
-Fixed-build overlap-4 rerun is active in
-`~/temp/agent/corpus-fixed-Toka_ls-four-20260827`.
+
+### `Toka_ls` on fixed build, overlap 4 and 180-second grace
+
+Not publishable under strict actual-output gate,
+although omission blocker is fixed.
+Run settled all 15 slices in 114.72 minutes over 14.49 call-hours,
+normalized `0.132`, with 72 voices unheard and both providers wet.
+`verify-published` found 15 wordings, zero silent,
+expected length and zero missing.
+Source destination count is one and page carries same one.
+U+FEFF fell from archive three to page zero.
+Restored final paragraph preserves date, time, place, cause, age and linked final note.
+
+MAJOR, inherited and left standing:
+biography shifts from third person to first person in sentence about inspiration and regulated verse.
+Source continues implicit third-person subject;
+archive inserted first person.
+Repair lane corrected it to third person;
+translate lane retained archive.
+Contest heard 8 of 10 and split 4 repair to 4 translate,
+while 5 ballots independently called archive flawed.
+Tie settled neither and therefore retained archive.
+This is not overlap ordering defect,
+but known-flawed tie fallback is not semantic approval.
+
+MINOR, introduced:
+letter opening lost trailing tilde source and archive both carry.
+Other inherited awkwardness remains;
+restored paragraph itself is faithful and complete.
+An independent reviewer first called page publishable against regression-only baseline,
+then strict-readiness review corrected verdict:
+inherited identifies provenance, not acceptability.
+
+Fresh same-digest overlap-4 rerun with 300-second grace is active at
+`~/temp/agent/corpus-fixed-Toka_ls-four-grace300-20260827`.
+It tests whether two cut contest voices caused tie;
+it does not by itself decide default grace.
 
 ## Tooling for the fresh pass, and the second reader's dry run
 

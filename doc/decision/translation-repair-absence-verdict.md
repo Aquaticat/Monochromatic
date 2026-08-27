@@ -108,7 +108,10 @@ moved third to `partly-carried`,
 and cast zero absence votes on all three equal-size decoys.
 Both providers were wet throughout.
 Log: `~/temp/agent/coverage-control-current-roster-20260827.log`.
-Current fixed-build `Toka_ls` rerun is publication validation for this addendum.
+Fixed-build `Toka_ls` then settled 15 wordings with zero silent and preserved source destination.
+The omission and invisible-byte blocker is closed.
+Page remains outside strict readiness for separate inherited person error that contest tied on;
+see `doc/audit/translation-repair-output-reading-20260826.md`.
 
 ## What this supersedes
 

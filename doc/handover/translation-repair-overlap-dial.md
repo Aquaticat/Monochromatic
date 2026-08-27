@@ -308,7 +308,13 @@ Both pages remain timing evidence only:
 each artifact recorded same omitted linked death paragraph as `gap-remains`.
 Current ten-model coverage control then passed with absence votes only on targeted damage,
 never equal-size decoys.
-Fixed-build overlap-4 `Toka_ls` rerun is active.
+Fixed-build overlap-4 `Toka_ls` at 180-second grace restored complete page in 114.72 minutes,
+normalized `0.132`.
+Strict read still found one inherited major person error:
+repair corrected it,
+translate retained it,
+and contest heard 8 of 10 then tied 4 to 4.
+Same-digest overlap-4 300-second-grace arm is active to test two cut voices.
 Record: `doc/audit/translation-repair-output-reading-20260826.md`.
 
 ## Do not land a driver into a live pass launch

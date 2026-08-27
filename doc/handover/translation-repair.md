@@ -27,8 +27,14 @@ two targeted cuts flipped from `carried` to `absent` with 10 and 9 votes,
 third moved to `partly-carried`,
 and all three equal-size decoys received zero absence votes.
 Both providers stayed wet.
-Fixed-build `Toka_ls` overlap-4 rerun and independent serial-page reading are running.
-Next gate is full fixed-page reread.
+Fixed-build `Toka_ls` overlap-4 rerun restored linked paragraph,
+settled 15 wordings with zero silent,
+retained source URL and removed all U+FEFF.
+Strict reread still says not publishable:
+inherited first-person intrusion survived because repair fixed it,
+translate retained it,
+and 8 heard contest voices split 4 to 4.
+Fresh same-digest overlap-4 rerun at 300-second grace is active to test two cut voices.
 No old-digest `Toka_ls` page is readiness evidence.
 `doc/audit/translation-repair-output-reading-20260826.md` carries full trace;
 `doc/planning/translation-repair-corpus-overlap-measurement.md` carries arm protocol.
