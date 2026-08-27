@@ -21,7 +21,11 @@ Every arm uses:
 No source rebuild or code commit lands between paired arms.
 Documentation may be updated because running bundles do not import it.
 
-## Live provider gate
+## Provider authority and live gate
+
+The owner authorized unrestricted use of both providers on 2026-08-27.
+Provider spend and allowance consumption do not limit evidence depth;
+matched-arm isolation and live availability still protect measurement validity.
 
 `budget-sample` immediately before launch must report both providers wet.
 The 2026-08-27 preflight did:
