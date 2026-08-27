@@ -508,18 +508,25 @@ bdev /dev/mapper/crypt_sda errs: wr 0, rd 0, flush 0, corrupt 405004, gen 0
 Retained boot `-2` contained 434 visible checksum-failure lines from 2026-08-16 through 2026-08-18.
 The kernel also emitted 41 `btrfs_print_data_csum_error` suppression notices
 and 41 matching device-stat suppression notices.
-The visible failures covered 59 inode numbers and 358 inode-offset pairs in top-level subvolume 5.
+The device-stat notices accounted for 404,483 suppressed callbacks,
+so the 434 visible lines are only a sample of the persistent counter's increments.
+That visible sample covered 59 inode numbers and 358 inode-offset pairs in top-level subvolume 5.
 
 Current inode resolution mapped 52 of those inode numbers:
 50 were Steam game or compatibility files,
 and two were files in a clean Git checkout with a working public remote.
-Seven inode numbers no longer existed.
-Targeted 4 KiB reads then exercised the recorded offsets in every mapped file.
+Seven inode numbers no longer existed,
+so their former paths cannot be classified from the current filesystem.
+Targeted 4 KiB buffered reads then exercised the recorded logical offsets in every mapped file.
 The probe read 232 current ranges without `EIO`;
 one additional old offset was beyond the current shorter file length.
 The persistent corruption counter remained exactly 405,004 after that probe.
-This means the retained failures did not reproduce at the current mapped extents.
-It does not verify unrecorded extents or the rest of the 1.42 TiB of allocated data.
+
+This narrow probe did not reproduce a checksum error.
+It is not proof that the original physical extents are sound:
+the page cache can satisfy buffered reads,
+and CoW updates can place a current inode offset on a different extent.
+It also does not verify suppressed offsets or the rest of the 1.42 TiB of allocated data.
 
 The filesystem has one device,
 uses `Data,single`,
@@ -532,7 +539,10 @@ SATA SMART reported PASSED with zero reallocated,
 uncorrectable,
 program/erase,
 and CRC errors.
-SMART health does not erase the historical Btrfs checksum failures.
+SMART health does not erase the historical Btrfs checksum failures
+or rule out corruption outside the drive,
+such as memory or data supplied before a write.
+No initiating cause has been established.
 A full scrub is still required before resetting the persistent counter.
 No captured desktop symptom was attributed to this filesystem.
 
