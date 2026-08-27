@@ -74,7 +74,7 @@ await describe({
         )
           .toEqual([
             'kimi-k3 32.664',
-            'gemma-4-26b-a4b-it 8.16',
+            'gemma-4-26b-a4b-it 8.4',
           ],);
       },
     },),
@@ -200,7 +200,7 @@ await describe({
         + 'can say how old the figures are',
       fn: async () => {
         expect(priceTally({ tally: tallyOf({ tails: [], },), },).pricedAsOf,)
-          .toBe('2026-08-25',);
+          .toBe('2026-08-26',);
       },
     },),
 

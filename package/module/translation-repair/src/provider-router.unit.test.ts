@@ -645,7 +645,7 @@ await describe({
         },);
         /** Outcome with nowhere else to ask. */
         const outcome = await client.chatJson({
-          modelId: 'hf:Qwen/Qwen3.8-27B',
+          modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
