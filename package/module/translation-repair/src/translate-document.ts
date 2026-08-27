@@ -196,14 +196,10 @@ export async function translateDocument(
    * Settled records in document order.
    */
   const settled = settlements.flatMap(function toSettled(
-    settlement,
+    { outcome, },
   ): readonly TranslateSliceRecord[] {
-    return (settlement
-      .outcome
-      .kind === 'settled')
-      ? [settlement
-        .outcome
-        .record,]
+    return (outcome.kind === 'settled')
+      ? [outcome.record,]
       : [];
   },);
 
@@ -211,14 +207,10 @@ export async function translateDocument(
    * Passages this run reached but left missing, in document order.
    */
   const unfilled = settlements.flatMap(function toUnfilled(
-    settlement,
+    { outcome, },
   ): readonly UnfilledSlice[] {
-    return (settlement
-      .outcome
-      .kind === 'unfilled')
-      ? [settlement
-        .outcome
-        .unfilled,]
+    return (outcome.kind === 'unfilled')
+      ? [outcome.unfilled,]
       : [];
   },);
 
@@ -226,15 +218,8 @@ export async function translateDocument(
    * Slices recovered from disk, excluding twins reused within this run.
    */
   const resumedSliceCount = settlements
-    .filter(function resumedFromDisk(
-      settlement,
-    ): boolean {
-      return (settlement
-        .outcome
-        .kind === 'settled')
-        && settlement
-          .outcome
-          .resumedFromDisk;
+    .filter(function resumedFromDisk({ outcome, },): boolean {
+      return (outcome.kind === 'settled') && outcome.resumedFromDisk;
     },)
     .length;
 
