@@ -104,6 +104,10 @@ export {
   type CorpusPair,
   settleEntry,
 } from './corpus-run/pass-entry.ts';
+export {
+  assertPublishableTranslation,
+  UnfilledPageError,
+} from './corpus-run/publish-completeness.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
 export {
   capOutlastsOneCall,
