@@ -12,7 +12,7 @@ import type {
   RepairModels,
 } from './repair-contract.ts';
 import {
-  refineRunShape,
+  type refineRunShape,
   refineSliceKey,
 } from './refine-slice-key.ts';
 import {
