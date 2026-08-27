@@ -68,6 +68,8 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
  *
  * @param perCallTimeoutMs - deadline per exchange
  *
+ * @param overlap - most refinement slices in flight
+ *
  * @param l - driver logger
  *
  * @returns Final outcomes plus the phase's findings
@@ -94,6 +96,7 @@ export async function refineSettledSlices(
     refineCache,
     signal,
     perCallTimeoutMs,
+    overlap = 1,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -106,6 +109,7 @@ export async function refineSettledSlices(
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
+    readonly overlap?: number;
     readonly l: Logger;
   }>,
 ): Promise<RefinePhaseResult> {
@@ -126,6 +130,7 @@ export async function refineSettledSlices(
         ...(refineCache === undefined ? {} : { refineCache, }),
         signal,
         perCallTimeoutMs,
+        overlap,
         l,
       },);
     }

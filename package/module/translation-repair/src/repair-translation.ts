@@ -75,7 +75,7 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  *
  * @param refineCache - optional cross-run cache for naturalness settlements
  *
- * @param overlap - most accuracy slices in flight; one reproduces former loop
+ * @param overlap - most repair or refinement slices in flight; one reproduces former loops
  *
  * @param parentLogger - logger this lane tags under
  *
@@ -281,6 +281,7 @@ export async function repairPreparedDocument(
     ...((refineCache === undefined) ? {} : { refineCache, }),
     signal,
     perCallTimeoutMs,
+    overlap,
     l: rl,
   },);
 

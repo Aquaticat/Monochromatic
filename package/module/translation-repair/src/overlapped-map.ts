@@ -52,6 +52,30 @@ export class OverlapRefusedError extends Error {
 }
 
 /**
+ * Refuses an overlap that cannot describe a lane count.
+ *
+ * Exposed to drivers with a no-work branch, so disabled stages cannot make an
+ * invalid overlap valid merely by returning before {@link mapOverlapped}.
+ *
+ * @param overlap - value requiring validation
+ *
+ * @throws OverlapRefusedError when value is fractional or below one
+ *
+ * @example
+ * ```ts
+ * assertOverlap({ overlap: 4, },);
+ * ```
+ *
+ * @internal
+ */
+export function assertOverlap(
+  { overlap, }: { readonly overlap: number; },
+): void {
+  if ((!Number.isInteger(overlap,)) || (overlap < 1))
+    throw new OverlapRefusedError({ overlap, },);
+}
+
+/**
  * One item beside where it sits, which every driver needs for its window and
  * for the index its records carry.
  */
@@ -103,8 +127,7 @@ export async function mapOverlapped<Item, Result,>(
     readonly oneItem: (row: OverlappedRow<Item>,) => Promise<Result>;
   },
 ): Promise<readonly Result[]> {
-  if ((!Number.isInteger(overlap,)) || (overlap < 1))
-    throw new OverlapRefusedError({ overlap, },);
+  assertOverlap({ overlap, },);
 
   /**
    * Every item beside its position, which is what each job is handed.
