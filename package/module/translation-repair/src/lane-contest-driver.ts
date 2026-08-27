@@ -23,6 +23,11 @@ import {
 } from './lane-contest-key.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import {
+  reuseTwinOrBuy,
+  type TwinMemo,
+  type TwinStored,
+} from './twin-memo.ts';
 
 //region Lane contest driver
 // The contest over one document: which slices are worth asking about, and what
@@ -36,6 +41,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // returns no slices, and the caller records that as a contest that ran and
 // found nothing rather than as a question nobody asked. Those are different
 // facts and the artifact keeps them apart.
+//
+// IDENTICAL QUESTIONS SHARE ONE CACHE-ELIGIBLE PURCHASE. Contest keys omit
+// slice position because position changes nothing the roster sees, and contest
+// outcomes carry no slice index that needs restamping. The promise memo keeps
+// overlapped twins from buying contradictory ballots or racing to overwrite one
+// cache file. An unheard outcome is neither persisted nor memoized, so its twin
+// asks again exactly as a warm run would.
 
 /**
  * Whether a bought outcome is worth keeping across runs.
@@ -62,6 +74,19 @@ function worthResuming(
 }
 
 /**
+ * Fresh contest outcome beside whether it became warm-run evidence.
+ *
+ * @example
+ * ```ts
+ * const bought: BoughtLaneContest = { outcome, persisted: true, };
+ * ```
+ */
+type BoughtLaneContest = {
+  readonly outcome: LaneContestOutcome;
+  readonly persisted: boolean;
+};
+
+/**
  * Persists a bought contest only when caller remains live and quorum made its
  * ballots reusable.
  *
@@ -76,6 +101,8 @@ function worthResuming(
  * @param cache - contest persistence boundary
  *
  * @param signal - caller abort checked before write
+ *
+ * @returns Whether outcome was persisted and may be reused by a twin
  *
  * @throws Whatever caller abort reason or persistence throws
  *
@@ -98,14 +125,15 @@ export async function persistLaneContestOutcome(
     readonly cache: SliceCache<LaneContestOutcome>;
     readonly signal: AbortSignal;
   }>,
-): Promise<void> {
+): Promise<boolean> {
   signal.throwIfAborted();
   if (!worthResuming({ outcome, }))
-    return;
+    return false;
   await cache.persist({
     key,
     serialized: JSON.stringify(outcome,),
   },);
+  return true;
 }
 
 /**
@@ -213,6 +241,11 @@ export async function contestDocumentLanes(
     .length;
   dl.info(`lane contest: ${String(eligible.size,)}/${String(compared,)} slices differ`,);
 
+  /**
+   * Cache-eligible purchases in this document, shared by every contested row.
+   */
+  const twins: TwinMemo<LaneContestOutcome> = new Map();
+
   return await mapOverlapped({
     items: eligibleRows,
     overlap,
@@ -247,33 +280,60 @@ export async function contestDocumentLanes(
         .get(key,);
 
       /**
-       * What the roster settled here, bought or resumed.
+       * What the roster settled here, bought, resumed, or reused from a twin.
        */
-      const outcome = resumed ?? await contestLaneSlice({
-        client,
-        modelIds,
-        subject: {
-          sourceText,
-          incumbentText: row.incumbentText,
-          repairText: row.repairText,
-          translateText: row.translateText,
-          ...((identityContext === undefined) ? {} : { identityContext, }),
-        },
-        signal,
-        exchangeTimeoutMs: perCallTimeoutMs,
-        l: dl,
-      },);
-      if (resumed === undefined) {
-        // Gather rounds degrade torn-down calls to silence. A quorum that
-        // arrived before the abort must not make the abandoned entry look done
-        // or become warm-run evidence.
-        await persistLaneContestOutcome({
+      const outcome = await (async function resumeOrBuy(): Promise<LaneContestOutcome> {
+        if (resumed !== undefined)
+          return resumed;
+        const asked = await reuseTwinOrBuy({
           key,
-          outcome,
-          cache,
-          signal,
+          memo: twins,
+          buy: async function buyThisRow(): Promise<BoughtLaneContest> {
+            /**
+             * Ballots bought for this question.
+             */
+            const bought = await contestLaneSlice({
+              client,
+              modelIds,
+              subject: {
+                sourceText,
+                incumbentText: row.incumbentText,
+                repairText: row.repairText,
+                translateText: row.translateText,
+                ...((identityContext === undefined) ? {} : { identityContext, }),
+              },
+              signal,
+              exchangeTimeoutMs: perCallTimeoutMs,
+              l: dl,
+            },);
+            // Gather rounds degrade torn-down calls to silence. A quorum that
+            // arrived before the abort must not make the abandoned entry look
+            // done or become warm-run evidence.
+            const persisted = await persistLaneContestOutcome({
+              key,
+              outcome: bought,
+              cache,
+              signal,
+            },);
+            return {
+              outcome: bought,
+              persisted,
+            };
+          },
+          persistedOf: function storedOf(
+            bought,
+          ): TwinStored<LaneContestOutcome> {
+            return bought.persisted
+              ? {
+                kind: 'stored',
+                record: bought.outcome,
+              }
+              : { kind: 'nothing', };
+          },
+          l: dl,
         },);
-      }
+        return (asked.kind === 'reused') ? asked.twin : asked.bought.outcome;
+      })();
       return describeContestSlice({
         sliceIndex: row.sliceIndex,
         outcome,
