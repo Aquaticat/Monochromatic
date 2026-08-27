@@ -16,7 +16,11 @@ import { foldInvisibleVariants, } from '../invisible-variants.ts';
  * ```
  */
 export function passArchiveText({ text, }: { readonly text: string; },): string {
-  return foldInvisibleVariants({ text, }).text;
+  /**
+   * Visible text from shared fold.
+   */
+  const { text: folded, } = foldInvisibleVariants({ text, },);
+  return folded;
 }
 
 //endregion Pass archive
