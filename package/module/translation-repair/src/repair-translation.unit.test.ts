@@ -83,6 +83,14 @@ type CriticConcurrency = {
 };
 
 /**
+ * Successful refiner calls in flight, and peak observed by fixture.
+ */
+type RefinerConcurrency = {
+  now: number;
+  peak: number;
+};
+
+/**
  * One-based sheet numbers 1 through count.
  */
 function oneBasedNumbers(
@@ -232,6 +240,8 @@ function scriptedClient(
               };
             },),
         }
+        : stage === 'refine_report'
+        ? { rewrites: [], }
         : undefined;
       if (scripted === undefined)
         throw new Error(`stub has no script for stage ${stage}`,);
@@ -269,7 +279,9 @@ function scriptedClient(
  * @param silentCritics - whether every critic call fails while the signal stays
  * live
  *
- * @param criticConcurrency - optional successful-call overlap instrument
+ * @param criticConcurrency - optional successful-critic overlap instrument
+ *
+ * @param refinerConcurrency - optional successful-refiner overlap instrument
  *
  * @returns Client honoring the steering
  *
@@ -287,6 +299,7 @@ function steeringClient(
     abortOnStage,
     silentCritics = false,
     criticConcurrency,
+    refinerConcurrency,
   }: {
     readonly base: SyntheticClient;
     readonly controller: AbortController;
@@ -295,6 +308,7 @@ function steeringClient(
     readonly abortOnStage?: string;
     readonly silentCritics?: boolean;
     readonly criticConcurrency?: CriticConcurrency;
+    readonly refinerConcurrency?: RefinerConcurrency;
   },
 ): SyntheticClient {
   return {
@@ -327,6 +341,19 @@ function steeringClient(
           await wait(10,);
           criticConcurrency.now -= 1;
         }
+      }
+      if ((request.responseFormat
+          ?.json_schema
+          .name
+        === 'refine_report')
+        && (refinerConcurrency !== undefined)) {
+        refinerConcurrency.now += 1;
+        refinerConcurrency.peak = Math.max(
+          refinerConcurrency.peak,
+          refinerConcurrency.now,
+        );
+        await wait(10,);
+        refinerConcurrency.now -= 1;
       }
       if (request.signal
         .aborted)
@@ -1086,6 +1113,64 @@ Meow meow meow meow.
         expect(serial.peak,).toBe(MODELS.criticModelIds
           .length,);
         expect(overlapped.peak,).toBeGreaterThan(serial.peak,);
+      },
+    },),
+
+    it({
+      name: 'threads document overlap into refinement, making two eligible slices '
+        + 'reach rewriters together only at overlap 2',
+      fn: async () => {
+        /**
+         * Roster with naturalness lane active.
+         */
+        const refiningModels: RepairModels = {
+          ...MODELS,
+          refinerModelIds: ['hf:zai-org/GLM-5.2',],
+        };
+
+        /**
+         * Successful refiner calls under overlap one.
+         */
+        const serial: RefinerConcurrency = {
+          now: 0,
+          peak: 0,
+        };
+        await repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [], },),
+            controller: new AbortController(),
+            calls: { critic: 0, },
+            refinerConcurrency: serial,
+          },),
+          sourceText: `${SOURCE_LONG_SECTION}\n${SOURCE_LONG_SECTION}`,
+          targetText: `${TARGET_LONG_SECTION}\n${TARGET_LONG_SECTION}`,
+          models: refiningModels,
+          signal: new AbortController().signal,
+          overlap: 1,
+        },);
+
+        /**
+         * Successful refiner calls under overlap two.
+         */
+        const overlapped: RefinerConcurrency = {
+          now: 0,
+          peak: 0,
+        };
+        await repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [], },),
+            controller: new AbortController(),
+            calls: { critic: 0, },
+            refinerConcurrency: overlapped,
+          },),
+          sourceText: `${SOURCE_LONG_SECTION}\n${SOURCE_LONG_SECTION}`,
+          targetText: `${TARGET_LONG_SECTION}\n${TARGET_LONG_SECTION}`,
+          models: refiningModels,
+          signal: new AbortController().signal,
+          overlap: 2,
+        },);
+        expect(serial.peak,).toBe(1,);
+        expect(overlapped.peak,).toBe(2,);
       },
     },),
 
