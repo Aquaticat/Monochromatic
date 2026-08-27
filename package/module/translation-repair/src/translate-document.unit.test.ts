@@ -11,6 +11,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -198,6 +199,14 @@ type CallLog = {
 };
 
 /**
+ * Successful translator calls in flight, and peak observed by fixture.
+ */
+type TranslateConcurrency = {
+  now: number;
+  peak: number;
+};
+
+/**
  * Finds the one-based candidate index whose rendered text carries a needle,
  * reading the judge sheet the way a judge does rather than assuming an order the
  * lane deliberately varies.
@@ -260,6 +269,8 @@ function pickCandidate(
  * absent when none does; this is how one slice is made unfillable while the
  * rest of the document translates normally
  *
+ * @param translateConcurrency - optional successful-call overlap instrument
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -274,12 +285,14 @@ function laneClient(
     abortAfterTranslateCalls,
     silentTranslators = false,
     silentForSource = SILENT_FOR_NOTHING,
+    translateConcurrency,
   }: {
     readonly calls: CallLog;
     readonly controller: AbortController;
     readonly abortAfterTranslateCalls?: number;
     readonly silentTranslators?: boolean;
     readonly silentForSource?: string;
+    readonly translateConcurrency?: TranslateConcurrency;
   },
 ): SyntheticClient {
   return {
@@ -322,10 +335,19 @@ function laneClient(
         // single passage unfillable while the document around it settles.
         if (content.includes(silentForSource,))
           throw new Error('translator lost its voice on this passage',);
+        if (translateConcurrency !== undefined) {
+          translateConcurrency.now += 1;
+          translateConcurrency.peak = Math.max(
+            translateConcurrency.peak,
+            translateConcurrency.now,
+          );
+          await wait(10,);
+          translateConcurrency.now -= 1;
+        }
         calls.translate += 1;
 
         /**
-         * Wire reply carrying the scripted rendering.
+         * Wire reply carrying scripted rendering.
          */
         const value: unknown = { translation: renderingFor({ content, },), };
         if (!request.validate(value,))
@@ -384,6 +406,8 @@ function laneClient(
  *
  * @param overlap - most slices the driver may run at once
  *
+ * @param translateConcurrency - optional successful-call overlap instrument
+ *
  * @param persisted - map the run writes settled records into; passed in so a
  * case that expects a REJECTION can still read what reached the cache
  *
@@ -406,6 +430,7 @@ async function runDriver(
     silentForSource = SILENT_FOR_NOTHING,
     anchorSource,
     overlap = 1,
+    translateConcurrency,
     persisted = new Map<string, TranslateSliceRecord>(),
     calls = {
       translate: 0,
@@ -422,6 +447,7 @@ async function runDriver(
     readonly silentForSource?: string;
     readonly anchorSource?: string;
     readonly overlap?: number;
+    readonly translateConcurrency?: TranslateConcurrency;
     readonly persisted?: Map<string, TranslateSliceRecord>;
     readonly calls?: CallLog;
   },
@@ -481,6 +507,9 @@ async function runDriver(
         : { abortAfterTranslateCalls, }),
       silentTranslators,
       silentForSource,
+      ...((translateConcurrency === undefined)
+        ? {}
+        : { translateConcurrency, }),
     },),
     prepared,
     models: MODELS,
@@ -523,6 +552,34 @@ await describe({
         expect(result.sliceCount,).toBeGreaterThan(1,);
         for (const record of result.slices)
           expect(record.kind,).toBe('translate-slice',);
+      },
+    },),
+
+    it({
+      name: 'runs two slices at once when overlap is 2, after a serial positive control proves '
+        + 'the successful-call instrument can distinguish one slice from two',
+      fn: async () => {
+        /** Successful calls under former sequential loop. */
+        const serial: TranslateConcurrency = {
+          now: 0,
+          peak: 0,
+        };
+
+        /** Successful calls under two slices in flight. */
+        const overlapped: TranslateConcurrency = {
+          now: 0,
+          peak: 0,
+        };
+        await runDriver({
+          overlap: 1,
+          translateConcurrency: serial,
+        },);
+        await runDriver({
+          overlap: 2,
+          translateConcurrency: overlapped,
+        },);
+        expect(serial.peak,).toBe(TRANSLATORS.length,);
+        expect(overlapped.peak,).toBeGreaterThan(serial.peak,);
       },
     },),
 
