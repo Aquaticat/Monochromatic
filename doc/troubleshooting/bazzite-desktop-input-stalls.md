@@ -361,7 +361,13 @@ KWin delay,
 or system-wide input failure accompanied the failed Plasma probe.
 The 04:00 and 05:00 clean timeline-creation measurements still oppose a simple snapshot-creation trigger.
 A cleanup-specific interaction is now a focused hypothesis for the Plasma-centered episodes,
-but it requires another uncontaminated cleanup cycle to distinguish recurrence from coincidence.
+but it requires another uncontaminated cleanup cycle with a snapshot deletion
+to distinguish recurrence from coincidence.
+
+The 06:22 cleanup ran during the encrypted-filesystem scrub and deleted no snapshot.
+It completed at 06:25 without a Plasma or KWin probe delay.
+The 07:00 timeline creation also left both probes responsive while the scrub was active.
+These are scrub-contaminated cases and do not test the deletion-specific association.
 
 ## Environment findings
 
