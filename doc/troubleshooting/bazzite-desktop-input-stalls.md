@@ -1,4 +1,4 @@
-# Bazzite 44 global input stalls remained unconfirmed; a separate Plasma 6.7.4 panel freeze was observed
+# Bazzite 44 global input stalls remained unconfirmed; separate Plasma-centered freezes were observed
 
 ## Status
 
@@ -30,6 +30,17 @@ A watchdog independently captured a Plasma event-loop timeout during the report.
 This recurrence establishes that Panel Colorizer was not required for this later episode.
 It does not establish that the 04:25 and 05:25 episodes had one cause,
 or that Helium and Plasma shared one cause.
+
+A third natural episode began around 18:38 after Panel Colorizer removal.
+All Helium scrolling,
+clicks,
+and keyboard input were delayed,
+and panel task clicks did not work.
+Pointer movement,
+Firefox,
+and Alt+Tab remained responsive.
+Three autonomous probes timed out Plasma while KWin answered normally.
+The episode recovered without restarting Plasma.
 
 ## Symptom
 
@@ -110,6 +121,22 @@ The user continued to perceive some Helium scrolling delay after the panel recov
 At 05:54,
 the user confirmed that Helium and the panel were both working normally again.
 The temporary continuation keeps Helium's client-local behavior separate from the measured Plasma event-loop stall.
+
+During the later episode around 18:38:
+
+- Helium scrolling,
+  clicks,
+  and keyboard input were delayed.
+- Panel clicks did not work.
+- Clicking Helium's panel task entry did not switch windows.
+- Pointer movement and Firefox remained responsive.
+- Alt+Tab still switched windows,
+  including to Helium.
+- Plasma missed three 1.5-second DBus probes.
+- KWin answered the corresponding probes in 5.5 to 5.6 ms.
+- The user reported recovery without restarting Plasma.
+
+This boundary confirms a Plasma-plus-Helium event rather than an all-application input delay.
 
 ## Root cause
 
@@ -200,6 +227,46 @@ which QML item initiated a resize,
 or why Helium scrolling remained delayed.
 No kernel GPU fault appeared during either interval.
 
+### The 18:38 recurrence repeatedly blocked sleeping Plasma while KWin remained responsive
+
+The lightweight watchdog captured three natural failed Plasma probes starting at:
+
+- 18:38:11,
+  with a 1,500.9 ms timeout and 5.6 ms KWin response.
+- 18:39:12,
+  with a 1,502.8 ms timeout and 5.5 ms KWin response.
+- 18:41:01,
+  with a 1,502.4 ms timeout and 5.5 ms KWin response.
+
+Plasma accumulated 0.0 ms of scheduler runtime and 0.0 ms of runnable wait during each failed probe.
+The second wait-channel snapshot placed Plasma's main thread in `futex_do_wait`;
+the first and third reported `0` for that thread.
+Render threads were also in futex waits.
+These procfs snapshots show a sleeping synchronization boundary,
+not the initiating operation or owning component.
+They do not establish that every futex wait was abnormal.
+
+KWin scheduler wait remained between 0.0 and 0.2 ms,
+and the one-second observer classified no system-wide incident.
+A transient 394.2 ms/s I/O-pressure sample appeared near the first timeout,
+but dm-0 accumulated only 2 ms of block I/O and dm-1 had none.
+No AMDGPU,
+DRM,
+kernel lockup,
+or memory-pressure diagnostic accompanied the episode.
+A PipeWire link activation failed at 18:38:20,
+but one coincident audio-link failure does not establish the cause of either application's input delay.
+
+The captures are:
+
+- `/var/home/user/temp/agent/plasma-stall-captures/2026-08-27T22-38-11.285Z`
+- `/var/home/user/temp/agent/plasma-stall-captures/2026-08-27T22-39-12.336Z`
+- `/var/home/user/temp/agent/plasma-stall-captures/2026-08-27T22-41-01.483Z`
+
+Unlike the earlier all-thread stack capture,
+these captures used only DBus probes and procfs wait channels.
+They did not attach a debugger or stop Plasma.
+
 ### AMDGPU `REG_WAIT` messages are real timeouts but have not occurred at runtime here
 
 The exact kernel source is OpenGamingCollective Linux tag `v7.2-ogc6`,
@@ -259,7 +326,7 @@ but the functions can also participate in later display mode transitions.
 The messages must not be called harmless solely because they happened early.
 The narrower verified statement is that no matching runtime timeout coincided with the reported desktop symptoms here.
 
-### Timeline creation was clean, while cleanup aligned with both natural panel events
+### Timeline creation was clean, while cleanup aligned with every natural Plasma-centered event
 
 The exact Snapper source is tag `v0.13.0`,
 commit `3a3bd97083976d28538d402284ff947b4aab5b8f`.
@@ -360,8 +427,14 @@ The 04:25 and 05:25 natural Plasma-centered events both occurred while that clea
   Cleanup completed at 05:34:56.
 - The same cleanup logged deletion of snapshot 971 at 05:31:02.
   The observer-contaminated second probe began about 41 seconds later.
+- The 18:34:32 cleanup logged deletion of snapshot 964 at 18:37:22.
+  Natural failed Plasma probes began about 49 seconds,
+  1 minute 50 seconds,
+  and 3 minutes 39 seconds later.
+  Cleanup completed at 18:41:21,
+  and the user reported recovery shortly after the third probe recovered.
 
-Both uncontaminated symptom reports therefore have a cleanup association,
+All three user-reported Plasma-centered episodes therefore have a cleanup association,
 unlike the earlier assessment based only on timeline creation.
 This is repeated temporal evidence,
 not a demonstrated call path.
@@ -381,13 +454,21 @@ Later post-scrub controls did exercise deletion without the encrypted scrub or l
 - The 12:28 cleanup deleted snapshot 964 at 12:31:10.
 - The 13:29 cleanup deleted snapshot 964 at 13:32:15.
 - The 14:30 cleanup deleted snapshot 964 at 14:33:18.
+- The 15:31 cleanup deleted snapshot 964 at 15:34:14.
+- The 16:32 cleanup deleted snapshot 964 at 16:35:12.
+- The 17:33 cleanup deleted snapshot 964 at 17:36:12.
 
 Neither desktop observer recorded an incident candidate or event-loop stall across those cycles.
 Plasma and KWin DBus heartbeats remained successful,
 and the one-second observer reported no KWin wait accumulation around the deletions.
-These repeated deletion controls weaken a simple cleanup-deletion trigger.
-They do not prove that cleanup can never participate in a rarer interaction,
-but the original two-event timing is no longer sufficient grounds for changing `snapper-cleanup.timer`.
+These repeated deletion controls prove that deletion is not sufficient to trigger the symptom.
+The 18:38 recurrence nevertheless strengthens evidence for a conditional cleanup interaction
+because every natural Plasma-centered episode followed deletion while cleanup remained active.
+That pattern still does not identify a call path,
+component,
+or causal direction.
+Changing `snapper-cleanup.timer` should be treated as a controlled comparison,
+not a confirmed fix.
 
 ## Environment findings
 
