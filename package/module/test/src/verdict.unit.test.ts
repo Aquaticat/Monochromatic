@@ -296,7 +296,7 @@ await describe({
         await it({
           name: 'expected failure',
           l: capture.logger,
-          fails: true,
+          fails: 'reason contains PASS FAIL PASSAGE FAILURE',
           fn: async () => {
             throw new Error('expected throw',);
           },
@@ -356,7 +356,7 @@ await describe({
         /** Expected-failure pass verdict. */
         const expectedFailure = recordContaining({
           records: capture.records,
-          fragment: '[expected failure] [PASS] threw as expected (',
+          fragment: '[expected failure] [PASS] threw as expected (reason contains PASS FAIL PASSAGE FAILURE) (',
         },);
         /** Unexpected-success failure verdict. */
         const unexpectedFailure = recordContaining({
@@ -511,6 +511,12 @@ await describe({
           children: [],
         },);
         await describe({
+          name: 'boolean skipped suite',
+          l: capture.logger,
+          skip: true,
+          children: [],
+        },);
+        await describe({
           name: 'empty suite PASSAGE FAILURE',
           l: capture.logger,
           children: [],
@@ -529,14 +535,18 @@ await describe({
         },);
 
         expect(passes,).toHaveLength(1,);
-        expect(skips,).toHaveLength(1,);
+        expect(skips,).toHaveLength(2,);
         expect(passes[0]?.level,).toBe('info',);
         expect(skips[0]?.level,).toBe('info',);
+        expect(skips[1]?.level,).toBe('info',);
         expect(passes[0]?.message,).toContain(
           '[empty suite PASSAGE FAILURE] [PASS] (',
         );
         expect(skips[0]?.message,).toBe(
           '[skipped suite PASSAGE FAILURE] [SKIP] suite "skipped suite PASSAGE FAILURE": blocked by PASS FAIL diagnostic',
+        );
+        expect(skips[1]?.message,).toBe(
+          '[boolean skipped suite] [SKIP] suite "boolean skipped suite"',
         );
       },
     },),
