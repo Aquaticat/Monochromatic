@@ -1306,7 +1306,25 @@ adds them to deterministic declared-name survival and prompt context,
 and publication independently rejects any final attribution that drops or respells them.
 Exact current generation-7 page is positive control:
 new boundary rejects it with `ContributorCompletenessError`.
-Fresh affected rerun remains required before accepting output.
+
+Fresh `1d4472e31` generation-7 `Weideriche_` validation then settled in an isolated root with schema 7,
+preparation identity v2,
+and both providers wet.
+`verify-published` matched one artifact and page at expected length.
+Metadata kept source identity equality and exact established target contributor forms.
+Every structurally eligible body slice reached final polish;
+one retained its approved base after all three refiners proposed nothing,
+and another shipped a changed proposal after nine approving gate ballots with final text equal to proposed text.
+Complete-page reading still refused publication quality.
+The selected polish improved local repetition and verb form,
+but left source-order adverb stacking and literal verb-object phrasing;
+the untouched body slice also retained repeated generic referents.
+The generic rewriter question permitted partial local cleanup while preserving Chinese grammar too literally.
+Rewriter policy now says to preserve meaning rather than source grammar,
+names the observed calque classes,
+and requires every clear issue in a changed paragraph to be fixed before reply.
+Refinement and consolidation cache generations advance because earlier replies answered weaker question.
+Another fresh affected rerun remains required before accepting output.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.

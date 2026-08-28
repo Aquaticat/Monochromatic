@@ -32,8 +32,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 5 gives final polish every structurally eligible body paragraph and
  * makes target contributor public identities explicit in producer rule.
+ *
+ * VERSION 6 asks final polish to remove source-grammar calques and finish every
+ * clear issue in a changed paragraph. Version 5 asked a weaker question.
  */
-export const CONSOLIDATE_CACHE_VERSION = 5;
+export const CONSOLIDATE_CACHE_VERSION = 6;
 
 /**
  * What a line-structured slice appends to its key material.

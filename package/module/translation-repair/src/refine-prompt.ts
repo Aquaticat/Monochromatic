@@ -118,6 +118,8 @@ The translation below is already correct as far as anyone has determined. Nobody
 
 Rewrite a paragraph ONLY when the improvement is clear and obvious. If a paragraph reads acceptably, leave it out of your reply entirely. Returning an empty list is a correct and common answer, and is much better than proposing a change you would not defend.
 
+Preserve meaning, not Chinese grammar. Do not retain source-language word order or parts of speech when idiomatic English expresses the same meaning differently. Look for calqued verb-object combinations, stacked time or aspect adverbs, repeated generic nouns or pronouns, stiff causal transitions, and literal emotional descriptions. When you rewrite a paragraph, fix every clear naturalness problem in it rather than only the easiest phrase, then reread the whole replacement for anything a careful native editor would still change.
+
 These must survive a rewrite unchanged: every number, date, name, handle, link, footnote marker, and any word left in the original language. Do not add information, drop information, soften a statement, sharpen a statement, or change who did what to whom.
 
 Reply with ONLY a JSON object of shape {"rewrites": [{"paragraph": 1, "newText": "..."}]}. Include only the paragraphs you are changing. No prose, no code fences.`,

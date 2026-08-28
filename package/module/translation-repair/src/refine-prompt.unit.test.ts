@@ -339,6 +339,12 @@ await describe({
 
         expect(system,).toContain('leave it out of your reply entirely',);
         expect(system,).toContain('Returning an empty list is a correct and common answer',);
+        expect(system,).toContain('Preserve meaning, not Chinese grammar',);
+        expect(system,).toContain('calqued verb-object combinations',);
+        expect(system,).toContain('stacked time or aspect adverbs',);
+        expect(system,).toContain('repeated generic nouns or pronouns',);
+        expect(system,).toContain('fix every clear naturalness problem',);
+        expect(system,).toContain('reread the whole replacement',);
       },
     },),
   ],

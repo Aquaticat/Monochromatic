@@ -40,8 +40,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * probe's question moves, and a reader checking that rule against this change
  * has to find it kept rather than argued around. It also covers the slices
  * whose window is empty, which the fields deliberately cannot.
+ *
+ * VERSION 3 makes source-grammar calques and partially polished paragraphs
+ * explicit rewriter work. Earlier replies answered a weaker naturalness question.
  */
-export const REFINE_CACHE_VERSION = 2;
+export const REFINE_CACHE_VERSION = 3;
 
 /**
  * Everything about this run that changes what the voices are ASKED.
