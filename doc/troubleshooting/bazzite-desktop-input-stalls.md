@@ -1049,6 +1049,16 @@ and no cleanup was triggered manually.
 The 01:36 scheduled cleanup had already removed timeline snapshot 964 before this change;
 boot snapshot 963 remained.
 
+The first post-change timeline snapshot was created at 02:00.
+Cleanup ran from 02:36:17 to 02:39:04 without emitting a deletion message,
+and timeline snapshot 964 remained afterward.
+The filesystem had 182.881 GiB available,
+82.881 GiB above the new limit,
+and full qgroups were consistent.
+This verifies that the new free-space condition prevents the immediate create-delete loop.
+It does not prevent later deletion when fixed retention limits are exceeded,
+nor prove that deletion impact is resolved.
+
 ### Remove Panel Colorizer from every panel
 
 This user-requested maintenance action was completed and verified through Plasma's scripting host,
