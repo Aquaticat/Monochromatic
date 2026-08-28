@@ -41,7 +41,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.weight
 
 // What:     `RoundedCornerShape` supplies reference-like neutral disclosure silhouette.
 // Why:      Chevron target stays visually separate from every selectable page style.
@@ -201,10 +200,14 @@ private fun pageControlDisclosure(options: PageControlDisclosureOptions) {
     val actionLabel: String = if (options.expanded) "Show fewer pages" else "Show all pages"
     /** Selects up or down chevron point ordering. */
     val pointsDown: Boolean = !options.expanded
+    /** Captures adaptive button fill before entering non-composable draw scope. */
+    val containerColor = MaterialTheme.colorScheme.surfaceVariant
+    /** Captures adaptive chevron pigment before entering non-composable draw scope. */
+    val chevronColor = MaterialTheme.colorScheme.onSurfaceVariant
     Box(
         modifier = Modifier
             .size(pageDisclosureSize)
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(pageDisclosureRadius))
+            .background(containerColor, RoundedCornerShape(pageDisclosureRadius))
             .semantics {
                 contentDescription = actionLabel
                 role = Role.Button
@@ -224,14 +227,14 @@ private fun pageControlDisclosure(options: PageControlDisclosureOptions) {
                 /** Selects center endpoint y for current direction. */
                 val centerYPx: Float = if (pointsDown) lowerYPx else upperYPx
                 drawLine(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = chevronColor,
                     start = Offset(x = insetPx, y = outerYPx),
                     end = Offset(x = middleXPx, y = centerYPx),
                     strokeWidth = 2.dp.toPx(),
                     cap = StrokeCap.Round,
                 )
                 drawLine(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = chevronColor,
                     start = Offset(x = middleXPx, y = centerYPx),
                     end = Offset(x = size.width - insetPx, y = outerYPx),
                     strokeWidth = 2.dp.toPx(),
