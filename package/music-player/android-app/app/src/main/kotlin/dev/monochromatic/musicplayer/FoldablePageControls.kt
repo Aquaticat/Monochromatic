@@ -37,6 +37,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 
+// What:     Bring-into-view APIs ask every scrollable ancestor to reveal attached selected target.
+// Why:      Compose resolves selected geometry correctly across Row and custom SubcomposeLayout styles.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BringIntoViewRequester, bringIntoViewRequester } from "compose/relocation";
+// ```
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+
 // What:     Compose layout primitives arrange disclosure beside constrained page-control viewport.
 // Why:      Leading control owns fixed target while strip consumes remaining width.
 //
@@ -69,19 +79,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 // ```
 import androidx.compose.material3.MaterialTheme
 
-// What:     Compose runtime state and effect APIs retain measured geometry and apply scroll destinations.
-// Why:      Selected item is measured after composition, then synchronously revealed.
+// What:     Compose runtime effect and memory APIs retain requester and issue reveal after layout.
+// Why:      Selected item is composed before scrollable parent receives visibility request.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { useEffect, useState } from "compose/runtime";
+// import { useEffect, useMemo } from "compose/runtime";
 // ```
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 
 // What:     `Alignment` and `Modifier` describe immutable layout and interaction configuration.
 // Why:      Disclosure and viewport share top alignment without mutable view objects.
@@ -120,17 +127,6 @@ import androidx.compose.ui.geometry.Offset
 // ```
 import androidx.compose.ui.graphics.StrokeCap
 
-// What:     Layout callbacks report selected target and viewport geometry after placement.
-// Why:      Pure reveal helper needs physical content coordinates and viewport width.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { onLayout, positionInParent } from "compose/layout";
-// ```
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInParent
-
 // What:     `LocalConfiguration` reads current orientation from Compose environment.
 // Why:      Landscape retains existing fully wrapped controls.
 //
@@ -161,15 +157,6 @@ import androidx.compose.ui.semantics.semantics
 // ```
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
-// What:     `roundToInt` converts measured floating content coordinate to scroll state's integer pixels.
-// Why:      ScrollState and pure reveal helper use exact integer offsets.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const roundToInt = Math.round;
-// ```
-import kotlin.math.roundToInt
 
 /** Stores Android minimum disclosure target side. */
 private val pageDisclosureSize: Dp = 48.dp
@@ -253,16 +240,14 @@ private fun pageControlDisclosure(options: PageControlDisclosureOptions) {
     )
 }
 
-/** Groups rendered portrait row with scroll and selected-geometry boundaries. */
+/** Groups rendered portrait row with scroll and selected-request boundaries. */
 private data class PortraitPageControlRowOptions(
     /** Holds shared fold state and page action. */
     val fold: FoldablePageControlsOptions,
     /** Owns manual and programmatic horizontal offset. */
     val scrollState: ScrollState,
-    /** Reports selected control geometry. */
+    /** Attaches selected target to visibility requester. */
     val selectedModifier: Modifier,
-    /** Reports visible viewport width. */
-    val onViewportWidth: (Int) -> Unit,
 )
 
 /** Displays disclosure beside expanded rows or one horizontally scrollable row. */
@@ -283,11 +268,7 @@ private fun portraitPageControlRow(options: PortraitPageControlRowOptions) {
                 ),
             )
         }
-        BoxWithConstraints(
-            modifier = Modifier
-                .weight(1f)
-                .onSizeChanged { options.onViewportWidth(it.width) },
-        ) {
+        BoxWithConstraints(modifier = Modifier.weight(1f)) {
             /** Captures finite viewport before collapsed child receives horizontal infinity. */
             val pageMaximumWidth: Dp = maxWidth
             /** Shares stable page values between wrapped and one-row branches. */
@@ -314,53 +295,23 @@ private fun portraitPageControlRow(options: PortraitPageControlRowOptions) {
     }
 }
 
-/** Owns portrait measurement state and selected-control reveal effect. */
+/** Owns portrait scroll state and selected-control visibility request. */
 @Composable
 private fun portraitFoldablePageControls(options: FoldablePageControlsOptions) {
     /** Owns manual and programmatic horizontal strip offset. */
     val scrollState: ScrollState = rememberScrollState()
-    /** Stores selected control's source-coordinate start. */
-    var selectedStartPx: Int by remember { mutableIntStateOf(0) }
-    /** Stores selected control's source-coordinate end. */
-    var selectedEndPx: Int by remember { mutableIntStateOf(0) }
-    /** Stores visible horizontal viewport width. */
-    var viewportWidthPx: Int by remember { mutableIntStateOf(0) }
-    /** Attaches geometry reporting only to currently selected control. */
-    val selectedModifier: Modifier = Modifier.onGloballyPositioned { coordinates ->
-        /** Recovers stable source coordinate by adding current scroll translation. */
-        val sourceStartPx: Int = coordinates.positionInParent().x.roundToInt() + scrollState.value
-        selectedStartPx = sourceStartPx
-        selectedEndPx = sourceStartPx + coordinates.size.width
-    }
-    LaunchedEffect(
-        options.expanded,
-        options.state.selectedPage,
-        options.style,
-        selectedStartPx,
-        selectedEndPx,
-        viewportWidthPx,
-        scrollState.maxValue,
-    ) {
-        if (!options.expanded && viewportWidthPx > 0 && selectedEndPx > selectedStartPx) {
-            scrollState.scrollTo(
-                horizontalRevealOffset(
-                    HorizontalRevealOptions(
-                        currentOffsetPx = scrollState.value,
-                        viewportWidthPx = viewportWidthPx,
-                        itemStartPx = selectedStartPx,
-                        itemEndPx = selectedEndPx,
-                        maximumOffsetPx = scrollState.maxValue,
-                    ),
-                ),
-            )
-        }
+    /** Owns visibility request attached to current selected control. */
+    val requester: BringIntoViewRequester = remember { BringIntoViewRequester() }
+    /** Attaches selected control to requester without changing geometry. */
+    val selectedModifier: Modifier = Modifier.bringIntoViewRequester(requester)
+    LaunchedEffect(options.expanded, options.state.selectedPage, options.style, scrollState.maxValue) {
+        if (!options.expanded) requester.bringIntoView()
     }
     portraitPageControlRow(
         PortraitPageControlRowOptions(
             fold = options,
             scrollState = scrollState,
             selectedModifier = selectedModifier,
-            onViewportWidth = { viewportWidthPx = it },
         ),
     )
 }
