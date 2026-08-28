@@ -46,6 +46,10 @@ During one running app,
 retain expansion across desktop breakpoint changes,
 Android orientation changes,
 and page-control style changes.
+On Android,
+`rememberSaveable` treats configuration or process recreation inside the retained task as the same running app.
+A new task starts from the declared collapsed default,
+and no preference or session field stores expansion.
 
 ## Verification contract
 
@@ -110,6 +114,10 @@ segmented,
 Chromium,
 and LED controls from production composables.
 Every collapsed style brought selected `Hotel Mastering` into view.
+UI Automator measured its text bounds within the `1080px` display for every style:
+leading edges ranged from `610px` to `678px`,
+and trailing edges ranged from `1000px` to `1035px`.
+The screenshots confirmed the complete selected control was inside the visible strip rather than merely present in semantics.
 A one-page Chromium fixture rendered `Only page` without a disclosure or leading gap.
 The gallery neither read nor wrote the player's saved page-control preference,
 and its throwaway worktree was removed after verification.
