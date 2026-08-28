@@ -6,6 +6,27 @@ import type { UnclaimedTargetBlock, } from '../document-preparation.ts';
 // this boundary turns that evidence into fail-closed corpus behaviour.
 
 /**
+ * Names unreviewed blocks by pair and parser id.
+ *
+ * @param blocks - archive blocks outside source claims
+ *
+ * @returns Names containing no corpus text
+ *
+ * @example
+ * ```ts
+ * const locations = unreviewedLocations({ blocks, });
+ * ```
+ */
+function unreviewedLocations(
+  { blocks, }: { readonly blocks: readonly UnclaimedTargetBlock[]; },
+): string {
+  return blocks.map(function toLocation(block,): string {
+    return `${String(block.pairIndex,)}/${block.blockId}`;
+  },)
+    .join(', ',);
+}
+
+/**
  * Failure raised when archive blocks would bypass source-aligned quality stages.
  *
  * @example
@@ -44,10 +65,7 @@ export class UnreviewedArchiveError extends Error {
     },
   ) {
     super(`entry ${entryId} has ${String(blocks.length,)} unreviewed archive block(s) at ${
-      blocks.map(function toLocation(block,): string {
-        return `${String(block.pairIndex,)}/${block.blockId}`;
-      },)
-        .join(', ',)
+      unreviewedLocations({ blocks, },)
     }`,);
     this.name = 'UnreviewedArchiveError';
     this.entryId = entryId;
