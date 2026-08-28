@@ -12,6 +12,7 @@ import {
 
 import {
   assertFrontMatterComplete,
+  type ChunkPair,
   FrontMatterCompletenessError,
   frontMatterSlice,
   splitFrontMatter,
@@ -46,6 +47,28 @@ const sliceResult = frontMatterSlice({
 },);
 if (sliceResult.kind !== 'paired')
   throw new Error('front matter fixture did not pair',);
+
+/**
+ * Ordinary body slice preceding metadata in invalid-order fixture.
+ */
+const BODY_SLICE: ChunkPair = {
+  source: {
+    kind: 'content',
+    sliceIndex: 0,
+    nodes: [],
+    startOffset: SOURCE_TEXT.length,
+    endOffset: SOURCE_TEXT.length,
+    text: '',
+  },
+  target: {
+    kind: 'content',
+    sliceIndex: 0,
+    nodes: [],
+    startOffset: TARGET_TEXT.length,
+    endOffset: TARGET_TEXT.length,
+    text: '',
+  },
+};
 
 await describe({
   name: assertFrontMatterComplete.name,
@@ -119,11 +142,18 @@ await describe({
           pageText: '---\nname: Maomao\ninfo:\n  alias: Mao\n---\n\nBody.\n',
           slices: [{
             ...sliceResult.slice,
-            target: {
-              ...sliceResult.slice.target,
+            source: {
+              ...sliceResult.slice.source,
               sliceIndex: 1,
             },
           },],
+        },),).toThrow(FrontMatterCompletenessError,);
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: SOURCE_TEXT,
+          archiveText: TARGET_TEXT,
+          pageText: '---\nname: Maomao\ninfo:\n  alias: Mao\n---\n\nBody.\n',
+          slices: [BODY_SLICE, sliceResult.slice,],
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),

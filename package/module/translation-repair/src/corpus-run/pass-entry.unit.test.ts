@@ -409,6 +409,14 @@ function replyFor(
       reason: 'scripted',
     };
   }
+  if (schema === 'consolidate_gate') {
+    return {
+      choice: 'consolidated',
+      unsupported: [],
+      dropped: [],
+      reason: 'scripted metadata gate',
+    };
+  }
   throw new Error(`no script for ${schema}`,);
 }
 

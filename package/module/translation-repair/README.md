@@ -1148,10 +1148,28 @@ and build script uses that `name` as visible localized list metadata.
 This is inherited archive defect on exact path `#269` names,
 not settlement regression.
 Affected-entry evidence validates `#273` progress through settlement and publication only;
-general pipeline closure still requires seeded recontest evidence and front-matter repair.
+general pipeline closure still requires seeded recontest evidence and current-build front-matter rerun.
 Unit guard now proves contested pairing is not cached,
 second attempt is actually bought,
 and recovered one-to-many split becomes cacheable.
+
+Front-matter path `#269` is implemented after that reading and awaits live validation.
+Visible YAML metadata is explicit syntax-bearing slice zero in artifact generation 5;
+repair and naturalness lanes emit deliberate no-op rows,
+while translate ensemble,
+contest,
+consolidation,
+and final gate receive source-authoritative metadata rules.
+Candidate and final-page guards require parseable target-compatible YAML shape,
+exact metadata slice placement,
+and non-incumbent result when source and archive metadata differ.
+Preparation identity generation 2 distinguishes current metadata-aware slicing,
+while generations 2 through 4 rebuild under legacy body-only identity generation 1.
+A full synthetic pass crosses translation,
+contest,
+consolidation gate,
+artifact parser,
+and page persistence.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.
@@ -1166,7 +1184,7 @@ then rerun affected entry before resuming measurement.
 More samples do not compensate for known mechanism.
 
 Remaining corpus arms, hard-case output reading, live calibration checks,
-front matter and site-grammar gaps,
+site-grammar gaps,
 package reading CLI,
 Hyper catalog drift check,
 and declined-archive seam remain open.

@@ -156,7 +156,9 @@ export function assertFrontMatterComplete(
   /**
    * Whether explicit role points anywhere but exact metadata spans.
    */
-  const misplaced = (targetSlice.sliceIndex !== 0)
+  const misplaced = (slices.at(0,) !== metadataSlice)
+    || (sourceSlice.sliceIndex !== 0)
+    || (targetSlice.sliceIndex !== 0)
     || (sourceSlice.startOffset !== 0)
     || (targetSlice.startOffset !== 0)
     || (sourceSlice.endOffset !== sourceFrontMatter.length)

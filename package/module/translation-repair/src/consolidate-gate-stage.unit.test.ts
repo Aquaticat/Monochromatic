@@ -150,6 +150,39 @@ async function gate(
 }
 
 await describe({
+  name: 'front matter consolidation gate',
+  children: [
+    it({
+      name: 'SETTLES SYNTAX-BEARING METADATA through gate stage',
+      fn: async () => {
+        const outcome = await gateConsolidatedSlice({
+          client: cannedClient({
+            replyByModel: [
+              ballot({ choice: 'consolidated', },),
+              ballot({ choice: 'consolidated', },),
+              ballot({ choice: 'consolidated', },),
+            ],
+          },),
+          modelIds: ROSTER,
+          subject: {
+            sourceText: '---\nname: 猫猫\n---\n',
+            incumbentText: '---\nname: EntryId\n---\n',
+            consolidatedText: '---\nname: Maomao Cat\n---\n',
+            standingText: '---\nname: Maomao\n---\n',
+            syntax: 'front-matter',
+          },
+          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.choice,).toBe('consolidated',);
+        expect(outcome.ships,).toBe('consolidated',);
+      },
+    },),
+  ],
+},);
+
+await describe({
   name: settleGateBallots.name,
   children: [
     it({
