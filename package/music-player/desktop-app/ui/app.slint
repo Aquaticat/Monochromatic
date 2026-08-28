@@ -755,19 +755,19 @@ component ChromiumControls inherits Rectangle {
             max-width: chromium-layout.width;
             property <bool> last-control: p == root.labels.length - 1;
             init => {
-                root.control-geometry(p, self.x, self.width);
+                root.control-geometry(p, self.x + 12px, self.width);
             }
             changed x => {
-                root.control-geometry(p, self.x, self.width);
+                root.control-geometry(p, self.x + 12px, self.width);
             }
             changed width => {
-                root.control-geometry(p, self.x, self.width);
+                root.control-geometry(p, self.x + 12px, self.width);
             }
             changed selected => {
-                root.control-geometry(p, self.x, self.width);
+                root.control-geometry(p, self.x + 12px, self.width);
             }
             changed last-control => {
-                root.control-geometry(p, self.x, self.width);
+                root.control-geometry(p, self.x + 12px, self.width);
             }
             clicked => {
                 root.select-page(p);

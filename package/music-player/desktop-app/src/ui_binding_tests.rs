@@ -327,9 +327,13 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     for _ in 0..3 {
         mock_elapsed_time(std::time::Duration::from_millis(1));
     }
-    let final_tab = ElementHandle::find_by_element_type_name(&app, "ChromiumTab")
+    let final_tab = fold
+        .query_descendants()
+        .match_type_name("ChromiumTab")
+        .find_all()
         .last()
-        .expect("Chromium fixture renders its final tab");
+        .cloned()
+        .expect("folded Chromium fixture renders its final tab");
     let fold_left = fold.absolute_position().x;
     let fold_right = fold_left + fold.size().width;
     let tab_left = final_tab.absolute_position().x;
