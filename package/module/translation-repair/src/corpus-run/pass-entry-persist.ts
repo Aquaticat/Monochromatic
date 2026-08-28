@@ -7,6 +7,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { DestinationCheck, } from './dropped-destinations.ts';
+import { assertFinalSelectionSettled, } from './final-selection-completeness.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 
 //region Pass entry persistence
@@ -60,6 +61,13 @@ export async function persistSettledEntry(
     readonly l: Logger;
   }>,
 ): Promise<DestinationCheck> {
+  // FIRST MUTATION SITS BELOW THIS LINE. A contest decline cannot become
+  // approval merely because final assembly still has archive bytes available.
+  assertFinalSelectionSettled({
+    entryId,
+    artifact,
+  },);
+
   /**
    * Page write and its source-destination comparison.
    */

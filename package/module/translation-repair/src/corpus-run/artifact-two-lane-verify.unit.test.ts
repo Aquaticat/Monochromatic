@@ -177,6 +177,7 @@ const PREPARED: PreparedDocumentPair = {
   lineStructuredSliceIndices: new Set<number>(),
   declaredNames: [],
   alignmentFindings: FINDINGS,
+  unclaimedTargetBlocks: [],
   alignmentPairCount: 2,
 };
 

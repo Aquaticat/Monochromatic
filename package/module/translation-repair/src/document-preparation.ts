@@ -50,6 +50,41 @@ import {
 // exclusion is the boundary: anything needing one of those is lane work.
 
 /**
+ * Target block pairing roster left without source claim.
+ *
+ * @example
+ * ```ts
+ * const block: UnclaimedTargetBlock = {
+ *   pairIndex: 0,
+ *   blockId: 'block/2',
+ *   startOffset: 41,
+ *   endOffset: 73,
+ * };
+ * ```
+ */
+export type UnclaimedTargetBlock = {
+  /**
+   * Aligned section-pair index containing block.
+   */
+  readonly pairIndex: number;
+
+  /**
+   * Stable parser id within target document.
+   */
+  readonly blockId: string;
+
+  /**
+   * First target-text offset owned by block.
+   */
+  readonly startOffset: number;
+
+  /**
+   * Target-text boundary immediately after block.
+   */
+  readonly endOffset: number;
+};
+
+/**
  * A document pair reduced to the slices both lanes run over.
  *
  * @example
@@ -109,6 +144,14 @@ export type PreparedDocumentPair = {
    * Alignment findings in scorecard-stable wording.
    */
   readonly alignmentFindings: readonly string[];
+
+  /**
+   * Archive blocks pairing roster deliberately left outside every source claim.
+   *
+   * STRUCTURED APART FROM `alignmentFindings` so publication safety never parses
+   * diagnostic prose to decide whether unreviewed archive wording exists.
+   */
+  readonly unclaimedTargetBlocks: readonly UnclaimedTargetBlock[];
 
   /**
    * Entries in the aligned unit list, which is the count worth logging beside
@@ -266,6 +309,11 @@ export function prepareDocumentPair(
   const declinedFindings: string[] = [];
 
   /**
+   * Target blocks roster pairing explicitly left outside source claims.
+   */
+  const unclaimedTargetBlocks: UnclaimedTargetBlock[] = [];
+
+  /**
    * Slice pairs accumulated across every aligned section.
    */
   const slices: ChunkPair[] = [];
@@ -340,6 +388,16 @@ export function prepareDocumentPair(
         .filter(function isDeclined(node,): boolean {
           return declined.has(node.id,);
         },);
+      unclaimedTargetBlocks.push(...blocks.map(function toUnclaimedTargetBlock(
+        node,
+      ): UnclaimedTargetBlock {
+        return {
+          pairIndex,
+          blockId: node.id,
+          startOffset: node.startOffset,
+          endOffset: node.endOffset,
+        };
+      },),);
       declinedFindings.push(
         `alignment target-unclaimed (pair ${String(pairIndex,)}: ${
           String(blocks.length,)
@@ -458,6 +516,7 @@ export function prepareDocumentPair(
       ...sectionFindings,
       ...declinedFindings,
     ],
+    unclaimedTargetBlocks,
     alignmentPairCount: alignment.pairs
       .length,
 

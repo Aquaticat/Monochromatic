@@ -192,6 +192,27 @@ The cat also likes sunbathing.
       },
     },),
     it({
+      name: 'EXPOSES TARGET BLOCKS THE ROSTER LEFT UNCLAIMED as structured offsets, because publication safety must not parse diagnostic prose to find inherited wording no quality stage reviewed',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: 'Cats nap.',
+          targetText: 'Cats nap.\n\nAn unclaimed aside.',
+          blockPairings: new Map([[
+            0,
+            [{ source: 0, target: 0, },],
+          ],]),
+        },);
+
+        expect(prepared.unclaimedTargetBlocks,).toEqual([{
+          pairIndex: 0,
+          blockId: 'block/1',
+          startOffset: 11,
+          endOffset: 30,
+        },],);
+      },
+    },),
+
+    it({
       name: 'GIVES THE SAME SLICING EVERY TIME for one pair, which is the '
         + 'whole reason preparation is shared: two lanes that sliced separately '
         + 'would drift the moment either changed a budget, and each would still '

@@ -123,6 +123,7 @@ const PREPARED: PreparedDocumentPair = {
   lineStructuredSliceIndices: new Set<number>(),
   declaredNames: [],
   alignmentFindings: [],
+  unclaimedTargetBlocks: [],
   alignmentPairCount: 1,
 };
 

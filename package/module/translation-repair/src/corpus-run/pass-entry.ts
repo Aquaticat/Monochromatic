@@ -9,7 +9,7 @@ import { readImageWithOcr, } from '../image-ocr.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
-import { prepareDocumentPairWithRoster, } from '../prepare-with-pairing.ts';
+import { preparePassEntry, } from './pass-prepare.ts';
 import { sliceNeighbourContexts, } from '../fidelity-window.ts';
 import { slicePictureContexts, } from '../slice-pictures.ts';
 import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
@@ -33,8 +33,6 @@ import { readPassOverlap, } from './pass-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
 import {
   discardSliceCache,
-  openPairingCache,
-  openSectionPairingCache,
   openRefineSliceCache,
   openSliceCache,
   openTranslateSliceCache,
@@ -230,24 +228,12 @@ async function runEntryPipeline(
     const {
       prepared,
       findings: pairingFindings,
-    } = await prepareDocumentPairWithRoster({
+    } = await preparePassEntry({
       client,
+      entryId: entry.id,
+      entryCacheDir,
+      pipelineDigest,
       modelIds: RUN_ROSTER,
-      // BOUGHT ONCE PER DOCUMENT PAIR. Without this a resumed entry that buys
-      // nothing else still spends a pairing round per section, which this
-      // module's own test catches: it asserts a fully cached resume makes no
-      // calls at all.
-      pairingCache: await openPairingCache({
-        dir: entryCacheDir,
-        generation: pipelineDigest,
-      },),
-      // THE SECTION ROUND IS BOUGHT FIRST and cached apart, because it decides
-      // what an aligned section IS and therefore what the block rounds above
-      // are even asked about.
-      sectionCache: await openSectionPairingCache({
-        dir: entryCacheDir,
-        generation: pipelineDigest,
-      },),
       sourceText: entry.sourceText,
       targetText: archiveText,
       signal: deadline.callSignal,
@@ -461,6 +447,7 @@ async function runEntryPipeline(
         slices: consolidateSlices,
       },
     },);
+
     /**
      * This entry's TALLY line, read off the artifact BEFORE it is written.
      *

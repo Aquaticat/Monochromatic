@@ -329,6 +329,7 @@ async function settleWith(
     lineStructuredSliceIndices: new Set<number>(),
     declaredNames,
     alignmentFindings: [],
+    unclaimedTargetBlocks: [],
     alignmentPairCount: 1,
   };
 

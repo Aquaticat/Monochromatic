@@ -7,6 +7,7 @@
 export {
   type PreparedDocumentPair,
   prepareDocumentPair,
+  type UnclaimedTargetBlock,
 } from './document-preparation.ts';
 export {
   type FoldedText,

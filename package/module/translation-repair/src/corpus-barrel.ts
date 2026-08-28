@@ -102,10 +102,7 @@ export {
 } from './corpus-run/artifact-two-lane-project.ts';
 export type { CorpusPair, } from './corpus-run/pass-entry-contract.ts';
 export { settleEntry, } from './corpus-run/pass-entry.ts';
-export {
-  assertPublishableTranslation,
-  UnfilledPageError,
-} from './corpus-run/publish-completeness.ts';
+export * from './corpus-readiness-barrel.ts';
 export { decidePassInsertionAdmission, } from './corpus-run/pass-insertion-admission.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
 export {

@@ -107,6 +107,7 @@ function preparedGap(
     lineStructuredSliceIndices: new Set(),
     declaredNames: [],
     alignmentFindings: [],
+    unclaimedTargetBlocks: [],
     alignmentPairCount: 1,
   };
 }
