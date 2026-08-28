@@ -1184,7 +1184,44 @@ Candidate validation now preserves source `name` and `info.alias` identity equal
 contest winners that fail publication invariants remain retryable,
 and consolidation standing text must pass same syntax guard before unchanged result becomes resumable.
 Final-page validation applies same source identity relation even when page differs bytewise from archive.
-A fresh current-build rerun remains required.
+
+Fresh `1974ad999` validation then settled all four slices under preparation identity generation 2.
+Artifact generation 5 and its 897-character page matched exactly under `verify-published`;
+source destination survived,
+all nine seats answered,
+and both providers were wet on all 30 meter readings.
+Visible `name` and `info.alias` now identify same source person,
+so primary front-matter defect is closed at publication boundary.
+Strict complete-page reading still rejected output for two systemic reasons.
+The `info.location` contributor comment restored source-script attribution over established target form,
+and body consolidation reintroduced several literal collocations after repair lane's naturalness pass had finished.
+Mechanical agreement therefore remains necessary and insufficient.
+
+Metadata validation now compares contributor attribution at same YAML path and preserves established target spelling after
+`, by `;
+translate,
+contest,
+consolidation,
+and final-page checks share that policy,
+with translate,
+contest,
+and consolidation cache generations advanced.
+Artifact generation 6 adds auditable body-only naturalness polish after consolidation fidelity gate.
+Measured refiner roles propose rewrites,
+existing selection chooses candidate,
+then separate fidelity-first naturalness gate lets polished wording replace approved base only when meaning and structure remain intact.
+Front matter never enters polish.
+Artifact records base,
+proposal,
+final text,
+writers,
+selection round count,
+gate ballots,
+and findings;
+publication reads polish before every earlier decider.
+Full package suite passes 851 groups with no failures,
+and mutation proofs show polish shipping and read precedence guards are effective.
+Fresh generation-6 `Weideriche_` rerun remains required before accepting affected output.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.
