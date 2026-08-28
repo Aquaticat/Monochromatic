@@ -17,6 +17,7 @@ import {
   readBlockPairing,
 } from './pair-blocks-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
+import { claimMediaAdjacentTargets, } from './pair-media-adjacency.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -306,9 +307,26 @@ export async function pairBlocksWithRoster(
   findings.push(...prefixed,);
 
   /**
-   * Pairs that survived agreement and ordering.
+   * Structurally claimed transcripts adjoining source-matched media.
    */
-  const agreed = agreement.pairs;
+  const mediaClaim = claimMediaAdjacentTargets({
+    pairs: agreement.pairs,
+    sourceBlocks,
+    targetBlocks,
+  },);
+  /**
+   * Media findings in stage vocabulary.
+   */
+  const mediaFindings = mediaClaim.findings
+    .map(function prefixMedia(finding,): string {
+      return `block-pairing ${finding}`;
+    },);
+  findings.push(...mediaFindings,);
+
+  /**
+   * Pairs that survived agreement, ordering and structural media attachment.
+   */
+  const agreed = mediaClaim.pairs;
   pl.info(
     `paired ${String(agreed.length,)} of ${String(sourceBlocks.length,)} original and ${
       String(targetBlocks.length,)

@@ -144,6 +144,48 @@ await describe({
       },
     },),
     it({
+      name: 'CLAIMS archive transcript beside source-matched media marker so it cannot bypass quality stages as target-unclaimed text',
+      fn: async () => {
+        /**
+         * Literal site path placeholder.
+         */
+        const pathToken = [
+          '$',
+          '{path}',
+        ].join('',);
+        /**
+         * Media marker shared by both sides.
+         */
+        const media = `<PhotoScroll photos={[ '${pathToken}/photos/letter.webp']} />`;
+        const outcome = await pairBlocksWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":2}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":2}]}',
+            ],
+          },),
+          modelIds: ROSTER,
+          sourceBlocks: [
+            { index: 0, text: 'About the cat.', },
+            { index: 1, text: media, },
+          ],
+          targetBlocks: [
+            { index: 0, text: 'About the cat.', },
+            { index: 1, text: 'Translated letter.', },
+            { index: 2, text: media, },
+          ],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.pairs,).toEqual([
+          { source: 0, target: 0, },
+          { source: 1, target: 1, },
+          { source: 1, target: 2, },
+        ],);
+      },
+    },),
+    it({
       name: 'KEEPS a split paragraph when enough voices name both target blocks together, rather than treating supported one-to-many correspondence as contested alternatives',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({

@@ -34,6 +34,10 @@ export {
   type PairingShape,
 } from './pair-agreement.ts';
 export {
+  claimMediaAdjacentTargets,
+  type MediaAdjacentClaim,
+} from './pair-media-adjacency.ts';
+export {
   type SectionBlockPairing,
   sectionPairingsOf,
 } from './section-pairing.ts';
