@@ -10,6 +10,8 @@ The resolver promotes common platform paths exposed by `PATH`,
 scans remaining candidates sequentially,
 recognizes Windows `PATHEXT`,
 skips every known cli-git self-shim form,
+rejects non-regular filesystem candidates without blocking,
+bounds script inspection,
 and caches successful resolution by effective absolute candidate sequence.
 Expected absent candidates no longer emit one diagnostic each.
 
@@ -18,9 +20,13 @@ read event.
 A same-process test creates another linked worktree after initial discovery and verifies that the next discovery includes
 it.
 
-The post-change verbose harness recorded one `/usr/bin/git` resolver success across seven linked-worktree metadata
+The post-change verbose unit harness recorded one `/usr/bin/git` resolver success across seven linked-worktree metadata
 collections and no `git not executable at` records.
-The resolver success is a positive control proving that the verbose harness captured resolver diagnostics.
+A Pi SDK host verification loaded the built auto-mode extension and executed two built-in `read` calls.
+It recorded one `/usr/bin/git` resolution,
+two fresh worktree metadata collections,
+and no missing-candidate records.
+The resolver successes are positive controls proving that both verbose harnesses captured resolver diagnostics.
 The shared package,
 git-policy-cli,
 and auto-mode unit suites passed after migration.

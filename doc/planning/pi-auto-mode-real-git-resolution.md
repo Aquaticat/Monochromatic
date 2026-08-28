@@ -12,7 +12,8 @@ Implementation landed in these commits:
 - `a8fd5b68e` hardened resolver diagnostics and platform-path tests;
 - `2aef2d409` migrated git-policy-cli and deleted its resolver copy;
 - `612ae1853` migrated auto-mode and deleted its resolver copy;
-- `842057939` registered workspace dependency metadata.
+- `842057939` registered workspace dependency metadata;
+- `219d7f94b` rejected non-regular candidates and bounded script inspection.
 
 The shared resolver now owns common-platform-path priority,
 Windows `PATHEXT`,
@@ -21,9 +22,14 @@ self-shim exclusion,
 and successful-resolution caching.
 Auto-mode continues to query mutable worktree metadata for every read event.
 
-The post-change verbose auto-mode harness recorded one `/usr/bin/git` resolution across seven linked-worktree metadata
-collections and no `git not executable at` records.
-The resolver record is a positive control proving that verbose resolver diagnostics were captured.
+The post-change verbose auto-mode unit harness recorded one `/usr/bin/git` resolution across seven linked-worktree
+metadata collections and no `git not executable at` records.
+A Pi SDK host verification loaded the built auto-mode extension,
+executed two real built-in `read` tool calls,
+and recorded one resolver success,
+two fresh metadata collections,
+and no missing-candidate records.
+The resolver records are positive controls proving that verbose resolver diagnostics were captured.
 
 ## Problem
 
