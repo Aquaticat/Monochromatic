@@ -1115,6 +1115,13 @@ then run bounded targeted re-pairing while retaining attempt evidence.
 It must not relax coverage or publication guard;
 adjacency alone does not prove two target blocks may be merged.
 
+Corpus-readiness work is defect-driven:
+once output proves reproducible systemic blocker,
+stop unrelated corpus arms,
+fix and verify blocker,
+then rerun affected entry before resuming measurement.
+More samples do not compensate for known mechanism.
+
 Remaining corpus arms, hard-case output reading, live calibration checks,
 front matter and site-grammar gaps,
 package reading CLI,
