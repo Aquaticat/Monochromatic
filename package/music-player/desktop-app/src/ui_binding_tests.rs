@@ -152,6 +152,9 @@ fn led_backplate_fills_width_and_rows_track_resize() {
     let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
     crate::ui_led_rows::apply(&app);
     app.set_page_control_style(5);
+    // This pre-existing test measures wrapped LED geometry, so explicitly disclose
+    // all rows now that issue #457 makes narrow page controls collapsed by default.
+    app.set_page_controls_expanded(true);
     app.set_page_labels(ModelRc::new(VecModel::from(vec![
         SharedString::from("Alpha"),
         SharedString::from("Beta"),
@@ -327,7 +330,10 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     let tab_left = final_tab.absolute_position().x;
     let tab_right = tab_left + final_tab.size().width;
     assert!(tab_left >= fold_left + 56.0, "selected final tab starts after disclosure gutter");
-    assert!(tab_right <= fold_right, "selected final tab is auto-revealed inside collapsed strip");
+    assert!(
+        tab_right <= fold_right,
+        "selected final tab is auto-revealed inside collapsed strip; fold=({fold_left}, {fold_right}), tab=({tab_left}, {tab_right})",
+    );
 
     // A one-label model fits without folding, so no disclosure or artificial gutter remains.
     app.set_page_labels(ModelRc::new(VecModel::from(vec![SharedString::from("Only page")])));
