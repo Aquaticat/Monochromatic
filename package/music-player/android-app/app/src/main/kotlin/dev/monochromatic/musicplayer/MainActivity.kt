@@ -1996,6 +1996,31 @@ private fun pageSceneColor(style: PageControlStyle): Color {
     return lightGround
 }
 
+/** Holds live seek position and duration sampled from current controller. */
+private data class PlaybackProgress(
+    /** Stores elapsed playback seconds. */
+    val position: Double,
+    /** Stores current track duration seconds. */
+    val duration: Double,
+)
+
+/** Returns Compose-observable playback progress retargeted when controller changes. */
+@Composable
+private fun rememberPlaybackProgress(controller: PlayerController): PlaybackProgress {
+    /** Holds live playback position. */
+    var position: Double by remember { mutableDoubleStateOf(0.0) }
+    /** Holds live track duration. */
+    var duration: Double by remember { mutableDoubleStateOf(0.0) }
+    LaunchedEffect(controller) {
+        while (true) {
+            position = controller.positionSec()
+            duration = controller.durationSec()
+            delay(POSITION_POLL_MS)
+        }
+    }
+    return PlaybackProgress(position = position, duration = duration)
+}
+
 // What:     `@Composable` marks the next function as a Compose component.
 // Why:      `playerScreen` is the main UI component.
 //
@@ -2073,101 +2098,8 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // useBackHandler(showingSettings, () => setShowingSettings(false));
     // ```
     BackHandler(enabled = showingSettings) { showingSettings = false }
-    // What:     `var position by remember { mutableDoubleStateOf(0.0) }` declares a
-    //           state-backed `Double` local via the `useState` idiom: `remember` keeps it
-    //           across recompositions, `mutableDoubleStateOf(0.0)` is the (number-specialized)
-    //           observable holder seeded `0.0`, and `by` delegates get/set. `0.0` is a
-    //           `Double` literal.
-    // Why:      Holds the live playback position for the seek bar, updated by the poll loop.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const [position, setPosition] = useState(0);
-    // ```
-    /**
-     * Defines position value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    var position by remember { mutableDoubleStateOf(0.0) }
-    // What:     `var duration by remember { mutableDoubleStateOf(0.0) }` declares another
-    //           state-backed `Double` local (same `by remember { mutableDoubleStateOf(...) }`
-    //           idiom) seeded `0.0`.
-    // Why:      Holds the live track duration for the seek bar.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const [duration, setDuration] = useState(0);
-    // ```
-    /**
-     * Defines duration value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    var duration by remember { mutableDoubleStateOf(0.0) }
-
-    // What:     `LaunchedEffect(controller) { ... }` runs the trailing `suspend` block,
-    //           restarting it whenever the `controller` instance changes (its key): Compose
-    //           cancels the old loop and launches a fresh one on a swap.
-    // Why:      Start the position/duration polling loop, and re-target it at the live brain
-    //           if the bound controller is replaced (e.g. the service was recreated on a
-    //           rebind, then republished by `onServiceConnected`). Keying on `controller`
-    //           (not `Unit`) keeps the loop from polling a stale, released controller after
-    //           such a swap, which would otherwise freeze the seek bar at 0.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // useEffect(() => {
-    //   let alive = true;
-    //   (async () => {
-    //     while (alive) {
-    //       setPosition(controller.positionSec());
-    //       setDuration(controller.durationSec());
-    //       await delay(POSITION_POLL_MS);
-    //     }
-    //   })();
-    //   return () => { alive = false; };
-    // }, [controller]);
-    // ```
-    LaunchedEffect(controller) {
-        // What:     `while (true) { ... }` is an infinite loop (it runs until the effect is
-        //           cancelled when the composable leaves).
-        // Why:      Continuously poll the engine while the screen is shown.
-        // Gotcha:   This loop never exits on its own; Compose cancels the `LaunchedEffect`
-        //           coroutine when the composable leaves, which ends it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // while (alive) { ... }
-        // ```
-        while (true) {
-            // What:     `position = controller.positionSec()` writes the latest position
-            //           through the `by` delegate (triggers recompose of the seek bar).
-            // Why:      Update the seek bar's elapsed position.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // setPosition(controller.positionSec());
-            // ```
-            position = controller.positionSec()
-            // What:     `duration = controller.durationSec()` writes the latest duration
-            //           through the `by` delegate.
-            // Why:      Update the seek bar's total duration.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // setDuration(controller.durationSec());
-            // ```
-            duration = controller.durationSec()
-            // What:     `delay(POSITION_POLL_MS)` SUSPENDS the loop for the poll interval
-            //           (without blocking a thread).
-            // Why:      Poll at the configured cadence (200ms).
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // await delay(POSITION_POLL_MS);
-            // ```
-            delay(POSITION_POLL_MS)
-        }
-    }
+    /** Samples live seek values without keeping polling loop inside screen layout function. */
+    val playbackProgress: PlaybackProgress = rememberPlaybackProgress(controller)
 
     // What:     `Scaffold { innerPadding -> ... }` calls the `Scaffold` composable with a
     //           trailing lambda whose parameter `innerPadding` is the system-bar inset
@@ -2211,7 +2143,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             // ```ts
             // <seekRow position={position} duration={duration} onSeek={(sec) => controller.seek(sec)}/>
             // ```
-            seekRow(position = position, duration = duration, onSeek = { controller.seek(it) })
+            seekRow(playbackProgress.position, playbackProgress.duration) { controller.seek(it) }
             // What:     `volumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })`
             //           renders the volume slider; `onVolume`'s lambda uses `it` (the new gain).
             // Why:      Show and drive the volume control.
@@ -3235,10 +3167,9 @@ private fun pageTabItem(options: PageTabItemOptions) {
     }
 }
 
-/** Displays one page-control style as wrapped rows or one intrinsic-width row. */
-@OptIn(ExperimentalLayoutApi::class)
+/** Displays specialized segmented or LED renderer and reports whether it handled style. */
 @Composable
-internal fun pageTabs(options: PageTabsOptions) {
+private fun specializedPageTabs(options: PageTabsOptions): Boolean {
     if (options.style == PageControlStyle.SEGMENTED_BUTTONS) {
         segmentedPageControls(
             SegmentedPageControlsOptions(
@@ -3248,20 +3179,26 @@ internal fun pageTabs(options: PageTabsOptions) {
                 onSelectPage = options.onSelectPage,
             ),
         )
-        return
+        return true
     }
-    if (options.style == PageControlStyle.LED_SEGMENTED_BUTTONS) {
-        ledPageControls(
-            LedPageControlsOptions(
-                state = options.state,
-                onSelectPage = options.onSelectPage,
-                folded = !options.wrap,
-                maximumWidth = options.maximumWidth,
-                selectedModifier = options.selectedModifier,
-            ),
-        )
-        return
-    }
+    if (options.style != PageControlStyle.LED_SEGMENTED_BUTTONS) return false
+    ledPageControls(
+        LedPageControlsOptions(
+            state = options.state,
+            onSelectPage = options.onSelectPage,
+            folded = !options.wrap,
+            maximumWidth = options.maximumWidth,
+            selectedModifier = options.selectedModifier,
+        ),
+    )
+    return true
+}
+
+/** Displays one page-control style as wrapped rows or one intrinsic-width row. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun pageTabs(options: PageTabsOptions) {
+    if (specializedPageTabs(options)) return
     BoxWithConstraints {
         /** Uses finite owner width in one-row mode and local bounded width otherwise. */
         val pageMaximumWidth: Dp = options.maximumWidth ?: maxWidth
