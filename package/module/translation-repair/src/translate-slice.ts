@@ -9,7 +9,6 @@ import {
   findDroppedDeclaredNames,
 } from './declared-name-survival.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import { restoreSyntaxSliceBoundary, } from './front-matter-slice.ts';
 import {
   BlankSelectionError,
   type IncumbentKind,
@@ -178,9 +177,9 @@ export async function settleTranslateSlice(
     : 'present';
 
   /**
-   * What translators wrote and judges decided before page-boundary restoration.
+   * What the translators wrote and the judges decided.
    */
-  const rawStageResult = await runTranslateStage({
+  const stageResult = await runTranslateStage({
     client,
     translatorModelIds: models.translatorModelIds,
     judgeModelIds: models.judgeModelIds,
@@ -206,18 +205,6 @@ export async function settleTranslateSlice(
     perCallTimeoutMs,
     l,
   },);
-
-  /**
-   * Decided text with syntax-bearing page separator restored deterministically.
-   */
-  const stageResult = {
-    ...rawStageResult,
-    text: restoreSyntaxSliceBoundary({
-      ...((slice.syntax === undefined) ? {} : { syntax: slice.syntax, }),
-      targetText: archiveText,
-      candidateText: rawStageResult.text,
-    },),
-  };
 
   /**
    * What this slice reports, the stage's own findings plus one line per picture

@@ -219,14 +219,9 @@ const FRONT_MATTER_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫\n---\n';
 const FRONT_MATTER_TARGET = '---\nname: CatFrontMatter\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Source-faithful model rendering omitting page-separating final line break.
+ * Source-faithful metadata rendering scripted for ensemble.
  */
-const FRONT_MATTER_MODEL_FRESH = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---';
-
-/**
- * Assembly-safe metadata after deterministic separator restoration.
- */
-const FRONT_MATTER_FRESH = `${FRONT_MATTER_MODEL_FRESH}\n`;
+const FRONT_MATTER_FRESH = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
  * Entry exercising complete metadata publication path.
@@ -313,7 +308,7 @@ type CoverageScript = 'lost' | 'absent';
  */
 function renderingFor({ content, }: { readonly content: string; },): string {
   if (content.includes('name: 猫猫',))
-    return FRONT_MATTER_MODEL_FRESH;
+    return FRONT_MATTER_FRESH;
   if (content.includes('第一节',))
     return `## Section one\n\n${FRESH}`;
   if (content.includes('第二节',))
@@ -356,7 +351,7 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
         || block.includes(FRESH,)
         || block.includes(BIRD_FRESH,)
         || block.includes(GAP_FRESH,)
-        || block.includes(FRONT_MATTER_MODEL_FRESH,)))
+        || block.includes(FRONT_MATTER_FRESH,)))
       return index;
   }
   return 0;

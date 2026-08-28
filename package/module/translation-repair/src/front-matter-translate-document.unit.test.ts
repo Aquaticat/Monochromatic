@@ -32,14 +32,9 @@ const SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫\n---\n';
 const TARGET_TEXT = '---\nname: EntryId\ninfo:\n  alias: Maomao\n---\n';
 
 /**
- * Source-faithful model candidate omitting page-separating final line break.
+ * Source-faithful candidate retaining target shape.
  */
-const CORRECTED_MODEL_TEXT = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---';
-
-/**
- * Assembly-safe candidate after deterministic separator restoration.
- */
-const CORRECTED_TEXT = `${CORRECTED_MODEL_TEXT}\n`;
+const CORRECTED_TEXT = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
  * Models producing and judging fixture slate.
@@ -100,7 +95,7 @@ function frontMatterClient({ prompts, }: { readonly prompts: string[]; }): Synth
       prompts.push(content,);
       const schema = request.responseFormat?.json_schema.name ?? '';
       const value: unknown = (schema === 'translation_report')
-        ? { translation: CORRECTED_MODEL_TEXT, }
+        ? { translation: CORRECTED_TEXT, }
         : {
           best: correctedCandidate({ content, }),
           reason: 'source metadata names the person',
