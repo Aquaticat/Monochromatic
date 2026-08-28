@@ -1034,3 +1034,26 @@ A null from a probe never shown able to produce a non-null decides nothing,
 so the reading chain now carries a positive control:
 projection and tally driven together over real-shaped rounds,
 asserting a standing with its counts.
+
+### `qwen3.8-max` is culled, 2026-08-28
+
+The owner authorized removing `qwen3.8-max` from the pipeline because its metered cost is disproportionate
+and exceptionally expensive.
+This supersedes the 2026-08-24 decision that kept it in wide roles.
+No replacement was requested or selected; the operational roster narrows from ten models to nine.
+
+The removal reaches every active path:
+
+-   `RosterModelId` no longer admits it.
+-   Charm Hyper catalog no longer allowlists it.
+-   Corpus critics, translators, judges, pairing, coverage, picture reading, repair panels, and consolidation no longer
+    seat it because they derive from the roster.
+-   The request builder no longer carries its automatic-tool exception; every remaining Hyper model uses forced tool
+    choice.
+
+Dated pricing and spend parsing keep the old label so historical run artifacts can still be accounted.
+Historical measurements remain evidence about their recorded ten-model roster and are not rewritten as current runs.
+
+Rollback requires an explicit owner decision plus new cost evidence.
+Restoring it would require adding the model to roster identity and Hyper catalog together, then rebuilding and validating
+consumer-boundary routing before any live corpus run.

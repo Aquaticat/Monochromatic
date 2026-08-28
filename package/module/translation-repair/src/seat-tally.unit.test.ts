@@ -146,14 +146,14 @@ await describe({
       fn: async () => {
         /** Tally under test. */
         const tally = createSeatTally();
-        tally.record({ modelId: 'qwen3.8-max', outcome: 'threw', },);
+        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
         tally.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
-        tally.record({ modelId: 'qwen3.8-max', outcome: 'unusable', },);
-        tally.record({ modelId: 'qwen3.8-max', outcome: 'usable', },);
+        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'unusable', },);
+        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'usable', },);
 
         expect(tally.counts(),).toStrictEqual([
           {
-            modelId: 'qwen3.8-max',
+            modelId: 'gemma-4-26b-a4b-it',
             asked: 3,
             usable: 1,
             unusable: 1,
@@ -326,7 +326,7 @@ await describe({
         let fromText: unknown;
         try {
           await client.chatText({
-            modelId: 'qwen3.8-max',
+            modelId: 'gemma-4-26b-a4b-it',
             messages: MESSAGES,
             signal: SIGNAL,
           },);
@@ -339,7 +339,7 @@ await describe({
         let fromJson: unknown;
         try {
           await client.chatJson({
-            modelId: 'qwen3.8-max',
+            modelId: 'gemma-4-26b-a4b-it',
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isCatVerdict,
@@ -352,7 +352,7 @@ await describe({
         expect(fromText,).toBe(FAILURE,);
         expect(fromJson,).toBe(FAILURE,);
         expect(tally.counts(),).toStrictEqual([{
-          modelId: 'qwen3.8-max',
+          modelId: 'gemma-4-26b-a4b-it',
           asked: 2,
           usable: 0,
           unusable: 0,
@@ -410,8 +410,8 @@ await describe({
       fn: async () => {
         /** Tally with two dark seats among three. */
         const tally = createSeatTally();
-        tally.record({ modelId: 'qwen3.8-max', outcome: 'threw', },);
-        tally.record({ modelId: 'qwen3.8-max', outcome: 'threw', },);
+        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
+        tally.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
         tally.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
         tally.record({ modelId: 'minimax-m3', outcome: 'unusable', },);
 
@@ -421,7 +421,7 @@ await describe({
         expect(lines.length,).toBe(4,);
         expect(lines[3],).toBe(
           'SEATS DARK: 2 of 3 seats asked produced nothing usable this run: '
-            + 'qwen3.8-max (asked 2, unusable 0, threw 2); minimax-m3 (asked 1, unusable 1, threw 0). '
+            + 'gemma-4-26b-a4b-it (asked 2, unusable 0, threw 2); minimax-m3 (asked 1, unusable 1, threw 0). '
             + 'A seat that fails every call is a provider that cannot serve it, a key that was never '
             + 'injected, or a model that answers nothing readable; the run log names which. '
             + 'Do not read this run as a comparison of the roster.',

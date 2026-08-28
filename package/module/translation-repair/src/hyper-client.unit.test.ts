@@ -417,31 +417,6 @@ await describe({
     },),
 
     it({
-      name: 'asks the one model that refuses a forced tool for an automatic one',
-      fn: async () => {
-        /** Transport replaying one recorded tool call. */
-        const { transport, exchanges, } = recordedTransport({
-          replies: [{ status: 200, bodyText: TOOL_CALL_BODY, },],
-        },);
-        /** Client under test with injected transport. */
-        const client = createHyperClient({
-          apiKey: 'test-key',
-          transport,
-        },);
-        await client.chatText({
-          modelId: 'qwen3.8-max',
-          messages: MESSAGES,
-          signal: new AbortController().signal,
-          responseFormat: RESPONSE_FORMAT,
-        },);
-
-        // MEASURED PER MODEL: this one answers HTTP 400 to a forced tool on
-        // every variant tried, and 20 of 20 under an automatic one.
-        expect(sentBody({ exchanges, },).tool_choice,).toEqual({ type: 'auto', },);
-      },
-    },),
-
-    it({
       name: 'holds the ask to the lower of the measured bound and the model ceiling',
       fn: async () => {
         /** Transport replaying one recorded tool call. */

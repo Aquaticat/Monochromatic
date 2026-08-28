@@ -14,7 +14,6 @@ import {
 } from './anthropic-tool.ts';
 import {
   answerCeilingFor,
-  HYPER_MODELS,
   type HyperServedId,
 } from './hyper-catalog.ts';
 
@@ -325,36 +324,20 @@ export function speakingTurns(
 }
 
 /**
- * How this model is told to choose, which is per-model and measured.
+ * Forces current model to call answer tool.
  *
- * @param modelId - model the request is for
+ * @param name - answer tool model must call
  *
- * @param name - answer tool it would be forced to call
- *
- * @returns Forced choice, or the automatic one for the model that refuses it
+ * @returns Forced tool choice
  *
  * @example
  * ```ts
- * const choice = toolChoiceFor({ modelId, name, },);
+ * const choice = toolChoiceFor({ name, },);
  * ```
  */
 function toolChoiceFor(
-  {
-    modelId,
-    name,
-  }: {
-    readonly modelId: HyperServedId;
-    readonly name: string;
-  },
+  { name, }: { readonly name: string; },
 ): AnthropicToolChoice {
-  /**
-   * Shape this model was measured to accept, which is not the same for all.
-   */
-  const { toolChoice, } = HYPER_MODELS[modelId];
-
-  if (toolChoice === 'auto')
-    return { type: 'auto', };
-
   return {
     type: 'tool',
     name,
@@ -371,25 +354,17 @@ function toolChoiceFor(
  * the caller that also decides the system field, and threading the absence
  * through here would put that decision in two places.
  *
- * @param modelId - model the request is for
- *
- * @param responseFormat - structured-output constraint the caller stated
+ * @param responseFormat - structured-output constraint caller stated
  *
  * @returns Both tool fields
  *
  * @example
  * ```ts
- * const fields = toolFieldsFor({ modelId, responseFormat, },);
+ * const fields = toolFieldsFor({ responseFormat, },);
  * ```
  */
 function toolFieldsFor(
-  {
-    modelId,
-    responseFormat,
-  }: {
-    readonly modelId: HyperServedId;
-    readonly responseFormat: ReadableResponseFormat;
-  },
+  { responseFormat, }: { readonly responseFormat: ReadableResponseFormat; },
 ): {
   readonly tools: readonly AnthropicToolDefinition[];
   readonly tool_choice: AnthropicToolChoice;
@@ -401,10 +376,7 @@ function toolFieldsFor(
 
   return {
     tools: [tool,],
-    tool_choice: toolChoiceFor({
-      modelId,
-      name: tool.name,
-    },),
+    tool_choice: toolChoiceFor({ name: tool.name, },),
   };
 }
 
@@ -481,10 +453,7 @@ export function buildAnthropicBody(
     // Conditional spread keeps both tool fields absent for a free-text call.
     ...((responseFormat === undefined)
       ? {}
-      : toolFieldsFor({
-        modelId,
-        responseFormat,
-      },)),
+      : toolFieldsFor({ responseFormat, },)),
   };
 }
 

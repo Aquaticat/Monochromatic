@@ -282,7 +282,7 @@ await describe({
         },).max_tokens,).toBe(13_107,);
 
         expect(buildAnthropicBody({
-          modelId: 'qwen3.8-max',
+          modelId: 'minimax-m3',
           messages: catMessages,
         },).max_tokens,).toBe(32_000,);
       },
@@ -385,18 +385,6 @@ await describe({
           name: 'whisker_report',
         },);
         expect(body.tools?.at(0,)?.name,).toBe('whisker_report',);
-      },
-    },),
-
-    it({
-      name: 'ASKS qwen3.8-max with the automatic choice instead, because that model answers HTTP '
-        + '400 to a forced tool on every request variant tried',
-      fn: async () => {
-        expect(buildAnthropicBody({
-          modelId: 'qwen3.8-max',
-          messages: catMessages,
-          responseFormat: catFormat,
-        },).tool_choice,).toEqual({ type: 'auto', },);
       },
     },),
 

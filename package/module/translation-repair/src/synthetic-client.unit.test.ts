@@ -1258,7 +1258,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: 'qwen3.8-max',
+            modelId: 'gemma-4-26b-a4b-it',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -1271,7 +1271,7 @@ await describe({
           caught instanceof SyntheticModelNotServedError
             ? caught.modelId
             : '',
-        ).toBe('qwen3.8-max',);
+        ).toBe('gemma-4-26b-a4b-it',);
         expect(exchanges,).toHaveLength(0,);
       },
     },),

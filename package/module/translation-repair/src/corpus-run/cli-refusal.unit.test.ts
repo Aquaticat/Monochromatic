@@ -366,8 +366,8 @@ await describe({
          */
         const seats = createSeatTally();
         seats.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
-        seats.record({ modelId: 'qwen3.8-max', outcome: 'threw', },);
-        seats.record({ modelId: 'qwen3.8-max', outcome: 'threw', },);
+        seats.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
+        seats.record({ modelId: 'gemma-4-26b-a4b-it', outcome: 'threw', },);
 
         process.exitCode = 0;
         await reportingRefusals({
@@ -389,10 +389,10 @@ await describe({
         expect(
           printed.lines.includes('SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0',),
         ).toBe(true,);
-        expect(printed.lines.includes('SEAT qwen3.8-max asked=2 usable=0 unusable=0 threw=2',),).toBe(true,);
+        expect(printed.lines.includes('SEAT gemma-4-26b-a4b-it asked=2 usable=0 unusable=0 threw=2',),).toBe(true,);
         expect(dark.startsWith(
           'SEATS DARK: 1 of 2 seats asked produced nothing usable this run: '
-            + 'qwen3.8-max (asked 2, unusable 0, threw 2).',
+            + 'gemma-4-26b-a4b-it (asked 2, unusable 0, threw 2).',
         ),).toBe(true,);
         expect(dark.includes('gpt-oss',),).toBe(false,);
       },

@@ -67,19 +67,6 @@ export const HYPER_API_VERSION = '2023-06-01';
 export const HYPER_AUTH_HEADER = 'Authorization';
 
 /**
- * How a model must be asked for a tool call.
- *
- * MEASURED PER MODEL, because it is not a property of the provider. Seven of
- * the eight honour `tool_choice: {type: 'tool'}`; `qwen3.8-max` REFUSES that
- * shape outright with `HTTP 400 invalid_request_error`, regardless of
- * streaming, system prompt or `max_tokens`, and answers correctly under
- * `{type: 'auto'}` instead. That is a rejected request rather than a weak
- * model, and reading it as weakness would have dropped a model that scores as
- * well as any other here.
- */
-export type HyperToolChoice = 'forced' | 'auto';
-
-/**
  * Models allowlisted on this provider by the owner.
  *
  * A CLOSED UNION so a typo cannot reach the wire, and so widening the roster is
@@ -91,7 +78,6 @@ export type HyperToolChoice = 'forced' | 'auto';
  * ```
  */
 export type HyperServedId =
-  | 'qwen3.8-max'
   | 'qwen3.8-27b'
   | 'minimax-m3'
   | 'kimi-k3'
@@ -130,8 +116,8 @@ export type HyperModelInfo = {
    * Whether this model can be sent an image alongside its text.
    *
    * READ FROM `capabilities.vision` on this provider's own catalog endpoint.
-   * Five of the nine report true, which triples the width of the picture
-   * reading roster: the other provider serves exactly two image readers, and
+   * Four of the eight report true, which doubles available picture serving
+   * paths: the other provider serves exactly two image readers, and
    * its catalog note correctly said widening that would need a different
    * provider rather than a different configuration.
    */
@@ -147,19 +133,15 @@ export type HyperModelInfo = {
    * reader to the prompt instead of to the ceiling.
    */
   readonly maxOutputLength: number;
-
-  /**
-   * Shape this model accepts for being told to call the tool.
-   */
-  readonly toolChoice: HyperToolChoice;
 };
 
 /**
  * Every model this provider serves for this pipeline.
  *
- * CONFORMANCE MEASURED OVER 20 STREAMING ATTEMPTS EACH on 2026-08-24, under the
- * tool-choice shape recorded per model: all eight answered 20 of 20 with an
- * input matching the declared schema exactly. No model is dropped.
+ * CONFORMANCE MEASURED OVER 20 STREAMING ATTEMPTS EACH on 2026-08-24. Current
+ * models accept forced tool choice and answered with schema-conformant input.
+ * `qwen3.8-max`, only model requiring automatic choice, was culled 2026-08-28
+ * because its metered cost was disproportionate and exceptionally expensive.
  *
  * An earlier reading that `kimi-k3` honoured a forced tool on 1 of 3 attempts
  * was wrong and is retracted here; it measures 20 of 20.
@@ -170,16 +152,6 @@ export type HyperModelInfo = {
  * ```
  */
 export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
-  'qwen3.8-max': {
-    id: 'qwen3.8-max',
-    sharedWith: HYPER_ONLY,
-    readsImages: true,
-    maxOutputLength: 65_536,
-    // THE ONE MODEL THAT REFUSES A FORCED TOOL, with HTTP 400 on every variant
-    // tried: streaming and not, with and without a system prompt, at its own
-    // ceiling and below it. `auto` answers 20 of 20.
-    toolChoice: 'auto',
-  },
   'qwen3.8-27b': {
     id: 'qwen3.8-27b',
     // THE SAME SEAT AS `hf:Qwen/Qwen3.8-27B`, added 2026-08-26 when the owner
@@ -187,62 +159,53 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
     // keeps cutting, and this provider has no per-model slot to saturate, so
     // the router's overflow now has somewhere to send it. Fields from the
     // catalog endpoint the same day (`max_output_tokens` 128000,
-    // `capabilities.vision` true); the tool-choice shape is the one every
-    // model but `qwen3.8-max` accepted, checked live by the probe recorded in
-    // the handover before the first run that could route here.
+    // `capabilities.vision` true); forced tool choice was checked live by probe
+    // recorded in handover before first run that could route here.
     sharedWith: 'hf:Qwen/Qwen3.8-27B',
     readsImages: true,
     maxOutputLength: 128_000,
-    toolChoice: 'forced',
   },
   'minimax-m3': {
     id: 'minimax-m3',
     sharedWith: HYPER_ONLY,
     readsImages: true,
     maxOutputLength: 512_000,
-    toolChoice: 'forced',
   },
   'kimi-k3': {
     id: 'kimi-k3',
     sharedWith: 'hf:moonshotai/Kimi-K3',
     readsImages: true,
     maxOutputLength: 16_000,
-    toolChoice: 'forced',
   },
   'gpt-oss-120b': {
     id: 'gpt-oss-120b',
     sharedWith: 'hf:openai/gpt-oss-120b',
     readsImages: false,
     maxOutputLength: 13_107,
-    toolChoice: 'forced',
   },
   'gemma-4-26b-a4b-it': {
     id: 'gemma-4-26b-a4b-it',
     sharedWith: HYPER_ONLY,
     readsImages: false,
     maxOutputLength: 25_600,
-    toolChoice: 'forced',
   },
   'deepseek-v4-pro-0813': {
     id: 'deepseek-v4-pro-0813',
     sharedWith: HYPER_ONLY,
     readsImages: false,
     maxOutputLength: 262_144,
-    toolChoice: 'forced',
   },
   'deepseek-v4-flash-0731': {
     id: 'deepseek-v4-flash-0731',
     sharedWith: HYPER_ONLY,
     readsImages: false,
     maxOutputLength: 384_000,
-    toolChoice: 'forced',
   },
   'glm-5.2': {
     id: 'glm-5.2',
     sharedWith: 'hf:zai-org/GLM-5.2',
     readsImages: true,
     maxOutputLength: 32_768,
-    toolChoice: 'forced',
   },
 };
 
@@ -371,7 +334,7 @@ export const HYPER_ONLY_NAMES_ARE_SERVED: HyperOnlyNamesAreServed = true;
  *
  * @example
  * ```ts
- * const served = hyperServesLabel('qwen3.8-max',);
+ * const served = hyperServesLabel('minimax-m3',);
  * ```
  */
 export function hyperServesLabel(label: string,): label is HyperServedId {

@@ -154,7 +154,6 @@ export {
   type HyperModelInfo,
   type HyperServedId,
   hyperServesLabel,
-  type HyperToolChoice,
   modelsServedByBoth,
   modelsServedOnlyHere,
 } from './hyper-catalog.ts';

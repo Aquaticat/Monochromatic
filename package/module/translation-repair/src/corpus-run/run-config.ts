@@ -86,15 +86,15 @@ const HERE = import.meta.dirname;
  * stale the first time either catalog moves, and it goes stale silently: a
  * missing model is a seat nobody notices is empty.
  *
- * TEN MODELS, AT FULL WEIGHT IMMEDIATELY. The owner's instruction on the new
- * five was full weight from the start, on the grounds that nothing is shipping
- * yet, so a cautious ramp would only delay the evidence.
+ * NINE MODELS NOW. `qwen3.8-max` was culled on 2026-08-28 at owner's
+ * instruction because its metered cost was disproportionate and exceptionally
+ * expensive. Remaining seats retain full weight.
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
 
 
 /**
- * Role roster for a corpus run: all TEN critique and adjudicate, THREE edit
+ * Role roster for a corpus run: all NINE critique and adjudicate, THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
  *
@@ -247,9 +247,9 @@ export const RUN_MODELS: RepairModels = {
   // in the rounds it missed against 366 in the rounds it made, a ratio of 1.61,
   // Mann-Whitney z +3.51, p 0.0004. Its headline is survivorship on the easy
   // half of the corpus, and it took 29 cuts, more than any other model. It
-  // keeps its place in the wide roles below, where a lost voice costs one
-  // ballot; a three-seat stage that empties on the hard slices is a different
-  // bargain, and a worse one.
+  // remained in wide roles at this calibration point, then was culled from
+  // whole roster on 2026-08-28 because metered cost was disproportionate and
+  // exceptionally expensive.
   //
   // THIS SEAT NOW CROSSES PROVIDERS, which no writer seat did before. Charm
   // Hyper serves `gemma-4-26b-a4b-it` and Synthetic serves the other two, so a
@@ -359,8 +359,8 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  * ballot for its own work counts half, so if those two also translated then no
  * disinterested judge would remain on any slice carrying a picture. Asking them
  * only to READ turns the picture into text, and the whole roster translates
- * and judges from that text with its weights untouched. Six of the ten read
- * images since 2026-08-24 (two on Synthetic, four on Charm Hyper); the stage
+ * and judges from that text with its weights untouched. Four of the nine read
+ * images after the 2026-08-28 roster cull; the stage
  * stays separate because the reasoning above is about weights, not about how
  * many readers there happen to be.
  *
@@ -594,13 +594,13 @@ const l = tagged({ tag: 'translation-repair', },);
  * BOTH KEYS ARE REQUIRED, AND A MISSING SECOND ONE IS A REFUSAL. This used to
  * warn and hand back the first provider's client alone, on the reasoning that
  * refusing would stop a run the first provider could serve by itself. It
- * cannot: five of the ten roster seats are Charm Hyper endpoint labels that
- * Synthetic does not host, so the one-provider client offered them to a
- * provider that answered 400 to every call, quorum was met on the nose by the
- * other five, and a four-slice calibration settled clean with half its roster
- * dark (`#235`). A run that cannot reach half its roster is not a run at
- * single-provider capacity; it is a run whose result must not be read, and the
- * time to say so is before the first call, not after the last.
+ * cannot safely preserve configured run: four of the nine roster seats are
+ * Charm Hyper endpoint labels that Synthetic does not host, so one-provider
+ * client would offer them to a provider that answers 400 to every call. An
+ * earlier four-slice calibration settled with half its roster dark (`#235`).
+ * Current nine-seat quorum could still settle on five Synthetic voices, which
+ * makes early refusal more important: degraded run would look complete. The
+ * time to refuse is before first call, not after last.
  *
  * EVERY CALL IS COUNTED on `RUN_SEATS`, the process-wide tally the refusal
  * boundary prints when the command ends, so a seat that produced nothing

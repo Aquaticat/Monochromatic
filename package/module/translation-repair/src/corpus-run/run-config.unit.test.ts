@@ -554,7 +554,7 @@ const SHARED_SEAT = 'hf:openai/gpt-oss-120b';
 /**
  * Seat only the second provider serves: a Charm Hyper endpoint label.
  */
-const SECOND_ONLY_SEAT = 'qwen3.8-max';
+const SECOND_ONLY_SEAT = 'minimax-m3';
 
 /**
  * Asks one seat through the client and hands back whatever came of it, the

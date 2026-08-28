@@ -79,11 +79,17 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'SEATS TEN DISTINCT MODELS, five Synthetic serves and five only the second provider '
-        + 'does, with the three shared ones counted once',
+      name: 'SEATS NINE DISTINCT MODELS, five Synthetic serves and four only the second provider does',
       fn: async () => {
-        expect(ROSTER_MODEL_IDS.length,).toBe(10,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(10,);
+        expect(ROSTER_MODEL_IDS.length,).toBe(9,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(9,);
+      },
+    },),
+
+    it({
+      name: 'DOES NOT SEAT qwen3.8-max after owner culled its disproportionate metered cost',
+      fn: async () => {
+        expect(ROSTER_MODEL_IDS.includes('qwen3.8-max' as never,),).toBe(false,);
       },
     },),
 
@@ -261,9 +267,7 @@ await describe({
   name: readsImages.name,
   children: [
     it({
-      name: 'NAMES THE READER SUB-ROSTER AS FIVE, widened from two by the second provider. Three '
-        + 'of the five read only there, which is why the reading lane was a two-model bottleneck '
-        + 'before this',
+      name: 'NAMES READER SUB-ROSTER AS FOUR after costly vision seat was culled',
       fn: async () => {
         expect(ROSTER_MODEL_IDS
           .filter(function reads(modelId,): boolean {
@@ -274,7 +278,6 @@ await describe({
           'hf:moonshotai/Kimi-K3',
           'hf:zai-org/GLM-5.2',
           'minimax-m3',
-          'qwen3.8-max',
         ],);
       },
     },),

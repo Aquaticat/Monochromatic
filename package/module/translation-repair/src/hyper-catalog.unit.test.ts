@@ -2,9 +2,8 @@
  * Tests for the Charm Hyper catalog.
  *
  * THIS FILE PINS MEASUREMENTS, not preferences. Every value it checks came from
- * a live call on 2026-08-24, and each one is a value that a plausible reading of
- * the provider's own docs would have got wrong: that a forced tool works
- * everywhere, that a model's answer ceiling is above the bound `#156` measured,
+ * live calls, and each one is a value that a plausible reading of provider
+ * docs could get wrong: model answer ceiling can sit below bound `#156`,
  * and that only two models in this pipeline can read a picture.
  *
  * A CHANGED VALUE HERE IS A PROVIDER CHANGE, so these cases are meant to fail
@@ -43,30 +42,7 @@ await describe({
           'kimi-k3',
           'minimax-m3',
           'qwen3.8-27b',
-          'qwen3.8-max',
         ],);
-      },
-    },),
-
-    it({
-      name: 'ASKS qwen3.8-max with auto tool choice and every other model with a forced one, '
-        + 'because that model answers HTTP 400 to a forced tool on every request variant tried '
-        + 'and answers 20 of 20 under auto',
-      fn: async () => {
-        expect(HYPER_MODELS['qwen3.8-max'].toolChoice,).toBe('auto',);
-
-        /**
-         * Every other model, which all accept the forced shape.
-         */
-        const others = Object
-          .values(HYPER_MODELS,)
-          .filter(function notQwen(info,): boolean {
-            return info.id !== 'qwen3.8-max';
-          },);
-
-        expect(others.length,).toBe(8,);
-        for (const info of others)
-          expect(info.toolChoice,).toBe('forced',);
       },
     },),
 
@@ -104,7 +80,7 @@ await describe({
     },),
 
     it({
-      name: 'NAMES the five models only this provider serves, which have no cross-provider re-ask '
+      name: 'NAMES the four models only this provider serves, which have no cross-provider re-ask '
         + 'and fall back to the invalid-candidate path from `#88` instead',
       fn: async () => {
         expect(modelsServedOnlyHere().toSorted(),).toEqual([
@@ -112,7 +88,6 @@ await describe({
           'deepseek-v4-pro-0813',
           'gemma-4-26b-a4b-it',
           'minimax-m3',
-          'qwen3.8-max',
         ],);
       },
     },),
@@ -143,7 +118,7 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS five image readers, which triples the width of the picture reading roster: '
+      name: 'REPORTS four image readers after the costly model was culled: '
         + 'the other provider serves exactly two, and widening that needed a different provider '
         + 'rather than a different configuration',
       fn: async () => {
@@ -164,7 +139,6 @@ await describe({
           'kimi-k3',
           'minimax-m3',
           'qwen3.8-27b',
-          'qwen3.8-max',
         ],);
       },
     },),

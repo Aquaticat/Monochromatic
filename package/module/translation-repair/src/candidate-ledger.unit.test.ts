@@ -72,7 +72,7 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
     producer: {
       kind: 'composite',
       contributors: [
-        'qwen3.8-max',
+        'deepseek-v4-pro-0813',
         'minimax-m3',
       ],
     },
@@ -93,7 +93,7 @@ const BALLOTS: readonly SelectionBallot[] = [
     selfVote: false,
   },
   {
-    modelId: 'qwen3.8-max',
+    modelId: 'deepseek-v4-pro-0813',
     best: 2,
     reason: 'Candidate 2 is mine and I still think it is better.',
     weight: 0.5,
@@ -342,7 +342,7 @@ await describe({
           .toEqual([[
             ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
             [
-              'qwen3.8-max',
+              'deepseek-v4-pro-0813',
               'minimax-m3',
             ],
           ],],);

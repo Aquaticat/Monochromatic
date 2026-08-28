@@ -5,8 +5,8 @@
 // other's would be a cycle, so the identity lives on its own and the catalogs
 // describe it from their own side.
 //
-// THE ROSTER IS TEN DISTINCT MODELS across two providers: five Synthetic serves,
-// five only Charm Hyper serves, and three of the Synthetic five are served by
+// THE ROSTER IS NINE DISTINCT MODELS across two providers: five Synthetic serves,
+// four only Charm Hyper serves, and four of the Synthetic five are served by
 // both. A model is one roster entry however many providers can reach it, which
 // is the property the adjudication tally depends on: `synthetic-catalog.ts`
 // explains at length why one model occupying two seats would silently overstate
@@ -22,7 +22,7 @@
  *
  * `hf:zai-org/GLM-4.7-Flash` WAS REMOVED 2026-08-24 at the owner's instruction,
  * which reverses `#136`'s finding that it should stay. That finding compared it
- * against five peers; the roster is now ten, and the owner blocklisted it.
+ * against five peers; that wider roster later changed independently.
  *
  * @example
  * ```ts
@@ -49,7 +49,8 @@ export type SyntheticServedId =
  * ```
  */
 export const HYPER_ONLY_ROSTER_IDS = [
-  'qwen3.8-max',
+  // qwen3.8-max WAS CULLED 2026-08-28 at owner's instruction because its
+  // metered cost was disproportionate and exceptionally expensive.
   'minimax-m3',
   'gemma-4-26b-a4b-it',
   'deepseek-v4-pro-0813',

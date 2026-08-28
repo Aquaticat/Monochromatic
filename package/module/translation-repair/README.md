@@ -472,9 +472,10 @@ and reading one as an instruction has cost this package a defect before.
     `createRunClient` refuses to build a client without it,
     as a stated refusal that names the variable and exits 6.
     It used to warn and return a client that spoke to the first provider alone;
-    that client offered the five Charm-Hyper-only seats to a provider that cannot serve them,
-    quorum was met by the other five,
+    that client offered Charm-Hyper-only seats to a provider that cannot serve them,
     and a calibration settled clean with half its roster dark (`#235`).
+    Current nine-model roster has four Hyper-only seats and can settle at quorum on five Synthetic voices,
+    so early refusal prevents degraded run from looking complete.
     There is no one-provider run to fall back to.
     Note the `CHARM` in the middle;
     a name missing it is read by nothing and reported by nothing.
@@ -494,6 +495,13 @@ a key that was never injected,
 or a model that answers nothing readable;
 the run log names which.
 Do not read a run with a dark seat as a comparison of the roster.
+
+#### Current roster cull
+
+`qwen3.8-max` was removed from roster and Charm Hyper allowlist on 2026-08-28 at owner's instruction.
+Its metered cost was disproportionate and exceptionally expensive.
+No replacement was selected, so current roster has nine models.
+Dated pricing remains only so historical run artifacts can still be accounted.
 
 #### Running out of budget is normal, and the two providers run out differently
 
