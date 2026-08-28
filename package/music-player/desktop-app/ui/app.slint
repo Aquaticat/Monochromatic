@@ -817,8 +817,9 @@ component PageControlWidthProbeItem inherits Rectangle {
     in property <string> text;
     in property <int> control-style;
     in property <length> max-control-width;
+    in property <int> control-index;
     in property <bool> selected;
-    callback report-geometry(length, length);
+    callback report-geometry(int, length, length);
     private property <length> label-width: probe-label.preferred-width;
     width: root.control-style == 0 ? root.label-width + 28px
         : root.control-style == 1 ? root.label-width + 24px
@@ -830,16 +831,16 @@ component PageControlWidthProbeItem inherits Rectangle {
     clip: true;
     accessible-role: none;
     init => {
-        root.report-geometry(root.x, root.width);
+        root.report-geometry(root.control-index, root.x, root.width);
     }
     changed x => {
-        root.report-geometry(root.x, root.width);
+        root.report-geometry(root.control-index, root.x, root.width);
     }
     changed width => {
-        root.report-geometry(root.x, root.width);
+        root.report-geometry(root.control-index, root.x, root.width);
     }
     changed selected => {
-        root.report-geometry(root.x, root.width);
+        root.report-geometry(root.control-index, root.x, root.width);
     }
 
     probe-label := Text {
@@ -878,9 +879,10 @@ component PageControlWidthProbe inherits Rectangle {
             text: label;
             control-style: root.control-style;
             max-control-width: root.max-control-width;
+            control-index: p;
             selected: p == root.selected-page;
-            report-geometry(item-x, item-width) => {
-                if (self.selected) {
+            report-geometry(item-index, item-x, item-width) => {
+                if (item-index == root.selected-page) {
                     root.selected-x = item-x;
                     root.selected-width = item-width;
                 }
