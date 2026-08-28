@@ -2,15 +2,24 @@
 
 ## Status
 
-The original problem is an intermittent episode in which input to every application is delayed.
+The original problem is an intermittent episode in which input to applications is delayed.
 A matching episode recurred on 2026-08-28 around 00:40 local time.
 The user reported that all applications were delayed and then recovered,
 followed by a narrower Helium delay.
 Three autonomous probes timed out Plasma while KWin answered normally.
 The episode occurred inside Snapper's 00:39:20 to 00:43:15 snapshot-deletion interval.
-This makes cleanup and deletion the leading trigger hypothesis,
-but does not identify the cross-application blocking mechanism.
-A low-rate observer is running through 2026-08-28 at 04:20:34 local time.
+
+A distinct most-application episode occurred around 05:43 during post-deletion synchronization.
+All applications except Ghostty were delayed,
+the pointer moved normally,
+and Alt+Tab was not tested.
+Plasma and KWin answered DBus probes in 5 and 4 ms.
+Applications recovered around 05:45 while Snapper remained blocked until 05:52.
+The Ghostty exception prevents classifying this as the original all-application symptom.
+Its application-toolkit or display-protocol boundary was not measured.
+These recurrences make cleanup and deletion the leading conditional trigger,
+but do not identify the cross-application blocking mechanism.
+Passive observers were stopped after capturing the target symptom.
 
 A different episode was captured on 2026-08-27 around 04:25 local time:
 all four Plasma panels stopped reacting to hover and click input,
@@ -53,7 +62,7 @@ The episode recovered without restarting Plasma.
 
 The defining symptom is delayed input across applications,
 not merely an unresponsive panel.
-No timestamped instance of this symptom has been captured yet.
+Timestamped recurrences were captured around 00:40 and 05:43 on 2026-08-28.
 
 The available negative evidence is:
 
@@ -162,13 +171,55 @@ During the original-symptom recurrence around 00:40 on 2026-08-28:
   memory-pressure interval,
   or contemporaneous I/O-pressure threshold crossing was captured.
 
-The matching original episode changes the cleanup association from a Plasma-only correlation
-to a leading trigger hypothesis for the user-reported global delay.
-It does not establish whether Btrfs accounting,
+### Distinct most-application recurrence around 05:43
+
+During the 05:43 recurrence:
+
+- Snapper cleanup started at 05:36:17.
+- Timeline snapshot 965 deletion began at 05:38:26.
+- A qgroup rescan completed at 05:38:26,
+  and another completed at 05:43:05.
+- Snapper's post-deletion free-space query then waited until 05:52:14.
+- The user then reported that all applications except Ghostty were delayed.
+- Pointer movement remained normal;
+  Alt+Tab was not tested.
+- Plasma and KWin answered DBus probes in 5 and 4 ms.
+- Current CPU and memory pressure were negligible;
+  ten-second I/O pressure was 0.0.
+- Snapper's main thread was in `futex_do_wait`,
+  its worker was in `hrtimer_nanosleep`,
+  and the helper was in `poll`.
+- Applications recovered around 05:45.
+- The following free-space query returned at 05:52:14,
+  showing that recovery preceded operation completion.
+- No GPU fault,
+  kernel lockup,
+  or memory-pressure event was emitted.
+
+The capture is preserved at
+`/var/home/user/temp/agent/plasma-stall-captures/2026-08-28T09-43-user-reported-all-app-stall`.
+The later Snapper daemon crash is excluded from natural attribution.
+A diagnostic `snapper list` client was terminated after it remained blocked behind cleanup.
+The later crash is most consistent with Snapper handling that disconnected sender,
+but the exact queued sender was not recorded.
+`server/snapperd.cc:116` calls `get_unix_userid` for a newly observed sender without a surrounding exception handler;
+the journal recorded an uncaught `DBus::ErrorException` there.
+The crash occurred after visible recovery and is observer-contaminated for stall attribution.
+It nevertheless exposes a separate Snapper daemon robustness defect:
+a disconnected queued client can terminate the daemon,
+make the helper receive `NoReply`,
+and fail cleanup.
+Do not invoke or terminate Snapper CLI clients while cleanup is active;
+use journal and direct Btrfs state until cleanup finishes.
+
+The recurrences change the cleanup association from a Plasma-only correlation
+to a leading trigger hypothesis for cross-application delay.
+The 05:43 event also shows that Plasma and KWin can remain responsive while ordinary applications are delayed.
+The evidence does not establish whether Btrfs accounting,
 storage locks,
 Snapper synchronization,
 a desktop service,
-or another shared dependency transmitted the delay to applications.
+or another shared dependency transmits the delay.
 
 ## Root cause
 
@@ -182,17 +233,18 @@ kernel lockup,
 memory pressure,
 or observer-wide scheduler delay.
 
-This is enough to justify a reversible cleanup-timer pause as an A/B diagnostic.
+The user retained hourly snapshot creation but moved cleanup to midnight after the 05:43 recurrence.
+The persistent timer catches up after boot when a midnight run was missed.
+This reduces deletion exposure during ordinary active hours without disabling automatic snapshots.
 It is not enough to call Snapper or Btrfs the root cause:
 many equivalent deletion cycles completed without a user-visible stall,
-and no capture identifies the dependency that delayed every application.
+and no capture identifies the dependency that delayed applications.
 
-A direct event-loop watchdog now probes Plasma Shell and KWin every five seconds.
+The direct event-loop watchdog was stopped after capturing the target symptom.
 Its first failure captured both process states and a Plasma stack.
 A second stack was also captured,
 but the stack collector pauses the target process and can prolong an existing stall.
-The replacement watchdog therefore records only probe results and kernel wait channels.
-This closes part of the initial procfs-only observer gap without repeatedly stopping Plasma.
+Later captures therefore used DBus probes and procfs wait channels without attaching a debugger.
 
 ## Diagnostic interpretation
 
@@ -988,10 +1040,10 @@ Reclaiming or moving live data while identifying its growth source remains the s
 
 After capacity is addressed,
 the leading reversible stutter mitigation is to keep hourly creation while moving cleanup to a chosen inactive time.
-The user instead selected the existing hourly creation and hourly cleanup cadence,
-accepting the possibility of hourly deletion after retention limits are reached.
-No timer override was installed.
-It retains hourly restore granularity and batches deletion exposure into one scheduled window.
+The user initially retained hourly cleanup,
+then selected midnight cleanup after the 05:43 recurrence repeated the same deletion-interval association.
+A persistent systemd timer catches up after boot when midnight was missed.
+This retains hourly restore granularity and batches deletion exposure into one scheduled window.
 It temporarily accumulates up to one cleanup interval of snapshots,
 and the scheduled cleanup can still stall applications.
 Changing both creation and cleanup to once daily further reduces transactions,
@@ -1058,6 +1110,42 @@ and full qgroups were consistent.
 This verifies that the new free-space condition prevents the immediate create-delete loop.
 It does not prevent later deletion when fixed retention limits are exceeded,
 nor prove that deletion impact is resolved.
+The 05:43 recurrence occurred when fixed retention deleted snapshot 965,
+confirming that limitation.
+
+### Move cleanup to midnight with boot catch-up
+
+Hourly timeline creation remains enabled.
+The timer override at `/etc/systemd/system/snapper-cleanup.timer.d/schedule.conf`
+clears the vendor unit's `OnBootSec=10m` and `OnUnitActiveSec=1h` triggers,
+adds `OnCalendar=*-*-* 00:00:00`,
+and sets `Persistent=true`.
+The user selected boot catch-up despite its risk of running during an active session.
+
+After daemon reload and timer restart,
+`systemctl show` reported an active waiting timer,
+`Persistent=yes`,
+and its next trigger at 00:00 on August 29.
+A persistent stamp was created at 05:53;
+the next trigger remained midnight and no immediate run occurred.
+Hourly timeline creation's next trigger remained unchanged.
+The failed cleanup state from the observer-contaminated daemon crash was reset,
+and the restarted Snapper daemon was healthy.
+
+Daily cleanup can batch roughly one day of hourly snapshots,
+so its deletion interval may be longer than an hourly cleanup.
+Timeline creation and cleanup both become eligible at midnight;
+Snapper serializes DBus work,
+but their ordering is not guaranteed.
+If the filesystem approaches the 100 GiB free-space limit,
+free-space deletion pressure returns inside the midnight window.
+`Persistent=true` catches up only after the timer was inactive across a missed calendar event;
+an awake or suspended system still uses the midnight event normally.
+
+Removing the override,
+reloading systemd,
+and restarting `snapper-cleanup.timer` restores the vendor hourly schedule.
+The restored monotonic timer may schedule cleanup within an hour of restart.
 
 ### Remove Panel Colorizer from every panel
 
@@ -1191,6 +1279,7 @@ Sources:
 - [Btrfs qgroup performance and simple-quota documentation](https://btrfs.readthedocs.io/en/stable/btrfs-quota.html)
 - [Btrfs `drop_subtree_threshold` documentation](https://btrfs.readthedocs.io/en/stable/ch-sysfs.html#uuid-qgroups)
 - [2026 `linux-btrfs` report about qgroup-induced system hangs](https://www.spinics.net/lists/linux-btrfs/msg165086.html)
+- [`systemd.timer` persistent calendar semantics](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
 
 ## What does not work
 
@@ -1351,8 +1440,30 @@ or Panel Colorizer.
     not a software fix.
 
 Decision:
-do not file yet.
-Preserve the 00:40 incident and test the reversible timer pause before assigning an upstream.
+do not file the stall yet.
+Preserve the 00:40 and 05:43 incidents and evaluate the midnight-cleanup mitigation before assigning an upstream.
+
+### Snapper daemon disconnected-client crash
+
+1.  **Is it really upstream's fault?**
+    The unhandled DBus exception is in Snapper's daemon,
+    but this occurrence followed an observer-terminated client and is not a natural stall cause.
+2.  **Can upstream fix it?**
+    Yes.
+    Snapper can handle sender disappearance around `get_unix_userid` without terminating the daemon.
+3.  **Are they supporting this use case?**
+    Yes.
+    CLI clients can disconnect or enforce their own operation limits.
+4.  **Would the repository welcome a contribution?**
+    Not checked because a clean reproduction has not been built.
+5.  **Will they likely fix it?**
+    Unknown without a minimal reproduction and full DBus message identity.
+6.  **Has a minimal compatible fix been prototyped?**
+    No.
+
+Decision:
+do not file the contaminated occurrence.
+Reproduce a disconnected queued client against a disposable or isolated daemon before proposing an upstream report.
 
 ### Panel Colorizer
 

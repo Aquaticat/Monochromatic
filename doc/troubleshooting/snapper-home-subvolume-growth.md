@@ -295,6 +295,35 @@ Tradeoffs:
 - Very new snapshots are still protected by `NUMBER_MIN_AGE` and `TIMELINE_MIN_AGE`,
   so a huge fresh snapshot can remain until it reaches the configured minimum age.
 
+### Current reserve and cleanup cadence after deletion-associated stalls
+
+On August 28,
+the user selected a lower free-space reserve while retaining automatic snapshots:
+
+```text
+FREE_LIMIT=100GiB
+TIMELINE_CREATE=yes
+TIMELINE_CLEANUP=yes
+```
+
+The first cleanup after that change retained the new timeline snapshot because free space exceeded 100 GiB.
+A later fixed-retention deletion still coincided with cross-application delays,
+so cleanup was moved from hourly to midnight while timeline creation remained hourly.
+
+The active drop-in is `/etc/systemd/system/snapper-cleanup.timer.d/schedule.conf`:
+
+```systemd
+[Timer]
+OnBootSec=
+OnUnitActiveSec=
+OnCalendar=*-*-* 00:00:00
+Persistent=true
+```
+
+Empty assignments remove the vendor timer's boot and hourly triggers.
+`Persistent=true` catches up after boot if midnight was missed.
+The user selected that catch-up behavior despite the possibility of cleanup during an active login session.
+
 ### Structural improvement for high-churn directories
 
 Move high-churn directories to separate Btrfs subvolumes or mount points,
