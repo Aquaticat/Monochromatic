@@ -993,6 +993,7 @@ component FoldablePageControls inherits Rectangle {
     }
 
     if root.has-overflow: PageControlDisclosure {
+        x: 0px;
         y: (root.single-row-height - self.height) / 2;
         expanded: root.expanded;
         clicked => {
