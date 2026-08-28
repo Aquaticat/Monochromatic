@@ -58,8 +58,12 @@ import type { SliceSelection, } from './slice-selection.ts';
  * judges' sheet in both lanes. A slice judged before it could have ranked a
  * rendering the rule places lower, so every slice settled under version 5 is
  * re-judged; nothing about the record's shape or key changed.
+ *
+ * VERSION 7, on 2026-08-28, because metadata candidate admission now preserves
+ * contributor spelling established at same YAML comment path. A cached front
+ * matter candidate could retain source-script attribution and bypass guard.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 6;
+export const TRANSLATE_SLICE_CACHE_VERSION = 7;
 
 /**
  * Models the translate lane seats.

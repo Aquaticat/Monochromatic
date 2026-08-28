@@ -49,6 +49,16 @@ const SAME_IDENTITY_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
  */
 const DIRECTORY_ID_TARGET = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
 
+/**
+ * Source metadata carrying contributor attribution in location comment.
+ */
+const COMMENT_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n  location: 广东 #清远, by 魔骨\n---\n';
+
+/**
+ * Archive metadata establishing Latin contributor attribution at same path.
+ */
+const COMMENT_TARGET = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n';
+
 await describe({
   name: frontMatterSlice.name,
   children: [
@@ -150,6 +160,22 @@ await describe({
           pageText: TARGET.raw,
           candidateText: '---\nname: [broken\n---\n',
         },).kind,).toBe('invalid',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES SOURCE-SCRIPT COMMENT ATTRIBUTION replacing established target form',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: COMMENT_SOURCE,
+          pageText: COMMENT_TARGET,
+          candidateText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by 魔骨\n---\n',
+        },).kind,).toBe('invalid',);
+        expect(validateFrontMatterTranslation({
+          sourceText: COMMENT_SOURCE,
+          pageText: COMMENT_TARGET,
+          candidateText: COMMENT_TARGET,
+        },).kind,).toBe('valid',);
       },
     },),
 

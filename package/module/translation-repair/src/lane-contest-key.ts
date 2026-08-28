@@ -18,8 +18,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * quorum, or anything else that changes what a judge is asked or how its answer
  * is read. It does NOT move for a change to how a settled outcome is RECORDED,
  * since the ballots on disk still answer the question that bought them.
+ *
+ * VERSION 2 adds target-authoritative contributor spelling to metadata policy.
+ * Version 1 ballots never answered that question and cannot settle it now.
  */
-export const LANE_CONTEST_CACHE_VERSION = 1;
+export const LANE_CONTEST_CACHE_VERSION = 2;
 
 /**
  * Everything about this run that changes what the judges are ASKED, folded into

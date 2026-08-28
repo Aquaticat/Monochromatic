@@ -183,6 +183,9 @@ await describe({
         expect(criteria.some(function preservesIdentityRelation(criterion,): boolean {
           return criterion.includes('name and info.alias are the same identity',);
         },),).toBe(true,);
+        expect(criteria.some(function preservesCommentContributor(criterion,): boolean {
+          return criterion.includes('established target contributor spelling',);
+        },),).toBe(true,);
       },
     },),
     it({

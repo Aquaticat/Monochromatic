@@ -1,3 +1,4 @@
+import { frontMatterCommentAuthorityFindings, } from './front-matter-comment-authority.ts';
 import { splitFrontMatter, } from './front-matter.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import type { SliceValidation, } from './translate-validate.ts';
@@ -13,7 +14,8 @@ export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete Y
   + 'flawed if it breaks YAML fences, field names, nesting, container lengths, or scalar kinds. ORIGINAL metadata '
   + 'values are source facts. The visible name field must identify the source person and must not be replaced by an '
   + 'entry directory id. When ORIGINAL name and info.alias are the same identity, translated name and info.alias must '
-  + 'also be the same identity; a candidate retaining a different archive name is invalid.';
+  + 'also be the same identity; a candidate retaining a different archive name is invalid. In info.location comments, '
+  + 'keep established target contributor spelling after `, by ` where source and archive spell that contributor differently.';
 
 /**
  * Visible identity read from standard fields, or another metadata schema.
@@ -210,6 +212,20 @@ export function validateFrontMatterTranslation(
       return {
         kind: 'invalid',
         findings: ['Your translation changed YAML field names, nesting, container lengths, or scalar kinds.',],
+      };
+    }
+    /**
+     * Comment attribution findings grounded at same YAML path.
+     */
+    const commentFindings = frontMatterCommentAuthorityFindings({
+      sourceText,
+      pageText,
+      candidateText,
+    },);
+    if (commentFindings.length > 0) {
+      return {
+        kind: 'invalid',
+        findings: commentFindings,
       };
     }
     /**

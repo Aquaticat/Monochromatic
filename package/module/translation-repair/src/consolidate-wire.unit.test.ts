@@ -148,6 +148,7 @@ await describe({
         expect(sheet,).toContain('complete YAML front matter',);
         expect(sheet,).toContain('never an entry directory id',);
         expect(sheet,).toContain('name and info.alias are the same identity',);
+        expect(sheet,).toContain('established target contributor spelling',);
       },
     },),
     it({

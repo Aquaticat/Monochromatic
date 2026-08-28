@@ -206,6 +206,7 @@ await describe({
         expect(system,).toContain('complete YAML front matter',);
         expect(system,).toContain('entry directory id',);
         expect(system,).toContain('name and info.alias are the same identity',);
+        expect(system,).toContain('established target contributor spelling',);
       },
     },),
     it({

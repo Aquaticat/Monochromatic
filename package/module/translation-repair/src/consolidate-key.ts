@@ -22,8 +22,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * after both rounds and looks like a recording change, but it can demote a
  * consolidation to the standing text, which is a different settlement and not a
  * different way of writing the same one.
+ *
+ * VERSION 3 adds target-authoritative contributor spelling to producer,
+ * selector, validity floor and gate. Version 2 settlements did not answer it.
  */
-export const CONSOLIDATE_CACHE_VERSION = 2;
+export const CONSOLIDATE_CACHE_VERSION = 3;
 
 /**
  * What a line-structured slice appends to its key material.

@@ -133,6 +133,47 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES SOURCE-SCRIPT COMMENT ATTRIBUTION replacing established target form',
+      fn: async () => {
+        /**
+         * Source page carrying contributor attribution in location comment.
+         */
+        const sourceText = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n  location: 广东 #清远, by 魔骨\n---\n\nBody.\n';
+        /**
+         * Archive page establishing target contributor spelling.
+         */
+        const archiveText = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n\nBody.\n';
+        /**
+         * Candidate retaining source-script attribution.
+         */
+        const pageText = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by 魔骨\n---\n\nBody.\n';
+        /**
+         * Parsed source metadata.
+         */
+        const source = splitFrontMatter({ text: sourceText, }).frontMatter;
+        /**
+         * Parsed archive metadata.
+         */
+        const target = splitFrontMatter({ text: archiveText, }).frontMatter;
+        if ((source === undefined) || (target === undefined))
+          throw new Error('comment authority fixture did not parse',);
+        /**
+         * Explicit metadata slice at publication boundary.
+         */
+        const result = frontMatterSlice({ source, target, });
+        if (result.kind !== 'paired')
+          throw new Error('comment authority fixture did not pair',);
+        expect(() => assertFrontMatterComplete({
+          entryId: 'CatEntry',
+          sourceText,
+          archiveText,
+          pageText,
+          slices: [result.slice,],
+        },),).toThrow(FrontMatterCompletenessError,);
+      },
+    },),
+
+    it({
       name: 'REFUSES PAGE THAT DROPS TARGET METADATA FIELD',
       fn: async () => {
         expect(() => assertFrontMatterComplete({

@@ -113,8 +113,9 @@ export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML
   + 'ORIGINAL into natural English. For this metadata only, ORIGINAL field values are source facts and outrank the '
   + 'existing translation. The name field is the visible person name, never an entry directory id. When ORIGINAL name '
   + 'and info.alias are the same identity, translated name and info.alias must also be the same identity; retaining a '
-  + 'different existing name is invalid. Existing aliases, handles, and contributor names may supply established English '
-  + 'forms only where they identify the same source value. '
+  + 'different existing name is invalid. In info.location comments, keep the established target contributor spelling '
+  + 'after `, by ` where source and archive spell that contributor differently. Existing aliases, handles, and contributor '
+  + 'names may supply established English forms only where they identify the same source value. '
   + 'THIS RULE OUTRANKS the general rule that names already used by the existing translation are authoritative.';
 
 /**

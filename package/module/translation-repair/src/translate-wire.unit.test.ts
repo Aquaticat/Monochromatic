@@ -116,6 +116,7 @@ await describe({
         expect(frontMatterSystem.includes('ORIGINAL field values are source facts',),).toBe(true,);
         expect(frontMatterSystem.includes('never an entry directory id',),).toBe(true,);
         expect(frontMatterSystem.includes('name and info.alias are the same identity',),).toBe(true,);
+        expect(frontMatterSystem.includes('established target contributor spelling',),).toBe(true,);
         expect(frontMatterSystem.includes('Preserve every field name',),).toBe(true,);
         expect(system.includes('never an entry directory id',),).toBe(false,);
       },

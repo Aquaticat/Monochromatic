@@ -201,14 +201,12 @@ await describe({
 
     it({
       name: 'PINS THE KEY TO A LITERAL, so a change to this material has to be made on purpose. The value '
-        + 'moved once, on 2026-08-22, when `CONSOLIDATE_CACHE_VERSION` went to 2. That bump was not a '
-        + 'change to any field here: it answered a change the material CANNOT SEE. The judges deciding a '
-        + 'governed consolidation began receiving the rule against merging lines, and a slice settled '
-        + 'before that resumes with a judgment made under a sheet that never mentioned lines while keying '
-        + 'identically. Comparing two calls would not have noticed, which is why this pins a value',
+        + 'moved on 2026-08-22 for line-structure judging and on 2026-08-28 for target-authoritative '
+        + 'metadata contributor spelling. Neither policy is a field here, so comparing two calls would '
+        + 'not notice a stale settlement, which is why this pins a value',
       fn: async () => {
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'bac632ff7400207f4a57637173c848d9465a23418b5307df1b98f85ee436e9e7',
+          '60082c36d7fe1ed5130eb3b98bbf18508a8ca511ac4d4f8ee54b6be55d9b3448',
         );
       },
     },),
