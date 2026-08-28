@@ -290,6 +290,7 @@ export async function pairBlocksWithRoster(
   const agreement = agreePairs({
     pairings,
     needed: AGREEMENT_NEEDED,
+    pairingShape: 'many-to-many',
   },);
   /**
    * What agreement dropped, in its own words.

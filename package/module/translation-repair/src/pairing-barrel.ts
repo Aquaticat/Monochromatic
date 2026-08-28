@@ -31,6 +31,7 @@ export {
   agreePairs,
   type IndexPair,
   type PairAgreement,
+  type PairingShape,
 } from './pair-agreement.ts';
 export {
   type SectionBlockPairing,

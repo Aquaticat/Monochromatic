@@ -227,6 +227,52 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS corroborated paragraph splits and merges in many-to-many mode, because block wire explicitly represents repeated positions on either side',
+      fn: async () => {
+        expect(agreePairs({
+          pairings: [
+            [
+              { source: 0, target: 0, },
+              { source: 0, target: 1, },
+              { source: 1, target: 1, },
+            ],
+            [
+              { source: 0, target: 0, },
+              { source: 0, target: 1, },
+              { source: 1, target: 1, },
+            ],
+          ],
+          needed: NEEDED,
+          pairingShape: 'many-to-many',
+        },),).toEqual({
+          pairs: [
+            { source: 0, target: 0, },
+            { source: 0, target: 1, },
+            { source: 1, target: 1, },
+          ],
+          findings: [],
+        },);
+      },
+    },),
+    it({
+      name: 'DOES NOT INVENT A SPLIT from tied alternatives no voice named together',
+      fn: async () => {
+        expect(agreePairs({
+          pairings: [
+            [{ source: 0, target: 0, },],
+            [{ source: 0, target: 0, },],
+            [{ source: 0, target: 1, },],
+            [{ source: 0, target: 1, },],
+          ],
+          needed: NEEDED,
+          pairingShape: 'many-to-many',
+        },),).toEqual({
+          pairs: [],
+          findings: ['contested (source 0 named against 2 targets)'],
+        },);
+      },
+    },),
+    it({
       name: 'KEEPS the result strictly increasing on both sides, skipping and naming an agreed'
         + ' pair that would run backwards',
       fn: async () => {

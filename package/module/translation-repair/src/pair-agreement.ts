@@ -7,12 +7,11 @@
 // pairs survived depended on which seat answered usably first. Agreement is
 // per pair: a pair named by enough voices survives whoever named it.
 //
-// STRICTLY INCREASING ON BOTH SIDES is what the step builders downstream
-// require, and one reply's pairs already are. A union of several replies need
-// not be: two voices can name one source against two targets, or a pair that
-// runs backwards against its neighbours. Both are resolved here, by votes and
-// then by order, with a finding for every pair that was agreed and still
-// could not be kept, so the loss is on the record.
+// SECTION PAIRS ARE STRICTLY INCREASING. Block pairs are monotone and may stay
+// on one side while the other advances, because paragraph splits and merges are
+// first-class correspondences in `pair-blocks-wire.ts`. A repeated-side set is
+// kept only when enough voices named its members together, so alternatives from
+// disjoint replies do not become invented many-to-many structure.
 
 /**
  * A correspondence between one source position and one target position.
@@ -36,6 +35,16 @@ type VotedPair<PairT extends IndexPair,> = {
 };
 
 /**
+ * Multiplicity pairing consumer can represent.
+ *
+ * @example
+ * ```ts
+ * const shape: PairingShape = 'many-to-many';
+ * ```
+ */
+export type PairingShape = 'one-to-one' | 'many-to-many';
+
+/**
  * Pairs the roster agreed on, with the findings for agreed pairs that could
  * not be kept.
  *
@@ -46,7 +55,7 @@ type VotedPair<PairT extends IndexPair,> = {
  */
 export type PairAgreement<PairT extends IndexPair,> = {
   /**
-   * Agreed pairs, strictly increasing on both sides.
+   * Agreed pairs, strictly increasing for one-to-one and monotone otherwise.
    */
   readonly pairs: readonly PairT[];
 
@@ -98,12 +107,62 @@ function countAcrossVoices<PairT extends IndexPair,>(
 }
 
 /**
- * Of the candidates naming one source, the one to keep: the best-voted, or
- * none when the best is tied.
+ * Reports whether enough voices named every candidate together.
  *
- * @param candidates - agreed pairs sharing a source
+ * @param candidates - pairs whose co-occurrence is being tested
  *
- * @returns The winner alone, or nothing for a tie or no candidate
+ * @param pairings - one pairing per usable voice
+ *
+ * @param needed - voices required
+ *
+ * @returns Whether candidates are corroborated as one relation
+ *
+ * @example
+ * ```ts
+ * const together = candidatesCoOccur({ candidates, pairings, needed: 2, });
+ * ```
+ */
+function candidatesCoOccur<PairT extends IndexPair,>(
+  {
+    candidates,
+    pairings,
+    needed,
+  }: {
+    readonly candidates: readonly VotedPair<PairT>[];
+    readonly pairings: readonly (readonly PairT[])[];
+    readonly needed: number;
+  },
+): boolean {
+  /**
+   * Voices naming every candidate as one relation.
+   */
+  const matching = pairings.filter(function namesEveryCandidate(pairing,): boolean {
+    return candidates.every(function namesCandidate(candidate,): boolean {
+      /**
+       * Candidate pair this voice must name.
+       */
+      const { pair: candidatePair, } = candidate;
+      return pairing.some(function isSamePair(pair,): boolean {
+        return (pair.source === candidatePair.source)
+          && (pair.target === candidatePair.target);
+      },);
+    },);
+  },);
+  return matching.length >= needed;
+}
+
+/**
+ * Of candidates naming one source, set to keep under consumer multiplicity.
+ *
+ * @param candidates - agreed pairs sharing source
+ *
+ * @param pairings - one pairing per usable voice
+ *
+ * @param needed - voices required
+ *
+ * @param pairingShape - multiplicity consumer can represent
+ *
+ * @returns Corroborated set, best-voted singleton, or nothing for tie
  *
  * @example
  * ```ts
@@ -111,8 +170,25 @@ function countAcrossVoices<PairT extends IndexPair,>(
  * ```
  */
 function bestVoted<PairT extends IndexPair,>(
-  { candidates, }: { readonly candidates: readonly VotedPair<PairT>[]; },
+  {
+    candidates,
+    pairings,
+    needed,
+    pairingShape,
+  }: {
+    readonly candidates: readonly VotedPair<PairT>[];
+    readonly pairings: readonly (readonly PairT[])[];
+    readonly needed: number;
+    readonly pairingShape: PairingShape;
+  },
 ): readonly VotedPair<PairT>[] {
+  if ((pairingShape === 'many-to-many')
+    && candidatesCoOccur({
+      candidates,
+      pairings,
+      needed,
+    },))
+    return candidates;
   /**
    * Candidates from the most-voted down.
    */
@@ -140,6 +216,8 @@ function bestVoted<PairT extends IndexPair,>(
  *
  * @param needed - voices a pair needs to count as agreed
  *
+ * @param pairingShape - multiplicity consumer can represent
+ *
  * @returns Agreed pairs in source order, plus a finding per agreed pair dropped
  *
  * @example
@@ -151,9 +229,11 @@ export function agreePairs<PairT extends IndexPair,>(
   {
     pairings,
     needed,
+    pairingShape = 'one-to-one',
   }: {
     readonly pairings: readonly (readonly PairT[])[];
     readonly needed: number;
+    readonly pairingShape?: PairingShape;
   },
 ): PairAgreement<PairT> {
   /**
@@ -218,30 +298,62 @@ export function agreePairs<PairT extends IndexPair,>(
     /**
      * The one to keep for this source, absent on a tie.
      */
-    const [winner,] = bestVoted({ candidates, },);
-    if (winner === undefined) {
+    const winners = bestVoted({
+      candidates,
+      pairings,
+      needed,
+      pairingShape,
+    },);
+    if (winners.length === 0) {
       findings.push(`contested (source ${String(source,)} named against ${String(candidates.length,)} targets)`,);
       continue;
     }
-    /**
-     * Last pair kept, absent before the first.
-     */
-    const last = kept.at(-1,);
-    /**
-     * Target of the last pair kept, below every target when none is kept yet.
-     */
-    const lastTarget = (last === undefined) ? (-1) : last.target;
-    /**
-     * Pair the winner names.
-     */
-    const { pair: chosen, } = winner;
-    if (chosen.target <= lastTarget) {
-      findings.push(
-        `non-monotone (${String(source,)},${String(chosen.target,)} runs back behind ${String(lastTarget,)})`,
-      );
-      continue;
+    for (const winner of winners) {
+      /**
+       * Last pair kept, absent before first.
+       */
+      const last = kept.at(-1,);
+      /**
+       * Target of last pair, below every target before first.
+       */
+      const lastTarget = (last === undefined) ? (-1) : last.target;
+      /**
+       * Pair this winner names.
+       */
+      const { pair: chosen, } = winner;
+      /**
+       * Whether repeated target is corroborated merge in many-to-many mode.
+       */
+      const repeatedTarget = (last !== undefined)
+        && (chosen.target === last.target)
+        && (pairingShape === 'many-to-many')
+        && candidatesCoOccur({
+          candidates: [
+            {
+              pair: last,
+              votes: needed,
+            },
+            winner,
+          ],
+          pairings,
+          needed,
+        },);
+      /**
+       * Whether this pair stays on previous target.
+       */
+      const repeatsTarget = chosen.target === lastTarget;
+      /**
+       * Equal target unsupported as merge.
+       */
+      const doesNotAdvance = repeatsTarget ? !repeatedTarget : false;
+      if ((chosen.target < lastTarget) || doesNotAdvance) {
+        findings.push(
+          `non-monotone (${String(source,)},${String(chosen.target,)} runs back behind ${String(lastTarget,)})`,
+        );
+        continue;
+      }
+      kept.push(chosen,);
     }
-    kept.push(chosen,);
   }
   return {
     pairs: kept,
