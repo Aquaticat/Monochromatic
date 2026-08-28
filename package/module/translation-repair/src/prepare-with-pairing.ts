@@ -17,6 +17,7 @@ import {
   pairBlocksWithRoster,
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
+import { countPairedBlocks, } from './pair-block-counts.ts';
 import type {
   BlockPair,
   NumberedBlock,
@@ -416,14 +417,19 @@ export async function prepareDocumentPairWithRoster(
     // A ROUND NOBODY ANSWERED SAYS SO ELSEWHERE. At no usable voice the stage
     // has already filed `no-usable-voice`, and a count of zero out of zero
     // beside it would be a second wording for one fact.
-    if (usable > 0)
+    if (usable > 0) {
+      /**
+       * Unique reach after corroborated media adjacency joins roster relations.
+       */
+      const counts = countPairedBlocks({ pairs: rosterPairs, },);
       sectionFindings.push(
-        `block-pairing section ${String(pairIndex,)} paired ${String(rosterPairs.length,)} of ${
+        `block-pairing section ${String(pairIndex,)} paired ${String(counts.source,)} of ${
           String(sourceBlocks.length,)
-        } original and ${String(targetBlocks.length,)} translation blocks, from ${
-          String(usable,)
-        } usable voices of ${String(heard,)} heard`,
+        } original and ${String(counts.target,)} of ${String(targetBlocks.length,)} translation blocks across ${
+          String(counts.relations,)
+        } relations, from ${String(usable,)} usable voices of ${String(heard,)} heard`,
       );
+    }
 
     /**
      * Whether cross-run cache may treat this pairing as terminal.

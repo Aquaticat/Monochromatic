@@ -17,6 +17,7 @@ import {
   readBlockPairing,
 } from './pair-blocks-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
+import { countPairedBlocks, } from './pair-block-counts.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -293,8 +294,8 @@ export async function pairBlocksWithRoster(
   }
 
   /**
-   * Pairs the roster agreed on, counted over every usable voice's pairs and
-   * kept strictly increasing on both sides (`#245`).
+   * Pairs roster agreed on, counted over every usable voice's relations and
+   * kept monotone while allowing corroborated repeated indexes (`#245`).
    */
   const agreement = agreePairs({
     pairings,
@@ -318,10 +319,16 @@ export async function pairBlocksWithRoster(
    * Pairs that survived agreement and ordering.
    */
   const agreed = agreement.pairs;
+  /**
+   * Unique block reach beside many-to-many relation count.
+   */
+  const counts = countPairedBlocks({ pairs: agreed, },);
   pl.info(
-    `paired ${String(agreed.length,)} of ${String(sourceBlocks.length,)} original and ${
-      String(targetBlocks.length,)
-    } translation blocks, from ${String(pairings.length,)} usable voices of ${String(heardVoices.length,)} heard`,
+    `paired ${String(counts.source,)} of ${String(sourceBlocks.length,)} original and ${
+      String(counts.target,)
+    } of ${String(targetBlocks.length,)} translation blocks across ${String(counts.relations,)} relations, from ${
+      String(pairings.length,)
+    } usable voices of ${String(heardVoices.length,)} heard`,
   );
   return {
     pairs: agreed,

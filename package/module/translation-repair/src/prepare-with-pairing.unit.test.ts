@@ -333,8 +333,8 @@ await describe({
         /**
          * What the counts have to say, section and all.
          */
-        const expected = 'block-pairing section 0 paired 2 of 2 original and 2 translation blocks, '
-          + 'from 2 usable voices of 2 heard';
+        const expected = 'block-pairing section 0 paired 2 of 2 original and 2 of 2 translation blocks '
+          + 'across 2 relations, from 2 usable voices of 2 heard';
         expect(findings,).toContain(expected,);
 
         // THE ARTIFACT READS THE PREPARATION, not this return value, and
@@ -367,7 +367,7 @@ await describe({
         // the voices were heard and usable, they simply named nothing, and that
         // is exactly the case the counts are worth recording for.
         expect(findings,).toContain(
-          'block-pairing section 0 paired 0 of 2 original and 2 translation blocks, from 2 usable voices of 2 heard',
+          'block-pairing section 0 paired 0 of 2 original and 0 of 2 translation blocks across 0 relations, from 2 usable voices of 2 heard',
         );
       },
     },),

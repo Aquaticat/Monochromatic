@@ -15,6 +15,10 @@ export {
 } from './declined-target-runs.ts';
 export { blockPairingToSteps, } from './pair-blocks-steps.ts';
 export {
+  type BlockPairCounts,
+  countPairedBlocks,
+} from './pair-block-counts.ts';
+export {
   type PairedPreparation,
   prepareDocumentPairWithRoster,
 } from './prepare-with-pairing.ts';
