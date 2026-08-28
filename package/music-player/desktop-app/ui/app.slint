@@ -1158,6 +1158,9 @@ component FoldablePageControls inherits Rectangle {
         selected-reveal-timer.start();
         selected-reveal-timer.restart();
     }
+    init => {
+        root.schedule-selected-reveal();
+    }
     changed width => {
         root.schedule-selected-reveal();
     }
