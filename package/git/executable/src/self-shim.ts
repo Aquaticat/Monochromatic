@@ -105,6 +105,35 @@ export class GitCandidateFileTypeError extends Error {
 }
 
 /**
+ * Reports non-native candidate whose script inspection would exceed fixed bound.
+ *
+ * @example
+ * ```ts
+ * throw new GitCandidateInspectionLimitError('/tmp/git');
+ * ```
+ */
+export class GitCandidateInspectionLimitError extends Error {
+  /**
+   * Stable error classification independent of minification.
+   */
+  override readonly name = 'GitCandidateInspectionLimitError';
+
+  /**
+   * Creates bounded-inspection rejection evidence.
+   *
+   * @param candidatePath - Non-native candidate larger than inspection bound.
+   *
+   * @example
+   * ```ts
+   * const error = new GitCandidateInspectionLimitError('/tmp/git');
+   * ```
+   */
+  constructor(candidatePath: string,) {
+    super(`Non-native Git candidate exceeds script inspection bound: ${candidatePath}`,);
+  }
+}
+
+/**
  * Package name used by scripts that delegate to Git policy wrapper.
  */
 const GIT_POLICY_CLI_PACKAGE_NAME = '@monochromatic-dev/git-policy-cli';
@@ -145,7 +174,8 @@ const SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
  * @returns Whether candidate delegates to Git policy wrapper.
  *
  * @throws When candidate cannot be opened or read,
- * or opened object is not a regular file.
+ * opened object is not a regular file,
+ * or non-native script exceeds inspection bound.
  *
  * @example
  * ```ts
@@ -186,6 +216,8 @@ export async function isGitPolicySelfShim(candidatePath: string,): Promise<boole
     ),
   ))
     return false;
+  if (candidateStats.size > MAX_SELF_SHIM_INSPECTION_BYTES)
+    throw new GitCandidateInspectionLimitError(candidatePath,);
   /**
    * Bounded non-native candidate bytes inspected for self-shim markers.
    */

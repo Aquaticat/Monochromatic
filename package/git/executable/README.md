@@ -6,13 +6,15 @@ The resolver promotes common platform Git locations only when `PATH` exposes the
 then scans remaining candidates in shell order.
 It recognizes Windows `PATHEXT`,
 rejects non-regular candidates without blocking on their contents,
-inspects bounded script prefixes for `@monochromatic-dev/git-policy-cli` delegation,
+inspects script candidates up to 64 KiB for `@monochromatic-dev/git-policy-cli` delegation,
+rejects larger non-native candidates,
 and accepts ELF,
 PE,
 Mach-O,
 and universal Mach-O executables from their headers.
 
 Successful resolutions are cached by their effective absolute candidate sequence.
+The cache retains 16 least-recently-used successful sequences.
 Concurrent calls for the same sequence share one lookup.
 Failed lookups are not cached,
 so installing Git or changing candidate files allows a later call to retry.

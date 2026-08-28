@@ -10,8 +10,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { RealGitNotFoundError, } from './error.ts';
 import { commonGitPathsForPlatform, } from './platform-paths.ts';
+import { resolveCachedRealGit, } from './resolution-cache.ts';
 import {
   GitCandidateFileTypeError,
+  GitCandidateInspectionLimitError,
   isGitPolicySelfShim,
 } from './self-shim.ts';
 import type { ResolveRealGitOptions, } from './types.ts';
@@ -27,12 +29,6 @@ const moduleLogger = tagged({ tag: 'git-executable', },);
  * Default Windows executable extensions in shell lookup order.
  */
 const DEFAULT_WINDOWS_PATH_EXTENSIONS = '.COM;.EXE;.BAT;.CMD';
-
-/**
- * Successful and in-flight resolutions keyed by effective candidate sequence.
- * Rejected resolutions are removed before their errors escape.
- */
-const resolutionByCandidateSequence = new Map<string, Promise<string>>();
 
 /**
  * Inputs for constructing ordered executable candidate sequence.
@@ -268,7 +264,8 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  * ```
  */
 function isExpectedCandidateMiss(error: unknown,): boolean {
-  if (error instanceof GitCandidateFileTypeError)
+  if ((error instanceof GitCandidateFileTypeError)
+    || (error instanceof GitCandidateInspectionLimitError))
     return true;
   if (!isErrnoException(error,))
     return false;
@@ -408,29 +405,12 @@ export async function resolveRealGit(options: ResolveRealGitOptions = {},): Prom
    * Stable identity preserving effective candidate order and spelling.
    */
   const cacheKey = JSON.stringify(candidates,);
-  /**
-   * In-flight or successful equal resolution when already known.
-   */
-  const cachedResolution = resolutionByCandidateSequence.get(cacheKey,);
-  if (cachedResolution !== undefined)
-    return await cachedResolution;
-
-  /**
-   * Fresh scan stored before awaiting so concurrent callers share it.
-   */
-  const resolution = scanCandidateSequence(candidates,);
-  resolutionByCandidateSequence.set(
+  return await resolveCachedRealGit({
     cacheKey,
-    resolution,
-  );
-
-  try {
-    return await resolution;
-  }
-  catch (error) {
-    resolutionByCandidateSequence.delete(cacheKey,);
-    throw error;
-  }
+    resolve: async function scanEffectiveCandidates(): Promise<string> {
+      return await scanCandidateSequence(candidates,);
+    },
+  },);
 }
 
 //endregion Candidate scanning and cache

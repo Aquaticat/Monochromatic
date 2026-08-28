@@ -39,6 +39,21 @@ const EXECUTABLE_MODE = 0o755;
 const NON_EXECUTABLE_MODE = 0o644;
 
 /**
+ * File mode allowing execution while denying read access.
+ */
+const UNREADABLE_EXECUTABLE_MODE = 0o111;
+
+/**
+ * Prefix bytes placing self-shim marker beyond resolver inspection bound.
+ */
+const PADDED_SELF_SHIM_PREFIX_BYTES = 65_536;
+
+/**
+ * Distinct successful resolutions needed to exceed bounded cache capacity.
+ */
+const CACHE_EVICTION_FIXTURE_COUNT = 17;
+
+/**
  * Child-process deadline proving special-file candidates cannot block resolver.
  */
 const RESOLVER_CHILD_TIMEOUT_MS = 2_000;
@@ -199,7 +214,7 @@ async function captureResolutionError(
  *
  * @param commonGitPaths - Preferred paths passed to child resolver.
  *
- * @returns Absolute executable path printed by child resolver.
+ * @returns Resolved path plus captured verbose diagnostics.
  *
  * @throws When resolver blocks beyond deadline or child lookup fails.
  *
@@ -217,7 +232,10 @@ async function resolveRealGitInChild({
 }: {
   readonly pathEnv: string;
   readonly commonGitPaths: readonly string[];
-},): Promise<string> {
+},): Promise<{
+  readonly resolvedPath: string;
+  readonly diagnostics: string;
+}> {
   /**
    * Built package interface loaded by child process.
    */
@@ -244,16 +262,28 @@ async function resolveRealGitInChild({
   /**
    * Isolated resolver output.
    */
-  const { stdout, } = await executeFile(
+  const {
+    stdout,
+    stderr,
+  } = await executeFile(
     process.execPath,
     [
       '--input-type=module',
       '--eval',
       childSource,
     ],
-    { timeout: RESOLVER_CHILD_TIMEOUT_MS, },
+    {
+      timeout: RESOLVER_CHILD_TIMEOUT_MS,
+      env: {
+        ...process.env,
+        MONOCHROMATIC_VERBOSE: 'true',
+      },
+    },
   );
-  return stdout;
+  return {
+    resolvedPath: stdout,
+    diagnostics: stderr,
+  };
 }
 
 /**
@@ -283,6 +313,7 @@ async function createExecutableFifo(path: string,): Promise<void> {
 
 await describe({
   name: resolveRealGit.name,
+  concurrency: 1,
   children: [
     //region Selection priority and self-shim exclusion
 
@@ -382,46 +413,61 @@ await describe({
           writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },),
         ],);
 
-        expect(await resolveRealGitInChild({
+        /**
+         * Isolated result proving FIFO candidate cannot block lookup.
+         */
+        const result = await resolveRealGitInChild({
           pathEnv: [fifoBin, externalBin,].join(delimiter,),
           commonGitPaths: [],
-        },),).toBe(externalGit,);
+        },);
+
+        expect(result.resolvedPath,).toBe(externalGit,);
       },
     },),
     it({
-      name: 'does not inspect later executable FIFO after common Git resolves',
+      name: 'does not inspect later unreadable candidate after common Git resolves',
       skip: process.platform === 'win32',
-      fn: async function doesNotInspectLaterFifo(): Promise<void> {
+      fn: async function doesNotInspectLaterUnreadableCandidate(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
         /**
          * Earlier PATH directory containing preferred common executable.
          */
         const commonBin = join(tempDirectory.path, 'common-bin',);
         /**
-         * Later PATH directory containing blocking-risk FIFO candidate.
+         * Later PATH directory containing executable without read permission.
          */
-        const fifoBin = join(tempDirectory.path, 'fifo-bin',);
+        const unreadableBin = join(tempDirectory.path, 'unreadable-bin',);
         await Promise.all([
           mkdir(commonBin,),
-          mkdir(fifoBin,),
+          mkdir(unreadableBin,),
         ],);
         /**
          * Preferred regular executable that must end sequential lookup.
          */
         const commonGit = join(commonBin, 'git',);
         /**
-         * Later FIFO whose inspection would block without non-blocking open.
+         * Later candidate that emits path-specific diagnostic if inspected.
          */
-        const fifoGit = join(fifoBin, 'git',);
+        const unreadableGit = join(unreadableBin, 'git',);
         await Promise.all([
           writeExecutable({ path: commonGit, content: REAL_GIT_CONTENT, },),
-          createExecutableFifo(fifoGit,),
+          writeFile(
+            unreadableGit,
+            REAL_GIT_CONTENT,
+            { mode: UNREADABLE_EXECUTABLE_MODE, },
+          ),
         ],);
-
-        expect(await resolveRealGitInChild({
-          pathEnv: [commonBin, fifoBin,].join(delimiter,),
+        /**
+         * Child result carrying positive-control resolver log.
+         */
+        const result = await resolveRealGitInChild({
+          pathEnv: [commonBin, unreadableBin,].join(delimiter,),
           commonGitPaths: [commonGit,],
-        },),).toBe(commonGit,);
+        },);
+
+        expect(result.resolvedPath,).toBe(commonGit,);
+        expect(result.diagnostics,).toContain('resolved real Git at',);
+        expect(result.diagnostics,).not.toContain(unreadableGit,);
       },
     },),
     ...SELF_SHIM_CASES.map(function mapSelfShimCase(selfShimCase,) {
@@ -460,6 +506,49 @@ await describe({
           },),).toBe(externalGit,);
         },
       },);
+    },),
+    it({
+      name: 'rejects padded self shim whose marker follows inspection bound',
+      fn: async function rejectsPaddedSelfShim(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /**
+         * Earlier PATH directory containing oversized non-native wrapper.
+         */
+        const paddedBin = join(tempDirectory.path, 'padded-bin',);
+        /**
+         * Later PATH directory containing external Git fixture.
+         */
+        const externalBin = join(tempDirectory.path, 'external-bin',);
+        await Promise.all([
+          mkdir(paddedBin,),
+          mkdir(externalBin,),
+        ],);
+        /**
+         * Oversized wrapper whose self marker is outside bounded prefix.
+         */
+        const paddedGit = join(paddedBin, 'git',);
+        /**
+         * External executable selected after oversized wrapper rejection.
+         */
+        const externalGit = join(externalBin, 'git',);
+        /**
+         * Non-native wrapper bytes placing package marker after bound.
+         */
+        const paddedSelfShim = Buffer.concat([
+          Buffer.from('#!/bin/sh\n',),
+          Buffer.alloc(PADDED_SELF_SHIM_PREFIX_BYTES, '#',),
+          Buffer.from('\n@monochromatic-dev/git-policy-cli\n',),
+        ],);
+        await Promise.all([
+          writeExecutable({ path: paddedGit, content: paddedSelfShim, },),
+          writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },),
+        ],);
+
+        expect(await resolveRealGit({
+          pathEnv: [paddedBin, externalBin,].join(delimiter,),
+          commonGitPaths: [],
+        },),).toBe(externalGit,);
+      },
     },),
     it({
       name: 'skips prioritized common self shim before ordinary PATH Git',
@@ -751,6 +840,56 @@ await describe({
           pathEnv: secondBin,
           commonGitPaths: [],
         },),).toBe(secondGit,);
+      },
+    },),
+    it({
+      name: 'evicts least-recently-used success after cache capacity',
+      fn: async function evictsLeastRecentlyUsedSuccess(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /**
+         * Distinct PATH directories exceeding documented cache capacity.
+         */
+        const cacheBinPaths = Array.from(
+          { length: CACHE_EVICTION_FIXTURE_COUNT, },
+          function cacheBinPath(_unused, index,) {
+            return join(
+              tempDirectory.path,
+              `cache-bin-${String(index,)}`,
+            );
+          },
+        );
+        await Promise.all(cacheBinPaths.map(async function createCachedGit(cacheBinPath,) {
+          await mkdir(cacheBinPath,);
+          await writeExecutable({
+            path: join(cacheBinPath, 'git',),
+            content: REAL_GIT_CONTENT,
+          },);
+        },),);
+
+        for (const cacheBinPath of cacheBinPaths) {
+          // oxlint-disable-next-line no-await-in-loop -- insertion order establishes deterministic LRU eviction
+          await resolveRealGit({
+            pathEnv: cacheBinPath,
+            commonGitPaths: [],
+          },);
+        }
+
+        /**
+         * Oldest successful candidate expected to have been evicted.
+         */
+        const [oldestCacheBinPath,] = cacheBinPaths;
+        if (oldestCacheBinPath === undefined)
+          throw new Error('Cache eviction fixture did not create oldest candidate.',);
+        await rm(join(oldestCacheBinPath, 'git',),);
+        /**
+         * Fresh lookup failure proving oldest success no longer remains cached.
+         */
+        const caught = await captureResolutionError({
+          pathEnv: oldestCacheBinPath,
+          commonGitPaths: [],
+        },);
+
+        expect(caught,).toBeInstanceOf(RealGitNotFoundError,);
       },
     },),
     it({
