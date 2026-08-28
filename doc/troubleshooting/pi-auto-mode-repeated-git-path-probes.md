@@ -11,8 +11,8 @@ scans remaining candidates sequentially,
 recognizes Windows `PATHEXT`,
 skips every known cli-git self-shim form,
 rejects non-regular filesystem candidates without blocking,
-bounds script inspection,
-and caches successful resolution by effective absolute candidate sequence.
+rejects non-native scripts above 64 KiB,
+and caches 16 least-recently-used successful resolutions by effective absolute candidate sequence.
 Expected absent candidates no longer emit one diagnostic each.
 
 Auto-mode deleted its duplicate resolver but keeps `git worktree list` and `rev-parse` metadata queries fresh for every
@@ -30,6 +30,8 @@ The resolver successes are positive controls proving that both verbose harnesses
 The shared package,
 git-policy-cli,
 and auto-mode unit suites passed after migration.
+Artifact-level cache tests observed one scanner invocation for concurrent equal calls and confirmed least-recently-used
+eviction after a refreshed key.
 
 Implementation commits are recorded in
 [`doc/planning/pi-auto-mode-real-git-resolution.md`](../planning/pi-auto-mode-real-git-resolution.md).

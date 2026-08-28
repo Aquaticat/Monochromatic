@@ -13,13 +13,15 @@ Implementation landed in these commits:
 - `2aef2d409` migrated git-policy-cli and deleted its resolver copy;
 - `612ae1853` migrated auto-mode and deleted its resolver copy;
 - `842057939` registered workspace dependency metadata;
-- `219d7f94b` rejected non-regular candidates and bounded script inspection.
+- `219d7f94b` rejected non-regular candidates and bounded script inspection;
+- `e142bca71` rejected oversized scripts and bounded cache lifetime;
+- `d13354d43` proved in-flight deduplication and least-recently-used eviction through built artifact.
 
 The shared resolver now owns common-platform-path priority,
 Windows `PATHEXT`,
 native executable recognition,
 self-shim exclusion,
-and successful-resolution caching.
+and a 16-entry least-recently-used successful-resolution cache.
 Auto-mode continues to query mutable worktree metadata for every read event.
 
 The post-change verbose auto-mode unit harness recorded one `/usr/bin/git` resolution across seven linked-worktree
