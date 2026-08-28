@@ -63,3 +63,57 @@ Exercise these boundaries before closing the issue:
 
 Run the owning desktop and Android package checks through their `mise` tasks.
 Keep unrelated working-tree changes in `mise.toml` and `pnpm-lock.yaml` untouched.
+
+## Verification evidence
+
+Desktop checks passed:
+
+- `lint:slint` compiled `ui/app.slint`;
+- `lint` completed `cargo check`;
+- `lint:rust` completed the repository Rust linter;
+- `test` passed all 95 tests, including every style, disclosure semantics,
+  no overflow, selected-tab reveal, and narrow-to-wide state retention.
+
+The headless Slint MCP boundary rendered a `480px` by `600px` window.
+The collapsed screenshot showed one Chromium row with the leading down-chevron.
+The expanded screenshot showed every row with the up-chevron.
+Selecting the final `Zulu` page and collapsing positioned its complete tab body at the strip's trailing edge.
+A horizontal drag changed the visible subset while preserving source order.
+
+`lint:clippy` is not a change regression.
+Both fixed baseline `310d9dea2` and the implementation reported the same 175 existing
+`clippy::implicit_return` errors in unchanged production Rust files.
+No changed desktop source emitted a Clippy diagnostic.
+
+Android checks passed:
+
+- `test:unit` compiled the Compose UI and passed host-JVM tests;
+- `lint:detekt` passed Kotlin documentation and method-length checks;
+- `lint` passed Android Lint;
+- `run:release` rebuilt both native ABIs, installed the release APK,
+  and launched it on Pixel 6 `1C171FDF600KWW`.
+
+The production release showed one collapsed LED row in portrait and automatically brought selected page `A` into view.
+The disclosure semantics were `Show all pages` and `Show fewer pages` in the matching states.
+UI Automator measured its bounds as `107px` by `107px` at the device's `356dpi` override,
+which is approximately `48.1dp` by `48.1dp`.
+A horizontal swipe changed the visible collapsed subset.
+Expansion showed every LED row in place.
+Landscape showed the existing fully wrapped control without a disclosure.
+Returning to portrait retained expansion,
+and the final release was left collapsed with rotation restored to `lock 0`.
+
+A disposable debug-only gallery rendered collapsed and expanded radio,
+MD1,
+rounded,
+segmented,
+Chromium,
+and LED controls from production composables.
+Every collapsed style brought selected `Hotel Mastering` into view.
+A one-page Chromium fixture rendered `Only page` without a disclosure or leading gap.
+The gallery neither read nor wrote the player's saved page-control preference,
+and its throwaway worktree was removed after verification.
+
+Android target provisioning hit a rustup client connection failure during this work.
+The independently verified recovery is recorded in
+`doc/troubleshooting/rustup-android-target-download-connect-abort.md`.
