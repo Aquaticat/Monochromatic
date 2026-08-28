@@ -93,12 +93,12 @@ export async function applyFinalPolish(
     ...settlement,
     text: (polish.kind === 'settled') ? polish.text : settlement.text,
     polish,
-    findings: (polish.kind === 'settled')
-      ? [
+    findings: (polish.kind === 'not-run')
+      ? settlement.findings
+      : [
         ...settlement.findings,
         ...polish.findings,
-      ]
-      : settlement.findings,
+      ],
   };
 }
 

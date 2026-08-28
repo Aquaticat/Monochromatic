@@ -578,6 +578,10 @@ await describe({
             refinersHeard: ['hf:zai-org/GLM-5.2',],
             contributors: ['hf:zai-org/GLM-5.2',],
             rounds: [],
+            review: {
+              correctionCount: 0,
+              rounds: [],
+            },
             findings: [],
           },
         };
@@ -1317,11 +1321,39 @@ await describe({
               refinersHeard: ['hf:zai-org/GLM-5.2',],
               contributors: ['hf:zai-org/GLM-5.2',],
               rounds: [],
+              review: {
+                correctionCount: 0,
+                rounds: [],
+              },
               findings: [],
             },
           },
           standingMayShip: false,
         },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO CACHE ABSOLUTE NATURALNESS FAILURE, so retry asks again instead of twin-reusing rejected text',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: {
+            ...settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
+            polish: {
+              kind: 'unsettled',
+              baseText: 'The cat actively faced the day.',
+              proposedText: 'The cat actively faced the day.',
+              refinersHeard: ['hf:zai-org/GLM-5.2',],
+              contributors: [],
+              rounds: [],
+              review: {
+                correctionCount: 1,
+                rounds: [],
+              },
+              findings: ['absolute-naturalness correction made no approved text change',],
+            },
+          },
+        },),).toBe(false,);
       },
     },),
 

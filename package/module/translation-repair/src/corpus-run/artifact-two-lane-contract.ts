@@ -36,6 +36,11 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
  */
+export const ARTIFACT_SCHEMA_VERSION_V8 = 8;
+
+/**
+ * Generation before exact-text absolute naturalness review became auditable.
+ */
 export const ARTIFACT_SCHEMA_VERSION_V7 = 7;
 
 /**
@@ -103,6 +108,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V5,
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
+  ARTIFACT_SCHEMA_VERSION_V8,
 ];
 
 /**
@@ -119,7 +125,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V4
   | typeof ARTIFACT_SCHEMA_VERSION_V5
   | typeof ARTIFACT_SCHEMA_VERSION_V6
-  | typeof ARTIFACT_SCHEMA_VERSION_V7;
+  | typeof ARTIFACT_SCHEMA_VERSION_V7
+  | typeof ARTIFACT_SCHEMA_VERSION_V8;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -155,7 +162,50 @@ export function artifactGenerationRequiresPolish(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return (generation === ARTIFACT_SCHEMA_VERSION_V6)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V7);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V7)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V8);
+}
+
+/**
+ * Reports whether generation binds final wording to absolute naturalness review.
+ *
+ * @param generation - known two-lane artifact generation
+ *
+ * @returns Whether consolidation polish must carry absolute review audit
+ *
+ * @example
+ * ```ts
+ * artifactGenerationRequiresNaturalnessReview({ generation: 8, });
+ * ```
+ */
+export function artifactGenerationRequiresNaturalnessReview(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation === ARTIFACT_SCHEMA_VERSION_V8;
+}
+
+/**
+ * Generation-specific fields exact reader requires.
+ *
+ * @param generation - known two-lane artifact generation
+ *
+ * @returns Polish and absolute-review requirements for generation
+ *
+ * @example
+ * ```ts
+ * const requirements = artifactGenerationReadingRequirements({ generation: 8, });
+ * ```
+ */
+export function artifactGenerationReadingRequirements(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): {
+  readonly polishRequired: boolean;
+  readonly reviewRequired: boolean;
+} {
+  return {
+    polishRequired: artifactGenerationRequiresPolish({ generation, }),
+    reviewRequired: artifactGenerationRequiresNaturalnessReview({ generation, }),
+  };
 }
 
 /**
@@ -422,7 +472,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V7;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V8;
 
   /**
    * Corpus entry this covers.

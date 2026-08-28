@@ -3,6 +3,21 @@
 
 export { renderConsolidationBrief, } from './consolidate-brief.ts';
 export {
+  ABSOLUTE_NATURALNESS_REVIEW_QUORUM,
+  type AbsoluteNaturalnessReviewOutcome,
+  type AbsoluteNaturalnessReviewSeat,
+  type AbsoluteNaturalnessReviewVerdict,
+  reviewAbsoluteNaturalness,
+} from './absolute-naturalness-review-stage.ts';
+export {
+  ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
+  type AbsoluteNaturalnessFinding,
+  type AbsoluteNaturalnessReviewSubject,
+  type AbsoluteNaturalnessReviewWire,
+  buildAbsoluteNaturalnessReviewMessages,
+  isAbsoluteNaturalnessReviewWire,
+} from './absolute-naturalness-review-wire.ts';
+export {
   CONSOLIDATE_GATE_QUORUM,
   type ConsolidateGateOutcome,
   gateConsolidatedSlice,
@@ -20,10 +35,15 @@ export {
   type ArtifactConsolidateSlice,
   type ArtifactConsolidation,
   type ArtifactConsolidationPolish,
+  type ArtifactNaturalnessFinding,
+  type ArtifactNaturalnessReview,
+  type ArtifactNaturalnessReviewRound,
+  type ArtifactNaturalnessReviewSeat,
   describeConsolidateSlice,
 } from './corpus-run/artifact-two-lane-consolidate.ts';
 export { consolidateDocument, } from './consolidate-driver.ts';
 export {
+  type ConsolidationNaturalnessAudit,
   type ConsolidationPolish,
   type ConsolidationPolishConfig,
   polishConsolidation,
@@ -43,6 +63,7 @@ export {
   type PolishChoice,
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
+export { NaturalnessCompletenessError, } from './naturalness-completeness-error.ts';
 export {
   consolidationWorthResuming,
   persistConsolidationSettlement,

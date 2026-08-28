@@ -98,6 +98,7 @@ const MARKED_CLASSES: readonly string[] = [
   'MislabelledArtifactError',
   'MixedGenerationError',
   'ModelNotServedError',
+  'NaturalnessCompletenessError',
   'NoProviderForModelError',
   'OffRosterModelError',
   'OverlapRefusedError',

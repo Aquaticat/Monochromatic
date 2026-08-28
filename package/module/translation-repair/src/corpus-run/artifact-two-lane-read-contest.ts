@@ -27,6 +27,7 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
+  ARTIFACT_SCHEMA_VERSION_V8,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
 
@@ -94,7 +95,8 @@ function parseContestSlice(
       'verdict',
       'ballots',
       'usable',
-      ...((generation === ARTIFACT_SCHEMA_VERSION_V7) ? ['eligibility',] : []),
+      ...(((generation === ARTIFACT_SCHEMA_VERSION_V7)
+        || (generation === ARTIFACT_SCHEMA_VERSION_V8)) ? ['eligibility',] : []),
     ],
     path,
   },);
@@ -128,7 +130,8 @@ function parseContestSlice(
       row,
       path: `${path}.eligibility`,
     },);
-  if ((generation === ARTIFACT_SCHEMA_VERSION_V7)
+  if (((generation === ARTIFACT_SCHEMA_VERSION_V7)
+      || (generation === ARTIFACT_SCHEMA_VERSION_V8))
     && (eligibility === undefined)
     && contestEligibilityRequired({ row, })) {
     throw new ArtifactParseError({

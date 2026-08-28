@@ -14,6 +14,7 @@ export {
   type ParsedConsolidation,
 } from './corpus-run/artifact-two-lane-read-consolidate.ts';
 export { parseConsolidationPolish, } from './corpus-run/artifact-two-lane-read-polish.ts';
+export { parseNaturalnessReview, } from './corpus-run/artifact-two-lane-read-naturalness-review.ts';
 export {
   parseGateBallot,
   parseShipped,

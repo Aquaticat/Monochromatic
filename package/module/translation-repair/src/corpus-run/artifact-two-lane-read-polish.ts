@@ -8,6 +8,7 @@ import {
   requireString,
 } from '../artifact-guard.ts';
 import type { ArtifactConsolidationPolish, } from './artifact-two-lane-consolidate.ts';
+import { parseNaturalnessReview, } from './artifact-two-lane-read-naturalness-review.ts';
 import { parsePolishGate, } from './artifact-two-lane-read-polish-gate.ts';
 
 //region Artifact consolidation polish read
@@ -60,6 +61,8 @@ function parseStringList(
  *
  * @param path - artifact path
  *
+ * @param reviewRequired - whether generation carries exact-text absolute review
+ *
  * @returns Parsed polish record
  *
  * @example
@@ -71,9 +74,11 @@ export function parseConsolidationPolish(
   {
     value,
     path,
+    reviewRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly reviewRequired?: boolean;
   },
 ): ArtifactConsolidationPolish {
   /**
@@ -123,6 +128,7 @@ export function parseConsolidationPolish(
       'contributors',
       'roundCount',
       'gate',
+      ...(reviewRequired ? ['review',] : []),
       'findings',
     ],
     path,
@@ -228,6 +234,15 @@ export function parseConsolidationPolish(
       path: `${path}.roundCount`,
     },),
     ...((gateReading.kind === 'present') ? { gate: gateReading.gate, } : {}),
+    ...(reviewRequired
+      ? {
+        review: parseNaturalnessReview({
+          value: record.review,
+          path: `${path}.review`,
+          finalText: text,
+        },),
+      }
+      : {}),
     findings: parseStringList({
       value: record.findings,
       path: `${path}.findings`,

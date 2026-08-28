@@ -5,6 +5,7 @@ import type {
   ProposalVerdict,
 } from '../consolidate-settle.ts';
 import type { GateBallot, } from '../consolidate-gate-wire.ts';
+import { NaturalnessCompletenessError, } from '../naturalness-completeness-error.ts';
 
 //region Artifact version 2 consolidation
 // ONE CONSOLIDATED SLICE AS THE STAGE LEFT IT, written so a later reader can
@@ -117,6 +118,111 @@ export type ArtifactConsolidationTerminal =
   | 'slate-kept-standing';
 
 /**
+ * Paragraph-located absolute naturalness defect.
+ *
+ * @example
+ * ```ts
+ * const finding: ArtifactNaturalnessFinding = { paragraph: 1, problem: 'Replace stiff syntax.' };
+ * ```
+ */
+export type ArtifactNaturalnessFinding = {
+  /**
+   * One-based paragraph reviewer was shown.
+   */
+  readonly paragraph: number;
+
+  /**
+   * Concise actionable defect.
+   */
+  readonly problem: string;
+};
+
+/**
+ * One roster seat in absolute naturalness review.
+ *
+ * @example
+ * ```ts
+ * const seat: ArtifactNaturalnessReviewSeat = { modelId: 'hf:cat/Cat-A', status: 'acceptable', findings: [], reason: 'ready' };
+ * ```
+ */
+export type ArtifactNaturalnessReviewSeat = {
+  /**
+   * Reviewer model id.
+   */
+  readonly modelId: string;
+
+  /**
+   * Usable verdict or named unusable seat.
+   */
+  readonly status: 'acceptable' | 'unacceptable' | 'unusable';
+
+  /**
+   * Actionable defects from rejecting seat.
+   */
+  readonly findings: readonly ArtifactNaturalnessFinding[];
+
+  /**
+   * Usable explanation, empty for unusable seat.
+   */
+  readonly reason: string;
+};
+
+/**
+ * Candidate-bound absolute naturalness review round.
+ *
+ * @example
+ * ```ts
+ * const round: ArtifactNaturalnessReviewRound = { candidateDigest: 'sha256:abc', seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ * ```
+ */
+export type ArtifactNaturalnessReviewRound = {
+  /**
+   * Digest binding review to exact candidate bytes.
+   */
+  readonly candidateDigest: string;
+
+  /**
+   * Every requested seat in roster order.
+   */
+  readonly seats: readonly ArtifactNaturalnessReviewSeat[];
+
+  /**
+   * Seats carrying usable structured verdict.
+   */
+  readonly usable: number;
+
+  /**
+   * Aggregate fail-closed verdict.
+   */
+  readonly verdict: 'acceptable' | 'unacceptable' | 'quorum-not-met';
+
+  /**
+   * Rejection findings in roster order without exact duplicates.
+   */
+  readonly findings: readonly ArtifactNaturalnessFinding[];
+};
+
+/**
+ * Absolute naturalness review audit added in artifact generation eight.
+ *
+ * @example
+ * ```ts
+ * const review: ArtifactNaturalnessReview = { correctionCount: 0, rounds: [] };
+ * ```
+ */
+export type ArtifactNaturalnessReview = {
+  /**
+   * Dedicated correction generations bought.
+   */
+  readonly correctionCount: 0 | 1;
+
+  /**
+   * Initial and optional post-correction absolute reviews.
+   */
+  readonly rounds: readonly ArtifactNaturalnessReviewRound[];
+};
+
+/**
  * Auditable post-consolidation body polish record.
  *
  * @example
@@ -181,6 +287,11 @@ export type ArtifactConsolidationPolish =
      * Final fidelity-first naturalness gate.
      */
     readonly gate?: ConsolidationPolishGateOutcome;
+
+    /**
+     * Absolute whole-passage review, required from artifact generation eight.
+     */
+    readonly review?: ArtifactNaturalnessReview;
 
     /**
      * Stable naturalness findings.
@@ -249,6 +360,8 @@ export type ArtifactConsolidateSlice = {
  *
  * @param settlement - consolidation result carrying optional polish
  *
+ * @param sliceIndex - prepared slice named if unsettled reaches serializer
+ *
  * @returns Artifact polish record, naming disabled stage when absent
  *
  * @example
@@ -257,7 +370,13 @@ export type ArtifactConsolidateSlice = {
  * ```
  */
 function artifactPolishOf(
-  { settlement, }: { readonly settlement: ConsolidationSettlement; },
+  {
+    settlement,
+    sliceIndex,
+  }: {
+    readonly settlement: ConsolidationSettlement;
+    readonly sliceIndex: number;
+  },
 ): ArtifactConsolidationPolish {
   /**
    * Internal polish settlement, absent before stage integration.
@@ -271,6 +390,8 @@ function artifactPolishOf(
   }
   if (polish.kind === 'not-run')
     return polish;
+  if (polish.kind === 'unsettled')
+    throw new NaturalnessCompletenessError({ sliceIndex, },);
   /**
    * Naturalness selection rounds retained in run ledger.
    */
@@ -286,6 +407,7 @@ function artifactPolishOf(
     contributors: polish.contributors,
     roundCount,
     ...((polish.gate === undefined) ? {} : { gate: polish.gate, }),
+    review: polish.review,
     findings: polish.findings,
   };
 }
@@ -346,7 +468,10 @@ export function describeConsolidateSlice(
         ballots: gate.ballots,
         usable: gate.usable,
       },
-    polish: artifactPolishOf({ settlement, },),
+    polish: artifactPolishOf({
+      settlement,
+      sliceIndex,
+    },),
   };
 }
 

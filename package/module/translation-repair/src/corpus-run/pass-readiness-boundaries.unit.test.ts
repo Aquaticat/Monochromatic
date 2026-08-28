@@ -24,6 +24,7 @@ import {
 
 import {
   createSyntheticClient,
+  NaturalnessCompletenessError,
   type PipelineDigest,
   preparePassEntry,
   persistSettledEntry,
@@ -119,6 +120,66 @@ function declinedArtifact(): SettledArtifact {
   } as unknown as SettledArtifact;
 }
 
+/**
+ * Builds artifact whose final body polish lacks absolute review.
+ *
+ * @returns Artifact final-selection guard accepts and naturalness guard refuses
+ *
+ * @example
+ * ```ts
+ * const artifact = unreviewedNaturalnessArtifact();
+ * ```
+ */
+function unreviewedNaturalnessArtifact(): SettledArtifact {
+  return {
+    comparison: [{
+      sliceIndex: 0,
+      incumbentKind: 'present',
+      incumbentText: 'The cat naps.',
+      repairText: 'The cat is asleep.',
+      translateText: 'A cat naps.',
+      laneRelation: 'both-differ',
+      repairOutcome: { kind: 'decided', acceptedText: 'The cat is asleep.', },
+      translateOutcome: { kind: 'decided', acceptedText: 'A cat naps.', },
+      decisionComparison: { kind: 'comparable', verdict: 'different', },
+      repairDelivery: { kind: 'replacement-shipped', },
+      translateDelivery: { kind: 'replacement-shipped', },
+    },],
+    laneSelection: {
+      kind: 'contested',
+      slices: [{
+        sliceIndex: 0,
+        verdict: { kind: 'lane-won', lane: 'translate', },
+        ballots: [],
+        usable: 2,
+      },],
+    },
+    consolidation: {
+      kind: 'settled',
+      slices: [{
+        sliceIndex: 0,
+        terminal: 'gate-kept-standing',
+        shipped: { kind: 'unchanged', },
+        rewrapped: false,
+        demoted: false,
+        verdicts: [],
+        gate: { kind: 'not-asked', },
+        polish: {
+          kind: 'settled',
+          baseText: 'A cat naps.',
+          proposedText: 'A cat naps.',
+          text: 'A cat naps.',
+          changed: false,
+          refinersHeard: [],
+          contributors: [],
+          roundCount: 0,
+          findings: [],
+        },
+      },],
+    },
+  } as unknown as SettledArtifact;
+}
+
 await describe({
   name: 'pass readiness boundaries',
   children: [
@@ -149,6 +210,65 @@ await describe({
         expect(thrown,).toBeInstanceOf(UnreviewedArchiveError,);
       },
     },),
+    it({
+      name: 'REFUSES body without absolute naturalness review before persistence writes page or artifact',
+      fn: async () => {
+        const root = await mkdtemp(join(tmpdir(), 'pass-persist-naturalness-',),);
+        const publishDir = join(root, 'published',);
+        const artifactsDir = join(root, 'artifacts',);
+        await Promise.all([
+          mkdir(publishDir,),
+          mkdir(artifactsDir,),
+        ],);
+
+        let thrown: unknown;
+        try {
+          await persistSettledEntry({
+            artifact: unreviewedNaturalnessArtifact(),
+            slices: [{
+              source: {
+                kind: 'content',
+                sliceIndex: 0,
+                nodes: [],
+                startOffset: 0,
+                endOffset: '猫在睡觉。'.length,
+                text: '猫在睡觉。',
+              },
+              target: {
+                kind: 'content',
+                sliceIndex: 0,
+                nodes: [],
+                startOffset: 0,
+                endOffset: 'The cat naps.'.length,
+                text: 'The cat naps.',
+              },
+            },],
+            archiveText: 'The cat naps.',
+            sourceText: '猫在睡觉。',
+            entryId: 'Cat',
+            publishDir,
+            artifactsDir,
+            l,
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
+
+        const written = await Promise.all([
+          readdir(publishDir,),
+          readdir(artifactsDir,),
+        ],);
+        await rm(root, { recursive: true, force: true, },);
+
+        expect(thrown,).toBeInstanceOf(NaturalnessCompletenessError,);
+        expect(written,).toEqual([
+          [],
+          [],
+        ],);
+      },
+    },),
+
     it({
       name: 'REFUSES unendorsed archive before persistence writes page or artifact',
       fn: async () => {

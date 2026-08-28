@@ -137,6 +137,8 @@ function assertConsolidationCoversContest(
  *
  * @param polishRequired - whether generation records final body polish
  *
+ * @param reviewRequired - whether polish records absolute naturalness review
+ *
  * @returns What the stage settled, that it did not run, or that this artifact
  * predates the field
  *
@@ -156,12 +158,14 @@ export function parseConsolidation(
     path,
     keys,
     polishRequired = false,
+    reviewRequired = false,
   }: {
     readonly value: unknown;
     readonly laneSelection: ArtifactLaneSelection;
     readonly path: string;
     readonly keys: ArtifactKeyVocabulary;
     readonly polishRequired?: boolean;
+    readonly reviewRequired?: boolean;
   },
 ): ParsedConsolidation {
   if (value === undefined) {
@@ -220,6 +224,7 @@ export function parseConsolidation(
         path: `${path}.slices[${String(at,)}]`,
         keys,
         polishRequired,
+        reviewRequired,
       },);
     },);
 

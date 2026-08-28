@@ -128,6 +128,8 @@ export type RefineStageResult = {
  * @param declaredNames - same declarations as strings to compare, since a
  * rewrite for naturalness is exactly the edit that drops one
  *
+ * @param naturalnessFindings - absolute-review defects for one bounded correction
+ *
  * @param sliceIndex - slice being refined, which a refusal names
  *
  * @param signal - caller abort honored by every exchange
@@ -158,6 +160,7 @@ export async function runRefineStage(
     definitions,
     identityContext,
     declaredNames,
+    naturalnessFindings,
     sliceIndex,
     signal,
     perCallTimeoutMs,
@@ -172,6 +175,7 @@ export async function runRefineStage(
     readonly definitions: string;
     readonly identityContext?: string;
     readonly declaredNames: readonly string[];
+    readonly naturalnessFindings?: readonly string[];
     readonly sliceIndex: number;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -213,6 +217,7 @@ export async function runRefineStage(
     sourceText,
     envelopes,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...((naturalnessFindings === undefined) ? {} : { naturalnessFindings, }),
   },);
 
   /**

@@ -345,6 +345,12 @@ function standingPolishClient(
           dropped: [],
           reason: 'same meaning in more idiomatic English',
         }
+        : (schema === 'absolute_naturalness_review')
+        ? {
+          acceptable: true,
+          findings: [],
+          reason: 'whole passage is publication-ready',
+        }
         : {};
       if (!request.validate(value,))
         throw new Error(`synthetic ${schema} reply failed validation`,);

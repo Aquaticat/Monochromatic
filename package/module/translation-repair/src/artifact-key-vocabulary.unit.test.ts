@@ -79,9 +79,14 @@ const GENERATION_SIX = 6;
 const GENERATION_SEVEN = 7;
 
 /**
+ * Generation adding absolute naturalness review under same key spelling.
+ */
+const GENERATION_EIGHT = 8;
+
+/**
  * Generation no table covers, one past newest.
  */
-const GENERATION_UNKNOWN = 8;
+const GENERATION_UNKNOWN = 9;
 
 await describe({
   name: keyVocabularyOf.name,
@@ -149,7 +154,7 @@ await describe({
     },),
 
     it({
-      name: 'gives generations 1 and 2 older spelling and generations 4 through 7 current one, which is '
+      name: 'gives generations 1 and 2 older spelling and generations 4 through 8 current one, which is '
         + 'the whole dispatch',
       fn: async () => {
         expect(keyVocabularyOf({ version: GENERATION_ONE, },),).toBe(CHUNK_SPELLED_KEYS,);
@@ -158,6 +163,7 @@ await describe({
         expect(keyVocabularyOf({ version: GENERATION_FIVE, },),).toBe(SLICE_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_SIX, },),).toBe(SLICE_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_SEVEN, },),).toBe(SLICE_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_EIGHT, },),).toBe(SLICE_SPELLED_KEYS,);
       },
     },),
 

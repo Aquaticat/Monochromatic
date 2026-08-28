@@ -10,6 +10,7 @@ export {
   assertArchiveReviewed,
   UnreviewedArchiveError,
 } from './corpus-run/unreviewed-archive.ts';
+export { assertFinalNaturalnessComplete, } from './corpus-run/final-naturalness-completeness.ts';
 export {
   assertFinalSelectionSettled,
   UnsettledFinalSelectionError,

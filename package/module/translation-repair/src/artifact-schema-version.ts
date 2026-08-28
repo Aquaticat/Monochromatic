@@ -9,6 +9,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V5,
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
+  ARTIFACT_SCHEMA_VERSION_V8,
 } from './corpus-run/artifact-two-lane-contract.ts';
 
 //region Artifact schema version
@@ -36,6 +37,9 @@ import {
  * changed and why a reader could not have worked it out from the fields alone.
  * A version that does NOT move on a shape change is the failure this field
  * exists to end, so say so here when a field is added compatibly.
+ *
+ * VERSION 8, 2026-08-28: every final body polish records independent absolute
+ * naturalness review bound to exact would-ship text and bounded correction.
  *
  * VERSION 7, 2026-08-28: syntax-bearing lane contest records source-backed
  * candidate eligibility, so raw votes for unpublishable candidates are kept
@@ -143,6 +147,7 @@ export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V5,
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
+  ARTIFACT_SCHEMA_VERSION_V8,
 ];
 
 /**

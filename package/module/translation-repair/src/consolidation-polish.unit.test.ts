@@ -91,6 +91,12 @@ const client: SyntheticClient = {
         dropped: [],
         reason: 'equally faithful and more idiomatic',
       }
+      : (schema === 'absolute_naturalness_review')
+      ? {
+        acceptable: true,
+        findings: [],
+        reason: 'whole passage is publication-ready',
+      }
       : {};
     if (!request.validate(value,))
       throw new Error(`synthetic ${String(schema,)} reply failed validation`,);
@@ -104,6 +110,109 @@ const client: SyntheticClient = {
     throw new Error('quotas unused by polish stages',);
   },
 };
+
+/**
+ * Builds client whose initial no-op fails absolute review and whose sole correction follows script.
+ *
+ * @param correctionText - corrective replacement, absent to return second no-op
+ *
+ * @param rejectCorrection - whether second absolute review still rejects
+ *
+ * @returns Scripted bounded-correction client
+ *
+ * @example
+ * ```ts
+ * const correctionClient = boundedCorrectionClient({ correctionText: POLISHED, });
+ * ```
+ */
+function boundedCorrectionClient(
+  {
+    correctionText,
+    rejectCorrection = false,
+  }: {
+    readonly correctionText?: string;
+    readonly rejectCorrection?: boolean;
+  },
+): SyntheticClient {
+  /**
+   * Stateful call counts separating initial and corrective rounds.
+   */
+  const calls = {
+    refine: 0,
+    review: 0,
+  };
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused by structured polish stages',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      /**
+       * Schema identifying stage role.
+       */
+      const schema = request.responseFormat
+        ?.json_schema
+        .name;
+      /**
+       * Scripted stage reply.
+       */
+      const value: unknown = (() => {
+        if (schema === 'refine_report') {
+          calls.refine += 1;
+          return {
+            rewrites: ((calls.refine === 1) || (correctionText === undefined))
+              ? []
+              : [{ paragraph: 1, newText: correctionText, },],
+          };
+        }
+        if (schema === 'candidate_ballot') {
+          return {
+            best: 1,
+            reason: 'correction resolves every supplied finding',
+          };
+        }
+        if (schema === 'consolidation_polish_gate') {
+          return {
+            choice: 'polished',
+            unsupported: [],
+            dropped: [],
+            reason: 'correction remains faithful',
+          };
+        }
+        if (schema === 'absolute_naturalness_review') {
+          calls.review += 1;
+          if ((calls.review === 1) || rejectCorrection) {
+            return {
+              acceptable: false,
+              findings: [{
+                paragraph: 1,
+                problem: 'Replace stiff source-language word order.',
+              },],
+              reason: 'candidate retains translationese',
+            };
+          }
+          return {
+            acceptable: true,
+            findings: [],
+            reason: 'whole passage is publication-ready',
+          };
+        }
+        return {};
+      })();
+      if (!request.validate(value,))
+        throw new Error(`synthetic ${String(schema,)} reply failed validation`,);
+      return {
+        kind: 'ok',
+        value,
+        rawText: JSON.stringify(value,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused by polish stages',);
+    },
+  };
+}
 
 await describe({
   name: polishConsolidation.name,
@@ -136,6 +245,8 @@ await describe({
         expect(polish.text,).toBe(POLISHED,);
         expect(polish.gate?.ships,).toBe('polished',);
         expect(polish.rounds.length,).toBe(1,);
+        expect(polish.review.correctionCount,).toBe(0,);
+        expect(polish.review.rounds[0]?.verdict,).toBe('acceptable',);
       },
     },),
 
@@ -162,6 +273,94 @@ await describe({
         },);
         expect(polish.kind,).toBe('settled',);
         expect(polish.kind === 'settled' ? polish.text : '',).toBe(SHORT_POLISHED,);
+      },
+    },),
+
+    it({
+      name: 'CORRECTS ABSOLUTE REVIEW FINDINGS once and re-reviews exact gated text',
+      fn: async () => {
+        const polish = await polishConsolidation({
+          client: boundedCorrectionClient({ correctionText: POLISHED, }),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-correction-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('bounded correction fixture remained unsettled',);
+        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.review.correctionCount,).toBe(1,);
+        expect(polish.review.rounds.map(function verdict(review,): string {
+          return review.verdict;
+        },),).toEqual([
+          'unacceptable',
+          'acceptable',
+        ],);
+        expect(polish.rounds.length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'RETURNS UNSETTLED when sole correction makes no approved text change',
+      fn: async () => {
+        const polish = await polishConsolidation({
+          client: boundedCorrectionClient({}),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-unsettled-test', },),
+        },);
+        expect(polish.kind,).toBe('unsettled',);
+        expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'RETURNS UNSETTLED when post-correction absolute review still rejects',
+      fn: async () => {
+        const polish = await polishConsolidation({
+          client: boundedCorrectionClient({ correctionText: POLISHED, rejectCorrection: true, }),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-rejection-test', },),
+        },);
+        expect(polish.kind,).toBe('unsettled',);
+        expect(polish.kind === 'unsettled' ? polish.review.rounds.length : 0,).toBe(2,);
       },
     },),
 

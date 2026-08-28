@@ -35,8 +35,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 6 asks final polish to remove source-grammar calques and finish every
  * clear issue in a changed paragraph. Version 5 asked a weaker question.
+ *
+ * VERSION 7 adds candidate-bound absolute review and one bounded correction.
+ * Earlier settlements could approve relative improvement with defects remaining.
  */
-export const CONSOLIDATE_CACHE_VERSION = 6;
+export const CONSOLIDATE_CACHE_VERSION = 7;
 
 /**
  * What a line-structured slice appends to its key material.

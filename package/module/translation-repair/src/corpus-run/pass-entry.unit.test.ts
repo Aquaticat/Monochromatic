@@ -473,6 +473,13 @@ function replyFor(
       reason: 'scripted fidelity-first naturalness gate',
     };
   }
+  if (schema === 'absolute_naturalness_review') {
+    return {
+      acceptable: true,
+      findings: [],
+      reason: 'whole candidate is publication-ready',
+    };
+  }
   throw new Error(`no script for ${schema}`,);
 }
 
@@ -837,8 +844,8 @@ await describe({
 
     it({
       name:
-        'settles an entry into ONE artifact at schema version 7 carrying BOTH lanes and final polish '
-        + 'over one preparation',
+        'settles an entry into ONE artifact at schema version 8 carrying BOTH lanes and absolute-reviewed '
+        + 'final polish over one preparation',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -873,7 +880,7 @@ await describe({
         // Read structurally rather than through the writer's own types, since
         // what is under test is the FILE: a reader holding only this has to
         // find both lanes nested and no lane at the top level.
-        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(7,);
+        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(8,);
         expect(Object.keys((artifact as { lanes: object; }).lanes,)
           .toSorted(),).toEqual([
           'repair',
@@ -1034,6 +1041,7 @@ await describe({
         expect(polish?.kind,).toBe('settled',);
         expect(polish?.kind === 'settled' ? polish.changed : false,).toBe(true,);
         expect(polish?.kind === 'settled' ? polish.text : '',).toContain(POLISH_FINAL_PARAGRAPH,);
+        expect(polish?.kind === 'settled' ? polish.review?.rounds.at(-1,)?.verdict : '',).toBe('acceptable',);
         /**
          * Page persisted from parsed decision stack.
          */
@@ -1044,6 +1052,7 @@ await describe({
         expect(page,).toContain(POLISH_FINAL_PARAGRAPH,);
         expect(page,).not.toContain(POLISH_BASE_PARAGRAPH,);
         expect(served,).toContain('consolidation_polish_gate',);
+        expect(served,).toContain('absolute_naturalness_review',);
       },
     },),
     it({
@@ -1083,7 +1092,7 @@ await describe({
           entryId: FRONT_MATTER_ENTRY.id,
         },), 'utf8',);
 
-        expect(artifact.artifactSchemaVersion,).toBe(7,);
+        expect(artifact.artifactSchemaVersion,).toBe(8,);
         expect(artifact.preparation.sliceCount,).toBe(1,);
         if (artifact.laneSelection.kind !== 'contested')
           throw new Error('front matter pass did not record lane contest',);

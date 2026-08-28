@@ -62,6 +62,8 @@ export function consolidationWorthResuming(
    * Post-consolidation polish, absent before final candidate.
    */
   const { polish, } = settlement;
+  if (polish?.kind === 'unsettled')
+    return false;
   /**
    * Whether post-consolidation polish replaced otherwise unsafe baseline.
    */

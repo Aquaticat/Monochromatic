@@ -36,6 +36,7 @@ import {
 } from './twin-memo.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
+import { NaturalnessCompletenessError, } from './naturalness-completeness-error.ts';
 
 //region Consolidate driver
 // THE CONSOLIDATION OVER ONE DOCUMENT: which slices get a third rendering
@@ -477,6 +478,12 @@ export async function consolidateDocument(
       return asked.bought
         .settlement;
     })();
+    /**
+     * Final polish decision before artifact projection.
+     */
+    const { polish, } = settlement;
+    if (polish?.kind === 'unsettled')
+      throw new NaturalnessCompletenessError({ sliceIndex: row.sliceIndex, },);
     return describeConsolidateSlice({
       sliceIndex: row.sliceIndex,
       settlement,

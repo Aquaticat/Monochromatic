@@ -1324,6 +1324,36 @@ Rewriter policy now says to preserve meaning rather than source grammar,
 names the observed calque classes,
 and requires every clear issue in a changed paragraph to be fixed before reply.
 Refinement and consolidation cache generations advance because earlier replies answered weaker question.
+
+Prompt pressure alone is not publication proof.
+Artifact generation 8 adds independent absolute naturalness review over exact would-ship body text after comparative fidelity gate,
+including unchanged text when refiners propose nothing.
+Every roster seat reaches usable reply,
+malformed reply,
+transport failure,
+or per-call deadline before review settles;
+two usable approvals are minimum,
+and any usable rejection blocks.
+Findings identify one-based structurally correctable paragraph and actionable defect.
+One bounded corrective generation receives those findings as fenced data,
+then existing structure and fidelity gates run before independent review rechecks exact selected text.
+No-op correction,
+thin review,
+rejected correction,
+or second-review defect yields `NaturalnessCompletenessError` before page or artifact persistence.
+Such settlements are neither cached nor twin-reused.
+Schema 8 stores every seat status,
+review verdict,
+correction count,
+and candidate digest;
+reader recomputes counts,
+unique seats,
+findings,
+verdict,
+and final-text digest.
+Generations 6 and 7 remain readable but cannot satisfy schema-8 publication boundary.
+Full package suite passes 858 groups with no failures,
+and OXLint and TypeScript checks are clean.
 Another fresh affected rerun remains required before accepting output.
 
 The live artifact also exposed misleading diagnostic wording:

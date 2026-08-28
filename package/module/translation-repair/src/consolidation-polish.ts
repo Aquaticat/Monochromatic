@@ -1,27 +1,21 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import {
+  type AbsoluteNaturalnessReviewOutcome,
+  reviewAbsoluteNaturalness,
+} from './absolute-naturalness-review-stage.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { ConsolidationPolishGateOutcome, } from './consolidation-polish-gate-stage.ts';
 import {
-  type ConsolidationPolishGateOutcome,
-  gateConsolidationPolish,
-} from './consolidation-polish-gate-stage.ts';
-import { parseDocument, } from './parse-document.ts';
-import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
-import { runRefineStage, } from './refine-stage.ts';
+  finalPolishParagraphs,
+  runConsolidationPolishRound,
+} from './consolidation-polish-round.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { validateTranslatedSlice, } from './translate-validate.ts';
 
 //region Consolidation naturalness polish
-
-/**
- * Final pass reviews every structurally eligible body paragraph, including
- * short prose whose awkwardness complete-page reading proved length does not
- * prevent. Repair lane keeps its measured default length window.
- */
-const FINAL_POLISH_MINIMUM_CHARS = 0;
 
 /**
  * Model roles and document facts needed by final body polish.
@@ -56,6 +50,26 @@ export type ConsolidationPolishConfig = {
    * Link and footnote definitions used by rewrite guards.
    */
   readonly definitions: string;
+};
+
+/**
+ * Absolute review rounds binding publication approval to exact final wording.
+ *
+ * @example
+ * ```ts
+ * const review: ConsolidationNaturalnessAudit = { correctionCount: 0, rounds: [] };
+ * ```
+ */
+export type ConsolidationNaturalnessAudit = {
+  /**
+   * Dedicated corrective generations bought after initial rejection.
+   */
+  readonly correctionCount: 0 | 1;
+
+  /**
+   * Absolute whole-passage reviews in execution order.
+   */
+  readonly rounds: readonly AbsoluteNaturalnessReviewOutcome[];
 };
 
 /**
@@ -125,10 +139,79 @@ export type ConsolidationPolish =
     readonly gate?: ConsolidationPolishGateOutcome;
 
     /**
-     * Findings from proposal, validation and gate.
+     * Absolute whole-passage approval bound to final text.
+     */
+    readonly review: ConsolidationNaturalnessAudit;
+
+    /**
+     * Findings from proposal, validation, gate and absolute review.
+     */
+    readonly findings: readonly string[];
+  }
+  | {
+    /**
+     * Naturalness work exhausted bounded correction without publishable text.
+     */
+    readonly kind: 'unsettled';
+
+    /**
+     * Approved fidelity baseline that remains unpublishable for naturalness.
+     */
+    readonly baseText: string;
+
+    /**
+     * Last selected correction proposal, whether or not gates accepted it.
+     */
+    readonly proposedText: string;
+
+    /**
+     * Rewriters returning usable answer across bounded rounds.
+     */
+    readonly refinersHeard: readonly RosterModelId[];
+
+    /**
+     * Models whose work last would-ship candidate carries.
+     */
+    readonly contributors: readonly RosterModelId[];
+
+    /**
+     * Candidate-selection rounds from initial and corrective generations.
+     */
+    readonly rounds: readonly RepairJudgedRound[];
+
+    /**
+     * Last comparative fidelity gate, when correction reached it.
+     */
+    readonly gate?: ConsolidationPolishGateOutcome;
+
+    /**
+     * Absolute reviews proving why publication remains refused.
+     */
+    readonly review: ConsolidationNaturalnessAudit;
+
+    /**
+     * Stable bounded-correction and review findings.
      */
     readonly findings: readonly string[];
   };
+
+/**
+ * Deduplicates model credits while preserving first-stage order.
+ *
+ * @param modelIds - credits from bounded rounds
+ *
+ * @returns Unique model ids in first occurrence order
+ *
+ * @example
+ * ```ts
+ * uniqueRosterModelIds({ modelIds: ['hf:zai-org/GLM-5.2', 'hf:zai-org/GLM-5.2'], });
+ * ```
+ */
+function uniqueRosterModelIds(
+  { modelIds, }: { readonly modelIds: readonly RosterModelId[]; },
+): readonly RosterModelId[] {
+  return [...new Set(modelIds,),];
+}
 
 /**
  * Polishes final body text and lets fidelity-first roster approve replacement.
@@ -216,95 +299,162 @@ export async function polishConsolidation(
     };
   }
   /**
-   * Paragraph envelopes eligible for idiomatic rewrite.
+   * Initial exploratory generation, selection and comparative fidelity gate.
    */
-  const {
-    envelopes,
-    definitions: baseDefinitions,
-  } = deriveRefinableEnvelopes({
-    document: parseDocument({ text: baseText, },),
-    minimumChars: FINAL_POLISH_MINIMUM_CHARS,
-  },);
-  /**
-   * Archive-wide definitions plus any changed definitions in approved base.
-   */
-  const definitions = [
-    config.definitions,
-    baseDefinitions,
-  ]
-    .filter(function present(value,): boolean {
-      return value !== '';
-    },)
-    .join('\n',);
-  /**
-   * Rewriter slate settlement over approved base.
-   */
-  const refined = await runRefineStage({
+  const initial = await runConsolidationPolishRound({
     client,
-    refinerModelIds: config.refinerModelIds,
-    judgeModelIds: config.judgeModelIds,
     sourceText,
-    repairedText: baseText,
-    envelopes,
-    definitions,
+    archiveText,
+    baseText,
+    ...((syntax === undefined) ? {} : { syntax, }),
+    lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),
-    declaredNames: config.declaredNames,
     sliceIndex,
+    config,
     signal,
     perCallTimeoutMs,
     l,
   },);
-  if (!refined.changed) {
-    return {
-      kind: 'settled',
-      baseText,
-      proposedText: baseText,
-      text: baseText,
-      changed: false,
-      refinersHeard: refined.heard,
-      contributors: refined.contributors,
-      rounds: refined.rounds,
-      findings: refined.findings,
-    };
-  }
   /**
-   * Structural validity of selected rewrite before semantic gate.
+   * Independent absolute review of exact initial would-ship text.
    */
-  const validation = validateTranslatedSlice({
-    sourceText,
-    candidateText: refined.refinedText,
-    pageText: baseText,
-    ...((syntax === undefined) ? {} : { syntax, }),
-    lineStructured,
-  },);
-  if (validation.kind !== 'valid') {
-    return {
-      kind: 'settled',
-      baseText,
-      proposedText: refined.refinedText,
-      text: baseText,
-      changed: false,
-      refinersHeard: refined.heard,
-      contributors: refined.contributors,
-      rounds: refined.rounds,
-      findings: [
-        ...refined.findings,
-        ...((validation.kind === 'invalid') ? validation.findings : [validation.detail,]),
-        'consolidation-polish structural validation kept approved base',
-      ],
-    };
-  }
-  /**
-   * Fidelity-first panel deciding whether selected polish may replace base.
-   */
-  const gate = await gateConsolidationPolish({
+  const initialReview = await reviewAbsoluteNaturalness({
     client,
     modelIds: config.gateModelIds,
     subject: {
       sourceText,
-      archiveText,
+      candidateText: initial.text,
+      paragraphs: finalPolishParagraphs({ text: initial.text, }),
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+    },
+    signal,
+    exchangeTimeoutMs: perCallTimeoutMs,
+    l,
+  },);
+  if (initialReview.verdict === 'acceptable') {
+    return {
+      kind: 'settled',
       baseText,
-      polishedText: refined.refinedText,
+      proposedText: initial.proposedText,
+      text: initial.text,
+      changed: initial.text !== baseText,
+      refinersHeard: initial.refinersHeard,
+      contributors: initial.contributors,
+      rounds: initial.rounds,
+      ...((initial.gate === undefined) ? {} : { gate: initial.gate, }),
+      review: {
+        correctionCount: 0,
+        rounds: [initialReview,],
+      },
+      findings: initial.findings,
+    };
+  }
+  if (initialReview.verdict === 'quorum-not-met') {
+    return {
+      kind: 'unsettled',
+      baseText,
+      proposedText: initial.proposedText,
+      refinersHeard: initial.refinersHeard,
+      contributors: initial.contributors,
+      rounds: initial.rounds,
+      ...((initial.gate === undefined) ? {} : { gate: initial.gate, }),
+      review: {
+        correctionCount: 0,
+        rounds: [initialReview,],
+      },
+      findings: [
+        ...initial.findings,
+        'absolute-naturalness-review quorum not met',
+      ],
+    };
+  }
+  /**
+   * Paragraph-located findings rendered as fenced correction data.
+   */
+  const initialReviewFindings = initialReview.findings
+    .map(function correctionFinding(finding,): string {
+      return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
+    },);
+  /**
+   * Sole dedicated correction over exact rejected would-ship text.
+   */
+  const correction = await runConsolidationPolishRound({
+    client,
+    sourceText,
+    archiveText,
+    baseText: initial.text,
+    ...((syntax === undefined) ? {} : { syntax, }),
+    lineStructured,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+    naturalnessFindings: initialReviewFindings,
+    sliceIndex,
+    config,
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+  /**
+   * Rewriters heard across both bounded generations.
+   */
+  const refinersHeard = uniqueRosterModelIds({
+    modelIds: [
+      ...initial.refinersHeard,
+      ...correction.refinersHeard,
+    ],
+  },);
+  /**
+   * Credits whose work final corrective candidate carries.
+   */
+  const contributors = uniqueRosterModelIds({
+    modelIds: [
+      ...(initial.changed ? initial.contributors : []),
+      ...correction.contributors,
+    ],
+  },);
+  /**
+   * Candidate-selection records across both bounded generations.
+   */
+  const rounds = [
+    ...initial.rounds,
+    ...correction.rounds,
+  ];
+  /**
+   * Stable findings across both bounded generations.
+   */
+  const correctionFindings = [
+    ...initial.findings,
+    ...initialReviewFindings,
+    ...correction.findings,
+  ];
+  if (!correction.changed) {
+    return {
+      kind: 'unsettled',
+      baseText,
+      proposedText: correction.proposedText,
+      refinersHeard,
+      contributors,
+      rounds,
+      ...((correction.gate === undefined) ? {} : { gate: correction.gate, }),
+      review: {
+        correctionCount: 1,
+        rounds: [initialReview,],
+      },
+      findings: [
+        ...correctionFindings,
+        'absolute-naturalness correction made no approved text change',
+      ],
+    };
+  }
+  /**
+   * Independent absolute review of post-gate corrective text.
+   */
+  const correctionReview = await reviewAbsoluteNaturalness({
+    client,
+    modelIds: config.gateModelIds,
+    subject: {
+      sourceText,
+      candidateText: correction.text,
+      paragraphs: finalPolishParagraphs({ text: correction.text, }),
       ...((identityContext === undefined) ? {} : { identityContext, }),
     },
     signal,
@@ -312,25 +462,51 @@ export async function polishConsolidation(
     l,
   },);
   /**
-   * Final text after conservative gate.
+   * Both exact candidate-bound absolute review rounds.
    */
-  const text = (gate.ships === 'polished')
-    ? refined.refinedText
-    : baseText;
+  const review: ConsolidationNaturalnessAudit = {
+    correctionCount: 1,
+    rounds: [
+      initialReview,
+      correctionReview,
+    ],
+  };
+  if (correctionReview.verdict !== 'acceptable') {
+    /**
+     * Final rejection findings rendered for stable stage telemetry.
+     */
+    const finalReviewFindings = correctionReview.findings
+      .map(function describeFinding(finding,): string {
+        return `paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
+      },);
+    return {
+      kind: 'unsettled',
+      baseText,
+      proposedText: correction.proposedText,
+      refinersHeard,
+      contributors,
+      rounds,
+      ...((correction.gate === undefined) ? {} : { gate: correction.gate, }),
+      review,
+      findings: [
+        ...correctionFindings,
+        ...finalReviewFindings,
+        `absolute-naturalness correction remained ${correctionReview.verdict}`,
+      ],
+    };
+  }
   return {
     kind: 'settled',
     baseText,
-    proposedText: refined.refinedText,
-    text,
-    changed: text !== baseText,
-    refinersHeard: refined.heard,
-    contributors: refined.contributors,
-    rounds: refined.rounds,
-    gate,
-    findings: [
-      ...refined.findings,
-      ...gate.findings,
-    ],
+    proposedText: correction.proposedText,
+    text: correction.text,
+    changed: correction.text !== baseText,
+    refinersHeard,
+    contributors,
+    rounds,
+    ...((correction.gate === undefined) ? {} : { gate: correction.gate, }),
+    review,
+    findings: correctionFindings,
   };
 }
 

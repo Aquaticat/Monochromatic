@@ -7,6 +7,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { DestinationCheck, } from './dropped-destinations.ts';
+import { assertFinalNaturalnessComplete, } from './final-naturalness-completeness.ts';
 import { assertFinalSelectionSettled, } from './final-selection-completeness.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 
@@ -67,6 +68,7 @@ export async function persistSettledEntry(
     entryId,
     artifact,
   },);
+  assertFinalNaturalnessComplete({ artifact, },);
 
   /**
    * Page write and its source-destination comparison.
