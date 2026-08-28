@@ -1088,6 +1088,19 @@ Both pages retained byte-identical blocked details transcript,
 while surrounding wording differed stochastically.
 Both are mechanically complete and neither is acceptable production output.
 
+Fixed-build overlap-4 `Weideriche_` exposed liveness blocker `#273`.
+Pairing roster heard all 10 voices but contested one source block and committed no pair for it.
+Preparation therefore made source-only insertion,
+although archive carries passage in neighbouring target slice.
+Coverage refused duplicate insertion,
+translation left slice unfilled,
+and publication guard correctly wrote no artifact or page.
+First attempt took 31.51 minutes over 2.502 call-hours,
+normalized `0.210`, with both providers wet.
+Automatic retry reused cached pairing and reached same refusal in 32.35 seconds.
+Safe refusal is correct;
+persisting contested alignment with no path to re-pair means entry cannot settle under this generation.
+
 Remaining corpus arms, hard-case output reading, live calibration checks,
 front matter and site-grammar gaps,
 package reading CLI,
