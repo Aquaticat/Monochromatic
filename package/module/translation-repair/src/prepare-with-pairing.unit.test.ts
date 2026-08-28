@@ -256,6 +256,58 @@ await describe({
       },
     },),
     it({
+      name: 'DOES NOT CACHE CONTESTED PAIRING so automatic retry buys new alignment instead of replaying settlement failure',
+      fn: async () => {
+        const stored = new Map<string, PairedSectionRecord>();
+        await prepareDocumentPairWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":2}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":2}]}',
+            ],
+          },),
+          modelIds: [
+            ...ROSTER,
+            'hf:openai/gpt-oss-120b',
+            'hf:moonshotai/Kimi-K3',
+          ],
+          sourceText: '猫睡在盒子里。\n\n它整个下午都没有动。',
+          targetText: 'The cat slept in the box.\n\nShe stayed still.\n\nAll afternoon.',
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+          pairingCache: memoryPairingCache({ stored, },),
+        },);
+
+        expect(stored.size,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'DOES NOT CACHE PAIRING THAT LEAVES ARCHIVE BLOCK UNCLAIMED, allowing next bounded attempt to seek safer correspondence',
+      fn: async () => {
+        const stored = new Map<string, PairedSectionRecord>();
+        await prepareDocumentPairWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0}]}',
+              '{"pairs":[{"source":0,"target":0}]}',
+            ],
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫睡着了。',
+          targetText: 'The cat slept.\n\nAn archive-only aside.',
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+          pairingCache: memoryPairingCache({ stored, },),
+        },);
+
+        expect(stored.size,).toBe(0,);
+      },
+    },),
+    it({
       name:
         'RECORDS HOW MANY VOICES AGREED, naming the section, and files it on the channel that reaches the '
         + 'artifact rather than only on the log nobody keeps',

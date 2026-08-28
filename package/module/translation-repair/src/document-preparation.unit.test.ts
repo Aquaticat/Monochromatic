@@ -204,7 +204,10 @@ The cat also likes sunbathing.
         },);
 
         expect(prepared.unclaimedTargetBlocks,).toEqual([{
-          pairIndex: 0,
+          location: {
+            kind: 'aligned-pair',
+            pairIndex: 0,
+          },
           blockId: 'block/1',
           startOffset: 11,
           endOffset: 30,
@@ -256,6 +259,20 @@ The cat also likes sunbathing.
         expect(prepared.unclaimedTargetBlocks,).toEqual([]);
         expect(prepared.slices.some(function carriesAside(slice,): boolean {
           return slice.target.text.includes('archive aside',);
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'EXPOSES WHOLE TARGET SECTION OUTSIDE ALIGNMENT because no slice can review its archive wording',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: '## Cats\n\nCats nap.',
+          targetText: '## Cats\n\nCats nap.\n\n## Aside\n\nArchive-only section.',
+        },);
+
+        expect(prepared.unclaimedTargetBlocks.some(function isTargetSection(block,): boolean {
+          return block.location.kind === 'target-section';
         },),).toBe(true,);
       },
     },),

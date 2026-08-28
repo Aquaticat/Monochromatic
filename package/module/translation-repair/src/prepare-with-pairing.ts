@@ -8,6 +8,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { alignDocumentSections, } from './chunk-document.ts';
+import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
 import {
   prepareDocumentPair,
   type PreparedDocumentPair,
@@ -355,6 +356,7 @@ export async function prepareDocumentPairWithRoster(
       pairs: rosterPairs,
       usable,
       heard,
+      cacheEligible,
     } = outcome;
 
     /**
@@ -372,13 +374,18 @@ export async function prepareDocumentPairWithRoster(
     const { pairs, } = mediaClaim;
 
     /**
-     * Everything this section reported, gathered before any of it is stored.
-     *
-     * GATHERED BECAUSE THE CACHE KEEPS IT. Pushing each finding straight into
-     * the document's list left nothing naming which findings belonged to this
-     * section, so the record written beside the pairs could not carry them and
-     * a resume reported a quieter round than the one that was bought.
+     * Target blocks normalized pairing still leaves outside source claims.
      */
+    const unclaimedTargetIds = declinedTargetIdsOfPairing({
+      pairs,
+      sourceNodes,
+      targetNodes,
+    },);
+    /**
+     * Whether normalized pairing still strands archive blocks.
+     */
+    const leavesUnclaimedTargets = unclaimedTargetIds.size > 0;
+
     /**
      * Structural media findings in pairing vocabulary.
      */
@@ -387,7 +394,12 @@ export async function prepareDocumentPairWithRoster(
         return `block-pairing ${finding}`;
       },);
     /**
-     * Roster and structural findings cached with normalized pairing.
+     * Everything this section reported, gathered before any of it is stored.
+     *
+     * GATHERED BECAUSE THE CACHE KEEPS IT. Pushing each finding straight into
+     * the document's list left nothing naming which findings belonged to this
+     * section, so the record written beside the pairs could not carry them and
+     * a resume reported a quieter round than the one that was bought.
      */
     const sectionFindings: string[] = [
       ...outcome.findings,
@@ -413,6 +425,17 @@ export async function prepareDocumentPairWithRoster(
         } usable voices of ${String(heard,)} heard`,
       );
 
+    /**
+     * Whether cross-run cache may treat this pairing as terminal.
+     */
+    const canPersistPairing = cacheEligible ? !leavesUnclaimedTargets : false;
+    /**
+     * Whether heard round remained unresolved.
+     */
+    const reportUnresolved = canPersistPairing ? false : usable > 0;
+    if (reportUnresolved)
+      sectionFindings.push(`block-pairing section ${String(pairIndex,)} unresolved, not cached`,);
+
     // A ROUND NOBODY ANSWERED IS NOT AN ANSWER, and must not be cached: the
     // roster was unreachable, not undecided, and caching that would make one
     // bad minute permanent for this entry. A round that WAS answered caches
@@ -427,7 +450,11 @@ export async function prepareDocumentPairWithRoster(
     // cold run that produced them.
     findings.push(...sectionFindings,);
 
-    if (usable > 0)
+    /**
+     * Whether this heard round may persist.
+     */
+    const shouldPersist = (usable > 0) ? canPersistPairing : false;
+    if (shouldPersist)
       // eslint-disable-next-line no-await-in-loop -- writing this section's answer before the next one is asked is the point: a batched write at the end loses everything an abort interrupts
       await pairingCache?.persist({
         key,

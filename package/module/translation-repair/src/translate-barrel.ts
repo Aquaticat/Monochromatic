@@ -136,12 +136,15 @@ export {
   type ArtifactConsolidation,
   describeConsolidateSlice,
 } from './corpus-run/artifact-two-lane-consolidate.ts';
+export { consolidateDocument, } from './consolidate-driver.ts';
 export {
-  consolidateDocument,
   consolidationWorthResuming,
   persistConsolidationSettlement,
-} from './consolidate-driver.ts';
-export { standingTextFor, } from './consolidate-standing.ts';
+} from './consolidate-persistence.ts';
+export {
+  contestStandingMayShip,
+  standingTextFor,
+} from './consolidate-standing.ts';
 export {
   CONSOLIDATE_CACHE_VERSION,
   consolidateRunShape,

@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactContestVerdict,
   assertFinalSelectionSettled,
   UnsettledFinalSelectionError,
   type WouldShipSource,
@@ -52,7 +53,7 @@ function sourceWith(
     verdict,
     consolidated = false,
   }: {
-    readonly verdict: Record<string, unknown>;
+    readonly verdict: ArtifactContestVerdict;
     readonly consolidated?: boolean;
   },
 ): WouldShipSource {

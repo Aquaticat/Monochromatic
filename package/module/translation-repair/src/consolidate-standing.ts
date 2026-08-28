@@ -1,3 +1,4 @@
+import type { ArtifactContestVerdict, } from './corpus-run/artifact-two-lane-contest.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 
 //region Consolidate standing text
@@ -47,6 +48,36 @@ export function standingTextFor(
   if (choice === 'translate')
     return translateText;
   return incumbentText;
+}
+
+/**
+ * Reports whether standing baseline may become final output unchanged.
+ *
+ * @param choice - lane selected or neither
+ *
+ * @param verdict - full contest result carrying archive endorsement
+ *
+ * @returns Whether prior contest approved standing baseline
+ *
+ * @example
+ * ```ts
+ * const mayShip = contestStandingMayShip({ choice, verdict, });
+ * ```
+ */
+export function contestStandingMayShip(
+  {
+    choice,
+    verdict,
+  }: {
+    readonly choice: LaneChoice;
+    readonly verdict: ArtifactContestVerdict;
+  },
+): boolean {
+  if (choice !== 'neither')
+    return true;
+  if (verdict.kind !== 'settled-neither')
+    return false;
+  return verdict.archive === 'endorsed';
 }
 
 //endregion Consolidate standing text

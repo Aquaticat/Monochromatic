@@ -21,7 +21,17 @@ function unreviewedLocations(
   { blocks, }: { readonly blocks: readonly UnclaimedTargetBlock[]; },
 ): string {
   return blocks.map(function toLocation(block,): string {
-    return `${String(block.pairIndex,)}/${block.blockId}`;
+    /**
+     * Structured alignment location.
+     */
+    const { location: blockLocation, } = block;
+    /**
+     * Alignment location rendered without corpus wording.
+     */
+    const location = (blockLocation.kind === 'aligned-pair')
+      ? `pair/${String(blockLocation.pairIndex,)}`
+      : `target-section/${String(blockLocation.sectionIndex,)}`;
+    return `${location}/${block.blockId}`;
   },)
     .join(', ',);
 }

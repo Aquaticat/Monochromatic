@@ -86,7 +86,7 @@ const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
  *
  * @example
  * ```ts
- * const outcome: BlockPairingOutcome = { pairs: [], heard: 0, usable: 0, findings: [], };
+ * const outcome: BlockPairingOutcome = { pairs: [], heard: 0, usable: 0, cacheEligible: false, findings: [], };
  * ```
  */
 export type BlockPairingOutcome = {
@@ -104,6 +104,14 @@ export type BlockPairingOutcome = {
    * Voices whose answer survived the reader.
    */
   readonly usable: number;
+
+  /**
+   * Whether result is terminal enough for cross-run cache.
+   *
+   * False when agreed correspondences were dropped as contested or non-monotone,
+   * because another roster round can settle them differently.
+   */
+  readonly cacheEligible: boolean;
 
   /**
    * What went wrong, in scorecard-stable wording.
@@ -279,6 +287,7 @@ export async function pairBlocksWithRoster(
       pairs: [],
       heard: heardVoices.length,
       usable: 0,
+      cacheEligible: false,
       findings,
     };
   }
@@ -318,6 +327,7 @@ export async function pairBlocksWithRoster(
     pairs: agreed,
     heard: heardVoices.length,
     usable: pairings.length,
+    cacheEligible: dropped.length === 0,
     findings,
   };
 }

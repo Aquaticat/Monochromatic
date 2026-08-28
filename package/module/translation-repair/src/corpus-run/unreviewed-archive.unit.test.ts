@@ -34,7 +34,10 @@ await describe({
           assertArchiveReviewed({
             entryId: 'Cat',
             blocks: [{
-              pairIndex: 1,
+              location: {
+                kind: 'aligned-pair',
+                pairIndex: 1,
+              },
               blockId: 'block/3',
               startOffset: 10,
               endOffset: 30,
@@ -48,7 +51,7 @@ await describe({
         expect(thrown,).toBeInstanceOf(UnreviewedArchiveError,);
         expect((thrown as UnreviewedArchiveError).entryId,).toBe('Cat');
         expect((thrown as UnreviewedArchiveError).blocks,).toHaveLength(1);
-        expect((thrown as Error).message,).toContain('1/block/3');
+        expect((thrown as Error).message,).toContain('pair/1/block/3');
       },
     },),
   ],

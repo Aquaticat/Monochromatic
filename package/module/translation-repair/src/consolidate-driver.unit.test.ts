@@ -543,7 +543,7 @@ await describe({
       name: 'PUTS ARCHIVE IN DECLINE RECOVERY SLATE AS BASELINE, not either lane contest rejected',
       fn: async () => {
         const { client, judgeSheets, } = answeringClient();
-        const { slices, } = await driveWith({
+        const { slices, written, } = await driveWith({
           client,
           contests: [{
             sliceIndex: 0,
@@ -561,6 +561,7 @@ await describe({
           return sheet.includes('archive wording for slice 0',);
         },),).toBe(true,);
         expect(slices[0]?.terminal,).not.toBe('no-standing-text',);
+        expect(written,).toEqual([]);
       },
     },),
     it({
@@ -1147,6 +1148,20 @@ await describe({
       fn: async () => {
         expect(consolidationWorthResuming({
           settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO CACHE UNCHANGED UNENDORSED BASELINE while retaining fresh consolidated result, so retry can recover instead of replaying final-selection failure',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
+          standingMayShip: false,
+        },),).toBe(false,);
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
+          standingMayShip: false,
         },),).toBe(true,);
       },
     },),

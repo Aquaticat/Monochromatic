@@ -2,20 +2,18 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
   consolidateRunShape,
   consolidateSliceKey,
 } from './consolidate-key.ts';
-import { CONSOLIDATE_GATE_QUORUM, } from './consolidate-gate-stage.ts';
-import type {
-  ConsolidationSettlement,
-  ConsolidationTerminal,
-} from './consolidate-settle.ts';
+import { persistConsolidationSettlement, } from './consolidate-persistence.ts';
+import type { ConsolidationSettlement, } from './consolidate-settle.ts';
 import { buyConsolidationSlice, } from './consolidate-slice-buy.ts';
-import { standingTextFor, } from './consolidate-standing.ts';
+import {
+  contestStandingMayShip,
+  standingTextFor,
+} from './consolidate-standing.ts';
 import {
   type ArtifactConsolidateSlice,
   describeConsolidateSlice,
@@ -28,7 +26,6 @@ import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
 import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
-import type { TranslateDecision, } from './translate-stage-result.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   reuseTwinOrBuy,
@@ -58,119 +55,6 @@ import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
 // names everything the stages see, while `ConsolidationSettlement` carries no
 // slice index needing restamp. An unsettled panel is neither persisted nor
 // memoized, so its twin asks again exactly as a warm run would.
-
-/**
- * Judge decisions a second panel might change, so a cache must not freeze them.
- *
- * INHERITED, NOT INVENTED. `translate-retry.ts` names exactly these two as the
- * declines worth buying another judging for, and names `no-candidate-backed`
- * as the settled one it records after that second round. The classification is
- * the same question here, so it gets the same answer.
- *
- * `no-candidate` is deliberately absent for the reason given there: it means
- * nothing usable was proposed, which a re-ask of the SAME slate cannot change.
- * The consolidation reaches the judge only past a floor that already refused
- * an empty slate, so it should not arise at all; if it does, keeping it stops
- * a later run re-buying a full panel to be told the same thing.
- *
- * SURVIVED THE TERMINAL SPLIT, and the reason is worth stating, because the
- * split otherwise routes this whole function. `slate-declined-standing` covers
- * BOTH the two declines a second panel might change and the settled
- * `no-candidate-backed` it records afterwards, so the terminal alone cannot
- * tell a re-askable decline from a settled one. The other four terminals are
- * decided by name.
- */
-const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
-  'declined-indecision',
-  'declined-rejection',
-];
-
-/**
- * Terminals settled enough to keep without reading the judged round.
- *
- * FOUR OF THE FIVE NON-GATED WAYS OUT, and the split is what made them
- * readable by name. Two never reached a judge, one records judges endorsing
- * the archive, and one records a slate carrying a single candidate nobody was
- * asked about. None of those changes on a second asking of the same slate.
- *
- * The fifth, `slate-declined-standing`, is the only one that still needs the
- * decision read, because it covers both the declines a second panel might
- * change and the settled one recorded after that second panel has run.
- */
-const SETTLED_WITHOUT_A_GATE: readonly ConsolidationTerminal[] = [
-  'incumbent-only',
-  'no-standing-text',
-  'slate-endorsed-standing',
-  'slate-unjudged-standing',
-];
-
-/**
- * Whether a settlement is worth keeping across runs.
- *
- * SETTLED VERDICTS ONLY, matching the contest's rule for the same reason: a
- * thin panel is a transient fact about a provider on one night, not a property
- * of the question, and freezing it into the cache would answer every later
- * resume of this entry with that night. The contest spells that as its own
- * quorum, so this spells it as the GATE'S quorum rather than as any ballot at
- * all: a gate that heard one voice of six did not settle, it was under-attended,
- * and `gateConsolidatedSlice` already refuses to act on fewer than
- * `CONSOLIDATE_GATE_QUORUM`.
- *
- * A settlement that never reached the gate IS still worth keeping when it was
- * the floor or an absent standing text that stopped it. Those are properties of
- * the slate and the contest, not of who answered. A slate the JUDGES kept the
- * standing text at is worth keeping only where they decided rather than
- * declined, which is the same distinction one stage earlier.
- *
- * EXPORTED FOR ITS OWN TEST, per `XPT`. Driving this predicate through
- * `consolidateDocument` would need a client that answers every round of every
- * branch, which buys a transport fixture to assert a decision the fixture is
- * not what settles.
- *
- * @param settlement - what the stage settled
- *
- * @returns Whether to persist it
- *
- * @example
- * ```ts
- * const keep = consolidationWorthResuming({ settlement, },);
- * ```
- */
-export function consolidationWorthResuming(
-  { settlement, }: { readonly settlement: ConsolidationSettlement; },
-): boolean {
-  /**
-   * What the gate settled, absent where the slice never reached it.
-   */
-  const { gate, } = settlement;
-  if (gate !== undefined)
-    return gate.usable >= CONSOLIDATE_GATE_QUORUM;
-
-  /**
-   * How this slice left the stage, which decides four of the five cases on
-   * its own now that the slate name is no longer one word for three states.
-   */
-  const { terminal, } = settlement;
-  if (SETTLED_WITHOUT_A_GATE.some(function matches(settled,): boolean {
-    return settled === terminal;
-  },))
-    return true;
-
-  if (terminal !== 'slate-declined-standing')
-    return false;
-
-  /**
-   * What the judges decided, which separates the settled decline this stage
-   * records after a second round from the two a second round might change.
-   */
-  const { decided, } = settlement;
-  if (decided === undefined)
-    return false;
-
-  return !UNSETTLED_DECISIONS.some(function matches(unsettled,): boolean {
-    return unsettled === decided.decision;
-  },);
-}
 
 /**
  * Fresh consolidation beside whether it became warm-run evidence.
@@ -206,52 +90,6 @@ function storedConsolidationOf(
       record: bought.settlement,
     }
     : { kind: 'nothing', };
-}
-
-/**
- * Persists a bought consolidation only while caller remains live and the
- * settlement is stable enough for a warm run.
- *
- * @param key - exact consolidation question this settlement answers
- *
- * @param settlement - complete answer from model stages or deterministic floor
- *
- * @param cache - consolidation persistence boundary
- *
- * @param signal - caller abort checked before write
- *
- * @returns Whether settlement was persisted and may be reused by a twin
- *
- * @throws Whatever caller abort reason or persistence throws
- *
- * @example
- * ```ts
- * await persistConsolidationSettlement({ key, settlement, cache, signal, },);
- * ```
- *
- * @internal
- */
-export async function persistConsolidationSettlement(
-  {
-    key,
-    settlement,
-    cache,
-    signal,
-  }: ForeignBorrowed<{
-    readonly key: string;
-    readonly settlement: ConsolidationSettlement;
-    readonly cache: SliceCache<ConsolidationSettlement>;
-    readonly signal: AbortSignal;
-  }>,
-): Promise<boolean> {
-  signal.throwIfAborted();
-  if (!consolidationWorthResuming({ settlement, }))
-    return false;
-  await cache.persist({
-    key,
-    serialized: JSON.stringify(settlement,),
-  },);
-  return true;
 }
 
 /**
@@ -443,13 +281,24 @@ export async function consolidateDocument(
       throw new ConsolidationLedgerGapError({ sliceIndex: row.sliceIndex, },);
 
     /**
+     * Lane contest selected, or refusal of both.
+     */
+    const choice = laneChoiceOf({ verdict: contest.verdict, },);
+    /**
      * Wording that would ship without this stage.
      */
     const standingText = standingTextFor({
-      choice: laneChoiceOf({ verdict: contest.verdict, },),
+      choice,
       repairText: row.repairText,
       translateText: row.translateText,
       incumbentText: row.incumbentText,
+    },);
+    /**
+     * Whether this baseline has enough prior approval to be cached unchanged.
+     */
+    const standingMayShip = contestStandingMayShip({
+      choice,
+      verdict: contest.verdict,
     },);
 
     /**
@@ -570,6 +419,7 @@ export async function consolidateDocument(
             key,
             settlement: bought,
             cache,
+            standingMayShip,
             signal,
           },);
           return {

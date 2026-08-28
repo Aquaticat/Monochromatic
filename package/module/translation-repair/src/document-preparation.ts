@@ -1,6 +1,7 @@
 import {
   alignDocumentSections,
   type ChunkPair,
+  chunkByHeadings,
   describeAlignmentAttachment,
 } from './chunk-document.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
@@ -55,7 +56,7 @@ import {
  * @example
  * ```ts
  * const block: UnclaimedTargetBlock = {
- *   pairIndex: 0,
+ *   location: { kind: 'aligned-pair', pairIndex: 0, },
  *   blockId: 'block/2',
  *   startOffset: 41,
  *   endOffset: 73,
@@ -64,9 +65,29 @@ import {
  */
 export type UnclaimedTargetBlock = {
   /**
-   * Aligned section-pair index containing block.
+   * Alignment location whose source claim is absent.
    */
-  readonly pairIndex: number;
+  readonly location: {
+    /**
+     * Block sits inside aligned section pair.
+     */
+    readonly kind: 'aligned-pair';
+
+    /**
+     * Aligned pair index.
+     */
+    readonly pairIndex: number;
+  } | {
+    /**
+     * Whole target section sits outside alignment.
+     */
+    readonly kind: 'target-section';
+
+    /**
+     * Target section index.
+     */
+    readonly sectionIndex: number;
+  };
 
   /**
    * Stable parser id within target document.
@@ -309,9 +330,54 @@ export function prepareDocumentPair(
   const declinedFindings: string[] = [];
 
   /**
-   * Target blocks roster pairing explicitly left outside source claims.
+   * Target node ids gathered from aligned sections.
    */
-  const unclaimedTargetBlocks: UnclaimedTargetBlock[] = [];
+  const alignedTargetIdRows = alignment.pairs
+    .flatMap(function toTargetIds(pair,): readonly string[] {
+      /**
+       * Target nodes this aligned pair owns.
+       */
+      const { nodes, } = pair.target;
+      return nodes.map(function toId(node,): string {
+        return node.id;
+      },);
+    },);
+  /**
+   * Target node ids belonging to some aligned section.
+   */
+  const alignedTargetIds = new Set(alignedTargetIdRows,);
+  /**
+   * Target heading chunks across whole archive.
+   */
+  const targetChunks = chunkByHeadings({ document: targetDocument, },);
+  /**
+   * Target blocks outside every aligned section, which no slice can review.
+   */
+  const unclaimedTargetBlocks: UnclaimedTargetBlock[] = targetChunks
+    .flatMap(function outsideAlignment(
+      chunk,
+      sectionIndex,
+    ): readonly UnclaimedTargetBlock[] {
+      /**
+       * Nodes belonging to this target section.
+       */
+      const { nodes, } = chunk;
+      return nodes
+        .filter(function isOutside(node,): boolean {
+          return !alignedTargetIds.has(node.id,);
+        },)
+        .map(function toUnclaimed(node,): UnclaimedTargetBlock {
+          return {
+            location: {
+              kind: 'target-section',
+              sectionIndex,
+            },
+            blockId: node.id,
+            startOffset: node.startOffset,
+            endOffset: node.endOffset,
+          };
+        },);
+    },);
 
   /**
    * Slice pairs accumulated across every aligned section.
@@ -392,7 +458,10 @@ export function prepareDocumentPair(
         node,
       ): UnclaimedTargetBlock {
         return {
-          pairIndex,
+          location: {
+            kind: 'aligned-pair',
+            pairIndex,
+          },
           blockId: node.id,
           startOffset: node.startOffset,
           endOffset: node.endOffset,

@@ -167,6 +167,29 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS a merged paragraph when enough voices name both source blocks against one target',
+      fn: async () => {
+        const outcome = await pairBlocksWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":0}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":0}]}',
+            ],
+          },),
+          modelIds: ROSTER,
+          sourceBlocks: SOURCE,
+          targetBlocks: TARGET,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.pairs,).toEqual([
+          { source: 0, target: 0, },
+          { source: 1, target: 0, },
+        ],);
+      },
+    },),
+    it({
       name: 'KEEPS a correspondence two later voices named though the first voice omitted it, since '
         + 'agreement is per pair and not per reply (`#245`)',
       fn: async () => {
