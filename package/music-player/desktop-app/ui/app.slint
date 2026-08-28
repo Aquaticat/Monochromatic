@@ -236,6 +236,7 @@ component SegmentedControls inherits Rectangle {
         for label[p] in root.labels: SegmentedButton {
             text: label;
             selected: p == root.selected-page;
+            property <bool> last-control: p == root.labels.length - 1;
             init => {
                 root.control-geometry(p, self.x, self.width);
             }
@@ -246,6 +247,9 @@ component SegmentedControls inherits Rectangle {
                 root.control-geometry(p, self.x, self.width);
             }
             changed selected => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed last-control => {
                 root.control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -565,6 +569,7 @@ component LedSegmentControls inherits Rectangle {
             plate-origin: root.absolute-position;
             selected: p == root.selected-page;
             max-width: root.width;
+            property <bool> last-control: p == root.labels.length - 1;
             init => {
                 root.control-geometry(p, self.x, self.width);
             }
@@ -575,6 +580,9 @@ component LedSegmentControls inherits Rectangle {
                 root.control-geometry(p, self.x, self.width);
             }
             changed selected => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed last-control => {
                 root.control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -745,6 +753,7 @@ component ChromiumControls inherits Rectangle {
             next-selected: p < root.labels.length - 1 && p + 1 == root.selected-page;
             show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
             max-width: chromium-layout.width;
+            property <bool> last-control: p == root.labels.length - 1;
             init => {
                 root.control-geometry(p, self.x, self.width);
             }
@@ -755,6 +764,9 @@ component ChromiumControls inherits Rectangle {
                 root.control-geometry(p, self.x, self.width);
             }
             changed selected => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed last-control => {
                 root.control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -774,6 +786,7 @@ component PageControls inherits VerticalLayout {
     in property <int> selected-page;
     in property <int> control-style;
     in property <bool> folded: false;
+    out property <length> content-width: 0px;
     callback select-page(int);
     callback selected-geometry(length, length);
     callback report-control-geometry(int, length, length);
@@ -783,6 +796,15 @@ component PageControls inherits VerticalLayout {
         if (index == root.selected-page) {
             root.selected-geometry(item-x, item-width);
         }
+        if (root.folded && index == root.labels.length - 1) {
+            root.content-width = item-x + item-width + (root.control-style == 4 ? 12px : 0px);
+        }
+    }
+    changed control-style => {
+        root.content-width = 0px;
+    }
+    changed labels => {
+        root.content-width = 0px;
     }
 
     if root.control-style == 0: FlexboxLayout {
@@ -797,6 +819,7 @@ component PageControls inherits VerticalLayout {
             text: label;
             selected: p == root.selected-page;
             large-target: true;
+            property <bool> last-control: p == root.labels.length - 1;
             init => {
                 root.report-control-geometry(p, self.x, self.width);
             }
@@ -807,6 +830,9 @@ component PageControls inherits VerticalLayout {
                 root.report-control-geometry(p, self.x, self.width);
             }
             changed selected => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed last-control => {
                 root.report-control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -823,6 +849,7 @@ component PageControls inherits VerticalLayout {
         for label[p] in root.labels: Md1Tab {
             text: label;
             selected: p == root.selected-page;
+            property <bool> last-control: p == root.labels.length - 1;
             init => {
                 root.report-control-geometry(p, self.x, self.width);
             }
@@ -833,6 +860,9 @@ component PageControls inherits VerticalLayout {
                 root.report-control-geometry(p, self.x, self.width);
             }
             changed selected => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed last-control => {
                 root.report-control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -850,6 +880,7 @@ component PageControls inherits VerticalLayout {
         for label[p] in root.labels: Button {
             text: label;
             primary: p == root.selected-page;
+            property <bool> last-control: p == root.labels.length - 1;
             init => {
                 root.report-control-geometry(p, self.x, self.width);
             }
@@ -860,6 +891,9 @@ component PageControls inherits VerticalLayout {
                 root.report-control-geometry(p, self.x, self.width);
             }
             changed primary => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed last-control => {
                 root.report-control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -1029,7 +1063,8 @@ component FoldablePageControls inherits Rectangle {
     in-out property <bool> expanded: false;
     callback select-page(int);
     private property <length> single-row-height: root.control-style == 5 ? 60px : 48px;
-    private property <bool> has-overflow: width-probe.width > root.width;
+    private property <length> scroll-content-width: max(width-probe.width, visible-controls.content-width);
+    private property <bool> has-overflow: root.scroll-content-width > root.width;
     private property <length> disclosure-gutter: root.has-overflow ? 56px : 0px;
     private property <length> selected-control-x: 0px;
     private property <length> selected-control-width: 0px;
@@ -1046,7 +1081,7 @@ component FoldablePageControls inherits Rectangle {
         let visible-start = -control-strip.viewport-x;
         let visible-end = visible-start + control-strip.width;
         let selected-end = root.selected-control-x + root.selected-control-width;
-        let minimum-viewport-x = min(0px, control-strip.width - width-probe.width);
+        let minimum-viewport-x = min(0px, control-strip.width - root.scroll-content-width);
         if (root.selected-control-x < visible-start) {
             control-strip.viewport-x = max(minimum-viewport-x, min(0px, -root.selected-control-x));
         } else if (selected-end > visible-end) {
@@ -1091,13 +1126,13 @@ component FoldablePageControls inherits Rectangle {
         x: root.disclosure-gutter;
         width: max(0px, parent.width - root.disclosure-gutter);
         height: parent.height;
-        viewport-width: root.expanded ? self.width : max(self.width, width-probe.width);
+        viewport-width: root.expanded ? self.width : max(self.width, root.scroll-content-width);
         viewport-height: visible-controls.preferred-height;
         interactive: !root.expanded;
 
         visible-controls := PageControls {
             y: root.expanded ? 0px : max(0px, (root.single-row-height - self.preferred-height) / 2);
-            width: root.expanded ? control-strip.width : max(control-strip.width, width-probe.width);
+            width: root.expanded ? control-strip.width : max(control-strip.width, root.scroll-content-width);
             labels: root.labels;
             selected-page: root.selected-page;
             control-style: root.control-style;
