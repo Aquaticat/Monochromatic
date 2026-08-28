@@ -145,7 +145,7 @@ function emptyVersionTwoArtifact(
   },
 ): Record<string, unknown> {
   return {
-    artifactSchemaVersion: 6,
+    artifactSchemaVersion: 7,
     id: entryId,
     tip: FIXED_TIP,
     pipelineDigest: digest,
@@ -332,7 +332,7 @@ await describe({
         const artifactsDir = await writeArtifacts({
           entries: {
             Mittens: {
-              version: 6,
+              version: 7,
               digest: DIGEST_A,
             },
           },
@@ -342,7 +342,7 @@ await describe({
          * What the guard said about it.
          */
         const said = await refusalOf({ artifactsDir, },);
-        expect(said,).toContain('Mittens declares schema version 6',);
+        expect(said,).toContain('Mittens declares schema version 7',);
         expect(said,).toContain('and is not one',);
       },
     },),
@@ -469,7 +469,7 @@ await describe({
         expect(said,).toContain('Restore the code those entries were settled under',);
         expect(said,).toContain('Move the incompatible artifacts to an archive directory',);
         expect(said,).toContain('Deleting them outright is the one thing to avoid',);
-        expect(said,).toContain('this pass writes schema version 6',);
+        expect(said,).toContain('this pass writes schema version 7',);
       },
     },),
   ],

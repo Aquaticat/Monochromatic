@@ -3,6 +3,10 @@ import {
   type LaneContestOutcome,
   settleArchiveBallots,
 } from '../lane-contest-stage.ts';
+import {
+  type LaneContestEligibility,
+  settleEligibleLaneContestBallots,
+} from '../lane-contest-eligibility.ts';
 import type { LaneContestBallot, } from '../lane-contest-wire.ts';
 import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 
@@ -98,6 +102,14 @@ export type ArtifactContestSlice = {
    * the quorum is measured against.
    */
   readonly usable: number;
+
+  /**
+   * Deterministic source-backed candidate admission, present on syntax slices.
+   *
+   * Raw ballots remain unchanged. Reader uses this record to exclude votes for
+   * candidates that cannot cross publication boundary, then re-derives verdict.
+   */
+  readonly eligibility?: LaneContestEligibility;
 };
 
 /**
@@ -121,8 +133,16 @@ export type ArtifactContestSlice = {
  * ```
  */
 function settledNeitherVerdict(
-  { ballots, }: { readonly ballots: readonly LaneContestBallot[]; },
+  {
+    ballots,
+    eligibility,
+  }: {
+    readonly ballots: readonly LaneContestBallot[];
+    readonly eligibility?: LaneContestEligibility;
+  },
 ): ArtifactContestVerdict {
+  if (eligibility?.archive === 'ineligible')
+    return { kind: 'settled-neither', };
   /**
    * What the roster made of the archive at this slice.
    */
@@ -142,6 +162,8 @@ function settledNeitherVerdict(
  *
  * @param outcome - what the roster settled
  *
+ * @param eligibility - deterministic candidate admission for syntax slice
+ *
  * @returns Record for one contested slice
  *
  * @example
@@ -153,28 +175,43 @@ export function describeContestSlice(
   {
     sliceIndex,
     outcome,
+    eligibility,
   }: {
     readonly sliceIndex: number;
     readonly outcome: LaneContestOutcome;
+    readonly eligibility?: LaneContestEligibility;
   },
 ): ArtifactContestSlice {
+  /**
+   * Roster choice after votes for inadmissible candidates are excluded.
+   */
+  const choice = (eligibility === undefined)
+    ? outcome.choice
+    : settleEligibleLaneContestBallots({
+      ballots: outcome.ballots,
+      eligibility,
+    },);
   /**
    * What the roster settled, read against the same quorum the stage applied
    * rather than against a copy of the number, so the two cannot drift.
    */
   const verdict: ArtifactContestVerdict = (outcome.usable < LANE_CONTEST_QUORUM)
     ? { kind: 'quorum-not-met', }
-    : ((outcome.choice === 'neither')
-      ? settledNeitherVerdict({ ballots: outcome.ballots, },)
+    : ((choice === 'neither')
+      ? settledNeitherVerdict({
+        ballots: outcome.ballots,
+        ...((eligibility === undefined) ? {} : { eligibility, }),
+      },)
       : {
         kind: 'lane-won',
-        lane: outcome.choice,
+        lane: choice,
       });
   return {
     sliceIndex,
     verdict,
     ballots: outcome.ballots,
     usable: outcome.usable,
+    ...((eligibility === undefined) ? {} : { eligibility, }),
   };
 }
 

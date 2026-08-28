@@ -85,7 +85,14 @@ export {
   settleArchiveBallots,
   settleLaneContestBallots,
 } from './lane-contest-stage.ts';
-export { laneContestChoiceMayShip, } from './lane-contest-eligibility.ts';
+export {
+  applyLaneContestEligibility,
+  frontMatterContestEligibility,
+  type LaneContestEligibility,
+  LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
+  laneContestChoiceMayShip,
+  settleEligibleLaneContestBallots,
+} from './lane-contest-eligibility.ts';
 export {
   contestDocumentLanes,
   persistLaneContestOutcome,

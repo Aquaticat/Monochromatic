@@ -85,7 +85,7 @@ await describe({
          * Key these fixed inputs derive today.
          */
         const key = laneContestSliceKey(catInputs(),);
-        expect(key,).toBe('e045390748245deb76bfeed9449ff7425f19e24ae0f8e272a35b468e6e570823',);
+        expect(key,).toBe('7a87b1ed2d28c0ce94439102eb722c6740e58d7babd1b329411a0aa5171ed277',);
       },
     },),
     it({

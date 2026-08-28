@@ -211,7 +211,7 @@ const ENTRY = {
 /**
  * Source page made entirely of visible metadata.
  */
-const FRONT_MATTER_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫\n---\n';
+const FRONT_MATTER_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
 
 /**
  * Archive metadata carrying entry id as visible name.
@@ -837,7 +837,7 @@ await describe({
 
     it({
       name:
-        'settles an entry into ONE artifact at schema version 6 carrying BOTH lanes and final polish '
+        'settles an entry into ONE artifact at schema version 7 carrying BOTH lanes and final polish '
         + 'over one preparation',
       fn: async () => {
         await using dirs = await throwawayDirs();
@@ -873,14 +873,14 @@ await describe({
         // Read structurally rather than through the writer's own types, since
         // what is under test is the FILE: a reader holding only this has to
         // find both lanes nested and no lane at the top level.
-        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(6,);
+        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(7,);
         expect(Object.keys((artifact as { lanes: object; }).lanes,)
           .toSorted(),).toEqual([
           'repair',
           'translate',
         ],);
         /**
-         * Consolidation records carrying generation-six polish decision.
+         * Consolidation records carrying auditable polish decision.
          */
         const { consolidation, } = artifact as {
           consolidation: { slices: readonly { polish?: unknown; }[]; };
@@ -890,7 +890,7 @@ await describe({
         },),).toBe(true,);
 
         // THE STAMP AND THE SPELLING, checked together on the bytes. A writer
-        // that stamped generation 6 and wrote an earlier generation's keys
+        // that stamped generation 7 and wrote an earlier generation's keys
         // would satisfy the assertion above and produce a file its own reader
         // refuses, and every fixture in this package would still pass: they are
         // built by hand from the same names the writer uses.
@@ -1083,8 +1083,17 @@ await describe({
           entryId: FRONT_MATTER_ENTRY.id,
         },), 'utf8',);
 
-        expect(artifact.artifactSchemaVersion,).toBe(6,);
+        expect(artifact.artifactSchemaVersion,).toBe(7,);
         expect(artifact.preparation.sliceCount,).toBe(1,);
+        if (artifact.laneSelection.kind !== 'contested')
+          throw new Error('front matter pass did not record lane contest',);
+        expect(artifact.laneSelection.slices[0]?.eligibility,).toEqual({
+          syntax: 'front-matter',
+          sourceText: FRONT_MATTER_SOURCE,
+          archive: 'ineligible',
+          repair: 'ineligible',
+          translate: 'eligible',
+        },);
         expect(page,).toBe(FRONT_MATTER_FRESH,);
         expect(served,).toContain('translation_report',);
         expect(served,).toContain('candidate_ballot',);

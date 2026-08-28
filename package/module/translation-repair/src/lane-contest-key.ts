@@ -21,8 +21,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 2 adds target-authoritative contributor spelling to metadata policy.
  * Version 1 ballots never answered that question and cannot settle it now.
+ *
+ * VERSION 3 tells judges which syntax candidates deterministic publication
+ * guard rejects. Earlier ballots spent votes on candidates unable to ship.
  */
-export const LANE_CONTEST_CACHE_VERSION = 2;
+export const LANE_CONTEST_CACHE_VERSION = 3;
 
 /**
  * Everything about this run that changes what the judges are ASKED, folded into

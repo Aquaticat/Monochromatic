@@ -15,7 +15,7 @@ import {
   type PreparationIdentity,
 } from '../preparation-identity.ts';
 import {
-  ARTIFACT_SCHEMA_VERSION_V6,
+  artifactGenerationRequiresPolish,
   isTwoLaneArtifactGeneration,
   TWO_LANE_GENERATIONS,
 } from './artifact-two-lane-contract.ts';
@@ -423,6 +423,7 @@ export function parseSettledTwoLaneArtifact(
     comparison,
     path: `${id}.laneSelection`,
     keys,
+    generation,
   },);
   return {
     artifactSchemaVersion: generation,
@@ -465,7 +466,7 @@ export function parseSettledTwoLaneArtifact(
       laneSelection,
       path: `${id}.consolidation`,
       keys,
-      polishRequired: generation === ARTIFACT_SCHEMA_VERSION_V6,
+      polishRequired: artifactGenerationRequiresPolish({ generation, }),
     },),
   };
 }

@@ -1219,9 +1219,36 @@ selection round count,
 gate ballots,
 and findings;
 publication reads polish before every earlier decider.
-Full package suite passes 851 groups with no failures,
+Full package suite passes 852 groups with no failures,
 and mutation proofs show polish shipping and read precedence guards are effective.
-Fresh generation-6 `Weideriche_` rerun remains required before accepting affected output.
+
+Fresh `2981e8cad` generation-6 `Weideriche_` validation reached all four slices and all nine active seats,
+but correctly published no artifact or page.
+Translate produced source-valid metadata;
+repair deliberately retained archive metadata whose visible name and alias violate source identity.
+On retry the lane contest selected repair,
+recorded winner as unpublishable,
+and did not cache it.
+Consolidation produced source-valid metadata,
+but final consolidation gate kept invalid standing repair text.
+Complete-page guard refused both attempts as `invalid-page`;
+second attempt added no cache record and queue stopped rather than repeating same work.
+
+Missing trailing newline on generated metadata was investigated and rejected as root cause.
+Positive control parsed exact generated candidate plus actual archive body successfully because body begins with line break.
+Temporary boundary restoration and cache bumps were reverted in `03b698e40`.
+
+Artifact generation 7 records source text and deterministic archive,
+repair,
+and translate eligibility on syntax-bearing contests while retaining raw ballots unchanged.
+Verdict derivation excludes votes for ineligible candidates without redirecting them,
+requires ordinary direct-vote quorum for eligible lane,
+and suppresses archive endorsement when archive itself is ineligible.
+No eligible winner remains retryable and uncached.
+Contest prompt names deterministic exclusions,
+artifact reader recomputes eligibility from stored source and lane texts,
+and final page guard remains independent.
+Fresh generation-7 `Weideriche_` rerun remains required before accepting affected output.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.

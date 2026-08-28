@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-type ArtifactComparisonRow,
+  type ArtifactComparisonRow,
   ArtifactParseError,
   SLICE_SPELLED_KEYS,
   parseLaneSelection,
@@ -167,6 +167,33 @@ const MIXED: readonly ArtifactComparisonRow[] = [
  */
 const ONE_CONTESTED: readonly ArtifactComparisonRow[] = [CONTESTED_ROW,];
 
+/**
+ * Source metadata making archive and repair identities inadmissible.
+ */
+const FRONT_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
+
+/**
+ * Archive metadata retaining directory id as visible name.
+ */
+const FRONT_ARCHIVE = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
+
+/**
+ * Source-backed translated metadata.
+ */
+const FRONT_TRANSLATE = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
+
+/**
+ * Front matter row whose only admissible lane is translate.
+ */
+const FRONT_ROW: ArtifactComparisonRow = {
+  ...catRow({
+    sliceIndex: 0,
+    repairText: FRONT_ARCHIVE,
+    translateText: FRONT_TRANSLATE,
+  },),
+  incumbentText: FRONT_ARCHIVE,
+};
+
 await describe({
   name: parseLaneSelection.name,
   children: [
@@ -235,6 +262,79 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'RECOMPUTES SCHEMA 7 VERDICT from raw ballots after syntax eligibility floor',
+      fn: async () => {
+        const selection = parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [{
+              sliceIndex: 0,
+              verdict: {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+              ballots: [
+                FOR_REPAIR,
+                FOR_REPAIR,
+                FOR_TRANSLATE,
+                FOR_TRANSLATE,
+              ],
+              usable: 4,
+              eligibility: {
+                syntax: 'front-matter',
+                sourceText: FRONT_SOURCE,
+                archive: 'ineligible',
+                repair: 'ineligible',
+                translate: 'eligible',
+              },
+            },],
+          },
+          comparison: [FRONT_ROW,],
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+          generation: 7,
+        },);
+        if (selection.kind !== 'contested')
+          throw new Error('reader returned pending selection for eligibility record',);
+        expect(selection.slices[0]?.verdict,).toEqual({
+          kind: 'lane-won',
+          lane: 'translate',
+        },);
+        expect(selection.slices[0]?.ballots,).toHaveLength(4,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES SCHEMA 7 ELIGIBILITY STATUS disagreeing with source and lane texts',
+      fn: async () => {
+        const refusal = await caught(() => parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [{
+              sliceIndex: 0,
+              verdict: { kind: 'settled-neither', },
+              ballots: [FOR_REPAIR, FOR_REPAIR,],
+              usable: 2,
+              eligibility: {
+                syntax: 'front-matter',
+                sourceText: FRONT_SOURCE,
+                archive: 'ineligible',
+                repair: 'eligible',
+                translate: 'eligible',
+              },
+            },],
+          },
+          comparison: [FRONT_ROW,],
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+          generation: 7,
+        },),);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusal as Error).message,).toContain('eligibility.repair',);
+      },
+    },),
+
     it({
       name: 'ACCEPTS a slice too few of whose voices arrived, recording it as unsettled rather than as a refusal',
       fn: async () => {

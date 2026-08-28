@@ -8,18 +8,24 @@ import {
   requireCount,
   requireRecord,
 } from '../artifact-guard.ts';
-import { settleLaneContestBallots, } from '../lane-contest-stage.ts';
+import { settleEligibleLaneContestBallots, } from '../lane-contest-eligibility.ts';
 import type { LaneContestBallot, } from '../lane-contest-wire.ts';
 import {
   type ArtifactContestSlice,
-  type ArtifactContestVerdict,
   type ArtifactLaneSelection,
   contestEligibleIndexes,
   describeContestSlice,
 } from './artifact-two-lane-contest.ts';
 import { parseContestBallot, } from './artifact-two-lane-read-contest-ballot.ts';
+import { parseContestEligibility, } from './artifact-two-lane-read-contest-eligibility.ts';
+import { assertContestVerdictMatches, } from './artifact-two-lane-read-contest-verdict.ts';
 import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
+import {
+  ARTIFACT_SCHEMA_VERSION_V6,
+  ARTIFACT_SCHEMA_VERSION_V7,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 
 //region Lane contest reading
 // Reading the recorded contest, and refusing one that disagrees with either the
@@ -32,193 +38,6 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 // field nobody re-derives is a field that can quietly become a lie.
 
 /**
- * Names the keys a recorded verdict may carry, given what its ballots settle.
- *
- * @param derived - verdict those ballots settle on
- *
- * @returns Key names the record is allowed to use
- *
- * @example
- * ```ts
- * const allowed = allowedVerdictKeys({ derived, },);
- * ```
- */
-function allowedVerdictKeys(
-  { derived, }: { readonly derived: ArtifactContestVerdict; },
-): readonly string[] {
-  if (derived.kind === 'lane-won') {
-    return [
-      'kind',
-      'lane',
-    ];
-  }
-
-  // THE ARCHIVE KEY IS ALLOWED ONLY WHERE ONE WAS DERIVED, so a record
-  // carrying the field where the ballots settle nothing is still refused
-  // rather than quietly accepted and then compared away.
-  if ((derived.kind === 'settled-neither') && (derived.archive !== undefined)) {
-    return [
-      'kind',
-      'archive',
-    ];
-  }
-  return ['kind',];
-}
-
-/**
- * Names a verdict in one token, for comparing two of them and for saying which
- * arrived when they differ.
- *
- * @param verdict - verdict to name
- *
- * @returns Kind, carrying the lane when one won or the archive verdict when one
- * was given
- *
- * @example
- * ```ts
- * const settled = renderContestVerdict({ verdict, },);
- * ```
- */
-function renderContestVerdict(
-  { verdict, }: { readonly verdict: ArtifactContestVerdict; },
-): string {
-  if (verdict.kind === 'lane-won')
-    return `${verdict.kind}:${verdict.lane}`;
-
-  // AN UNJUDGED ARCHIVE RENDERS AS THE BARE KIND, matching the record that
-  // omits the field, so every artifact written before the question existed
-  // still renders to the token its own ballots settle on.
-  if ((verdict.kind === 'settled-neither') && (verdict.archive !== undefined))
-    return `${verdict.kind}:${verdict.archive}`;
-  return verdict.kind;
-}
-
-/**
- * Renders the recorded verdict in the same one-token form.
- *
- * @param recorded - verdict the artifact carries
- *
- * @param path - dotted path of that verdict
- *
- * @returns Token the record claims
- *
- * @throws {@link ArtifactParseError} when a field names nothing this schema knows
- *
- * @example
- * ```ts
- * const claimed = renderRecordedVerdict({ recorded, path, },);
- * ```
- */
-function renderRecordedVerdict(
-  {
-    recorded,
-    path,
-  }: {
-    readonly recorded: Readonly<Record<string, unknown>>;
-    readonly path: string;
-  },
-): string {
-  if (recorded.lane !== undefined) {
-    return `${
-      requireOneOf({
-        value: recorded.kind,
-        allowed: ['lane-won',],
-        path: `${path}.kind`,
-      },)
-    }:${
-      requireOneOf({
-        value: recorded.lane,
-        allowed: [
-          'repair',
-          'translate',
-        ],
-        path: `${path}.lane`,
-      },)
-    }`;
-  }
-  if (recorded.archive !== undefined) {
-    return `${
-      requireOneOf({
-        value: recorded.kind,
-        allowed: ['settled-neither',],
-        path: `${path}.kind`,
-      },)
-    }:${
-      requireOneOf({
-        value: recorded.archive,
-        allowed: [
-          'endorsed',
-          'declined',
-        ],
-        path: `${path}.archive`,
-      },)
-    }`;
-  }
-  return requireOneOf({
-    value: recorded.kind,
-    allowed: [
-      'settled-neither',
-      'quorum-not-met',
-    ],
-    path: `${path}.kind`,
-  },);
-}
-
-/**
- * Refuses a recorded verdict that is not the one its own ballots settle on.
- *
- * @param recorded - verdict the artifact carries
- *
- * @param derived - verdict those ballots settle on
- *
- * @param path - dotted path of the recorded verdict
- *
- * @throws {@link ArtifactParseError} when the two name different outcomes
- *
- * @example
- * ```ts
- * assertVerdictMatches({ recorded, derived, path, },);
- * ```
- */
-function assertVerdictMatches(
-  {
-    recorded,
-    derived,
-    path,
-  }: {
-    readonly recorded: Readonly<Record<string, unknown>>;
-    readonly derived: ArtifactContestVerdict;
-    readonly path: string;
-  },
-): void {
-  requireExactKeys({
-    record: recorded,
-    allowed: allowedVerdictKeys({ derived, },),
-    path,
-  },);
-
-  /**
-   * Verdict the record claims, in the one-token form the derived one renders
-   * to, so the two compare as values rather than as shapes.
-   */
-  const claimed = renderRecordedVerdict({
-    recorded,
-    path,
-  },);
-
-  /**
-   * Verdict those ballots settle on, in the same form.
-   */
-  const settled = renderContestVerdict({ verdict: derived, },);
-  if (claimed !== settled) {
-    throw new ArtifactParseError({
-      path,
-      reason: `${settled}, which is what these ballots settle on, rather than ${claimed}`,
-    },);
-  }
-}
-
-/**
  * Reads one contested slice and re-derives its verdict from its own ballots.
  *
  * @param value - recorded slice
@@ -227,6 +46,10 @@ function assertVerdictMatches(
  *
  * @param keys - field spellings this artifact's generation uses, so an older
  * file is read by its own names rather than by today's
+ *
+ * @param generation - artifact generation deciding eligibility field support
+ *
+ * @param comparison - recomputed lane rows eligibility is checked against
  *
  * @returns Slice record, proven to agree with the ballots it carries
  *
@@ -244,10 +67,14 @@ function parseContestSlice(
     value,
     path,
     keys,
+    generation,
+    comparison,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly keys: ArtifactKeyVocabulary;
+    readonly generation: TwoLaneArtifactGeneration;
+    readonly comparison: readonly ArtifactComparisonRow[];
   },
 ): ArtifactContestSlice {
   /**
@@ -264,9 +91,40 @@ function parseContestSlice(
       'verdict',
       'ballots',
       'usable',
+      ...((generation === ARTIFACT_SCHEMA_VERSION_V7) ? ['eligibility',] : []),
     ],
     path,
   },);
+
+  /**
+   * Slice index this record answers.
+   */
+  const sliceIndex = requireCount({
+    value: slice[keys.sliceIndex],
+    path: `${path}.${keys.sliceIndex}`,
+  },);
+  /**
+   * Lane row carrying candidate texts for eligibility recomputation.
+   */
+  const row = comparison.find(function namesSlice(candidate,): boolean {
+    return candidate.sliceIndex === sliceIndex;
+  },);
+  if (row === undefined) {
+    throw new ArtifactParseError({
+      path: `${path}.${keys.sliceIndex}`,
+      reason: 'index naming no recomputed comparison row',
+    },);
+  }
+  /**
+   * Source-backed syntax eligibility, absent on ordinary and older records.
+   */
+  const eligibility = (slice.eligibility === undefined)
+    ? undefined
+    : parseContestEligibility({
+      value: slice.eligibility,
+      row,
+      path: `${path}.eligibility`,
+    },);
 
   /**
    * Ballots this slice carries.
@@ -305,27 +163,21 @@ function parseContestSlice(
    * Verdict the stored ballots settle on under the stage`s own rule.
    */
   const derived = describeContestSlice({
-    sliceIndex: requireCount({
-      value: slice[keys.sliceIndex],
-      path: `${path}.${keys.sliceIndex}`,
-    },),
+    sliceIndex,
     outcome: {
-      choice: settleLaneContestBallots({ ballots, },),
+      choice: settleEligibleLaneContestBallots({
+        ballots,
+        ...((eligibility === undefined) ? {} : { eligibility, }),
+      },),
       ballots,
       usable,
       findings: [],
     },
+    ...((eligibility === undefined) ? {} : { eligibility, }),
   },);
 
-  /**
-   * Verdict the record claims, read as a record before it is compared.
-   */
-  const recorded = requireRecord({
+  assertContestVerdictMatches({
     value: slice.verdict,
-    path: `${path}.verdict`,
-  },);
-  assertVerdictMatches({
-    recorded,
     derived: derived.verdict,
     path: `${path}.verdict`,
   },);
@@ -396,6 +248,8 @@ function assertContestCoversEligible(
  * @param keys - field spellings this artifact's generation uses, so an older
  * file is read by its own names rather than by today's
  *
+ * @param generation - artifact generation deciding eligibility field support
+ *
  * @returns Selection, proven to agree with the ballots and the comparison
  *
  * @throws {@link ArtifactParseError} when the kind is unknown, when any slice is
@@ -412,11 +266,13 @@ export function parseLaneSelection(
     comparison,
     path,
     keys,
+    generation = ARTIFACT_SCHEMA_VERSION_V6,
   }: {
     readonly value: unknown;
     readonly comparison: readonly ArtifactComparisonRow[];
     readonly path: string;
     readonly keys: ArtifactKeyVocabulary;
+    readonly generation?: TwoLaneArtifactGeneration;
   },
 ): ArtifactLaneSelection {
   /**
@@ -470,6 +326,8 @@ export function parseLaneSelection(
         value: one,
         path: `${path}.slices[${String(position,)}]`,
         keys,
+        generation,
+        comparison,
       },);
     },);
   assertContestCoversEligible({

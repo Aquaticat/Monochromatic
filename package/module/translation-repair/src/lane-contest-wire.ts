@@ -294,6 +294,15 @@ export type LaneContestSubject = {
   readonly translateText: string;
 
   /**
+   * Candidates deterministic syntax guard has already made unpublishable.
+   *
+   * Judges still see bytes for comparison and cast raw ballots, but are told
+   * these names cannot be selected. Driver independently excludes violating
+   * choices, so prompt is liveness guidance rather than publication guard.
+   */
+  readonly ineligibleCandidates?: readonly ('archive' | 'repair' | 'translate')[];
+
+  /**
    * Names and handles both documents' front matter declares, when either does.
    *
    * WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION.
@@ -395,6 +404,23 @@ export function buildLaneContestMessages(
     ];
 
   /**
+   * Deterministic syntax admission result, or nothing for ordinary contests.
+   */
+  const ineligible = subject.ineligibleCandidates ?? [];
+  /**
+   * Guidance preventing panel from spending votes on candidates guard rejects.
+   */
+  const admissionBlock = (ineligible.length === 0)
+    ? []
+    : [
+      `DETERMINISTIC PUBLICATION ADMISSION rejects: ${ineligible.join(', ')}.`,
+      'Do not choose a rejected repair or translate candidate.',
+      'Judge a rejected archive as flawed. If no eligible lane is faithful, choose neither.',
+      'Raw ballots are audited and violating choices are excluded rather than redirected.',
+      '',
+    ];
+
+  /**
    * Policy extended for syntax-bearing visible metadata.
    */
   const policy = (subject.syntax === 'front-matter')
@@ -410,6 +436,7 @@ export function buildLaneContestMessages(
       role: 'user',
       content: [
         ...identityBlock,
+        ...admissionBlock,
         'ORIGINAL (Chinese), the standard:',
         `${fence}\n${subject.sourceText}\n${fence}`,
         '',

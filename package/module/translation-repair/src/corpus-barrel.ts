@@ -43,6 +43,7 @@ export {
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V5,
   ARTIFACT_SCHEMA_VERSION_V6,
+  ARTIFACT_SCHEMA_VERSION_V7,
   type ArtifactJsonValue,
   type ArtifactSectionAlignment,
   type ArtifactSectionCorrespondence,

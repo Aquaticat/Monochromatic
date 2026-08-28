@@ -210,6 +210,28 @@ await describe({
       },
     },),
     it({
+      name: 'NAMES DETERMINISTICALLY REJECTED CANDIDATES before syntax panel votes',
+      fn: async () => {
+        const messages = buildLaneContestMessages({
+          subject: {
+            sourceText: '---\nname: 猫猫\n---\n',
+            incumbentText: '---\nname: EntryId\n---\n',
+            repairText: '---\nname: EntryId\n---\n',
+            translateText: '---\nname: Maomao\n---\n',
+            syntax: 'front-matter',
+            ineligibleCandidates: [
+              'archive',
+              'repair',
+            ],
+          },
+        },);
+        const asked = messages.at(1,)?.content ?? '';
+        expect(asked,).toContain('DETERMINISTIC PUBLICATION ADMISSION rejects: archive, repair',);
+        expect(asked,).toContain('violating choices are excluded rather than redirected',);
+      },
+    },),
+
+    it({
       name: 'OMITS the block entirely when neither document declares a name',
       fn: async () => {
         // An empty heading would read as "nothing is declared about this

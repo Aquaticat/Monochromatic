@@ -74,9 +74,14 @@ const GENERATION_FIVE = 5;
 const GENERATION_SIX = 6;
 
 /**
+ * Generation adding contest eligibility under same key spelling.
+ */
+const GENERATION_SEVEN = 7;
+
+/**
  * Generation no table covers, one past newest.
  */
-const GENERATION_UNKNOWN = 7;
+const GENERATION_UNKNOWN = 8;
 
 await describe({
   name: keyVocabularyOf.name,
@@ -144,7 +149,7 @@ await describe({
     },),
 
     it({
-      name: 'gives generations 1 and 2 older spelling and generations 4 through 6 current one, which is '
+      name: 'gives generations 1 and 2 older spelling and generations 4 through 7 current one, which is '
         + 'the whole dispatch',
       fn: async () => {
         expect(keyVocabularyOf({ version: GENERATION_ONE, },),).toBe(CHUNK_SPELLED_KEYS,);
@@ -152,6 +157,7 @@ await describe({
         expect(keyVocabularyOf({ version: GENERATION_FOUR, },),).toBe(SLICE_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_FIVE, },),).toBe(SLICE_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_SIX, },),).toBe(SLICE_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_SEVEN, },),).toBe(SLICE_SPELLED_KEYS,);
       },
     },),
 

@@ -22,6 +22,7 @@ import {
 
 import {
   type ArtifactComparisonRow,
+  type ArtifactContestSlice,
   type ArtifactDeliveryRow,
   contestDocumentLanes,
   createSyntheticClient,
@@ -312,10 +313,7 @@ type CatRig = {
   /**
    * Records the driver produced.
    */
-  readonly slices: readonly {
-    readonly sliceIndex: number;
-    readonly verdict: { readonly kind: string; };
-  }[];
+  readonly slices: readonly ArtifactContestSlice[];
 };
 
 /**
@@ -736,6 +734,14 @@ await describe({
         },);
         expect(single.admitted,).toBe(ROSTER.length,);
         expect(single.persisted,).toEqual([],);
+        expect(single.slices[0]?.verdict,).toEqual({ kind: 'settled-neither', },);
+        expect(single.slices[0]?.eligibility,).toEqual({
+          syntax: 'front-matter',
+          sourceText: METADATA_SOURCE,
+          archive: 'ineligible',
+          repair: 'ineligible',
+          translate: 'eligible',
+        },);
         expect(twin.admitted,).toBe(single.admitted * 2,);
         expect(twin.persisted,).toEqual([],);
       },

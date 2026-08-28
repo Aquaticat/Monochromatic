@@ -5,7 +5,11 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
-import { laneContestChoiceMayShip, } from './lane-contest-eligibility.ts';
+import {
+  applyLaneContestEligibility,
+  frontMatterContestEligibility,
+  laneContestChoiceMayShip,
+} from './lane-contest-eligibility.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import {
   type ArtifactContestSlice,
@@ -49,6 +53,15 @@ import {
 // overlapped twins from buying contradictory ballots or racing to overwrite one
 // cache file. An unheard outcome is neither persisted nor memoized, so its twin
 // asks again exactly as a warm run would.
+
+/**
+ * Candidate names deterministic syntax admission classifies.
+ */
+const CONTEST_CANDIDATES = [
+  'archive',
+  'repair',
+  'translate',
+] as const;
 
 /**
  * Whether a bought outcome is worth keeping across runs.
@@ -310,6 +323,26 @@ export async function contestDocumentLanes(
         ? 'front-matter' as const
         : undefined;
       /**
+       * Source-backed candidate admission for syntax-bearing contest.
+       */
+      const eligibility = (syntax === 'front-matter')
+        ? frontMatterContestEligibility({
+          sourceText,
+          incumbentText: row.incumbentText,
+          repairText: row.repairText,
+          translateText: row.translateText,
+        },)
+        : undefined;
+      /**
+       * Candidate names prompt marks unavailable before panel votes.
+       */
+      const ineligibleCandidates = (eligibility === undefined)
+        ? []
+        : CONTEST_CANDIDATES
+          .filter(function isIneligible(candidate,): boolean {
+            return eligibility[candidate] === 'ineligible';
+          },);
+      /**
        * Key these ballots resume under.
        */
       const key = laneContestSliceKey({
@@ -345,7 +378,7 @@ export async function contestDocumentLanes(
             /**
              * Ballots bought for this question.
              */
-            const bought = await contestLaneSlice({
+            const rawBought = await contestLaneSlice({
               client,
               modelIds,
               subject: {
@@ -354,11 +387,19 @@ export async function contestDocumentLanes(
                 repairText: row.repairText,
                 translateText: row.translateText,
                 ...((syntax === undefined) ? {} : { syntax, }),
+                ...((ineligibleCandidates.length === 0) ? {} : { ineligibleCandidates, }),
                 ...((identityContext === undefined) ? {} : { identityContext, }),
               },
               signal,
               exchangeTimeoutMs: perCallTimeoutMs,
               l: dl,
+            },);
+            /**
+             * Effective result after inadmissible raw choices are excluded.
+             */
+            const bought = applyLaneContestEligibility({
+              outcome: rawBought,
+              ...((eligibility === undefined) ? {} : { eligibility, }),
             },);
             // Gather rounds degrade torn-down calls to silence. A quorum that
             // arrived before the abort must not make the abandoned entry look
@@ -405,6 +446,7 @@ export async function contestDocumentLanes(
       return describeContestSlice({
         sliceIndex: row.sliceIndex,
         outcome,
+        ...((eligibility === undefined) ? {} : { eligibility, }),
       },);
     },
   },);

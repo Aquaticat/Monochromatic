@@ -36,6 +36,11 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
  */
+export const ARTIFACT_SCHEMA_VERSION_V7 = 7;
+
+/**
+ * Generation before source-backed contest eligibility became auditable.
+ */
 export const ARTIFACT_SCHEMA_VERSION_V6 = 6;
 
 /**
@@ -97,6 +102,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V4,
   ARTIFACT_SCHEMA_VERSION_V5,
   ARTIFACT_SCHEMA_VERSION_V6,
+  ARTIFACT_SCHEMA_VERSION_V7,
 ];
 
 /**
@@ -112,7 +118,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V3
   | typeof ARTIFACT_SCHEMA_VERSION_V4
   | typeof ARTIFACT_SCHEMA_VERSION_V5
-  | typeof ARTIFACT_SCHEMA_VERSION_V6;
+  | typeof ARTIFACT_SCHEMA_VERSION_V6
+  | typeof ARTIFACT_SCHEMA_VERSION_V7;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -130,6 +137,25 @@ export function isTwoLaneArtifactGeneration(
   value: number,
 ): value is TwoLaneArtifactGeneration {
   return TWO_LANE_GENERATIONS.includes(value,);
+}
+
+/**
+ * Reports whether generation requires auditable consolidation polish records.
+ *
+ * @param generation - known two-lane artifact generation
+ *
+ * @returns Whether every consolidation slice must carry polish field
+ *
+ * @example
+ * ```ts
+ * artifactGenerationRequiresPolish({ generation: 7, });
+ * ```
+ */
+export function artifactGenerationRequiresPolish(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return (generation === ARTIFACT_SCHEMA_VERSION_V6)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V7);
 }
 
 /**
@@ -396,7 +422,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V6;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V7;
 
   /**
    * Corpus entry this covers.

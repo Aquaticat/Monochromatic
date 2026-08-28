@@ -11,8 +11,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  applyLaneContestEligibility,
+  frontMatterContestEligibility,
   laneContestChoiceMayShip,
+  type LaneContestBallot,
   type LaneContestOutcome,
+  settleEligibleLaneContestBallots,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -43,15 +47,100 @@ const TRANSLATED = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
  * ```
  */
 function outcomeFor(
-  { choice, }: { readonly choice: LaneContestOutcome['choice']; },
+  { choice, ballots = [], }: {
+    readonly choice: LaneContestOutcome['choice'];
+    readonly ballots?: readonly LaneContestBallot[];
+  },
 ): LaneContestOutcome {
+  /**
+   * Raw ballots fixture outcome retains.
+   */
+  const usable = ballots.length === 0 ? 2 : ballots.length;
   return {
     choice,
-    ballots: [],
-    usable: 2,
+    ballots,
+    usable,
     findings: [],
   };
 }
+
+/**
+ * Builds raw contest ballot choosing one lane.
+ *
+ * @param choice - unmodified model choice
+ *
+ * @returns Complete ballot fixture
+ *
+ * @example
+ * ```ts
+ * const ballot = ballotFor({ choice: 'translate', });
+ * ```
+ */
+function ballotFor(
+  { choice, }: { readonly choice: LaneContestBallot['choice']; },
+): LaneContestBallot {
+  return {
+    choice,
+    unsupported: [],
+    unsupportedRaw: [],
+    dropped: [],
+    droppedRaw: [],
+    reason: 'fixture reads one candidate as source-faithful',
+  };
+}
+
+await describe({
+  name: settleEligibleLaneContestBallots.name,
+  children: [
+    it({
+      name: 'EXCLUDES INVALID LANE VOTES without redirecting them to eligible lane',
+      fn: async () => {
+        const eligibility = frontMatterContestEligibility({
+          sourceText: SOURCE,
+          incumbentText: ARCHIVE,
+          repairText: ARCHIVE,
+          translateText: TRANSLATED,
+        },);
+        const ballots = [
+          ballotFor({ choice: 'repair', },),
+          ballotFor({ choice: 'repair', },),
+          ballotFor({ choice: 'translate', },),
+          ballotFor({ choice: 'translate', },),
+        ];
+        expect(settleEligibleLaneContestBallots({
+          ballots,
+          eligibility,
+        },),).toBe('translate',);
+        const admitted = applyLaneContestEligibility({
+          outcome: outcomeFor({ choice: 'neither', ballots, },),
+          eligibility,
+        },);
+        expect(admitted.choice,).toBe('translate',);
+        expect(admitted.ballots,).toEqual(ballots,);
+      },
+    },),
+
+    it({
+      name: 'RETURNS NEITHER when eligible lane lacks direct quorum',
+      fn: async () => {
+        const eligibility = frontMatterContestEligibility({
+          sourceText: SOURCE,
+          incumbentText: ARCHIVE,
+          repairText: ARCHIVE,
+          translateText: TRANSLATED,
+        },);
+        expect(settleEligibleLaneContestBallots({
+          ballots: [
+            ballotFor({ choice: 'repair', },),
+            ballotFor({ choice: 'repair', },),
+            ballotFor({ choice: 'translate', },),
+          ],
+          eligibility,
+        },),).toBe('neither',);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: laneContestChoiceMayShip.name,

@@ -7,7 +7,7 @@ import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts'
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import {
-  ARTIFACT_SCHEMA_VERSION_V6,
+  ARTIFACT_SCHEMA_VERSION_V7,
   type ArtifactJsonValue,
   type ArtifactSectionAlignment,
   type ArtifactSectionCorrespondence,
@@ -247,7 +247,7 @@ export function buildSettledTwoLaneArtifact(
       },),
   },);
   return {
-    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V6,
+    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V7,
     id: entryId,
     tip,
     pipelineDigest,

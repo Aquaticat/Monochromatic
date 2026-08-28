@@ -1,0 +1,119 @@
+import {
+  requireExactKeys,
+  requireOneOf,
+} from '../artifact-exact-guard.ts';
+import {
+  ArtifactParseError,
+  requireRecord,
+  requireString,
+} from '../artifact-guard.ts';
+import {
+  frontMatterContestEligibility,
+  type LaneContestEligibility,
+} from '../lane-contest-eligibility.ts';
+import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
+
+//region Contest eligibility reading
+// Source-backed syntax admission is parsed separately from raw contest ballots
+// so the main contest reader stays focused on ballot/verdict agreement.
+
+/**
+ * Candidate statuses carried by source-backed eligibility.
+ */
+const ELIGIBILITY_CANDIDATES = [
+  'archive',
+  'repair',
+  'translate',
+] as const;
+
+/**
+ * Reads and re-derives source-backed candidate eligibility.
+ *
+ * @param value - recorded eligibility
+ *
+ * @param row - lane candidates eligibility governs
+ *
+ * @param path - dotted eligibility path
+ *
+ * @returns Proven deterministic eligibility
+ *
+ * @throws ArtifactParseError when shape or any stored status disagrees
+ *
+ * @example
+ * ```ts
+ * const eligibility = parseContestEligibility({ value, row, path, });
+ * ```
+ */
+export function parseContestEligibility(
+  {
+    value,
+    row,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly row: ArtifactComparisonRow;
+    readonly path: string;
+  },
+): LaneContestEligibility {
+  /**
+   * Recorded eligibility before fields are read.
+   */
+  const record = requireRecord({
+    value,
+    path,
+  },);
+  requireExactKeys({
+    record,
+    allowed: [
+      'syntax',
+      'sourceText',
+      'archive',
+      'repair',
+      'translate',
+    ],
+    path,
+  },);
+  requireOneOf({
+    value: record.syntax,
+    allowed: ['front-matter',],
+    path: `${path}.syntax`,
+  },);
+  /**
+   * Original metadata stored so deterministic statuses can be recomputed.
+   */
+  const sourceText = requireString({
+    value: record.sourceText,
+    path: `${path}.sourceText`,
+  },);
+  /**
+   * Eligibility recomputed from source, archive, and both lanes.
+   */
+  const derived = frontMatterContestEligibility({
+    sourceText,
+    incumbentText: row.incumbentText,
+    repairText: row.repairText,
+    translateText: row.translateText,
+  },);
+  for (const candidate of ELIGIBILITY_CANDIDATES) {
+    /**
+     * Status artifact claims for this candidate.
+     */
+    const claimed = requireOneOf({
+      value: record[candidate],
+      allowed: [
+        'eligible',
+        'ineligible',
+      ],
+      path: `${path}.${candidate}`,
+    },);
+    if (claimed !== derived[candidate]) {
+      throw new ArtifactParseError({
+        path: `${path}.${candidate}`,
+        reason: `${derived[candidate]}, which deterministic syntax guard derives, rather than ${claimed}`,
+      },);
+    }
+  }
+  return derived;
+}
+
+//endregion Contest eligibility reading
