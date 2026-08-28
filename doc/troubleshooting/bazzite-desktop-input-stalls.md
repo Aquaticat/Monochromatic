@@ -1,10 +1,15 @@
-# Bazzite 44 global input stalls remained unconfirmed; separate Plasma-centered freezes were observed
+# Bazzite 44 global input stall recurred during Snapper cleanup; initiating mechanism remains unknown
 
 ## Status
 
 The original problem is an intermittent episode in which input to every application is delayed.
-No such episode was reproduced during this investigation,
-so its root cause remains unknown.
+A matching episode recurred on 2026-08-28 around 00:40 local time.
+The user reported that all applications were delayed and then recovered,
+followed by a narrower Helium delay.
+Three autonomous probes timed out Plasma while KWin answered normally.
+The episode occurred inside Snapper's 00:39:20 to 00:43:15 snapshot-deletion interval.
+This makes cleanup and deletion the leading trigger hypothesis,
+but does not identify the cross-application blocking mechanism.
 A low-rate observer is running through 2026-08-28 at 04:20:34 local time.
 
 A different episode was captured on 2026-08-27 around 04:25 local time:
@@ -138,16 +143,49 @@ During the later episode around 18:38:
 
 This boundary confirms a Plasma-plus-Helium event rather than an all-application input delay.
 
+During the original-symptom recurrence around 00:40 on 2026-08-28:
+
+- Snapper cleanup started at 00:36:17.
+- A Btrfs qgroup scan completed at 00:39:20.
+- Snapper queried quota and free space,
+  then logged deletion of timeline snapshot 964 at 00:39:20.
+- Plasma missed three 1.5-second probes reported at 00:40:19,
+  00:41:18,
+  and 00:42:17.
+- KWin answered those probes in 5.3 to 5.8 ms.
+- Plasma scheduler runtime and runnable wait deltas were 0.0 ms for each failed probe.
+- The user reported that all applications were delayed and then recovered.
+- The user then reported a narrower Helium delay.
+- Snapper's next free-space query and cleanup completion occurred at 00:43:15.
+- No AMDGPU fault,
+  kernel lockup,
+  memory-pressure interval,
+  or contemporaneous I/O-pressure threshold crossing was captured.
+
+The matching original episode changes the cleanup association from a Plasma-only correlation
+to a leading trigger hypothesis for the user-reported global delay.
+It does not establish whether Btrfs accounting,
+storage locks,
+Snapper synchronization,
+a desktop service,
+or another shared dependency transmitted the delay to applications.
+
 ## Root cause
 
-### Original global-input episode: unknown
+### Original global-input episode: cleanup-associated; initiating mechanism unknown
 
-There is no red-capable reproduction for the original symptom.
-The user-visible event has not coincided with a captured kernel fault,
-compositor delay,
-resource-pressure interval,
-or application stack.
-The investigation therefore cannot assign an original root cause.
+The original symptom now has a timestamped recurrence.
+It coincided with a blocking Snapper cleanup interval and three independent Plasma event-loop failures,
+while KWin remained responsive.
+The same interval had no matching GPU fault,
+kernel lockup,
+memory pressure,
+or observer-wide scheduler delay.
+
+This is enough to justify a reversible cleanup-timer pause as an A/B diagnostic.
+It is not enough to call Snapper or Btrfs the root cause:
+many equivalent deletion cycles completed without a user-visible stall,
+and no capture identifies the dependency that delayed every application.
 
 A direct event-loop watchdog now probes Plasma Shell and KWin every five seconds.
 Its first failure captured both process states and a Plasma stack.
@@ -441,16 +479,28 @@ not a demonstrated call path.
 
 Snapper prints the deletion message immediately before a blocking DBus `DeleteSnapshots` request
 (`client/proxy/commands.cc:277-296`).
-The next cleanup-phase message appears only after that request returns.
-The 18:38 episode's three failed probe starts all fell inside the request from 18:37:22 through 18:41:21.
-The kernel logged its qgroup scan completion at 18:37:22.159,
-just before Snapper submitted the deletion at 18:37:22.189.
+Service stdout alone does not prove that the whole interval until the next cleanup-phase message belongs to that request,
+because quota and free-space DBus calls inside the cleanup loop do not emit helper-phase messages.
+
+The 00:40 recurrence has a tighter boundary.
+`/var/log/snapper.log` recorded the pre-deletion free-space query at 00:39:20,
+the helper immediately logged deletion of snapshot 964,
+and Snapper recorded the loop's next free-space query at 00:43:15.
+The cleanup loop re-evaluates that condition only after `remove` returns
+(`client/cleanup.cc:353-397`),
+so the two queries bracket the synchronous deletion request.
+The kernel logged qgroup scan completion at 00:39:20,
+before this interval.
+The three Plasma failures and the matching all-application delay occurred inside it.
+
 The server path can unmount the snapshot and call Btrfs subvolume deletion
 (`snapper/Snapshot.cc:655-660`,
 `snapper/Btrfs.cc:411-431`,
 and `snapper/BtrfsUtils.cc:221-236`).
-The available logs do not identify which server-side step occupied the request interval
-or how it could block Plasma and Helium selectively.
+A 00:41:18 procfs sample found `systemd-helper` blocked in `poll`,
+Snapper's main thread in a futex wait,
+and its second thread in `clock_nanosleep`.
+That non-attaching sample confirms user-space waiting but does not identify the Btrfs operation or shared application dependency.
 
 No I/O-pressure interval,
 KWin delay,
@@ -471,17 +521,23 @@ Later post-scrub controls did exercise deletion without the encrypted scrub or l
 - The 15:31 cleanup deleted snapshot 964 at 15:34:14.
 - The 16:32 cleanup deleted snapshot 964 at 16:35:12.
 - The 17:33 cleanup deleted snapshot 964 at 17:36:12.
+- The 19:35 through 23:36 cleanups each deleted snapshot 964 without a captured desktop stall.
 
 Neither desktop observer recorded an incident candidate or event-loop stall across those cycles.
 Plasma and KWin DBus heartbeats remained successful,
 and the one-second observer reported no KWin wait accumulation around the deletions.
 These repeated deletion controls prove that deletion is not sufficient to trigger the symptom.
-The 18:38 recurrence nevertheless strengthens evidence for a conditional cleanup interaction
-because every natural Plasma-centered episode followed deletion while cleanup remained active.
-That pattern still does not identify a call path,
-component,
-or causal direction.
-Changing `snapper-cleanup.timer` should be treated as a controlled comparison,
+
+The 00:40 recurrence nevertheless strengthens evidence for a conditional cleanup interaction
+because the original all-application symptom and every natural Plasma-centered episode occurred during deletion
+while cleanup remained active.
+At that time,
+`FREE_LIMIT` was 200 GiB while Snapper measured about 182.6 GiB free.
+The space-aware pass therefore deleted each new hourly timeline snapshot,
+leaving snapshot 963 as the only retained snapshot after cleanup.
+That create-delete cycle explains repeated snapshot number 964 on Snapper 0.13.0,
+but does not identify the cross-application delay mechanism.
+Changing the creation and cleanup timers should be treated as a controlled comparison,
 not a confirmed fix.
 
 ## Environment findings
@@ -869,6 +925,16 @@ The active Panel Colorizer settings directory was removed.
 
 No workaround for the original global-input stalls or the separate panel freeze has been verified.
 
+The leading reversible diagnostic is to pause `snapper-timeline.timer`,
+`snapper-cleanup.timer`,
+and `snapper-boot.timer` together after an active cleanup finishes.
+This would stop the hourly create-delete cycle without deleting the remaining snapshot.
+It has not been applied.
+The tradeoff is loss of new automatic snapshots during the pause and continued space retention by the existing snapshot.
+At the 00:43 cleanup boundary,
+`/var/home` had 183 GiB available and snapshot 963 was the only retained snapshot.
+The timer state and free space must be recorded before the pause and restored or reviewed afterward.
+
 ## Verified local actions
 
 ### Remove Panel Colorizer from every panel
@@ -1095,9 +1161,10 @@ not a verified fix.
 ### Calling Snapper the cause from qgroup warnings alone
 
 The warning and rescans are real,
-but one fully observed cycle had no visible symptom and no KWin delay.
-That is negative evidence against a simple hourly trigger,
-not a complete exclusion.
+but many fully observed cleanup and deletion cycles had no visible symptom and no KWin delay.
+The 00:40 original-symptom recurrence occurred during deletion after its qgroup scan completed.
+This makes the cleanup path the leading trigger hypothesis,
+not proof that qgroup warnings or Snapper itself caused the delay.
 
 ### Claiming the high-rate monitor prevented the bug
 
@@ -1138,23 +1205,28 @@ or Panel Colorizer.
 
 1.  **Is it really upstream's fault?**
     Unknown.
-    There is no captured failing component.
+    The captured episode is associated with Snapper cleanup and Btrfs deletion,
+    but no cross-application blocking path is identified.
 2.  **Can upstream fix it?**
-    Unknown until the failure boundary is identified.
+    Possibly after timer-pause or targeted-tracing evidence separates Snapper,
+    Btrfs,
+    and desktop behavior.
 3.  **Are they supporting this use case?**
-    The desktop and input path are supported,
-    but the responsible project is unknown.
+    Snapper supports automatic Btrfs snapshot cleanup,
+    and the desktop and input paths are supported.
 4.  **Would the repository welcome a contribution?**
-    No repository can be selected yet.
+    Snapper issue 337 previously accepted cleanup-time performance reports,
+    but the responsible project remains unsettled here.
 5.  **Will they likely fix it?**
-    Unknown without a project or reproduction.
+    Unknown without the blocking path or a repeatable trigger.
 6.  **Has a minimal compatible fix been prototyped?**
     No.
-    There is no diagnosed call path to fix.
+    The proposed timer pause is a diagnostic workaround,
+    not a software fix.
 
 Decision:
-do not file.
-There is no responsible upstream or reproducible report yet.
+do not file yet.
+Preserve the 00:40 incident and test the reversible timer pause before assigning an upstream.
 
 ### Panel Colorizer
 
