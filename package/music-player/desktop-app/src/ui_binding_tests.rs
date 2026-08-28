@@ -377,19 +377,30 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     for _ in 0..3 {
         mock_elapsed_time(std::time::Duration::from_millis(1));
     }
+    let directly_selected_first_label = fold
+        .query_descendants()
+        .match_predicate(|element| {
+            element.accessible_label().is_some_and(|label| label == "Alpha Orchestra")
+        })
+        .find_first()
+        .expect("direct backward selection reveals first Chromium label");
+    assert!(
+        directly_selected_first_label.absolute_position().x >= fold_left + 56.0,
+        "directly selected first tab moves after disclosure gutter",
+    );
     app.set_selected_page(7);
     for _ in 0..3 {
         mock_elapsed_time(std::time::Duration::from_millis(1));
     }
-    let directly_selected_final_tab = fold
+    let directly_selected_final_label = fold
         .query_descendants()
-        .match_type_name("ChromiumTab")
-        .find_all()
-        .last()
-        .cloned()
-        .expect("direct selection retains final Chromium tab");
+        .match_predicate(|element| {
+            element.accessible_label().is_some_and(|label| label == "Hotel Mastering")
+        })
+        .find_first()
+        .expect("direct forward selection reveals final Chromium label");
     assert!(
-        directly_selected_final_tab.absolute_position().x + directly_selected_final_tab.size().width <= fold_right,
+        directly_selected_final_label.absolute_position().x + directly_selected_final_label.size().width <= fold_right,
         "directly selected hidden tab is revealed inside collapsed strip",
     );
 
