@@ -303,6 +303,8 @@ export type ConsolidationSettlement = {
  *
  * @param polishConfig - final body polish roles and document guard facts
  *
+ * @param standingMayShip - whether unchanged baseline has prior endorsement
+ *
  * @param signal - cancellation for the whole settlement
  *
  * @param perCallTimeoutMs - bound on any single exchange
@@ -330,6 +332,7 @@ export async function settleConsolidation(
     lineStructured,
     sliceIndex = 0,
     polishConfig,
+    standingMayShip = true,
     signal,
     perCallTimeoutMs,
     l,
@@ -344,6 +347,7 @@ export async function settleConsolidation(
     readonly lineStructured: boolean;
     readonly sliceIndex?: number;
     readonly polishConfig?: ConsolidationPolishConfig;
+    readonly standingMayShip?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -615,6 +619,7 @@ export async function settleConsolidation(
       : { identityContext: subject.identityContext, }),
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
+    eligible: (terminal === 'consolidated') || standingMayShip,
     signal,
     perCallTimeoutMs,
     l: sl,

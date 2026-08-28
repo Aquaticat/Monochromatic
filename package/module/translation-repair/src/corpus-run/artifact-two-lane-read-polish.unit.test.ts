@@ -83,6 +83,41 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES CHANGED POLISH WITHOUT FINAL GATE',
+      fn: async () => {
+        /**
+         * Settled fields except required changed-polish gate.
+         */
+        const {
+          gate: unusedGate,
+          ...withoutGate
+        } = SETTLED;
+        expect(unusedGate,).not.toBeUndefined();
+        expect(() => parseConsolidationPolish({
+          value: withoutGate,
+          path: 'artifact.consolidation.slices[0].polish',
+        },),).toThrow(ArtifactParseError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES GATE CHOICE inconsistent with shipping role',
+      fn: async () => {
+        expect(() => parseConsolidationPolish({
+          value: {
+            ...SETTLED,
+            gate: {
+              ...SETTLED.gate,
+              choice: 'polished',
+              ships: 'base',
+            },
+          },
+          path: 'artifact.consolidation.slices[0].polish',
+        },),).toThrow(ArtifactParseError,);
+      },
+    },),
+
+    it({
       name: 'REFUSES GATE USABLE COUNT disagreeing with ballots',
       fn: async () => {
         expect(() => parseConsolidationPolish({

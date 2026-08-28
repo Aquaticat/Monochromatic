@@ -92,10 +92,12 @@ export function parseConsolidationPolish(
       ],
       path,
     },);
-    if ((record.reason !== 'front-matter') && (record.reason !== 'not-configured')) {
+    if ((record.reason !== 'front-matter')
+      && (record.reason !== 'not-configured')
+      && (record.reason !== 'unsafe-baseline')) {
       throw new ArtifactParseError({
         path: `${path}.reason`,
-        reason: 'one of front-matter, not-configured',
+        reason: 'one of front-matter, not-configured, unsafe-baseline',
       },);
     }
     return {
@@ -159,6 +161,54 @@ export function parseConsolidationPolish(
       reason: 'whether final text differs from baseText',
     },);
   }
+  /**
+   * Optional final gate as explicit presence reading.
+   */
+  const gateReading = (record.gate === undefined)
+    ? { kind: 'absent', } as const
+    : {
+      kind: 'present',
+      gate: parsePolishGate({
+        value: record.gate,
+        path: `${path}.gate`,
+      },),
+    } as const;
+  if (changed && (gateReading.kind === 'absent')) {
+    throw new ArtifactParseError({
+      path: `${path}.gate`,
+      reason: 'final gate approving every changed polish',
+    },);
+  }
+  if (gateReading.kind === 'present') {
+    /**
+     * Parsed final gate under present reading.
+     */
+    const { gate, } = gateReading;
+    /**
+     * Shipping role implied by panel choice under conservative gate rule.
+     */
+    const expectedShips = (gate.choice === 'polished')
+      ? 'polished'
+      : 'base';
+    if (gate.ships !== expectedShips) {
+      throw new ArtifactParseError({
+        path: `${path}.gate.ships`,
+        reason: `${expectedShips}, derived from gate choice`,
+      },);
+    }
+    if (changed && ((gate.ships !== 'polished') || (text !== proposedText))) {
+      throw new ArtifactParseError({
+        path,
+        reason: 'changed polish whose gate ships polished proposedText',
+      },);
+    }
+    if ((!changed) && (gate.ships === 'polished')) {
+      throw new ArtifactParseError({
+        path,
+        reason: 'unchanged polish whose gate keeps base',
+      },);
+    }
+  }
   return {
     kind: 'settled',
     baseText,
@@ -177,14 +227,7 @@ export function parseConsolidationPolish(
       value: record.roundCount,
       path: `${path}.roundCount`,
     },),
-    ...((record.gate === undefined)
-      ? {}
-      : {
-        gate: parsePolishGate({
-          value: record.gate,
-          path: `${path}.gate`,
-        },),
-      }),
+    ...((gateReading.kind === 'present') ? { gate: gateReading.gate, } : {}),
     findings: parseStringList({
       value: record.findings,
       path: `${path}.findings`,

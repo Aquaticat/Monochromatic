@@ -41,6 +41,8 @@ const TRANSLATE = 'A cat naps.';
  *
  * @param consolidated - whether third rendering settled fresh wording
  *
+ * @param polished - whether polish attempts to rewrite unchanged baseline
+ *
  * @returns Source accepted by would-ship reader
  *
  * @example
@@ -52,9 +54,11 @@ function sourceWith(
   {
     verdict,
     consolidated = false,
+    polished = false,
   }: {
     readonly verdict: ArtifactContestVerdict;
     readonly consolidated?: boolean;
+    readonly polished?: boolean;
   },
 ): WouldShipSource {
   return {
@@ -90,6 +94,29 @@ function sourceWith(
           rewrapped: false,
           demoted: false,
           verdicts: [],
+        },],
+      }
+      : polished
+      ? {
+        kind: 'settled',
+        slices: [{
+          sliceIndex: 0,
+          terminal: 'gate-kept-standing',
+          shipped: { kind: 'unchanged', },
+          rewrapped: false,
+          demoted: false,
+          verdicts: [],
+          polish: {
+            kind: 'settled',
+            baseText: ARCHIVE,
+            proposedText: 'The cat rested.',
+            text: 'The cat rested.',
+            changed: true,
+            refinersHeard: ['hf:zai-org/GLM-5.2',],
+            contributors: ['hf:zai-org/GLM-5.2',],
+            roundCount: 1,
+            findings: [],
+          },
         },],
       }
       : { kind: 'not-run', },
@@ -146,6 +173,20 @@ await describe({
           assertFinalSelectionSettled({
             entryId: 'Cat',
             artifact: sourceWith({ verdict: { kind: 'quorum-not-met', }, }),
+          },);
+        },).toThrow(UnsettledFinalSelectionError,);
+      },
+    },),
+    it({
+      name: 'REFUSES POLISH BYPASS over unendorsed archive baseline',
+      fn: async () => {
+        expect(function refusePolishedFallback(): void {
+          assertFinalSelectionSettled({
+            entryId: 'Cat',
+            artifact: sourceWith({
+              verdict: { kind: 'settled-neither', archive: 'declined', },
+              polished: true,
+            }),
           },);
         },).toThrow(UnsettledFinalSelectionError,);
       },

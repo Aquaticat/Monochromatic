@@ -118,6 +118,11 @@ export function assertFinalSelectionSettled(
     : [];
 
   /**
+   * Consolidation and optional polish records final reading derives from.
+   */
+  const { consolidation, } = artifact;
+
+  /**
    * Slices where archive would stand despite no contest endorsement.
    */
   const unresolved = contests.flatMap(function unresolvedArchive(contest,): readonly number[] {
@@ -127,6 +132,28 @@ export function assertFinalSelectionSettled(
     const reading = readings.get(contest.sliceIndex,);
     if (reading?.kind !== 'wording')
       return [];
+    if (reading.decidedBy === 'polish') {
+      /**
+       * Initial consolidation result polish rewrote, when stage recorded one.
+       */
+      const consolidated = (consolidation.kind === 'settled')
+        ? consolidation.slices
+          .find(function namesSlice(slice,): boolean {
+            return slice.sliceIndex === contest.sliceIndex;
+          },)
+        : undefined;
+      if (consolidated?.terminal === 'consolidated')
+        return [];
+      /**
+       * Contest verdict deciding whether baseline had prior endorsement.
+       */
+      const { verdict, } = contest;
+      if (verdict.kind === 'lane-won')
+        return [];
+      if (archiveWasEndorsed({ verdict, },))
+        return [];
+      return [contest.sliceIndex,];
+    }
     if (reading.decidedBy !== 'archive')
       return [];
     if (archiveWasEndorsed({ verdict: contest.verdict, },))

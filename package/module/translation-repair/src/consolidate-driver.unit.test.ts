@@ -35,6 +35,8 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type ArtifactContestSlice,
   consolidateDocument,
+  consolidateRunShape,
+  consolidateSliceKey,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
   consolidationWorthResuming,
@@ -540,6 +542,54 @@ await describe({
 
         expect(slices.length,).toBe(0,);
         expect(written.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'RESUMES AUDITABLE CHANGED POLISH without rebuying any stage',
+      fn: async () => {
+        /**
+         * Exact first-slice question driver derives.
+         */
+        const key = consolidateSliceKey({
+          runShape: consolidateRunShape({ modelIds: ROSTER, },),
+          sourceText: '原文0',
+          incumbentText: 'archive wording for slice 0',
+          repairText: 'repair wording for slice 0',
+          translateText: 'translate wording for slice 0',
+          standingText: 'repair wording for slice 0',
+          ballots: [],
+          lineStructured: false,
+          pictureContext: '',
+          neighbouringSourceText: '',
+          neighbouringIncumbentText: '',
+        },);
+        /**
+         * Cached settlement whose final polish replaced approved base.
+         */
+        const settled: ConsolidationSettlement = {
+          ...settlementReaching({ terminal: 'gate-kept-standing', },),
+          polish: {
+            kind: 'settled',
+            baseText: 'repair wording for slice 0',
+            proposedText: 'polished wording for slice 0',
+            text: 'polished wording for slice 0',
+            changed: true,
+            refinersHeard: ['hf:zai-org/GLM-5.2',],
+            contributors: ['hf:zai-org/GLM-5.2',],
+            rounds: [],
+            findings: [],
+          },
+        };
+        const resumed = await driveWith({
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+          resumed: new Map<string, ConsolidationSettlement>([[key, settled,],]),
+        },);
+        expect(resumed.written,).toEqual([],);
+        expect(resumed.slices[0]?.polish?.kind,).toBe('settled',);
+        expect(resumed.slices[0]?.polish?.kind === 'settled'
+          ? resumed.slices[0].polish.changed
+          : false,).toBe(true,);
       },
     },),
 

@@ -448,6 +448,7 @@ export async function consolidateDocument(
             lineStructured,
             sliceIndex: row.sliceIndex,
             ...((polishConfig === undefined) ? {} : { polishConfig, }),
+            standingMayShip,
             signal,
             perCallTimeoutMs,
             l: dl,

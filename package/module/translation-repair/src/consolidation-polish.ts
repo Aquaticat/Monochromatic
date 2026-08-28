@@ -69,7 +69,7 @@ export type ConsolidationPolish =
     /**
      * Why no body polish was bought.
      */
-    readonly reason: 'front-matter' | 'not-configured';
+    readonly reason: 'front-matter' | 'not-configured' | 'unsafe-baseline';
   }
   | {
     /**
@@ -144,6 +144,8 @@ export type ConsolidationPolish =
  *
  * @param config - model roles and document-wide guard facts
  *
+ * @param eligible - whether approved base may cross publication boundary
+ *
  * @param signal - caller cancellation
  *
  * @param perCallTimeoutMs - per-exchange ceiling
@@ -168,6 +170,7 @@ export async function polishConsolidation(
     identityContext,
     sliceIndex,
     config,
+    eligible = true,
     signal,
     perCallTimeoutMs,
     l,
@@ -181,6 +184,7 @@ export async function polishConsolidation(
     readonly identityContext?: string;
     readonly sliceIndex: number;
     readonly config?: ConsolidationPolishConfig;
+    readonly eligible?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -192,6 +196,12 @@ export async function polishConsolidation(
       reason: 'front-matter',
     };
   }
+  if (!eligible) {
+    return {
+      kind: 'not-run',
+      reason: 'unsafe-baseline',
+    };
+  }
   if (config === undefined) {
     return {
       kind: 'not-run',
@@ -201,9 +211,23 @@ export async function polishConsolidation(
   /**
    * Paragraph envelopes eligible for idiomatic rewrite.
    */
-  const { envelopes, } = deriveRefinableEnvelopes({
+  const {
+    envelopes,
+    definitions: baseDefinitions,
+  } = deriveRefinableEnvelopes({
     document: parseDocument({ text: baseText, },),
   },);
+  /**
+   * Archive-wide definitions plus any changed definitions in approved base.
+   */
+  const definitions = [
+    config.definitions,
+    baseDefinitions,
+  ]
+    .filter(function present(value,): boolean {
+      return value !== '';
+    },)
+    .join('\n',);
   /**
    * Rewriter slate settlement over approved base.
    */
@@ -214,7 +238,7 @@ export async function polishConsolidation(
     sourceText,
     repairedText: baseText,
     envelopes,
-    definitions: config.definitions,
+    definitions,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     declaredNames: config.declaredNames,
     sliceIndex,

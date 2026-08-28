@@ -34,6 +34,8 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * @param polishConfig - final body polish roles and guard facts
  *
+ * @param standingMayShip - whether unchanged baseline has prior endorsement
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -70,6 +72,7 @@ export async function buyConsolidationSlice(
     lineStructured,
     sliceIndex,
     polishConfig,
+    standingMayShip = true,
     signal,
     perCallTimeoutMs,
     l,
@@ -81,6 +84,7 @@ export async function buyConsolidationSlice(
     readonly lineStructured: boolean;
     readonly sliceIndex: number;
     readonly polishConfig?: ConsolidationPolishConfig;
+    readonly standingMayShip?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -103,6 +107,7 @@ export async function buyConsolidationSlice(
       lineStructured,
       sliceIndex,
       ...((polishConfig === undefined) ? {} : { polishConfig, }),
+      standingMayShip,
       signal,
       perCallTimeoutMs,
       l,
@@ -133,6 +138,7 @@ export async function buyConsolidationSlice(
     lineStructured,
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
+    standingMayShip,
     signal,
     perCallTimeoutMs,
     l,

@@ -151,6 +151,31 @@ const FRESH = 'The cat naps on the windowsill.';
 const BIRD_FRESH = 'A bird sits on the windowsill.';
 
 /**
+ * Literal consolidation paragraph long enough for naturalness stage.
+ */
+const POLISH_BASE_PARAGRAPH = 'The cat faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
+
+/**
+ * Idiomatic final paragraph approved by polish gate.
+ */
+const POLISH_FINAL_PARAGRAPH = 'The cat maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
+
+/**
+ * Stable phrase identifying literal consolidation after semantic wrapping.
+ */
+const POLISH_BASE_NEEDLE = 'faced life proactively';
+
+/**
+ * Stable phrase identifying idiomatic polish after semantic wrapping.
+ */
+const POLISH_FINAL_NEEDLE = 'maintained a positive outlook on life';
+
+/**
+ * Complete consolidated slice before naturalness stage.
+ */
+const POLISH_BASE = `## Section one\n\n${POLISH_BASE_PARAGRAPH}`;
+
+/**
  * Original document: two sections, each one paragraph.
  */
 const SOURCE_TEXT = `## 第一节
@@ -321,7 +346,9 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
      */
     const index = Math.trunc(Number(heading,),);
     if (Number.isInteger(index,)
-      && (block.includes(FRESH,)
+      && (block.includes(POLISH_FINAL_NEEDLE,)
+        || block.includes(POLISH_BASE_NEEDLE,)
+        || block.includes(FRESH,)
         || block.includes(BIRD_FRESH,)
         || block.includes(GAP_FRESH,)
         || block.includes(FRONT_MATTER_FRESH,)))
@@ -344,6 +371,10 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
  *
  * @param coverageScript - whether coverage roster answers absent or loses voice
  *
+ * @param consolidation - whether translation schema belongs to third rendering
+ *
+ * @param polishScript - whether final naturalness rewrite is exercised
+ *
  * @returns Wire value for that stage
  *
  * @throws {@link Error} when a stage this script does not serve asks
@@ -358,10 +389,14 @@ function replyFor(
     schema,
     content,
     coverageScript,
+    consolidation = false,
+    polishScript = false,
   }: {
     readonly schema: string;
     readonly content: string;
     readonly coverageScript: CoverageScript;
+    readonly consolidation?: boolean;
+    readonly polishScript?: boolean;
   },
 ): unknown {
   // THE PAIRING ROUND RUNS BEFORE EITHER LANE, so the script has to serve it or
@@ -385,10 +420,23 @@ function replyFor(
   }
   if (schema === 'critic_report')
     return { issues: [], };
-  if (schema === 'refine_report')
-    return { rewrites: [], };
-  if (schema === 'translation_report')
+  if (schema === 'refine_report') {
+    return (polishScript && content.includes(POLISH_BASE_NEEDLE,))
+      ? {
+        rewrites: [{
+          paragraph: 1,
+          newText: POLISH_FINAL_PARAGRAPH,
+        },],
+      }
+      : { rewrites: [], };
+  }
+  if (schema === 'translation_report') {
+    if (polishScript
+      && (consolidation || content.includes('CANDIDATE "repair"',))
+      && content.includes('第一节',))
+      return { translation: POLISH_BASE, };
     return { translation: renderingFor({ content, },), };
+  }
   if (schema === 'candidate_ballot') {
     return {
       best: pickCandidate({ content, },),
@@ -414,7 +462,15 @@ function replyFor(
       choice: 'consolidated',
       unsupported: [],
       dropped: [],
-      reason: 'scripted metadata gate',
+      reason: 'scripted consolidation gate',
+    };
+  }
+  if (schema === 'consolidation_polish_gate') {
+    return {
+      choice: 'polished',
+      unsupported: [],
+      dropped: [],
+      reason: 'scripted fidelity-first naturalness gate',
     };
   }
   throw new Error(`no script for ${schema}`,);
@@ -432,6 +488,8 @@ function replyFor(
  *
  * @param coverageScript - whether coverage roster answers or loses every voice
  *
+ * @param polishScript - whether final naturalness rewrite is exercised
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -445,11 +503,13 @@ function entryClient(
     failOnSchema,
     activity,
     coverageScript = 'lost',
+    polishScript = false,
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
     readonly activity?: PassConcurrency;
     readonly coverageScript?: CoverageScript;
+    readonly polishScript?: boolean;
   },
 ): SyntheticClient {
   return {
@@ -516,6 +576,8 @@ function entryClient(
         schema,
         content,
         coverageScript,
+        consolidation: isConsolidation,
+        polishScript,
       },);
       if (!request.validate(value,))
         throw new Error(`scripted ${schema} failed the wire guard`,);
@@ -926,6 +988,62 @@ await describe({
         // lane's translators each ran.
         expect(served.includes('critic_report',),).toBe(true,);
         expect(served.includes('translation_report',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'PUBLISHES CHANGED FINAL POLISH through artifact parser and page assembly',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         * Schemas reached by full polished pass.
+         */
+        const served: string[] = [];
+        await settleEntry({
+          client: entryClient({
+            served,
+            polishScript: true,
+          },),
+          entry: ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+        /**
+         * Serialized artifact through production parser.
+         */
+        const artifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(dirs.artifactsDir, 'CatEntry1.json',),
+            'utf8',
+          ),),
+        },);
+        if (artifact.consolidation.kind !== 'settled')
+          throw new Error('polished pass did not record consolidation',);
+        /**
+         * Changed polish record for first slice.
+         */
+        const polish = artifact.consolidation.slices
+          .find(function firstSlice(slice,): boolean {
+            return slice.sliceIndex === 0;
+          },)
+          ?.polish;
+        expect(polish?.kind,).toBe('settled',);
+        expect(polish?.kind === 'settled' ? polish.changed : false,).toBe(true,);
+        expect(polish?.kind === 'settled' ? polish.text : '',).toContain(POLISH_FINAL_PARAGRAPH,);
+        /**
+         * Page persisted from parsed decision stack.
+         */
+        const page = await readFile(fixedPagePath({
+          publishDir: dirs.publishDir,
+          entryId: ENTRY.id,
+        },), 'utf8',);
+        expect(page,).toContain(POLISH_FINAL_PARAGRAPH,);
+        expect(page,).not.toContain(POLISH_BASE_PARAGRAPH,);
+        expect(served,).toContain('consolidation_polish_gate',);
       },
     },),
     it({

@@ -134,7 +134,7 @@ export type ArtifactConsolidationPolish =
     /**
      * Why stage was absent.
      */
-    readonly reason: 'front-matter' | 'not-configured';
+    readonly reason: 'front-matter' | 'not-configured' | 'unsafe-baseline';
   }
   | {
     /**
