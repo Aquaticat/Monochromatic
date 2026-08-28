@@ -76,6 +76,24 @@ await describe({
     },),
 
     it({
+      name: 'SEPARATES FINAL POLISH CONFIGURATION from consolidation without naturalness stage',
+      fn: async () => {
+        expect(consolidateRunShape({ modelIds: ROSTER, },),).not.toBe(
+          consolidateRunShape({
+            modelIds: ROSTER,
+            polishConfig: {
+              refinerModelIds: [ROSTER[0],],
+              judgeModelIds: ROSTER,
+              gateModelIds: ROSTER,
+              declaredNames: ['Mittens',],
+              definitions: '',
+            },
+          },),
+        );
+      },
+    },),
+
+    it({
       name: 'SEPARATES FRONT MATTER POLICY from identical Markdown consolidation text',
       fn: async () => {
         expect(consolidateSliceKey(SLICE,),).not.toBe(
@@ -202,11 +220,11 @@ await describe({
     it({
       name: 'PINS THE KEY TO A LITERAL, so a change to this material has to be made on purpose. The value '
         + 'moved on 2026-08-22 for line-structure judging and on 2026-08-28 for target-authoritative '
-        + 'metadata contributor spelling. Neither policy is a field here, so comparing two calls would '
-        + 'not notice a stale settlement, which is why this pins a value',
+        + 'metadata contributor spelling, then for final body polish. These policies are not text fields, '
+        + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '60082c36d7fe1ed5130eb3b98bbf18508a8ca511ac4d4f8ee54b6be55d9b3448',
+          'cb245dc164a5d16d670b703cdadaf85b8e34d77dff260eb01c643406ad0c7f74',
         );
       },
     },),

@@ -10,14 +10,10 @@ import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
-import { sliceNeighbourContexts, } from '../fidelity-window.ts';
 import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
-import { slicePictureContexts, } from '../slice-pictures.ts';
 import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
-import { consolidateDocument, } from '../consolidate-driver.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
-import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import type {
   CorpusPair,
@@ -25,6 +21,7 @@ import type {
 } from './pass-entry-contract.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
 import { passArchiveText, } from './pass-archive.ts';
+import { runPassConsolidation, } from './pass-consolidate.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
 import { persistSettledEntry, } from './pass-entry-persist.ts';
@@ -369,48 +366,18 @@ async function runEntryPipeline(
     },);
 
     /**
-     * What the roster settled at every slice the contest left a standing text
-     * at, which is the third rendering: a wording neither lane produced.
-     *
-     * BOUNDED BY THE ENTRY'S OWN SIGNAL and nothing narrower. The stage buys a
-     * slate, one judging and one gate per slice, each already bounded by
-     * `RUN_PER_CALL_TIMEOUT_MS` and by the client's stream guards. Each stable
-     * settlement persists when it finishes, while a caller abort blocks that
-     * write; under overlap, completion and persistence need not follow slice
-     * order. A separate per-settlement ceiling would cut a round the per-call
-     * bound already cuts and cost bought work. The entry ceiling is what stops
-     * a document that is going nowhere.
+     * Third rendering and final naturalness decisions for contested slices.
      */
-    const consolidateSlices = await consolidateDocument({
+    const consolidateSlices = await runPassConsolidation({
       client,
+      prepared,
       projected,
       contests: contestSlices,
-      modelIds: RUN_ROSTER,
       frontMatterSlices,
-      lineStructuredSlices: prepared.lineStructuredSliceIndices,
-      // THE SAME WINDOW THE TRANSLATE LANE WAS SHOWN, computed from the same
-      // slices and the same readings. A producer asked to better a translation
-      // should not be shown less of the passage than its translator was, and
-      // until today it was shown none of it: the subject field existed, the
-      // sheet rendered it, and no caller ever wrote it.
-      pictureContextBySlice: slicePictureContexts({
-        slices: prepared.slices,
-        readings: pictureReadings,
-      },),
-      // THE WINDOW THE TRANSLATE LANE'S JUDGES GET, computed from the same
-      // slices, for the consolidation's judges. Built here rather than in the
-      // driver for the reason the picture map is: a window is POSITIONAL, found
-      // by walking the prepared array, and the driver holds no prepared slices.
-      neighbourContextBySlice: sliceNeighbourContexts({ slices: prepared.slices, },),
-      ...((prepared.identityContext === undefined)
-        ? {}
-        : { identityContext: prepared.identityContext, }),
-      cache: await openConsolidateCache({
-        dir: entryCacheDir,
-        generation: pipelineDigest,
-      },),
+      pictureReadings,
+      entryCacheDir,
+      pipelineDigest,
       signal: deadline.callSignal,
-      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       overlap,
       l: tagged({ tag: entry.id, },),
     },);

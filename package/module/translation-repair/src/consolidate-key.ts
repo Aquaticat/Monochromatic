@@ -1,4 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import { hashContent, } from './document-node.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -25,8 +26,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 3 adds target-authoritative contributor spelling to producer,
  * selector, validity floor and gate. Version 2 settlements did not answer it.
+ *
+ * VERSION 4 adds body naturalness polish after fidelity gate. Earlier
+ * settlements never bought that stage and cannot resume as though they did.
  */
-export const CONSOLIDATE_CACHE_VERSION = 3;
+export const CONSOLIDATE_CACHE_VERSION = 4;
 
 /**
  * What a line-structured slice appends to its key material.
@@ -86,6 +90,8 @@ const NEIGHBOURING_INCUMBENT_KEY_LABEL = 'neighbouring-incumbent';
  *
  * @param identityContext - names and handles both documents declare
  *
+ * @param polishConfig - naturalness roles and document guard facts
+ *
  * @returns Stable string for the key
  *
  * @example
@@ -97,14 +103,25 @@ export function consolidateRunShape(
   {
     modelIds,
     identityContext,
+    polishConfig,
   }: {
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly polishConfig?: ConsolidationPolishConfig;
   },
 ): string {
   return JSON.stringify([
     modelIds,
     identityContext ?? '',
+    ...((polishConfig === undefined)
+      ? []
+      : [
+        polishConfig.refinerModelIds,
+        polishConfig.judgeModelIds,
+        polishConfig.gateModelIds,
+        polishConfig.declaredNames,
+        polishConfig.definitions,
+      ]),
   ],);
 }
 

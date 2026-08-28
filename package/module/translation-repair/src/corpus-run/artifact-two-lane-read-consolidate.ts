@@ -2,21 +2,14 @@ import { requireExactKeys, } from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
   requireArray,
-  requireBoolean,
-  requireCount,
   requireRecord,
 } from '../artifact-guard.ts';
 import type {
   ArtifactConsolidateSlice,
-  ArtifactConsolidationTerminal,
   ArtifactConsolidation,
 } from './artifact-two-lane-consolidate.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
-import {
-  parseGateBallot,
-  parseShipped,
-  parseVerdict,
-} from './artifact-two-lane-read-consolidate-parts.ts';
+import { parseConsolidateSlice, } from './artifact-two-lane-read-consolidate-slice.ts';
 
 import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
@@ -34,26 +27,6 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 // text on exactly the consolidated terminal. The first two are checked against
 // the contest the same artifact records, the way the contest itself is checked
 // against the comparison; the third is checked per slice.
-
-/**
- * Ways a settlement can leave the stage, as an artifact may name them.
- */
-const TERMINAL_NAMES: readonly ArtifactConsolidationTerminal[] = [
-  'incumbent-only',
-  'no-standing-text',
-  'slate-endorsed-standing',
-  'slate-unjudged-standing',
-  'slate-declined-standing',
-
-  // RETIRED, AND STILL READ. Artifacts outlive pipeline digests, and 11 rows
-  // across four settled entries carry this spelling for a state that could be
-  // any of the three above. None can be told apart after the fact, because no
-  // artifact ever recorded the judged round beside it.
-  'slate-kept-standing',
-  'gate-kept-standing',
-  'wrap-erased-difference',
-  'consolidated',
-];
 
 /**
  * What an artifact says about the third rendering over its document.
@@ -77,204 +50,6 @@ export type ParsedConsolidation =
      */
     readonly kind: 'unrecorded';
   };
-
-/**
- * Reads what the gate settled at one slice, or that it was never asked.
- *
- * @param value - gate field as the slice carries it
- *
- * @param path - dotted path for error messages
- *
- * @returns What the gate settled, or a stated absence
- *
- * @throws {@link ArtifactParseError} when the field is the wrong shape or its
- * usable count disagrees with the ballots beside it
- *
- * @example
- * ```ts
- * const gate = parseGate({ value: record.gate, path, },);
- * ```
- */
-function parseGate(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): ArtifactConsolidateSlice['gate'] {
-  /**
-   * Gate field as a record.
-   */
-  const record = requireRecord({
-    value,
-    path,
-  },);
-  if (record.kind === 'not-asked') {
-    requireExactKeys({
-      record,
-      allowed: ['kind',],
-      path,
-    },);
-    return { kind: 'not-asked', };
-  }
-  if (record.kind !== 'asked') {
-    throw new ArtifactParseError({
-      path: `${path}.kind`,
-      reason: 'one of asked, not-asked',
-    },);
-  }
-  requireExactKeys({
-    record,
-    allowed: [
-      'kind',
-      'ballots',
-      'usable',
-    ],
-    path,
-  },);
-
-  /**
-   * Every ballot the gate could read, in the order it recorded them.
-   */
-  const ballots = requireArray({
-    value: record.ballots,
-    path: `${path}.ballots`,
-  },)
-    .map(function readOne(
-      entry,
-      at,
-    ) {
-      return parseGateBallot({
-        value: entry,
-        path: `${path}.ballots[${String(at,)}]`,
-      },);
-    },);
-
-  /**
-   * Voices the gate counted, which the producer sets to the ballot count.
-   */
-  const usable = requireCount({
-    value: record.usable,
-    path: `${path}.usable`,
-  },);
-  if (usable !== ballots.length) {
-    throw new ArtifactParseError({
-      path: `${path}.usable`,
-      reason: `${String(ballots.length,)}, matching the ballots recorded beside it`,
-    },);
-  }
-  return {
-    kind: 'asked',
-    ballots,
-    usable,
-  };
-}
-
-/**
- * Reads one consolidated slice.
- *
- * @param value - slice as the artifact carries it
- *
- * @param path - dotted path for error messages
- *
- * @param keys - field spellings this artifact's generation uses, so an older
- * file is read by its own names rather than by today's
- *
- * @returns Slice this version names
- *
- * @throws {@link ArtifactParseError} when a field is missing, names a terminal
- * this version does not know, or disagrees with the terminal about whether the
- * slice ships anything
- *
- * @example
- * ```ts
- * const slice = parseConsolidateSlice({ value: entry, path, },);
- * ```
- */
-function parseConsolidateSlice(
-  {
-    value,
-    path,
-    keys,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-    readonly keys: ArtifactKeyVocabulary;
-  },
-): ArtifactConsolidateSlice {
-  /**
-   * Slice as a record.
-   */
-  const record = requireRecord({
-    value,
-    path,
-  },);
-  requireExactKeys({
-    record,
-    allowed: [
-      keys.sliceIndex,
-      'terminal',
-      'shipped',
-      'rewrapped',
-      'demoted',
-      'verdicts',
-      'gate',
-    ],
-    path,
-  },);
-
-  /**
-   * How this slice left the stage, which decides whether it ships anything.
-   */
-  const terminal = TERMINAL_NAMES.find(function matches(known,): boolean {
-    return known === record.terminal;
-  },);
-  if (terminal === undefined) {
-    throw new ArtifactParseError({
-      path: `${path}.terminal`,
-      reason: `one of ${TERMINAL_NAMES.join(', ',)}`,
-    },);
-  }
-  return {
-    sliceIndex: requireCount({
-      value: record[keys.sliceIndex],
-      path: `${path}.${keys.sliceIndex}`,
-    },),
-    terminal,
-    shipped: parseShipped({
-      value: record.shipped,
-      terminal,
-      path: `${path}.shipped`,
-    },),
-    rewrapped: requireBoolean({
-      value: record.rewrapped,
-      path: `${path}.rewrapped`,
-    },),
-    demoted: requireBoolean({
-      value: record.demoted,
-      path: `${path}.demoted`,
-    },),
-    verdicts: requireArray({
-      value: record.verdicts,
-      path: `${path}.verdicts`,
-    },)
-      .map(function readOne(
-        entry,
-        at,
-      ) {
-        return parseVerdict({
-          value: entry,
-          path: `${path}.verdicts[${String(at,)}]`,
-        },);
-      },),
-    gate: parseGate({
-      value: record.gate,
-      path: `${path}.gate`,
-    },),
-  };
-}
 
 /**
  * Refuses a settled stage that does not answer exactly the slices the contest
@@ -360,6 +135,8 @@ function assertConsolidationCoversContest(
  * @param keys - field spellings this artifact's generation uses, so an older
  * file is read by its own names rather than by today's
  *
+ * @param polishRequired - whether generation records final body polish
+ *
  * @returns What the stage settled, that it did not run, or that this artifact
  * predates the field
  *
@@ -378,15 +155,24 @@ export function parseConsolidation(
     laneSelection,
     path,
     keys,
+    polishRequired = false,
   }: {
     readonly value: unknown;
     readonly laneSelection: ArtifactLaneSelection;
     readonly path: string;
     readonly keys: ArtifactKeyVocabulary;
+    readonly polishRequired?: boolean;
   },
 ): ParsedConsolidation {
-  if (value === undefined)
+  if (value === undefined) {
+    if (polishRequired) {
+      throw new ArtifactParseError({
+        path,
+        reason: 'recorded consolidation with generation-six polish decisions',
+      },);
+    }
     return { kind: 'unrecorded', };
+  }
 
   /**
    * Consolidation field as a record.
@@ -433,6 +219,7 @@ export function parseConsolidation(
         value: entry,
         path: `${path}.slices[${String(at,)}]`,
         keys,
+        polishRequired,
       },);
     },);
 

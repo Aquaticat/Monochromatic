@@ -13,6 +13,7 @@ export {
   parseConsolidation,
   type ParsedConsolidation,
 } from './corpus-run/artifact-two-lane-read-consolidate.ts';
+export { parseConsolidationPolish, } from './corpus-run/artifact-two-lane-read-polish.ts';
 export {
   parseGateBallot,
   parseShipped,

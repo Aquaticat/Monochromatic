@@ -36,6 +36,11 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
  */
+export const ARTIFACT_SCHEMA_VERSION_V6 = 6;
+
+/**
+ * Generation before final post-consolidation body polish became auditable.
+ */
 export const ARTIFACT_SCHEMA_VERSION_V5 = 5;
 
 /**
@@ -91,6 +96,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V3,
   ARTIFACT_SCHEMA_VERSION_V4,
   ARTIFACT_SCHEMA_VERSION_V5,
+  ARTIFACT_SCHEMA_VERSION_V6,
 ];
 
 /**
@@ -105,7 +111,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V2
   | typeof ARTIFACT_SCHEMA_VERSION_V3
   | typeof ARTIFACT_SCHEMA_VERSION_V4
-  | typeof ARTIFACT_SCHEMA_VERSION_V5;
+  | typeof ARTIFACT_SCHEMA_VERSION_V5
+  | typeof ARTIFACT_SCHEMA_VERSION_V6;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -389,7 +396,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V5;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V6;
 
   /**
    * Corpus entry this covers.

@@ -4,7 +4,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { refusalText, } from '../refusal-text.ts';
-import { ARTIFACT_SCHEMA_VERSION_V5, } from './artifact-two-lane-contract.ts';
+import { ARTIFACT_SCHEMA_VERSION_V6, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import {
   censusBySchema,
@@ -419,7 +419,7 @@ async function assertBodyMatchesLabel(
 export async function assertResumableSchemaGeneration(
   {
     artifactsDir,
-    writes = ARTIFACT_SCHEMA_VERSION_V5,
+    writes = ARTIFACT_SCHEMA_VERSION_V6,
   }: {
     readonly artifactsDir: string;
     readonly writes?: number;

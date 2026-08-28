@@ -7,6 +7,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V3,
   ARTIFACT_SCHEMA_VERSION_V4,
   ARTIFACT_SCHEMA_VERSION_V5,
+  ARTIFACT_SCHEMA_VERSION_V6,
 } from './corpus-run/artifact-two-lane-contract.ts';
 
 //region Artifact schema version
@@ -22,7 +23,7 @@ import {
 /**
  * First schema generation there has ever been.
  *
- * NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V5` and has been
+ * NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V6` and has been
  * a two-lane generation since `settleEntry` moved to one. This was called
  * `SETTLED_ARTIFACT_SCHEMA_VERSION` and documented as the generation the pass
  * writes, which stopped being true at that move; it is renamed rather than
@@ -34,6 +35,9 @@ import {
  * changed and why a reader could not have worked it out from the fields alone.
  * A version that does NOT move on a shape change is the failure this field
  * exists to end, so say so here when a field is added compatibly.
+ *
+ * VERSION 6, 2026-08-28: final post-consolidation body polish became auditable
+ * per slice. Generation 5 records no naturalness decision after consolidation.
  *
  * VERSION 5, 2026-08-28: visible YAML front matter became explicit slice zero.
  * Earlier generations sliced body only, so current preparation cannot rebuild
@@ -132,6 +136,7 @@ export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V3,
   ARTIFACT_SCHEMA_VERSION_V4,
   ARTIFACT_SCHEMA_VERSION_V5,
+  ARTIFACT_SCHEMA_VERSION_V6,
 ];
 
 /**

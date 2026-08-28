@@ -69,9 +69,14 @@ const GENERATION_FOUR = 4;
 const GENERATION_FIVE = 5;
 
 /**
+ * Generation adding auditable final body polish under same key spelling.
+ */
+const GENERATION_SIX = 6;
+
+/**
  * Generation no table covers, one past newest.
  */
-const GENERATION_UNKNOWN = 6;
+const GENERATION_UNKNOWN = 7;
 
 await describe({
   name: keyVocabularyOf.name,
@@ -139,13 +144,14 @@ await describe({
     },),
 
     it({
-      name: 'gives generations 1 and 2 older spelling and generations 4 and 5 current one, which is '
+      name: 'gives generations 1 and 2 older spelling and generations 4 through 6 current one, which is '
         + 'the whole dispatch',
       fn: async () => {
         expect(keyVocabularyOf({ version: GENERATION_ONE, },),).toBe(CHUNK_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_TWO, },),).toBe(CHUNK_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_FOUR, },),).toBe(SLICE_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_FIVE, },),).toBe(SLICE_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_SIX, },),).toBe(SLICE_SPELLED_KEYS,);
       },
     },),
 

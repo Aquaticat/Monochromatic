@@ -15,6 +15,11 @@ import {
   type ProposalValidity,
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
+import {
+  type ConsolidationPolish,
+  type ConsolidationPolishConfig,
+  polishConsolidation,
+} from './consolidation-polish.ts';
 import type { SliceValidation, } from './translate-validate.ts';
 import {
   wrapConsolidation,
@@ -268,6 +273,11 @@ export type ConsolidationSettlement = {
    * structurally, and repeating them here would count one refusal twice.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Final body naturalness decision, absent on exits before final candidate.
+   */
+  readonly polish?: ConsolidationPolish;
 };
 
 /**
@@ -288,6 +298,10 @@ export type ConsolidationSettlement = {
  *
  * @param standingText - wording in place when this stage began, which is what a
  * consolidation has to beat and what ships whenever it does not
+ *
+ * @param sliceIndex - prepared position used by naturalness stage records
+ *
+ * @param polishConfig - final body polish roles and document guard facts
  *
  * @param signal - cancellation for the whole settlement
  *
@@ -314,6 +328,8 @@ export async function settleConsolidation(
     producedFindings,
     standingText,
     lineStructured,
+    sliceIndex = 0,
+    polishConfig,
     signal,
     perCallTimeoutMs,
     l,
@@ -326,6 +342,8 @@ export async function settleConsolidation(
     readonly producedFindings: readonly string[];
     readonly standingText: string;
     readonly lineStructured: boolean;
+    readonly sliceIndex?: number;
+    readonly polishConfig?: ConsolidationPolishConfig;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -582,21 +600,43 @@ export async function settleConsolidation(
     ? 'consolidated'
     : (wrapped.demoted ? 'wrap-erased-difference' : 'gate-kept-standing');
 
+  /**
+   * Final body naturalness pass over fidelity-approved wording.
+   */
+  const polish = await polishConsolidation({
+    client,
+    sourceText: subject.sourceText,
+    archiveText: subject.incumbentText,
+    baseText: wrapped.text,
+    ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+    lineStructured,
+    ...((subject.identityContext === undefined)
+      ? {}
+      : { identityContext: subject.identityContext, }),
+    sliceIndex,
+    ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
+    signal,
+    perCallTimeoutMs,
+    l: sl,
+  },);
+
   return {
     terminal,
-    text: wrapped.text,
+    text: (polish.kind === 'settled') ? polish.text : wrapped.text,
     floor,
     verdicts,
     decided,
     gate,
     rewrapped: wrapped.rewrapped,
     demoted: wrapped.demoted,
+    polish,
 
     // The judged round already carries the produce half's findings, so
     // adding them again here would report one voice loss twice.
     findings: [
       ...decided.findings,
       ...gate.findings,
+      ...((polish.kind === 'settled') ? polish.findings : []),
     ],
   };
 }

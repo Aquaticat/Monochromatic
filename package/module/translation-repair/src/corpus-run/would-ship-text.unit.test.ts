@@ -199,6 +199,53 @@ await describe({
   name: wouldShipTextFor.name,
   children: [
   it({
+    name: 'TAKES FINAL BODY POLISH before consolidation, contest, or archive wording',
+    fn: async () => {
+      /**
+       * Final idiomatic wording approved by polish gate.
+       */
+      const polished = 'The cat maintained a positive outlook on life.';
+      const reading = firstReadingOf({
+        source: sourceWith({
+          consolidation: {
+            kind: 'settled',
+            slices: [
+              {
+                ...keptStanding({ terminal: 'gate-kept-standing', },),
+                polish: {
+                  kind: 'settled',
+                  baseText: REPAIR_NAP,
+                  proposedText: polished,
+                  text: polished,
+                  changed: true,
+                  refinersHeard: ['hf:zai-org/GLM-5.2',],
+                  contributors: ['hf:zai-org/GLM-5.2',],
+                  roundCount: 1,
+                  findings: [],
+                },
+              },
+            ],
+          },
+          laneSelection: {
+            kind: 'contested',
+            slices: [
+              contestedWith({
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'repair',
+                },
+              },),
+            ],
+          },
+        },),
+      },);
+      expect(reading.kind,).toBe('wording',);
+      expect(reading.kind === 'wording' ? reading.text : '',).toBe(polished,);
+      expect(reading.kind === 'wording' ? reading.decidedBy : '',).toBe('polish',);
+    },
+  },),
+
+  it({
     name:
       'TAKES THE THIRD RENDERING where it settled wording, because it ran after both other '
       + 'deciders and was free to replace what either left. On the two artifacts that exist it '

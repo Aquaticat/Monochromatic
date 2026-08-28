@@ -1403,8 +1403,24 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS GENERATION SIX with explicit consolidation state',
+      fn: async () => {
+        /**
+         * Generation-six fixture after full parsing.
+         */
+        const parsed = parseSettledTwoLaneArtifact({
+          value: artifactWith({
+            artifactSchemaVersion: 6,
+            consolidation: { kind: 'not-run', },
+          },),
+        },);
+        expect(parsed.artifactSchemaVersion,).toBe(6,);
+        expect(parsed.consolidation,).toEqual({ kind: 'not-run', },);
+      },
+    },),
+    it({
       name:
-        'REFUSES every generation but the four that wrote this shape, including a MISSING one and a '
+        'REFUSES every generation but the five that wrote this shape, including a MISSING one and a '
         + 'version spelled as text: dispatch has already chosen this reader by the time it is called, '
         + 'so a file arriving here under another version is a caller reading the wrong file',
       fn: async () => {
@@ -1413,7 +1429,7 @@ await describe({
           null,
           '3',
           1,
-          6,
+          7,
         ].map(function refuses(version,): string {
           try {
             parseSettledTwoLaneArtifact({ value: artifactWith({ artifactSchemaVersion: version, },), },);

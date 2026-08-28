@@ -1,3 +1,4 @@
+import type { ConsolidationPolishGateOutcome, } from '../consolidation-polish-gate-stage.ts';
 import type {
   ConsolidationSettlement,
   ConsolidationTerminal,
@@ -116,7 +117,79 @@ export type ArtifactConsolidationTerminal =
   | 'slate-kept-standing';
 
 /**
- * One consolidated slice as the stage left it.
+ * Auditable post-consolidation body polish record.
+ *
+ * @example
+ * ```ts
+ * const polish: ArtifactConsolidationPolish = { kind: 'not-run', reason: 'front-matter', };
+ * ```
+ */
+export type ArtifactConsolidationPolish =
+  | {
+    /**
+     * Naturalness stage did not run.
+     */
+    readonly kind: 'not-run';
+
+    /**
+     * Why stage was absent.
+     */
+    readonly reason: 'front-matter' | 'not-configured';
+  }
+  | {
+    /**
+     * Naturalness stage examined approved base.
+     */
+    readonly kind: 'settled';
+
+    /**
+     * Approved text before polish.
+     */
+    readonly baseText: string;
+
+    /**
+     * Selected rewrite before final gate.
+     */
+    readonly proposedText: string;
+
+    /**
+     * Final text after gate.
+     */
+    readonly text: string;
+
+    /**
+     * Whether final text replaces base.
+     */
+    readonly changed: boolean;
+
+    /**
+     * Rewriters heard.
+     */
+    readonly refinersHeard: readonly string[];
+
+    /**
+     * Models contributing selected proposal.
+     */
+    readonly contributors: readonly string[];
+
+    /**
+     * Number of naturalness selection rounds retained in run ledger.
+     */
+    readonly roundCount: number;
+
+    /**
+     * Final fidelity-first naturalness gate.
+     */
+    readonly gate?: ConsolidationPolishGateOutcome;
+
+    /**
+     * Stable naturalness findings.
+     */
+    readonly findings: readonly string[];
+  };
+
+/**
+ * One consolidated slice as stage left it.
  *
  * @example
  * ```ts
@@ -164,7 +237,58 @@ export type ArtifactConsolidateSlice = {
    * What the gate settled, or a named absence saying it was never asked.
    */
   readonly gate: ArtifactConsolidateGate;
+
+  /**
+   * Final body naturalness decision. Absent only on artifacts before generation six.
+   */
+  readonly polish?: ArtifactConsolidationPolish;
 };
+
+/**
+ * Projects internal polish settlement into artifact audit shape.
+ *
+ * @param settlement - consolidation result carrying optional polish
+ *
+ * @returns Artifact polish record, naming disabled stage when absent
+ *
+ * @example
+ * ```ts
+ * const polish = artifactPolishOf({ settlement, });
+ * ```
+ */
+function artifactPolishOf(
+  { settlement, }: { readonly settlement: ConsolidationSettlement; },
+): ArtifactConsolidationPolish {
+  /**
+   * Internal polish settlement, absent before stage integration.
+   */
+  const { polish, } = settlement;
+  if (polish === undefined) {
+    return {
+      kind: 'not-run',
+      reason: 'not-configured',
+    };
+  }
+  if (polish.kind === 'not-run')
+    return polish;
+  /**
+   * Naturalness selection rounds retained in run ledger.
+   */
+  const roundCount = polish.rounds
+    .length;
+  return {
+    kind: 'settled',
+    baseText: polish.baseText,
+    proposedText: polish.proposedText,
+    text: polish.text,
+    changed: polish.changed,
+    refinersHeard: polish.refinersHeard,
+    contributors: polish.contributors,
+    roundCount,
+    ...((polish.gate === undefined) ? {} : { gate: polish.gate, }),
+    findings: polish.findings,
+  };
+}
 
 /**
  * Reads the artifact's record out of what the consolidation stage returned.
@@ -222,6 +346,7 @@ export function describeConsolidateSlice(
         ballots: gate.ballots,
         usable: gate.usable,
       },
+    polish: artifactPolishOf({ settlement, },),
   };
 }
 

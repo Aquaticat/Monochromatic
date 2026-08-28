@@ -3,6 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import {
   consolidateRunShape,
   consolidateSliceKey,
@@ -136,6 +137,8 @@ function laneChoiceOf(
  *
  * @param identityContext - names and handles both documents declare
  *
+ * @param polishConfig - final body naturalness roles and document guard facts
+ *
  * @param frontMatterSlices - syntax-bearing metadata slice indexes
  *
  * @param lineStructuredSlices - chunk indices whose original is verse or
@@ -176,6 +179,7 @@ export async function consolidateDocument(
     contests,
     modelIds,
     identityContext,
+    polishConfig,
     frontMatterSlices,
     lineStructuredSlices,
     pictureContextBySlice,
@@ -191,6 +195,7 @@ export async function consolidateDocument(
     readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly polishConfig?: ConsolidationPolishConfig;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly lineStructuredSlices: ReadonlySet<number>;
     readonly pictureContextBySlice: ReadonlyMap<number, string>;
@@ -244,6 +249,7 @@ export async function consolidateDocument(
   const runShape = consolidateRunShape({
     modelIds,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((polishConfig === undefined) ? {} : { polishConfig, }),
   },);
 
   /**
@@ -441,6 +447,7 @@ export async function consolidateDocument(
             standingText,
             lineStructured,
             sliceIndex: row.sliceIndex,
+            ...((polishConfig === undefined) ? {} : { polishConfig, }),
             signal,
             perCallTimeoutMs,
             l: dl,

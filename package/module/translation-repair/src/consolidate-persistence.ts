@@ -59,11 +59,21 @@ export function consolidationWorthResuming(
   },
 ): boolean {
   /**
+   * Post-consolidation polish, absent before final candidate.
+   */
+  const { polish, } = settlement;
+  /**
+   * Whether post-consolidation polish replaced otherwise unsafe baseline.
+   */
+  const polishSettled = (polish !== undefined)
+    && (polish.kind === 'settled')
+    && polish.changed;
+  /**
    * Whether unchanged standing baseline is terminal for this question.
    */
   const baselineSettled = standingMayShip
     ? true
-    : settlement.terminal === 'consolidated';
+    : (settlement.terminal === 'consolidated') || polishSettled;
   if (!baselineSettled)
     return false;
   /**

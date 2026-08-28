@@ -31,6 +31,7 @@ import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
  * ```
  */
 export type WouldShipDecider =
+  | 'polish'
   | 'consolidation'
   | 'contest'
   | 'lanes-agreed'
@@ -274,23 +275,69 @@ type ConsolidationContribution =
   };
 
 /**
- * Names the consolidation's wording at one slice, or that it contributed none.
+ * Reads final body polish wording where generation six stage replaced base.
  *
- * ONLY ONE TERMINAL YIELDS TEXT. `shipped` carries a `text` key exactly where
- * the terminal reads `consolidated`; every other terminal, including the three
- * the slate split into and the retired spelling four settled entries still
- * carry, leaves a bare `unchanged`. Testing the shape rather than enumerating
- * terminals is what keeps a terminal added later from silently yielding text.
+ * @param artifact - parsed artifact carrying optional polish records
  *
- * @param artifact - parsed artifact whose consolidation is being read
+ * @param sliceIndex - slice to answer
  *
- * @param sliceIndex - slice to answer for
- *
- * @returns Consolidated wording, or a stated absence when it replaced nothing
+ * @returns Polished wording or named absence
  *
  * @example
  * ```ts
- * const text = consolidatedWordingAt({ artifact, sliceIndex: 0, },);
+ * const text = polishedWordingAt({ artifact, sliceIndex: 0, });
+ * ```
+ */
+function polishedWordingAt(
+  {
+    artifact,
+    sliceIndex,
+  }: {
+    readonly artifact: WouldShipSource;
+    readonly sliceIndex: number;
+  },
+): ConsolidationContribution {
+  /**
+   * Consolidation stage carrying optional polish records.
+   */
+  const { consolidation, } = artifact;
+  if (consolidation.kind !== 'settled')
+    return { kind: 'replaced-nothing', };
+  /**
+   * Consolidation record for requested slice.
+   */
+  const slice = consolidation.slices
+    .find(function namesIt(candidate: ArtifactConsolidateSlice,): boolean {
+      return candidate.sliceIndex === sliceIndex;
+    },);
+  if (slice === undefined)
+    return { kind: 'replaced-nothing', };
+  /**
+   * Polish decision for requested slice, absent before generation six.
+   */
+  const { polish, } = slice;
+  if ((polish === undefined) || (polish.kind !== 'settled'))
+    return { kind: 'replaced-nothing', };
+  if (!polish.changed)
+    return { kind: 'replaced-nothing', };
+  return {
+    kind: 'wording',
+    text: polish.text,
+  };
+}
+
+/**
+ * Names consolidation wording at one slice, or that it contributed none.
+ *
+ * @param artifact - parsed artifact whose consolidation is read
+ *
+ * @param sliceIndex - slice to answer
+ *
+ * @returns Consolidated wording or named absence
+ *
+ * @example
+ * ```ts
+ * const text = consolidatedWordingAt({ artifact, sliceIndex: 0, });
  * ```
  */
 function consolidatedWordingAt(
@@ -410,6 +457,21 @@ export function wouldShipTextFor(
     readonly row: ArtifactComparisonRow;
   },
 ): WouldShipReading {
+  /**
+   * Final naturalness polish, absent before generation six or when base stood.
+   */
+  const polished = polishedWordingAt({
+    artifact,
+    sliceIndex: row.sliceIndex,
+  },);
+  if (polished.kind === 'wording') {
+    return {
+      kind: 'wording',
+      text: polished.text,
+      decidedBy: 'polish',
+    };
+  }
+
   /**
    * Third rendering's wording, absent wherever it replaced nothing.
    */

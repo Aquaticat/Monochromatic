@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import { produceConsolidations, } from './consolidate-produce.ts';
 import {
   type ConsolidationSettlement,
@@ -29,7 +30,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * @param lineStructured - whether structural rule forbids merged lines
  *
- * @param sliceIndex - index used only in no-standing-text log
+ * @param sliceIndex - index used by logs and final polish records
+ *
+ * @param polishConfig - final body polish roles and guard facts
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -66,6 +69,7 @@ export async function buyConsolidationSlice(
     standingText,
     lineStructured,
     sliceIndex,
+    polishConfig,
     signal,
     perCallTimeoutMs,
     l,
@@ -76,6 +80,7 @@ export async function buyConsolidationSlice(
     readonly standingText: string;
     readonly lineStructured: boolean;
     readonly sliceIndex: number;
+    readonly polishConfig?: ConsolidationPolishConfig;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -96,6 +101,8 @@ export async function buyConsolidationSlice(
       producedFindings: [],
       standingText,
       lineStructured,
+      sliceIndex,
+      ...((polishConfig === undefined) ? {} : { polishConfig, }),
       signal,
       perCallTimeoutMs,
       l,
@@ -124,6 +131,8 @@ export async function buyConsolidationSlice(
     producedFindings: produced.findings,
     standingText,
     lineStructured,
+    sliceIndex,
+    ...((polishConfig === undefined) ? {} : { polishConfig, }),
     signal,
     perCallTimeoutMs,
     l,

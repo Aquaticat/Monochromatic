@@ -775,9 +775,8 @@ await describe({
 
     it({
       name:
-        'settles an entry into ONE artifact at schema version 5 carrying BOTH lanes over ONE '
-        + 'preparation, which is what the whole two-lane generation is for: the two documents differ '
-        + 'by lane rather than by two runs of the aligner',
+        'settles an entry into ONE artifact at schema version 6 carrying BOTH lanes and final polish '
+        + 'over one preparation',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -812,15 +811,24 @@ await describe({
         // Read structurally rather than through the writer's own types, since
         // what is under test is the FILE: a reader holding only this has to
         // find both lanes nested and no lane at the top level.
-        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(5,);
+        expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(6,);
         expect(Object.keys((artifact as { lanes: object; }).lanes,)
           .toSorted(),).toEqual([
           'repair',
           'translate',
         ],);
+        /**
+         * Consolidation records carrying generation-six polish decision.
+         */
+        const { consolidation, } = artifact as {
+          consolidation: { slices: readonly { polish?: unknown; }[]; };
+        };
+        expect(consolidation.slices.every(function hasPolish(slice,): boolean {
+          return slice.polish !== undefined;
+        },),).toBe(true,);
 
         // THE STAMP AND THE SPELLING, checked together on the bytes. A writer
-        // that stamped generation 5 and wrote an earlier generation's keys
+        // that stamped generation 6 and wrote an earlier generation's keys
         // would satisfy the assertion above and produce a file its own reader
         // refuses, and every fixture in this package would still pass: they are
         // built by hand from the same names the writer uses.
@@ -957,7 +965,7 @@ await describe({
           entryId: FRONT_MATTER_ENTRY.id,
         },), 'utf8',);
 
-        expect(artifact.artifactSchemaVersion,).toBe(5,);
+        expect(artifact.artifactSchemaVersion,).toBe(6,);
         expect(artifact.preparation.sliceCount,).toBe(1,);
         expect(page,).toBe(FRONT_MATTER_FRESH,);
         expect(served,).toContain('translation_report',);

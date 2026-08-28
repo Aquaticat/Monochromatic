@@ -1255,6 +1255,23 @@ await describe({
           settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
           standingMayShip: false,
         },),).toBe(true,);
+        expect(consolidationWorthResuming({
+          settlement: {
+            ...settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
+            polish: {
+              kind: 'settled',
+              baseText: 'The cat faced life proactively.',
+              proposedText: 'The cat maintained a positive outlook on life.',
+              text: 'The cat maintained a positive outlook on life.',
+              changed: true,
+              refinersHeard: ['hf:zai-org/GLM-5.2',],
+              contributors: ['hf:zai-org/GLM-5.2',],
+              rounds: [],
+              findings: [],
+            },
+          },
+          standingMayShip: false,
+        },),).toBe(true,);
       },
     },),
 
