@@ -18,6 +18,45 @@ and checks successful help plus invalid-usage behavior.
 A separate CI check compares the declared floor with Node's official release index each day,
 so a newly published LTS line makes the stale single range fail visibly.
 
+### Landed verification
+
+The runtime policy landed in commits `6a43312ff` and `e092d20bb`.
+Node's official release index on 2026-08-28 reported Node 24.20.0 as latest LTS,
+and its first release carrying the Krypton LTS marker was Node 24.11.0.
+The declared `^24.11.0` range therefore identifies current latest LTS line and its exact floor.
+
+The following package-scoped commands passed with `MISE_NODE_VERSION=24.11.0`:
+
+```sh
+mise run //package/git-policy/cli:build
+mise run //package/git-policy/cli:test:unit
+mise run //package/git-policy/cli:verify:minimum-runtime
+```
+
+The build accepted manifest-derived target `node24.11.0`.
+Unit execution completed at Node 24.11.0,
+and minimum-runtime host evidence confirmed:
+
+- side-effect-free import of `dist/final/node/index.mjs` with `definePolicy` exported;
+- management help exited `0` with authored help;
+- invalid trust usage exited `2` with authored usage on stderr.
+
+The guard had two positive controls after its first commit:
+
+- running host evidence under repository Node 26.7.0 failed before artifact execution because it was not exact declared floor;
+- temporarily restoring `^22.18.0`,
+  rebuilding through derived `node22.18.0` target,
+  and running on Node 22.18.0 failed representative invalid CLI behavior with exit `1`.
+
+Restoring `^24.11.0`,
+rebuilding,
+and rerunning Node 24.11.0 host evidence passed.
+Type checking passed.
+Package Oxlint reported no finding in changed TypeScript files;
+its package-wide task remained nonzero on existing `test-import(require-eventual-artifact)` diagnostics in other tests.
+Repository-wide dprint likewise named only existing unrelated files.
+The Markdown check passed for this record and package README.
+
 The remaining sections preserve the pre-resolution diagnosis and Node 22 evidence.
 
 ## Symptom
