@@ -112,7 +112,9 @@ function recordsForVerdict({
  *
  * @param fragment - exact message fragment required
  *
- * @returns first matching record or `undefined`
+ * @returns first matching record
+ *
+ * @throws Error when no record contains fragment
  *
  * @example
  * ```ts
@@ -125,10 +127,14 @@ function recordContaining({
 }: {
   readonly fragment: string;
   readonly records: readonly LogRecord[];
-},): LogRecord | undefined {
-  return records.find(function includesFragment(record,) {
-    return record.message.includes(fragment,);
+},): LogRecord {
+  /** First record whose message contains requested fragment. */
+  const record = records.find(function includesFragment(candidate,) {
+    return candidate.message.includes(fragment,);
   },);
+  if (record === undefined)
+    throw new Error(`No captured log record contains: ${fragment}`,);
+  return record;
 }
 
 await describe({
@@ -378,13 +384,13 @@ await describe({
           fragment: '[boolean skip] [SKIP] (no reason)',
         },);
 
-        expect(expectedFailure?.level,).toBe('debug',);
-        expect(unexpectedFailure?.level,).toBe('error',);
-        expect(firstRepeat?.level,).toBe('debug',);
-        expect(secondRepeat?.level,).toBe('debug',);
-        expect(timeoutFailure?.level,).toBe('error',);
-        expect(timeoutFailure?.message,).toContain('Timed out after 1ms',);
-        expect(booleanSkip?.level,).toBe('info',);
+        expect(expectedFailure.level,).toBe('debug',);
+        expect(unexpectedFailure.level,).toBe('error',);
+        expect(firstRepeat.level,).toBe('debug',);
+        expect(secondRepeat.level,).toBe('debug',);
+        expect(timeoutFailure.level,).toBe('error',);
+        expect(timeoutFailure.message,).toContain('Timed out after 1ms',);
+        expect(booleanSkip.level,).toBe('info',);
       },
     },),
 
@@ -434,7 +440,7 @@ await describe({
         expect(recordContaining({
           records: allFailureCapture.records,
           fragment: '[all failure suite] [FAIL] (',
-        },)?.level,).toBe('error',);
+        },).level,).toBe('error',);
 
         /** Capture for repeated empty-suite verdicts. */
         const repeatCapture = await createCapture();
@@ -448,11 +454,11 @@ await describe({
         expect(recordContaining({
           records: repeatCapture.records,
           fragment: '[repeated empty suite] [PASS] [run 1/2] (',
-        },)?.level,).toBe('info',);
+        },).level,).toBe('info',);
         expect(recordContaining({
           records: repeatCapture.records,
           fragment: '[repeated empty suite] [PASS] [run 2/2] (',
-        },)?.level,).toBe('info',);
+        },).level,).toBe('info',);
 
         /** Capture for suite-timeout verdict. */
         const timeoutCapture = await createCapture();
@@ -487,8 +493,8 @@ await describe({
           records: timeoutCapture.records,
           fragment: '[timed suite] [FAIL] timeout (',
         },);
-        expect(timeoutFailure?.level,).toBe('error',);
-        expect(timeoutFailure?.message,).toContain('Timed out after 1ms',);
+        expect(timeoutFailure.level,).toBe('error',);
+        expect(timeoutFailure.message,).toContain('Timed out after 1ms',);
       },
     },),
 
