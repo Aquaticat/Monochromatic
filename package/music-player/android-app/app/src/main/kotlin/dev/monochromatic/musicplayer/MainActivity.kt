@@ -3179,6 +3179,62 @@ internal data class PageTabsOptions(
     val onSelectPage: (Int) -> Unit,
 )
 
+/** Groups one page-control item with parent style and width boundaries. */
+private data class PageTabItemOptions(
+    /** Holds shared page rendering options. */
+    val tabs: PageTabsOptions,
+    /** Identifies source page index. */
+    val page: Int,
+    /** Holds source page label. */
+    val label: String,
+    /** Caps Chromium body inside finite viewport. */
+    val maximumWidth: Dp,
+)
+
+/** Displays one source-ordered page selector in selected or inactive state. */
+@Composable
+private fun pageTabItem(options: PageTabItemOptions) {
+    /** Records whether this page is currently visible. */
+    val selected: Boolean = options.page == options.tabs.state.selectedPage
+    /** Attaches selected geometry reporting to current control only. */
+    val modifier: Modifier = if (selected) options.tabs.selectedModifier else Modifier
+    /** Selects this source page. */
+    val selectPage: () -> Unit = { options.tabs.onSelectPage(options.page) }
+    if (options.tabs.style == PageControlStyle.RADIO) {
+        Box(modifier = modifier) {
+            radioOption(label = options.label, selected = selected, onSelect = selectPage)
+        }
+        return
+    }
+    if (options.tabs.style == PageControlStyle.MD1_TABS) {
+        Box(modifier = modifier) {
+            md1PageTab(label = options.label, selected = selected, onSelect = selectPage)
+        }
+        return
+    }
+    if (options.tabs.style == PageControlStyle.CHROMIUM_TABS) {
+        chromiumPageTab(
+            ChromiumPageTabOptions(
+                label = options.label,
+                selected = selected,
+                showDivider = options.page < options.tabs.state.pageLabels.lastIndex &&
+                    options.page + 1 != options.tabs.state.selectedPage,
+                maximumWidth = options.maximumWidth,
+                modifier = modifier,
+                onSelect = selectPage,
+            ),
+        )
+        return
+    }
+    Box(modifier = modifier) {
+        if (selected) {
+            Button(onClick = selectPage) { Text(options.label) }
+        } else {
+            OutlinedButton(onClick = selectPage) { Text(options.label) }
+        }
+    }
+}
+
 /** Displays one page-control style as wrapped rows or one intrinsic-width row. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -3229,47 +3285,14 @@ internal fun pageTabs(options: PageTabsOptions) {
         /** Emits one source-ordered control for each page. */
         val controls: @Composable () -> Unit = {
             options.state.pageLabels.forEachIndexed { page, label ->
-                /** Records whether this page is currently visible. */
-                val selected: Boolean = page == options.state.selectedPage
-                /** Attaches selected geometry reporting to current control only. */
-                val itemModifier: Modifier = if (selected) options.selectedModifier else Modifier
-                if (options.style == PageControlStyle.RADIO) {
-                    Box(modifier = itemModifier) {
-                        radioOption(
-                            label = label,
-                            selected = selected,
-                            onSelect = { options.onSelectPage(page) },
-                        )
-                    }
-                } else if (options.style == PageControlStyle.MD1_TABS) {
-                    Box(modifier = itemModifier) {
-                        md1PageTab(
-                            label = label,
-                            selected = selected,
-                            onSelect = { options.onSelectPage(page) },
-                        )
-                    }
-                } else if (options.style == PageControlStyle.CHROMIUM_TABS) {
-                    chromiumPageTab(
-                        ChromiumPageTabOptions(
-                            label = label,
-                            selected = selected,
-                            showDivider = page < options.state.pageLabels.lastIndex &&
-                                page + 1 != options.state.selectedPage,
-                            maximumWidth = pageContentMaximumWidth,
-                            modifier = itemModifier,
-                            onSelect = { options.onSelectPage(page) },
-                        ),
-                    )
-                } else {
-                    Box(modifier = itemModifier) {
-                        if (selected) {
-                            Button(onClick = { options.onSelectPage(page) }) { Text(label) }
-                        } else {
-                            OutlinedButton(onClick = { options.onSelectPage(page) }) { Text(label) }
-                        }
-                    }
-                }
+                pageTabItem(
+                    PageTabItemOptions(
+                        tabs = options,
+                        page = page,
+                        label = label,
+                        maximumWidth = pageContentMaximumWidth,
+                    ),
+                )
             }
         }
         if (options.wrap) {

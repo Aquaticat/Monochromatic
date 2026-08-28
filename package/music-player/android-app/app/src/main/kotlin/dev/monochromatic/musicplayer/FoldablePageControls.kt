@@ -16,6 +16,15 @@ package dev.monochromatic.musicplayer
 // ```
 import android.content.res.Configuration
 
+// What:     `ScrollState` stores current and maximum horizontal strip offsets.
+// Why:      Fold owner shares actual scroll geometry with selected reveal helper.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type ScrollState = { value: number; maxValue: number; scrollTo(value: number): Promise<void> };
+// ```
+import androidx.compose.foundation.ScrollState
+
 // What:     Foundation paint, click, and scroll modifiers compose neutral disclosure and strip behavior.
 // Why:      One row needs native touch handling and user-driven horizontal scrolling.
 //
@@ -244,43 +253,85 @@ private fun pageControlDisclosure(options: PageControlDisclosureOptions) {
     )
 }
 
-/** Displays portrait one-row fold or unchanged fully wrapped landscape controls. */
-@Composable
-internal fun foldablePageControls(options: FoldablePageControlsOptions) {
-    /** Reads current orientation as Compose-observable configuration. */
-    val orientation: Int = LocalConfiguration.current.orientation
-    if (orientation != Configuration.ORIENTATION_PORTRAIT) {
-        pageTabs(
-            PageTabsOptions(
-                state = options.state,
-                style = options.style,
-                wrap = true,
-                maximumWidth = null,
-                selectedModifier = Modifier,
-                onSelectPage = options.onSelectPage,
-            ),
-        )
-        return
-    }
+/** Groups rendered portrait row with scroll and selected-geometry boundaries. */
+private data class PortraitPageControlRowOptions(
+    /** Holds shared fold state and page action. */
+    val fold: FoldablePageControlsOptions,
+    /** Owns manual and programmatic horizontal offset. */
+    val scrollState: ScrollState,
+    /** Reports selected control geometry. */
+    val selectedModifier: Modifier,
+    /** Reports visible viewport width. */
+    val onViewportWidth: (Int) -> Unit,
+)
 
+/** Displays disclosure beside expanded rows or one horizontally scrollable row. */
+@Composable
+private fun portraitPageControlRow(options: PortraitPageControlRowOptions) {
+    /** Shows toggle for measured overflow or retained explicit expansion. */
+    val showDisclosure: Boolean = options.fold.expanded || options.scrollState.maxValue > 0
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(pageDisclosureGap),
+        verticalAlignment = Alignment.Top,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        if (showDisclosure) {
+            pageControlDisclosure(
+                PageControlDisclosureOptions(
+                    expanded = options.fold.expanded,
+                    onClick = { options.fold.onExpandedChange(!options.fold.expanded) },
+                ),
+            )
+        }
+        BoxWithConstraints(
+            modifier = Modifier
+                .weight(1f)
+                .onSizeChanged { options.onViewportWidth(it.width) },
+        ) {
+            /** Captures finite viewport before collapsed child receives horizontal infinity. */
+            val pageMaximumWidth: Dp = maxWidth
+            /** Shares stable page values between wrapped and one-row branches. */
+            val commonOptions = PageTabsOptions(
+                state = options.fold.state,
+                style = options.fold.style,
+                wrap = options.fold.expanded,
+                maximumWidth = pageMaximumWidth,
+                selectedModifier = if (options.fold.expanded) Modifier else options.selectedModifier,
+                onSelectPage = options.fold.onSelectPage,
+            )
+            if (options.fold.expanded) {
+                pageTabs(commonOptions)
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(options.scrollState),
+                ) {
+                    pageTabs(commonOptions)
+                }
+            }
+        }
+    }
+}
+
+/** Owns portrait measurement state and selected-control reveal effect. */
+@Composable
+private fun portraitFoldablePageControls(options: FoldablePageControlsOptions) {
     /** Owns manual and programmatic horizontal strip offset. */
-    val scrollState = rememberScrollState()
+    val scrollState: ScrollState = rememberScrollState()
     /** Stores selected control's source-coordinate start. */
     var selectedStartPx: Int by remember { mutableIntStateOf(0) }
     /** Stores selected control's source-coordinate end. */
     var selectedEndPx: Int by remember { mutableIntStateOf(0) }
     /** Stores visible horizontal viewport width. */
     var viewportWidthPx: Int by remember { mutableIntStateOf(0) }
-    /** Attaches geometry reporting only to currently selected rendered control. */
+    /** Attaches geometry reporting only to currently selected control. */
     val selectedModifier: Modifier = Modifier.onGloballyPositioned { coordinates ->
         /** Recovers stable source coordinate by adding current scroll translation. */
         val sourceStartPx: Int = coordinates.positionInParent().x.roundToInt() + scrollState.value
         selectedStartPx = sourceStartPx
         selectedEndPx = sourceStartPx + coordinates.size.width
     }
-    /** Shows toggle for measured overflow or retained explicit expansion. */
-    val showDisclosure: Boolean = options.expanded || scrollState.maxValue > 0
-
     LaunchedEffect(
         options.expanded,
         options.state.selectedPage,
@@ -304,56 +355,31 @@ internal fun foldablePageControls(options: FoldablePageControlsOptions) {
             )
         }
     }
+    portraitPageControlRow(
+        PortraitPageControlRowOptions(
+            fold = options,
+            scrollState = scrollState,
+            selectedModifier = selectedModifier,
+            onViewportWidth = { viewportWidthPx = it },
+        ),
+    )
+}
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(pageDisclosureGap),
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        if (showDisclosure) {
-            pageControlDisclosure(
-                PageControlDisclosureOptions(
-                    expanded = options.expanded,
-                    onClick = { options.onExpandedChange(!options.expanded) },
-                ),
-            )
-        }
-        BoxWithConstraints(
-            modifier = Modifier
-                .weight(1f)
-                .onSizeChanged { viewportWidthPx = it.width },
-        ) {
-            /** Captures finite viewport width before collapsed child receives horizontal infinity. */
-            val pageMaximumWidth: Dp = maxWidth
-            if (options.expanded) {
-                pageTabs(
-                    PageTabsOptions(
-                        state = options.state,
-                        style = options.style,
-                        wrap = true,
-                        maximumWidth = pageMaximumWidth,
-                        selectedModifier = Modifier,
-                        onSelectPage = options.onSelectPage,
-                    ),
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(scrollState),
-                ) {
-                    pageTabs(
-                        PageTabsOptions(
-                            state = options.state,
-                            style = options.style,
-                            wrap = false,
-                            maximumWidth = pageMaximumWidth,
-                            selectedModifier = selectedModifier,
-                            onSelectPage = options.onSelectPage,
-                        ),
-                    )
-                }
-            }
-        }
+/** Displays portrait fold or unchanged fully wrapped landscape controls. */
+@Composable
+internal fun foldablePageControls(options: FoldablePageControlsOptions) {
+    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
+        portraitFoldablePageControls(options)
+        return
     }
+    pageTabs(
+        PageTabsOptions(
+            state = options.state,
+            style = options.style,
+            wrap = true,
+            maximumWidth = null,
+            selectedModifier = Modifier,
+            onSelectPage = options.onSelectPage,
+        ),
+    )
 }
