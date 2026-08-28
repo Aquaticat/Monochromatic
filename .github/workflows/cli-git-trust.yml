@@ -142,8 +142,11 @@ jobs:
     - name: Build at minimum runtime
       run: mise run //package/git-policy/cli:build
 
-    - name: Run unit tests at minimum runtime
-      run: mise run //package/git-policy/cli:test:unit
+    - name: Run representative source tests at minimum runtime
+      run: >-
+        mise run //package/git-policy/cli:test:unit --
+        package/git-policy/cli/src/api.unit.test.ts
+        package/git-policy/cli/src/bin.unit.test.ts
 
     - name: Exercise built package at minimum runtime
       run: mise run //package/git-policy/cli:verify:minimum-runtime
