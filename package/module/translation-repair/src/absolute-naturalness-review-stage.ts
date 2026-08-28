@@ -139,6 +139,8 @@ function uniqueFindings(
  *
  * @param exchangeTimeoutMs - deadline accounting unavailable seat
  *
+ * @param graceMs - optional test seam for post-quorum abandonment window
+ *
  * @param l - parent logger
  *
  * @returns Candidate-bound absolute verdict and every seat status
@@ -155,6 +157,7 @@ export async function reviewAbsoluteNaturalness(
     subject,
     signal,
     exchangeTimeoutMs,
+    graceMs,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -162,6 +165,7 @@ export async function reviewAbsoluteNaturalness(
     readonly subject: AbsoluteNaturalnessReviewSubject;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
+    readonly graceMs?: number;
     readonly l: Logger;
   }>,
 ): Promise<AbsoluteNaturalnessReviewOutcome> {
@@ -186,6 +190,7 @@ export async function reviewAbsoluteNaturalness(
     stage: 'absolute-naturalness-review',
     l: rl,
     heardNeeded: modelIds.length,
+    ...((graceMs === undefined) ? {} : { graceMs, }),
   },);
   /**
    * Stable seat records, including calls with no usable ballot.

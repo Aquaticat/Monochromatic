@@ -128,6 +128,7 @@ async function runReview(
     },
     signal: AbortSignal.timeout(5_000,),
     exchangeTimeoutMs: 5_000,
+    graceMs: 0,
     l: tagged({ tag: 'absolute-review-test', },),
   },);
 }
