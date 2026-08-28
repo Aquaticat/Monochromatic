@@ -1251,7 +1251,35 @@ No eligible winner remains retryable and uncached.
 Contest prompt names deterministic exclusions,
 artifact reader recomputes eligibility from stored source and lane texts,
 and final page guard remains independent.
-Fresh generation-7 `Weideriche_` rerun remains required before accepting affected output.
+Fresh `09c3919bc` generation-7 `Weideriche_` validation settled all four slices in isolated root,
+used both providers,
+wrote one artifact and one page,
+and passed `verify-published` with exact wording and expected length.
+Artifact carries schema 7,
+preparation identity v2,
+and source-backed metadata eligibility at slice zero.
+Archive and repair metadata are ineligible,
+translate metadata is eligible,
+and all eight retained raw ballots remain unchanged.
+Seven judges declined to redirect an inadmissible choice and one chose translate,
+so eligible lane lacked direct quorum;
+consolidation then produced valid metadata and its gate approved it.
+Complete-page reading confirmed visible name and alias agree,
+location contributor uses established target spelling,
+and source-script contributor did not leak into published metadata.
+
+That page is not accepted yet.
+Body meaning is materially faithful,
+but several phrases remain literal or stiff.
+Both body slices record polish as `not-run/not-configured` even though production run roles configure measured refiners.
+The actual reachability defect is in `settleConsolidation`:
+when consolidation slate keeps an already-endorsed standing lane,
+function returns before `polishConsolidation`.
+Artifact conversion then reports missing polish as not configured.
+Final polish now runs over every endorsed surviving body baseline,
+including slate-declined and structurally empty consolidation slates,
+while unendorsed baseline remains `unsafe-baseline` and cannot buy or ship polish.
+Fresh affected rerun remains required before accepting output.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.

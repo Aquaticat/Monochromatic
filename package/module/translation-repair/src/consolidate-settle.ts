@@ -15,10 +15,10 @@ import {
   type ProposalValidity,
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
-import {
-  type ConsolidationPolish,
-  type ConsolidationPolishConfig,
-  polishConsolidation,
+import { applyFinalPolish, } from './consolidation-polish-apply.ts';
+import type {
+  ConsolidationPolish,
+  ConsolidationPolishConfig,
 } from './consolidation-polish.ts';
 import type { SliceValidation, } from './translate-validate.ts';
 import {
@@ -448,16 +448,28 @@ export async function settleConsolidation(
   // A SLATE WITH NOTHING VALID ON IT ENDS HERE, before either round is bought.
   // The gate's question is which rendering is more faithful, and that has no
   // meaning when the only proposals are structurally not the page.
-  if (floor.kind === 'incumbent-only')
-    return {
-      terminal: 'incumbent-only',
-      text: standingText,
-      floor,
-      verdicts,
-      rewrapped: false,
-      demoted: false,
-      findings: producedFindings,
-    };
+  if (floor.kind === 'incumbent-only') {
+    return await applyFinalPolish({
+      client,
+      settlement: {
+        terminal: 'incumbent-only',
+        text: standingText,
+        floor,
+        verdicts,
+        rewrapped: false,
+        demoted: false,
+        findings: producedFindings,
+      },
+      subject,
+      lineStructured,
+      sliceIndex,
+      ...((polishConfig === undefined) ? {} : { polishConfig, }),
+      eligible: standingMayShip,
+      signal,
+      perCallTimeoutMs,
+      l: sl,
+    },);
+  }
 
   /**
    * Model ids the floor passed, read off the floor so the filter below takes
@@ -554,17 +566,29 @@ export async function settleConsolidation(
   // THE JUDGES CHOOSING THE INCUMBENT ENDS IT. There is no consolidation to
   // gate, and asking the gate anyway would buy ballots about the text that is
   // already in place.
-  if (decided.origin !== 'fresh')
-    return {
-      terminal: SLATE_TERMINALS[decided.decision],
-      text: standingText,
-      floor,
-      verdicts,
-      decided,
-      rewrapped: false,
-      demoted: false,
-      findings: decided.findings,
-    };
+  if (decided.origin !== 'fresh') {
+    return await applyFinalPolish({
+      client,
+      settlement: {
+        terminal: SLATE_TERMINALS[decided.decision],
+        text: standingText,
+        floor,
+        verdicts,
+        decided,
+        rewrapped: false,
+        demoted: false,
+        findings: decided.findings,
+      },
+      subject,
+      lineStructured,
+      sliceIndex,
+      ...((polishConfig === undefined) ? {} : { polishConfig, }),
+      eligible: standingMayShip,
+      signal,
+      perCallTimeoutMs,
+      l: sl,
+    },);
+  }
 
   /**
    * What the gate made of the consolidation that won the slate.
@@ -604,46 +628,34 @@ export async function settleConsolidation(
     ? 'consolidated'
     : (wrapped.demoted ? 'wrap-erased-difference' : 'gate-kept-standing');
 
-  /**
-   * Final body naturalness pass over fidelity-approved wording.
-   */
-  const polish = await polishConsolidation({
+  return await applyFinalPolish({
     client,
-    sourceText: subject.sourceText,
-    archiveText: subject.incumbentText,
-    baseText: wrapped.text,
-    ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+    settlement: {
+      terminal,
+      text: wrapped.text,
+      floor,
+      verdicts,
+      decided,
+      gate,
+      rewrapped: wrapped.rewrapped,
+      demoted: wrapped.demoted,
+
+      // The judged round already carries the produce half's findings, so
+      // adding them again here would report one voice loss twice.
+      findings: [
+        ...decided.findings,
+        ...gate.findings,
+      ],
+    },
+    subject,
     lineStructured,
-    ...((subject.identityContext === undefined)
-      ? {}
-      : { identityContext: subject.identityContext, }),
     sliceIndex,
-    ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
+    ...((polishConfig === undefined) ? {} : { polishConfig, }),
     eligible: (terminal === 'consolidated') || standingMayShip,
     signal,
     perCallTimeoutMs,
     l: sl,
   },);
-
-  return {
-    terminal,
-    text: (polish.kind === 'settled') ? polish.text : wrapped.text,
-    floor,
-    verdicts,
-    decided,
-    gate,
-    rewrapped: wrapped.rewrapped,
-    demoted: wrapped.demoted,
-    polish,
-
-    // The judged round already carries the produce half's findings, so
-    // adding them again here would report one voice loss twice.
-    findings: [
-      ...decided.findings,
-      ...gate.findings,
-      ...((polish.kind === 'settled') ? polish.findings : []),
-    ],
-  };
 }
 
 //endregion Consolidate settle

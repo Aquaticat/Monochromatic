@@ -28,12 +28,15 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   buildTranslateCandidates,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   createSyntheticClient,
   describeSlate,
   type ProposalValidity,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   rotateCandidates,
   settleConsolidation,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -97,6 +100,16 @@ const STANDING = 'The cat fell asleep by the window.\nShe woke at four.';
  * line because producers do that.
  */
 const FRESH = 'The cat fell asleep beside the window. She woke at four in the afternoon.';
+
+/**
+ * Idiomatic final rewrite used to prove standing-text polish reachability.
+ */
+const POLISHABLE_STANDING = 'She faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
+
+/**
+ * Faithful idiomatic rewrite of polishable standing text.
+ */
+const POLISHED_STANDING = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
  * Builds one voice as the producing half hands them over.
@@ -272,6 +285,79 @@ function routedClient(
       };
     },
   },);
+}
+
+/**
+ * Builds direct client proving final polish remains reachable after slate decline.
+ *
+ * @param servedSchemas - schema names called in execution order
+ *
+ * @returns Client declining consolidation slate but approving final polish
+ *
+ * @example
+ * ```ts
+ * const client = standingPolishClient({ servedSchemas: [], });
+ * ```
+ */
+function standingPolishClient(
+  { servedSchemas, }: { readonly servedSchemas: string[]; },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused by structured consolidation stages',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      /**
+       * Structured schema naming current stage.
+       */
+      const schema = request.responseFormat
+        ?.json_schema
+        .name ?? '';
+      servedSchemas.push(schema,);
+      /**
+       * Whether candidate ballot belongs to final naturalness selector.
+       */
+      const choosingPolish = JSON.stringify(request.messages,)
+        .includes(POLISHED_STANDING,);
+      /**
+       * Reply preserving declined consolidation while approving polish.
+       */
+      const value: unknown = (schema === 'refine_report')
+        ? {
+          rewrites: [{
+            paragraph: 1,
+            newText: POLISHED_STANDING,
+          },],
+        }
+        : (schema === 'candidate_ballot')
+        ? {
+          best: choosingPolish ? 1 : 0,
+          reason: choosingPolish
+            ? 'same meaning in more idiomatic English'
+            : 'no consolidation clearly improves the standing text',
+        }
+        : (schema === 'consolidation_polish_gate')
+        ? {
+          choice: 'polished',
+          unsupported: [],
+          dropped: [],
+          reason: 'same meaning in more idiomatic English',
+        }
+        : {};
+      if (!request.validate(value,))
+        throw new Error(`synthetic ${schema} reply failed validation`,);
+      return {
+        kind: 'ok',
+        value,
+        rawText: JSON.stringify(value,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused by consolidation stages',);
+    },
+  };
 }
 
 /**
@@ -562,6 +648,90 @@ await describe({
         expect(settled.text,).toBe(STANDING,);
         expect(served.judge,).toBeGreaterThan(0,);
         expect(served.gate,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'POLISHES AN ENDORSED STANDING TEXT after consolidation judges decline their slate',
+      fn: async () => {
+        /**
+         * Structured stages reached by settlement.
+         */
+        const servedSchemas: string[] = [];
+        const settled = await settleConsolidation({
+          client: standingPolishClient({ servedSchemas, }),
+          roster: ROSTER,
+          subject: {
+            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            incumbentText: POLISHABLE_STANDING,
+          },
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          producedFindings: [],
+          standingText: POLISHABLE_STANDING,
+          lineStructured: false,
+          sliceIndex: 1,
+          polishConfig: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          standingMayShip: true,
+          signal: AbortSignal.timeout(CALL_TIMEOUT_MS * 8,),
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          l,
+        },);
+        expect(settled.terminal,).toBe('slate-declined-standing',);
+        expect(settled.text,).toBe(POLISHED_STANDING,);
+        expect(settled.polish?.kind,).toBe('settled',);
+        expect(settled.polish?.kind === 'settled' ? settled.polish.changed : false,).toBe(true,);
+        expect(servedSchemas,).toContain('refine_report',);
+        expect(servedSchemas,).toContain('consolidation_polish_gate',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO POLISH AN UNENDORSED STANDING TEXT after consolidation judges decline',
+      fn: async () => {
+        /**
+         * Structured stages reached before provenance refusal.
+         */
+        const servedSchemas: string[] = [];
+        const settled = await settleConsolidation({
+          client: standingPolishClient({ servedSchemas, }),
+          roster: ROSTER,
+          subject: {
+            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            incumbentText: POLISHABLE_STANDING,
+          },
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          producedFindings: [],
+          standingText: POLISHABLE_STANDING,
+          lineStructured: false,
+          sliceIndex: 1,
+          polishConfig: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          standingMayShip: false,
+          signal: AbortSignal.timeout(CALL_TIMEOUT_MS * 8,),
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          l,
+        },);
+        expect(settled.terminal,).toBe('slate-declined-standing',);
+        expect(settled.text,).toBe(POLISHABLE_STANDING,);
+        expect(settled.polish,).toEqual({
+          kind: 'not-run',
+          reason: 'unsafe-baseline',
+        },);
+        expect(servedSchemas,).not.toContain('refine_report',);
+        expect(servedSchemas,).not.toContain('consolidation_polish_gate',);
       },
     },),
 
