@@ -981,6 +981,9 @@ component PageControlWidthProbeItem inherits Rectangle {
     in property <string> text;
     in property <int> control-style;
     in property <length> max-control-width;
+    in property <int> control-index;
+    in property <int> report-tick;
+    callback report-geometry(int, length, length);
     private property <length> label-width: probe-label.preferred-width;
     width: root.control-style == 0 ? root.label-width + 28px
         : root.control-style == 1 ? root.label-width + 24px
@@ -991,6 +994,18 @@ component PageControlWidthProbeItem inherits Rectangle {
     height: 0px;
     clip: true;
     accessible-role: none;
+    init => {
+        root.report-geometry(root.control-index, root.x, root.width);
+    }
+    changed x => {
+        root.report-geometry(root.control-index, root.x, root.width);
+    }
+    changed width => {
+        root.report-geometry(root.control-index, root.x, root.width);
+    }
+    changed report-tick => {
+        root.report-geometry(root.control-index, root.x, root.width);
+    }
 
     probe-label := Text {
         text: root.text;
@@ -1006,8 +1021,12 @@ component PageControlWidthProbeItem inherits Rectangle {
 // position remain measurable across expansion, resizing, and style changes.
 component PageControlWidthProbe inherits Rectangle {
     in property <[string]> labels;
+    in property <int> selected-page;
     in property <int> control-style;
+    in property <int> geometry-request;
     in property <length> max-control-width;
+    out property <length> selected-x: 0px;
+    out property <length> selected-width: 0px;
     width: probe-layout.preferred-width;
     height: 0px;
     clip: true;
@@ -1025,6 +1044,14 @@ component PageControlWidthProbe inherits Rectangle {
             text: label;
             control-style: root.control-style;
             max-control-width: root.max-control-width;
+            control-index: p;
+            report-tick: root.geometry-request;
+            report-geometry(index, item-x, item-width) => {
+                if (index == root.selected-page) {
+                    root.selected-x = item-x;
+                    root.selected-width = item-width;
+                }
+            }
         }
     }
 }
@@ -1193,8 +1220,20 @@ component FoldablePageControls inherits Rectangle {
     width-probe := PageControlWidthProbe {
         y: root.height + 1px;
         labels: root.labels;
+        selected-page: root.selected-page;
         control-style: root.control-style;
+        geometry-request: root.geometry-report-tick;
         max-control-width: root.width;
+        changed selected-x => {
+            root.selected-control-x = self.selected-x;
+            root.reveal-selected();
+            root.schedule-selected-reveal();
+        }
+        changed selected-width => {
+            root.selected-control-width = self.selected-width;
+            root.reveal-selected();
+            root.schedule-selected-reveal();
+        }
     }
 }
 
