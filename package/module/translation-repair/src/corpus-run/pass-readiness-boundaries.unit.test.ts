@@ -164,7 +164,24 @@ await describe({
         try {
           await persistSettledEntry({
             artifact: declinedArtifact(),
-            slices: [],
+            slices: [{
+              source: {
+                kind: 'content',
+                sliceIndex: 0,
+                nodes: [],
+                startOffset: 0,
+                endOffset: '猫在睡觉。'.length,
+                text: '猫在睡觉。',
+              },
+              target: {
+                kind: 'content',
+                sliceIndex: 0,
+                nodes: [],
+                startOffset: 0,
+                endOffset: 'The cat naps.'.length,
+                text: 'The cat naps.',
+              },
+            },],
             archiveText: 'The cat naps.',
             sourceText: '猫在睡觉。',
             entryId: 'Cat',

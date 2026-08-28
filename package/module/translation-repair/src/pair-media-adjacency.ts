@@ -1,9 +1,10 @@
+import type { DocumentNode, } from './document-node.ts';
 import {
   type BlockPair,
-  type NumberedBlock,
   readBlockPairing,
 } from './pair-blocks-wire.ts';
 import { photoReferences, } from './photo-reference.ts';
+import type { ContainerSpan, } from './unwrap-container.ts';
 
 //region Media-adjacent block claims
 // A target transcript can precede or follow media marker that is its only
@@ -136,8 +137,8 @@ function pairSharesMedia(
     targetBlocks,
   }: {
     readonly pair: BlockPair;
-    readonly sourceBlocks: readonly NumberedBlock[];
-    readonly targetBlocks: readonly NumberedBlock[];
+    readonly sourceBlocks: readonly DocumentNode[];
+    readonly targetBlocks: readonly DocumentNode[];
   },
 ): boolean {
   /**
@@ -163,6 +164,50 @@ function pairSharesMedia(
     .some(function sharesAsset(reference,): boolean {
       return sourceAssets.has(reference.assetName,);
     },);
+}
+
+/**
+ * Reports whether run exactly occupies one details container.
+ *
+ * @param run - unclaimed target run
+ *
+ * @param targetBlocks - parsed target blocks
+ *
+ * @param targetContainers - parsed target containers
+ *
+ * @returns Whether run is explicit archive transcript container
+ *
+ * @example
+ * ```ts
+ * const enclosed = isDetailsRun({ run, targetBlocks, targetContainers, });
+ * ```
+ */
+function isDetailsRun(
+  {
+    run,
+    targetBlocks,
+    targetContainers,
+  }: {
+    readonly run: TargetRun;
+    readonly targetBlocks: readonly DocumentNode[];
+    readonly targetContainers: readonly ContainerSpan[];
+  },
+): boolean {
+  /**
+   * First block in run.
+   */
+  const first = targetBlocks[run.start];
+  /**
+   * Last block in run.
+   */
+  const last = targetBlocks[run.end];
+  if ((first === undefined) || (last === undefined))
+    return false;
+  return targetContainers.some(function enclosesRun(container,): boolean {
+    return (container.name === 'details')
+      && (container.openerStartOffset === first.startOffset)
+      && (container.closerEndOffset === last.endOffset);
+  },);
 }
 
 /**
@@ -229,17 +274,19 @@ function mediaOwner(
  *
  * @param pairs - roster-agreed block correspondences
  *
- * @param sourceBlocks - numbered source blocks
+ * @param sourceBlocks - parsed source blocks
  *
- * @param targetBlocks - numbered target blocks
+ * @param targetBlocks - parsed target blocks
  *
- * @returns Pairing widened only across unambiguous media gaps
+ * @param targetContainers - parsed target containers proving transcript boundary
+ *
+ * @returns Pairing widened only across unambiguous media transcript gaps
  *
  * @throws BlockPairingError if widened result is not monotone
  *
  * @example
  * ```ts
- * const claim = claimMediaAdjacentTargets({ pairs, sourceBlocks, targetBlocks, });
+ * const claim = claimMediaAdjacentTargets({ pairs, sourceBlocks, targetBlocks, targetContainers, });
  * ```
  */
 export function claimMediaAdjacentTargets(
@@ -247,10 +294,12 @@ export function claimMediaAdjacentTargets(
     pairs,
     sourceBlocks,
     targetBlocks,
+    targetContainers,
   }: {
     readonly pairs: readonly BlockPair[];
-    readonly sourceBlocks: readonly NumberedBlock[];
-    readonly targetBlocks: readonly NumberedBlock[];
+    readonly sourceBlocks: readonly DocumentNode[];
+    readonly targetBlocks: readonly DocumentNode[];
+    readonly targetContainers: readonly ContainerSpan[];
   },
 ): MediaAdjacentClaim {
   /**
@@ -288,6 +337,12 @@ export function claimMediaAdjacentTargets(
    * New pairs contributed by unambiguous media gaps.
    */
   const added = runs.flatMap(function claimRun(run,): readonly BlockPair[] {
+    if (!isDetailsRun({
+      run,
+      targetBlocks,
+      targetContainers,
+    },))
+      return [];
     /**
      * Source marker owning this run.
      */

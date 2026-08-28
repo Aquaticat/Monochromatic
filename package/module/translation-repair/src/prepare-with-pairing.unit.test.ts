@@ -108,6 +108,25 @@ function cannedClient(
 }
 
 /**
+ * Builds client that fails if cache path buys any exchange.
+ *
+ * @returns Client refusing every transport call
+ *
+ * @example
+ * ```ts
+ * const client = refusingClient();
+ * ```
+ */
+function refusingClient(): ReturnType<typeof createSyntheticClient> {
+  return createSyntheticClient({
+    apiKey: 'test-key',
+    transport: async function refuseTransport(): Promise<never> {
+      throw new Error('cached preparation bought an exchange',);
+    },
+  },);
+}
+
+/**
  * Builds a pairing cache backed by a map that outlives one run.
  *
  * ROUND-TRIPS THROUGH THE SERIALIZATION rather than storing the record by
@@ -173,6 +192,67 @@ await describe({
             },
           ],
         },],);
+      },
+    },),
+    it({
+      name: 'ATTACHES DETAILS TRANSCRIPT TO MATCHED MEDIA ON COLD AND WARM PREPARATION so picture evidence reaches quality stages and cached pairing cannot bypass normalization',
+      fn: async () => {
+        /**
+         * Literal site path placeholder.
+         */
+        const pathToken = [
+          '$',
+          '{path}',
+        ].join('',);
+        /**
+         * Shared source and target media marker.
+         */
+        const media = `<PhotoScroll photos={[ '${pathToken}/photos/letter.webp']} />`;
+        /**
+         * Source fixture with image carrying letter.
+         */
+        const sourceText = `About the cat.\n\n${media}\n\nRemember the cat.`;
+        /**
+         * Archive fixture with details transcript before same image.
+         */
+        const targetText = `About the cat.\n\n<details>\n<summary>Letter</summary>\n> Translated letter.\n</details>\n\n${media}\n\nRemember the cat.`;
+        /**
+         * Cache shared across cold and warm preparation.
+         */
+        const stored = new Map<string, PairedSectionRecord>();
+        const pairingCache = memoryPairingCache({ stored, },);
+
+        const first = await prepareDocumentPairWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":3},{"source":2,"target":4}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":3},{"source":2,"target":4}]}',
+            ],
+          },),
+          modelIds: ROSTER,
+          sourceText,
+          targetText,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+          pairingCache,
+        },);
+        const resumed = await prepareDocumentPairWithRoster({
+          client: refusingClient(),
+          modelIds: ROSTER,
+          sourceText,
+          targetText,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+          pairingCache,
+        },);
+
+        expect(first.prepared.unclaimedTargetBlocks,).toEqual([]);
+        expect(first.prepared.slices.some(function carriesTranscript(slice,): boolean {
+          return slice.target.text.includes('Translated letter.',);
+        },),).toBe(true,);
+        expect(resumed.prepared.blockPairing,).toEqual(first.prepared.blockPairing,);
       },
     },),
     it({

@@ -255,6 +255,29 @@ await describe({
       },
     },),
     it({
+      name: 'ORDERS CORROBORATED SPLIT CANONICALLY when higher target was named first by an earlier voice',
+      fn: async () => {
+        expect(agreePairs({
+          pairings: [
+            [{ source: 0, target: 1, },],
+            [
+              { source: 0, target: 0, },
+              { source: 0, target: 1, },
+            ],
+            [
+              { source: 0, target: 0, },
+              { source: 0, target: 1, },
+            ],
+          ],
+          needed: NEEDED,
+          pairingShape: 'many-to-many',
+        },).pairs,).toEqual([
+          { source: 0, target: 0, },
+          { source: 0, target: 1, },
+        ],);
+      },
+    },),
+    it({
       name: 'DOES NOT INVENT A SPLIT from tied alternatives no voice named together',
       fn: async () => {
         expect(agreePairs({

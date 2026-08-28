@@ -540,6 +540,30 @@ await describe({
       },
     },),
     it({
+      name: 'PUTS ARCHIVE IN DECLINE RECOVERY SLATE AS BASELINE, not either lane contest rejected',
+      fn: async () => {
+        const { client, judgeSheets, } = answeringClient();
+        const { slices, } = await driveWith({
+          client,
+          contests: [{
+            sliceIndex: 0,
+            verdict: {
+              kind: 'settled-neither',
+              archive: 'declined',
+            },
+            ballots: [],
+            usable: ROSTER.length,
+          },],
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(judgeSheets.every(function carriesArchiveBaseline(sheet,): boolean {
+          return sheet.includes('archive wording for slice 0',);
+        },),).toBe(true,);
+        expect(slices[0]?.terminal,).not.toBe('no-standing-text',);
+      },
+    },),
+    it({
       name: 'REFUSES A CONTESTED SLICE MISSING FROM THE REPAIR LEDGER rather than consolidating '
         + 'against no original, because the comparison and the ledger disagreeing about which slices '
         + 'exist is a defect upstream and settling one of them anyway would hide it',

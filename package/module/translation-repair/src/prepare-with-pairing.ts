@@ -20,6 +20,7 @@ import type {
   BlockPair,
   NumberedBlock,
 } from './pair-blocks-wire.ts';
+import { claimMediaAdjacentTargets, } from './pair-media-adjacency.ts';
 import type {
   PairedDocumentRecord,
 } from './pair-sections-stage.ts';
@@ -200,10 +201,25 @@ export async function prepareDocumentPairWithRoster(
       .entries()
   ) {
     /**
+     * Source and target section chunks.
+     */
+    const {
+      source: sourceChunk,
+      target: targetChunk,
+    } = pair;
+    /**
+     * Parsed source nodes media attachment and pairing share.
+     */
+    const { nodes: sourceNodes, } = sourceChunk;
+    /**
+     * Parsed target nodes under same rule.
+     */
+    const { nodes: targetNodes, } = targetChunk;
+
+    /**
      * This section's original blocks.
      */
-    const sourceBlocks = pair.source
-      .nodes
+    const sourceBlocks = sourceNodes
       .map(function toNumbered(
         node,
         index,
@@ -217,8 +233,7 @@ export async function prepareDocumentPairWithRoster(
     /**
      * This section's translation blocks.
      */
-    const targetBlocks = pair.target
-      .nodes
+    const targetBlocks = targetNodes
       .map(function toNumbered(
         node,
         index,
@@ -278,18 +293,42 @@ export async function prepareDocumentPairWithRoster(
       } = cached;
       findings.push(...cachedFindings,);
 
+      /**
+       * Structural transcript claims applied on cold and warm paths alike.
+       */
+      const resumedMediaClaim = claimMediaAdjacentTargets({
+        pairs: cachedPairs,
+        sourceBlocks: sourceNodes,
+        targetBlocks: targetNodes,
+        targetContainers: target.containers,
+      },);
+      /**
+       * Cached pairs after current structural normalization.
+       */
+      const { pairs: resumedPairs, } = resumedMediaClaim;
+      /**
+       * Structural findings current warm path contributes.
+       */
+      const resumedMediaFindings = resumedMediaClaim.findings
+        .map(function prefixMedia(
+          finding,
+        ): string {
+          return `block-pairing ${finding}`;
+        },);
+      findings.push(...resumedMediaFindings,);
+
       // AN EMPTY CACHED PAIRING IS AN ANSWER: the roster was asked about these
       // blocks and agreed on nothing, so the section keeps the scorer without
       // the round being bought again. Warned again rather than only the first
       // time, because falling back to the deterministic aligner is what THIS run
       // is doing, not something that merely happened once.
-      if (cachedPairs.length === 0) {
+      if (resumedPairs.length === 0) {
         pl.warn(`section ${String(pairIndex,)}: no agreed pairing, keeping the deterministic aligner`,);
         continue;
       }
       blockPairings.set(
         pairIndex,
-        cachedPairs,
+        resumedPairs,
       );
       continue;
     }
@@ -313,10 +352,24 @@ export async function prepareDocumentPairWithRoster(
      * stood behind them.
      */
     const {
-      pairs,
+      pairs: rosterPairs,
       usable,
       heard,
     } = outcome;
+
+    /**
+     * Structurally claimed details transcripts adjoining matched media.
+     */
+    const mediaClaim = claimMediaAdjacentTargets({
+      pairs: rosterPairs,
+      sourceBlocks: sourceNodes,
+      targetBlocks: targetNodes,
+      targetContainers: target.containers,
+    },);
+    /**
+     * Pairing consumed and cached after structural normalization.
+     */
+    const { pairs, } = mediaClaim;
 
     /**
      * Everything this section reported, gathered before any of it is stored.
@@ -326,7 +379,20 @@ export async function prepareDocumentPairWithRoster(
      * section, so the record written beside the pairs could not carry them and
      * a resume reported a quieter round than the one that was bought.
      */
-    const sectionFindings: string[] = [...outcome.findings,];
+    /**
+     * Structural media findings in pairing vocabulary.
+     */
+    const mediaFindings = mediaClaim.findings
+      .map(function prefixMedia(finding,): string {
+        return `block-pairing ${finding}`;
+      },);
+    /**
+     * Roster and structural findings cached with normalized pairing.
+     */
+    const sectionFindings: string[] = [
+      ...outcome.findings,
+      ...mediaFindings,
+    ];
 
     // HOW MANY VOICES AGREED, recorded rather than only logged. A section two
     // voices paired and one six voices paired are different evidence about the
@@ -340,7 +406,7 @@ export async function prepareDocumentPairWithRoster(
     // beside it would be a second wording for one fact.
     if (usable > 0)
       sectionFindings.push(
-        `block-pairing section ${String(pairIndex,)} paired ${String(pairs.length,)} of ${
+        `block-pairing section ${String(pairIndex,)} paired ${String(rosterPairs.length,)} of ${
           String(sourceBlocks.length,)
         } original and ${String(targetBlocks.length,)} translation blocks, from ${
           String(usable,)

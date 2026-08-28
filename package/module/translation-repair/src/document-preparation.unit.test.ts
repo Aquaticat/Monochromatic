@@ -213,6 +213,54 @@ The cat also likes sunbathing.
     },),
 
     it({
+      name: 'CARRIES CORROBORATED PARAGRAPH SPLITS AND MERGES THROUGH SLICING because block wire permits repeated position on either side',
+      fn: async () => {
+        const split = prepareDocumentPair({
+          sourceText: 'Cats nap.',
+          targetText: 'Cats nap.\n\nThey dream.',
+          blockPairings: new Map([[
+            0,
+            [
+              { source: 0, target: 0, },
+              { source: 0, target: 1, },
+            ],
+          ],]),
+        },);
+        const merged = prepareDocumentPair({
+          sourceText: 'Cats nap.\n\nThey dream.',
+          targetText: 'Cats nap and dream.',
+          blockPairings: new Map([[
+            0,
+            [
+              { source: 0, target: 0, },
+              { source: 1, target: 0, },
+            ],
+          ],]),
+        },);
+
+        expect(split.slices,).toHaveLength(1);
+        expect(split.slices[0]?.target.text,).toContain('They dream.');
+        expect(merged.slices,).toHaveLength(1);
+        expect(merged.slices[0]?.source.text,).toContain('They dream.');
+      },
+    },),
+
+    it({
+      name: 'REVIEWS TARGET-ONLY PROSE THROUGH DETERMINISTIC SLICING when no roster pairing exists, rather than misclassifying folded context as unclaimed bypass',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: 'Cats nap.',
+          targetText: 'Cats nap.\n\nAn adjacent archive aside.',
+        },);
+
+        expect(prepared.unclaimedTargetBlocks,).toEqual([]);
+        expect(prepared.slices.some(function carriesAside(slice,): boolean {
+          return slice.target.text.includes('archive aside',);
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'GIVES THE SAME SLICING EVERY TIME for one pair, which is the '
         + 'whole reason preparation is shared: two lanes that sliced separately '
         + 'would drift the moment either changed a budget, and each would still '
