@@ -21,6 +21,7 @@ import {
   sectionPairingsOf,
 } from './section-pairing.ts';
 import { parseDocument, } from './parse-document.ts';
+import { frontMatterSlice, } from './front-matter-slice.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertContainerIntegrity, } from './container-integrity.ts';
 import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
@@ -230,6 +231,9 @@ export type PreparedDocumentPair = {
  * @param sliceCharBudget - target characters a slice may carry; defaults to
  * {@link SLICE_CHAR_BUDGET}
  *
+ * @param includeFrontMatter - whether visible metadata becomes explicit slice;
+ * false only when rebuilding pre-generation-5 artifacts
+ *
  * @param blockPairings - correspondences a roster agreed on WITHIN each aligned
  * section, keyed by section index
  *
@@ -251,12 +255,14 @@ export function prepareDocumentPair(
     sourceText,
     targetText,
     sliceCharBudget = SLICE_CHAR_BUDGET,
+    includeFrontMatter = true,
     blockPairings,
     sectionPairing,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly sliceCharBudget?: number;
+    readonly includeFrontMatter?: boolean;
     readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
     readonly sectionPairing?: readonly SectionPair[];
   },
@@ -380,9 +386,20 @@ export function prepareDocumentPair(
     },);
 
   /**
-   * Slice pairs accumulated across every aligned section.
+   * Slice pairs accumulated across front matter and aligned body sections.
    */
   const slices: ChunkPair[] = [];
+  /**
+   * Visible localized metadata excluded from Markdown nodes.
+   */
+  const metadataSlice = includeFrontMatter
+    ? frontMatterSlice({
+      ...(sourceDocument.frontMatter === undefined ? {} : { source: sourceDocument.frontMatter, }),
+      ...(targetDocument.frontMatter === undefined ? {} : { target: targetDocument.frontMatter, }),
+    },)
+    : { kind: 'none' as const, };
+  if (metadataSlice.kind === 'paired')
+    slices.push(metadataSlice.slice,);
 
   /**
    * Slices whose enclosing CHUNK's original is line-structured.

@@ -216,6 +216,13 @@ export async function settleRefinePhaseSlice(
   const prepared = slices[outcome.sliceIndex];
   if (prepared === undefined)
     throw new UnpreparedSliceError({ sliceIndex: outcome.sliceIndex, },);
+  if (prepared.syntax === 'front-matter') {
+    return {
+      outcome,
+      findings: ['refine-front-matter-not-applicable (YAML metadata is syntax-bearing)',],
+      asked: false,
+    };
+  }
 
   /**
    * Source wording serving as faithfulness anchor.

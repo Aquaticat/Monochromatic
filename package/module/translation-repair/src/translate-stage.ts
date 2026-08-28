@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { SliceSyntax, } from './chunk-document.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
@@ -70,6 +71,8 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  * side, shown so a passage missing here can be recognised next door rather than
  * read as one the archive never had
  *
+ * @param syntax - syntax role requiring dedicated production and judging rules
+ *
  * @param lineStructured - whether the enclosing CHUNK's original is
  * line-structured, decided by the caller
  *
@@ -110,6 +113,7 @@ export async function runTranslateStage(
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
+    syntax,
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -125,6 +129,7 @@ export async function runTranslateStage(
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
+    readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -150,6 +155,7 @@ export async function runTranslateStage(
     incumbentText,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
+    ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -172,6 +178,7 @@ export async function runTranslateStage(
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),
+      ...((syntax === undefined) ? {} : { syntax, }),
       // THE SAME VALUE THE PRODUCER WAS GIVEN, read from one binding rather
       // than derived twice. A slate written under the verse rule and judged
       // without it is the contradiction `#150` fixed for producers alone, and

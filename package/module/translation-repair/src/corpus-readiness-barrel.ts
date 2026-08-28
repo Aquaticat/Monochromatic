@@ -14,6 +14,10 @@ export {
   assertFinalSelectionSettled,
   UnsettledFinalSelectionError,
 } from './corpus-run/final-selection-completeness.ts';
+export {
+  assertFrontMatterComplete,
+  FrontMatterCompletenessError,
+} from './corpus-run/front-matter-completeness.ts';
 export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
 export { preparePassEntry, } from './corpus-run/pass-prepare.ts';
 

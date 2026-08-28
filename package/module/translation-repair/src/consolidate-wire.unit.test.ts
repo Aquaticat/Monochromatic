@@ -137,6 +137,19 @@ await describe({
       },
     },),
     it({
+      name: 'GIVES FRONT MATTER PRODUCER YAML RULE and source-authoritative name precedence',
+      fn: async () => {
+        const sheet = sheetFor({
+          subject: {
+            ...bare,
+            syntax: 'front-matter',
+          },
+        },);
+        expect(sheet,).toContain('complete YAML front matter',);
+        expect(sheet,).toContain('never an entry directory id',);
+      },
+    },),
+    it({
       name: 'tells the producer that agreement between candidates can be wrong',
       fn: async () => {
         // THE INHERITED-INVENTION CASE. Where the archive invented something no

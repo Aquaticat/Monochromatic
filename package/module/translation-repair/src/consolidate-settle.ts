@@ -5,6 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { SliceSyntax, } from './chunk-document.ts';
 import {
   type ConsolidateGateOutcome,
   gateConsolidatedSlice,
@@ -153,6 +154,11 @@ export type ConsolidationSubject = {
    * against.
    */
   readonly sourceText: string;
+
+  /**
+   * Syntax role requiring dedicated validation and judging.
+   */
+  readonly syntax?: SliceSyntax;
 
   /**
    * Wording the ARCHIVE carries, which is not the standing text once a lane
@@ -506,6 +512,7 @@ export async function settleConsolidation(
     // whose lanes both produced wording has a standing text to fall back on
     // even though the archive holds none.
     incumbentKind: 'present',
+    ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
     ...identity,
     // WHAT THE PRODUCERS WERE SHOWN, forwarded rather than recomputed. `#176`
     // put the pictures in front of the producers and left the judges blind,

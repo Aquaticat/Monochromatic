@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import type { SliceSyntax, } from './chunk-document.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
@@ -104,6 +105,17 @@ export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-struc
   + 'drop a line. Where the EXISTING TRANSLATION has merged lines, unmerge them.';
 
 /**
+ * Instruction for visible YAML page metadata.
+ */
+export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML front matter, including its '
+  + '--- fence lines. Return one complete YAML front matter block and nothing outside it. Preserve every field name, '
+  + 'nesting level, container length, scalar kind, comment, and fence. Translate human-language values from the '
+  + 'ORIGINAL into natural English. For this metadata only, ORIGINAL field values are source facts and outrank the '
+  + 'existing translation. The name field is the visible person name, never an entry directory id. Existing aliases, '
+  + 'handles, and contributor names may supply established English forms only where they identify the same source value. '
+  + 'THIS RULE OUTRANKS the general rule that names already used by the existing translation are authoritative.';
+
+/**
  * Messages for one translation call.
  *
  * @example
@@ -127,6 +139,8 @@ export type TranslatePromptPlan = {
  *
  * @param identityContext - declared names and handles, omitted when absent
  *
+ * @param syntax - syntax role requiring dedicated preservation rules
+ *
  * @param lineStructured - whether the enclosing CHUNK's original is
  * line-structured, decided by the caller because a slice is too small a unit to
  * decide it on; see `buildEditorAddendum`
@@ -144,12 +158,14 @@ export function buildTranslateMessages(
     existingText,
     identityContext = '',
     pictureContext = '',
+    syntax,
     lineStructured = false,
   }: {
     readonly sourceText: string;
     readonly existingText: string;
     readonly identityContext?: string;
     readonly pictureContext?: string;
+    readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
   },
 ): TranslatePromptPlan {
@@ -172,6 +188,7 @@ export function buildTranslateMessages(
    */
   const system = [
     TRANSLATE_RULES,
+    syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : '',
     lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : '',
     TRANSLATE_REPLY_RULE,
   ]

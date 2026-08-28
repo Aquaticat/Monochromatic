@@ -11,6 +11,7 @@ import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
 import { sliceNeighbourContexts, } from '../fidelity-window.ts';
+import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
 import { slicePictureContexts, } from '../slice-pictures.ts';
 import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
@@ -340,12 +341,20 @@ async function runEntryPipeline(
     const projected = projectLanes({ lanes, },);
 
     /**
+     * Syntax-bearing metadata slice indexes shared by final quality stages.
+     */
+    const frontMatterSlices = frontMatterSliceIndexes({
+      slices: prepared.slices,
+    },);
+
+    /**
      * What the roster said at every slice the two lanes worded differently.
      */
     const contestSlices = await contestDocumentLanes({
       client,
       projected,
       modelIds: RUN_ROSTER,
+      frontMatterSlices,
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),
@@ -377,6 +386,7 @@ async function runEntryPipeline(
       projected,
       contests: contestSlices,
       modelIds: RUN_ROSTER,
+      frontMatterSlices,
       lineStructuredSlices: prepared.lineStructuredSliceIndices,
       // THE SAME WINDOW THE TRANSLATE LANE WAS SHOWN, computed from the same
       // slices and the same readings. A producer asked to better a translation

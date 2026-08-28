@@ -26,6 +26,7 @@ import {
   type WouldShipSource,
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
+import { assertFrontMatterComplete, } from './front-matter-completeness.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
 import {
   type DestinationCheck,
@@ -245,6 +246,14 @@ export async function publishFixedPage(
     targetText: archiveText,
     slices,
     replacements,
+  },);
+
+  assertFrontMatterComplete({
+    entryId,
+    sourceText,
+    archiveText,
+    pageText,
+    slices,
   },);
 
   // BEFORE THE WRITE, so a page that disagrees with its artifact publishes

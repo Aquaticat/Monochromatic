@@ -91,6 +91,20 @@ await describe({
     },),
 
     it({
+      name: 'PUTS VISIBLE FRONT MATTER IN EXPLICIT SLICE ZERO before body slicing',
+      fn: async () => {
+        const { slices, } = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },);
+        expect(slices.at(0,)?.syntax,).toBe('front-matter',);
+        expect(slices.at(0,)?.source.text,).toBe('---\nname: 猫猫\nhandle: mao\n---\n',);
+        expect(slices.at(0,)?.target.text,).toBe('---\nname: Maomao\nhandle: mao\n---\n',);
+        expect(slices.at(1,)?.syntax,).toBeUndefined();
+      },
+    },),
+
+    it({
       name: 'indexes slices GLOBALLY and in document order, which is what lets '
         + 'a cached outcome and a spliced replacement name the same slice. '
         + 'Per-section indexes would collide the moment any section subdivided',
@@ -146,7 +160,12 @@ await describe({
           sourceText: SOURCE_TEXT,
           // One section short, which is the shape that made a whole document
           // pair off by one in the corpus.
-          targetText: `## Section one
+          targetText: `---
+name: Maomao
+handle: mao
+---
+
+## Section one
 
 The cat likes chasing butterflies.
 
@@ -169,7 +188,12 @@ The cat also likes sunbathing.
         const { alignmentFindings, } = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
           // One section short, the shape that refuses rather than pairs.
-          targetText: `## Section one
+          targetText: `---
+name: Maomao
+handle: mao
+---
+
+## Section one
 
 The cat likes chasing butterflies.
 

@@ -128,6 +128,19 @@ await describe({
       },
     },),
     it({
+      name: 'SEPARATES FRONT MATTER ROLE from identical Markdown text because prompts and validators differ',
+      fn: async () => {
+        expect(translateSliceKey({
+          runShape: RUN_SHAPE,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          incumbentKind: 'present',
+          syntax: 'front-matter',
+          lineStructured: false,
+        },),).not.toBe(keyFor({},),);
+      },
+    },),
+    it({
       name: 'keys the same slice to the same string when nothing varies, which is the whole point '
         + 'of the key and the thing every separation above is measured against',
       fn: async () => {

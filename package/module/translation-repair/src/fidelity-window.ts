@@ -79,6 +79,12 @@ export function neighbouringSource(
     );
   }
 
+  /**
+   * Slice whose body window is requested.
+   */
+  const current = slices[slicePosition];
+  if (current?.syntax === 'front-matter')
+    return '';
   return [
     slicePosition - 1,
     slicePosition + 1,
@@ -88,7 +94,7 @@ export function neighbouringSource(
        * That slice, absent at either end of the document.
        */
       const beside = slices[neighbour];
-      if (beside === undefined)
+      if ((beside === undefined) || (beside.syntax === 'front-matter'))
         return '';
       return beside.source
         .text;
@@ -162,6 +168,12 @@ export function neighbouringIncumbent(
     );
   }
 
+  /**
+   * Slice whose body window is requested.
+   */
+  const current = slices[slicePosition];
+  if (current?.syntax === 'front-matter')
+    return '';
   return [
     slicePosition - 1,
     slicePosition + 1,
@@ -171,7 +183,7 @@ export function neighbouringIncumbent(
        * That slice, absent at either end of the document.
        */
       const beside = slices[neighbour];
-      if (beside === undefined)
+      if ((beside === undefined) || (beside.syntax === 'front-matter'))
         return '';
       return beside.target
         .text;

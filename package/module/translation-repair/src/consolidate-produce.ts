@@ -169,6 +169,7 @@ export async function produceConsolidations(
         candidateText: voice.value
           .translation,
         pageText: subject.incumbentText,
+        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
         lineStructured: subject.lineStructured,
       },),
     };
@@ -192,6 +193,7 @@ export async function produceConsolidations(
     sourceText: subject.sourceText,
     incumbentText: standingText,
     pageText: subject.incumbentText,
+    ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
     lineStructured: subject.lineStructured,
     priorMessages: messages,
     signal,

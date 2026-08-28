@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { cacheRefusalsOf, } from './repair-cache-gate.ts';
@@ -98,6 +99,16 @@ export async function buyRepairSlice(
 
   // Cached slices may finish under an already spent signal. A purchase may not.
   signal.throwIfAborted();
+  if (slice.syntax === 'front-matter') {
+    /**
+     * Archive metadata retained by repair lane.
+     */
+    const { text: targetText, } = slice.target;
+    return frontMatterRepairOutcome({
+      sliceIndex,
+      targetText,
+    },);
+  }
 
   /**
    * Fresh outcome from full repair stage sequence, normalizing an abort to its

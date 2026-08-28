@@ -3,6 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { SliceSyntax, } from './chunk-document.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import { attemptStageCall, } from './stage-call.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
@@ -91,6 +92,7 @@ async function repairOneCandidate(
     sourceText,
     incumbentText,
     pageText,
+    syntax,
     lineStructured,
     priorMessages,
     signal,
@@ -102,6 +104,7 @@ async function repairOneCandidate(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly pageText: string;
+    readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
@@ -131,6 +134,7 @@ async function repairOneCandidate(
     candidateText: voice.value
       .translation,
     pageText,
+    ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
   },);
   if (validation.kind === 'valid')
@@ -233,6 +237,7 @@ async function repairOneCandidate(
     sourceText,
     candidateText: translation,
     pageText,
+    ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
   },);
 
@@ -307,6 +312,7 @@ export async function repairInvalidCandidates(
     sourceText,
     incumbentText,
     pageText = incumbentText,
+    syntax,
     lineStructured = false,
     priorMessages,
     signal,
@@ -318,6 +324,7 @@ export async function repairInvalidCandidates(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly pageText?: string;
+    readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
@@ -339,6 +346,7 @@ export async function repairInvalidCandidates(
         sourceText,
         incumbentText,
         pageText,
+        ...((syntax === undefined) ? {} : { syntax, }),
         lineStructured,
         priorMessages,
         signal,

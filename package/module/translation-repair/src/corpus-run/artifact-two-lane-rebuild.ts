@@ -4,6 +4,7 @@ import {
 } from '../document-preparation.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
 import type { SectionPair, } from '../pair-sections-wire.ts';
+import { ARTIFACT_SCHEMA_VERSION_V5, } from './artifact-two-lane-contract.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 
 //region Preparation rebuilt from a settled artifact
@@ -251,6 +252,7 @@ export function rebuildPreparation(
     prepared: prepareDocumentPair({
       sourceText,
       targetText,
+      includeFrontMatter: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V5,
       ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
       ...((blockPairings === undefined) ? {} : { blockPairings, }),
     },),

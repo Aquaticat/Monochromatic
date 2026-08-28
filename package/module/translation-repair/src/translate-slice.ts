@@ -198,6 +198,7 @@ export async function settleTranslateSlice(
     ...((pictureContext === undefined)
       ? {}
       : { pictureContext, }),
+    ...((slice.syntax === undefined) ? {} : { syntax: slice.syntax, }),
     lineStructured: prepared.lineStructuredSliceIndices
       .has(sliceIndex,),
     signal,
@@ -304,7 +305,19 @@ export async function settleTranslateSlice(
    * declared alias, and stating the exception in the criterion moved their
    * reasoning without moving the vote.
    */
-  const droppedDeclaredNames = guardsThisSlice
+  /**
+   * Whether target-declared forms govern this ordinary prose slice.
+   *
+   * Front matter is where declarations themselves are corrected from source,
+   * so protecting target values there would make metadata unrepairable.
+   */
+  const guardDeclaredNames = slice.syntax === 'front-matter'
+    ? false
+    : guardsThisSlice;
+  /**
+   * Target-declared forms ordinary prose replacement would drop.
+   */
+  const droppedDeclaredNames = guardDeclaredNames
     ? findDroppedDeclaredNames({
       forms: prepared.declaredNames,
       baseText: incumbentText,

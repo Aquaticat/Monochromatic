@@ -1,7 +1,10 @@
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { ParsedConsolidation, } from './artifact-two-lane-read-consolidate.ts';
-import type { ArtifactJsonValue, } from './artifact-two-lane-contract.ts';
+import type {
+  ArtifactJsonValue,
+  TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 import type { ParsedBlockPairing, } from './artifact-two-lane-read-pairing.ts';
 import type { ParsedSectionPairing, } from './artifact-two-lane-read-section-pairing.ts';
 import type {
@@ -315,6 +318,11 @@ export type ParsedPreparation = {
  * ```
  */
 export type ParsedTwoLaneArtifact = {
+  /**
+   * Schema generation selecting preparation semantics and key vocabulary.
+   */
+  readonly artifactSchemaVersion: TwoLaneArtifactGeneration;
+
   /**
    * Corpus entry this covers.
    */

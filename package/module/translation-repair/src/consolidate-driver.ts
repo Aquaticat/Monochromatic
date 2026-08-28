@@ -135,6 +135,8 @@ function laneChoiceOf(
  *
  * @param identityContext - names and handles both documents declare
  *
+ * @param frontMatterSlices - syntax-bearing metadata slice indexes
+ *
  * @param lineStructuredSlices - chunk indices whose original is verse or
  * otherwise line-structured, which decides whether a producer is shown the rule
  * against merging lines
@@ -173,6 +175,7 @@ export async function consolidateDocument(
     contests,
     modelIds,
     identityContext,
+    frontMatterSlices = new Set(),
     lineStructuredSlices,
     pictureContextBySlice,
     neighbourContextBySlice,
@@ -187,6 +190,7 @@ export async function consolidateDocument(
     readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly frontMatterSlices?: ReadonlySet<number>;
     readonly lineStructuredSlices: ReadonlySet<number>;
     readonly pictureContextBySlice: ReadonlyMap<number, string>;
     readonly neighbourContextBySlice: ReadonlyMap<number, SliceNeighbourContext>;
@@ -343,6 +347,7 @@ export async function consolidateDocument(
       repairText: row.repairText,
       translateText: row.translateText,
       ballots: contest.ballots,
+      ...(frontMatterSlices.has(row.sliceIndex,) ? { syntax: 'front-matter' as const, } : {}),
       lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       // Omitted rather than empty, matching the context above it, so a producer

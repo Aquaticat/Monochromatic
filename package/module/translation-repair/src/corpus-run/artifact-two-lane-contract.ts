@@ -36,6 +36,11 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
  */
+export const ARTIFACT_SCHEMA_VERSION_V5 = 5;
+
+/**
+ * Generation before front matter became explicit slice zero.
+ */
 export const ARTIFACT_SCHEMA_VERSION_V4 = 4;
 
 /**
@@ -85,7 +90,40 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V3,
   ARTIFACT_SCHEMA_VERSION_V4,
+  ARTIFACT_SCHEMA_VERSION_V5,
 ];
+
+/**
+ * Generation of parsed two-lane artifact.
+ *
+ * @example
+ * ```ts
+ * const generation: TwoLaneArtifactGeneration = 5;
+ * ```
+ */
+export type TwoLaneArtifactGeneration =
+  | typeof ARTIFACT_SCHEMA_VERSION_V2
+  | typeof ARTIFACT_SCHEMA_VERSION_V3
+  | typeof ARTIFACT_SCHEMA_VERSION_V4
+  | typeof ARTIFACT_SCHEMA_VERSION_V5;
+
+/**
+ * Narrows numeric artifact version to known two-lane generation.
+ *
+ * @param value - parsed schema version
+ *
+ * @returns Whether this two-lane reader knows generation
+ *
+ * @example
+ * ```ts
+ * if (isTwoLaneArtifactGeneration(artifact.artifactSchemaVersion)) read(artifact);
+ * ```
+ */
+export function isTwoLaneArtifactGeneration(
+  value: number,
+): value is TwoLaneArtifactGeneration {
+  return TWO_LANE_GENERATIONS.includes(value,);
+}
 
 /**
  * What the one field this schema does not describe may hold.
@@ -351,7 +389,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V4;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V5;
 
   /**
    * Corpus entry this covers.

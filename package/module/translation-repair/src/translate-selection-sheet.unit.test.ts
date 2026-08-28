@@ -25,6 +25,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  TRANSLATE_FRONT_MATTER_CRITERIA,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TRANSLATE_SELECTION_CRITERIA,
   translateSelectionCriteria,
@@ -166,6 +167,19 @@ await describe({
         + 'that happened to match today is the thing that drifts tomorrow',
       fn: async () => {
         expect(translateSelectionCriteria({ lineStructured: false, },),).toBe(TRANSLATE_SELECTION_CRITERIA,);
+      },
+    },),
+    it({
+      name: 'USES DEDICATED YAML CRITERIA for front matter instead of prose shape rules',
+      fn: async () => {
+        const criteria = translateSelectionCriteria({
+          lineStructured: false,
+          syntax: 'front-matter',
+        },);
+        expect(criteria,).toBe(TRANSLATE_FRONT_MATTER_CRITERIA,);
+        expect(criteria.some(function namesVisibleIdentity(criterion,): boolean {
+          return criterion.includes('entry directory id',);
+        },),).toBe(true,);
       },
     },),
     it({

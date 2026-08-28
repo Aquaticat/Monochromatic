@@ -1,3 +1,5 @@
+import type { SliceSyntax, } from './chunk-document.ts';
+import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
 import {
@@ -526,6 +528,8 @@ const NO_PAGE: SliceSkeleton = {
  * has none. Its shape is a floor the candidate carries rather than a ceiling,
  * so a rendering restoring what the page left out stays valid
  *
+ * @param syntax - explicit syntax role, absent for ordinary Markdown
+ *
  * @param lineStructured - whether the line-structure rule governs this slice,
  * which makes merging its lines a fault. Defaults to false, so a caller that
  * cannot say leaves the check off rather than guessing at it from the slice
@@ -544,14 +548,22 @@ export function validateTranslatedSlice(
     sourceText,
     candidateText,
     pageText = '',
+    syntax,
     lineStructured = false,
   }: {
     readonly sourceText: string;
     readonly candidateText: string;
     readonly pageText?: string;
+    readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
   },
 ): SliceValidation {
+  if (syntax === 'front-matter') {
+    return validateFrontMatterTranslation({
+      pageText,
+      candidateText,
+    },);
+  }
   /**
    * Shape the original carries.
    */

@@ -192,6 +192,22 @@ await describe({
       },
     },),
     it({
+      name: 'JUDGES FRONT MATTER AS YAML and makes source visible name authoritative',
+      fn: async () => {
+        const system = buildLaneContestMessages({
+          subject: {
+            sourceText: '---\nname: 猫猫\n---\n',
+            incumbentText: '---\nname: EntryId\n---\n',
+            repairText: '---\nname: EntryId\n---\n',
+            translateText: '---\nname: Maomao\n---\n',
+            syntax: 'front-matter',
+          },
+        },).at(0,)?.content ?? '';
+        expect(system.includes('complete YAML front matter',),).toBe(true,);
+        expect(system.includes('must not be replaced by an entry directory id',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'OMITS the block entirely when neither document declares a name',
       fn: async () => {
         // An empty heading would read as "nothing is declared about this

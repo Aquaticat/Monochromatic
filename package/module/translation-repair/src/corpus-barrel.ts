@@ -41,13 +41,16 @@ export {
 } from './corpus-run/damage-region-v2.ts';
 export {
   ARTIFACT_SCHEMA_VERSION_V2,
+  ARTIFACT_SCHEMA_VERSION_V5,
   type ArtifactJsonValue,
   type ArtifactSectionAlignment,
   type ArtifactSectionCorrespondence,
   type SettledArtifact,
   type SettledLane,
   type SettledPreparation,
+  isTwoLaneArtifactGeneration,
   TWO_LANE_GENERATIONS,
+  type TwoLaneArtifactGeneration,
 } from './corpus-run/artifact-two-lane-contract.ts';
 export {
   type ArtifactContestSlice,

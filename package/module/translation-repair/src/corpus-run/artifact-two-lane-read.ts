@@ -15,6 +15,7 @@ import {
   type PreparationIdentity,
 } from '../preparation-identity.ts';
 import {
+  isTwoLaneArtifactGeneration,
   TWO_LANE_GENERATIONS,
 } from './artifact-two-lane-contract.ts';
 import {
@@ -317,7 +318,7 @@ export function parseSettledTwoLaneArtifact(
     value: artifact.artifactSchemaVersion,
     path: 'artifact.artifactSchemaVersion',
   },);
-  if (!TWO_LANE_GENERATIONS.includes(version,)) {
+  if (!isTwoLaneArtifactGeneration(version,)) {
     throw new ArtifactParseError({
       path: 'artifact.artifactSchemaVersion',
       reason: `${
@@ -328,6 +329,10 @@ export function parseSettledTwoLaneArtifact(
     },);
   }
 
+  /**
+   * Known two-lane generation after membership guard.
+   */
+  const generation = version;
   /**
    * Spelling this artifact's own generation gave the three renamed keys.
    */
@@ -419,6 +424,7 @@ export function parseSettledTwoLaneArtifact(
     keys,
   },);
   return {
+    artifactSchemaVersion: generation,
     id,
     tip: requireString({
       value: artifact.tip,

@@ -10,6 +10,17 @@ export {
   type UnclaimedTargetBlock,
 } from './document-preparation.ts';
 export {
+  FrontMatterAlignmentError,
+  frontMatterSlice,
+  frontMatterSliceIndexes,
+  type FrontMatterSliceResult,
+} from './front-matter-slice.ts';
+export { validateFrontMatterTranslation, } from './front-matter-translation.ts';
+export {
+  TRANSLATE_FRONT_MATTER_CRITERIA,
+} from './translate-selection-sheet.ts';
+export { TRANSLATE_FRONT_MATTER_RULE, } from './translate-wire.ts';
+export {
   type FoldedText,
   foldInvisibleVariants,
 } from './invisible-variants.ts';

@@ -47,6 +47,16 @@ export {
 } from './chunk-placement.ts';
 
 /**
+ * Syntax roles requiring rules beyond ordinary Markdown prose.
+ *
+ * @example
+ * ```ts
+ * const syntax: SliceSyntax = 'front-matter';
+ * ```
+ */
+export type SliceSyntax = 'front-matter';
+
+/**
  * One source chunk paired with its translation chunk.
  *
  * Each side is exactly one chunk. Merging several sections into one side was
@@ -58,6 +68,13 @@ export {
  * ```
  */
 export type ChunkPair = {
+  /**
+   * Syntax role requiring rules beyond ordinary Markdown prose.
+   *
+   * Absent for body slices so existing structural consumers stay narrow.
+   */
+  readonly syntax?: SliceSyntax;
+
   /**
    * Original-side chunk, which is always existing text: a pair exists
    * because a source section exists.

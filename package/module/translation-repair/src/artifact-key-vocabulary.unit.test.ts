@@ -59,14 +59,19 @@ const GENERATION_TWO = 2;
 const GENERATION_THREE = 3;
 
 /**
- * Generation the pass writes, which spells every field the current way.
+ * Generation that finished key renames.
  */
 const GENERATION_FOUR = 4;
 
 /**
- * Generation no table covers, one past the newest.
+ * Generation current pass writes, retaining same key spelling.
  */
-const GENERATION_UNKNOWN = 5;
+const GENERATION_FIVE = 5;
+
+/**
+ * Generation no table covers, one past newest.
+ */
+const GENERATION_UNKNOWN = 6;
 
 await describe({
   name: keyVocabularyOf.name,
@@ -134,12 +139,13 @@ await describe({
     },),
 
     it({
-      name: 'gives generations 1 and 2 the older spelling and generation 4 the current one, which is '
+      name: 'gives generations 1 and 2 older spelling and generations 4 and 5 current one, which is '
         + 'the whole dispatch',
       fn: async () => {
         expect(keyVocabularyOf({ version: GENERATION_ONE, },),).toBe(CHUNK_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_TWO, },),).toBe(CHUNK_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_FOUR, },),).toBe(SLICE_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_FIVE, },),).toBe(SLICE_SPELLED_KEYS,);
       },
     },),
 

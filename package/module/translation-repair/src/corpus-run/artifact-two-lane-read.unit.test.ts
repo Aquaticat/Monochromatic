@@ -516,6 +516,7 @@ function interpretedOf(
    * Reading with its lanes held aside, since only those carry a raw record.
    */
   const {
+    artifactSchemaVersion: _artifactSchemaVersion,
     lanes,
     ...rest
   } = artifact;
@@ -1403,7 +1404,7 @@ await describe({
     },),
     it({
       name:
-        'REFUSES every generation but the three that wrote this shape, including a MISSING one and a '
+        'REFUSES every generation but the four that wrote this shape, including a MISSING one and a '
         + 'version spelled as text: dispatch has already chosen this reader by the time it is called, '
         + 'so a file arriving here under another version is a caller reading the wrong file',
       fn: async () => {
@@ -1412,7 +1413,7 @@ await describe({
           null,
           '3',
           1,
-          5,
+          6,
         ].map(function refuses(version,): string {
           try {
             parseSettledTwoLaneArtifact({ value: artifactWith({ artifactSchemaVersion: version, },), },);

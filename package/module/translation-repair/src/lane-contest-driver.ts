@@ -171,6 +171,8 @@ export async function persistLaneContestOutcome(
  *
  * @param identityContext - names and handles both documents declare
  *
+ * @param frontMatterSlices - syntax-bearing metadata slice indexes
+ *
  * @param cache - per-entry store of ballots already bought
  *
  * @param signal - abort shared with the rest of the entry
@@ -194,6 +196,7 @@ export async function contestDocumentLanes(
     projected,
     modelIds,
     identityContext,
+    frontMatterSlices = new Set(),
     cache,
     signal,
     perCallTimeoutMs,
@@ -204,6 +207,7 @@ export async function contestDocumentLanes(
     readonly projected: ProjectedLanes;
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly frontMatterSlices?: ReadonlySet<number>;
     readonly cache: SliceCache<LaneContestOutcome>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -326,6 +330,7 @@ export async function contestDocumentLanes(
                 incumbentText: row.incumbentText,
                 repairText: row.repairText,
                 translateText: row.translateText,
+                ...(frontMatterSlices.has(row.sliceIndex,) ? { syntax: 'front-matter' as const, } : {}),
                 ...((identityContext === undefined) ? {} : { identityContext, }),
               },
               signal,

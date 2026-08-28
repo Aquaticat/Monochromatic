@@ -87,6 +87,13 @@ export function slicePictureNames(
   }
 
   /**
+   * Slice whose picture window was requested.
+   */
+  const current = slices[slicePosition];
+  if (current?.syntax === 'front-matter')
+    return [];
+
+  /**
    * Names gathered so far, in order, each once.
    */
   const named = new Set<string>();
@@ -100,7 +107,7 @@ export function slicePictureNames(
      * That slice, absent at either end of the document.
      */
     const beside = slices[at];
-    if (beside === undefined)
+    if ((beside === undefined) || (beside.syntax === 'front-matter'))
       continue;
     for (const reference of photoReferences({
       text: beside.source

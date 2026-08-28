@@ -1,10 +1,14 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import type { SliceSyntax, } from './chunk-document.ts';
 import { renderConsolidationBrief, } from './consolidate-brief.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import { selectFence, } from './prompt-fence.ts';
-import { TRANSLATE_LINE_STRUCTURE_RULE, } from './translate-wire.ts';
+import {
+  TRANSLATE_FRONT_MATTER_RULE,
+  TRANSLATE_LINE_STRUCTURE_RULE,
+} from './translate-wire.ts';
 
 //region Consolidate wire
 // Asks for the rendering that ships, given the two the lanes produced and what
@@ -88,6 +92,11 @@ export type ConsolidateSubject = {
    * Original passage, which is the standard.
    */
   readonly sourceText: string;
+
+  /**
+   * Syntax role requiring dedicated production and validation rules.
+   */
+  readonly syntax?: SliceSyntax;
 
   /**
    * Archive rendering, as evidence rather than as the standard.
@@ -284,6 +293,7 @@ export function buildConsolidateMessages(
    */
   const system = [
     CONSOLIDATE_RULES,
+    (subject.syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : ''),
     (subject.lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : ''),
     CONSOLIDATE_REPLY_RULE,
   ]

@@ -64,6 +64,23 @@ const verseSystem = buildTranslateMessages({
   },)
   .join('\n',);
 
+/**
+ * Syntax-specific sheet for visible page metadata.
+ */
+const frontMatterSystem = buildTranslateMessages({
+  sourceText: '---\nname: 猫猫\n---\n',
+  existingText: '---\nname: EntryId\n---\n',
+  syntax: 'front-matter',
+},)
+  .messages
+  .filter(function isSystem(message,): boolean {
+    return message.role === 'system';
+  },)
+  .map(function toContent(message,): string {
+    return message.content;
+  },)
+  .join('\n',);
+
 await describe({
   name: 'translate wire shape rule',
   children: [
@@ -91,6 +108,15 @@ await describe({
         // its whole judged decision.
         expect(system.includes('THE DECLARED SPELLING WINS',),).toBe(true,);
         expect(system.includes('Never invent a third spelling',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'MAKES SOURCE METADATA AUTHORITATIVE and forbids entry id as visible name',
+      fn: async () => {
+        expect(frontMatterSystem.includes('ORIGINAL field values are source facts',),).toBe(true,);
+        expect(frontMatterSystem.includes('never an entry directory id',),).toBe(true,);
+        expect(frontMatterSystem.includes('Preserve every field name',),).toBe(true,);
+        expect(system.includes('never an entry directory id',),).toBe(false,);
       },
     },),
     it({

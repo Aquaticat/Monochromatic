@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { Candidate, } from './candidate-select-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { SliceSyntax, } from './chunk-document.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
@@ -82,6 +83,8 @@ export type ProducedSlate = {
  * @param identityContext - declared names from both sides' front matter,
  * omitted when neither declares anything
  *
+ * @param syntax - syntax role requiring dedicated preservation rules
+ *
  * @param lineStructured - whether the enclosing chunk's original is
  * line-structured, decided by the caller
  *
@@ -106,6 +109,7 @@ export async function produceTranslateSlate(
     incumbentText,
     identityContext,
     pictureContext,
+    syntax,
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -117,6 +121,7 @@ export async function produceTranslateSlate(
     readonly incumbentText: string;
     readonly identityContext?: string;
     readonly pictureContext?: string;
+    readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -140,6 +145,7 @@ export async function produceTranslateSlate(
     existingText: incumbentText,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
+    ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
   },);
 
@@ -176,6 +182,7 @@ export async function produceTranslateSlate(
     voices: gather.voices,
     sourceText,
     incumbentText,
+    ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     priorMessages: plan.messages,
     signal,

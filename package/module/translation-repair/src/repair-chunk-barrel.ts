@@ -11,6 +11,7 @@ export {
   runChunkCriticPhase,
 } from './chunk-critic-phase.ts';
 export { repairChunk, } from './repair-chunk.ts';
+export { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 export {
   type ChunkVerdict,
   describeChunkSettlement,

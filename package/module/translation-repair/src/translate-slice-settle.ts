@@ -299,6 +299,7 @@ export async function settleTranslateSlice(
     incumbentText: slice.target
       .text,
     incumbentKind,
+    ...((slice.syntax === undefined) ? {} : { syntax: slice.syntax, }),
     lineStructured: prepared.lineStructuredSliceIndices
       .has(sliceIndex,),
     neighbouringIncumbentText,

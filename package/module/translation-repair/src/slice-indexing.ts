@@ -146,6 +146,7 @@ export function reindexSlicePair(
   },
 ): ChunkPair {
   return {
+    ...slice,
     source: {
       ...slice.source,
       sliceIndex: slicePosition,

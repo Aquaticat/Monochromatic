@@ -1,3 +1,4 @@
+import type { SliceSyntax, } from './chunk-document.ts';
 import { hashContent, } from './document-node.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import {
@@ -91,6 +92,8 @@ export function translateRunShape(
  *
  * @param incumbentKind - whether there is a translation to fall back on
  *
+ * @param syntax - syntax role changing model instructions and validation
+ *
  * @param lineStructured - whether the enclosing chunk is line-structured
  *
  * @param neighbouringSourceText - original of the sections either side, shown to
@@ -120,6 +123,7 @@ export function translateSliceKey(
     sourceText,
     incumbentText,
     incumbentKind,
+    syntax,
     lineStructured,
     neighbouringIncumbentText,
     neighbouringSourceText,
@@ -129,6 +133,7 @@ export function translateSliceKey(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
+    readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
@@ -155,6 +160,12 @@ export function translateSliceKey(
       // modes. This is explicit domain separation, and it holds if either of
       // those facts ever stops being true.
       incumbentKind,
+      ...((syntax === undefined)
+        ? []
+        : [
+          'syntax',
+          syntax,
+        ]),
       // Two slices can carry identical text and still be governed differently,
       // because the verdict belongs to the enclosing chunk.
       lineStructured,

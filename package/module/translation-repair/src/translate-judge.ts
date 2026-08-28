@@ -11,6 +11,7 @@ import {
   LEAVES_PASSAGE_UNTRANSLATED,
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { SliceSyntax, } from './chunk-document.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   blankAgainst,
@@ -118,6 +119,7 @@ export async function judgeTranslateSlate(
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
+    syntax,
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -133,6 +135,7 @@ export async function judgeTranslateSlate(
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
+    readonly syntax?: SliceSyntax;
 
     /**
      * Whether the enclosing chunk is governed by the verse rule.
@@ -341,7 +344,10 @@ export async function judgeTranslateSlate(
       ? LEAVES_PASSAGE_UNTRANSLATED
       : KEEPS_TRUSTED_TEXT,
     task: TRANSLATE_SELECTION_TASK,
-    criteria: translateSelectionCriteria({ lineStructured, },),
+    criteria: translateSelectionCriteria({
+      lineStructured,
+      ...((syntax === undefined) ? {} : { syntax, }),
+    },),
     evidence: [
       {
         label: 'ORIGINAL (Chinese)',

@@ -1,3 +1,5 @@
+import type { SliceSyntax, } from './chunk-document.ts';
+
 //region Translate selection sheet
 // What the judges of the translate lane are asked, kept apart from the stage
 // that asks it.
@@ -149,6 +151,17 @@ export const TRANSLATE_LINE_STRUCTURE_CRITERION: string =
   `The ORIGINAL is line-structured: each original line is a unit, and this criterion OUTRANKS the rule that ${A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT}, which governs prose and not verse. Count the lines against the ORIGINAL: a candidate that merges two original lines into one, splits one across two, or drops or invents a line is FAULTY here however well it reads, and a candidate carrying one line per original line is correct even where the EXISTING TRANSLATION merged them.`;
 
 /**
+ * Selection rules for visible YAML metadata.
+ */
+export const TRANSLATE_FRONT_MATTER_CRITERIA: readonly string[] = [
+  'Valid syntax: candidate is one complete YAML front matter block with nothing outside it.',
+  'Exact structure: field names, nesting, container lengths, scalar kinds, comments, and fence lines are preserved.',
+  'Source authority: human-language field values faithfully render ORIGINAL metadata; existing metadata is evidence only.',
+  'Visible identity: name field identifies source person and is never substituted with entry directory id.',
+  'Natural English: localized prose values read idiomatically without changing metadata facts.',
+];
+
+/**
  * Decision rules for a slice, carrying the line-structure criterion only where
  * the rule governs.
  *
@@ -162,6 +175,8 @@ export const TRANSLATE_LINE_STRUCTURE_CRITERION: string =
  * the rule keeps it there if the list is ever reordered. An index would silently
  * put it somewhere else.
  *
+ * @param syntax - syntax role requiring dedicated decision criteria
+ *
  * @param lineStructured - whether the enclosing chunk is governed by the verse
  * rule, decided by the caller from the same set that gates the producer sheet
  *
@@ -173,8 +188,16 @@ export const TRANSLATE_LINE_STRUCTURE_CRITERION: string =
  * ```
  */
 export function translateSelectionCriteria(
-  { lineStructured, }: { readonly lineStructured: boolean; },
+  {
+    lineStructured,
+    syntax,
+  }: {
+    readonly lineStructured: boolean;
+    readonly syntax?: SliceSyntax;
+  },
 ): readonly string[] {
+  if (syntax === 'front-matter')
+    return TRANSLATE_FRONT_MATTER_CRITERIA;
   // THE UNGOVERNED ANSWER IS THE ARRAY ITSELF, returned rather than rebuilt, so
   // a prose slice is asked byte for byte what it was asked before this existed.
   if (!lineStructured)

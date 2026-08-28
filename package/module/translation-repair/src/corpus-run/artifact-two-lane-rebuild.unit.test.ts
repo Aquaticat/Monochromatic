@@ -179,6 +179,8 @@ function rawResultFor(
  * @param strip - preparation keys to delete before parsing, which is how a
  * file written before those fields existed looks to a reader
  *
+ * @param generation - schema generation to label fixture with
+ *
  * @returns Parsed artifact
  *
  * @example
@@ -190,9 +192,11 @@ function writeAndRead(
   {
     prepared,
     strip,
+    generation = 5,
   }: {
     readonly prepared: PreparedDocumentPair;
     readonly strip: readonly string[];
+    readonly generation?: 4 | 5;
   },
 ): ReturnType<typeof parseSettledTwoLaneArtifact> {
   /**
@@ -264,6 +268,7 @@ function writeAndRead(
   return parseSettledTwoLaneArtifact({
     value: {
       ...written,
+      artifactSchemaVersion: generation,
       preparation,
     },
   },);
@@ -272,6 +277,67 @@ function writeAndRead(
 await describe({
   name: rebuildPreparation.name,
   children: [
+    it({
+      name: 'REBUILDS GENERATION 4 WITHOUT FRONT MATTER SLICE and generation 5 with it',
+      fn: async () => {
+        /**
+         * Original carrying visible metadata.
+         */
+        const sourceText = '---\nname: 猫猫\n---\n\n猫睡了。\n';
+        /**
+         * Translation carrying corresponding metadata.
+         */
+        const targetText = '---\nname: Maomao\n---\n\nThe cat slept.\n';
+        /**
+         * Body-only slicing generation 4 recorded.
+         */
+        const legacyPrepared = prepareDocumentPair({
+          sourceText,
+          targetText,
+          includeFrontMatter: false,
+        },);
+        /**
+         * Metadata-inclusive slicing generation 5 records.
+         */
+        const currentPrepared = prepareDocumentPair({
+          sourceText,
+          targetText,
+        },);
+        /**
+         * Rebuild under generation 4 semantics.
+         */
+        const legacy = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: legacyPrepared,
+            strip: [],
+            generation: 4,
+          },),
+          sourceText,
+          targetText,
+        },);
+        /**
+         * Rebuild under generation 5 semantics.
+         */
+        const current = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: currentPrepared,
+            strip: [],
+            generation: 5,
+          },),
+          sourceText,
+          targetText,
+        },);
+
+        expect(legacy.prepared.slices.some(function hasMetadata(slice,): boolean {
+          return slice.syntax === 'front-matter';
+        },),).toBe(false,);
+        expect(current.prepared.slices.at(0,)?.syntax,).toBe('front-matter',);
+        expect(preparationIdentity({ prepared: legacy.prepared, }),)
+          .toBe(preparationIdentity({ prepared: legacyPrepared, }),);
+        expect(preparationIdentity({ prepared: current.prepared, }),)
+          .toBe(preparationIdentity({ prepared: currentPrepared, }),);
+      },
+    },),
     it({
       name:
         'REPRODUCES the run\'s own slicing from a recorded section pairing, proved by the identity hash: '

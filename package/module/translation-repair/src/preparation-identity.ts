@@ -226,6 +226,9 @@ function sliceRow(
   return [
     framedNumber({ value: slice.target
       .sliceIndex, },),
+    ...((slice.syntax === undefined)
+      ? []
+      : [framed({ value: `syntax:${slice.syntax}`, },),]),
     // BOTH INDICES, though they are equal today. The pairing is what this row
     // exists to record, and `#100`'s one-sided slicing touches exactly the
     // assumption that one number names both sides. Adding it now costs nothing;
