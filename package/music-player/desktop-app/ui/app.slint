@@ -1175,7 +1175,7 @@ component FoldablePageControls inherits Rectangle {
     // wrap mode, and available width. This is scheduling, not visual animation.
     selected-reveal-timer := Timer {
         interval: 1ms;
-        running: false;
+        running: true;
         triggered => {
             self.stop();
             root.geometry-report-tick += 1;
