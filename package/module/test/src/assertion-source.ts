@@ -72,6 +72,8 @@ const NOT_FOUND = -1;
 /**
  * Rendered assertion site: a short `file:line` location plus the
  * reconstructed expression.
+ *
+ * @internal
  */
 export type AssertionSite = {
   /**
@@ -129,6 +131,8 @@ export function basename(path: string,): string {
  *
  * @returns substring expected to hold `path:line:col`, scheme-stripped
  *
+ * @internal
+ *
  * @example
  * ```ts
  * extractLocationSubstring('at fn (file:///abs/file.ts:21:12)') // '/abs/file.ts:21:12'
@@ -168,6 +172,8 @@ export function extractLocationSubstring(frame: string,): string {
  * @param value - candidate numeric segment
  *
  * @returns whether `value` is a non-empty run of digits
+ *
+ * @internal
  *
  * @example
  * ```ts
@@ -235,6 +241,8 @@ function findOpenerIndex({
  * @param lineNumber - 1-based line the failing frame points at (the matcher line)
  *
  * @returns single-line expression, or `''` when `lineNumber` is out of range
+ *
+ * @internal
  *
  * @example
  * ```ts
@@ -505,6 +513,8 @@ async function readSourceText({
  * @param value - thrown value of unknown shape
  *
  * @returns map from each error node to its rendered assertion site
+ *
+ * @internal
  *
  * @example
  * ```ts

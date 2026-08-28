@@ -17,6 +17,7 @@ import {
 } from './descriptor.ts';
 import { formatFailure, } from './format-error.ts';
 import type { ItResult, } from './it.ts';
+import { createVerdictLoggers, } from './verdict.ts';
 
 /**
  * Result returned by a completed suite, mirroring {@link ItResult}.
@@ -87,7 +88,7 @@ export type DescribeOptions = {
   readonly repeats?: number;
   /**
    * Whether to skip execution entirely. When `true` or a reason string,
-   * the suite logs SKIP and returns immediately without running children.
+   * the suite logs `[SKIP]` and returns immediately without running children.
    * Defaults to `false`.
    */
   readonly skip?: boolean | string;
@@ -112,7 +113,7 @@ export type DescribeOptions = {
  *
  * On failure, emits the wrapped cause inline at `error` level
  * (`formatErrorDeep` walks `.cause` and `AggregateError.errors`)
- * adjacent to the `FAIL` summary, so the log stream alone is
+ * adjacent to the `[FAIL]` summary, so the log stream alone is
  * sufficient for diagnosis. The throw shape is unchanged.
  *
  * @throws Error wrapping child failures when any child rejects.
@@ -158,13 +159,21 @@ async function runDescribe(
       tag: name,
       l: baseLogger,
     },);
+  /**
+   * Outcome-tagged loggers composed after this suite's hierarchy tag.
+   */
+  const {
+    fail: failLogger,
+    pass: passLogger,
+    skip: skipLogger,
+  } = createVerdictLoggers({ l, },);
 
   if (skip !== false) {
     /**
-     * Reason suffix appended after the SKIP keyword when a string was supplied.
+     * Optional reason carried in message body while verdict remains in tag.
      */
     const reason = (typeof skip) === 'string' ? `: ${skip}` : '';
-    l.info(`SKIP suite${name ? ` "${name}"` : ''}${reason}`,);
+    skipLogger.info(`suite${name ? ` "${name}"` : ''}${reason}`,);
     return { name, };
   }
 
@@ -246,23 +255,22 @@ async function runDescribe(
 
   /**
    * Runs one pass of the suite: starts all children, collects results, reports.
-   * Children emit their own `PASS` (at `debug`) and `FAIL` (at `error`) lines
-   * during execution, each carrying the full `[outer] [inner] [child]` tag
-   * chain via the inherited `childCtx.parentLogger`. After all children
-   * settle, this function emits the suite-level enumeration:
+   * Children emit their own `[PASS]` (at `debug`) and `[FAIL]` (at `error`)
+   * records during execution, each carrying the full `[outer] [inner] [child]`
+   * hierarchy via inherited `childCtx.parentLogger`. After all children
+   * settle, this function emits suite-level enumeration:
    *
-   * - all-success: one `info` line `PASS childA, childB, ... (Nms)` listing
-   *   fulfilled children plus the suite's wall-clock duration
-   * - mixed-result: one `info` line `PASS childA, ...` listing passing
-   *   siblings (no duration), followed by an `error` `FAIL (Nms)` rollup
-   * - all-failure: only the `error` `FAIL (Nms)` rollup
-   * - empty suite (no children): one `info` line `(Nms)` with duration only
+   * - all-success: one `info` record `[PASS] childA, childB, ... (Nms)` listing
+   *   fulfilled children plus suite wall-clock duration
+   * - mixed-result: one `info` record `[PASS] childA, ...` listing passing
+   *   siblings, followed by `error` record `[FAIL] (Nms)` rollup
+   * - all-failure: only `error` record `[FAIL] (Nms)` rollup
+   * - empty suite: one `info` record `[PASS] (Nms)`
    *
-   * On failure, the `FAIL` rollup is emitted in a single `l.error` call
-   * combined with the formatted cause chain (`formatErrorDeep`), so the
-   * tag prefix lands only on the summary and the continuation lines are
-   * untagged. Timeout failures take a separate path that emits a
-   * `FAIL: timeout (Nms)` rollup with the timeout error formatted inline.
+   * On failure, `[FAIL]` rollup is emitted in one outcome-tagged error call
+   * combined with formatted cause chain (`formatErrorDeep`), so hierarchy
+   * prefix lands only on summary and continuation lines are untagged.
+   * Timeout failures emit `[FAIL] timeout (Nms)` with timeout error inline.
    *
    * Empty-name suites downgrade the info line to `debug` so they stay out of
    * default output; the suite still groups and times its children.
@@ -272,6 +280,10 @@ async function runDescribe(
    * @throws Error wrapping child failures when any child rejects
    */
   async function runOnce(runLabel: string,): Promise<void> {
+    /**
+     * Optional repeat label normalized as message prefix after verdict tag.
+     */
+    const runPrefix = runLabel === '' ? '' : `${runLabel.trim()} `;
     /**
      * Selected child dispatcher; assigned once so the subsequent timeout wrapper and await both see the same promise.
      */
@@ -318,13 +330,13 @@ async function runDescribe(
      *
      * Timeout bypasses every child-result processing line, so the
      * failure has no inline diagnostic surface on its own. Emit one
-     * `l.error` carrying the FAIL summary fused with the formatted
+     * `[FAIL]` record carrying summary fused with the formatted
      * timeout error before re-throwing; the throw shape is preserved
      * (raw timeout error, matching pre-change behavior).
      *
      * @returns settled results from `Promise.allSettled` or the sequential equivalent
      *
-     * @throws original timeout error, after logging the FAIL line
+     * @throws original timeout error, after logging `[FAIL]` record
      */
     async function awaitSettleWithTimeoutLogging(): Promise<
       PromiseSettledResult<DescribeResult | ItResult>[]
@@ -334,19 +346,19 @@ async function runDescribe(
       }
       catch (timeoutError) {
         /**
-         * Elapsed time at the moment the timeout fired, used in the inline FAIL summary.
+         * Elapsed time at the moment the timeout fired, used in inline failure summary.
          */
         const elapsedMs = performance.now()
           - startTime;
-        l.error(await formatFailure({
-          summary: `FAIL${runLabel}: timeout (${formatDuration(elapsedMs,)})`,
+        failLogger.error(await formatFailure({
+          summary: `${runPrefix}timeout (${formatDuration(elapsedMs,)})`,
           value: timeoutError,
         },),);
         throw timeoutError;
       }
     }
     /**
-     * Settled child results awaited via the timeout-logging helper so a timeout always emits a FAIL line before throwing.
+     * Settled child results awaited via timeout-logging helper so timeout always emits `[FAIL]` before throwing.
      */
     const settled = await awaitSettleWithTimeoutLogging();
     /**
@@ -366,7 +378,9 @@ async function runDescribe(
     /**
      * Empty-name suites are invisible wrappers; downgrade success logs to debug.
      */
-    const logSuccess = name === '' ? l.debug : l.info;
+    const logPass = name === ''
+      ? passLogger.debug
+      : passLogger.info;
 
     for (const result of settled) {
       if (result.status
@@ -380,25 +394,24 @@ async function runDescribe(
     /**
      * Suite-level info line listing fulfilled children's names plus
      * duration. This is the visible-by-default carrier for the
-     * parent-children mapping now that per-test `PASS` is at `debug`:
+     * parent-children mapping now that per-test `[PASS]` is at `debug`:
      * a single info line per parent enumerates which children ran
      * under it, in array order. Mixed-result suites still emit a
      * names list (without duration) so passing siblings remain
-     * visible alongside the error-level `FAIL` rollup.
+     * visible alongside error-level `[FAIL]` rollup.
      */
-    const labelPrefix = runLabel === '' ? '' : `${runLabel.trim()} `;
     if (passedNames.length
       > 0) {
       if (errors.length
         === 0) {
-        logSuccess(
-          `PASS ${passedNames.join(', ',)} ${labelPrefix}(${
+        logPass(
+          `${passedNames.join(', ',)} ${runPrefix}(${
             formatDuration(durationMs,)
           })`,
         );
       }
       else {
-        logSuccess(`PASS ${passedNames.join(', ',)}`,);
+        logPass(passedNames.join(', ',),);
       }
     }
 
@@ -406,7 +419,7 @@ async function runDescribe(
       === 0) {
       if (passedNames.length
         === 0)
-        logSuccess(`${labelPrefix}(${formatDuration(durationMs,)})`,);
+        logPass(`${runPrefix}(${formatDuration(durationMs,)})`,);
       return;
     }
 
@@ -421,8 +434,8 @@ async function runDescribe(
         `${String(errors.length,)} children failed in suite "${name || '(root)'}"`,
       );
 
-    l.error(await formatFailure({
-      summary: `FAIL${runLabel} (${formatDuration(durationMs,)})`,
+    failLogger.error(await formatFailure({
+      summary: `${runPrefix}(${formatDuration(durationMs,)})`,
       value: cause,
     },),);
 
@@ -466,7 +479,7 @@ async function runDescribe(
  * the parent's effective value unless they override it.
  *
  * On failure, the suite emits the full cause chain inline at `error`
- * level adjacent to the `FAIL` summary, so the log stream alone is
+ * level adjacent to the `[FAIL]` summary, so the log stream alone is
  * sufficient for diagnosis. Top-level `try { await describe(...) } catch`
  * remains supported; the throw shape is unchanged.
  *

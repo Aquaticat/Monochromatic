@@ -468,7 +468,9 @@ function formatNode({
  * @param value - thrown value of unknown shape
  *
  * @returns single-line strings; see {@link formatFailure} for the
- *   common pattern of fusing the first line with a `FAIL` summary
+ *   common pattern of fusing first line with outcome summary
+ *
+ * @internal
  *
  * @mutates value - `Reflect.get` and `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf` on thrown values.
  *
@@ -510,19 +512,21 @@ export async function formatErrorDeep(value: unknown,): Promise<readonly string[
 }
 
 /**
- * Fuses a `FAIL` summary with the formatted error chain into a
- * single multi-line string ready for one `l.error(...)` call.
+ * Fuses outcome summary with formatted error chain into a
+ * single multi-line string ready for one error-level logger call.
  * The first error line (header plus inline stack frames) lands on the
  * summary line for grep-friendliness; subsequent cause lines
  * follow as newline-separated continuation. The tagged logger then
  * prefixes its tag onto the summary line only; continuation lines
  * remain untagged.
  *
- * @param summary - the `FAIL...` summary (e.g. `FAIL (5ms)`)
+ * @param summary - message body following dedicated `[FAIL]` tag
  *
  * @param value - thrown value to format
  *
- * @returns multi-line string suitable for `l.error(result)`
+ * @returns multi-line string suitable for error logger
+ *
+ * @internal
  *
  * @mutates value - `Reflect.get` and `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf` on thrown values.
  *
@@ -534,13 +538,13 @@ export async function formatErrorDeep(value: unknown,): Promise<readonly string[
  *   },);
  * }
  * catch (caught) {
- *   l.error(await formatFailure({
- *     summary: `FAIL (${String(durationMs,)}ms)`,
+ *   failLogger.error(await formatFailure({
+ *     summary: `(${String(durationMs,)}ms)`,
  *     value: caught,
  *   },),);
  * }
- * // emits (with [tag] applied only to line 1):
- * //   [tag] FAIL (5ms) Error: outer at fn (file:9:19) at runFnOnce (...)
+ * // emits (with outcome tag applied only to line 1):
+ * //   [FAIL] (5ms) Error: outer at fn (file:9:19) at runFnOnce (...)
  * //   Caused by: Error: inner at otherFn (...) at ...
  * //   Caused by: Error: root at root (...) at ...
  * ```

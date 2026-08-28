@@ -1,3 +1,11 @@
+export {
+  extractAssertionExpression,
+  extractLocationSubstring,
+  isIntegerString,
+  readAssertionSites,
+} from './assertion-source.ts';
+export type { AssertionSite, } from './assertion-source.ts';
+
 export { describe, } from './describe.ts';
 export type {
   DescribeChild,
@@ -6,6 +14,11 @@ export type {
 } from './describe.ts';
 
 export type { TestDescriptor, } from './descriptor.ts';
+
+export {
+  formatErrorDeep,
+  formatFailure,
+} from './format-error.ts';
 
 export { it, } from './it.ts';
 export type {

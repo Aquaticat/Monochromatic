@@ -19,6 +19,7 @@ import {
   createSinon,
   type DisposableSandbox,
 } from './sinon.ts';
+import { createVerdictLoggers, } from './verdict.ts';
 
 /**
  * Context passed to each test function.
@@ -41,7 +42,7 @@ export type TestContext = {
  */
 export type ItOptions = {
   /**
-   * Whether the test is expected to throw. When `true` or a reason string, a throwing test is treated as PASS and a passing test as FAIL. Defaults to `false`.
+   * Whether the test is expected to throw. When `true` or a reason string, a throwing test receives `[PASS]` and a passing test receives `[FAIL]`. Defaults to `false`.
    */
   readonly fails?: boolean | string;
   /**
@@ -63,7 +64,7 @@ export type ItOptions = {
    */
   readonly repeats?: number;
   /**
-   * Whether to skip execution entirely. When `true` or a reason string, the test logs SKIP and returns immediately. Defaults to `false`.
+   * Whether to skip execution entirely. When `true` or a reason string, the test logs `[SKIP]` and returns immediately. Defaults to `false`.
    */
   readonly skip?: boolean | string;
   /**
@@ -123,14 +124,14 @@ async function runFnOnce({
  * point wraps this in {@link makeDescriptor} so callers receive a lazy
  * descriptor.
  *
- * Logs `PASS (Nms)` at `debug` on success, so per-test output stays
+ * Logs `[PASS] (Nms)` at `debug` on success, so per-test output stays
  * out of default verbosity. The parent `describe` surfaces the
  * fulfilled child names in a single `info` line, preserving the
- * parent-children mapping without one info line per test. `FAIL` at
- * `error` is always visible; `SKIP` at `info`.
+ * parent-children mapping without one info line per test. `[FAIL]` at
+ * `error` is always visible; `[SKIP]` at `info`.
  * On failure, also emits the caught error inline at `error` level
  * (message, stack, `.cause` chain, `AggregateError.errors`) adjacent
- * to the `FAIL` summary, so the log stream alone is sufficient for
+ * to the `[FAIL]` summary, so the log stream alone is sufficient for
  * diagnosis without depending on the runtime's unhandled-rejection
  * printer. The throw shape is unchanged.
  * Throws `Error(name, { cause })` on failure or timeout, propagating
@@ -172,12 +173,12 @@ async function runIt(
    * when callers build their own logger pipeline) or the parent suite's
    * composed tagged logger threaded through `descriptorCtx.parentLogger`.
    * Wrapping the parent with this test's name puts the test tag rightmost
-   * so the full chain reads root-first: `[outer] [inner] [test-name] PASS`.
+   * so verdict composition reads root-first: `[outer] [inner] [test-name] [PASS]`.
    */
   const baseLogger = explicitLogger ?? descriptorCtx
     .parentLogger;
   /**
-   * Composed tagged logger used for every PASS/FAIL/SKIP line of this test.
+   * Hierarchy-tagged logger wrapped by outcome-specific loggers for verdict records.
    */
   const l = baseLogger !== undefined
     ? tagged({
@@ -185,13 +186,21 @@ async function runIt(
       l: baseLogger,
     },)
     : tagged({ tag: name, },);
+  /**
+   * Outcome-tagged loggers composed after this test's hierarchy tag.
+   */
+  const {
+    fail: failLogger,
+    pass: passLogger,
+    skip: skipLogger,
+  } = createVerdictLoggers({ l, },);
 
   if (skip !== false) {
     /**
-     * Reason suffix appended after the SKIP keyword when a string was supplied.
+     * Optional reason carried in message body while verdict remains in tag.
      */
-    const reason = (typeof skip) === 'string' ? `: ${skip}` : '';
-    l.info(`SKIP${reason}`,);
+    const reason = (typeof skip) === 'string' ? skip : '';
+    skipLogger.info(reason,);
     return { name, };
   }
 
@@ -229,6 +238,10 @@ async function runIt(
       ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]`
       : '';
     /**
+     * Optional repeat label normalized as message prefix after verdict tag.
+     */
+    const runPrefix = runLabel === '' ? '' : `${runLabel.trim()} `;
+    /**
      * Tracks whether the test body threw so post-run logic can branch on outcome.
      */
     let threw = false;
@@ -237,7 +250,7 @@ async function runIt(
      */
     let caughtError: unknown = undefined;
     /**
-     * Start timestamp for this iteration so duration can be reported in PASS/FAIL output.
+     * Start timestamp for this iteration so duration can be reported in verdict output.
      */
     const runStart = performance.now();
 
@@ -269,14 +282,14 @@ async function runIt(
       - runStart;
 
     /**
-     * Inline annotation appended after the FAIL/PASS line when `fails` was set as a string.
+     * Inline annotation appended to verdict body when `fails` was set as a string.
      */
     const failsReason = (typeof fails) === 'string' ? ` (${fails})` : '';
 
     if (fails !== false) {
       if (threw) {
-        l.debug(
-          `PASS${runLabel}: threw as expected${failsReason} (${
+        passLogger.debug(
+          `${runPrefix}threw as expected${failsReason} (${
             formatDuration(durationMs,)
           })`,
         );
@@ -288,8 +301,8 @@ async function runIt(
        */
       const failsCause = new Error('Expected test to throw but it passed',);
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
-      l.error(await formatFailure({
-        summary: `FAIL${runLabel}: expected to throw but passed${failsReason} (${
+      failLogger.error(await formatFailure({
+        summary: `${runPrefix}expected to throw but passed${failsReason} (${
           formatDuration(durationMs,)
         })`,
         value: failsCause,
@@ -302,8 +315,8 @@ async function runIt(
 
     if (threw) {
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
-      l.error(await formatFailure({
-        summary: `FAIL${runLabel} (${formatDuration(durationMs,)})`,
+      failLogger.error(await formatFailure({
+        summary: `${runPrefix}(${formatDuration(durationMs,)})`,
         value: caughtError,
       },),);
       throw new Error(
@@ -326,8 +339,8 @@ async function runIt(
         } were called`,
       );
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
-      l.error(await formatFailure({
-        summary: `FAIL${runLabel}: expected ${String(tracker.expected,)} assertions but ${
+      failLogger.error(await formatFailure({
+        summary: `${runPrefix}expected ${String(tracker.expected,)} assertions but ${
           String(tracker.count,)
         } were called (${formatDuration(durationMs,)})`,
         value: assertionCause,
@@ -348,9 +361,9 @@ async function runIt(
         'Expected at least one assertion to be called',
       );
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
-      l.error(await formatFailure({
+      failLogger.error(await formatFailure({
         summary:
-          `FAIL${runLabel}: expected at least one assertion but none were called (${
+          `${runPrefix}expected at least one assertion but none were called (${
             formatDuration(durationMs,)
           })`,
         value: noAssertionsCause,
@@ -362,7 +375,7 @@ async function runIt(
     }
     //endregion Assertion count verification
 
-    l.debug(`PASS${runLabel} (${formatDuration(durationMs,)})`,);
+    passLogger.debug(`${runPrefix}(${formatDuration(durationMs,)})`,);
   }
 
   return { name, };

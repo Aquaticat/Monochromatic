@@ -109,15 +109,15 @@ bounded,
 On success,
  the suite emits one `info` line listing every fulfilled child's name plus the
 suite's wall-clock duration:
- `PASS childA, childB, ... (<duration>)`.
+ `[PASS] childA, childB, ... (<duration>)`.
  The full `[outer] [inner]`
-tag chain is in the line's prefix,
+tag chain precedes the verdict tag,
  so the parent-children mapping is visible at default
 verbosity.
- Per-test `PASS` lines are at `debug` (hidden by default;
+ Per-test `[PASS]` lines are at `debug` (hidden by default;
  surface with
 `MONOCHROMATIC_VERBOSE=true`).
- On failure the suite emits a `FAIL (<duration>)` line at `error`.
+ On failure the suite emits a `[FAIL] (<duration>)` line at `error`.
  Empty-name
 suites downgrade the success line to `debug`.
  See the [Output format](#output-format)
@@ -180,7 +180,7 @@ The global `expect` still works for tests that do not destructure the context.
 Returns `{ name }` on success.
 Throws `Error(name, { cause })` on failure or timeout.
 
-- **`skip`** (`boolean | string`, default `false`): skips execution entirely, logs `SKIP`, and returns immediately;
+- **`skip`** (`boolean | string`, default `false`): skips execution entirely, logs a `[SKIP]` tag, and returns immediately;
   a string is logged as the reason
 - **`repeats`** (default `0`): number of additional runs after the first execution;
   `repeats: 2` runs the test 3 times total, with labels like `[run 1/3]`
@@ -240,34 +240,49 @@ expectTypeOf<() => void>().toBeFunction();
 
 ## Output format
 
-Test output goes through `@monochromatic-dev/module-logger`. Every line carries the
-full suite hierarchy as a tag chain, so the parent-children mapping is always visible
-without a separate enumeration. The harness keeps default output compact by surfacing
-one suite-level info line per parent and demoting per-test `PASS` to `debug`.
+Test output goes through `@monochromatic-dev/module-logger`.
+Every verdict record carries the full suite hierarchy followed by a dedicated
+`[PASS]`,
+`[FAIL]`,
+or `[SKIP]` tag.
+The harness keeps default output compact by surfacing one suite-level info line
+per parent and demoting per-test pass records to `debug`.
 
 ### Per-line shape
 
 ```text
-[level] [iso-timestamp] [outer] [inner] [child] message
-```text
+[level] [iso-timestamp] [outer] [inner] [child] [verdict] message
+```
 
-The leftmost tag is the outermost `describe`; the rightmost tag is the current `it`
-or innermost `describe`. The chain falls out of `tagged` composition: each suite
-wraps its parent's logger with its own name, and `it` wraps that again with the
-test name. Empty-name suites contribute no tag segment.
+The leftmost hierarchy tag is the outermost `describe`.
+The rightmost hierarchy tag is the current `it` or innermost `describe`.
+The verdict tag follows that hierarchy.
+Each suite wraps its parent's logger with its own name,
+`it` wraps that logger with the test name,
+and the outcome wrapper appends the verdict tag.
+Empty-name suites contribute no hierarchy segment.
+Non-verdict records,
+such as suite start traces,
+have no verdict tag.
 
 ### What each level emits
 
-- **`info`**: per-suite `[outer] [inner] PASS childA, childB, ... (<duration>)` listing
-  every fulfilled child (tests and nested describes alike) plus the suite's
-  wall-clock duration. Mixed-result suites still emit a names list (without
-  duration) so passing siblings stay visible alongside the error-level FAIL
-  rollup. `SKIP` messages from `it` are also `info`. Visible by default.
-- **`error`**: `[chain...] FAIL (<duration>)` for each failing test, plus a rollup
-  `[chain...] FAIL (<duration>)` for each suite that has failing children. Always visible.
-- **`debug`**: per-test `[chain...] PASS (<duration>)` for each passing test (full
-  hierarchy in the tag chain), per-suite `[chain...] start (concurrency: N)`
-  traces, and the rollup for empty-name (invisible) suites. Hidden by default;
+- **`info`**:
+  per-suite `[outer] [inner] [PASS] childA, childB, ... (<duration>)`,
+  listing every fulfilled child plus suite wall-clock duration.
+  Mixed-result suites still emit a `[PASS]` names list without duration,
+  so passing siblings stay visible alongside error-level `[FAIL]` rollup.
+  `[SKIP]` records from tests and suites are also `info`.
+  Visible by default.
+- **`error`**:
+  `[chain...] [FAIL] (<duration>)` for each failing test,
+  plus rollup for each suite with failing children.
+  Always visible.
+- **`debug`**:
+  per-test `[chain...] [PASS] (<duration>)` for each passing test,
+  per-suite `[chain...] start (concurrency: N)` traces,
+  and verdict for empty-name suites.
+  Hidden by default;
   enable with `MONOCHROMATIC_VERBOSE=true` or `--verbose`.
 
 The duration renders adaptively: below 10ms shows one decimal place (`0.3ms`,
@@ -298,7 +313,7 @@ await describe({
 a successful run prints (default verbosity):
 
 ```text
-[info] [...] [math] PASS adds, subtracts (1.4ms)
+[info] [...] [math] [PASS] adds, subtracts (1.4ms)
 ```
 
 The empty-name root suite's enumeration goes to `debug`,
@@ -309,38 +324,73 @@ The empty-name root suite's enumeration goes to `debug`,
 
 ```text
 [debug] [...] [math] start (concurrency: 16)
-[debug] [...] [math] [adds] PASS (0.5ms)
-[debug] [...] [math] [subtracts] PASS (0.6ms)
-[info]  [...] [math] PASS adds, subtracts (1.4ms)
-[debug] [...] PASS math (1.5ms)
+[debug] [...] [math] [adds] [PASS] (0.5ms)
+[debug] [...] [math] [subtracts] [PASS] (0.6ms)
+[info]  [...] [math] [PASS] adds, subtracts (1.4ms)
+[debug] [...] [PASS] math (1.5ms)
 ```
 
 A failure in `subtracts` emits (default verbosity):
 
 ```text
-[error] [...] [math] [subtracts] FAIL (0.7ms) Error: ... at fn (math.unit.test.ts:9:19) at runFnOnce (...)
+[error] [...] [math] [subtracts] [FAIL] (0.7ms) Error: ... at fn (math.unit.test.ts:9:19) at runFnOnce (...)
 Caused by: Error: ... at otherFn (...) at ...
-[info]  [...] [math] PASS adds
-[error] [...] [math] FAIL (1.4ms) Error: subtracts at runIt (...) at ...
+[info]  [...] [math] [PASS] adds
+[error] [...] [math] [FAIL] (1.4ms) Error: subtracts at runIt (...) at ...
 Caused by: Error: ... at fn (math.unit.test.ts:9:19) at ...
 ```
 
-The failing test's FAIL line emits during execution (from inside `runIt`),
- so
-it appears first.
- After all children settle,
- the parent suite emits the
-passing-siblings list (so `adds` stays visible at `info`) and then the
-suite-level `FAIL` rollup with wall-clock duration.
+The failing test's `[FAIL]` record emits during execution from inside `runIt`,
+so it appears first.
+After all children settle,
+parent suite emits passing-siblings `[PASS]` record,
+then suite-level `[FAIL]` rollup with wall-clock duration.
  `Error.cause` carries the
 original failure for stack-trace navigation;
  the `name` of each thrown `Error`
 matches the corresponding tag segment.
 
+### Filtering verdict records
+
+Process exit code remains authoritative for overall run success.
+Verdict tags select individual log records for inspection.
+A raw count measures records,
+not unique test or suite outcomes:
+a mixed suite emits passing-child summary `[PASS]` record and suite `[FAIL]`
+record,
+while verbose output also contains each child's own verdict.
+
+For captured console output,
+select exact bracketed tag rather than bare outcome word:
+
+```bash
+rg --fixed-strings '[FAIL]' path/to/test-output.log
+```
+
+Replace `[FAIL]` with `[PASS]` or `[SKIP]` for those records.
+Complete passing-test console output requires `MONOCHROMATIC_VERBOSE=true` or
+`--verbose` because per-test passes remain debug-level.
+
+Persistent logger sinks store each record as JSONL with verdict chain in
+`message`.
+Select failures with:
+
+```bash
+jq --compact-output 'select((.message? // "") | contains("[FAIL]"))' path/to/run.log.jsonl
+```
+
+The fallback ignores logger marker records that have no `message` field.
+The same selector works for `[PASS]` and `[SKIP]`.
+Debug records reach JSONL even when default console sink hides them.
+Names or diagnostics containing bare `PASS`,
+`FAIL`,
+`PASSAGE`,
+or `FAILURE` do not match bracketed verdict selector.
+
 ### Inline error diagnostics
 
-Every `FAIL` summary line is fused with the caught error's first formatted
-line (header plus stack frames concatenated inline) in the same `l.error`
+Every `[FAIL]` summary record is fused with the caught error's first formatted
+line (header plus stack frames concatenated inline) in one error-level logger
 call,
  so the whole thing fits on a single tagged line and `grep` matches by
 message,
@@ -670,7 +720,7 @@ it({
   name: 'not ready yet',
   skip: 'waiting for upstream fix #123',
   fn: async () => {
-    // never runs; logs "SKIP: waiting for upstream fix #123"
+    // never runs; logs "[SKIP] waiting for upstream fix #123"
   },
 },);
 ```
@@ -696,7 +746,7 @@ it({
   name: 'known broken behavior',
   fails: 'parser bug #456',
   fn: async () => {
-    // logs "PASS: threw as expected (parser bug #456)"
+    // logs "[PASS] threw as expected (parser bug #456)"
     throw new Error('expected to break',);
   },
 },);
