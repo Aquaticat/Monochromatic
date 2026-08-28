@@ -82,7 +82,16 @@ The headless Slint MCP boundary rendered a `480px` by `600px` window.
 The collapsed screenshot showed one Chromium row with the leading down-chevron.
 The expanded screenshot showed every row with the up-chevron.
 Selecting the final `Zulu` page and collapsing positioned its complete tab body at the strip's trailing edge.
+The regression test also covers selection while expanded and no-overflow models for every style.
 A horizontal drag changed the visible subset while preserving source order.
+
+A disposable live probe set initial collapsed `selected-page` directly to `25`.
+Before the delayed intrinsic-width probe fix,
+the rendered frame still showed `Alpha` through `Golf` at `viewport-x = 0`.
+With the fix,
+the settled frame showed `Tango` through selected `Zulu` at `viewport-x = -1110`.
+The reveal timer settled after generation `5` rather than running continuously.
+This positive control validates the programmatic restore/controller path independently from tab clicks.
 
 `lint:clippy` is not a change regression.
 Both fixed baseline `310d9dea2` and the implementation reported the same 175 existing
@@ -121,6 +130,10 @@ The screenshots confirmed the complete selected control was inside the visible s
 A one-page Chromium fixture rendered `Only page` without a disclosure or leading gap.
 The gallery neither read nor wrote the player's saved page-control preference,
 and its throwaway worktree was removed after verification.
+
+The Android LED one-line guard was also shown to fail when `singleLedLine` was replaced by wrapped packing:
+`foldedModeKeepsEveryCapOnOneLine` failed at `LedPageControlsTest.kt:139`.
+Restoring the implementation returned the host suite to green.
 
 Android target provisioning hit a rustup client connection failure during this work.
 The independently verified recovery is recorded in
