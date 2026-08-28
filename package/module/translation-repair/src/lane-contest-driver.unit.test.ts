@@ -86,6 +86,21 @@ const REPAIR_NAP = 'The cat naps in the bookshop attic.';
 const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 
 /**
+ * Source metadata repeating one identity as visible name and alias.
+ */
+const METADATA_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
+
+/**
+ * Archive metadata retaining entry id beside translated alias.
+ */
+const METADATA_ARCHIVE = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
+
+/**
+ * Translate lane metadata preserving source identity relation.
+ */
+const METADATA_TRANSLATED = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
+
+/**
  * Builds one ledger row, which is where the driver reads the original.
  *
  * @param sliceIndex - slice this row names
@@ -185,6 +200,52 @@ function catComparisonRow(
  * const projected = catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },);
  * ```
  */
+/**
+ * Builds repeated syntax-bearing contest question at requested positions.
+ *
+ * @param sliceCount - document positions carrying same question
+ *
+ * @returns Projection whose position-free keys match
+ *
+ * @example
+ * ```ts
+ * const projected = metadataProjection({ sliceCount: 2, });
+ * ```
+ */
+function metadataProjection(
+  { sliceCount, }: { readonly sliceCount: number; },
+): ProjectedLanes {
+  /**
+   * Positions this synthetic document carries.
+   */
+  const positions = Array.from({ length: sliceCount, },)
+    .keys();
+  /**
+   * Repeated comparison row differing only by position.
+   */
+  const comparison = Array.from(positions, function toRow(sliceIndex,) {
+    return {
+      sliceIndex,
+      incumbentKind: 'present',
+      incumbentText: METADATA_ARCHIVE,
+      repairText: METADATA_ARCHIVE,
+      translateText: METADATA_TRANSLATED,
+    };
+  },);
+  return {
+    delivery: {
+      repair: comparison.map(function toDelivery(row,) {
+        return {
+          sliceIndex: row.sliceIndex,
+          sourceText: METADATA_SOURCE,
+        };
+      },),
+      translate: [],
+    },
+    comparison,
+  } as unknown as ProjectedLanes;
+}
+
 function catProjection(
   {
     pairs,
@@ -266,6 +327,12 @@ type CatRig = {
  *
  * @param resumed - ballots an earlier run already bought
  *
+ * @param projected - optional explicit lane projection
+ *
+ * @param frontMatterSlices - syntax-bearing positions
+ *
+ * @param answerChoice - lane every scripted ballot selects
+ *
  * @param overlap - most contested slices in flight
  *
  * @param activity - optional successful-call overlap instrument
@@ -284,6 +351,9 @@ async function drive(
     pairs,
     answering,
     resumed = new Map<string, LaneContestOutcome>(),
+    projected,
+    frontMatterSlices = new Set(),
+    answerChoice = 'translate',
     overlap = 1,
     activity,
     abortOnCall,
@@ -294,6 +364,9 @@ async function drive(
     ])[];
     readonly answering: boolean;
     readonly resumed?: ReadonlyMap<string, LaneContestOutcome>;
+    readonly projected?: ProjectedLanes;
+    readonly frontMatterSlices?: ReadonlySet<number>;
+    readonly answerChoice?: LaneContestOutcome['choice'];
     readonly overlap?: number;
     readonly activity?: ContestConcurrency;
     readonly abortOnCall?: number;
@@ -341,7 +414,7 @@ async function drive(
                 index: 0,
                 delta: {
                   content: JSON.stringify({
-                    choice: 'translate',
+                    choice: answerChoice,
                     unsupported: [],
                     dropped: [],
                     reason: 'the original supports it',
@@ -398,13 +471,18 @@ async function drive(
   };
 
   /**
+   * Projection supplied by syntax case or ordinary cat fixture.
+   */
+  const askedProjection = projected ?? catProjection({ pairs, },);
+
+  /**
    * Records the driver produced.
    */
   const slices = await contestDocumentLanes({
     client,
-    projected: catProjection({ pairs, },),
+    projected: askedProjection,
     modelIds: ROSTER,
-    frontMatterSlices: new Set(),
+    frontMatterSlices,
     cache,
     signal: (abortOnCall === undefined)
       ? AbortSignal.timeout(30_000,)
@@ -625,6 +703,41 @@ await describe({
           expect(twin.admitted,).toBe(single.admitted * 2,);
           expect(twin.persisted,).toEqual([],);
         },),);
+      },
+    },),
+
+    it({
+      name: 'REBUYS IDENTICAL FRONT MATTER winner that cannot ship instead of persisting or twin-memoizing it',
+      fn: async () => {
+        /**
+         * One unsafe contest as purchase positive control.
+         */
+        const single = await drive({
+          pairs: [],
+          projected: metadataProjection({ sliceCount: 1, },),
+          frontMatterSlices: new Set([0,]),
+          answerChoice: 'repair',
+          answering: true,
+          overlap: 2,
+        },);
+        /**
+         * Same unsafe question repeated at two positions.
+         */
+        const twin = await drive({
+          pairs: [],
+          projected: metadataProjection({ sliceCount: 2, },),
+          frontMatterSlices: new Set([
+            0,
+            1,
+          ],),
+          answerChoice: 'repair',
+          answering: true,
+          overlap: 2,
+        },);
+        expect(single.admitted,).toBe(ROSTER.length,);
+        expect(single.persisted,).toEqual([],);
+        expect(twin.admitted,).toBe(single.admitted * 2,);
+        expect(twin.persisted,).toEqual([],);
       },
     },),
 

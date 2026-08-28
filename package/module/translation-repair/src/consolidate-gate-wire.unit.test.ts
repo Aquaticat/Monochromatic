@@ -205,6 +205,7 @@ await describe({
         },).at(0,)?.content ?? '';
         expect(system,).toContain('complete YAML front matter',);
         expect(system,).toContain('entry directory id',);
+        expect(system,).toContain('name and info.alias are the same identity',);
       },
     },),
     it({

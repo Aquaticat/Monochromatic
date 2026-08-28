@@ -180,6 +180,9 @@ await describe({
         expect(criteria.some(function namesVisibleIdentity(criterion,): boolean {
           return criterion.includes('entry directory id',);
         },),).toBe(true,);
+        expect(criteria.some(function preservesIdentityRelation(criterion,): boolean {
+          return criterion.includes('name and info.alias are the same identity',);
+        },),).toBe(true,);
       },
     },),
     it({

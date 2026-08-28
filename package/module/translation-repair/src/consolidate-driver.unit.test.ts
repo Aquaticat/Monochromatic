@@ -271,6 +271,55 @@ function twoSliceDocument(): ProjectedLanes {
 }
 
 /**
+ * Builds identical metadata question whose standing repair text is unpublishable.
+ *
+ * @returns Projection whose syntax-bearing keys match by content
+ *
+ * @example
+ * ```ts
+ * const projected = frontMatterTwinDocument();
+ * ```
+ */
+function frontMatterTwinDocument(): ProjectedLanes {
+  /**
+   * Source metadata repeating same identity as name and alias.
+   */
+  const sourceText = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
+  /**
+   * Archive metadata retaining directory id as visible name.
+   */
+  const incumbentText = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
+  /**
+   * Valid translated metadata offered by translate lane.
+   */
+  const translateText = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
+  /**
+   * Same question stamped at both positions.
+   */
+  const comparison = [0, 1,].map(function toRow(sliceIndex,) {
+    return {
+      sliceIndex,
+      incumbentKind: 'present',
+      incumbentText,
+      repairText: incumbentText,
+      translateText,
+    };
+  },);
+  return {
+    comparison,
+    delivery: {
+      repair: comparison.map(function toDelivery(row,) {
+        return {
+          sliceIndex: row.sliceIndex,
+          sourceText,
+        };
+      },),
+      translate: [],
+    },
+  } as unknown as ProjectedLanes;
+}
+
+/**
  * Builds two rows asking an identical consolidation question.
  *
  * @returns Projection whose position-free consolidation keys match
@@ -379,6 +428,8 @@ function settlementReaching(
  *
  * @param projected - both ledgers, overridable to test a ledger gap
  *
+ * @param frontMatterSlices - syntax-bearing metadata positions
+ *
  * @param overlap - most contested slices in flight
  *
  * @param activity - optional successful-call overlap instrument
@@ -397,6 +448,7 @@ async function driveWith(
     projected = twoSliceDocument(),
     client = REFUSING_CLIENT,
     lineStructuredSlices = new Set(),
+    frontMatterSlices = new Set(),
     pictureContextBySlice = new Map(),
     neighbourContextBySlice = new Map(),
     overlap = 1,
@@ -407,6 +459,7 @@ async function driveWith(
     readonly projected?: ProjectedLanes;
     readonly client?: SyntheticClient;
     readonly lineStructuredSlices?: ReadonlySet<number>;
+    readonly frontMatterSlices?: ReadonlySet<number>;
     readonly pictureContextBySlice?: ReadonlyMap<number, string>;
     readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
     readonly overlap?: number;
@@ -458,7 +511,7 @@ async function driveWith(
     projected,
     contests,
     modelIds: ROSTER,
-    frontMatterSlices: new Set(),
+    frontMatterSlices,
     cache,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
@@ -804,6 +857,44 @@ await describe({
             1,
           ],);
         },),);
+      },
+    },),
+
+    it({
+      name: 'REBUYS IDENTICAL FRONT MATTER standing text that cannot ship instead of persisting or twin-memoizing it',
+      fn: async () => {
+        /**
+         * One unsafe consolidation as purchase positive control.
+         */
+        const singleFixture = recordingClient();
+        const single = await driveWith({
+          client: singleFixture.client,
+          projected: frontMatterTwinDocument(),
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+          frontMatterSlices: new Set([0,]),
+          overlap: 2,
+        },);
+        /**
+         * Same unsafe question repeated at two positions.
+         */
+        const twinFixture = recordingClient();
+        const twin = await driveWith({
+          client: twinFixture.client,
+          projected: frontMatterTwinDocument(),
+          contests: [
+            contestSettling({ sliceIndex: 0, lane: 'repair', },),
+            contestSettling({ sliceIndex: 1, lane: 'repair', },),
+          ],
+          frontMatterSlices: new Set([
+            0,
+            1,
+          ],),
+          overlap: 2,
+        },);
+        expect(singleFixture.bodies.length,).toBeGreaterThan(0,);
+        expect(single.written,).toEqual([],);
+        expect(twinFixture.bodies.length,).toBe(singleFixture.bodies.length * 2,);
+        expect(twin.written,).toEqual([],);
       },
     },),
 
