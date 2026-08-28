@@ -386,6 +386,8 @@ Names or diagnostics containing bare `PASS`,
 `FAIL`,
 `PASSAGE`,
 or `FAILURE` do not match bracketed verdict selector.
+A hierarchy name or unrelated message containing literal `[FAIL]` does match;
+tags assume callers reserve bracketed outcome tokens for runner verdicts.
 
 ### Inline error diagnostics
 

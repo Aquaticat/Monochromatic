@@ -199,7 +199,7 @@ async function runIt(
     /**
      * Optional reason carried in message body while verdict remains in tag.
      */
-    const reason = (typeof skip) === 'string' ? skip : '';
+    const reason = (typeof skip) === 'string' ? skip : '(no reason)';
     skipLogger.info(reason,);
     return { name, };
   }

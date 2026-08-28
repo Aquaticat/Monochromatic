@@ -4,6 +4,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -101,6 +102,32 @@ function recordsForVerdict({
   const tag = `[${verdict}]`;
   return records.filter(function hasVerdict(record,) {
     return record.message.includes(tag,);
+  },);
+}
+
+/**
+ * Finds first captured record whose message includes fragment.
+ *
+ * @param records - captured records to search
+ *
+ * @param fragment - exact message fragment required
+ *
+ * @returns first matching record or `undefined`
+ *
+ * @example
+ * ```ts
+ * const record = recordContaining({ records, fragment: '[FAIL]', });
+ * ```
+ */
+function recordContaining({
+  records,
+  fragment,
+}: {
+  readonly fragment: string;
+  readonly records: readonly LogRecord[];
+},): LogRecord | undefined {
+  return records.find(function includesFragment(record,) {
+    return record.message.includes(fragment,);
   },);
 }
 
@@ -245,6 +272,223 @@ await describe({
         expect(failures[1]?.message,).toContain(
           '[suite contains PASSAGE FAILURE] [FAIL] (',
         );
+      },
+    },),
+
+    it({
+      name: 'tags expected failures, repeats, timeouts, and boolean skips',
+      fn: async () => {
+        /** Number of additional repeated test runs. */
+        const REPEATS = 1;
+        /** Delay that exceeds timeout boundary. */
+        const DELAY_MS = 20;
+        /** Timeout that fires before delayed test resolves. */
+        const TIMEOUT_MS = 1;
+        /** Capture for remaining test verdict branches. */
+        const capture = await createCapture();
+
+        await it({
+          name: 'expected failure',
+          l: capture.logger,
+          fails: true,
+          fn: async () => {
+            throw new Error('expected throw',);
+          },
+        },);
+
+        /** Expected-failure descriptor that unexpectedly resolves. */
+        const unexpectedSuccess = it({
+          name: 'unexpected success',
+          l: capture.logger,
+          fails: true,
+          fn: async () => {},
+        },);
+        /** Caught unexpected-success failure. */
+        let unexpectedCaught: unknown;
+        try {
+          await unexpectedSuccess;
+        }
+        catch (error: unknown) {
+          unexpectedCaught = error;
+        }
+        expect(unexpectedCaught,).toBeInstanceOf(Error,);
+
+        await it({
+          name: 'repeated pass',
+          l: capture.logger,
+          repeats: REPEATS,
+          fn: async () => {},
+        },);
+
+        /** Descriptor whose timeout becomes failure verdict. */
+        const timed = it({
+          name: 'timed test',
+          l: capture.logger,
+          timeout: TIMEOUT_MS,
+          fn: async () => {
+            await wait(DELAY_MS,);
+          },
+        },);
+        /** Caught timeout failure. */
+        let timeoutCaught: unknown;
+        try {
+          await timed;
+        }
+        catch (error: unknown) {
+          timeoutCaught = error;
+        }
+        expect(timeoutCaught,).toBeInstanceOf(Error,);
+
+        await it({
+          name: 'boolean skip',
+          l: capture.logger,
+          skip: true,
+          fn: async () => {},
+        },);
+        await capture.logger.flush();
+
+        /** Expected-failure pass verdict. */
+        const expectedFailure = recordContaining({
+          records: capture.records,
+          fragment: '[expected failure] [PASS] threw as expected (',
+        },);
+        /** Unexpected-success failure verdict. */
+        const unexpectedFailure = recordContaining({
+          records: capture.records,
+          fragment: '[unexpected success] [FAIL] expected to throw but passed (',
+        },);
+        /** First repeated pass verdict. */
+        const firstRepeat = recordContaining({
+          records: capture.records,
+          fragment: '[repeated pass] [PASS] [run 1/2] (',
+        },);
+        /** Second repeated pass verdict. */
+        const secondRepeat = recordContaining({
+          records: capture.records,
+          fragment: '[repeated pass] [PASS] [run 2/2] (',
+        },);
+        /** Timeout failure verdict. */
+        const timeoutFailure = recordContaining({
+          records: capture.records,
+          fragment: '[timed test] [FAIL] (',
+        },);
+        /** Boolean-skip verdict. */
+        const booleanSkip = recordContaining({
+          records: capture.records,
+          fragment: '[boolean skip] [SKIP] (no reason)',
+        },);
+
+        expect(expectedFailure?.level,).toBe('debug',);
+        expect(unexpectedFailure?.level,).toBe('error',);
+        expect(firstRepeat?.level,).toBe('debug',);
+        expect(secondRepeat?.level,).toBe('debug',);
+        expect(timeoutFailure?.level,).toBe('error',);
+        expect(timeoutFailure?.message,).toContain('Timed out after 1ms',);
+        expect(booleanSkip?.level,).toBe('info',);
+      },
+    },),
+
+    it({
+      name: 'tags all-failure, repeated, and timed suite branches',
+      fn: async () => {
+        /** Number of additional repeated suite runs. */
+        const REPEATS = 1;
+        /** Delay that exceeds suite timeout boundary. */
+        const DELAY_MS = 20;
+        /** Suite timeout that fires before delayed child resolves. */
+        const TIMEOUT_MS = 1;
+        /** Capture for all-failure suite path. */
+        const allFailureCapture = await createCapture();
+        /** Suite with no fulfilled child. */
+        const allFailure = describe({
+          name: 'all failure suite',
+          l: allFailureCapture.logger,
+          children: [
+            it({
+              name: 'only failure',
+              fn: async () => {
+                throw new Error('only child failed',);
+              },
+            },),
+          ],
+        },);
+        /** Caught all-failure suite error. */
+        let allFailureCaught: unknown;
+        try {
+          await allFailure;
+        }
+        catch (error: unknown) {
+          allFailureCaught = error;
+        }
+        expect(allFailureCaught,).toBeInstanceOf(Error,);
+        await allFailureCapture.logger.flush();
+
+        expect(recordsForVerdict({
+          records: allFailureCapture.records,
+          verdict: 'PASS',
+        },),).toHaveLength(0,);
+        expect(recordsForVerdict({
+          records: allFailureCapture.records,
+          verdict: 'FAIL',
+        },),).toHaveLength(2,);
+        expect(recordContaining({
+          records: allFailureCapture.records,
+          fragment: '[all failure suite] [FAIL] (',
+        },)?.level,).toBe('error',);
+
+        /** Capture for repeated empty-suite verdicts. */
+        const repeatCapture = await createCapture();
+        await describe({
+          name: 'repeated empty suite',
+          l: repeatCapture.logger,
+          repeats: REPEATS,
+          children: [],
+        },);
+        await repeatCapture.logger.flush();
+        expect(recordContaining({
+          records: repeatCapture.records,
+          fragment: '[repeated empty suite] [PASS] [run 1/2] (',
+        },)?.level,).toBe('info',);
+        expect(recordContaining({
+          records: repeatCapture.records,
+          fragment: '[repeated empty suite] [PASS] [run 2/2] (',
+        },)?.level,).toBe('info',);
+
+        /** Capture for suite-timeout verdict. */
+        const timeoutCapture = await createCapture();
+        /** Suite that times out while child remains in flight. */
+        const timedSuite = describe({
+          name: 'timed suite',
+          l: timeoutCapture.logger,
+          timeout: TIMEOUT_MS,
+          children: [
+            it({
+              name: 'delayed child',
+              fn: async () => {
+                await wait(DELAY_MS,);
+              },
+            },),
+          ],
+        },);
+        /** Caught suite timeout. */
+        let timeoutCaught: unknown;
+        try {
+          await timedSuite;
+        }
+        catch (error: unknown) {
+          timeoutCaught = error;
+        }
+        expect(timeoutCaught,).toBeInstanceOf(Error,);
+        await wait(DELAY_MS,);
+        await timeoutCapture.logger.flush();
+
+        /** Suite-timeout failure verdict. */
+        const timeoutFailure = recordContaining({
+          records: timeoutCapture.records,
+          fragment: '[timed suite] [FAIL] timeout (',
+        },);
+        expect(timeoutFailure?.level,).toBe('error',);
+        expect(timeoutFailure?.message,).toContain('Timed out after 1ms',);
       },
     },),
 
