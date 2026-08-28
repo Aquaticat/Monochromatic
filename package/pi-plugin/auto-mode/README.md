@@ -340,10 +340,11 @@ commands with secret parameter references,
 
 Auto-mode also allows `read` tool access to existing files in linked git
 worktrees attached to the current repository.
- The worktree list comes from real
-git metadata,
- and each candidate root is classified with `rev-parse` so the main
-worktree is not added to this cross-worktree allowlist.
+`@monochromatic-dev/git-executable` selects real Git with common-platform-path priority and caches successful executable
+resolution.
+The worktree list remains fresh for each read event,
+and each candidate root is classified with `rev-parse` so the main worktree is not added to this cross-worktree
+allowlist.
 
 The allowlist preserves secret-path checks.
  `write` and `edit` calls targeting

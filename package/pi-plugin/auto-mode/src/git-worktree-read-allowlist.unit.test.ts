@@ -18,6 +18,7 @@ import type {
   ExtensionAPI,
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
+import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   describe,
   expect,
@@ -26,10 +27,7 @@ import {
 import nanoSpawn from 'nano-spawn';
 
 import autoMode from './index.ts';
-import {
-  linkedWorktreeReadAllowlistedDirs,
-  resolveRealGit,
-} from './git-worktree-read-allowlist.ts';
+import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
 import { shouldFlag, } from './signals.ts';
 import type { SignalContext, } from './types.ts';
 
@@ -413,6 +411,37 @@ await describe({
     },),
 
     it({
+      name: 'refreshes linked roots after another worktree is created',
+      fn: async function refreshesLinkedRootsAfterCreation() {
+        await using tempDirectory = await createTempDirectory();
+        /** Disposable repository with initial linked worktree. */
+        const fixture = await createWorktreeFixture({ tempPath: tempDirectory.path, },);
+        /** Initial allowlist before another linked worktree exists. */
+        const initialReadAllowlistedDirs = await linkedWorktreeReadAllowlistedDirs({
+          cwd: fixture.repoPath,
+        },);
+        /** Second linked worktree created during same process lifetime. */
+        const secondLinkedPath = join(
+          tempDirectory.path,
+          'linked-second',
+        );
+        await createLinkedWorktree({
+          repoPath: fixture.repoPath,
+          linkedPath: secondLinkedPath,
+        },);
+        /** Refreshed allowlist after repository metadata changes. */
+        const refreshedReadAllowlistedDirs = await linkedWorktreeReadAllowlistedDirs({
+          cwd: fixture.repoPath,
+        },);
+
+        expect(initialReadAllowlistedDirs,).toContain(fixture.linkedPath,);
+        expect(initialReadAllowlistedDirs.includes(secondLinkedPath,),).toBe(false,);
+        expect(refreshedReadAllowlistedDirs,).toContain(fixture.linkedPath,);
+        expect(refreshedReadAllowlistedDirs,).toContain(secondLinkedPath,);
+      },
+    },),
+
+    it({
       name: 'returns empty allowlist outside git worktrees',
       fn: async function returnsEmptyOutsideGitWorktrees() {
         await using tempDirectory = await createTempDirectory();
@@ -515,7 +544,7 @@ await describe({
           registrations,
           event: 'tool_call',
         },);
-        /** Handler result for read into linked worktree. */
+        /** Handler result for first read into linked worktree. */
         const result = await toolCallHandler(
           {
             type: 'tool_call',
@@ -529,8 +558,23 @@ await describe({
             cwd: fixture.repoPath,
           },
         );
+        /** Handler result for repeated read using cached executable and fresh metadata. */
+        const repeatedResult = await toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-linked-worktree-through-index-again',
+            input: {
+              path: fixture.linkedFile,
+            },
+          },
+          {
+            cwd: fixture.repoPath,
+          },
+        );
 
         expect(result,).toBeUndefined();
+        expect(repeatedResult,).toBeUndefined();
       },
     },),
   ],

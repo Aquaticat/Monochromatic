@@ -1,14 +1,6 @@
-import { constants, } from 'node:fs';
-import {
-  access,
-  readFile,
-  realpath,
-} from 'node:fs/promises';
-import {
-  delimiter,
-  resolve,
-} from 'node:path';
+import { realpath, } from 'node:fs/promises';
 
+import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import nanoSpawn from 'nano-spawn';
 import { caughtValueText as formatError, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -32,24 +24,6 @@ const moduleLogger = tagged({
 },);
 
 /**
- * Package name used by cli-git shims that delegate to this workspace's wrapper.
- */
-const CLI_GIT_PACKAGE_NAME = '@monochromatic-dev/git-policy-cli';
-
-/**
- * Built cli-git entry marker used by pnpm shims that do not name package metadata.
- */
-const CLI_GIT_BUNDLED_ENTRY_MARKER = 'package/git-policy/cli/dist/final/node/index.mjs';
-
-/**
- * Text markers that identify scripts delegating to the workspace git wrapper.
- */
-const CLI_GIT_SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
-  CLI_GIT_PACKAGE_NAME,
-  CLI_GIT_BUNDLED_ENTRY_MARKER,
-],);
-
-/**
  * Prefix used by `git worktree list --porcelain` to introduce worktree roots.
  */
 const WORKTREE_PORCELAIN_PREFIX = 'worktree ';
@@ -65,29 +39,9 @@ const GIT_METADATA_QUERY_TIMEOUT_MS = 2_000;
 const GIT_STDOUT_UNAVAILABLE = Symbol('git worktree stdout unavailable during read allowlist',);
 
 /**
- * Sentinel returned when PATH candidate cannot be executed as real git.
- */
-const GIT_CANDIDATE_UNAVAILABLE = Symbol('PATH entry missing executable or points at cli-git wrapper',);
-
-/**
  * Result from read-only git stdout query.
  */
 type GitStdoutResult = string | typeof GIT_STDOUT_UNAVAILABLE;
-
-/**
- * Result from testing one PATH entry as a real git candidate.
- */
-type GitCandidateResult = string | typeof GIT_CANDIDATE_UNAVAILABLE;
-
-/**
- * Options for resolving real git from a PATH-like value.
- */
-type ResolveRealGitOptions = {
-  /**
-   * PATH-like string to scan.
-   */
-  readonly pathEnv?: string;
-};
 
 /**
  * Options for read-only git stdout queries.
@@ -158,140 +112,6 @@ function stripTrailingLineBreak(output: string,): string {
     );
   }
   return output;
-}
-
-/**
- * Checks whether candidate executable is a shim for this workspace's git wrapper.
- *
- * @param candidatePath - Absolute path to candidate git executable.
- *
- * @returns Whether file content identifies the cli-git wrapper.
- *
- * @example
- * ```ts
- * await isCliGitShimForSelf('/repo/node_modules/.bin/git');
- * // => true when the shim points at \@monochromatic-dev/git-policy-cli
- * ```
- */
-async function isCliGitShimForSelf(candidatePath: string,): Promise<boolean> {
-  try {
-    /**
-     * Candidate executable bytes decoded as text for wrapper marker scanning.
-     */
-    const content = await readFile(
-      candidatePath,
-      'utf8',
-    );
-    return [...CLI_GIT_SELF_SHIM_MARKERS,].some(function hasSelfShimMarker(marker,) {
-      return content.includes(marker,);
-    },);
-  }
-  catch (error) {
-    moduleLogger.debug(
-      `could not inspect git candidate ${candidatePath}: ${formatError(error,)}`,
-    );
-    return false;
-  }
-}
-
-/**
- * Locates real git by scanning PATH and skipping this workspace's git wrapper shims.
- *
- * @param pathEnv - PATH-like string to scan; defaults to process PATH.
- *
- * @returns Absolute path to real git binary.
- *
- * @throws When no executable git candidate outside the wrapper shim is found.
- *
- * @example
- * ```ts
- * const gitPath = await resolveRealGit();
- * ```
- */
-export async function resolveRealGit({
-  pathEnv = process.env
-    .PATH
-    ?? '',
-}: ResolveRealGitOptions = {},): Promise<string> {
-  moduleLogger.debug('resolving real git for linked worktree read allowlist',);
-
-  /**
-   * Individual PATH entries, scanned in shell lookup order.
-   */
-  const pathDirs = pathEnv.split(delimiter,);
-  /**
-   * Candidate paths after parallel executable and shim checks, kept in PATH order.
-   */
-  const candidateResults = await Promise.all(
-    pathDirs.map(function resolveGitCandidateForDir(dir,) {
-      return resolveGitCandidate(dir,);
-    },),
-  );
-  /**
-   * First usable git candidate in shell lookup order.
-   */
-  const gitPath = candidateResults.find(function candidateIsAvailable(
-    candidate,
-  ): candidate is string {
-    return candidate !== GIT_CANDIDATE_UNAVAILABLE;
-  },);
-
-  if (gitPath !== undefined) {
-    moduleLogger.debug(`resolved real git at ${gitPath}`,);
-    return gitPath;
-  }
-
-  throw new Error('auto-mode: could not find real git binary on PATH.',);
-}
-
-/**
- * Resolve one PATH directory to a real git executable candidate, skipping
- * self shims detected by {@link isCliGitShimForSelf}.
- *
- * @param dir - PATH entry to inspect.
- *
- * @returns Candidate path, or sentinel when unavailable or self-shimmed.
- *
- * @example
- * ```ts
- * await resolveGitCandidate('/usr/bin');
- * ```
- */
-async function resolveGitCandidate(dir: string,): Promise<GitCandidateResult> {
-  /**
-   * Absolute candidate path for `git` inside this PATH entry.
-   */
-  const candidatePath = resolve(
-    dir === ''
-      ? process.cwd()
-      : dir,
-    'git',
-  );
-
-  try {
-    await access(
-      candidatePath,
-      constants.X_OK,
-    );
-  }
-  catch (error) {
-    /**
-     * Sub-logger tagged with this function name so the handled access failure stays traceable.
-     */
-    const innerL = tagged({
-      tag: resolveGitCandidate.name,
-      l: moduleLogger,
-    },);
-    innerL.debug(`git not executable at ${candidatePath}: ${String(error,)}`,);
-    return GIT_CANDIDATE_UNAVAILABLE;
-  }
-
-  if (await isCliGitShimForSelf(candidatePath,)) {
-    moduleLogger.debug(`skipping cli-git wrapper shim at ${candidatePath}`,);
-    return GIT_CANDIDATE_UNAVAILABLE;
-  }
-
-  return candidatePath;
 }
 
 /**
