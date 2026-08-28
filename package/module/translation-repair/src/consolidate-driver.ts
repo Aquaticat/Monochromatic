@@ -27,6 +27,7 @@ import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import { validateTranslatedSlice, } from './translate-validate.ts';
 import {
   reuseTwinOrBuy,
   type TwinMemo,
@@ -298,14 +299,6 @@ export async function consolidateDocument(
       incumbentText: row.incumbentText,
     },);
     /**
-     * Whether this baseline has enough prior approval to be cached unchanged.
-     */
-    const standingMayShip = contestStandingMayShip({
-      choice,
-      verdict: contest.verdict,
-    },);
-
-    /**
      * Whether the line-structure rule governs this slice.
      *
      * READ ONCE, because four places below need this same answer: the sheet
@@ -320,6 +313,35 @@ export async function consolidateDocument(
     const syntax = frontMatterSlices.has(row.sliceIndex,)
       ? 'front-matter' as const
       : undefined;
+
+    /**
+     * Syntax verdict for standing text, or ordinary prose admission.
+     */
+    const standingValidation = (syntax === undefined)
+      ? { kind: 'valid', } as const
+      : validateTranslatedSlice({
+        sourceText,
+        candidateText: standingText,
+        pageText: row.incumbentText,
+        syntax,
+      },);
+    /**
+     * Whether standing text itself passes syntax-bearing publication rules.
+     */
+    const standingValid = standingValidation.kind === 'valid';
+    /**
+     * Whether this baseline has prior approval and may ship unchanged.
+     */
+    const standingMayShip = contestStandingMayShip({
+      choice,
+      verdict: contest.verdict,
+      standingValid,
+    },);
+    if (!standingMayShip) {
+      dl.warn(
+        `slice ${String(row.sliceIndex,)}: consolidation standing text fails publication eligibility and remains retryable`,
+      );
+    }
 
     /**
      * What the pictures near this slice were read to say, empty where none

@@ -21,7 +21,7 @@ import {
 /**
  * Complete source page fixture.
  */
-const SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫\n---\n\nBody.\n';
+const SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n\nBody.\n';
 
 /**
  * Complete target page fixture.
@@ -80,7 +80,7 @@ await describe({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: TARGET_TEXT,
-          pageText: '---\nname: Maomao\ninfo:\n  alias: Mao\n---\n\nBody.\n',
+          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
           slices: [sliceResult.slice,],
         },),).not.toThrow();
       },
@@ -120,6 +120,19 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES CHANGED PAGE retaining directory id as visible name',
+      fn: async () => {
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: SOURCE_TEXT,
+          archiveText: TARGET_TEXT,
+          pageText: '---\nname: EntryId2\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
+          slices: [sliceResult.slice,],
+        },),).toThrow(FrontMatterCompletenessError,);
+      },
+    },),
+
+    it({
       name: 'REFUSES PAGE THAT DROPS TARGET METADATA FIELD',
       fn: async () => {
         expect(() => assertFrontMatterComplete({
@@ -139,7 +152,7 @@ await describe({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: TARGET_TEXT,
-          pageText: '---\nname: Maomao\ninfo:\n  alias: Mao\n---\n\nBody.\n',
+          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
           slices: [{
             ...sliceResult.slice,
             source: {
@@ -152,7 +165,7 @@ await describe({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: TARGET_TEXT,
-          pageText: '---\nname: Maomao\ninfo:\n  alias: Mao\n---\n\nBody.\n',
+          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
           slices: [BODY_SLICE, sliceResult.slice,],
         },),).toThrow(FrontMatterCompletenessError,);
       },

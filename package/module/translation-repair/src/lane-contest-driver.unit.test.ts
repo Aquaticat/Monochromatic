@@ -648,6 +648,51 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES TO PERSIST winner that final publication cannot ship',
+      fn: async () => {
+        /**
+         * Cache writes attempted by unsafe winner.
+         */
+        const persisted: string[] = [];
+        await persistLaneContestOutcome({
+          key: 'unsafe-front-matter-winner',
+          outcome: {
+            choice: 'repair',
+            ballots: [
+              {
+                choice: 'repair',
+                unsupported: [],
+                unsupportedRaw: [],
+                dropped: [],
+                droppedRaw: [],
+                reason: 'first vote',
+              },
+              {
+                choice: 'repair',
+                unsupported: [],
+                unsupportedRaw: [],
+                dropped: [],
+                droppedRaw: [],
+                reason: 'second vote',
+              },
+            ],
+            usable: 2,
+            findings: [],
+          },
+          choiceMayShip: false,
+          cache: {
+            resumed: new Map<string, LaneContestOutcome>(),
+            persist: async ({ key, },) => {
+              persisted.push(key,);
+            },
+          },
+          signal: new AbortController().signal,
+        },);
+        expect(persisted,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'THROWS the caller abort reason while the roster is in flight, even after '
         + 'the first voices answered',
       fn: async () => {

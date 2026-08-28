@@ -12,7 +12,80 @@ import type { SliceValidation, } from './translate-validate.ts';
 export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete YAML front matter. A candidate is '
   + 'flawed if it breaks YAML fences, field names, nesting, container lengths, or scalar kinds. ORIGINAL metadata '
   + 'values are source facts. The visible name field must identify the source person and must not be replaced by an '
-  + 'entry directory id.';
+  + 'entry directory id. When ORIGINAL name and info.alias are the same identity, translated name and info.alias must '
+  + 'also be the same identity; a candidate retaining a different archive name is invalid.';
+
+/**
+ * Visible identity read from standard fields, or another metadata schema.
+ *
+ * @example
+ * ```ts
+ * const identity: VisibleIdentityReading = { kind: 'present', name: 'Mittens', alias: 'Mittens', };
+ * ```
+ */
+type VisibleIdentityReading =
+  | {
+    /**
+     * Standard visible identity fields are present.
+     */
+    readonly kind: 'present';
+
+    /**
+     * Primary visible name.
+     */
+    readonly name: string;
+
+    /**
+     * Alias nested under metadata info.
+     */
+    readonly alias: string;
+  }
+  | {
+    /**
+     * Metadata uses another schema and carries no enforceable relation here.
+     */
+    readonly kind: 'other-schema';
+  };
+
+/**
+ * Reads standard visible identity fields from parsed metadata.
+ *
+ * @param value - parsed YAML document
+ *
+ * @returns Identity pair, or nothing when document uses another schema
+ *
+ * @example
+ * ```ts
+ * const identity = visibleIdentityOf({ value: { name: 'Mittens', info: { alias: 'Mittens', }, }, });
+ * ```
+ */
+function visibleIdentityOf({ value, }: { readonly value: unknown; },): VisibleIdentityReading {
+  if (!isJsonRecord(value,))
+    return { kind: 'other-schema', };
+  /**
+   * Nested metadata containing declared alias.
+   */
+  const { info, } = value;
+  if (!isJsonRecord(info,))
+    return { kind: 'other-schema', };
+  /**
+   * Primary value whose relationship carries source identity.
+   */
+  const { name, } = value;
+  /**
+   * Alias value whose relationship carries source identity.
+   */
+  const { alias, } = info;
+  if ((typeof name) !== 'string')
+    return { kind: 'other-schema', };
+  if ((typeof alias) !== 'string')
+    return { kind: 'other-schema', };
+  return {
+    kind: 'present',
+    name,
+    alias,
+  };
+}
 
 /**
  * Structural signature for parsed YAML value.
@@ -52,6 +125,8 @@ function yamlShape({ value, }: { readonly value: unknown; }): string {
 /**
  * Validates syntax and archive-compatible key shape of front matter candidate.
  *
+ * @param sourceText - source front matter whose identity relationships govern
+ *
  * @param pageText - archive front matter candidate replaces
  *
  * @param candidateText - proposed localized front matter
@@ -60,19 +135,25 @@ function yamlShape({ value, }: { readonly value: unknown; }): string {
  *
  * @example
  * ```ts
- * const validation = validateFrontMatterTranslation({ pageText, candidateText, });
+ * const validation = validateFrontMatterTranslation({ sourceText, pageText, candidateText, });
  * ```
  */
 export function validateFrontMatterTranslation(
   {
+    sourceText,
     pageText,
     candidateText,
   }: {
+    readonly sourceText: string;
     readonly pageText: string;
     readonly candidateText: string;
   },
 ): SliceValidation {
   try {
+    /**
+     * Parsed source metadata defining identity relationships.
+     */
+    const source = splitFrontMatter({ text: sourceText, },);
     /**
      * Parsed archive metadata defining structural shape.
      */
@@ -101,12 +182,22 @@ export function validateFrontMatterTranslation(
         findings: ['Your translation added text outside YAML front matter block.',],
       };
     }
+    if (source.frontMatter === undefined) {
+      return {
+        kind: 'unknown',
+        detail: 'source front matter could not be read',
+      };
+    }
     if (page.frontMatter === undefined) {
       return {
         kind: 'unknown',
         detail: 'page front matter could not be read',
       };
     }
+    /**
+     * Parsed source metadata.
+     */
+    const { data: sourceData, } = source.frontMatter;
     /**
      * Parsed candidate metadata.
      */
@@ -119,6 +210,24 @@ export function validateFrontMatterTranslation(
       return {
         kind: 'invalid',
         findings: ['Your translation changed YAML field names, nesting, container lengths, or scalar kinds.',],
+      };
+    }
+    /**
+     * Source identity pair, when standard fields expose one.
+     */
+    const sourceIdentity = visibleIdentityOf({ value: sourceData, },);
+    /**
+     * Candidate identity pair under same standard fields.
+     */
+    const candidateIdentity = visibleIdentityOf({ value: candidateData, },);
+    if ((sourceIdentity.kind === 'present')
+      && (sourceIdentity.name === sourceIdentity.alias)
+      && ((candidateIdentity.kind !== 'present') || (candidateIdentity.name !== candidateIdentity.alias))) {
+      return {
+        kind: 'invalid',
+        findings: [
+          'Your translation must keep name and info.alias as same visible identity because ORIGINAL declares them as same identity.',
+        ],
       };
     }
     return {

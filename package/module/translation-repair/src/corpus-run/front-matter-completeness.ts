@@ -180,6 +180,7 @@ export function assertFrontMatterComplete(
    * Structural validation before persistence.
    */
   const validation = validateFrontMatterTranslation({
+    sourceText: sourceFrontMatter,
     pageText: archiveFrontMatter,
     candidateText: pageFrontMatter,
   },);

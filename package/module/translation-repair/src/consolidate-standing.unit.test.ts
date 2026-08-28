@@ -17,7 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { standingTextFor, } from '../dist/final/node/index.mjs';
+import {
+  contestStandingMayShip,
+  standingTextFor,
+} from '../dist/final/node/index.mjs';
 
 /**
  * What archive carries.
@@ -33,6 +36,42 @@ const REPAIR = 'The cat fell asleep by the window.';
  * What the translate lane would ship.
  */
 const TRANSLATE = 'The cat had fallen asleep beside the window.';
+
+await describe({
+  name: contestStandingMayShip.name,
+  children: [
+    it({
+      name: 'REFUSES INVALID STANDING even when contest chose its lane',
+      fn: async () => {
+        expect(contestStandingMayShip({
+          choice: 'repair',
+          verdict: {
+            kind: 'lane-won',
+            lane: 'repair',
+          },
+          standingValid: false,
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS VALID LANE WINNER and keeps unendorsed decline unsafe',
+      fn: async () => {
+        expect(contestStandingMayShip({
+          choice: 'translate',
+          verdict: {
+            kind: 'lane-won',
+            lane: 'translate',
+          },
+        },),).toBe(true,);
+        expect(contestStandingMayShip({
+          choice: 'neither',
+          verdict: { kind: 'settled-neither', },
+        },),).toBe(false,);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: standingTextFor.name,

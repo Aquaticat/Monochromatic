@@ -39,6 +39,16 @@ const TARGET = {
   },
 };
 
+/**
+ * Source metadata where visible name and alias identify same person form.
+ */
+const SAME_IDENTITY_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
+
+/**
+ * Archive metadata whose visible name is entry id rather than declared alias.
+ */
+const DIRECTORY_ID_TARGET = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
+
 await describe({
   name: frontMatterSlice.name,
   children: [
@@ -115,6 +125,7 @@ await describe({
       name: 'ACCEPTS TRANSLATED SCALARS under exact archive key and container shape',
       fn: async () => {
         expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
           pageText: TARGET.raw,
           candidateText: '---\nname: Mao\ninfo:\n  alias: Kitty\n---\n',
         },).kind,).toBe('valid',);
@@ -125,17 +136,36 @@ await describe({
       name: 'REFUSES FIELD LOSS, BODY PROSE, AND MALFORMED YAML',
       fn: async () => {
         expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
           pageText: TARGET.raw,
           candidateText: '---\nname: Mao\n---\n',
         },).kind,).toBe('invalid',);
         expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
           pageText: TARGET.raw,
           candidateText: `${TARGET.raw}explanation`,
         },).kind,).toBe('invalid',);
         expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
           pageText: TARGET.raw,
           candidateText: '---\nname: [broken\n---\n',
         },).kind,).toBe('invalid',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES DIRECTORY ID when source visible name and alias are same identity',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: SAME_IDENTITY_SOURCE,
+          pageText: DIRECTORY_ID_TARGET,
+          candidateText: DIRECTORY_ID_TARGET,
+        },).kind,).toBe('invalid',);
+        expect(validateFrontMatterTranslation({
+          sourceText: SAME_IDENTITY_SOURCE,
+          pageText: DIRECTORY_ID_TARGET,
+          candidateText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n',
+        },).kind,).toBe('valid',);
       },
     },),
   ],

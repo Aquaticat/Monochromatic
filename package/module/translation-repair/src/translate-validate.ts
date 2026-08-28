@@ -1,4 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
@@ -509,14 +510,6 @@ function mergeAtoms(
 }
 
 /**
- * Shape standing in for a slice with no readable page.
- */
-const NO_PAGE: SliceSkeleton = {
-  blocks: [],
-  atoms: [],
-};
-
-/**
  * Checks one candidate translation against the original and the page it
  * replaces.
  *
@@ -560,6 +553,7 @@ export function validateTranslatedSlice(
 ): SliceValidation {
   if (syntax === 'front-matter') {
     return validateFrontMatterTranslation({
+      sourceText,
       pageText,
       candidateText,
     },);
@@ -616,7 +610,7 @@ export function validateTranslatedSlice(
    */
   const page: SliceSkeleton = (replaced.kind === 'read')
     ? replaced.skeleton
-    : NO_PAGE;
+    : EMPTY_SLICE_SKELETON;
 
   /**
    * Page's blocks, named so the emptiness check is one step rather than three.

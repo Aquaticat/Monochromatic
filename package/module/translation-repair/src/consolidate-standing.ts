@@ -57,7 +57,9 @@ export function standingTextFor(
  *
  * @param verdict - full contest result carrying archive endorsement
  *
- * @returns Whether prior contest approved standing baseline
+ * @param standingValid - whether baseline passes syntax publication invariants
+ *
+ * @returns Whether prior contest approved publishable standing baseline
  *
  * @example
  * ```ts
@@ -68,11 +70,15 @@ export function contestStandingMayShip(
   {
     choice,
     verdict,
+    standingValid = true,
   }: {
     readonly choice: LaneChoice;
     readonly verdict: ArtifactContestVerdict;
+    readonly standingValid?: boolean;
   },
 ): boolean {
+  if (!standingValid)
+    return false;
   if (choice !== 'neither')
     return true;
   if (verdict.kind !== 'settled-neither')

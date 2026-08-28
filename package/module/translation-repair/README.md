@@ -1153,7 +1153,7 @@ Unit guard now proves contested pairing is not cached,
 second attempt is actually bought,
 and recovered one-to-many split becomes cacheable.
 
-Front-matter path `#269` is implemented after that reading and awaits live validation.
+Front-matter path `#269` is implemented after that reading and remains under live validation.
 Visible YAML metadata is explicit syntax-bearing slice zero in artifact generation 5;
 repair and naturalness lanes emit deliberate no-op rows,
 while translate ensemble,
@@ -1170,6 +1170,21 @@ contest,
 consolidation gate,
 artifact parser,
 and page persistence.
+
+Fresh `b716eb99e` validation reached four slices and all nine active seats,
+but correctly published no artifact or page.
+The translate lane produced changed metadata whose visible name followed source identity,
+then lane contest selected the unchanged repair metadata.
+Consolidation produced another changed candidate,
+but its final gate restored exact incumbent metadata.
+The final guard refused that output as `incumbent-fallback` on three attempts;
+subsequent attempt stalled because invalid contest and consolidation decisions had become cache-terminal.
+This confirms final refusal but not live closure of `#269`.
+Candidate validation now preserves source `name` and `info.alias` identity equality,
+contest winners that fail publication invariants remain retryable,
+and consolidation standing text must pass same syntax guard before unchanged result becomes resumable.
+Final-page validation applies same source identity relation even when page differs bytewise from archive.
+A fresh current-build rerun remains required.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.

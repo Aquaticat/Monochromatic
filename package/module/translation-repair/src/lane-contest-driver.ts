@@ -5,6 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { laneContestChoiceMayShip, } from './lane-contest-eligibility.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import {
   type ArtifactContestSlice,
@@ -60,6 +61,8 @@ import {
  *
  * @param outcome - what the roster settled
  *
+ * @param choiceMayShip - whether selected lane passes publication invariants
+ *
  * @returns Whether to persist it
  *
  * @example
@@ -68,9 +71,15 @@ import {
  * ```
  */
 function worthResuming(
-  { outcome, }: { readonly outcome: LaneContestOutcome; },
+  {
+    outcome,
+    choiceMayShip = true,
+  }: {
+    readonly outcome: LaneContestOutcome;
+    readonly choiceMayShip?: boolean;
+  },
 ): boolean {
-  return outcome.usable >= LANE_CONTEST_QUORUM;
+  return choiceMayShip && (outcome.usable >= LANE_CONTEST_QUORUM);
 }
 
 /**
@@ -123,6 +132,8 @@ function storedContestOf(
  *
  * @param cache - contest persistence boundary
  *
+ * @param choiceMayShip - whether selected lane passes publication invariants
+ *
  * @param signal - caller abort checked before write
  *
  * @returns Whether outcome was persisted and may be reused by a twin
@@ -141,16 +152,21 @@ export async function persistLaneContestOutcome(
     key,
     outcome,
     cache,
+    choiceMayShip = true,
     signal,
   }: ForeignBorrowed<{
     readonly key: string;
     readonly outcome: LaneContestOutcome;
     readonly cache: SliceCache<LaneContestOutcome>;
+    readonly choiceMayShip?: boolean;
     readonly signal: AbortSignal;
   }>,
 ): Promise<boolean> {
   signal.throwIfAborted();
-  if (!worthResuming({ outcome, }))
+  if (!worthResuming({
+    outcome,
+    choiceMayShip,
+  },))
     return false;
   await cache.persist({
     key,
@@ -348,12 +364,29 @@ export async function contestDocumentLanes(
             // arrived before the abort must not make the abandoned entry look
             // done or become warm-run evidence.
             /**
+             * Whether selected lane can cross final publication boundary.
+             */
+            const choiceMayShip = laneContestChoiceMayShip({
+              outcome: bought,
+              sourceText,
+              incumbentText: row.incumbentText,
+              repairText: row.repairText,
+              translateText: row.translateText,
+              ...((syntax === undefined) ? {} : { syntax, }),
+            },);
+            if (!choiceMayShip) {
+              dl.warn(
+                `slice ${String(row.sliceIndex,)}: contest winner fails publication invariants and remains retryable`,
+              );
+            }
+            /**
              * Whether this purchase became reusable evidence.
              */
             const persisted = await persistLaneContestOutcome({
               key,
               outcome: bought,
               cache,
+              choiceMayShip,
               signal,
             },);
             return {
