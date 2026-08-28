@@ -16,7 +16,7 @@ const SEMANTIC_VERSION_COMPONENT_COUNT = 3;
 /**
  * Canonical package runtime contract.
  */
-const nodeEngineRange = packageMetadata.engines.node;
+const { node: nodeEngineRange, } = packageMetadata.engines;
 
 if (!nodeEngineRange.startsWith(NODE_LTS_RANGE_PREFIX,))
   throw new Error(`cli-git Node engine must be one caret range, received ${nodeEngineRange}`,);
@@ -26,19 +26,36 @@ if (!nodeEngineRange.startsWith(NODE_LTS_RANGE_PREFIX,))
  */
 const minimumNodeVersion = nodeEngineRange.slice(NODE_LTS_RANGE_PREFIX.length,);
 /**
- * Components used to reject unions, aliases, and noncanonical versions.
+ * Components used to reject unions,
+ * aliases,
+ * and noncanonical versions.
  */
 const minimumNodeVersionComponents = minimumNodeVersion.split('.',);
-/**
- * Whether every version component is an unsigned canonical integer.
- */
-const hasCanonicalMinimumNodeVersion = minimumNodeVersionComponents.length === SEMANTIC_VERSION_COMPONENT_COUNT
-  && minimumNodeVersionComponents.every(function isCanonicalVersionComponent(component: string,): boolean {
-    return component !== '' && String(Number(component,)) === component;
-  },);
 
-if (!hasCanonicalMinimumNodeVersion)
+/**
+ * Checks whether one version component is an unsigned canonical integer.
+ *
+ * @param component - Version component from package engine floor.
+ *
+ * @returns Whether component has canonical integer spelling.
+ *
+ * @example
+ * ```ts
+ * isCanonicalVersionComponent('11');
+ * ```
+ */
+function isCanonicalVersionComponent(component: string,): boolean {
+  if (component === '')
+    return false;
+  return String(Number(component,)) === component;
+}
+
+if (minimumNodeVersionComponents.length !== SEMANTIC_VERSION_COMPONENT_COUNT) {
   throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
+}
+if (!minimumNodeVersionComponents.every(isCanonicalVersionComponent,)) {
+  throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
+}
 
 /**
  * Shared Node flavor before cli-git's package-specific runtime target.

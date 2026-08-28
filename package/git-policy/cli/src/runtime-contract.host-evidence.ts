@@ -5,12 +5,16 @@
  * @module
  */
 
-import { spawnSync, } from 'node:child_process';
 import { fileURLToPath, } from 'node:url';
+
+import nanoSpawn, {
+  type Result,
+  SubprocessError,
+} from 'nano-spawn';
 
 import packageMetadata from '../package.json' with { type: 'json', };
 
-//region Runtime contract -- Derive one maintained LTS floor from package metadata.
+//region Runtime contract: Derive one maintained LTS floor from package metadata.
 
 /**
  * Engine range form reserved for one maintained Node LTS line.
@@ -23,7 +27,7 @@ const SEMANTIC_VERSION_COMPONENT_COUNT = 3;
 /**
  * Consumer runtime contract declared by package manifest.
  */
-const nodeEngineRange = packageMetadata.engines.node;
+const { node: nodeEngineRange, } = packageMetadata.engines;
 
 if (!nodeEngineRange.startsWith(NODE_LTS_RANGE_PREFIX,))
   throw new Error(`cli-git Node engine must be one caret range, received ${nodeEngineRange}`,);
@@ -33,41 +37,71 @@ if (!nodeEngineRange.startsWith(NODE_LTS_RANGE_PREFIX,))
  */
 const minimumNodeVersion = nodeEngineRange.slice(NODE_LTS_RANGE_PREFIX.length,);
 /**
- * Components used to reject unions, aliases, and noncanonical versions.
+ * Components used to reject unions,
+ * aliases,
+ * and noncanonical versions.
  */
 const minimumNodeVersionComponents = minimumNodeVersion.split('.',);
-/**
- * Whether every version component is an unsigned canonical integer.
- */
-const hasCanonicalMinimumNodeVersion = minimumNodeVersionComponents.length === SEMANTIC_VERSION_COMPONENT_COUNT
-  && minimumNodeVersionComponents.every(function isCanonicalVersionComponent(component: string,): boolean {
-    return component !== '' && String(Number(component,)) === component;
-  },);
 
-if (!hasCanonicalMinimumNodeVersion)
+/**
+ * Checks whether one version component is an unsigned canonical integer.
+ *
+ * @param component - Version component from package engine floor.
+ *
+ * @returns Whether component has canonical integer spelling.
+ *
+ * @example
+ * ```ts
+ * isCanonicalVersionComponent('11');
+ * ```
+ */
+function isCanonicalVersionComponent(component: string,): boolean {
+  if (component === '')
+    return false;
+  return String(Number(component,)) === component;
+}
+
+if (minimumNodeVersionComponents.length !== SEMANTIC_VERSION_COMPONENT_COUNT) {
   throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
-if (process.versions.node !== minimumNodeVersion) {
+}
+if (!minimumNodeVersionComponents.every(isCanonicalVersionComponent,)) {
+  throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
+}
+
+/**
+ * Node version executing this host-evidence program.
+ */
+const { node: currentNodeVersion, } = process.versions;
+
+if (currentNodeVersion !== minimumNodeVersion) {
   throw new Error(
-    `minimum-runtime evidence requires Node ${minimumNodeVersion}, received ${process.versions.node}`,
+    `minimum-runtime evidence requires Node ${minimumNodeVersion}, received ${currentNodeVersion}`,
   );
 }
 
 //endregion Runtime contract
 
-//region Built consumer evidence -- Import public API and exercise authored CLI diagnostics.
+//region Built consumer evidence: Import public API and exercise authored CLI diagnostics.
 
 /**
  * Public application artifact consumed by package imports and shadow executable.
  */
-const builtArtifactUrl = new URL('../dist/final/node/index.mjs', import.meta.url,);
+const builtArtifactUrl = new URL(
+  '../dist/final/node/index.mjs',
+  import.meta.url,
+);
 /**
  * Filesystem path passed to child Node invocations.
  */
 const builtArtifactPath = fileURLToPath(builtArtifactUrl,);
 /**
+ * Node executable proven to be package's declared floor.
+ */
+const { execPath: nodeExecutable, } = process;
+/**
  * Exact success marker proving package import emitted no other output.
  */
-const expectedImportOutput = 'cli-git-import-ok\n';
+const expectedImportOutput = 'cli-git-import-ok';
 /**
  * Syntax-boundary-safe import probe for public authoring API.
  */
@@ -81,72 +115,105 @@ process.stdout.write(${JSON.stringify(expectedImportOutput,)})
 /**
  * Isolated import result retaining stdout and stderr for side-effect checks.
  */
-const importResult = spawnSync(
-  process.execPath,
+const {
+  stdout: importStdout,
+  stderr: importStderr,
+} = await nanoSpawn(
+  nodeExecutable,
   [
     '--input-type=module',
     '--eval',
     importProbeSource,
   ],
-  { encoding: 'utf8', },
 );
 
-if (importResult.error !== undefined)
-  throw importResult.error;
-if (importResult.status !== 0 || importResult.stdout !== expectedImportOutput || importResult.stderr !== '') {
-  throw new Error(
-    `built import failed: status=${String(importResult.status,)} stdout=${JSON.stringify(importResult.stdout,)} stderr=${JSON.stringify(importResult.stderr,)}`,
-  );
-}
+if (importStdout !== expectedImportOutput)
+  throw new Error(`built import emitted unexpected stdout: ${JSON.stringify(importStdout,)}`,);
+if (importStderr !== '')
+  throw new Error(`built import emitted unexpected stderr: ${JSON.stringify(importStderr,)}`,);
 
 /**
  * Management help result proving representative successful CLI dispatch.
  */
-const helpResult = spawnSync(
-  process.execPath,
+const {
+  stdout: helpStdout,
+  stderr: helpStderr,
+} = await nanoSpawn(
+  nodeExecutable,
   [
     builtArtifactPath,
     'cli-git',
     '--help',
   ],
-  { encoding: 'utf8', },
 );
 
-if (helpResult.error !== undefined)
-  throw helpResult.error;
-if (
-  helpResult.status !== 0
-  || helpResult.stderr !== ''
-  || !helpResult.stdout.includes('Usage: git cli-git <command> [options]',)
-) {
-  throw new Error(
-    `built help failed: status=${String(helpResult.status,)} stdout=${JSON.stringify(helpResult.stdout,)} stderr=${JSON.stringify(helpResult.stderr,)}`,
-  );
+if (helpStderr !== '')
+  throw new Error(`built help emitted unexpected stderr: ${JSON.stringify(helpStderr,)}`,);
+if (!helpStdout.includes('Usage: git cli-git <command> [options]',))
+  throw new Error(`built help emitted unexpected stdout: ${JSON.stringify(helpStdout,)}`,);
+
+/**
+ * Invokes built CLI while retaining expected nonzero result as evidence.
+ *
+ * @param args - Exact CLI argument vector after Node executable.
+ *
+ * @returns Successful result or structured subprocess failure.
+ *
+ * @example
+ * ```ts
+ * await invokeAllowingFailure({ args: ['cli.mjs', '--invalid'] });
+ * ```
+ */
+async function invokeAllowingFailure({ args, }: {
+  readonly args: readonly string[];
+},): Promise<Result | SubprocessError> {
+  try {
+    return await nanoSpawn(
+      nodeExecutable,
+      [...args,],
+    );
+  }
+  catch (error: unknown) {
+    if (error instanceof SubprocessError)
+      return error;
+    throw error;
+  }
 }
 
 /**
  * Invalid trust result proving authored usage routing and nonzero exit contract.
  */
-const invalidUsageResult = spawnSync(
-  process.execPath,
-  [
+const invalidUsageResult = await invokeAllowingFailure({
+  args: [
     builtArtifactPath,
     'cli-git',
     'trust',
     '--unknown',
   ],
-  { encoding: 'utf8', },
-);
+},);
+/**
+ * Captured invalid-usage process fields.
+ */
+const {
+  stdout: invalidUsageStdout,
+  stderr: invalidUsageStderr,
+} = invalidUsageResult;
 
-if (invalidUsageResult.error !== undefined)
-  throw invalidUsageResult.error;
-if (
-  invalidUsageResult.status !== 2
-  || invalidUsageResult.stdout !== ''
-  || !invalidUsageResult.stderr.includes('Usage: git cli-git trust [--yes]',)
-) {
+if (!(invalidUsageResult instanceof SubprocessError))
+  throw new Error('built invalid usage exited successfully',);
+if (invalidUsageResult.exitCode !== 2) {
   throw new Error(
-    `built invalid-usage check failed: status=${String(invalidUsageResult.status,)} stdout=${JSON.stringify(invalidUsageResult.stdout,)} stderr=${JSON.stringify(invalidUsageResult.stderr,)}`,
+    `built invalid usage exited ${String(invalidUsageResult.exitCode,)}`,
+  );
+}
+if (invalidUsageStdout !== '') {
+  throw new Error(
+    `built invalid usage emitted unexpected stdout: ${JSON.stringify(invalidUsageStdout,)}`,
+  );
+}
+if (!invalidUsageStderr.includes('Usage: git cli-git trust [--yes]',)) {
+  throw new Error(
+    `built invalid usage emitted unexpected stderr: ${JSON.stringify(invalidUsageStderr,)}`,
   );
 }
 
