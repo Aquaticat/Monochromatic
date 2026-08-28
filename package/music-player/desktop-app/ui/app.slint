@@ -793,11 +793,11 @@ component PageControls inherits VerticalLayout {
     alignment: start;
 
     report-control-geometry(index, item-x, item-width) => {
-        if (index == root.selected-page) {
-            root.selected-geometry(item-x, item-width);
-        }
         if (root.folded && index == root.labels.length - 1) {
             root.content-width = item-x + item-width + (root.control-style == 4 ? 12px : 0px);
+        }
+        if (index == root.selected-page) {
+            root.selected-geometry(item-x, item-width);
         }
     }
     changed control-style => {
@@ -1140,6 +1140,7 @@ component FoldablePageControls inherits Rectangle {
             selected-geometry(item-x, item-width) => {
                 root.selected-control-x = item-x;
                 root.selected-control-width = item-width;
+                root.reveal-selected();
                 root.schedule-selected-reveal();
             }
             select-page(p) => {
