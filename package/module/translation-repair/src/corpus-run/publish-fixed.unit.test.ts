@@ -48,6 +48,7 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  ContributorCompletenessError,
   type DestinationCheck,
   type ChunkPair,
   fixedPagePath,
@@ -664,6 +665,90 @@ await describe({
         await expect(refusalOfWritingNothingAtAnAnchor(),).rejects.toThrow(
           'has no translation and writes none',
         );
+      },
+    },),
+
+    it({
+      name: 'REFUSES TARGET CONTRIBUTOR RENAMING before writing page',
+      fn: async () => {
+        await using tree = await throwawayTree();
+        /**
+         * Existing English attribution establishing chosen public handle.
+         */
+        const contributorArchive = 'Contributors for this entry: [Snow](https://example.test/snow)\n';
+        /**
+         * Candidate literally respelling contributor while retaining destination.
+         */
+        const renamed = 'Contributors for this entry: [Snowflake](https://example.test/snow)\n';
+        /**
+         * Baseline artifact shape reused with single whole-page attribution slice.
+         */
+        const baseline = artifactShipping({ translateText: renamed, });
+        /**
+         * Comparison row adapted to attribution fixture.
+         */
+        const [baselineRow,] = baseline.comparison;
+        if (baselineRow === undefined)
+          throw new Error('publisher fixture has no comparison row',);
+        const artifact = {
+          ...baseline,
+          comparison: [{
+            ...baselineRow,
+            sliceIndex: 0,
+            incumbentText: contributorArchive,
+            repairText: contributorArchive,
+            translateText: renamed,
+            repairOutcome: {
+              kind: 'decided',
+              acceptedText: contributorArchive,
+            },
+            translateOutcome: {
+              kind: 'decided',
+              acceptedText: renamed,
+            },
+          },],
+          laneSelection: {
+            kind: 'contested',
+            slices: [{
+              sliceIndex: 0,
+              verdict: {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+              ballots: [],
+              usable: 0,
+            },],
+          },
+        } as WouldShipSource;
+        /**
+         * Publication attempt that must fail before atomic write.
+         */
+        const refused = publishFixedPage({
+          artifact,
+          slices: [pairOver({
+            target: {
+              sliceIndex: 0,
+              nodes: [],
+              startOffset: 0,
+              endOffset: contributorArchive.length,
+              text: contributorArchive,
+            },
+          },),],
+          archiveText: contributorArchive,
+          sourceText: '条目贡献：小雪\n',
+          entryId: 'BookshopContributors',
+          publishDir: tree.publishDir,
+          l: tagged({ tag: 'publish-test', },),
+        },);
+        await expect(refused,).rejects.toBeInstanceOf(ContributorCompletenessError,);
+        /**
+         * Path contributor-invalid page must never reach.
+         */
+        const refusedPath = fixedPagePath({
+          publishDir: tree.publishDir,
+          entryId: 'BookshopContributors',
+        },);
+        expect(existsSync(refusedPath,),).toBe(false,);
       },
     },),
 
