@@ -988,6 +988,9 @@ Reclaiming or moving live data while identifying its growth source remains the s
 
 After capacity is addressed,
 the leading reversible stutter mitigation is to keep hourly creation while moving cleanup to a chosen inactive time.
+The user instead selected the existing hourly creation and hourly cleanup cadence,
+accepting the possibility of hourly deletion after retention limits are reached.
+No timer override was installed.
 It retains hourly restore granularity and batches deletion exposure into one scheduled window.
 It temporarily accumulates up to one cleanup interval of snapshots,
 and the scheduled cleanup can still stall applications.
@@ -1041,7 +1044,7 @@ The previous `/etc/snapper/configs/root` was preserved at
 `/var/home/user/temp/agent/snapper-root.before-free-limit-100GiB-20260828`.
 `snapper --config root set-config FREE_LIMIT=100GiB` updated the live configuration.
 Both `snapper get-config` and the configuration file reported `FREE_LIMIT=100GiB` afterward.
-Automatic creation and cleanup remained enabled,
+Automatic creation and cleanup remained enabled on their existing hourly timers,
 and no cleanup was triggered manually.
 The 01:36 scheduled cleanup had already removed timeline snapshot 964 before this change;
 boot snapshot 963 remained.
