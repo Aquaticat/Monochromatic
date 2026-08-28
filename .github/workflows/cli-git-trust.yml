@@ -19,6 +19,9 @@ on:
     - 'package/module/fs-path/**'
     - 'pnpm-lock.yaml'
     - '.github/workflows/cli-git-trust.yml'
+  schedule:
+  - cron: '17 6 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,8 +31,126 @@ permissions:
   contents: read
 
 jobs:
+  runtime-policy:
+    name: Runtime policy
+    runs-on: ubuntu-latest
+    outputs:
+      minimum_node_version: ${{ steps.contract.outputs.minimum_node_version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Resolve maintained Node LTS floor
+      id: contract
+      shell: node {0}
+      run: |
+        const { appendFileSync, readFileSync } = require('node:fs')
+
+        const manifestPath = 'package/git-policy/cli/package.json'
+        const rangePrefix = '^'
+        const semanticVersionComponentCount = 3
+        const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+        const range = manifest.engines?.node
+        const outputPath = process.env.GITHUB_OUTPUT
+
+        if (typeof range !== 'string' || !range.startsWith(rangePrefix))
+          throw new Error(`${manifestPath} engines.node must be one caret range`)
+        const minimumVersion = range.slice(rangePrefix.length)
+        const components = minimumVersion.split('.')
+        const isCanonical = components.length === semanticVersionComponentCount
+          && components.every((component) => component !== '' && String(Number(component)) === component)
+        if (!isCanonical)
+          throw new Error(`${manifestPath} engines.node must contain one canonical version, received ${range}`)
+        if (outputPath === undefined)
+          throw new Error('GitHub did not provide GITHUB_OUTPUT')
+
+        console.log(`cli-git maintained Node range: ${range}`)
+        appendFileSync(outputPath, `minimum_node_version=${minimumVersion}\n`)
+
+  latest-lts-policy:
+    name: Latest LTS policy
+    needs: runtime-policy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Compare declared floor with published latest LTS line
+      env:
+        DECLARED_MINIMUM_NODE_VERSION: ${{ needs.runtime-policy.outputs.minimum_node_version }}
+      shell: node {0}
+      run: |
+        const response = await fetch('https://nodejs.org/dist/index.json')
+        if (!response.ok)
+          throw new Error(`Node release index returned HTTP ${response.status}`)
+
+        const releases = await response.json()
+        if (!Array.isArray(releases))
+          throw new TypeError('Node release index is not an array')
+        const ltsReleases = releases.filter((release) => (
+          typeof release === 'object'
+          && release !== null
+          && typeof release.version === 'string'
+          && release.lts !== false
+        ))
+        const latestLtsRelease = ltsReleases[0]
+        if (latestLtsRelease === undefined)
+          throw new Error('Node release index contains no LTS release')
+
+        const latestLtsMajor = latestLtsRelease.version.slice(1).split('.')[0]
+        const firstLtsRelease = ltsReleases.toReversed().find((release) => (
+          release.version.slice(1).split('.')[0] === latestLtsMajor
+        ))
+        if (firstLtsRelease === undefined)
+          throw new Error(`Node release index contains no floor for LTS ${latestLtsMajor}`)
+
+        const expectedMinimum = firstLtsRelease.version.slice(1)
+        const declaredMinimum = process.env.DECLARED_MINIMUM_NODE_VERSION
+        if (declaredMinimum !== expectedMinimum) {
+          throw new Error(
+            `cli-git must replace its maintained Node range with ^${expectedMinimum}; received ^${declaredMinimum}`,
+          )
+        }
+        console.log(
+          `cli-git tracks Node ${latestLtsMajor} LTS from ${firstLtsRelease.version} through ${latestLtsRelease.version}`,
+        )
+
+  minimum-runtime:
+    name: Minimum runtime
+    if: github.event_name != 'schedule'
+    needs: runtime-policy
+    runs-on: ubuntu-latest
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_NODE_VERSION: ${{ needs.runtime-policy.outputs.minimum_node_version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up mise without repository-wide tool installation
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+
+    - name: Install minimum runtime tools
+      run: mise install node pnpm
+
+    - name: Install cli-git dependency closure
+      run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
+
+    - name: Build at minimum runtime
+      run: mise run //package/git-policy/cli:build
+
+    - name: Run unit tests at minimum runtime
+      run: mise run //package/git-policy/cli:test:unit
+
+    - name: Exercise built package at minimum runtime
+      run: mise run //package/git-policy/cli:verify:minimum-runtime
+
   trust:
     name: Trust (${{ matrix.os }})
+    if: github.event_name != 'schedule'
     strategy:
       fail-fast: false
       matrix:

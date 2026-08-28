@@ -5,7 +5,18 @@ The package also exposes a side-effect-free policy authoring API.
 
 ## Runtime
 
-Cli-git requires Node `^22.18.0 || >=24.11.0`.
+Cli-git supports the latest Node LTS line,
+currently Node `^24.11.0`.
+The single `engines.node` range in `package.json` is canonical:
+the build derives its transform target from that range,
+and CI builds,
+tests,
+imports,
+and invokes the package at its exact floor.
+CI also compares the range with Node's published latest LTS release each day.
+When a new Node line becomes LTS,
+replace the range with that line's first LTS release instead of adding a historical branch.
+
 Installing the package exposes a shadowing `git` executable.
 Put the package's `node_modules/.bin` directory before the real Git directory on `PATH`;
 the wrapper resolves and forwards to the next real Git executable.

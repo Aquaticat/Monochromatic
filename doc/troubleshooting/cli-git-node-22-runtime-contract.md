@@ -1,8 +1,29 @@
-# cli-git 0.0.1 declares Node 22.18 support but its built artifact needs Node 24 language and APIs
+# cli-git 0.0.1 declared Node 22.18 support but its built artifact needed Node 24 language and APIs
+
+## Resolution policy
+
+Issue #429 selects one maintained runtime line:
+the latest published Node LTS line.
+`package/git-policy/cli/package.json` is the source of truth and carries one caret range,
+currently `^24.11.0`,
+where Node 24.11.0 is the release that moved Node 24 into LTS.
+The policy replaces this range when a newer Node line enters LTS;
+it does not append an older-line union.
+
+`package/git-policy/cli/rolldown.node.config.ts` derives its exact `node24.11.0` transform target from that manifest range.
+`package/git-policy/cli/src/runtime-contract.host-evidence.ts` requires execution at the exact declared floor,
+imports the built public MJS without extra output,
+and checks successful help plus invalid-usage behavior.
+`.github/workflows/cli-git-trust.yml` builds and runs unit and host evidence at that floor.
+A separate CI check compares the declared floor with Node's official release index each day,
+so a newly published LTS line makes the stale single range fail visibly.
+
+The remaining sections preserve the pre-resolution diagnosis and Node 22 evidence.
 
 ## Symptom
 
-`package/git-policy/cli/package.json` declares:
+Before issue #429,
+`package/git-policy/cli/package.json` declared:
 
 ```json
 {

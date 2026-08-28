@@ -3,18 +3,67 @@ import {
   type NodeFlavorConfig,
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
+import packageMetadata from './package.json' with { type: 'json', };
+
 /**
- * Node build configuration for the shadow bin and authoring API.
- *
- * Unminified single-chunk output: build diagnostics and stack traces feed
- * the cli-git trust flow, and `codeSplitting: false` keeps dynamic imports
- * inline so the bin stays one auditable file.
+ * Engine range form reserved for one maintained Node LTS line.
  */
-const config: NodeFlavorConfig = nodeConfig({
+const NODE_LTS_RANGE_PREFIX = '^';
+/**
+ * Number of components required by package's exact minimum Node version.
+ */
+const SEMANTIC_VERSION_COMPONENT_COUNT = 3;
+/**
+ * Canonical package runtime contract.
+ */
+const nodeEngineRange = packageMetadata.engines.node;
+
+if (!nodeEngineRange.startsWith(NODE_LTS_RANGE_PREFIX,))
+  throw new Error(`cli-git Node engine must be one caret range, received ${nodeEngineRange}`,);
+
+/**
+ * Exact minimum runtime extracted from package's single-line LTS range.
+ */
+const minimumNodeVersion = nodeEngineRange.slice(NODE_LTS_RANGE_PREFIX.length,);
+/**
+ * Components used to reject unions, aliases, and noncanonical versions.
+ */
+const minimumNodeVersionComponents = minimumNodeVersion.split('.',);
+/**
+ * Whether every version component is an unsigned canonical integer.
+ */
+const hasCanonicalMinimumNodeVersion = minimumNodeVersionComponents.length === SEMANTIC_VERSION_COMPONENT_COUNT
+  && minimumNodeVersionComponents.every(function isCanonicalVersionComponent(component: string,): boolean {
+    return component !== '' && String(Number(component,)) === component;
+  },);
+
+if (!hasCanonicalMinimumNodeVersion)
+  throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
+
+/**
+ * Shared Node flavor before cli-git's package-specific runtime target.
+ */
+const baseConfig: NodeFlavorConfig = nodeConfig({
   outputOverrides: {
     minify: false,
     codeSplitting: false,
   },
 },);
+
+/**
+ * Node build configuration for shadow bin and authoring API.
+ *
+ * Transform target comes from same manifest range used by package managers and
+ * minimum-runtime CI. Unminified single-chunk output keeps trust diagnostics,
+ * stack traces,
+ * and dynamic imports in one auditable file.
+ */
+const config: NodeFlavorConfig = {
+  ...baseConfig,
+  transform: {
+    ...baseConfig.transform,
+    target: `node${minimumNodeVersion}`,
+  },
+};
 
 export default config;
