@@ -213,3 +213,130 @@ fn led_backplate_fills_width_and_rows_track_resize() {
     assert_eq!(plate.size().width, controls.size().width, "backplate remains full width after resize");
     assert_eq!(plate.size().height, controls.size().height, "backplate remains full height after resize");
 }
+
+// What:     `#[test] fn narrow_page_controls_fold_every_style_and_reveal_selection()`
+//           asks Slint's testing backend to lay out every persisted page-control style
+//           inside the real narrow `AppWindow`, then drives the disclosure through its
+//           accessibility action. `#[test]` registers this function with Rust's test
+//           harness; unlike a TypeScript test callback, the attribute performs registration.
+// Why:      Issue #457 spans all style branches, overflow and no-overflow geometry,
+//           selected-page auto-reveal, accessibility text, and transient state across
+//           style and breakpoint changes. One generated-window test crosses those bindings.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("folds every narrow page-control style and reveals selection", () => { ... });
+// ```
+#[test]
+fn narrow_page_controls_fold_every_style_and_reveal_selection() {
+    // Install the shared headless backend and instantiate the generated Slint window.
+    setup();
+    let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
+
+    // What:     `ModelRc::new(VecModel::from(vec![...]))` builds Slint's reference-counted
+    //           read-only model wrapper around an owned mutable vector model. `SharedString`
+    //           is Slint's reference-counted UTF-8 string, rather than Rust's owned `String`
+    //           or borrowed `&str`; `vec![...]` creates the owned growable array.
+    // Why:      Long labels force every included style past one row at the narrow width,
+    //           while Slint requires a model rather than a Rust array for repeated UI items.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const labels = ["Alpha Orchestra", "Bravo Ensemble", /* remaining labels */];
+    // ```
+    let labels = ModelRc::new(VecModel::from(vec![
+        SharedString::from("Alpha Orchestra"),
+        SharedString::from("Bravo Ensemble"),
+        SharedString::from("Charlie Collective"),
+        SharedString::from("Delta Sessions"),
+        SharedString::from("Echo Recordings"),
+        SharedString::from("Foxtrot Archive"),
+        SharedString::from("Golf Sound Library"),
+        SharedString::from("Hotel Mastering"),
+    ]));
+    app.set_page_labels(labels);
+    app.window().set_size(slint::LogicalSize::new(640.0, 800.0));
+    app.show().expect("narrow frame lays out under testing backend");
+
+    // What:     `for (style, collapsed_height) in [(...), ...]` iterates owned pairs.
+    //           Rust's array and tuple syntax correspond to a fixed JS array of pairs;
+    //           the loop destructures each pair into immutable bindings.
+    // Why:      Every persisted style branch must expose the same fold interaction, with
+    //           LED retaining its 60px hardware row while other styles reserve 48px.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const [style, collapsedHeight] of [[0, 48], /* ... */]) { ... }
+    // ```
+    for (style, collapsed_height) in [(0, 48.0), (1, 48.0), (2, 48.0), (3, 48.0), (4, 48.0), (5, 60.0)] {
+        app.set_page_control_style(style);
+        app.set_page_controls_expanded(false);
+
+        // Locate the visible fold root and its accessible collapsed disclosure.
+        let fold = ElementHandle::find_by_element_type_name(&app, "FoldablePageControls")
+            .next()
+            .expect("narrow overflow creates foldable page controls");
+        let disclosure = ElementHandle::find_by_accessible_label(&app, "Show all pages")
+            .next()
+            .expect("overflow exposes collapsed disclosure semantics");
+        assert_eq!(fold.size().height, collapsed_height, "style {style} starts at one row");
+
+        // Invoke the same default action assistive technology uses, then confirm both
+        // observable state and the expanded accessibility label change without selection.
+        disclosure.invoke_accessible_default_action();
+        assert!(app.get_page_controls_expanded(), "style {style} disclosure expands controls");
+        assert!(
+            ElementHandle::find_by_accessible_label(&app, "Show fewer pages").next().is_some(),
+            "style {style} exposes expanded disclosure semantics",
+        );
+        assert!(
+            fold.size().height > collapsed_height,
+            "style {style} expansion reveals additional wrapped rows",
+        );
+    }
+
+    // Preserve explicit expansion when the visual style changes during this process.
+    app.set_page_control_style(4);
+    assert!(app.get_page_controls_expanded(), "style changes retain transient expansion");
+    assert!(
+        ElementHandle::find_by_accessible_label(&app, "Show fewer pages").next().is_some(),
+        "retained expansion keeps the up-chevron semantics",
+    );
+
+    // Wide mode removes the fold surface without clearing its transient state.
+    app.window().set_size(slint::LogicalSize::new(1000.0, 800.0));
+    assert!(
+        ElementHandle::find_by_element_type_name(&app, "FoldablePageControls").next().is_none(),
+        "desktop wide mode keeps the existing unfurled controls",
+    );
+    assert!(app.get_page_controls_expanded(), "breakpoint transition retains expansion");
+
+    // Re-enter narrow mode, collapse, and select the final Chromium tab. The horizontal
+    // viewport must position that source-ordered final tab inside the fold's visible bounds.
+    app.window().set_size(slint::LogicalSize::new(640.0, 800.0));
+    app.set_page_controls_expanded(false);
+    app.set_selected_page(7);
+    let fold = ElementHandle::find_by_element_type_name(&app, "FoldablePageControls")
+        .next()
+        .expect("narrow mode restores foldable controls");
+    let final_tab = ElementHandle::find_by_element_type_name(&app, "ChromiumTab")
+        .last()
+        .expect("Chromium fixture renders its final tab");
+    let fold_left = fold.absolute_position().x;
+    let fold_right = fold_left + fold.size().width;
+    let tab_left = final_tab.absolute_position().x;
+    let tab_right = tab_left + final_tab.size().width;
+    assert!(tab_left >= fold_left + 56.0, "selected final tab starts after disclosure gutter");
+    assert!(tab_right <= fold_right, "selected final tab is auto-revealed inside collapsed strip");
+
+    // A one-label model fits without folding, so no disclosure or artificial gutter remains.
+    app.set_page_labels(ModelRc::new(VecModel::from(vec![SharedString::from("Only page")])));
+    assert!(
+        ElementHandle::find_by_accessible_label(&app, "Show all pages").next().is_none(),
+        "no-overflow controls omit collapsed disclosure",
+    );
+    assert!(
+        ElementHandle::find_by_accessible_label(&app, "Show fewer pages").next().is_none(),
+        "no-overflow controls omit expanded disclosure",
+    );
+}
