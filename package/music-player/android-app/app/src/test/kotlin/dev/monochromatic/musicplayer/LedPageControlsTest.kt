@@ -133,6 +133,38 @@ class LedPageControlsTest {
         )
     }
 
+    /** Confirms folded mode preserves every cap on one intrinsic-width plate. */
+    @Test
+    fun foldedModeKeepsEveryCapOnOneLine() {
+        assertEquals(
+            listOf(LedLine(pageIndexes = listOf(0, 1, 2), widthPx = 136)),
+            singleLedLine(
+                LedPackingOptions(
+                    capWidthsPx = listOf(32, 40, 32),
+                    maximumWidthPx = 80,
+                    marginPx = 8,
+                    gapPx = 8,
+                ),
+            ),
+        )
+    }
+
+    /** Confirms folded empty input reserves no plate. */
+    @Test
+    fun foldedEmptyInputProducesNoPlate() {
+        assertEquals(
+            emptyList<LedLine>(),
+            singleLedLine(
+                LedPackingOptions(
+                    capWidthsPx = emptyList(),
+                    maximumWidthPx = 80,
+                    marginPx = 8,
+                    gapPx = 8,
+                ),
+            ),
+        )
+    }
+
     // What:     `measuredLegendProducesContentWidthCap` covers unconstrained natural width.
     // Why:      Cap paint must follow measured legend rather than claim complete row width.
     //
