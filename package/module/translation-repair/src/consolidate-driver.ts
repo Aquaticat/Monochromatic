@@ -165,7 +165,7 @@ function laneChoiceOf(
  *
  * @example
  * ```ts
- * const slices = await consolidateDocument({ client, projected, contests, modelIds, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, },);
+ * const slices = await consolidateDocument({ client, projected, contests, modelIds, frontMatterSlices, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function consolidateDocument(
@@ -175,7 +175,7 @@ export async function consolidateDocument(
     contests,
     modelIds,
     identityContext,
-    frontMatterSlices = new Set(),
+    frontMatterSlices,
     lineStructuredSlices,
     pictureContextBySlice,
     neighbourContextBySlice,
@@ -190,7 +190,7 @@ export async function consolidateDocument(
     readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
-    readonly frontMatterSlices?: ReadonlySet<number>;
+    readonly frontMatterSlices: ReadonlySet<number>;
     readonly lineStructuredSlices: ReadonlySet<number>;
     readonly pictureContextBySlice: ReadonlyMap<number, string>;
     readonly neighbourContextBySlice: ReadonlyMap<number, SliceNeighbourContext>;
@@ -314,6 +314,12 @@ export async function consolidateDocument(
      * is how four answers drift into three.
      */
     const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
+    /**
+     * Syntax role shared by every consolidation phase and cache key.
+     */
+    const syntax = frontMatterSlices.has(row.sliceIndex,)
+      ? 'front-matter' as const
+      : undefined;
 
     /**
      * What the pictures near this slice were read to say, empty where none
@@ -347,7 +353,7 @@ export async function consolidateDocument(
       repairText: row.repairText,
       translateText: row.translateText,
       ballots: contest.ballots,
-      ...(frontMatterSlices.has(row.sliceIndex,) ? { syntax: 'front-matter' as const, } : {}),
+      ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       // Omitted rather than empty, matching the context above it, so a producer
@@ -371,6 +377,7 @@ export async function consolidateDocument(
       runShape,
       sourceText,
       incumbentText: row.incumbentText,
+      ...((syntax === undefined) ? {} : { syntax, }),
       repairText: row.repairText,
       translateText: row.translateText,
       standingText,

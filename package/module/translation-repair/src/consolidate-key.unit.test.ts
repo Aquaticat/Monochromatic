@@ -76,6 +76,15 @@ await describe({
     },),
 
     it({
+      name: 'SEPARATES FRONT MATTER POLICY from identical Markdown consolidation text',
+      fn: async () => {
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({ ...SLICE, syntax: 'front-matter', },),
+        );
+      },
+    },),
+
+    it({
       name: 'SEPARATES TWO SLICES THAT DIFFER ONLY IN THE CONTEST BALLOTS, which is what this key adds '
         + 'over the contest key it sits after. The ballots are prompt content: the producers are shown '
         + 'what the judges said about each lane, so the same two candidates with different arguments '

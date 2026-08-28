@@ -1,3 +1,4 @@
+import type { SliceSyntax, } from './chunk-document.ts';
 import { hashContent, } from './document-node.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -127,6 +128,8 @@ export function consolidateRunShape(
  *
  * @param incumbentText - archive rendering, which is the structural standard
  *
+ * @param syntax - syntax role changing producer, judge and gate policies
+ *
  * @param repairText - what the repair lane would ship
  *
  * @param translateText - what the translate lane would ship
@@ -160,6 +163,7 @@ export function consolidateSliceKey(
     runShape,
     sourceText,
     incumbentText,
+    syntax,
     repairText,
     translateText,
     standingText,
@@ -172,6 +176,7 @@ export function consolidateSliceKey(
     readonly runShape: string;
     readonly sourceText: string;
     readonly incumbentText: string;
+    readonly syntax?: SliceSyntax;
     readonly repairText: string;
     readonly translateText: string;
     readonly standingText: string;
@@ -189,6 +194,12 @@ export function consolidateSliceKey(
       runShape,
       sourceText,
       incumbentText,
+      ...((syntax === undefined)
+        ? []
+        : [
+          'syntax',
+          syntax,
+        ]),
       repairText,
       translateText,
       standingText,

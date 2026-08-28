@@ -555,6 +555,7 @@ export async function settleConsolidation(
       incumbentText: subject.incumbentText,
       consolidatedText: decided.text,
       standingText,
+      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
       ...identity,
     },
     signal,

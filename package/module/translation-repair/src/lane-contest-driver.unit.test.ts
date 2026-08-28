@@ -404,6 +404,7 @@ async function drive(
     client,
     projected: catProjection({ pairs, },),
     modelIds: ROSTER,
+    frontMatterSlices: new Set(),
     cache,
     signal: (abortOnCall === undefined)
       ? AbortSignal.timeout(30_000,)

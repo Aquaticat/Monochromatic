@@ -195,6 +195,19 @@ await describe({
       },
     },),
     it({
+      name: 'APPLIES YAML POLICY at final consolidation gate',
+      fn: async () => {
+        const system = buildConsolidateGateMessages({
+          subject: {
+            ...SUBJECT,
+            syntax: 'front-matter',
+          },
+        },).at(0,)?.content ?? '';
+        expect(system,).toContain('complete YAML front matter',);
+        expect(system,).toContain('entry directory id',);
+      },
+    },),
+    it({
       name: 'asks the two findings questions the lane contest asks',
       fn: async () => {
         const shown = exchangeFor({ subject: SUBJECT, },);

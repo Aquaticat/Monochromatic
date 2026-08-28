@@ -89,6 +89,15 @@ await describe({
       },
     },),
     it({
+      name: 'SEPARATES FRONT MATTER POLICY from identical Markdown candidate texts',
+      fn: async () => {
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          syntax: 'front-matter',
+        },),).not.toBe(laneContestSliceKey(catInputs(),),);
+      },
+    },),
+    it({
       name:
         'SEPARATES two contests over identical candidates and different ARCHIVE wording, since the judge '
         + 'is shown the archive rendering as evidence and is therefore not being asked the same question',

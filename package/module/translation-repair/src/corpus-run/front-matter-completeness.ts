@@ -32,7 +32,7 @@ export class FrontMatterCompletenessError extends Error {
       reason,
     }: {
       readonly entryId: string;
-      readonly reason: 'missing-slice' | 'presence-mismatch' | 'invalid-page';
+      readonly reason: 'missing-slice' | 'presence-mismatch' | 'invalid-page' | 'incumbent-fallback';
     },
   ) {
     super(`entry ${entryId} front matter is not publishable (${reason})`,);
@@ -97,12 +97,73 @@ export function assertFrontMatterComplete(
       reason: 'presence-mismatch',
     },);
   }
-  if (!sourcePresent)
+  /**
+   * Parsed assembled page.
+   */
+  const page = splitFrontMatter({ text: pageText, });
+  if (!sourcePresent) {
+    if (page.frontMatter !== undefined) {
+      throw new FrontMatterCompletenessError({
+        entryId,
+        reason: 'invalid-page',
+      },);
+    }
     return;
+  }
 
-  if (!slices.some(function isFrontMatter(slice,): boolean {
+  /**
+   * Metadata slices, which must be exactly slice zero.
+   */
+  const metadataSlices = slices.filter(function isFrontMatter(slice,): boolean {
     return slice.syntax === 'front-matter';
-  },)) {
+  },);
+  /**
+   * Sole metadata slice when count is valid.
+   */
+  const [metadataSlice,] = metadataSlices;
+  if ((metadataSlices.length !== 1) || (metadataSlice === undefined)) {
+    throw new FrontMatterCompletenessError({
+      entryId,
+      reason: 'missing-slice',
+    },);
+  }
+
+  if ((page.frontMatter === undefined)
+    || (archive.frontMatter === undefined)
+    || (source.frontMatter === undefined)) {
+    throw new FrontMatterCompletenessError({
+      entryId,
+      reason: 'invalid-page',
+    },);
+  }
+
+  /**
+   * Exact source metadata bytes preparation must have reviewed.
+   */
+  const { raw: sourceFrontMatter, } = source.frontMatter;
+  /**
+   * Exact archive metadata bytes preparation must have reviewed.
+   */
+  const { raw: archiveFrontMatter, } = archive.frontMatter;
+  /**
+   * Source span metadata slice claims.
+   */
+  const { source: sourceSlice, } = metadataSlice;
+  /**
+   * Target span metadata slice claims.
+   */
+  const { target: targetSlice, } = metadataSlice;
+  /**
+   * Whether explicit role points anywhere but exact metadata spans.
+   */
+  const misplaced = (targetSlice.sliceIndex !== 0)
+    || (sourceSlice.startOffset !== 0)
+    || (targetSlice.startOffset !== 0)
+    || (sourceSlice.endOffset !== sourceFrontMatter.length)
+    || (targetSlice.endOffset !== archiveFrontMatter.length)
+    || (sourceSlice.text !== sourceFrontMatter)
+    || (targetSlice.text !== archiveFrontMatter);
+  if (misplaced) {
     throw new FrontMatterCompletenessError({
       entryId,
       reason: 'missing-slice',
@@ -110,23 +171,9 @@ export function assertFrontMatterComplete(
   }
 
   /**
-   * Candidate front matter alone, split from assembled body.
-   */
-  const page = splitFrontMatter({ text: pageText, });
-  if ((page.frontMatter === undefined) || (archive.frontMatter === undefined)) {
-    throw new FrontMatterCompletenessError({
-      entryId,
-      reason: 'invalid-page',
-    },);
-  }
-  /**
    * Exact page metadata bytes.
    */
   const { raw: pageFrontMatter, } = page.frontMatter;
-  /**
-   * Exact archive metadata bytes defining expected shape.
-   */
-  const { raw: archiveFrontMatter, } = archive.frontMatter;
   /**
    * Structural validation before persistence.
    */
@@ -138,6 +185,12 @@ export function assertFrontMatterComplete(
     throw new FrontMatterCompletenessError({
       entryId,
       reason: 'invalid-page',
+    },);
+  }
+  if ((sourceFrontMatter !== archiveFrontMatter) && (pageFrontMatter === archiveFrontMatter)) {
+    throw new FrontMatterCompletenessError({
+      entryId,
+      reason: 'incumbent-fallback',
     },);
   }
 }

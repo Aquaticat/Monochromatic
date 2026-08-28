@@ -84,6 +84,19 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES EXACT INCUMBENT FALLBACK when source and target metadata differ',
+      fn: async () => {
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: SOURCE_TEXT,
+          archiveText: TARGET_TEXT,
+          pageText: TARGET_TEXT,
+          slices: [sliceResult.slice,],
+        },),).toThrow(FrontMatterCompletenessError,);
+      },
+    },),
+
+    it({
       name: 'REFUSES PAGE THAT DROPS TARGET METADATA FIELD',
       fn: async () => {
         expect(() => assertFrontMatterComplete({
@@ -92,6 +105,25 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: '---\nname: Maomao\n---\n\nBody.\n',
           slices: [sliceResult.slice,],
+        },),).toThrow(FrontMatterCompletenessError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES METADATA SLICE AT WRONG INDEX OR SPAN',
+      fn: async () => {
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: SOURCE_TEXT,
+          archiveText: TARGET_TEXT,
+          pageText: '---\nname: Maomao\ninfo:\n  alias: Mao\n---\n\nBody.\n',
+          slices: [{
+            ...sliceResult.slice,
+            target: {
+              ...sliceResult.slice.target,
+              sliceIndex: 1,
+            },
+          },],
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -106,6 +138,13 @@ await describe({
           pageText: 'Body.\n',
           slices: [],
         },),).not.toThrow();
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: 'Body.\n',
+          archiveText: 'Body.\n',
+          pageText: '---\nname: Added\n---\n\nBody.\n',
+          slices: [],
+        },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
   ],

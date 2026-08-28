@@ -187,7 +187,7 @@ export async function persistLaneContestOutcome(
  *
  * @example
  * ```ts
- * const slices = await contestDocumentLanes({ client, projected, modelIds, cache, signal, perCallTimeoutMs, l, },);
+ * const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, cache, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function contestDocumentLanes(
@@ -196,7 +196,7 @@ export async function contestDocumentLanes(
     projected,
     modelIds,
     identityContext,
-    frontMatterSlices = new Set(),
+    frontMatterSlices,
     cache,
     signal,
     perCallTimeoutMs,
@@ -207,7 +207,7 @@ export async function contestDocumentLanes(
     readonly projected: ProjectedLanes;
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
-    readonly frontMatterSlices?: ReadonlySet<number>;
+    readonly frontMatterSlices: ReadonlySet<number>;
     readonly cache: SliceCache<LaneContestOutcome>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -288,6 +288,12 @@ export async function contestDocumentLanes(
       }
 
       /**
+       * Syntax role shared by prompt and cache key.
+       */
+      const syntax = frontMatterSlices.has(row.sliceIndex,)
+        ? 'front-matter' as const
+        : undefined;
+      /**
        * Key these ballots resume under.
        */
       const key = laneContestSliceKey({
@@ -295,6 +301,7 @@ export async function contestDocumentLanes(
         sourceText,
         incumbentText: row.incumbentText,
         incumbentKind: row.incumbentKind,
+        ...((syntax === undefined) ? {} : { syntax, }),
         repairText: row.repairText,
         translateText: row.translateText,
       },);
@@ -330,7 +337,7 @@ export async function contestDocumentLanes(
                 incumbentText: row.incumbentText,
                 repairText: row.repairText,
                 translateText: row.translateText,
-                ...(frontMatterSlices.has(row.sliceIndex,) ? { syntax: 'front-matter' as const, } : {}),
+                ...((syntax === undefined) ? {} : { syntax, }),
                 ...((identityContext === undefined) ? {} : { identityContext, }),
               },
               signal,

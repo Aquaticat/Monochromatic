@@ -319,7 +319,7 @@ await describe({
          */
         const artifact = catArtifact();
         expect(artifact.preparation
-          .identity,).toMatch('sha256-preparation-v1:',);
+          .identity,).toMatch('sha256-preparation-v2:',);
 
         // Two builds of the same preparation agree, which is what makes a
         // resumed pass comparable with the one it resumed.

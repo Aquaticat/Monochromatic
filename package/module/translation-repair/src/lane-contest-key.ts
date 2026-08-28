@@ -1,3 +1,4 @@
+import type { SliceSyntax, } from './chunk-document.ts';
 import { hashContent, } from './document-node.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -82,6 +83,8 @@ export function laneContestRunShape(
  *
  * @param incumbentKind - whether the archive has wording here at all
  *
+ * @param syntax - syntax role changing judge policy
+ *
  * @param repairText - what the repair lane would ship
  *
  * @param translateText - what the translate lane would ship
@@ -99,6 +102,7 @@ export function laneContestSliceKey(
     sourceText,
     incumbentText,
     incumbentKind,
+    syntax,
     repairText,
     translateText,
   }: {
@@ -106,6 +110,7 @@ export function laneContestSliceKey(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
+    readonly syntax?: SliceSyntax;
     readonly repairText: string;
     readonly translateText: string;
   },
@@ -118,6 +123,12 @@ export function laneContestSliceKey(
       sourceText,
       incumbentKind,
       incumbentText,
+      ...((syntax === undefined)
+        ? []
+        : [
+          'syntax',
+          syntax,
+        ]),
       repairText,
       translateText,
     ],),

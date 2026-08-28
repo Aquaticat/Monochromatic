@@ -458,6 +458,7 @@ async function driveWith(
     projected,
     contests,
     modelIds: ROSTER,
+    frontMatterSlices: new Set(),
     cache,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,

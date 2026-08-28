@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { SliceSyntax, } from './chunk-document.ts';
+import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import {
   CONTEST_POLICY,
   isStringList,
@@ -397,7 +398,7 @@ export function buildLaneContestMessages(
    * Policy extended for syntax-bearing visible metadata.
    */
   const policy = (subject.syntax === 'front-matter')
-    ? `${CONTEST_POLICY}\n\nThe candidates are complete YAML front matter. A candidate is flawed if it breaks YAML fences, field names, nesting, container lengths, scalar kinds, or comments. ORIGINAL metadata values are source facts. The visible name field must identify the source person and must not be replaced by an entry directory id.`
+    ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
     : CONTEST_POLICY;
 
   return [

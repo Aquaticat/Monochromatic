@@ -116,6 +116,13 @@ export type UnclaimedTargetBlock = {
  */
 export type PreparedDocumentPair = {
   /**
+   * Marks body-only slicing rebuilt for artifact generations before five.
+   *
+   * Current preparations omit it and use metadata-aware identity scheme.
+   */
+  readonly legacyIdentity?: true;
+
+  /**
    * Original document this preparation was made from.
    */
   readonly sourceText: string;
@@ -588,6 +595,7 @@ export function prepareDocumentPair(
   },);
 
   return {
+    ...(!includeFrontMatter ? { legacyIdentity: true as const, } : {}),
     sourceText,
     targetText,
     slices,

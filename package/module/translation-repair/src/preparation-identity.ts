@@ -43,7 +43,20 @@ const DIGEST_ALGORITHM = 'sha256';
  * it is framed makes a DIFFERENT string rather than a same-looking one. Without
  * it, a later scheme would silently make two incomparable values comparable.
  */
-const IDENTITY_FORMAT = 'sha256-preparation-v1';
+const LEGACY_IDENTITY_FORMAT = 'sha256-preparation-v1';
+
+/**
+ * Metadata-aware preparation identity scheme.
+ */
+const IDENTITY_FORMAT = 'sha256-preparation-v2';
+
+/**
+ * Every identity scheme this reader understands.
+ */
+const IDENTITY_FORMATS: readonly string[] = [
+  LEGACY_IDENTITY_FORMAT,
+  IDENTITY_FORMAT,
+];
 
 /**
  * Character between the scheme name and the hex, chosen because neither side
@@ -94,14 +107,20 @@ export function assertPreparationIdentity(
   value: string,
 ): asserts value is PreparationIdentity {
   /**
-   * Prefix every identity carries.
+   * Scheme this recorded identity declares.
    */
-  const prefix = `${IDENTITY_FORMAT}${FORMAT_SEPARATOR}`;
-  if (!value.startsWith(prefix,)) {
+  const format = IDENTITY_FORMATS.find(function matches(candidate,): boolean {
+    return value.startsWith(`${candidate}${FORMAT_SEPARATOR}`,);
+  },);
+  if (format === undefined) {
     throw new PreparationIdentityError({
       message: `identity does not name this scheme: ${value}`,
     },);
   }
+  /**
+   * Prefix selected scheme carries.
+   */
+  const prefix = `${format}${FORMAT_SEPARATOR}`;
 
   /**
    * Hex half, once the scheme name is off.
@@ -279,8 +298,17 @@ export function preparationIdentity(
    * implied by them: a section neither side sliced appears in no row, so two
    * preparations differing only outside every slice would otherwise agree.
    */
+  /**
+   * Identity scheme selected by preparation generation.
+   */
+  const format = prepared.legacyIdentity === true
+    ? LEGACY_IDENTITY_FORMAT
+    : IDENTITY_FORMAT;
+  /**
+   * Whole preparation payload under selected identity scheme.
+   */
   const payload = [
-    framed({ value: IDENTITY_FORMAT, },),
+    framed({ value: format, },),
     framed({ value: prepared.sourceText, },),
     framed({ value: prepared.targetText, },),
     framedNumber({ value: prepared.slices
@@ -303,7 +331,7 @@ export function preparationIdentity(
   /**
    * Recorded value, naming the scheme that produced it.
    */
-  const identity = `${IDENTITY_FORMAT}${FORMAT_SEPARATOR}${
+  const identity = `${format}${FORMAT_SEPARATOR}${
     createHash(DIGEST_ALGORITHM,)
       .update(
         payload,

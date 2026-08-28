@@ -341,12 +341,32 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS LEGACY BODY-ONLY REBUILD under version 1 identity scheme',
+      fn: async () => {
+        /**
+         * Current metadata-aware preparation.
+         */
+        const current = catPreparation();
+        /**
+         * Same rows interpreted under legacy body-only scheme.
+         */
+        const legacy = {
+          ...current,
+          legacyIdentity: true as const,
+        };
+        expect(preparationIdentity({ prepared: legacy, },),)
+          .toMatch('sha256-preparation-v1:',);
+        expect(preparationIdentity({ prepared: current, },),)
+          .not.toBe(preparationIdentity({ prepared: legacy, },),);
+      },
+    },),
+    it({
       name:
         'names the scheme in the value, so a later scheme cannot be mistaken for this one by a reader '
         + 'that only sees sixty-four hex characters',
       fn: async () => {
         expect(preparationIdentity({ prepared: catPreparation(), },),)
-          .toMatch('sha256-preparation-v1:',);
+          .toMatch('sha256-preparation-v2:',);
       },
     },),
   ],

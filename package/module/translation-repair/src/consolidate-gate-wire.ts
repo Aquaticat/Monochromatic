@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import type { SliceSyntax, } from './chunk-document.ts';
 import {
   CONTEST_POLICY,
   CONTEST_REFUSAL,
@@ -8,6 +9,7 @@ import {
   readCandidateNames,
 } from './contest-ballot-wire.ts';
 import { contestSizeNote, } from './contest-size-note.ts';
+import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Consolidate gate wire
@@ -210,6 +212,11 @@ export type ConsolidateGateSubject = {
   readonly sourceText: string;
 
   /**
+   * Syntax role requiring dedicated gate policy.
+   */
+  readonly syntax?: SliceSyntax;
+
+  /**
    * Archive rendering, as evidence rather than as the standard.
    */
   readonly incumbentText: string;
@@ -312,10 +319,17 @@ export function buildConsolidateGateMessages(
       '',
     ];
 
+  /**
+   * Policy extended for syntax-bearing visible metadata.
+   */
+  const policy = (subject.syntax === 'front-matter')
+    ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
+    : CONTEST_POLICY;
+
   return [
     {
       role: 'system',
-      content: CONTEST_POLICY,
+      content: policy,
     },
     {
       role: 'user',

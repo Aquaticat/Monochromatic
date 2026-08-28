@@ -548,7 +548,7 @@ await describe({
           .preparationIdentity,).toBe(lanes.translateDelivery
           .preparationIdentity,);
         expect(lanes.repairDelivery
-          .preparationIdentity,).toMatch('sha256-preparation-v1:',);
+          .preparationIdentity,).toMatch('sha256-preparation-v2:',);
 
         /**
          * Slices the translate lane's document carries a change for, read off

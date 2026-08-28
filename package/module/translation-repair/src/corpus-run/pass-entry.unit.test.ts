@@ -40,6 +40,7 @@ import {
   type ChatJsonRequest,
   fixedPagePath,
   messageText,
+  parseSettledTwoLaneArtifact,
   type PipelineDigest,
   settleEntry,
   type SyntheticClient,
@@ -183,6 +184,30 @@ const ENTRY = {
 };
 
 /**
+ * Source page made entirely of visible metadata.
+ */
+const FRONT_MATTER_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫\n---\n';
+
+/**
+ * Archive metadata carrying entry id as visible name.
+ */
+const FRONT_MATTER_TARGET = '---\nname: CatFrontMatter\ninfo:\n  alias: Maomao\n---\n';
+
+/**
+ * Source-faithful metadata rendering scripted for ensemble.
+ */
+const FRONT_MATTER_FRESH = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
+
+/**
+ * Entry exercising complete metadata publication path.
+ */
+const FRONT_MATTER_ENTRY = {
+  id: 'CatFrontMatter',
+  sourceText: FRONT_MATTER_SOURCE,
+  targetText: FRONT_MATTER_TARGET,
+};
+
+/**
  * Entry whose archive carries invisible separator outside replacements.
  */
 const INVISIBLE_ENTRY = {
@@ -257,6 +282,8 @@ type CoverageScript = 'lost' | 'absent';
  * ```
  */
 function renderingFor({ content, }: { readonly content: string; },): string {
+  if (content.includes('name: 猫猫',))
+    return FRONT_MATTER_FRESH;
   if (content.includes('第一节',))
     return `## Section one\n\n${FRESH}`;
   if (content.includes('第二节',))
@@ -296,7 +323,8 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
     if (Number.isInteger(index,)
       && (block.includes(FRESH,)
         || block.includes(BIRD_FRESH,)
-        || block.includes(GAP_FRESH,)))
+        || block.includes(GAP_FRESH,)
+        || block.includes(FRONT_MATTER_FRESH,)))
       return index;
   }
   return 0;
@@ -882,6 +910,51 @@ await describe({
         // lane's translators each ran.
         expect(served.includes('critic_report',),).toBe(true,);
         expect(served.includes('translation_report',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'PUBLISHES SOURCE-ALIGNED FRONT MATTER THROUGH LANES, CONTEST, ARTIFACT READBACK, AND PAGE WRITE',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         * Model schemas reached across complete entry boundary.
+         */
+        const served: string[] = [];
+        await settleEntry({
+          client: entryClient({ served, },),
+          entry: FRONT_MATTER_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        /**
+         * Serialized artifact read through production parser.
+         */
+        const artifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(dirs.artifactsDir, 'CatFrontMatter.json',),
+            'utf8',
+          ),),
+        },);
+        /**
+         * Page persisted before artifact sentinel.
+         */
+        const page = await readFile(fixedPagePath({
+          publishDir: dirs.publishDir,
+          entryId: FRONT_MATTER_ENTRY.id,
+        },), 'utf8',);
+
+        expect(artifact.artifactSchemaVersion,).toBe(5,);
+        expect(artifact.preparation.sliceCount,).toBe(1,);
+        expect(page,).toBe(FRONT_MATTER_FRESH,);
+        expect(served,).toContain('translation_report',);
+        expect(served,).toContain('candidate_ballot',);
+        expect(served,).toContain('lane_contest',);
       },
     },),
     it({

@@ -7,6 +7,14 @@ import type { SliceValidation, } from './translate-validate.ts';
 // against archive metadata while model ensemble decides semantic translation.
 
 /**
+ * Decision addendum shared by final candidate comparisons.
+ */
+export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete YAML front matter. A candidate is '
+  + 'flawed if it breaks YAML fences, field names, nesting, container lengths, or scalar kinds. ORIGINAL metadata '
+  + 'values are source facts. The visible name field must identify the source person and must not be replaced by an '
+  + 'entry directory id.';
+
+/**
  * Structural signature for parsed YAML value.
  *
  * @param value - parsed YAML value
