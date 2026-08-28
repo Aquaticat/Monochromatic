@@ -695,6 +695,15 @@ import androidx.compose.runtime.mutableStateOf
 // ```
 import androidx.compose.runtime.remember
 
+// What:     `rememberSaveable` retains simple Compose state through activity recreation.
+// Why:      Portrait expansion survives device rotation during one running app.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { useRestorableState } from "compose/runtime/saveable";
+// ```
+import androidx.compose.runtime.saveable.rememberSaveable
+
 // What:     `import androidx.compose.runtime.setValue` imports the `setValue` OPERATOR
 //           used to WRITE a `by`-delegated state property.
 // Why:      Assigning to the `by` state vars below goes through it.
@@ -2045,6 +2054,8 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // ```
     /** Holds the selected page-control treatment. */
     var pageControlStyle by remember { mutableStateOf(SessionStore.loadPageControlStyle(context)) }
+    /** Retains explicit page-control expansion through recomposition and rotation. */
+    var pageControlsExpanded by rememberSaveable { mutableStateOf(false) }
     // What:     `showingSettings` is remembered observable navigation state.
     // Why:      The Settings button swaps the library area for the settings page.
     //
@@ -2255,9 +2266,13 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             // <trackPager state={state} controller={controller}/>
             // ```
                 trackPager(
-                    state = state,
-                    controller = controller,
-                    pageControlStyle = pageControlStyle,
+                    TrackPagerOptions(
+                        state = state,
+                        controller = controller,
+                        pageControlStyle = pageControlStyle,
+                        pageControlsExpanded = pageControlsExpanded,
+                        onPageControlsExpandedChange = { pageControlsExpanded = it },
+                    ),
                 )
             }
         }
@@ -2930,6 +2945,8 @@ private data class ChromiumPageTabOptions(
     val showDivider: Boolean,
     /** Caps pathological labels to available pager width. */
     val maximumWidth: Dp,
+    /** Reports selected target geometry to folded strip owner. */
+    val modifier: Modifier,
     /** Selects this page when invoked. */
     val onSelect: () -> Unit,
 )
@@ -3021,7 +3038,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
         Modifier
     }
     Box(
-        modifier = Modifier
+        modifier = options.modifier
             // Makes both visible face and owned target meet Android's minimum size.
             .widthIn(min = chromiumTabVisibleHeight, max = options.maximumWidth)
             .width(IntrinsicSize.Max)
@@ -3096,34 +3113,47 @@ private fun segmentedPageButton(label: String, selected: Boolean, onSelect: () -
     }
 }
 
-// What:     `segmentedPageControls` renders content-width segments in one rounded frame.
-// Why:      A separate overlay keeps the shared border visible over child backgrounds.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function SegmentedPageControls(props: PageControlsProps) { ... }
-// ```
-/** Displays a wrapped, mutually exclusive segmented page-control group. */
+/** Groups segmented control state, wrapping mode, geometry reporting, and action. */
+private data class SegmentedPageControlsOptions(
+    /** Holds current pages and selected page index. */
+    val state: PlayerUiState,
+    /** Wraps controls when true and keeps one source-ordered row otherwise. */
+    val wrap: Boolean,
+    /** Reports selected segment geometry to folded strip owner. */
+    val selectedModifier: Modifier,
+    /** Selects one page index. */
+    val onSelectPage: (Int) -> Unit,
+)
+
+/** Displays wrapped or one-row mutually exclusive segmented controls. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
-    /** Holds the shared outer shape for clipping and border drawing. */
+private fun segmentedPageControls(options: SegmentedPageControlsOptions) {
+    /** Holds shared outer shape for clipping and border drawing. */
     val groupShape: RoundedCornerShape = RoundedCornerShape(12.dp)
+    /** Emits source-ordered segments into Row or FlowRow receiver. */
+    val controls: @Composable () -> Unit = {
+        options.state.pageLabels.forEachIndexed { page, label ->
+            /** Records whether this page is currently visible. */
+            val selected: Boolean = page == options.state.selectedPage
+            Box(modifier = if (selected) options.selectedModifier else Modifier) {
+                segmentedPageButton(
+                    label = label,
+                    selected = selected,
+                    onSelect = { options.onSelectPage(page) },
+                )
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .wrapContentWidth(align = Alignment.Start)
             .clip(groupShape),
     ) {
-        FlowRow(modifier = Modifier.selectableGroup()) {
-            state.pageLabels.forEachIndexed { page, label ->
-                /** Records whether this page is currently visible. */
-                val selected: Boolean = page == state.selectedPage
-                segmentedPageButton(
-                    label = label,
-                    selected = selected,
-                    onSelect = { onSelectPage(page) },
-                )
-            }
+        if (options.wrap) {
+            FlowRow(modifier = Modifier.selectableGroup()) { controls() }
+        } else {
+            Row(modifier = Modifier.selectableGroup()) { controls() }
         }
         Box(
             modifier = Modifier
@@ -3133,131 +3163,146 @@ private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> U
     }
 }
 
-// What:     `@OptIn(ExperimentalLayoutApi::class)` acknowledges the experimental `FlowRow`
-//           used by `pageTabs` (see the same annotation on `controlRow`).
-// Why:      `pageTabs` uses `FlowRow`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // @OptIn(ExperimentalLayoutApi)
-// ```
+/** Groups page-control rendering mode, width boundary, selected geometry, and action. */
+internal data class PageTabsOptions(
+    /** Holds current pages and selected page index. */
+    val state: PlayerUiState,
+    /** Holds selected visual page-control treatment. */
+    val style: PageControlStyle,
+    /** Wraps controls when true and keeps one source-ordered row otherwise. */
+    val wrap: Boolean,
+    /** Supplies finite viewport width when one-row parent measures horizontally unbounded. */
+    val maximumWidth: Dp?,
+    /** Reports selected control geometry to folded strip owner. */
+    val selectedModifier: Modifier,
+    /** Selects one page index. */
+    val onSelectPage: (Int) -> Unit,
+)
+
+/** Displays one page-control style as wrapped rows or one intrinsic-width row. */
 @OptIn(ExperimentalLayoutApi::class)
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `pageTabs` is a UI component.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // (component function)
-// ```
 @Composable
-// What:     `private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) { ... }`
-//           declares a private composable taking the snapshot and an `(Int) -> Unit`
-//           page-select callback.
-// Why:      Page-tab grid: one button per page, the active page filled, the rest outlined.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function pageTabs(props: { state: PlayerUiState; onSelectPage: (n: number) => void; }) { ... }
-// ```
-/**
- * Defines page tabs behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
- */
-private fun pageTabs(
-    state: PlayerUiState,
-    pageControlStyle: PageControlStyle,
-    onSelectPage: (Int) -> Unit,
-) {
-    // What:     `FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) { ... }` lays the
-    //           tab buttons left-to-right, wrapping, with 4dp gaps.
-    // Why:      A wrapping grid of page tabs.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <FlowRow horizontalArrangement={Arrangement.spacedBy(dp(4))}> ... </FlowRow>
-    // ```
-    if (pageControlStyle == PageControlStyle.SEGMENTED_BUTTONS) {
-        segmentedPageControls(state = state, onSelectPage = onSelectPage)
+internal fun pageTabs(options: PageTabsOptions) {
+    if (options.style == PageControlStyle.SEGMENTED_BUTTONS) {
+        segmentedPageControls(
+            SegmentedPageControlsOptions(
+                state = options.state,
+                wrap = options.wrap,
+                selectedModifier = options.selectedModifier,
+                onSelectPage = options.onSelectPage,
+            ),
+        )
         return
     }
-    if (pageControlStyle == PageControlStyle.LED_SEGMENTED_BUTTONS) {
-        ledPageControls(LedPageControlsOptions(state = state, onSelectPage = onSelectPage))
+    if (options.style == PageControlStyle.LED_SEGMENTED_BUTTONS) {
+        ledPageControls(
+            LedPageControlsOptions(
+                state = options.state,
+                onSelectPage = options.onSelectPage,
+                folded = !options.wrap,
+                maximumWidth = options.maximumWidth,
+                selectedModifier = options.selectedModifier,
+            ),
+        )
         return
     }
     BoxWithConstraints {
-        /** Holds pager width before entering nested FlowRow scope. */
-        val pageMaximumWidth: Dp = maxWidth
-        /** Reserves paint-only edge room for Chromium feet without spacing adjacent tab bodies. */
-        val chromiumPaintGutter: Dp = if (pageControlStyle == PageControlStyle.CHROMIUM_TABS) {
+        /** Uses finite owner width in one-row mode and local bounded width otherwise. */
+        val pageMaximumWidth: Dp = options.maximumWidth ?: maxWidth
+        /** Reserves paint-only edge room for Chromium feet. */
+        val chromiumPaintGutter: Dp = if (options.style == PageControlStyle.CHROMIUM_TABS) {
             chromiumTabShoulder
         } else {
             0.dp
         }
         /** Caps tab bodies to width remaining inside optional paint gutters. */
         val pageContentMaximumWidth: Dp = pageMaximumWidth - chromiumPaintGutter * 2
-        FlowRow(
-            modifier = Modifier.padding(horizontal = chromiumPaintGutter),
-            horizontalArrangement = Arrangement.spacedBy(
-            if (
-                pageControlStyle == PageControlStyle.MD1_TABS ||
-                pageControlStyle == PageControlStyle.CHROMIUM_TABS
+        /** Keeps tab-like controls adjacent while other controls retain four-unit gaps. */
+        val horizontalSpacing: Dp = if (
+            options.style == PageControlStyle.MD1_TABS ||
+            options.style == PageControlStyle.CHROMIUM_TABS
+        ) {
+            0.dp
+        } else {
+            4.dp
+        }
+        /** Emits one source-ordered control for each page. */
+        val controls: @Composable () -> Unit = {
+            options.state.pageLabels.forEachIndexed { page, label ->
+                /** Records whether this page is currently visible. */
+                val selected: Boolean = page == options.state.selectedPage
+                /** Attaches selected geometry reporting to current control only. */
+                val itemModifier: Modifier = if (selected) options.selectedModifier else Modifier
+                if (options.style == PageControlStyle.RADIO) {
+                    Box(modifier = itemModifier) {
+                        radioOption(
+                            label = label,
+                            selected = selected,
+                            onSelect = { options.onSelectPage(page) },
+                        )
+                    }
+                } else if (options.style == PageControlStyle.MD1_TABS) {
+                    Box(modifier = itemModifier) {
+                        md1PageTab(
+                            label = label,
+                            selected = selected,
+                            onSelect = { options.onSelectPage(page) },
+                        )
+                    }
+                } else if (options.style == PageControlStyle.CHROMIUM_TABS) {
+                    chromiumPageTab(
+                        ChromiumPageTabOptions(
+                            label = label,
+                            selected = selected,
+                            showDivider = page < options.state.pageLabels.lastIndex &&
+                                page + 1 != options.state.selectedPage,
+                            maximumWidth = pageContentMaximumWidth,
+                            modifier = itemModifier,
+                            onSelect = { options.onSelectPage(page) },
+                        ),
+                    )
+                } else {
+                    Box(modifier = itemModifier) {
+                        if (selected) {
+                            Button(onClick = { options.onSelectPage(page) }) { Text(label) }
+                        } else {
+                            OutlinedButton(onClick = { options.onSelectPage(page) }) { Text(label) }
+                        }
+                    }
+                }
+            }
+        }
+        if (options.wrap) {
+            FlowRow(
+                modifier = Modifier.padding(horizontal = chromiumPaintGutter),
+                horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
             ) {
-                0.dp
-            } else {
-                4.dp
-            },
-        ),
-    ) {
-        // What:     `state.pageLabels.forEachIndexed { page, label -> ... }` iterates the page
-        //           labels WITH their indices. `forEachIndexed { page, label -> ... }` is a
-        //           trailing lambda whose two parameters are the index `page` (an `Int`) and the
-        //           element `label` (a `String`), written before `->`.
-        // Why:      Emit one tab button per page, knowing each page's index.
-        // Gotcha:   Argument order is `(index, value)` here, flipped from JS `forEach`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // state.pageLabels.forEach((label, page) => { ... });
-        // ```
-        state.pageLabels.forEachIndexed { page, label ->
-            // What:     `if (page == state.selectedPage) { Button(...) } else { OutlinedButton(...) }`
-            //           branches on whether this tab is the active page (`==` integer equality):
-            //           the active tab is a filled `Button`, the rest are `OutlinedButton`s. Each
-            //           `onClick` lambda calls `onSelectPage(page)`; the trailing lambda is the
-            //           label.
-            // Why:      Visually mark the active page and make every tab selectable.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // if (page === state.selectedPage)
-            //   return <Button onClick={() => onSelectPage(page)}><Text>{label}</Text></Button>;
-            // return <OutlinedButton onClick={() => onSelectPage(page)}><Text>{label}</Text></OutlinedButton>;
-            // ```
-            /** Records whether this page is currently visible. */
-            val selected: Boolean = page == state.selectedPage
-            if (pageControlStyle == PageControlStyle.RADIO) {
-                radioOption(label = label, selected = selected, onSelect = { onSelectPage(page) })
-            } else if (pageControlStyle == PageControlStyle.MD1_TABS) {
-                md1PageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
-            } else if (pageControlStyle == PageControlStyle.CHROMIUM_TABS) {
-                chromiumPageTab(
-                    ChromiumPageTabOptions(
-                        label = label,
-                        selected = selected,
-                        showDivider = page < state.pageLabels.lastIndex && page + 1 != state.selectedPage,
-                        maximumWidth = pageContentMaximumWidth,
-                        onSelect = { onSelectPage(page) },
-                    ),
-                )
-            } else if (selected) {
-                Button(onClick = { onSelectPage(page) }) { Text(label) }
-            } else {
-                OutlinedButton(onClick = { onSelectPage(page) }) { Text(label) }
+                controls()
+            }
+        } else {
+            Row(
+                modifier = Modifier.padding(horizontal = chromiumPaintGutter),
+                horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+            ) {
+                controls()
             }
         }
     }
-    }
 }
+
+/** Groups track pager state, controller, style, and transient fold boundary. */
+private data class TrackPagerOptions(
+    /** Holds current queue and pagination snapshot. */
+    val state: PlayerUiState,
+    /** Drives page and track selection. */
+    val controller: PlayerController,
+    /** Holds selected visual page-control treatment. */
+    val pageControlStyle: PageControlStyle,
+    /** Records retained portrait disclosure state. */
+    val pageControlsExpanded: Boolean,
+    /** Updates retained portrait disclosure state. */
+    val onPageControlsExpandedChange: (Boolean) -> Unit,
+)
 
 // What:     `@Composable` marks the next function as a Compose component.
 // Why:      `trackPager` is a UI component.
@@ -3291,11 +3336,11 @@ private fun pageTabs(
  * Defines track pager behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun ColumnScope.trackPager(
-    state: PlayerUiState,
-    controller: PlayerController,
-    pageControlStyle: PageControlStyle,
-) {
+private fun ColumnScope.trackPager(options: TrackPagerOptions) {
+    /** Holds current snapshot for concise existing row bindings. */
+    val state: PlayerUiState = options.state
+    /** Holds player controller for concise existing actions. */
+    val controller: PlayerController = options.controller
     // What:     `if (state.queueSize == 0) { ... }` checks for an empty queue (`==` integer
     //           equality).
     // Why:      An empty queue shows either a loading notice or a "no music" message, then
@@ -3397,10 +3442,14 @@ private fun ColumnScope.trackPager(
                 // ```ts
                 // <pageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
                 // ```
-                pageTabs(
-                    state = state,
-                    pageControlStyle = pageControlStyle,
-                    onSelectPage = { controller.selectPage(it) },
+                foldablePageControls(
+                    FoldablePageControlsOptions(
+                        state = state,
+                        style = options.pageControlStyle,
+                        expanded = options.pageControlsExpanded,
+                        onExpandedChange = options.onPageControlsExpandedChange,
+                        onSelectPage = { controller.selectPage(it) },
+                    ),
                 )
             }
         }

@@ -340,6 +340,15 @@ import androidx.compose.ui.unit.DpOffset
 // ```
 import androidx.compose.ui.unit.constrainHeight
 
+// What:     `constrainWidth` clamps measured single-row plate width to incoming bounds.
+// Why:      Folded controls may exceed viewport while expanded controls remain parent-sized.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { constrainWidth } from "compose/units";
+// ```
+import androidx.compose.ui.unit.constrainWidth
+
 // What:     `dp` converts numeric literals into density-independent dimensions.
 // Why:      Every geometry constant maps directly from the authoritative generator.
 //
@@ -496,12 +505,18 @@ internal data class LedMultilineHeightOptions(
     val rowPitchPx: Int,
 )
 
-/** Groups state and selection action for complete wrapping LED control. */
+/** Groups state, layout mode, selected geometry, and action for complete LED control. */
 internal data class LedPageControlsOptions(
     /** Holds current pages and selected page index. */
     val state: PlayerUiState,
     /** Selects one page index. */
     val onSelectPage: (Int) -> Unit,
+    /** Keeps every cap on one intrinsic-width row when true. */
+    val folded: Boolean = false,
+    /** Caps folded labels to finite viewport width before horizontal scrolling. */
+    val maximumWidth: Dp? = null,
+    /** Reports selected cap geometry to fold owner. */
+    val selectedModifier: Modifier = Modifier,
 )
 
 /** Stores runtime-derived selected colors and invariant inactive pigments. */
@@ -536,6 +551,8 @@ private data class LedTargetOptions(
     val palette: LedPalette,
     /** Holds fixed legend measurement style. */
     val labelStyle: TextStyle,
+    /** Reports selected target geometry when applicable. */
+    val modifier: Modifier,
     /** Selects this page. */
     val onSelect: () -> Unit,
 )
@@ -592,6 +609,8 @@ private data class LedLayoutOptions(
     val palette: LedPalette,
     /** Holds selected-state-invariant legend metrics. */
     val labelStyle: TextStyle,
+    /** Reports selected target geometry when applicable. */
+    val selectedModifier: Modifier,
 )
 
 /** Groups incoming constraints with physical row geometry. */
@@ -610,6 +629,10 @@ private data class LedMeasureOptions(
     val targetHeightPx: Int,
     /** Stores target's vertical origin inside plate. */
     val targetOffsetYPx: Int,
+    /** Keeps measured targets on one row. */
+    val folded: Boolean,
+    /** Stores finite page viewport width used to cap individual labels. */
+    val maximumWidthPx: Int,
 )
 
 /** Groups one target's source page and position within a packed row. */
@@ -688,6 +711,16 @@ internal fun packLedLines(options: LedPackingOptions): List<LedLine> =
             )
         }
     }
+
+/** Returns one source-ordered line containing every measured cap. */
+internal fun singleLedLine(options: LedPackingOptions): List<LedLine> {
+    if (options.capWidthsPx.isEmpty()) return emptyList()
+    /** Adds two plate margins, every cap, and every inter-cap channel. */
+    val widthPx: Int = options.marginPx * 2 +
+        options.capWidthsPx.sum() +
+        options.gapPx * (options.capWidthsPx.size - 1)
+    return listOf(LedLine(pageIndexes = options.capWidthsPx.indices.toList(), widthPx = widthPx))
+}
 
 /** Returns content-width cap width from actual legend measurement. */
 internal fun ledCapWidth(options: LedCapWidthOptions): Int =
@@ -975,6 +1008,7 @@ private fun ledCapTarget(options: LedTargetOptions) {
         modifier = Modifier
             .widthIn(min = ledTargetHeight)
             .height(ledTargetHeight)
+            .then(options.modifier)
             .selectable(selected = options.selected, role = Role.RadioButton, onClick = options.onSelect),
     ) {
         Box(
@@ -1031,6 +1065,11 @@ private fun ledTargetOptions(options: LedTargetFactoryOptions): LedTargetOptions
     lightScene = options.layout.lightScene,
     palette = options.layout.palette,
     labelStyle = options.layout.labelStyle,
+    modifier = if (options.page == options.layout.state.selectedPage) {
+        options.layout.selectedModifier
+    } else {
+        Modifier
+    },
     onSelect = { options.layout.onSelectPage(options.page) },
 )
 
@@ -1050,7 +1089,7 @@ private fun ledProbeLabel(options: LedProbeLabelOptions) {
 private fun SubcomposeMeasureScope.measureLedProbeWidths(options: LedMeasureOptions): List<Int> {
     /** Caps one target to row width after both plate margins. */
     val maximumCapWidthPx: Int =
-        (options.constraints.maxWidth - options.marginPx * 2).coerceAtLeast(1)
+        (options.maximumWidthPx - options.marginPx * 2).coerceAtLeast(1)
     /** Converts per-side legend inset to physical pixels. */
     val insetPx: Int = ledLegendHorizontalInset.roundToPx()
     /** Leaves both label insets inside maximum cap width. */
@@ -1131,21 +1170,29 @@ private fun Placeable.PlacementScope.placeLedRows(options: LedPlacementOptions) 
 private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions): MeasureResult {
     /** Measures real legends before deciding target and row widths. */
     val capWidthsPx: List<Int> = measureLedProbeWidths(options)
-    /** Packs actual content widths into immutable rows. */
-    val lines: List<LedLine> = packLedLines(
-        LedPackingOptions(
-            capWidthsPx = capWidthsPx,
-            maximumWidthPx = options.constraints.maxWidth,
-            marginPx = options.marginPx,
-            gapPx = options.gapPx,
-        ),
+    /** Groups shared packing inputs for wrapped or one-line mode. */
+    val packingOptions = LedPackingOptions(
+        capWidthsPx = capWidthsPx,
+        maximumWidthPx = options.maximumWidthPx,
+        marginPx = options.marginPx,
+        gapPx = options.gapPx,
     )
+    /** Packs actual content widths into one line or viewport-width rows. */
+    val lines: List<LedLine> = if (options.folded) {
+        singleLedLine(packingOptions)
+    } else {
+        packLedLines(packingOptions)
+    }
     /** Composes targets once with row-position corner geometry. */
     val positionedCaps: List<List<Placeable>> = measureLedPositionedCaps(
         LedPositionedMeasureOptions(measure = options, lines = lines, capWidthsPx = capWidthsPx),
     )
-    /** Expands plate and outer layout to complete incoming width. */
-    val layoutWidthPx: Int = options.constraints.maxWidth
+    /** Uses intrinsic one-line plate width or complete incoming width. */
+    val layoutWidthPx: Int = if (options.folded) {
+        lines.firstOrNull()?.widthPx ?: 0
+    } else {
+        options.constraints.maxWidth
+    }
     /** Computes one continuous plate height from source cap-row pitch. */
     val contentHeightPx: Int = ledMultilineHeight(
         LedMultilineHeightOptions(
@@ -1163,7 +1210,7 @@ private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions)
         ),
     )
     return layout(
-        width = layoutWidthPx,
+        width = options.constraints.constrainWidth(layoutWidthPx),
         height = options.constraints.constrainHeight(contentHeightPx),
     ) {
         placeLedRows(
@@ -1190,8 +1237,11 @@ internal fun ledPageControls(options: LedPageControlsOptions) {
         lightScene = !androidx.compose.foundation.isSystemInDarkTheme(),
         palette = ledPalette(),
         labelStyle = ledLabelStyle(),
+        selectedModifier = options.selectedModifier,
     )
     SubcomposeLayout(modifier = Modifier.selectableGroup()) { constraints ->
+        /** Uses supplied finite viewport in folded mode, parent maximum otherwise. */
+        val maximumWidthPx: Int = options.maximumWidth?.roundToPx() ?: constraints.maxWidth
         measureLedControl(
             LedMeasureOptions(
                 layout = layoutOptions,
@@ -1201,6 +1251,8 @@ internal fun ledPageControls(options: LedPageControlsOptions) {
                 plateHeightPx = ledPlateHeight.roundToPx(),
                 targetHeightPx = ledTargetHeight.roundToPx(),
                 targetOffsetYPx = (ledPlateHeight - ledTargetHeight).roundToPx() / 2,
+                folded = options.folded,
+                maximumWidthPx = maximumWidthPx,
             ),
         )
     }
