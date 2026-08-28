@@ -1088,16 +1088,24 @@ Both pages retained byte-identical blocked details transcript,
 while surrounding wording differed stochastically.
 Both are mechanically complete and neither is acceptable production output.
 
-Fixed-build overlap-4 `Weideriche_` exposed liveness blocker `#273`.
-Pairing roster heard all 10 voices but contested one source block and committed no pair for it.
+Fixed-build matched `Weideriche_` pair exposed liveness blocker `#273`.
+In both fresh roots pairing roster heard all 10 voices,
+contested same source block,
+and committed same pairing without it.
 Preparation therefore made source-only insertion,
 although archive carries passage in neighbouring target slice.
 Coverage refused duplicate insertion,
 translation left slice unfilled,
 and publication guard correctly wrote no artifact or page.
-First attempt took 31.51 minutes over 2.502 call-hours,
-normalized `0.210`, with both providers wet.
-Automatic retry reused cached pairing and reached same refusal in 32.35 seconds.
+
+Overlap `1` first attempt took 54.04 minutes over 2.293 call-hours,
+normalized `0.393`, with 15 voices unheard and 13.02 metered credits.
+Overlap `4` first attempt took 31.51 minutes over 2.502 call-hours,
+normalized `0.210`, with 10 voices unheard and 30.92 metered credits.
+Both providers were wet throughout.
+Overlap `4` reduced wall time 41.7 percent and normalized wall 46.6 percent;
+call sum rose 9.1 percent and metered spend rose 137.5 percent.
+Automatic retries reused cached pairing and reached same refusal.
 Safe refusal is correct;
 persisting contested alignment with no path to re-pair means entry cannot settle under this generation.
 
