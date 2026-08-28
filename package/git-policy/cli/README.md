@@ -20,8 +20,10 @@ trusted policies,
 fixed transforms,
 and post-commit auto-push.
 Use a known absolute real-Git path only for deliberate bypasses such as fixture setup or forensic inspection.
-Cli-git's own real-Git resolver rejects its package entry and package-manager shims that point back to that entry,
-then follows PATH directory order and Windows `PATHEXT` extension order.
+The shared `@monochromatic-dev/git-executable` resolver rejects cli-git's package entry and package-manager shims that
+point back to that entry.
+Common platform Git paths exposed by `PATH` have priority;
+remaining candidates follow `PATH` directory order and Windows `PATHEXT` extension order.
 
 The package is prepared for npm distribution,
 but registry publication is deliberately deferred to issue #358.

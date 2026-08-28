@@ -18,7 +18,7 @@ import {
   autoPush,
   filterPushOutput,
 } from './auto-push.ts';
-import { resolveGit, } from './resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 //region Test fixtures: disposable repos, bare remotes, and a remote-line hook
 

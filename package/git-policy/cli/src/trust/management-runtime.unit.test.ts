@@ -17,7 +17,7 @@ import nanoSpawn, {
   type Result,
   SubprocessError,
 } from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 /** Real Git binary for disposable management repository. */
 const REAL_GIT = await resolveGit();

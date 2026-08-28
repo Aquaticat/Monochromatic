@@ -23,7 +23,7 @@ import nanoSpawn, {
   SubprocessError,
 } from 'nano-spawn';
 
-import { resolveGit, } from './resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 /** Absolute path to real git binary used for fixture setup and assertions. */
 const realGitPath = await resolveGit();

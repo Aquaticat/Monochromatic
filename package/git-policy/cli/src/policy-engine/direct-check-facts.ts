@@ -5,7 +5,7 @@
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   ADD_POLICY_FACTS_NOT_APPLICABLE,
   type AddPolicyFactsScope,

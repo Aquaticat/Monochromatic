@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { discoverConfig, CONFIG_ABSENT, type DiscoveredConfig, } from './config-discovery.ts';
 import { TrustedConfigError, } from './config-loader.ts';
 import { listTrustRecords, trustIdentityKey, } from './registry-catalog.ts';

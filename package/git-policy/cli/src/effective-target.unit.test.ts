@@ -14,7 +14,7 @@ import {
 import nanoSpawn from 'nano-spawn';
 
 import { classifyEffectiveTarget, } from './effective-target.ts';
-import { resolveGit, } from './resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 //region Test fixtures
 

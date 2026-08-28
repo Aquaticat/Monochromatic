@@ -25,7 +25,7 @@ import {
   createEngineFailureEvent,
   renderPolicyEvents,
 } from './policy-engine/events.ts';
-import { resolveGit, } from './resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { TrustedConfigError, } from './trust/config-loader.ts';
 import { classifyConfigLoading, } from './trust/command-classification.ts';
 import {

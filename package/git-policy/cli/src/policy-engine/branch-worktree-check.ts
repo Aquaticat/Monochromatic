@@ -7,7 +7,7 @@ import {
   type BranchCreationSubcommand,
 } from '../parser/branch-create.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { branchCreationMessage, } from './branch-worktree-messages.ts';
 import { implicitRemoteGuessCreatesBranch, } from './branch-worktree-remote-guess.ts';
 

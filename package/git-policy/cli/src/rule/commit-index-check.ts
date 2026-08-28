@@ -1,7 +1,7 @@
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 /**
  * Logger root for cli-git after removing the package log shim.

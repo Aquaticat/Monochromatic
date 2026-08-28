@@ -3,7 +3,7 @@ import {
   isAllowedWorktreeDir,
 } from './allowed-worktree-dirs.ts';
 import { resolveGitWorktreeIdentity, } from './git-worktree-identity.ts';
-import { resolveGit, } from './resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 //region Effective target classification
 

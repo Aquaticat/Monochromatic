@@ -12,7 +12,7 @@ import { join, } from 'node:path';
 import nanoSpawn from 'nano-spawn';
 
 import { cleanupHkGitConfig, } from '../../maintenance/hk-config-cleanup.ts';
-import { resolveGit, } from '../../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 //region Cleanup fixture -- Prove exact ownership and repeated no-op behavior in disposable config files.
 

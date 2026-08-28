@@ -11,7 +11,7 @@ import {
   cleanupHkGitConfig,
   type HkConfigScope,
 } from './hk-config-cleanup.ts';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 //region Cleanup command -- Require explicit scopes and report exact removed keys.
 

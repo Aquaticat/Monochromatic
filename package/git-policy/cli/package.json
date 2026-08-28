@@ -36,6 +36,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/git-executable": "workspace:*",
     "@monochromatic-dev/git-policy-repository": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
