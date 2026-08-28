@@ -12,6 +12,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -41,6 +42,14 @@ const ROSTER = [
   'hf:zai-org/GLM-5.2',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
+] as const;
+
+/**
+ * Roster with two delayed eligible voices after two fast inadmissible ones.
+ */
+const ELIGIBILITY_ROSTER = [
+  ...ROSTER,
+  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
 ] as const;
 
 /**
@@ -79,6 +88,8 @@ function ballot({ choice, }: { readonly choice: string; },): string {
  *
  * @param replyByModel - reply body per model
  *
+ * @param delayByModel - response delay per model position
+ *
  * @returns Client over a canned transport
  *
  * @example
@@ -87,7 +98,13 @@ function ballot({ choice, }: { readonly choice: string; },): string {
  * ```
  */
 function cannedClient(
-  { replyByModel, }: { readonly replyByModel: readonly string[]; },
+  {
+    replyByModel,
+    delayByModel = [],
+  }: {
+    readonly replyByModel: readonly string[];
+    readonly delayByModel?: readonly number[];
+  },
 ) {
   /**
    * Calls served so far, so each model gets its own reply.
@@ -106,6 +123,7 @@ function cannedClient(
        * This model's reply text.
        */
       const content = replyByModel[at] ?? replyByModel[0] ?? '';
+      await wait(delayByModel[at] ?? 0,);
       return {
         status: 200,
         bodyText: `data: ${
@@ -166,6 +184,41 @@ await describe({
         expect(outcome.findings,).toEqual([],);
       },
     },),
+    it({
+      name: 'WAITS FOR DELAYED ELIGIBLE VOICES before grace after fast inadmissible quorum',
+      fn: async () => {
+        const outcome = await contestLaneSlice({
+          client: cannedClient({
+            replyByModel: [
+              ballot({ choice: 'repair', },),
+              ballot({ choice: 'repair', },),
+              ballot({ choice: 'translate', },),
+              ballot({ choice: 'translate', },),
+            ],
+            delayByModel: [
+              0,
+              0,
+              30,
+              30,
+            ],
+          },),
+          modelIds: ELIGIBILITY_ROSTER,
+          subject: {
+            ...SUBJECT,
+            ineligibleCandidates: ['repair',],
+          },
+          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          graceMs: 5,
+          l,
+        },);
+        expect(outcome.usable,).toBe(4,);
+        expect(outcome.ballots.filter(function choseTranslate(ballotValue,): boolean {
+          return ballotValue.choice === 'translate';
+        },),).toHaveLength(2,);
+      },
+    },),
+
     it({
       name: 'REFUSES to ship on a tie, rather than picking by list order',
       fn: async () => {

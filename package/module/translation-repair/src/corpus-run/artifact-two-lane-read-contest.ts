@@ -17,7 +17,10 @@ import {
   describeContestSlice,
 } from './artifact-two-lane-contest.ts';
 import { parseContestBallot, } from './artifact-two-lane-read-contest-ballot.ts';
-import { parseContestEligibility, } from './artifact-two-lane-read-contest-eligibility.ts';
+import {
+  contestEligibilityRequired,
+  parseContestEligibility,
+} from './artifact-two-lane-read-contest-eligibility.ts';
 import { assertContestVerdictMatches, } from './artifact-two-lane-read-contest-verdict.ts';
 import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
@@ -125,6 +128,14 @@ function parseContestSlice(
       row,
       path: `${path}.eligibility`,
     },);
+  if ((generation === ARTIFACT_SCHEMA_VERSION_V7)
+    && (eligibility === undefined)
+    && contestEligibilityRequired({ row, })) {
+    throw new ArtifactParseError({
+      path: `${path}.eligibility`,
+      reason: 'source-backed syntax eligibility record rather than absence',
+    },);
+  }
 
   /**
    * Ballots this slice carries.

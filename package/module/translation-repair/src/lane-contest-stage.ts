@@ -285,6 +285,8 @@ function withoutArchiveAnswer(
  *
  * @param exchangeTimeoutMs - per-call ceiling
  *
+ * @param graceMs - optional straggler window seam for deterministic tests
+ *
  * @param l - logger to tag
  *
  * @returns What the roster settled on, with every usable ballot
@@ -301,6 +303,7 @@ export async function contestLaneSlice(
     subject,
     signal,
     exchangeTimeoutMs,
+    graceMs,
     l,
   }: {
     readonly client: SyntheticClient;
@@ -308,6 +311,7 @@ export async function contestLaneSlice(
     readonly subject: LaneContestSubject;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
+    readonly graceMs?: number;
     readonly l: Logger;
   },
 ): Promise<LaneContestOutcome> {
@@ -318,6 +322,26 @@ export async function contestLaneSlice(
     l,
     tag: contestLaneSlice.name,
   },);
+
+  /**
+   * Candidate exclusions deterministic syntax guard supplied.
+   */
+  const { ineligibleCandidates, } = subject;
+  /**
+   * Whether deterministic guard excluded either lane from effective tally.
+   */
+  const laneExcluded = (ineligibleCandidates === undefined)
+    ? false
+    : ineligibleCandidates.some(function isLane(candidate,): boolean {
+      return (candidate === 'repair') || (candidate === 'translate');
+    },);
+  /**
+   * Voices required before grace begins.
+   *
+   * Every seat is required when raw choices can be excluded. Otherwise two
+   * fast inadmissible votes could start grace and cut off eligible quorum.
+   */
+  const heardNeeded = laneExcluded ? modelIds.length : HEARD_NEEDED;
 
   /**
    * One reply per voice, heard or lost.
@@ -332,7 +356,8 @@ export async function contestLaneSlice(
     validate: isLaneContestWire,
     stage: 'lane-contest',
     l: cl,
-    heardNeeded: HEARD_NEEDED,
+    heardNeeded,
+    ...((graceMs === undefined) ? {} : { graceMs, }),
   },);
 
   /**

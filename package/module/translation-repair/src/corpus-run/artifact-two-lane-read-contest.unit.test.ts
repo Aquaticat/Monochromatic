@@ -306,6 +306,32 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES SCHEMA 7 FRONT MATTER CONTEST missing eligibility record',
+      fn: async () => {
+        const refusal = await caught(() => parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [{
+              sliceIndex: 0,
+              verdict: {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+              ballots: [FOR_TRANSLATE, FOR_TRANSLATE,],
+              usable: 2,
+            },],
+          },
+          comparison: [FRONT_ROW,],
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+          generation: 7,
+        },),);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusal as Error).message,).toContain('eligibility',);
+      },
+    },),
+
+    it({
       name: 'REFUSES SCHEMA 7 ELIGIBILITY STATUS disagreeing with source and lane texts',
       fn: async () => {
         const refusal = await caught(() => parseLaneSelection({

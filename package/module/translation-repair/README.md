@@ -1244,6 +1244,9 @@ and translate eligibility on syntax-bearing contests while retaining raw ballots
 Verdict derivation excludes votes for ineligible candidates without redirecting them,
 requires ordinary direct-vote quorum for eligible lane,
 and suppresses archive endorsement when archive itself is ineligible.
+When either lane is excluded,
+contest waits for every seat before straggler grace can begin,
+so fast inadmissible votes cannot cut off delayed eligible quorum.
 No eligible winner remains retryable and uncached.
 Contest prompt names deterministic exclusions,
 artifact reader recomputes eligibility from stored source and lane texts,
