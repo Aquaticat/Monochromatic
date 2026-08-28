@@ -963,29 +963,28 @@ The active Panel Colorizer settings directory was removed.
 No workaround for the original global-input stalls or the separate panel freeze has been verified.
 
 The user declined a timer pause and wants automatic snapshots retained.
-No production mitigation has been applied.
+The production `FREE_LIMIT` was lowered to 100 GiB after the user selected the weaker reserve tradeoff.
+No timer or Btrfs quota setting has been changed.
 The disposable controls reject threshold 2,
 simple quotas,
 and disabled quotas as demonstrated latency fixes for the reproduced metadata-heavy deletion.
 
-Capacity is the gating decision.
+Capacity was the gating decision.
 After removing and syncing the disposable fixture,
 `/var/home` had 183.102 GiB available,
-16.898 GiB below the configured 200 GiB `FREE_LIMIT`.
-The new timeline snapshot remains eligible for deletion while that condition is unsatisfied,
-regardless of whether cleanup runs hourly or daily.
+16.898 GiB below the former 200 GiB `FREE_LIMIT`.
+The user selected a 100 GiB limit instead of data migration or storage expansion.
+The applied limit was verified with 183.054 GiB available,
+so the free-space condition was satisfied with 83.054 GiB of headroom.
 The encrypted data filesystem had 2.265 TiB available,
-but moving data there requires selecting content whose access and performance requirements fit that device.
+but no data was moved.
 
 Retained Snapper logs show free space falling from 451.4 GiB on July 5 to 182.6 GiB at the captured August 28 cleanup,
 an average decline of 4.978 GiB per day over that interval.
 Daily changes varied,
 so this mean is evidence of sustained pressure rather than a precise exhaustion forecast.
-Lowering `FREE_LIMIT` alone postpones the same capacity problem.
-Reclaiming or moving live data while identifying its growth source ranks first because it restores the configured reserve
-without weakening protection.
-Expanding storage ranks second because it addresses capacity but requires hardware or filesystem work.
-Lowering `FREE_LIMIT` ranks third because it is reversible but only defers the pressure.
+Lowering `FREE_LIMIT` postpones rather than removes that capacity pressure.
+Reclaiming or moving live data while identifying its growth source remains the safest response if free space approaches 100 GiB.
 
 After capacity is addressed,
 the leading reversible stutter mitigation is to keep hourly creation while moving cleanup to a chosen inactive time.
@@ -1034,6 +1033,18 @@ but simple quotas also invalidate parent usage accounting.
 Threshold and daemon scheduling rank last because neither has evidence of reducing deletion impact.
 
 ## Verified local actions
+
+### Lower the Snapper free-space limit to 100 GiB
+
+The inactive cleanup service was confirmed before changing the configuration.
+The previous `/etc/snapper/configs/root` was preserved at
+`/var/home/user/temp/agent/snapper-root.before-free-limit-100GiB-20260828`.
+`snapper --config root set-config FREE_LIMIT=100GiB` updated the live configuration.
+Both `snapper get-config` and the configuration file reported `FREE_LIMIT=100GiB` afterward.
+Automatic creation and cleanup remained enabled,
+and no cleanup was triggered manually.
+The 01:36 scheduled cleanup had already removed timeline snapshot 964 before this change;
+boot snapshot 963 remained.
 
 ### Remove Panel Colorizer from every panel
 
