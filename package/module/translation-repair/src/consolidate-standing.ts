@@ -1,17 +1,18 @@
 import type { LaneChoice, } from './lane-contest-wire.ts';
 
 //region Consolidate standing text
-// WHAT WOULD SHIP TODAY at one contested slice, which is what a consolidation
-// has to beat and what ships whenever it does not.
+// BASELINE A CONSOLIDATION MUST BEAT at one contested slice. Lane winner is
+// standing text. When contest chose neither, archive is comparison baseline so
+// third rendering can still be judged; final-selection guard separately refuses
+// archive itself unless contest endorsed it.
 
 /**
  * Names the rendering a contested slice would ship without this stage.
  *
- * A DECLINED CONTEST LEAVES NOTHING STANDING, and this returns the empty string
- * rather than inventing a side. Picking either lane on a decline would make the
- * consolidation's slate carry a candidate no panel chose, and the deciding half
- * treats an absent standing text as its own terminal state precisely so that
- * case stays visible.
+ * A DECLINED CONTEST LEAVES NO LANE STANDING. Archive remains comparison
+ * baseline rather than invented lane choice, allowing third rendering to be
+ * judged against current page. Keeping baseline is not approval:
+ * `assertFinalSelectionSettled` refuses it unless contest endorsed archive.
  *
  * @param choice - what the lane contest settled
  *
@@ -19,11 +20,13 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
  *
  * @param translateText - what the translate lane would ship
  *
- * @returns Wording in place, empty where the contest declined
+ * @param incumbentText - archive wording available as decline baseline
+ *
+ * @returns Lane winner or archive baseline
  *
  * @example
  * ```ts
- * const standing = standingTextFor({ choice: 'repair', repairText, translateText, },);
+ * const standing = standingTextFor({ choice: 'repair', repairText, translateText, incumbentText, },);
  * ```
  */
 export function standingTextFor(
@@ -31,17 +34,19 @@ export function standingTextFor(
     choice,
     repairText,
     translateText,
+    incumbentText,
   }: {
     readonly choice: LaneChoice;
     readonly repairText: string;
     readonly translateText: string;
+    readonly incumbentText: string;
   },
 ): string {
   if (choice === 'repair')
     return repairText;
   if (choice === 'translate')
     return translateText;
-  return '';
+  return incumbentText;
 }
 
 //endregion Consolidate standing text

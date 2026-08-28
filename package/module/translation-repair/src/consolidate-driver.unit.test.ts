@@ -512,28 +512,30 @@ await describe({
     },),
 
     it({
-      name: 'BUYS NO SLATE FOR A SLICE WITH NO STANDING TEXT, on either verdict that leaves none: the '
-        + 'settle half refuses such a slice before judging anything, so a producer round bought for '
-        + 'it was a roster of calls discarded whole, and on a night the contest lost quorum every '
-        + 'contested slice paid it. The refusing client above is the proof: any call throws',
+      name: 'REACHES CONSOLIDATION AFTER CONTEST SETTLES NEITHER OR MISSES QUORUM, using archive only as comparison baseline rather than silently reviving it',
       fn: async () => {
         await Promise.all(([
           { kind: 'settled-neither', },
           { kind: 'quorum-not-met', },
         ] as const).map(async function driveVerdict(verdict,): Promise<void> {
-          const { slices, written, } = await driveWith({
-            contests: [{
-              sliceIndex: 0,
-              verdict,
-              ballots: [],
-              usable: ROSTER.length,
-            },],
-          },);
-          expect(slices.length,).toBe(1,);
-          expect(slices[0]?.terminal,).toBe('no-standing-text',);
-          // Still a settlement worth resuming: the answer is a stable fact of
-          // the key, and a resumed run must not re-derive it either.
-          expect(written.length,).toBe(1,);
+          const raised: unknown = await (async function captureRefusal(): Promise<unknown> {
+            try {
+              await driveWith({
+                contests: [{
+                  sliceIndex: 0,
+                  verdict,
+                  ballots: [],
+                  usable: ROSTER.length,
+                },],
+              },);
+            }
+            catch (error) {
+              return error;
+            }
+            return 'driver unexpectedly settled';
+          })();
+          expect(raised,).toBeInstanceOf(Error,);
+          expect(String(raised,).includes('bought a call it should not have',),).toBe(true,);
         },),);
       },
     },),

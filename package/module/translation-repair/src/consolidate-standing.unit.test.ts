@@ -20,6 +20,11 @@ import {
 import { standingTextFor, } from '../dist/final/node/index.mjs';
 
 /**
+ * What archive carries.
+ */
+const ARCHIVE = 'The cat sleeps by the window.';
+
+/**
  * What the repair lane would ship.
  */
 const REPAIR = 'The cat fell asleep by the window.';
@@ -36,7 +41,12 @@ await describe({
       name: 'NAMES THE REPAIR LANE when the contest chose it',
       fn: async () => {
         expect(
-          standingTextFor({ choice: 'repair', repairText: REPAIR, translateText: TRANSLATE, },),
+          standingTextFor({
+            choice: 'repair',
+            repairText: REPAIR,
+            translateText: TRANSLATE,
+            incumbentText: ARCHIVE,
+          },),
         ).toBe(REPAIR,);
       },
     },),
@@ -45,19 +55,27 @@ await describe({
       name: 'NAMES THE TRANSLATE LANE when the contest chose it',
       fn: async () => {
         expect(
-          standingTextFor({ choice: 'translate', repairText: REPAIR, translateText: TRANSLATE, },),
+          standingTextFor({
+            choice: 'translate',
+            repairText: REPAIR,
+            translateText: TRANSLATE,
+            incumbentText: ARCHIVE,
+          },),
         ).toBe(TRANSLATE,);
       },
     },),
 
     it({
-      name: 'LEAVES NOTHING STANDING ON A DECLINE rather than picking a side, because a lane the '
-        + 'judges did not choose is not what would ship, and offering it as the incumbent would make '
-        + 'the consolidation beat an arbitrary rendering instead of a decided one',
+      name: 'USES ARCHIVE AS COMPARISON BASELINE ON A DECLINE without picking either lane, so third rendering can recover while final guard separately prevents unendorsed fallback',
       fn: async () => {
         expect(
-          standingTextFor({ choice: 'neither', repairText: REPAIR, translateText: TRANSLATE, },),
-        ).toBe('',);
+          standingTextFor({
+            choice: 'neither',
+            repairText: REPAIR,
+            translateText: TRANSLATE,
+            incumbentText: ARCHIVE,
+          },),
+        ).toBe(ARCHIVE,);
       },
     },),
   ],

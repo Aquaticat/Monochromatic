@@ -259,10 +259,10 @@ export async function persistConsolidationSettlement(
  *
  * BOTH WAYS OF NOT SETTLING READ AS `neither`, deliberately. The record keeps
  * `settled-neither` apart from `quorum-not-met` because they are different
- * facts about the run, but this stage asks one question of them: is there a
- * standing text to improve on. There is not, either way, and `standingTextFor`
- * answers the empty string for both, which stops the settlement before it buys
- * anything.
+ * facts about the run, but this function asks which LANE stood. Neither did.
+ * `standingTextFor` then uses archive as comparison baseline so consolidation
+ * can recover, while final-selection guard prevents that unendorsed baseline
+ * from becoming publication fallback.
  *
  * @param verdict - what the contest recorded for this slice
  *
@@ -449,6 +449,7 @@ export async function consolidateDocument(
       choice: laneChoiceOf({ verdict: contest.verdict, },),
       repairText: row.repairText,
       translateText: row.translateText,
+      incumbentText: row.incumbentText,
     },);
 
     /**
