@@ -4,6 +4,7 @@ import {
   chunkByHeadings,
   describeAlignmentAttachment,
 } from './chunk-document.ts';
+import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
 import {
   collectIdentityLines,
@@ -149,8 +150,8 @@ export type PreparedDocumentPair = {
   readonly lineStructuredSliceIndices: ReadonlySet<number>;
 
   /**
-   * Declared names and handles from both sides' front matter, joined into the
-   * block a prompt carries.
+   * Declared names and handles from front matter plus target-authoritative
+   * contributor identities, joined into prompt block.
    *
    * Absent rather than empty when neither side declares anything, so a caller
    * spreading it into a prompt never emits a heading with nothing under it.
@@ -158,7 +159,7 @@ export type PreparedDocumentPair = {
   readonly identityContext?: string;
 
   /**
-   * Declared name forms as the TRANSLATION side spells them.
+   * Declared name and contributor forms as TRANSLATION side spells them.
    *
    * SEPARATE FROM `identityContext`, which is prose for a prompt. These are the
    * strings a guard compares, and the guard exists because asking a model to
@@ -299,14 +300,47 @@ export function prepareDocumentPair(
   },);
 
   /**
-   * Declared name forms a guard compares against English text.
+   * Contributor public handles existing English attribution establishes.
    */
-  const declaredNames = declaredNameForms({
-    identity: extractDeclaredIdentity({
-      data: targetDocument.frontMatter
-        ?.data,
+  const contributorNames = archiveContributorNameForms({ text: targetText, });
+
+  /**
+   * Prompt lines adding target-authoritative contributor spellings beside
+   * front matter correspondence.
+   */
+  const identityContextLines = [
+    ...identityLines,
+    ...contributorNames.map(function contributorLine(name,): string {
+      return `target contributor: ${name}`;
     },),
-  },);
+  ];
+
+  /**
+   * Target-authoritative identity forms guards preserve wherever archive body
+   * already carries them.
+   */
+  const declaredNames = [
+    ...declaredNameForms({
+      identity: extractDeclaredIdentity({
+        data: targetDocument.frontMatter
+          ?.data,
+      },),
+    },),
+    ...contributorNames,
+  ]
+    .filter(function firstOccurrence(
+      form,
+      at,
+      forms: readonly string[],
+    ): boolean {
+      return forms.indexOf(form,) === at;
+    },)
+    .toSorted(function longestFirst(
+      left,
+      right,
+    ): number {
+      return right.length - left.length;
+    },);
 
   /**
    * Aligned chunk pairs covering both documents totally.
@@ -602,9 +636,9 @@ export function prepareDocumentPair(
     lineStructuredSliceIndices: governedSliceIndices({ chunks: governance, },),
     // Omitted rather than empty, so spreading this into a prompt cannot emit a
     // heading with nothing under it.
-    ...(identityLines.length === 0
+    ...(identityContextLines.length === 0
       ? {}
-      : { identityContext: identityLines.join('\n',), }),
+      : { identityContext: identityContextLines.join('\n',), }),
     declaredNames,
     alignmentFindings: [
       ...sectionFindings,

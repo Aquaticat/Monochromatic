@@ -108,6 +108,8 @@ await describe({
         // its whole judged decision.
         expect(system.includes('THE DECLARED SPELLING WINS',),).toBe(true,);
         expect(system.includes('Never invent a third spelling',),).toBe(true,);
+        expect(system.includes('target contributor:',),).toBe(true,);
+        expect(system.includes('Preserve that spelling exactly on contributor lines',),).toBe(true,);
       },
     },),
     it({

@@ -29,8 +29,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 4 adds body naturalness polish after fidelity gate. Earlier
  * settlements never bought that stage and cannot resume as though they did.
+ *
+ * VERSION 5 gives final polish every structurally eligible body paragraph and
+ * makes target contributor public identities explicit in producer rule.
  */
-export const CONSOLIDATE_CACHE_VERSION = 4;
+export const CONSOLIDATE_CACHE_VERSION = 5;
 
 /**
  * What a line-structured slice appends to its key material.

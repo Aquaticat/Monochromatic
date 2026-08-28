@@ -15,6 +15,10 @@ export {
   UnsettledFinalSelectionError,
 } from './corpus-run/final-selection-completeness.ts';
 export {
+  assertContributorNamesComplete,
+  ContributorCompletenessError,
+} from './corpus-run/contributor-completeness.ts';
+export {
   assertFrontMatterComplete,
   FrontMatterCompletenessError,
 } from './corpus-run/front-matter-completeness.ts';

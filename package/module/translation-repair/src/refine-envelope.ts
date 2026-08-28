@@ -86,6 +86,8 @@ export function collectDefinitions(
  *
  * @param document - REPAIRED slice, parsed after accuracy edits landed
  *
+ * @param minimumChars - shortest paragraph eligible in calling refinement role
+ *
  * @returns Envelopes, definitions, and skip findings
  *
  * @example
@@ -96,14 +98,19 @@ export function collectDefinitions(
 export function deriveRefinableEnvelopes(
   {
     document,
+    minimumChars,
   }: {
     readonly document: RepairDocument;
+    readonly minimumChars?: number;
   },
 ): RefinableSlice {
   /**
    * Eligibility verdict per block.
    */
-  const verdicts = selectRefinableParagraphs({ document, },);
+  const verdicts = selectRefinableParagraphs({
+    document,
+    ...((minimumChars === undefined) ? {} : { minimumChars, }),
+  },);
 
   return {
     definitions: collectDefinitions({ document, },),

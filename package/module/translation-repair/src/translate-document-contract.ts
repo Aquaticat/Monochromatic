@@ -62,8 +62,12 @@ import type { SliceSelection, } from './slice-selection.ts';
  * VERSION 7, on 2026-08-28, because metadata candidate admission now preserves
  * contributor spelling established at same YAML comment path. A cached front
  * matter candidate could retain source-script attribution and bypass guard.
+ *
+ * VERSION 8, same day, because body contributor lines now preserve public
+ * identity spellings established by existing English attribution. An earlier
+ * cached slice can replace them with literal source-side transliterations.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 7;
+export const TRANSLATE_SLICE_CACHE_VERSION = 8;
 
 /**
  * Models the translate lane seats.

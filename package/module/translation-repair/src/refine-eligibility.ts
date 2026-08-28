@@ -212,6 +212,8 @@ function carriesHardBreak({ text, }: { readonly text: string; },): boolean {
  * @param degraded - whether parsing this slice reported findings, which makes
  * every block in it ineligible
  *
+ * @param minimumChars - shortest paragraph eligible in current refinement role
+ *
  * @returns Verdict carrying the excluding rule when there is one
  *
  * @example
@@ -223,9 +225,11 @@ function judgeParagraph(
   {
     node,
     degraded,
+    minimumChars,
   }: {
     readonly node: DocumentNode;
     readonly degraded: boolean;
+    readonly minimumChars: number;
   },
 ): ParagraphEligibility {
   if (node.kind !== ELIGIBLE_KIND)
@@ -261,7 +265,7 @@ function judgeParagraph(
     },);
   if (node.text
     .length
-    < MIN_REFINE_CHARS)
+    < minimumChars)
     return skipped({
       node,
       reason: 'too-short',
@@ -286,6 +290,9 @@ function judgeParagraph(
  *
  * @param document - REPAIRED slice, parsed after accuracy edits landed
  *
+ * @param minimumChars - shortest eligible paragraph; defaults to measured
+ * repair-lane window while final polish may use narrower sentence-scale window
+ *
  * @returns Verdict per block in document order
  *
  * @example
@@ -296,8 +303,10 @@ function judgeParagraph(
 export function selectRefinableParagraphs(
   {
     document,
+    minimumChars = MIN_REFINE_CHARS,
   }: {
     readonly document: RepairDocument;
+    readonly minimumChars?: number;
   },
 ): readonly ParagraphEligibility[] {
   /**
@@ -318,6 +327,7 @@ export function selectRefinableParagraphs(
       return judgeParagraph({
         node,
         degraded,
+        minimumChars,
       },);
     },);
 }

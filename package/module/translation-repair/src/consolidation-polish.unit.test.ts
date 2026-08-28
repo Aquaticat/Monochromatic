@@ -38,6 +38,16 @@ const BASE = 'She faced life proactively and spent a good time with everyone, wh
 const POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
+ * Short literal prose final polish must still review.
+ */
+const SHORT_BASE = 'She had a good time with everyone.';
+
+/**
+ * Faithful idiomatic rewrite of short prose.
+ */
+const SHORT_POLISHED = 'She spent some happy times with everyone.';
+
+/**
  * Client serving rewrite, selection and final gate schemas.
  */
 const client: SyntheticClient = {
@@ -56,12 +66,16 @@ const client: SyntheticClient = {
     /**
      * Synthetic reply for requested stage.
      */
+    /**
+     * Whether request carries sentence-scale final polish fixture.
+     */
+    const short = JSON.stringify(request.messages,).includes(SHORT_BASE,);
     const value: unknown = (schema === 'refine_report')
       ? {
         rewrites: [
           {
             paragraph: 1,
-            newText: POLISHED,
+            newText: short ? SHORT_POLISHED : POLISHED,
           },
         ],
       }
@@ -122,6 +136,32 @@ await describe({
         expect(polish.text,).toBe(POLISHED,);
         expect(polish.gate?.ships,).toBe('polished',);
         expect(polish.rounds.length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'REVIEWS SHORT BODY PROSE below repair-lane refinement window',
+      fn: async () => {
+        const polish = await polishConsolidation({
+          client,
+          sourceText: '她和大家度过了一段不错的时光。',
+          archiveText: SHORT_BASE,
+          baseText: SHORT_BASE,
+          lineStructured: false,
+          sliceIndex: 2,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        expect(polish.kind === 'settled' ? polish.text : '',).toBe(SHORT_POLISHED,);
       },
     },),
 

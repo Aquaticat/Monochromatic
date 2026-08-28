@@ -28,6 +28,7 @@ import {
 } from './would-ship-text.ts';
 import { assertFrontMatterComplete, } from './front-matter-completeness.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
+import { assertContributorNamesComplete, } from './contributor-completeness.ts';
 import {
   type DestinationCheck,
   droppedDestinations,
@@ -254,6 +255,11 @@ export async function publishFixedPage(
     archiveText,
     pageText,
     slices,
+  },);
+  assertContributorNamesComplete({
+    entryId,
+    archiveText,
+    pageText,
   },);
 
   // BEFORE THE WRITE, so a page that disagrees with its artifact publishes

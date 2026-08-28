@@ -17,6 +17,13 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 //region Consolidation naturalness polish
 
 /**
+ * Final pass reviews every structurally eligible body paragraph, including
+ * short prose whose awkwardness complete-page reading proved length does not
+ * prevent. Repair lane keeps its measured default length window.
+ */
+const FINAL_POLISH_MINIMUM_CHARS = 0;
+
+/**
  * Model roles and document facts needed by final body polish.
  *
  * @example
@@ -216,6 +223,7 @@ export async function polishConsolidation(
     definitions: baseDefinitions,
   } = deriveRefinableEnvelopes({
     document: parseDocument({ text: baseText, },),
+    minimumChars: FINAL_POLISH_MINIMUM_CHARS,
   },);
   /**
    * Archive-wide definitions plus any changed definitions in approved base.

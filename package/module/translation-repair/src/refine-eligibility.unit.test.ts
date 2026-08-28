@@ -150,6 +150,17 @@ await describe({
     },),
 
     it({
+      name: 'ADMITS SHORT BODY PROSE when final polish disables repair-lane length floor',
+      fn: async () => {
+        const verdicts = selectRefinableParagraphs({
+          document: parseDocument({ text: 'She too had once faced life positively.', },),
+          minimumChars: 0,
+        },);
+        expect(verdicts.at(0,)?.eligible,).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'disqualifies every block of a slice whose parse was degraded, not '
         + 'just the block that caused it',
       fn: async () => {

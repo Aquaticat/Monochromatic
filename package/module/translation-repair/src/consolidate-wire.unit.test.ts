@@ -134,6 +134,10 @@ await describe({
           .toContain('OUTRANK THE ARCHIVE RENDERING',);
         expect(sheetFor({ subject: bare, },),)
           .toContain('copying the archive\'s spelling is not a defence',);
+        expect(sheetFor({ subject: bare, },),)
+          .toContain('target contributor:',);
+        expect(sheetFor({ subject: bare, },),)
+          .toContain('Preserve that spelling exactly on contributor lines',);
       },
     },),
     it({

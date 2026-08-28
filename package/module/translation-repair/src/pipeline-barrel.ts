@@ -204,6 +204,7 @@ export {
   fenceForMarkdown,
   longestBacktickRun,
 } from './markdown-fence.ts';
+export { archiveContributorNameForms, } from './contributor-name-authority.ts';
 export {
   declaredNameForms,
   type DeclaredNameRefusalReport,

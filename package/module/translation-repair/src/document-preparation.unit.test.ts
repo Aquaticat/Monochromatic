@@ -140,6 +140,19 @@ await describe({
     },),
 
     it({
+      name: 'PRESERVES TARGET CONTRIBUTOR HANDLES as declared identity forms',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: '## 简介\n\n猫睡着了。\n\n条目贡献：一体, 小雪\n',
+          targetText: '## Description\n\nThe cat slept.\n\nContributors for this entry: One Body, [Snow](https://example.test/snow)\n',
+        },);
+        expect(prepared.declaredNames,).toContain('One Body',);
+        expect(prepared.declaredNames,).toContain('Snow',);
+        expect(prepared.declaredNames,).not.toContain('小雪',);
+      },
+    },),
+
+    it({
       name: 'OMITS the identity block when neither side declares anything, '
         + 'rather than passing an empty one, so a prompt never carries a '
         + 'heading with nothing under it',

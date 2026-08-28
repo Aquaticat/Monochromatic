@@ -1219,7 +1219,7 @@ selection round count,
 gate ballots,
 and findings;
 publication reads polish before every earlier decider.
-Full package suite passes 852 groups with no failures,
+Full package suite passes 854 groups with no failures,
 and mutation proofs show polish shipping and read precedence guards are effective.
 
 Fresh `2981e8cad` generation-6 `Weideriche_` validation reached all four slices and all nine active seats,
@@ -1279,6 +1279,33 @@ Artifact conversion then reports missing polish as not configured.
 Final polish now runs over every endorsed surviving body baseline,
 including slate-declined and structurally empty consolidation slates,
 while unendorsed baseline remains `unsafe-baseline` and cannot buy or ship polish.
+
+Fresh `bd70fa261` generation-7 `Weideriche_` validation confirmed that reachability fix:
+all body slices carry settled polish rather than `not-configured`,
+one body slice heard all measured refiners and reached nine-voice fidelity gate,
+and `verify-published` matched one artifact and page at expected length.
+Gate kept approved base,
+so no changed polish shipped.
+Complete-page reading still refused output.
+Three short body passages,
+including redundant and literal constructions,
+were skipped because repair-lane 120-character eligibility floor was reused by final polish.
+Final polish now disables that length floor while retaining paragraph-kind,
+hard-break,
+markup,
+parse-integrity,
+structural,
+name-survival,
+and final fidelity guards.
+
+Same page also translated established English contributor handles literally from source attribution.
+Existing English archive has 38 canonical contributor-label lines at pinned corpus checkout,
+and target labels can be chosen public identities unrelated to source-script transliteration.
+Preparation now extracts plain and linked contributor forms from those lines,
+adds them to deterministic declared-name survival and prompt context,
+and publication independently rejects any final attribution that drops or respells them.
+Exact current generation-7 page is positive control:
+new boundary rejects it with `ContributorCompletenessError`.
 Fresh affected rerun remains required before accepting output.
 
 The live artifact also exposed misleading diagnostic wording:
