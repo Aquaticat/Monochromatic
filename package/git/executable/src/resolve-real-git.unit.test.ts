@@ -31,10 +31,22 @@ import {
 const EXECUTABLE_MODE = 0o755;
 
 /**
+ * File mode leaving fixture readable but not executable.
+ */
+const NON_EXECUTABLE_MODE = 0o644;
+
+/**
  * Shell script standing in for external real Git.
  */
 const REAL_GIT_CONTENT = `#!/bin/sh
 echo real git "$@"
+`;
+
+/**
+ * Bundled entry marker emitted by pnpm command shims.
+ */
+const BUNDLED_ENTRY_SHIM_CONTENT = `#!/bin/sh
+exec node "$basedir/../../package/git-policy/cli/dist/final/node/index.mjs" "$@"
 `;
 
 /**
@@ -52,9 +64,7 @@ const SELF_SHIM_CASES: readonly {
   },
   {
     name: 'bundled entry marker',
-    content: `#!/bin/sh
-exec node "$basedir/../../package/git-policy/cli/dist/final/node/index.mjs" "$@"
-`,
+    content: BUNDLED_ENTRY_SHIM_CONTENT,
   },
   {
     name: 'Windows package marker',
@@ -303,7 +313,7 @@ await describe({
         const selfGit = join(selfBin, 'git',);
         await Promise.all([
           writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },),
-          writeExecutable({ path: selfGit, content: SELF_SHIM_CASES[1]?.content ?? '', },),
+          writeExecutable({ path: selfGit, content: BUNDLED_ENTRY_SHIM_CONTENT, },),
         ],);
 
         expect(await resolveRealGit({
@@ -330,6 +340,45 @@ await describe({
         expect(await resolveRealGit({
           pathEnv: externalBin,
           commonGitPaths: [join(tempDirectory.path, 'missing', 'git',),],
+        },),).toBe(externalGit,);
+      },
+    },),
+    it({
+      name: 'skips non-executable candidate and selects later Git',
+      fn: async function skipsNonExecutableCandidate(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /**
+         * Earlier directory containing readable non-executable candidate.
+         */
+        const nonExecutableBin = join(tempDirectory.path, 'non-executable-bin',);
+        /**
+         * Later directory containing usable executable.
+         */
+        const externalBin = join(tempDirectory.path, 'external-bin',);
+        await Promise.all([
+          mkdir(nonExecutableBin,),
+          mkdir(externalBin,),
+        ],);
+        /**
+         * Candidate rejected because execute permission is absent.
+         */
+        const nonExecutableGit = join(nonExecutableBin, 'git',);
+        /**
+         * Later selected executable.
+         */
+        const externalGit = join(externalBin, 'git',);
+        await Promise.all([
+          writeFile(
+            nonExecutableGit,
+            REAL_GIT_CONTENT,
+            { mode: NON_EXECUTABLE_MODE, },
+          ),
+          writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },),
+        ],);
+
+        expect(await resolveRealGit({
+          pathEnv: [nonExecutableBin, externalBin,].join(delimiter,),
+          commonGitPaths: [],
         },),).toBe(externalGit,);
       },
     },),
@@ -361,7 +410,10 @@ await describe({
         ],);
 
         expect(await resolveRealGit({
-          pathEnv: externalBin,
+          pathEnv: [
+            join(tempDirectory.path, 'missing-bin',),
+            externalBin,
+          ].join(';',),
           platform: 'win32',
           pathExtensions: '.COM;.EXE;.BAT;.CMD',
           commonGitPaths: [exeGit.toLowerCase(),],
@@ -570,6 +622,7 @@ await describe({
 
         expect(caught,).toBeInstanceOf(RealGitNotFoundError,);
         expect((caught as Error).name,).toBe('RealGitNotFoundError',);
+        expect((caught as Error).message,).toContain('examining 1 PATH candidates',);
         expect((caught as Error).message,).toContain('PATH/PATHEXT',);
       },
     },),

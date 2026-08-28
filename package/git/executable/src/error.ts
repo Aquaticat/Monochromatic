@@ -3,7 +3,10 @@
  *
  * @example
  * ```ts
- * throw new RealGitNotFoundError();
+ * throw new RealGitNotFoundError({
+ *   candidateCount: 4,
+ *   skippedSelfShimCount: 1,
+ * });
  * ```
  */
 export class RealGitNotFoundError extends Error {
@@ -13,16 +16,30 @@ export class RealGitNotFoundError extends Error {
   override readonly name = 'RealGitNotFoundError';
 
   /**
-   * Creates resolution failure with operator-facing remediation.
+   * Creates resolution failure with attempted-candidate evidence.
+   *
+   * @param candidateCount - PATH-derived candidates examined before failure.
+   *
+   * @param skippedSelfShimCount - Self-referential wrappers rejected during examination.
    *
    * @example
    * ```ts
-   * const error = new RealGitNotFoundError();
+   * const error = new RealGitNotFoundError({
+   *   candidateCount: 4,
+   *   skippedSelfShimCount: 1,
+   * });
    * ```
    */
-  constructor() {
+  constructor({
+    candidateCount,
+    skippedSelfShimCount,
+  }: {
+    readonly candidateCount: number;
+    readonly skippedSelfShimCount: number;
+  },) {
     super(
-      'Could not find a real Git executable on PATH. '
+      `Could not find a real Git executable after examining ${String(candidateCount,)} PATH candidates `
+        + `and skipping ${String(skippedSelfShimCount,)} self-referential wrappers. `
         + 'Ensure Git is installed and PATH/PATHEXT expose its executable.',
     );
   }

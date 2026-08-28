@@ -3,6 +3,7 @@ import { access, } from 'node:fs/promises';
 import {
   delimiter,
   resolve,
+  win32,
 } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -167,10 +168,17 @@ function buildCandidateSequence({
     pathExtensions,
   },);
   /**
+   * Platform PATH delimiter,
+   * injectable through platform while filesystem resolution remains host-native.
+   */
+  const pathDelimiter = platform === 'win32'
+    ? win32.delimiter
+    : delimiter;
+  /**
    * Absolute executable candidates derived from PATH directory order.
    */
   const pathCandidates = pathEnv
-    .split(delimiter,)
+    .split(pathDelimiter,)
     .flatMap(function candidatesInDirectory(dir,) {
       return executableNames.map(function executableInDirectory(name,) {
         return resolve(
@@ -248,7 +256,7 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  *
  * @returns Whether failure means candidate is absent,
  * unreachable through a non-directory,
- * or not executable.
+ * or unreachable because parent path is not a directory.
  *
  * @example
  * ```ts
@@ -260,8 +268,7 @@ function isExpectedCandidateMiss(error: unknown,): boolean {
   if (!isErrnoException(error,))
     return false;
   return (error.code === 'ENOENT')
-    || (error.code === 'ENOTDIR')
-    || (error.code === 'EACCES');
+    || (error.code === 'ENOTDIR');
 }
 
 /**
@@ -280,6 +287,13 @@ function isExpectedCandidateMiss(error: unknown,): boolean {
  */
 async function scanCandidateSequence(candidates: readonly string[],): Promise<string> {
   /**
+   * Function-tagged logger for candidate scan decisions.
+   */
+  const rl = tagged({
+    tag: scanCandidateSequence.name,
+    l: moduleLogger,
+  },);
+  /**
    * Self-referential wrappers rejected before selected executable.
    */
   const skippedSelfShimPaths: string[] = [];
@@ -297,7 +311,7 @@ async function scanCandidateSequence(candidates: readonly string[],): Promise<st
         continue;
       }
 
-      moduleLogger.debug(
+      rl.debug(
         `resolved real Git at ${candidate} using common-platform-path priority; `
           + `self shims skipped: ${String(skippedSelfShimPaths.length,)}`,
       );
@@ -305,17 +319,20 @@ async function scanCandidateSequence(candidates: readonly string[],): Promise<st
     }
     catch (error: unknown) {
       if (!isExpectedCandidateMiss(error,)) {
-        moduleLogger.debug(
+        rl.debug(
           `Git candidate inspection failed at ${candidate}: ${String(error,)}`,
         );
       }
     }
   }
 
-  moduleLogger.debug(
+  rl.debug(
     `real Git resolution exhausted PATH candidates; self shims skipped: ${String(skippedSelfShimPaths.length,)}`,
   );
-  throw new RealGitNotFoundError();
+  throw new RealGitNotFoundError({
+    candidateCount: candidates.length,
+    skippedSelfShimCount: skippedSelfShimPaths.length,
+  },);
 }
 
 /**

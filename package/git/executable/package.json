@@ -3,6 +3,7 @@
   "name": "@monochromatic-dev/git-executable",
   "description": "Resolve a native Git executable without re-entering the workspace Git policy wrapper.",
   "type": "module",
+  "sideEffects": false,
   "private": true,
   "version": "0.0.1",
   "module": "dist/final/node/index.mjs",
