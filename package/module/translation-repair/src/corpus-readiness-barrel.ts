@@ -14,5 +14,7 @@ export {
   assertFinalSelectionSettled,
   UnsettledFinalSelectionError,
 } from './corpus-run/final-selection-completeness.ts';
+export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
+export { preparePassEntry, } from './corpus-run/pass-prepare.ts';
 
 //endregion Corpus readiness barrel
