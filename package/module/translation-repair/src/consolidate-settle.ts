@@ -20,6 +20,7 @@ import {
   type ConsolidationPolishConfig,
   polishConsolidation,
 } from './consolidation-polish.ts';
+import { restoreSyntaxSliceBoundary, } from './front-matter-slice.ts';
 import type { SliceValidation, } from './translate-validate.ts';
 import {
   wrapConsolidation,
@@ -451,7 +452,11 @@ export async function settleConsolidation(
   if (floor.kind === 'incumbent-only')
     return {
       terminal: 'incumbent-only',
-      text: standingText,
+      text: restoreSyntaxSliceBoundary({
+        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        targetText: subject.incumbentText,
+        candidateText: standingText,
+      },),
       floor,
       verdicts,
       rewrapped: false,
@@ -557,7 +562,11 @@ export async function settleConsolidation(
   if (decided.origin !== 'fresh')
     return {
       terminal: SLATE_TERMINALS[decided.decision],
-      text: standingText,
+      text: restoreSyntaxSliceBoundary({
+        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        targetText: subject.incumbentText,
+        candidateText: standingText,
+      },),
       floor,
       verdicts,
       decided,
@@ -627,7 +636,11 @@ export async function settleConsolidation(
 
   return {
     terminal,
-    text: (polish.kind === 'settled') ? polish.text : wrapped.text,
+    text: restoreSyntaxSliceBoundary({
+      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+      targetText: subject.incumbentText,
+      candidateText: (polish.kind === 'settled') ? polish.text : wrapped.text,
+    },),
     floor,
     verdicts,
     decided,

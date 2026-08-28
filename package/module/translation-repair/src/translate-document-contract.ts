@@ -62,8 +62,12 @@ import type { SliceSelection, } from './slice-selection.ts';
  * VERSION 7, on 2026-08-28, because metadata candidate admission now preserves
  * contributor spelling established at same YAML comment path. A cached front
  * matter candidate could retain source-script attribution and bypass guard.
+ *
+ * VERSION 8, the same day, because selected metadata now restores target page
+ * separator omitted by model completion. Version 7 could cache valid isolated
+ * front matter whose closing fence joined body and invalidated assembled page.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 7;
+export const TRANSLATE_SLICE_CACHE_VERSION = 8;
 
 /**
  * Models the translate lane seats.

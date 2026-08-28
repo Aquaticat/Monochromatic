@@ -139,4 +139,47 @@ export function frontMatterSliceIndexes(
     },),);
 }
 
+/**
+ * Restores page-separating line break model completions commonly omit.
+ *
+ * Front matter parsed alone may close at end of input without a trailing line
+ * break. Placing those same bytes before page body joins closing fence and body
+ * onto one line, so complete page no longer has front matter. Target slice
+ * carries exact separator used by page and remains source of boundary style.
+ *
+ * @param syntax - prepared role deciding whether boundary governs
+ *
+ * @param targetText - archive slice carrying page separator
+ *
+ * @param candidateText - settled replacement to make assembly-safe
+ *
+ * @returns Candidate with required front matter separator restored
+ *
+ * @example
+ * ```ts
+ * restoreSyntaxSliceBoundary({ syntax: 'front-matter', targetText: '---\nname: Cat\n---\n', candidateText: '---\nname: Kitty\n---', });
+ * ```
+ */
+export function restoreSyntaxSliceBoundary(
+  {
+    syntax,
+    targetText,
+    candidateText,
+  }: {
+    readonly syntax?: SliceSyntax;
+    readonly targetText: string;
+    readonly candidateText: string;
+  },
+): string {
+  if (syntax !== 'front-matter')
+    return candidateText;
+  if ((!targetText.endsWith('\n',)) || candidateText.endsWith('\n',))
+    return candidateText;
+  /**
+   * Exact line ending target page uses at metadata-to-body boundary.
+   */
+  const boundary = targetText.endsWith('\r\n',) ? '\r\n' : '\n';
+  return `${candidateText}${boundary}`;
+}
+
 //endregion Front matter slice

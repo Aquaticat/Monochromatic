@@ -14,6 +14,7 @@ export {
   frontMatterSlice,
   frontMatterSliceIndexes,
   type FrontMatterSliceResult,
+  restoreSyntaxSliceBoundary,
 } from './front-matter-slice.ts';
 export { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 export {

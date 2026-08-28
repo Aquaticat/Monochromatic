@@ -28,6 +28,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   buildTranslateCandidates,
+  type ConsolidationSubject,
   createSyntheticClient,
   describeSlate,
   type ProposalValidity,
@@ -321,6 +322,8 @@ function gateBallot({ choice, }: { readonly choice: string; },): string {
  *
  * @param validity - what the guard made of each
  *
+ * @param subject - source, archive, and optional syntax role under decision
+ *
  * @param standingText - wording in place, overridable to test its absence
  *
  * @param judgeReply - body every slate judge returns
@@ -340,6 +343,7 @@ async function settleWith(
   {
     voices,
     validity,
+    subject = SUBJECT,
     standingText = STANDING,
     judgeReply = judgeBallot({ best: 0, },),
     gateReply = gateBallot({ choice: 'standing', },),
@@ -351,6 +355,7 @@ async function settleWith(
       readonly value: { readonly translation: string; };
     }[];
     readonly validity: readonly ProposalValidity[];
+    readonly subject?: ConsolidationSubject;
     readonly standingText?: string;
     readonly judgeReply?: string;
     readonly gateReply?: string;
@@ -384,7 +389,7 @@ async function settleWith(
       judgeSheets,
     },),
     roster: ROSTER,
-    subject: SUBJECT,
+    subject,
     voices,
     validity,
     producedFindings,
@@ -422,6 +427,39 @@ await describe({
 
         expect(settled.terminal,).toBe('incumbent-only',);
         expect(settled.text,).toBe(STANDING,);
+        expect(served.judge,).toBe(0,);
+        expect(served.gate,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'RESTORES FRONT MATTER PAGE SEPARATOR on incumbent-only terminal',
+      fn: async () => {
+        /**
+         * Archive metadata carrying separator before page body.
+         */
+        const targetText = '---\nname: CatArchive\n---\n';
+        /**
+         * Valid isolated metadata whose model completion omitted separator.
+         */
+        const standingText = '---\nname: Cat\n---';
+        const { settled, served, } = await settleWith({
+          subject: {
+            sourceText: '---\nname: 猫\n---\n',
+            incumbentText: targetText,
+            syntax: 'front-matter',
+          },
+          standingText,
+          voices: ROSTER.map(function toVoice(modelId,) {
+            return voiceOf({ modelId, translation: standingText, },);
+          },),
+          validity: ROSTER.map(function toVerdict(modelId,) {
+            return validityOf({ modelId, valid: false, },);
+          },),
+        },);
+
+        expect(settled.terminal,).toBe('incumbent-only',);
+        expect(settled.text,).toBe(`${standingText}\n`,);
         expect(served.judge,).toBe(0,);
         expect(served.gate,).toBe(0,);
       },

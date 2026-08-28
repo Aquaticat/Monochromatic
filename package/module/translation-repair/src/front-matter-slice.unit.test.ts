@@ -14,6 +14,7 @@ import {
   FrontMatterAlignmentError,
   frontMatterRepairOutcome,
   frontMatterSlice,
+  restoreSyntaxSliceBoundary,
   validateFrontMatterTranslation,
 } from '../dist/final/node/index.mjs';
 
@@ -103,6 +104,42 @@ await describe({
       fn: async () => {
         expect(() => frontMatterSlice({ source: SOURCE, },),).toThrow(FrontMatterAlignmentError,);
         expect(() => frontMatterSlice({ target: TARGET, },),).toThrow(FrontMatterAlignmentError,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: restoreSyntaxSliceBoundary.name,
+  children: [
+    it({
+      name: 'RESTORES TARGET PAGE SEPARATOR when model metadata ends at closing fence',
+      fn: async () => {
+        expect(restoreSyntaxSliceBoundary({
+          syntax: 'front-matter',
+          targetText: TARGET.raw,
+          candidateText: TARGET.raw.trimEnd(),
+        },),).toBe(TARGET.raw,);
+        expect(restoreSyntaxSliceBoundary({
+          syntax: 'front-matter',
+          targetText: '---\r\nname: Cat\r\n---\r\n',
+          candidateText: '---\r\nname: Kitty\r\n---',
+        },),).toBe('---\r\nname: Kitty\r\n---\r\n',);
+      },
+    },),
+
+    it({
+      name: 'PRESERVES EXISTING SEPARATOR AND ORDINARY PROSE exactly',
+      fn: async () => {
+        expect(restoreSyntaxSliceBoundary({
+          syntax: 'front-matter',
+          targetText: TARGET.raw,
+          candidateText: TARGET.raw,
+        },),).toBe(TARGET.raw,);
+        expect(restoreSyntaxSliceBoundary({
+          targetText: 'Archive paragraph\n',
+          candidateText: 'Replacement paragraph',
+        },),).toBe('Replacement paragraph',);
       },
     },),
   ],
