@@ -15,7 +15,8 @@ Implementation landed in these commits:
 - `842057939` registered workspace dependency metadata;
 - `219d7f94b` rejected non-regular candidates and bounded script inspection;
 - `e142bca71` rejected oversized scripts and bounded cache lifetime;
-- `d13354d43` proved in-flight deduplication and least-recently-used eviction through built artifact.
+- `d13354d43` proved in-flight deduplication and least-recently-used eviction through built artifact;
+- `627636830` completed package license texts required by `LGPL-3.0-or-later`.
 
 The shared resolver now owns common-platform-path priority,
 Windows `PATHEXT`,
