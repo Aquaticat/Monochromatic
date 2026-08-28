@@ -206,6 +206,7 @@ export async function settleRefinedSlice(
     definitions,
     ...(identityContext === undefined ? {} : { identityContext, }),
     declaredNames,
+    mode: { kind: 'comparative', },
     sliceIndex: outcome.sliceIndex,
     signal,
     perCallTimeoutMs,

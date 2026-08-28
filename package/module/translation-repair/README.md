@@ -1354,6 +1354,22 @@ and final-text digest.
 Generations 6 and 7 remain readable but cannot satisfy schema-8 publication boundary.
 Full package suite passes 858 groups with no failures,
 and OXLint and TypeScript checks are clean.
+
+The first fresh schema-8 run correctly rejected body text after every absolute reviewer found material naturalness defects.
+It wrote no page,
+artifact,
+or consolidation cache.
+That run also exposed a correction-routing defect:
+correction refiners saw the findings,
+but candidate selectors still received the generic comparative-polish question and a tie restored wording already known to be unpublishable.
+Consolidation cache generation 8 makes required correction a distinct non-fallback mode.
+Correction rewriters and selectors now receive structured paragraph findings as fenced evidence;
+selectors are told unchanged text cannot ship,
+and decline or tie records `no-correction` rather than fallback.
+Comparative refinement retains its accepted-input fallback.
+Structural validation,
+fidelity gate,
+and exact-text second absolute review remain mandatory after any selected correction.
 Another fresh affected rerun remains required before accepting output.
 
 The live artifact also exposed misleading diagnostic wording:

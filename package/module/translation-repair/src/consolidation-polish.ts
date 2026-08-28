@@ -309,6 +309,7 @@ export async function polishConsolidation(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    mode: { kind: 'comparative', },
     sliceIndex,
     config,
     signal,
@@ -386,7 +387,10 @@ export async function polishConsolidation(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),
-    naturalnessFindings: initialReviewFindings,
+    mode: {
+      kind: 'required-naturalness-correction',
+      findings: initialReview.findings,
+    },
     sliceIndex,
     config,
     signal,
@@ -426,7 +430,7 @@ export async function polishConsolidation(
     ...initialReviewFindings,
     ...correction.findings,
   ];
-  if (!correction.changed) {
+  if (correction.disposition === 'no-correction') {
     return {
       kind: 'unsettled',
       baseText,

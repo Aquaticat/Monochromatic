@@ -11,6 +11,7 @@ import {
 import { parseDocument, } from './parse-document.ts';
 import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
+import type { RefineStageMode, } from './refine-selection-context.ts';
 import { runRefineStage, } from './refine-stage.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
@@ -27,10 +28,18 @@ const FINAL_POLISH_MINIMUM_CHARS = 0;
  *
  * @example
  * ```ts
- * const result: ConsolidationPolishRoundResult = { text: 'The cat slept.', proposedText: 'The cat slept.', changed: false, refinersHeard: [], contributors: [], rounds: [], findings: [] };
+ * const result: ConsolidationPolishRoundResult = { disposition: 'fallback', text: 'The cat slept.', proposedText: 'The cat slept.', changed: false, refinersHeard: [], contributors: [], rounds: [], findings: [] };
  * ```
  */
 export type ConsolidationPolishRoundResult = {
+  /**
+   * Whether round selected text, retained admissible fallback, or found no correction.
+   */
+  readonly disposition:
+    | 'selected'
+    | 'fallback'
+    | 'no-correction';
+
   /**
    * Exact text selected after fidelity gate.
    */
@@ -114,7 +123,7 @@ export function finalPolishParagraphs(
  *
  * @param identityContext - declared identities and contributor forms
  *
- * @param naturalnessFindings - independent defects dedicated correction resolves
+ * @param mode - comparative polish or required correction findings
  *
  * @param sliceIndex - prepared slice position
  *
@@ -130,7 +139,7 @@ export function finalPolishParagraphs(
  *
  * @example
  * ```ts
- * const round = await runConsolidationPolishRound({ client, sourceText, archiveText, baseText, lineStructured: false, sliceIndex: 1, config, signal, perCallTimeoutMs, l, });
+ * const round = await runConsolidationPolishRound({ client, sourceText, archiveText, baseText, mode: { kind: 'comparative' }, lineStructured: false, sliceIndex: 1, config, signal, perCallTimeoutMs, l, });
  * ```
  */
 export async function runConsolidationPolishRound(
@@ -142,7 +151,7 @@ export async function runConsolidationPolishRound(
     syntax,
     lineStructured,
     identityContext,
-    naturalnessFindings,
+    mode,
     sliceIndex,
     config,
     signal,
@@ -156,7 +165,7 @@ export async function runConsolidationPolishRound(
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly identityContext?: string;
-    readonly naturalnessFindings?: readonly string[];
+    readonly mode: RefineStageMode;
     readonly sliceIndex: number;
     readonly config: ConsolidationPolishConfig;
     readonly signal: AbortSignal;
@@ -198,7 +207,7 @@ export async function runConsolidationPolishRound(
     definitions,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     declaredNames: config.declaredNames,
-    ...((naturalnessFindings === undefined) ? {} : { naturalnessFindings, }),
+    mode,
     sliceIndex,
     signal,
     perCallTimeoutMs,
@@ -206,6 +215,7 @@ export async function runConsolidationPolishRound(
   },);
   if (!refined.changed) {
     return {
+      disposition: refined.disposition,
       text: baseText,
       proposedText: baseText,
       changed: false,
@@ -227,6 +237,7 @@ export async function runConsolidationPolishRound(
   },);
   if (validation.kind !== 'valid') {
     return {
+      disposition: (mode.kind === 'comparative') ? 'fallback' : 'no-correction',
       text: baseText,
       proposedText: refined.refinedText,
       changed: false,
@@ -264,6 +275,9 @@ export async function runConsolidationPolishRound(
     ? refined.refinedText
     : baseText;
   return {
+    disposition: (text === baseText)
+      ? ((mode.kind === 'comparative') ? 'fallback' : 'no-correction')
+      : 'selected',
     text,
     proposedText: refined.refinedText,
     changed: text !== baseText,

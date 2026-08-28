@@ -21,6 +21,11 @@ export {
   type RefinePromptPlan,
 } from './refine-prompt.ts';
 export {
+  buildRefineSelectionContext,
+  type RefineSelectionContext,
+  type RefineStageMode,
+} from './refine-selection-context.ts';
+export {
   type RefineStageResult,
   runRefineStage,
 } from './refine-stage.ts';

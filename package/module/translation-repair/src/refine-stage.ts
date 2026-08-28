@@ -23,6 +23,10 @@ import { gateParagraphRewrite, } from './inspect-paragraph.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { buildRefineMessages, } from './refine-prompt.ts';
 import {
+  buildRefineSelectionContext,
+  type RefineStageMode,
+} from './refine-selection-context.ts';
+import {
   isRefineReportWire,
   REFINE_RESPONSE_FORMAT,
   resolveRefineRewrites,
@@ -40,12 +44,10 @@ import { restoreTypography, } from './restore-typography.ts';
 //region Refinement stage
 // One slice's naturalness pass over already-repaired text.
 //
-// Every exit that is not a clear win returns the input text unchanged. That is
-// stricter than the editor stage on purpose: the editor works from issues a
-// panel accepted and checkers afterwards prove each one gone, while nothing
-// here ever claimed the text was wrong. When judges fail to agree, the right
-// answer is the text that was already good enough, so BOTH decline
-// dispositions fall back rather than only rejection.
+// Comparative exits without a clear win retain accepted input. Required
+// correction exits distinguish that same byte result as no correction because
+// independent review has already made fallback inadmissible. Candidate ties
+// never manufacture approval in either mode.
 
 /**
  * Everything one slice's refinement decided.
@@ -57,7 +59,7 @@ import { restoreTypography, } from './restore-typography.ts';
  */
 export type RefineStageResult = {
   /**
-   * Text that ships; equals the input whenever nothing clearly won.
+   * Text selected by refinement; equals input on non-selection.
    */
   readonly refinedText: string;
 
@@ -65,6 +67,14 @@ export type RefineStageResult = {
    * Whether a refinement actually won.
    */
   readonly changed: boolean;
+
+  /**
+   * Whether unchanged text is fallback or rejected correction produced none.
+   */
+  readonly disposition:
+    | 'selected'
+    | 'fallback'
+    | 'no-correction';
 
   /**
    * Ballots of this slice's refinement round, empty when it never reached the
@@ -128,7 +138,7 @@ export type RefineStageResult = {
  * @param declaredNames - same declarations as strings to compare, since a
  * rewrite for naturalness is exactly the edit that drops one
  *
- * @param naturalnessFindings - absolute-review defects for one bounded correction
+ * @param mode - comparative improvement or mandatory absolute-quality correction
  *
  * @param sliceIndex - slice being refined, which a refusal names
  *
@@ -160,7 +170,7 @@ export async function runRefineStage(
     definitions,
     identityContext,
     declaredNames,
-    naturalnessFindings,
+    mode,
     sliceIndex,
     signal,
     perCallTimeoutMs,
@@ -175,7 +185,7 @@ export async function runRefineStage(
     readonly definitions: string;
     readonly identityContext?: string;
     readonly declaredNames: readonly string[];
-    readonly naturalnessFindings?: readonly string[];
+    readonly mode: RefineStageMode;
     readonly sliceIndex: number;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -196,6 +206,7 @@ export async function runRefineStage(
   const unchanged: RefineStageResult = {
     refinedText: repairedText,
     changed: false,
+    disposition: (mode.kind === 'comparative') ? 'fallback' : 'no-correction',
     contributors: [],
     heard: [],
     rounds: [],
@@ -217,7 +228,7 @@ export async function runRefineStage(
     sourceText,
     envelopes,
     ...(identityContext === undefined ? {} : { identityContext, }),
-    ...((naturalnessFindings === undefined) ? {} : { naturalnessFindings, }),
+    ...((mode.kind === 'comparative') ? {} : { naturalnessFindings: mode.findings, }),
   },);
 
   /**
@@ -371,27 +382,22 @@ export async function runRefineStage(
   /**
    * Judges verdict over the whole-slice proposals.
    */
+  /**
+   * Selector question matching whether current text may survive.
+   */
+  const selectionContext = buildRefineSelectionContext({
+    mode,
+    sourceText,
+    repairedText,
+  },);
+  /**
+   * Candidate decision over structurally admissible rewrites.
+   */
   const outcome = await selectBestCandidate({
     client,
     candidates,
     judgeModelIds,
-    task:
-      'Each candidate is a revision of the CURRENT English translation below, meant to read more naturally without changing what it says.',
-    criteria: [
-      'Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed.',
-      'Faithful to the Chinese ORIGINAL.',
-      'Reads more naturally than the CURRENT text by a clear margin.',
-    ],
-    evidence: [
-      {
-        label: 'ORIGINAL (Chinese)',
-        text: sourceText,
-      },
-      {
-        label: 'CURRENT English translation, which ships unchanged unless a candidate clearly beats it',
-        text: repairedText,
-      },
-    ],
+    ...selectionContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -409,12 +415,13 @@ export async function runRefineStage(
     },),
   ];
   if (outcome.kind === 'declined') {
-    // BOTH dispositions fall back, unlike the editor stage. There, judges
-    // failing to rank repairs still leaves repairs the panel ruled necessary,
-    // and a later gate makes them prove themselves. Here nothing claimed the
-    // text was wrong and nothing downstream re-examines a refusal, so an
-    // unresolved vote means the text that was already good enough ships.
-    rl.info(`${outcome.reason}; keeping the repaired text`,);
+    /**
+     * Consequence matching whether input remains publication-admissible.
+     */
+    const declineAction = (mode.kind === 'comparative')
+      ? 'keeping the repaired text'
+      : 'required correction remains unresolved';
+    rl.info(`${outcome.reason}; ${declineAction}`,);
     return {
       ...unchanged,
       heard,
@@ -475,6 +482,7 @@ export async function runRefineStage(
   return {
     refinedText: outcome.value,
     changed: true,
+    disposition: 'selected',
     contributors,
     heard,
     rounds,

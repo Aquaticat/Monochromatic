@@ -38,8 +38,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 7 adds candidate-bound absolute review and one bounded correction.
  * Earlier settlements could approve relative improvement with defects remaining.
+ *
+ * VERSION 8 makes absolute-review correction a distinct non-fallback mode and
+ * gives selectors its required findings. Version 7 selectors answered generic polish question.
  */
-export const CONSOLIDATE_CACHE_VERSION = 7;
+export const CONSOLIDATE_CACHE_VERSION = 8;
 
 /**
  * What a line-structured slice appends to its key material.

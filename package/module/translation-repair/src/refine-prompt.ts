@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import type { AbsoluteNaturalnessFinding, } from './absolute-naturalness-review-wire.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -73,9 +74,16 @@ export function buildRefineMessages(
     readonly sourceText: string;
     readonly envelopes: readonly EditableEnvelope[];
     readonly identityContext?: string;
-    readonly naturalnessFindings?: readonly string[];
+    readonly naturalnessFindings?: readonly AbsoluteNaturalnessFinding[];
   },
 ): RefinePromptPlan {
+  /**
+   * Structured review findings rendered only at prompt boundary.
+   */
+  const renderedFindings = naturalnessFindings
+    .map(function renderFinding(finding,): string {
+      return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
+    },);
   /**
    * Fence longer than any run inside anything this prompt encloses, so no
    * enclosed text can close a block it sits in.
@@ -87,7 +95,7 @@ export function buildRefineMessages(
         return envelope.baseText;
       },),
       ...(identityContext === undefined ? [] : [identityContext,]),
-      ...naturalnessFindings,
+      ...renderedFindings,
     ],
   },);
 
@@ -112,9 +120,9 @@ export function buildRefineMessages(
   /**
    * Independent defects this dedicated correction round must resolve.
    */
-  const findingBlock = (naturalnessFindings.length === 0)
+  const findingBlock = (renderedFindings.length === 0)
     ? ''
-    : `\n\nUNRESOLVED WHOLE-PASSAGE NATURALNESS FINDINGS:\n${fence}\n${naturalnessFindings
+    : `\n\nUNRESOLVED WHOLE-PASSAGE NATURALNESS FINDINGS:\n${fence}\n${renderedFindings
       .map(function listFinding(finding,): string {
         return `- ${finding}`;
       },)
@@ -122,9 +130,15 @@ export function buildRefineMessages(
   /**
    * Dedicated correction instruction, absent on initial exploratory refinement.
    */
-  const correctionPolicy = (naturalnessFindings.length === 0)
+  const correctionPolicy = (renderedFindings.length === 0)
     ? ''
-    : '\n\nAn independent whole-passage review found material naturalness defects. This is the only corrective round. Resolve every listed defect across the complete affected paragraphs; do not stop after one local improvement.';
+    : '\n\nAn independent whole-passage review found material naturalness defects, so the current wording cannot be published unchanged. This is the only corrective round. Resolve every listed defect across the complete affected paragraphs; do not stop after one local improvement.';
+  /**
+   * Baseline status differs when independent review has already rejected it.
+   */
+  const baselinePolicy = (renderedFindings.length === 0)
+    ? 'The translation below is already correct as far as anyone has determined. Nobody has claimed any of it is wrong. Your only question per paragraph is whether an English reader would find it awkward, and whether you can fix that without touching meaning.\n\nRewrite a paragraph ONLY when the improvement is clear and obvious. If a paragraph reads acceptably, leave it out of your reply entirely. Returning an empty list is a correct and common answer, and is much better than proposing a change you would not defend.'
+    : 'The current wording failed an independent absolute publication-quality review for the quoted findings below. It cannot remain unchanged. Correct every listed finding while preserving exact meaning. Return an empty list only if no faithful correction exists; that answer refuses publication rather than approving the current wording.';
 
   return {
     envelopes,
@@ -135,9 +149,7 @@ export function buildRefineMessages(
 
 ${HOUSE_POLICY_BLOCK}
 
-The translation below is already correct as far as anyone has determined. Nobody has claimed any of it is wrong. Your only question per paragraph is whether an English reader would find it awkward, and whether you can fix that without touching meaning.
-
-Rewrite a paragraph ONLY when the improvement is clear and obvious. If a paragraph reads acceptably, leave it out of your reply entirely. Returning an empty list is a correct and common answer, and is much better than proposing a change you would not defend.
+${baselinePolicy}
 
 Preserve meaning, not Chinese grammar. Do not retain source-language word order or parts of speech when idiomatic English expresses the same meaning differently. Look for calqued verb-object combinations, stacked time or aspect adverbs, repeated generic nouns or pronouns, stiff causal transitions, and literal emotional descriptions. When you rewrite a paragraph, fix every clear naturalness problem in it rather than only the easiest phrase, then reread the whole replacement for anything a careful native editor would still change.
 
