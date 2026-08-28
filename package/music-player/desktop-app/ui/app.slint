@@ -220,6 +220,7 @@ component SegmentedControls inherits Rectangle {
     in property <[string]> labels;
     in property <int> selected-page;
     in property <bool> folded: false;
+    in property <int> geometry-tick;
     callback select-page(int);
     callback control-geometry(int, length, length);
     height: segment-layout.preferred-height;
@@ -237,6 +238,7 @@ component SegmentedControls inherits Rectangle {
             text: label;
             selected: p == root.selected-page;
             property <bool> last-control: p == root.labels.length - 1;
+            property <int> report-tick: root.geometry-tick;
             init => {
                 root.control-geometry(p, self.x, self.width);
             }
@@ -250,6 +252,9 @@ component SegmentedControls inherits Rectangle {
                 root.control-geometry(p, self.x, self.width);
             }
             changed last-control => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed report-tick => {
                 root.control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -481,6 +486,7 @@ component LedSegmentControls inherits Rectangle {
     in property <[string]> labels;
     in property <int> selected-page;
     in property <bool> folded: false;
+    in property <int> geometry-tick;
     callback select-page(int);
     callback control-geometry(int, length, length);
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
@@ -570,6 +576,7 @@ component LedSegmentControls inherits Rectangle {
             selected: p == root.selected-page;
             max-width: root.width;
             property <bool> last-control: p == root.labels.length - 1;
+            property <int> report-tick: root.geometry-tick;
             init => {
                 root.control-geometry(p, self.x, self.width);
             }
@@ -583,6 +590,9 @@ component LedSegmentControls inherits Rectangle {
                 root.control-geometry(p, self.x, self.width);
             }
             changed last-control => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed report-tick => {
                 root.control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -731,6 +741,7 @@ component ChromiumControls inherits Rectangle {
     in property <[string]> labels;
     in property <int> selected-page;
     in property <bool> folded: false;
+    in property <int> geometry-tick;
     callback select-page(int);
     callback control-geometry(int, length, length);
     height: chromium-layout.preferred-height;
@@ -754,6 +765,7 @@ component ChromiumControls inherits Rectangle {
             show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
             max-width: chromium-layout.width;
             property <bool> last-control: p == root.labels.length - 1;
+            property <int> report-tick: root.geometry-tick;
             init => {
                 root.control-geometry(p, self.x + 12px, self.width);
             }
@@ -767,6 +779,9 @@ component ChromiumControls inherits Rectangle {
                 root.control-geometry(p, self.x + 12px, self.width);
             }
             changed last-control => {
+                root.control-geometry(p, self.x + 12px, self.width);
+            }
+            changed report-tick => {
                 root.control-geometry(p, self.x + 12px, self.width);
             }
             clicked => {
@@ -787,6 +802,7 @@ component PageControls inherits VerticalLayout {
     in property <int> control-style;
     in property <bool> folded: false;
     out property <length> content-width: 0px;
+    private property <int> geometry-tick: 0;
     callback select-page(int);
     callback selected-geometry(length, length);
     callback report-control-geometry(int, length, length);
@@ -806,6 +822,9 @@ component PageControls inherits VerticalLayout {
     changed labels => {
         root.content-width = 0px;
     }
+    changed selected-page => {
+        root.geometry-tick += 1;
+    }
 
     if root.control-style == 0: FlexboxLayout {
         spacing-horizontal: 12px;
@@ -820,6 +839,7 @@ component PageControls inherits VerticalLayout {
             selected: p == root.selected-page;
             large-target: true;
             property <bool> last-control: p == root.labels.length - 1;
+            property <int> report-tick: root.geometry-tick;
             init => {
                 root.report-control-geometry(p, self.x, self.width);
             }
@@ -833,6 +853,9 @@ component PageControls inherits VerticalLayout {
                 root.report-control-geometry(p, self.x, self.width);
             }
             changed last-control => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed report-tick => {
                 root.report-control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -850,6 +873,7 @@ component PageControls inherits VerticalLayout {
             text: label;
             selected: p == root.selected-page;
             property <bool> last-control: p == root.labels.length - 1;
+            property <int> report-tick: root.geometry-tick;
             init => {
                 root.report-control-geometry(p, self.x, self.width);
             }
@@ -863,6 +887,9 @@ component PageControls inherits VerticalLayout {
                 root.report-control-geometry(p, self.x, self.width);
             }
             changed last-control => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed report-tick => {
                 root.report-control-geometry(p, self.x, self.width);
             }
             clicked => {
@@ -881,6 +908,7 @@ component PageControls inherits VerticalLayout {
             text: label;
             primary: p == root.selected-page;
             property <bool> last-control: p == root.labels.length - 1;
+            property <int> report-tick: root.geometry-tick;
             init => {
                 root.report-control-geometry(p, self.x, self.width);
             }
@@ -896,6 +924,9 @@ component PageControls inherits VerticalLayout {
             changed last-control => {
                 root.report-control-geometry(p, self.x, self.width);
             }
+            changed report-tick => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
             clicked => {
                 root.select-page(p);
             }
@@ -905,6 +936,7 @@ component PageControls inherits VerticalLayout {
         labels: root.labels;
         selected-page: root.selected-page;
         folded: root.folded;
+        geometry-tick: root.geometry-tick;
         control-geometry(index, item-x, item-width) => {
             root.report-control-geometry(index, item-x, item-width);
         }
@@ -916,6 +948,7 @@ component PageControls inherits VerticalLayout {
         labels: root.labels;
         selected-page: root.selected-page;
         folded: root.folded;
+        geometry-tick: root.geometry-tick;
         control-geometry(index, item-x, item-width) => {
             root.report-control-geometry(index, item-x, item-width);
         }
@@ -927,6 +960,7 @@ component PageControls inherits VerticalLayout {
         labels: root.labels;
         selected-page: root.selected-page;
         folded: root.folded;
+        geometry-tick: root.geometry-tick;
         control-geometry(index, item-x, item-width) => {
             root.report-control-geometry(index, item-x, item-width);
         }
