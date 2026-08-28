@@ -340,6 +340,10 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
         .expect("expanded Chromium fixture renders its final tab");
     expanded_final_tab.mock_single_click(slint::platform::PointerEventButton::Left);
     assert_eq!(app.get_selected_page(), 7, "final tab click selects final page");
+    assert!(
+        app.get_page_controls_expanded(),
+        "selecting a page leaves explicitly expanded controls open",
+    );
     ElementHandle::find_by_accessible_label(&app, "Show fewer pages")
         .next()
         .expect("expanded disclosure remains available after selection")
@@ -367,17 +371,46 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
         "selected final tab is auto-revealed inside collapsed strip; fold=({fold_left}, {fold_right}), tab=({tab_left}, {tab_right})",
     );
 
-    // A one-label model fits without folding, so no disclosure or artificial gutter remains.
-    app.set_page_labels(ModelRc::new(VecModel::from(vec![SharedString::from("Only page")])));
+    // Programmatic selection changes while already collapsed must reveal both directions,
+    // covering restore/controller writes rather than only clicks inside expanded controls.
+    app.set_selected_page(0);
     for _ in 0..3 {
         mock_elapsed_time(std::time::Duration::from_millis(1));
     }
+    app.set_selected_page(7);
+    for _ in 0..3 {
+        mock_elapsed_time(std::time::Duration::from_millis(1));
+    }
+    let directly_selected_final_tab = fold
+        .query_descendants()
+        .match_type_name("ChromiumTab")
+        .find_all()
+        .last()
+        .cloned()
+        .expect("direct selection retains final Chromium tab");
     assert!(
-        ElementHandle::find_by_accessible_label(&app, "Show all pages").next().is_none(),
-        "no-overflow controls omit collapsed disclosure",
+        directly_selected_final_tab.absolute_position().x + directly_selected_final_tab.size().width <= fold_right,
+        "directly selected hidden tab is revealed inside collapsed strip",
     );
-    assert!(
-        ElementHandle::find_by_accessible_label(&app, "Show fewer pages").next().is_none(),
-        "no-overflow controls omit expanded disclosure",
-    );
+
+    // Two short labels fit every style, so none may create disclosure or leading gutter.
+    app.set_page_labels(ModelRc::new(VecModel::from(vec![
+        SharedString::from("A"),
+        SharedString::from("B"),
+    ])));
+    for style in 0..=5 {
+        app.set_page_control_style(style);
+        app.set_page_controls_expanded(false);
+        for _ in 0..3 {
+            mock_elapsed_time(std::time::Duration::from_millis(1));
+        }
+        assert!(
+            ElementHandle::find_by_accessible_label(&app, "Show all pages").next().is_none(),
+            "no-overflow style {style} omits collapsed disclosure",
+        );
+        assert!(
+            ElementHandle::find_by_accessible_label(&app, "Show fewer pages").next().is_none(),
+            "no-overflow style {style} omits expanded disclosure",
+        );
+    }
 }
