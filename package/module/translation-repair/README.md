@@ -1075,6 +1075,19 @@ Three have English-only details blocks absent from source Markdown:
 This proves bypass pattern is not entry-unique;
 it does not establish which remaining visual assets contain source text.
 
+Same-digest `Zha_Ke` overlap pair at built-in grace confirms performance mechanism,
+not readiness.
+Both providers were wet throughout both arms.
+Overlap `1` took 129.95 minutes over 4.862 call-hours,
+normalized `0.445`, with 68 voices unheard and 25.27 metered credits.
+Overlap `4` took 36.49 minutes over 2.947 call-hours,
+normalized `0.206`, with 6 voices unheard and 44.55 metered credits.
+Overlap `4` reduced wall time 71.9 percent and normalized wall 53.7 percent;
+metered spend rose 76.3 percent.
+Both pages retained byte-identical blocked details transcript,
+while surrounding wording differed stochastically.
+Both are mechanically complete and neither is acceptable production output.
+
 Remaining corpus arms, hard-case output reading, live calibration checks,
 front matter and site-grammar gaps,
 package reading CLI,
