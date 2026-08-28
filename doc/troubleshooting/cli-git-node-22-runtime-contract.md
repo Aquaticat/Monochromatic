@@ -20,7 +20,10 @@ so a newly published LTS line makes the stale single range fail visibly.
 
 ### Landed verification
 
-The runtime policy landed in commits `6a43312ff` and `e092d20bb`.
+The runtime policy and scoped CI evidence landed in commits `6a43312ff`,
+`e092d20bb`,
+`b27889c38`,
+and `1848ce73a`.
 Node's official release index on 2026-08-28 reported Node 24.20.0 as latest LTS,
 and its first release carrying the Krypton LTS marker was Node 24.11.0.
 The declared `^24.11.0` range therefore identifies current latest LTS line and its exact floor.
@@ -56,6 +59,26 @@ Package Oxlint reported no finding in changed TypeScript files;
 its package-wide task remained nonzero on existing `test-import(require-eventual-artifact)` diagnostics in other tests.
 Repository-wide dprint likewise named only existing unrelated files.
 The Markdown check passed for this record and package README.
+
+Initial CI run `33218859206` built at Node 24.11.0 but did not reach host evidence:
+the separate manual-push integration fixture reported that
+`/usr/bin/git push --atomic origin --dry-run --verify` exited `128` on GitHub's runner.
+That fixture is not part of runtime-contract acceptance.
+Commit `1848ce73a` scopes minimum-runtime source execution to public authoring API and entry-point tests,
+then runs dedicated built import and CLI host evidence.
+The complete unit task remains package-scoped local evidence at Node 24.11.0.
+
+Final CI run [33219232827][runtime-contract-ci] passed on commit `1848ce73a`.
+Its runtime-policy,
+latest-LTS,
+minimum-runtime,
+and Linux,
+macOS,
+and Windows trust jobs all completed successfully.
+The minimum-runtime job built at Node 24.11.0,
+ran public API and entry-point source tests,
+imported built public MJS without side effects,
+and exercised successful help plus invalid usage.
 
 The remaining sections preserve the pre-resolution diagnosis and Node 22 evidence.
 
@@ -320,3 +343,4 @@ Do not file an issue against Node or CAC.
 Track any engine-floor or downleveling decision in this repository.
 
 [node-24]: https://nodejs.org/en/blog/release/v24.0.0
+[runtime-contract-ci]: https://github.com/Aquaticat/Monochromatic/actions/runs/33219232827
