@@ -369,6 +369,9 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
 
     // A one-label model fits without folding, so no disclosure or artificial gutter remains.
     app.set_page_labels(ModelRc::new(VecModel::from(vec![SharedString::from("Only page")])));
+    for _ in 0..3 {
+        mock_elapsed_time(std::time::Duration::from_millis(1));
+    }
     assert!(
         ElementHandle::find_by_accessible_label(&app, "Show all pages").next().is_none(),
         "no-overflow controls omit collapsed disclosure",
