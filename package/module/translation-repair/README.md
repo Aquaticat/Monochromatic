@@ -1108,6 +1108,12 @@ call sum rose 9.1 percent and metered spend rose 137.5 percent.
 Automatic retries reused cached pairing and reached same refusal.
 Safe refusal is correct;
 persisting contested alignment with no path to re-pair means entry cannot settle under this generation.
+This is settlement-progress failure,
+not process nontermination.
+Repair must preserve contested source block and candidate targets as unresolved relation,
+then run bounded targeted re-pairing while retaining attempt evidence.
+It must not relax coverage or publication guard;
+adjacency alone does not prove two target blocks may be merged.
 
 Remaining corpus arms, hard-case output reading, live calibration checks,
 front matter and site-grammar gaps,
