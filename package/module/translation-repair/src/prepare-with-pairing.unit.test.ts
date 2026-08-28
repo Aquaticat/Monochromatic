@@ -256,9 +256,24 @@ await describe({
       },
     },),
     it({
-      name: 'DOES NOT CACHE CONTESTED PAIRING so automatic retry buys new alignment instead of replaying settlement failure',
+      name: 'RECONTESTS CONTESTED PAIRING instead of replaying settlement failure, then caches recovered split',
       fn: async () => {
+        /**
+         * Cache shared by contested and recovered attempts.
+         */
         const stored = new Map<string, PairedSectionRecord>();
+        /**
+         * Original blocks shared by both attempts.
+         */
+        const sourceText = '猫睡在盒子里。\n\n它整个下午都没有动。';
+        /**
+         * Translation blocks shared by both attempts.
+         */
+        const targetText = 'The cat slept in the box.\n\nShe stayed still.\n\nAll afternoon.';
+        /**
+         * Cache boundary proving first attempt leaves nothing terminal.
+         */
+        const pairingCache = memoryPairingCache({ stored, },);
         await prepareDocumentPairWithRoster({
           client: cannedClient({
             replyByModel: [
@@ -273,15 +288,41 @@ await describe({
             'hf:openai/gpt-oss-120b',
             'hf:moonshotai/Kimi-K3',
           ],
-          sourceText: '猫睡在盒子里。\n\n它整个下午都没有动。',
-          targetText: 'The cat slept in the box.\n\nShe stayed still.\n\nAll afternoon.',
+          sourceText,
+          targetText,
           signal: new AbortController().signal,
           exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
           l,
-          pairingCache: memoryPairingCache({ stored, },),
+          pairingCache,
+        },);
+        expect(stored.size,).toBe(0,);
+
+        /**
+         * Recovered attempt whose roster corroborates one-to-many split.
+         */
+        const recovered = await prepareDocumentPairWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":1,"target":2}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1},{"source":1,"target":2}]}',
+            ],
+          },),
+          modelIds: ROSTER,
+          sourceText,
+          targetText,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+          pairingCache,
         },);
 
-        expect(stored.size,).toBe(0,);
+        expect(recovered.prepared.blockPairing?.at(0,)?.pairs,).toEqual([
+          { source: 0, target: 0, },
+          { source: 1, target: 1, },
+          { source: 1, target: 2, },
+        ],);
+        expect(recovered.prepared.unclaimedTargetBlocks,).toEqual([]);
+        expect(stored.size,).toBe(1,);
       },
     },),
     it({

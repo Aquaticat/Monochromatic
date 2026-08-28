@@ -1123,6 +1123,31 @@ then run bounded targeted re-pairing while retaining attempt evidence.
 It must not relax coverage or publication guard;
 adjacency alone does not prove two target blocks may be merged.
 
+Current nine-model validation on 2026-08-28 settled `Weideriche_` under production overlap `1`.
+Its block record carries eight source blocks and nine target blocks across nine monotone relations,
+including one source block paired to two adjacent target blocks.
+No archive block remained unclaimed,
+three slices settled,
+and publication wrote artifact and page instead of repeating prior unfilled-passage refusal.
+Mechanical verification matched one artifact to one page,
+with all three promised wordings,
+expected 919 characters,
+and source destination retained.
+Both providers were wet on all 25 meter readings and no seat stayed dark.
+Strict source, archive and published-page reading found no blocker or major output defect;
+the published page restores source's non-binary older-sister wording,
+care for injured people,
+positive period of life,
+memorial facts,
+and contributor destination without reintroducing archive pronoun claim.
+This affected-entry run validates settlement-progress fix for `#273`.
+Unit guards separately prove contested or still-unclaimed pairing is not cached as terminal.
+
+The live artifact also exposed misleading diagnostic wording:
+it reported nine pair relations as though nine of eight source blocks had been paired.
+`countPairedBlocks` now reports unique source and target reach separately from relation count,
+with one-to-many and many-to-one guards.
+
 Corpus-readiness work is defect-driven:
 once output proves reproducible systemic blocker,
 stop unrelated corpus arms,
