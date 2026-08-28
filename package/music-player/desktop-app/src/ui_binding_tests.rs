@@ -322,9 +322,11 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     let fold = ElementHandle::find_by_element_type_name(&app, "FoldablePageControls")
         .next()
         .expect("narrow mode restores foldable controls");
-    // Advance the one-millisecond post-layout scheduler after tree discovery has
-    // forced Slint to resolve the new selected item and narrow geometry.
-    mock_elapsed_time(std::time::Duration::from_millis(1));
+    // Advance repeated one-millisecond turns after tree discovery. The first turn
+    // resolves layout and can restart the reveal timer; a following turn fires it.
+    for _ in 0..3 {
+        mock_elapsed_time(std::time::Duration::from_millis(1));
+    }
     let final_tab = ElementHandle::find_by_element_type_name(&app, "ChromiumTab")
         .last()
         .expect("Chromium fixture renders its final tab");
