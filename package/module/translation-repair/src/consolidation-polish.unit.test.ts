@@ -118,6 +118,8 @@ const client: SyntheticClient = {
  *
  * @param rejectCorrection - whether second absolute review still rejects
  *
+ * @param selectionSheets - optional sink receiving candidate-selector prompts
+ *
  * @returns Scripted bounded-correction client
  *
  * @example
@@ -129,9 +131,11 @@ function boundedCorrectionClient(
   {
     correctionText,
     rejectCorrection = false,
+    selectionSheets,
   }: {
     readonly correctionText?: string;
     readonly rejectCorrection?: boolean;
+    readonly selectionSheets?: string[];
   },
 ): SyntheticClient {
   /**
@@ -167,6 +171,7 @@ function boundedCorrectionClient(
           };
         }
         if (schema === 'candidate_ballot') {
+          selectionSheets?.push(JSON.stringify(request.messages,),);
           return {
             best: 1,
             reason: 'correction resolves every supplied finding',
@@ -279,8 +284,10 @@ await describe({
     it({
       name: 'CORRECTS ABSOLUTE REVIEW FINDINGS once and re-reviews exact gated text',
       fn: async () => {
+        /** Selector prompts across required correction. */
+        const selectionSheets: string[] = [];
         const polish = await polishConsolidation({
-          client: boundedCorrectionClient({ correctionText: POLISHED, }),
+          client: boundedCorrectionClient({ correctionText: POLISHED, selectionSheets, }),
           sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
           archiveText: BASE,
           baseText: BASE,
@@ -309,6 +316,8 @@ await describe({
           'acceptable',
         ],);
         expect(polish.rounds.length,).toBe(1,);
+        expect(selectionSheets.join('\n',),).toContain('CURRENT English translation, which cannot ship unchanged',);
+        expect(selectionSheets.join('\n',),).toContain('REQUIRED FINDINGS',);
       },
     },),
 
