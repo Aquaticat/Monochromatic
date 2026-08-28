@@ -5,7 +5,8 @@ Resolve a native Git executable without re-entering the workspace Git policy wra
 The resolver promotes common platform Git locations only when `PATH` exposes them,
 then scans remaining candidates in shell order.
 It recognizes Windows `PATHEXT`,
-skips scripts that delegate to `@monochromatic-dev/git-policy-cli`,
+rejects non-regular candidates without blocking on their contents,
+inspects bounded script prefixes for `@monochromatic-dev/git-policy-cli` delegation,
 and accepts ELF,
 PE,
 Mach-O,

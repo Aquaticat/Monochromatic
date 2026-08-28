@@ -1,3 +1,4 @@
+import { execFile, } from 'node:child_process';
 import {
   chmod,
   mkdir,
@@ -10,6 +11,8 @@ import {
   delimiter,
   join,
 } from 'node:path';
+import { pathToFileURL, } from 'node:url';
+import { promisify, } from 'node:util';
 
 import {
   describe,
@@ -34,6 +37,18 @@ const EXECUTABLE_MODE = 0o755;
  * File mode leaving fixture readable but not executable.
  */
 const NON_EXECUTABLE_MODE = 0o644;
+
+/**
+ * Child-process deadline proving special-file candidates cannot block resolver.
+ */
+const RESOLVER_CHILD_TIMEOUT_MS = 2_000;
+
+/* oxlint-disable typescript/strict-void-return -- node:util.promisify intentionally accepts execFile while promise result excludes ChildProcess handle. */
+/**
+ * Promise adapter for external fixture and isolated resolver processes.
+ */
+const executeFile = promisify(execFile,);
+/* oxlint-enable typescript/strict-void-return */
 
 /**
  * Shell script standing in for external real Git.
@@ -177,6 +192,93 @@ async function captureResolutionError(
   return undefined;
 }
 
+/**
+ * Resolves Git in isolated process with deadline protecting FIFO regression tests.
+ *
+ * @param pathEnv - PATH-like candidate directories passed to child resolver.
+ *
+ * @param commonGitPaths - Preferred paths passed to child resolver.
+ *
+ * @returns Absolute executable path printed by child resolver.
+ *
+ * @throws When resolver blocks beyond deadline or child lookup fails.
+ *
+ * @example
+ * ```ts
+ * await resolveRealGitInChild({
+ *   pathEnv: '/tmp/bin:/usr/bin',
+ *   commonGitPaths: ['/usr/bin/git'],
+ * });
+ * ```
+ */
+async function resolveRealGitInChild({
+  pathEnv,
+  commonGitPaths,
+}: {
+  readonly pathEnv: string;
+  readonly commonGitPaths: readonly string[];
+},): Promise<string> {
+  /**
+   * Built package interface loaded by child process.
+   */
+  const moduleUrl = pathToFileURL(join(
+    import.meta.dirname,
+    '..',
+    'dist',
+    'final',
+    'node',
+    'index.mjs',
+  ),)
+    .href;
+  /**
+   * Destination-JavaScript-safe serialized resolver inputs.
+   */
+  const serializedOptions = JSON.stringify({
+    pathEnv,
+    commonGitPaths,
+  },);
+  /**
+   * Child module source using only JSON-encoded interpolations.
+   */
+  const childSource = `import { resolveRealGit } from ${JSON.stringify(moduleUrl,)};\nprocess.stdout.write(await resolveRealGit(${serializedOptions}));\n`;
+  /**
+   * Isolated resolver output.
+   */
+  const { stdout, } = await executeFile(
+    process.execPath,
+    [
+      '--input-type=module',
+      '--eval',
+      childSource,
+    ],
+    { timeout: RESOLVER_CHILD_TIMEOUT_MS, },
+  );
+  return stdout;
+}
+
+/**
+ * Creates executable FIFO candidate for non-blocking resolver tests.
+ *
+ * @param path - Absolute FIFO path to create.
+ *
+ * @returns Nothing after FIFO is executable.
+ *
+ * @example
+ * ```ts
+ * await createExecutableFifo('/tmp/git');
+ * ```
+ */
+async function createExecutableFifo(path: string,): Promise<void> {
+  await executeFile(
+    'mkfifo',
+    [path,],
+  );
+  await chmod(
+    path,
+    EXECUTABLE_MODE,
+  );
+}
+
 //endregion Disposable executable fixtures
 
 await describe({
@@ -246,6 +348,78 @@ await describe({
 
         expect(await resolveRealGit({
           pathEnv,
+          commonGitPaths: [commonGit,],
+        },),).toBe(commonGit,);
+      },
+    },),
+    it({
+      name: 'rejects executable FIFO candidate without waiting for a writer',
+      skip: process.platform === 'win32',
+      fn: async function rejectsExecutableFifo(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /**
+         * Earlier PATH directory containing executable FIFO candidate.
+         */
+        const fifoBin = join(tempDirectory.path, 'fifo-bin',);
+        /**
+         * Later PATH directory containing regular executable candidate.
+         */
+        const externalBin = join(tempDirectory.path, 'external-bin',);
+        await Promise.all([
+          mkdir(fifoBin,),
+          mkdir(externalBin,),
+        ],);
+        /**
+         * Executable FIFO that must not be opened in blocking mode.
+         */
+        const fifoGit = join(fifoBin, 'git',);
+        /**
+         * Regular executable selected after FIFO rejection.
+         */
+        const externalGit = join(externalBin, 'git',);
+        await Promise.all([
+          createExecutableFifo(fifoGit,),
+          writeExecutable({ path: externalGit, content: REAL_GIT_CONTENT, },),
+        ],);
+
+        expect(await resolveRealGitInChild({
+          pathEnv: [fifoBin, externalBin,].join(delimiter,),
+          commonGitPaths: [],
+        },),).toBe(externalGit,);
+      },
+    },),
+    it({
+      name: 'does not inspect later executable FIFO after common Git resolves',
+      skip: process.platform === 'win32',
+      fn: async function doesNotInspectLaterFifo(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /**
+         * Earlier PATH directory containing preferred common executable.
+         */
+        const commonBin = join(tempDirectory.path, 'common-bin',);
+        /**
+         * Later PATH directory containing blocking-risk FIFO candidate.
+         */
+        const fifoBin = join(tempDirectory.path, 'fifo-bin',);
+        await Promise.all([
+          mkdir(commonBin,),
+          mkdir(fifoBin,),
+        ],);
+        /**
+         * Preferred regular executable that must end sequential lookup.
+         */
+        const commonGit = join(commonBin, 'git',);
+        /**
+         * Later FIFO whose inspection would block without non-blocking open.
+         */
+        const fifoGit = join(fifoBin, 'git',);
+        await Promise.all([
+          writeExecutable({ path: commonGit, content: REAL_GIT_CONTENT, },),
+          createExecutableFifo(fifoGit,),
+        ],);
+
+        expect(await resolveRealGitInChild({
+          pathEnv: [commonBin, fifoBin,].join(delimiter,),
           commonGitPaths: [commonGit,],
         },),).toBe(commonGit,);
       },

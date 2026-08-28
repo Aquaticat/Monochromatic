@@ -1,3 +1,4 @@
+import { constants, } from 'node:fs';
 import { open, } from 'node:fs/promises';
 
 //region Native executable recognition
@@ -6,6 +7,23 @@ import { open, } from 'node:fs/promises';
  * Header byte count covering supported native executable signatures.
  */
 const NATIVE_EXECUTABLE_HEADER_BYTES = 4;
+
+/**
+ * Bytes per kibibyte used to express script inspection bound.
+ */
+const KIBIBYTE_BYTES = 1_024;
+
+/**
+ * Kibibytes inspected from each script candidate.
+ */
+const SELF_SHIM_INSPECTION_KIBIBYTES = 64;
+
+/**
+ * Maximum bytes inspected from script candidates.
+ * Generated command shims are launchers;
+ * a fixed bound prevents arbitrary PATH files from controlling resolver memory use.
+ */
+const MAX_SELF_SHIM_INSPECTION_BYTES = SELF_SHIM_INSPECTION_KIBIBYTES * KIBIBYTE_BYTES;
 
 /**
  * Hex prefixes for ELF,
@@ -58,6 +76,35 @@ function isNativeExecutableHeader(header: Uint8Array,): boolean {
 //region Git policy wrapper markers
 
 /**
+ * Reports PATH candidate whose opened filesystem object is not a regular file.
+ *
+ * @example
+ * ```ts
+ * throw new GitCandidateFileTypeError('/tmp/git');
+ * ```
+ */
+export class GitCandidateFileTypeError extends Error {
+  /**
+   * Stable error classification independent of minification.
+   */
+  override readonly name = 'GitCandidateFileTypeError';
+
+  /**
+   * Creates non-regular candidate evidence.
+   *
+   * @param candidatePath - Opened PATH candidate with unsupported filesystem type.
+   *
+   * @example
+   * ```ts
+   * const error = new GitCandidateFileTypeError('/tmp/git');
+   * ```
+   */
+  constructor(candidatePath: string,) {
+    super(`Git candidate is not a regular file: ${candidatePath}`,);
+  }
+}
+
+/**
  * Package name used by scripts that delegate to Git policy wrapper.
  */
 const GIT_POLICY_CLI_PACKAGE_NAME = '@monochromatic-dev/git-policy-cli';
@@ -97,7 +144,8 @@ const SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
  *
  * @returns Whether candidate delegates to Git policy wrapper.
  *
- * @throws When candidate cannot be opened or read.
+ * @throws When candidate cannot be opened or read,
+ * or opened object is not a regular file.
  *
  * @example
  * ```ts
@@ -110,8 +158,14 @@ export async function isGitPolicySelfShim(candidatePath: string,): Promise<boole
    */
   await using candidate = await open(
     candidatePath,
-    'r',
+    constants.O_RDONLY | constants.O_NONBLOCK,
   );
+  /**
+   * Opened candidate metadata resistant to path replacement after open.
+   */
+  const candidateStats = await candidate.stat();
+  if (!candidateStats.isFile())
+    throw new GitCandidateFileTypeError(candidatePath,);
   /**
    * Fixed native-signature prefix.
    */
@@ -133,9 +187,27 @@ export async function isGitPolicySelfShim(candidatePath: string,): Promise<boole
   ))
     return false;
   /**
-   * Complete non-native candidate text inspected for self-shim markers.
+   * Bounded non-native candidate bytes inspected for self-shim markers.
    */
-  const content = await candidate.readFile('utf8',);
+  const contentBytes = Buffer.alloc(MAX_SELF_SHIM_INSPECTION_BYTES,);
+  /**
+   * Captured script bytes up to inspection bound.
+   */
+  const { bytesRead: contentBytesRead, } = await candidate.read(
+    contentBytes,
+    0,
+    contentBytes.length,
+    0,
+  );
+  /**
+   * UTF-8 script prefix containing command shim targets.
+   */
+  const content = contentBytes
+    .subarray(
+      0,
+      contentBytesRead,
+    )
+    .toString('utf8');
   return [...SELF_SHIM_MARKERS,].some(function hasSelfShimMarker(marker,) {
     return content.includes(marker,);
   },);

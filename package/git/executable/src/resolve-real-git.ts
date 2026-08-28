@@ -10,7 +10,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { RealGitNotFoundError, } from './error.ts';
 import { commonGitPathsForPlatform, } from './platform-paths.ts';
-import { isGitPolicySelfShim, } from './self-shim.ts';
+import {
+  GitCandidateFileTypeError,
+  isGitPolicySelfShim,
+} from './self-shim.ts';
 import type { ResolveRealGitOptions, } from './types.ts';
 
 //region Resolver state and candidate types
@@ -265,6 +268,8 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  * ```
  */
 function isExpectedCandidateMiss(error: unknown,): boolean {
+  if (error instanceof GitCandidateFileTypeError)
+    return true;
   if (!isErrnoException(error,))
     return false;
   return (error.code === 'ENOENT')
