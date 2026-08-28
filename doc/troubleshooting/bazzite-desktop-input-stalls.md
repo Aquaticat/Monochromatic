@@ -487,20 +487,57 @@ The 00:40 recurrence has a tighter boundary.
 the helper immediately logged deletion of snapshot 964,
 and Snapper recorded the loop's next free-space query at 00:43:15.
 The cleanup loop re-evaluates that condition only after `remove` returns
-(`client/cleanup.cc:353-397`),
-so the two queries bracket the synchronous deletion request.
-The kernel logged qgroup scan completion at 00:39:20,
-before this interval.
-The three Plasma failures and the matching all-application delay occurred inside it.
+(`client/cleanup.cc:353-397`).
 
-The server path can unmount the snapshot and call Btrfs subvolume deletion
-(`snapper/Snapshot.cc:655-660`,
-`snapper/Btrfs.cc:411-431`,
-and `snapper/BtrfsUtils.cc:221-236`).
+The interval is deletion completion and synchronization,
+not necessarily one DBus `DeleteSnapshots` call.
+The server deletes the subvolume and remembers its ID
+(`snapper/Btrfs.cc:411-431`).
+The following free-space query calls `filesystem->sync()`
+(`snapper/Snapper.cc:886-906`).
+For remembered deleted subvolumes,
+`Btrfs::sync()` sleeps until Btrfs no longer reports each ID,
+then syncs again
+(`snapper/Btrfs.cc:1576-1596`).
 A 00:41:18 procfs sample found `systemd-helper` blocked in `poll`,
 Snapper's main thread in a futex wait,
-and its second thread in `clock_nanosleep`.
-That non-attaching sample confirms user-space waiting but does not identify the Btrfs operation or shared application dependency.
+and its second thread in `clock_nanosleep`,
+matching that post-deletion wait boundary.
+The kernel logged qgroup scan completion at 00:39:20,
+before the interval.
+The three Plasma failures and matching all-application delay occurred inside it.
+
+This filesystem uses full qgroup accounting and the kernel's default subtree-drop threshold of 3.
+Snapshot 963 has a level-3 root,
+so its highest shared subtrees are level 2 and do not reach the default skip threshold.
+The kernel's `drop_subtree_threshold` interface can skip accounting at or above its value,
+marking qgroup data inconsistent for a later rescan.
+The production qgroups were already inconsistent after the next hourly snapshot creation,
+so cleanup was going to rescan them even without changing the threshold.
+
+A disposable 2 GiB Btrfs fixture reproduced a level-3 tree with 180,000 empty files.
+Threshold 2 activated the intended branch:
+every threshold-2 deletion changed `inconsistent` from 0 to 1,
+while every threshold-3 deletion left it at 0.
+Independent first-after-mount controls did not show a timing benefit.
+Threshold-2 deletions took 29.006 and 29.007 seconds;
+threshold-3 deletions took 29.007 and 30.007 seconds.
+Matched controls took 30.006 and 31.009 seconds with simple quotas,
+and 31.007 seconds in both quota-disabled cases.
+The fixture therefore validates threshold semantics but not threshold- or quota-mode-based latency reduction.
+It cannot exclude a production-only qgroup contribution.
+
+Simple quotas accepted parent qgroup creation,
+explicit assignment,
+and snapshot inheritance commands.
+A data-bearing control exposed incompatible accounting semantics.
+After a 64 MiB allocation in the live subvolume,
+a read-only inherited snapshot's child qgroup and parent `1/0` each reported only 4 KiB.
+Deleting the live reference left the retained allocation charged to the live subvolume,
+not the snapshot parent.
+Snapper queries that parent's exclusive usage for `SPACE_LIMIT`,
+so simple quotas would undercount snapshot-retained data.
+No quota mode or threshold was changed on the production filesystem.
 
 No I/O-pressure interval,
 KWin delay,
@@ -925,15 +962,76 @@ The active Panel Colorizer settings directory was removed.
 
 No workaround for the original global-input stalls or the separate panel freeze has been verified.
 
-The leading reversible diagnostic is to pause `snapper-timeline.timer`,
-`snapper-cleanup.timer`,
-and `snapper-boot.timer` together after an active cleanup finishes.
-This would stop the hourly create-delete cycle without deleting the remaining snapshot.
-It has not been applied.
-The tradeoff is loss of new automatic snapshots during the pause and continued space retention by the existing snapshot.
-At the 00:43 cleanup boundary,
-`/var/home` had 183 GiB available and snapshot 963 was the only retained snapshot.
-The timer state and free space must be recorded before the pause and restored or reviewed afterward.
+The user declined a timer pause and wants automatic snapshots retained.
+No production mitigation has been applied.
+The disposable controls reject threshold 2,
+simple quotas,
+and disabled quotas as demonstrated latency fixes for the reproduced metadata-heavy deletion.
+
+Capacity is the gating decision.
+After removing and syncing the disposable fixture,
+`/var/home` had 183.102 GiB available,
+16.898 GiB below the configured 200 GiB `FREE_LIMIT`.
+The new timeline snapshot remains eligible for deletion while that condition is unsatisfied,
+regardless of whether cleanup runs hourly or daily.
+The encrypted data filesystem had 2.265 TiB available,
+but moving data there requires selecting content whose access and performance requirements fit that device.
+
+Retained Snapper logs show free space falling from 451.4 GiB on July 5 to 182.6 GiB at the captured August 28 cleanup,
+an average decline of 4.978 GiB per day over that interval.
+Daily changes varied,
+so this mean is evidence of sustained pressure rather than a precise exhaustion forecast.
+Lowering `FREE_LIMIT` alone postpones the same capacity problem.
+Reclaiming or moving live data while identifying its growth source ranks first because it restores the configured reserve
+without weakening protection.
+Expanding storage ranks second because it addresses capacity but requires hardware or filesystem work.
+Lowering `FREE_LIMIT` ranks third because it is reversible but only defers the pressure.
+
+After capacity is addressed,
+the leading reversible stutter mitigation is to keep hourly creation while moving cleanup to a chosen inactive time.
+It retains hourly restore granularity and batches deletion exposure into one scheduled window.
+It temporarily accumulates up to one cleanup interval of snapshots,
+and the scheduled cleanup can still stall applications.
+Changing both creation and cleanup to once daily further reduces transactions,
+but provides coarser restore points and ranks second.
+
+A structural mitigation is to move measured high-churn directories into nested subvolumes
+outside the `/var/home` snapshot tree.
+It can preserve hourly snapshots for remaining home data while reducing the tree Btrfs must remove.
+It requires a reviewed data migration,
+and excluded directories need a separate backup policy.
+No directory has been selected or measured for exclusion,
+so this remains behind the reversible timer change.
+
+Disabling full qgroups remains an evidence-gathering fallback,
+not a recommended production change.
+Snapper's free-space condition does not require `QGROUP`;
+only snapshot-specific `SPACE_LIMIT` accounting does.
+The fixture measured no deletion improvement with quotas disabled,
+so the known functionality loss has no demonstrated benefit.
+Simple quotas rank lower because they also undercount snapshot-retained data in Snapper's parent qgroup.
+
+Lowering `drop_subtree_threshold` to 2 activated Btrfs's intended skip path
+but did not improve independent deletion timings.
+It marks qgroups inconsistent;
+Snapper's next quota query then requests the rescan.
+Giving `snapperd` idle CPU or I/O priority is also not a demonstrated fix:
+the helper already has idle scheduling,
+and filesystem transaction work runs in kernel workers.
+
+Mitigation ranking after the capacity gate:
+hourly creation with daily cleanup,
+then daily creation and cleanup,
+then measured structural exclusion,
+then full-qgroup removal,
+then simple quotas,
+then threshold 2 or daemon scheduling.
+Hourly creation with daily cleanup ranks above daily creation because it preserves more restore points with the same deletion window.
+Daily creation ranks above structural work because it is reversible and requires no migration.
+Measured structural exclusion ranks above quota changes because it targets snapshotted data while preserving restore points.
+Full-qgroup removal ranks above simple quotas because both lack a fixture latency benefit,
+but simple quotas also invalidate parent usage accounting.
+Threshold and daemon scheduling rank last because neither has evidence of reducing deletion impact.
 
 ## Verified local actions
 
@@ -990,10 +1088,11 @@ and cannot represent natural idle behavior.
 The Plasma and KWin event-loop probes remained useful for detecting service boundaries,
 but every overlap with scrub requires explicit classification.
 
-## Proposed targeted diagnostic stage
+## Retained targeted diagnostic plan
 
-Do not extend the current passive observation indefinitely.
-If the user chooses to investigate the Plasma-plus-Helium incident after the original-symptom window closes,
+The original symptom was captured and passive observers were stopped.
+This plan is dormant while mitigation is prioritized.
+If the user later resumes causal investigation,
 use staged instrumentation rather than another unchanged observation window.
 
 First,
@@ -1065,6 +1164,9 @@ Sources:
 - [`perf-sched(1)`](https://www.man7.org/linux/man-pages/man1/perf-sched.1.html)
 - [Upstream `perf-record(1)` source documentation](https://github.com/torvalds/linux/blob/master/tools/perf/Documentation/perf-record.txt)
 - [bpftrace one-line tutorial](https://bpftrace.org/tutorial-one-liners)
+- [Btrfs qgroup performance and simple-quota documentation](https://btrfs.readthedocs.io/en/stable/btrfs-quota.html)
+- [Btrfs `drop_subtree_threshold` documentation](https://btrfs.readthedocs.io/en/stable/ch-sysfs.html#uuid-qgroups)
+- [2026 `linux-btrfs` report about qgroup-induced system hangs](https://www.spinics.net/lists/linux-btrfs/msg165086.html)
 
 ## What does not work
 

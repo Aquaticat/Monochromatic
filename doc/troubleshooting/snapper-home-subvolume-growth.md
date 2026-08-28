@@ -109,7 +109,10 @@ NUMBER_LIMIT_IMPORTANT="3"
 QGROUP=""
 ```
 
-`SPACE_LIMIT` and `FREE_LIMIT` did not protect this machine while qgroups were absent.
+Space-aware cleanup did not protect this machine because the cleanup limits were fixed values rather than ranges.
+`SPACE_LIMIT` additionally could not work while qgroups were absent.
+`FREE_LIMIT` does not require qgroups,
+but Snapper skips both space-aware passes when the retention parameters are degenerate.
 Before the fix,
 `sudo btrfs qgroup show /var` reported:
 
@@ -308,8 +311,10 @@ Relying on fixed values like `NUMBER_LIMIT=3` and `TIMELINE_LIMIT_HOURLY=2` does
 space-aware cleanup pass.
 The Snapper documentation says the cleanup limits must be ranges for that behavior.
 
-Relying on `SPACE_LIMIT` and `FREE_LIMIT` without Btrfs qgroups does not work.
-Snapper needs `QGROUP` set by `snapper setup-quota` so it can measure snapshot space.
+Relying on `SPACE_LIMIT` without Btrfs qgroups does not work.
+Snapper needs `QGROUP` set by `snapper setup-quota` to measure snapshot-exclusive space.
+`FREE_LIMIT` queries filesystem free space independently of qgroups,
+but both space-aware passes require range-form retention limits.
 
 Disabling `snapper-timeline.timer` and `snapper-boot.timer` is only an emergency stopgap.
 It prevents recurrence by stopping snapshot creation,
