@@ -8,6 +8,7 @@ import {
   ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
   type AbsoluteNaturalnessFinding,
   type AbsoluteNaturalnessReviewSubject,
+  type AbsoluteNaturalnessReviewWire,
   buildAbsoluteNaturalnessReviewMessages,
   isAbsoluteNaturalnessReviewWire,
 } from './absolute-naturalness-review-wire.ts';
@@ -66,7 +67,7 @@ export type AbsoluteNaturalnessReviewVerdict =
  *
  * @example
  * ```ts
- * const review: AbsoluteNaturalnessReviewOutcome = { candidateDigest: 'sha256:abc', seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ * const review: AbsoluteNaturalnessReviewOutcome = { candidateDigest: 'sha256:abc', paragraphCount: 0, seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
  * ```
  */
 export type AbsoluteNaturalnessReviewOutcome = {
@@ -74,6 +75,11 @@ export type AbsoluteNaturalnessReviewOutcome = {
    * Digest binding review to exact candidate bytes.
    */
   readonly candidateDigest: string;
+
+  /**
+   * Structurally correctable paragraphs reviewer was shown.
+   */
+  readonly paragraphCount: number;
 
   /**
    * Every requested roster seat in request order.
@@ -177,6 +183,11 @@ export async function reviewAbsoluteNaturalness(
     tag: reviewAbsoluteNaturalness.name,
   },);
   /**
+   * Structurally correctable paragraphs shown to every reviewer.
+   */
+  const paragraphCount = subject.paragraphs
+    .length;
+  /**
    * Every requested outcome after every seat has settled or reached deadline.
    */
   const outcomes = await runGatherRound({
@@ -186,7 +197,17 @@ export async function reviewAbsoluteNaturalness(
     signal,
     exchangeTimeoutMs,
     responseFormat: ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
-    validate: isAbsoluteNaturalnessReviewWire,
+    validate: function fitsSubject(value,): value is AbsoluteNaturalnessReviewWire {
+      if (!isAbsoluteNaturalnessReviewWire(value,))
+        return false;
+      /**
+       * Located findings after wire validation.
+       */
+      const { findings, } = value;
+      return findings.every(function existingParagraph(finding,): boolean {
+        return finding.paragraph <= paragraphCount;
+      },);
+    },
     stage: 'absolute-naturalness-review',
     l: rl,
     heardNeeded: modelIds.length,
@@ -253,6 +274,7 @@ export async function reviewAbsoluteNaturalness(
   );
   return {
     candidateDigest: hashContent({ content: subject.candidateText, },),
+    paragraphCount,
     seats,
     usable: usableSeats.length,
     verdict,

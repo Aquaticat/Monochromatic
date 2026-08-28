@@ -7,6 +7,7 @@ import {
   requireString,
 } from '../artifact-guard.ts';
 import { ABSOLUTE_NATURALNESS_REVIEW_QUORUM, } from '../absolute-naturalness-review-stage.ts';
+import { finalPolishParagraphs, } from '../consolidation-polish-round.ts';
 import { hashContent, } from '../document-node.ts';
 import type {
   ArtifactNaturalnessFinding,
@@ -162,6 +163,7 @@ function parseRound(
     record,
     allowed: [
       'candidateDigest',
+      'paragraphCount',
       'seats',
       'usable',
       'verdict',
@@ -185,6 +187,27 @@ function parseRound(
         path: `${path}.seats[${String(at,)}]`,
       },);
     },);
+  /**
+   * Structurally correctable paragraphs reviewer was shown.
+   */
+  const paragraphCount = requireCount({
+    value: record.paragraphCount,
+    path: `${path}.paragraphCount`,
+  },);
+  if (seats.some(function outOfRange(seat,): boolean {
+    /**
+     * Findings this seat attached to reviewed paragraphs.
+     */
+    const { findings: seatFindings, } = seat;
+    return seatFindings.some(function missingParagraph(finding,): boolean {
+      return finding.paragraph > paragraphCount;
+    },);
+  },)) {
+    throw new ArtifactParseError({
+      path: `${path}.seats`,
+      reason: 'findings naming existing reviewed paragraph',
+    },);
+  }
   /**
    * Model ids proving one status per seat.
    */
@@ -268,6 +291,7 @@ function parseRound(
   }
   return {
     candidateDigest,
+    paragraphCount,
     seats,
     usable,
     verdict,
@@ -376,6 +400,17 @@ export function parseNaturalnessReview(
     throw new ArtifactParseError({
       path: `${path}.rounds[${String(rounds.length - 1,)}].verdict`,
       reason: 'acceptable final absolute review',
+    },);
+  }
+  /**
+   * Correctable paragraphs independently re-derived from final text.
+   */
+  const finalParagraphCount = finalPolishParagraphs({ text: finalText, })
+    .length;
+  if (final.paragraphCount !== finalParagraphCount) {
+    throw new ArtifactParseError({
+      path: `${path}.rounds[${String(rounds.length - 1,)}].paragraphCount`,
+      reason: 'structurally correctable paragraph count of final polish text',
     },);
   }
   if (final.candidateDigest !== hashContent({ content: finalText, },)) {

@@ -172,7 +172,7 @@ export type ArtifactNaturalnessReviewSeat = {
  *
  * @example
  * ```ts
- * const round: ArtifactNaturalnessReviewRound = { candidateDigest: 'sha256:abc', seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ * const round: ArtifactNaturalnessReviewRound = { candidateDigest: 'sha256:abc', paragraphCount: 0, seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
  * ```
  */
 export type ArtifactNaturalnessReviewRound = {
@@ -180,6 +180,11 @@ export type ArtifactNaturalnessReviewRound = {
    * Digest binding review to exact candidate bytes.
    */
   readonly candidateDigest: string;
+
+  /**
+   * Structurally correctable paragraphs reviewer was shown.
+   */
+  readonly paragraphCount: number;
 
   /**
    * Every requested seat in roster order.

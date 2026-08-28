@@ -46,6 +46,7 @@ const REVIEW = {
   correctionCount: 0,
   rounds: [{
     candidateDigest: hashContent({ content: FINAL_TEXT, },),
+    paragraphCount: 1,
     seats: [
       acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
       acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
@@ -72,7 +73,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES MUTATED USABLE COUNT, VERDICT, DIGEST, MODEL IDS, AND CORRECTION COUNT',
+      name: 'REFUSES MUTATED USABLE COUNT, VERDICT, DIGEST, MODEL IDS, PARAGRAPH COUNT, AND CORRECTION COUNT',
       fn: async () => {
         const cases: readonly unknown[] = [
           {
@@ -96,6 +97,10 @@ await describe({
                 acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
               ],
             },],
+          },
+          {
+            ...REVIEW,
+            rounds: [{ ...REVIEW.rounds[0], paragraphCount: 2, },],
           },
           {
             ...REVIEW,
