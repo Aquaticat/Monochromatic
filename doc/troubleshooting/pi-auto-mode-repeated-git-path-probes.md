@@ -1,5 +1,35 @@
 # Pi auto-mode 0.0.1 read events emit repeated missing-Git PATH probe logs
 
+Status:
+ resolved.
+
+## Resolution
+
+`@monochromatic-dev/git-executable` now owns real-Git selection for git-policy-cli and auto-mode.
+The resolver promotes common platform paths exposed by `PATH`,
+scans remaining candidates sequentially,
+recognizes Windows `PATHEXT`,
+skips every known cli-git self-shim form,
+and caches successful resolution by effective absolute candidate sequence.
+Expected absent candidates no longer emit one diagnostic each.
+
+Auto-mode deleted its duplicate resolver but keeps `git worktree list` and `rev-parse` metadata queries fresh for every
+read event.
+A same-process test creates another linked worktree after initial discovery and verifies that the next discovery includes
+it.
+
+The post-change verbose harness recorded one `/usr/bin/git` resolver success across seven linked-worktree metadata
+collections and no `git not executable at` records.
+The resolver success is a positive control proving that the verbose harness captured resolver diagnostics.
+The shared package,
+git-policy-cli,
+and auto-mode unit suites passed after migration.
+
+Implementation commits are recorded in
+[`doc/planning/pi-auto-mode-real-git-resolution.md`](../planning/pi-auto-mode-real-git-resolution.md).
+
+The root-cause excerpts in this document describe the pre-fix revision and remain as historical diagnostic evidence.
+
 ## Symptom
 
 A Pi `read` event can add debug records such as:
@@ -367,7 +397,7 @@ No functional failure variant reproduced.
 The diagnostic wording looks like a failed Git operation,
 but the emitting operation is an executable-candidate `access()` check.
 
-## Verified workarounds
+## Historical workaround
 
 Leaving `MONOCHROMATIC_VERBOSE` unset suppresses these debug records from the console sink.
 The non-verbose harness passed and omitted the candidate records from console output.
@@ -378,14 +408,9 @@ Other configured logger sinks can still retain debug records.
 There is no valid `PATH`-narrowing workaround.
 The broad workspace-bin `PATH` is expected and needed for normal Pi operation.
 
-The durable remediation is a code change at the resolver ownership boundary:
-expose git-policy-cli's resolver or extract it into a shared package,
-add the required dependency,
-and test whether common-path priority or first-real-Git `PATH` order is intended.
-Real-Git resolution and worktree metadata also need separate cache-scope decisions.
-No source fix was applied during this diagnosis.
-The recommended design is recorded in
-[`doc/planning/pi-auto-mode-real-git-resolution.md`](../planning/pi-auto-mode-real-git-resolution.md).
+The durable remediation was applied at the resolver ownership boundary.
+The user confirmed common-path priority,
+and `@monochromatic-dev/git-executable` now separates executable cache lifetime from mutable worktree metadata.
 
 ## What does not work
 

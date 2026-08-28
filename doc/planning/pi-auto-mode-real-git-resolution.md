@@ -1,9 +1,29 @@
 # Consolidate real-Git executable resolution for Pi auto-mode
 
 Status:
- proposed.
-The user requested a recommendation,
-not implementation.
+ implemented.
+The user confirmed common-platform-path priority and then authorized implementation.
+
+## Outcome
+
+Implementation landed in these commits:
+
+- `a671af16e` added `@monochromatic-dev/git-executable`;
+- `a8fd5b68e` hardened resolver diagnostics and platform-path tests;
+- `2aef2d409` migrated git-policy-cli and deleted its resolver copy;
+- `612ae1853` migrated auto-mode and deleted its resolver copy;
+- `842057939` registered workspace dependency metadata.
+
+The shared resolver now owns common-platform-path priority,
+Windows `PATHEXT`,
+native executable recognition,
+self-shim exclusion,
+and successful-resolution caching.
+Auto-mode continues to query mutable worktree metadata for every read event.
+
+The post-change verbose auto-mode harness recorded one `/usr/bin/git` resolution across seven linked-worktree metadata
+collections and no `git not executable at` records.
+The resolver record is a positive control proving that verbose resolver diagnostics were captured.
 
 ## Problem
 
