@@ -235,6 +235,16 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     // Install the shared headless backend and instantiate the generated Slint window.
     setup();
     let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
+    // Mirror production's page-selection callback with a weak window handle so a
+    // synthetic tab click updates the selected-page property without retaining the UI.
+    app.on_select_page({
+        let weak = app.as_weak();
+        move |page| {
+            if let Some(app) = weak.upgrade() {
+                app.set_selected_page(page);
+            }
+        }
+    });
 
     // What:     `ModelRc::new(VecModel::from(vec![...]))` builds Slint's reference-counted
     //           read-only model wrapper around an owned mutable vector model. `SharedString`
@@ -314,16 +324,29 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     );
     assert!(app.get_page_controls_expanded(), "breakpoint transition retains expansion");
 
-    // Re-enter narrow mode, collapse, and select the final Chromium tab. The horizontal
-    // viewport must position that source-ordered final tab inside the fold's visible bounds.
+    // Re-enter narrow mode while expanded, click the final Chromium tab through the
+    // testing backend, then collapse. This is the end-user path from a hidden page to
+    // a one-line strip whose viewport must retain the selected tab.
     app.window().set_size(slint::LogicalSize::new(640.0, 800.0));
-    app.set_selected_page(7);
-    app.set_page_controls_expanded(false);
+    let expanded_fold = ElementHandle::find_by_element_type_name(&app, "FoldablePageControls")
+        .next()
+        .expect("narrow mode restores expanded foldable controls");
+    let expanded_final_tab = expanded_fold
+        .query_descendants()
+        .match_type_name("ChromiumTab")
+        .find_all()
+        .last()
+        .cloned()
+        .expect("expanded Chromium fixture renders its final tab");
+    expanded_final_tab.mock_single_click(slint::platform::PointerEventButton::Left);
+    assert_eq!(app.get_selected_page(), 7, "final tab click selects final page");
+    ElementHandle::find_by_accessible_label(&app, "Show fewer pages")
+        .next()
+        .expect("expanded disclosure remains available after selection")
+        .invoke_accessible_default_action();
     let fold = ElementHandle::find_by_element_type_name(&app, "FoldablePageControls")
         .next()
-        .expect("narrow mode restores foldable controls");
-    // Advance repeated one-millisecond turns after tree discovery. The first turn
-    // resolves layout and can restart the reveal timer; a following turn fires it.
+        .expect("disclosure collapses narrow controls");
     for _ in 0..3 {
         mock_elapsed_time(std::time::Duration::from_millis(1));
     }
