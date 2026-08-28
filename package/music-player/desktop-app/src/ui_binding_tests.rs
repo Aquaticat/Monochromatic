@@ -319,6 +319,9 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     app.window().set_size(slint::LogicalSize::new(640.0, 800.0));
     app.set_page_controls_expanded(false);
     app.set_selected_page(7);
+    // Advance the one-millisecond post-layout scheduler that positions the horizontal
+    // viewport after the selected item and narrow width have both settled.
+    mock_elapsed_time(std::time::Duration::from_millis(1));
     let fold = ElementHandle::find_by_element_type_name(&app, "FoldablePageControls")
         .next()
         .expect("narrow mode restores foldable controls");

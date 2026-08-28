@@ -964,6 +964,7 @@ component FoldablePageControls inherits Rectangle {
     private property <bool> has-overflow: width-probe.width > root.width;
     private property <length> disclosure-gutter: root.has-overflow ? 56px : 0px;
     callback reveal-selected();
+    callback schedule-selected-reveal();
     height: root.expanded ? max(root.single-row-height, visible-controls.preferred-height) : root.single-row-height;
     preferred-height: root.height;
 
@@ -982,14 +983,29 @@ component FoldablePageControls inherits Rectangle {
             control-strip.viewport-x = max(minimum-viewport-x, min(0px, control-strip.width - selected-end));
         }
     }
+    schedule-selected-reveal => {
+        selected-reveal-timer.start();
+        selected-reveal-timer.restart();
+    }
     changed width => {
-        root.reveal-selected();
+        root.schedule-selected-reveal();
     }
     changed selected-page => {
-        root.reveal-selected();
+        root.schedule-selected-reveal();
     }
     changed expanded => {
-        root.reveal-selected();
+        root.schedule-selected-reveal();
+    }
+
+    // Defer viewport positioning until Slint has applied the new selected item,
+    // wrap mode, and available width. This is scheduling, not visual animation.
+    selected-reveal-timer := Timer {
+        interval: 1ms;
+        running: false;
+        triggered => {
+            self.stop();
+            root.reveal-selected();
+        }
     }
 
     if root.has-overflow: PageControlDisclosure {
@@ -1029,10 +1045,10 @@ component FoldablePageControls inherits Rectangle {
         control-style: root.control-style;
         max-control-width: root.width;
         changed selected-x => {
-            root.reveal-selected();
+            root.schedule-selected-reveal();
         }
         changed selected-width => {
-            root.reveal-selected();
+            root.schedule-selected-reveal();
         }
     }
 }
