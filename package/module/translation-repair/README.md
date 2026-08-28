@@ -1134,14 +1134,24 @@ with all three promised wordings,
 expected 919 characters,
 and source destination retained.
 Both providers were wet on all 25 meter readings and no seat stayed dark.
-Strict source, archive and published-page reading found no blocker or major output defect;
-the published page restores source's non-binary older-sister wording,
+Body reading found the published wording restores source's non-binary older-sister wording,
 care for injured people,
 positive period of life,
 memorial facts,
 and contributor destination without reintroducing archive pronoun claim.
-This affected-entry run validates settlement-progress fix for `#273`.
-Unit guards separately prove contested or still-unclaimed pairing is not cached as terminal.
+It still has body-level naturalness defects,
+including strained emotional-deprivation wording and calqued descriptions of facing life and suicidal ideation.
+More importantly,
+whole-page reading failed publication:
+target front matter still names entry id instead of source person's declared name,
+and build script uses that `name` as visible localized list metadata.
+This is inherited archive defect on exact path `#269` names,
+not settlement regression.
+Affected-entry evidence validates `#273` progress through settlement and publication only;
+general pipeline closure still requires seeded recontest evidence and front-matter repair.
+Unit guard now proves contested pairing is not cached,
+second attempt is actually bought,
+and recovered one-to-many split becomes cacheable.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.
