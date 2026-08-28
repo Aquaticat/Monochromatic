@@ -221,6 +221,7 @@ component SegmentedControls inherits Rectangle {
     in property <int> selected-page;
     in property <bool> folded: false;
     callback select-page(int);
+    callback control-geometry(int, length, length);
     height: segment-layout.preferred-height;
     preferred-height: segment-layout.preferred-height;
     background: transparent;
@@ -235,6 +236,18 @@ component SegmentedControls inherits Rectangle {
         for label[p] in root.labels: SegmentedButton {
             text: label;
             selected: p == root.selected-page;
+            init => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed x => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed width => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed selected => {
+                root.control-geometry(p, self.x, self.width);
+            }
             clicked => {
                 root.select-page(p);
             }
@@ -465,6 +478,7 @@ component LedSegmentControls inherits Rectangle {
     in property <int> selected-page;
     in property <bool> folded: false;
     callback select-page(int);
+    callback control-geometry(int, length, length);
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
     private property <bool> geometry-adapter-ready: LedRowGeometry.adapter-ready;
     private property <int> geometry-generation: 0;
@@ -551,6 +565,18 @@ component LedSegmentControls inherits Rectangle {
             plate-origin: root.absolute-position;
             selected: p == root.selected-page;
             max-width: root.width;
+            init => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed x => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed width => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed selected => {
+                root.control-geometry(p, self.x, self.width);
+            }
             clicked => {
                 root.select-page(p);
             }
@@ -698,6 +724,7 @@ component ChromiumControls inherits Rectangle {
     in property <int> selected-page;
     in property <bool> folded: false;
     callback select-page(int);
+    callback control-geometry(int, length, length);
     height: chromium-layout.preferred-height;
     preferred-height: chromium-layout.preferred-height;
     background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
@@ -718,6 +745,18 @@ component ChromiumControls inherits Rectangle {
             next-selected: p < root.labels.length - 1 && p + 1 == root.selected-page;
             show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
             max-width: chromium-layout.width;
+            init => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed x => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed width => {
+                root.control-geometry(p, self.x, self.width);
+            }
+            changed selected => {
+                root.control-geometry(p, self.x, self.width);
+            }
             clicked => {
                 root.select-page(p);
             }
@@ -736,7 +775,15 @@ component PageControls inherits VerticalLayout {
     in property <int> control-style;
     in property <bool> folded: false;
     callback select-page(int);
+    callback selected-geometry(length, length);
+    callback report-control-geometry(int, length, length);
     alignment: start;
+
+    report-control-geometry(index, item-x, item-width) => {
+        if (index == root.selected-page) {
+            root.selected-geometry(item-x, item-width);
+        }
+    }
 
     if root.control-style == 0: FlexboxLayout {
         spacing-horizontal: 12px;
@@ -750,6 +797,18 @@ component PageControls inherits VerticalLayout {
             text: label;
             selected: p == root.selected-page;
             large-target: true;
+            init => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed x => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed width => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed selected => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
             clicked => {
                 root.select-page(p);
             }
@@ -764,6 +823,18 @@ component PageControls inherits VerticalLayout {
         for label[p] in root.labels: Md1Tab {
             text: label;
             selected: p == root.selected-page;
+            init => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed x => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed width => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed selected => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
             clicked => {
                 root.select-page(p);
             }
@@ -779,6 +850,18 @@ component PageControls inherits VerticalLayout {
         for label[p] in root.labels: Button {
             text: label;
             primary: p == root.selected-page;
+            init => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed x => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed width => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
+            changed primary => {
+                root.report-control-geometry(p, self.x, self.width);
+            }
             clicked => {
                 root.select-page(p);
             }
@@ -788,6 +871,9 @@ component PageControls inherits VerticalLayout {
         labels: root.labels;
         selected-page: root.selected-page;
         folded: root.folded;
+        control-geometry(index, item-x, item-width) => {
+            root.report-control-geometry(index, item-x, item-width);
+        }
         select-page(p) => {
             root.select-page(p);
         }
@@ -796,6 +882,9 @@ component PageControls inherits VerticalLayout {
         labels: root.labels;
         selected-page: root.selected-page;
         folded: root.folded;
+        control-geometry(index, item-x, item-width) => {
+            root.report-control-geometry(index, item-x, item-width);
+        }
         select-page(p) => {
             root.select-page(p);
         }
@@ -804,6 +893,9 @@ component PageControls inherits VerticalLayout {
         labels: root.labels;
         selected-page: root.selected-page;
         folded: root.folded;
+        control-geometry(index, item-x, item-width) => {
+            root.report-control-geometry(index, item-x, item-width);
+        }
         select-page(p) => {
             root.select-page(p);
         }
@@ -817,9 +909,6 @@ component PageControlWidthProbeItem inherits Rectangle {
     in property <string> text;
     in property <int> control-style;
     in property <length> max-control-width;
-    in property <int> control-index;
-    in property <bool> selected;
-    callback report-geometry(int, length, length);
     private property <length> label-width: probe-label.preferred-width;
     width: root.control-style == 0 ? root.label-width + 28px
         : root.control-style == 1 ? root.label-width + 24px
@@ -830,18 +919,6 @@ component PageControlWidthProbeItem inherits Rectangle {
     height: 0px;
     clip: true;
     accessible-role: none;
-    init => {
-        root.report-geometry(root.control-index, root.x, root.width);
-    }
-    changed x => {
-        root.report-geometry(root.control-index, root.x, root.width);
-    }
-    changed width => {
-        root.report-geometry(root.control-index, root.x, root.width);
-    }
-    changed selected => {
-        root.report-geometry(root.control-index, root.x, root.width);
-    }
 
     probe-label := Text {
         text: root.text;
@@ -857,11 +934,8 @@ component PageControlWidthProbeItem inherits Rectangle {
 // position remain measurable across expansion, resizing, and style changes.
 component PageControlWidthProbe inherits Rectangle {
     in property <[string]> labels;
-    in property <int> selected-page;
     in property <int> control-style;
     in property <length> max-control-width;
-    out property <length> selected-x: 0px;
-    out property <length> selected-width: 0px;
     width: probe-layout.preferred-width;
     height: 0px;
     clip: true;
@@ -879,14 +953,6 @@ component PageControlWidthProbe inherits Rectangle {
             text: label;
             control-style: root.control-style;
             max-control-width: root.max-control-width;
-            control-index: p;
-            selected: p == root.selected-page;
-            report-geometry(item-index, item-x, item-width) => {
-                if (item-index == root.selected-page) {
-                    root.selected-x = item-x;
-                    root.selected-width = item-width;
-                }
-            }
         }
     }
 }
@@ -965,6 +1031,8 @@ component FoldablePageControls inherits Rectangle {
     private property <length> single-row-height: root.control-style == 5 ? 60px : 48px;
     private property <bool> has-overflow: width-probe.width > root.width;
     private property <length> disclosure-gutter: root.has-overflow ? 56px : 0px;
+    private property <length> selected-control-x: 0px;
+    private property <length> selected-control-width: 0px;
     callback reveal-selected();
     callback schedule-selected-reveal();
     height: root.expanded ? max(root.single-row-height, visible-controls.preferred-height) : root.single-row-height;
@@ -977,10 +1045,10 @@ component FoldablePageControls inherits Rectangle {
         }
         let visible-start = -control-strip.viewport-x;
         let visible-end = visible-start + control-strip.width;
-        let selected-end = width-probe.selected-x + width-probe.selected-width;
+        let selected-end = root.selected-control-x + root.selected-control-width;
         let minimum-viewport-x = min(0px, control-strip.width - width-probe.width);
-        if (width-probe.selected-x < visible-start) {
-            control-strip.viewport-x = max(minimum-viewport-x, min(0px, -width-probe.selected-x));
+        if (root.selected-control-x < visible-start) {
+            control-strip.viewport-x = max(minimum-viewport-x, min(0px, -root.selected-control-x));
         } else if (selected-end > visible-end) {
             control-strip.viewport-x = max(minimum-viewport-x, min(0px, control-strip.width - selected-end));
         }
@@ -1034,6 +1102,11 @@ component FoldablePageControls inherits Rectangle {
             selected-page: root.selected-page;
             control-style: root.control-style;
             folded: !root.expanded;
+            selected-geometry(item-x, item-width) => {
+                root.selected-control-x = item-x;
+                root.selected-control-width = item-width;
+                root.schedule-selected-reveal();
+            }
             select-page(p) => {
                 root.select-page(p);
             }
@@ -1043,15 +1116,8 @@ component FoldablePageControls inherits Rectangle {
     width-probe := PageControlWidthProbe {
         y: root.height + 1px;
         labels: root.labels;
-        selected-page: root.selected-page;
         control-style: root.control-style;
         max-control-width: root.width;
-        changed selected-x => {
-            root.schedule-selected-reveal();
-        }
-        changed selected-width => {
-            root.schedule-selected-reveal();
-        }
     }
 }
 
