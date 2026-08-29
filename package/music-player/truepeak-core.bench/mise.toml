@@ -15,6 +15,10 @@ run = "cargo check"
 description = "Run clippy with warnings denied"
 run = "cargo clippy --release -- -D warnings"
 
+[tasks."format:clippy"]
+description = "Apply clippy's machine-applicable suggestions in place"
+run = "cargo clippy --fix --allow-dirty --allow-staged --all-targets"
+
 [tasks."lint:rust"]
 description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
 # Same host linter the core crate uses; .gitignore-aware walking skips target/.
