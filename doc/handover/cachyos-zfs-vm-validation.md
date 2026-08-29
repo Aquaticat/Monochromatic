@@ -66,9 +66,31 @@ or evidence unless the user later authorizes cleanup.
   The corrected guest `systemctl poweroff` reached `shut off` immediately.
   Flatpak-packaged `virsh change-media --eject --config` then exited with code 139 and no diagnostic message,
   but after-state domain XML proved the ISO source had been removed from persistent `hda` configuration.
-  A fresh instrumented no-desktop control is now booting the authenticated ISO.
-  It must run the pinned installer before stock Calamares is ever launched.
-  Process `wait-clean-nodesktop-live` is waiting for CachyOS Hello.
+  A fresh instrumented no-desktop control reached CachyOS Hello from the authenticated ISO.
+  Stock Calamares was never launched,
+  and `pgrep --exact calamares` confirmed that no Calamares process existed before the pinned setup began.
+  Guest block-device inspection confirmed only virtual `vda`,
+  read-only `vdb` and `vdc` source images,
+  and writable `vdd` evidence storage.
+  The installer archive again matched the pinned SHA-256 inside the guest.
+  The evidence image was mounted with live-user ownership through FAT mount options after a direct `chown` correctly failed.
+  The pinned installer is running with `DEBUG=1` and teeing its terminal output to the evidence image.
+  Before destructive confirmation,
+  a second terminal proved that effective `/usr/share/calamares/settings.conf` contained all custom execution entries:
+  script copy,
+  ZFSBootMenu,
+  encryption,
+  mkinitcpio,
+  baseline,
+  pacman-ZFS,
+  and user-home setup.
+  The effective sequence and complete settings file were copied to the evidence image and synced.
+  Calamares then selected **No Desktop** with only the required default package groups.
+  The summary again named only `/dev/vda`,
+  a 2048 MiB EFI partition,
+  and a 129021 MiB encrypted ZFS root partition.
+  **Install Now** was confirmed.
+  Process `wait-clean-nodesktop-install` is waiting for terminal success or failure.
   The failed no-desktop domain previously restarted from its installed EFI disk,
   but the encrypted-boot watcher timed out after 635 seconds without seeing ZFSBootMenu or text login.
   A direct positive-control capture found the guest in the EDK II UEFI shell.
