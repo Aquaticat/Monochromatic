@@ -19,9 +19,9 @@ await describe({
   name: estimateRequestWeight.name,
   children: [
     it({
-      name: 'RETAINS THE DOCUMENTED REQUEST-WEIGHT DENOMINATOR after its retiring model leaves the roster',
+      name: 'TRACKS CURRENT KIMI-K3 REQUEST-WEIGHT DENOMINATOR independently of roster identity',
       fn: async () => {
-        expect(SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,).toBe(0.000001,);
+        expect(SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,).toBe(0.000003,);
       },
     },),
 
@@ -68,7 +68,7 @@ await describe({
     },),
 
     it({
-      name: 'spans five vendor families across five distinct models',
+      name: 'spans four vendor families across four distinct models',
       fn: async () => {
         /** Distinct families in the catalog. */
         const families = new Set(
@@ -78,20 +78,28 @@ await describe({
         );
         expect([...families,].toSorted(),).toEqual([
           'moonshot',
-          'nvidia',
           'openai',
           'qwen',
           'zai',
         ],);
-        // Five, not the ten ids the models endpoint lists: syn:large:text,
+        // Four, not the eleven ids the models endpoint lists: syn:large:text,
         // syn:large:vision, syn:small:text, and syn:small:vision each alias a
         // model already counted here. Admitting one would seat a single model
         // twice on a voting panel and count one opinion as two confirmations.
         //
-        // FIVE RATHER THAN SIX SINCE 2026-08-24, when the owner blocklisted
-        // `zai-org/GLM-4.7-Flash`. Still five vendor families, because the
-        // family it left behind remains represented by GLM-5.3-Flash.
-        expect(Object.keys(SYNTHETIC_MODELS,),).toHaveLength(5,);
+        // FIVE RATHER THAN SIX FROM 2026-08-24, when the owner blocklisted
+        // `zai-org/GLM-4.7-Flash`, then four from 2026-08-29 when the owner
+        // removed Nemotron from every stage. The Z.ai family remains represented
+        // by GLM-5.3-Flash; the NVIDIA family leaves the callable catalog.
+        expect(Object.keys(SYNTHETIC_MODELS,),).toHaveLength(4,);
+        expect(Object.hasOwn(
+          SYNTHETIC_MODELS,
+          'hf:zai-org/GLM-4.7-Flash',
+        ),).toBe(false,);
+        expect(Object.hasOwn(
+          SYNTHETIC_MODELS,
+          'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+        ),).toBe(false,);
       },
     },),
   ],

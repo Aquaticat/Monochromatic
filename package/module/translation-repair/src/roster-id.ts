@@ -5,8 +5,8 @@
 // other's would be a cycle, so the identity lives on its own and the catalogs
 // describe it from their own side.
 //
-// THE ROSTER IS NINE DISTINCT MODELS across two providers: five Synthetic serves,
-// four only Charm Hyper serves, and three of the Synthetic five are served by
+// THE ROSTER IS EIGHT DISTINCT MODELS across two providers: four Synthetic serves,
+// four only Charm Hyper serves, and three of the Synthetic four are served by
 // both. A model is one roster entry however many providers can reach it, which
 // is the property the adjudication tally depends on: `synthetic-catalog.ts`
 // explains at length why one model occupying two seats would silently overstate
@@ -28,6 +28,10 @@
  * live endpoint confirmed the successor and the operational request reported
  * Synthetic's plan to retire the older model.
  *
+ * `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` WAS REMOVED 2026-08-29
+ * at the owner's instruction after contradicting its own concrete wording
+ * recommendation in adjacent required-correction reviews.
+ *
  * @example
  * ```ts
  * const modelId: SyntheticServedId = 'hf:zai-org/GLM-5.3-Flash';
@@ -37,7 +41,6 @@ export type SyntheticServedId =
   | 'hf:zai-org/GLM-5.3-Flash'
   | 'hf:Qwen/Qwen3.8-27B'
   | 'hf:moonshotai/Kimi-K3'
-  | 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4'
   | 'hf:openai/gpt-oss-120b';
 
 /**

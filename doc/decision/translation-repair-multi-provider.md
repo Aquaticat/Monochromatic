@@ -1094,3 +1094,58 @@ Dated Hyper pricing retains `glm-5.2` for historical spend accounting.
 Wire and modality conformance do not establish translation quality.
 Fresh schema-9 actual-output validation is required before the replacement contributes readiness evidence.
 Historical GLM-5.2 measurements retain their recorded name and do not transfer.
+
+### Nemotron leaves every stage, 2026-08-29
+
+The owner removed `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` from every stage after adjacent
+required-correction reviews contradicted one another:
+it first proposed concrete wording,
+then was sole reviewer rejecting candidate that used it while other eight approved.
+This is direct evidence from role owner removed it from,
+not inference from unrelated writer calibration.
+
+Removal reaches roster identity,
+Synthetic callable catalog,
+whole-roster production stages,
+explicit checker roster,
+and default restoration-benchmark judges.
+Historical artifacts,
+provider observations,
+and dated measurements keep departed id as evidence rather than being rewritten.
+Operational roster narrows from nine models to eight.
+Broad-stage quorum moves from five to four,
+equal to entire Synthetic side.
+A stage not requiring every seat may settle while all four Hyper seats are dark;
+that is degraded evidence and cannot establish readiness.
+
+Checker roster cannot simply shrink to two because `MINIMUM_CHECKER_COUNT` refuses roster below three.
+Kimi-K3 takes departed seat.
+It already participated among added voices in 231-round wide checker comparison where added voices changed zero
+resolution verdicts.
+That establishes compatibility with checker ensemble,
+not independent optimality of replacement seat;
+fresh checker-seat calibration remains open.
+
+GPT-OSS takes departed default restoration-benchmark judge seat because it already serves production checker and
+whole-roster judging roles.
+No benchmark-specific calibration is inferred from that role overlap.
+
+GLM-4.7-Flash remains absent from roster identity,
+callable catalogs,
+and every typed active stage.
+Interrupted schema-9 pass launched immediately before this cull logged zero GLM-4.7-Flash model labels and was stopped
+when roster changed.
+No translation-repair process remained alive afterward.
+That evidence rules it out as caller in interrupted pass,
+but does not identify source or time window of calls observed outside pass log.
+Widened same-day validation,
+review,
+replay,
+and probe-log search found zero GLM-4.7 call labels;
+remaining matches were live provider catalog listings or historical stream-parser test names.
+
+Same catalog read showed `syn:large:text` had moved to GLM-5.3-Flash,
+while current rate-limit documentation names Kimi-K3 as one-request baseline.
+Planning denominator therefore moves to Kimi-K3 input price without admitting any alias to roster.
+Diagnosis and consumer-side guard are recorded in
+`doc/troubleshooting/synthetic-rate-limit-default-drift.md`.

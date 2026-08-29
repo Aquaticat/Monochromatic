@@ -80,7 +80,7 @@ const SHARED_EDITORS = [
 /**
  * Seat only the wide arm adds, which is the variable under test.
  */
-const WIDE_ONLY_EDITOR = 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4';
+const WIDE_ONLY_EDITOR = 'deepseek-v4-pro-0813';
 
 /**
  * Narrow roster.

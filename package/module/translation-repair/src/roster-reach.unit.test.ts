@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  DEFAULT_JUDGE_MODEL_IDS,
   HYPER_ONLY_NAMES_ARE_SERVED,
   HYPER_ONLY_ROSTER_IDS,
   hyperIdFor,
@@ -30,6 +31,14 @@ import {
   syntheticServes,
   visionReachOf,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Models the owner removed from every active stage.
+ */
+const DEPARTED_MODEL_IDS = [
+  'hf:zai-org/GLM-4.7-Flash',
+  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+] as const;
 
 // FIRST, because every describe after this one assumes the roster is served:
 // a label with no catalog row must fail here, by name, before it fails a
@@ -76,10 +85,10 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'SEATS NINE DISTINCT MODELS, five Synthetic serves and four only the second provider does',
+      name: 'SEATS EIGHT DISTINCT MODELS, four Synthetic serves and four only the second provider does',
       fn: async () => {
-        expect(ROSTER_MODEL_IDS.length,).toBe(9,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(9,);
+        expect(ROSTER_MODEL_IDS.length,).toBe(8,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(8,);
       },
     },),
 
@@ -98,11 +107,43 @@ await describe({
     },),
 
     it({
+      name: 'DOES NOT SEAT Nemotron after contradictory adjacent review guidance caused owner removal',
+      fn: async () => {
+        expect(ROSTER_MODEL_IDS.includes(
+          'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4' as never,
+        ),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'REPLACES GLM-5.2 rather than double-seating predecessor and successor',
       fn: async () => {
         expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(true,);
         expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.2' as never,),).toBe(false,);
         expect(ROSTER_MODEL_IDS.includes('glm-5.2' as never,),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'active stage model exclusions',
+  children: [
+    it({
+      name: 'KEEPS owner-removed models out of callable production roster and benchmark defaults',
+      fn: async () => {
+        /**
+         * Every model reachable through whole-roster production stages or
+         * explicit benchmark defaults. Narrow production roles are statically
+         * constrained to same roster type, so a departed literal fails types.
+         */
+        const activeStageModelIds = new Set<string>([
+          ...ROSTER_MODEL_IDS,
+          ...DEFAULT_JUDGE_MODEL_IDS,
+        ],);
+
+        for (const departedModelId of DEPARTED_MODEL_IDS)
+          expect(activeStageModelIds.has(departedModelId,),).toBe(false,);
       },
     },),
   ],
@@ -134,13 +175,10 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS Synthetic-only models as unserved rather than inheriting predecessor wire names',
+      name: 'REPORTS Synthetic-only model as unserved rather than inheriting predecessor wire names',
       fn: async () => {
         expect(hyperIdFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),)
           .toEqual({ served: false, },);
-        expect(hyperIdFor({
-          modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-        },),).toEqual({ served: false, },);
       },
     },),
   ],
@@ -184,9 +222,7 @@ await describe({
     it({
       name: 'REPORTS one provider for a model only that provider serves, on both sides',
       fn: async () => {
-        expect(reachOf({
-          modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-        },),).toEqual({
+        expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           onSynthetic: true,
           onHyper: false,
         },);

@@ -30,7 +30,7 @@ const ROSTER = [
   'minimax-m3',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+  'deepseek-v4-pro-0813',
   'hf:openai/gpt-oss-120b',
 ] as const;
 

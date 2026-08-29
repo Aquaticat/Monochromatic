@@ -63,7 +63,7 @@ const CANDIDATES: readonly Candidate<{ readonly text: string; }>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+      modelId: 'deepseek-v4-flash-0731',
     },
     value: { text: 'The cat slept on the warm flagstones.', },
     rendered: 'The cat slept on the warm flagstones.',
@@ -340,7 +340,7 @@ await describe({
             },);
         },),)
           .toEqual([[
-            ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
+            ['deepseek-v4-flash-0731',],
             [
               'deepseek-v4-pro-0813',
               'minimax-m3',

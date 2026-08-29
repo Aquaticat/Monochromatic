@@ -477,7 +477,7 @@ and reading one as an instruction has cost this package a defect before.
     It used to warn and return a client that spoke to the first provider alone;
     that client offered Charm-Hyper-only seats to a provider that cannot serve them,
     and a calibration settled clean with half its roster dark (`#235`).
-    Current nine-model roster has four Hyper-only seats and can settle at quorum on five Synthetic voices,
+    Current eight-model roster has four Hyper-only seats and can settle at quorum on four Synthetic voices,
     so early refusal prevents degraded run from looking complete.
     There is no one-provider run to fall back to.
     Note the `CHARM` in the middle;
@@ -518,7 +518,41 @@ and the structured-output features this pipeline requires.
 The old `glm-5.2` Charm Hyper route left the active allowlist because it is the superseded roster identity,
 not a fallback for GLM-5.3-Flash.
 Hyper's live catalog still listed `glm-5.2` but no GLM-5.3-Flash spelling on 2026-08-29.
-The roster remains nine models.
+That replacement left the roster at nine models.
+
+Nemotron-3-Super left every active stage and the callable Synthetic catalog on 2026-08-29 at owner's instruction.
+In adjacent required-correction reviews it first proposed concrete wording and then was sole reviewer rejecting that wording.
+The roster now has eight models.
+Broad-stage quorum consequently moves from five to four,
+which equals entire Synthetic side;
+a run with all four Hyper seats dark can reach quorum in stages that do not require every seat.
+Both-key startup refusal prevents missing credentials but not provider becoming unavailable later,
+so any such run remains degraded evidence rather than readiness proof.
+Kimi-K3 takes departed checker seat rather than shrinking below hard floor of three;
+it participated in 231-round wide checker arm where added voices changed zero verdicts,
+but fresh checker-seat calibration remains required before treating new narrow roster as independently optimal.
+GPT-OSS takes departed default restoration-benchmark judge seat because it already checks and judges in production;
+benchmark-specific calibration remains open.
+Historical artifacts and measured narratives retain departed identity.
+
+GLM-4.7-Flash remains blocked from every active stage,
+roster type,
+and callable catalog as it has been since 2026-08-24.
+Interrupted schema-9 run started before Nemotron removal logged no GLM-4.7-Flash model label,
+and no translation-repair process remained alive after run was stopped.
+This establishes interrupted pass did not issue GLM-4.7-Flash calls;
+it does not identify source or time window of calls visible outside package log.
+A widened scan over same-day validation,
+review,
+replay,
+and probe logs found zero GLM-4.7 call labels;
+remaining mentions were provider catalog listings or historical stream-parser test names.
+
+Same live catalog read showed `syn:large:text` now points to GLM-5.3-Flash,
+while current Synthetic rate-limit documentation names Kimi-K3 as one-request baseline.
+Planning denominator now follows Kimi-K3 input price and has GFP coverage;
+live `/quotas` remains authoritative.
+See `doc/troubleshooting/synthetic-rate-limit-default-drift.md`.
 
 No GLM-5.2 quality result or role calibration transfers to GLM-5.3-Flash.
 It enters only catalog-derived broad-roster and image-reading paths;

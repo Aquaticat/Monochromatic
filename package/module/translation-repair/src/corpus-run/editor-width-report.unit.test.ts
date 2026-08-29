@@ -63,7 +63,7 @@ const NARROW: readonly RosterModelId[] = [
  */
 const WIDE: readonly RosterModelId[] = [
   ...NARROW,
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+  'deepseek-v4-pro-0813',
 ];
 
 /**

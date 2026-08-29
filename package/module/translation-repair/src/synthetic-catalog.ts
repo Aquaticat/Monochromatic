@@ -7,7 +7,7 @@ import type {
 // Facts verified live on 2026-08-29 against `GET /openai/v1/models` (prices, context
 // lengths, modalities, feature flags) and https://synthetic.new/rate-limits (weighting
 // rule: requests are scaled by model input price; the baseline is the provider default
-// model, currently GLM-5.2, counting as exactly one request). Weights here are
+// model, currently Kimi-K3, counting as exactly one request). Weights here are
 // planning estimates for routing; live budget truth always comes from `/quotas`.
 
 /**
@@ -46,7 +46,6 @@ export type SyntheticVendorFamily =
   | 'zai'
   | 'qwen'
   | 'moonshot'
-  | 'nvidia'
   | 'openai';
 
 /**
@@ -64,12 +63,11 @@ export type {
  *
  * These are the models the provider offers that this pipeline seats. The models
  * endpoint also lists `syn:large:text`, `syn:large:vision`, `syn:small:text`,
- * and `syn:small:vision`, and those are DELIBERATELY ABSENT here: each is an
- * alias onto a model already listed, which the endpoint states in its own
- * `hugging_face_id` field (`syn:large:text` is GLM-5.2, `syn:large:vision` is
- * Kimi-K3, `syn:small:text` is GLM-4.7-Flash, `syn:small:vision` is
- * Qwen/Qwen3-point-6-27B, spelled out here for the reason the replacement note
- * below gives).
+ * and `syn:small:vision`, and those are DELIBERATELY ABSENT here: each is a
+ * moving alias, which the endpoint states in its `hugging_face_id` field.
+ * Live on 2026-08-29 they point to GLM-5.3-Flash, Kimi-K3, GLM-4.7-Flash,
+ * and Qwen3.8-27B respectively. An alias onto a seated model duplicates its
+ * vote; an alias onto excluded GLM-4.7-Flash bypasses owner's blocklist.
  *
  * TWO REASONS, AND THE SECOND IS THE SERIOUS ONE.
  *
@@ -114,8 +112,14 @@ export type {
  *
  * One id was REMOVED 2026-08-24, `zai-org/GLM-4.7-Flash` (again without the
  * prefix), blocklisted by the owner. `#136` had measured that it should stay,
- * and the owner overruled that on a roster that is now ten models rather than
- * six. It answers normally; nothing here calls it.
+ * and the owner overruled that on a roster that later changed independently.
+ * It answers normally; nothing here calls it.
+ *
+ * One id was REMOVED 2026-08-29,
+ * `nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4`, at the owner's instruction
+ * after adjacent required-correction reviews produced contradictory guidance.
+ * Historical artifacts retain the exact departed identity, but no active
+ * roster or callable catalog row reaches it.
  */
 
 /**
@@ -143,7 +147,7 @@ export type SyntheticModelInfo = {
    * READ FROM THE PROVIDER RATHER THAN ASSUMED. `GET
    * https://api.synthetic.new/openai/v1/models` reports `input_modalities` per
    * model, and the values here are that response as of 2026-08-29: three of the
-   * five Synthetic roster models read images. The provider's other vision
+   * four Synthetic roster models read images. The provider's other vision
    * entries, `syn:large:vision` and `syn:small:vision`, are aliases of two of
    * those same three. The vision sub-roster is now EXACTLY THREE.
    *
@@ -215,15 +219,6 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModel
     promptDollarsPerToken: 0.000003,
     completionDollarsPerToken: 0.000015,
   },
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': {
-    id: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-    readsImages: false,
-    family: 'nvidia',
-    contextLength: 262_144,
-    maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.0000003,
-    completionDollarsPerToken: 0.000001,
-  },
   'hf:openai/gpt-oss-120b': {
     id: 'hf:openai/gpt-oss-120b',
     readsImages: false,
@@ -238,13 +233,13 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModel
 /**
  * Input price of one baseline request against the five-hour limit.
  *
- * DECOUPLED FROM THE ACTIVE ROSTER because Synthetic still documented its
- * retiring GLM-5.2 default at this price on 2026-08-29 when the roster moved to
- * GLM-5.3-Flash. Planning estimates retain the documented denominator without
- * leaving the retired model callable. Recheck this constant when Synthetic
- * changes its documented default. Live `/quotas` readings remain authoritative.
+ * READ FROM CURRENT RATE-LIMIT DOCUMENTATION on 2026-08-29, which names
+ * `moonshotai/Kimi-K3` as default and one call as exactly one request. Earlier
+ * same-day documentation named GLM-5.2 at a different price, so this value is
+ * deliberately separate from roster identity and must move with documented
+ * default. Live `/quotas` readings remain authoritative.
  */
-export const SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN = 0.000001;
+export const SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN = 0.000003;
 
 /**
  * Whether Synthetic serves a roster model at all.

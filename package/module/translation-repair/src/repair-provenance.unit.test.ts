@@ -203,7 +203,7 @@ const CHECKER_READING = {
       wroteTheText: false,
     },
     {
-      modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+      modelId: 'deepseek-v4-pro-0813',
       verdict: 'not-fixed',
       wroteTheText: false,
     },
@@ -240,7 +240,7 @@ const RECHECK_READING = {
       wroteTheText: false,
     },
     {
-      modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+      modelId: 'deepseek-v4-pro-0813',
       verdict: 'fixed',
       wroteTheText: false,
     },

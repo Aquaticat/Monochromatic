@@ -458,7 +458,7 @@ await describe({
 
         try {
           await client.chatText({
-            modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);

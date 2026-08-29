@@ -58,9 +58,12 @@ export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
  * Default restoration-judge roster: three established vendor families kept
  * distinct so no single family decides. GLM-5.3-Flash does not inherit its
  * predecessor's benchmark role without replacement-specific quality evidence.
+ * GPT-OSS replaces departed Nemotron because it already holds production
+ * checker and whole-roster judge roles; benchmark-specific calibration remains
+ * required before treating that replacement as independently established.
  */
 export const DEFAULT_JUDGE_MODEL_IDS: readonly RosterModelId[] = [
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+  'hf:openai/gpt-oss-120b',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ];

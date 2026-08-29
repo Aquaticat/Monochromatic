@@ -49,7 +49,7 @@ const ROSTER = [
  */
 const ELIGIBILITY_ROSTER = [
   ...ROSTER,
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+  'hf:openai/gpt-oss-120b',
 ] as const;
 
 /**

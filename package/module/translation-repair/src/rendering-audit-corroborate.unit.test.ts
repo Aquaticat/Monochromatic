@@ -155,7 +155,7 @@ const TWO_TO_THREE_A = claimOf({
  * Second voice's claim about the same count, quoting a narrower locator.
  */
 const TWO_TO_THREE_B = claimOf({
-  modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+  modelId: 'deepseek-v4-pro-0813',
   category: 'altered-number',
   sourceLocator: '晚上两只猫睡在窗台上',
   sourceFocus: '两',
@@ -306,7 +306,7 @@ await describe({
             candidateFocus: 'eat',
           },),
           claimOf({
-            modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+            modelId: 'deepseek-v4-pro-0813',
             category: 'omission',
             sourceLocator: '她们不吃罐头',
             sourceFocus: '不吃',
@@ -391,7 +391,7 @@ await describe({
             },),
         ).toEqual([
           'hf:Qwen/Qwen3.8-27B',
-          'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+          'deepseek-v4-pro-0813',
         ],);
       },
     },),

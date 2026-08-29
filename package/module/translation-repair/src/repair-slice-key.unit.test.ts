@@ -38,7 +38,7 @@ const MODELS: RepairModels = {
   panelModelIds: ['hf:Qwen/Qwen3.8-27B',],
   editorModelIds: ['hf:openai/gpt-oss-120b',],
   judgeModelIds: ['minimax-m3',],
-  refinerModelIds: ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
+  refinerModelIds: ['deepseek-v4-pro-0813',],
   checkerModelIds: ['hf:Qwen/Qwen3.8-27B',],
 };
 
@@ -120,10 +120,12 @@ await describe({
         // question changed, and bumping it would discard every settled slice in
         // the corpus to record a test fixture edit.
         //
-        // THE SAME CASE MOVED THIS LITERAL ON 2026-08-29 when GLM-5.3-Flash
-        // replaced GLM-5.2 in the fixture roster. Its id is already key input.
+        // THE SAME CASE MOVED THIS LITERAL TWICE ON 2026-08-29. GLM-5.3-Flash
+        // replaced GLM-5.2, then the owner removed Nemotron from every stage
+        // and this fixture replaced it with an active roster id. Both ids are
+        // already key input.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('b5493a0852b930381488e19317aa7e360bb8914c845e1b03c69940bac0d669c4',);
+          .toBe('89e4ebbae8ce112ad9d48ab743b0c428ec9f4bde4981092ecdbe7715496e6009',);
       },
     },),
     it({

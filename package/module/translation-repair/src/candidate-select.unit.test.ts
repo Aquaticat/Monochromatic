@@ -148,7 +148,7 @@ const JUDGES: readonly RosterModelId[] = [
   'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+  'deepseek-v4-pro-0813',
   'hf:openai/gpt-oss-120b',
 ];
 
@@ -313,7 +313,7 @@ await describe({
             'hf:zai-org/GLM-5.3-Flash': 1,
             'hf:moonshotai/Kimi-K3': 1,
             'hf:Qwen/Qwen3.8-27B': 2,
-            'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 2,
+            'deepseek-v4-pro-0813': 2,
             'hf:openai/gpt-oss-120b': 2,
           },
         },);
@@ -350,7 +350,7 @@ await describe({
             'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
-            'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+            'deepseek-v4-pro-0813',
           ],
         },);
         expect(outcome.kind,).toBe('selected',);
@@ -389,7 +389,7 @@ await describe({
         const { outcome, } = await runSelection({
           ballots: {
             'hf:moonshotai/Kimi-K3': 1,
-            'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 0,
+            'deepseek-v4-pro-0813': 0,
             'hf:openai/gpt-oss-120b': 0,
             'hf:zai-org/GLM-5.3-Flash': 0,
             'hf:Qwen/Qwen3.8-27B': 0,
@@ -410,7 +410,7 @@ await describe({
         const { outcome, } = await runSelection({
           ballots: {
             'hf:moonshotai/Kimi-K3': 1,
-            'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 2,
+            'deepseek-v4-pro-0813': 2,
             'hf:openai/gpt-oss-120b': 0,
           },
         },);
@@ -427,7 +427,7 @@ await describe({
         const { outcome, } = await runSelection({
           ballots: {
             'hf:moonshotai/Kimi-K3': 0,
-            'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 0,
+            'deepseek-v4-pro-0813': 0,
             'hf:openai/gpt-oss-120b': 0,
           },
         },);
@@ -444,7 +444,7 @@ await describe({
         const { outcome, } = await runSelection({
           ballots: {
             'hf:moonshotai/Kimi-K3': 2,
-            'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 2,
+            'deepseek-v4-pro-0813': 2,
             'hf:openai/gpt-oss-120b': 9,
           },
         },);
@@ -673,7 +673,7 @@ await describe({
           client: scriptedJudges({
             ballots: {
               'hf:moonshotai/Kimi-K3': 1,
-              'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 2,
+              'deepseek-v4-pro-0813': 2,
               'hf:openai/gpt-oss-120b': 0,
             },
             counter,

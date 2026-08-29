@@ -215,7 +215,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
+            refinerModelIds: ['deepseek-v4-pro-0813',],
             judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
             checkerModelIds: ['hf:moonshotai/Kimi-K3',],
           },),
@@ -233,7 +233,7 @@ await describe({
           refineRunShape({
             refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
             judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
-            checkerModelIds: ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
+            checkerModelIds: ['deepseek-v4-pro-0813',],
           },),
         ).not.toBe(RUN_SHAPE,);
       },

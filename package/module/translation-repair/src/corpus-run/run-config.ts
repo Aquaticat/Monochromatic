@@ -9,7 +9,11 @@ import {
   CORPUS_COMMIT_SHA,
   type CorpusPin,
 } from '../corpus-source.ts';
-import type { RepairModels, } from '../repair-contract.ts';
+import {
+  assertCheckerIndependence,
+  assertCheckerQuorumReachable,
+  type RepairModels,
+} from '../repair-contract.ts';
 import type { TranslateModels, } from '../translate-document-contract.ts';
 import {
   STREAM_FIRST_BYTE_MS,
@@ -86,15 +90,15 @@ const HERE = import.meta.dirname;
  * stale the first time either catalog moves, and it goes stale silently: a
  * missing model is a seat nobody notices is empty.
  *
- * NINE MODELS NOW. `qwen3.8-max` was culled on 2026-08-28 at owner's
- * instruction because its metered cost was disproportionate and exceptionally
- * expensive. Remaining seats retain full weight.
+ * EIGHT MODELS NOW. `qwen3.8-max` was culled on 2026-08-28 for disproportionate
+ * metered cost, then Nemotron left every stage on 2026-08-29 after contradictory
+ * adjacent required-correction reviews. Remaining seats retain full weight.
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
 
 
 /**
- * Role roster for a corpus run: all NINE critique and adjudicate, THREE edit
+ * Role roster for a corpus run: all EIGHT critique and adjudicate, THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
  *
@@ -289,12 +293,21 @@ export const RUN_MODELS: RepairModels = {
   //
   // THE NULL IS ABOUT WIDTH RATHER THAN ABOUT SILENCE, which is the only way a
   // null settles anything here. The six disagreed on 14 rounds, and on 10 of
-  // those a writer answered something no checker of these three said, so the
-  // extra ballots carried real information. The arithmetic is what absorbs it:
-  // a checker judging text it helped write counts half, so three writers bring
-  // 1.5 against 3.0 and cannot overturn a unanimous three. They could only
-  // reach a split three, which happened on 4 rounds, and on none of those did
-  // all three writers dissent together.
+  // those a writer answered something no checker of the narrow three said, so
+  // the extra ballots carried real information. The arithmetic absorbed it:
+  // a checker judging text it helped write counted half, so three writers
+  // brought 1.5 against 3.0 and could not overturn a unanimous three. They
+  // could only reach a split three, which happened on 4 rounds, and on none of
+  // those did all three writers dissent together.
+  //
+  // NEMOTRON LEFT EVERY ROLE on 2026-08-29 at the owner's instruction after it
+  // contradicted its own adjacent required-correction guidance. Kimi-K3 takes
+  // that checker seat rather than shrinking below the hard floor of three. It
+  // was already one of the added checker voices in all 231 measured wide-arm
+  // rounds, where added voices changed no resolution verdict. That evidence is
+  // about ensemble effect rather than individual checker ranking; a fresh
+  // checker-seat calibration remains required before calling the new narrow
+  // roster independently optimal.
   //
   // NO LONGER DISJOINT, and that is the owner's decision of 2026-08-24: enable
   // the discount and let every model do both. `#187` found the checker-side
@@ -304,15 +317,29 @@ export const RUN_MODELS: RepairModels = {
   // WHAT MAKES THAT SAFE is measured rather than assumed, and it is the
   // paragraph above: a checker judging text it helped write counts half, so
   // three writers bring 1.5 against 3.0 and cannot overturn a unanimous three.
-  // The overlap is one model, not three, so the standing arithmetic bounds it
-  // with room to spare.
+  // The replacement makes two checker ids also producer ids, but only actual
+  // authorship of text under review receives half weight. If both helped write
+  // one refined result, their combined weight is 1.0, equal to disinterested
+  // GPT-OSS alone; they cannot resolve an issue against that independent vote.
   checkerSelfCertificationPermitted: true,
   checkerModelIds: [
     'hf:Qwen/Qwen3.8-27B',
-    'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+    'hf:moonshotai/Kimi-K3',
     'hf:openai/gpt-oss-120b',
   ],
 };
+
+// Refuse invalid production role composition at configuration load rather than
+// after a live corpus pass has already paid for critics, panels, and editors.
+assertCheckerIndependence({
+  editorModelIds: RUN_MODELS.editorModelIds,
+  refinerModelIds: RUN_MODELS.refinerModelIds ?? [],
+  checkerModelIds: RUN_MODELS.checkerModelIds,
+  selfCertificationPermitted: RUN_MODELS.checkerSelfCertificationPermitted ?? false,
+},);
+assertCheckerQuorumReachable({
+  checkerModelIds: RUN_MODELS.checkerModelIds,
+},);
 
 /**
  * Roster the translate lane runs under during a corpus pass.
@@ -359,8 +386,8 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  * ballot for its own work counts half, so if those two also translated then no
  * disinterested judge would remain on any slice carrying a picture. Asking them
  * only to READ turns the picture into text, and the whole roster translates
- * and judges from that text with its weights untouched. Four of the nine read
- * images after the 2026-08-28 roster cull; the stage
+ * and judges from that text with its weights untouched. Four of the eight read
+ * images after the 2026-08-29 Nemotron removal; the stage
  * stays separate because the reasoning above is about weights, not about how
  * many readers there happen to be.
  *
@@ -594,11 +621,11 @@ const l = tagged({ tag: 'translation-repair', },);
  * BOTH KEYS ARE REQUIRED, AND A MISSING SECOND ONE IS A REFUSAL. This used to
  * warn and hand back the first provider's client alone, on the reasoning that
  * refusing would stop a run the first provider could serve by itself. It
- * cannot safely preserve configured run: four of the nine roster seats are
+ * cannot safely preserve configured run: four of the eight roster seats are
  * Charm Hyper endpoint labels that Synthetic does not host, so one-provider
  * client would offer them to a provider that answers 400 to every call. An
  * earlier four-slice calibration settled with half its roster dark (`#235`).
- * Current nine-seat quorum could still settle on five Synthetic voices, which
+ * Current eight-seat quorum could still settle on four Synthetic voices, which
  * makes early refusal more important: degraded run would look complete. The
  * time to refuse is before first call, not after last.
  *
