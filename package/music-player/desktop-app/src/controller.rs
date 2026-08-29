@@ -1366,7 +1366,7 @@ impl Controller {
                         // this.queue.playIndex(idx); this.emitReconciled();
                         // ```
                         Some(idx) => {
-                            self.queue.play_index(idx);
+                            self.queue.restore_index_preserving_page(idx);
                             self.emit_reconciled();
                         }
                         // What:     `None => { ... }`. The Selected Track is gone (or there was

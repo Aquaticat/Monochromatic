@@ -171,6 +171,19 @@ pub struct Page {
     pub entries: Vec<PageEntry>,
 }
 
+/// Returns a stable page identity that distinguishes folder and root-letter pages.
+pub fn page_identity(page: &Page) -> String {
+    let folder_prefix = format!("{}/", page.label);
+    let is_folder = page
+        .entries
+        .first()
+        .is_some_and(|entry| return entry.name.starts_with(&folder_prefix));
+    if is_folder {
+        return format!("folder:{}", page.label);
+    }
+    return format!("root:{}", page.label);
+}
+
 /// What:     `fn letter_key(name: &str) -> (u8, String)`. The page key for a root-level
 ///           track (one with no folder): a `(group, label)` pair using the first letter.
 ///           `(u8, String)` is a TUPLE (a fixed pair of two types). Private helper.

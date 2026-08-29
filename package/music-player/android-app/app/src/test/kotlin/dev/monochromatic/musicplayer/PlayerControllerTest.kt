@@ -754,6 +754,31 @@ class PlayerControllerTest {
         assertEquals("Charon", controller.uiState.pageLabels[controller.uiState.selectedPage])
     }
 
+    /** Confirms duplicate displayed labels retain folder versus root page identity. */
+    @Test
+    fun duplicatePageLabelsKeepSelectedPageKind() {
+        val controller = PlayerController(FakeAudioEngine())
+        controller.applySettings(Session())
+        controller.beginLoad()
+        controller.reconcileLibrary(
+            listOf(
+                track("u-folder", "A/folder.mp3"),
+                track("u-root", "Apple.mp3"),
+            ),
+        )
+        controller.selectPage(1)
+        assertEquals("Apple.mp3", controller.uiState.pageItems.single().name)
+        controller.reconcileLibrary(
+            listOf(
+                track("u-zero", "0/zero.mp3"),
+                track("u-folder", "A/folder.mp3"),
+                track("u-root", "Apple.mp3"),
+            ),
+        )
+        assertEquals(2, controller.uiState.selectedPage)
+        assertEquals("Apple.mp3", controller.uiState.pageItems.single().name)
+    }
+
     /** Confirms changing mode keeps the loaded track, position, and playback state. */
     @Test
     fun playbackModeChangeDoesNotReloadOrMoveAudio() {

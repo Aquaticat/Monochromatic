@@ -424,6 +424,43 @@ fn displayed_page_scope_keeps_current_until_manual_transport() {
     assert_eq!(q.prev(), Some(3));
 }
 
+/// Displayed-page identity survives a library replacement by label.
+#[test]
+fn displayed_page_scope_survives_track_replacement() {
+    let mut q = Queue::with_rng_seed(13);
+    q.set_tracks(track_paths(&["A/1.flac", "B/2.flac"]));
+    q.set_page_scope(vec![1]);
+    q.set_tracks(track_paths(&["AA/0.flac", "A/1.flac", "B/2.flac"]));
+    assert_eq!(q.restore_index_preserving_page(1), Some(1));
+    assert_eq!(q.current_index(), Some(1));
+    assert_eq!(q.advance(false), Some(2));
+}
+
+/// Duplicate displayed labels retain distinct folder versus root-letter identities.
+#[test]
+fn duplicate_page_labels_preserve_root_page_scope() {
+    let mut q = Queue::with_rng_seed(29);
+    q.set_tracks(track_paths(&["A/folder.flac", "Apple.flac"]));
+    q.set_page_scope(vec![1]);
+    q.set_tracks(track_paths(&["0/zero.flac", "A/folder.flac", "Apple.flac"]));
+    assert_eq!(q.restore_index_preserving_page(1), Some(1));
+    assert_eq!(q.advance(false), Some(2));
+}
+
+/// A page change preserves prior Shuffle page history for Previous and Next.
+#[test]
+fn shuffle_page_change_preserves_history() {
+    let mut q = Queue::with_rng_seed(19);
+    q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac", "B/4.flac"]));
+    q.set_page_scope(vec![0, 1]);
+    q.set_playback_mode(PlaybackMode::ShufflePage);
+    assert_eq!(q.advance(false), Some(1));
+    q.set_page_scope(vec![2, 3]);
+    assert_eq!(q.prev(), Some(0));
+    assert_eq!(q.advance(false), Some(1));
+    assert!([2, 3].contains(&q.advance(false).unwrap()));
+}
+
 /// Shuffle page uses the displayed page and retains the current track on selection.
 #[test]
 fn shuffle_page_uses_displayed_page_and_keeps_current() {

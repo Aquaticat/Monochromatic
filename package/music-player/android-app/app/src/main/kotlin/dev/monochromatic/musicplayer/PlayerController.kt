@@ -126,6 +126,9 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 // ```
 import dev.monochromatic.musicplayer.core.pageOfIndex
 
+/** Stable page identity distinguishes duplicate displayed labels. */
+import dev.monochromatic.musicplayer.core.pageIdentity
+
 // What:     `import dev.monochromatic.musicplayer.core.paginate` imports the
 //           `paginate(names)` FUNCTION that groups display strings into `Page`s.
 // Why:      `openLibrary` paginates the queue's display paths.
@@ -184,6 +187,10 @@ class PlayerController(private val engine: AudioEngine) {
      * source and use.
      */
     private var pages: List<Page> = emptyList()
+
+    /** Stable identity of the page currently displayed by the UI. */
+    private var selectedPageIdentity: String? = null
+
     // What:     `private var loadedUri: String? = null` declares a private, reassignable
     //           field of NULLABLE `String?` (the trailing `?` = "a `String` OR null"),
     //           initialised `null`.
@@ -1343,6 +1350,7 @@ class PlayerController(private val engine: AudioEngine) {
         // }
         // ```
         if (page in pages.indices) {
+            selectedPageIdentity = pageIdentity(pages[page])
             queue.setPageScope(pageIndices(page))
             // What:     `uiState = uiState.copy(selectedPage = page, pageItems = pages[page].entries)`
             //           reassigns `uiState` to a near-duplicate built by `copy(...)`. `.copy`
@@ -1765,7 +1773,7 @@ class PlayerController(private val engine: AudioEngine) {
          * Defines previous label value for this music-player component; the TypeScript-oriented notes above
          * explain its source and use.
          */
-        val previousLabel: String? = uiState.pageLabels.getOrNull(uiState.selectedPage)
+        val previousIdentity: String? = selectedPageIdentity
         // What:     `val byLabel: Int = previousLabel?.let { label -> pages.indexOfFirst { it.label == label } } ?: -1`
         //           finds the new index of that label, or -1.
         //           - `previousLabel?.let { label -> ... }` runs the block only when the label is
@@ -1786,7 +1794,9 @@ class PlayerController(private val engine: AudioEngine) {
          * Defines by label value for this music-player component; the TypeScript-oriented notes above explain
          * its source and use.
          */
-        val byLabel: Int = previousLabel?.let { label -> pages.indexOfFirst { it.label == label } } ?: -1
+        val byIdentity: Int = previousIdentity
+            ?.let { identity -> pages.indexOfFirst { page -> pageIdentity(page) == identity } }
+            ?: -1
         // What:     `if (byLabel >= 0) { return byLabel }` returns the resolved index early when the
         //           label was found.
         // Why:      The viewed tab still exists; keep showing it at its new position.
@@ -1795,8 +1805,8 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // if (byLabel >= 0) return byLabel;
         // ```
-        if (byLabel >= 0) {
-            return byLabel
+        if (byIdentity >= 0) {
+            return byIdentity
         }
         // What:     `return uiState.selectedPage.coerceIn(0, maxOf(0, pages.size - 1))` is the
         //           fallback. `coerceIn(min, max)` CLAMPS the old numeric index into range;
@@ -1887,6 +1897,7 @@ class PlayerController(private val engine: AudioEngine) {
             // ```
             resolveViewedPage()
         }
+        selectedPageIdentity = pages.getOrNull(selected)?.let { page -> pageIdentity(page) }
         queue.setPageScope(pageIndices(selected))
         // What:     `uiState = PlayerUiState( ... )` reassigns `uiState` to a brand-new
         //           snapshot built with NAMED constructor arguments (the assignment goes

@@ -317,7 +317,7 @@ use slint::{ComponentHandle, Model, SharedString, VecModel};
 /// ```
 use ui_page::{set_now_playing, set_queue_model, PageNav};
 /// Playback-mode conversion and displayed-page scope helpers.
-use ui_playback::{int_to_playback_mode, page_scope, playback_mode_to_int};
+use ui_playback::{int_to_playback_mode, kept_page, page_scope, playback_mode_to_int};
 
 /// What:     `fn format_time(secs: f64) -> String`. Format seconds as "m:ss".
 ///           `f64` is a 64-bit float (sibling: `f32`); `String` is an owned heap
@@ -402,6 +402,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // const pages = pagination.paginate(names);
     // ```
     let pages = pagination::paginate(&names);
+    let kept_page = kept_page(app, &pages);
 
     // What:     `let labels: Vec<SharedString> = pages.iter().map(|page| SharedString::from(page.label.as_str())).collect();`.
     //           `.iter()` borrows each `page`; the closure takes its `label` (a
@@ -459,7 +460,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
         // ```ts
         // if (target.kind === "keep") return app.selectedPage;
         // ```
-        PageNav::Keep => app.get_selected_page(),
+        PageNav::Keep => kept_page,
         // What:     `PageNav::Follow => { ... }`. The follow arm; its `{ ... }` block computes
         //           the page to follow the current track.
         // Why:      Keep the playing row visible after a track change.
@@ -603,6 +604,8 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // app.pageItems = items;
     // ```
     app.set_page_items(Rc::new(VecModel::from(items)).into());
+    let selected_page_key = pages.get(clamped as usize).map(pagination::page_identity).unwrap_or_default();
+    app.set_selected_page_key(selected_page_key.into());
     // What:     `app.set_selected_page(clamped);`. Set the `selected-page` property
     //           to mark which tab is active.
     // Why:      Highlight the visible tab.

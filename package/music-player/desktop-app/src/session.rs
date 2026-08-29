@@ -104,7 +104,7 @@ struct StoredSession {
     position_secs: f64,
     /// Current output gain.
     volume: f32,
-    /// Current explicit wire text. Unknown text still counts as a current field.
+    /// Current wire text when it is a string.
     playback_mode: Option<String>,
     /// Former shuffle enum text, used only when `playback_mode` is absent.
     shuffle: Option<String>,
@@ -149,9 +149,9 @@ impl Default for Session {
 /// Loads, migrates, and saves sessions.
 impl Session {
     /// Converts permissive input into current state and reports whether to rewrite.
-    fn from_stored(stored: StoredSession) -> (Session, bool) {
+    fn from_stored(stored: StoredSession, has_current_mode: bool) -> (Session, bool) {
         let should_rewrite =
-            stored.playback_mode.is_none() || stored.shuffle.is_some() || stored.repeat_track.is_some();
+            !has_current_mode || stored.shuffle.is_some() || stored.repeat_track.is_some();
         let current_mode = stored.playback_mode.as_deref();
         let playback_mode = if current_mode == Some("repeat") {
             PlaybackMode::Repeat
@@ -159,7 +159,7 @@ impl Session {
             PlaybackMode::ShufflePage
         } else if current_mode == Some("shuffle_all") {
             PlaybackMode::ShuffleAll
-        } else if current_mode.is_some() {
+        } else if has_current_mode {
             PlaybackMode::InOrder
         } else if stored.repeat_track == Some(true) {
             PlaybackMode::Repeat
@@ -183,11 +183,21 @@ impl Session {
         );
     }
 
+    /// Parses permissive input while preserving whether the current key was present.
+    fn parse_stored(text: &str) -> Result<(StoredSession, bool), serde_json::Error> {
+        let value: serde_json::Value = serde_json::from_str(text)?;
+        let has_current_mode = value
+            .as_object()
+            .is_some_and(|object| return object.contains_key("playback_mode"));
+        let stored: StoredSession = serde_json::from_value(value)?;
+        return Ok((stored, has_current_mode));
+    }
+
     /// Parses current or former JSON without exposing migration fields.
     #[cfg(test)]
     fn from_json(text: &str) -> Result<Session, serde_json::Error> {
-        let stored: StoredSession = serde_json::from_str(text)?;
-        return Ok(Session::from_stored(stored).0);
+        let (stored, has_current_mode) = Session::parse_stored(text)?;
+        return Ok(Session::from_stored(stored, has_current_mode).0);
     }
 
     /// Reads the session file, returning defaults after any path, I/O, or parse failure.
@@ -198,14 +208,12 @@ impl Session {
         let Ok(text) = std::fs::read_to_string(&path) else {
             return Session::default();
         };
-        let Ok(stored) = serde_json::from_str::<StoredSession>(&text) else {
+        let Ok((stored, has_current_mode)) = Session::parse_stored(&text) else {
             return Session::default();
         };
-        let (session, should_rewrite) = Session::from_stored(stored);
-        if should_rewrite {
-            if let Err(error) = session.save() {
-                tracing::warn!(?error, "failed to rewrite migrated playback session");
-            }
+        let (session, should_rewrite) = Session::from_stored(stored, has_current_mode);
+        if should_rewrite && let Err(error) = session.save() {
+            tracing::warn!(?error, "failed to rewrite migrated playback session");
         }
         return session;
     }
@@ -225,7 +233,7 @@ impl Session {
 
 /// Resolves the app-private session JSON path.
 fn session_path() -> Option<PathBuf> {
-    return identity::config_dir().map(|directory| directory.join("session.json"));
+    return identity::config_dir().map(|directory| return directory.join("session.json"));
 }
 
 /// Session persistence tests.

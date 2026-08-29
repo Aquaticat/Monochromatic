@@ -1379,6 +1379,15 @@ component PlaybackModeGroup inherits Rectangle {
     accessible-role: radio-group;
     accessible-label: "When this track ends";
     accessible-item-count: 4;
+    accessible-action-increment => {
+        mode-scroll.viewport-x = max(
+            mode-scroll.width - mode-scroll.viewport-width,
+            mode-scroll.viewport-x - mode-scroll.width,
+        );
+    }
+    accessible-action-decrement => {
+        mode-scroll.viewport-x = min(0px, mode-scroll.viewport-x + mode-scroll.width);
+    }
 
     mode-scroll := Flickable {
         width: parent.width;
@@ -1484,6 +1493,17 @@ component TransportButtonGroup inherits Rectangle {
     callback next();
     height: 48px;
     horizontal-stretch: 1;
+    accessible-role: groupbox;
+    accessible-label: "Transport";
+    accessible-action-increment => {
+        transport-scroll.viewport-x = max(
+            transport-scroll.width - transport-scroll.viewport-width,
+            transport-scroll.viewport-x - transport-scroll.width,
+        );
+    }
+    accessible-action-decrement => {
+        transport-scroll.viewport-x = min(0px, transport-scroll.viewport-x + transport-scroll.width);
+    }
 
     transport-scroll := Flickable {
         width: parent.width;
@@ -1577,6 +1597,8 @@ export component AppWindow inherits Window {
     // `page-items` are only the selected page's tracks.
     in property <[string]> page-labels: [];
     in property <int> selected-page: 0;
+    // Stable non-displayed identity distinguishes folder A from root-letter A.
+    in property <string> selected-page-key: "";
     in property <[PageItem]> page-items: [];
     // Page selector style: 0 = radio controls, 1 = multi-row MD1 tabs,
     // 2 = the previous rounded buttons, 3 = segmented buttons,

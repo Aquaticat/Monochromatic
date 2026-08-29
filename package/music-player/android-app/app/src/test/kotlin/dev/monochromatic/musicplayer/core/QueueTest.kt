@@ -2127,6 +2127,41 @@ class QueueTest {
         assertEquals(3, q.prev())
     }
 
+    /** Verifies displayed-page identity survives a library replacement by label. */
+    @Test
+    fun displayedPageScopeSurvivesTrackReplacement() {
+        val q = Queue.withRngSeed(13)
+        q.setTracks(trackPaths("A/1.flac", "B/2.flac"))
+        q.setPageScope(listOf(1))
+        q.setTracks(trackPaths("AA/0.flac", "A/1.flac", "B/2.flac"))
+        assertEquals(0, q.currentIndex())
+        assertEquals(2, q.advance(false))
+    }
+
+    /** Verifies duplicate labels retain root-letter rather than folder page scope. */
+    @Test
+    fun duplicatePageLabelsPreserveRootPageScope() {
+        val q = Queue.withRngSeed(31)
+        q.setTracks(trackPaths("A/folder.flac", "Apple.flac"))
+        q.setPageScope(listOf(1))
+        q.setTracks(trackPaths("0/zero.flac", "A/folder.flac", "Apple.flac"))
+        assertEquals(2, q.advance(false))
+    }
+
+    /** Verifies a page change preserves prior Shuffle page history for Prev and Next. */
+    @Test
+    fun shufflePageChangePreservesHistory() {
+        val q = Queue.withRngSeed(19)
+        q.setTracks(trackPaths("A/1.flac", "A/2.flac", "B/3.flac", "B/4.flac"))
+        q.setPageScope(listOf(0, 1))
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE)
+        assertEquals(1, q.advance(false))
+        q.setPageScope(listOf(2, 3))
+        assertEquals(0, q.prev())
+        assertEquals(1, q.advance(false))
+        assertTrue(q.advance(false) in setOf(2, 3))
+    }
+
     /** Verifies Shuffle page draws only from the displayed page after a mode change. */
     @Test
     fun shufflePageUsesDisplayedPageAndKeepsCurrent() {

@@ -530,6 +530,16 @@ class Queue private constructor(private val rng: Random) {
      * its call shape and effects.
      */
     fun setTracks(newTracks: List<String>) {
+        /** Pages derived from the prior track set. */
+        val previousPages: List<Page> = paginate(displayPaths())
+        /** Prior displayed page position, or null. */
+        val previousPage: Int? = pageScope.firstOrNull()?.let { previousIndex ->
+            pageOfIndex(previousPages, previousIndex)
+        }
+        /** Stable prior page identity, or null. */
+        val previousPageIdentity: String? = previousPage?.let { page ->
+            pageIdentity(previousPages[page])
+        }
         // What:     `tracks = newTracks` reassigns the `var` field to the new list.
         //           Plain assignment; no special punctuation.
         // Why:      Adopt the new track list.
@@ -539,8 +549,13 @@ class Queue private constructor(private val rng: Random) {
         // this.tracks = newTracks;
         // ```
         tracks = newTracks
-        // A replacement library invalidates load-order indices from the prior page.
-        pageScope = emptyList()
+        /** Rebuilt pages for resolving the retained displayed page. */
+        val rebuiltPages: List<Page> = paginate(displayPaths())
+        /** Identity match, or numeric fallback when prior page was removed. */
+        val rebuiltPage: Page? = rebuiltPages
+            .firstOrNull { page -> pageIdentity(page) == previousPageIdentity }
+            ?: previousPage?.let { page -> rebuiltPages.getOrNull(minOf(page, rebuiltPages.size - 1)) }
+        pageScope = rebuiltPage?.entries?.map { entry -> entry.index } ?: emptyList()
         // What:     `rebuildScopeOrder(0)` calls the private helper with the literal
         //           anchor `0`. Note `0` is a plain non-null `Int` here, which the
         //           helper accepts as its `Int?` parameter (a non-null value is a
@@ -615,7 +630,7 @@ class Queue private constructor(private val rng: Random) {
         val valid: List<Int> = indices.filter { index -> index in tracks.indices }
         if (valid == pageScope) return
         pageScope = valid
-        if (mode == PlaybackMode.SHUFFLE_ALL) return
+        if (mode == PlaybackMode.SHUFFLE_PAGE || mode == PlaybackMode.SHUFFLE_ALL) return
         /** Track retained while future transport adopts the new page. */
         val current: Int? = currentIndex()
         rebuildScopeOrder(current)

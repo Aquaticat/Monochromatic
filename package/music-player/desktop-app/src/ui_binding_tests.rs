@@ -16,7 +16,12 @@
 // What:     Testing backend initialization, mock-time control, and element driver.
 // Why:      `init_no_event_loop` needs no window server; `ElementHandle` drives real
 //           generated UI, while mock time triggers the post-layout LED report timer.
-use i_slint_backend_testing::{init_no_event_loop, mock_elapsed_time, ElementHandle};
+use i_slint_backend_testing::{
+    init_no_event_loop,
+    mock_elapsed_time,
+    AccessibleRole,
+    ElementHandle,
+};
 
 // What:     Slint handles and model types expose generated globals and page labels.
 // Why:      LED lifecycle guard must instantiate real generated UI and inspect final path.
@@ -188,6 +193,18 @@ fn playback_groups_follow_mode_page_and_transport_state() {
             .accessible_label()
             .is_none_or(|label| !label.contains("<currentPage>"))
     }));
+    let mode_group = ElementHandle::find_by_element_type_name(&app, "PlaybackModeGroup")
+        .next()
+        .expect("playback mode group exists");
+    mode_group.invoke_accessible_increment_action();
+    let revealed_mode_buttons = ElementHandle::find_by_element_type_name(&app, "PlaybackModeButton")
+        .collect::<Vec<_>>();
+    let final_mode = revealed_mode_buttons.last().expect("Shuffle all mode exists");
+    assert!(
+        final_mode.absolute_position().x + final_mode.size().width
+            <= mode_group.absolute_position().x + mode_group.size().width,
+        "accessibility increment reveals the final playback action",
+    );
 
     let transport = ElementHandle::find_by_element_type_name(&app, "TransportGroupButton")
         .collect::<Vec<_>>();
@@ -202,6 +219,84 @@ fn playback_groups_follow_mode_page_and_transport_state() {
     let playing_transport = ElementHandle::find_by_element_type_name(&app, "TransportGroupButton")
         .collect::<Vec<_>>();
     assert_eq!(playing_transport[1].accessible_label().as_deref(), Some("Pause"));
+
+    let transport_group = ElementHandle::find_by_element_type_name(&app, "TransportButtonGroup")
+        .next()
+        .expect("transport group exists");
+    assert_eq!(transport_group.accessible_label().as_deref(), Some("Transport"));
+    assert_eq!(transport_group.accessible_role(), Some(AccessibleRole::Groupbox));
+    app.set_base_font_size(100.0);
+    transport_group.invoke_accessible_increment_action();
+    let enlarged_transport = ElementHandle::find_by_element_type_name(&app, "TransportGroupButton")
+        .collect::<Vec<_>>();
+    let final_transport = enlarged_transport.last().expect("Next action exists");
+    assert!(
+        final_transport.absolute_position().x + final_transport.size().width
+            <= transport_group.absolute_position().x + transport_group.size().width,
+        "accessibility increment reveals the final transport action",
+    );
+    transport_group.invoke_accessible_decrement_action();
+}
+
+/// Page reconciliation keeps the displayed page by label and clamps only when removed.
+#[test]
+fn reconciled_pages_keep_displayed_identity() {
+    setup();
+    let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
+    crate::ui_page::set_queue_model(
+        &app,
+        &["A/1.flac".to_string(), "B/2.flac".to_string()],
+    );
+    crate::refresh_page(&app, crate::ui_page::PageNav::Show(1));
+    assert_eq!(app.get_selected_page(), 1);
+    assert_eq!(app.get_page_labels().row_data(1).as_deref(), Some("B"));
+
+    crate::ui_page::set_queue_model(
+        &app,
+        &[
+            "AA/0.flac".to_string(),
+            "A/1.flac".to_string(),
+            "B/2.flac".to_string(),
+        ],
+    );
+    crate::refresh_page(&app, crate::ui_page::PageNav::Keep);
+    assert_eq!(app.get_selected_page(), 2);
+    assert_eq!(app.get_page_labels().row_data(2).as_deref(), Some("B"));
+
+    crate::ui_page::set_queue_model(
+        &app,
+        &["AA/0.flac".to_string(), "A/1.flac".to_string()],
+    );
+    crate::refresh_page(&app, crate::ui_page::PageNav::Keep);
+    assert_eq!(app.get_selected_page(), 1);
+    assert_eq!(app.get_page_labels().row_data(1).as_deref(), Some("AA"));
+}
+
+/// Duplicate displayed labels preserve root-letter versus folder page identity.
+#[test]
+fn reconciled_duplicate_labels_keep_page_kind() {
+    setup();
+    let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
+    crate::ui_page::set_queue_model(
+        &app,
+        &["A/folder.flac".to_string(), "Apple.flac".to_string()],
+    );
+    crate::refresh_page(&app, crate::ui_page::PageNav::Show(1));
+    assert_eq!(app.get_page_labels().row_data(0).as_deref(), Some("A"));
+    assert_eq!(app.get_page_labels().row_data(1).as_deref(), Some("A"));
+    assert_eq!(app.get_selected_page_key().as_str(), "root:A");
+
+    crate::ui_page::set_queue_model(
+        &app,
+        &[
+            "0/zero.flac".to_string(),
+            "A/folder.flac".to_string(),
+            "Apple.flac".to_string(),
+        ],
+    );
+    crate::refresh_page(&app, crate::ui_page::PageNav::Keep);
+    assert_eq!(app.get_selected_page(), 2);
+    assert_eq!(app.get_selected_page_key().as_str(), "root:A");
 }
 
 // What:     `led_backplate_fills_width_and_rows_track_resize` drives measured LED layouts.

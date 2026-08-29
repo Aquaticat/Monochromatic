@@ -55,9 +55,28 @@ pub(crate) fn int_to_playback_mode(value: i32) -> PlaybackMode {
     return PlaybackMode::InOrder;
 }
 
+/// Resolves a reconciled page by prior label, falling back to its prior index.
+pub(crate) fn kept_page(app: &AppWindow, pages: &[music_player::pagination::Page]) -> i32 {
+    let previous_page = app.get_selected_page();
+    if previous_page < 0 {
+        return previous_page;
+    }
+    let previous_identity = app.get_selected_page_key();
+    return pages
+        .iter()
+        .position(|page| {
+            return music_player::pagination::page_identity(page) == previous_identity.as_str();
+        })
+        .map_or(previous_page, |page| return page as i32);
+}
+
 /// Returns load-order indices belonging to one displayed page.
 pub(crate) fn page_scope(app: &AppWindow, page: i32) -> Vec<usize> {
-    let names: Vec<String> = app.get_queue().iter().map(|name| name.to_string()).collect();
+    let names: Vec<String> = app
+        .get_queue()
+        .iter()
+        .map(|name| return name.to_string())
+        .collect();
     let pages = music_player::pagination::paginate(&names);
     if page < 0 {
         return Vec::new();
@@ -65,5 +84,5 @@ pub(crate) fn page_scope(app: &AppWindow, page: i32) -> Vec<usize> {
     let Some(selected) = pages.get(page as usize) else {
         return Vec::new();
     };
-    return selected.entries.iter().map(|entry| entry.index).collect();
+    return selected.entries.iter().map(|entry| return entry.index).collect();
 }

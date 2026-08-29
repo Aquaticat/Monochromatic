@@ -944,6 +944,24 @@ fun pageOfIndex(pages: List<Page>, index: Int): Int? {
     return if (position < 0) null else position
 }
 
+// What:     `fun pageIdentity(page: Page): String` prefixes the displayed label
+//           with its folder or root-page kind.
+// Why:      Folder page `A` and root-letter page `A` need distinct identities while
+//           retaining the same displayed text.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function pageIdentity(page: Page): string { /* kind plus label */ }
+// ```
+/** Returns stable page identity distinct from its potentially duplicated label. */
+fun pageIdentity(page: Page): String {
+    /** Folder prefix that distinguishes folder entries from root-level names. */
+    val folderPrefix: String = "${page.label}/"
+    /** Whether first entry proves this is a folder page. */
+    val folderPage: Boolean = page.entries.firstOrNull()?.name?.startsWith(folderPrefix) == true
+    return if (folderPage) "folder:${page.label}" else "root:${page.label}"
+}
+
 // What:     `fun rowDisplay(label: String, name: String): String { ... }` declares a PUBLIC
 //           function (no visibility keyword means `public`). Params: `label` is a page's tab
 //           caption and `name` is one of that page's track display strings; both are `String`

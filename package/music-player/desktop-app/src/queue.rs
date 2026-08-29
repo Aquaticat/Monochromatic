@@ -480,6 +480,14 @@ impl Queue {
     /// }
     /// ```
     pub fn set_tracks(&mut self, tracks: Vec<PathBuf>) {
+        let previous_names = self.display_paths();
+        let previous_pages = crate::pagination::paginate(&previous_names);
+        let previous_page = self
+            .page_scope
+            .first()
+            .and_then(|index| return crate::pagination::page_of_index(&previous_pages, *index));
+        let previous_page_identity =
+            previous_page.map(|page| return crate::pagination::page_identity(&previous_pages[page]));
         // What:     `self.tracks = tracks;` moves the new vector in, dropping (freeing) the
         //           old one.
         // Why:      Adopt the new track list.
@@ -489,7 +497,23 @@ impl Queue {
         // this.tracks = tracks;
         // ```
         self.tracks = tracks;
-        self.page_scope = Vec::new();
+        let rebuilt_names = self.display_paths();
+        let rebuilt_pages = crate::pagination::paginate(&rebuilt_names);
+        let rebuilt_page = previous_page_identity
+            .and_then(|identity| {
+                return rebuilt_pages
+                    .iter()
+                    .find(|page| return crate::pagination::page_identity(page) == identity);
+            })
+            .or_else(|| {
+                return previous_page.and_then(|page| {
+                    let fallback = page.min(rebuilt_pages.len().saturating_sub(1));
+                    return rebuilt_pages.get(fallback);
+                });
+            });
+        self.page_scope = rebuilt_page
+            .map(|page| return page.entries.iter().map(|entry| return entry.index).collect())
+            .unwrap_or_default();
         // What:     `self.rebuild_scope_order(Some(0));` builds the scope order around the
         //           first track. `Some(0)` wraps index 0; the helper handles the empty queue
         //           (order empty, cursor None).
@@ -939,7 +963,7 @@ impl Queue {
             return;
         }
         self.page_scope = valid;
-        if self.mode == PlaybackMode::ShuffleAll {
+        if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll {
             return;
         }
         let current = self.current_index();
@@ -1043,6 +1067,15 @@ impl Queue {
         // return track;
         // ```
         Some(track)
+    }
+
+    /// Restores a relocated selected track without replacing the displayed-page scope.
+    pub fn restore_index_preserving_page(&mut self, track: usize) -> Option<usize> {
+        if track >= self.tracks.len() {
+            return None;
+        }
+        self.rebuild_scope_order(Some(track));
+        return Some(track);
     }
 
     /// What:     `pub fn advance(&mut self, natural: bool) -> Option<usize>`. `natural` is

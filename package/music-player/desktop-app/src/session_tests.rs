@@ -67,6 +67,16 @@ fn unknown_current_mode_does_not_reuse_legacy_fields() {
     );
 }
 
+/// Explicit null is a present current field and must not resurrect former state.
+#[test]
+fn null_current_mode_does_not_reuse_legacy_fields() {
+    let json = r#"{"playback_mode":null,"shuffle":"All","repeat_track":true}"#;
+    assert_eq!(
+        Session::from_json(json).unwrap().playback_mode,
+        PlaybackMode::InOrder,
+    );
+}
+
 /// Former track-list files retain unrelated settings while migrating playback.
 #[test]
 fn old_track_list_format_keeps_settings() {
