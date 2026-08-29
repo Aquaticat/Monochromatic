@@ -1134,12 +1134,12 @@ not observed installation or runtime behavior.
   3,
   3.5,
   1.5,
-  1.5,
+  2,
   2.5,
   and 2.
 - **Estimate**:
-  25/40,
-  or 62.5 percent.
+  25.5/40,
+  or 63.8 percent.
 - **Evidence basis**:
   ZFSBootMenu has the strongest native boot-environment UI in the finalist set,
   but rollback remains rated 3 because the complete CachyOS path depends on an unexecuted unofficial integration.
@@ -1159,6 +1159,33 @@ not observed installation or runtime behavior.
   and OpenZFS remains an out-of-tree kernel dependency
   (https://docs.zfsbootmenu.org/en/latest/online/snapshot-management.html and
   https://github.com/fnichol/cachyos-zfs-installer).
+
+#### Operational-burden correction
+
+The original 1.5 rating mixed routine operator work with third-party integration risk.
+Routine work is more automated than that rating implied:
+pacman hooks create boot environments,
+retain clone datasets,
+verify image placement,
+and CachyOS ships an exact-version ZFS module package.
+ZFSBootMenu also provides a recovery shell and keeps one backup EFI image.
+Operational burden is therefore raised to 2.
+
+Source inspection still found operator-owned integration gaps:
+
+- installer files are copied into `/usr/local` without a package or update channel;
+- every package transaction creates both a snapshot and clone,
+  while retention deletes only clone filesystems and does not name their origin snapshots for deletion;
+- `generate-zbm` is conditional,
+  and CachyOS packages its sample regeneration hook under `/usr/share/doc` with targets that do not match
+  `linux-cachyos-zfs` or cover `zfsbootmenu` itself;
+- exact-version modules avoid DKMS but make kernel updates depend on a matching module package;
+- ZED is preset-enabled,
+  while the shipped weekly and monthly scrub timers require the operator to choose and enable one;
+- pool-feature activation must remain compatible with the ZFSBootMenu and rescue images.
+
+The source trace and unmeasured-runtime limits are recorded in the
+[CachyOS ZFS operational-ownership investigation](../troubleshooting/cachyos-zfs-installer-operational-ownership.md).
 
 #### Latency-masking sensitivity outside the frozen rubric
 
@@ -1180,7 +1207,7 @@ and dirty-data control are counted only once.
 At equal weight 1,
 the overall order remains unchanged.
 At maximum weight 5,
-ZFS becomes first with 44.5/60 points,
+ZFS becomes first with 45/60 points,
 ahead of Tumbleweed at 43.5/60.
 That scenario assigns one unvalidated criterion one third of total weight,
 so it demonstrates dominance of that preference rather than a robust measured outcome.
