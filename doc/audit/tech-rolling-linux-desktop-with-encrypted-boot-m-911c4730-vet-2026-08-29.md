@@ -1,7 +1,8 @@
 # Rolling Linux desktop with encrypted boot-menu rollback vet report
 
 - **Status**:
-  Blocked on consumer-boundary validation
+  Blocked on consumer-boundary validation;
+  informal source-only recommendation recorded
 - **Lifecycle phase**:
   Hard-gate screening and source validation complete;
   consumer-boundary validation deferred
@@ -1017,10 +1018,187 @@ not substitutes for this audit’s missing consumer-boundary run.
 
 ## Scoring and sensitivity
 
-Not performed.
-The governing workflow permits scoring only validated finalists,
-and hard-gate source evidence cannot be converted into soft scores to bypass the missing installation evidence.
-Sensitivity analysis is therefore also not applicable yet.
+Formal scoring is not performed.
+The governing workflow permits formal scores only after equal-depth consumer validation.
+At the user’s explicit request,
+this section instead records a non-governing source-only estimate so the available evidence still produces a decision.
+The estimate uses the frozen 10 criteria at equal weight,
+the 0 through 4 rating scale,
+and a maximum of 40 points.
+Ratings measure source evidence and architecture,
+not observed installation or runtime behavior.
+
+### Informal source-only score: openSUSE Tumbleweed BLS
+
+- Rollback correctness: 3.
+  `sdbootutil` constructs snapshot-specific BLS entries and matching content-addressed artifacts,
+  but boot-storage pruning can remove an entry while its Snapper snapshot remains
+  (https://github.com/openSUSE/sdbootutil).
+- Encryption: 2.5.
+  LUKS2 unlock is distribution-supported,
+  while BLS boot artifacts remain on FAT storage
+  (https://news.opensuse.org/2025/11/13/tw-grub2-bls).
+- Rolling and kernel robustness: 3.5.
+  The boot stack is distribution-owned and actively maintained,
+  but the exact encrypted snapshot path has not been exercised here.
+- UWSM plus labwc portability: 3.5.
+  Tumbleweed directly packages labwc,
+  UWSM,
+  and xwayland-satellite;
+  sfwbar comes from `X11:Wayland`
+  (https://software.opensuse.org/package/labwc).
+- Gaming and AMD currency: 3.
+  Tumbleweed is rolling,
+  but no RX 7600 or game workload was run.
+- Storage-pressure control: 2.
+  Installed policy uses `QGROUP=1/0` and package snapshots with cleanup,
+  although this audit did not establish qgroups as the incumbent stall cause
+  (https://doc.opensuse.org/documentation/tumbleweed/snapper/).
+- Installer and distribution integration: 4.
+  Encryption,
+  Snapper,
+  BLS synchronization,
+  and recovery are distribution-owned.
+- Operational burden: 3.5.
+  Distribution tooling owns the lifecycle,
+  but the BLS path and boot-store sizing still require operator attention.
+- Inspectability and provenance: 3.5.
+  Source and maintenance are inspectable,
+  but the inspected `sdbootutil` tree has no local end-to-end test suite.
+- Migration and exit cost: 2.5.
+  Mutable Btrfs can host selected rollback-coupled configuration,
+  but the actual host procedure is untested.
+- **Estimate**:
+  31/40,
+  or 77.5 percent.
+
+### Informal source-only score: Garuda Btrfs plus GRUB
+
+- Ratings in frozen-criterion order:
+  2.5,
+  3.5,
+  2.5,
+  3,
+  3.5,
+  3.5,
+  3,
+  2.5,
+  2.5,
+  and 2.5.
+- **Estimate**:
+  29/40,
+  or 72.5 percent.
+- **Evidence basis**:
+  kernels remain inside the encrypted snapshotted root;
+  current GRUB 2.14 supports LUKS2 plus Argon2;
+  qgroups are disabled;
+  and current pipelines passed.
+  The encrypted snapshot boot was not exercised,
+  focused restore tests are absent,
+  and the base system includes Chaotic-AUR trust
+  (https://forum.garudalinux.org/t/garuda-linux-temeraire-260819/48606).
+
+### Informal source-only score: CachyOS Btrfs plus Limine
+
+- Ratings in frozen-criterion order:
+  3,
+  2.5,
+  2.5,
+  3,
+  3.5,
+  3.5,
+  3,
+  2.5,
+  2.5,
+  and 2.5.
+- **Estimate**:
+  28.5/40,
+  or 71.3 percent.
+- **Evidence basis**:
+  current source pairs snapshots with archived kernel artifacts,
+  reserves 4,096 MiB of FAT boot storage,
+  and disables qgroups and timeline snapshots by default.
+  Boot artifacts are unencrypted,
+  helper tests are disabled,
+  documentation retains a stale kernel warning,
+  and the current ISO path was not run
+  (https://gitlab.com/Zesko/limine-snapper-sync and https://github.com/CachyOS/cachyos-calamares).
+
+### Informal source-only score: CachyOS ZFS plus ZFSBootMenu
+
+- Ratings in frozen-criterion order:
+  3,
+  3,
+  2,
+  3,
+  3,
+  3,
+  1.5,
+  1.5,
+  2.5,
+  and 2.
+- **Estimate**:
+  24.5/40,
+  or 61.3 percent.
+- **Evidence basis**:
+  ZFSBootMenu has the strongest native boot-environment UI in the finalist set,
+  but rollback remains rated 3 because the complete CachyOS path depends on an unexecuted unofficial integration.
+  The installer is single-author by measured contribution count and has no installation tests,
+  and OpenZFS remains an out-of-tree kernel dependency
+  (https://docs.zfsbootmenu.org/en/latest/online/snapshot-management.html and
+  https://github.com/fnichol/cachyos-zfs-installer).
+
+### Informal source-only score: Shanios blue/green
+
+- Ratings in frozen-criterion order:
+  2,
+  2.5,
+  2,
+  1.5,
+  2.5,
+  1.5,
+  2,
+  1.5,
+  2,
+  and 1.
+- **Estimate**:
+  18.5/40,
+  or 46.3 percent.
+- **Evidence basis**:
+  LUKS2,
+  per-slot UKIs,
+  and boot fallback are structurally attractive,
+  but only one previous slot is selectable;
+  writable configuration is shared;
+  continuous bees deduplication is enabled;
+  the labwc path depends on Nixpkgs;
+  and the large installer and deployment surface has one maintainer
+  (https://github.com/shani8dev/os-installer-config and https://github.com/shani8dev/shani-deploy).
+
+### Informal sensitivity
+
+The source-only order is not preference-stable:
+
+- weighting storage-pressure control at 3 instead of 1 makes Garuda first;
+- weighting encryption at 3 produces a Garuda and Tumbleweed tie;
+- weighting gaming currency at 5 produces the same tie;
+- weighting installer integration,
+  operational ownership,
+  robustness,
+  or inspectability more heavily preserves or widens Tumbleweed’s lead.
+
+No single full-point rating change alters the source-only winner.
+The Garuda and CachyOS Btrfs adjacency is less stable:
+a single adverse half-point change creates a tie,
+and a full-point change can reverse them.
+Tumbleweed’s score also counts distribution ownership under integration,
+robustness,
+and operations.
+Reducing its robustness and operations ratings by half a point each to deduplicate that evidence produces 30/40,
+which remains first but only one point ahead of Garuda.
+The scores remain low-confidence because the omitted runtime checks affect several criteria together.
+Desktop packaging also overlaps labwc and gaming.
+This estimate therefore must not be read as formal sensitivity analysis.
 
 ## Source-evidence validation priority
 
@@ -1131,8 +1309,57 @@ session.
 
 ## Ranking and recommendation
 
-No adoption recommendation is issued in this report state.
-The five-item source-evidence order names where runtime validation should start;
-it does not satisfy the equal-depth validation,
-scoring,
-or sensitivity gates required for a recommendation.
+### Informal source-only ranking
+
+openSUSE Tumbleweed BLS > Garuda Btrfs plus GRUB > CachyOS Btrfs plus Limine > CachyOS ZFS plus ZFSBootMenu >
+Shanios.
+
+Tumbleweed precedes Garuda because its installer,
+encryption,
+boot synchronization,
+and recovery chain are distribution-owned and more operationally documented;
+Garuda’s lower default snapshot-pressure surface does not establish that it avoids the unresolved incumbent stall.
+Garuda precedes CachyOS Btrfs because it keeps kernels inside the encrypted snapshotted root,
+while both have native Arch-family session packages and disabled qgroups.
+CachyOS Btrfs precedes the ZFS assembly because its official installer owns the storage path,
+whereas the ZFS installer is third-party and adds an out-of-tree kernel boundary.
+The ZFS assembly precedes Shanios because ZFSBootMenu has broader upstream maintenance and deeper boot-environment
+functionality,
+while Shanios concentrates a larger custom system in one maintainer and does not natively ship the required session.
+
+### Informal adoption recommendation
+
+Based only on the available source and package evidence,
+adopt **openSUSE Tumbleweed with encrypted Btrfs,
+Snapper,
+and the current BLS boot stack**.
+Confidence is low.
+It best matches the user’s preference for distribution-integrated recovery without adding a third-party root installer,
+and it has the strongest combined evidence for maintained boot-artifact synchronization,
+operational ownership,
+and native labwc stack packaging.
+
+Material limits remain part of the recommendation:
+
+- no encrypted installation,
+  firmware boot,
+  snapshot boot,
+  promotion,
+  or labwc migration was exercised;
+- Tumbleweed’s qgroup and cleanup defaults retain a source-level exposure similar to part of the incumbent stack,
+  although qgroups were not proved causal;
+- boot-storage pruning can leave a Snapper snapshot without a direct BLS entry;
+- retaining Btrfs and the same NVMe means migration does not prove or guarantee removal of the original stall mechanism;
+- the 4 TB encrypted data SSD still requires a verified backup and recovery plan before NVMe repartitioning.
+
+If avoiding qgroups and default snapshot-maintenance work is treated as more important than distribution ownership,
+Garuda becomes the source-only preference.
+The separate source-evidence validation priority still starts with CachyOS Btrfs because that ordering answers a
+different question:
+which untested path has the deepest candidate-specific source trace and should be exercised first.
+
+This user-requested recommendation does not advance the governing lifecycle to `Validated`,
+`Scored`,
+`Recommended`,
+or `Adopted`.
+It authorizes no installation or decision record.
