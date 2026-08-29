@@ -1132,21 +1132,59 @@ not observed installation or runtime behavior.
   2,
   3,
   3,
-  3,
+  3.5,
   1.5,
   1.5,
   2.5,
   and 2.
 - **Estimate**:
-  24.5/40,
-  or 61.3 percent.
+  25/40,
+  or 62.5 percent.
 - **Evidence basis**:
   ZFSBootMenu has the strongest native boot-environment UI in the finalist set,
   but rollback remains rated 3 because the complete CachyOS path depends on an unexecuted unofficial integration.
+  OpenZFS’s ARC can eliminate physical reads on cache hits;
+  its ZIO scheduler prioritizes synchronous I/O over async writes and background scans;
+  and its finite dirty-data window plus transaction delay can smooth short write bursts.
+  Those mechanisms raise storage-pressure control from 3 to 3.5,
+  but they do not hide cache misses,
+  synchronous durability waits,
+  sustained writes,
+  or an already-issued slow NVMe command.
+  The source trace is recorded in the
+  [OpenZFS latency investigation](../troubleshooting/openzfs-single-device-latency-masking.md)
+  and in current OpenZFS documentation at
+  https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/ZIO%20Scheduler.html.
   The installer is single-author by measured contribution count and has no installation tests,
   and OpenZFS remains an out-of-tree kernel dependency
   (https://docs.zfsbootmenu.org/en/latest/online/snapshot-management.html and
   https://github.com/fnichol/cachyos-zfs-installer).
+
+#### Latency-masking sensitivity outside the frozen rubric
+
+The frozen rubric did not isolate foreground latency smoothing from qgroup exposure,
+snapshot maintenance,
+and general filesystem robustness.
+An illustrative additional criterion rates the three mutable Btrfs finalists at 2.5,
+ZFS at 4,
+and Shanios at 2 for source-level latency-masking architecture.
+The Btrfs value is a labeled placeholder:
+Linux page-cache behavior was confirmed,
+but the current Btrfs transaction and writeback paths did not receive an equal source trace or workload benchmark.
+The added criterion excludes qgroup and snapshot-policy exposure
+because the existing storage criterion already counts it.
+For the sensitivity arithmetic,
+ZFS’s existing storage rating reverts from 3.5 to 3 so ARC,
+ZIO scheduling,
+and dirty-data control are counted only once.
+At equal weight 1,
+the overall order remains unchanged.
+At maximum weight 5,
+ZFS becomes first with 44.5/60 points,
+ahead of Tumbleweed at 43.5/60.
+That scenario assigns one unvalidated criterion one third of total weight,
+so it demonstrates dominance of that preference rather than a robust measured outcome.
+This conditional result is not a benchmark result or a formal rubric revision.
 
 ### Informal source-only score: Shanios blue/green
 
@@ -1354,6 +1392,11 @@ Material limits remain part of the recommendation:
 
 If avoiding qgroups and default snapshot-maintenance work is treated as more important than distribution ownership,
 Garuda becomes the source-only preference.
+If ARC,
+foreground-aware I/O scheduling,
+and finite write-burst absorption are the dominant preference,
+the added-criterion sensitivity makes CachyOS ZFS plus ZFSBootMenu first despite its installer and kernel-integration
+costs.
 The separate source-evidence validation priority still starts with CachyOS Btrfs because that ordering answers a
 different question:
 which untested path has the deepest candidate-specific source trace and should be exercised first.
