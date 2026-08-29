@@ -66,7 +66,10 @@ or evidence unless the user later authorizes cleanup.
   The corrected guest `systemctl poweroff` reached `shut off` immediately.
   Flatpak-packaged `virsh change-media --eject --config` then exited with code 139 and no diagnostic message,
   but after-state domain XML proved the ISO source had been removed from persistent `hda` configuration.
-  The no-desktop domain restarted from its installed EFI disk,
+  A fresh instrumented no-desktop control is now booting the authenticated ISO.
+  It must run the pinned installer before stock Calamares is ever launched.
+  Process `wait-clean-nodesktop-live` is waiting for CachyOS Hello.
+  The failed no-desktop domain previously restarted from its installed EFI disk,
   but the encrypted-boot watcher timed out after 635 seconds without seeing ZFSBootMenu or text login.
   A direct positive-control capture found the guest in the EDK II UEFI shell.
   UEFI mapped the 2048 MiB first partition as `FS0:`,
@@ -197,6 +200,37 @@ Use the VM-only input helper with this environment variable:
 VM_DOMAIN=cachyos-zfs-nodesktop-validation \
   node /var/home/user/temp/agent/guest-vm-input.mjs
 ```
+
+## Clean no-desktop control identity and storage
+
+- Domain name:
+  `cachyos-zfs-nodesktop-clean-validation`
+- Domain UUID:
+  `f9a2f58d-7740-4037-b2c1-86d4effea718`
+- Primary virtual disk:
+  `/mnt/encrypted/VMs/cachyos-zfs-nodesktop-clean-validation/disk.qcow2`
+- Virtual disk capacity:
+  128 GiB sparse qcow2
+- Disposable credential record:
+  `/mnt/encrypted/VMs/cachyos-zfs-nodesktop-clean-validation/disposable-credentials.json`
+- Writable 256 MiB evidence image:
+  `/mnt/encrypted/VMs/cachyos-zfs-nodesktop-clean-validation/installer-evidence.img`
+- Guest framebuffer evidence:
+  `/var/home/user/temp/agent/cachyos-zfs-nodesktop-clean-vnc.png`
+
+This control uses UEFI,
+8192 MiB memory,
+four virtual CPUs,
+loopback-only VNC,
+and no virtual GPU acceleration.
+It reuses the authenticated ISO and read-only source images.
+No physical block device is attached.
+
+The evidence image must retain:
+
+- pinned-installer debug output;
+- the effective Calamares settings and custom execution sequence;
+- the complete Calamares installation log.
 
 ## Attached guest storage
 
