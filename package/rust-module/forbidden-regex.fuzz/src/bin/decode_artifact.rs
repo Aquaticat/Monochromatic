@@ -32,5 +32,5 @@ fn main() -> Result<()> {
         }
         Err(error) => println!("decode failed: {error:?}"),
     }
-    Ok(())
+    return Ok(())
 }

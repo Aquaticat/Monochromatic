@@ -52,16 +52,16 @@ impl Builder {
     // What:  a single-token atom that is a valid operand anywhere.
     // Why:   `&`/`|` operands and repetition bases must be single atoms.
     fn simple(&mut self, u: &mut Unstructured) -> Result<String> {
-        Ok((*u.choose(SIMPLE)?).to_string())
+        return Ok((*u.choose(SIMPLE)?).to_string())
     }
 
     // What:  an operand: a simple atom or a parenthesized sub-sequence.
     // Why:   a group `(?:...)` is the way to make a sequence into one atom.
     fn operand(&mut self, u: &mut Unstructured, depth: u32) -> Result<String> {
         if depth == 0 || u.ratio(3, 4)? {
-            self.simple(u)
+            return self.simple(u)
         } else {
-            Ok(format!("(?:{})", self.seq(u, depth - 1)?))
+            return Ok(format!("(?:{})", self.seq(u, depth - 1)?))
         }
     }
 
@@ -70,14 +70,14 @@ impl Builder {
     // Why:   covers every construct the parser and back-end selector branch on.
     fn atom(&mut self, u: &mut Unstructured, depth: u32) -> Result<String> {
         match u.int_in_range(0u32..=7)? {
-            0 | 1 => self.operand(u, depth),
-            2 => Ok((*u.choose(ANCHORS)?).to_string()),
-            3 => self.repeat(u, depth),
-            4 => Ok(format!("{}?", self.operand(u, depth)?)),
-            5 => self.alt(u, depth),
-            6 if depth > 0 => self.inter(u, depth),
-            _ if depth > 0 => self.comp(u, depth),
-            _ => self.simple(u),
+            0 | 1 => return self.operand(u, depth),
+            2 => return Ok((*u.choose(ANCHORS)?).to_string()),
+            3 => return self.repeat(u, depth),
+            4 => return Ok(format!("{}?", self.operand(u, depth)?)),
+            5 => return self.alt(u, depth),
+            6 if depth > 0 => return self.inter(u, depth),
+            _ if depth > 0 => return self.comp(u, depth),
+            _ => return self.simple(u),
         }
     }
 
@@ -91,10 +91,10 @@ impl Builder {
         let base = self.simple(u)?;
         let n = u.int_in_range(0u32..=MAX_REPEAT)?;
         if u.ratio(1, 2)? {
-            Ok(format!("{base}{{{n}}}"))
+            return Ok(format!("{base}{{{n}}}"))
         } else {
             let m = u.int_in_range(n..=MAX_REPEAT)?;
-            Ok(format!("{base}{{{n},{m}}}"))
+            return Ok(format!("{base}{{{n},{m}}}"))
         }
     }
 
@@ -106,7 +106,7 @@ impl Builder {
         for _ in 0..count {
             branches.push(self.operand(u, depth)?);
         }
-        Ok(format!("(?:{})", branches.join("|")))
+        return Ok(format!("(?:{})", branches.join("|")))
     }
 
     // What:  an intersection `op & op`, where the right side may be a complement.
@@ -119,7 +119,7 @@ impl Builder {
         } else {
             self.operand(u, depth)?
         };
-        Ok(format!("{left}&{right}"))
+        return Ok(format!("{left}&{right}"))
     }
 
     // What:  a complement `~(...)` over a sub-sequence.
@@ -127,7 +127,7 @@ impl Builder {
     //        which exercises that rejection path.
     fn comp(&mut self, u: &mut Unstructured, depth: u32) -> Result<String> {
         self.uses_algebra = true;
-        Ok(format!("~({})", self.seq(u, depth.saturating_sub(1))?))
+        return Ok(format!("~({})", self.seq(u, depth.saturating_sub(1))?))
     }
 
     // What:  a concatenation of one to `MAX_SEQ` atoms.
@@ -138,7 +138,7 @@ impl Builder {
         for _ in 0..count {
             out.push_str(&self.atom(u, depth)?);
         }
-        Ok(out)
+        return Ok(out)
     }
 }
 
@@ -147,7 +147,7 @@ impl Builder {
 //        semantics and break the differential comparison against `regex`.
 fn content(u: &mut Unstructured) -> Result<Vec<u8>> {
     let raw: Vec<u8> = u.arbitrary()?;
-    Ok(raw.into_iter().filter(|&b| b != b'\n').take(MAX_CONTENT).collect())
+    return Ok(raw.into_iter().filter(|&b| return b != b'\n').take(MAX_CONTENT).collect())
 }
 
 impl<'a> Arbitrary<'a> for PatternAndContent {
@@ -159,7 +159,7 @@ impl<'a> Arbitrary<'a> for PatternAndContent {
             uses_algebra: builder.uses_algebra,
         };
         let content = content(u)?;
-        Ok(PatternAndContent { pattern, content })
+        return Ok(PatternAndContent { pattern, content })
     }
 }
 
@@ -239,6 +239,6 @@ impl<'a> Arbitrary<'a> for RulesetAndBuffer {
             }
         }
 
-        Ok(RulesetAndBuffer { patterns, buf, starts })
+        return Ok(RulesetAndBuffer { patterns, buf, starts })
     }
 }
