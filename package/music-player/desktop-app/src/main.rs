@@ -183,7 +183,7 @@ use std::sync::{Arc, Mutex};
 /// ```
 use std::time::Instant;
 
-/// What:     `use music_player::command::{Command, ShuffleMode, Update};`. The
+/// What:     `use music_player::command::{Command, PlaybackMode, Update};`. The
 ///           message types from our library crate. The package is `music-player`
 ///           but a Rust crate identifier cannot contain `-`, so the lib crate is
 ///           `music_player` (the hyphen becomes an underscore).
@@ -191,9 +191,9 @@ use std::time::Instant;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { Command, ShuffleMode, Update } from "music-player/command";
+/// import { Command, PlaybackMode, Update } from "music-player/command";
 /// ```
-use music_player::command::{Command, ShuffleMode, Update};
+use music_player::command::{Command, PlaybackMode, Update};
 
 /// What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
 ///           from our library crate (its fields are `start_playing` and `paths`).
@@ -314,7 +314,7 @@ use slint::{ComponentHandle, Model, SharedString, VecModel};
 /// ```
 use ui_page::{set_now_playing, set_queue_model, PageNav};
 
-/// What:     `fn shuffle_to_int(mode: ShuffleMode) -> i32`. Map the enum to the
+/// What:     `fn playback_mode_to_int(mode: PlaybackMode) -> i32`. Map the enum to the
 ///           integer the UI property uses (Off=0, WithinPage=1, All=2). `i32` is a
 ///           32-bit signed integer; siblings: `u32` (unsigned), `i64`/`usize`.
 /// Why:      Slint has no Rust enum; it stores the mode as an `int` (which is `i32`
@@ -323,93 +323,40 @@ use ui_page::{set_now_playing, set_queue_model, PageNav};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function shuffleToInt(mode: ShuffleMode): number { ... }
+/// function shuffleToInt(mode: PlaybackMode): number { ... }
 /// ```
-fn shuffle_to_int(mode: ShuffleMode) -> i32 {
-    // What:     `match mode { ... }`. Pattern-match each enum variant to its number.
-    //           `match` is exhaustive: the compiler rejects it if a variant is
-    //           unhandled, so adding a `ShuffleMode` later forces an update here.
-    // Why:      Stable encoding shared with the .slint file.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // switch (mode) { ... }
-    // ```
-    match mode {
-        // What:     `ShuffleMode::Off => 0`. The `Variant => value` arm: when `mode`
-        //           is the path-qualified variant `ShuffleMode::Off`, the arm yields
-        //           `0`. No trailing `;`, so the arm's value becomes the `match`'s
-        //           value, which (being the function tail) is returned.
-        // Why:      Off is 0.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "off": return 0;
-        // ```
-        ShuffleMode::Off => 0,
-        // What:     `ShuffleMode::WithinPage => 1`. The within-page variant -> `1`.
-        // Why:      WithinPage is 1.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "withinPage": return 1;
-        // ```
-        ShuffleMode::WithinPage => 1,
-        // What:     `ShuffleMode::All => 2`. The all variant -> `2`.
-        // Why:      All is 2.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "all": return 2;
-        // ```
-        ShuffleMode::All => 2,
+fn playback_mode_to_int(mode: PlaybackMode) -> i32 {
+    if mode == PlaybackMode::Repeat {
+        return 0;
     }
+    if mode == PlaybackMode::InOrder {
+        return 1;
+    }
+    if mode == PlaybackMode::ShufflePage {
+        return 2;
+    }
+    return 3;
 }
 
-/// What:     `fn int_to_shuffle(value: i32) -> ShuffleMode`. Inverse of the above:
-///           the UI radio's selected `i32` back into a `ShuffleMode` enum value.
-/// Why:      Turn the radio group's selected integer back into a `ShuffleMode`.
+/// What:     `fn int_to_playback_mode(value: i32) -> PlaybackMode`. Inverse of the above:
+///           the UI radio's selected `i32` back into a `PlaybackMode` enum value.
+/// Why:      Turn the radio group's selected integer back into a `PlaybackMode`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function intToShuffle(value: number): ShuffleMode { ... }
+/// function intToShuffle(value: number): PlaybackMode { ... }
 /// ```
-fn int_to_shuffle(value: i32) -> ShuffleMode {
-    // What:     `match value { 1 => WithinPage, 2 => All, _ => Off }`. The wildcard
-    //           `_` arm matches anything not matched above (including 0 and any
-    //           out-of-range int) and maps it to Off.
-    // Why:      Defensive default to Off for any unexpected integer.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return value === 1 ? "withinPage" : value === 2 ? "all" : "off";
-    // ```
-    match value {
-        // What:     `1 => ShuffleMode::WithinPage`. Integer literal arm -> variant.
-        // Why:      1 is WithinPage.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case 1: return "withinPage";
-        // ```
-        1 => ShuffleMode::WithinPage,
-        // What:     `2 => ShuffleMode::All`. Integer literal arm -> variant.
-        // Why:      2 is All.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case 2: return "all";
-        // ```
-        2 => ShuffleMode::All,
-        // What:     `_ => ShuffleMode::Off`. The catch-all wildcard arm.
-        // Why:      Default for every other integer.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // default: return "off";
-        // ```
-        _ => ShuffleMode::Off,
+fn int_to_playback_mode(value: i32) -> PlaybackMode {
+    if value == 0 {
+        return PlaybackMode::Repeat;
     }
+    if value == 2 {
+        return PlaybackMode::ShufflePage;
+    }
+    if value == 3 {
+        return PlaybackMode::ShuffleAll;
+    }
+    return PlaybackMode::InOrder;
 }
 
 /// What:     `fn format_time(secs: f64) -> String`. Format seconds as "m:ss".
@@ -707,6 +654,19 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     app.set_selected_page(clamped);
 }
 
+/// Returns load-order indices belonging to one displayed page.
+fn page_scope(app: &AppWindow, page: i32) -> Vec<usize> {
+    let names: Vec<String> = app.get_queue().iter().map(|name| name.to_string()).collect();
+    let pages = pagination::paginate(&names);
+    if page < 0 {
+        return Vec::new();
+    }
+    let Some(selected) = pages.get(page as usize) else {
+        return Vec::new();
+    };
+    return selected.entries.iter().map(|entry| entry.index).collect();
+}
+
 /// What:     `fn apply_update(app: &AppWindow, update: &Update)`. Apply one engine
 ///           update to the window's properties. `app` is a borrowed window handle;
 ///           `update` is BORROWED (`&Update`) so the progress-debounce wrapper can forward
@@ -882,8 +842,8 @@ fn apply_update(app: &AppWindow, update: &Update) {
         // case "volume": app.volume = v; break;
         // ```
         Update::Volume(v) => app.set_volume(*v),
-        // What:     `Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(mode))`.
-        //           Bind the `ShuffleMode`, encode it to an int via the helper, and
+        // What:     `Update::Shuffle(mode) => app.set_playback_mode_mode(playback_mode_to_int(mode))`.
+        //           Bind the `PlaybackMode`, encode it to an int via the helper, and
         //           set the radio group's property.
         // Why:      Highlight the selected shuffle radio.
         //
@@ -891,16 +851,7 @@ fn apply_update(app: &AppWindow, update: &Update) {
         // ```ts
         // case "shuffle": app.shuffleMode = shuffleToInt(mode); break;
         // ```
-        Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(*mode)),
-        // What:     `Update::RepeatTrack(on) => app.set_repeat_track(on)`. Bind the
-        //           repeat-track boolean and set the checkbox property.
-        // Why:      Check/uncheck the repeat-track box.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "repeatTrack": app.repeatTrack = on; break;
-        // ```
-        Update::RepeatTrack(on) => app.set_repeat_track(*on),
+        Update::PlaybackMode(mode) => app.set_playback_mode(playback_mode_to_int(*mode)),
     }
 }
 
@@ -1627,7 +1578,7 @@ fn main() -> Result<()> {
         move |v| engine.send(Command::SetVolume(v))
     });
 
-    // What:     `app.on_set_shuffle_mode({ ... })`. Register the shuffle radio
+    // What:     `app.on_set_playback_mode_mode({ ... })`. Register the shuffle radio
     //           handler; the clicked radio passes its mode integer `m: i32` (0/1/2).
     //           Map it back to the enum and send. No property read needed: the radio
     //           carries the target mode directly.
@@ -1635,57 +1586,20 @@ fn main() -> Result<()> {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // app.onSetShuffleMode((m) => engine.send(Command.SetShuffle(intToShuffle(m))));
+    // app.onSetPlaybackMode((m) => engine.send(Command.SetPlaybackMode(intToShuffle(m))));
     // ```
-    app.on_set_shuffle_mode({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
+    app.on_set_playback_mode({
         let engine = engine.clone();
-        // What:     `move |m| engine.send(Command::SetShuffle(int_to_shuffle(m)))`. A
-        //           move closure taking the mode int `m`, decoding it to the enum via
-        //           `int_to_shuffle`, and forwarding it.
-        // Why:      One radio click -> one shuffle-mode command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (m) => engine.send(Command.SetShuffle(intToShuffle(m)))
-        // ```
-        move |m| engine.send(Command::SetShuffle(int_to_shuffle(m)))
-    });
-
-    // What:     `app.on_set_repeat_track({ ... })`. Register the repeat-track checkbox
-    //           handler; the checkbox passes the desired boolean `on: bool`.
-    // Why:      Toggling the box sets the flag directly.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onSetRepeatTrack((on) => engine.send(Command.SetRepeatTrack(on)));
-    // ```
-    app.on_set_repeat_track({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let engine = engine.clone();
-        // What:     `move |on| engine.send(Command::SetRepeatTrack(on))`. A move
-        //           closure taking the desired boolean `on` and forwarding it.
-        // Why:      One checkbox toggle -> one repeat-track command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (on) => engine.send(Command.SetRepeatTrack(on))
-        // ```
-        move |on| engine.send(Command::SetRepeatTrack(on))
+        let weak = app.as_weak();
+        move |mode| {
+            if let Some(app) = weak.upgrade() {
+                engine.send(Command::SetPageScope(page_scope(
+                    &app,
+                    app.get_selected_page(),
+                )));
+                engine.send(Command::SetPlaybackMode(int_to_playback_mode(mode)));
+            }
+        }
     });
 
     // What:     `app.on_select_index({ ... })`. Register the row-select handler; its
@@ -1741,6 +1655,7 @@ fn main() -> Result<()> {
         // const w = app; // WeakRef so the closure does not keep the window alive
         // ```
         let weak = app.as_weak();
+        let engine = engine.clone();
         // What:     `move |p| { if let Some(app) = weak.upgrade() { refresh_page(&app, PageNav::Show(p)); } }`.
         //           A move closure taking the page `p`; `weak.upgrade()` yields
         //           `Option<AppWindow>`, the `if let Some(app)` runs only if the window
@@ -1755,6 +1670,7 @@ fn main() -> Result<()> {
         move |p| {
             if let Some(app) = weak.upgrade() {
                 refresh_page(&app, PageNav::Show(p));
+                engine.send(Command::SetPageScope(page_scope(&app, p)));
             }
         }
     });
@@ -1942,8 +1858,7 @@ fn main() -> Result<()> {
                     selected: session.selected,
                     position: session.position_secs,
                     volume: session.volume,
-                    shuffle: session.shuffle,
-                    repeat_track: session.repeat_track,
+                    playback_mode: session.playback_mode,
                 });
             } else if let Some(music_dir) = music_dir() {
                 engine.send(Command::Restore {
@@ -1951,8 +1866,7 @@ fn main() -> Result<()> {
                     selected: None,
                     position: 0.0,
                     volume: session.volume,
-                    shuffle: session.shuffle,
-                    repeat_track: session.repeat_track,
+                    playback_mode: session.playback_mode,
                 });
             }
         }

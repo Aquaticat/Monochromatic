@@ -67,7 +67,10 @@ dependencies {
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
+    // Explicit alpha is required because the Material standard ButtonGroup API first
+    // appears in 1.5.0-alpha27; the 2026.08 stable BOM still resolves Material3 1.4.0.
+    // Keep the rest of Compose on the BOM while this one component has no stable release.
+    implementation("androidx.compose.material3:material3:1.5.0-alpha27")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.core:core-ktx:1.19.0")
     debugImplementation("androidx.compose.ui:ui-tooling")

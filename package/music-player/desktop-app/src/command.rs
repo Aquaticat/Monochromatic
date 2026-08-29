@@ -18,7 +18,7 @@ use std::path::PathBuf;
 ///           derive macro auto-generates code for a type when you write
 ///           `#[derive(...)]` above it. `Serialize` generates "turn this into JSON",
 ///           `Deserialize` generates "build this from JSON".
-/// Why:      `ShuffleMode` is saved to the session file on disk, so it needs both
+/// Why:      `PlaybackMode` is saved to the session file on disk, so it needs both
 ///           directions of conversion.
 ///
 /// In TS you'd write (pseudocode):
@@ -48,63 +48,26 @@ use serde::{Deserialize, Serialize};
 // // nothing — the union below just works with ===, JSON, console.log
 // ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-/// What:     `pub enum ShuffleMode { ... }` declares a PUBLIC enum: a type whose value
-///           is exactly one of the listed variants. Here the variants carry no data
-///           (plain tags).
-/// Why:      Encodes the three shuffle behaviours. Shuffle now also chooses the SCOPE
-///           that playback loops over, so it subsumes what a separate repeat-all/off
-///           setting used to do (see the design note below).
+#[serde(rename_all = "snake_case")]
+/// What:     `pub enum PlaybackMode` declares four fieldless variants and derives
+///           stable snake-case JSON conversion.
+/// Why:      One value controls completion, ordering, scope, UI selection, and saved
+///           state, replacing independent shuffle and repeat fields.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ShuffleMode = "off" | "withinPage" | "all";
+/// type PlaybackMode = "repeat" | "in_order" | "shuffle_page" | "shuffle_all";
 /// ```
-///
-/// Design decision (deliberate limitation): the repeat behaviour when "repeat
-/// track" is OFF is derived from this mode, not set independently. `Off` and
-/// `WithinPage` confine playback to the current page (the track's top-level
-/// folder, or its A-Z/`#` letter bucket for a root-level track) and loop WITHIN
-/// that page; only `All` traverses and loops the whole queue. There is therefore
-/// no way to express "play the whole queue in load order and loop the whole
-/// queue" (non-shuffle + repeat-all): when not shuffling, the user stays inside
-/// the current folder/page. This is intended: when playing in order, people do
-/// not want playback to jump to a different artist once a folder finishes.
-pub enum ShuffleMode {
-    // What:     `#[default]` marks this variant as the one `derive(Default)` returns
-    //           from `ShuffleMode::default()`. It is an ATTRIBUTE on the variant, not
-    //           code.
-    // Why:      A brand-new session with no saved file should start unshuffled; the
-    //           derive then writes the `Default` impl for us.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const DEFAULT_SHUFFLE: ShuffleMode = "off";
-    // ```
+pub enum PlaybackMode {
+    /// Replays the current track after natural completion.
+    Repeat,
+    /// Plays the displayed page in order and wraps within it.
     #[default]
-    /// What:     `Off` a fieldless enum variant.
-    /// Why:      Play the current page in load order, looping within the page.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// "off"
-    /// ```
-    Off,
-    /// What:     `WithinPage` a fieldless enum variant.
-    /// Why:      Shuffle the current page, looping within the page once all are played.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// "withinPage"
-    /// ```
-    WithinPage,
-    /// What:     `All` a fieldless enum variant.
-    /// Why:      Shuffle the whole queue, looping the queue once all are played.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// "all"
-    /// ```
-    All,
+    InOrder,
+    /// Shuffles the displayed page without replacement in repeated cycles.
+    ShufflePage,
+    /// Shuffles the complete library without replacement in repeated cycles.
+    ShuffleAll,
 }
 
 /// What:     `pub enum Command { ... }` declares the public set of actions the UI can
@@ -122,8 +85,8 @@ pub enum ShuffleMode {
 ///   | { kind: "selectIndex"; index: number }
 ///   | { kind: "seek"; secs: number }
 ///   | { kind: "setVolume"; volume: number }
-///   | { kind: "setShuffle"; mode: ShuffleMode }
-///   | { kind: "setRepeatTrack"; on: boolean }
+///   | { kind: "setPlaybackMode"; mode: PlaybackMode }
+///   | { kind: "setPageScope"; indices: number[] }
 ///   | { kind: "quit" };
 /// ```
 pub enum Command {
@@ -290,46 +253,21 @@ pub enum Command {
         /// ```
         f32,
     ),
-    /// What:     `SetShuffle(ShuffleMode)` a tuple variant carrying the chosen mode.
+    /// What:     `SetPlaybackMode(PlaybackMode)` a tuple variant carrying the chosen mode.
     /// Why:      Set the shuffle mode (off / within-page / all).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// { kind: "setShuffle"; mode: ShuffleMode }
+    /// { kind: "setShuffle"; mode: PlaybackMode }
     /// ```
-    SetShuffle(
-        /// What:     Unnamed field `.0` of the `SetShuffle` variant: a `ShuffleMode`
-        ///           value (the sibling enum declared above: `Off` / `WithinPage` /
-        ///           `All`). Not a `bool` or an integer flag: shuffle has three
-        ///           distinct behaviours, so it is its own enum.
-        /// Why:      Carries the chosen mode the engine should switch to.
-        ///
-        /// In TS you'd write (pseudocode):
-        /// ```ts
-        /// // the `mode: ShuffleMode` payload of { kind: "setShuffle" }
-        /// ```
-        ShuffleMode,
+    SetPlaybackMode(
+        /// Selected completion and transport behavior.
+        PlaybackMode,
     ),
-    /// What:     `SetRepeatTrack(bool)` a tuple variant carrying the desired flag.
-    /// Why:      Turn "repeat track" (replay the current track on its natural end) on
-    ///           or off.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// { kind: "setRepeatTrack"; on: boolean }
-    /// ```
-    SetRepeatTrack(
-        /// What:     Unnamed field `.0` of the `SetRepeatTrack` variant: the desired
-        ///           on/off flag as a `bool`. Not a `ShuffleMode` or an enum:
-        ///           "repeat track" is a single two-state toggle.
-        /// Why:      `true` turns on replaying the current track at its natural end,
-        ///           `false` turns it off.
-        ///
-        /// In TS you'd write (pseudocode):
-        /// ```ts
-        /// // the `on: boolean` payload of { kind: "setRepeatTrack" }
-        /// ```
-        bool,
+    /// Updates the displayed page's load-order indices without moving audio.
+    SetPageScope(
+        /// Owned page indices computed by the UI from its displayed pagination.
+        Vec<usize>,
     ),
     /// What:     `Restore { ... }` is a STRUCT variant carrying a saved session to
     ///           reinstate at launch: the Source Root to scan, the optional Selected Track
@@ -342,7 +280,7 @@ pub enum Command {
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: "restore"; root: string; selected: string | null; position: number;
-    ///   volume: number; shuffle: ShuffleMode; repeatTrack: boolean }
+    ///   volume: number; playbackMode: PlaybackMode }
     /// ```
     Restore {
         /// What:     `root: PathBuf` the saved Source Root to re-scan into the queue.
@@ -380,22 +318,8 @@ pub enum Command {
         /// volume: number;
         /// ```
         volume: f32,
-        /// What:     `shuffle: ShuffleMode` saved shuffle mode.
-        /// Why:      Restore shuffle.
-        ///
-        /// In TS you'd write (pseudocode):
-        /// ```ts
-        /// shuffle: ShuffleMode;
-        /// ```
-        shuffle: ShuffleMode,
-        /// What:     `repeat_track: bool` saved "repeat track" flag.
-        /// Why:      Restore whether the current track replays on its natural end.
-        ///
-        /// In TS you'd write (pseudocode):
-        /// ```ts
-        /// repeatTrack: boolean;
-        /// ```
-        repeat_track: bool,
+        /// Single saved completion and transport behavior.
+        playback_mode: PlaybackMode,
     },
     /// What:     `Rescan` a fieldless variant.
     /// Why:      Re-scan the current Source Root and reconcile the queue with disk: added
@@ -434,7 +358,7 @@ pub enum Command {
 ///   | { kind: "position"; secs: number }
 ///   | { kind: "playing"; on: boolean }
 ///   | { kind: "volume"; volume: number }
-///   | { kind: "shuffle"; mode: ShuffleMode }
+///   | { kind: "shuffle"; mode: PlaybackMode }
 ///   | { kind: "repeatTrack"; on: boolean };
 /// ```
 pub enum Update {
@@ -619,45 +543,9 @@ pub enum Update {
         /// ```
         f32,
     ),
-    /// What:     `Shuffle(ShuffleMode)` a tuple variant carrying the current mode.
-    /// Why:      Current shuffle mode (off / within-page / all).
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// { kind: "shuffle"; mode: ShuffleMode }
-    /// ```
-    Shuffle(
-        /// What:     Unnamed field `.0` of the `Shuffle` variant: the current
-        ///           `ShuffleMode` value (the sibling enum declared above: `Off` /
-        ///           `WithinPage` / `All`). Not a `bool` or integer flag: shuffle has
-        ///           three distinct behaviours.
-        /// Why:      Tells the UI which shuffle mode the engine is now in so the
-        ///           control reflects it.
-        ///
-        /// In TS you'd write (pseudocode):
-        /// ```ts
-        /// // the `mode: ShuffleMode` payload of { kind: "shuffle" }
-        /// ```
-        ShuffleMode,
-    ),
-    /// What:     `RepeatTrack(bool)` a tuple variant carrying the flag state.
-    /// Why:      Whether "repeat track" is on.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// { kind: "repeatTrack"; on: boolean }
-    /// ```
-    RepeatTrack(
-        /// What:     Unnamed field `.0` of the `RepeatTrack` variant: the flag state
-        ///           as a `bool`. Not an enum: "repeat track" is a single two-state
-        ///           toggle.
-        /// Why:      `true` means the current track replays on its natural end; the
-        ///           UI lights its repeat control to match.
-        ///
-        /// In TS you'd write (pseudocode):
-        /// ```ts
-        /// // the `on: boolean` payload of { kind: "repeatTrack" }
-        /// ```
-        bool,
+    /// Mirrors the single selected completion and transport behavior to the UI.
+    PlaybackMode(
+        /// Current four-state mode.
+        PlaybackMode,
     ),
 }

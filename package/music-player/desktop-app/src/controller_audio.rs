@@ -142,8 +142,7 @@ impl Controller {
             selected: self.queue.current_path().cloned(),
             position_secs,
             volume: self.volume,
-            shuffle: self.queue.shuffle_mode(),
-            repeat_track: self.queue.repeat_track(),
+            playback_mode: self.queue.playback_mode(),
             page_control_style,
         }
     }

@@ -1,9 +1,9 @@
 // What:     `package dev.monochromatic.musicplayer.core` names the namespace this test file
 //           lives under. It is the SAME package as the code under test (`Queue.kt`,
-//           `ShuffleMode`), so this file uses `Queue` and `ShuffleMode` by their short names
+//           `PlaybackMode`), so this file uses `Queue` and `PlaybackMode` by their short names
 //           with no import. The package must mirror the directory path.
 // Why:      Sharing the package lets the tests reach the `Queue` class, its companion factory,
-//           and the `ShuffleMode` enum without importing them; test and main source sets merge
+//           and the `PlaybackMode` enum without importing them; test and main source sets merge
 //           into one package at compile time.
 //
 // In TS you'd write (pseudocode):
@@ -373,7 +373,7 @@ class QueueTest {
         // ```ts
         // q.setRepeatTrack(true);
         // ```
-        q.setRepeatTrack(true)
+        q.setPlaybackMode(PlaybackMode.REPEAT)
         // What:     `assertEquals(0, q.advance(true))` is `assertEquals(expected, actual)`:
         //           EXPECTED `Int` `0`; ACTUAL `q.advance(true)` (the `true` means a NATURAL end),
         //           which, with repeat-track on, REPLAYS the current track 0 (cursor unchanged).
@@ -395,6 +395,9 @@ class QueueTest {
         // expect(q.advance(false)).toEqual(1);
         // ```
         assertEquals(1, q.advance(false))
+        // Repeat changes natural completion only; manual Previous follows page order.
+        assertEquals(0, q.prev())
+        assertEquals(2, q.prev())
     }
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
@@ -541,7 +544,7 @@ class QueueTest {
     @Test
     // What:     `fun shuffleAllKeepsCurrentTrackAndCoversAll() { ... }` declares a no-arg
     //           `Unit`-returning test method, block body.
-    // Why:      Pins that switching to `ShuffleMode.ALL` KEEPS the currently-playing track current
+    // Why:      Pins that switching to `PlaybackMode.SHUFFLE_ALL` KEEPS the currently-playing track current
     //           and that advancing through the whole queue COVERS every track exactly once. These
     //           are RNG-independent invariants (no exact order asserted).
     //
@@ -583,16 +586,16 @@ class QueueTest {
         // expect(q.advance(false)).toEqual(2);
         // ```
         assertEquals(2, q.advance(false))
-        // What:     `q.setShuffle(ShuffleMode.ALL)` switches the mode to `ShuffleMode.ALL`.
-        //           `ShuffleMode.ALL` names one constant of the sibling `ShuffleMode` enum (the
+        // What:     `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` switches the mode to `PlaybackMode.SHUFFLE_ALL`.
+        //           `PlaybackMode.SHUFFLE_ALL` names one constant of the sibling `PlaybackMode` enum (the
         //           others being `OFF` and `WITHIN_PAGE`).
         // Why:      Enable whole-queue shuffle while keeping the current track current.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.ALL);
+        // q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `assertEquals(2, q.currentIndex())` confirms track 2 is STILL current after the
         //           shuffle switch.
         // Why:      Switching shuffle must not interrupt the playing track.
@@ -708,23 +711,23 @@ class QueueTest {
         // q.setTracks(paths(4));
         // ```
         q.setTracks(paths(4))
-        // What:     `q.setShuffle(ShuffleMode.ALL)` switches to whole-queue shuffle.
+        // What:     `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` switches to whole-queue shuffle.
         // Why:      Scramble the order first, so turning it off has something to restore.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.ALL);
+        // q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        q.setShuffle(ShuffleMode.ALL)
-        // What:     `q.setShuffle(ShuffleMode.OFF)` switches back to no shuffle. `ShuffleMode.OFF`
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
+        // What:     `q.setPlaybackMode(PlaybackMode.IN_ORDER)` switches back to no shuffle. `PlaybackMode.IN_ORDER`
         //           is the enum constant for sequential, page-confined playback.
         // Why:      Turn shuffle off to restore load order.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.OFF);
+        // q.setPlaybackMode(PlaybackMode.IN_ORDER);
         // ```
-        q.setShuffle(ShuffleMode.OFF)
+        q.setPlaybackMode(PlaybackMode.IN_ORDER)
         // What:     `assertEquals(0, q.currentIndex())` confirms the cursor is back at index 0.
         // Why:      With these root tracks the current track is the first, so off restores 0.
         //
@@ -843,7 +846,7 @@ class QueueTest {
     @Test
     // What:     `fun shuffleWithinPageCoversOnlyCurrentPage() { ... }` declares a no-arg
     //           `Unit`-returning test method, block body.
-    // Why:      Pins that `ShuffleMode.WITHIN_PAGE` shuffles ONLY the current page's tracks and
+    // Why:      Pins that `PlaybackMode.SHUFFLE_PAGE` shuffles ONLY the current page's tracks and
     //           never reaches another page (index 3 on page `B` is never seen). Coverage equals
     //           the page size, RNG-independently.
     //
@@ -869,16 +872,16 @@ class QueueTest {
         // q.setTracks(trackPaths("A/1.flac", "A/2.flac", "A/3.flac", "B/4.flac"));
         // ```
         q.setTracks(trackPaths("A/1.flac", "A/2.flac", "A/3.flac", "B/4.flac"))
-        // What:     `q.setShuffle(ShuffleMode.WITHIN_PAGE)` switches to per-page shuffle.
-        //           `ShuffleMode.WITHIN_PAGE` is the enum constant that shuffles within the page
+        // What:     `q.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE)` switches to per-page shuffle.
+        //           `PlaybackMode.SHUFFLE_PAGE` is the enum constant that shuffles within the page
         //           while staying page-confined.
         // Why:      Enable the within-page shuffle under test.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.WITHIN_PAGE);
+        // q.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE);
         // ```
-        q.setShuffle(ShuffleMode.WITHIN_PAGE)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE)
         // What:     `assertEquals(0, q.currentIndex())` confirms the cursor anchors at index 0 on
         //           page `A`.
         // Why:      Playback starts on page `A`.
@@ -969,7 +972,7 @@ class QueueTest {
     @Test
     // What:     `fun shuffleAllCrossesPages() { ... }` declares a no-arg `Unit`-returning test
     //           method, block body.
-    // Why:      Pins that `ShuffleMode.ALL` scopes playback to the WHOLE queue, so it DOES reach a
+    // Why:      Pins that `PlaybackMode.SHUFFLE_ALL` scopes playback to the WHOLE queue, so it DOES reach a
     //           track on another page (index 2 on page `B`), unlike `WITHIN_PAGE`. Coverage spans
     //           all pages.
     //
@@ -995,14 +998,14 @@ class QueueTest {
         // q.setTracks(trackPaths("A/1.flac", "A/2.flac", "B/3.flac"));
         // ```
         q.setTracks(trackPaths("A/1.flac", "A/2.flac", "B/3.flac"))
-        // What:     `q.setShuffle(ShuffleMode.ALL)` switches to whole-queue shuffle.
+        // What:     `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` switches to whole-queue shuffle.
         // Why:      Enable cross-page coverage.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.ALL);
+        // q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val seen: MutableSet<Int> = mutableSetOf()` declares a mutable `Int` set
         //           (see the earlier such block).
         // Why:      Collect visited indices to verify the `B` page is reached.
@@ -1406,14 +1409,14 @@ class QueueTest {
         // q.setTracks(paths(6));
         // ```
         q.setTracks(paths(6))
-        // What:     `q.setShuffle(ShuffleMode.ALL)` switches to whole-queue shuffle.
+        // What:     `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` switches to whole-queue shuffle.
         // Why:      Produce a shuffled play history whose positions differ from load order.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.ALL);
+        // q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `repeat(4) { q.advance(false) }` advances four times. `repeat(n) { ... }` is a
         //           stdlib loop running the block `n` times.
         // Why:      Just-in-time shuffle starts `playbackOrder()` as `[anchor]` (size 1) and grows
@@ -1558,14 +1561,14 @@ class QueueTest {
         // q.setTracks(paths(8));
         // ```
         q.setTracks(paths(8))
-        // What:     `q.setShuffle(ShuffleMode.ALL)` switches to whole-queue shuffle.
+        // What:     `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` switches to whole-queue shuffle.
         // Why:      Produce the shuffled scope to verify.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.ALL);
+        // q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val seen: MutableSet<Int> = mutableSetOf()` declares a mutable `Int` set (see
         //           the earlier such block).
         // Why:      Collect every visited index to compare against the full expected set.
@@ -1660,14 +1663,14 @@ class QueueTest {
         // first.setTracks(paths(10));
         // ```
         first.setTracks(paths(10))
-        // What:     `first.setShuffle(ShuffleMode.ALL)` shuffles the first queue's whole scope.
+        // What:     `first.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` shuffles the first queue's whole scope.
         // Why:      Produce the first shuffled order.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // first.setShuffle(ShuffleMode.ALL);
+        // first.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        first.setShuffle(ShuffleMode.ALL)
+        first.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val firstOrder: List<Int> = (0 until 10).map { first.advance(false)!! }`
         //           declares a read-only `List<Int>` local `firstOrder`. `(0 until 10)` is the
         //           half-open range 0..9; `.map { ... }` runs a trailing lambda for each (implicit
@@ -1701,14 +1704,14 @@ class QueueTest {
         // second.setTracks(paths(10));
         // ```
         second.setTracks(paths(10))
-        // What:     `second.setShuffle(ShuffleMode.ALL)` shuffles the second queue's whole scope.
+        // What:     `second.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` shuffles the second queue's whole scope.
         // Why:      Same shuffle operation as the first queue.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // second.setShuffle(ShuffleMode.ALL);
+        // second.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        second.setShuffle(ShuffleMode.ALL)
+        second.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val secondOrder: List<Int> = (0 until 10).map { second.advance(false)!! }`
         //           captures the second queue's advance sequence, same shape as `firstOrder`
         //           (range `.map` with `!!`-unwrapped `Int?`).
@@ -1862,14 +1865,14 @@ class QueueTest {
         // q.setTracks(paths(5));
         // ```
         q.setTracks(paths(5))
-        // What:     `q.setShuffle(ShuffleMode.ALL)` switches to whole-queue shuffle.
+        // What:     `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` switches to whole-queue shuffle.
         // Why:      Exercise the just-in-time cycle over all five tracks.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setShuffle(ShuffleMode.ALL);
+        // q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val seen: MutableList<Int> = mutableListOf(q.currentIndex()!!)` seeds a mutable
         //           list with the anchor track. `q.currentIndex()!!` reads the current index and
         //           `!!` asserts non-null (the queue is non-empty here).
@@ -1948,16 +1951,16 @@ class QueueTest {
         // const q = Queue.withRngSeed(7n);
         // ```
         val q = Queue.withRngSeed(7)
-        // What:     `q.setTracks(paths(6))` loads six tracks; `q.setShuffle(ShuffleMode.ALL)`
+        // What:     `q.setTracks(paths(6))` loads six tracks; `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)`
         //           switches to whole-queue shuffle.
         // Why:      A scope large enough for a three-track history with distinct picks.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // q.setTracks(paths(6)); q.setShuffle(ShuffleMode.ALL);
+        // q.setTracks(paths(6)); q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
         q.setTracks(paths(6))
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val a = q.currentIndex()!!` is the anchor; `val b = q.advance(false)!!` and
         //           `val c = q.advance(false)!!` are the next two just-in-time picks.
         // Why:      Build a three-entry history a -> b -> c to retrace.
@@ -2011,16 +2014,16 @@ class QueueTest {
     // ```
     fun shufflePrevAtHistoryStartStays() {
         // What:     `val q = Queue.withRngSeed(3)` then `q.setTracks(paths(4))` then
-        //           `q.setShuffle(ShuffleMode.ALL)` builds a four-track shuffled queue at its anchor.
+        //           `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` builds a four-track shuffled queue at its anchor.
         // Why:      The cursor sits at history position 0 (only the anchor played).
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const q = Queue.withRngSeed(3n); q.setTracks(paths(4)); q.setShuffle(ShuffleMode.ALL);
+        // const q = Queue.withRngSeed(3n); q.setTracks(paths(4)); q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
         val q = Queue.withRngSeed(3)
         q.setTracks(paths(4))
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val start = q.currentIndex()!!` captures the anchor track index.
         // Why:      The track `prev` should return without moving.
         //
@@ -2068,16 +2071,16 @@ class QueueTest {
     // ```
     fun shuffleNewCycleAvoidsImmediateRepeat() {
         // What:     `val q = Queue.withRngSeed(99)` then `q.setTracks(paths(4))` then
-        //           `q.setShuffle(ShuffleMode.ALL)` builds a four-track shuffled queue.
+        //           `q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` builds a four-track shuffled queue.
         // Why:      A small scope so one full cycle is exactly four advances (anchor + 3).
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const q = Queue.withRngSeed(99n); q.setTracks(paths(4)); q.setShuffle(ShuffleMode.ALL);
+        // const q = Queue.withRngSeed(99n); q.setTracks(paths(4)); q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL);
         // ```
         val q = Queue.withRngSeed(99)
         q.setTracks(paths(4))
-        q.setShuffle(ShuffleMode.ALL)
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         // What:     `val cycle: MutableList<Int> = mutableListOf(q.currentIndex()!!)` seeds the
         //           first cycle with the anchor; `repeat(3) { cycle.add(q.advance(false)!!) }`
         //           completes it (anchor + 3 = 4 tracks).
@@ -2109,6 +2112,34 @@ class QueueTest {
         // expect(next).not.toEqual(cycle[cycle.length - 1]);
         // ```
         assertTrue(next != cycle.last())
+    }
+
+    /** Verifies page modes follow the displayed page while retaining an off-page track. */
+    @Test
+    fun displayedPageScopeKeepsCurrentUntilManualTransport() {
+        val q = Queue.withRngSeed(17)
+        q.setTracks(trackPaths("A/1.flac", "A/2.flac", "B/3.flac", "B/4.flac"))
+        q.setPageScope(listOf(2, 3))
+        assertEquals(0, q.currentIndex())
+        assertEquals(2, q.advance(false))
+        assertEquals(3, q.advance(false))
+        assertEquals(2, q.advance(false))
+        assertEquals(3, q.prev())
+    }
+
+    /** Verifies Shuffle page draws only from the displayed page after a mode change. */
+    @Test
+    fun shufflePageUsesDisplayedPageAndKeepsCurrent() {
+        val q = Queue.withRngSeed(23)
+        q.setTracks(trackPaths("A/1.flac", "A/2.flac", "B/3.flac", "B/4.flac"))
+        q.setPageScope(listOf(2, 3))
+        q.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE)
+        assertEquals(0, q.currentIndex())
+        val seen: MutableSet<Int> = mutableSetOf()
+        repeat(4) {
+            seen.add(q.advance(false)!!)
+        }
+        assertEquals(setOf(2, 3), seen)
     }
     //endregion
 }

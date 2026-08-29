@@ -22,15 +22,15 @@ package dev.monochromatic.musicplayer
 // ```
 import dev.monochromatic.musicplayer.core.Session
 
-// What:     `import dev.monochromatic.musicplayer.core.ShuffleMode` imports the three-value
+// What:     `import dev.monochromatic.musicplayer.core.PlaybackMode` imports the three-value
 //           shuffle enum from `.core`.
 // Why:      The settings-survival test sets and asserts shuffle modes.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { ShuffleMode } from "./core/ShuffleMode";
+// import { PlaybackMode } from "./core/PlaybackMode";
 // ```
-import dev.monochromatic.musicplayer.core.ShuffleMode
+import dev.monochromatic.musicplayer.core.PlaybackMode
 
 // What:     `import org.junit.Assert.assertEquals` imports the static `assertEquals(expected, actual)`
 //           value-equality assertion from JUnit 4.
@@ -353,16 +353,16 @@ class PlayerControllerTest {
         // const controller = new PlayerController(new FakeAudioEngine());
         // ```
         val controller = PlayerController(FakeAudioEngine())
-        // What:     `val saved = Session(selected = "u1", shuffle = ShuffleMode.OFF, volume = 0.3f)`
+        // What:     `val saved = Session(selected = "u1", playbackMode = PlaybackMode.IN_ORDER, volume = 0.3f)`
         //           builds a saved session with shuffle OFF and volume 0.3 (a `Float`, the `f`
-        //           suffix). `ShuffleMode.OFF` reads a named enum constant.
+        //           suffix). `PlaybackMode.IN_ORDER` reads a named enum constant.
         // Why:      Establish the saved baseline the user will override mid-load.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const saved = makeSession({ selected: "u1", shuffle: "Off", volume: 0.3 });
         // ```
-        val saved = Session(selected = "u1", shuffle = ShuffleMode.OFF, volume = 0.3f)
+        val saved = Session(selected = "u1", playbackMode = PlaybackMode.IN_ORDER, volume = 0.3f)
         // What:     `controller.applySettings(saved)` then `controller.beginLoad()` apply the saved
         //           settings early, then begin loading.
         // Why:      The saved settings become the baseline.
@@ -373,15 +373,15 @@ class PlayerControllerTest {
         // ```
         controller.applySettings(saved)
         controller.beginLoad()
-        // What:     `controller.setShuffle(ShuffleMode.ALL)` then `controller.setVolume(0.9f)` change
+        // What:     `controller.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)` then `controller.setVolume(0.9f)` change
         //           the settings mid-load, as a user could while the controls are live.
         // Why:      These changes must survive the terminal restore.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // controller.setShuffle("All"); controller.setVolume(0.9);
+        // controller.setPlaybackMode("All"); controller.setVolume(0.9);
         // ```
-        controller.setShuffle(ShuffleMode.ALL)
+        controller.setPlaybackMode(PlaybackMode.SHUFFLE_ALL)
         controller.setVolume(0.9f)
         // What:     `controller.finishLoad(listOf(track("u1","a.mp3"), track("u2","b.mp3")), saved)`
         //           finishes the load (no tap), which reselects `u1` but must NOT re-stamp settings.
@@ -392,15 +392,15 @@ class PlayerControllerTest {
         // controller.finishLoad([track("u1","a.mp3"), track("u2","b.mp3")], saved);
         // ```
         controller.finishLoad(listOf(track("u1", "a.mp3"), track("u2", "b.mp3")), saved)
-        // What:     `assertEquals(ShuffleMode.ALL, controller.uiState.shuffle)` asserts the mid-load
+        // What:     `assertEquals(PlaybackMode.SHUFFLE_ALL, controller.uiState.playbackMode)` asserts the mid-load
         //           shuffle change survived (not reset to the saved OFF).
         // Why:      The restore must not undo a mid-load setting change.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // expect(controller.uiState.shuffle).toEqual("All");
+        // expect(controller.uiState.playbackMode).toEqual("All");
         // ```
-        assertEquals(ShuffleMode.ALL, controller.uiState.shuffle)
+        assertEquals(PlaybackMode.SHUFFLE_ALL, controller.uiState.playbackMode)
         // What:     `assertEquals(0.9f, controller.uiState.volume)` asserts the mid-load volume change
         //           survived (not reset to the saved 0.3). Both are `Float`.
         // Why:      Volume changed mid-load leaves no settings re-stamp, so it must persist.
@@ -752,5 +752,28 @@ class PlayerControllerTest {
         // expect(controller.uiState.pageLabels[controller.uiState.selectedPage]).toEqual("Charon");
         // ```
         assertEquals("Charon", controller.uiState.pageLabels[controller.uiState.selectedPage])
+    }
+
+    /** Confirms changing mode keeps the loaded track, position, and playback state. */
+    @Test
+    fun playbackModeChangeDoesNotReloadOrMoveAudio() {
+        val engine = FakeAudioEngine()
+        val controller = PlayerController(engine)
+        controller.openLibrary(
+            listOf(
+                track("u-a", "A/1.mp3"),
+                track("u-b", "B/2.mp3"),
+            ),
+        )
+        controller.playIndex(0)
+        engine.positionValue = 37.5
+        val loadsBeforeModeChange = engine.loadCount
+        controller.selectPage(1)
+        controller.setPlaybackMode(PlaybackMode.REPEAT)
+        assertEquals(loadsBeforeModeChange, engine.loadCount)
+        assertEquals("u-a", engine.loadedUri)
+        assertEquals(37.5, controller.positionSec(), 0.0)
+        assertEquals(true, engine.playWhenReady())
+        assertEquals(PlaybackMode.REPEAT, controller.uiState.playbackMode)
     }
 }

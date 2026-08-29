@@ -1,110 +1,85 @@
-// What:     Unit tests for `session.rs`, pulled in by
-//           `#[cfg(test)] #[path = "session_tests.rs"] mod tests;` at the bottom of
-//           `session.rs`. Compiles only under `cargo nextest run` / `cargo test`;
-//           reaches the module items via `use super::*` because this file is the
-//           `tests` CHILD of session.
-// Why:      Keep the tests beside the code without inflating `session.rs` or its
-//           max-lines budget (sibling `*_tests.rs` files are exempt from the linter).
+// Session migration and current-wire tests. This file is a child of session.rs.
 
-// What:     `use super::*;` bring the module's items into the test scope.
-// Why:      Tests need `Session`, `ShuffleMode`, `PathBuf`.
+// Bring parent module declarations into the test module.
 use super::*;
 
-// What:     `#[test] fn json_round_trip_preserves_fields()`. Serialize a fully-populated
-//           session and parse it back.
-// Why:      Every field (source root, selection, settings) must survive the wire form.
+/// Current JSON round-trips every field and emits only one playback setting.
 #[test]
-fn json_round_trip_preserves_fields() {
-    // What:     build a non-default session literal with a root and a selection.
-    // Why:      Exercise serialization of every field.
+fn current_json_round_trip_preserves_fields() {
     let original = Session {
         source_root: Some(PathBuf::from("/music/Artist")),
         selected: Some(PathBuf::from("/music/Artist/01.flac")),
         position_secs: 12.5,
         volume: 0.7,
-        shuffle: ShuffleMode::WithinPage,
-        repeat_track: true,
+        playback_mode: PlaybackMode::ShufflePage,
         page_control_style: PageControlStyle::Md1Tabs,
     };
-    // What:     `serde_json::to_string(&original).unwrap()` serializes to JSON; `.unwrap()`
-    //           panics on error (fine in a test).
-    // Why:      Produce the wire form.
     let json = serde_json::to_string(&original).unwrap();
-    // What:     `serde_json::from_str::<Session>(&json).unwrap()` parses it back.
-    // Why:      Round-trip the value.
-    let back = serde_json::from_str::<Session>(&json).unwrap();
-    // What:     `assert_eq!(original, back)` via the derived `PartialEq`.
-    // Why:      No field is lost or altered by the round-trip.
-    assert_eq!(original, back);
+    let restored = Session::from_json(&json).unwrap();
+    assert_eq!(original, restored);
+    assert!(json.contains("\"playback_mode\":\"shuffle_page\""));
+    assert!(!json.contains("\"shuffle\""));
+    assert!(!json.contains("repeat_track"));
 }
 
-// What:     `#[test] fn none_root_and_selection_round_trip()`. A default session (no root,
-//           nothing cued) must serialize and parse back unchanged.
-// Why:      The first-run / nothing-loaded state is the common case and must round-trip.
-#[test]
-fn none_root_and_selection_round_trip() {
-    // What:     `Session::default()` the empty starting state.
-    // Why:      Exercise the `None` source root and selection.
-    let original = Session::default();
-    // What:     serialize then parse back.
-    // Why:      Confirm `None` fields survive.
-    let back = serde_json::from_str::<Session>(&serde_json::to_string(&original).unwrap()).unwrap();
-    // What:     equal to the original, with both optionals `None`.
-    // Why:      No drift on the empty state.
-    assert_eq!(back, original);
-    assert_eq!(back.source_root, None);
-    assert_eq!(back.selected, None);
-}
-
-// What:     `#[test] fn empty_json_object_yields_defaults()`. Parsing `{}` must produce the
-//           default session.
-// Why:      `#[serde(default)]` fills every missing field, so a truncated/empty file is
-//           tolerated rather than failing the restore.
+/// Empty current input yields first-run defaults.
 #[test]
 fn empty_json_object_yields_defaults() {
-    // What:     parse an empty JSON object.
-    // Why:      Every field is absent, so all default.
-    let parsed = serde_json::from_str::<Session>("{}").unwrap();
-    // What:     equals the default session.
-    // Why:      Confirms the `#[serde(default)]` fallback.
-    assert_eq!(parsed, Session::default());
+    assert_eq!(Session::from_json("{}").unwrap(), Session::default());
 }
 
-// What:     `#[test] fn old_track_list_format_degrades_to_no_root_but_keeps_settings()`.
-//           A session written by the pre-source-root build carried `tracks`/`current`.
-// Why:      Those obsolete fields must be ignored, the absent `source_root`/`selected`
-//           default to `None` (so launch falls through to the music directory), and the
-//           saved settings must still be read.
+/// Every former shuffle and repeat combination maps according to issue 460.
 #[test]
-fn old_track_list_format_degrades_to_no_root_but_keeps_settings() {
-    // What:     a hand-written old-format JSON (shuffle omitted so the test does not depend
-    //           on the enum's serialized spelling; it defaults to `Off`).
-    // Why:      Reproduce a session file from the previous schema.
-    let old = r#"{"tracks":["/a.flac","/b.opus"],"current":1,"position_secs":5.0,"volume":0.5,"repeat_track":true}"#;
-    // What:     parse it as the new `Session`.
-    // Why:      Confirm graceful degradation.
-    let parsed = serde_json::from_str::<Session>(old).unwrap();
-    // What:     no usable root and no selection survive the old format.
-    // Why:      The obsolete `tracks`/`current` cannot become a root; launch must fall back.
+fn every_legacy_combination_migrates() {
+    let cases = [
+        ("Off", false, PlaybackMode::InOrder),
+        ("WithinPage", false, PlaybackMode::ShufflePage),
+        ("All", false, PlaybackMode::ShuffleAll),
+        ("Off", true, PlaybackMode::Repeat),
+        ("WithinPage", true, PlaybackMode::Repeat),
+        ("All", true, PlaybackMode::Repeat),
+    ];
+    for (shuffle, repeat_track, expected) in cases {
+        let json = format!(
+            "{{\"shuffle\":\"{shuffle}\",\"repeat_track\":{repeat_track}}}"
+        );
+        assert_eq!(Session::from_json(&json).unwrap().playback_mode, expected);
+    }
+}
+
+/// A present current field wins over stale former fields.
+#[test]
+fn current_playback_mode_wins_over_legacy_fields() {
+    let json = r#"{"playback_mode":"shuffle_all","shuffle":"WithinPage","repeat_track":true}"#;
+    assert_eq!(
+        Session::from_json(json).unwrap().playback_mode,
+        PlaybackMode::ShuffleAll,
+    );
+}
+
+/// Unknown current mode degrades to In order without resurrecting stale values.
+#[test]
+fn unknown_current_mode_does_not_reuse_legacy_fields() {
+    let json = r#"{"playback_mode":"future","shuffle":"All","repeat_track":true}"#;
+    assert_eq!(
+        Session::from_json(json).unwrap().playback_mode,
+        PlaybackMode::InOrder,
+    );
+}
+
+/// Former track-list files retain unrelated settings while migrating playback.
+#[test]
+fn old_track_list_format_keeps_settings() {
+    let old = r#"{"tracks":["/a.flac"],"current":0,"position_secs":5.0,"volume":0.5,"shuffle":"All","repeat_track":false}"#;
+    let parsed = Session::from_json(old).unwrap();
     assert_eq!(parsed.source_root, None);
     assert_eq!(parsed.selected, None);
-    // What:     the saved settings are still read.
-    // Why:      Volume/position/repeat persistence must not regress for old files.
     assert_eq!(parsed.position_secs, 5.0);
     assert_eq!(parsed.volume, 0.5);
-    assert!(parsed.repeat_track);
-    // What:     omitted shuffle defaults to `Off`.
-    // Why:      Confirms missing fields fall back rather than failing the parse.
-    assert_eq!(parsed.shuffle, ShuffleMode::Off);
-    // Missing page-control preferences use the first-install Chromium default.
-    assert_eq!(parsed.page_control_style, PageControlStyle::ChromiumTabs);
+    assert_eq!(parsed.playback_mode, PlaybackMode::ShuffleAll);
 }
 
-
-// What:     `#[test] fn page_control_style_integer_conversion_covers_every_style()`.
-//           Exercise all named styles plus an invalid Slint integer.
-// Why:      The UI boundary must preserve every settings choice and make radio controls
-//           the safe default for stale or invalid values.
+/// Page-style integer conversion covers every persisted style and its fallback.
 #[test]
 fn page_control_style_integer_conversion_covers_every_style() {
     assert_eq!(PageControlStyle::default(), PageControlStyle::ChromiumTabs);

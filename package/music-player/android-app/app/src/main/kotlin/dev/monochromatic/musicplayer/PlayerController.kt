@@ -105,15 +105,15 @@ import dev.monochromatic.musicplayer.core.Queue
 // ```
 import dev.monochromatic.musicplayer.core.Session
 
-// What:     `import dev.monochromatic.musicplayer.core.ShuffleMode` imports the
-//           three-value enum `ShuffleMode` (`OFF`/`WITHIN_PAGE`/`ALL`).
-// Why:      `setShuffle` takes a `ShuffleMode`.
+// What:     `import dev.monochromatic.musicplayer.core.PlaybackMode` imports the
+//           three-value enum `PlaybackMode` (`OFF`/`WITHIN_PAGE`/`ALL`).
+// Why:      `setPlaybackMode` takes a `PlaybackMode`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { ShuffleMode } from "./core/ShuffleMode";
+// import { PlaybackMode } from "./core/PlaybackMode";
 // ```
-import dev.monochromatic.musicplayer.core.ShuffleMode
+import dev.monochromatic.musicplayer.core.PlaybackMode
 
 // What:     `import dev.monochromatic.musicplayer.core.pageOfIndex` imports the
 //           `pageOfIndex(pages, index)` FUNCTION: returns the page position holding a
@@ -565,6 +565,19 @@ class PlayerController(private val engine: AudioEngine) {
      */
     private fun currentUri(): String? = queue.currentIndex()?.let { uris[it] }
 
+    // What:     `private fun pageIndices(page: Int): List<Int>` maps one displayed
+    //           page to its queue load-order indices.
+    // Why:      The label shown in the playback-mode segment and the queue scope must
+    //           always describe the same selected page.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function pageIndices(page: number): readonly number[] { /* map entries */ }
+    // ```
+    /** Returns load-order indices for one displayed page, or an empty list. */
+    private fun pageIndices(page: Int): List<Int> =
+        pages.getOrNull(page)?.entries?.map { entry -> entry.index } ?: emptyList()
+
     // What:     `fun currentSession(): Session { ... }` declares a public method returning a
     //           snapshot of the persistable state as a `core.Session`, expression body.
     // Why:      The service calls this to persist via `SessionStore`: the selected track URI,
@@ -578,8 +591,7 @@ class PlayerController(private val engine: AudioEngine) {
     //     selected: this.currentUri(),
     //     positionSecs: this.engine.positionSec(),
     //     volume: this.uiState.volume,
-    //     shuffle: this.queue.shuffleMode(),
-    //     repeatTrack: this.queue.repeatTrack(),
+    //     playbackMode: this.queue.playbackMode(),
     //   });
     // }
     // ```
@@ -591,8 +603,7 @@ class PlayerController(private val engine: AudioEngine) {
         selected = currentUri(),
         positionSecs = engine.positionSec(),
         volume = uiState.volume,
-        shuffle = queue.shuffleMode(),
-        repeatTrack = queue.repeatTrack(),
+        playbackMode = queue.playbackMode(),
     )
 
     // What:     `fun applySettings(session: Session) { ... }` declares a public method taking a
@@ -609,8 +620,7 @@ class PlayerController(private val engine: AudioEngine) {
     // In TS you'd write (pseudocode):
     // ```ts
     // applySettings(session) {
-    //   this.queue.setRepeatTrack(session.repeatTrack);
-    //   this.queue.setShuffle(session.shuffle);
+    //   this.queue.setPlaybackMode(session.playbackMode);
     //   this.engine.setVolume(session.volume);
     //   this.uiState = { ...this.uiState, volume: session.volume };
     // }
@@ -620,17 +630,8 @@ class PlayerController(private val engine: AudioEngine) {
      * explain its call shape and effects.
      */
     fun applySettings(session: Session) {
-        // What:     `queue.setRepeatTrack(session.repeatTrack)` then `queue.setShuffle(session.shuffle)`
-        //           store the saved settings in the queue's mode fields.
-        // Why:      Restore the user's shuffle/repeat choices up front; the queue re-reads these
-        //           when tracks later arrive, so the eventual scope is correct.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.queue.setRepeatTrack(session.repeatTrack); this.queue.setShuffle(session.shuffle);
-        // ```
-        queue.setRepeatTrack(session.repeatTrack)
-        queue.setShuffle(session.shuffle)
+        // Restore one mode before tracks arrive; later scope rebuilds read this value.
+        queue.setPlaybackMode(session.playbackMode)
         // What:     `engine.setVolume(session.volume)` applies the saved gain to the engine.
         // Why:      Restore the user's volume from the first frame; this persistent gain survives
         //           the terminal `engine.load`, so applying it early is safe.
@@ -1296,65 +1297,22 @@ class PlayerController(private val engine: AudioEngine) {
         playCurrent()
     }
 
-    // What:     `fun setShuffle(mode: ShuffleMode) { ... }` declares a public method taking
-    //           a `ShuffleMode` enum, block body, `Unit`.
+    // What:     `fun setPlaybackMode(mode: PlaybackMode) { ... }` declares a public method taking
+    //           a `PlaybackMode` enum, block body, `Unit`.
     // Why:      Change shuffle/scope, keeping the current track current.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // setShuffle(mode: ShuffleMode): void { this.queue.setShuffle(mode); this.refresh(); }
+    // setPlaybackMode(mode: PlaybackMode): void { this.queue.setPlaybackMode(mode); this.refresh(); }
     // ```
     /**
      * Defines set shuffle behavior for this music-player component; the TypeScript-oriented notes above explain
      * its call shape and effects.
      */
-    fun setShuffle(mode: ShuffleMode) {
-        // What:     `queue.setShuffle(mode)` applies the new shuffle/scope mode in the queue.
-        // Why:      Change the mode while keeping the playing track current.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.queue.setShuffle(mode);
-        // ```
-        queue.setShuffle(mode)
-        // What:     `refresh()` rebuilds the snapshot after the mode change.
-        // Why:      Repaint the shuffle radios and any reordering.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.refresh();
-        // ```
-        refresh()
-    }
-
-    // What:     `fun setRepeatTrack(on: Boolean) { ... }` declares a public method taking a
-    //           `Boolean`, block body, `Unit`.
-    // Why:      Toggle "repeat track".
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // setRepeatTrack(on: boolean): void { this.queue.setRepeatTrack(on); this.refresh(); }
-    // ```
-    /**
-     * Defines set repeat track behavior for this music-player component; the TypeScript-oriented notes above
-     * explain its call shape and effects.
-     */
-    fun setRepeatTrack(on: Boolean) {
-        // What:     `queue.setRepeatTrack(on)` stores the repeat-track flag in the queue.
-        // Why:      Record the new repeat-track state.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.queue.setRepeatTrack(on);
-        // ```
-        queue.setRepeatTrack(on)
-        // What:     `refresh()` rebuilds the snapshot after the toggle.
-        // Why:      Repaint the repeat-track checkbox.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.refresh();
-        // ```
+    fun setPlaybackMode(mode: PlaybackMode) {
+        // Scope the choice to the page whose displayed name labels the segment.
+        queue.setPageScope(pageIndices(uiState.selectedPage))
+        queue.setPlaybackMode(mode)
         refresh()
     }
 
@@ -1385,6 +1343,7 @@ class PlayerController(private val engine: AudioEngine) {
         // }
         // ```
         if (page in pages.indices) {
+            queue.setPageScope(pageIndices(page))
             // What:     `uiState = uiState.copy(selectedPage = page, pageItems = pages[page].entries)`
             //           reassigns `uiState` to a near-duplicate built by `copy(...)`. `.copy`
             //           is the data-class method that returns a NEW value with the named
@@ -1928,6 +1887,7 @@ class PlayerController(private val engine: AudioEngine) {
             // ```
             resolveViewedPage()
         }
+        queue.setPageScope(pageIndices(selected))
         // What:     `uiState = PlayerUiState( ... )` reassigns `uiState` to a brand-new
         //           snapshot built with NAMED constructor arguments (the assignment goes
         //           through the Compose delegate, triggering recompose). Two arguments use
@@ -1946,8 +1906,7 @@ class PlayerController(private val engine: AudioEngine) {
         //   pageItems: this.pages[selected]?.entries ?? [],
         //   currentIndex: current,
         //   playing: this.isPlaying,
-        //   shuffle: this.queue.shuffleMode(),
-        //   repeatTrack: this.queue.repeatTrack(),
+        //   playbackMode: this.queue.playbackMode(),
         //   volume: this.uiState.volume,
         //   queueSize: this.queue.len(),
         //   loading: this.isLoading,
@@ -2002,24 +1961,8 @@ class PlayerController(private val engine: AudioEngine) {
             // playing: this.isPlaying,
             // ```
             playing = isPlaying,
-            // What:     `shuffle = queue.shuffleMode()` passes the current shuffle mode by
-            //           name.
-            // Why:      The shuffle radio group.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // shuffle: this.queue.shuffleMode(),
-            // ```
-            shuffle = queue.shuffleMode(),
-            // What:     `repeatTrack = queue.repeatTrack()` passes the repeat-track flag by
-            //           name.
-            // Why:      The repeat-track checkbox.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // repeatTrack: this.queue.repeatTrack(),
-            // ```
-            repeatTrack = queue.repeatTrack(),
+            // Mirror the one queue mode into the single-select control.
+            playbackMode = queue.playbackMode(),
             // What:     `volume = uiState.volume` carries the current volume forward by name
             //           (reading the OLD snapshot's volume).
             // Why:      Preserve the gain across the rebuild.

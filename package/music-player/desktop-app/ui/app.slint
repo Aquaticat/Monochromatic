@@ -30,7 +30,7 @@
 // slider, while their human-readable "m:ss" forms arrive as separate string
 // properties formatted in Rust (Slint's number formatting is awkward).
 
-import { Button, CheckBox, Slider, HorizontalBox, VerticalBox, Palette } from "std-widgets.slint";
+import { Button, Slider, HorizontalBox, VerticalBox, Palette } from "std-widgets.slint";
 
 // One shared text size for every hand-drawn Text in this file, kept equal to the
 // Fluent std-widgets' body text so custom Text never sits a notch below the Button
@@ -1302,6 +1302,214 @@ component VScrollBar inherits Rectangle {
     }
 }
 
+// One Material single-select segment. Joined outer corners and shared seams
+// present four mutually exclusive playback behaviors as one control.
+component PlaybackModeButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    in property <bool> leading;
+    in property <bool> trailing;
+    in property <int> item-index;
+    callback clicked();
+    horizontal-stretch: 0;
+    width: max(48px, mode-label.preferred-width + 32px);
+    height: 48px;
+    border-width: mode-focus.has-focus ? 2px : 1px;
+    border-color: mode-focus.has-focus
+        ? Palette.accent-background
+        : LedPaletteAdapter.set-alpha(Palette.foreground, 0.6);
+    border-top-left-radius: root.leading ? 24px : 0px;
+    border-bottom-left-radius: root.leading ? 24px : 0px;
+    border-top-right-radius: root.trailing ? 24px : 0px;
+    border-bottom-right-radius: root.trailing ? 24px : 0px;
+    background: root.selected
+        ? Palette.accent-background
+        : mode-touch.pressed
+            ? LedPaletteAdapter.set-alpha(Palette.foreground, 0.18)
+            : mode-touch.has-hover
+                ? LedPaletteAdapter.set-alpha(Palette.foreground, 0.12)
+                : Palette.control-background;
+    forward-focus: mode-focus;
+    accessible-role: radio-button;
+    accessible-label: root.text;
+    accessible-checkable: true;
+    accessible-checked: root.selected;
+    accessible-item-index: root.item-index;
+    accessible-action-default => {
+        root.clicked();
+    }
+
+    mode-label := Text {
+        x: 16px;
+        width: parent.width - 32px;
+        height: parent.height;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        color: root.selected ? Palette.accent-foreground : Palette.foreground;
+    }
+    mode-touch := TouchArea {
+        clicked => {
+            mode-focus.focus();
+            root.clicked();
+        }
+    }
+    mode-focus := FocusScope {
+        x: 0px;
+        width: 0px;
+        key-pressed(event) => {
+            if (event.text == " " || event.text == "\n") {
+                root.clicked();
+                return accept;
+            }
+            return reject;
+        }
+    }
+}
+
+// Material playback-mode group with horizontal reachability for long page names
+// and enlarged system fonts. The displayed page name is used verbatim.
+component PlaybackModeGroup inherits Rectangle {
+    in property <int> selected-mode;
+    in property <string> current-page;
+    callback select-mode(int);
+    height: 48px;
+    horizontal-stretch: 1;
+    accessible-role: radio-group;
+    accessible-label: "When this track ends";
+    accessible-item-count: 4;
+
+    mode-scroll := Flickable {
+        width: parent.width;
+        height: parent.height;
+        viewport-width: max(self.width, mode-row.preferred-width);
+        viewport-height: self.height;
+        interactive: true;
+
+        mode-row := HorizontalLayout {
+            spacing: -1px;
+            PlaybackModeButton {
+                text: "Repeat";
+                selected: root.selected-mode == 0;
+                leading: true;
+                trailing: false;
+                item-index: 0;
+                clicked => { root.select-mode(0); }
+            }
+            PlaybackModeButton {
+                text: "In order";
+                selected: root.selected-mode == 1;
+                leading: false;
+                trailing: false;
+                item-index: 1;
+                clicked => { root.select-mode(1); }
+            }
+            PlaybackModeButton {
+                text: root.current-page == "" ? "Shuffle page" : "Shuffle " + root.current-page;
+                selected: root.selected-mode == 2;
+                leading: false;
+                trailing: false;
+                item-index: 2;
+                clicked => { root.select-mode(2); }
+            }
+            PlaybackModeButton {
+                text: "Shuffle all";
+                selected: root.selected-mode == 3;
+                leading: false;
+                trailing: true;
+                item-index: 3;
+                clicked => { root.select-mode(3); }
+            }
+        }
+    }
+}
+
+// One Material standard group action with a 48px minimum target, keyboard
+// activation, accessible button semantics, and visible focus.
+component TransportGroupButton inherits Rectangle {
+    in property <string> text;
+    callback clicked();
+    horizontal-stretch: 0;
+    width: max(48px, transport-label.preferred-width + 32px);
+    height: 48px;
+    border-radius: 24px;
+    border-width: transport-focus.has-focus ? 2px : 0px;
+    border-color: Palette.accent-background;
+    background: transport-touch.pressed
+        ? LedPaletteAdapter.set-alpha(Palette.accent-background, 0.7)
+        : transport-touch.has-hover
+            ? LedPaletteAdapter.set-alpha(Palette.accent-background, 0.85)
+            : Palette.accent-background;
+    forward-focus: transport-focus;
+    accessible-role: button;
+    accessible-label: root.text;
+    accessible-action-default => { root.clicked(); }
+
+    transport-label := Text {
+        x: 16px;
+        width: parent.width - 32px;
+        height: parent.height;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        color: Palette.accent-foreground;
+    }
+    transport-touch := TouchArea {
+        clicked => {
+            transport-focus.focus();
+            root.clicked();
+        }
+    }
+    transport-focus := FocusScope {
+        x: 0px;
+        width: 0px;
+        key-pressed(event) => {
+            if (event.text == " " || event.text == "\n") {
+                root.clicked();
+                return accept;
+            }
+            return reject;
+        }
+    }
+}
+
+// Material standard button group. Whole actions stay intact and horizontally
+// scroll when the available width or font scale cannot show all three at once.
+component TransportButtonGroup inherits Rectangle {
+    in property <bool> playing;
+    callback prev();
+    callback toggle-play();
+    callback next();
+    height: 48px;
+    horizontal-stretch: 1;
+
+    transport-scroll := Flickable {
+        width: parent.width;
+        height: parent.height;
+        viewport-width: max(self.width, transport-row.preferred-width);
+        viewport-height: self.height;
+        interactive: true;
+
+        transport-row := HorizontalLayout {
+            spacing: 8px;
+            TransportGroupButton {
+                text: "Prev";
+                clicked => { root.prev(); }
+            }
+            TransportGroupButton {
+                text: root.playing ? "Pause" : "Play";
+                clicked => { root.toggle-play(); }
+            }
+            TransportGroupButton {
+                text: "Next";
+                clicked => { root.next(); }
+            }
+        }
+    }
+}
+
 export component AppWindow inherits Window {
     // Window title: the playing track's list path (folder/.../file, the same string
     // the queue row shows) while audio is playing, plain "Music Player" when paused
@@ -1357,17 +1565,9 @@ export component AppWindow inherits Window {
     // binds its `value` here, so a one-way binding would break on the first user drag and
     // stop reflecting engine/restored volume changes.
     in-out property <float> volume: 1.0;
-    // Shuffle mode as an int the radio group compares against: 0 = off,
-    // 1 = within page, 2 = all. Off/within-page confine playback to the current
-    // page; all spans the whole queue (the scope logic lives in Rust).
-    in property <int> shuffle-mode: 0;
-    // Whether "repeat track" is on (replay the current track on its natural end).
-    // Two-way (`in-out`) for the same reason as `volume`/`position`: the native
-    // CheckBox flips its own `checked` with an imperative assignment on click
-    // (widgets/fluent/checkbox.slint), which would break a one-way binding (see
-    // doc/troubleshooting/slint-slider-binding-breaks-on-input.md); a two-way
-    // `<=>` alias survives that, so engine updates keep moving the checkbox.
-    in-out property <bool> repeat-track: false;
+    // One playback mode: 0 Repeat, 1 In order, 2 Shuffle displayed page,
+    // 3 Shuffle all. In order is the first-run default.
+    in property <int> playback-mode: 1;
     in property <int> current-index: -1;
     in property <[string]> queue: [];
 
@@ -1396,10 +1596,8 @@ export component AppWindow inherits Window {
     callback next();
     callback seek(float);
     callback set-volume(float);
-    // The user picked a shuffle radio; the argument is the mode int (0/1/2).
-    callback set-shuffle-mode(int);
-    // The user toggled the repeat-track checkbox; the argument is the new state.
-    callback set-repeat-track(bool);
+    // The user picked one playback segment; the argument is the mode int (0 to 3).
+    callback set-playback-mode(int);
     // A single click on an UNSELECTED row selects it: Rust makes it current and
     // loads it paused (pausing whatever was playing). A click on the already-current
     // row instead toggles play/pause (see the row handler below). The argument is
@@ -1462,111 +1660,41 @@ export component AppWindow inherits Window {
             }
         }
 
-        // Combined control row, left to right: an Open button, the three-state
-        // shuffle radio group (a "Shuffle" label then Off / Within page / All),
-        // the transport buttons (prev / play-pause / next), and a "repeat track"
-        // checkbox. The radio and checkbox are plain-HTML-styled custom
-        // components. A FlexboxLayout (the same experimental builtin the page-tab
-        // bar uses, enabled via SLINT_ENABLE_EXPERIMENTAL_FEATURES in the
-        // Containerfile) lays the four groups left-to-right and wraps them onto
-        // more rows when the window is too narrow. Each group is wrapped in its
-        // own HorizontalLayout so a wrap never splits a group. alignment:
-        // space-between is taffy's justify-content: space-between, and
-        // spacing-horizontal: 48px is taffy's column gap, which acts as the
-        // minimum: space-between only ADDS free space on top of the gap, so the
-        // groups spread across the row yet never sit closer than 48px (verified
-        // against the slint clone's internal/core/layout.rs:1495-1524, where
-        // alignment maps to justify_content and spacing-h/v map to the taffy gap
-        // independently). spacing-vertical: 8px is the gap between wrapped rows;
-        // cross-axis-alignment: center vertically centres each group against the
-        // tallest in its row; vertical-stretch: 0 keeps the row at its wrapped height (the
-        // queue region below absorbs the vertical slack).
+        // Settings and source actions remain separate from playback semantics.
         FlexboxLayout {
             flex-wrap: wrap;
-            alignment: space-between;
-            cross-axis-alignment: center;
-            spacing-horizontal: 48px;
+            spacing-horizontal: 16px;
             spacing-vertical: 8px;
             vertical-stretch: 0;
             Button {
                 text: "Settings";
                 primary: root.show-settings;
-                clicked => {
-                    root.show-settings = true;
-                }
+                clicked => { root.show-settings = true; }
             }
             Button {
                 text: "Open";
-                // Highlight (accent style) when the queue is empty, so a fresh
-                // launch points the user at the only useful action.
                 primary: root.queue.length == 0;
-                clicked => {
-                    root.open-files();
-                }
+                clicked => { root.open-files(); }
             }
-            // shuffle group: the label plus the three mutually-exclusive radios,
-            // kept together as one flex item so wrapping never splits them
-            HorizontalLayout {
-                spacing: 8px;
-                Text {
-                    text: "Shuffle";
-                    font-size: Typography.body-rem * 1rem;
-                    vertical-alignment: center;
-                    color: Palette.foreground;
-                }
-                RadioButton {
-                    text: "Off";
-                    selected: root.shuffle-mode == 0;
-                    clicked => {
-                        root.set-shuffle-mode(0);
-                    }
-                }
-                RadioButton {
-                    text: "Within page";
-                    selected: root.shuffle-mode == 1;
-                    clicked => {
-                        root.set-shuffle-mode(1);
-                    }
-                }
-                RadioButton {
-                    text: "All";
-                    selected: root.shuffle-mode == 2;
-                    clicked => {
-                        root.set-shuffle-mode(2);
-                    }
-                }
-            }
-            // transport group: prev / play-pause / next, one flex item
-            HorizontalLayout {
-                spacing: 8px;
-                Button {
-                    text: "Prev";
-                    clicked => {
-                        root.prev();
-                    }
-                }
-                Button {
-                    text: root.playing ? "Pause" : "Play";
-                    clicked => {
-                        root.toggle-play();
-                    }
-                }
-                Button {
-                    text: "Next";
-                    clicked => {
-                        root.next();
-                    }
-                }
-            }
-            CheckBox {
-                text: "Repeat track";
-                // Native CheckBox owns its `checked` and flips it on click, so bind
-                // two-way; `toggled` then fires with the new value already in place.
-                checked <=> root.repeat-track;
-                toggled => {
-                    root.set-repeat-track(root.repeat-track);
-                }
-            }
+        }
+
+        Text {
+            text: "When this track ends";
+            font-size: Typography.body-rem * 1rem;
+            color: Palette.foreground;
+        }
+        PlaybackModeGroup {
+            selected-mode: root.playback-mode;
+            current-page: root.selected-page >= 0 && root.page-labels.length > root.selected-page
+                ? root.page-labels[root.selected-page]
+                : "";
+            select-mode(mode) => { root.set-playback-mode(mode); }
+        }
+        TransportButtonGroup {
+            playing: root.playing;
+            prev => { root.prev(); }
+            toggle-play => { root.toggle-play(); }
+            next => { root.next(); }
         }
 
         // 32px gap between the control row and the queue area below. The spacer

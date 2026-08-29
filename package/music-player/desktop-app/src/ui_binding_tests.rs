@@ -142,6 +142,67 @@ fn volume_thumb_follows_engine_after_user_input() {
     );
 }
 
+/// Playback and transport groups expose the required order, selection, and dynamic page name.
+#[test]
+fn playback_groups_follow_mode_page_and_transport_state() {
+    setup();
+    let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
+    app.set_page_labels(ModelRc::new(VecModel::from(vec![
+        SharedString::from("Jazz"),
+        SharedString::from("Classical Archive With A Long Displayed Name"),
+    ])));
+    app.set_selected_page(0);
+    app.set_playback_mode(0);
+    let mode_buttons = ElementHandle::find_by_element_type_name(&app, "PlaybackModeButton")
+        .collect::<Vec<_>>();
+    let labels = mode_buttons
+        .iter()
+        .map(|button| button.accessible_label().expect("mode button has a label").to_string())
+        .collect::<Vec<_>>();
+    assert_eq!(labels, ["Repeat", "In order", "Shuffle Jazz", "Shuffle all"]);
+    assert_eq!(
+        mode_buttons
+            .iter()
+            .filter(|button| button.accessible_checked() == Some(true))
+            .count(),
+        1,
+    );
+
+    app.set_selected_page(1);
+    app.set_playback_mode(2);
+    let changed_mode_buttons = ElementHandle::find_by_element_type_name(&app, "PlaybackModeButton")
+        .collect::<Vec<_>>();
+    assert_eq!(
+        changed_mode_buttons[2].accessible_label().as_deref(),
+        Some("Shuffle Classical Archive With A Long Displayed Name"),
+    );
+    assert_eq!(
+        changed_mode_buttons
+            .iter()
+            .filter(|button| button.accessible_checked() == Some(true))
+            .count(),
+        1,
+    );
+    assert!(changed_mode_buttons.iter().all(|button| {
+        button
+            .accessible_label()
+            .is_none_or(|label| !label.contains("<currentPage>"))
+    }));
+
+    let transport = ElementHandle::find_by_element_type_name(&app, "TransportGroupButton")
+        .collect::<Vec<_>>();
+    assert_eq!(
+        transport
+            .iter()
+            .map(|button| button.accessible_label().expect("transport button has a label"))
+            .collect::<Vec<_>>(),
+        ["Prev", "Play", "Next"],
+    );
+    app.set_playing(true);
+    let playing_transport = ElementHandle::find_by_element_type_name(&app, "TransportGroupButton")
+        .collect::<Vec<_>>();
+    assert_eq!(playing_transport[1].accessible_label().as_deref(), Some("Pause"));
+}
 
 // What:     `led_backplate_fills_width_and_rows_track_resize` drives measured LED layouts.
 // Why:      Plate paint must always fill available width while deferred reports preserve

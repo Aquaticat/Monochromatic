@@ -4,7 +4,7 @@
 //           `src/main/kotlin`, so this file physically lives at
 //           `.../dev/monochromatic/musicplayer/core/Queue.kt`. Other files refer
 //           to `Queue` either by importing `dev.monochromatic.musicplayer.core.Queue`
-//           or by sitting in this same package (as the sibling `ShuffleMode`,
+//           or by sitting in this same package (as the sibling `PlaybackMode`,
 //           `Page`, and `paginate` do).
 // Why:      Without a package line everything would land in the unnamed "root"
 //           package, which Kotlin discourages and which collides as the app grows.
@@ -46,15 +46,15 @@ import kotlin.random.Random
 // `queue.rs`.
 //
 // Playback has a SCOPE that it loops over, chosen by the shuffle mode (the
-// sibling `ShuffleMode` enum):
+// sibling `PlaybackMode` enum):
 //
-//   - `ShuffleMode.OFF` and `ShuffleMode.WITHIN_PAGE` confine playback to the
+//   - `PlaybackMode.IN_ORDER` and `PlaybackMode.SHUFFLE_PAGE` confine playback to the
 //     current track's PAGE: its top-level folder under the loaded root, or its
 //     A-Z/`#` letter bucket for a root-level track. This is the same grouping the
 //     UI tabs use, computed by the sibling `paginate` function. `OFF` plays the
 //     page in load order; `WITHIN_PAGE` shuffles the page. Either way, reaching
 //     the end of the page loops back to its start.
-//   - `ShuffleMode.ALL` scopes playback to the whole queue, shuffled, and loops
+//   - `PlaybackMode.SHUFFLE_ALL` scopes playback to the whole queue, shuffled, and loops
 //     the whole queue.
 //
 // "Repeat track" is independent of the shuffle scope: when on, a track that ends
@@ -177,43 +177,40 @@ class Queue private constructor(private val rng: Random) {
      */
     private var pos: Int? = null
 
-    // What:     `private var shuffle: ShuffleMode = ShuffleMode.OFF` declares a
-    //           private, reassignable field of the sibling enum type `ShuffleMode`,
-    //           initialised to the enum constant `ShuffleMode.OFF`. `ShuffleMode` is
-    //           a three-state enum (`OFF`, `WITHIN_PAGE`, `ALL`); `ShuffleMode.OFF`
-    //           names one specific constant of it.
-    // Why:      The three-state shuffle/scope setting; it decides BOTH the scope
-    //           (page vs whole queue) and the ordering (sequential vs shuffled).
-    //           Defaulting to `OFF` means a fresh queue plays the current page in
-    //           load order.
+    // What:     `private var mode: PlaybackMode` stores one of four enum values.
+    // Why:      Natural completion, manual transport, shuffle scope, and persistence
+    //           must never disagree through separate flags.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // private shuffle: ShuffleMode = ShuffleMode.OFF;
+    // private mode: PlaybackMode = "in_order";
     // ```
-    /**
-     * Defines shuffle value for this music-player component; the TypeScript-oriented notes above explain its
-     * source and use.
-     */
-    private var shuffle: ShuffleMode = ShuffleMode.OFF
+    /** Single selected playback behavior. */
+    private var mode: PlaybackMode = PlaybackMode.IN_ORDER
 
-    // What:     `private var repeatTrackFlag: Boolean = false` declares a private,
-    //           reassignable boolean field, initialised `false`. `Boolean` is
-    //           Kotlin's true/false type (capital `B`); there are no integer
-    //           siblings to confuse it with here.
-    // Why:      When true, a track that ends naturally replays itself; this is the
-    //           "repeat track" checkbox state. It is independent of the shuffle
-    //           scope, which is why it lives in its own field.
+    // What:     `List<Int>` is a read-only list of load-order indices; its mutable
+    //           sibling is `MutableList<Int>`.
+    // Why:      The displayed page, not necessarily the current track's page, decides
+    //           the scope used by In order and Shuffle page.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // private repeatTrackFlag: boolean = false;
+    // private pageScope: readonly number[] = [];
     // ```
-    /**
-     * Defines repeat track flag value for this music-player component; the TypeScript-oriented notes above
-     * explain its source and use.
-     */
-    private var repeatTrackFlag: Boolean = false
+    /** Load-order indices belonging to the currently displayed page. */
+    private var pageScope: List<Int> = emptyList()
+
+    // What:     `Int` is Kotlin's 32-bit signed integer; siblings include `Long`,
+    //           `Short`, and `Byte`.
+    // Why:      A retained current track may sit before the displayed page temporarily;
+    //           this index marks where sequential wrapping begins after that transition.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private sequentialStart = 0;
+    // ```
+    /** First repeatable position in a sequential order. */
+    private var sequentialStart: Int = 0
 
     // What:     `private var cycleStart: Int = 0` declares a private, reassignable
     //           `Int` field, initialised to `0`. It is an index INTO `order`: the
@@ -223,7 +220,7 @@ class Queue private constructor(private val rng: Random) {
     //           is the set already played this cycle; a new pick is drawn only from
     //           scope tracks NOT in that set (without replacement). When a cycle has
     //           exhausted the scope, `cycleStart` advances to `order.size` so the next
-    //           pick begins a fresh cycle. Under `ShuffleMode.OFF` it is unused
+    //           pick begins a fresh cycle. Under `PlaybackMode.IN_ORDER` it is unused
     //           (sequential order needs no play history). Mirrors the desktop
     //           `queue.rs` `cycle_start`. See `doc/decision/music-player-jit-shuffle.md`.
     //
@@ -383,37 +380,16 @@ class Queue private constructor(private val rng: Random) {
      */
     fun isEmpty(): Boolean = tracks.isEmpty()
 
-    // What:     `fun repeatTrack(): Boolean = repeatTrackFlag` declares an instance
-    //           method returning `Boolean`, expression body. It simply reads the
-    //           `repeatTrackFlag` field and returns it.
-    // Why:      Whether "repeat track" is on; the engine mirrors this flag to the UI
-    //           checkbox.
+    // What:     `fun playbackMode(): PlaybackMode = mode` is an expression-body
+    //           accessor returning the enum by value.
+    // Why:      UI and persistence mirror the same single mode the queue executes.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // repeatTrack(): boolean { return this.repeatTrackFlag; }
+    // playbackMode(): PlaybackMode { return this.mode; }
     // ```
-    /**
-     * Defines repeat track behavior for this music-player component; the TypeScript-oriented notes above explain
-     * its call shape and effects.
-     */
-    fun repeatTrack(): Boolean = repeatTrackFlag
-
-    // What:     `fun shuffleMode(): ShuffleMode = shuffle` declares an instance
-    //           method returning the sibling enum `ShuffleMode`, expression body.
-    //           It reads and returns the `shuffle` field.
-    // Why:      The current shuffle mode; the engine mirrors it to the UI radio
-    //           group.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // shuffleMode(): ShuffleMode { return this.shuffle; }
-    // ```
-    /**
-     * Defines shuffle mode behavior for this music-player component; the TypeScript-oriented notes above explain
-     * its call shape and effects.
-     */
-    fun shuffleMode(): ShuffleMode = shuffle
+    /** Returns the selected completion and transport behavior. */
+    fun playbackMode(): PlaybackMode = mode
 
     // What:     `fun displayPaths(): List<String> = relativeDisplayPaths(tracks)`
     //           declares an instance method returning a read-only `List<String>`,
@@ -535,32 +511,6 @@ class Queue private constructor(private val rng: Random) {
     //endregion
 
     //region Mutators
-    // What:     `fun setRepeatTrack(on: Boolean) { ... }` declares an instance method
-    //           taking one `Boolean` parameter `on` and returning nothing (no return
-    //           type annotation means the return type is `Unit`, Kotlin's "void").
-    //           This uses a BLOCK body `{ ... }`, not an expression body.
-    // Why:      Toggle "repeat track"; `advance` reads the flag on a natural end.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // setRepeatTrack(on: boolean): void { this.repeatTrackFlag = on; }
-    // ```
-    /**
-     * Defines set repeat track behavior for this music-player component; the TypeScript-oriented notes above
-     * explain its call shape and effects.
-     */
-    fun setRepeatTrack(on: Boolean) {
-        // What:     `repeatTrackFlag = on` is a plain field assignment: store the
-        //           parameter into the `var` field. No Kotlin-specific punctuation.
-        // Why:      Record the new flag so `advance` can honour it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.repeatTrackFlag = on;
-        // ```
-        repeatTrackFlag = on
-    }
-
     // What:     `fun setTracks(newTracks: List<String>) { ... }` declares an instance
     //           method taking one read-only `List<String>` parameter `newTracks` and
     //           returning `Unit` (void), block body. The parameter is the replacement
@@ -589,6 +539,8 @@ class Queue private constructor(private val rng: Random) {
         // this.tracks = newTracks;
         // ```
         tracks = newTracks
+        // A replacement library invalidates load-order indices from the prior page.
+        pageScope = emptyList()
         // What:     `rebuildScopeOrder(0)` calls the private helper with the literal
         //           anchor `0`. Note `0` is a plain non-null `Int` here, which the
         //           helper accepts as its `Int?` parameter (a non-null value is a
@@ -631,78 +583,41 @@ class Queue private constructor(private val rng: Random) {
         rebuildScopeOrder(null)
     }
 
-    // What:     `fun setShuffle(mode: ShuffleMode) { ... }` declares an instance
-    //           method taking one `ShuffleMode` enum parameter `mode`, returning
-    //           `Unit` (void), block body.
-    // Why:      Change the shuffle/scope mode while keeping the currently-playing
-    //           track current, so switching shuffle does not interrupt the current
-    //           song. A no-op change is ignored so the cursor never jumps needlessly.
+    // What:     `fun setPlaybackMode(newMode: PlaybackMode)` accepts one enum value.
+    // Why:      A mode change rebuilds navigation around the retained track without
+    //           loading audio or changing playback position.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // setShuffle(mode: ShuffleMode): void {
-    //   if (mode === this.shuffle) return;
-    //   const current = this.currentIndex();
-    //   this.shuffle = mode;
-    //   this.rebuildScopeOrder(current);
-    // }
+    // setPlaybackMode(newMode: PlaybackMode): void { /* retain current, rebuild */ }
     // ```
-    /**
-     * Defines set shuffle behavior for this music-player component; the TypeScript-oriented notes above explain
-     * its call shape and effects.
-     */
-    fun setShuffle(mode: ShuffleMode) {
-        // What:     `if (mode == shuffle) return` is an EARLY RETURN guard. `==` on
-        //           two enum values is a value/identity comparison (enum constants are
-        //           singletons, so `==` checks "same constant"). When the requested
-        //           mode equals the current `shuffle`, `return` exits immediately
-        //           (returning `Unit`).
-        // Why:      Avoid reshuffling and moving the cursor on a no-op mode change.
-        // Gotcha:   Kotlin's `==` calls structural equality (`.equals`), but for an
-        //           `enum` it behaves exactly like reference equality / TS `===`,
-        //           because each enum constant is a unique singleton.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (mode === this.shuffle) return;
-        // ```
-        if (mode == shuffle) return
-        // What:     `val current: Int? = currentIndex()` declares a read-only local
-        //           binding `current` (`val` = immutable) with an EXPLICIT type
-        //           annotation `Int?` (nullable Int), assigned the result of
-        //           `currentIndex()` (the current track's load-order index, or null).
-        // Why:      Remember the playing track BEFORE we change the mode and rebuild,
-        //           so the rebuild can keep the cursor on the same track.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const current: number | null = this.currentIndex();
-        // ```
-        /**
-         * Defines current value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
+    /** Selects one playback behavior while retaining the current track. */
+    fun setPlaybackMode(newMode: PlaybackMode) {
+        if (newMode == mode) return
+        /** Track retained across the navigation rebuild, or null. */
         val current: Int? = currentIndex()
-        // What:     `shuffle = mode` reassigns the `var` field to the new mode.
-        // Why:      Record the new mode so `rebuildScopeOrder`/`scopeIndices` read it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.shuffle = mode;
-        // ```
-        shuffle = mode
-        // What:     `rebuildScopeOrder(current)` calls the private helper, passing the
-        //           remembered `Int?` anchor. When `current` is `null` (nothing selected, e.g.
-        //           shuffle toggled before tapping a track), the helper DESELECTS (empty scope,
-        //           null cursor) rather than defaulting to the first track.
-        // Why:      Apply the new mode by recomputing the scope order, anchored on the
-        //           previously playing track so it stays current; with no current track,
-        //           toggling shuffle must keep nothing selected.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.rebuildScopeOrder(current);
-        // ```
+        mode = newMode
+        rebuildScopeOrder(current)
+    }
+
+    // What:     `fun setPageScope(indices: List<Int>)` accepts the displayed page's
+    //           load-order indices.
+    // Why:      Page-based modes must follow tab changes even when the playing track
+    //           remains on a different page.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // setPageScope(indices: readonly number[]): void { /* retain current, rebuild */ }
+    // ```
+    /** Updates the displayed-page scope without moving the current track. */
+    fun setPageScope(indices: List<Int>) {
+        /** Valid page indices in display order. */
+        val valid: List<Int> = indices.filter { index -> index in tracks.indices }
+        if (valid == pageScope) return
+        pageScope = valid
+        if (mode == PlaybackMode.SHUFFLE_ALL) return
+        /** Track retained while future transport adopts the new page. */
+        val current: Int? = currentIndex()
         rebuildScopeOrder(current)
     }
 
@@ -718,7 +633,7 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // playIndex(track: number): number | null {
     //   if (track >= this.tracks.length) return null;
-    //   if (this.shuffle === ShuffleMode.OFF) {
+    //   if (this.shuffle === PlaybackMode.IN_ORDER) {
     //     const position = this.order.indexOf(track);
     //     if (position >= 0) this.pos = position;
     //     else this.rebuildScopeOrder(track);
@@ -745,7 +660,18 @@ class Queue private constructor(private val rng: Random) {
         // if (track >= this.tracks.length) return null;
         // ```
         if (track >= tracks.size) return null
-        // What:     `if (shuffle == ShuffleMode.OFF) { ... } else { ... }` branches on
+        if (track !in pageScope) {
+            /** Pages rebuilt from the same display paths shown by the UI. */
+            val trackPages: List<Page> = paginate(displayPaths())
+            /** Page containing the selected track, or null for a defensive fallback. */
+            val trackPage: Int? = pageOfIndex(trackPages, track)
+            pageScope = if (trackPage == null) {
+                tracks.indices.toList()
+            } else {
+                trackPages[trackPage].entries.map { entry -> entry.index }
+            }
+        }
+        // What:     `if (mode == PlaybackMode.IN_ORDER || mode == PlaybackMode.REPEAT) { ... } else { ... }` branches on
         //           the shuffle mode. `==` compares the `shuffle` field against the
         //           `OFF` enum constant (enum value equality, like TS `===`).
         // Why:      Just-in-time shuffle keeps NO reusable precomputed order, so a
@@ -756,9 +682,9 @@ class Queue private constructor(private val rng: Random) {
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (this.shuffle === ShuffleMode.OFF) { /* find-or-rebuild */ } else { this.rebuildScopeOrder(track); }
+        // if (this.shuffle === PlaybackMode.IN_ORDER) { /* find-or-rebuild */ } else { this.rebuildScopeOrder(track); }
         // ```
-        if (shuffle == ShuffleMode.OFF) {
+        if (mode == PlaybackMode.IN_ORDER || mode == PlaybackMode.REPEAT) {
             // What:     `val position: Int = order.indexOf(track)` declares a read-only
             //           local `position`. `order.indexOf(track)` is a stdlib `List`
             //           method returning the FIRST index at which `track` appears in
@@ -836,7 +762,7 @@ class Queue private constructor(private val rng: Random) {
     //   if (this.pos === null) return null;
     //   const position = this.pos;
     //   if (natural && this.repeatTrackFlag) return this.order[position];
-    //   if (this.shuffle !== ShuffleMode.OFF) {
+    //   if (this.shuffle !== PlaybackMode.IN_ORDER) {
     //     if (position + 1 < this.order.length) { this.pos = position + 1; return this.order[position + 1]; }
     //     const pick = this.pickNextShuffle(this.order[position]);
     //     this.order = [...this.order, pick]; this.pos = this.order.length - 1; return pick;
@@ -857,9 +783,9 @@ class Queue private constructor(private val rng: Random) {
         val position: Int? = pos
         return if (position == null) {
             null
-        } else if (natural && repeatTrackFlag) {
+        } else if (natural && mode == PlaybackMode.REPEAT) {
             order[position]
-        } else if (shuffle != ShuffleMode.OFF) {
+        } else if (mode == PlaybackMode.SHUFFLE_PAGE || mode == PlaybackMode.SHUFFLE_ALL) {
             if (position + 1 < order.size) {
                 pos = position + 1
                 order[position + 1]
@@ -872,6 +798,11 @@ class Queue private constructor(private val rng: Random) {
                 pos = order.size - 1
                 pick
             }
+        } else if (sequentialStart > 0 && position < sequentialStart) {
+            order = order.drop(sequentialStart)
+            sequentialStart = 0
+            pos = 0
+            order[0]
         } else {
             /** Sequential position after the current one. */
             val next: Int = position + 1
@@ -879,8 +810,8 @@ class Queue private constructor(private val rng: Random) {
                 pos = next
                 order[next]
             } else {
-                pos = 0
-                order[0]
+                pos = sequentialStart
+                order[sequentialStart]
             }
         }
     }
@@ -955,7 +886,7 @@ class Queue private constructor(private val rng: Random) {
     // prev(): number | null {
     //   if (this.pos === null) return null;
     //   const position = this.pos;
-    //   if (this.shuffle !== ShuffleMode.OFF) {
+    //   if (this.shuffle !== PlaybackMode.IN_ORDER) {
     //     if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }
     //     return this.order[position]; // at history start: stay put
     //   }
@@ -975,14 +906,19 @@ class Queue private constructor(private val rng: Random) {
         val position: Int? = pos
         return if (position == null) {
             null
-        } else if (shuffle != ShuffleMode.OFF) {
+        } else if (mode == PlaybackMode.SHUFFLE_PAGE || mode == PlaybackMode.SHUFFLE_ALL) {
             if (position > 0) {
                 pos = position - 1
                 order[position - 1]
             } else {
                 order[position]
             }
-        } else if (position > 0) {
+        } else if (sequentialStart > 0 && position < sequentialStart) {
+            order = order.drop(sequentialStart)
+            sequentialStart = 0
+            pos = order.size - 1
+            order[order.size - 1]
+        } else if (position > sequentialStart) {
             pos = position - 1
             order[position - 1]
         } else {
@@ -1002,14 +938,14 @@ class Queue private constructor(private val rng: Random) {
     //           a read-only `List<Int>`, block body.
     // Why:      Compute the load-order indices that make up the playback scope around
     //           the `anchor` track, in ascending load order: the whole queue for
-    //           `ShuffleMode.ALL`, otherwise the anchor's page. Falls back to the
+    //           `PlaybackMode.SHUFFLE_ALL`, otherwise the anchor's page. Falls back to the
     //           whole queue when the anchor belongs to no page (an empty/invalid
     //           anchor), never producing an empty scope for a real track.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // private scopeIndices(anchor: number): number[] {
-    //   if (this.shuffle === ShuffleMode.ALL) {
+    //   if (this.shuffle === PlaybackMode.SHUFFLE_ALL) {
     //     return [...this.tracks.keys()];
     //   }
     //   const names = this.displayPaths();
@@ -1025,16 +961,16 @@ class Queue private constructor(private val rng: Random) {
      * explain its call shape and effects.
      */
     private fun scopeIndices(anchor: Int): List<Int> {
-        // What:     `if (shuffle == ShuffleMode.ALL) { ... }` is a control-flow check.
-        //           `==` compares the `shuffle` field against the `ShuffleMode.ALL`
+        // What:     `if (mode == PlaybackMode.SHUFFLE_ALL) { ... }` is a control-flow check.
+        //           `==` compares the `shuffle` field against the `PlaybackMode.SHUFFLE_ALL`
         //           enum constant (enum value equality, like TS `===`).
         // Why:      `ALL` ignores pages entirely: the scope is every track.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (this.shuffle === ShuffleMode.ALL) return [...this.tracks.keys()];
+        // if (this.shuffle === PlaybackMode.SHUFFLE_ALL) return [...this.tracks.keys()];
         // ```
-        if (shuffle == ShuffleMode.ALL) {
+        if (mode == PlaybackMode.SHUFFLE_ALL) {
             // What:     `return tracks.indices.toList()` builds and returns the list of
             //           every load-order index.
             //           - `tracks.indices` is a stdlib property giving the `IntRange`
@@ -1048,6 +984,9 @@ class Queue private constructor(private val rng: Random) {
             // return [...Array(this.tracks.length).keys()];
             // ```
             return tracks.indices.toList()
+        }
+        if (pageScope.isNotEmpty()) {
+            return pageScope
         }
         // What:     `val names: List<String> = displayPaths()` declares a read-only
         //           `List<String>` local `names`, the relative display strings (one
@@ -1297,7 +1236,7 @@ class Queue private constructor(private val rng: Random) {
     //           and returning `Unit` (void), block body.
     // Why:      Recompute the scope `order` and cursor `pos` so the `anchor` track
     //           stays current; called whenever the scope might change (`setTracks`,
-    //           `setShuffle`, `playIndex` to another page). A `null` anchor defaults
+    //           `setPlaybackMode`, `playIndex` to another page). A `null` anchor defaults
     //           to the first track; a stale index past the end is clamped into range;
     //           an empty queue clears the order and cursor.
     //
@@ -1307,7 +1246,7 @@ class Queue private constructor(private val rng: Random) {
     //   if (this.tracks.length === 0) { this.order = []; this.pos = null; return; }
     //   if (anchor === null) { this.order = []; this.pos = null; return; }
     //   const clamped = Math.min(anchor, this.tracks.length - 1);
-    //   if (this.shuffle === ShuffleMode.OFF) {
+    //   if (this.shuffle === PlaybackMode.IN_ORDER) {
     //     const scope = this.scopeIndices(clamped);
     //     const found = scope.indexOf(clamped);
     //     this.order = scope;
@@ -1332,6 +1271,7 @@ class Queue private constructor(private val rng: Random) {
         // if (this.tracks.length === 0) { this.order = []; this.pos = null; return; }
         // ```
         if (tracks.isEmpty()) {
+            sequentialStart = 0
             // What:     `order = emptyList()` assigns the shared zero-length read-only
             //           list (see the `emptyList()` note) to the `order` field.
             // Why:      No tracks means no playback order.
@@ -1375,6 +1315,7 @@ class Queue private constructor(private val rng: Random) {
         if (anchor == null) {
             order = emptyList()
             pos = null
+            sequentialStart = 0
             return
         }
         // What:     `val clamped: Int = minOf(anchor, tracks.size - 1)` declares a read-only
@@ -1393,7 +1334,7 @@ class Queue private constructor(private val rng: Random) {
          * source and use.
          */
         val clamped: Int = minOf(anchor, tracks.size - 1)
-        // What:     `if (shuffle == ShuffleMode.OFF) { ... } else { ... }` branches the
+        // What:     `if (mode == PlaybackMode.IN_ORDER || mode == PlaybackMode.REPEAT) { ... } else { ... }` branches the
         //           rebuild on shuffle mode. `==` is enum value equality.
         // Why:      `OFF` builds the FULL sequential page scope up front (it is
         //           deterministic and needs no play history). The shuffle modes build no
@@ -1403,9 +1344,9 @@ class Queue private constructor(private val rng: Random) {
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (this.shuffle === ShuffleMode.OFF) { /* full sequential scope */ } else { /* [anchor] + reset cycle */ }
+        // if (this.shuffle === PlaybackMode.IN_ORDER) { /* full sequential scope */ } else { /* [anchor] + reset cycle */ }
         // ```
-        if (shuffle == ShuffleMode.OFF) {
+        if (mode == PlaybackMode.IN_ORDER || mode == PlaybackMode.REPEAT) {
             // What:     `val scope: List<Int> = scopeIndices(clamped)` is the page's
             //           indices in ascending load order (the whole sequential scope).
             // Why:      `OFF` plays the page in load order, so the scope IS the order.
@@ -1434,25 +1375,17 @@ class Queue private constructor(private val rng: Random) {
              * its source and use.
              */
             val found: Int = scope.indexOf(clamped)
-            // What:     `order = scope` adopts the sequential scope as the playback order.
-            // Why:      Under `OFF` the order is the load-order page.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.order = scope;
-            // ```
-            order = scope
-            // What:     `pos = if (found < 0) 0 else found` points the cursor at the
-            //           anchor (or the scope's start if it somehow fell outside, which
-            //           cannot happen for a real track). The non-null `Int` is stored
-            //           into the `Int?` field.
-            // Why:      Keep the anchor current after the rebuild.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.pos = found < 0 ? 0 : found;
-            // ```
-            pos = if (found < 0) 0 else found
+            if (found < 0) {
+                // Retain an out-of-page current track as a one-step prelude. Manual
+                // transport removes it before looping the displayed page.
+                order = listOf(clamped) + scope
+                pos = 0
+                sequentialStart = 1
+            } else {
+                order = scope
+                pos = found
+                sequentialStart = 0
+            }
         } else {
             // What:     `order = listOf(clamped)` seeds the play history with JUST the
             //           anchor. `listOf(x)` builds a one-element read-only `List<Int>`.
@@ -1464,6 +1397,7 @@ class Queue private constructor(private val rng: Random) {
             // this.order = [clamped];
             // ```
             order = listOf(clamped)
+            sequentialStart = 0
             // What:     `pos = 0` points the cursor at that single seeded entry.
             // Why:      The anchor is the current track.
             //

@@ -231,6 +231,16 @@ import androidx.compose.foundation.border
 // ```
 import androidx.compose.foundation.clickable
 
+// What:     Horizontal scrolling and its remembered state keep oversized groups reachable.
+// Why:      Long page names and enlarged system fonts may exceed the screen width.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { horizontalScroll, rememberScrollState } from "compose/foundation";
+// ```
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+
 // What:     `import androidx.compose.foundation.isSystemInDarkTheme` pulls in
 //           `isSystemInDarkTheme()`, a composable that returns whether the device is in
 //           dark mode.
@@ -493,15 +503,44 @@ import androidx.compose.foundation.lazy.items
 // ```
 import androidx.compose.material3.Button
 
-// What:     `import androidx.compose.material3.Checkbox` pulls in the Material3 `Checkbox`
-//           composable.
-// Why:      The repeat-track toggle uses it.
+// What:     Material3 ButtonGroup and its defaults provide grouped transport actions.
+// Why:      Prev, Play/Pause, and Next need Material's overflow-aware standard group.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Checkbox } from "androidx/compose/material3";
+// import { ButtonGroup, ButtonGroupDefaults } from "compose/material3";
 // ```
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
+
+// What:     DropdownMenuItem renders an action moved into ButtonGroup overflow.
+// Why:      Every transport command remains reachable at narrow widths and large fonts.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { DropdownMenuItem } from "compose/material3";
+// ```
+import androidx.compose.material3.DropdownMenuItem
+
+// What:     This annotation opts into segmented-button APIs in this library release.
+// Why:      The compiler requires explicit acknowledgement at the call site.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // No TypeScript equivalent.
+// ```
+import androidx.compose.material3.ExperimentalMaterial3Api
+
+// What:     These Material primitives render one joined single-select group.
+// Why:      Exactly one playback mode appears selected in the required order.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { SegmentedButton, SegmentedButtonDefaults, SingleChoiceSegmentedButtonRow } from "compose/material3";
+// ```
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 
 // What:     `import androidx.compose.material3.CircularProgressIndicator` pulls in the
 //           spinner composable.
@@ -892,15 +931,15 @@ import androidx.compose.ui.unit.dp
 // ```
 import dev.monochromatic.musicplayer.core.PageEntry
 
-// What:     `import dev.monochromatic.musicplayer.core.ShuffleMode` imports the
-//           three-value enum `ShuffleMode` (`OFF`/`WITHIN_PAGE`/`ALL`).
+// What:     `import dev.monochromatic.musicplayer.core.PlaybackMode` imports the
+//           three-value enum `PlaybackMode` (`OFF`/`WITHIN_PAGE`/`ALL`).
 // Why:      `controlRow` compares and sets shuffle modes.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { ShuffleMode } from "./core/ShuffleMode";
+// import { PlaybackMode } from "./core/PlaybackMode";
 // ```
-import dev.monochromatic.musicplayer.core.ShuffleMode
+import dev.monochromatic.musicplayer.core.PlaybackMode
 
 // What:     `import dev.monochromatic.musicplayer.core.rowDisplay` imports the
 //           `rowDisplay(label, name)` FUNCTION that strips a folder tab's `<label>/` prefix
@@ -2383,207 +2422,126 @@ private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
     }
 }
 
-// What:     `@OptIn(ExperimentalLayoutApi::class)` is an ANNOTATION acknowledging the use
-//           of an EXPERIMENTAL API (`FlowRow`). `ExperimentalLayoutApi::class` is a CLASS
-//           REFERENCE (`::class` names the class as a value); without the opt-in the
-//           compiler refuses the experimental `FlowRow`.
-// Why:      `controlRow` uses `FlowRow`, which is marked experimental.
+// What:     `@OptIn(...)` acknowledges experimental FlowRow and segmented-button APIs.
+// Why:      The stable Material button-group API and current segmented API are used together.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // @OptIn(ExperimentalLayoutApi) — acknowledge experimental FlowRow
+// // No TypeScript equivalent.
 // ```
-@OptIn(ExperimentalLayoutApi::class)
-// What:     `@Composable` marks the next function as a Compose component.
-// Why:      `controlRow` is a UI component.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // (component function)
-// ```
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-// What:     `private fun controlRow(...)` declares a private composable taking the UI
-//           snapshot, controller, Settings callback, and Open callback.
-// Why:      Wrapping control row, in the desktop's order: Settings, Open, the
-//           three-state shuffle radios, the transport buttons, and repeat-track.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function controlRow(props: { state: PlayerUiState; controller: PlayerController; onOpen: () => void; }) { ... }
-// ```
-/**
- * Defines control row behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
- */
+/** Renders distinct playback-mode and transport Material button groups. */
 private fun controlRow(
     state: PlayerUiState,
     controller: PlayerController,
     onSettings: () -> Unit,
     onOpen: () -> Unit,
 ) {
-    // What:     `FlowRow( horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement =
-    //           Arrangement.spacedBy(8.dp), ) { ... }`
-    //           lays children left-to-right, WRAPPING to new lines on overflow, with 16dp
-    //           horizontal and 8dp vertical gaps.
-    // Why:      The controls wrap gracefully on narrow screens.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <FlowRow
-    //   horizontalArrangement={Arrangement.spacedBy(dp(16))}
-    //   verticalArrangement={Arrangement.spacedBy(dp(8))}
-    // > ... </FlowRow>
-    // ```
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        // What:     `Button(onClick = onSettings)` renders Settings immediately before Open.
-        // Why:      Open the page-control preference screen from the main controls.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Button onClick={onSettings}>Settings</Button>
-        // ```
-        Button(onClick = onSettings) { Text("Settings") }
-        // What:     `Button(onClick = onOpen) { Text("Open") }` renders the Open button; its
-        //           trailing lambda `{ Text("Open") }` is the button's CONTENT (label).
-        // Why:      Launch the folder picker.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Button onClick={onOpen}><Text>Open</Text></Button>
-        // ```
-        Button(onClick = onOpen) { Text("Open") }
-        // What:     `Row(verticalAlignment = Alignment.CenterVertically) { ... }` groups the
-        //           shuffle label and its three radios.
-        // Why:      Keep "Shuffle" and its options together.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Row verticalAlignment={Alignment.CenterVertically}> ... </Row>
-        // ```
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // What:     `Text("Shuffle")` labels the shuffle group.
-            // Why:      Name the radios.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Text>Shuffle</Text>
-            // ```
-            Text("Shuffle")
-            // What:     `radioOption("Off", state.shuffle == ShuffleMode.OFF) {
-            //           controller.setShuffle(ShuffleMode.OFF) }`
-            //           renders the "Off" radio. The second arg `state.shuffle == ShuffleMode.OFF`
-            //           is its selected `Boolean` (enum value equality); the trailing lambda is
-            //           its `onSelect` action setting the mode to `OFF`.
-            // Why:      Let the user turn shuffle off.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <radioOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
-            // controller.setShuffle(ShuffleMode.OFF)}/>
-            // ```
-            radioOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
-            // What:     `radioOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
-            //           controller.setShuffle(ShuffleMode.WITHIN_PAGE) }`
-            //           renders the "Within page" radio (selected when the mode is
-            //           `WITHIN_PAGE`; its action sets that mode).
-            // Why:      Let the user shuffle within the current page only.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <radioOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
-            // controller.setShuffle(ShuffleMode.WITHIN_PAGE)}/>
-            // ```
-            radioOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
-                controller.setShuffle(ShuffleMode.WITHIN_PAGE)
+    /** Displayed page text used verbatim by the page-shuffle segment. */
+    val currentPage: String = state.pageLabels.getOrNull(state.selectedPage) ?: "page"
+    /** Dynamic segment label that follows selected page changes. */
+    val pageShuffleLabel: String = "Shuffle $currentPage"
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Button(onClick = onSettings) { Text("Settings") }
+            Button(onClick = onOpen) { Text("Open") }
+        }
+
+        Text("When this track ends")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+        ) {
+            SingleChoiceSegmentedButtonRow {
+                SegmentedButton(
+                    selected = state.playbackMode == PlaybackMode.REPEAT,
+                    onClick = { controller.setPlaybackMode(PlaybackMode.REPEAT) },
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 4),
+                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                ) { Text("Repeat", maxLines = 1) }
+                SegmentedButton(
+                    selected = state.playbackMode == PlaybackMode.IN_ORDER,
+                    onClick = { controller.setPlaybackMode(PlaybackMode.IN_ORDER) },
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 4),
+                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                ) { Text("In order", maxLines = 1) }
+                SegmentedButton(
+                    selected = state.playbackMode == PlaybackMode.SHUFFLE_PAGE,
+                    onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE) },
+                    shape = SegmentedButtonDefaults.itemShape(index = 2, count = 4),
+                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                ) { Text(pageShuffleLabel, maxLines = 1) }
+                SegmentedButton(
+                    selected = state.playbackMode == PlaybackMode.SHUFFLE_ALL,
+                    onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_ALL) },
+                    shape = SegmentedButtonDefaults.itemShape(index = 3, count = 4),
+                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                ) { Text("Shuffle all", maxLines = 1) }
             }
-            // What:     `radioOption("All", state.shuffle == ShuffleMode.ALL) {
-            //           controller.setShuffle(ShuffleMode.ALL) }`
-            //           renders the "All" radio (selected when the mode is `ALL`; its action
-            //           sets that mode).
-            // Why:      Let the user shuffle the whole queue.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <radioOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
-            // controller.setShuffle(ShuffleMode.ALL)}/>
-            // ```
-            radioOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
         }
-        // What:     `Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement =
-        //           Arrangement.spacedBy(8.dp)) { ... }`
-        //           groups the transport buttons with 8dp gaps.
-        // Why:      Keep Prev/Play/Next together.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Row verticalAlignment={Alignment.CenterVertically} horizontalArrangement={Arrangement.spacedBy(dp(8))}> ...
-        // </Row>
-        // ```
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // What:     `Button(onClick = { controller.prev() }) { Text("Prev") }` renders the
-            //           Prev button; the `onClick` lambda calls `controller.prev()`; the trailing
-            //           lambda is the label.
-            // Why:      Skip to the previous track.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Button onClick={() => controller.prev()}><Text>Prev</Text></Button>
-            // ```
-            Button(onClick = { controller.prev() }) { Text("Prev") }
-            // What:     `Button(onClick = { controller.togglePlay() }) { Text(if (state.playing) "Pause" else "Play")
-            //           }`
-            //           renders the play/pause button. The content `Text(...)` takes an
-            //           `if/else` EXPRESSION choosing the label "Pause" vs "Play" from
-            //           `state.playing`.
-            // Why:      Toggle play/pause, showing the matching label.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Button onClick={() => controller.togglePlay()}>
-            //   <Text>{state.playing ? "Pause" : "Play"}</Text>
-            // </Button>
-            // ```
-            Button(onClick = { controller.togglePlay() }) { Text(if (state.playing) "Pause" else "Play") }
-            // What:     `Button(onClick = { controller.next() }) { Text("Next") }` renders the
-            //           Next button.
-            // Why:      Skip to the next track.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Button onClick={() => controller.next()}><Text>Next</Text></Button>
-            // ```
-            Button(onClick = { controller.next() }) { Text("Next") }
-        }
-        // What:     `Row(verticalAlignment = Alignment.CenterVertically) { ... }` groups the
-        //           repeat-track checkbox and its label.
-        // Why:      Keep the checkbox next to its text.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Row verticalAlignment={Alignment.CenterVertically}> ... </Row>
-        // ```
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // What:     `Checkbox(checked = state.repeatTrack, onCheckedChange = { controller.setRepeatTrack(it) })`
-            //           renders the repeat-track checkbox. `checked` is the current flag;
-            //           `onCheckedChange`'s lambda uses `it` (the new `Boolean`).
-            // Why:      Toggle "repeat track".
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Checkbox checked={state.repeatTrack} onCheckedChange={(on) => controller.setRepeatTrack(on)}/>
-            // ```
-            Checkbox(checked = state.repeatTrack, onCheckedChange = { controller.setRepeatTrack(it) })
-            // What:     `Text("Repeat track")` labels the checkbox.
-            // Why:      Name the toggle.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <Text>Repeat track</Text>
-            // ```
-            Text("Repeat track")
+
+        ButtonGroup(
+            overflowIndicator = { menuState ->
+                ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            customItem(
+                buttonGroupContent = {
+                    Button(
+                        onClick = { controller.prev() },
+                        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                    ) { Text("Prev") }
+                },
+                menuContent = { menuState ->
+                    DropdownMenuItem(
+                        text = { Text("Prev") },
+                        onClick = {
+                            controller.prev()
+                            menuState.dismiss()
+                        },
+                    )
+                },
+            )
+            customItem(
+                buttonGroupContent = {
+                    Button(
+                        onClick = { controller.togglePlay() },
+                        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                    ) { Text(if (state.playing) "Pause" else "Play") }
+                },
+                menuContent = { menuState ->
+                    DropdownMenuItem(
+                        text = { Text(if (state.playing) "Pause" else "Play") },
+                        onClick = {
+                            controller.togglePlay()
+                            menuState.dismiss()
+                        },
+                    )
+                },
+            )
+            customItem(
+                buttonGroupContent = {
+                    Button(
+                        onClick = { controller.next() },
+                        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                    ) { Text("Next") }
+                },
+                menuContent = { menuState ->
+                    DropdownMenuItem(
+                        text = { Text("Next") },
+                        onClick = {
+                            controller.next()
+                            menuState.dismiss()
+                        },
+                    )
+                },
+            )
         }
     }
 }
