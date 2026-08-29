@@ -233,6 +233,15 @@ const FRONT_MATTER_ENTRY = {
 };
 
 /**
+ * Entry inserting source metadata into target page that has none.
+ */
+const FRONT_MATTER_SOURCE_ONLY_ENTRY = {
+  id: 'CatFrontMatterInsertion',
+  sourceText: `${FRONT_MATTER_SOURCE}${SOURCE_TEXT}`,
+  targetText: TARGET_TEXT,
+};
+
+/**
  * Entry whose archive carries invisible separator outside replacements.
  */
 const INVISIBLE_ENTRY = {
@@ -1205,6 +1214,35 @@ await describe({
         expect(served,).toContain('translation_report',);
         expect(served,).toContain('candidate_ballot',);
         expect(served,).toContain('lane_contest',);
+      },
+    },),
+    it({
+      name: 'INSERTS SOURCE-ONLY FRONT MATTER through complete pass',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        const served: string[] = [];
+        const outcome = await settleEntry({
+          client: entryClient({
+            served,
+            coverageScript: 'absent',
+          },),
+          entry: FRONT_MATTER_SOURCE_ONLY_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+        expect(outcome,).toEqual({ kind: 'settled', },);
+        const page = await readFile(fixedPagePath({
+          publishDir: dirs.publishDir,
+          entryId: FRONT_MATTER_SOURCE_ONLY_ENTRY.id,
+        },), 'utf8',);
+        expect(page.startsWith(FRONT_MATTER_FRESH,)).toBe(true,);
+        expect(served,).not.toContain('coverage_report',);
+        expect(served,).toContain('translation_report',);
       },
     },),
     it({

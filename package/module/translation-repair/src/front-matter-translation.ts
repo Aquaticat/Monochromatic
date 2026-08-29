@@ -190,7 +190,7 @@ export function validateFrontMatterTranslation(
         detail: 'source front matter could not be read',
       };
     }
-    if (page.frontMatter === undefined) {
+    if ((page.frontMatter === undefined) && (pageText !== '')) {
       return {
         kind: 'unknown',
         detail: 'page front matter could not be read',
@@ -205,9 +205,15 @@ export function validateFrontMatterTranslation(
      */
     const { data: candidateData, } = candidate.frontMatter;
     /**
-     * Parsed archive metadata.
+     * Parsed archive metadata when target already carries it.
      */
-    const { data: pageData, } = page.frontMatter;
+    const { frontMatter: pageFrontMatter, } = page;
+    /**
+     * Structural authority:
+     * archive metadata when present,
+     * otherwise source shape for new insertion.
+     */
+    const pageData = pageFrontMatter?.data ?? sourceData;
     if (yamlShape({ value: candidateData, }) !== yamlShape({ value: pageData, })) {
       return {
         kind: 'invalid',

@@ -25,11 +25,13 @@ not current instruction.
   distinct image-reading responsibilities,
   reviewed positives,
   and unresolved-asset pause before lanes.
+- Pending one-sided front-matter support inserts source metadata and preserves target-only metadata.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
 - Final generation-15 verification emitted 866 `PASS` lines and zero `FAIL` lines.
 - Final visual-evidence verification emitted 867 `PASS` lines and zero `FAIL` lines.
+- Pending one-sided front-matter verification emitted 867 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.

@@ -1,4 +1,5 @@
 import type { ChunkPair, } from '../chunk-document.ts';
+import { isInsertionChunk, } from '../chunk-placement.ts';
 import { splitFrontMatter, } from '../front-matter.ts';
 import { validateFrontMatterTranslation, } from '../front-matter-translation.ts';
 
@@ -32,7 +33,7 @@ export class FrontMatterCompletenessError extends Error {
       reason,
     }: {
       readonly entryId: string;
-      readonly reason: 'missing-slice' | 'presence-mismatch' | 'invalid-page' | 'incumbent-fallback';
+      readonly reason: 'missing-slice' | 'invalid-page' | 'incumbent-fallback';
     },
   ) {
     super(`entry ${entryId} front matter is not publishable (${reason})`,);
@@ -53,7 +54,7 @@ export class FrontMatterCompletenessError extends Error {
  *
  * @param slices - preparation carrying explicit syntax role
  *
- * @throws FrontMatterCompletenessError when metadata presence, role, or syntax differs
+ * @throws FrontMatterCompletenessError when metadata role or syntax differs
  *
  * @example
  * ```ts
@@ -91,18 +92,31 @@ export function assertFrontMatterComplete(
    * Presence of archive metadata.
    */
   const archivePresent = archive.frontMatter !== undefined;
-  if (sourcePresent !== archivePresent) {
-    throw new FrontMatterCompletenessError({
-      entryId,
-      reason: 'presence-mismatch',
-    },);
-  }
   /**
    * Parsed assembled page.
    */
   const page = splitFrontMatter({ text: pageText, });
+  /**
+   * Archive metadata when target declares it.
+   */
+  const { frontMatter: archiveMetadata, } = archive;
+  /**
+   * Assembled metadata when final page declares it.
+   */
+  const { frontMatter: pageMetadata, } = page;
   if (!sourcePresent) {
-    if (page.frontMatter !== undefined) {
+    if (!archivePresent) {
+      if (pageMetadata !== undefined) {
+        throw new FrontMatterCompletenessError({
+          entryId,
+          reason: 'invalid-page',
+        },);
+      }
+      return;
+    }
+    if ((pageMetadata === undefined)
+      || (archiveMetadata === undefined)
+      || (pageMetadata.raw !== archiveMetadata.raw)) {
       throw new FrontMatterCompletenessError({
         entryId,
         reason: 'invalid-page',
@@ -128,8 +142,7 @@ export function assertFrontMatterComplete(
     },);
   }
 
-  if ((page.frontMatter === undefined)
-    || (archive.frontMatter === undefined)
+  if ((pageMetadata === undefined)
     || (source.frontMatter === undefined)) {
     throw new FrontMatterCompletenessError({
       entryId,
@@ -142,9 +155,10 @@ export function assertFrontMatterComplete(
    */
   const { raw: sourceFrontMatter, } = source.frontMatter;
   /**
-   * Exact archive metadata bytes preparation must have reviewed.
+   * Exact archive metadata bytes preparation reviewed,
+   * empty for source-only insertion.
    */
-  const { raw: archiveFrontMatter, } = archive.frontMatter;
+  const archiveFrontMatter = archiveMetadata?.raw ?? '';
   /**
    * Source span metadata slice claims.
    */
@@ -164,7 +178,9 @@ export function assertFrontMatterComplete(
     || (sourceSlice.endOffset !== sourceFrontMatter.length)
     || (targetSlice.endOffset !== archiveFrontMatter.length)
     || (sourceSlice.text !== sourceFrontMatter)
-    || (targetSlice.text !== archiveFrontMatter);
+    || (targetSlice.text !== archiveFrontMatter)
+    || ((archivePresent) && isInsertionChunk(targetSlice,))
+    || ((!archivePresent) && (!isInsertionChunk(targetSlice,)));
   if (misplaced) {
     throw new FrontMatterCompletenessError({
       entryId,
@@ -175,7 +191,7 @@ export function assertFrontMatterComplete(
   /**
    * Exact page metadata bytes.
    */
-  const { raw: pageFrontMatter, } = page.frontMatter;
+  const { raw: pageFrontMatter, } = pageMetadata;
   /**
    * Structural validation before persistence.
    */
@@ -190,7 +206,9 @@ export function assertFrontMatterComplete(
       reason: 'invalid-page',
     },);
   }
-  if ((sourceFrontMatter !== archiveFrontMatter) && (pageFrontMatter === archiveFrontMatter)) {
+  if (archivePresent
+    && (sourceFrontMatter !== archiveFrontMatter)
+    && (pageFrontMatter === archiveFrontMatter)) {
     throw new FrontMatterCompletenessError({
       entryId,
       reason: 'incumbent-fallback',

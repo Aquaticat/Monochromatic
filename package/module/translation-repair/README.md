@@ -1737,11 +1737,12 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Translation/insertion must continue from those slices and latest refusal evidence.
 - `assertFinalSelectionSettled` throws when archive wording stands without endorsement.
   Contest/consolidation must reopen unresolved slices with prior ballots as failed-strategy evidence.
-- `assertFrontMatterComplete` combines multiple classes.
-  `incumbent-fallback` and candidate YAML/schema invalidity are repairable metadata quality.
-  One-sided metadata presence needs earlier preparation support.
-  Missing/misplaced slice and contradictory assembled-page structure are invariants;
-  earlier stages must prevent them rather than looping at publication guard.
+- Pending front-matter support creates insertion slice for source-only metadata,
+  deterministically admits it,
+  and validates candidate against source YAML shape when archive has none.
+  Target-only metadata remains exact archive content outside localized slices.
+  Missing/misplaced slice and contradictory assembled-page structure pause as `INCOMPLETE` invariants;
+  incumbent fallback and candidate YAML/schema invalidity remain handled before publication.
 - `assertContributorNamesComplete` throws when final attribution drops target-authoritative public form.
   Generation 15 landed in `5211c54dd` and floors translation candidates,
   excludes unrepairable violator voices without fabricated authorship,

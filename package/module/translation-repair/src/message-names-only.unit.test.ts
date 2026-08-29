@@ -82,7 +82,6 @@ const MARKED_CLASSES: readonly string[] = [
   'EmptyPoolError',
   'EnvelopeOverlapError',
   'FootnoteOverflowError',
-  'FrontMatterAlignmentError',
   'FrontMatterCompletenessError',
   'FrontMatterParseError',
   'GenerationDriftError',

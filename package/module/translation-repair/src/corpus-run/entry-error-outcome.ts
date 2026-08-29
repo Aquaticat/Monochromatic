@@ -1,5 +1,6 @@
 import { NaturalnessCompletenessError, } from '../naturalness-completeness-error.ts';
 import { ContributorCompletenessError, } from './contributor-completeness.ts';
+import { FrontMatterCompletenessError, } from './front-matter-completeness.ts';
 import { NaturalnessRepairInterruptedError, } from '../naturalness-repair-interrupted-error.ts';
 import { PromptPayloadStoreError, } from '../prompt-payload-store.ts';
 import { VisualEvidenceInterruptedError, } from './visual-evidence-completeness.ts';
@@ -46,6 +47,7 @@ export function entryErrorOutcome(
    * Whether error names stage-local incomplete naturalness work.
    */
   const stopped = (error instanceof ContributorCompletenessError)
+    || (error instanceof FrontMatterCompletenessError)
     || (error instanceof NaturalnessRepairInterruptedError)
     || (error instanceof NaturalnessCompletenessError)
     || (error instanceof PromptPayloadStoreError)

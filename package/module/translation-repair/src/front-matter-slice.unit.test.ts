@@ -11,7 +11,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  FrontMatterAlignmentError,
   frontMatterRepairOutcome,
   frontMatterSlice,
   validateFrontMatterTranslation,
@@ -99,10 +98,27 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES PRESENCE MISMATCH instead of silently dropping or preserving one side',
+      name: 'CREATES INSERTION SLICE when source metadata has no target rendering',
       fn: async () => {
-        expect(() => frontMatterSlice({ source: SOURCE, },),).toThrow(FrontMatterAlignmentError,);
-        expect(() => frontMatterSlice({ target: TARGET, },),).toThrow(FrontMatterAlignmentError,);
+        const result = frontMatterSlice({ source: SOURCE, },);
+        expect(result.kind,).toBe('paired',);
+        if (result.kind !== 'paired')
+          throw new Error('source-only metadata did not create insertion slice',);
+        expect(result.slice.target,).toEqual({
+          kind: 'insertion',
+          sliceIndex: 0,
+          nodes: [],
+          startOffset: 0,
+          endOffset: 0,
+          text: '',
+        },);
+      },
+    },),
+
+    it({
+      name: 'PRESERVES TARGET-ONLY METADATA outside localized slice',
+      fn: async () => {
+        expect(frontMatterSlice({ target: TARGET, },),).toEqual({ kind: 'none', },);
       },
     },),
   ],
@@ -137,6 +153,17 @@ await describe({
         expect(validateFrontMatterTranslation({
           sourceText: SOURCE.raw,
           pageText: TARGET.raw,
+          candidateText: '---\nname: Mao\ninfo:\n  alias: Kitty\n---\n',
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS SOURCE-SHAPED METADATA when target page has none',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
+          pageText: '',
           candidateText: '---\nname: Mao\ninfo:\n  alias: Kitty\n---\n',
         },).kind,).toBe('valid',);
       },

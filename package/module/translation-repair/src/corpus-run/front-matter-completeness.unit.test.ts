@@ -87,7 +87,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES MISSING REVIEW SLICE AND METADATA PRESENCE MISMATCH',
+      name: 'REFUSES MISSING REVIEW SLICE when both sides declare metadata',
       fn: async () => {
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
@@ -96,13 +96,35 @@ await describe({
           pageText: TARGET_TEXT,
           slices: [],
         },),).toThrow(FrontMatterCompletenessError,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS TRANSLATED SOURCE-ONLY METADATA through insertion slice',
+      fn: async () => {
+        const sourceOnly = frontMatterSlice({ source: sourceFrontMatter, },);
+        if (sourceOnly.kind !== 'paired')
+          throw new Error('source-only front matter fixture did not pair',);
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: 'Body.\n',
-          pageText: 'Body.\n',
+          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
+          slices: [sourceOnly.slice,],
+        },),).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS UNCHANGED TARGET-ONLY METADATA without localized slice',
+      fn: async () => {
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: 'Body.\n',
+          archiveText: TARGET_TEXT,
+          pageText: TARGET_TEXT,
           slices: [],
-        },),).toThrow(FrontMatterCompletenessError,);
+        },),).not.toThrow();
       },
     },),
 

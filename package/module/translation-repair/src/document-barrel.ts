@@ -10,7 +10,6 @@ export {
   type UnclaimedTargetBlock,
 } from './document-preparation.ts';
 export {
-  FrontMatterAlignmentError,
   frontMatterSlice,
   frontMatterSliceIndexes,
   type FrontMatterSliceResult,

@@ -44,6 +44,11 @@ type InsertionCandidate = {
    * Original passage proposed for insertion.
    */
   readonly sourceText: string;
+
+  /**
+   * Whether syntax-bearing metadata deterministically requires insertion.
+   */
+  readonly frontMatter: boolean;
 };
 
 /**
@@ -171,6 +176,7 @@ export async function decidePassInsertionAdmission(
         position,
         sliceIndex: target.sliceIndex,
         sourceText: source.text,
+        frontMatter: slice.syntax === 'front-matter',
       },];
     },);
   if (candidates.length === 0) {
@@ -179,6 +185,23 @@ export async function decidePassInsertionAdmission(
       findings: [],
     };
   }
+
+  /**
+   * Metadata insertion positions admitted by explicit syntax role.
+   */
+  const frontMatterPositions = new Set(candidates
+    .filter(function isFrontMatter(candidate,): boolean {
+      return candidate.frontMatter;
+    },)
+    .map(function positionOf(candidate,): number {
+      return candidate.position;
+    },),);
+  /**
+   * Prose candidates requiring semantic coverage proof.
+   */
+  const semanticCandidates = candidates.filter(function isProse(candidate,): boolean {
+    return !candidate.frontMatter;
+  },);
 
   /**
    * Target parsed once so every coverage quote anchors against one document.
@@ -197,7 +220,7 @@ export async function decidePassInsertionAdmission(
    * Semantic and destination evidence per source-only slice.
    */
   const rows = await mapOverlapped({
-    items: candidates,
+    items: semanticCandidates,
     overlap,
     oneItem: async function readCandidate({ item: candidate, },): Promise<InsertionCoverageRow> {
       /**
@@ -294,30 +317,40 @@ export async function decidePassInsertionAdmission(
   /**
    * Positions backed by semantic absence and either deterministic signal.
    */
-  const positions = new Set(
-    absent
+  const positions = new Set([
+    ...frontMatterPositions,
+    ...absent
       .filter(function corroborated(row,): boolean {
         return (row.missingDestinationCount > 0) || shortfallAdmitted.has(row.position,);
       },)
       .map(function toPosition(row,): number {
         return row.position;
       },),
-  );
+  ],);
 
   return {
     positions,
-    findings: rows.flatMap(function evidence(row,): readonly string[] {
-      return [
-        row.coverageFinding,
-        `insertion-corroboration (slice ${String(row.sliceIndex,)}, shortfall ${
-          shortfallAdmitted.has(row.position,) ? 'admitted' : 'refused'
-        }, missing destinations ${String(row.missingDestinationCount,)}, admission ${
-          positions.has(row.position,) ? 'admitted' : 'refused'
-        })`,
-        ...row.stageFindings,
-        ...row.destinationFindings,
-      ];
-    },),
+    findings: [
+      ...candidates
+        .filter(function isFrontMatter(candidate,): boolean {
+          return candidate.frontMatter;
+        },)
+        .map(function metadataFinding(candidate,): string {
+          return `insertion-front-matter-admitted (slice ${String(candidate.sliceIndex,)})`;
+        },),
+      ...rows.flatMap(function evidence(row,): readonly string[] {
+        return [
+          row.coverageFinding,
+          `insertion-corroboration (slice ${String(row.sliceIndex,)}, shortfall ${
+            shortfallAdmitted.has(row.position,) ? 'admitted' : 'refused'
+          }, missing destinations ${String(row.missingDestinationCount,)}, admission ${
+            positions.has(row.position,) ? 'admitted' : 'refused'
+          })`,
+          ...row.stageFindings,
+          ...row.destinationFindings,
+        ];
+      },),
+    ],
   };
 }
 
