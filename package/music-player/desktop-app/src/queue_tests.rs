@@ -22,7 +22,7 @@ fn paths(n: usize) -> Vec<PathBuf> {
     //           `i.to_string()` allocates a `String`; `PathBuf::from` wraps it.
     //           Tail expression.
     // Why:      Distinct dummy paths with no folder.
-    (0..n).map(|i| PathBuf::from(i.to_string())).collect()
+    return (0..n).map(|i| return PathBuf::from(i.to_string())).collect()
 }
 
 // What:     `fn track_paths(list: &[&str]) -> Vec<PathBuf>` test helper turning
@@ -34,7 +34,7 @@ fn track_paths(list: &[&str]) -> Vec<PathBuf> {
     //           `&&str`; `*s` derefs it to `&str`; `PathBuf::from` wraps it.
     //           Tail expression.
     // Why:      Build the owned path vector preserving folders.
-    list.iter().map(|s| PathBuf::from(*s)).collect()
+    return list.iter().map(|s| return PathBuf::from(*s)).collect()
 }
 
 // What:     `#[test]` marks the next function as a test case.

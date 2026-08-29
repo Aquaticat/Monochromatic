@@ -30,7 +30,7 @@ fn temp_cache(tag: &str) -> PathBuf {
         .as_nanos();
     // What:     build the path under the system temp dir. Tail -> return.
     // Why:      Disposable location.
-    std::env::temp_dir().join(format!(
+    return std::env::temp_dir().join(format!(
         "mp-measure-{}-{}-{}.db",
         std::process::id(),
         nanos,

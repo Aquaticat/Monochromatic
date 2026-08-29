@@ -51,9 +51,9 @@ fn setup() {
 //           still reads a FROZEN thumb even when the bound property moved on: exactly
 //           the signal this regression needs.
 fn thumb(handle: &ElementHandle) -> f32 {
-    handle
+    return handle
         .accessible_value()
-        .and_then(|value| value.parse::<f32>().ok())
+        .and_then(|value| return value.parse::<f32>().ok())
         .expect("Slider exposes a numeric accessible-value")
 }
 
@@ -63,7 +63,7 @@ fn thumb(handle: &ElementHandle) -> f32 {
 //           element-id debug info to locate the widgets; declaration order is stable
 //           depth-first tree order.
 fn sliders(app: &crate::AppWindow) -> Vec<ElementHandle> {
-    ElementHandle::find_by_element_type_name(app, "Slider").collect()
+    return ElementHandle::find_by_element_type_name(app, "Slider").collect()
 }
 
 // What:     `#[test] fn seek_thumb_follows_engine_after_user_input()`.
@@ -162,13 +162,13 @@ fn playback_groups_follow_mode_page_and_transport_state() {
         .collect::<Vec<_>>();
     let labels = mode_buttons
         .iter()
-        .map(|button| button.accessible_label().expect("mode button has a label").to_string())
+        .map(|button| return button.accessible_label().expect("mode button has a label").to_string())
         .collect::<Vec<_>>();
     assert_eq!(labels, ["Repeat", "In order", "Shuffle Jazz", "Shuffle all"]);
     assert_eq!(
         mode_buttons
             .iter()
-            .filter(|button| button.accessible_checked() == Some(true))
+            .filter(|button| return button.accessible_checked() == Some(true))
             .count(),
         1,
     );
@@ -184,14 +184,14 @@ fn playback_groups_follow_mode_page_and_transport_state() {
     assert_eq!(
         changed_mode_buttons
             .iter()
-            .filter(|button| button.accessible_checked() == Some(true))
+            .filter(|button| return button.accessible_checked() == Some(true))
             .count(),
         1,
     );
     assert!(changed_mode_buttons.iter().all(|button| {
-        button
+        return button
             .accessible_label()
-            .is_none_or(|label| !label.contains("<currentPage>"))
+            .is_none_or(|label| return !label.contains("<currentPage>"))
     }));
     let mode_group = ElementHandle::find_by_element_type_name(&app, "PlaybackModeGroup")
         .next()
@@ -211,7 +211,7 @@ fn playback_groups_follow_mode_page_and_transport_state() {
     assert_eq!(
         transport
             .iter()
-            .map(|button| button.accessible_label().expect("transport button has a label"))
+            .map(|button| return button.accessible_label().expect("transport button has a label"))
             .collect::<Vec<_>>(),
         ["Prev", "Play", "Next"],
     );
@@ -338,7 +338,7 @@ fn led_backplate_fills_width_and_rows_track_resize() {
     let geometry = app.global::<crate::LedRowGeometry>();
     let wrapped_starts = geometry.get_starts();
     let wrapped_row_count = (0..wrapped_starts.row_count())
-        .filter(|index| wrapped_starts.row_data(*index) == Some(true))
+        .filter(|index| return wrapped_starts.row_data(*index) == Some(true))
         .count();
     let wrapped_positions = caps.iter().map(ElementHandle::absolute_position).collect::<Vec<_>>();
     assert!(
@@ -354,7 +354,7 @@ fn led_backplate_fills_width_and_rows_track_resize() {
     ])));
     let resized_positions =
         ElementHandle::find_by_element_type_name(&app, "LedSegmentButton")
-            .map(|cap| cap.absolute_position())
+            .map(|cap| return cap.absolute_position())
             .collect::<Vec<_>>();
     mock_elapsed_time(std::time::Duration::ZERO);
     for delay_ms in [1, 16, 16] {
@@ -363,7 +363,7 @@ fn led_backplate_fills_width_and_rows_track_resize() {
 
     let resized_starts = geometry.get_starts();
     let resized_row_count = (0..resized_starts.row_count())
-        .filter(|index| resized_starts.row_data(*index) == Some(true))
+        .filter(|index| return resized_starts.row_data(*index) == Some(true))
         .count();
     assert_eq!(
         resized_row_count, 1,
@@ -536,7 +536,7 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     let directly_selected_first_label = fold
         .query_descendants()
         .match_predicate(|element| {
-            element.accessible_label().is_some_and(|label| label == "Alpha Orchestra")
+            return element.accessible_label().is_some_and(|label| return label == "Alpha Orchestra")
         })
         .find_first()
         .expect("direct backward selection reveals first Chromium label");
@@ -551,7 +551,7 @@ fn narrow_page_controls_fold_every_style_and_reveal_selection() {
     let directly_selected_final_label = fold
         .query_descendants()
         .match_predicate(|element| {
-            element.accessible_label().is_some_and(|label| label == "Hotel Mastering")
+            return element.accessible_label().is_some_and(|label| return label == "Hotel Mastering")
         })
         .find_first()
         .expect("direct forward selection reveals final Chromium label");

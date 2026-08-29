@@ -43,7 +43,7 @@ fn approx_eq(a: f32, b: f32) -> bool {
     // What:     `(a - b).abs() < TOLERANCE`. Difference-based comparison. Tail
     //           expression returns the boolean.
     // Why:      Values that differ only by f32 rounding count as equal.
-    (a - b).abs() < TOLERANCE
+    return (a - b).abs() < TOLERANCE
 }
 
 // What:     `fn test_controller() -> Controller`. Build a controller with no audio
@@ -55,7 +55,7 @@ fn test_controller() -> Controller {
     //           Construct the controller; `Box::new` heap-boxes the callback closure, `None`
     //           means silent mode, and the degraded cache touches no disk.
     // Why:      Give tests a real controller without an audio device or real cache state.
-    Controller::new(Box::new(|_| {}), None, CacheHandle::open_degraded())
+    return Controller::new(Box::new(|_| {}), None, CacheHandle::open_degraded())
 }
 
 // What:     `fn temp_cache(tag: &str) -> PathBuf`. Build a fresh disposable cache path.
@@ -70,7 +70,7 @@ fn temp_cache(tag: &str) -> PathBuf {
     // What:     `std::env::temp_dir().join(format!(...))`. Join a formatted filename
     //           under the system temp directory. Tail expression returns it.
     // Why:      Keep disposable cache state out of the repo and real config dir.
-    std::env::temp_dir().join(format!(
+    return std::env::temp_dir().join(format!(
         "mp-controller-{}-{}-{}.json",
         std::process::id(),
         nanos,
@@ -332,7 +332,7 @@ fn rescan_reflects_disk_and_preserves_selection_by_path() {
 
     // What:     select `b` by its scanned position.
     // Why:      Establish a Selected Track to preserve across the next rescan.
-    let bi = controller.queue.tracks().iter().position(|p| *p == b).unwrap();
+    let bi = controller.queue.tracks().iter().position(|p| return *p == b).unwrap();
     controller.queue.play_index(bi);
     assert_eq!(controller.queue.current_path(), Some(&b));
 

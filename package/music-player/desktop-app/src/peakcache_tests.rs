@@ -27,7 +27,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 // What:     `fn exact(gain: f32) -> Decision`. A full-scan-exact decision for the tests.
 // Why:      An exact decision appears in the known-fingerprint (exact) snapshot.
 fn exact(gain: f32) -> Decision {
-    Decision { gain, kind: DecisionKind::FullScanExact, measured_peak: 1.2, duration_secs: 200.0 }
+    return Decision { gain, kind: DecisionKind::FullScanExact, measured_peak: 1.2, duration_secs: 200.0 }
 }
 
 // What:     `fn wait_for_decision(cache: &CacheHandle, key: u64) -> Option<Decision>`. Poll the
@@ -42,7 +42,7 @@ fn wait_for_decision(cache: &CacheHandle, key: u64) -> Option<Decision> {
         }
         thread::sleep(Duration::from_millis(20));
     }
-    None
+    return None
 }
 
 // What:     `fn unique_path(suffix: &str) -> PathBuf`. A fresh throwaway path under
@@ -60,7 +60,7 @@ fn unique_path(suffix: &str) -> PathBuf {
     // What:     `std::env::temp_dir().join(format!("music-player-peak-{}-{}-{}", std::process::id(), nanos, suffix))`.
     //           Build the path. Tail -> return.
     // Why:      Unique per process, call, and purpose.
-    std::env::temp_dir().join(format!(
+    return std::env::temp_dir().join(format!(
         "music-player-peak-{}-{}-{}",
         std::process::id(),
         nanos,

@@ -50,7 +50,7 @@ fn unique_temp_dir() -> PathBuf {
     fs::create_dir_all(&dir).unwrap();
     // What:     `dir`. Tail expression -> return the created path.
     // Why:      Hand the fixture root to the caller.
-    dir
+    return dir
 }
 
 // What:     `#[test]` marks the next function as a test case.
@@ -227,7 +227,7 @@ fn approx_eq(a: f32, b: f32) -> bool {
     // What:     `(a - b).abs() < TOLERANCE`. Subtract, take the magnitude with
     //           `.abs()`, then compare with `<`. Tail expression -> return.
     // Why:      Distance-based equality avoids the float `==` trap.
-    (a - b).abs() < TOLERANCE
+    return (a - b).abs() < TOLERANCE
 }
 
 // What:     `#[test]` marks the next function as a test case.

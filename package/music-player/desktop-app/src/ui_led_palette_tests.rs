@@ -22,12 +22,12 @@ fn linear_srgb(channel: u8) -> f32 {
     if encoded <= 0.04045 {
         return encoded / 12.92;
     }
-    ((encoded + 0.055) / 1.055).powf(2.4)
+    return ((encoded + 0.055) / 1.055).powf(2.4)
 }
 
 /// Returns WCAG relative luminance for a rendered sRGB color.
 fn relative_luminance(color: Color) -> f32 {
-    0.2126 * linear_srgb(color.red())
+    return 0.2126 * linear_srgb(color.red())
         + 0.7152 * linear_srgb(color.green())
         + 0.0722 * linear_srgb(color.blue())
 }

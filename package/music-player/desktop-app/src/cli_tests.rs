@@ -32,7 +32,7 @@ fn parse(extra: &[&str]) -> Cli {
     // What:     `Cli::try_parse_from(argv).unwrap()`. Parse the explicit argv; `.unwrap()`
     //           panics on a parse error (failing the test).
     // Why:      Parsing from an explicit list makes the launch policy testable.
-    Cli::try_parse_from(argv).unwrap()
+    return Cli::try_parse_from(argv).unwrap()
 }
 
 // What:     `#[test] fn no_args_yields_no_path_and_paused()`. A bare launch.

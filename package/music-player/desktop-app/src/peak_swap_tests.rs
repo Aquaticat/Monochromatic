@@ -36,7 +36,7 @@ fn temp_cache(tag: &str) -> PathBuf {
     // What:     `std::env::temp_dir().join(format!(...))`. Join a formatted filename
     //           under the system temp directory. Tail expression returns it.
     // Why:      Keep disposable cache state out of the repo and real config dir.
-    std::env::temp_dir().join(format!(
+    return std::env::temp_dir().join(format!(
         "mp-peak-swap-{}-{}-{}.db",
         std::process::id(),
         nanos,
@@ -50,7 +50,7 @@ fn fixture() -> &'static Path {
     // What:     `Path::new("fixture/tone.flac")`. Borrow a static string as a path.
     //           Tail expression returns it.
     // Why:      Existing true-peak tests already use this quiet fixture.
-    Path::new("fixture/tone.flac")
+    return Path::new("fixture/tone.flac")
 }
 
 // What:     `fn test_cache(path: &Path) -> CacheHandle`. Build a cache handle backed by a
@@ -60,7 +60,7 @@ fn test_cache(path: &Path) -> CacheHandle {
     // What:     `CacheHandle::open_at(path.to_path_buf())`. Start the cache actor on the
     //           given temp database file.
     // Why:      The measurement worker and test thread share the same cache handle.
-    CacheHandle::open_at(path.to_path_buf())
+    return CacheHandle::open_at(path.to_path_buf())
 }
 
 // What:     `fn wait_cached(cache: &CacheHandle, key: u64)`. Poll until the key is cached,
@@ -75,7 +75,7 @@ fn wait_cached(cache: &CacheHandle, key: u64) -> bool {
         }
         thread::sleep(Duration::from_millis(20));
     }
-    false
+    return false
 }
 
 // What:     `fn approx_eq(a: f32, b: f32) -> bool`. Float comparison helper.
@@ -87,7 +87,7 @@ fn approx_eq(a: f32, b: f32) -> bool {
     // What:     `(a - b).abs() < TOLERANCE`. Difference-based comparison. Tail
     //           expression returns the boolean.
     // Why:      Avoid brittle exact float equality.
-    (a - b).abs() < TOLERANCE
+    return (a - b).abs() < TOLERANCE
 }
 
 // What:     `#[test]` marks the next function as a unit test.

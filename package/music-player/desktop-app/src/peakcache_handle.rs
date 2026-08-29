@@ -154,7 +154,7 @@ impl CacheHandle {
         // ```ts
         // return { readTx, writeTx };
         // ```
-        CacheHandle { read_tx, write_tx }
+        return CacheHandle { read_tx, write_tx }
     }
 
     /// What:     `#[cfg(test)] pub(crate) fn open_degraded() -> CacheHandle`. Start a cache
@@ -184,7 +184,7 @@ impl CacheHandle {
         // ```ts
         // return { readTx, writeTx };
         // ```
-        CacheHandle { read_tx, write_tx }
+        return CacheHandle { read_tx, write_tx }
     }
 
     /// What:     `pub(crate) fn get(&self, fingerprint: u64) -> Option<Decision>`. Block
