@@ -25,6 +25,8 @@ pub mod lsp;
 pub mod rule;
 /// Built-in lint rule implementations.
 pub mod builtin;
+/// Exit-status policy for completed lint runs.
+mod exit_code;
 
 // What:     `pub use dependency::{a, b};` re-exports two MODULES, not types, from
 //           a dependency under this crate's own root. After this, `crate::context`
@@ -397,47 +399,12 @@ pub fn run_cli(cli: &Cli) -> i32 {
         print!("{}", render_jsonl(&shown));
     }
 
-    return exit_code_for(cli, linter.options.deny_warnings, warnings, errors);
-}
-
-// What:     `fn exit_code_for(..) -> i32`. Turns the run's tallies into the
-//           process status.
-// Why:      Three separate switches can each fail a run that produced no errors,
-//           and deciding them in one function is what makes the precedence
-//           legible rather than emergent from the order of some `if`s.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function exitCodeFor(cli: Cli, denyWarnings: boolean, warnings: number, errors: number): number
-// ```
-/// Decide the process exit status from the run's warning and error counts.
-fn exit_code_for(cli: &Cli, config_deny_warnings: bool, warnings: usize, errors: usize) -> i32 {
-    // Any error fails, whatever the warning settings say.
-    if errors > 0 {
-        return 1;
-    }
-
-    // The flag and the configured option are both honoured, and the flag cannot
-    // turn the option off, matching how `deny-warnings` merges between files.
-    if (cli.deny_warnings || config_deny_warnings) && warnings > 0 {
-        return 1;
-    }
-
-    // `if let Some(threshold) = ..` runs only when a threshold was set. Zero is
-    // meaningful and distinct from absent, which is why this is an `Option`
-    // rather than a number defaulting to zero.
-    // What:     `if let Some(threshold) = .. && warnings > threshold`. A let
-    //           binding and a boolean test joined by `&&` in one condition; the
-    //           binding is in scope for the test to its right.
-    // Why:      Written as two nested `if`s clippy objects, and it reads as one
-    //           condition anyway: there is a threshold AND it was exceeded.
-    if let Some(threshold) = cli.max_warnings
-        && warnings > threshold
-    {
-        return 1;
-    }
-
-    return 0;
+    return exit_code::exit_code_for(
+        cli,
+        linter.options.deny_warnings,
+        warnings,
+        errors,
+    );
 }
 
 // What:     `fn collect_rust_files(paths: &[String]) -> Vec<String>`. Borrow the

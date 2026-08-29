@@ -19,8 +19,9 @@ use std::io::{BufReader, Write};
 
 /// Imports the parsed command-line options the server lints with.
 use crate::cli::Cli;
-/// Imports the per-file context and finding types.
+/// Imports the parsed source context for each open document.
 use crate::context::LintContext;
+/// Imports finding payloads and their report severity.
 use crate::diagnostic::{Diagnostic, Severity};
 /// Imports the rule trait the server runs.
 use crate::rule::Rule;
@@ -58,6 +59,7 @@ struct Capabilities {
     //           traffic but means applying ranged edits correctly, and a linter
     //           re-parses the whole file regardless.
     #[serde(rename = "textDocumentSync")]
+    /// Synchronisation mode, set to LSP's full-document mode.
     text_document_sync: u8,
 }
 
