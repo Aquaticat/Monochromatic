@@ -66,8 +66,13 @@ import type { SliceSelection, } from './slice-selection.ts';
  * VERSION 8, same day, because body contributor lines now preserve public
  * identity spellings established by existing English attribution. An earlier
  * cached slice can replace them with literal source-side transliterations.
+ *
+ * VERSION 9 deterministically floors every candidate on complete target
+ * contributor survival rather than relying on prompt compliance alone,
+ * and excludes an unrepairable contributor-violating voice without fabricating
+ * incumbent authorship.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 8;
+export const TRANSLATE_SLICE_CACHE_VERSION = 9;
 
 /**
  * Models the translate lane seats.

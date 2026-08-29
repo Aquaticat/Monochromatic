@@ -23,6 +23,7 @@ import {
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import {
+  buildTranslateCandidates,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
@@ -141,6 +142,8 @@ function repairClient(
  *
  * @param answer - what it answers when asked about the findings
  *
+ * @param sourceText - original candidate renders
+ *
  * @param incumbentText - translation already in the document, blank by default
  * so most cases exercise a slice with none
  *
@@ -158,11 +161,13 @@ async function runRepair(
   {
     translation,
     answer,
+    sourceText = SOURCE_TEXT,
     incumbentText = '',
     pageText = incumbentText,
   }: {
     readonly translation: string;
     readonly answer: unknown;
+    readonly sourceText?: string;
     readonly incumbentText?: string;
     readonly pageText?: string;
   },
@@ -189,7 +194,7 @@ async function runRepair(
         value: { translation, },
       },
     ],
-    sourceText: SOURCE_TEXT,
+    sourceText,
     incumbentText,
     pageText,
     priorMessages: PRIOR_MESSAGES,
@@ -223,6 +228,128 @@ await describe({
         expect(log.calls,).toBe(0,);
         expect(repaired.findings,).toHaveLength(0,);
         expect(repaired.voices[0]?.value.translation,).toBe(GOOD_TEXT,);
+      },
+    },),
+
+    it({
+      name: 'REPAIRS contributor respelling back to target-authoritative form',
+      fn: async () => {
+        /** Target-authoritative archive attribution. */
+        const archive = 'Contributors for this entry: [Snow](https://example.test/snow)';
+        const { repaired, log, } = await runRepair({
+          sourceText: '本条目贡献者：雪猫',
+          incumbentText: archive,
+          translation: 'Contributors for this entry: Snowflake',
+          answer: {
+            resolution: 'revised',
+            translation: archive,
+            explanation: 'restored target contributor form',
+          },
+        },);
+        expect(log.calls,).toBe(1,);
+        expect(repaired.voices[0]?.value.translation,).toBe(archive,);
+      },
+    },),
+
+    it({
+      name: 'FLOORS DEFENDED contributor respelling to target-authoritative page',
+      fn: async () => {
+        /** Target-authoritative archive attribution. */
+        const archive = 'Contributors for this entry: [Snow](https://example.test/snow)';
+        const { repaired, } = await runRepair({
+          sourceText: '本条目贡献者：雪猫',
+          incumbentText: archive,
+          translation: 'Contributors for this entry: Snowflake',
+          answer: {
+            resolution: 'as-intended',
+            translation: '',
+            explanation: 'literal spelling is deliberate',
+          },
+        },);
+        expect(repaired.voices,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'EXCLUDES contributor violation when follow-up is unheard',
+      fn: async () => {
+        /** Target-authoritative archive attribution. */
+        const archive = 'Contributors for this entry: [Snow](https://example.test/snow)';
+        const { repaired, } = await runRepair({
+          sourceText: '本条目贡献者：雪猫',
+          incumbentText: archive,
+          translation: 'Contributors for this entry: Snowflake',
+          answer: { nonsense: true, },
+        },);
+        expect(repaired.voices,).toHaveLength(0,);
+        expect(repaired.findings,).toContain(`translate-repair-unheard (${TRANSLATOR})`,);
+      },
+    },),
+
+    it({
+      name: 'BUILDS INCUMBENT-ONLY SLATE with named findings when all voices violate authority',
+      fn: async () => {
+        /** Target-authoritative archive attribution. */
+        const archive = 'Contributors for this entry: [Snow](https://example.test/snow)';
+        /** Shared call log for both rejected voices. */
+        const log: RepairLog = { calls: 0, messages: [], };
+        const modelIds = [
+          TRANSLATOR,
+          'hf:Qwen/Qwen3.8-27B',
+        ] as const;
+        const repaired = await repairInvalidCandidates({
+          client: repairClient({
+            answer: {
+              resolution: 'as-intended',
+              translation: '',
+              explanation: 'literal spelling is deliberate',
+            },
+            log,
+          },),
+          voices: modelIds.map(function voice(modelId,) {
+            return {
+              modelId,
+              value: { translation: 'Contributors for this entry: Snowflake', },
+            };
+          },),
+          sourceText: '本条目贡献者：雪猫',
+          incumbentText: archive,
+          priorMessages: PRIOR_MESSAGES,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+        const built = buildTranslateCandidates({
+          voices: repaired.voices,
+          translatorModelIds: modelIds,
+          incumbentText: archive,
+        },);
+        expect(repaired.voices,).toHaveLength(0,);
+        expect(repaired.findings,).toHaveLength(modelIds.length * 2,);
+        expect(built.candidates,).toHaveLength(1,);
+        expect(built.candidates[0]?.value.text,).toBe(archive,);
+      },
+    },),
+
+    it({
+      name: 'EXCLUDES contributor violation when revision remains invalid',
+      fn: async () => {
+        /** Target-authoritative archive attribution. */
+        const archive = 'Contributors for this entry: [Snow](https://example.test/snow)';
+        const { repaired, } = await runRepair({
+          sourceText: '本条目贡献者：雪猫',
+          incumbentText: archive,
+          translation: 'Contributors for this entry: Snowflake',
+          answer: {
+            resolution: 'revised',
+            translation: 'Contributors for this entry: Snow Cat',
+            explanation: 'changed wording but not target form',
+          },
+        },);
+        expect(repaired.voices,).toHaveLength(0,);
+        expect(repaired.findings.some(function unresolved(finding,): boolean {
+          return finding.startsWith(`translate-repair-unresolved (${TRANSLATOR})`,);
+        },),).toBe(true,);
       },
     },),
 
@@ -302,6 +429,29 @@ await describe({
         if (asked === undefined)
           throw new Error('a final turn by construction',);
         expect(messageText({ message: asked, },),).toContain('heading (level 2)',);
+      },
+    },),
+
+    it({
+      name: 'KEEPS contributor-safe original when revision introduces respelling',
+      fn: async () => {
+        /** Source carrying heading plus attribution. */
+        const source = '## 贡献者\n\n本条目贡献者：雪猫';
+        /** Target-authoritative page shape and identity. */
+        const archive = '## Contributors\n\nContributors for this entry: [Snow](https://example.test/snow)';
+        /** Structurally invalid original candidate retaining contributor authority. */
+        const original = 'Contributors for this entry: [Snow](https://example.test/snow)';
+        const { repaired, } = await runRepair({
+          sourceText: source,
+          incumbentText: archive,
+          translation: original,
+          answer: {
+            resolution: 'revised',
+            translation: '## Contributors\n\nContributors for this entry: Snowflake',
+            explanation: 'restored heading but changed attribution',
+          },
+        },);
+        expect(repaired.voices[0]?.value.translation,).toBe(original,);
       },
     },),
 

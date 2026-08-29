@@ -87,6 +87,11 @@ const SHORT_BASE = 'She had a good time with everyone.';
 const SHORT_POLISHED = 'She spent some happy times with everyone.';
 
 /**
+ * Target-authoritative contributor attribution baseline.
+ */
+const CONTRIBUTOR_BASE = 'Contributors for this entry: [Snow](https://example.test/snow)';
+
+/**
  * Disposable temporary prompt checkpoint directory.
  */
 type TemporaryDirectory = AsyncDisposable & {
@@ -477,6 +482,35 @@ await describe({
         },);
         expect(polish.kind,).toBe('settled',);
         expect(polish.kind === 'settled' ? polish.text : '',).toBe(SHORT_POLISHED,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS TARGET CONTRIBUTOR BASELINE when polish candidate drops authority',
+      fn: async () => {
+        const polish = await polishConsolidation({
+          client,
+          sourceText: '本条目贡献者：雪猫',
+          archiveText: CONTRIBUTOR_BASE,
+          baseText: CONTRIBUTOR_BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-contributor-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('contributor authority fixture did not settle',);
+        expect(polish.text,).toBe(CONTRIBUTOR_BASE,);
+        expect(polish.changed,).toBe(false,);
       },
     },),
 

@@ -1,9 +1,11 @@
+import { findDroppedDeclaredNames, } from './declared-name-survival.ts';
+
 //region Contributor name authority
 
 /**
  * English archive labels introducing target-authoritative contributor names.
  */
-const CONTRIBUTOR_LABELS = [
+export const CONTRIBUTOR_LABELS = [
   'Contributor for this entry:',
   'Contributors for this entry:',
   'Contributor for this entry：',
@@ -195,6 +197,89 @@ export function archiveContributorNameForms(
     right,
   ): number {
     return right.length - left.length;
+  },);
+}
+
+/**
+ * Reports whether two contributor spellings project to same complete identity.
+ *
+ * @param left - one visible contributor form
+ *
+ * @param right - other visible contributor form
+ *
+ * @returns Whether forms differ only by supported name separators or markup
+ *
+ * @example
+ * ```ts
+ * const same = contributorFormsMatch({ left: 'Snow_Cat', right: 'Snow Cat', });
+ * ```
+ */
+export function contributorFormsMatch(
+  {
+    left,
+    right,
+  }: {
+    readonly left: string;
+    readonly right: string;
+  },
+): boolean {
+  /**
+   * Left projected identity losses when compared into right.
+   */
+  const leftDropped = findDroppedDeclaredNames({
+    forms: [left,],
+    baseText: left,
+    candidateText: right,
+  },);
+  /**
+   * Right projected identity losses when compared into left.
+   */
+  const rightDropped = findDroppedDeclaredNames({
+    forms: [right,],
+    baseText: right,
+    candidateText: left,
+  },);
+  return (leftDropped.length === 0) && (rightDropped.length === 0);
+}
+
+/**
+ * Finds target-authoritative contributor forms missing or respelled in candidate.
+ *
+ * @param archiveText - existing English attribution authority
+ *
+ * @param candidateText - proposed wording
+ *
+ * @returns Missing target forms in archive order
+ *
+ * @example
+ * ```ts
+ * const dropped = droppedContributorNameForms({ archiveText, candidateText, });
+ * ```
+ */
+export function droppedContributorNameForms(
+  {
+    archiveText,
+    candidateText,
+  }: {
+    readonly archiveText: string;
+    readonly candidateText: string;
+  },
+): readonly string[] {
+  /**
+   * Target-authoritative archive forms.
+   */
+  const forms = archiveContributorNameForms({ text: archiveText, },);
+  /**
+   * Forms candidate attribution currently carries.
+   */
+  const candidateForms = archiveContributorNameForms({ text: candidateText, },);
+  return forms.filter(function absent(form,): boolean {
+    return !candidateForms.some(function matches(candidate,): boolean {
+      return contributorFormsMatch({
+        left: form,
+        right: candidate,
+      },);
+    },);
   },);
 }
 

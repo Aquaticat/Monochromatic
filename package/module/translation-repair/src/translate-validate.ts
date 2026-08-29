@@ -1,8 +1,13 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import { contributorAuthorityFindings, } from './contributor-translation-guard.ts';
 import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
+import {
+  describeAtom,
+  mergeAtoms,
+} from './translate-atom-floor.ts';
 import {
   type BlockShape,
   readSliceSkeleton,
@@ -105,22 +110,6 @@ function describeBlocks({ blocks, }: { readonly blocks: readonly BlockShape[]; }
     return 'nothing';
   return blocks.map(describeBlock,)
     .join(', ',);
-}
-
-/**
- * Renders one atom for a finding.
- *
- * @param atom - atom to describe
- *
- * @returns Kind and value
- *
- * @example
- * ```ts
- * const label = describeAtom({ kind: 'footnote', value: '1', },);
- * ```
- */
-function describeAtom(atom: ProtectedAtom,): string {
-  return `${atom.kind} ${atom.value}`;
 }
 
 /**
@@ -350,166 +339,6 @@ function compareBlocks(
 }
 
 /**
- * One atom and how many copies of it a side carries.
- *
- * @example
- * ```ts
- * const tally: AtomTally = { atom, count: 2, };
- * ```
- */
-type AtomTally = {
-  /**
-   * Atom itself, kept so a finding can describe it.
-   */
-  readonly atom: ProtectedAtom;
-
-  /**
-   * Copies carried.
-   */
-  readonly count: number;
-};
-
-/**
- * How many times each atom appears, keyed by its exact description.
- *
- * @param atoms - atoms one side carries
- *
- * @returns One entry per distinct atom, carrying it and its count
- *
- * @example
- * ```ts
- * const counted = countAtoms({ atoms, },);
- * ```
- */
-function countAtoms(
-  { atoms, }: { readonly atoms: readonly ProtectedAtom[]; },
-): ReadonlyMap<string, AtomTally> {
-  return atoms.reduce(
-    function tally(
-      seen: Map<string, AtomTally>,
-      atom: ProtectedAtom,
-    ): Map<string, AtomTally> {
-      /**
-       * Key identifying this atom exactly.
-       */
-      const key = describeAtom(atom,);
-
-      /**
-       * What this atom has been counted at so far.
-       */
-      const counted = seen.get(key,);
-
-      /**
-       * Copies before this one.
-       */
-      const before = (counted === undefined) ? 0 : counted.count;
-      seen.set(
-        key,
-        {
-          atom,
-          count: before + 1,
-        },
-      );
-      return seen;
-    },
-    new Map<string, AtomTally>(),
-  );
-}
-
-/**
- * Atoms a candidate owes, taking whichever reference asks for more of each.
- *
- * WHY THE LARGER DEMAND WINS. A footnote the archive added and the Chinese
- * never had is accurate detail a reader benefits from, and one the archive
- * dropped is exactly what this pipeline exists to restore. Taking the union
- * keeps both without letting either side alone forbid the other.
- *
- * @param page - atoms the text being replaced carries, empty where none
- *
- * @param source - atoms the original carries
- *
- * @returns Atoms with the higher of the two demands, one entry per copy
- *
- * @example
- * ```ts
- * const owed = mergeAtoms({ page, source, },);
- * ```
- */
-function mergeAtoms(
-  {
-    page,
-    source,
-  }: {
-    readonly page: readonly ProtectedAtom[];
-    readonly source: readonly ProtectedAtom[];
-  },
-): readonly ProtectedAtom[] {
-  /**
-   * What the page asks for.
-   */
-  const fromPage = countAtoms({ atoms: page, },);
-
-  /**
-   * What the original asks for.
-   */
-  const fromSource = countAtoms({ atoms: source, },);
-
-  /**
-   * Every atom either side names, once each.
-   */
-  const keys = [
-    ...new Set([
-      ...fromPage.keys(),
-      ...fromSource.keys(),
-    ],),
-  ];
-
-  return keys.flatMap(function expand(key: string,): readonly ProtectedAtom[] {
-    /**
-     * Either side's record of this atom, the original's preferred so a finding
-     * quotes the text being translated wherever both carry it.
-     */
-    const byPage = fromPage.get(key,);
-
-    /**
-     * Original's record of this atom, absent where only the page carries it.
-     */
-    const bySource = fromSource.get(key,);
-
-    /**
-     * Record a finding can describe this atom from.
-     */
-    const held = bySource ?? byPage;
-    if (held === undefined)
-      throw new Error(`atom key belonging to neither side: ${key}`,);
-
-    /**
-     * Copies the page asks for.
-     */
-    const wantedByPage = (byPage === undefined) ? 0 : byPage.count;
-
-    /**
-     * Copies the original asks for.
-     */
-    const wantedBySource = (bySource === undefined) ? 0 : bySource.count;
-
-    /**
-     * Copies the fuller reference asks for.
-     */
-    const owed = Math.max(
-      wantedByPage,
-      wantedBySource,
-    );
-    return Array.from(
-      { length: owed, },
-      function copy(): ProtectedAtom {
-        return held.atom;
-      },
-    );
-  },);
-}
-
-/**
  * Checks one candidate translation against the original and the page it
  * replaces.
  *
@@ -557,6 +386,21 @@ export function validateTranslatedSlice(
       pageText,
       candidateText,
     },);
+  }
+  /**
+   * Contributor authority floor applies even when source grammar is unreadable.
+   */
+  const contributorFindings = contributorAuthorityFindings({
+    texts: Array.of(
+      pageText,
+      candidateText,
+    ),
+  },);
+  if (contributorFindings.length > 0) {
+    return {
+      kind: 'invalid',
+      findings: contributorFindings,
+    };
   }
   /**
    * Shape the original carries.

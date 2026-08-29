@@ -20,9 +20,11 @@ not current instruction.
   reviewed-rejection strategy history,
   and required-provider gate landed in `cf14b379b`.
 - Deterministic correction-cycle guard landed in `6369228d5`.
+- Pending generation 15 floors every body candidate on target-authoritative contributor survival.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
+- Pending generation-15 verification emitted 866 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -52,9 +54,12 @@ not current instruction.
   and `~/temp/agent/gfp-generation14-payload-validation-green-20260829.log`.
 
 Artifact schema remains 9.
-Consolidation cache generation is 14 at `6369228d5`,
-lane-contest cache generation is 4,
-and pairing cache generation is 2.
+Pending cache generations are consolidation 15,
+lane contest 5,
+translate 9,
+refine 4,
+repair 30,
+and pairing 2.
 Preparation identity remains v2.
 
 ### Current quality mechanism

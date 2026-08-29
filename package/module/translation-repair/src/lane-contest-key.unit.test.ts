@@ -87,8 +87,9 @@ await describe({
         const key = laneContestSliceKey(catInputs(),);
         // MOVED ON 2026-08-29 when the fixture roster replaced GLM-5.2 with
         // GLM-5.3-Flash, then when excluded-lane participation stopped waiting
-        // for every roster seat. Roster identity is explicit key material.
-        expect(key,).toBe('3f15e6827e0e5578ae6c9202a8b9e3a6c891396137a326eecc821dbe02e1ce7f',);
+        // for every roster seat. Version 5 floors complete-form contributor
+        // authority. Roster identity is explicit key material.
+        expect(key,).toBe('031cfaf106b0f6e9849e3a1cd0c5a7a42d08b56155cd362e940649d166d107cb',);
       },
     },),
     it({

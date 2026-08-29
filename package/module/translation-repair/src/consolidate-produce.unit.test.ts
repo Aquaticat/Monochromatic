@@ -120,6 +120,9 @@ function scriptedProducer(
  *
  * @param answers - translations per call
  *
+ * @param subject - consolidation evidence,
+ * defaulting to line-structure fixture
+ *
  * @returns Slate plus the calls it cost
  *
  * @example
@@ -127,7 +130,15 @@ function scriptedProducer(
  * const { produced, } = await producedUnder({ answers: [PAGE_TEXT,], },);
  * ```
  */
-async function producedUnder({ answers, }: { readonly answers: readonly string[]; },) {
+async function producedUnder(
+  {
+    answers,
+    subject = SUBJECT,
+  }: {
+    readonly answers: readonly string[];
+    readonly subject?: ConsolidateSubject;
+  },
+) {
   /**
    * Scripted client and its counter.
    */
@@ -139,8 +150,8 @@ async function producedUnder({ answers, }: { readonly answers: readonly string[]
   const produced = await produceConsolidations({
     client: rig.client,
     roster: ROSTER,
-    subject: SUBJECT,
-    standingText: PAGE_TEXT,
+    subject,
+    standingText: subject.incumbentText,
     signal: new AbortController().signal,
     perCallTimeoutMs: 5_000,
     l,
@@ -170,6 +181,32 @@ await describe({
         expect(produced.validityBefore[0]?.validation.kind,).toBe('invalid',);
         expect(produced.validity[0]?.validation.kind,).toBe('valid',);
         expect(produced.voices[0]?.value.translation,).toBe(PAGE_TEXT,);
+      },
+    },),
+
+    it({
+      name: 'REPAIRS contributor respelling before proposal can become settlement baseline',
+      fn: async () => {
+        /** Target-authoritative attribution. */
+        const archive = 'Contributors for this entry: [Snow](https://example.test/snow)';
+        const { produced, calls, } = await producedUnder({
+          subject: {
+            sourceText: '本条目贡献者：雪猫',
+            incumbentText: archive,
+            repairText: archive,
+            translateText: archive,
+            ballots: [],
+            lineStructured: false,
+          },
+          answers: [
+            'Contributors for this entry: Snowflake',
+            archive,
+          ],
+        },);
+        expect(calls,).toBe(2,);
+        expect(produced.validityBefore[0]?.validation.kind,).toBe('invalid',);
+        expect(produced.validity[0]?.validation.kind,).toBe('valid',);
+        expect(produced.voices[0]?.value.translation,).toBe(archive,);
       },
     },),
 

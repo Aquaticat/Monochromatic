@@ -277,6 +277,13 @@ import type { RepairModels, } from './repair-contract.ts';
  * Resuming a version-29 record instead would silently recheck refined text with
  * nobody named as its author, which is exactly the discount this field exists
  * to feed.
+ *
+ * VERSION 30 STAYS for complete-form contributor authority.
+ * Repair output cannot ship directly:
+ * differing lane text reaches lane-contest winner floor,
+ * while uncontested identical text matches translate lane already floored by
+ * `TRANSLATE_SLICE_CACHE_VERSION` 9.
+ * Main consolidation candidates are independently floored before settlement.
  */
 export const SLICE_CACHE_VERSION = 30;
 /**

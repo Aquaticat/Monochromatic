@@ -174,6 +174,19 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES ORDINARY REPAIR-LANE WINNER that respells target contributor authority',
+      fn: async () => {
+        expect(laneContestChoiceMayShip({
+          outcome: outcomeFor({ choice: 'repair', },),
+          sourceText: '本条目贡献者：雪猫',
+          incumbentText: 'Contributors for this entry: [Snow](https://example.test/snow)',
+          repairText: 'Contributors for this entry: Snowflake',
+          translateText: 'Contributors for this entry: [Snow](https://example.test/snow)',
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'LEAVES ORDINARY PROSE AND DECLINED CONTEST outside syntax rejection',
       fn: async () => {
         expect(laneContestChoiceMayShip({

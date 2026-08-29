@@ -2,6 +2,7 @@
 // Third rendering, its fidelity gate, final body polish, cache and artifact records.
 
 export { renderConsolidationBrief, } from './consolidate-brief.ts';
+export { applyFinalPolish, } from './consolidation-polish-apply.ts';
 export {
   ABSOLUTE_NATURALNESS_CONFIRMATIONS_REQUIRED,
   type ConfirmedAbsoluteNaturalness,

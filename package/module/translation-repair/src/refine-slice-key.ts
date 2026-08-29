@@ -43,8 +43,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 3 makes source-grammar calques and partially polished paragraphs
  * explicit rewriter work. Earlier replies answered a weaker naturalness question.
+ *
+ * VERSION 4 moves because refinement output is re-admitted under lane-contest
+ * winner contributor floor;
+ * old cached rewrite could bypass new admission question.
  */
-export const REFINE_CACHE_VERSION = 3;
+export const REFINE_CACHE_VERSION = 4;
 
 /**
  * Everything about this run that changes what the voices are ASKED.

@@ -156,6 +156,18 @@ In the morning it dozes on the windowsill.
     },),
 
     it({
+      name: 'REFUSES contributor respelling even when ORIGINAL grammar is unknown',
+      fn: async () => {
+        const validation = validateTranslatedSlice({
+          sourceText: '猫猫 <未闭合 的标签 在这里。',
+          pageText: 'Contributors for this entry: [Snow](https://example.test/snow)',
+          candidateText: 'Contributors for this entry: Snowflake',
+        },);
+        expect(validation.kind,).toBe('invalid',);
+      },
+    },),
+
+    it({
       name: 'REPORTS a candidate the parser refuses, and hands the parser\'s '
         + 'own account back, so the model is told what to fix rather than that '
         + 'something was wrong',
@@ -329,6 +341,34 @@ In the morning it dozes on the windowsill.
         ],);
       },
     },),
+    it({
+      name: 'REFUSES CANDIDATE that respells target-authoritative contributor identity',
+      fn: async () => {
+        const validation = validateTranslatedSlice({
+          sourceText: '本条目贡献者：雪猫',
+          pageText: 'Contributors for this entry: [Snow](https://example.test/snow)',
+          candidateText: 'Contributors for this entry: Snowflake',
+        },);
+        expect(validation.kind,).toBe('invalid',);
+        const findings = (validation.kind === 'invalid')
+          ? validation.findings.join('\n',)
+          : '';
+        expect(findings,).toContain('Target-authoritative contributor identity',);
+        expect(findings,).not.toContain('Snow',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS TARGET CONTRIBUTOR after harmless attribution reflow',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '本条目贡献者：雪猫',
+          pageText: 'Contributors for this entry: [Snow](https://example.test/snow)',
+          candidateText: 'Contributors for this entry:\n[Snow](https://example.test/snow)',
+        },).kind,).toBe('valid',);
+      },
+    },),
+
     it({
       name: 'FALLS BACK to the original alone when the page refuses the strict '
         + 'grammar, since an archive written before this grammar existed is '

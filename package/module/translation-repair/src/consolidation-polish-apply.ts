@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { droppedContributorNameForms, } from './contributor-name-authority.ts';
 import type {
   ConsolidationSettlement,
   ConsolidationSubject,
@@ -10,6 +11,7 @@ import {
   type ConsolidationPolishConfig,
   polishConsolidation,
 } from './consolidation-polish.ts';
+import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
 
 //region Final consolidation polish application
 
@@ -69,6 +71,22 @@ export async function applyFinalPolish(
     readonly l: Logger;
   }>,
 ): Promise<ConsolidationSettlement> {
+  // FRESH PRODUCTION BASES REACH HERE THROUGH TWO EARLIER FLOORS. Lane standing
+  // is admitted by lane-contest winner validation; a consolidated replacement
+  // is admitted by producer validation. This check is an invariant backstop for
+  // stale/corrupt data, never ordinary quality settlement.
+  /**
+   * Target-authoritative contributor forms baseline lost before polish.
+   */
+  const droppedContributors = droppedContributorNameForms({
+    archiveText: subject.incumbentText,
+    candidateText: settlement.text,
+  },);
+  if (droppedContributors.length > 0) {
+    throw new NaturalnessRepairInterruptedError({
+      reason: 'contributor-structure',
+    },);
+  }
   /**
    * Final naturalness decision over approved surviving baseline.
    */

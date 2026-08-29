@@ -62,12 +62,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  * MOVED on 2026-08-22 when version went to 6 for judge line-structure policy,
  * then on 2026-08-28 when version went to 7 for target-authoritative contributor
  * spelling in metadata comments and version 8 for body contributor public
- * identities. These questions changed without input fields.
+ * identities. Version 9 adds deterministic complete-form contributor floor.
+ * These questions changed without input fields.
  *
  * The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  * leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '6c660969fa561462d8a5772a5af4adcea96d97463dc640f40cd9f166a9e28f1a';
+const LEGACY_WINDOWLESS_KEY = 'a1b2616bbf2f3742198b1cd280061975892277dfadd9fbda947667aaa3dfe38f';
 
 /**
  * One slice's key, with whatever this case wants to vary.

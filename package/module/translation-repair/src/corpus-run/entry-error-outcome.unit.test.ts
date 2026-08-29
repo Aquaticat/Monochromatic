@@ -11,6 +11,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ContributorCompletenessError,
   entryErrorOutcome,
   NaturalnessCompletenessError,
   NaturalnessRepairInterruptedError,
@@ -21,6 +22,7 @@ await describe({
   name: entryErrorOutcome.name,
   children: [
     ...([
+      new ContributorCompletenessError({ entryId: 'Cat', droppedCount: 1, }),
       new NaturalnessRepairInterruptedError({ reason: 'quorum-not-met', }),
       new NaturalnessCompletenessError({ sliceIndex: 1, }),
       new PromptPayloadStoreError({

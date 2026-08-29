@@ -62,8 +62,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 14 threads every reviewed rejection into failed-strategy evidence
  * and adds durable raw-payload replay across interrupted invocations.
+ *
+ * VERSION 15 floors every candidate on target-authoritative contributor identity.
+ * Earlier settlements could resume wording final publication guard rejects.
  */
-export const CONSOLIDATE_CACHE_VERSION = 14;
+export const CONSOLIDATE_CACHE_VERSION = 15;
 
 /**
  * What a line-structured slice appends to its key material.

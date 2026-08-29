@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import { CONTRIBUTOR_AUTHORITY_FINDING, } from './contributor-translation-guard.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import { attemptStageCall, } from './stage-call.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
@@ -41,9 +42,10 @@ import type { TranslateReportWire, } from './translate-wire.ts';
  */
 export type RepairOutcome = {
   /**
-   * Voice to build a candidate from, revised where the author revised it.
+   * Voice to build candidate from,
+   * absent when non-defensible contributor violation was not repaired.
    */
-  readonly voice: HeardVoice<TranslateReportWire>;
+  readonly voice?: HeardVoice<TranslateReportWire>;
 
   /**
    * What validation and the follow-up turn recorded, in scorecard-stable
@@ -165,7 +167,11 @@ async function repairOneCandidate(
     .map(function toFinding(finding,): string {
       return `translate-invalid (${voice.modelId}): ${finding}`;
     },);
-
+  /**
+   * Whether original candidate violates non-defensible target authority floor.
+   */
+  const contributorViolation = validation.findings
+    .includes(CONTRIBUTOR_AUTHORITY_FINDING,);
   /**
    * Characters of finding text this answer has to address.
    *
@@ -204,7 +210,7 @@ async function repairOneCandidate(
   },);
   if (!answer.heard) {
     return {
-      voice,
+      ...((contributorViolation) ? {} : { voice, }),
       findings: [
         ...found,
         `translate-repair-unheard (${voice.modelId})`,
@@ -222,7 +228,7 @@ async function repairOneCandidate(
   } = answer.value;
   if (resolution !== 'revised') {
     return {
-      voice,
+      ...((contributorViolation) ? {} : { voice, }),
       findings: [
         ...found,
         `translate-repair-${resolution} (${voice.modelId}): ${explanation}`,
@@ -246,7 +252,7 @@ async function repairOneCandidate(
   // original is at least what it produced with the whole sheet in front of it.
   if (rechecked.kind === 'invalid') {
     return {
-      voice,
+      ...((contributorViolation) ? {} : { voice, }),
       findings: [
         ...found,
         `translate-repair-unresolved (${voice.modelId}): ${explanation}`,
@@ -357,8 +363,10 @@ export async function repairInvalidCandidates(
   );
 
   return {
-    voices: outcomes.map(function toVoice(outcome,): HeardVoice<TranslateReportWire> {
-      return outcome.voice;
+    voices: outcomes.flatMap(function toVoice(
+      outcome,
+    ): readonly HeardVoice<TranslateReportWire>[] {
+      return (outcome.voice === undefined) ? [] : [outcome.voice,];
     },),
     findings: outcomes.flatMap(function toFindings(outcome,): readonly string[] {
       return outcome.findings;

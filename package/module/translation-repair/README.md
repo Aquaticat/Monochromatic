@@ -1743,7 +1743,20 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Missing/misplaced slice and contradictory assembled-page structure are invariants;
   earlier stages must prevent them rather than looping at publication guard.
 - `assertContributorNamesComplete` throws when final attribution drops target-authoritative public form.
-  Deterministic authority restoration should repair final attribution and rerun validation.
+  Generation 15 floors translation candidates,
+  excludes unrepairable violator voices without fabricated authorship,
+  rejects unsafe ordinary lane winners,
+  and floors consolidation and polish candidates.
+  Repair/refine text that differs reaches lane winner floor;
+  uncontested identical text matches translate lane already floored.
+  Invalid slate deterministically retains target-authoritative incumbent.
+  Body-slice floor does not replace front-matter comment authority,
+  which remains in metadata validator.
+  Final completeness guard remains defensive.
+  Cache generations move to translate 9,
+  refine 4,
+  lane contest 5,
+  and consolidation 15.
 
 - Image-reading exhaustion currently remains unavailable evidence rather than terminal refusal.
   That can let visual content bypass review;

@@ -1,5 +1,4 @@
-import { archiveContributorNameForms, } from '../contributor-name-authority.ts';
-import { findDroppedDeclaredNames, } from '../declared-name-survival.ts';
+import { droppedContributorNameForms, } from '../contributor-name-authority.ts';
 
 //region Contributor completeness
 
@@ -49,59 +48,6 @@ export class ContributorCompletenessError extends Error {
 }
 
 /**
- * Reports whether two contributor spellings project to same complete identity.
- *
- * Bidirectional survival prevents prefix acceptance: `Snow` survives inside
- * `Snowflake` in one direction, while `Snowflake` does not survive in `Snow`.
- *
- * @param left - one visible contributor form
- *
- * @param right - other visible contributor form
- *
- * @returns Whether forms differ only by supported name separators or markup
- *
- * @example
- * ```ts
- * const same = contributorFormsMatch({ left: 'Snow_Cat', right: 'Snow Cat', });
- * ```
- */
-function contributorFormsMatch(
-  {
-    left,
-    right,
-  }: {
-    readonly left: string;
-    readonly right: string;
-  },
-): boolean {
-  /**
-   * Left projected identity losses when compared into right.
-   */
-  const leftDropped = findDroppedDeclaredNames({
-    forms: [left,],
-    baseText: left,
-    candidateText: right,
-  },);
-  /**
-   * Whether left projected identity occurs in right.
-   */
-  const leftSurvives = leftDropped.length === 0;
-  /**
-   * Right projected identity losses when compared into left.
-   */
-  const rightDropped = findDroppedDeclaredNames({
-    forms: [right,],
-    baseText: right,
-    candidateText: left,
-  },);
-  /**
-   * Whether right projected identity occurs in left.
-   */
-  const rightSurvives = rightDropped.length === 0;
-  return leftSurvives && rightSurvives;
-}
-
-/**
  * Refuses final page that drops or respells contributor identity established by
  * existing English archive attribution line.
  *
@@ -130,23 +76,11 @@ export function assertContributorNamesComplete(
   },
 ): void {
   /**
-   * Public identity spellings existing English archive establishes.
-   */
-  const forms = archiveContributorNameForms({ text: archiveText, });
-  /**
-   * Visible contributor spellings final page carries after reflow.
-   */
-  const finalForms = archiveContributorNameForms({ text: pageText, });
-  /**
    * Established contributor forms final attribution no longer names whole.
    */
-  const dropped = forms.filter(function absent(form,): boolean {
-    return !finalForms.some(function matches(candidate,): boolean {
-      return contributorFormsMatch({
-        left: form,
-        right: candidate,
-      },);
-    },);
+  const dropped = droppedContributorNameForms({
+    archiveText,
+    candidateText: pageText,
   },);
   if (dropped.length === 0)
     return;

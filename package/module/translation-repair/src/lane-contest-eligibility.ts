@@ -246,9 +246,9 @@ export function applyLaneContestEligibility(
 /**
  * Reports whether contest winner can cross final publication boundary.
  *
- * ORDINARY PROSE KEEPS ROSTER VERDICT. Front matter is syntax-bearing and has
- * deterministic identity invariants, so a lane that violates them cannot
- * become warm-run terminal evidence merely because enough ballots selected it.
+ * ORDINARY PROSE KEEPS ROSTER VERDICT only after contributor-authority floor.
+ * Front matter is syntax-bearing and has deterministic identity invariants,
+ * so a lane that violates them cannot become warm-run terminal evidence merely because enough ballots selected it.
  * A declined contest remains retryable through consolidation and therefore has
  * no selected lane to reject here.
  *
@@ -288,9 +288,9 @@ export function laneContestChoiceMayShip(
     readonly syntax?: SliceSyntax;
   },
 ): boolean {
-  if (syntax === undefined)
-    return true;
   if (outcome.choice === 'neither') {
+    if (syntax === undefined)
+      return true;
     /**
      * Findings distinguishing genuine decline from no safe eligible winner.
      */
@@ -298,15 +298,21 @@ export function laneContestChoiceMayShip(
     return !findings.includes(LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,);
   }
   /**
-   * Candidate statuses under source-backed syntax policy.
+   * Exact selected lane candidate.
    */
-  const eligibility = frontMatterContestEligibility({
+  const candidateText = (outcome.choice === 'repair')
+    ? repairText
+    : translateText;
+  /**
+   * Final deterministic eligibility for syntax and ordinary contributor authority.
+   */
+  const validation = validateTranslatedSlice({
     sourceText,
-    incumbentText,
-    repairText,
-    translateText,
+    candidateText,
+    pageText: incumbentText,
+    ...((syntax === undefined) ? {} : { syntax, }),
   },);
-  return eligibility[outcome.choice] === 'eligible';
+  return validation.kind === 'valid';
 }
 
 //endregion Lane contest publication eligibility

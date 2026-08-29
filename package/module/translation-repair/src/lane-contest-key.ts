@@ -27,8 +27,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 4 starts straggler grace at exact-half participation even when
  * deterministic eligibility excludes one lane.
+ *
+ * VERSION 5 excludes candidate that drops target-authoritative contributor form.
  */
-export const LANE_CONTEST_CACHE_VERSION = 4;
+export const LANE_CONTEST_CACHE_VERSION = 5;
 
 /**
  * Everything about this run that changes what the judges are ASKED, folded into
