@@ -90,7 +90,47 @@ or evidence unless the user later authorizes cleanup.
   a 2048 MiB EFI partition,
   and a 129021 MiB encrypted ZFS root partition.
   **Install Now** was confirmed.
-  Process `wait-clean-nodesktop-install` is waiting for terminal success or failure.
+  The clean no-desktop control reached terminal Calamares success.
+  Its retained log proves:
+
+  - ZFSBootMenu image generation succeeded;
+  - the EFI boot entry was created;
+  - native-encryption configuration completed;
+  - `zroot/ROOT/baseline` was created;
+  - the ESP contains `EFI/ZFSBootMenu/vmlinuz-linux-cachyos.EFI`,
+    measured at 42,821,120 bytes.
+
+  The installer cleanup again reported `cannot export 'zroot': pool is busy`,
+  so that warning is not sufficient to explain the failed run's empty ESP.
+  The debug output,
+  effective sequence,
+  settings,
+  full Calamares log,
+  selected key events,
+  archive hash,
+  and ESP listing were synced to the writable evidence image.
+  The guest entered `systemctl poweroff` after unmounting the evidence image and reached `shut off`.
+  The evidence files were copied to
+  `/var/home/user/temp/agent/cachyos-zfs-nodesktop-clean-evidence`,
+  with SHA-256 recorded for every file.
+  Persistent domain XML proves the authenticated ISO source was ejected.
+  The clean no-desktop domain restarted from its installed EFI disk.
+  ZFSBootMenu counted down for `zroot/ROOT/default`,
+  requested the native-encryption passphrase,
+  accepted the disposable credential,
+  and booted to tty1.
+  Login as `user` reached a fish shell with no preinstalled graphical session.
+  The running root is `zroot/ROOT/default` on ZFS,
+  and the pool reports healthy.
+  Kernel `6.18.42-1-cachyos-lts` is paired exactly with `linux-cachyos-lts-zfs 6.18.42-1`.
+  Normal kernel `7.2.2-1` and `linux-cachyos-zfs 7.2.2-1` are also installed.
+  The root uses native `aes-256-gcm` encryption with passphrase format,
+  encryption root `zroot`,
+  and key location `file:///etc/zfs/keys/zroot.key`.
+  The keyfile is root-owned,
+  mode `000`,
+  and 40 bytes.
+  Firmware boot order starts with the ZFSBootMenu entry targeting the measured EFI image.
   The failed no-desktop domain previously restarted from its installed EFI disk,
   but the encrypted-boot watcher timed out after 635 seconds without seeing ZFSBootMenu or text login.
   A direct positive-control capture found the guest in the EDK II UEFI shell.
@@ -495,23 +535,19 @@ and `user` login.
 
 ## Immediate next actions
 
-1. Enter the disposable ZFS passphrase through the VM-only helper when the unlock prompt is visible.
+1. Under task 37,
+verify the installed automatic boot-environment hooks and regeneration behavior.
 
-1. Confirm whether ZFSBootMenu lists only `default` before the hidden baseline is enabled.
+1. Enable and boot the hidden baseline only after preserving a fallback.
 
-1. Boot `default` and authenticate as `user` with the disposable user password.
+1. Create and boot a known-good environment independently of the installer baseline.
 
-1. Verify root dataset,
-native encryption properties,
-dataset layout,
-kernel package,
-`linux-cachyos-zfs` dependency pairing,
-EFI artifacts,
-and pool health.
+1. Exercise clone or promotion rollback on disposable state.
 
-1. Mark installation task 36 complete only after the installed encrypted system reaches a usable session.
+1. Install and validate the intended UWSM plus labwc session from the text-only base.
 
-1. Start task 38 to evaluate recovery without ZFSBootMenu.
+1. Under task 38,
+evaluate authenticated-USB recovery without ZFSBootMenu in a separate disposable architecture.
 
 1. Update this handover after each milestone.
 
@@ -584,13 +620,13 @@ is real and recoverable.
   completed after ZFSBootMenu unlock and installed boot reached Ly 1.4.1.
 - Task 37,
   validate rollback and desktop:
-  pending after task 39.
+  in progress on the clean no-desktop control.
 - Task 38,
   evaluate ZFS recovery without ZFSBootMenu:
   pending.
 - Task 39,
   install no-desktop CachyOS validation:
-  in progress.
+  completed after encrypted boot reached the authenticated tty1 user shell.
 
 ## Stop conditions
 
