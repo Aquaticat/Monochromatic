@@ -55,7 +55,7 @@ pub struct AppBridgeRust {
 /// Why: gives QML a non-empty greeting binding without hardcoding it QML-side.
 impl Default for AppBridgeRust {
     fn default() -> Self {
-        Self {
+        return Self {
             greeting: QString::from("Monochromatic file manager (Qt / cxx-qt)"),
         }
     }
