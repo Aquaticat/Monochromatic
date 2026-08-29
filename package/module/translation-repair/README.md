@@ -1735,6 +1735,8 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Insertion admission does not throw separately;
   its inconclusive or uncorroborated outcome feeds this final unfilled list.
   Translation/insertion must continue from those slices and latest refusal evidence.
+  Translate version 10 landed in `504a407fc` and replaces identical decline retry with distinct prior-decline challenge;
+  no-candidate production still needs continuous strategy.
 - `assertFinalSelectionSettled` throws when archive wording stands without endorsement.
   Contest/consolidation must reopen unresolved slices with prior ballots as failed-strategy evidence.
 - One-sided front-matter support landed in `56a47cb81` and creates insertion slice for source-only metadata,
@@ -1754,7 +1756,7 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Body-slice floor does not replace front-matter comment authority,
   which remains in metadata validator.
   Final completeness guard remains defensive.
-  Cache generations move to translate 9,
+  Cache generations move to translate 10,
   refine 4,
   lane contest 5,
   and consolidation 15.

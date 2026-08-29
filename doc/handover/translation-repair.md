@@ -10,7 +10,7 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `56a47cb81`.
+- Current pipeline commit: `504a407fc`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
 - Generation-13 continuous correction,
@@ -27,6 +27,7 @@ not current instruction.
   and unresolved-asset pause before lanes.
 - One-sided front-matter support landed in `56a47cb81`:
   source metadata insertion and exact target-only preservation.
+- Translate version 10 prior-decline challenge landed in `504a407fc`.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
@@ -83,11 +84,14 @@ not current instruction.
   `~/temp/agent/gfp-front-matter-source-shape-green-20260829.log`,
   `~/temp/agent/gfp-front-matter-stopped-red-20260829.log`,
   and `~/temp/agent/gfp-front-matter-stopped-green-20260829.log`.
+- Translate version-10 GFP logs:
+  `~/temp/agent/gfp-translate-v10-decline-challenge-red-20260829.log`
+  and `~/temp/agent/gfp-translate-v10-decline-challenge-green-20260829.log`.
 
 Artifact schema remains 9.
-At `5211c54dd`, cache generations are consolidation 15,
+At `504a407fc`, cache generations are consolidation 15,
 lane contest 5,
-translate 9,
+translate 10,
 refine 4,
 repair 30,
 and pairing 2.
