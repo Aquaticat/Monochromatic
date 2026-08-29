@@ -1758,7 +1758,7 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   lane contest 5,
   and consolidation 15.
 
-- Pending visual-evidence guard gives each image retry substantively distinct responsibility:
+- Visual-evidence guard landed in `d14e641e6` and gives each image retry substantively distinct responsibility:
   complete transcription,
   small text,
   layout,
