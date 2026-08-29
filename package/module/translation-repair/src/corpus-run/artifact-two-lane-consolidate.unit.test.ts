@@ -268,6 +268,7 @@ await describe({
                 firstReview,
                 finalReview,
               ],
+              confirmations: [finalReview,],
             },
             findings: [],
           },

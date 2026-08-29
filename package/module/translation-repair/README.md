@@ -1533,6 +1533,32 @@ Consolidation cache generation 10 prevents warm reuse of settlements bought unde
 correction-generation,
 selection,
 or fidelity-gate questions.
+The next eight-seat validation proved relative correction selection still allowed every judge to choose best available text before exact absolute review rejected it.
+Generation 11 makes required correction absolute eligibility explicit:
+rewriters are instructed to perform separate finding-led and sentence-level native-English passes,
+inherited wording gets no presumption from omission in finding list,
+and selectors must assess each candidate independently and decline every candidate when each remains materially unnatural.
+
+Prompt strengthening alone was insufficient.
+A newly generated correction fixed demonstrated phrase but introduced another idiomatic defect;
+selector still chose it and exact review rejected it.
+More importantly,
+same exact failed candidate was rejected by original run and first replay,
+then accepted by all eight seats in later replay.
+One absolute-review draw is therefore not stable enough for publication approval.
+Generation 11 now requires one sequential all-seat confirmation after first acceptance.
+Any rejection remains immediately decisive and feeds bounded correction;
+an acceptance ships only after second all-seat acceptance of exact candidate.
+Schema-9 `confirmations` retains earlier acceptable draw with candidate and paragraph digests,
+while decisive `rounds` preserves one-review-per-candidate correction-chain invariant.
+Runtime settlement produces confirmation evidence by construction;
+artifact reader independently checks final-candidate identity,
+paragraph digests,
+roster order,
+and confirmation order.
+Final-naturalness completeness guard checks settled runtime state and does not duplicate artifact reader's digest validation.
+Legacy schema-9 records without field remain readable.
+This does not add a third correction or weaken fidelity and final absolute review.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.

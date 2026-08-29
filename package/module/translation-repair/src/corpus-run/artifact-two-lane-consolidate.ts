@@ -247,7 +247,7 @@ export type ArtifactNaturalnessCorrection = {
  *
  * @example
  * ```ts
- * const review: ArtifactNaturalnessReview = { correctionCount: 0, corrections: [], rounds: [] };
+ * const review: ArtifactNaturalnessReview = { correctionCount: 0, corrections: [], rounds: [], confirmations: [] };
  * ```
  */
 export type ArtifactNaturalnessReview = {
@@ -262,9 +262,16 @@ export type ArtifactNaturalnessReview = {
   readonly corrections?: readonly ArtifactNaturalnessCorrection[];
 
   /**
-   * Initial and post-correction absolute reviews.
+   * Decisive initial and post-correction absolute reviews.
    */
   readonly rounds: readonly ArtifactNaturalnessReviewRound[];
+
+  /**
+   * Earlier acceptable same-candidate readings before decisive reviews.
+   *
+   * Absent on artifacts written before acceptance confirmation.
+   */
+  readonly confirmations?: readonly ArtifactNaturalnessReviewRound[];
 };
 
 /**

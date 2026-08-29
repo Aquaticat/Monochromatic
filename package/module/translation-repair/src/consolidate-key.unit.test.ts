@@ -222,16 +222,19 @@ await describe({
         + 'moved on 2026-08-22 for line-structure judging and on 2026-08-28 for target-authoritative '
         + 'metadata contributor spelling, final body polish, target body contributor authority, and '
         + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction, then on 2026-08-29 for '
-        + 'render-aware absolute review and rejected-base correction prompts. These policies are not text fields, '
+        + 'render-aware absolute review, rejected-base correction prompts, and absolute correction eligibility. These policies are not text fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
         // THE LITERAL MOVED TWICE ON 2026-08-29. Its fixture roster first
         // replaced GLM-5.2 with GLM-5.3-Flash, which invalidated its own
         // settlements. Version 10 then invalidated settlements bought before
         // corrected absolute-review, correction-generation, selection, and
-        // fidelity-gate questions.
+        // fidelity-gate questions. Version 11 then invalidated corrections
+        // whose reviewers, rewriters, and selectors were not required to
+        // perform separate whole-paragraph absolute-eligibility passes or
+        // confirm an acceptable final reading independently.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '8dab970decb7158158c0796ceb750b40f194571b338ae196a71af5ed98a06159',
+          'deac12d66a9c66bc11f9472cedcc5521e2e46474c14b4fd2d3f2cdbf27f7b535',
         );
       },
     },),

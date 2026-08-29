@@ -1,10 +1,8 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import {
-  type AbsoluteNaturalnessReviewOutcome,
-  reviewAbsoluteNaturalness,
-} from './absolute-naturalness-review-stage.ts';
+import { confirmAbsoluteNaturalness, } from './absolute-naturalness-confirmation.ts';
+import type { AbsoluteNaturalnessReviewOutcome, } from './absolute-naturalness-review-stage.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import type {
@@ -52,9 +50,14 @@ export type NaturalnessCorrectionStep =
     readonly correction: ConsolidationPolishRoundResult;
 
     /**
-     * Absolute review over exact gated correction text.
+     * Decisive absolute review over exact gated correction text.
      */
     readonly review: AbsoluteNaturalnessReviewOutcome;
+
+    /**
+     * Earlier acceptable readings before decisive same-candidate review.
+     */
+    readonly confirmations: readonly AbsoluteNaturalnessReviewOutcome[];
 
     /**
      * Digest chain from rejected input through findings to gated text.
@@ -177,7 +180,7 @@ export async function runNaturalnessCorrection(
   /**
    * Absolute review of exact post-fidelity-gate correction.
    */
-  const review = await reviewAbsoluteNaturalness({
+  const confirmed = await confirmAbsoluteNaturalness({
     client,
     modelIds: config.gateModelIds,
     subject: {
@@ -190,10 +193,15 @@ export async function runNaturalnessCorrection(
     exchangeTimeoutMs: perCallTimeoutMs,
     l,
   },);
+  /**
+   * Decisive exact-candidate review after optional acceptance confirmation.
+   */
+  const { review, } = confirmed;
   return {
     kind: 'reviewed',
     correction,
     review,
+    confirmations: confirmed.confirmations,
     audit: {
       inputDigest: rejection.candidateDigest,
       findingsDigest: naturalnessFindingsDigest({ review: rejection, },),

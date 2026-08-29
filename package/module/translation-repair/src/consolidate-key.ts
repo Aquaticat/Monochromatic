@@ -48,8 +48,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * VERSION 10 binds revised absolute-review and required-correction questions:
  * Markdown soft breaks render as spaces, rejected base is not approved fallback,
  * and findings are a minimum rather than an edit whitelist.
+ *
+ * VERSION 11 requires absolute reviewers and correction rewriters to perform
+ * separate local and whole-passage scans, makes publication-quality
+ * naturalness a hard selector eligibility floor rather than relative ranking,
+ * and requires a second all-seat acceptance before publication approval.
  */
-export const CONSOLIDATE_CACHE_VERSION = 10;
+export const CONSOLIDATE_CACHE_VERSION = 11;
 
 /**
  * What a line-structured slice appends to its key material.

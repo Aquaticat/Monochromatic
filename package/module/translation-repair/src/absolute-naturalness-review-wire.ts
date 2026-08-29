@@ -238,6 +238,8 @@ export function buildAbsoluteNaturalnessReviewMessages(
 
 Mark acceptable only when the whole candidate reads as idiomatic, publication-ready English. Reject translationese a careful native editor should change: Chinese word order or parts of speech carried into English, calqued verb-object combinations, stacked time or aspect adverbs, repeated generic nouns or pronouns, stiff causal transitions, literal emotional descriptions, unclear references, and ungrammatical coordination.
 
+Perform two independent scans before deciding. First inspect every sentence for local grammar, collocation, word order, and reference defects. Then set those observations aside and reread each complete paragraph plus the whole passage for flow, register, repetition, and any defect the local scan missed. For an unacceptable candidate, return the union of material defects from both scans rather than only the first defect that proves rejection.
+
 Do not reject merely because another optional style is possible. Preserve memorial tone, deliberate source-language kinship terms with their glosses, names, handles, links, Markdown, and line structure. Judge naturalness only; do not rewrite the passage or decide factual fidelity.
 
 Single newlines inside one numbered paragraph, unless marked as explicit Markdown hard breaks, are soft breaks that render as spaces. Preserve them and do not report their source layout as choppy flow. A flow defect is material only if it remains after replacing each soft break with a space.

@@ -1,5 +1,5 @@
 /**
- * Tests schema-eight absolute naturalness review recomputation and text binding.
+ * Tests absolute naturalness review recomputation, correction binding, and acceptance confirmation.
  *
  * @module
  */
@@ -163,6 +163,40 @@ const CHAINED_REVIEW = {
   ],
 } as const;
 
+/**
+ * Builds acceptable schema-nine reading of exact candidate.
+ *
+ * @param text - exact candidate independently reviewed
+ *
+ * @returns Candidate and paragraph-bound acceptable round
+ */
+function acceptableRound({ text, }: { readonly text: string; },) {
+  return {
+    candidateDigest: hashContent({ content: text, },),
+    candidateText: text,
+    paragraphCount: 1,
+    paragraphDigests: [hashContent({ content: text, },),],
+    seats: [
+      acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
+      acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
+    ],
+    usable: 2,
+    verdict: 'acceptable' as const,
+    findings: [],
+  };
+}
+
+/**
+ * Schema-nine chain retaining earlier acceptances before decisive reviews.
+ */
+const CONFIRMED_CHAINED_REVIEW = {
+  ...CHAINED_REVIEW,
+  confirmations: [
+    acceptableRound({ text: INITIAL_TEXT, },),
+    acceptableRound({ text: FINAL_TEXT, },),
+  ],
+};
+
 await describe({
   name: parseNaturalnessReview.name,
   children: [
@@ -188,6 +222,82 @@ await describe({
           correctionChainRequired: true,
         },);
         expect(parsed,).toEqual(CHAINED_REVIEW,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS CONFIRMATIONS bound to decisive candidates including acceptance later rejected',
+      fn: async () => {
+        const parsed = parseNaturalnessReview({
+          value: CONFIRMED_CHAINED_REVIEW,
+          path: 'consolidation.slices[0].polish.review',
+          finalText: FINAL_TEXT,
+          correctionChainRequired: true,
+        },);
+        expect(parsed,).toEqual(CONFIRMED_CHAINED_REVIEW,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES MISSING FINAL, REJECTED, DUPLICATE, UNBOUND, REORDERED, OR DIFFERENT-ROSTER CONFIRMATION',
+      fn: async () => {
+        const cases: readonly unknown[] = [
+          {
+            ...CONFIRMED_CHAINED_REVIEW,
+            confirmations: [CONFIRMED_CHAINED_REVIEW.confirmations[0],],
+          },
+          {
+            ...CONFIRMED_CHAINED_REVIEW,
+            confirmations: [{
+              ...CONFIRMED_CHAINED_REVIEW.confirmations[1],
+              verdict: 'unacceptable',
+              seats: [
+                unacceptableSeat({
+                  modelId: 'hf:cat/Cat-A',
+                  problem: 'Still awkward.',
+                },),
+                acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
+              ],
+              findings: [{ paragraph: 1, problem: 'Still awkward.', },],
+            },],
+          },
+          {
+            ...CONFIRMED_CHAINED_REVIEW,
+            confirmations: [
+              CONFIRMED_CHAINED_REVIEW.confirmations[1],
+              CONFIRMED_CHAINED_REVIEW.confirmations[1],
+            ],
+          },
+          {
+            ...CONFIRMED_CHAINED_REVIEW,
+            confirmations: [acceptableRound({ text: 'The cat sat elsewhere.', },),],
+          },
+          {
+            ...CONFIRMED_CHAINED_REVIEW,
+            confirmations: CONFIRMED_CHAINED_REVIEW.confirmations.toReversed(),
+          },
+          {
+            ...CONFIRMED_CHAINED_REVIEW,
+            confirmations: [
+              CONFIRMED_CHAINED_REVIEW.confirmations[0],
+              {
+                ...CONFIRMED_CHAINED_REVIEW.confirmations[1],
+                seats: [
+                  acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
+                  acceptableSeat({ modelId: 'hf:cat/Cat-C', },),
+                ],
+              },
+            ],
+          },
+        ];
+        for (const value of cases) {
+          expect(() => parseNaturalnessReview({
+            value,
+            path: 'consolidation.slices[0].polish.review',
+            finalText: FINAL_TEXT,
+            correctionChainRequired: true,
+          },),).toThrow();
+        }
       },
     },),
 

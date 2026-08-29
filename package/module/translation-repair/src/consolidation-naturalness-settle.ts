@@ -15,6 +15,10 @@ import type {
   ConsolidationPolishConfig,
 } from './consolidation-polish-model.ts';
 import type { ConsolidationPolishRoundResult, } from './consolidation-polish-round.ts';
+import {
+  describeReviewFindings,
+  uniqueRosterModelIds,
+} from './consolidation-naturalness-state.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -65,49 +69,15 @@ type CorrectionState = {
   readonly reviewRounds: readonly AbsoluteNaturalnessReviewOutcome[];
 
   /**
+   * Earlier acceptable readings before decisive same-candidate reviews.
+   */
+  readonly confirmationRounds: readonly AbsoluteNaturalnessReviewOutcome[];
+
+  /**
    * Digest-bound successful correction transitions.
    */
   readonly corrections: readonly ConsolidationNaturalnessCorrectionAudit[];
 };
-
-/**
- * Deduplicates model credits while preserving first occurrence.
- *
- * @param modelIds - credits across bounded generations
- *
- * @returns Stable unique model ids
- *
- * @example
- * ```ts
- * const unique = uniqueRosterModelIds({ modelIds, });
- * ```
- */
-function uniqueRosterModelIds(
-  { modelIds, }: { readonly modelIds: readonly RosterModelId[]; },
-): readonly RosterModelId[] {
-  return [...new Set(modelIds,),];
-}
-
-/**
- * Renders latest structured findings for stage telemetry.
- *
- * @param review - exact rejected review feeding correction
- *
- * @returns Paragraph-located descriptions
- *
- * @example
- * ```ts
- * const findings = describeReviewFindings({ review, });
- * ```
- */
-function describeReviewFindings(
-  { review, }: { readonly review: AbsoluteNaturalnessReviewOutcome; },
-): readonly string[] {
-  return review.findings
-    .map(function describe(finding,): string {
-      return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
-    },);
-}
 
 /**
  * Combines one attempted correction with prior bounded state.
@@ -194,6 +164,10 @@ function incorporateReview(
       ...state.reviewRounds,
       step.review,
     ],
+    confirmationRounds: [
+      ...state.confirmationRounds,
+      ...step.confirmations,
+    ],
     corrections: [
       ...state.corrections,
       step.audit,
@@ -220,6 +194,7 @@ function reviewAudit(
     correctionCount: state.correctionCount,
     corrections: state.corrections,
     rounds: state.reviewRounds,
+    confirmations: state.confirmationRounds,
   };
 }
 
@@ -302,7 +277,9 @@ function terminalPolish(
  *
  * @param initial - initial comparative polish round
  *
- * @param initialReview - exact initial absolute rejection
+ * @param initialReview - decisive initial absolute rejection
+ *
+ * @param initialConfirmations - earlier acceptable initial-candidate readings
  *
  * @param syntax - explicit syntax role when present
  *
@@ -335,6 +312,7 @@ export async function settleNaturalnessCorrections(
     baseText,
     initial,
     initialReview,
+    initialConfirmations,
     syntax,
     lineStructured,
     identityContext,
@@ -350,6 +328,7 @@ export async function settleNaturalnessCorrections(
     readonly baseText: string;
     readonly initial: ConsolidationPolishRoundResult;
     readonly initialReview: AbsoluteNaturalnessReviewOutcome;
+    readonly initialConfirmations: readonly AbsoluteNaturalnessReviewOutcome[];
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly identityContext?: string;
@@ -372,6 +351,7 @@ export async function settleNaturalnessCorrections(
     rounds: initial.rounds,
     findings: initial.findings,
     reviewRounds: [initialReview,],
+    confirmationRounds: initialConfirmations,
     corrections: [],
   };
   /**

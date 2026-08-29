@@ -137,6 +137,8 @@ const client: SyntheticClient = {
  *
  * @param onReviewRound - optional observer of one-based absolute review round
  *
+ * @param acceptanceByReviewRound - optional exact acceptable status by round
+ *
  * @returns Scripted bounded-correction client
  *
  * @example
@@ -155,6 +157,7 @@ function boundedCorrectionClient(
     throwOnThirdCorrection = false,
     onRefineCall,
     onReviewRound,
+    acceptanceByReviewRound,
   }: {
     readonly correctionText?: string;
     readonly rejectCorrection?: boolean;
@@ -165,6 +168,7 @@ function boundedCorrectionClient(
     readonly throwOnThirdCorrection?: boolean;
     readonly onRefineCall?: (count: number) => void;
     readonly onReviewRound?: (round: number) => void;
+    readonly acceptanceByReviewRound?: readonly boolean[];
   },
 ): SyntheticClient {
   /**
@@ -240,11 +244,18 @@ function boundedCorrectionClient(
           /**
            * Whether final bounded review remains scripted rejection.
            */
-          const secondCorrectionRejected = (reviewRound === 3)
+          const secondCorrectionRejected = rejectCorrection
+            && (reviewRound === 3)
             && (!acceptSecondCorrection);
-          if ((reviewRound === 1)
-            || ((reviewRound === 2) && rejectCorrection)
-            || secondCorrectionRejected) {
+          /**
+           * Optional exact verdict for confirmation-path tests.
+           */
+          const explicitAcceptance = acceptanceByReviewRound
+            ?.at(reviewRound - 1,);
+          if ((explicitAcceptance === false)
+            || ((explicitAcceptance === undefined) && ((reviewRound === 1)
+              || ((reviewRound === 2) && rejectCorrection)
+              || secondCorrectionRejected))) {
             return {
               acceptable: false,
               findings: [{
@@ -309,6 +320,7 @@ await describe({
         expect(polish.rounds.length,).toBe(1,);
         expect(polish.review.correctionCount,).toBe(0,);
         expect(polish.review.rounds[0]?.verdict,).toBe('acceptable',);
+        expect(polish.review.confirmations,).toHaveLength(1,);
       },
     },),
 
@@ -335,6 +347,62 @@ await describe({
         },);
         expect(polish.kind,).toBe('settled',);
         expect(polish.kind === 'settled' ? polish.text : '',).toBe(SHORT_POLISHED,);
+      },
+    },),
+
+    it({
+      name: 'CORRECTS WHEN CONFIRMATION REJECTS FIRST ACCEPTANCE and requires repeated acceptance of correction',
+      fn: async () => {
+        /**
+         * One-based absolute-review calls proving confirmation sequence.
+         */
+        const reviewRounds: number[] = [];
+        const polish = await polishConsolidation({
+          client: boundedCorrectionClient({
+            correctionText: POLISHED,
+            acceptanceByReviewRound: [
+              true,
+              false,
+              true,
+              true,
+            ],
+            onReviewRound: function recordReviewRound(round,): void {
+              reviewRounds.push(round,);
+            },
+          },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-confirmation-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('confirmation rejection fixture remained unsettled',);
+        expect(polish.review.correctionCount,).toBe(1,);
+        expect(polish.review.rounds.map(function verdict(review,): string {
+          return review.verdict;
+        },),).toEqual([
+          'unacceptable',
+          'acceptable',
+        ],);
+        expect(polish.review.confirmations,).toHaveLength(2,);
+        expect([...new Set(reviewRounds,),],).toEqual([
+          1,
+          2,
+          3,
+          4,
+        ],);
       },
     },),
 
@@ -372,6 +440,7 @@ await describe({
           'unacceptable',
           'acceptable',
         ],);
+        expect(polish.review.confirmations,).toHaveLength(1,);
         expect(polish.rounds.length,).toBe(1,);
         expect(selectionSheets.join('\n',),).toContain('CURRENT English translation, which cannot ship unchanged',);
         expect(selectionSheets.join('\n',),).toContain('REQUIRED FINDINGS',);
@@ -410,6 +479,7 @@ await describe({
         expect(polish.text,).toBe(FINAL_POLISHED,);
         expect(polish.review.correctionCount,).toBe(2,);
         expect(polish.review.rounds.length,).toBe(3,);
+        expect(polish.review.confirmations,).toHaveLength(1,);
         expect(polish.review.corrections.length,).toBe(2,);
       },
     },),

@@ -70,7 +70,7 @@ export type ConsolidationNaturalnessCorrectionAudit = {
  *
  * @example
  * ```ts
- * const review: ConsolidationNaturalnessAudit = { correctionCount: 0, corrections: [], rounds: [] };
+ * const review: ConsolidationNaturalnessAudit = { correctionCount: 0, corrections: [], rounds: [], confirmations: [] };
  * ```
  */
 export type ConsolidationNaturalnessAudit = {
@@ -85,9 +85,14 @@ export type ConsolidationNaturalnessAudit = {
   readonly corrections: readonly ConsolidationNaturalnessCorrectionAudit[];
 
   /**
-   * Absolute whole-passage reviews in execution order.
+   * Decisive whole-passage reviews, one per generated candidate.
    */
   readonly rounds: readonly AbsoluteNaturalnessReviewOutcome[];
+
+  /**
+   * Earlier acceptable readings before each decisive same-candidate review.
+   */
+  readonly confirmations: readonly AbsoluteNaturalnessReviewOutcome[];
 };
 
 /**

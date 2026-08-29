@@ -3,6 +3,11 @@
 
 export { renderConsolidationBrief, } from './consolidate-brief.ts';
 export {
+  ABSOLUTE_NATURALNESS_CONFIRMATIONS_REQUIRED,
+  type ConfirmedAbsoluteNaturalness,
+  confirmAbsoluteNaturalness,
+} from './absolute-naturalness-confirmation.ts';
+export {
   ABSOLUTE_NATURALNESS_REVIEW_QUORUM,
   type AbsoluteNaturalnessReviewOutcome,
   type AbsoluteNaturalnessReviewSeat,

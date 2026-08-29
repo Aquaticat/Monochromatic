@@ -79,6 +79,60 @@ Replayed GPT findings differed across adjacent candidates;
 this supports iterative defect discovery rather than proof latest required finding was ignored.
 Final absolute review remains independent and correctly refused publication after second correction cap.
 
+## Correction quality before next validation
+
+First instrumented relaunch from `0bf949cfa` was premature because it changed observability,
+not correction quality.
+It was stopped immediately and its fresh root is not validation evidence.
+
+Correction selection still carried comparative framing:
+all eight judges selected best available proposal,
+then independent absolute review rejected exact winner.
+Generic selector did permit decline,
+but required-correction criteria left publication quality as later ranking criterion instead of explicit eligibility floor.
+
+Consolidation cache generation 11 changes absolute-review and required-correction questions:
+
+- absolute reviewers are instructed to perform separate sentence-level and whole-passage scans and return union of material defects
+- rewriters are instructed to perform finding-led pass,
+  then set findings aside and reread every affected sentence as native-English editor
+- inherited wording receives no presumption of acceptability merely because finding did not name it
+- selectors treat fidelity,
+  complete finding resolution,
+  and absence of any material naturalness defect as joint hard eligibility floor
+- selectors assess each candidate in isolation before comparison
+- selectors must decline all proposals when every one remains materially unnatural,
+  even if one is least awkward
+
+Prompt changes still did not make selection absolute certification:
+a generated correction removed demonstrated defect but introduced different idiomatic defect,
+selector chose it,
+and exact review rejected it.
+Two alternate proposals also failed exact absolute review.
+
+Same exact final candidate then flipped from rejection in original run and first replay to eight-seat acceptance in later replay.
+Generation 11 therefore requires one sequential all-seat confirmation after first acceptance.
+A rejection remains immediately decisive;
+accepted text ships only after second all-seat acceptance of exact same candidate.
+Schema-9 `confirmations` retains earlier acceptable review with candidate and paragraph digests,
+while decisive `rounds` remains one per generated candidate for adjacent correction-chain verification.
+Legacy schema-9 artifacts without confirmation field remain readable.
+
+Two-correction cap,
+fidelity gate,
+exact final absolute review,
+and terminal refusal remain unchanged.
+Generation bump prevents reuse of settlements bought under relative correction selection or single-review acceptance.
+
+Directional replay held prior three proposals and final replay finding fixed.
+Original correction ledger had all eight judges select candidate one.
+Under generation-11 selector question all eight independently declined all candidates.
+This proves new hard floor can expose exact demonstrated failure mode;
+it is prompt evidence,
+not fresh publication evidence.
+A second generated slate was still selected despite all three candidates later failing exact review,
+which is why repeated absolute acceptance is enforcement rather than selector wording alone.
+
 ## Missing observability
 
 Existing logs were sufficient to prove aggregate cause only after correlating:
@@ -122,6 +176,8 @@ mise run //package/module/translation-repair:build
 node package/module/translation-repair/src/slice-cost-read.unit.test.ts
 node package/module/translation-repair/src/consolidate-driver.unit.test.ts
 node package/module/translation-repair/src/absolute-naturalness-review-stage.unit.test.ts
+node package/module/translation-repair/src/consolidation-polish.unit.test.ts
+node package/module/translation-repair/src/corpus-run/artifact-two-lane-read-naturalness-review.unit.test.ts
 ```
 
 Tests prove:
@@ -134,6 +190,12 @@ Tests prove:
   finding count,
   paragraph,
   and digest without wording
+- first acceptance followed by rejection feeds one bounded correction
+- settled candidate retains first acceptance and decisive confirmation separately
+- schema-9 reader binds every confirmation to exact decisive candidate and refuses missing final,
+  rejected,
+  duplicate,
+  or unbound confirmation evidence when field is present
 
 Operator-boundary report verification:
 

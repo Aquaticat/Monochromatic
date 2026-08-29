@@ -1,9 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import {
-  reviewAbsoluteNaturalness,
-} from './absolute-naturalness-review-stage.ts';
+import { confirmAbsoluteNaturalness, } from './absolute-naturalness-confirmation.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { settleNaturalnessCorrections, } from './consolidation-naturalness-settle.ts';
@@ -131,7 +129,7 @@ export async function polishConsolidation(
   /**
    * Independent absolute review of exact initial would-ship text.
    */
-  const initialReview = await reviewAbsoluteNaturalness({
+  const initialConfirmed = await confirmAbsoluteNaturalness({
     client,
     modelIds: config.gateModelIds,
     subject: {
@@ -144,6 +142,10 @@ export async function polishConsolidation(
     exchangeTimeoutMs: perCallTimeoutMs,
     l,
   },);
+  /**
+   * Decisive initial review after optional acceptance confirmation.
+   */
+  const { review: initialReview, } = initialConfirmed;
   if (initialReview.verdict === 'acceptable') {
     return {
       kind: 'settled',
@@ -159,6 +161,7 @@ export async function polishConsolidation(
         correctionCount: 0,
         corrections: [],
         rounds: [initialReview,],
+        confirmations: initialConfirmed.confirmations,
       },
       findings: initial.findings,
     };
@@ -176,6 +179,7 @@ export async function polishConsolidation(
         correctionCount: 0,
         corrections: [],
         rounds: [initialReview,],
+        confirmations: initialConfirmed.confirmations,
       },
       findings: [
         ...initial.findings,
@@ -190,6 +194,7 @@ export async function polishConsolidation(
     baseText,
     initial,
     initialReview,
+    initialConfirmations: initialConfirmed.confirmations,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),

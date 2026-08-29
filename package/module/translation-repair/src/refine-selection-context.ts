@@ -118,12 +118,16 @@ export function buildRefineSelectionContext(
     },)
     .join('\n',);
   return {
-    task: 'The CURRENT English translation failed an independent absolute-quality review. Choose a faithful correction that resolves every REQUIRED FINDING.',
+    task: 'The CURRENT English translation failed an independent absolute-quality review. Choose a faithful correction that resolves every REQUIRED FINDING. Decline every candidate when each one still contains any material naturalness defect.',
     criteria: [
+      'Hard eligibility floor, not a ranking preference: a candidate must preserve exact meaning, resolve every REQUIRED FINDING, and contain no material naturalness defect a careful native editor would change.',
+      'Before comparing candidates, assess each candidate in isolation against absolute publication quality. Improvement over CURRENT or another candidate is irrelevant to eligibility.',
+      'For each candidate, scan every sentence for grammar, collocation, word order, and reference defects, then reread complete affected paragraphs for flow, register, repetition, and defects introduced outside REQUIRED FINDINGS.',
       'Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed.',
       'Faithful to the Chinese ORIGINAL.',
       'Resolves every REQUIRED FINDING across each affected paragraph.',
       'Treats findings as a minimum, not an edit whitelist: reward additional material naturalness fixes that preserve exact meaning.',
+      'After checking required findings, reread every affected paragraph sentence by sentence and decline any candidate that is merely the least awkward option.',
       'Reads as publication-quality natural English when considered as a whole.',
     ],
     evidence: [
