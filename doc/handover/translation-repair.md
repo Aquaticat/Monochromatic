@@ -10,22 +10,34 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current committed base: `697c370ba`.
+- Current pipeline commit: `1d16d89c4`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
-- Pending worktree implements generation-13 continuous correction,
+- Generation-13 continuous correction,
   prompt payload reuse,
-  and one-provider operation.
+  and one-provider operation landed in `1d16d89c4`.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
-- Latest pending worktree verification emitted 862 `PASS` lines and zero `FAIL` lines.
+- Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
-  `git diff --check`,
-  advisor review,
-  and guard-failure mutations passed before commit.
+  and `git diff --check` passed before commit.
+- Pre-commit advisor reviews identified blockers;
+  remediation followed,
+  but no clean post-remediation advisor verdict was recorded before `1d16d89c4`.
+- Post-commit GFP mutations proved prompt reuse,
+  stopped whole-entry retry,
+  and third-correction guards fail when removed,
+  then pass after restoration.
+- GFP logs:
+  `~/temp/agent/gfp-prompt-reuse-red-20260829.log`,
+  `~/temp/agent/gfp-prompt-reuse-green-20260829.log`,
+  `~/temp/agent/gfp-stopped-entry-red-20260829.log`,
+  `~/temp/agent/gfp-stopped-entry-green-20260829.log`,
+  `~/temp/agent/gfp-continuous-correction-red-20260829.log`,
+  and `~/temp/agent/gfp-continuous-correction-green-20260829.log`.
 
 Artifact schema remains 9.
-Consolidation cache generation is 13 in pending worktree,
+Consolidation cache generation is 13 at `1d16d89c4`,
 lane-contest cache generation is 4,
 and pairing cache generation is 2.
 Preparation identity remains v2.
@@ -188,16 +200,12 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  GFP-prove continuous correction,
-    prompt payload reuse,
-    and stopped whole-entry retry guard.
-2.  Commit generation-13 work while excluding `.idea/.name`.
-3.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
-4.  Optimize only measured completion path without weakening quality.
-5.  Rebuild pull-request fixture worktree and launch fresh generation-13 roots only after performance gate.
-6.  Verify every successful page and artifact,
+1.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+2.  Optimize only measured completion path without weakening quality.
+3.  Rebuild pull-request fixture worktree and launch fresh generation-13 roots only after performance gate.
+4.  Verify every successful page and artifact,
     then read complete output.
-7.  Continue targeted calibration and remaining pages after current mechanism is proven.
+5.  Continue targeted calibration and remaining pages after current mechanism is proven.
 
 There is no release deadline.
 Strict actual-output quality remains gate.

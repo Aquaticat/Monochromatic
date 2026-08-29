@@ -1582,7 +1582,7 @@ roster order,
 and confirmation order.
 Final-naturalness completeness guard checks settled runtime state and does not duplicate artifact reader's digest validation.
 Legacy schema-9 records without field remain readable.
-Generation 13 removes two-correction ceiling.
+Generation 13 landed in `1d16d89c4` and removes two-correction ceiling.
 Every rejection feeds latest exact text and findings into next correction.
 No-change,
 selection decline,
