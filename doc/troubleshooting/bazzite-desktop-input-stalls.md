@@ -1,4 +1,4 @@
-# Bazzite 44 global input stall recurred during Snapper cleanup; initiating mechanism remains unknown
+# Bazzite 44 cross-application stalls coincide with extreme Btrfs transaction and storage pressure
 
 ## Status
 
@@ -17,9 +17,28 @@ Plasma and KWin answered DBus probes in 5 and 4 ms.
 Applications recovered around 05:45 while Snapper remained blocked until 05:52.
 The Ghostty exception prevents classifying this as the original all-application symptom.
 Its application-toolkit or display-protocol boundary was not measured.
-These recurrences make cleanup and deletion the leading conditional trigger,
-but do not identify the cross-application blocking mechanism.
-Passive observers were stopped after capturing the target symptom.
+These recurrences made cleanup and deletion the leading conditional trigger at that stage,
+but did not identify the cross-application blocking mechanism.
+
+On August 29,
+a broader incident delayed the panel,
+applications,
+Alt+Tab,
+pointer movement,
+and network-dependent activity.
+Cleanup had batched deletion of snapshots 966 through 983 and remained active for 2 hours 53 minutes.
+During the report,
+ten-second CPU pressure was 21.03%,
+ten-second I/O pressure was 25.03%,
+ten-second full I/O pressure was 19.68%,
+and the last Btrfs commit took 230.563 seconds.
+The maximum recorded commit was 246.996 seconds.
+
+A shorter recurrence around 02:58 occurred after deletion cleanup was inactive.
+It overlapped completion of a four-minute timeline snapshot creation and a qgroup-inherit warning.
+This is a direct counterexample to active deletion being necessary.
+It keeps Btrfs transaction work and the storage path in scope without proving that snapshots initiate the condition.
+A bounded physical-NVMe latency histogram and Btrfs-worker monitor is now active.
 
 A different episode was captured on 2026-08-27 around 04:25 local time:
 all four Plasma panels stopped reacting to hover and click input,
@@ -221,6 +240,54 @@ Snapper synchronization,
 a desktop service,
 or another shared dependency transmits the delay.
 
+### August 29 systemwide-pressure and cleanup-inactive recurrences
+
+At 02:49,
+the user reported delayed panel input,
+applications,
+Alt+Tab,
+pointer movement,
+and internet access.
+The pointer was delayed rather than fully frozen.
+Plasma and KWin DBus replies after the report took 89 and 42 ms,
+remaining below the prior timeout boundary.
+Memory pressure was zero.
+
+Snapper's midnight cleanup had begun at 00:00:12.
+Number cleanup took about 12 minutes,
+then timeline cleanup requested deletion of snapshots 966 through 983.
+The operation was still active at 02:49.
+Snapper's main thread waited on a futex,
+its worker slept in `hrtimer_nanosleep`,
+and the helper waited in `poll`.
+The helper had idle I/O scheduling,
+but Snapper daemon used best-effort scheduling and Btrfs transaction work ran in kernel threads.
+
+A request to stop cleanup and Snapper daemon took 161 seconds to return.
+The services stopped at 02:53:56,
+current CPU and I/O pressure fell to 0.03% and 0.02%,
+and the user reported recovery.
+Because the stop request itself was delayed until settlement,
+this timing does not prove that service termination caused recovery.
+
+The network journal contains a user-initiated `systemctl restart NetworkManager` at 02:45:53.
+That restart explains a contemporaneous disconnect and reconnect,
+so network interruption is not independent evidence for the desktop-stall mechanism.
+
+Around 02:58,
+the user reported another short recurrence while deletion cleanup was inactive.
+Timeline creation had run from 02:53:56 to 02:57:58,
+when Btrfs logged `qgroup inherit needs a rescan`.
+Ten-second full I/O pressure was 2.41%,
+and the last completed Btrfs commit took 1.824 seconds.
+Plasma and KWin then answered in 5 and 4 ms.
+A concurrent Rust build discovered afterward began at 02:59:17,
+after the recurrence,
+so it cannot explain either August 29 incident.
+
+The evidence is preserved at
+`/var/home/user/temp/agent/plasma-stall-captures/2026-08-29T06-49-systemwide-pressure`.
+
 ## Root cause
 
 ### Original global-input episode: cleanup-associated; initiating mechanism unknown
@@ -245,6 +312,44 @@ Its first failure captured both process states and a Plasma stack.
 A second stack was also captured,
 but the stack collector pauses the target process and can prolong an existing stall.
 Later captures therefore used DBus probes and procfs wait channels without attaching a debugger.
+
+### Coupled Btrfs-accounting and SSD-latency hypothesis
+
+The root device is a 2 TB `SPCC M.2 PCIe SSD` using Realtek's RTS5772DL controller,
+which PCI identification explicitly describes as DRAM-less.
+Firmware is `VF101C68`.
+The kernel allocated the controller's full preferred 64 MiB host-memory buffer,
+and the controller reports a volatile write cache.
+SMART reports 1% endurance used,
+47 °C,
+no media errors,
+and no NVMe error-log entries.
+Healthy SMART data does not measure slow successful completions.
+
+The physical device uses Kyber with 2 ms read and 10 ms synchronous-write targets.
+Writeback throttling is enabled with a 2 ms target.
+Snapper cleanup's helper uses idle I/O priority,
+but Snapper daemon uses best-effort priority and has default cgroup I/O weight.
+Btrfs cleaner,
+transaction,
+qgroup,
+and writeback work executes in kernel threads,
+so userspace priority alone cannot prove isolation of that work.
+
+Traditional qgroups remain a filesystem-level candidate.
+An upstream Btrfs maintainer explains that back-reference accounting cost grows with shared extents
+and can block a transaction for minutes.
+The local fixture's empty-file tree did not reproduce the production pathological regime;
+its quota-mode timing null applies only to that fixture and does not exclude qgroup cost with real shared data extents.
+
+The leading model is therefore coupled rather than exclusive:
+full-qgroup transaction work can amplify metadata and lock duration,
+a DRAM-less controller can amplify commit or flush latency,
+and default block isolation can transmit device contention to applications.
+No layer has been isolated as the initiating cause.
+A kernel-side trace now records physical NVMe request latency independently of Btrfs commit duration.
+Normal device latency during another long commit would favor filesystem accounting or locks;
+slow physical completions would support the SSD or firmware side of the model.
 
 ## Diagnostic interpretation
 
@@ -1142,6 +1247,14 @@ free-space deletion pressure returns inside the midnight window.
 `Persistent=true` catches up only after the timer was inactive across a missed calendar event;
 an awake or suspended system still uses the midnight event normally.
 
+The first midnight run confirmed the batching risk.
+It requested deletion of 18 timeline snapshots and remained active for 2 hours 53 minutes.
+The active helper and daemon were stopped after preserving the incident,
+but the stop request itself took 161 seconds.
+The user rejected snapshot deletion as the root-cause conclusion,
+so no second timer-policy change was made.
+Hourly creation and the midnight cleanup timer remain configured while physical-device latency is measured.
+
 Removing the override,
 reloading systemd,
 and restarting `snapper-cleanup.timer` restores the vendor hourly schedule.
@@ -1280,6 +1393,9 @@ Sources:
 - [Btrfs `drop_subtree_threshold` documentation](https://btrfs.readthedocs.io/en/stable/ch-sysfs.html#uuid-qgroups)
 - [2026 `linux-btrfs` report about qgroup-induced system hangs](https://www.spinics.net/lists/linux-btrfs/msg165086.html)
 - [`systemd.timer` persistent calendar semantics](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
+- [Linux Kyber scheduler documentation](https://docs.kernel.org/5.17/block/kyber-iosched.html)
+- [Linux cgroup v2 I/O controller documentation](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#io)
+- [Linux buffered-writeback throttling source](https://github.com/torvalds/linux/blob/master/block/blk-wbt.c)
 
 ## What does not work
 
