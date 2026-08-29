@@ -21,19 +21,24 @@ or evidence unless the user later authorizes cleanup.
 - **Installation result**:
   CachyOS Calamares displayed `All done.` and reported a successful installation.
 - **Current transition**:
-  The patched-layout domain is installing the no-desktop encrypted-ZFS system to virtual `/dev/vda`.
+  The patched-layout installation reached Calamares **All done**.
   The local patch applied cleanly to the pinned installer commit and has SHA-256
   `e9d7271f4f7d2a110b8782049299ee765061d3914b344072d9fa027f2c7341f0`.
   The archive and patch hashes,
   patched `zfs.conf`,
-  and effective Calamares settings are being preserved on the evidence disk.
+  full Calamares session log,
+  and effective settings are preserved on the evidence disk.
   The effective sequence contained all 7 custom ZFS jobs,
   and exactly 1 Calamares process was running before destructive confirmation.
   The summary selected only virtual `/dev/vda`,
   native encryption,
   no desktop,
   and the default base package groups.
-  Process `wait-patched-layout-install` is waiting for installer completion on loopback VNC display 1.
+  The installed ESP contains `EFI/ZFSBootMenu/vmlinuz-linux-cachyos.EFI`,
+  measured at 42,821,120 bytes.
+  Post-install ZFS properties showed `zroot/data/var` and `zroot/data/var/lib` at `none` plus `off`,
+  while every explicit persistent child remained mounted.
+  Process `wait-patched-layout-poweroff` is waiting for clean shutdown before installed boot.
   The first installed disk reached Ly 1.4.1 after a successful native-encryption unlock.
   It contains Wayfire because the original runbook prescribed Wayfire as a temporary graphical base.
   The user correctly identified **No Desktop** as closer to the intended UWSM plus labwc system.
@@ -332,6 +337,11 @@ The patch changes only
 `src/calamares/etc/calamares/modules/zfs.conf`.
 It keeps `data/var` and `data/var/lib` as unmounted namespace parents.
 No physical block device is attached.
+
+Post-install inspection exposed a separate home-layout anomaly:
+`zroot/data/home/useruser` was mounted at `/home/useruser`.
+No conclusion about its cause or installed-login effect has been drawn.
+The installed boot must verify the account home and backing dataset before desktop setup.
 
 ## Attached guest storage
 
