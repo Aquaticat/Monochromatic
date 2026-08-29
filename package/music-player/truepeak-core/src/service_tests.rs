@@ -45,7 +45,9 @@ fn test_policy() -> Policy {
 // The first resolve opens the source and stores; the second is a cache hit and never opens.
 #[tokio::test]
 async fn resolves_on_miss_then_serves_from_cache() {
-    let cache = DecisionCache::open(":memory:").await.unwrap();
+    let cache = DecisionCache::open(":memory:")
+        .await
+        .expect("in-memory cache should open");
     let policy = test_policy();
     let opens = Cell::new(0u32);
 
@@ -54,7 +56,7 @@ async fn resolves_on_miss_then_serves_from_cache() {
         return Ok(Box::new(Fake { samples: vec![0.0, 0.9, 0.9, 0.0], cursor: 0 }) as Box<dyn TruePeakSource>)
     })
     .await
-    .unwrap();
+    .expect("cache miss should resolve");
     assert_eq!(first.kind, DecisionKind::ShortFullScan);
     assert_eq!(opens.get(), 1); // opened on the miss
 
@@ -63,7 +65,7 @@ async fn resolves_on_miss_then_serves_from_cache() {
         return Ok(Box::new(Fake { samples: vec![0.0, 0.9, 0.9, 0.0], cursor: 0 }) as Box<dyn TruePeakSource>)
     })
     .await
-    .unwrap();
+    .expect("cache hit should resolve");
     assert_eq!(second, first); // same decision, read back from the cache
     assert_eq!(opens.get(), 1); // the hit never opened the source
 }

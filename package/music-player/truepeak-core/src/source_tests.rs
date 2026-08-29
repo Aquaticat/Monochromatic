@@ -76,7 +76,7 @@ fn boxed_source_drives_the_meter() {
 
     let mut meter = TruePeakMeter::new(source.spec().channels as usize);
     loop {
-        let chunk = source.next_chunk().unwrap();
+        let chunk = source.next_chunk().expect("in-memory source should yield a chunk");
         if chunk.is_empty() {
             break;
         }
@@ -98,8 +98,10 @@ fn seek_to_frame_repositions_and_guards_end() {
         chunk: 2,
     };
 
-    source.seek_to_frame(1).unwrap(); // skip the first stereo frame
-    let chunk = source.next_chunk().unwrap();
+    source
+        .seek_to_frame(1)
+        .expect("in-memory source should seek to an existing frame");
+    let chunk = source.next_chunk().expect("in-memory source should yield the sought chunk");
     assert_eq!(chunk, vec![0.3, 0.4]);
 
     assert!(source.seek_to_frame(99).is_err());

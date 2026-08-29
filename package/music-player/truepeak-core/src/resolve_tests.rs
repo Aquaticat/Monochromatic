@@ -73,7 +73,8 @@ fn test_policy(short_scan_max_secs: f64, coverage_fraction: f64, probe_window_se
 fn short_track_full_scans_exactly() {
     let samples = vec![0.0_f32, 0.9, 0.9, 0.0];
     let mut source = FakeSource::new(samples.clone(), 1, 4, 1.0);
-    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source)
+        .expect("short-track resolution should succeed");
 
     let expected_peak = true_peak_interleaved(&samples, 1);
     assert_eq!(decision.kind, DecisionKind::ShortFullScan);
@@ -88,7 +89,8 @@ fn long_track_probes_with_margin() {
     let samples = vec![0.9_f32; 20]; // constant, so every window peak is 0.9
     let mut source = FakeSource::new(samples, 1, 10, 2.0);
     let policy = test_policy(0.5, 1.0, 0.5, 1.0);
-    let decision = resolve_decision(&policy, &mut source).unwrap();
+    let decision = resolve_decision(&policy, &mut source)
+        .expect("long-track resolution should succeed");
 
     assert_eq!(decision.kind, DecisionKind::ProbeEstimate);
     // total_frames=20, count=round(2.0/0.5)=4, window_frames=round(0.5*10)=5.
@@ -107,7 +109,8 @@ fn probe_seek_finds_a_mid_track_loud_window() {
     let mut samples = vec![0.5_f32; 20];
     samples[10..15].fill(1.5); // a loud window at frames 10..15
     let mut source = FakeSource::new(samples, 1, 10, 2.0);
-    let decision = resolve_decision(&test_policy(0.5, 1.0, 0.5, 0.8), &mut source).unwrap();
+    let decision = resolve_decision(&test_policy(0.5, 1.0, 0.5, 0.8), &mut source)
+        .expect("probe resolution should succeed");
 
     // A window starts at frame 10 and covers the loud region, so the sampled peak sees it.
     assert!(decision.measured_peak >= 1.5, "sampled peak {} should catch the loud window", decision.measured_peak);
@@ -117,7 +120,8 @@ fn probe_seek_finds_a_mid_track_loud_window() {
 #[test]
 fn silence_yields_unity_gain() {
     let mut source = FakeSource::new(vec![0.0_f32; 16], 2, 8, 1.0);
-    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source)
+        .expect("silent-track resolution should succeed");
     assert_eq!(decision.gain, 1.0);
     assert_eq!(decision.kind, DecisionKind::ShortFullScan);
 }
@@ -127,7 +131,8 @@ fn silence_yields_unity_gain() {
 fn unknown_duration_full_scans() {
     let samples = vec![0.0_f32, 0.9, 0.9, 0.0, 0.5, 0.5];
     let mut source = FakeSource::new(samples, 1, 10, 0.0); // duration 0 = unknown
-    let decision = resolve_decision(&test_policy(0.1, 1.0, 0.5, 0.8), &mut source).unwrap();
+    let decision = resolve_decision(&test_policy(0.1, 1.0, 0.5, 0.8), &mut source)
+        .expect("unknown-duration resolution should succeed");
     assert_eq!(decision.kind, DecisionKind::FullScanExact);
     assert!(source.seeks.is_empty());
 }
@@ -136,7 +141,8 @@ fn unknown_duration_full_scans() {
 #[test]
 fn zero_channels_is_unity() {
     let mut source = FakeSource::new(vec![0.5_f32; 8], 0, 48000, 5.0);
-    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+    let decision = resolve_decision(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source)
+        .expect("zero-channel resolution should succeed");
     assert_eq!(decision.gain, 1.0);
     assert_eq!(decision.kind, DecisionKind::FullScanExact);
 }
@@ -152,10 +158,15 @@ fn full_scan_upgrades_a_long_track_exactly() {
     let policy = test_policy(0.5, 1.0, 0.5, 0.8);
 
     // The probe path would tag this a probe estimate; the full-scan path never does.
-    let probe = resolve_decision(&policy, &mut FakeSource::new(source_samples.clone(), 1, 10, 2.0)).unwrap();
+    let probe = resolve_decision(
+        &policy,
+        &mut FakeSource::new(source_samples.clone(), 1, 10, 2.0),
+    )
+    .expect("probe resolution should succeed");
     assert_eq!(probe.kind, DecisionKind::ProbeEstimate);
 
-    let decision = resolve_full_scan(&policy, &mut source).unwrap();
+    let decision = resolve_full_scan(&policy, &mut source)
+        .expect("full-scan resolution should succeed");
     assert_eq!(decision.kind, DecisionKind::FullScanExact);
     assert!(source.seeks.is_empty()); // a full scan never seeks
     let expected_peak = true_peak_interleaved(&source_samples, 1);
@@ -168,7 +179,8 @@ fn full_scan_upgrades_a_long_track_exactly() {
 fn full_scan_of_short_track_tags_short() {
     let samples = vec![0.0_f32, 0.9, 0.9, 0.0];
     let mut source = FakeSource::new(samples, 1, 4, 1.0);
-    let decision = resolve_full_scan(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source).unwrap();
+    let decision = resolve_full_scan(&test_policy(100.0, 0.2, 0.3, 0.8), &mut source)
+        .expect("short full-scan resolution should succeed");
     assert_eq!(decision.kind, DecisionKind::ShortFullScan);
     assert!(source.seeks.is_empty());
 }
@@ -182,12 +194,13 @@ fn provenance_picks_bucket_coverage() {
     let samples = vec![0.9_f32; 20]; // 4 bins of 5 frames at rate 10
 
     let mut bare = FakeSource::new(samples.clone(), 1, 10, 2.0);
-    resolve_decision(&policy, &mut bare).unwrap();
+    resolve_decision(&policy, &mut bare).expect("bare-track resolution should succeed");
     assert_eq!(bare.seeks.len(), 4); // bare coverage 1.0 measures every bin
 
     let mut lossless = FakeSource::new(samples, 1, 10, 2.0);
     let provenance = TrackProvenance { lossless: true, ..TrackProvenance::unknown() };
-    resolve_decision_for(&policy, &mut lossless, provenance, None).unwrap();
+    resolve_decision_for(&policy, &mut lossless, provenance, None)
+        .expect("lossless-track resolution should succeed");
     assert_eq!(lossless.seeks.len(), 2); // lossless coverage 0.5 measures half
 }
 
@@ -203,7 +216,8 @@ fn bones_seeds_guide_the_lossless_probe() {
     let mut source = FakeSource::new(samples, 1, 10, 2.0);
     let provenance = TrackProvenance { lossless: true, ..TrackProvenance::unknown() };
     let hot = [3usize];
-    let decision = resolve_decision_for(&policy, &mut source, provenance, Some(&hot)).unwrap();
+    let decision = resolve_decision_for(&policy, &mut source, provenance, Some(&hot))
+        .expect("seeded lossless-track resolution should succeed");
     // The seed measures the flagged bin (frame 15) within the two-bin budget.
     assert!(source.seeks.contains(&15), "seeds must visit the flagged bin: {:?}", source.seeks);
     assert!(source.seeks.len() <= 2);

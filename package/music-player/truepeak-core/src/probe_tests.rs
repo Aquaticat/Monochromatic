@@ -48,9 +48,7 @@ impl TruePeakSource for FakeSource {
 fn track(base: f32, overrides: &[(usize, f32)]) -> Vec<f32> {
     let mut samples = vec![base; 1000];
     for &(bin, level) in overrides {
-        for frame in bin * 10..(bin + 1) * 10 {
-            samples[frame] = level;
-        }
+        samples[bin * 10..(bin + 1) * 10].fill(level);
     }
     return samples
 }
