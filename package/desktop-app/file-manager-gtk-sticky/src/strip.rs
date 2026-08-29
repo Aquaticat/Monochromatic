@@ -92,13 +92,13 @@ impl StripController {
             }
         }));
         inner.layout.scroll_to_pane(root_id);
-        Self { inner }
+        return Self { inner }
     }
 
     /// What: clone the root widget to place in the window.
     /// Why: the concrete GTK root lives behind `StickyLayout` so callers do not depend on it.
     pub fn widget(&self) -> Widget {
-        self.inner.layout.widget()
+        return self.inner.layout.widget()
     }
 
     /// What: mark the observed state ready once `window` maps, and mirror state at that moment.
@@ -138,17 +138,17 @@ pub(crate) fn focus_pane(inner: &Rc<StripInner>, id: PaneId) {
 fn next_generation(inner: &Rc<StripInner>) -> u64 {
     let generation = inner.generation.get() + 1;
     inner.generation.set(generation);
-    generation
+    return generation
 }
 
 /// What: convert the model's panes into placement snapshots for layout and state output.
 /// Why: both consumers need only grid coordinates and parent links.
 fn placements_of(inner: &Rc<StripInner>) -> Vec<Placement> {
-    inner
+    return inner
         .state
         .borrow()
         .panes()
-        .map(|pane| Placement {
+        .map(|pane| return Placement {
             id: pane.id,
             column: pane.column,
             row: pane.row,
@@ -164,7 +164,7 @@ fn reconcile(inner: &Rc<StripInner>) {
     let placements = placements_of(inner);
     inner
         .layout
-        .reconcile(placements, |id| build_pane_widget(inner, id));
+        .reconcile(placements, |id| return build_pane_widget(inner, id));
     write_state(inner);
 }
 
@@ -175,10 +175,10 @@ fn write_state(inner: &Rc<StripInner>) {
     let state = inner.state.borrow();
     let active_path = state
         .active()
-        .and_then(|id| state.pane(id))
+        .and_then(|id| return state.pane(id))
         .map(|pane| match &pane.location {
             PaneLocation::Directory(path) | PaneLocation::Preview(path) => {
-                path.display().to_string()
+                return path.display().to_string()
             }
         })
         .unwrap_or_default();
@@ -198,19 +198,19 @@ fn write_state(inner: &Rc<StripInner>) {
 /// Why: a directory becomes a listing pane wired to spawn; a preview becomes an icon pane; a
 ///      missing pane degrades to a label.
 fn build_pane_widget(inner: &Rc<StripInner>, id: PaneId) -> Widget {
-    let location = inner.state.borrow().pane(id).map(|pane| pane.location.clone());
+    let location = inner.state.borrow().pane(id).map(|pane| return pane.location.clone());
     match location {
-        Some(PaneLocation::Directory(path)) => build_directory_pane(inner, id, &path),
+        Some(PaneLocation::Directory(path)) => return build_directory_pane(inner, id, &path),
         Some(PaneLocation::Preview(path)) => {
             let close_weak = Rc::downgrade(inner);
-            build_preview_pane(&path, move || {
+            return build_preview_pane(&path, move || {
                 if let Some(inner) = close_weak.upgrade() {
                     close_pane(&inner, id);
                 }
             })
             .upcast::<Widget>()
         }
-        None => Label::new(Some("(missing pane)")).upcast::<Widget>(),
+        None => return Label::new(Some("(missing pane)")).upcast::<Widget>(),
     }
 }
 
@@ -223,7 +223,7 @@ fn build_directory_pane(inner: &Rc<StripInner>, id: PaneId, path: &Path) -> Widg
         Ok(snapshot) => {
             let spawn_weak = Rc::downgrade(inner);
             let close_weak = Rc::downgrade(inner);
-            build_listing_pane(
+            return build_listing_pane(
                 &snapshot,
                 move |entry, force_dup| {
                     if let Some(inner) = spawn_weak.upgrade() {
@@ -240,7 +240,7 @@ fn build_directory_pane(inner: &Rc<StripInner>, id: PaneId, path: &Path) -> Widg
         }
         Err(error) => {
             tracing::error!(%error, path = %path.display(), "failed to read directory for pane");
-            Label::new(Some(&format!("Cannot read {}: {error}", path.display()))).upcast::<Widget>()
+            return Label::new(Some(&format!("Cannot read {}: {error}", path.display()))).upcast::<Widget>()
         }
     }
 }
@@ -259,7 +259,7 @@ fn spawn_from(inner: &Rc<StripInner>, source: PaneId, entry: &FileEntry, force_d
         .state
         .borrow_mut()
         .spawn_child(source, location, force_duplicate);
-    if let Some(column) = inner.state.borrow().pane(spawned).map(|pane| pane.column) {
+    if let Some(column) = inner.state.borrow().pane(spawned).map(|pane| return pane.column) {
         inner.layout.set_focused_column(column);
     }
     reconcile(inner);

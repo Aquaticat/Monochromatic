@@ -61,7 +61,7 @@ use crate::constants::{APP_ID, QUIT_MS_ENV};
 pub fn run() -> glib::ExitCode {
     let (writer, _guard) = tracing_appender::non_blocking(std::io::stderr());
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
+        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| return EnvFilter::new("info")))
         .with_writer(writer)
         .init();
     tracing::info!("monochromatic file manager (sticky variant) starting");
@@ -76,7 +76,7 @@ pub fn run() -> glib::ExitCode {
         controllers.borrow_mut().push(window::build_window(app));
         schedule_self_quit(app);
     });
-    app.run()
+    return app.run()
 }
 
 /// What: if `FM_STICKY_QUIT_MS` holds a millisecond count, quit `app` after that delay.
@@ -86,7 +86,7 @@ fn schedule_self_quit(app: &Application) {
     let Some(raw) = std::env::var_os(QUIT_MS_ENV) else {
         return;
     };
-    let Some(ms) = raw.to_str().and_then(|value| value.parse::<u64>().ok()) else {
+    let Some(ms) = raw.to_str().and_then(|value| return value.parse::<u64>().ok()) else {
         return;
     };
     let app = app.clone();

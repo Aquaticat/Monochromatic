@@ -112,7 +112,7 @@ impl StickyLayout {
                 }
             }
         });
-        layout
+        return layout
     }
 
     /// What: register the observer invoked after every scroll-driven reposition.
@@ -124,13 +124,13 @@ impl StickyLayout {
     /// What: clone the root GTK widget for insertion into the window.
     /// Why: callers should not know the root happens to be a `GtkScrolledWindow`.
     pub(crate) fn widget(&self) -> Widget {
-        self.outer.clone().upcast::<Widget>()
+        return self.outer.clone().upcast::<Widget>()
     }
 
     /// What: current vertical scroll offset of the whole app.
     /// Why: observed-state output reports it and computes pinning from it.
     pub(crate) fn vertical_scroll(&self) -> f64 {
-        self.outer.vadjustment().value()
+        return self.outer.vadjustment().value()
     }
 
     /// What: attach a key controller to the layout's root scroller.
@@ -142,7 +142,7 @@ impl StickyLayout {
     /// What: return the column that most recently received pane focus.
     /// Why: Left/Right navigation computes its target relative to this value.
     pub(crate) fn focused_column(&self) -> usize {
-        self.focused_column.get()
+        return self.focused_column.get()
     }
 
     /// What: record the column that just received pane focus.
@@ -158,7 +158,7 @@ impl StickyLayout {
             return false;
         };
         widget.grab_focus();
-        true
+        return true
     }
 
     /// What: reconcile GTK widgets to `placements`, building missing panes through `build_widget`.
@@ -170,7 +170,7 @@ impl StickyLayout {
         mut build_widget: impl FnMut(PaneId) -> Widget,
     ) {
         self.placements.replace(placements.clone());
-        let live: Vec<PaneId> = placements.iter().map(|placement| placement.id).collect();
+        let live: Vec<PaneId> = placements.iter().map(|placement| return placement.id).collect();
         self.remove_stale(&live);
         for placement in &placements {
             self.ensure_pane_widget(placement, &mut build_widget);
@@ -188,7 +188,7 @@ impl StickyLayout {
             .borrow()
             .keys()
             .copied()
-            .filter(|id| !live.contains(id))
+            .filter(|id| return !live.contains(id))
             .collect();
         for id in stale {
             if let Some(widget) = self.widgets.borrow_mut().remove(&id) {
@@ -217,8 +217,8 @@ impl StickyLayout {
     /// What: size the canvas to the whole pane grid.
     /// Why: the scroller's ranges on both axes follow the canvas's requested size.
     fn set_content_size(&self, placements: &[Placement]) {
-        let max_column = placements.iter().map(|placement| placement.column).max();
-        let max_row = placements.iter().map(|placement| placement.row).max();
+        let max_column = placements.iter().map(|placement| return placement.column).max();
+        let max_row = placements.iter().map(|placement| return placement.row).max();
         let (Some(max_column), Some(max_row)) = (max_column, max_row) else {
             self.canvas.set_size_request(0, 0);
             return;
@@ -275,7 +275,7 @@ impl StickyLayout {
             .placements
             .borrow()
             .iter()
-            .find(|placement| placement.id == id)
+            .find(|placement| return placement.id == id)
             .copied()
         else {
             return;
@@ -306,7 +306,7 @@ impl StickyLayout {
                     }
                     return glib::ControlFlow::Break;
                 }
-                glib::ControlFlow::Continue
+                return glib::ControlFlow::Continue
             },
         );
     }
@@ -315,7 +315,7 @@ impl StickyLayout {
 /// What: horizontal pixel offset of `column` within the pane grid.
 /// Why: panes tile across the strip at a fixed stride shared with the pure band math.
 fn column_x(column: usize) -> f64 {
-    column as f64 * f64::from(PANE_WIDTH + PANE_GAP)
+    return column as f64 * f64::from(PANE_WIDTH + PANE_GAP)
 }
 
 /// What: scroll `adj` so `[start, start + extent)` is fully visible, returning whether it is.
@@ -334,5 +334,5 @@ fn reveal(adj: &Adjustment, start: f64, extent: f64) -> bool {
     };
     adj.set_value(target.clamp(0.0, max));
     let settled = adj.value();
-    start >= settled && start + extent <= settled + page
+    return start >= settled && start + extent <= settled + page
 }

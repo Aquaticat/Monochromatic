@@ -45,7 +45,7 @@ pub struct Band {
 /// What: vertical pixel offset of `row` within the pane grid.
 /// Why: panes tile down each column at a fixed stride shared by every column.
 pub fn row_y(row: usize) -> f64 {
-    row as f64 * f64::from(PANE_HEIGHT + PANE_GAP)
+    return row as f64 * f64::from(PANE_HEIGHT + PANE_GAP)
 }
 
 /// What: compute `placement`'s sticky band from the placement snapshot.
@@ -54,9 +54,9 @@ pub fn row_y(row: usize) -> f64 {
 pub fn band_for(placement: Placement, placements: &[Placement]) -> Band {
     let deepest = placements
         .iter()
-        .filter(|candidate| candidate.parent == Some(placement.id))
-        .fold(placement.row, |deepest_row, child| deepest_row.max(child.row));
-    Band {
+        .filter(|candidate| return candidate.parent == Some(placement.id))
+        .fold(placement.row, |deepest_row, child| return deepest_row.max(child.row));
+    return Band {
         top: row_y(placement.row),
         height: row_y(deepest) + f64::from(PANE_HEIGHT) - row_y(placement.row),
     }
@@ -68,19 +68,19 @@ pub fn band_for(placement: Placement, placements: &[Placement]) -> Band {
 ///      accumulation, rail clamping, and relaxation passes.
 pub fn sticky_y(band: Band, scroll: f64) -> f64 {
     let travel = (band.height - f64::from(PANE_HEIGHT)).max(0.0);
-    band.top + (scroll - band.top).clamp(0.0, travel)
+    return band.top + (scroll - band.top).clamp(0.0, travel)
 }
 
 /// What: resolve every pane's `(x, y)` content position for one app scroll offset.
 /// Why: positioning is a pure function of the snapshot and the scroll, so the GTK adapter holds
 ///      no per-lane state and the boundary test can assert geometry without a GUI.
 pub fn positions(placements: &[Placement], scroll: f64) -> Vec<(PaneId, f64, f64)> {
-    placements
+    return placements
         .iter()
         .map(|placement| {
             let x = placement.column as f64 * f64::from(PANE_WIDTH + PANE_GAP);
             let y = sticky_y(band_for(*placement, placements), scroll);
-            (placement.id, x, y)
+            return (placement.id, x, y)
         })
         .collect()
 }
@@ -92,14 +92,14 @@ pub fn overlap_count(placements: &[Placement], scroll: f64) -> usize {
     let resolved = positions(placements, scroll);
     let width = f64::from(PANE_WIDTH);
     let height = f64::from(PANE_HEIGHT);
-    resolved
+    return resolved
         .iter()
         .enumerate()
         .map(|(index, (_, left_x, left_y))| {
-            resolved[index + 1..]
+            return resolved[index + 1..]
                 .iter()
                 .filter(|(_, right_x, right_y)| {
-                    (left_x < &(right_x + width))
+                    return (left_x < &(right_x + width))
                         && (right_x < &(left_x + width))
                         && (left_y < &(right_y + height))
                         && (right_y < &(left_y + height))
@@ -119,11 +119,11 @@ pub fn root_pinned(placements: &[Placement], scroll: f64) -> bool {
     }
     let Some(root) = placements
         .iter()
-        .filter(|placement| placement.column == 0)
-        .min_by_key(|placement| placement.row)
+        .filter(|placement| return placement.column == 0)
+        .min_by_key(|placement| return placement.row)
     else {
         return false;
     };
     let y = sticky_y(band_for(*root, placements), scroll);
-    (y - scroll).abs() < 1.0
+    return (y - scroll).abs() < 1.0
 }
