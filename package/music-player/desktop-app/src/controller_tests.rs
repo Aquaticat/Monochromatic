@@ -65,7 +65,7 @@ fn temp_cache(tag: &str) -> PathBuf {
     // Why:      Make a collision-resistant filename for parallel test runs.
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system clock should be after Unix epoch")
         .as_nanos();
     // What:     `std::env::temp_dir().join(format!(...))`. Join a formatted filename
     //           under the system temp directory. Tail expression returns it.
@@ -115,15 +115,14 @@ fn timeout_keeps_fallback_then_later_result_swaps_gain() {
     // Why:      A later measurement result should still be able to swap gain.
     assert!(controller.pending_peak.is_some());
 
-    // What:     `sender.send(PeakGainResult { generation: 1, gain: 0.5 }).unwrap();`.
-    //           Send a matching-generation measured gain through the channel.
+    // What:     Send a matching-generation measured gain through the channel.
     // Why:      The next poll should accept it and replace fallback.
     sender
         .send(PeakGainResult {
             generation: 1,
             gain: 0.5,
         })
-        .unwrap();
+        .expect("pending peak receiver should remain connected");
     // What:     `assert!(controller.poll_pending_peak());`. Poll and expect a live
     //           current-track result to apply.
     // Why:      Confirms late results still swap future decoded samples.
@@ -159,15 +158,14 @@ fn stale_generation_result_is_ignored() {
     //           Store the pending receiver.
     // Why:      Make `poll_pending_peak` read the stale result.
     controller.pending_peak = Some(PendingPeakMeasurement::from_receiver(receiver));
-    // What:     `sender.send(PeakGainResult { generation: 1, gain: 0.5 }).unwrap();`.
-    //           Send an older generation.
+    // What:     Send an older generation.
     // Why:      This simulates a previous track finishing after the current one loaded.
     sender
         .send(PeakGainResult {
             generation: 1,
             gain: 0.5,
         })
-        .unwrap();
+        .expect("pending peak receiver should remain connected");
 
     // What:     `assert!(!controller.poll_pending_peak());`. Poll returns false because
     //           the result was not applied.
@@ -202,15 +200,14 @@ fn play_start_waits_for_pending_peak_result() {
     //           Store a pending receiver on the controller.
     // Why:      `set_playing(true)` should consume it before setting playback on.
     controller.pending_peak = Some(PendingPeakMeasurement::from_receiver(receiver));
-    // What:     `sender.send(PeakGainResult { generation: 3, gain: 0.5 }).unwrap();`.
-    //           Send the matching result.
+    // What:     Send the matching result.
     // Why:      The start wait should apply this measured gain.
     sender
         .send(PeakGainResult {
             generation: 3,
             gain: 0.5,
         })
-        .unwrap();
+        .expect("pending peak receiver should remain connected");
 
     // What:     `controller.set_playing(true);`. Start playback through the real helper.
     // Why:      Covers the Play/CLI start boundary.
@@ -302,20 +299,23 @@ fn background_sweep_skips_current_track() {
 fn rescan_reflects_disk_and_preserves_selection_by_path() {
     // What:     `let nanos = ...as_nanos();`. A unique suffix for a throwaway directory.
     // Why:      Each run gets its own scratch root (THR: verify on a throwaway).
-    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after Unix epoch")
+        .as_nanos();
     // What:     `let dir = std::env::temp_dir().join(format!("mp_rescan_{nanos}"));`. The
     //           disposable Source Root.
     // Why:      A real directory so `expand_paths` actually scans it.
     let dir = std::env::temp_dir().join(format!("mp_rescan_{nanos}"));
-    // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it.
+    // What:     Create the disposable source root.
     // Why:      The root must exist before scanning.
-    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::create_dir_all(&dir).expect("source fixture directory should be created");
     // What:     two audio-extension files written with one byte each.
     // Why:      `expand_paths` keeps only audio extensions; content is irrelevant here.
     let a = dir.join("a.flac");
     let b = dir.join("b.flac");
-    std::fs::write(&a, b"x").unwrap();
-    std::fs::write(&b, b"x").unwrap();
+    std::fs::write(&a, b"x").expect("first source fixture should be written");
+    std::fs::write(&b, b"x").expect("second source fixture should be written");
 
     // What:     build a silent controller and point its Source Root at the scratch dir.
     // Why:      Drive the real `Rescan` handler without audio or UI.
@@ -339,7 +339,7 @@ fn rescan_reflects_disk_and_preserves_selection_by_path() {
     // What:     add a file that sorts before the others, then rescan.
     // Why:      Adding a file shifts `b`'s index; the selection must follow by path.
     let zero = dir.join("0.flac");
-    std::fs::write(&zero, b"x").unwrap();
+    std::fs::write(&zero, b"x").expect("new source fixture should be written");
     controller.handle_command(Command::Rescan);
     // What:     the new file is in the queue and `b` is still the selection.
     // Why:      Live add is reflected; selection preserved by path despite the index shift.
@@ -348,7 +348,7 @@ fn rescan_reflects_disk_and_preserves_selection_by_path() {
 
     // What:     remove the selected file `b`, then rescan.
     // Why:      The Selected Track's file left the root, so the selection must clear.
-    std::fs::remove_file(&b).unwrap();
+    std::fs::remove_file(&b).expect("selected fixture should be removed");
     controller.handle_command(Command::Rescan);
     // What:     `b` is gone from the queue and nothing is selected.
     // Why:      Live remove is reflected; the missing selection is cleared.

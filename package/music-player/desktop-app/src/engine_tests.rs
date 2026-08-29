@@ -78,16 +78,18 @@ fn wait_for_len(rx: &mpsc::Receiver<usize>, want: usize, secs: u64) -> bool {
 //           spinning a ~500ms loop that made every page-tab selection bounce to the first tab.
 #[test]
 fn idle_root_emits_no_extra_queue_updates() {
-    // What:     `let nanos = ...as_nanos();`. Unique suffix for the throwaway directory.
+    // What:     Build a unique suffix for the throwaway directory.
     // Why:      Isolate this run's scratch root (THR: verify on a throwaway).
-    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-    // What:     `let dir = std::env::temp_dir().join(format!("mp_idle_{nanos}"));`. The Source
-    //           Root to open and watch.
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after Unix epoch")
+        .as_nanos();
+    // What:     Build the source root path under the system temp directory.
     // Why:      A real directory the OS watcher can observe.
     let dir = std::env::temp_dir().join(format!("mp_idle_{nanos}"));
-    // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it before opening.
+    // What:     Create the source root before opening it.
     // Why:      The Source Root must exist to be scanned and watched.
-    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::create_dir_all(&dir).expect("source fixture directory should be created");
     // What:     `for name in [...] { std::fs::copy(manifest/fixture/name, dir/name) }`. Copy
     //           two REAL fixtures (not empty files) into the root. `CARGO_MANIFEST_DIR` is the
     //           package dir, so `fixture/` resolves regardless of the test's working directory.
@@ -95,7 +97,8 @@ fn idle_root_emits_no_extra_queue_updates() {
     //           read-driven watcher events that the loop fed on; empty files decode to nothing.
     let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     for name in ["tone.flac", "tone.opus"] {
-        std::fs::copy(manifest.join("fixture").join(name), dir.join(name)).unwrap();
+        std::fs::copy(manifest.join("fixture").join(name), dir.join(name))
+            .expect("audio fixture should be copied");
     }
 
     // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of list-update lengths.
@@ -171,21 +174,21 @@ fn idle_root_emits_no_extra_queue_updates() {
 //           worker and the worker actually re-derives and re-emits the queue.
 #[test]
 fn watcher_drives_rescan_update_through_engine() {
-    // What:     `let nanos = ...as_nanos();`. Unique suffix for the throwaway directory.
+    // What:     Build a unique suffix for the throwaway directory.
     // Why:      Isolate this run's scratch root (THR: verify on a throwaway).
-    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-    // What:     `let dir = std::env::temp_dir().join(format!("mp_engine_{nanos}"));`. The
-    //           Source Root to open and watch.
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after Unix epoch")
+        .as_nanos();
+    // What:     Build the source root path under the system temp directory.
     // Why:      A real directory the OS watcher can observe.
     let dir = std::env::temp_dir().join(format!("mp_engine_{nanos}"));
-    // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it before opening.
+    // What:     Create the source root before opening it.
     // Why:      The Source Root must exist to be scanned and watched.
-    std::fs::create_dir_all(&dir).unwrap();
-    // What:     `std::fs::write(dir.join("a.flac"), b"").unwrap();`. One zero-byte audio file
-    //           present before the open. The scan filters by extension (`is_audio_file`), so
-    //           an empty `.flac` counts as a track without needing real audio.
+    std::fs::create_dir_all(&dir).expect("source fixture directory should be created");
+    // What:     Write one zero-byte audio file before opening the root.
     // Why:      Give the initial scan exactly one track to report.
-    std::fs::write(dir.join("a.flac"), b"").unwrap();
+    std::fs::write(dir.join("a.flac"), b"").expect("first audio fixture should be written");
 
     // What:     `let (tx, rx) = mpsc::channel::<usize>();`. A channel of list-update lengths.
     // Why:      The engine's update callback runs on the worker thread; it forwards each
@@ -241,10 +244,9 @@ fn watcher_drives_rescan_update_through_engine() {
         "expected Queue(1) after opening a root with one audio file"
     );
 
-    // What:     `std::fs::write(dir.join("b.flac"), b"").unwrap();`. Add a second audio file
-    //           to the watched root.
+    // What:     Add a second audio file to the watched root.
     // Why:      This on-disk change is what the watcher must turn into a live `Rescan`.
-    std::fs::write(dir.join("b.flac"), b"").unwrap();
+    std::fs::write(dir.join("b.flac"), b"").expect("second audio fixture should be written");
     // What:     `assert!(wait_for_len(&rx, 2, WAIT_SECS), ...)`. A list update of length 2 must
     //           arrive without any further command from the test: watcher -> Rescan ->
     //           re-derived queue -> `Reconciled` emit (the live rescan path no longer emits

@@ -14,8 +14,8 @@ fn current_json_round_trip_preserves_fields() {
         playback_mode: PlaybackMode::ShufflePage,
         page_control_style: PageControlStyle::Md1Tabs,
     };
-    let json = serde_json::to_string(&original).unwrap();
-    let restored = Session::from_json(&json).unwrap();
+    let json = serde_json::to_string(&original).expect("current session should serialize");
+    let restored = Session::from_json(&json).expect("serialized session should parse");
     assert_eq!(original, restored);
     assert!(json.contains("\"playback_mode\":\"shuffle_page\""));
     assert!(!json.contains("\"shuffle\""));
@@ -25,7 +25,10 @@ fn current_json_round_trip_preserves_fields() {
 /// Empty current input yields first-run defaults.
 #[test]
 fn empty_json_object_yields_defaults() {
-    assert_eq!(Session::from_json("{}").unwrap(), Session::default());
+    assert_eq!(
+        Session::from_json("{}").expect("empty session object should parse"),
+        Session::default(),
+    );
 }
 
 /// Every former shuffle and repeat combination maps according to issue 460.
@@ -43,7 +46,12 @@ fn every_legacy_combination_migrates() {
         let json = format!(
             "{{\"shuffle\":\"{shuffle}\",\"repeat_track\":{repeat_track}}}"
         );
-        assert_eq!(Session::from_json(&json).unwrap().playback_mode, expected);
+        assert_eq!(
+            Session::from_json(&json)
+                .expect("legacy session should parse")
+                .playback_mode,
+            expected,
+        );
     }
 }
 
@@ -52,7 +60,9 @@ fn every_legacy_combination_migrates() {
 fn current_playback_mode_wins_over_legacy_fields() {
     let json = r#"{"playback_mode":"shuffle_all","shuffle":"WithinPage","repeat_track":true}"#;
     assert_eq!(
-        Session::from_json(json).unwrap().playback_mode,
+        Session::from_json(json)
+            .expect("current session should parse")
+            .playback_mode,
         PlaybackMode::ShuffleAll,
     );
 }
@@ -62,7 +72,9 @@ fn current_playback_mode_wins_over_legacy_fields() {
 fn unknown_current_mode_does_not_reuse_legacy_fields() {
     let json = r#"{"playback_mode":"future","shuffle":"All","repeat_track":true}"#;
     assert_eq!(
-        Session::from_json(json).unwrap().playback_mode,
+        Session::from_json(json)
+            .expect("forward-version session should parse")
+            .playback_mode,
         PlaybackMode::InOrder,
     );
 }
@@ -72,7 +84,9 @@ fn unknown_current_mode_does_not_reuse_legacy_fields() {
 fn null_current_mode_does_not_reuse_legacy_fields() {
     let json = r#"{"playback_mode":null,"shuffle":"All","repeat_track":true}"#;
     assert_eq!(
-        Session::from_json(json).unwrap().playback_mode,
+        Session::from_json(json)
+            .expect("null-mode session should parse")
+            .playback_mode,
         PlaybackMode::InOrder,
     );
 }
@@ -81,7 +95,7 @@ fn null_current_mode_does_not_reuse_legacy_fields() {
 #[test]
 fn old_track_list_format_keeps_settings() {
     let old = r#"{"tracks":["/a.flac"],"current":0,"position_secs":5.0,"volume":0.5,"shuffle":"All","repeat_track":false}"#;
-    let parsed = Session::from_json(old).unwrap();
+    let parsed = Session::from_json(old).expect("former track-list session should parse");
     assert_eq!(parsed.source_root, None);
     assert_eq!(parsed.selected, None);
     assert_eq!(parsed.position_secs, 5.0);

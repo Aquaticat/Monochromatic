@@ -24,14 +24,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 //           fresh throwaway directory under the system temp dir.
 // Why:      Verify on a disposable fixture, never real state.
 fn unique_temp_dir() -> PathBuf {
-    // What:     `let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();`.
-    //           Current time minus the epoch -> a `Duration`; `.unwrap()`
-    //           extracts it (panics only if the clock predates 1970);
-    //           `.as_nanos()` gives a `u128` nanosecond count.
+    // What:     Read nanoseconds elapsed since the Unix epoch.
     // Why:      A high-resolution component keeps the directory name unique.
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system clock should be after Unix epoch")
         .as_nanos();
     // What:     `let dir = std::env::temp_dir().join(format!("music-player-expand-{}-{}", std::process::id(), nanos));`.
     //           Build the path: system temp dir + a name carrying the process
@@ -43,11 +40,9 @@ fn unique_temp_dir() -> PathBuf {
         std::process::id(),
         nanos
     ));
-    // What:     `fs::create_dir_all(&dir).unwrap();`. Create the directory (and
-    //           any missing parents); `.unwrap()` fails the test on error.
-    //           `&dir` lends the path.
+    // What:     Create the directory and any missing parents.
     // Why:      The fixture root must exist before we populate it.
-    fs::create_dir_all(&dir).unwrap();
+    fs::create_dir_all(&dir).expect("fixture directory should be created");
     // What:     `dir`. Tail expression -> return the created path.
     // Why:      Hand the fixture root to the caller.
     return dir
@@ -61,36 +56,32 @@ fn expand_paths_walks_directories_recursively_and_sorts() {
     // Why:      A real tree to expand.
     let root = unique_temp_dir();
 
-    // What:     `fs::write(root.join("b.flac"), b"x").unwrap();`. Create a file.
-    //           `root.join("b.flac")` builds the child path; `b"x"` is a BYTE
-    //           STRING literal (a `&[u8; 1]`, raw bytes, not text); `.unwrap()`
-    //           fails the test on I/O error.
-    // Why:      Two root files created out of alphabetical order, to prove the
-    //           walk sorts them.
-    fs::write(root.join("b.flac"), b"x").unwrap();
+    // What:     Create a file named `b.flac` in the fixture root.
+    // Why:      Two root files created out of alphabetical order prove the walk sorts them.
+    fs::write(root.join("b.flac"), b"x").expect("root fixture should be written");
     // What:     create the second root file.
     // Why:      Out-of-order sibling.
-    fs::write(root.join("a.flac"), b"x").unwrap();
+    fs::write(root.join("a.flac"), b"x").expect("root fixture should be written");
 
     // What:     `let sub = root.join("sub");`. A subfolder path.
     // Why:      Prove the walk descends one level.
     let sub = root.join("sub");
     // What:     create the subfolder.
     // Why:      It must exist before adding files.
-    fs::create_dir_all(&sub).unwrap();
+    fs::create_dir_all(&sub).expect("subdirectory fixture should be created");
     // What:     a file inside the subfolder.
     // Why:      Expected after the root files.
-    fs::write(sub.join("c.flac"), b"x").unwrap();
+    fs::write(sub.join("c.flac"), b"x").expect("subdirectory fixture should be written");
 
     // What:     `let nested = sub.join("nested");`. A deeper folder.
     // Why:      Prove the walk descends more than one level.
     let nested = sub.join("nested");
     // What:     create the nested folder.
     // Why:      Needed before its file.
-    fs::create_dir_all(&nested).unwrap();
+    fs::create_dir_all(&nested).expect("nested fixture directory should be created");
     // What:     a file two levels down.
     // Why:      Expected last.
-    fs::write(nested.join("d.flac"), b"x").unwrap();
+    fs::write(nested.join("d.flac"), b"x").expect("nested fixture should be written");
 
     // What:     `let got = expand_paths(vec![root.clone()]);`. Expand the root
     //           folder. `vec![...]` wraps it in a one-element vector;
@@ -124,7 +115,7 @@ fn expand_paths_walks_directories_recursively_and_sorts() {
 
     // What:     create an AppleDouble sidecar file beside the direct-file case.
     // Why:      The direct sidecar test should exercise an existing file, not a missing path.
-    fs::write(root.join("._a.flac"), b"x").unwrap();
+    fs::write(root.join("._a.flac"), b"x").expect("sidecar fixture should be written");
     // What:     `let direct_sidecar = expand_paths(vec![root.join("._a.flac")]);`. Expand a
     //           directly supplied AppleDouble sidecar path.
     // Why:      Direct file-open paths need the same `._` rejection as directory scans.
@@ -186,18 +177,18 @@ fn expand_paths_keeps_only_audio_files_and_skips_junk() {
 
     // What:     create two audio files, deliberately out of alphabetical order.
     // Why:      Confirm they survive and come back sorted.
-    fs::write(root.join("song.mp3"), b"x").unwrap();
-    fs::write(root.join("tune.flac"), b"x").unwrap();
+    fs::write(root.join("song.mp3"), b"x").expect("MP3 fixture should be written");
+    fs::write(root.join("tune.flac"), b"x").expect("FLAC fixture should be written");
     // What:     create non-audio and hidden/system files that must be skipped.
     // Why:      These are exactly the kinds of files that leaked into the queue.
-    fs::write(root.join("cover.jpg"), b"x").unwrap();
-    fs::write(root.join("playlist.m3u"), b"x").unwrap();
-    fs::write(root.join(".DS_Store"), b"x").unwrap();
-    fs::write(root.join(".nomedia"), b"x").unwrap();
-    fs::write(root.join(".database_uuid"), b"x").unwrap();
+    fs::write(root.join("cover.jpg"), b"x").expect("cover fixture should be written");
+    fs::write(root.join("playlist.m3u"), b"x").expect("playlist fixture should be written");
+    fs::write(root.join(".DS_Store"), b"x").expect("Finder fixture should be written");
+    fs::write(root.join(".nomedia"), b"x").expect("media marker fixture should be written");
+    fs::write(root.join(".database_uuid"), b"x").expect("database fixture should be written");
     // What:     create an AppleDouble sidecar with an audio-looking extension.
     // Why:      This is the regression case: extension-only filtering would keep it.
-    fs::write(root.join("._song.mp3"), b"x").unwrap();
+    fs::write(root.join("._song.mp3"), b"x").expect("sidecar fixture should be written");
 
     // What:     `let got = expand_paths(vec![root.clone()]);`. Scan the folder.
     // Why:      Exercise the filtered walk.

@@ -29,10 +29,9 @@ fn parse(extra: &[&str]) -> Cli {
     // What:     append the test's real arguments after the program name.
     // Why:      Place them where clap expects positionals/flags.
     argv.extend_from_slice(extra);
-    // What:     `Cli::try_parse_from(argv).unwrap()`. Parse the explicit argv; `.unwrap()`
-    //           panics on a parse error (failing the test).
+    // What:     Parse the explicit argv and require success.
     // Why:      Parsing from an explicit list makes the launch policy testable.
-    return Cli::try_parse_from(argv).unwrap()
+    return Cli::try_parse_from(argv).expect("test CLI arguments should parse")
 }
 
 // What:     `#[test] fn no_args_yields_no_path_and_paused()`. A bare launch.

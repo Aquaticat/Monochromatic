@@ -17,12 +17,12 @@ fn settings_options_match_included_catalog_entries() {
 /// Confirms every independently excluded style follows deterministic fallback chain.
 #[test]
 fn each_excluded_style_resolves_without_renumbering() {
-    for excluded_index in 0..BUILD_STYLES.len() {
+    for (excluded_index, excluded_style) in BUILD_STYLES.iter().enumerate() {
         let catalog: [BuildStyle; BUILD_STYLES.len()] = std::array::from_fn(|index| return BuildStyle {
             included: index != excluded_index,
             ..BUILD_STYLES[index]
         });
-        let excluded = BUILD_STYLES[excluded_index].style;
+        let excluded = excluded_style.style;
         let expected = if excluded == PageControlStyle::ChromiumTabs {
             PageControlStyle::Radio
         } else {

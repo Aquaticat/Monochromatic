@@ -31,7 +31,7 @@ fn temp_cache(tag: &str) -> PathBuf {
     // Why:      Make a collision-resistant filename for parallel test runs.
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system clock should be after Unix epoch")
         .as_nanos();
     // What:     `std::env::temp_dir().join(format!(...))`. Join a formatted filename
     //           under the system temp directory. Tail expression returns it.

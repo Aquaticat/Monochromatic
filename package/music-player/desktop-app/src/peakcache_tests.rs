@@ -49,13 +49,11 @@ fn wait_for_decision(cache: &CacheHandle, key: u64) -> Option<Decision> {
 //           the system temp dir, tagged with pid + nanoseconds + `suffix`.
 // Why:      Tests must not collide or touch real state.
 fn unique_path(suffix: &str) -> PathBuf {
-    // What:     `let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();`.
-    //           Nanoseconds since 1970; `.unwrap()` panics only if the clock is
-    //           before 1970 (fine in a test).
-    // Why:      High-resolution uniqueness.
+    // What:     Read nanoseconds elapsed since the Unix epoch.
+    // Why:      High-resolution uniqueness prevents fixture collisions.
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system clock should be after Unix epoch")
         .as_nanos();
     // What:     `std::env::temp_dir().join(format!("music-player-peak-{}-{}-{}", std::process::id(), nanos, suffix))`.
     //           Build the path. Tail -> return.
@@ -75,7 +73,7 @@ fn fingerprint_is_stable_and_change_sensitive() {
     // What:     create a real temp file to stat.
     // Why:      `fingerprint` needs metadata.
     let file = unique_path("a.flac");
-    fs::write(&file, b"hello").unwrap();
+    fs::write(&file, b"hello").expect("first fingerprint fixture should be written");
 
     // What:     `let first = fingerprint(&file).unwrap();`. Compute it once (a `u64`).
     // Why:      Baseline.
@@ -87,7 +85,8 @@ fn fingerprint_is_stable_and_change_sensitive() {
     // What:     a file with different bytes (so a different size) fingerprints differently.
     // Why:      Change-sensitivity: size is part of the key, so a re-encode invalidates it.
     let other = unique_path("b.flac");
-    fs::write(&other, b"hello world").unwrap();
+    fs::write(&other, b"hello world")
+        .expect("changed fingerprint fixture should be written");
     assert_ne!(fingerprint(&other).unwrap(), first);
 
     // What:     a missing path yields no fingerprint.

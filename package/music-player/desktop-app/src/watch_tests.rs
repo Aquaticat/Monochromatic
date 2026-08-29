@@ -25,14 +25,17 @@ use std::time::{SystemTime, UNIX_EPOCH};
 fn watcher_fires_on_file_creation() {
     // What:     `let nanos = ...as_nanos();`. Unique suffix for the throwaway directory.
     // Why:      Isolate this run's scratch root (THR: verify on a throwaway).
-    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after Unix epoch")
+        .as_nanos();
     // What:     `let dir = std::env::temp_dir().join(format!("mp_watch_{nanos}"));`. The dir
     //           to watch.
     // Why:      A real directory the OS watcher can observe.
     let dir = std::env::temp_dir().join(format!("mp_watch_{nanos}"));
-    // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it before watching.
+    // What:     Create the source root before watching it.
     // Why:      The watch target must exist.
-    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::create_dir_all(&dir).expect("watch fixture directory should be created");
 
     // What:     `let (tx, rx) = mpsc::channel::<()>();`. A unit-signal channel.
     // Why:      The callback sends `()` so the test can wait for a change.
@@ -55,9 +58,9 @@ fn watcher_fires_on_file_creation() {
     //           be missed; this avoids that race in the test.
     const ARM_SLACK_MS: u64 = 200;
     std::thread::sleep(Duration::from_millis(ARM_SLACK_MS));
-    // What:     `std::fs::write(dir.join("new.flac"), b"x").unwrap();`. Create a file.
+    // What:     Create an audio file in the watched directory.
     // Why:      The change the watcher should report.
-    std::fs::write(dir.join("new.flac"), b"x").unwrap();
+    std::fs::write(dir.join("new.flac"), b"x").expect("watched fixture should be written");
 
     // What:     `let got = rx.recv_timeout(Duration::from_secs(WAIT_SECS));`. Wait (bounded)
     //           for the callback. The debounce window is 500ms; the timeout is generous.
