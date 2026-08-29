@@ -6,18 +6,17 @@ import {
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 //region Translate retry
-// Asks a declining panel once more, against the SAME slate.
+// Challenges a declining panel once more against SAME slate.
 //
-// WHY THE SAME SLATE AND NOT A FRESH ONE: producing is the expensive half, and
-// re-producing would change what is being judged, so a second decline would say
-// nothing about the first. Judging the same candidates twice asks one question,
-// whether this panel backs any of THESE, and `#109` split the stage into produce
-// and judge halves so it could be asked twice.
+// WHY SAME SLATE AND NOT FRESH ONE: producing is expensive half,
+// and re-producing would change question.
+// Second judging challenges prior decline under distinct responsibility rather
+// than pretending identical prompt is independent evidence.
+// `#109` split stage into produce and judge halves so this is expressible.
 //
-// WHY ONCE AND NOT UNTIL IT AGREES: a panel that declines twice on identical
-// input is not going to be talked round by a third ask, and every further round
-// is bought at full roster cost against an entry deadline. One retry separates
-// the momentary decline from the settled one, which is all the record needs.
+// WHY ONCE AND NOT UNTIL IT AGREES: a panel that declines initial selection and
+// distinct challenge has exhausted these responsibilities.
+// Every further round costs full roster against entry deadline.
 //
 // A DECLINE LEAVES BY TWO DIFFERENT DOORS and both are handled here. With an
 // incumbent the stage RETURNS, keeping the archive's wording; with none it
@@ -187,7 +186,7 @@ export async function judgeSlateWithRetry(
     return first.result;
   }
 
-  l.info(`translate stage: ${firstReport.reason}; asking the same panel once more`,);
+  l.info(`translate stage: ${firstReport.reason}; challenging same panel under distinct responsibility`,);
 
   /**
    * Findings the first round gathered, which the second must not lose.
@@ -197,7 +196,10 @@ export async function judgeSlateWithRetry(
     /**
      * What the same panel said about the same candidates, second time.
      */
-    const second = await judgeTranslateSlate(judging,);
+    const second = await judgeTranslateSlate({
+      ...judging,
+      responsibility: 'decline-challenge',
+    },);
 
     // A SECOND DECLINE IS RESTAMPED, a second decision is kept as it stands.
     // Either way the first round's findings are carried, so the record shows

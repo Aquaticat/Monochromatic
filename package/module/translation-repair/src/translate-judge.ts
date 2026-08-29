@@ -37,6 +37,13 @@ import {
 } from './translate-stage-result.ts';
 
 //region Translate judge
+
+/**
+ * Substantive responsibility assigned to one slate judging pass.
+ */
+export type TranslateJudgeResponsibility =
+  | 'initial-selection'
+  | 'decline-challenge';
 // The half of the translate stage that CHOOSES: a slate that already exists is
 // put to the judges, and one candidate ships.
 //
@@ -86,6 +93,8 @@ import {
  * side, shown so a passage missing here can be recognised next door rather than
  * read as one the archive never had
  *
+ * @param responsibility - initial selection or prior-decline challenge
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -121,6 +130,7 @@ export async function judgeTranslateSlate(
     pictureContext,
     syntax,
     lineStructured,
+    responsibility = 'initial-selection',
     signal,
     perCallTimeoutMs,
     l,
@@ -148,6 +158,7 @@ export async function judgeTranslateSlate(
      * anywhere would report that the rule went missing.
      */
     readonly lineStructured: boolean;
+    readonly responsibility?: TranslateJudgeResponsibility;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -329,6 +340,12 @@ export async function judgeTranslateSlate(
   }
 
   /**
+   * Substantively distinct task after prior panel declined exact slate.
+   */
+  const task = (responsibility === 'initial-selection')
+    ? TRANSLATE_SELECTION_TASK
+    : `${TRANSLATE_SELECTION_TASK} A prior panel declined this exact slate. Challenge that result: first identify which candidates are individually ineligible, then compare only eligible candidates and select one when any faithfully renders the passage.`;
+  /**
    * Judges' verdict over the whole-slice candidates.
    */
   const outcome = await selectBestCandidate<TranslateCandidateValue>({
@@ -343,7 +360,7 @@ export async function judgeTranslateSlate(
     declineConsequence: (incumbentKind === 'absent')
       ? LEAVES_PASSAGE_UNTRANSLATED
       : KEEPS_TRUSTED_TEXT,
-    task: TRANSLATE_SELECTION_TASK,
+    task,
     criteria: translateSelectionCriteria({
       lineStructured,
       ...((syntax === undefined) ? {} : { syntax, }),

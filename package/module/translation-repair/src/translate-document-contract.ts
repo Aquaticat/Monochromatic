@@ -71,8 +71,10 @@ import type { SliceSelection, } from './slice-selection.ts';
  * contributor survival rather than relying on prompt compliance alone,
  * and excludes an unrepairable contributor-violating voice without fabricating
  * incumbent authorship.
+ *
+ * VERSION 10 replaces identical second judging with prior-decline challenge.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 9;
+export const TRANSLATE_SLICE_CACHE_VERSION = 10;
 
 /**
  * Models the translate lane seats.

@@ -139,6 +139,7 @@ function scriptedRig(
 ): {
   readonly client: SyntheticClient;
   readonly judgeCalls: { count: number; };
+  readonly judgePrompts: string[];
 } {
   /**
    * Translator calls served so far.
@@ -149,9 +150,14 @@ function scriptedRig(
    * Judge calls made so far, which says which judging this is.
    */
   const judgeCalls = { count: 0, };
+  /**
+   * Exact model-plus-message identities across judging rounds.
+   */
+  const judgePrompts: string[] = [];
 
   return {
     judgeCalls,
+    judgePrompts,
     client: {
       chatText: async () => {
         throw new Error('chatText unused by the translate lane',);
@@ -187,6 +193,10 @@ function scriptedRig(
           };
         }
         judgeCalls.count += 1;
+        judgePrompts.push(JSON.stringify({
+          modelId: request.modelId,
+          messages: request.messages,
+        },),);
 
         /**
          * Which judging this call belongs to, every judge answering once per
@@ -244,6 +254,7 @@ async function judgedUnder(
 ): Promise<{
   readonly result: TranslateStageResult;
   readonly judgeCalls: number;
+  readonly judgePrompts: readonly string[];
 }> {
   /**
    * Scripted client and its counter.
@@ -284,6 +295,7 @@ async function judgedUnder(
   return {
     result,
     judgeCalls: rig.judgeCalls.count,
+    judgePrompts: rig.judgePrompts,
   };
 }
 
@@ -299,7 +311,7 @@ await describe({
       name: 'KEEPS a second judging\'s decision after a first decline, carrying the first round\'s findings and '
         + 'the retry marker, so the record shows both asks',
       fn: async () => {
-        const { result, judgeCalls, } = await judgedUnder({
+        const { result, judgeCalls, judgePrompts, } = await judgedUnder({
           ballotFor: function firstRejects(judging,): 'reject' | 'dozes' {
             return (judging === 1) ? 'reject' : 'dozes';
           },
@@ -310,6 +322,7 @@ await describe({
         expect(result.findings.includes(RETRY_FINDING,),).toBe(true,);
         expect(result.findings.includes('translate-declined (rejection)',),).toBe(true,);
         expect(judgeCalls,).toBe(JUDGES.length * 2,);
+        expect(new Set(judgePrompts,).size,).toBe(judgeCalls,);
       },
     },),
 
