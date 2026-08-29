@@ -622,6 +622,11 @@ TODO | DONE
 
     Expect `true` and exit status zero.
     A zero-error result with zero expected files is not accepted as backup evidence.
+    A read-only positive control against these exact sources on 2026-08-29 reported zero errors,
+    245,977 expected files,
+    47,610 processed objects,
+    and 49 read files.
+    Re-run the check because that control does not verify later backup changes.
 
 1. Flush all backup writes:
 
