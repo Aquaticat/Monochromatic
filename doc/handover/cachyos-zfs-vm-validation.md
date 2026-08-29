@@ -27,7 +27,24 @@ or evidence unless the user later authorizes cleanup.
   The Wayfire disk is retained as installation and encrypted-boot evidence,
   but it is no longer the target desktop-validation base.
   Task 39 created a separate no-desktop validation domain and disk without deleting the Wayfire control.
-  Process `wait-nodesktop-live` is waiting for its authenticated live environment.
+  The authenticated live environment reached CachyOS Hello.
+  The first watcher remained active because its case-sensitive `CachyOS` matcher missed OCR output `CachyOs`.
+  A direct guest-frame capture proved the live environment was ready.
+  The first installer-launch click used an incorrect coordinate and left CachyOS Hello open.
+  A current guest frame located **Launch installer** at guest coordinate `642,605`,
+  and the corrected VM-only click was sent.
+  That action opened stock CachyOS Calamares rather than applying the pinned ZFS installer profile first.
+  Stock Calamares was canceled at its bootloader page before partitioning or confirmation.
+  Its session did not mutate the virtual disk.
+  The read-only installer-source image was then mounted inside the guest,
+  and the archive hash again matched the pinned value.
+  The pinned third-party installer was launched from the verified extracted archive.
+  It again reduced the bootloader page to `systemd-boot` and the partition plan to ZFS.
+  `/dev/vda` was the only installation target,
+  with the same 2 GiB EFI plus 126 GiB ZFS plan.
+  Native ZFS encryption was enabled with matching disposable passphrases.
+  **No Desktop** is selected.
+  Calamares explicitly states that this choice starts in text-only mode and permits installing a desktop later.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
