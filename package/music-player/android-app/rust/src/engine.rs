@@ -305,7 +305,7 @@ impl Control {
         // ```ts
         // return new Control(/* all fields below */);
         // ```
-        Control {
+        return Control {
             // What:     `playing: AtomicBool::new(false)`. `AtomicBool::new(false)` is the
             //           WRAPPER CONSTRUCTOR that builds an atomic boolean cell holding
             //           `false`. The `::new` is an associated function (like a static
@@ -435,7 +435,7 @@ impl Control {
         // ```ts
         // return bitsToF32(Atomics.load(this.volumeBits, 0));
         // ```
-        f32::from_bits(self.volume_bits.load(Ordering::Relaxed))
+        return f32::from_bits(self.volume_bits.load(Ordering::Relaxed))
     }
 
     /// What:     `pub(crate) fn norm_gain(&self) -> f32`. The same shape as `volume`: a
@@ -457,7 +457,7 @@ impl Control {
         // ```ts
         // return bitsToF32(Atomics.load(this.normGainBits, 0));
         // ```
-        f32::from_bits(self.norm_gain_bits.load(Ordering::Relaxed))
+        return f32::from_bits(self.norm_gain_bits.load(Ordering::Relaxed))
     }
 }
 
@@ -707,7 +707,7 @@ impl Engine {
         // ```ts
         // return new Engine(tx, /* worker */ worker, control, /* playIntent */ false);
         // ```
-        Ok(Engine {
+        return Ok(Engine {
             tx,
             worker: Some(worker),
             control,
@@ -795,7 +795,7 @@ impl Engine {
         // ```
         self.tx
             .send(Command::Load(file, play))
-            .map_err(|_| PlayerError::Unsupported("engine worker gone".to_string()))?;
+            .map_err(|_| return PlayerError::Unsupported("engine worker gone".to_string()))?;
         // What:     `Ok(())`. `Ok(...)` wraps the success channel of `Result`, and `()` is
         //           the unit value ("nothing"). No trailing `;`, so this is the tail
         //           expression and the function's return value.
@@ -805,7 +805,7 @@ impl Engine {
         // ```ts
         // return; // success, no value
         // ```
-        Ok(())
+        return Ok(())
     }
 
     /// What:     `pub fn play(&mut self)`. A control method that takes a MUTABLE BORROW
@@ -1013,7 +1013,7 @@ impl Engine {
         // ```ts
         // return frames / rate; // both already floats in TS
         // ```
-        frames as f64 / rate as f64
+        return frames as f64 / rate as f64
     }
 
     /// What:     `pub fn duration_sec(&self) -> f64`. A read-only-borrow poller returning the
@@ -1036,7 +1036,7 @@ impl Engine {
         // ```ts
         // return Atomics.load(this.control.durationMs, 0) / MILLIS_PER_SEC;
         // ```
-        self.control.duration_ms.load(Ordering::Acquire) as f64 / MILLIS_PER_SEC
+        return self.control.duration_ms.load(Ordering::Acquire) as f64 / MILLIS_PER_SEC
     }
 
     /// What:     `pub fn is_playing(&self) -> bool`. A read-only-borrow poller returning a
@@ -1063,7 +1063,7 @@ impl Engine {
         //   Atomics.load(this.control.playing, 0) && !Atomics.load(this.control.ended, 0)
         // );
         // ```
-        self.control.playing.load(Ordering::Acquire) && !self.control.ended.load(Ordering::Acquire)
+        return self.control.playing.load(Ordering::Acquire) && !self.control.ended.load(Ordering::Acquire)
     }
 
     /// What:     `pub fn is_ended(&self) -> bool`. A read-only-borrow poller returning a
@@ -1084,7 +1084,7 @@ impl Engine {
         // ```ts
         // return Atomics.load(this.control.ended, 0);
         // ```
-        self.control.ended.load(Ordering::Acquire)
+        return self.control.ended.load(Ordering::Acquire)
     }
 
     /// What:     `pub fn play_when_ready(&self) -> bool`. A read-only-borrow poller returning
@@ -1107,7 +1107,7 @@ impl Engine {
         // ```ts
         // return this.playIntent;
         // ```
-        self.play_intent
+        return self.play_intent
     }
 }
 

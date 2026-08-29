@@ -145,7 +145,7 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> u64 {
     // ```ts
     // return gxhash64(material, FINGERPRINT_SEED);
     // ```
-    gxhash64(&material, FINGERPRINT_SEED)
+    return gxhash64(&material, FINGERPRINT_SEED)
 }
 
 // What:     `#[unsafe(no_mangle)]` keeps the symbol name unmangled so the JVM's
@@ -223,5 +223,5 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFin
     // ```ts
     // return BigInt.asIntN(64, fingerprint);
     // ```
-    fingerprint as jlong
+    return fingerprint as jlong
 }

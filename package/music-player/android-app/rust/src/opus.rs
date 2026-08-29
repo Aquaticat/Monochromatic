@@ -233,7 +233,7 @@ impl OpusSource {
         let audio_params = track
             .codec_params
             .as_ref()
-            .and_then(|cp| cp.audio())
+            .and_then(|cp| return cp.audio())
             .ok_or_else(|| {
                 // What:     `PlayerError::Unsupported("opus: no audio codec parameters".to_string())`.
                 //           Constructs the `Unsupported` variant of our error enum
@@ -247,7 +247,7 @@ impl OpusSource {
                 // ```ts
                 // new PlayerError.Unsupported("opus: no audio codec parameters")
                 // ```
-                PlayerError::Unsupported("opus: no audio codec parameters".to_string())
+                return PlayerError::Unsupported("opus: no audio codec parameters".to_string())
             })?;
 
         // What:     `let channels = match &audio_params.channels { ... };`. `match` is
@@ -440,7 +440,7 @@ impl OpusSource {
         // ```ts
         // return new OpusSource(format, decoder, trackId, channels, spec, scratch, preSkip);
         // ```
-        Ok(OpusSource {
+        return Ok(OpusSource {
             format,
             decoder,
             track_id,
@@ -480,7 +480,7 @@ impl Source for OpusSource {
         // ```ts
         // return this.spec;
         // ```
-        self.spec
+        return self.spec
     }
 
     /// What:     `fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError>`. A method taking
@@ -736,6 +736,6 @@ impl Source for OpusSource {
         // ```ts
         // return;
         // ```
-        Ok(())
+        return Ok(())
     }
 }

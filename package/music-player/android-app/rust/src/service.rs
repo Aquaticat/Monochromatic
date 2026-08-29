@@ -129,7 +129,7 @@ fn decoder_stack_id() -> u64 {
     // ```ts
     // return stackId(DECODER_STACK_DESCRIPTION);
     // ```
-    stack_id(DECODER_STACK_DESCRIPTION)
+    return stack_id(DECODER_STACK_DESCRIPTION)
 }
 
 /// What:     `struct Read { fingerprint: u64, reply: oneshot::Sender<Option<Decision>> }`. One
@@ -261,7 +261,7 @@ impl TruePeakService {
         // ```ts
         // return { readTx, writeTx };
         // ```
-        TruePeakService { read_tx, write_tx }
+        return TruePeakService { read_tx, write_tx }
     }
 
     /// What:     `fn get(&self, fingerprint: u64) -> Option<Decision>`. Block briefly for one
@@ -298,7 +298,7 @@ impl TruePeakService {
         // ```ts
         // return (await replyRx) ?? null;
         // ```
-        reply_rx.blocking_recv().ok().flatten()
+        return reply_rx.blocking_recv().ok().flatten()
     }
 
     /// What:     `fn put(&self, fingerprint: u64, decision: Decision)`. Fire-and-forget a
@@ -390,10 +390,10 @@ async fn open_cache(db_path: &str) -> Option<DecisionCache> {
     // try { return await DecisionCache.open(dbPath); } catch (e) { warn(e); return null; }
     // ```
     match DecisionCache::open(db_path).await {
-        Ok(cache) => Some(cache),
+        Ok(cache) => return Some(cache),
         Err(error) => {
             tracing::warn!(error = %error, "cache open failed; running degraded");
-            None
+            return None
         }
     }
 }
@@ -423,7 +423,7 @@ async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint
     // ```ts
     // try { return await cache.get(fingerprint, identity); } catch { return null; }
     // ```
-    cache.get(fingerprint, identity).await.ok().flatten()
+    return cache.get(fingerprint, identity).await.ok().flatten()
 }
 
 /// What:     `async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request:
@@ -487,7 +487,7 @@ fn service_ref<'a>(handle: jlong) -> Option<&'a TruePeakService> {
     // ```ts
     // return handleTable.get(handle);
     // ```
-    Some(unsafe { &*(handle as *const TruePeakService) })
+    return Some(unsafe { &*(handle as *const TruePeakService) })
 }
 
 /// What:     `fn resolve_and_cache(service, fd, fingerprint, full) -> f32`. The shared body of
@@ -584,7 +584,7 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
     // ```ts
     // return decision.gain;
     // ```
-    decision.gain
+    return decision.gain
 }
 
 /// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceCreate(...)
@@ -633,7 +633,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     let handle = Box::into_raw(Box::new(TruePeakService::open(path))) as jlong;
     // The service is live; log the handle Kotlin will hold.
     tracing::info!(handle, "truepeak service created");
-    handle
+    return handle
 }
 
 /// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceRelease(...)`.
@@ -713,7 +713,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeRes
     // ```ts
     // return resolveAndCache(service, fd, fingerprint, false);
     // ```
-    resolve_and_cache(service, fd, fingerprint as u64, false)
+    return resolve_and_cache(service, fd, fingerprint as u64, false)
 }
 
 /// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeWarmTrack(...) -> jfloat`.
@@ -753,5 +753,5 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeWar
     // ```ts
     // return resolveAndCache(service, fd, fingerprint, true);
     // ```
-    resolve_and_cache(service, fd, fingerprint as u64, true)
+    return resolve_and_cache(service, fd, fingerprint as u64, true)
 }

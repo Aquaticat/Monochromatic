@@ -365,7 +365,7 @@ impl WorkerState {
         // ```ts
         // return { source: null, stream: null, prod: null, pending: [], pendingPos: 0 };
         // ```
-        WorkerState {
+        return WorkerState {
             source: None,
             stream: None,
             prod: None,
@@ -1214,7 +1214,7 @@ fn reconfigure_output(
                 // ```ts
                 // return audioCallback(cons, data, frames, callbackControl, callbackChannels);
                 // ```
-                audio_callback(&mut cons, data, frames, &callback_control, callback_channels)
+                return audio_callback(&mut cons, data, frames, &callback_control, callback_channels)
             },
         ))
         // What:     `.open_stream()`. Finalize the builder and actually OPEN the configured
@@ -1266,7 +1266,7 @@ fn reconfigure_output(
     // ```ts
     // return; // success
     // ```
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `fn pump(state: &mut WorkerState, control: &Control) -> bool`. A private
@@ -1572,7 +1572,7 @@ fn pump(state: &mut WorkerState, control: &Control) -> bool {
     // ```ts
     // return didWork;
     // ```
-    did_work
+    return did_work
 }
 
 /// What:     `fn audio_callback(cons: &mut HeapCons<f32>, data: *mut c_void, frames: i32, control: &Control, channels: usize) -> AudioCallbackResult`.
@@ -1808,7 +1808,7 @@ fn audio_callback(
     // ```ts
     // return "continue";
     // ```
-    AudioCallbackResult::Continue
+    return AudioCallbackResult::Continue
 }
 
 /// What:     `fn audio_error<E: std::fmt::Debug>(error: E) -> PlayerError`. A GENERIC
@@ -1838,5 +1838,5 @@ fn audio_error<E: std::fmt::Debug>(error: E) -> PlayerError {
     // ```ts
     // return new PlayerError({ kind: "audio", message: String(error) });
     // ```
-    PlayerError::Audio(format!("{error:?}"))
+    return PlayerError::Audio(format!("{error:?}"))
 }
