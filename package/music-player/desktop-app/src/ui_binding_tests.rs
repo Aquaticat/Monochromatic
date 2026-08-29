@@ -27,11 +27,10 @@ use i_slint_backend_testing::{
 // Why:      LED lifecycle guard must instantiate real generated UI and inspect final path.
 use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel};
 
-// What:     `use std::sync::Once;`. A one-time initialization guard.
-// Why:      A Slint backend installs only once per process; `Once` lets every test in
-//           this file share a single `init_no_event_loop` call whether the harness
-//           runs them in separate processes (nextest) or one (`cargo test`).
-use std::sync::Once;
+// What:     Interior state, shared ownership, and a one-time initialization guard.
+// Why:      Callback assertions need shared state, while a Slint backend installs only
+//           once per process and every test must reuse that installation.
+use std::{cell::Cell, rc::Rc, sync::Once};
 
 // What:     `static TESTING_BACKEND: Once`. The shared init guard used by `setup`.
 // Why:      Guarantee exactly one backend installation across all tests here.
@@ -196,15 +195,16 @@ fn playback_groups_follow_mode_page_and_transport_state() {
     let mode_group = ElementHandle::find_by_element_type_name(&app, "PlaybackModeGroup")
         .next()
         .expect("playback mode group exists");
-    mode_group.invoke_accessible_increment_action();
-    let revealed_mode_buttons = ElementHandle::find_by_element_type_name(&app, "PlaybackModeButton")
-        .collect::<Vec<_>>();
-    let final_mode = revealed_mode_buttons.last().expect("Shuffle all mode exists");
-    assert!(
-        final_mode.absolute_position().x + final_mode.size().width
-            <= mode_group.absolute_position().x + mode_group.size().width,
-        "accessibility increment reveals the final playback action",
-    );
+    let mode_left = mode_group.absolute_position().x;
+    let mode_right = mode_left + mode_group.size().width;
+    for button in &changed_mode_buttons {
+        let button_left = button.absolute_position().x;
+        let button_right = button_left + button.size().width;
+        assert!(
+            button_left >= mode_left && button_right <= mode_right,
+            "long playback label keeps every segment surface visible",
+        );
+    }
 
     let transport = ElementHandle::find_by_element_type_name(&app, "TransportGroupButton")
         .collect::<Vec<_>>();
@@ -238,9 +238,46 @@ fn playback_groups_follow_mode_page_and_transport_state() {
     transport_group.invoke_accessible_decrement_action();
 }
 
-/// Playback-control pairs share wide lines and wrap as intact groups at narrow widths.
+/// Asserts every control surface of one type stays inside its semantic pair and window.
+fn assert_controls_inside_pair(
+    app: &crate::AppWindow,
+    pair: &ElementHandle,
+    control_type: &str,
+    window_width: f32,
+    context: &str,
+) {
+    const BOUND_EPSILON: f32 = 0.01;
+    let pair_left = pair.absolute_position().x;
+    let pair_top = pair.absolute_position().y;
+    let pair_right = pair_left + pair.size().width;
+    let pair_bottom = pair_top + pair.size().height;
+    assert!(
+        pair_left >= -BOUND_EPSILON && pair_right <= window_width + BOUND_EPSILON,
+        "{context} pair leaves {window_width}px window; pair=({pair_left}, {pair_right})",
+    );
+    let controls =
+        ElementHandle::find_by_element_type_name(app, control_type).collect::<Vec<_>>();
+    assert!(!controls.is_empty(), "{context} exposes control surfaces");
+    for control in controls {
+        let control_left = control.absolute_position().x;
+        let control_top = control.absolute_position().y;
+        let control_right = control_left + control.size().width;
+        let control_bottom = control_top + control.size().height;
+        assert!(
+            control_left >= pair_left - BOUND_EPSILON
+                && control_right <= pair_right + BOUND_EPSILON
+                && control_top >= pair_top - BOUND_EPSILON
+                && control_bottom <= pair_bottom + BOUND_EPSILON,
+            "{context} control leaves pair; pair=({pair_left}, {pair_top}, {pair_right}, {pair_bottom}), control=({control_left}, {control_top}, {control_right}, {control_bottom})",
+        );
+    }
+}
+
+/// Playback-control pairs share wide lines and keep every action visible while narrowing.
 #[test]
 fn playback_control_pairs_wrap_only_when_width_requires() {
+    const RESPONSIVE_WIDTHS: [f32; 8] = [360.0, 440.0, 480.0, 560.0, 620.0, 648.0, 760.0, 1000.0];
+
     setup();
     let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
     let progress_pair =
@@ -282,14 +319,61 @@ fn playback_control_pairs_wrap_only_when_width_requires() {
         end_pair.absolute_position().y > volume_pair.absolute_position().y,
         "narrow end-of-track pair wraps below volume",
     );
-    assert!(
-        transport_pair.absolute_position().x + transport_pair.size().width <= 360.0,
-        "wrapped transport pair remains inside the narrow window",
-    );
-    assert!(
-        end_pair.absolute_position().x + end_pair.size().width <= 360.0,
-        "wrapped end-of-track pair remains inside the narrow window",
-    );
+    for width in RESPONSIVE_WIDTHS {
+        app.window().set_size(slint::LogicalSize::new(width, 600.0));
+        assert_controls_inside_pair(
+            &app,
+            &transport_pair,
+            "TransportGroupButton",
+            width,
+            "transport",
+        );
+        assert_controls_inside_pair(
+            &app,
+            &end_pair,
+            "PlaybackModeButton",
+            width,
+            "default playback mode",
+        );
+    }
+
+    app.set_page_labels(ModelRc::new(VecModel::from(vec![SharedString::from(
+        "Classical Archive With A Long Displayed Name",
+    )])));
+    app.set_selected_page(0);
+    for width in RESPONSIVE_WIDTHS {
+        app.window().set_size(slint::LogicalSize::new(width, 600.0));
+        assert_controls_inside_pair(
+            &app,
+            &end_pair,
+            "PlaybackModeButton",
+            width,
+            "long-label playback mode",
+        );
+    }
+
+    let invoked_mode = Rc::new(Cell::new(-1));
+    let callback_mode = Rc::clone(&invoked_mode);
+    app.on_set_playback_mode(move |mode| callback_mode.set(mode));
+    app.window().set_size(slint::LogicalSize::new(360.0, 600.0));
+    let mode_buttons = ElementHandle::find_by_element_type_name(&app, "PlaybackModeButton")
+        .collect::<Vec<_>>();
+    for (button, expected_mode) in mode_buttons.iter().zip([0, 1, 2, 3]) {
+        button.invoke_accessible_default_action();
+        assert_eq!(invoked_mode.get(), expected_mode, "narrow mode action remains operable");
+    }
+
+    app.set_base_font_size(100.0);
+    for width in RESPONSIVE_WIDTHS {
+        app.window().set_size(slint::LogicalSize::new(width, 600.0));
+        assert_controls_inside_pair(
+            &app,
+            &end_pair,
+            "PlaybackModeButton",
+            width,
+            "large-font playback mode",
+        );
+    }
 }
 
 /// Page reconciliation keeps the displayed page by label and clamps only when removed.

@@ -1309,10 +1309,16 @@ component PlaybackModeButton inherits Rectangle {
     in property <bool> selected;
     in property <bool> leading;
     in property <bool> trailing;
+    in property <bool> preserve-label;
     in property <int> item-index;
     callback clicked();
     horizontal-stretch: 0;
-    width: max(48px, mode-label.preferred-width + 32px);
+    // Static labels keep their natural width at normal font scales, capped so all
+    // four 48px action surfaces still fit the 336px content width at narrow size.
+    min-width: root.preserve-label
+        ? min(96px, mode-label.preferred-width + 24px)
+        : 48px;
+    preferred-width: mode-label.preferred-width + 24px;
     height: 48px;
     border-width: mode-focus.has-focus ? 2px : 1px;
     border-color: mode-focus.has-focus
@@ -1340,13 +1346,14 @@ component PlaybackModeButton inherits Rectangle {
     }
 
     mode-label := Text {
-        x: 16px;
-        width: parent.width - 32px;
+        x: 12px;
+        width: parent.width - 24px;
         height: parent.height;
         text: root.text;
         font-size: Typography.body-rem * 1rem;
         vertical-alignment: center;
         horizontal-alignment: center;
+        overflow: elide;
         color: root.selected ? Palette.accent-foreground : Palette.foreground;
     }
     mode-touch := TouchArea {
@@ -1368,67 +1375,57 @@ component PlaybackModeButton inherits Rectangle {
     }
 }
 
-// Material playback-mode group with horizontal reachability for long page names
-// and enlarged system fonts. The displayed page name is used verbatim.
+// Material playback-mode group keeps every segment surface inside its assigned width.
+// Long visual labels elide while accessibility retains the complete displayed page name.
 component PlaybackModeGroup inherits Rectangle {
     in property <int> selected-mode;
     in property <string> current-page;
     callback select-mode(int);
     height: 48px;
+    preferred-width: min(mode-row.preferred-width, 328px);
     horizontal-stretch: 1;
     accessible-role: radio-group;
     accessible-label: "When this track ends";
     accessible-item-count: 4;
-    accessible-action-increment => {
-        // The group now shares a row, so one action jumps to the final segment even when
-        // its narrow viewport would otherwise require several page-width increments.
-        mode-scroll.viewport-x = mode-scroll.width - mode-scroll.viewport-width;
-    }
-    accessible-action-decrement => {
-        mode-scroll.viewport-x = 0px;
-    }
 
-    mode-scroll := Flickable {
+    mode-row := HorizontalLayout {
         width: parent.width;
         height: parent.height;
-        viewport-width: max(self.width, mode-row.preferred-width);
-        viewport-height: self.height;
-        interactive: true;
-
-        mode-row := HorizontalLayout {
-            spacing: -1px;
-            PlaybackModeButton {
-                text: "Repeat";
-                selected: root.selected-mode == 0;
-                leading: true;
-                trailing: false;
-                item-index: 0;
-                clicked => { root.select-mode(0); }
-            }
-            PlaybackModeButton {
-                text: "In order";
-                selected: root.selected-mode == 1;
-                leading: false;
-                trailing: false;
-                item-index: 1;
-                clicked => { root.select-mode(1); }
-            }
-            PlaybackModeButton {
-                text: root.current-page == "" ? "Shuffle page" : "Shuffle " + root.current-page;
-                selected: root.selected-mode == 2;
-                leading: false;
-                trailing: false;
-                item-index: 2;
-                clicked => { root.select-mode(2); }
-            }
-            PlaybackModeButton {
-                text: "Shuffle all";
-                selected: root.selected-mode == 3;
-                leading: false;
-                trailing: true;
-                item-index: 3;
-                clicked => { root.select-mode(3); }
-            }
+        spacing: -1px;
+        PlaybackModeButton {
+            text: "Repeat";
+            selected: root.selected-mode == 0;
+            leading: true;
+            trailing: false;
+            preserve-label: true;
+            item-index: 0;
+            clicked => { root.select-mode(0); }
+        }
+        PlaybackModeButton {
+            text: "In order";
+            selected: root.selected-mode == 1;
+            leading: false;
+            trailing: false;
+            preserve-label: true;
+            item-index: 1;
+            clicked => { root.select-mode(1); }
+        }
+        PlaybackModeButton {
+            text: root.current-page == "" ? "Shuffle page" : "Shuffle " + root.current-page;
+            selected: root.selected-mode == 2;
+            leading: false;
+            trailing: false;
+            item-index: 2;
+            clicked => { root.select-mode(2); }
+        }
+        PlaybackModeButton {
+            text: "Shuffle all";
+            selected: root.selected-mode == 3;
+            leading: false;
+            trailing: true;
+            preserve-label: true;
+            item-index: 3;
+            clicked => { root.select-mode(3); }
         }
     }
 }
@@ -1535,6 +1532,8 @@ export component AppWindow inherits Window {
     // taskbar / window-list entry shows the song only during active playback and
     // reverts the moment it pauses.
     title: root.playing && root.track-name != "" ? root.track-name : "Music Player";
+    // Keeps the window at the narrowest width covered by descendant-bound tests.
+    min-width: 360px;
     preferred-width: 480px;
     preferred-height: 600px;
 
@@ -1711,17 +1710,29 @@ export component AppWindow inherits Window {
                     }
                 }
             }
-            end-controls := HorizontalLayout {
+            end-controls := FlexboxLayout {
                 flex-grow: 2;
-                flex-shrink: 0;
-                // Reserves the one-line label plus a scrollable mode-control viewport.
-                flex-basis: 240px;
+                flex-shrink: 1;
+                min-width: 0px;
+                // The outer basis holds the 128px label and 328px default mode group.
+                // When that pair cannot fit, the group wraps below its label and divides
+                // its assigned width among all four visible segment surfaces.
+                flex-basis: 456px;
+                flex-wrap: wrap;
+                spacing-vertical: 8px;
+                cross-axis-alignment: center;
                 Text {
+                    flex-shrink: 1;
+                    min-width: 0px;
                     text: "When this track ends";
                     font-size: Typography.body-rem * 1rem;
                     vertical-alignment: center;
+                    overflow: elide;
                 }
                 PlaybackModeGroup {
+                    flex-grow: 1;
+                    flex-shrink: 1;
+                    flex-basis: 328px;
                     selected-mode: root.playback-mode;
                     current-page: root.selected-page >= 0 && root.page-labels.length > root.selected-page
                         ? root.page-labels[root.selected-page]
