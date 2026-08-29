@@ -36,7 +36,13 @@ i-slint-backend-winit = "1.17.0"
 libghostty-vt = { version = "0.1.1", default-features = false }
 # WezTerm's PTY abstraction. It gives this app safe shell spawn, read, write,
 # and resize operations without hand-written forkpty or ioctl setup.
-portable-pty = "0.9.0"
+# Pin the first upstream revision after the crates.io 0.9.0 release that upgrades
+# nix from 0.28 to 0.29. nix 0.28 requires cfg_aliases 0.1.1, whose expression
+# macro emits future-incompatible trailing semicolons and has no fixed 0.1 release.
+# This revision keeps portable-pty at 0.9.0 and changes no default-feature PTY
+# implementation code; the source delta only updates optional serde imports.
+# Revert to a crates.io release once one includes nix 0.29 or newer.
+portable-pty = { git = "https://github.com/wezterm/wezterm", rev = "f78f72f2f18bf459561e3681f016365273d3e281" }
 # "1.17.0" here is Cargo's default caret requirement (">=1.17.0, <2.0.0"), not an
 # exact pin, the same as i-slint-backend-winit and slint-build in this file.
 slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
