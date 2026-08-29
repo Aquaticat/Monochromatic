@@ -66,8 +66,14 @@ or evidence unless the user later authorizes cleanup.
   The corrected guest `systemctl poweroff` reached `shut off` immediately.
   Flatpak-packaged `virsh change-media --eject --config` then exited with code 139 and no diagnostic message,
   but after-state domain XML proved the ISO source had been removed from persistent `hda` configuration.
-  The no-desktop domain restarted from its installed EFI disk.
-  Process `wait-nodesktop-encrypted-boot` is waiting for ZFSBootMenu unlock or installed text login.
+  The no-desktop domain restarted from its installed EFI disk,
+  but the encrypted-boot watcher timed out after 635 seconds without seeing ZFSBootMenu or text login.
+  A direct positive-control capture found the guest in the EDK II UEFI shell.
+  UEFI mapped the 2048 MiB first partition as `FS0:`,
+  but `dir` reported zero files and zero directories at its root.
+  The installed ESP is empty,
+  so no ZFSBootMenu image can be launched.
+  This is a stop-condition failure rather than a usable no-desktop installation.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
@@ -284,6 +290,22 @@ The installed VM used:
 The current package page did not expose the kernel-choice page described by the draft runbook.
 No real-time kernel was selected manually.
 Installed package verification must establish the actual kernel and exact ZFS module pairing after first boot.
+
+## No-desktop boot failure under investigation
+
+The no-desktop installer reported terminal success despite producing an empty ESP.
+The retained Konsole transcript also showed Calamares fail to export `zroot` during cleanup because the pool was busy.
+No destructive repair was attempted.
+
+A source-based hypothesis is that **No Desktop** omitted every installed kernel package.
+`configure-zfsbootmenu.sh` treats a zero exit from `generate-zbm` as success,
+even if no EFI image was produced,
+and then creates a firmware entry naming a fixed image path.
+This hypothesis is not yet proven against the installed root.
+The next safe diagnostic is to boot the authenticated ISO,
+import the pool without mounting unintended datasets,
+load the disposable native-encryption key,
+and inspect the installed package database and ESP.
 
 ## Desktop-selection correction
 
