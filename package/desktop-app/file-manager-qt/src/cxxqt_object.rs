@@ -72,10 +72,12 @@ impl qobject::AppBridge {
     }
 }
 
+/// Verifies Rust-owned state exposed through generated Qt bindings.
 #[cfg(test)]
 mod tests {
     use super::{AppBridgeRust, QString};
 
+    /// Ensures default construction preserves QML's visible initial state.
     #[test]
     fn default_state_carries_the_qml_greeting() {
         let bridge = AppBridgeRust::default();
