@@ -375,6 +375,34 @@ known-good environment,
 and transaction clone containing the old hash must be destroyed or deliberately refreshed.
 The encrypted-pool passphrase remains a separate control and was not changed in this test.
 
+The retained patched VM later rehearsed deliberate refresh after another disposable credential disclosure.
+Copying the trusted environment's hash into offline environments with `usermod --root` produced byte-identical,
+nonempty shadow fields across every clone.
+That was not sufficient evidence:
+a fresh `sudo -k; sudo -v` in default still rejected the credential after reboot.
+The test did not isolate whether another account field,
+password-aging state,
+or a different integration detail caused the rejection.
+Raw hash copying is therefore not the accepted procedure.
+
+The verified procedure mounted each non-running root dataset at an empty temporary directory with
+`mount --types zfs --options zfsutil`,
+then ran `passwd --root <mountpoint> <user>` and entered the final credential twice.
+`passwd` reported successful updates for baseline,
+default,
+and all retained transaction environments.
+Known-good accepted the final credential directly.
+After default was refreshed through `passwd --root`,
+a rebooted graphical terminal accepted it through a fresh `sudo -k; sudo -v`.
+Baseline,
+known-good,
+default,
+and all 4 retained pre-install environments then passed the same fresh sudo authentication after reboot or direct
+selection;
+each running root matched its intended dataset.
+Every temporary mount was then absent.
+This proves a supported refresh path without reusing either revoked password.
+
 ## What does not work
 
 ### Treating a successful boot as rollback proof

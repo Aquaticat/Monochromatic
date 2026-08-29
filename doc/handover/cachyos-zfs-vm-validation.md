@@ -133,21 +133,54 @@ or evidence unless the user later authorizes cleanup.
   The original Super+Enter foot inherited `DISPLAY=:0` because `launch-feedback` used scope-mode `uwsm app`.
   The canonical retained script and guest copy now use `uwsm app -t service`,
   matching the clean activation-environment rule already used by `launch-new`.
+  The corrected path created an independent app service with `DISPLAY=:12`.
   A Fish login guard and tty1 autologin drop-in are installed for the CachyOS default Fish shell.
-  The next reboot must prove automatic display-manager-free startup and the corrected Super+Enter environment.
+  Cold boot reached the display-manager-free session automatically.
+  The final mechanism keeps the UWSM guard in root-backed `/etc/user-rollback/user/start-labwc.fish` and sources it
+  through persistent `~/.config/fish/conf.d/uwsm.fish`.
+  Both files passed `fish --no-execute`.
+  Stopping `wayland-wm@labwc.service` made getty respawn the full session through that exact bridge;
+  labwc and xwayland-satellite were active afterward.
+  Installing `breeze-gtk` and selecting Breeze-Dark through GSettings corrected pavucontrol's initial light appearance.
 
-  During the timed-out `sudo` attempt,
-  delayed input reached fish after the password prompt closed and printed the disposable VM user password as an unknown
+  The known-good environment was promoted by setting pool `bootfs`.
+  An unattended ZFSBootMenu countdown booted known-good,
+  where `/` and `/var/lib/pacman` both resolved to that environment and `tree` reported 7 files with 0 altered files.
+  Restoring `bootfs=zroot/ROOT/default` returned to the automatic UWSM plus labwc desktop.
+  Default then reported coherent package state,
+  active labwc and xwayland-satellite services,
+  `DISPLAY=:12`,
+  and Breeze-Dark.
+
+  During the first timed-out `sudo` attempt,
+  delayed input reached fish after the password prompt closed and printed a disposable VM user password as an unknown
   command.
-  That credential was immediately replaced through `passwd`.
-  The credential JSON now retains only the replacement,
-  the temporary old-password property was removed,
-  credential-bearing scratch captures were deleted,
-  and the guest console was cleared.
-  No non-disposable resource used that credential.
-  The Pi transcript still contains the revoked value,
-  so it must never be restored.
+  A later login-sequencing error rendered its first replacement as a username.
+  Both values were immediately revoked and removed from the credential JSON.
+  The final disposable password contains only ASCII letters and digits,
+  remains only in the mode-0600 credential file,
+  and has never been printed.
+  No non-disposable resource used any disposable credential.
+  The Pi transcript contains both revoked values,
+  so neither may ever be restored.
   The ZFS passphrase was not exposed.
+
+  Copying a byte-identical `/etc/shadow` hash with offline `usermod --root` was rejected as the revocation procedure:
+  offline comparisons matched,
+  but a fresh `sudo` authentication in default failed.
+  No cause was assigned from that correlation.
+  Running each target's supported `passwd --root` operation against a temporary `zfsutil` mount fixed default,
+  and a fresh graphical-terminal `sudo -k; sudo -v` accepted the final credential after reboot.
+  The same operation completed successfully for baseline and all 4 retained pre-install environments.
+  Known-good had inherited the final credential when created.
+  Baseline,
+  known-good,
+  default,
+  and all 4 pre-install environments then passed fresh `sudo` authentication after reboot or direct selection.
+  Each tested root matched the intended dataset.
+  Every temporary mount was removed.
+  The supported password operations rewrote each older environment's local password state without reusing either
+  revoked password.
   The first installed disk reached Ly 1.4.1 after a successful native-encryption unlock.
   It contains Wayfire because the original runbook prescribed Wayfire as a temporary graphical base.
   The user correctly identified **No Desktop** as closer to the intended UWSM plus labwc system.
@@ -759,17 +792,23 @@ No upstream issue was posted.
 
 ## Immediate next actions
 
-1. Under task 37,
-finish fallback from known-good to default.
-
-1. Rehearse removal or deliberate refresh of environments containing revoked credential hashes.
-
-1. Install and validate the intended UWSM plus labwc session from the text-only base.
+Rollback promotion,
+return to default,
+credential revocation,
+and UWSM plus labwc validation are complete under tasks 37 and 40.
 
 1. Under task 38,
 evaluate authenticated-USB recovery without ZFSBootMenu using the corrected dataset boundary.
 
-1. Update this handover after each milestone.
+1. Retain every domain,
+disk,
+source image,
+credential file,
+and evidence artifact.
+
+1. Keep the physical-install gate closed until authenticated-USB recovery passes.
+
+1. Update this handover after each material recovery milestone.
 
 ## ZFSBootMenu-free recovery question
 

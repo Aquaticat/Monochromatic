@@ -23,10 +23,21 @@ and return-to-default checks.
 
 Corrected baseline and independently created known-good environments then passed menu selection,
 boot,
-and package-coherence checks.
-The overall gate remains closed pending credential-revocation rehearsal,
-the intended UWSM plus labwc session,
-and authenticated-USB recovery or explicit removal of that alternative.
+package coherence,
+promotion,
+and return-to-default checks.
+Default,
+baseline,
+and all retained transaction environments received the final disposable password through supported `passwd`
+operations;
+known-good inherited it when created.
+All 7 retained environments passed a fresh `sudo` authentication check after reboot or direct selection.
+The no-desktop default also passed display-manager-free UWSM plus labwc startup,
+compositor-exit respawn,
+xwayland-satellite,
+application-service,
+and dark GTK checks.
+The overall gate remains closed only pending authenticated-USB recovery or explicit removal of that alternative.
 
 Until that gate passes,
 the technology-vetting lifecycle remains at source-validated finalist rather than formally `Validated`,

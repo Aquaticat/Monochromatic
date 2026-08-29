@@ -30,7 +30,7 @@ or the NVMe caused those incidents.
 Single-device ZFS also does not tolerate NVMe failure.
 The backup requirement remains mandatory.
 
-## Current validation blocker
+## Current validation gate
 
 Do not execute the physical-installation sections yet.
 The disposable consumer test found that the installer mounts all of `/var/lib` from persistent
@@ -68,12 +68,29 @@ boot,
 and package-coherence checks.
 Baseline required both `mountpoint=/` and `org.zfsbootmenu:active=on` before it appeared.
 Known-good accepted the post-snapshot rotated password and preserved persistent home.
+Promoting known-good through pool `bootfs` survived an unattended boot,
+and restoring `bootfs=zroot/ROOT/default` returned to coherent default state.
 
-The physical gate remains closed until all remaining checks pass:
+Credential revocation was rehearsed across every retained environment.
+Copying a byte-identical shadow hash with offline `usermod --root` was rejected because default still refused a fresh
+`sudo` authentication.
+Running `passwd --root` against each older environment's temporary `zfsutil` mount succeeded.
+Known-good inherited the final disposable credential when created.
+Baseline,
+known-good,
+default,
+and all 4 retained transaction environments passed fresh `sudo` authentication after reboot or direct selection.
+Do not substitute raw hash copying for the supported password operation.
 
-- credential-revocation handling is rehearsed across retained environments;
-- the intended UWSM plus labwc session passes from the corrected no-desktop base;
-- the authenticated-USB alternative is either fully rehearsed or removed from the accepted recovery paths.
+The corrected no-desktop base also passed the intended desktop boundary:
+UWSM plus labwc starts from tty1 without a display manager,
+respawns after compositor exit,
+runs xwayland-satellite at `DISPLAY=:12`,
+uses independent application services,
+and renders pavucontrol with Breeze-Dark.
+
+The physical gate remains closed until the authenticated-USB alternative is either fully rehearsed or removed from the
+accepted recovery paths.
 See the [package rollback diagnosis][package-rollback-diagnosis].
 
 ## Why this is a manual runbook
@@ -93,6 +110,14 @@ firmware interaction,
 a destructive disk choice,
 and encryption-passphrase entry across reboots.
 Automating those boundaries from the current session would remove the human confirmation that protects the 4 TB SSD.
+
+## Shell convention
+
+Every fenced command block in this runbook uses Bash syntax.
+When the installed account opens CachyOS's default Fish shell,
+run `bash` to enter a temporary subshell before executing a block.
+Use `exit` to return to Fish;
+do not change the account's login shell.
 
 ## Fixed identities and source pins
 
@@ -1519,7 +1544,172 @@ TODO | DONE
 
     Expect `default` to boot.
 
+### Refresh a revoked local credential across retained environments
+
+Use this procedure whenever a local password entered on this machine becomes known outside its intended trust boundary.
+Rotating the running environment alone is insufficient because each retained root environment has its own `/etc/shadow`.
+Never enter the revoked password merely to boot an older environment.
+
+Do not copy the running shadow hash into another environment with `usermod --root`.
+The disposable validation produced byte-identical hashes with that method,
+but default still refused a fresh `sudo` authentication.
+The supported `passwd --root` operation passed the subsequent authentication test.
+
+1. Boot a trusted environment that accepts a non-revoked administrative credential.
+   Expect a normal user shell.
+
+1. Replace the running environment's password through `passwd`:
+
+    ```bash
+    passwd
+    ```
+
+    Enter the current non-revoked password,
+    then enter the new password twice.
+    Expect `password updated successfully`.
+
+1. Invalidate any cached sudo authentication and test the new value immediately:
+
+    ```bash
+    sudo --remove-timestamp \
+      && sudo --validate
+    ```
+
+    Enter the new password.
+    Expect no authentication error.
+
+1. List every retained root environment:
+
+    ```bash
+    sudo zfs list \
+      -H \
+      -r \
+      -t filesystem \
+      -o name \
+      zroot/ROOT
+    ```
+
+    Record every child dataset except the currently running root.
+    Include baseline,
+    known-good,
+    and every retained transaction environment.
+
+1. Create an empty temporary mountpoint:
+
+    ```bash
+    sudo install \
+      --directory \
+      /mnt/credential-refresh
+    ```
+
+    Expect the directory to exist.
+
+1. Mount one non-running environment without changing its ZFS properties:
+
+    ```bash
+    sudo mount \
+      --types zfs \
+      --options zfsutil \
+      zroot/ROOT/ENVIRONMENT \
+      /mnt/credential-refresh
+    ```
+
+    Replace `ENVIRONMENT` with one recorded dataset suffix.
+
+1. Verify the exact mount identity before changing authentication state:
+
+    ```bash
+    findmnt \
+      --noheadings \
+      --output SOURCE \
+      --mountpoint /mnt/credential-refresh
+    ```
+
+    Expect exactly `zroot/ROOT/ENVIRONMENT`,
+    with `ENVIRONMENT` replaced by the selected suffix.
+    Stop without running `passwd` if the output is absent or names any other dataset.
+
+1. Regenerate that environment's password and aging metadata through its supported password operation:
+
+    ```bash
+    sudo passwd \
+      --root /mnt/credential-refresh \
+      user
+    ```
+
+    Enter the same new password twice.
+    Expect `password updated successfully`.
+
+1. Unmount the refreshed environment before selecting another:
+
+    ```bash
+    sudo umount /mnt/credential-refresh
+    ```
+
+    Expect no error.
+
+1. Repeat the mount,
+   `passwd --root`,
+   and unmount steps for every recorded non-running environment.
+   Do not skip older transaction environments merely because they are unlikely to be selected.
+
+1. Confirm no refresh mount remains:
+
+    ```bash
+    findmnt --mountpoint /mnt/credential-refresh \
+      || echo 'credential refresh mount: absent'
+    ```
+
+    Expect exactly `credential refresh mount: absent`.
+
+1. Boot every retained environment one at a time.
+   Confirm the running root names the selected dataset:
+
+    ```bash
+    findmnt \
+      --noheadings \
+      --output SOURCE \
+      /
+    ```
+
+    Expect the selected `zroot/ROOT/...` dataset.
+
+1. From a newly started terminal in each retained environment,
+   test the refreshed password:
+
+    ```bash
+    sudo --remove-timestamp \
+      && sudo --validate
+    ```
+
+    Enter the new password.
+    Expect no authentication error.
+    A matching shadow file alone is not completion evidence.
+    Stop if any baseline,
+    known-good,
+    default,
+    or retained transaction environment rejects authentication.
+
+1. Restore and verify default after the final authentication check:
+
+    ```bash
+    sudo zpool set bootfs=zroot/ROOT/default zroot \
+      && sudo zpool get \
+        --no-headers \
+        --output value \
+        bootfs \
+        zroot
+    ```
+
+    Expect exactly `zroot/ROOT/default`.
+    Reboot and confirm default once more.
+
 ### Validate UWSM plus labwc in the VM
+
+Fenced command blocks in this section use Bash syntax.
+From a Fish prompt,
+start a temporary `bash` subshell before running them;
+do not change the account's login shell.
 
 1. Install the repository packages used by the rehearsed session:
 
@@ -1720,6 +1910,16 @@ TODO | DONE
 
     Expect both CSS files to contain `border-radius: 0`.
 
+1. Select the installed dark GTK theme in the VM:
+
+    ```bash
+    gsettings set org.gnome.desktop.interface gtk-theme Breeze-Dark \
+      && gsettings set org.gnome.desktop.interface icon-theme breeze-dark \
+      && gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+    ```
+
+    Expect a newly started pavucontrol window to use the dark theme.
+
 1. Install the panel icon font:
 
     ```bash
@@ -1797,20 +1997,21 @@ TODO | DONE
 
     Expect the command to exit zero.
 
-1. Change the login shell to Bash:
+1. Confirm the disposable account keeps CachyOS’s default Fish shell:
 
     ```bash
-    chsh --shell /usr/bin/bash
+    getent passwd user \
+      | cut --delimiter=: --fields=7
     ```
 
-    Expect a password prompt followed by no error.
+    Expect `/usr/bin/fish`.
 
 1. In the VM console,
    choose **Send Key** then **Ctrl+Alt+F2**.
     Expect a text login prompt.
 
 1. Log in as `user` on tty2.
-    Expect a Bash prompt.
+    Expect a Fish prompt.
 
 1. Start the candidate session manually:
 
@@ -1903,18 +2104,17 @@ TODO | DONE
 
     Expect `.config/labwc` to resolve under `/etc/user-rollback/user`.
 
-1. Create the disposable root-backed labwc login snippet:
+1. Create the disposable root-backed Fish login snippet:
 
     ```bash
-    sudo tee \
-      /etc/user-rollback/user/start-labwc.sh \
-      > /dev/null <<'EOF'
-    # /etc/user-rollback/user/start-labwc.sh
-    if uwsm check may-start; then
-      exec uwsm start -- /usr/bin/labwc
-    fi
-    EOF
-    sudo chmod 0644 /etc/user-rollback/user/start-labwc.sh
+    printf '%s\n' \
+      'if uwsm check may-start' \
+      '    exec uwsm start -- /usr/bin/labwc' \
+      'end' \
+      | sudo tee \
+        /etc/user-rollback/user/start-labwc.fish \
+        > /dev/null \
+      && sudo chmod 0644 /etc/user-rollback/user/start-labwc.fish
     ```
 
     Expect no error.
@@ -1937,19 +2137,30 @@ TODO | DONE
 
     Expect no error.
 
-1. Add the disposable marked startup block to `.bash_profile`:
+1. Create the disposable Fish login bridge at the path exercised by the retained VM:
 
     ```bash
-    cat >> /home/user/.bash_profile <<'EOF'
-    # cachyos-zfs-labwc-start
-    if test -r /etc/user-rollback/user/start-labwc.sh; then
-      . /etc/user-rollback/user/start-labwc.sh
-    fi
-    # cachyos-zfs-labwc-end
-    EOF
+    install \
+      --directory \
+      /home/user/.config/fish/conf.d \
+      && printf '%s\n' \
+        'if test -r /etc/user-rollback/user/start-labwc.fish' \
+        '    source /etc/user-rollback/user/start-labwc.fish' \
+        'end' \
+        > /home/user/.config/fish/conf.d/uwsm.fish
     ```
 
-    Expect the two marker comments exactly once.
+    Expect the bridge to source the root-backed snippet.
+
+1. Check both Fish files before enabling automatic startup:
+
+    ```bash
+    fish --no-execute \
+      /etc/user-rollback/user/start-labwc.fish \
+      /home/user/.config/fish/conf.d/uwsm.fish
+    ```
+
+    Expect no output and exit status zero.
 
 1. Disable the disposable VM’s initial display manager:
 
@@ -2750,6 +2961,11 @@ TODO | DONE
 
 ### Install and activate the physical labwc session
 
+Fenced command blocks in this section use Bash syntax.
+From a Fish prompt,
+start a temporary `bash` subshell before running them;
+do not change the account's login shell.
+
 1. Update the complete system without performing a partial upgrade:
 
    ```bash
@@ -2985,6 +3201,16 @@ TODO | DONE
 
     Expect the command to exit zero.
 
+1. Select the installed dark GTK theme:
+
+    ```bash
+    gsettings set org.gnome.desktop.interface gtk-theme Breeze-Dark \
+      && gsettings set org.gnome.desktop.interface icon-theme breeze-dark \
+      && gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+    ```
+
+    Expect a newly started pavucontrol window to use the dark theme.
+
 1. Install the panel icon font:
 
     ```bash
@@ -3062,15 +3288,17 @@ TODO | DONE
 
     Expect no error.
 
-1. Change the login shell from CachyOS’s default fish to Bash:
+1. Confirm CachyOS’s default Fish login shell remains selected:
 
     ```bash
-    chsh --shell /usr/bin/bash
+    getent passwd user \
+      | cut --delimiter=: --fields=7
     ```
 
-    Expect a password prompt followed by no error.
+    Expect `/usr/bin/fish`.
+    Do not change the user’s shell merely to reuse a Bash login snippet.
 
-1. Reboot to apply group and login-shell changes:
+1. Reboot to apply input-group membership:
 
     ```bash
     systemctl reboot
@@ -3082,7 +3310,7 @@ TODO | DONE
     Expect a text login prompt.
 
 1. Log in as `user`.
-    Expect a Bash prompt.
+    Expect a Fish prompt.
 
 1. Start labwc manually through UWSM:
 
@@ -3120,46 +3348,56 @@ TODO | DONE
 
     Expect the command to exit zero.
 
-1. Create the root-backed login snippet:
+1. Create the root-backed Fish login snippet:
 
     ```bash
     sudo install \
       --directory \
       --mode=0755 \
       /etc/user-rollback/user \
-      && sudo tee \
-        /etc/user-rollback/user/start-labwc.sh \
-        > /dev/null <<'EOF'
-    # /etc/user-rollback/user/start-labwc.sh
-    if uwsm check may-start; then
-      exec uwsm start -- /usr/bin/labwc
-    fi
-    EOF
+      && printf '%s\n' \
+        'if uwsm check may-start' \
+        '    exec uwsm start -- /usr/bin/labwc' \
+        'end' \
+      | sudo tee \
+        /etc/user-rollback/user/start-labwc.fish \
+        > /dev/null
     ```
 
     Expect the command to exit zero.
 
-1. Make the login snippet readable:
+1. Make the Fish login snippet readable:
 
     ```bash
-    sudo chmod 0644 /etc/user-rollback/user/start-labwc.sh
+    sudo chmod 0644 /etc/user-rollback/user/start-labwc.fish
     ```
 
     Expect no error.
 
-1. Add one marked source block to `.bash_profile`:
+1. Create the Fish login bridge at the path exercised in the disposable VM:
 
     ```bash
-    cat >> /home/user/.bash_profile <<'EOF'
-    # cachyos-zfs-labwc-start
-    if test -r /etc/user-rollback/user/start-labwc.sh; then
-      . /etc/user-rollback/user/start-labwc.sh
-    fi
-    # cachyos-zfs-labwc-end
-    EOF
+    install \
+      --directory \
+      /home/user/.config/fish/conf.d \
+      && printf '%s\n' \
+        'if test -r /etc/user-rollback/user/start-labwc.fish' \
+        '    source /etc/user-rollback/user/start-labwc.fish' \
+        'end' \
+        > /home/user/.config/fish/conf.d/uwsm.fish
     ```
 
-    Expect the two marker comments exactly once.
+    Expect the bridge to source the root-backed snippet.
+
+1. Check both Fish files before enabling automatic startup:
+
+    ```bash
+    fish --no-execute \
+      /etc/user-rollback/user/start-labwc.fish \
+      /home/user/.config/fish/conf.d/uwsm.fish
+    ```
+
+    Expect no output and exit status zero.
 
 1. Disable the initial display manager only after the manual labwc test passed:
 
@@ -4273,7 +4511,7 @@ TODO | DONE
    Expect a text login prompt independent of labwc.
 
 1. Log in as `user`.
-   Expect a Bash prompt.
+   Expect a Fish prompt.
 
 1. Re-enable the initial display manager:
 
@@ -4293,28 +4531,15 @@ TODO | DONE
 
    Expect the file to be absent.
 
-1. Remove only the marked labwc block from `.bash_profile`:
+1. Remove the Fish login bridge:
 
    ```bash
-   python3 - <<'PY'
-   # /home/user/.bash_profile
-   from pathlib import Path
-
-   path = Path('/home/user/.bash_profile')
-   text = path.read_text()
-   start = '# cachyos-zfs-labwc-start\n'
-   end = '# cachyos-zfs-labwc-end\n'
-   prefix, separator, tail = text.partition(start)
-   if not separator:
-       raise SystemExit('start marker not found')
-   discarded, separator, suffix = tail.partition(end)
-   if not separator:
-       raise SystemExit('end marker not found')
-   path.write_text(prefix + suffix)
-   PY
+   rm \
+     --force \
+     /home/user/.config/fish/conf.d/uwsm.fish
    ```
 
-   Expect exit status zero.
+   Expect the bridge file to be absent.
 
 1. Reload systemd and reboot:
 
