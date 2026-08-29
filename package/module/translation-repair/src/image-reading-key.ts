@@ -1,5 +1,8 @@
 import { hashContent, } from './document-node.ts';
-import { READING_INSTRUCTION, } from './image-reading-stage.ts';
+import {
+  IMAGE_READING_PERSPECTIVES,
+  READING_INSTRUCTION,
+} from './image-reading-stage.ts';
 import { CORROBORATION_TRIGRAM_SHARE, } from './reading-corroboration.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -56,6 +59,7 @@ export function imageReadingKey(
       picture,
       readerModelIds,
       READING_INSTRUCTION,
+      ...IMAGE_READING_PERSPECTIVES,
       CORROBORATION_TRIGRAM_SHARE,
     ],),
   },);

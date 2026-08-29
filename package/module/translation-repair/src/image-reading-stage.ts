@@ -50,6 +50,21 @@ export const READING_INSTRUCTION: string = 'Transcribe every word visible in thi
   + 'add any commentary. If you cannot read the image, say so plainly and say nothing else.';
 
 /**
+ * Substantively distinct visual reading responsibilities in retry order.
+ */
+export const IMAGE_READING_PERSPECTIVES = [
+  'Complete transcription pass: read the full image in normal visual order.',
+  'Small-text pass: prioritize low-contrast, small, edge, header, and footer text missed by a broad scan.',
+  'Layout pass: inspect each visual region in order and preserve line grouping across panels or columns.',
+  'Identifier pass: verify names, handles, dates, numbers, and addresses character by character, then include surrounding text.',
+] as const;
+
+/**
+ * One visual reading responsibility.
+ */
+export type ImageReadingPerspective = typeof IMAGE_READING_PERSPECTIVES[number];
+
+/**
  * Most bytes a picture may occupy in a reading request.
  *
  * WHAT THE GATEWAY WILL CARRY, not what the model will read. The model is the
@@ -156,6 +171,8 @@ export function isTransientReadingReason(
  *
  * @param assetName - its file name, which carries the media type
  *
+ * @param perspective - distinct visual scan responsibility
+ *
  * @param signal - abort honoured for the whole exchange
  *
  * @param perCallTimeoutMs - deadline bounding the exchange
@@ -179,6 +196,7 @@ export async function readImageAsset(
     modelId,
     bytes,
     assetName,
+    perspective = IMAGE_READING_PERSPECTIVES[0],
     signal,
     perCallTimeoutMs,
     l,
@@ -187,6 +205,7 @@ export async function readImageAsset(
     readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;
+    readonly perspective?: ImageReadingPerspective;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -241,7 +260,7 @@ export async function readImageAsset(
       content: [
         {
           type: 'text',
-          text: READING_INSTRUCTION,
+          text: `${READING_INSTRUCTION}\n\nREADING RESPONSIBILITY:\n${perspective}`,
         },
         {
           type: 'image_url',

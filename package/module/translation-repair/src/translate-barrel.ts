@@ -196,8 +196,11 @@ export {
 } from './image-ocr.ts';
 export {
   type ImageReading,
+  type ImageReadingPerspective,
+  IMAGE_READING_PERSPECTIVES,
   isTransientReadingReason,
   readImageAsset,
+  READING_INSTRUCTION,
 } from './image-reading-stage.ts';
 export { readDocumentPictures, } from './document-readings.ts';
 export { imageReadingKey, } from './image-reading-key.ts';

@@ -27,6 +27,8 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type ChatTextRequest,
+  IMAGE_READING_PERSPECTIVES,
+  messageText,
   readPastRefusal,
   REFUSAL_ASK_LIMIT,
   type SyntheticClient,
@@ -100,14 +102,20 @@ function sequencedClient(
 ): {
   readonly client: SyntheticClient;
   readonly asks: RosterModelId[];
+  readonly prompts: string[];
 } {
   /**
    * Models asked, in the order the asks arrived.
    */
   const asks: RosterModelId[] = [];
+  /**
+   * Exact text prompts in ask order.
+   */
+  const prompts: string[] = [];
 
   return {
     asks,
+    prompts,
     client: {
       chatText: async (request,) => {
         /**
@@ -115,6 +123,11 @@ function sequencedClient(
          */
         const { modelId, } = request as ChatTextRequest;
         asks.push(modelId,);
+        prompts.push(request.messages
+          .map(function text(message,): string {
+            return messageText({ message, });
+          },)
+          .join('\n',),);
 
         /**
          * Reply for this ask, holding at the last scripted one.
@@ -163,7 +176,7 @@ await describe({
       name: 'ASKS AGAIN AFTER A REFUSAL AND RETURNS THE READING THAT FOLLOWS, which is the case '
         + 'the measurement found: the same model, the same picture, a different answer',
       fn: async () => {
-        const { client, asks, } = sequencedClient({
+        const { client, asks, prompts, } = sequencedClient({
           replies: [
             REFUSAL,
             READING,
@@ -185,6 +198,9 @@ await describe({
 
         expect(reading.kind,).toBe('read',);
         expect(asks.length,).toBe(2,);
+        expect(new Set(prompts,).size,).toBe(2,);
+        expect(prompts[0],).toContain('Complete transcription pass',);
+        expect(prompts[1],).toContain('Small-text pass',);
       },
     },),
 
@@ -192,7 +208,7 @@ await describe({
       name: 'STOPS AT THE ASK LIMIT AND REPORTS THE LAST REFUSAL, so a reader that will not read '
         + 'this picture at all costs a bounded number of calls rather than an unbounded one',
       fn: async () => {
-        const { client, asks, } = sequencedClient({ replies: [REFUSAL,], },);
+        const { client, asks, prompts, } = sequencedClient({ replies: [REFUSAL,], },);
 
         /**
          * Outcome after every ask was declined.
@@ -209,6 +225,9 @@ await describe({
 
         expect(reading.kind,).toBe('unavailable',);
         expect(asks.length,).toBe(REFUSAL_ASK_LIMIT,);
+        expect(new Set(prompts,).size,).toBe(REFUSAL_ASK_LIMIT,);
+        for (const [index, perspective,] of IMAGE_READING_PERSPECTIVES.entries())
+          expect(prompts[index],).toContain(perspective,);
       },
     },),
 

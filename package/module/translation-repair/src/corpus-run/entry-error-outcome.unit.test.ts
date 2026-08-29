@@ -16,6 +16,7 @@ import {
   NaturalnessCompletenessError,
   NaturalnessRepairInterruptedError,
   PromptPayloadStoreError,
+  VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
 
 await describe({
@@ -29,6 +30,7 @@ await describe({
         promptDigest: 'fixture-digest',
         operation: 'read',
       },),
+      new VisualEvidenceInterruptedError({ unavailableCount: 1, }),
     ] as const).map(function stoppedError(error,) {
       return it({
         name: `MAPS ${error.name} to INCOMPLETE stopped work`,

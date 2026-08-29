@@ -140,6 +140,7 @@ const MARKED_CLASSES: readonly string[] = [
   'UnreviewedArchiveError',
   'UnsettledFinalSelectionError',
   'UnsafeSeedError',
+  'VisualEvidenceInterruptedError',
   'UnseatedStandingError',
   'WindowEvidenceError',
 ];
@@ -181,6 +182,7 @@ const NAMED_PARTS: Record<string, string> = {
   'String(blocks.length,)': 'count',
   'String(version,)': 'schema version',
   'String(sliceIndex,)': 'slice index',
+  'String(unavailableCount,)': 'count of source-referenced assets without usable visual evidence',
   'String(sliceIndices.length,)': 'count',
   'sliceIndices.join(\', \',)': 'slice indexes',
   'String(writes,)': 'schema version',
@@ -242,6 +244,7 @@ const NAMED_PARTS: Record<string, string> = {
   'short({ id: digest, },)': 'abbreviated digest',
   'short({ id: recorded, },)': 'abbreviated digest',
   'short({ id: requiredCommit, },)': 'abbreviated commit',
+  'unavailableCount': 'count of source-referenced assets without usable visual evidence',
   'yamlRefusalSite({ cause, },)': 'position, built to state a place and quote nothing',
 };
 

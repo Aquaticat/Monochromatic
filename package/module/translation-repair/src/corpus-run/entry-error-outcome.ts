@@ -2,6 +2,7 @@ import { NaturalnessCompletenessError, } from '../naturalness-completeness-error
 import { ContributorCompletenessError, } from './contributor-completeness.ts';
 import { NaturalnessRepairInterruptedError, } from '../naturalness-repair-interrupted-error.ts';
 import { PromptPayloadStoreError, } from '../prompt-payload-store.ts';
+import { VisualEvidenceInterruptedError, } from './visual-evidence-completeness.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 
 //region Entry failure scheduling
@@ -47,7 +48,8 @@ export function entryErrorOutcome(
   const stopped = (error instanceof ContributorCompletenessError)
     || (error instanceof NaturalnessRepairInterruptedError)
     || (error instanceof NaturalnessCompletenessError)
-    || (error instanceof PromptPayloadStoreError);
+    || (error instanceof PromptPayloadStoreError)
+    || (error instanceof VisualEvidenceInterruptedError);
   return stopped
     ? {
       status: 'INCOMPLETE',

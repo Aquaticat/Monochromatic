@@ -4,10 +4,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
-import { readDocumentPictures, } from '../document-readings.ts';
-import { readImageWithOcr, } from '../image-ocr.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
-import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
 import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
@@ -31,6 +28,10 @@ import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
 import {
+  type PassVisualEvidenceReader,
+  readPassVisualEvidence,
+} from './pass-visual-evidence.ts';
+import {
   discardSliceCache,
   openRefineSliceCache,
   openSliceCache,
@@ -47,6 +48,7 @@ import {
 } from './run-config.ts';
 
 //region Pass entry
+
 // ONE entry, start to settled: its cache, its deadline, its artifact and its
 // TALLY line.
 //
@@ -110,6 +112,7 @@ async function runEntryPipeline(
     hardCapMs,
     baseSignal,
     overlap,
+    visualEvidenceReader,
   }: {
     readonly client: SyntheticClient;
     readonly entry: CorpusPair;
@@ -121,6 +124,7 @@ async function runEntryPipeline(
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
     readonly overlap: number;
+    readonly visualEvidenceReader?: PassVisualEvidenceReader;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -241,33 +245,19 @@ async function runEntryPipeline(
     },);
 
     /**
-     * Pictures this entry's slices show, read off the pinned corpus.
-     *
-     * BEFORE THE LANES, not during them: a reading has to be in the cache key
-     * of every slice that sees it, so it must exist before the first slice is
-     * keyed.
+     * Complete reviewed visual evidence required before insertion and lanes.
      */
-    const assets = await gatherEntryPictures({
-      pin: RUN_CORPUS_PIN,
-      entryId: entry.id,
-      slices: prepared.slices,
-      l: tagged({ tag: entry.id, },),
-    },);
-
-    /**
-     * What each of those pictures says, corroborated across the two readers
-     * that can be sent one.
-     */
-    const pictureReadings = await readDocumentPictures({
-      readOcr: readImageWithOcr,
+    const pictureReadings = await readPassVisualEvidence({
       client,
       slices: prepared.slices,
-      assets,
+      pin: RUN_CORPUS_PIN,
+      entryId: entry.id,
       readerModelIds: RUN_READER_MODELS,
       cache: readingCache,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       l: tagged({ tag: entry.id, },),
+      ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
     },);
 
     /**
@@ -550,6 +540,7 @@ export async function settleEntry(
     pipelineDigest,
     hardCapMs,
     baseSignal,
+    visualEvidenceReader,
   }: {
     readonly client: SyntheticClient;
     readonly entry: CorpusPair;
@@ -560,6 +551,7 @@ export async function settleEntry(
     readonly pipelineDigest: PipelineDigest;
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
+    readonly visualEvidenceReader?: PassVisualEvidenceReader;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -590,6 +582,7 @@ export async function settleEntry(
     hardCapMs,
     baseSignal,
     overlap,
+    ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
   },);
   if (outcome.kind !== 'settled') {
     // The cache is what makes operational resume cheaper. Stopped quality work

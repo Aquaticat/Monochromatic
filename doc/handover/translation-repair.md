@@ -21,10 +21,13 @@ not current instruction.
   and required-provider gate landed in `cf14b379b`.
 - Deterministic correction-cycle guard landed in `6369228d5`.
 - Generation-15 contributor-authority floor landed in `5211c54dd`.
+- Pending visual-evidence guard uses distinct image-reading responsibilities
+  and pauses unresolved referenced assets before lanes.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
 - Final generation-15 verification emitted 866 `PASS` lines and zero `FAIL` lines.
+- Pending visual-evidence verification emitted 867 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.

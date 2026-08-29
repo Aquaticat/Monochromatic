@@ -256,6 +256,20 @@ const CLEANUP_ENTRY = {
 };
 
 /**
+ * Visual reference whose asset is intentionally absent from pinned corpus.
+ */
+const MISSING_VISUAL = `<PhotoScroll photos={[ '\${path}/photos/missing.webp' ]} />`;
+
+/**
+ * Entry proving unresolved referenced visual stops before lanes.
+ */
+const MISSING_VISUAL_ENTRY = {
+  id: 'CatEntryMissingVisual',
+  sourceText: `${SOURCE_TEXT}\n\n${MISSING_VISUAL}\n`,
+  targetText: `${TARGET_TEXT}\n\n${MISSING_VISUAL}\n`,
+};
+
+/**
  * Original carrying a linked factual paragraph absent from archive.
  */
 const GAP_SOURCE_TEXT = `${SOURCE_TEXT}
@@ -282,6 +296,15 @@ const GAP_ENTRY = {
   id: 'CatEntryGap',
   sourceText: GAP_SOURCE_TEXT,
   targetText: GAP_TARGET_TEXT,
+};
+
+/**
+ * Gap plus reviewed visual for successful guard traversal control.
+ */
+const REVIEWED_VISUAL_ENTRY = {
+  id: 'CatEntryReviewedVisual',
+  sourceText: `${GAP_SOURCE_TEXT}\n\n${MISSING_VISUAL}\n`,
+  targetText: `${GAP_TARGET_TEXT}\n\n${MISSING_VISUAL}\n`,
 };
 
 /**
@@ -839,6 +862,81 @@ await describe({
         expect(overlapped.contest.peak,).toBeGreaterThan(serial.contest.peak,);
         expect(serial.consolidate.peak,).toBeGreaterThan(0,);
         expect(overlapped.consolidate.peak,).toBeGreaterThan(serial.consolidate.peak,);
+      },
+    },),
+
+    it({
+      name: 'STOPS BEFORE LANES when referenced visual asset has no reviewed evidence',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /** Schemas reached before visual completeness guard. */
+        const served: string[] = [];
+        /** Entry outcome captured inside logger scope. */
+        const result: { outcome?: Awaited<ReturnType<typeof settleEntry>>; } = {};
+        const lines = await capturedLines({
+          body: async () => {
+            result.outcome = await settleEntry({
+              client: entryClient({ served, },),
+              entry: MISSING_VISUAL_ENTRY,
+              artifactsDir: dirs.artifactsDir,
+              publishDir: dirs.publishDir,
+              sliceCacheDir: dirs.sliceCacheDir,
+              tip: 'a'.repeat(40,),
+              pipelineDigest: DIGEST,
+              hardCapMs: 60_000,
+              baseSignal: new AbortController().signal,
+            },);
+          },
+        },);
+        expect(result.outcome,).toEqual({ kind: 'stopped', },);
+        expect(served,).not.toContain('coverage_report',);
+        expect(served,).not.toContain('critic_report',);
+        expect(served,).not.toContain('translation_report',);
+        expect(served,).not.toContain('lane_contest',);
+        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([],);
+        expect(await artifactNames({ artifactsDir: dirs.publishDir, },),).toEqual([],);
+        expect(lines.some(function incomplete(line,): boolean {
+          return line.startsWith(`TALLY ${MISSING_VISUAL_ENTRY.id} status=INCOMPLETE`,);
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'PASSES REVIEWED VISUAL into insertion and lane stages',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /** Schemas reached after successful visual completeness guard. */
+        const served: string[] = [];
+        await settleEntry({
+          client: entryClient({
+            served,
+            coverageScript: 'absent',
+          },),
+          entry: REVIEWED_VISUAL_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+          visualEvidenceReader: async function reviewedVisualEvidence() {
+            return new Map([[
+              'missing.webp',
+              {
+                kind: 'corroborated',
+                readings: [
+                  { modelId: 'hf:moonshotai/Kimi-K3', text: 'Mittens 555-0134', },
+                  { modelId: 'hf:zai-org/GLM-5.3-Flash', text: 'Mittens 555-0134', },
+                ],
+                overlap: 1,
+              },
+            ],]);
+          },
+        },);
+        expect(served,).toContain('coverage_report',);
+        expect(served,).toContain('critic_report',);
+        expect(served,).toContain('translation_report',);
       },
     },),
 

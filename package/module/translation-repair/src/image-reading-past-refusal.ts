@@ -2,10 +2,12 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
   type ImageReading,
+  IMAGE_READING_PERSPECTIVES,
   readImageAsset,
 } from './image-reading-stage.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -161,6 +163,7 @@ export async function readPastRefusal(
     modelId,
     bytes,
     assetName,
+    perspective: IMAGE_READING_PERSPECTIVES[0],
     signal,
     perCallTimeoutMs,
     l,
@@ -182,12 +185,19 @@ export async function readPastRefusal(
     // SEQUENTIAL ON PURPOSE. Asking the same model concurrently would queue
     // behind its own per-model limiter and spend every ask even after one
     // succeeds, which is the opposite of what the limit is for.
+    /**
+     * Distinct visual responsibility for this retry.
+     */
+    const perspective = nonNullishOrThrow(
+      IMAGE_READING_PERSPECTIVES[ask - 1],
+    );
     /* oxlint-disable-next-line no-await-in-loop -- re-asks are sequential by design, see above */
     reading = await readImageAsset({
       client,
       modelId,
       bytes,
       assetName,
+      perspective,
       signal,
       perCallTimeoutMs,
       l,

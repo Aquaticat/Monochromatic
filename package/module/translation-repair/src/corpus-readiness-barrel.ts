@@ -24,6 +24,10 @@ export {
   FrontMatterCompletenessError,
 } from './corpus-run/front-matter-completeness.ts';
 export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
+export {
+  assertVisualEvidenceComplete,
+  VisualEvidenceInterruptedError,
+} from './corpus-run/visual-evidence-completeness.ts';
 export { preparePassEntry, } from './corpus-run/pass-prepare.ts';
 
 //endregion Corpus readiness barrel

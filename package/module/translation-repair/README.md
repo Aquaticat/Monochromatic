@@ -1758,9 +1758,14 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   lane contest 5,
   and consolidation 15.
 
-- Image-reading exhaustion currently remains unavailable evidence rather than terminal refusal.
-  That can let visual content bypass review;
-  image-dependent slices must continue reading with distinct prompts or pause operationally before publication.
+- Pending visual-evidence guard gives each image retry substantively distinct responsibility:
+  complete transcription,
+  small text,
+  layout,
+  then identifier verification.
+  Corroborated and reviewed no-text outcomes proceed.
+  Missing or unavailable image-dependent evidence pauses as `INCOMPLETE` before lanes,
+  so visual content cannot bypass publication review.
 
 On fresh generation-14 corpus path,
 `assertFinalNaturalnessComplete` is runtime persistence invariant after continuous naturalness,
