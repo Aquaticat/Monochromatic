@@ -1,16 +1,15 @@
-# Cargo 1.99 nightly: cfg_aliases 0.2.1 causes dependency future-incompatibility warnings
+# Cargo 1.99 nightly: cfg_aliases 0.1.1 and 0.2.1 cause dependency future-incompatibility warnings
 
 Tool:
  Cargo 1.99.0-nightly (`3efb1f477 2026-07-17`) and rustc 1.99.0-nightly
 (`0e29c21d9 2026-07-21`).
 Surface trigger:
- building `package/music-player/desktop-app` with its lockfile resolving
-`cfg_aliases` 0.2.1,
- then running `cargo report future-incompatibilities`.
+ building `package/music-player/desktop-app` or `package/desktop-app/terminal`
+with a lockfile resolving `cfg_aliases` 0.1.1 or 0.2.1,
+then running `cargo report future-incompatibilities`.
 Failure mode:
- Cargo reports 488 instances of
-`trailing semicolon in macro used in expression position`
-across seven dependencies.
+ Cargo reports `trailing semicolon in macro used in expression position`
+from dependency build scripts that invoke the macro.
 
 ## Symptom
 
@@ -49,6 +48,16 @@ not the shared defective macro implementation.
 This surfaced after rustc PR [#159222][rust-159222] made
 `semicolon_in_expressions_from_macros` apply to macros defined in dependency crates.
 Rust PR [#159218][rust-159218] proposes completing the transition from a lint to a hard error.
+
+The terminal package showed the same diagnostic after its 0.2 dependency family was updated.
+Only `nix` 0.28.0 remained in Cargo's notice:
+
+```text
+warning: the following packages contain code that will be rejected by a future version of Rust: nix v0.28.0
+```
+
+That warning came from the separate `cfg_aliases` 0.1.1 semver family,
+not from the already corrected 0.2 family.
 
 ## Root cause
 
@@ -185,7 +194,50 @@ with crates.io checksum
 `f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527`.
 The seven affected packages request either `cfg_aliases = "0.2.0"` or `"0.2.1"`.
 Cargo's default caret requirements admit 0.2.2,
-so no top-level package upgrade or manifest override is needed.
+so no top-level package upgrade or manifest override is needed for that semver family.
+
+### Terminal's 0.1 dependency chain
+
+The crates.io `portable-pty` 0.9.0 manifest selects `nix` 0.28
+(`portable-pty-0.9.0/Cargo.toml:65-69`):
+
+```toml
+[dependencies.nix]
+version = "0.28"
+features = [
+    "term",
+    "fs",
+]
+```
+
+`nix` 0.28.0 in turn requires the unfixed `cfg_aliases` 0.1.1 family
+(`nix-0.28.0/Cargo.toml:101-102`):
+
+```toml
+[build-dependencies.cfg_aliases]
+version = "0.1.1"
+```
+
+The 0.1.1 macro contains the same three trailing semicolons in its recursive expression arms
+(`cfg_aliases-0.1.1/src/lib.rs:255-300`).
+No corrected 0.1 release exists,
+and Cargo cannot use 0.2.2 to satisfy a `^0.1.1` requirement.
+
+WezTerm commit `f78f72f2f18bf459561e3681f016365273d3e281` upgrades its workspace to `nix` 0.29
+(`Cargo.toml:143`) while `portable-pty` consumes that workspace dependency
+(`pty/Cargo.toml:17`):
+
+```toml
+# Cargo.toml:143
+nix = "0.29"
+
+# pty/Cargo.toml:17
+nix = { workspace = true, features = ["term", "fs"] }
+```
+
+The default-feature `portable-pty` implementation is unchanged from the 0.9.0 release at that revision.
+Its only Rust source differences are `serde_derive` to `serde` import changes behind the disabled
+`serde_support` feature in `pty/src/cmdbuilder.rs:4` and `pty/src/lib.rs:45`.
 
 ## Verification
 
@@ -247,41 +299,56 @@ Finished `test` profile [unoptimized + debuginfo] target(s)
 Summary [3.024s] 94 tests run: 94 passed, 0 skipped
 ```
 
+Repository-wide remediation advanced every remaining 0.2.1 lock entry to 0.2.2.
+The terminal package pins the first post-release `portable-pty` revision with `nix` 0.29;
+its generated lockfile contains `nix` 0.29.0 and only `cfg_aliases` 0.2.2
+(`package/desktop-app/terminal/Cargo.lock:753-756`,
+`package/desktop-app/terminal/Cargo.lock:2939-2947`).
+
+The terminal Clippy task changed from a notice naming six packages to no future-incompatibility notice.
+Its 16 tests pass,
+including `pty::tests::spawns_command_and_reads_output` through the upgraded dependency.
+The truepeak-core 62 tests,
+nested-wayland-session 25 tests,
+and Rust linter 51 tests also pass.
+Android native builds pass for both configured ABIs.
+Finally,
+the repository-wide 19-package Clippy fanout completed without Cargo's
+`packages contain code that will be rejected by a future version of Rust` notice.
+
 ## Verified workarounds
 
-Use the released transitive fix and commit only the generated lockfile change:
-
-```console
-cargo update \
-  --manifest-path package/music-player/desktop-app/Cargo.toml \
-  --package cfg_aliases@0.2.1 \
-  --precise 0.2.2
-mise run //package/music-player/desktop-app:lint
-mise run //package/music-player/desktop-app:test
-```
-
-Tradeoffs:
- this intentionally advances one transitive build dependency by one patch release.
-It does not change the application API,
+For dependencies accepting the 0.2 family,
+select released `cfg_aliases` 0.2.2 and commit the package-manager-generated lockfile change.
+This advances one transitive build dependency by one patch release without changing application APIs,
 Slint,
 Turso,
 winit,
 or glutin versions.
-A clean verification build fetches and recompiles the affected build-script dependency graph.
+A clean verification build fetches and recompiles the affected build scripts.
 
-The repository also has standalone lockfiles that still select `cfg_aliases` 0.2.1:
+The repository applies that update in these standalone lockfiles:
 
-- `package/linter/rust/Cargo.lock` through `borsh` 1.6.1;
-- `package/music-player/truepeak-core/Cargo.lock` through `turso_core` 0.6.1;
-- `package/music-player/android-app/rust/Cargo.lock` through `turso_core` 0.6.1;
-- `package/cli/nested-wayland-session/Cargo.lock` through `winit` 0.30.13;
-- `package/desktop-app/terminal/Cargo.lock` through its 0.2 dependency family.
+- `package/cli/nested-wayland-session/Cargo.lock`;
+- `package/desktop-app/terminal/Cargo.lock`;
+- `package/linter/rust/Cargo.lock`;
+- `package/music-player/android-app/rust/Cargo.lock`;
+- `package/music-player/desktop-app/Cargo.lock`;
+- `package/music-player/truepeak-core/Cargo.lock`.
 
-Apply and verify the same targeted 0.2.1 to 0.2.2 lockfile update in each owning package when handling
-this compatibility issue repository-wide.
-`package/desktop-app/terminal/Cargo.lock` also contains `cfg_aliases` 0.1.1 through `nix` 0.28.0.
-That separate semver family needs its own dependency assessment;
-the 0.2.2 lock update cannot replace it.
+For the terminal's incompatible 0.1 family,
+pin `portable-pty` to WezTerm revision
+`f78f72f2f18bf459561e3681f016365273d3e281`.
+That revision keeps the public package version and default-feature implementation at 0.9.0,
+but upgrades `nix` to 0.29,
+which accepts the corrected 0.2 macro family.
+
+Tradeoffs:
+ the terminal now fetches a pinned Git revision of the WezTerm monorepo and its `filedescriptor` path dependency
+instead of the crates.io archives.
+The generated lockfile also re-resolves flexible Windows dependency edges within their declared version ranges.
+The pin is immutable and the terminal's PTY spawn integration test exercises the consumed Linux boundary,
+but a future crates.io `portable-pty` release containing `nix` 0.29 or newer should replace the Git source.
 
 ## What does not work
 
@@ -292,9 +359,15 @@ the 0.2.2 lock update cannot replace it.
   and Slint and winit have already updated their development branches.
 - Adding `cfg_aliases` as an application build dependency only to constrain resolution.
   A direct dependency would misstate ownership when the lockfile can select the compatible patch release directly.
-- Adding a crates.io `[patch]` to the upstream Git commit.
+- Adding a crates.io `[patch]` to the upstream `cfg_aliases` Git commit.
   That was useful before 0.2.2 was published;
-  it now adds a Git source and maintenance work without changing the result.
+  it now adds a Git source and maintenance work without changing the 0.2-family result.
+- Updating only `cfg_aliases` 0.2.1 in the terminal lockfile.
+  `nix` 0.28 requires `^0.1.1`,
+  so both macro families remain and Cargo still reports `nix`.
+- Asking Cargo to select `nix` 0.29 beneath crates.io `portable-pty` 0.9.0.
+  The published manifest requires `nix = "0.28"`,
+  so Cargo correctly rejects 0.29 as outside that dependency requirement.
 - Suppressing `semicolon_in_expressions_from_macros` in application source.
   The invocation sites are dependency build scripts,
   and suppression would not make them valid after rustc turns the construct into a hard error.
@@ -302,6 +375,8 @@ the 0.2.2 lock update cannot replace it.
   The current compiler transition explicitly targets a future hard error.
 
 ## Upstream filing decision
+
+### cfg_aliases 0.2.2
 
 `.out-of-scope/` was checked.
 Its Cargo entry covers repository workspace structure,
@@ -343,7 +418,78 @@ Issue #16 already records the symptom,
 PR #15 records the minimal fix,
 and the 0.2.2 release is available from crates.io.
 
+### portable-pty release
+
+No `.out-of-scope/` entry matches `portable-pty` dependency releases.
+Searches across open and closed WezTerm issues and pull requests found no request covering the `nix` 0.29 bump.
+Issue [wezterm#3108][wezterm-3108] concerned an older 0.8.0 release and does not cover this warning.
+
+1. Is it really upstream's fault?
+    Yes.
+    Rust changed the diagnostic,
+    but only upstream can publish its existing `nix` 0.29 update for crates.io consumers.
+2. Can upstream fix it?
+    Yes.
+    Publishing the existing package state would let registry consumers leave `cfg_aliases` 0.1.1.
+3. Are they supporting this use case?
+    Yes.
+    `portable-pty` is an independently published crate and documents its crates.io API.
+4. Would the repository welcome the contribution?
+    Yes.
+    `CONTRIBUTING.md` welcomes code and documentation contributions,
+    the feature-request template accepts problem and solution proposals,
+    and no policy prohibits assisted reports.
+5. Will they likely fix it?
+    There is no refusal signal.
+    The maintainer published portable-pty 0.8.0 in response to issue #3108,
+    and the needed dependency update already exists on main.
+6. Has a minimal fix compatible with the architecture been prototyped?
+    Yes.
+    The repository pin uses the exact upstream revision containing the `nix` 0.29 update;
+    Clippy emits no future-incompatibility notice and the PTY spawn integration test passes.
+
+Decision:
+ keep the following release-request draft for human review rather than posting it automatically.
+
+~~~md
+Title: Publish portable-pty with the nix 0.29 dependency update
+Labels: enhancement, needs:triage
+
+**Is your feature request related to a problem? Please describe.**
+
+The crates.io `portable-pty` 0.9.0 manifest selects `nix` 0.28 at `pty/Cargo.toml:17` in the release source.
+That version of `nix` requires `cfg_aliases` 0.1.1.
+Rust 1.99 nightly reports the macro's recursive expression arms at `cfg_aliases/src/lib.rs:255-300` as
+`trailing semicolon in macro used in expression position` and warns that this will become a hard error.
+
+A consumer build reports:
+
+```text
+warning: the following packages contain code that will be rejected by a future version of Rust: nix v0.28.0
+```
+
+**Describe the solution you'd like**
+
+Please publish a `portable-pty` release containing the `nix` 0.29 dependency update already present in commit
+`f78f72f2f18bf459561e3681f016365273d3e281` at the workspace `Cargo.toml:143`.
+
+**Describe alternatives you've considered**
+
+Pinning `portable-pty` to that revision removes `cfg_aliases` 0.1.1,
+eliminates Cargo's future-incompatibility notice,
+and passes our PTY spawn integration test.
+Updating only `cfg_aliases` 0.2.1 does not help because `nix` 0.28 requires the incompatible 0.1 family.
+Our temporary workaround is the immutable Git revision pin.
+
+**Additional context**
+
+The revision keeps `portable-pty` at version 0.9.0.
+Relative to the published default-feature source,
+its only Rust changes are optional `serde_support` import updates in `pty/src/cmdbuilder.rs:4` and `pty/src/lib.rs:45`.
+~~~
+
 [cfg-aliases-15]: https://github.com/katharostech/cfg_aliases/pull/15
 [cfg-aliases-16]: https://github.com/katharostech/cfg_aliases/issues/16
 [rust-159218]: https://github.com/rust-lang/rust/pull/159218
 [rust-159222]: https://github.com/rust-lang/rust/pull/159222
+[wezterm-3108]: https://github.com/wezterm/wezterm/issues/3108
