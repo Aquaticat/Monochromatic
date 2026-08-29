@@ -102,6 +102,24 @@ or evidence unless the user later authorizes cleanup.
   Valid open and closed keyword searches also found none for the package-state or baseline-mountpoint defects.
   No external issue was posted.
 
+  The corrected default environment installed UWSM 0.26.2,
+  labwc 0.20.2,
+  sfwbar beta17,
+  xwayland-satellite 0.8.2,
+  and the rehearsed support packages through pacman-ZFS hooks.
+  A long direct QMP typing attempt dropped characters and produced an uppercase `PRINTF` error.
+  That path was abandoned.
+  A retained read-only FAT stage image then overwrote the affected files with exact path-adjusted copies.
+  Guest copies have 3 UWSM environment lines,
+  3 labwc autostart lines,
+  72 `rc.xml` lines,
+  and 263 sfwbar configuration lines.
+  XML parsing passed,
+  no stale `/home/user/` path remained,
+  xwayland-satellite is enabled,
+  and `uwsm check may-start` passed on tty1.
+  Process `wait-cachyos-labwc-session` is waiting for the first manual UWSM plus labwc render.
+
   During the timed-out `sudo` attempt,
   delayed input reached fish after the password prompt closed and printed the disposable VM user password as an unknown
   command.
@@ -406,6 +424,8 @@ The evidence image must retain:
   `/var/home/user/temp/agent/cachyos-zfs-layout-vnc.png`
 - Running display:
   `vnc://127.0.0.1:1`
+- Read-only desktop configuration stage:
+  `/mnt/encrypted/VMs/cachyos-zfs-layout-validation/labwc-stage.img`
 
 The read-only source image contains the unchanged pinned archive and the 896-byte local layout patch.
 The patch changes only
