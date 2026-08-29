@@ -26,7 +26,8 @@ or evidence unless the user later authorizes cleanup.
   The user correctly identified **No Desktop** as closer to the intended UWSM plus labwc system.
   The Wayfire disk is retained as installation and encrypted-boot evidence,
   but it is no longer the target desktop-validation base.
-  Task 39 will create a separate no-desktop installation without deleting this disk.
+  Task 39 created a separate no-desktop validation domain and disk without deleting the Wayfire control.
+  Process `wait-nodesktop-live` is waiting for its authenticated live environment.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
@@ -112,6 +113,44 @@ logs,
 commands,
 or user-facing messages.
 The guest input helper can read the required JSON property directly.
+
+## No-desktop VM identity and storage
+
+- Libvirt connection:
+  `qemu:///session`
+- Domain name:
+  `cachyos-zfs-nodesktop-validation`
+- Domain UUID:
+  `2bb347c3-34ec-4d61-af26-1f691923693e`
+- Firmware:
+  UEFI through edk2
+- Memory:
+  8192 MiB
+- Virtual CPUs:
+  4
+- Primary virtual disk:
+  `/mnt/encrypted/VMs/cachyos-zfs-nodesktop-validation/disk.qcow2`
+- Virtual disk capacity:
+  128 GiB
+- Storage behavior:
+  Sparse qcow2 with the `C` no-copy-on-write attribute
+- Disposable credential record:
+  `/mnt/encrypted/VMs/cachyos-zfs-nodesktop-validation/disposable-credentials.json`
+- Guest display:
+  loopback-only VNC
+- Guest framebuffer evidence:
+  `/var/home/user/temp/agent/cachyos-zfs-nodesktop-vnc.png`
+
+This domain reuses the read-only labwc and installer-source images from the retained Wayfire control.
+The authenticated ISO is attached only as virtual CD-ROM installation media.
+No physical host block device is attached.
+
+Use the VM-only input helper with this environment variable:
+
+```bash
+VM_DOMAIN=cachyos-zfs-nodesktop-validation \
+  node /var/home/user/temp/agent/guest-vm-input.mjs
+```
 
 ## Attached guest storage
 
