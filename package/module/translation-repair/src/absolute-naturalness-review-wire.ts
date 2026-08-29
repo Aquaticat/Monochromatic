@@ -240,6 +240,8 @@ Mark acceptable only when the whole candidate reads as idiomatic, publication-re
 
 Do not reject merely because another optional style is possible. Preserve memorial tone, deliberate source-language kinship terms with their glosses, names, handles, links, Markdown, and line structure. Judge naturalness only; do not rewrite the passage or decide factual fidelity.
 
+Single newlines inside one numbered paragraph, unless marked as explicit Markdown hard breaks, are soft breaks that render as spaces. Preserve them and do not report their source layout as choppy flow. A flow defect is material only if it remains after replacing each soft break with a space.
+
 For an unacceptable candidate, return one concise actionable finding per material defect and cover every material defect you see. Every finding must name the one-based PARAGRAPH number shown in the sheet. Report only defects in those numbered, structurally correctable paragraphs. For an acceptable candidate, findings must be empty.`,
     },
     {

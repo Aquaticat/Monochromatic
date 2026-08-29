@@ -72,6 +72,8 @@ await describe({
         expect(sheet,).toContain('not against another candidate',);
         expect(sheet,).toContain('Judge the ENTIRE English candidate',);
         expect(sheet,).toContain('stacked time or aspect adverbs',);
+        expect(sheet,).toContain('soft breaks that render as spaces',);
+        expect(sheet,).toContain('after replacing each soft break with a space',);
         expect(sheet,).toContain('Mimi (@mimi_cat)',);
       },
     },),
