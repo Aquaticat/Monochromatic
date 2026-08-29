@@ -15,6 +15,7 @@ import type {
   ConsolidationPolishConfig,
 } from './consolidation-polish-model.ts';
 import type { ConsolidationPolishRoundResult, } from './consolidation-polish-round.ts';
+import { hashContent, } from './document-node.ts';
 import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
 import type { PriorNaturalnessCorrection, } from './refine-selection-context.ts';
 import {
@@ -346,6 +347,10 @@ export async function settleNaturalnessCorrections(
       corrections: [],
       priorCorrections: [],
     };
+    /**
+     * Correction task identities already attempted in this invocation.
+     */
+    const correctionTasks = new Set<string>();
 
     while (!signal.aborted) {
       /**
@@ -355,6 +360,22 @@ export async function settleNaturalnessCorrections(
         current,
         currentReview,
       } = state;
+      /**
+       * Exact correction question identity preventing cached deterministic cycle.
+       */
+      const taskDigest = hashContent({
+        content: JSON.stringify({
+          rejectedText: current.text,
+          findings: currentReview.findings,
+          priorCorrections: state.priorCorrections,
+        },),
+      },);
+      if (correctionTasks.has(taskDigest,)) {
+        throw new NaturalnessRepairInterruptedError({
+          reason: 'correction-cycle',
+        },);
+      }
+      correctionTasks.add(taskDigest,);
       /**
        * One correction from latest rejected text and findings.
        */

@@ -31,7 +31,7 @@ export class NaturalnessRepairInterruptedError extends Error {
     {
       reason,
     }: {
-      readonly reason: 'quorum-not-met';
+      readonly reason: 'correction-cycle' | 'quorum-not-met';
     },
   ) {
     super(`naturalness repair interrupted: ${reason}`,);
