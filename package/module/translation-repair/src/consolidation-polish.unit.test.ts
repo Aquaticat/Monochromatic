@@ -131,6 +131,8 @@ const client: SyntheticClient = {
  *
  * @param throwOnThirdCorrection - whether unexpected third generation fails fixture
  *
+ * @param onRefineCall - optional observer of one-based refinement call count
+ *
  * @returns Scripted bounded-correction client
  *
  * @example
@@ -146,6 +148,7 @@ function boundedCorrectionClient(
     acceptSecondCorrection = false,
     selectionSheets,
     throwOnThirdCorrection = false,
+    onRefineCall,
   }: {
     readonly correctionText?: string;
     readonly rejectCorrection?: boolean;
@@ -153,6 +156,7 @@ function boundedCorrectionClient(
     readonly acceptSecondCorrection?: boolean;
     readonly selectionSheets?: string[];
     readonly throwOnThirdCorrection?: boolean;
+    readonly onRefineCall?: (count: number) => void;
   },
 ): SyntheticClient {
   /**
@@ -181,6 +185,7 @@ function boundedCorrectionClient(
       const value: unknown = (() => {
         if (schema === 'refine_report') {
           calls.refine += 1;
+          onRefineCall?.(calls.refine,);
           if (throwOnThirdCorrection && (calls.refine > 3))
             throw new Error('third correction generation exceeded bound',);
           return {
@@ -421,12 +426,17 @@ await describe({
     it({
       name: 'RETURNS UNSETTLED without third correction when second corrected text still rejects',
       fn: async () => {
+        /** One-based refinement calls observed across bounded stage. */
+        const refineCalls: number[] = [];
         const polish = await polishConsolidation({
           client: boundedCorrectionClient({
             correctionText: POLISHED,
             rejectCorrection: true,
             secondCorrectionText: FINAL_POLISHED,
             throwOnThirdCorrection: true,
+            onRefineCall: function recordRefineCall(count,): void {
+              refineCalls.push(count,);
+            },
           },),
           sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
           archiveText: BASE,
@@ -447,6 +457,7 @@ await describe({
         expect(polish.kind,).toBe('unsettled',);
         expect(polish.kind === 'unsettled' ? polish.review.rounds.length : 0,).toBe(3,);
         expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(2,);
+        expect(refineCalls,).toEqual([1, 2, 3,],);
       },
     },),
 
