@@ -82,6 +82,13 @@ export type AbsoluteNaturalnessReviewSubject = {
 };
 
 /**
+ * Substantive responsibility assigned to one exact-candidate review.
+ */
+export type AbsoluteNaturalnessReviewPerspective =
+  | 'defect-discovery'
+  | 'acceptance-challenge';
+
+/**
  * Structured-output contract for absolute naturalness reviewer.
  */
 export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
@@ -189,16 +196,30 @@ export function isAbsoluteNaturalnessReviewWire(
  *
  * @param subject - source context, exact candidate and declared identities
  *
+ * @param perspective - distinct first review or prior-acceptance challenge task
+ *
  * @returns Fenced reviewer conversation
  *
  * @example
  * ```ts
- * const messages = buildAbsoluteNaturalnessReviewMessages({ subject, });
+ * const messages = buildAbsoluteNaturalnessReviewMessages({ subject, perspective: 'defect-discovery', });
  * ```
  */
 export function buildAbsoluteNaturalnessReviewMessages(
-  { subject, }: { readonly subject: AbsoluteNaturalnessReviewSubject; },
+  {
+    subject,
+    perspective = 'defect-discovery',
+  }: {
+    readonly subject: AbsoluteNaturalnessReviewSubject;
+    readonly perspective?: AbsoluteNaturalnessReviewPerspective;
+  },
 ): readonly ChatMessage[] {
+  /**
+   * Substantively different responsibility for initial and confirmation passes.
+   */
+  const responsibility = (perspective === 'defect-discovery')
+    ? `Discover material defects without relying on any prior verdict. Start with sentence-local grammar and collocation, then independently assess paragraph and whole-passage flow.`
+    : `A prior editor accepted this exact candidate. Challenge that result rather than repeating its scan. Start from whole-passage register, coherence, and memorial voice, then work backward through each paragraph and sentence to find any overlooked material defect.`;
   /**
    * Fence absent from every untrusted block.
    */
@@ -235,6 +256,9 @@ export function buildAbsoluteNaturalnessReviewMessages(
     {
       role: 'system',
       content: `You are an independent publication-quality editor. Judge the ENTIRE English candidate against an absolute naturalness floor, not against another candidate and not by whether it is better than an earlier draft.
+
+REVIEW RESPONSIBILITY:
+${responsibility}
 
 Mark acceptable only when the whole candidate reads as idiomatic, publication-ready English. Reject translationese a careful native editor should change: Chinese word order or parts of speech carried into English, calqued verb-object combinations, stacked time or aspect adverbs, repeated generic nouns or pronouns, stiff causal transitions, literal emotional descriptions, unclear references, and ungrammatical coordination.
 

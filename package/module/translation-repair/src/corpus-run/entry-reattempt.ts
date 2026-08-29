@@ -1,3 +1,4 @@
+import type { EntryOutcome, } from './pass-entry-contract.ts';
 import { readDirectoryNames, } from './slice-cache-namespace.ts';
 
 //region Entry reattempt
@@ -75,6 +76,12 @@ export type ReattemptVerdict =
      * Slices it holds, which is what it held before this attempt too.
      */
     readonly cached: number;
+  }
+  | {
+    /**
+     * Incomplete work explicitly forbids fresh whole-entry attempt.
+     */
+    readonly kind: 'stopped';
   }
   | {
     /**
@@ -158,7 +165,7 @@ function slicesBought(
  * that discard as the sharpest possible stall and would be wrong about the one
  * outcome the whole pass exists to reach.
  *
- * @param settled - whether this entry now carries an artifact
+ * @param outcome - scheduling disposition from entry pipeline
  *
  * @param cachedBefore - slices present when this attempt started
  *
@@ -168,22 +175,24 @@ function slicesBought(
  *
  * @example
  * ```ts
- * const verdict = readAttemptOutcome({ settled: false, cachedBefore: 45, cachedAfter: 64, },);
+ * const verdict = readAttemptOutcome({ outcome: { kind: 'resumable-failure' }, cachedBefore: 45, cachedAfter: 64, },);
  * ```
  */
 export function readAttemptOutcome(
   {
-    settled,
+    outcome,
     cachedBefore,
     cachedAfter,
   }: {
-    readonly settled: boolean;
+    readonly outcome: EntryOutcome;
     readonly cachedBefore: number;
     readonly cachedAfter: number;
   },
 ): ReattemptVerdict {
-  if (settled)
+  if (outcome.kind === 'settled')
     return { kind: 'settled', };
+  if (outcome.kind === 'stopped')
+    return { kind: 'stopped', };
 
   /**
    * Slices this attempt is responsible for, reset-aware.

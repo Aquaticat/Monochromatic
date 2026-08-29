@@ -1,6 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { readAttemptOutcome, } from './entry-reattempt.ts';
+import type { EntryOutcome, } from './pass-entry-contract.ts';
 
 //region Entry attempt queue
 // The loop `#196` turns on, lifted out of `corpus-pass.ts` so it can be tested
@@ -39,7 +40,7 @@ export type QueueableEntry = {
  * @param cachedCountFor - slices one entry holds, asked before and after each
  * attempt so progress is measured rather than assumed
  *
- * @param attempt - runs one attempt, reporting whether that entry settled
+ * @param attempt - runs one attempt, reporting settlement or retry disposition
  *
  * @param stopBeforeNext - asked before each attempt; true ends the run. Owned
  * by the caller so the reason and its wording stay with the budget that knows
@@ -59,7 +60,7 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
   }: {
     readonly pending: readonly EntryT[];
     readonly cachedCountFor: (args: { readonly entry: EntryT; },) => Promise<number>;
-    readonly attempt: (args: { readonly entry: EntryT; },) => Promise<boolean>;
+    readonly attempt: (args: { readonly entry: EntryT; },) => Promise<EntryOutcome>;
     readonly stopBeforeNext: () => boolean;
   },
 ): Promise<void> {
@@ -84,10 +85,10 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
     const cachedBefore = await cachedCountFor({ entry, },);
 
     /**
-     * Whether this attempt reached an artifact.
+     * Settlement or retry disposition from this attempt.
      */
     /* oxlint-disable-next-line no-await-in-loop -- entries run sequentially by design; that is the point of a queue */
-    const settled = await attempt({ entry, },);
+    const outcome = await attempt({ entry, },);
 
     /**
      * Slices present now the attempt has stopped.
@@ -99,7 +100,7 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
      * What the attempt earned.
      */
     const verdict = readAttemptOutcome({
-      settled,
+      outcome,
       cachedBefore,
       cachedAfter,
     },);
@@ -115,6 +116,11 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
       console.log(
         `STALLED ${entry.id}: its ${String(verdict.cached,)} cache records are what it started `
           + 'with, so a further attempt in this invocation would repeat it',
+      );
+    }
+    if (verdict.kind === 'stopped') {
+      console.log(
+        `INCOMPLETE ${entry.id}: stage-local work remains; whole entry will not restart in this invocation`,
       );
     }
   }

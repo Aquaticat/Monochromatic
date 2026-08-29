@@ -77,7 +77,7 @@ export type ConsolidationNaturalnessAudit = {
   /**
    * Dedicated corrective generations bought after initial rejection.
    */
-  readonly correctionCount: 0 | 1 | 2;
+  readonly correctionCount: number;
 
   /**
    * Digest chain binding each accepted correction transition.
@@ -173,7 +173,8 @@ export type ConsolidationPolish =
   }
   | {
     /**
-     * Naturalness work exhausted bounded correction without publishable text.
+     * Legacy nonpublishable state retained for old records and defensive guards.
+     * Current runtime throws operational interruption instead of producing it.
      */
     readonly kind: 'unsettled';
 
@@ -188,7 +189,7 @@ export type ConsolidationPolish =
     readonly proposedText: string;
 
     /**
-     * Rewriters returning usable answer across bounded rounds.
+     * Rewriters returning usable answer across recorded rounds.
      */
     readonly refinersHeard: readonly RosterModelId[];
 
@@ -213,7 +214,7 @@ export type ConsolidationPolish =
     readonly review: ConsolidationNaturalnessAudit;
 
     /**
-     * Stable bounded-correction and review findings.
+     * Stable correction and review findings.
      */
     readonly findings: readonly string[];
   };

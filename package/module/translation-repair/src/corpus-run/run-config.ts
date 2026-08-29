@@ -4,7 +4,10 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import spawn from 'nano-spawn';
 
-import type { SyntheticClient, } from '../chat-contract.ts';
+import type {
+  ModelCaller,
+  SyntheticClient,
+} from '../chat-contract.ts';
 import {
   CORPUS_COMMIT_SHA,
   type CorpusPin,
@@ -28,12 +31,17 @@ import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
 import { createHyperClient, } from '../hyper-client.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
-import { createRoutingClient, } from '../provider-router.ts';
+import { promptUniqueClient, } from '../prompt-uniqueness-client.ts';
+import {
+  createRoutingClient,
+  NoProviderForModelError,
+} from '../provider-router.ts';
 import {
   RUN_SEATS,
   seatTallyClient,
 } from '../seat-tally.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 import { resolveGit, } from './git-command.ts';
 
 //region Corpus-run configuration
@@ -607,10 +615,66 @@ export async function resolveRunsDir(): Promise<string> {
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Builds the client every run calls, over both providers, counting every call.
+ * Builds caller that should remain unreachable while unconfigured provider is dry.
  *
- * ONE FACTORY, so wiring the second provider here reaches every corpus-run
- * entrypoint at once rather than each one growing its own routing.
+ * @param provider - absent provider named in invariant diagnostic
+ *
+ * @returns Text caller refusing accidental dispatch
+ *
+ * @example
+ * ```ts
+ * const caller = unconfiguredProviderCaller({ provider: 'hyper', });
+ * ```
+ */
+function unconfiguredProviderCaller(
+  { provider, }: { readonly provider: 'synthetic' | 'hyper'; },
+): Pick<ModelCaller, 'chatText'> {
+  return {
+    // oxlint-disable-next-line require-await, typescript/require-await -- caller contract is asynchronous; refusal must occur without provider call
+    chatText: async function refuseUnconfigured(request,) {
+      throw new NoProviderForModelError({
+        modelId: request.modelId,
+        reason: `${provider} provider is not configured`,
+      },);
+    },
+  };
+}
+
+/**
+ * Synthetic quota shape used only when Hyper is sole configured provider.
+ *
+ * Router receives absent Synthetic as dry directly;
+ * this compatibility method keeps client surface stable for observational callers.
+ *
+ * @returns Explicitly exhausted synthetic quota
+ *
+ * @example
+ * ```ts
+ * const quota = await unconfiguredSyntheticQuota();
+ * ```
+ */
+// oxlint-disable-next-line require-await, typescript/require-await -- compatibility meter contract is asynchronous
+async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
+  return {
+    fiveHour: {
+      remaining: 0,
+      max: 0,
+      limited: true,
+      nextTickAt: '',
+    },
+    weekly: {
+      percentRemaining: 0,
+      nextRegenAt: '',
+    },
+  };
+}
+
+/**
+ * Builds client every run calls from every configured provider,
+ * counting every call.
+ *
+ * ONE FACTORY, so provider routing reaches every corpus-run entrypoint at once
+ * rather than each one growing its own configuration.
  *
  * IT STILL ANSWERS `quotas`, which is the first provider's meter and nothing
  * else. The routing client does not offer one, because the two providers meter
@@ -618,16 +682,12 @@ const l = tagged({ tag: 'translation-repair', },);
  * knowledge that `quotas` means the Synthetic meter belongs, and keeping the
  * method here leaves every existing caller and the bench recorder untouched.
  *
- * BOTH KEYS ARE REQUIRED, AND A MISSING SECOND ONE IS A REFUSAL. This used to
- * warn and hand back the first provider's client alone, on the reasoning that
- * refusing would stop a run the first provider could serve by itself. It
- * cannot safely preserve configured run: four of the eight roster seats are
- * Charm Hyper endpoint labels that Synthetic does not host, so one-provider
- * client would offer them to a provider that answers 400 to every call. An
- * earlier four-slice calibration settled with half its roster dark (`#235`).
- * Current eight-seat quorum could still settle on four Synthetic voices, which
- * makes early refusal more important: degraded run would look complete. The
- * time to refuse is before first call, not after last.
+ * ONE KEY IS ENOUGH.
+ * Missing provider is marked dry before routing,
+ * so its seats become unavailable without unauthorized calls.
+ * Exact-half participation lets other provider operate normally;
+ * no provider family or cross-provider response is mandatory.
+ * Both missing remains launch refusal because no call can run.
  *
  * EVERY CALL IS COUNTED on `RUN_SEATS`, the process-wide tally the refusal
  * boundary prints when the command ends, so a seat that produced nothing
@@ -639,9 +699,7 @@ const l = tagged({ tag: 'translation-repair', },);
  *
  * @returns Ready client, routed across both providers and counted per seat
  *
- * @throws {@link RunConfigError} when either provider's key env var is unset
- * or empty; it is a stated refusal, so a CLI repeats the variable name and
- * exits 6 without frames
+ * @throws {@link RunConfigError} when both provider key variables are unset or empty
  *
  * @example
  * ```ts
@@ -665,68 +723,76 @@ export function createRunClient(
   const apiKey = process.env
     .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
     ?? '';
-  if (apiKey === '')
-    throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
-
   /**
-   * Second provider's key, which half the roster cannot be reached without.
+   * Second provider key,
+   * independently optional because either provider may run alone.
    */
   const hyperKey = process.env
     .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
     ?? '';
-  if (hyperKey === '')
-    // No one-provider run to fall back to: half the roster is served only by
-    // Charm Hyper (`#235`). The refusal names the variable and the fix.
-    throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY', },);
+  if ((apiKey === '') && (hyperKey === '')) {
+    throw new RunConfigError({
+      variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY or TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
+    },);
+  }
 
   /**
-   * Transport handed to both clients, absent when production's fetch is meant.
+   * Transport handed to configured clients,
+   * absent when production's fetch is meant.
    */
   const seam = (transport === undefined)
     ? {}
     : { transport, };
 
   /**
-   * First provider's client.
+   * First provider client when configured.
    */
-  const synthetic = createSyntheticClient({
-    apiKey,
-    ...seam,
-  },);
+  const synthetic = (apiKey === '')
+    ? undefined
+    : createSyntheticClient({
+      apiKey,
+      ...seam,
+    },);
 
   /**
-   * Second provider's client.
+   * Second provider client when configured.
    */
-  const hyper = createHyperClient({
-    apiKey: hyperKey,
-    ...seam,
-  },);
+  const hyper = (hyperKey === '')
+    ? undefined
+    : createHyperClient({
+      apiKey: hyperKey,
+      ...seam,
+    },);
 
   /**
    * Shared budget view both providers are routed by.
    */
   const budgets = createProviderBudgets({
-    synthetic,
-    hyper,
+    ...((synthetic === undefined) ? {} : { synthetic, }),
+    ...((hyper === undefined) ? {} : { hyper, }),
   },);
 
   /**
-   * Routed client with the first provider's meter as its `quotas`.
+   * Routed client with stable compatibility quota surface.
    */
   const routed: SyntheticClient = {
     ...createRoutingClient({
-      synthetic,
-      hyper,
+      synthetic: synthetic ?? unconfiguredProviderCaller({ provider: 'synthetic', },),
+      hyper: hyper ?? unconfiguredProviderCaller({ provider: 'hyper', },),
       budgets,
     },),
-    quotas: synthetic.quotas,
+    quotas: synthetic?.quotas ?? unconfiguredSyntheticQuota,
   };
 
-  rl.debug('both provider keys present; routing across both and counting every seat',);
+  rl.debug(
+    `provider configuration synthetic=${String(synthetic !== undefined,)} hyper=${String(hyper !== undefined,)}`,
+  );
 
-  return seatTallyClient({
-    inner: routed,
-    tally: RUN_SEATS,
+  return promptUniqueClient({
+    inner: seatTallyClient({
+      inner: routed,
+      tally: RUN_SEATS,
+    },),
   },);
 }
 

@@ -13,6 +13,7 @@ import {
   finalPolishParagraphs,
   runConsolidationPolishRound,
 } from './consolidation-polish-round.ts';
+import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
 
 export type {
   ConsolidationNaturalnessAudit,
@@ -167,25 +168,9 @@ export async function polishConsolidation(
     };
   }
   if (initialReview.verdict === 'quorum-not-met') {
-    return {
-      kind: 'unsettled',
-      baseText,
-      proposedText: initial.proposedText,
-      refinersHeard: initial.refinersHeard,
-      contributors: initial.contributors,
-      rounds: initial.rounds,
-      ...((initial.gate === undefined) ? {} : { gate: initial.gate, }),
-      review: {
-        correctionCount: 0,
-        corrections: [],
-        rounds: [initialReview,],
-        confirmations: initialConfirmed.confirmations,
-      },
-      findings: [
-        ...initial.findings,
-        'absolute-naturalness-review quorum not met',
-      ],
-    };
+    throw new NaturalnessRepairInterruptedError({
+      reason: 'quorum-not-met',
+    },);
   }
   return settleNaturalnessCorrections({
     client,

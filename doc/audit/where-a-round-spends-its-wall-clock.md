@@ -6,14 +6,16 @@ This audit is historical evidence from earlier roster,
 models,
 calibration overlap,
 and waiting policy.
-Generation 12 starts every production grace window at exact-half participation,
-so historical statement that grace buys every seat no longer describes required participation.
+Generation 13 starts every production grace window at exact-half participation
+and continues naturalness correction without finite quality ceiling.
+Historical statement that grace buys every seat no longer describes required participation.
 Grace can still retain additional usable evidence until bound expires.
 
 Current entry-level performance measurement is
 `doc/planning/translation-repair-entry-time-to-complete.md`.
-Wait for active `Weideriche_` and pull-request 386 runs to finish before runtime recommendation.
-Do not compare their elapsed times as matched arms because they overlap on shared providers and use different inputs.
+Generation-12 `Weideriche_` and pull-request 386 runs were stopped and are partial traces,
+not matched completion arms.
+Fresh Carena median below two hours is objective without weakening quality.
 
 Measured 2026-08-25 against the second editor calibration while it was still running,
 at 52 rounds of an expected 250 or so.

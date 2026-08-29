@@ -10,11 +10,14 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
+- Current committed base: `697c370ba`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
+- Pending worktree implements generation-13 continuous correction,
+  prompt payload reuse,
+  and one-provider operation.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
-- Whole package passed 859 test groups with zero failures before current runs.
+- Latest pending worktree verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   `git diff --check`,
@@ -22,25 +25,34 @@ not current instruction.
   and guard-failure mutations passed before commit.
 
 Artifact schema remains 9.
-Consolidation cache generation is 12,
+Consolidation cache generation is 13 in pending worktree,
 lane-contest cache generation is 4,
 and pairing cache generation is 2.
 Preparation identity remains v2.
 
 ### Current quality mechanism
 
-Absolute naturalness acceptance requires two sequential reviews of exact candidate.
-Each review settles at exact-half usable quorum,
+Absolute naturalness acceptance requires defect-discovery review followed by
+substantively distinct prior-acceptance challenge of exact candidate.
+Each responsibility settles at exact-half usable quorum,
 rounded up for odd rosters.
-Any usable rejection heard before bounded settlement remains decisive and enters existing two-correction path.
-No third correction exists.
-The two accepting draws may contain different responding halves;
-identity overlap is not required.
+Any usable rejection heard before bounded settlement remains decisive and enters continuous correction.
+Correction uses latest exact rejected text and structured findings,
+has no finite quality ceiling,
+and records any failed strategy into materially different next prompt.
+Schema-9 reader accepts arbitrary complete digest-bound correction chains.
 
 Every direct roster round now starts straggler grace at exact-half participation.
 Grace may collect more responses,
 but no stage requires every provider seat.
 Participation quorum remains distinct from two-vote corroboration thresholds in pairing and comparative gates.
+Either provider may supply entire exact half;
+missing provider key marks that provider dry rather than refusing launch.
+Both keys absent still refuse launch.
+
+Run client memoizes first model-plus-canonical-prompt payload per invocation.
+Exact duplicate calls reuse in-flight or completed payload rather than calling provider again.
+A later invocation repeat replaces interrupted work and is never independent or non-bias evidence.
 
 Schema-9 `confirmations` binds earlier acceptable review to exact candidate,
 paragraph digests,
@@ -54,12 +66,11 @@ so fresh validation must come from current writer rather than reconstructed arti
 `hf:zai-org/GLM-4.7-Flash` remain unreachable from every active stage.
 `hf:zai-org/GLM-5.3-Flash` uses verified Synthetic route without inherited GLM-5.2 standing.
 
-### Active validation snapshot
+### Stopped validation snapshot
 
-Snapshot taken 2026-08-29 at 12:14 UTC.
-Neither active run had terminal `TALLY` at snapshot.
-Process liveness and log writes are evidence of activity,
-not remaining duration.
+Snapshot began 2026-08-29 at 12:14 UTC.
+Both generation-12 processes were later stopped after non-conforming behavior was identified.
+Neither root is resumable under generation 13 or publication evidence.
 
 #### `Weideriche_`
 
@@ -71,7 +82,7 @@ not remaining duration.
 - Post-snapshot first-attempt tally:
   `status=ERROR ms=4840305 aborted=false error=slice 1 did not meet absolute naturalness floor`.
 - First attempt wrote no artifact or page and queued automatic reattempt with 13 additional cache records.
-- Process remains active on second attempt.
+- Process was stopped during incorrect whole-entry second attempt.
 - Expected artifact if published:
   `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829/artifacts/Weideriche_.json`.
 - Expected page if published:
@@ -107,6 +118,8 @@ its private log and candidate-review logs remain usable only without quoting the
 - Log: `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
 - Provenance: `~/temp/agent/pr386-Carena0442-run-provenance-20260829.md`.
 - Snapshot state: 22 slices prepared; first non-metadata repair slice active.
+- Process was stopped after same-prompt repetition was rejected as independence mechanism.
+- It wrote no artifact or page.
 - Expected artifact if published:
   `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829/artifacts/Carena0442.json`.
 - Expected page if published:
@@ -131,7 +144,7 @@ Both made no model call,
 produced no run root,
 and are not evidence.
 
-### Completion gates for each active run
+### Completion gates for future fresh runs
 
 1.  Inspect terminal `TALLY`; process exit zero is insufficient.
 2.  Count page and artifact outputs.
@@ -152,21 +165,21 @@ and are not evidence.
     timing report,
     slice-cost report,
     and provenance record.
-7.  Treat any naturalness refusal,
-    tie,
-    no-correction,
-    fidelity-base retention,
-    exhausted correction,
-    incomplete passage,
-    or publication mismatch as terminal refusal.
+7.  Treat quality rejection as stage-local repair work,
+    never terminal `do not publish` answer.
+    `status=INCOMPLETE` means operational work remains and is not success or quality verdict.
 
-### Time-to-complete work after active runs
+### Time-to-complete work before another Carena run
 
-Owner requested performance discussion after both runs finish.
-Do not change runtime settings before that discussion.
+Owner requires fresh `Carena0442` median below two hours without weakening quality.
+Stopped generation-12 run is phase evidence,
+not completion-time sample.
 Use `doc/planning/translation-repair-entry-time-to-complete.md` as measurement protocol.
+No new validation starts before guard proofs,
+commit,
+and completion-path plan.
 
-Current runs overlap and share provider capacity.
+Stopped runs overlapped and shared provider capacity.
 Their elapsed-time ratio is not matched concurrency evidence.
 Separate time to quorum from post-quorum grace,
 completed calls from abandoned calls,
@@ -175,13 +188,16 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  Let both active runs reach terminal state unless a genuine blocker appears.
-2.  Sanitize and inspect each terminal output without quoting corpus or reviewer wording.
-3.  Run publication verification and complete-page reading where page exists.
-4.  Update this current section and package readiness record with final evidence paths.
-5.  Perform measured time-to-complete analysis and discuss performance with owner.
-6.  Continue targeted `Zha_Ke` and `Toka_ls` validation only after current output is understood.
-7.  Complete live editor and checker calibration before production-readiness claim.
+1.  GFP-prove continuous correction,
+    prompt payload reuse,
+    and stopped whole-entry retry guard.
+2.  Commit generation-13 work while excluding `.idea/.name`.
+3.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+4.  Optimize only measured completion path without weakening quality.
+5.  Rebuild pull-request fixture worktree and launch fresh generation-13 roots only after performance gate.
+6.  Verify every successful page and artifact,
+    then read complete output.
+7.  Continue targeted calibration and remaining pages after current mechanism is proven.
 
 There is no release deadline.
 Strict actual-output quality remains gate.

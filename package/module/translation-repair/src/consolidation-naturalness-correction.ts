@@ -5,6 +5,7 @@ import { confirmAbsoluteNaturalness, } from './absolute-naturalness-confirmation
 import type { AbsoluteNaturalnessReviewOutcome, } from './absolute-naturalness-review-stage.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { PriorNaturalnessCorrection, } from './refine-selection-context.ts';
 import type {
   ConsolidationNaturalnessCorrectionAudit,
   ConsolidationPolishConfig,
@@ -96,6 +97,8 @@ export function naturalnessFindingsDigest(
  *
  * @param rejection - latest exact candidate-bound absolute review
  *
+ * @param priorCorrections - failed strategies next attempt must not repeat
+ *
  * @param syntax - explicit syntax role when present
  *
  * @param lineStructured - source line-boundary policy
@@ -126,6 +129,7 @@ export async function runNaturalnessCorrection(
     archiveText,
     rejectedText,
     rejection,
+    priorCorrections,
     syntax,
     lineStructured,
     identityContext,
@@ -140,6 +144,7 @@ export async function runNaturalnessCorrection(
     readonly archiveText: string;
     readonly rejectedText: string;
     readonly rejection: AbsoluteNaturalnessReviewOutcome;
+    readonly priorCorrections: readonly PriorNaturalnessCorrection[];
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly identityContext?: string;
@@ -164,6 +169,7 @@ export async function runNaturalnessCorrection(
     mode: {
       kind: 'required-naturalness-correction',
       findings: rejection.findings,
+      priorCorrections,
     },
     sliceIndex,
     config,

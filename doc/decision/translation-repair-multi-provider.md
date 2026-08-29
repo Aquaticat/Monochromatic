@@ -1151,21 +1151,31 @@ Planning denominator therefore moves to Kimi-K3 input price without admitting an
 Diagnosis and consumer-side guard are recorded in
 `doc/troubleshooting/synthetic-rate-limit-default-drift.md`.
 
-### Exact-half validation is active, 2026-08-29
+### Exact-half validation stopped and generation 13 follows, 2026-08-29
 
-Commits `97fda9f95` and `68c37da59` add repeated absolute acceptance and cap required participation at exact half.
-Two-provider production-pinned `Weideriche_` validation is active as `proc_a259`.
-Pull-request 386 `Carena0442` validation is active as `proc_3a1c` against exact files in isolated fixture.
-Both providers read wet at launch.
-Neither run had terminal tally at 12:14 UTC snapshot.
-`Weideriche_` first attempt later refused absolute naturalness after 4,840,305 milliseconds,
+Commits `97fda9f95` and `68c37da59` add repeated absolute acceptance and exact-half participation.
+Generation-12 `Weideriche_` and pull-request 386 `Carena0442` processes were stopped.
+`Weideriche_` first attempt refused absolute naturalness after 4,840,305 milliseconds,
 wrote no artifact or page,
-and queued cache-warm reattempt.
+and incorrectly queued whole-entry reattempt.
+Carena process stopped after same-model same-prompt repetition was rejected as independence mechanism.
+Neither root is publication,
+readiness,
+or completion-time evidence.
 
-Concurrent runs share provider capacity,
+Generation 13 continues correction from latest exact rejection,
+uses distinct defect-discovery and acceptance-challenge responsibilities,
+and memoizes model-plus-canonical-prompt payloads per invocation.
+Exact duplicates reuse first payload without another provider call.
+One configured or wet provider is valid normal operation;
+absent provider is dry,
+and exact-half participation may come entirely from other provider.
+No provider family or cross-provider response is mandatory.
+
+Stopped runs shared provider capacity,
 so their durations do not compare provider performance.
-Provider availability remains a condition recorded beside output,
-not proof of quality or remaining duration.
+Fresh Carena median below two hours is objective before broader launch,
+without weakening quality.
 Fresh artifact,
 publication verification,
 complete-page reading,

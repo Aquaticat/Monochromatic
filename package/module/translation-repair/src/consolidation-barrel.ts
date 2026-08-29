@@ -16,6 +16,7 @@ export {
 export {
   ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
   type AbsoluteNaturalnessFinding,
+  type AbsoluteNaturalnessReviewPerspective,
   type AbsoluteNaturalnessReviewSubject,
   type AbsoluteNaturalnessReviewWire,
   buildAbsoluteNaturalnessReviewMessages,
@@ -70,6 +71,7 @@ export {
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
 export { NaturalnessCompletenessError, } from './naturalness-completeness-error.ts';
+export { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
 export {
   consolidationWorthResuming,
   persistConsolidationSettlement,

@@ -122,6 +122,16 @@ const INITIAL_FINDINGS = [{ paragraph: 1, problem: 'Replace nominalized verb phr
 const SECOND_FINDINGS = [{ paragraph: 1, problem: 'Use ordinary location preposition.', },] as const;
 
 /**
+ * Second correction whose review exposes one final defect.
+ */
+const SECOND_CORRECTION_TEXT = 'The cat slept peacefully upon the windowsill.';
+
+/**
+ * Finding exposed by second correction.
+ */
+const THIRD_FINDINGS = [{ paragraph: 1, problem: 'Replace marked location preposition.', },] as const;
+
+/**
  * Valid schema-nine two-correction digest chain.
  */
 const CHAINED_REVIEW = {
@@ -178,6 +188,44 @@ const CHAINED_REVIEW = {
       verdict: 'acceptable',
       findings: [],
     },
+  ],
+} as const;
+
+/**
+ * Valid schema-nine three-correction digest chain.
+ */
+const THREE_CORRECTION_REVIEW = {
+  correctionCount: 3,
+  corrections: [
+    CHAINED_REVIEW.corrections[0],
+    {
+      inputDigest: hashContent({ content: FIRST_CORRECTION_TEXT, },),
+      findingsDigest: hashContent({ content: JSON.stringify(SECOND_FINDINGS,), },),
+      gatedTextDigest: hashContent({ content: SECOND_CORRECTION_TEXT, },),
+    },
+    {
+      inputDigest: hashContent({ content: SECOND_CORRECTION_TEXT, },),
+      findingsDigest: hashContent({ content: JSON.stringify(THIRD_FINDINGS,), },),
+      gatedTextDigest: hashContent({ content: FINAL_TEXT, },),
+    },
+  ],
+  rounds: [
+    CHAINED_REVIEW.rounds[0],
+    CHAINED_REVIEW.rounds[1],
+    {
+      candidateDigest: hashContent({ content: SECOND_CORRECTION_TEXT, },),
+      candidateText: SECOND_CORRECTION_TEXT,
+      paragraphCount: 1,
+      paragraphDigests: [hashContent({ content: SECOND_CORRECTION_TEXT, },),],
+      seats: [
+        unacceptableSeat({ modelId: 'hf:cat/Cat-A', problem: THIRD_FINDINGS[0].problem, },),
+        acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
+      ],
+      usable: 2,
+      verdict: 'unacceptable',
+      findings: THIRD_FINDINGS,
+    },
+    CHAINED_REVIEW.rounds[2],
   ],
 } as const;
 
@@ -240,6 +288,19 @@ await describe({
           correctionChainRequired: true,
         },);
         expect(parsed,).toEqual(CHAINED_REVIEW,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS THIRD CORRECTION when complete digest chain reaches final acceptance',
+      fn: async () => {
+        const parsed = parseNaturalnessReview({
+          value: THREE_CORRECTION_REVIEW,
+          path: 'consolidation.slices[0].polish.review',
+          finalText: FINAL_TEXT,
+          correctionChainRequired: true,
+        },);
+        expect(parsed,).toEqual(THREE_CORRECTION_REVIEW,);
       },
     },),
 

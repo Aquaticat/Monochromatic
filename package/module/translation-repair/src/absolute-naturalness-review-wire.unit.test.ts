@@ -9,6 +9,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   buildAbsoluteNaturalnessReviewMessages,
@@ -77,6 +78,36 @@ await describe({
         expect(sheet,).toContain('soft breaks that render as spaces',);
         expect(sheet,).toContain('after replacing each soft break with a space',);
         expect(sheet,).toContain('Mimi (@mimi_cat)',);
+      },
+    },),
+
+    it({
+      name: 'GIVES CONFIRMATION SUBSTANTIVELY DISTINCT CHALLENGE RESPONSIBILITY',
+      fn: async () => {
+        /** Shared exact candidate subject for both responsibilities. */
+        const subject = {
+          sourceText: '猫猫在窗台上睡觉。',
+          candidateText: 'The cat sleeps on the windowsill.',
+          paragraphs: ['The cat sleeps on the windowsill.',],
+        };
+        const discovery = buildAbsoluteNaturalnessReviewMessages({
+          subject,
+          perspective: 'defect-discovery',
+        },);
+        const challenge = buildAbsoluteNaturalnessReviewMessages({
+          subject,
+          perspective: 'acceptance-challenge',
+        },);
+        expect(JSON.stringify(challenge,),).not.toBe(JSON.stringify(discovery,),);
+        expect(messageText({ message: nonNullishOrThrow(discovery[0],), },),).toContain(
+          'without relying on any prior verdict',
+        );
+        expect(messageText({ message: nonNullishOrThrow(challenge[0],), },),).toContain(
+          'A prior editor accepted this exact candidate',
+        );
+        expect(messageText({ message: nonNullishOrThrow(challenge[0],), },),).toContain(
+          'work backward through each paragraph and sentence',
+        );
       },
     },),
   ],

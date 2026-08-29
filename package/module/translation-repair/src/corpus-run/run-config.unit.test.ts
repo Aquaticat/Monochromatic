@@ -297,8 +297,7 @@ await describe({
   name: createRunClient.name,
   children: [
     it({
-      name: 'builds a client when both keys are injected, which is the only '
-        + 'path a run should ever take',
+      name: 'builds a client when both keys are injected',
       fn: async () => {
         using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
         using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
@@ -335,26 +334,22 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a missing second key rather than running on one provider. '
-        + 'Half the roster is served only by the second provider, so a '
-        + 'one-provider client offered those seats to a provider that cannot '
-        + 'serve them, quorum still met on the other half, and the run settled '
-        + 'as a well-formed comparison half the roster never took part in '
-        + '(`#235`)',
+      name: 'BUILDS with only Synthetic configured because one wet provider is normal mode',
       fn: async () => {
         using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
         using _second = withHyperKey({ value: '', },);
+        const client = createRunClient();
+        expect(typeof client.chatText,).toBe('function',);
+      },
+    },),
 
-        /**
-         * What buildWithoutSecondKey raised, read for its class and its wording.
-         */
-        const refusalOfBuildingWithOneKey = caught(function buildWithoutSecondKey() {
-          createRunClient();
-        },);
-
-        expect(refusalOfBuildingWithOneKey,).toBeInstanceOf(RunConfigError,);
-        expect((refusalOfBuildingWithOneKey as Error).message,).toContain(HYPER_KEY_VAR,);
-        expect((refusalOfBuildingWithOneKey as Error).message,).toContain('mise',);
+    it({
+      name: 'BUILDS with only Hyper configured because no provider family is mandatory',
+      fn: async () => {
+        using _unset = withoutApiKey();
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        const client = createRunClient();
+        expect(typeof client.chatText,).toBe('function',);
       },
     },),
 
@@ -364,6 +359,7 @@ await describe({
         + 'the message names a variable and a fix, never content',
       fn: async () => {
         using _unset = withoutApiKey();
+        using _second = withHyperKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for the marker the boundary checks.
@@ -378,13 +374,10 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES to build a client when the key is unset, rather than '
-        + 'building one that fails on every call. A client with no key would '
-        + 'burn the whole roster against 401s before anyone realized sops had '
-        + 'not injected anything, and the failure would read as a provider '
-        + 'outage rather than as a setup mistake',
+      name: 'REFUSES to build client when neither provider is configured',
       fn: async () => {
         using _unset = withoutApiKey();
+        using _second = withHyperKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for its class as well as its wording.
@@ -399,11 +392,10 @@ await describe({
     },),
 
     it({
-      name: 'refuses an EMPTY key for the same reason it refuses an absent '
-        + 'one, since an exported-but-empty variable is an ordinary shell '
-        + 'accident and is indistinguishable from no key at the API',
+      name: 'REFUSES when both keys are empty',
       fn: async () => {
         using _empty = withApiKey({ value: '', },);
+        using _second = withHyperKey({ value: '', },);
 
         /**
          * What buildWithEmptyKey raised, read for its class as well as its wording.
@@ -418,10 +410,10 @@ await describe({
     },),
 
     it({
-      name: 'names mise in the failure, so whoever hits it learns the fix '
-        + 'rather than only the symptom',
+      name: 'names mise in total-configuration failure so operator learns fix',
       fn: async () => {
         using _unset = withoutApiKey();
+        using _second = withHyperKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for its class as well as its wording.
@@ -645,6 +637,29 @@ await describe({
         expect(Error.isError(came,),).toBe(false,);
         expect(urls.some(isFirstProviderChat,),).toBe(true,);
         expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'WRAPS ROUTED CLIENT with model-prompt payload reuse',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+
+        /**
+         * Transport recording provider calls.
+         */
+        const { transport, urls, } = recordingTransport();
+        /**
+         * One configured client preserving prompt claims across calls.
+         */
+        const client = createRunClient({ transport, },);
+        await askSeat({ client, modelId: SHARED_SEAT, },);
+        const duplicate = await askSeat({ client, modelId: SHARED_SEAT, },);
+
+        expect(Error.isError(duplicate,),).toBe(false,);
+        expect(urls.filter(isFirstProviderChat,),).toHaveLength(1,);
       },
     },),
 

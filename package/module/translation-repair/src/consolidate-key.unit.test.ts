@@ -222,7 +222,7 @@ await describe({
         + 'moved on 2026-08-22 for line-structure judging and on 2026-08-28 for target-authoritative '
         + 'metadata contributor spelling, final body polish, target body contributor authority, and '
         + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction, then on 2026-08-29 for '
-        + 'render-aware absolute review, rejected-base correction prompts, absolute correction eligibility, and exact-half participation. These policies are not text fields, '
+        + 'render-aware absolute review, rejected-base correction prompts, absolute correction eligibility, exact-half participation, continuous correction, and distinct confirmation responsibility. These policies are not text fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
         // THE LITERAL MOVED TWICE ON 2026-08-29. Its fixture roster first
@@ -234,8 +234,10 @@ await describe({
         // perform separate whole-paragraph absolute-eligibility passes or
         // confirm an acceptable final reading independently. Version 12 moves
         // every direct roster round from fixed or all-seat waits to exact half.
+        // Version 13 continues correction beyond two and separates discovery
+        // from acceptance-challenge review.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'b07b186a3bc7b0abc6f6f912d6a59b033fe8a447820cf8c2b000285300f89b61',
+          '043a694976480edbde50fafa84e8684a02c1fa5f2067944b557f1af9194683f1',
         );
       },
     },),

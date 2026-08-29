@@ -6,6 +6,29 @@ import type { SelectEvidence, } from './candidate-select-wire.ts';
 // contradictory questions about whether current wording may remain.
 
 /**
+ * One prior correction outcome that failed to replace rejected text.
+ *
+ * @example
+ * ```ts
+ * const prior: PriorNaturalnessCorrection = { proposedText: 'The cat slept.', findings: ['gate kept rejected input'], };
+ * ```
+ */
+export type PriorNaturalnessCorrection = {
+  /**
+   * Exact proposal prior round tried to authorize.
+   */
+  readonly proposedText: string;
+
+  /**
+   * Generation,
+   * selection,
+   * structure,
+   * and fidelity findings explaining failure.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
  * Why refinement is running and whether unchanged text remains admissible.
  *
  * @example
@@ -30,6 +53,11 @@ export type RefineStageMode =
      * Material defects candidate must resolve together.
      */
     readonly findings: readonly AbsoluteNaturalnessFinding[];
+
+    /**
+     * Earlier failed strategies next correction must not repeat.
+     */
+    readonly priorCorrections?: readonly PriorNaturalnessCorrection[];
   };
 
 /**
@@ -117,6 +145,22 @@ export function buildRefineSelectionContext(
       return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
     },)
     .join('\n',);
+  /**
+   * Failed prior strategies rendered as evidence against repetition.
+   */
+  const priorCorrections = (mode.priorCorrections ?? [])
+    .map(function renderPrior(
+      prior,
+      index,
+    ): string {
+      /**
+       * Prior findings rendered in original order.
+       */
+      const findings = prior.findings
+        .join('\n',);
+      return `Attempt ${String(index + 1,)} proposal:\n${prior.proposedText}\nFindings:\n${findings}`;
+    },)
+    .join('\n\n',);
   return {
     task: 'The CURRENT English translation failed an independent absolute-quality review. Choose a faithful correction that resolves every REQUIRED FINDING. Decline every candidate when each one still contains any material naturalness defect.',
     criteria: [
@@ -143,6 +187,12 @@ export function buildRefineSelectionContext(
         label: 'REQUIRED FINDINGS from independent absolute-quality review',
         text: selectionFindings,
       },
+      ...(priorCorrections === ''
+        ? []
+        : [{
+          label: 'PRIOR CORRECTION STRATEGIES THAT FAILED; choose a materially different approach',
+          text: priorCorrections,
+        },]),
     ],
     declineConsequence: 'the caller refuses publication because CURRENT already failed absolute review',
   };

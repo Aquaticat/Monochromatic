@@ -123,6 +123,25 @@ await describe({
     },),
 
     it({
+      name: 'TREATS EACH UNCONFIGURED PROVIDER AS DRY while other remains wet',
+      fn: async () => {
+        /** Stub providers with budget on both sides. */
+        const { synthetic, hyper, } = stubProviders({},);
+        const syntheticOnly = createProviderBudgets({ synthetic, },);
+        const hyperOnly = createProviderBudgets({ hyper, },);
+
+        expect(await syntheticOnly.read({ signal: SIGNAL, },),).toEqual({
+          syntheticDry: false,
+          hyperDry: true,
+        },);
+        expect(await hyperOnly.read({ signal: SIGNAL, },),).toEqual({
+          syntheticDry: true,
+          hyperDry: false,
+        },);
+      },
+    },),
+
+    it({
       name: 'reads an exhausted weekly credit as dry',
       fn: async () => {
         /** Stub providers with the first one's weekly credit spent. */

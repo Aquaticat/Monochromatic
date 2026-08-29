@@ -56,8 +56,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 12 starts every direct roster round and absolute acceptance at
  * exact-half quorum rather than requiring every provider seat.
+ *
+ * VERSION 13 replaces two-correction terminal refusal with continuous
+ * latest-rejection correction and distinct acceptance-challenge review.
  */
-export const CONSOLIDATE_CACHE_VERSION = 12;
+export const CONSOLIDATE_CACHE_VERSION = 13;
 
 /**
  * What a line-structured slice appends to its key material.

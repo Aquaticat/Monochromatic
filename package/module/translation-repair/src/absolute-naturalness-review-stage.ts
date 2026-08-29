@@ -7,6 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import {
   ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
   type AbsoluteNaturalnessFinding,
+  type AbsoluteNaturalnessReviewPerspective,
   type AbsoluteNaturalnessReviewSubject,
   type AbsoluteNaturalnessReviewWire,
   buildAbsoluteNaturalnessReviewMessages,
@@ -147,6 +148,8 @@ function uniqueFindings(
  *
  * @param subject - source context and exact candidate
  *
+ * @param perspective - distinct defect-discovery or acceptance-challenge task
+ *
  * @param signal - caller cancellation
  *
  * @param exchangeTimeoutMs - deadline accounting unavailable seat
@@ -167,6 +170,7 @@ export async function reviewAbsoluteNaturalness(
     client,
     modelIds,
     subject,
+    perspective = 'defect-discovery',
     signal,
     exchangeTimeoutMs,
     graceMs,
@@ -175,6 +179,7 @@ export async function reviewAbsoluteNaturalness(
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: AbsoluteNaturalnessReviewSubject;
+    readonly perspective?: AbsoluteNaturalnessReviewPerspective;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly graceMs?: number;
@@ -210,7 +215,10 @@ export async function reviewAbsoluteNaturalness(
   const outcomes = await runGatherRound({
     client,
     modelIds,
-    messages: buildAbsoluteNaturalnessReviewMessages({ subject, },),
+    messages: buildAbsoluteNaturalnessReviewMessages({
+      subject,
+      perspective,
+    },),
     signal,
     exchangeTimeoutMs,
     responseFormat: ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,

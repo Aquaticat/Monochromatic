@@ -49,7 +49,7 @@ await describe({
         + 'this is the case where the count falls furthest and means the most',
       fn: async () => {
         expect(readAttemptOutcome({
-          settled: true,
+          outcome: { kind: 'settled', },
           cachedBefore: 64,
           cachedAfter: 0,
         },),).toEqual({ kind: 'settled', },);
@@ -62,7 +62,7 @@ await describe({
         + 'one did and the cap is the only thing that stopped it',
       fn: async () => {
         expect(readAttemptOutcome({
-          settled: false,
+          outcome: { kind: 'resumable-failure', },
           cachedBefore: 45,
           cachedAfter: 64,
         },),).toEqual({
@@ -73,12 +73,23 @@ await describe({
     },),
 
     it({
+      name: 'STOPS WHOLE-ENTRY RETRY when stage-local work remains despite cache growth',
+      fn: async () => {
+        expect(readAttemptOutcome({
+          outcome: { kind: 'stopped', },
+          cachedBefore: 0,
+          cachedAfter: 13,
+        },),).toEqual({ kind: 'stopped', },);
+      },
+    },),
+
+    it({
       name: 'REFUSES another attempt when the count did not move, which is the '
         + 'stop condition: no progress guarantee holds, so an entry that '
         + 'bought nothing would repeat itself until the soft budget was gone',
       fn: async () => {
         expect(readAttemptOutcome({
-          settled: false,
+          outcome: { kind: 'resumable-failure', },
           cachedBefore: 45,
           cachedAfter: 45,
         },),).toEqual({
@@ -96,7 +107,7 @@ await describe({
         + 'a fresh generation',
       fn: async () => {
         expect(readAttemptOutcome({
-          settled: false,
+          outcome: { kind: 'resumable-failure', },
           cachedBefore: 65,
           cachedAfter: 10,
         },),).toEqual({
@@ -112,7 +123,7 @@ await describe({
         + 'rather than repeating a failure the cache cannot shorten',
       fn: async () => {
         expect(readAttemptOutcome({
-          settled: false,
+          outcome: { kind: 'resumable-failure', },
           cachedBefore: 65,
           cachedAfter: 0,
         },),).toEqual({
@@ -127,7 +138,7 @@ await describe({
         + 'is every large entry the first time it is seen',
       fn: async () => {
         expect(readAttemptOutcome({
-          settled: false,
+          outcome: { kind: 'resumable-failure', },
           cachedBefore: 0,
           cachedAfter: 45,
         },),).toEqual({

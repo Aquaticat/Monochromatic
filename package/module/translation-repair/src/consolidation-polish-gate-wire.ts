@@ -235,6 +235,23 @@ export function buildConsolidationPolishGateMessages(
         return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
       },);
   /**
+   * Prior failed strategies correction gate must not repeat.
+   */
+  const priorCorrections = comparative
+    ? []
+    : (mode.priorCorrections ?? [])
+      .map(function renderPrior(
+        prior,
+        index,
+      ): string {
+        /**
+         * Prior findings rendered in original order.
+         */
+        const findings = prior.findings
+          .join('\n',);
+        return `Attempt ${String(index + 1,)} proposal:\n${prior.proposedText}\nFindings:\n${findings}`;
+      },);
+  /**
    * Fence absent from every enclosed passage and finding.
    */
   const fence = selectFence({
@@ -244,6 +261,7 @@ export function buildConsolidationPolishGateMessages(
       subject.baseText,
       subject.polishedText,
       ...requiredFindings,
+      ...priorCorrections,
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
     ],
   },);
@@ -255,6 +273,17 @@ export function buildConsolidationPolishGateMessages(
     : [
       'REQUIRED FINDINGS from independent absolute review:',
       `${fence}\n${requiredFindings.join('\n',)}\n${fence}`,
+      '',
+    ];
+  /**
+   * Prior failed strategy block,
+   * absent on first correction.
+   */
+  const priorEvidence = (priorCorrections.length === 0)
+    ? []
+    : [
+      'PRIOR CORRECTION STRATEGIES THAT FAILED:',
+      `${fence}\n${priorCorrections.join('\n\n',)}\n${fence}`,
       '',
     ];
   /**
@@ -287,6 +316,7 @@ export function buildConsolidationPolishGateMessages(
         `${fence}\n${subject.polishedText}\n${fence}`,
         '',
         ...correctionEvidence,
+        ...priorEvidence,
         `Return JSON: choice one of "polished", "base", "${CONTEST_REFUSAL}";`,
         'unsupported and dropped each a list naming any of "polished", "base";',
         'reason one sentence.',

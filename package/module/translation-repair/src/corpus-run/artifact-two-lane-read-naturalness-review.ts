@@ -102,20 +102,16 @@ export function parseNaturalnessReview(
     path,
   },);
   /**
-   * Correction count under bounded policy.
+   * Correction count under artifact generation policy.
    */
   const correctionCount = requireCount({
     value: record.correctionCount,
     path: `${path}.correctionCount`,
   },);
-  /**
-   * Maximum corrections this artifact generation can represent.
-   */
-  const maximumCorrections = correctionChainRequired ? 2 : 1;
-  if (correctionCount > maximumCorrections) {
+  if ((!correctionChainRequired) && (correctionCount > 1)) {
     throw new ArtifactParseError({
       path: `${path}.correctionCount`,
-      reason: `zero to ${String(maximumCorrections,)} bounded corrections`,
+      reason: 'zero or one legacy correction',
     },);
   }
   /**
@@ -135,16 +131,10 @@ export function parseNaturalnessReview(
         paragraphDigestsRequired: correctionChainRequired,
       },);
     },);
-  /**
-   * Correction count narrowed to artifact domain after range validation.
-   */
-  const boundedCorrectionCount = (correctionCount === 0)
-    ? 0
-    : ((correctionCount === 1) ? 1 : 2);
-  if (rounds.length !== (boundedCorrectionCount + 1)) {
+  if (rounds.length !== (correctionCount + 1)) {
     throw new ArtifactParseError({
       path: `${path}.rounds`,
-      reason: `${String(boundedCorrectionCount + 1,)} rounds for correction count`,
+      reason: `${String(correctionCount + 1,)} rounds for correction count`,
     },);
   }
   /**
@@ -165,10 +155,10 @@ export function parseNaturalnessReview(
         },);
       },)
     : [];
-  if (correctionChainRequired && (corrections.length !== boundedCorrectionCount)) {
+  if (correctionChainRequired && (corrections.length !== correctionCount)) {
     throw new ArtifactParseError({
       path: `${path}.corrections`,
-      reason: `${String(boundedCorrectionCount,)} digest-bound correction transitions`,
+      reason: `${String(correctionCount,)} digest-bound correction transitions`,
     },);
   }
   /**
@@ -236,7 +226,7 @@ export function parseNaturalnessReview(
     paragraphDigestsRequired: correctionChainRequired,
   },);
   return {
-    correctionCount: boundedCorrectionCount,
+    correctionCount,
     ...(correctionChainRequired ? { corrections, } : {}),
     rounds,
     ...(confirmationsPresent ? { confirmations, } : {}),

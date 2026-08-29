@@ -125,11 +125,13 @@ so first-pass acceptance followed by confirmation produces two such pairs for sa
 Cost reports must count both draws rather than treating second pair as duplicate logging.
 Legacy schema-9 artifacts without confirmation field remain readable.
 
-Two-correction cap,
-fidelity gate,
-exact final absolute review,
-and terminal refusal remain unchanged.
-Generation bump prevents reuse of settlements bought under relative correction selection or single-review acceptance.
+Generation-13 correction supersedes two-correction cap and quality terminal refusal.
+Every rejection continues from latest exact candidate and findings.
+Failed no-change or fidelity strategy becomes evidence for materially different next prompt.
+Fidelity gate and exact final absolute review remain unchanged.
+Generation bump prevents reuse of settlements bought under bounded correction,
+relative correction selection,
+or repeated-prompt acceptance.
 
 Directional replay held prior three proposals and final replay finding fixed.
 Original correction ledger had all eight judges select candidate one.
@@ -140,7 +142,7 @@ not fresh publication evidence.
 A second generated slate was still selected despite all three candidates later failing exact review,
 which is why repeated absolute acceptance is enforcement rather than selector wording alone.
 
-## Active generation-12 timing evidence
+## Stopped generation-12 timing evidence
 
 Snapshot taken 2026-08-29 at 12:14 UTC.
 
@@ -153,11 +155,12 @@ Lane contest was active and no terminal tally existed at snapshot.
 First attempt later refused slice 1 absolute naturalness at 4,840,305 milliseconds,
 wrote no artifact or page,
 and queued automatic reattempt with 13 additional cache records.
-Process remained active on cache-warm second attempt.
+Process was stopped during non-conforming whole-entry second attempt.
 Log is
 `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829.log`.
 
 Pull-request 386 `Carena0442` process `proc_3a1c` had prepared 22 slices and started first non-metadata repair slice.
+It was stopped after same-model same-prompt repetition was rejected as independence mechanism.
 Log is
 `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
 Exact pull-request provenance is in
@@ -167,11 +170,18 @@ These runs overlap and share provider capacity.
 Their elapsed-time ratio cannot measure scaling or concurrency benefit.
 The pull-request fixture also has different pipeline digest
 because corpus pin and clone location are explicit throwaway inputs.
-Wait for terminal tally,
-phase reports,
-publication verification,
-and complete-page quality reading before performance recommendation.
+Neither stopped root is completion-time or publication evidence.
+Before another Carena launch,
+measure and optimize completion path toward fresh-run median below two hours without weakening quality.
 Detailed protocol is `doc/planning/translation-repair-entry-time-to-complete.md`.
+
+Generation 13 adds `TALLY status=INCOMPLETE` for stage-local or operational work that remains.
+It is neither success nor quality verdict,
+and scheduler does not queue whole-entry restart from cache growth.
+Exact duplicate model-plus-prompt calls within invocation reuse first payload without provider call;
+distinct confirmation uses prior-acceptance challenge responsibility.
+One configured provider is normal mode;
+absent provider is dry and exact-half quorum may come entirely from other provider.
 
 ## Missing observability
 

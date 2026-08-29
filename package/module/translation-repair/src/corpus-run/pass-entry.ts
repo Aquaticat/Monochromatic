@@ -24,6 +24,7 @@ import { passArchiveText, } from './pass-archive.ts';
 import { runPassConsolidation, } from './pass-consolidate.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
+import { entryErrorOutcome, } from './entry-error-outcome.ts';
 import { persistSettledEntry, } from './pass-entry-persist.ts';
 import { assertPublishableTranslation, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
@@ -486,8 +487,12 @@ async function runEntryPipeline(
      * Failure text for the TALLY line, named or quoted per its class and capped.
      */
     const message = tallyErrorText({ error, },);
-    console.log(`TALLY ${entry.id} status=ERROR ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,);
-    return { kind: 'failed', };
+    /**
+     * Tally and retry classification for caught state.
+     */
+    const classified = entryErrorOutcome({ error, },);
+    console.log(`TALLY ${entry.id} status=${classified.status} ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,);
+    return classified.outcome;
   }
 }
 
@@ -500,9 +505,8 @@ async function runEntryPipeline(
  * next one. Anything raised here would therefore end the run, which is why
  * nothing is.
  *
- * Returns nothing: the artifact file and the TALLY line ARE the outputs, and a
- * caller that read a value here would be reading a second, weaker copy of what
- * the artifact already says.
+ * Returns scheduling disposition so quality interruption cannot masquerade as
+ * cache-progress reason for fresh whole-entry attempt.
  *
  * @param client - shared model client
  *
@@ -528,9 +532,11 @@ async function runEntryPipeline(
  * @throws StatedRefusalError before entry work when overlap environment value
  * is invalid launch configuration
  *
+ * @returns Settlement, resumable operational failure, or stopped incomplete work
+ *
  * @example
  * ```ts
- * await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
+ * const outcome = await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
  * ```
  */
 export async function settleEntry(
@@ -555,7 +561,7 @@ export async function settleEntry(
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
   },
-): Promise<void> {
+): Promise<EntryOutcome> {
   /**
    * Slice overlap read once for this entry and shared by every per-slice driver.
    */
@@ -585,11 +591,10 @@ export async function settleEntry(
     baseSignal,
     overlap,
   },);
-  if (outcome.kind === 'failed') {
-    // The cache is what makes the next attempt cheaper, so a failed entry keeps
-    // every slice it managed to buy. This is the branch the discard used to
-    // share with the settled one.
-    return;
+  if (outcome.kind !== 'settled') {
+    // The cache is what makes operational resume cheaper. Stopped quality work
+    // also keeps evidence but does not earn another whole-entry attempt.
+    return outcome;
   }
 
   try {
@@ -608,6 +613,7 @@ export async function settleEntry(
     // nothing else: the next run skips the entry on its artifact.
     console.log(`CLEANUP ${entry.id} cache=retained error=${tallyErrorText({ error, },)}`,);
   }
+  return outcome;
 }
 
 //endregion Pass entry

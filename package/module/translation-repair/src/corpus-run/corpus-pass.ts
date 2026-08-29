@@ -24,6 +24,7 @@ import {
 } from './band-order.ts';
 import { readOnlyIds, } from './entry-filter.ts';
 import { collectEligiblePairs, } from './pass-eligibility.ts';
+import type { EntryOutcome, } from './pass-entry-contract.ts';
 import {
   settleEntry,
 } from './pass-entry.ts';
@@ -550,7 +551,7 @@ async function runCorpusPass(): Promise<void> {
       return true;
     },
 
-    attempt: async function attempt({ entry, },): Promise<boolean> {
+    attempt: async function attempt({ entry, },): Promise<EntryOutcome> {
       attempts[entry.id] = (attempts[entry.id] ?? 0) + 1;
       // Persisted before the attempt so a crash still records that it happened.
       await writeFile(
@@ -562,7 +563,7 @@ async function runCorpusPass(): Promise<void> {
         )}\n`,
       );
 
-      await settleEntry({
+      return settleEntry({
         client,
         entry,
         artifactsDir,
@@ -573,11 +574,6 @@ async function runCorpusPass(): Promise<void> {
         hardCapMs: HARD_CAP_MS,
         baseSignal: neverAbort,
       },);
-
-      // Read from the artifact directory rather than from `settleEntry`, which
-      // reports neither settlement nor progress.
-      return (await artifactBackedIds({ artifactsDir, },))
-        .has(entry.id,);
     },
   },);
 

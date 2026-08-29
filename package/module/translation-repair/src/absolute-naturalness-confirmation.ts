@@ -6,9 +6,11 @@ import {
 } from './absolute-naturalness-review-stage.ts';
 
 //region Absolute naturalness confirmation
-// Publication approval needs a second exact-half-quorum reading of exact same
-// candidate. Rejection remains immediate: it already proves candidate cannot
-// ship and its findings should reach correction without confirmation spend.
+// Publication approval needs a second exact-half-quorum responsibility over
+// exact same candidate. Rejection remains immediate: it already proves candidate
+// cannot ship and its findings should reach correction without confirmation spend.
+// Confirmation challenges prior acceptance with reverse-order reading rather than
+// repeating same model and prompt as fake independent evidence.
 
 /**
  * Successful review rounds required after first acceptable reading.
@@ -36,7 +38,7 @@ export type ConfirmedAbsoluteNaturalness = {
 };
 
 /**
- * Requires one repeated exact-half-quorum acceptance of exact candidate before approval.
+ * Requires distinct challenge acceptance after exact-candidate discovery approval.
  *
  * @param request - exact request each independent review receives
  *
@@ -53,7 +55,10 @@ export async function confirmAbsoluteNaturalness(
   /**
    * First approving quorum reading.
    */
-  const initial = await reviewAbsoluteNaturalness(request,);
+  const initial = await reviewAbsoluteNaturalness({
+    ...request,
+    perspective: 'defect-discovery',
+  },);
   if (initial.verdict !== 'acceptable') {
     return {
       review: initial,
@@ -62,9 +67,12 @@ export async function confirmAbsoluteNaturalness(
   }
 
   /**
-   * Independent repeated reading over exact same subject.
+   * Substantively distinct challenge of prior acceptance over exact same subject.
    */
-  const confirmation = await reviewAbsoluteNaturalness(request,);
+  const confirmation = await reviewAbsoluteNaturalness({
+    ...request,
+    perspective: 'acceptance-challenge',
+  },);
   return {
     review: confirmation,
     confirmations: [initial,],

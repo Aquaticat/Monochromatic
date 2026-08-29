@@ -6,12 +6,14 @@ This planning question is superseded by landed syntax-aware preparation and sche
 Hard line structure remains syntax-bearing and preserved;
 Markdown soft breaks inside prose are reviewed as rendered spaces.
 Absolute review reads exact would-ship text,
-requires repeated exact-half-quorum acceptance,
+requires defect-discovery then distinct acceptance-challenge exact-half quorum,
 and binds paragraph identities in artifact.
+Generation 13 continues correction without finite quality ceiling
+and feeds failed strategies into materially different next prompt.
 
-Do not reopen options in this file from current active-run duration.
+Generation-12 runs were stopped and are partial phase traces only.
 Time-to-complete measurement lives in
-`doc/planning/translation-repair-entry-time-to-complete.md` and waits for terminal active runs.
+`doc/planning/translation-repair-entry-time-to-complete.md` with fresh Carena median below two hours as objective.
 Remaining text is historical measurement and option reasoning.
 
 Measured 2026-08-13 across all 92 entries at pin

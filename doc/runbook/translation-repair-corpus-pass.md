@@ -83,7 +83,7 @@ TODO | DONE
     Nothing further in this runbook can work,
     and the key cannot be regenerated from anything in the repository.
 
-2.  Confirm both credentials are present in the encrypted store,
+2.  Confirm configured credential names in encrypted store,
     without printing their values.
 
     ```sh
@@ -91,7 +91,7 @@ TODO | DONE
     grep --only-matching '"TRANSLATION_REPAIR_[A-Z_]*"' .env.local.json | sort --unique
     ```
 
-    Expected, exactly these two lines:
+    Fully configured store prints these two lines:
 
     ```text
     "TRANSLATION_REPAIR_CHARM_HYPER_API_KEY"
@@ -103,9 +103,12 @@ TODO | DONE
     Never read a running process's environment to check this:
     `/proc/<pid>/environ` prints key values in full.
 
+    At least one name must exist.
+    One configured provider is valid normal operation;
+    absent provider is marked dry and its seats are unavailable.
+    Both absent is launch refusal.
     The Charm Hyper name carries `CHARM` in the middle.
-    A variable missing it is read by nothing and reported by nothing,
-    and the run proceeds on one provider while appearing configured for two.
+    A variable missing it configures Synthetic-only mode rather than silently failing.
 
 3.  Prepare the scratch root that will hold the log, the pid file and the run directory.
 
@@ -329,10 +332,16 @@ Each is the exact string the log carries.
     so every attempt is cut before any exchange returns,
     nothing caches, and the queue drops each entry as stalled on its second try.
 
--   `REATTEMPT <id> queued`, which is healthy.
-    The cap ends an attempt rather than an entry,
-    and an entry that bought more cache records goes to the back of the queue
-    and is tried again inside the same invocation.
+-   `REATTEMPT <id> queued`, which is healthy only after resumable operational error or hard cap.
+    Entry that bought more cache records goes to back of queue.
+    Quality rejection and `status=INCOMPLETE` must never produce this line.
+
+-   `TALLY <id> status=INCOMPLETE`, which means stage-local work remains.
+    It is neither success,
+    quality verdict,
+    nor publication evidence.
+    Cache stays,
+    but whole entry does not restart in same invocation.
 
 -   `STALLED <id>`, which is the earned-re-attempt rule refusing.
     The entry finished an attempt with no more cache records than it started with,

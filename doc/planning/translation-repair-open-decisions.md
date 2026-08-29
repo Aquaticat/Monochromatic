@@ -2158,16 +2158,17 @@ variable; the built-in `STRAGGLER_GRACE_MS` stays 180000 for the pass until `#26
 
 ## Question 13: entry time to complete after quality hardening
 
-Owner deferred performance discussion until active `Weideriche_` and pull-request 386 `Carena0442` runs finish.
-No option is ranked before both terminal tallies,
-phase reports,
-publication verification,
-and complete-page readings exist.
-
-The two active runs are not matched arms:
+Generation-12 `Weideriche_` and pull-request 386 `Carena0442` runs were stopped after correctness blockers.
+They are partial phase traces,
+not completion samples or matched arms:
 they have different corpus inputs and pipeline digests,
-and they overlap against shared provider capacity.
+and overlapped against shared provider capacity.
 Their elapsed-time ratio cannot establish scaling or concurrency effect.
+
+Owner set fresh `Carena0442` median below two hours as objective without weakening quality.
+No new validation launches before generation-13 correctness commit,
+partial-log phase attribution,
+and matched performance plan.
 
 `doc/planning/translation-repair-entry-time-to-complete.md` is authoritative protocol.
 It requires phase attribution,
@@ -2175,4 +2176,5 @@ post-quorum grace accounting,
 completed-versus-abandoned call separation,
 cache state,
 slice and source size,
-and publication-quality outcome before recommendation.
+run-to-run band,
+and verified publication-quality outcome before recommendation.

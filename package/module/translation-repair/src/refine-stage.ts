@@ -228,7 +228,14 @@ export async function runRefineStage(
     sourceText,
     envelopes,
     ...(identityContext === undefined ? {} : { identityContext, }),
-    ...((mode.kind === 'comparative') ? {} : { naturalnessFindings: mode.findings, }),
+    ...((mode.kind === 'comparative')
+      ? {}
+      : {
+        naturalnessFindings: mode.findings,
+        ...((mode.priorCorrections === undefined)
+          ? {}
+          : { priorNaturalnessCorrections: mode.priorCorrections, }),
+      }),
   },);
 
   /**

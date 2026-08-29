@@ -285,8 +285,8 @@ export function createProviderBudgets(
     cooldownMs = REFUSAL_COOLDOWN_MS,
     now = Date.now,
   }: {
-    readonly synthetic: Pick<SyntheticClient, 'quotas'>;
-    readonly hyper: Pick<HyperClient, 'credits'>;
+    readonly synthetic?: Pick<SyntheticClient, 'quotas'>;
+    readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
     readonly now?: () => number;
@@ -346,34 +346,44 @@ export function createProviderBudgets(
      * behind the other.
      */
     const [syntheticMeter, hyperMeter,] = await Promise.all([
-      meterRecordOf({
-        name: 'synthetic',
-        readLevel: async function readQuota(): Promise<MeterLevel> {
-          /**
-           * Snapshot the verdict and the numbers are both drawn from.
-           */
-          const quota = await synthetic.quotas({ signal, },);
+      (synthetic === undefined)
+        ? Promise.resolve<MeterRecord>({
+          state: 'dry',
+          fields: [],
+        },)
+        : meterRecordOf({
+          name: 'synthetic',
+          readLevel: async function readQuota(): Promise<MeterLevel> {
+            /**
+             * Snapshot the verdict and the numbers are both drawn from.
+             */
+            const quota = await synthetic.quotas({ signal, },);
 
-          return {
-            dry: syntheticIsDry({ quota, },),
-            fields: syntheticMeterLevel({ quota, },),
-          };
-        },
-      },),
-      meterRecordOf({
-        name: 'hyper',
-        readLevel: async function readCredits(): Promise<MeterLevel> {
-          /**
-           * Balance the verdict and the number are both drawn from.
-           */
-          const credits = await hyper.credits({ signal, },);
+            return {
+              dry: syntheticIsDry({ quota, },),
+              fields: syntheticMeterLevel({ quota, },),
+            };
+          },
+        },),
+      (hyper === undefined)
+        ? Promise.resolve<MeterRecord>({
+          state: 'dry',
+          fields: [],
+        },)
+        : meterRecordOf({
+          name: 'hyper',
+          readLevel: async function readCredits(): Promise<MeterLevel> {
+            /**
+             * Balance the verdict and the number are both drawn from.
+             */
+            const credits = await hyper.credits({ signal, },);
 
-          return {
-            dry: hyperIsDry({ credits, },),
-            fields: hyperMeterLevel({ credits, },),
-          };
-        },
-      },),
+            return {
+              dry: hyperIsDry({ credits, },),
+              fields: hyperMeterLevel({ credits, },),
+            };
+          },
+        },),
     ],);
 
     // INFO RATHER THAN DEBUG, because this line is the only record that a

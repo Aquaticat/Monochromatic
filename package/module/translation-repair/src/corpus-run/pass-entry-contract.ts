@@ -16,9 +16,14 @@ export type EntryOutcome = {
   readonly kind: 'settled';
 } | {
   /**
-   * Entry raised or hit its ceiling, and no artifact exists for it.
+   * Operational failure or hard ceiling may resume from newly cached work.
    */
-  readonly kind: 'failed';
+  readonly kind: 'resumable-failure';
+} | {
+  /**
+   * Work remains incomplete but same invocation must not start whole entry again.
+   */
+  readonly kind: 'stopped';
 };
 
 /**

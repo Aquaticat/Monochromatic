@@ -1582,9 +1582,16 @@ roster order,
 and confirmation order.
 Final-naturalness completeness guard checks settled runtime state and does not duplicate artifact reader's digest validation.
 Legacy schema-9 records without field remain readable.
-Current two-correction ceiling and repeated same-prompt confirmation do not conform to standing rules.
-Implementation work is pending;
-no further validation may rely on current behavior.
+Generation 13 removes two-correction ceiling.
+Every rejection feeds latest exact text and findings into next correction.
+No-change,
+selection decline,
+structural refusal,
+and fidelity retention become prior failed-strategy evidence for materially different next prompt.
+Schema-9 reader accepts any count of complete digest-bound transitions and still requires final acceptance.
+First acceptance uses defect-discovery responsibility;
+confirmation uses prior-acceptance challenge responsibility rather than repeated prompt.
+No further validation may reuse generation-12 consolidation cache.
 
 ### Standing operation invariants
 
@@ -1606,9 +1613,11 @@ or `do not publish` result.
 Operational interruption may pause or retry repair,
 but may not publish or weaken publication gate.
 
-One model plus one substantive prompt may contribute at most one provider payload.
+One model plus one substantive prompt may contribute at most one provider payload per invocation.
 Identity is exact model identity plus canonical ordered messages,
 including roles and exact content bytes.
+Run client memoizes first in-flight or completed payload and reuses it for exact duplicates;
+it never sends second provider call.
 Pipeline must never resend that task to same model to manufacture independence,
 non-bias,
 confirmation,
@@ -1636,6 +1645,19 @@ schema-invalid,
 or semantically rejected payload,
 that model and prompt may not be resent as another evidence draw.
 Operational recovery and discarded payload together still produce at most one recorded response.
+Malformed completed payload keeps memoized failed claim and cannot be resent.
+Claims are invocation-local;
+a later invocation replacing interrupted work may repeat provider request,
+but its result is never independent or non-bias evidence against earlier payload.
+Concurrent duplicate waits on first caller's exchange and signal;
+it does not start or cancel separate provider call.
+
+`TALLY status=INCOMPLETE` means stage-local or operational work remains.
+It is neither success,
+quality verdict,
+nor publication evidence.
+Scheduler retains caches but does not queue fresh whole-entry attempt in same invocation.
+Ordinary hard-cap or transport error remains `status=ERROR` and may resume measured cache progress.
 
 Pipeline must function normally when only one provider is wet.
 No provider family,
@@ -1673,12 +1695,14 @@ and failed startup non-evidence are recorded in
 `~/temp/agent/pr386-Carena0442-run-provenance-20260829.md` and
 `doc/handover/translation-repair.md`.
 
-Time-to-complete discussion waits for both terminal outcomes.
+The stopped runs are not completion-time samples.
+Before another `Carena0442` launch,
+completion-path work must target fresh-run median below two hours without weakening quality.
 `doc/planning/translation-repair-entry-time-to-complete.md` defines phase attribution,
 comparison controls,
-and completion evidence.
+completion evidence,
+and objective.
 Concurrent runs share provider capacity and are not matched runtime arms.
-No quality gate or deadline changes before measured discussion.
 
 Corpus-readiness work is defect-driven:
 once output proves reproducible systemic blocker,

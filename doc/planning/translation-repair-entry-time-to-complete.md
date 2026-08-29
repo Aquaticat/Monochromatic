@@ -2,12 +2,16 @@
 
 ## Decision state
 
-Performance discussion is deferred until active `Weideriche_` and pull-request 386 runs terminate.
-No runtime setting changes while either run is active.
+Both generation-12 runs were stopped after correctness blockers were identified.
+They are phase evidence,
+not completion samples.
+Before another `Carena0442` launch,
+completion path must target fresh-run median below two hours without weakening quality.
 Quality gates,
-correction bounds,
-review confirmation,
-and publication refusal remain fixed inputs to measurement.
+continuous correction,
+distinct confirmation responsibility,
+prompt payload reuse,
+and one-provider operation remain fixed measurement inputs.
 
 This work measures **entry time to complete**:
 wall time from entry start through terminal `TALLY`,
@@ -18,10 +22,12 @@ consolidation,
 confirmation,
 persistence,
 and publication checks.
-A terminal refusal is completion of attempt,
-not successful publication.
+Only verified artifact and page count as successful completion.
+`status=INCOMPLETE`,
+quality rejection,
+and operational error are censored unfinished outcomes rather than completion samples.
 
-## Active measurements
+## Stopped measurements
 
 Snapshot taken 2026-08-29 at 12:14 UTC.
 
@@ -39,7 +45,7 @@ Snapshot taken 2026-08-29 at 12:14 UTC.
 - First-attempt result after snapshot:
   `status=ERROR ms=4840305 aborted=false error=slice 1 did not meet absolute naturalness floor`.
 - First attempt wrote no artifact or page and queued reattempt with 13 additional cache records.
-- Process remains active on cache-warm second attempt.
+- Process was stopped during non-conforming whole-entry second attempt.
 - Repair slice costs recorded: 0.001, 927.787, 883.347, and 17.230 seconds.
 - Translate slice costs recorded: 427.660, 250.694, 264.892, and 8.567 seconds.
 
@@ -56,12 +62,14 @@ Snapshot taken 2026-08-29 at 12:14 UTC.
 - Expected page: run root plus `fixed/people/Carena0442/page.en.md`.
 - Verification log to create: `~/temp/agent/verify-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
 - State at snapshot: 22 slices prepared; first non-metadata repair slice active; no terminal tally.
+- Process was stopped after same-prompt repetition was rejected as independence mechanism.
+- No artifact or page exists.
 
 The pull-request run uses exact pull-request files in minimal Git fixture.
 Throwaway pipeline source changes only supply pull-request commit and corpus location.
 Its different pipeline digest makes it unsuitable as matched runtime arm against production-pinned run.
 
-## Evidence to collect after both runs
+## Evidence to collect before and during fresh generation-13 runs
 
 1.  Record terminal `TALLY`,
     process exit,
@@ -97,13 +105,15 @@ Its different pipeline digest makes it unsuitable as matched runtime arm against
 
 Completion criterion:
 every recorded millisecond belongs to named phase or named uninstrumented remainder,
-and publication quality outcome sits beside timing result.
+publication quality outcome sits beside timing result,
+and median of at least three isolated fresh same-digest successful runs is below two hours.
+Measure unchanged-run band before crediting optimization smaller than that band.
 
 ## Comparison rules
 
-Current runs overlap in wall clock and share provider capacity.
-They are operational work,
-not clean concurrency experiment.
+Stopped runs overlapped in wall clock and shared provider capacity.
+They are partial operational traces,
+not clean concurrency experiment or completion sample.
 Do not infer speedup,
 slowdown,
 or provider capacity from their elapsed-time ratio.
@@ -121,7 +131,7 @@ A command exit code of zero remains insufficient;
 artifact and page counts,
 and `verify-published` decide terminal state.
 
-## Questions for post-run discussion
+## Questions for completion-path design
 
 - Which phase owns largest measured share of each entry wall time?
 - How much post-quorum grace bought usable evidence that affected outcome?
@@ -136,4 +146,6 @@ naturalness,
 or failure semantics?
 - Which proposed change can be tested as matched disposable arm before production adoption?
 
-No recommendation is selected before active logs and outputs are complete.
+No new validation launches before partial Carena log is phase-attributed,
+correctness changes are committed,
+and matched optimization plan preserves strict quality.

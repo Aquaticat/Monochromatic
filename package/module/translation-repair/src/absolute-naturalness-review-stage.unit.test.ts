@@ -43,6 +43,25 @@ const SIX_SEAT_ROSTER = [
 ] as const;
 
 /**
+ * Seats each provider contributes to production-shaped fixture.
+ */
+const PROVIDER_SEAT_COUNT = 4;
+
+/**
+ * Production-shaped roster grouped by provider family.
+ */
+const PROVIDER_GROUPED_ROSTER = [
+  'hf:zai-org/GLM-5.3-Flash',
+  'hf:Qwen/Qwen3.8-27B',
+  'hf:moonshotai/Kimi-K3',
+  'hf:openai/gpt-oss-120b',
+  'deepseek-v4-flash-0731',
+  'deepseek-v4-pro-0813',
+  'minimax-m3',
+  'gemma-4-26b-a4b-it',
+] as const;
+
+/**
  * Builds logger retaining operational messages for assertions.
  *
  * @param messages - destination in emission order
@@ -260,6 +279,29 @@ await describe({
           problem: 'Replace stiff source-language word order.',
         },],);
       },
+    },),
+
+    ...([
+      {
+        label: 'Synthetic only',
+        unavailable: PROVIDER_GROUPED_ROSTER.slice(PROVIDER_SEAT_COUNT,),
+      },
+      {
+        label: 'Hyper only',
+        unavailable: PROVIDER_GROUPED_ROSTER.slice(0, PROVIDER_SEAT_COUNT,),
+      },
+    ] as const).map(function providerOnlyCase(testCase,) {
+      return it({
+        name: `ACCEPTS ${testCase.label} exact-half participation as normal operation`,
+        fn: async () => {
+          const review = await runReview({
+            client: reviewClient({ unavailable: testCase.unavailable, },),
+            modelIds: PROVIDER_GROUPED_ROSTER,
+          },);
+          expect(review.verdict,).toBe('acceptable',);
+          expect(review.usable,).toBe(PROVIDER_SEAT_COUNT,);
+        },
+      },);
     },),
 
     it({

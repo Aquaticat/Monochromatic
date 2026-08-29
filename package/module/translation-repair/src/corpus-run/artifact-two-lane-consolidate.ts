@@ -254,7 +254,7 @@ export type ArtifactNaturalnessReview = {
   /**
    * Dedicated correction generations bought.
    */
-  readonly correctionCount: 0 | 1 | 2;
+  readonly correctionCount: number;
 
   /**
    * Digest-bound correction transitions, required from generation nine.

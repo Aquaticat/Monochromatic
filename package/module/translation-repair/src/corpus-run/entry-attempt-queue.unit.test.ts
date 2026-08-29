@@ -27,6 +27,14 @@ import {
 import { runAttemptQueue, } from '../../dist/final/node/index.mjs';
 
 /**
+ * Scheduler disposition returned by scripted attempt.
+ */
+type AttemptOutcome =
+  | { readonly kind: 'settled'; }
+  | { readonly kind: 'resumable-failure'; }
+  | { readonly kind: 'stopped'; };
+
+/**
  * What one stub entry does on each successive attempt.
  */
 type Script = {
@@ -44,6 +52,11 @@ type Script = {
    * Attempt number, one-based, that settles this entry; zero for never.
    */
   readonly settlesOn: number;
+
+  /**
+   * Attempt number, one-based, that stops whole-entry retry; zero or absent for never.
+   */
+  readonly stopsOn?: number;
 };
 
 /**
@@ -120,7 +133,7 @@ async function attemptOrder(
       return order.length >= stopAfter;
     },
 
-    attempt: async function attempt({ entry, },): Promise<boolean> {
+    attempt: async function attempt({ entry, },): Promise<AttemptOutcome> {
       order.push(entry.id,);
 
       /**
@@ -131,7 +144,12 @@ async function attemptOrder(
         entry.id,
         made,
       );
-      return scriptFor({ id: entry.id, },).settlesOn === made;
+      const script = scriptFor({ id: entry.id, },);
+      if (script.settlesOn === made)
+        return { kind: 'settled', };
+      if (script.stopsOn === made)
+        return { kind: 'stopped', };
+      return { kind: 'resumable-failure', };
     },
   },);
 
@@ -202,6 +220,22 @@ await describe({
           'xingz',
           'xingz',
         ],);
+      },
+    },),
+
+    it({
+      name: 'DOES NOT RESTART WHOLE ENTRY after stage-local incomplete result even when cache grew',
+      fn: async () => {
+        expect(
+          await attemptOrder({
+            scripts: [{
+              id: 'naturalness-rejected',
+              cachedAfter: [13,],
+              settlesOn: 0,
+              stopsOn: 1,
+            },],
+          },),
+        ).toEqual(['naturalness-rejected',],);
       },
     },),
 

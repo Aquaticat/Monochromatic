@@ -15,6 +15,8 @@ import type {
   ConsolidationPolishConfig,
 } from './consolidation-polish-model.ts';
 import type { ConsolidationPolishRoundResult, } from './consolidation-polish-round.ts';
+import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
+import type { PriorNaturalnessCorrection, } from './refine-selection-context.ts';
 import {
   describeReviewFindings,
   uniqueRosterModelIds,
@@ -22,7 +24,7 @@ import {
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
-//region Bounded absolute-naturalness settlement
+//region Continuous absolute-naturalness settlement
 
 /**
  * Accumulated evidence after initial generation and zero or more corrections.
@@ -41,7 +43,7 @@ type CorrectionState = {
   /**
    * Dedicated correction generations consumed.
    */
-  readonly correctionCount: 0 | 1 | 2;
+  readonly correctionCount: number;
 
   /**
    * Usable rewriters across generations.
@@ -77,16 +79,21 @@ type CorrectionState = {
    * Digest-bound successful correction transitions.
    */
   readonly corrections: readonly ConsolidationNaturalnessCorrectionAudit[];
+
+  /**
+   * Failed strategies shown to later corrections so prompts remain substantive and unique.
+   */
+  readonly priorCorrections: readonly PriorNaturalnessCorrection[];
 };
 
 /**
- * Combines one attempted correction with prior bounded state.
+ * Combines one reviewed correction with prior continuous state.
  *
  * @param state - evidence before attempt
  *
  * @param correction - attempted generation and gate
  *
- * @param correctionCount - one-based bounded attempt count
+ * @param correctionCount - successful digest-bound correction count
  *
  * @returns State carrying attempt telemetry before next review
  *
@@ -103,7 +110,7 @@ function incorporateAttempt(
   }: {
     readonly state: CorrectionState;
     readonly correction: ConsolidationPolishRoundResult;
-    readonly correctionCount: 1 | 2;
+    readonly correctionCount: number;
   },
 ): CorrectionState {
   return {
@@ -178,7 +185,7 @@ function incorporateReview(
 /**
  * Projects accumulated review state into artifact-facing audit.
  *
- * @param state - bounded correction state
+ * @param state - continuous correction state
  *
  * @returns Exact review rounds and transition chain
  *
@@ -199,73 +206,54 @@ function reviewAudit(
 }
 
 /**
- * Returns terminal polish from one correction state.
+ * Projects accepted correction state into publishable polish.
  *
- * @param state - latest bounded state
+ * @param state - latest accepted continuous state
  *
  * @param baseText - original approved fidelity baseline
  *
- * @param accepted - whether latest exact absolute review accepted
- *
- * @param reason - terminal refusal telemetry when rejected
- *
- * @returns Settled publication or retryable refusal
+ * @returns Settled publication carrying complete transition audit
  *
  * @example
  * ```ts
- * const polish = terminalPolish({ state, baseText, accepted: true, });
+ * const polish = settledPolish({ state, baseText, });
  * ```
  */
-function terminalPolish(
+function settledPolish(
   {
     state,
     baseText,
-    accepted,
-    reason,
   }: {
     readonly state: CorrectionState;
     readonly baseText: string;
-    readonly accepted: boolean;
-    readonly reason?: string;
   },
 ): ConsolidationPolish {
   /**
-   * Latest exact round projected into terminal settlement.
+   * Latest exact accepted round projected into terminal settlement.
    */
   const { current, } = state;
-  if (accepted) {
-    return {
-      kind: 'settled',
-      baseText,
-      proposedText: current.proposedText,
-      text: current.text,
-      changed: current.text !== baseText,
-      refinersHeard: state.refinersHeard,
-      contributors: state.contributors,
-      rounds: state.rounds,
-      ...((current.gate === undefined) ? {} : { gate: current.gate, }),
-      review: reviewAudit({ state, },),
-      findings: state.findings,
-    };
-  }
   return {
-    kind: 'unsettled',
+    kind: 'settled',
     baseText,
     proposedText: current.proposedText,
+    text: current.text,
+    changed: current.text !== baseText,
     refinersHeard: state.refinersHeard,
     contributors: state.contributors,
     rounds: state.rounds,
     ...((current.gate === undefined) ? {} : { gate: current.gate, }),
     review: reviewAudit({ state, },),
-    findings: [
-      ...state.findings,
-      ...(reason === undefined ? [] : [reason,]),
-    ],
+    findings: state.findings,
   };
 }
 
 /**
- * Runs at most two sequential required corrections after initial rejection.
+ * Continues required correction until exact candidate passes or operation pauses.
+ *
+ * Every correction consumes latest exact rejected text and latest structured findings.
+ * No quality rejection returns terminal refusal.
+ * No-change and thin-review states pause as operational interruptions because
+ * resending same substantive task would violate model-prompt uniqueness.
  *
  * @param client - provider client
  *
@@ -291,13 +279,15 @@ function terminalPolish(
  *
  * @param config - correction, selection, and gate rosters
  *
- * @param signal - caller cancellation
+ * @param signal - caller cancellation bounding correction loop
  *
  * @param perCallTimeoutMs - per-exchange deadline
  *
  * @param l - parent logger
  *
- * @returns Settled exact text or retryable bounded refusal
+ * @returns Settled exact text after strict acceptance
+ *
+ * @throws {@link NaturalnessRepairInterruptedError} when no unique correction or review task remains
  *
  * @example
  * ```ts
@@ -339,148 +329,107 @@ export async function settleNaturalnessCorrections(
     readonly l: Logger;
   }>,
 ): Promise<ConsolidationPolish> {
-  /**
-   * Rejected starting state before dedicated correction.
-   */
-  const initialState: CorrectionState = {
-    current: initial,
-    currentReview: initialReview,
-    correctionCount: 0,
-    refinersHeard: initial.refinersHeard,
-    contributors: initial.contributors,
-    rounds: initial.rounds,
-    findings: initial.findings,
-    reviewRounds: [initialReview,],
-    confirmationRounds: initialConfirmations,
-    corrections: [],
-  };
-  /**
-   * First required correction transition.
-   */
-  const firstStep = await runNaturalnessCorrection({
-    client,
-    sourceText,
-    archiveText,
-    rejectedText: initial.text,
-    rejection: initialReview,
-    ...((syntax === undefined) ? {} : { syntax, }),
-    lineStructured,
-    ...((identityContext === undefined) ? {} : { identityContext, }),
-    sliceIndex,
-    config,
-    signal,
-    perCallTimeoutMs,
-    l,
-  },);
-  /**
-   * State including first generation and fidelity outcome.
-   */
-  const firstAttempt = incorporateAttempt({
-    state: initialState,
-    correction: firstStep.correction,
-    correctionCount: 1,
-  },);
-  if (firstStep.kind === 'no-correction') {
-    return terminalPolish({
-      state: firstAttempt,
-      baseText,
-      accepted: false,
-      reason: 'absolute-naturalness correction made no approved text change',
-    },);
+  {
+    /**
+     * Latest exact rejected state feeding next correction.
+     */
+    let state: CorrectionState = {
+      current: initial,
+      currentReview: initialReview,
+      correctionCount: 0,
+      refinersHeard: initial.refinersHeard,
+      contributors: initial.contributors,
+      rounds: initial.rounds,
+      findings: initial.findings,
+      reviewRounds: [initialReview,],
+      confirmationRounds: initialConfirmations,
+      corrections: [],
+      priorCorrections: [],
+    };
+
+    while (!signal.aborted) {
+      /**
+       * Latest exact candidate and review feeding correction.
+       */
+      const {
+        current,
+        currentReview,
+      } = state;
+      /**
+       * One correction from latest rejected text and findings.
+       */
+      // oxlint-disable-next-line no-await-in-loop -- each rejection supplies next correction's exact input
+      const step = await runNaturalnessCorrection({
+        client,
+        sourceText,
+        archiveText,
+        rejectedText: current.text,
+        rejection: currentReview,
+        priorCorrections: state.priorCorrections,
+        ...((syntax === undefined) ? {} : { syntax, }),
+        lineStructured,
+        ...((identityContext === undefined) ? {} : { identityContext, }),
+        sliceIndex,
+        config,
+        signal,
+        perCallTimeoutMs,
+        l,
+      },);
+      if (step.kind === 'no-correction') {
+        /**
+         * Failed correction round retained as next strategy evidence.
+         */
+        const { correction, } = step;
+        /**
+         * Failed strategy retained as substantive evidence for different next prompt.
+         */
+        const failed: PriorNaturalnessCorrection = {
+          proposedText: correction.proposedText,
+          findings: correction.findings,
+        };
+        state = {
+          ...incorporateAttempt({
+            state,
+            correction,
+            correctionCount: state.correctionCount,
+          },),
+          priorCorrections: [
+            ...state.priorCorrections,
+            failed,
+          ],
+        };
+        continue;
+      }
+      /**
+       * Successful changed transition and exact review added to accumulated audit.
+       */
+      const reviewed = incorporateReview({
+        state: incorporateAttempt({
+          state,
+          correction: step.correction,
+          correctionCount: state.correctionCount + 1,
+        },),
+        step,
+      },);
+      /**
+       * Exact corrected candidate verdict.
+       */
+      const { verdict, } = step.review;
+      if (verdict === 'acceptable') {
+        return settledPolish({
+          state: reviewed,
+          baseText,
+        },);
+      }
+      if (verdict === 'quorum-not-met') {
+        throw new NaturalnessRepairInterruptedError({
+          reason: 'quorum-not-met',
+        },);
+      }
+      state = reviewed;
+    }
+    throw signal.reason;
   }
-  /**
-   * State including exact first corrected-text review.
-   */
-  const firstReviewed = incorporateReview({
-    state: firstAttempt,
-    step: firstStep,
-  },);
-  /**
-   * First corrected candidate verdict.
-   */
-  const { verdict: firstVerdict, } = firstStep.review;
-  if (firstVerdict === 'acceptable') {
-    return terminalPolish({
-      state: firstReviewed,
-      baseText,
-      accepted: true,
-    },);
-  }
-  if (firstVerdict === 'quorum-not-met') {
-    return terminalPolish({
-      state: firstReviewed,
-      baseText,
-      accepted: false,
-      reason: 'absolute-naturalness-review quorum not met',
-    },);
-  }
-  /**
-   * Exact first correction and review feeding second attempt.
-   */
-  const {
-    correction: firstCorrection,
-    review: firstCorrectionReview,
-  } = firstStep;
-  /**
-   * Second and final required correction transition.
-   */
-  const secondStep = await runNaturalnessCorrection({
-    client,
-    sourceText,
-    archiveText,
-    rejectedText: firstCorrection.text,
-    rejection: firstCorrectionReview,
-    ...((syntax === undefined) ? {} : { syntax, }),
-    lineStructured,
-    ...((identityContext === undefined) ? {} : { identityContext, }),
-    sliceIndex,
-    config,
-    signal,
-    perCallTimeoutMs,
-    l,
-  },);
-  /**
-   * State including second generation and fidelity outcome.
-   */
-  const secondAttempt = incorporateAttempt({
-    state: firstReviewed,
-    correction: secondStep.correction,
-    correctionCount: 2,
-  },);
-  if (secondStep.kind === 'no-correction') {
-    return terminalPolish({
-      state: secondAttempt,
-      baseText,
-      accepted: false,
-      reason: 'second absolute-naturalness correction made no approved text change',
-    },);
-  }
-  /**
-   * State including exact second corrected-text review.
-   */
-  const secondReviewed = incorporateReview({
-    state: secondAttempt,
-    step: secondStep,
-  },);
-  /**
-   * Second corrected candidate verdict.
-   */
-  const { verdict: secondVerdict, } = secondStep.review;
-  if (secondVerdict === 'acceptable') {
-    return terminalPolish({
-      state: secondReviewed,
-      baseText,
-      accepted: true,
-    },);
-  }
-  return terminalPolish({
-    state: secondReviewed,
-    baseText,
-    accepted: false,
-    reason: (secondVerdict === 'quorum-not-met')
-      ? 'absolute-naturalness-review quorum not met'
-      : 'absolute-naturalness remained unacceptable after two corrections',
-  },);
 }
 
-//endregion Bounded absolute-naturalness settlement
+//endregion Continuous absolute-naturalness settlement

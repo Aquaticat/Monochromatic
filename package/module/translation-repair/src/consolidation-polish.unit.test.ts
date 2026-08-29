@@ -43,6 +43,11 @@ const POLISHED = 'She maintained a positive outlook on life and spent some good 
 const FINAL_POLISHED = 'She kept a positive outlook and shared good times with everyone, while doing her best to remain hopeful and connected to the people around her.';
 
 /**
+ * Third correction resolving a defect exposed after second rewrite.
+ */
+const THIRD_POLISHED = 'She stayed optimistic and enjoyed good times with everyone, doing her best to remain hopeful and connected to the people around her.';
+
+/**
  * Short literal prose final polish must still review.
  */
 const SHORT_BASE = 'She had a good time with everyone.';
@@ -127,7 +132,13 @@ const client: SyntheticClient = {
  *
  * @param acceptSecondCorrection - whether final bounded review accepts second correction
  *
+ * @param thirdCorrectionText - replacement for third continuous correction
+ *
+ * @param noOpCorrectionAttempts - failed no-change corrections before first proposal
+ *
  * @param selectionSheets - optional sink receiving candidate-selector prompts
+ *
+ * @param modelPrompts - optional sink receiving model and exact messages
  *
  * @param retainFirstCorrectionAtGate - whether fidelity gate keeps rejected input
  *
@@ -152,8 +163,11 @@ function boundedCorrectionClient(
     rejectCorrection = false,
     secondCorrectionText,
     acceptSecondCorrection = false,
+    thirdCorrectionText,
+    noOpCorrectionAttempts = 0,
     retainFirstCorrectionAtGate = false,
     selectionSheets,
+    modelPrompts,
     throwOnThirdCorrection = false,
     onRefineCall,
     onReviewRound,
@@ -163,8 +177,11 @@ function boundedCorrectionClient(
     readonly rejectCorrection?: boolean;
     readonly secondCorrectionText?: string;
     readonly acceptSecondCorrection?: boolean;
+    readonly thirdCorrectionText?: string;
+    readonly noOpCorrectionAttempts?: number;
     readonly retainFirstCorrectionAtGate?: boolean;
     readonly selectionSheets?: string[];
+    readonly modelPrompts?: string[];
     readonly throwOnThirdCorrection?: boolean;
     readonly onRefineCall?: (count: number) => void;
     readonly onReviewRound?: (round: number) => void;
@@ -192,6 +209,10 @@ function boundedCorrectionClient(
       const schema = request.responseFormat
         ?.json_schema
         .name;
+      modelPrompts?.push(JSON.stringify({
+        modelId: request.modelId,
+        messages: request.messages,
+      },),);
       /**
        * Scripted stage reply.
        */
@@ -202,13 +223,17 @@ function boundedCorrectionClient(
           if (throwOnThirdCorrection && (calls.refine > 3))
             throw new Error('third correction generation exceeded bound',);
           return {
-            rewrites: ((calls.refine === 1) || (correctionText === undefined))
+            rewrites: ((calls.refine === 1)
+              || (calls.refine <= (noOpCorrectionAttempts + 1))
+              || (correctionText === undefined))
               ? []
               : [{
                 paragraph: 1,
-                newText: ((calls.refine === 2) || (secondCorrectionText === undefined))
+                newText: (calls.refine === 2)
                   ? correctionText
-                  : secondCorrectionText,
+                  : ((calls.refine === 3) || (thirdCorrectionText === undefined))
+                    ? secondCorrectionText ?? correctionText
+                    : thirdCorrectionText,
               },],
           };
         }
@@ -485,10 +510,21 @@ await describe({
     },),
 
     it({
-      name: 'RETURNS UNSETTLED when correction makes no approved text change',
+      name: 'TRIES DISTINCT STRATEGY after correction makes no approved text change',
       fn: async () => {
+        /** Exact model and prompt identities across retry. */
+        const modelPrompts: string[] = [];
+        /** One-based refinement calls across no-op and successful strategy. */
+        const refineCalls: number[] = [];
         const polish = await polishConsolidation({
-          client: boundedCorrectionClient({}),
+          client: boundedCorrectionClient({
+            correctionText: POLISHED,
+            noOpCorrectionAttempts: 1,
+            modelPrompts,
+            onRefineCall: function recordRefineCall(count,): void {
+              refineCalls.push(count,);
+            },
+          }),
           sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
           archiveText: BASE,
           baseText: BASE,
@@ -503,19 +539,23 @@ await describe({
           },
           signal: AbortSignal.timeout(5_000,),
           perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-unsettled-test', },),
+          l: tagged({ tag: 'consolidation-polish-continuous-test', },),
         },);
-        expect(polish.kind,).toBe('unsettled',);
-        expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(1,);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('no-op correction fixture did not recover',);
+        expect(polish.review.correctionCount,).toBe(1,);
+        expect(refineCalls,).toEqual([1, 2, 3,],);
+        expect(new Set(modelPrompts,).size,).toBe(modelPrompts.length,);
       },
     },),
 
     it({
-      name: 'STOPS AFTER FIRST CORRECTION when fidelity gate retains rejected input',
+      name: 'TRIES DISTINCT STRATEGY when fidelity gate retains rejected input',
       fn: async () => {
-        /** One-based refinement calls observed before fidelity refusal. */
+        /** One-based refinement calls observed across fidelity recovery. */
         const refineCalls: number[] = [];
-        /** One-based absolute review rounds observed before fidelity refusal. */
+        /** One-based absolute review rounds observed across fidelity recovery. */
         const reviewRounds: number[] = [];
         const polish = await polishConsolidation({
           client: boundedCorrectionClient({
@@ -542,27 +582,35 @@ await describe({
           },
           signal: AbortSignal.timeout(5_000,),
           perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-fidelity-refusal-test', },),
+          l: tagged({ tag: 'consolidation-polish-fidelity-recovery-test', },),
         },);
-        expect(polish.kind,).toBe('unsettled',);
-        expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(1,);
-        expect(polish.kind === 'unsettled' ? polish.review.rounds.length : 0,).toBe(1,);
-        expect(refineCalls,).toEqual([1, 2,],);
-        expect([...new Set(reviewRounds,),],).toEqual([1,],);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('fidelity recovery fixture did not settle',);
+        expect(polish.review.correctionCount,).toBe(1,);
+        expect(refineCalls,).toEqual([1, 2, 3,],);
+        expect([...new Set(reviewRounds,),],).toEqual([1, 2, 3,],);
       },
     },),
 
     it({
-      name: 'RETURNS UNSETTLED without third correction when second corrected text still rejects',
+      name: 'CONTINUES WITH THIRD CORRECTION when second corrected text still rejects',
       fn: async () => {
-        /** One-based refinement calls observed across bounded stage. */
+        /** One-based refinement calls observed across continuous stage. */
         const refineCalls: number[] = [];
         const polish = await polishConsolidation({
           client: boundedCorrectionClient({
             correctionText: POLISHED,
             rejectCorrection: true,
             secondCorrectionText: FINAL_POLISHED,
-            throwOnThirdCorrection: true,
+            thirdCorrectionText: THIRD_POLISHED,
+            acceptanceByReviewRound: [
+              false,
+              false,
+              false,
+              true,
+              true,
+            ],
             onRefineCall: function recordRefineCall(count,): void {
               refineCalls.push(count,);
             },
@@ -583,10 +631,13 @@ await describe({
           perCallTimeoutMs: 5_000,
           l: tagged({ tag: 'consolidation-polish-rejection-test', },),
         },);
-        expect(polish.kind,).toBe('unsettled',);
-        expect(polish.kind === 'unsettled' ? polish.review.rounds.length : 0,).toBe(3,);
-        expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(2,);
-        expect(refineCalls,).toEqual([1, 2, 3,],);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('continuous correction fixture remained unsettled',);
+        expect(polish.text,).toBe(THIRD_POLISHED,);
+        expect(polish.review.rounds.length,).toBe(4,);
+        expect(polish.review.correctionCount,).toBe(3,);
+        expect(refineCalls,).toEqual([1, 2, 3, 4,],);
       },
     },),
 
