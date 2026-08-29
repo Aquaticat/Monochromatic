@@ -47,7 +47,9 @@ pub(super) fn generate_module_header() -> TokenStream {
         #![allow(unknown_lints, if_let_rescope, tail_expr_drop_order)]
 ```
 
-`clippy::all`, `clippy::pedantic`, and `clippy::nursery` do not contain restriction lints.
+`clippy::all`,
+`clippy::pedantic`,
+and `clippy::nursery` do not contain restriction lints.
 Clippy declares `implicit_return` in the restriction group at
 [`rust-lang/rust-clippy@3211e31`][clippy-source] `clippy_lints/src/implicit_return.rs:13-40`:
 
@@ -88,9 +90,11 @@ A real module declaration is the required lint-level boundary.
 
 The incident was reproduced with:
 
-- Slint `1.17.0`, crates.io `slint` checksum
+- Slint `1.17.0`,
+  crates.io `slint` checksum
   `a54a407d1a0cbaa71d830ae7c236064b171368ea18db3b51ea3f2ce3f19519ee`;
-- Slint tag `v1.17.0`, commit `fdde7a535305d2ab2d4072dee637bad186a49723`;
+- Slint tag `v1.17.0`,
+  commit `fdde7a535305d2ab2d4072dee637bad186a49723`;
 - Clippy `0.1.99` from rustc `1.100.0-nightly` commit
   `c656540d6467dee1381f0cbd882412d6bd1cd5ae`;
 - Fedora Linux x86-64.
@@ -163,7 +167,8 @@ mise run lint
 ### Passing catalog
 
 - Wrapping `slint::include_modules!()` in a private module carrying
-  `#[allow(clippy::implicit_return)]`, then importing its public bindings,
+  `#[allow(clippy::implicit_return)]`,
+  then importing its public bindings,
   completed with no diagnostics.
 - Adding `clippy::implicit_return` to Slint's generated module header,
   rebuilding the compiler from the `v1.17.0` source tree,
@@ -231,7 +236,9 @@ The repository therefore keeps the private-module workaround while using crates.
 not as an upstream-filing exclusion.
 
 Searches across open and closed Slint issues and pull requests used
-`implicit_return`, `generated clippy lint`, and `clippy generated Rust`.
+`implicit_return`,
+`generated clippy lint`,
+and `clippy generated Rust`.
 They returned no matching report as of 2026-08-29.
 
 1. **Is it really upstream's fault?**
