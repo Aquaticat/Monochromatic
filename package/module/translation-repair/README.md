@@ -1582,23 +1582,91 @@ roster order,
 and confirmation order.
 Final-naturalness completeness guard checks settled runtime state and does not duplicate artifact reader's digest validation.
 Legacy schema-9 records without field remain readable.
-This does not add a third correction or weaken fidelity and final absolute review.
+Current two-correction ceiling and repeated same-prompt confirmation do not conform to standing rules.
+Implementation work is pending;
+no further validation may rely on current behavior.
+
+### Standing operation invariants
+
+A quality rejection is repair work,
+not final `do not publish` answer.
+Pipeline must continue stage-local correction from latest exact rejected text and latest structured findings
+until strict publication gates accept or operational interruption pauses work.
+No finite correction ceiling is authorized.
+It must not restart whole entry merely because quality work remains.
+Cancellation,
+dark provider,
+quota exhaustion,
+transport outage,
+and insufficient live seats leave resumable incomplete work.
+They must not become quality judgement,
+terminal refusal,
+unsuccessful quality tally,
+or `do not publish` result.
+Operational interruption may pause or retry repair,
+but may not publish or weaken publication gate.
+
+One model plus one substantive prompt may contribute at most one provider payload.
+Identity is exact model identity plus canonical ordered messages,
+including roles and exact content bytes.
+Pipeline must never resend that task to same model to manufacture independence,
+non-bias,
+confirmation,
+or extra sample.
+Changing temperature,
+response schema,
+round number,
+nonce,
+whitespace,
+or request metadata does not create independent sample.
+Providers may silently enable deterministic prompt caching;
+duplicate response would then be same computation,
+not independent evidence.
+Follow-up work must give model substantively distinct task grounded in prior result,
+latest rejection,
+or different review responsibility.
+
+Same-model same-prompt transport retry is permitted only after connection failure,
+reset,
+or timeout before completed provider payload exists.
+Once any payload exists,
+including malformed,
+truncated,
+schema-invalid,
+or semantically rejected payload,
+that model and prompt may not be resent as another evidence draw.
+Operational recovery and discarded payload together still produce at most one recorded response.
+
+Pipeline must function normally when only one provider is wet.
+No provider family,
+provider-specific seat,
+or cross-provider response is mandatory.
+Exact-half participation may come entirely from one provider;
+strict quality,
+corroboration,
+and publication gates remain unchanged.
+One wet provider is valid normal operating mode with reduced provider diversity to report,
+not reason to stop repair or lower quality.
+Too few live seats for stage participation pauses or retries work as operational state;
+it is not quality rejection.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.
 `countPairedBlocks` now reports unique source and target reach separately from relation count,
 with one-to-many and many-to-one guards.
 
-Two fresh validations are active from `68c37da59` at 2026-08-29 12:14 UTC.
-`Weideriche_` runs in `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829`;
-repair and translate were complete and lane contest was active at snapshot.
-Its first attempt later refused slice 1 absolute naturalness at 4,840,305 milliseconds,
+Two fresh validations launched from `68c37da59` at 2026-08-29 12:14 UTC.
+`Weideriche_` used `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829`.
+Its first attempt refused slice 1 absolute naturalness at 4,840,305 milliseconds,
 wrote no artifact or page,
-and queued automatic cache-warm reattempt that remains active.
-Pull request 386 `Carena0442` runs against exact pull-request files in isolated fixture at
-`~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829`;
-22 slices were prepared and first non-metadata repair slice was active.
-Neither run had terminal tally.
+and incorrectly queued whole-entry cache-warm reattempt.
+Process was stopped after that behavior was rejected.
+
+Pull request 386 `Carena0442` used exact pull-request files in isolated fixture at
+`~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829`.
+Process was stopped after same-model same-prompt repetition was rejected as independence mechanism.
+It wrote no artifact or page.
+Neither stopped run is publication or readiness evidence.
 Artifact and log paths,
 fixture method,
 and failed startup non-evidence are recorded in
