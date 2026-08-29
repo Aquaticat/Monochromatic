@@ -118,7 +118,23 @@ or evidence unless the user later authorizes cleanup.
   no stale `/home/user/` path remained,
   xwayland-satellite is enabled,
   and `uwsm check may-start` passed on tty1.
-  Process `wait-cachyos-labwc-session` is waiting for the first manual UWSM plus labwc render.
+  The render watcher timed out because its clock pattern was fixed at hour 15,
+  but direct VM framebuffer inspection showed the black labwc desktop and sfwbar panel at hour 16.
+  `wayland-wm@labwc.service` and xwayland-satellite were active.
+  sfwbar,
+  its `wlr-pager` child,
+  swaync,
+  and nm-applet were independently scoped under `app-graphical.slice`.
+  The pager switched workspaces,
+  fuzzel opened from the launcher and closed on a desktop click,
+  and the taskbar right-click menu exposed **New instance**.
+  That action launched another foot in its own service with `DISPLAY=:12`.
+
+  The original Super+Enter foot inherited `DISPLAY=:0` because `launch-feedback` used scope-mode `uwsm app`.
+  The canonical retained script and guest copy now use `uwsm app -t service`,
+  matching the clean activation-environment rule already used by `launch-new`.
+  A Fish login guard and tty1 autologin drop-in are installed for the CachyOS default Fish shell.
+  The next reboot must prove automatic display-manager-free startup and the corrected Super+Enter environment.
 
   During the timed-out `sudo` attempt,
   delayed input reached fish after the password prompt closed and printed the disposable VM user password as an unknown
