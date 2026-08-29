@@ -6,7 +6,7 @@ Status:
  Authored 2026-08-29.
 
 Tracking issue:
- pending creation after the first plan commit.
+ [#470](https://github.com/Aquaticat/Monochromatic/issues/470).
 
 ## Goal
 
