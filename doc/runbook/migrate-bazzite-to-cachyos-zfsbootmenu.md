@@ -9,8 +9,9 @@ It then verifies:
 
 - native ZFS encryption on `zroot`;
 - a firmware-launched ZFSBootMenu image;
-- directly selectable `default`,
+- directly selectable and package-coherent `default`,
   `baseline`,
+  known-good,
   and pre-transaction boot environments;
 - matching CachyOS kernel and ZFS module packages;
 - rollback selection and promotion in the disposable VM;
@@ -28,6 +29,34 @@ qgroups,
 or the NVMe caused those incidents.
 Single-device ZFS also does not tolerate NVMe failure.
 The backup requirement remains mandatory.
+
+## Current validation blocker
+
+Do not execute the physical-installation sections yet.
+The disposable consumer test found that the installer mounts all of `/var/lib` from persistent
+`zroot/data/var/lib`,
+while pacman hooks snapshot only the root boot environment.
+Booting a pre-transaction environment restored root package files but left `/var/lib/pacman` at the newer state.
+`pacman -Qkk tree` then reported the rolled-back package files missing.
+
+A real-ZFS prototype corrected the boundary by keeping `zroot/data/var` and `zroot/data/var/lib` as
+namespace-only parents while preserving selected child datasets.
+That patch has not yet passed a complete installer,
+boot,
+and package-rollback rehearsal.
+The physical gate remains closed until all of these checks pass:
+
+- the patched source remains traceable to the pinned upstream archive and has its own recorded patch hash;
+- the effective Calamares sequence contains every custom ZFS job;
+- the patched dataset layout leaves `/var/lib/pacman` inside each root environment;
+- a pacman transaction creates a bootable pre-transaction environment;
+- package files and pacman database state agree in both the old and current environments;
+- the known-good and baseline environments pass the same coherence check;
+- native-encryption unlock,
+  ZFSBootMenu regeneration,
+  and the intended UWSM plus labwc session still pass;
+- the authenticated-USB alternative is either fully rehearsed or removed from the accepted recovery paths.
+See the [package rollback diagnosis][package-rollback-diagnosis].
 
 ## Why this is a manual runbook
 
@@ -4313,3 +4342,5 @@ The 4 TB SSD must remain disconnected during that reinstall for the same reason 
 
 1. Keep the CachyOS ZFS qcow2 VM until Bazzite restoration and required files are verified.
    Expect an independent bootable record of the selected architecture even after returning to Bazzite.
+
+[package-rollback-diagnosis]: ../troubleshooting/cachyos-zfs-boot-environment-pacman-state.md

@@ -11,6 +11,13 @@ The user authorized this choice on 2026-08-29 with:
 The consumer-boundary gate in
 [`doc/runbook/migrate-bazzite-to-cachyos-zfsbootmenu.md`](../runbook/migrate-bazzite-to-cachyos-zfsbootmenu.md)
 must pass in a disposable UEFI VM before the physical NVMe is erased.
+The gate is currently failed:
+a bootable pre-transaction environment restored root package files while persistent `/var/lib/pacman` retained the newer
+package database.
+The dataset-boundary diagnosis and prototype are in the
+[package rollback diagnosis][package-rollback-diagnosis].
+A corrected layout must pass complete installation and rollback rehearsal before physical installation.
+
 Until that gate passes,
 the technology-vetting lifecycle remains at source-validated finalist rather than formally `Validated`,
 `Scored`,
@@ -55,7 +62,8 @@ The choice must continue to satisfy:
 
 - rolling release;
 - encrypted root;
-- at least one usable rollback target directly selectable from the boot menu;
+- a rehearsed recovery path through either a directly selectable rollback target or authenticated USB media;
+- package files and package-manager state restored as one coherent system state;
 - matching root,
   kernel,
   and initramfs or EFI boot artifacts;
@@ -240,3 +248,4 @@ Reopen this decision when any condition occurs:
 
 [audit-report]: ../audit/tech-rolling-linux-desktop-with-encrypted-boot-m-911c4730-vet-2026-08-29.md
 [operational-investigation]: ../troubleshooting/cachyos-zfs-installer-operational-ownership.md
+[package-rollback-diagnosis]: ../troubleshooting/cachyos-zfs-boot-environment-pacman-state.md

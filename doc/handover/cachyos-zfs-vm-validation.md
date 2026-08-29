@@ -73,7 +73,8 @@ or evidence unless the user later authorizes cleanup.
   read-only `vdb` and `vdc` source images,
   and writable `vdd` evidence storage.
   The installer archive again matched the pinned SHA-256 inside the guest.
-  The evidence image was mounted with live-user ownership through FAT mount options after a direct `chown` correctly failed.
+  The evidence image was mounted with live-user ownership through FAT mount options.
+  A direct `chown` correctly failed because FAT does not store Unix ownership.
   The pinned installer is running with `DEBUG=1` and teeing its terminal output to the evidence image.
   Before destructive confirmation,
   a second terminal proved that effective `/usr/share/calamares/settings.conf` contained all custom execution entries:
@@ -548,31 +549,52 @@ verified the ZFSBootMenu EFI image,
 and verified root-backed kernels.
 
 After the transaction,
-`/usr/bin/tree` exists and pacman reports `tree 2.3.2-1` in the running default environment.
+`/usr/bin/tree` existed and pacman reported `tree 2.3.2-1` in the running default environment.
 A root-backed marker was created after the hook snapshot.
-The VM is rebooting so ZFSBootMenu can select the pre-install environment and test rollback boundaries.
-Process `intercept-zbm-tree-rollback` is canceling the automatic countdown.
 
-The layout keeps `/var/lib` on `zroot/data/var/lib`,
-not inside a boot environment.
-The rollback check must therefore compare root files with the persistent pacman database;
-a bootable clone alone would not prove package-state consistency.
+ZFSBootMenu listed and booted the pre-install environment successfully.
+Its running root was `zroot/ROOT/be-20260829-125545-pre-install`.
+The root-backed `tree` binary and post-snapshot marker were absent as expected,
+but persistent `/var/lib` remained mounted from `zroot/data/var/lib`.
+Pacman therefore still reported `tree 2.3.2-1`.
+`pacman -Qkk tree` reported missing `/usr/bin/tree` and its manual page,
+with 2 altered files.
+
+Rebooting `zroot/ROOT/default` restored the binary,
+marker,
+and coherent pacman state.
+`pacman -Qkk tree` then reported 7 total files and 0 altered files.
+The pre-transaction clone is bootable but is not a coherent package rollback.
+The hidden baseline has the same dataset boundary and must not be treated as safe system rollback.
+
+A real-ZFS before-and-after prototype on a retained 2 GiB virtual disk proved the cause and a minimal layout change.
+With persistent `/var` and `/var/lib` parents,
+the cloned binary was `before` while the database was `after`.
+With those parents changed to `mountpoint=none` and `canmount=off`,
+both values in the clone were `before`,
+and explicit `/var/lib/containers` persistence still mounted correctly.
+The prototype pools were destroyed,
+and the virtual disk was detached but retained.
+
+The full diagnosis and fileable upstream draft are in
+`doc/troubleshooting/cachyos-zfs-boot-environment-pacman-state.md`.
+No upstream issue was posted.
 
 ## Immediate next actions
 
 1. Under task 37,
-verify the installed automatic boot-environment hooks and regeneration behavior.
+repeat the clean installation with the prototyped namespace-only `/var` and `/var/lib` parent layout.
 
-1. Enable and boot the hidden baseline only after preserving a fallback.
+1. Repeat the `tree` package transaction and boot the generated pre-transaction environment.
+
+1. Require both package files and pacman database state to match before accepting rollback.
 
 1. Create and boot a known-good environment independently of the installer baseline.
-
-1. Exercise clone or promotion rollback on disposable state.
 
 1. Install and validate the intended UWSM plus labwc session from the text-only base.
 
 1. Under task 38,
-evaluate authenticated-USB recovery without ZFSBootMenu in a separate disposable architecture.
+evaluate authenticated-USB recovery without ZFSBootMenu using the corrected dataset boundary.
 
 1. Update this handover after each milestone.
 
