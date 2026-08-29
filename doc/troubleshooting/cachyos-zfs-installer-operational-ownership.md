@@ -91,14 +91,25 @@ ZFSBootMenu 3.1.0 documents `org.zfsbootmenu:active=off` as hiding an environmen
 The relevant implementation is `zfsbootmenu/lib/zfsbootmenu-ui.sh:591-603`.
 This conflicts with the installer README’s instruction to select `baseline` from ZFSBootMenu.
 
-The source-level remediation is:
+Consumer testing found a second omission.
+The clone inherits `mountpoint=none` from its new `zroot/ROOT` parent because the baseline script does not set a local
+mountpoint.
+Setting only `org.zfsbootmenu:active=on` left the baseline absent from ZFSBootMenu.
+The measured properties were `mountpoint=none`,
+`canmount=noauto`,
+and `org.zfsbootmenu:active=on`.
+Pacman-created environments avoid this problem because `pacman-zfs-pre` explicitly sets `mountpoint=/`.
+
+The corrected remediation is:
 
 ```bash
+sudo zfs set mountpoint=/ zroot/ROOT/baseline
 sudo zfs set org.zfsbootmenu:active=on zroot/ROOT/baseline
 ```
 
-This property change is included in the adoption runbook but has not been executed in a consumer installation.
-Pacman-created `be-*` environments do not receive `active=off` and remain candidates through their `/` mountpoint.
+The retained VM applied both properties and measured `/`,
+`noauto`,
+and `on` before repeating menu validation.
 
 ### Installed integration files have no package owner or update channel
 
@@ -350,8 +361,26 @@ Operator-owned or unresolved:
 
 ## Verified workarounds
 
-No runtime workaround is verified because the candidate was not installed.
-Source-supported controls are:
+### Baseline visibility
+
+The retained patched-layout VM verified this runtime correction:
+
+```bash
+sudo zfs set mountpoint=/ zroot/ROOT/baseline
+sudo zfs set org.zfsbootmenu:active=on zroot/ROOT/baseline
+```
+
+After measuring `/`,
+`noauto`,
+and `on`,
+ZFSBootMenu listed baseline among 3 environments.
+Baseline booted to tty1.
+Its read-only chroot showed `/` and `/var/lib/pacman` on `zroot/ROOT/baseline`,
+with neither the later `tree` package nor its marker.
+
+### Other source-supported controls
+
+These controls remain source-supported rather than consumer-verified:
 
 - package the `/usr/local` scripts and hook files locally so upgrades and ownership are explicit;
 - install an active pacman hook that regenerates ZFSBootMenu for actual CachyOS ZFS and ZFSBootMenu package names;
@@ -364,42 +393,117 @@ Automatic package delivery would be preferable to maintaining these controls man
 
 ## What does not work
 
-- Assuming the installer-created baseline is listed while it has `org.zfsbootmenu:active=off`.
+- Assuming the installer-created baseline is listed while it has `org.zfsbootmenu:active=off` and inherits
+  `mountpoint=none`.
+- Setting only baseline `org.zfsbootmenu:active=on` without also setting `mountpoint=/`.
+- Trying to change baseline properties from ZFSBootMenu's read-only recovery pool.
 - Treating the 24 cloned boot environments as a bound on all origin snapshots.
 - Assuming files copied to `/usr/local` receive fixes when the GitHub installer changes.
 - Assuming the sample `99-zfsbootmenu.hook` is active from its `/usr/share/doc` location.
 - Running `zpool upgrade` merely because `zpool status` advertises new features.
 - Treating an exact-version module package as support for every CachyOS kernel variant.
-- Treating the unexecuted source concerns as proof that a current installation necessarily fails.
+- Treating the remaining source concerns as proof that a current installation necessarily fails.
 
 ## Upstream filing decision
 
 No `.out-of-scope/` entry covers the installer.
-Searches of issues and pull requests found no report matching origin-snapshot retention or conditional ZFSBootMenu
-regeneration.
-Existing issue <https://github.com/fnichol/cachyos-zfs-installer/issues/1> concerns an installation
-and UEFI-entry failure,
-not these paths.
+Complete tracker listing found closed issues 1 and 3 plus closed pull request 2.
+None concerns baseline visibility,
+mountpoint inheritance,
+pacman database persistence,
+or package rollback.
+Valid open and closed keyword searches for both issue classes also returned empty arrays.
 
-1. **Is it upstream’s fault?**
-   Not yet established at the consumer boundary.
-   Current source exposes retention and regeneration gaps,
-   but no installed-system failure was reproduced.
-1. **Can upstream fix it?**
-   Yes if runtime validation confirms the source-level gaps.
-   The installer can package its integration,
-   delete eligible origin snapshots,
-   and install a package-name-correct regeneration hook.
-1. **Are they supporting this use case?**
-   Yes.
-   The README and `docs/zfs-be-hooks-readme.md` promise automatic retention and boot-menu updates.
-1. **Would the repository welcome a contribution?**
-   The README invites issues and pull requests and states no AI-specific prohibition.
-1. **Will they likely fix it?**
-   No refusal signal was found,
-   but the repository has one maintainer and sparse tracker history.
-1. **Has a minimal fix been prototyped?**
-   No.
-   The candidate-fix applicability gate is not met because no current installation reproduced either concern.
+The baseline defect now passes the filing constraints.
+The retention and regeneration concerns remain source-only and should not be filed as reproduced failures.
 
-Do not file or post upstream from this source-only audit.
+### 1. Upstream responsibility
+
+Yes for baseline visibility.
+`create-baseline-boot-env.sh` creates the clone but does not set `mountpoint=/`.
+The clone therefore inherits `none` from `zroot/ROOT`.
+The same script sets `org.zfsbootmenu:active=off`,
+while the README instructs the user to select baseline from ZFSBootMenu.
+
+### 2. Upstream fixability
+
+Yes.
+The installer can set baseline `mountpoint=/` when it creates the clone.
+Whether baseline remains hidden by default is a separate product choice,
+but manually enabling it must produce a selectable boot environment.
+
+### 3. Supported use case
+
+Yes.
+The installer creates baseline specifically for system rollback,
+and its README instructs users to select it.
+
+### 4. Contribution acceptance
+
+Yes.
+The README invites issues and fixes.
+No issue template,
+contribution restriction,
+or AI-assistance prohibition was found.
+
+### 5. Likelihood of an upstream fix
+
+Yes,
+with ordinary maintainer uncertainty.
+The repository accepted pull request 2 and investigated its existing issue reports.
+No documented non-goal conflicts with the correction.
+
+### 6. Minimal compatible fix
+
+Yes.
+The retained VM proved the property correction at the consumer boundary.
+The source change is to set `mountpoint=/` on baseline,
+matching `pacman-zfs-pre` behavior for transaction environments.
+
+Filing is warranted,
+but no external issue was posted without user authorization.
+
+## Upstream issue draft
+
+~~~markdown
+Title: Factory baseline remains hidden after enabling it because its mountpoint is `none`
+
+The installer creates `zroot/ROOT/baseline` for rollback,
+but the clone inherits `mountpoint=none` from `zroot/ROOT`.
+`create-baseline-boot-env.sh` sets `canmount=noauto` and
+`org.zfsbootmenu:active=off`,
+but never sets a local mountpoint.
+
+On installer commit `9d587de2d34a35ea33094735002d8599afed7eac`,
+a fresh encrypted no-desktop installation measured:
+
+```text
+zroot/ROOT/baseline  mountpoint                   none    inherited from zroot/ROOT
+zroot/ROOT/baseline  canmount                     noauto  local
+zroot/ROOT/baseline  org.zfsbootmenu:active       off     local
+```
+
+Setting only the documented visibility property did not add baseline to ZFSBootMenu:
+
+```bash
+sudo zfs set org.zfsbootmenu:active=on zroot/ROOT/baseline
+```
+
+After also setting the root mountpoint,
+ZFSBootMenu listed and booted baseline:
+
+```bash
+sudo zfs set mountpoint=/ zroot/ROOT/baseline
+```
+
+The boot reached tty1.
+A read-only ZFSBootMenu chroot showed both `/` and `/var/lib/pacman` on baseline.
+
+Suggested source correction:
+set `mountpoint=/` when creating baseline,
+as `pacman-zfs-pre` already does for transaction boot environments.
+Keeping `active=off` by default can remain a separate policy choice.
+
+This report was prepared with AI assistance from a retained disposable VM.
+No physical disk was attached.
+~~~

@@ -321,10 +321,59 @@ The full rehearsal must make these boundaries explicit:
   spool,
   and temporary data remain persistent under the prototype.
 
-A full installer,
-pacman transaction,
-ZFSBootMenu boot,
-and package-consistency test remain required before adopting this patch physically.
+### Full patched consumer validation
+
+A fresh retained UEFI VM applied the 896-byte patch to the pinned installer archive.
+The source identities were:
+
+- upstream archive SHA-256:
+  `f83565958f5d32054c2a6dbb7bc0295eedc69b21de47d18bcdd1d65ee3d2073c`;
+- local patch SHA-256:
+  `e9d7271f4f7d2a110b8782049299ee765061d3914b344072d9fa027f2c7341f0`;
+- patched `zfs.conf` SHA-256:
+  `0a3c855dcd5a3c8c61c9512bd5ed22b1d5898b0245f19d69dcc20671f8dc0c30`.
+
+The no-desktop installation completed every custom ZFS job,
+wrote the ZFSBootMenu EFI image,
+and booted through native encryption to tty1.
+Installed properties showed `mountpoint=none` plus `canmount=off` on both namespace parents.
+Running `/` and `/var/lib/pacman` both resolved to `zroot/ROOT/default`.
+
+Installing `tree` created `zroot/ROOT/be-20260829-135720-pre-install`.
+The current environment reported `tree 2.3.2-1`,
+7 total package files,
+0 altered files,
+the binary,
+and the post-snapshot marker.
+ZFSBootMenu listed both environments and booted the pre-install environment to tty1.
+
+The disposable user password had been rotated after the snapshot,
+so the rotated password was correctly rejected by the older environment.
+The revoked old credential was not reused.
+ZFSBootMenu's read-only chroot then showed both `/` and `/var/lib/pacman` on the selected pre-install environment.
+`pacman -Q tree` and `pacman -Qkk tree` both reported that `tree` was not installed,
+the binary was absent,
+and the marker was absent.
+This completes the package-file and package-database rollback check without modifying the selected environment.
+
+Returning to `zroot/ROOT/default` accepted the rotated password.
+Running `/` plus `/var/lib/pacman` again resolved to `zroot/ROOT/default`,
+while home resolved to `zroot/data/home/useruser`.
+Pacman reported `tree 2.3.2-1`,
+0 altered files,
+the binary was present,
+and the marker was present.
+
+### Credential state also rolls back
+
+The password rejection proves that `/etc/shadow` follows root boot-environment state.
+That is coherent system rollback,
+but it can restore a revoked local password hash.
+After changing a compromised login credential,
+every baseline,
+known-good environment,
+and transaction clone containing the old hash must be destroyed or deliberately refreshed.
+The encrypted-pool passphrase remains a separate control and was not changed in this test.
 
 ## What does not work
 
@@ -372,9 +421,13 @@ Treating it as independent persistent data breaks package rollback semantics.
 ## Upstream filing decision
 
 No matching exemption exists under `.out-of-scope/`.
-Searches of open and closed issues and pull requests found no duplicate
+Valid open and closed issue and pull-request searches returned empty arrays
 for pacman database persistence across boot environments.
-The repository currently has only unrelated installer and input-device reports.
+Complete tracker listing found closed issues 1 and 3 plus closed pull request 2.
+Those concern installation,
+a trackpad,
+and SATA or SCSI EFI entry handling rather than package rollback.
+No duplicate exists in the current tracker.
 
 The filing constraints evaluate as follows:
 
@@ -387,8 +440,11 @@ while its README promises that installed-package changes revert with boot enviro
 ### 2. Upstream fixability
 
 Yes.
-The prototype demonstrates corrected snapshot-inheritance semantics in isolation.
-A full installer and boot rehearsal is still required to prove the complete correction.
+The prototype first demonstrated corrected snapshot-inheritance semantics in isolation.
+The retained patched VM then completed installation,
+pacman-hook,
+ZFSBootMenu,
+and package-coherence checks.
 
 ### 3. Supported use case
 
@@ -417,9 +473,10 @@ No documented non-goal or rejection of this use case was found.
 
 Yes.
 The retained patch passed a real-ZFS layout fixture with an explicit persistent child dataset.
-It has not yet passed the installer,
+It also passed the installer,
 pacman-hook,
-or boot path.
+boot,
+and read-only rollback inspection paths in a fresh retained VM.
 
 All filing constraints pass.
 No external issue was opened because posting to a third-party repository requires user authorization.
@@ -485,8 +542,8 @@ A minimal prototype keeps `data/var` and `data/var/lib` as namespace-only parent
 A real-ZFS layout fixture produced `binary=before, database=after` before the patch and
 `binary=before, database=before` after it.
 Explicit children such as `data/var/lib/containers` still mounted at `/var/lib/containers`.
-This fixture proves inheritance semantics in isolation;
-a full patched installation and boot test is still required.
+A fresh patched installation then booted the pre-transaction environment and showed package files plus pacman state at
+the pre-transaction version.
 
 The tradeoff is intentional:
 unlisted `/var` state becomes boot-environment state.

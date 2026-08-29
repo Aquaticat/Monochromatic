@@ -41,20 +41,38 @@ Booting a pre-transaction environment restored root package files but left `/var
 
 A real-ZFS prototype corrected the boundary by keeping `zroot/data/var` and `zroot/data/var/lib` as
 namespace-only parents while preserving selected child datasets.
-That patch has not yet passed a complete installer,
-boot,
-and package-rollback rehearsal.
-The physical gate remains closed until all of these checks pass:
+A fresh retained VM then passed these checks:
 
-- the patched source remains traceable to the pinned upstream archive and has its own recorded patch hash;
-- the effective Calamares sequence contains every custom ZFS job;
-- the patched dataset layout leaves `/var/lib/pacman` inside each root environment;
-- a pacman transaction creates a bootable pre-transaction environment;
-- package files and pacman database state agree in both the old and current environments;
-- the known-good and baseline environments pass the same coherence check;
-- native-encryption unlock,
-  ZFSBootMenu regeneration,
-  and the intended UWSM plus labwc session still pass;
+- the patched source remained traceable to the pinned archive through recorded archive,
+  patch,
+  and patched-file hashes;
+- the effective Calamares sequence contained every custom ZFS job;
+- native-encryption installation and ZFSBootMenu boot succeeded;
+- `/var/lib/pacman` remained inside each root environment;
+- a pacman transaction created a bootable pre-transaction environment;
+- package files and pacman database state agreed in the pre-transaction and current environments;
+- returning to default restored the package,
+  binary,
+  marker,
+  and clean package verification.
+
+The test also proved that `/etc/shadow` rolls back with root.
+Changing a compromised local password does not revoke its older hash inside retained boot environments.
+Destroy or deliberately refresh every baseline,
+known-good environment,
+and transaction clone containing that hash before treating the credential as revoked.
+Never authenticate with a credential known to be compromised merely to test an older environment.
+
+The corrected baseline and independently created known-good environment also passed encrypted menu selection,
+boot,
+and package-coherence checks.
+Baseline required both `mountpoint=/` and `org.zfsbootmenu:active=on` before it appeared.
+Known-good accepted the post-snapshot rotated password and preserved persistent home.
+
+The physical gate remains closed until all remaining checks pass:
+
+- credential-revocation handling is rehearsed across retained environments;
+- the intended UWSM plus labwc session passes from the corrected no-desktop base;
 - the authenticated-USB alternative is either fully rehearsed or removed from the accepted recovery paths.
 See the [package rollback diagnosis][package-rollback-diagnosis].
 
@@ -1196,23 +1214,28 @@ TODO | DONE
 
    ```bash
    sudo zfs set \
-     org.zfsbootmenu:active=on \
-     zroot/ROOT/baseline
+     mountpoint=/ \
+     zroot/ROOT/baseline \
+     && sudo zfs set \
+       org.zfsbootmenu:active=on \
+       zroot/ROOT/baseline
    ```
 
    Expect no error.
+   The baseline clone otherwise inherits `mountpoint=none` from `zroot/ROOT`,
+   so changing only the active property does not make it visible.
 
-1. Confirm the baseline visibility property:
+1. Confirm both baseline visibility properties:
 
    ```bash
    sudo zfs get \
      -H \
-     -o value \
-     org.zfsbootmenu:active \
+     -o property,value \
+     mountpoint,org.zfsbootmenu:active \
      zroot/ROOT/baseline
    ```
 
-   Expect exactly `on`.
+   Expect `mountpoint` to be `/` and `org.zfsbootmenu:active` to be `on`.
 
 1. Reboot the VM to test baseline visibility:
 
@@ -2364,23 +2387,28 @@ TODO | DONE
 
    ```bash
    sudo zfs set \
-     org.zfsbootmenu:active=on \
-     zroot/ROOT/baseline
+     mountpoint=/ \
+     zroot/ROOT/baseline \
+     && sudo zfs set \
+       org.zfsbootmenu:active=on \
+       zroot/ROOT/baseline
    ```
 
    Expect no error.
+   The baseline clone otherwise inherits `mountpoint=none` from `zroot/ROOT`,
+   so changing only the active property does not make it visible.
 
-1. Confirm the baseline visibility property:
+1. Confirm both baseline visibility properties:
 
    ```bash
    sudo zfs get \
      -H \
-     -o value \
-     org.zfsbootmenu:active \
+     -o property,value \
+     mountpoint,org.zfsbootmenu:active \
      zroot/ROOT/baseline
    ```
 
-   Expect exactly `on`.
+   Expect `mountpoint` to be `/` and `org.zfsbootmenu:active` to be `on`.
 
 1. Confirm the persistent home boundary:
 

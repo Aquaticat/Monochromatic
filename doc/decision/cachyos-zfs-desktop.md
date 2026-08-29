@@ -11,12 +11,22 @@ The user authorized this choice on 2026-08-29 with:
 The consumer-boundary gate in
 [`doc/runbook/migrate-bazzite-to-cachyos-zfsbootmenu.md`](../runbook/migrate-bazzite-to-cachyos-zfsbootmenu.md)
 must pass in a disposable UEFI VM before the physical NVMe is erased.
-The gate is currently failed:
-a bootable pre-transaction environment restored root package files while persistent `/var/lib/pacman` retained the newer
-package database.
-The dataset-boundary diagnosis and prototype are in the
+The original gate failed because a bootable pre-transaction environment restored root package files while persistent
+`/var/lib/pacman` retained the newer package database.
+The dataset-boundary diagnosis and validated local patch are in the
 [package rollback diagnosis][package-rollback-diagnosis].
-A corrected layout must pass complete installation and rollback rehearsal before physical installation.
+A fresh retained VM passed patched installation,
+encrypted boot,
+pacman-hook,
+pre-transaction rollback,
+and return-to-default checks.
+
+Corrected baseline and independently created known-good environments then passed menu selection,
+boot,
+and package-coherence checks.
+The overall gate remains closed pending credential-revocation rehearsal,
+the intended UWSM plus labwc session,
+and authenticated-USB recovery or explicit removal of that alternative.
 
 Until that gate passes,
 the technology-vetting lifecycle remains at source-validated finalist rather than formally `Validated`,

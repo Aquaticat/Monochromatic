@@ -55,7 +55,52 @@ or evidence unless the user later authorizes cleanup.
   unprivileged `systemctl reboot` succeeded.
   The exact countdown watcher then sent Escape at the real ZFSBootMenu countdown.
   The native-encryption passphrase was accepted after interception.
-  Process `wait-patched-rollback-menu` is waiting for both default and pre-install menu entries.
+  ZFSBootMenu showed both default and pre-install environments.
+  The pre-install environment booted to tty1.
+  Its older password hash correctly rejected the rotated disposable password,
+  so the revoked credential was not reused.
+  ZFSBootMenu's read-only chroot showed `/` and `/var/lib/pacman` on the pre-install environment,
+  no `tree` package record,
+  no binary,
+  and no post-snapshot marker.
+  Returning to default accepted the rotated credential and restored coherent current state:
+  `/` plus `/var/lib/pacman` on default,
+  persistent home on `zroot/data/home/useruser`,
+  `tree 2.3.2-1` with 0 altered files,
+  the binary,
+  and the marker.
+
+  Setting only `org.zfsbootmenu:active=on` did not reveal the installer baseline.
+  The clone had inherited `mountpoint=none` from `zroot/ROOT` because the baseline script never sets a local mountpoint.
+  The ZFSBootMenu recovery shell correctly refused a property mutation while the pool was read-only.
+  From the running default environment,
+  setting baseline `mountpoint=/` produced measured properties `/`,
+  `noauto`,
+  and `active=on`.
+  ZFSBootMenu then listed 3 environments and booted baseline to tty1.
+  No revoked credential was entered.
+  Its read-only chroot showed `/` and `/var/lib/pacman` on `zroot/ROOT/baseline`,
+  no `tree` package record,
+  no binary,
+  and no post-snapshot marker.
+  This proves baseline package coherence after the mountpoint correction.
+  From default after credential rotation,
+  a separate `zroot/ROOT/known-good` clone was created from
+  `zroot/ROOT/default@known-good-20260829-validated`.
+  Its measured properties are `mountpoint=/`,
+  `canmount=noauto`,
+  `active=on`,
+  and inherited-parent command line.
+  ZFSBootMenu listed and booted known-good.
+  The rotated credential authenticated,
+  `/` plus `/var/lib/pacman` resolved to known-good,
+  persistent home remained separate,
+  and `tree` plus its marker reported 0 altered files.
+  Directly selecting default afterward reached tty1 and accepted the rotated credential,
+  proving fallback from known-good.
+  Complete issue and pull-request listing found no upstream duplicate.
+  Valid open and closed keyword searches also found none for the package-state or baseline-mountpoint defects.
+  No external issue was posted.
 
   During the timed-out `sudo` attempt,
   delayed input reached fish after the password prompt closed and printed the disposable VM user password as an unknown
@@ -679,13 +724,9 @@ No upstream issue was posted.
 ## Immediate next actions
 
 1. Under task 37,
-repeat the clean installation with the prototyped namespace-only `/var` and `/var/lib` parent layout.
+finish fallback from known-good to default.
 
-1. Repeat the `tree` package transaction and boot the generated pre-transaction environment.
-
-1. Require both package files and pacman database state to match before accepting rollback.
-
-1. Create and boot a known-good environment independently of the installer baseline.
+1. Rehearse removal or deliberate refresh of environments containing revoked credential hashes.
 
 1. Install and validate the intended UWSM plus labwc session from the text-only base.
 
