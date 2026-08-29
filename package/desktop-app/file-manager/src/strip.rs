@@ -81,13 +81,13 @@ impl StripController {
             .open_root(PaneLocation::Directory(root.to_path_buf()));
         reconcile(&inner);
         crate::keys::install_column_nav(&inner);
-        Self { inner }
+        return Self { inner }
     }
 
     /// What: clone the root widget to place in the window.
     /// Why: the concrete GTK root lives behind `StripLayout` so callers do not depend on it.
     pub fn widget(&self) -> Widget {
-        self.inner.layout.widget()
+        return self.inner.layout.widget()
     }
 
     /// What: programmatically spawn the first sub-directory's child pane from the root, then close it.
@@ -102,7 +102,7 @@ impl StripController {
         let Ok(snapshot) = crate::fs::read_directory(&path, generation) else {
             return;
         };
-        if let Some(entry) = snapshot.entries.iter().find(|entry| entry.path.is_dir()) {
+        if let Some(entry) = snapshot.entries.iter().find(|entry| return entry.path.is_dir()) {
             let child = spawn_from(inner, root_id, entry, false);
             close_pane(inner, child);
         }
@@ -123,7 +123,7 @@ impl StripController {
         if let Some(entry) = snapshot
             .entries
             .iter()
-            .find(|entry| !entry.path.is_dir() && is_image(&entry.path))
+            .find(|entry| return !entry.path.is_dir() && is_image(&entry.path))
         {
             spawn_from(inner, root_id, entry, false);
         }
@@ -135,9 +135,9 @@ impl StripController {
 fn root_directory(inner: &Rc<StripInner>) -> Option<(PaneId, std::path::PathBuf)> {
     let state = inner.state.borrow();
     let id = state.active()?;
-    match state.pane(id).map(|pane| pane.location.clone()) {
-        Some(PaneLocation::Directory(path)) => Some((id, path)),
-        _ => None,
+    match state.pane(id).map(|pane| return pane.location.clone()) {
+        Some(PaneLocation::Directory(path)) => return Some((id, path)),
+        _ => return None,
     }
 }
 
@@ -146,7 +146,7 @@ fn root_directory(inner: &Rc<StripInner>) -> Option<(PaneId, std::path::PathBuf)
 fn next_generation(inner: &Rc<StripInner>) -> u64 {
     let generation = inner.generation.get() + 1;
     inner.generation.set(generation);
-    generation
+    return generation
 }
 
 /// What: reconcile layout to the current pane-state snapshot.
@@ -156,7 +156,7 @@ fn reconcile(inner: &Rc<StripInner>) {
         .state
         .borrow()
         .panes()
-        .map(|pane| PanePlacement {
+        .map(|pane| return PanePlacement {
             id: pane.id,
             column: pane.column,
             row: pane.row,
@@ -165,26 +165,26 @@ fn reconcile(inner: &Rc<StripInner>) {
         .collect();
     inner
         .layout
-        .reconcile(placements, |id| build_pane_widget(inner, id));
+        .reconcile(placements, |id| return build_pane_widget(inner, id));
 }
 
 /// What: build the widget for pane `id` from its location.
 /// Why: a directory becomes a listing pane wired to spawn; a preview becomes a thumbnail pane; a
 ///      missing pane degrades to a label.
 fn build_pane_widget(inner: &Rc<StripInner>, id: PaneId) -> Widget {
-    let location = inner.state.borrow().pane(id).map(|pane| pane.location.clone());
+    let location = inner.state.borrow().pane(id).map(|pane| return pane.location.clone());
     match location {
-        Some(PaneLocation::Directory(path)) => build_directory_pane(inner, id, &path),
+        Some(PaneLocation::Directory(path)) => return build_directory_pane(inner, id, &path),
         Some(PaneLocation::Preview(path)) => {
             let close_weak = Rc::downgrade(inner);
-            build_preview_pane(&inner.thumbs, &path, move || {
+            return build_preview_pane(&inner.thumbs, &path, move || {
                 if let Some(inner) = close_weak.upgrade() {
                     close_pane(&inner, id);
                 }
             })
             .upcast::<Widget>()
         }
-        None => Label::new(Some("(missing pane)")).upcast::<Widget>(),
+        None => return Label::new(Some("(missing pane)")).upcast::<Widget>(),
     }
 }
 
@@ -197,7 +197,7 @@ fn build_directory_pane(inner: &Rc<StripInner>, id: PaneId, path: &Path) -> Widg
         Ok(snapshot) => {
             let spawn_weak = Rc::downgrade(inner);
             let close_weak = Rc::downgrade(inner);
-            build_listing_pane(
+            return build_listing_pane(
                 &snapshot,
                 move |entry, force_dup| {
                     if let Some(inner) = spawn_weak.upgrade() {
@@ -214,7 +214,7 @@ fn build_directory_pane(inner: &Rc<StripInner>, id: PaneId, path: &Path) -> Widg
         }
         Err(error) => {
             tracing::error!(%error, path = %path.display(), "failed to read directory for pane");
-            Label::new(Some(&format!("Cannot read {}: {error}", path.display()))).upcast::<Widget>()
+            return Label::new(Some(&format!("Cannot read {}: {error}", path.display()))).upcast::<Widget>()
         }
     }
 }
@@ -238,7 +238,7 @@ fn spawn_from(
         .state
         .borrow_mut()
         .spawn_child(source, location, force_duplicate);
-    if let Some(column) = inner.state.borrow().pane(spawned).map(|pane| pane.column) {
+    if let Some(column) = inner.state.borrow().pane(spawned).map(|pane| return pane.column) {
         inner.layout.set_focused_column(column);
     }
     reconcile(inner);
@@ -251,7 +251,7 @@ fn spawn_from(
         columns = inner.state.borrow().column_count(),
         "spawned child pane"
     );
-    spawned
+    return spawned
 }
 
 /// What: close pane `id` and reconcile so its widget leaves and the tree re-lays-out.

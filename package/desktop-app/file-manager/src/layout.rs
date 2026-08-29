@@ -119,13 +119,13 @@ impl StripLayout {
             focused_column: Cell::new(0),
         });
         layout.install_app_scroll_sync();
-        layout
+        return layout
     }
 
     /// What: clone the root GTK widget for insertion into the window.
     /// Why: callers should not know the root happens to be a `GtkScrolledWindow`.
     pub(crate) fn widget(&self) -> Widget {
-        self.outer.clone().upcast::<Widget>()
+        return self.outer.clone().upcast::<Widget>()
     }
 
     /// What: attach a key controller to the layout's root scroller.
@@ -137,7 +137,7 @@ impl StripLayout {
     /// What: return the column that most recently received pane focus.
     /// Why: Left/Right navigation computes its target relative to this value.
     pub(crate) fn focused_column(&self) -> usize {
-        self.focused_column.get()
+        return self.focused_column.get()
     }
 
     /// What: record the column that just received pane focus.
@@ -153,7 +153,7 @@ impl StripLayout {
             return false;
         };
         widget.grab_focus();
-        true
+        return true
     }
 
     /// What: reconcile GTK widgets to `placements`, building missing panes through `build_widget`.
@@ -168,13 +168,13 @@ impl StripLayout {
         self.placements.replace(placements.clone());
         let column_count = placements
             .iter()
-            .map(|placement| placement.column + 1)
+            .map(|placement| return placement.column + 1)
             .max()
             .unwrap_or(0);
         self.ensure_columns(column_count);
         let live: HashMap<PaneId, (usize, usize)> = placements
             .iter()
-            .map(|placement| (placement.id, (placement.column, placement.row)))
+            .map(|placement| return (placement.id, (placement.column, placement.row)))
             .collect();
         self.remove_stale(&live);
         for placement in &placements {
@@ -223,7 +223,7 @@ impl StripLayout {
             .borrow()
             .keys()
             .copied()
-            .filter(|id| !live.contains_key(id))
+            .filter(|id| return !live.contains_key(id))
             .collect();
         for id in stale {
             if let Some(widget) = self.widgets.borrow_mut().remove(&id)
@@ -260,7 +260,7 @@ impl StripLayout {
         for (index, view) in self.columns.borrow().iter().enumerate() {
             let max_row = live
                 .values()
-                .filter_map(|&(column, row)| (column == index).then_some(row))
+                .filter_map(|&(column, row)| return (column == index).then_some(row))
                 .max()
                 .unwrap_or(0);
             let height = (scroll::row_y(max_row) + f64::from(PANE_HEIGHT)) as i32;

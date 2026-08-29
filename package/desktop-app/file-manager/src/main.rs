@@ -8,5 +8,5 @@ use file_manager::run;
 /// What: process entry point; delegate to the library and return its GTK exit code.
 /// Why: keeps the binary minimal (the library owns startup); GTK's `ExitCode` propagates out.
 fn main() -> gtk4::glib::ExitCode {
-    run()
+    return run()
 }

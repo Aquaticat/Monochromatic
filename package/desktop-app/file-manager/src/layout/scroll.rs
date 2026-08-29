@@ -49,7 +49,7 @@ impl StripLayout {
             .placements
             .borrow()
             .iter()
-            .find(|placement| placement.id == id)
+            .find(|placement| return placement.id == id)
             .copied()
         else {
             return;
@@ -74,7 +74,7 @@ impl StripLayout {
                     }
                     return glib::ControlFlow::Break;
                 }
-                glib::ControlFlow::Continue
+                return glib::ControlFlow::Continue
             },
         );
     }
@@ -83,7 +83,7 @@ impl StripLayout {
 /// What: vertical pixel offset of `row` within the pane grid.
 /// Why: panes tile down each column at a fixed stride shared by every lane and column.
 pub(super) fn row_y(row: usize) -> f64 {
-    row as f64 * f64::from(PANE_HEIGHT + PANE_GAP)
+    return row as f64 * f64::from(PANE_HEIGHT + PANE_GAP)
 }
 
 /// What: scroll `adj` so `[start, start + extent)` is fully visible, returning whether it is.
@@ -102,5 +102,5 @@ fn reveal(adj: &Adjustment, start: f64, extent: f64) -> bool {
     };
     adj.set_value(target.clamp(0.0, max));
     let settled = adj.value();
-    start >= settled && start + extent <= settled + page
+    return start >= settled && start + extent <= settled + page
 }

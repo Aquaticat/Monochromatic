@@ -111,7 +111,7 @@ impl Thumbnails {
                 deliver(&drain, &path, decoded);
             }
         });
-        Self { inner }
+        return Self { inner }
     }
 
     /// What: show `path`'s thumbnail in `picture`: set it now on a cache hit, else decode off-thread
@@ -138,16 +138,16 @@ impl Thumbnails {
         let tick = self.inner.tick.get() + 1;
         self.inner.tick.set(tick);
         entry.used = tick;
-        Some(entry.texture.clone())
+        return Some(entry.texture.clone())
     }
 }
 
 /// What: whether `path`'s extension names a decodable raster image.
 /// Why: preview panes request a thumbnail only for images; other files show a typed icon instead.
 pub fn is_image(path: &Path) -> bool {
-    matches!(
+    return matches!(
         path.extension()
-            .and_then(|ext| ext.to_str())
+            .and_then(|ext| return ext.to_str())
             .map(str::to_ascii_lowercase)
             .as_deref(),
         Some(
@@ -180,7 +180,7 @@ fn decode(path: &Path) -> Option<Decoded> {
     let thumb = image.thumbnail(THUMB_SIZE, THUMB_SIZE).to_rgba8();
     let width = i32::try_from(thumb.width()).ok()?;
     let height = i32::try_from(thumb.height()).ok()?;
-    Some(Decoded {
+    return Some(Decoded {
         pixels: thumb.into_raw(),
         width,
         height,
@@ -213,7 +213,7 @@ fn deliver(inner: &Rc<ThumbInner>, path: &Path, decoded: Option<Decoded>) {
 /// What: the cache byte cost of a decoded thumbnail.
 /// Why: RGBA is four bytes per pixel; this is what the budget counts.
 fn byte_cost(decoded: &Decoded) -> usize {
-    decoded.width as usize * decoded.height as usize * RGBA_CHANNELS
+    return decoded.width as usize * decoded.height as usize * RGBA_CHANNELS
 }
 
 /// What: wrap decoded RGBA pixels in a GPU-uploadable `Texture`.
@@ -221,7 +221,7 @@ fn byte_cost(decoded: &Decoded) -> usize {
 fn build_texture(decoded: &Decoded) -> Texture {
     let stride = decoded.width as usize * RGBA_CHANNELS;
     let bytes = Bytes::from(&decoded.pixels);
-    MemoryTexture::new(
+    return MemoryTexture::new(
         decoded.width,
         decoded.height,
         MemoryFormat::R8g8b8a8,
@@ -261,8 +261,8 @@ fn evict_to_budget(inner: &Rc<ThumbInner>) {
             .cache
             .borrow()
             .iter()
-            .min_by_key(|(_, cached)| cached.used)
-            .map(|(victim_path, _)| victim_path.clone());
+            .min_by_key(|(_, cached)| return cached.used)
+            .map(|(victim_path, _)| return victim_path.clone());
         let Some(victim) = victim else {
             break;
         };
