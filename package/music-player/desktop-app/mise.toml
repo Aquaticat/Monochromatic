@@ -121,7 +121,7 @@ description = "Run clippy with warnings denied (macOS/Windows native, else Linux
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
-runCargo(['clippy', '--release', '--', '-D', 'warnings'])
+runCargo(['clippy', '--release', '--all-targets', '--', '-D', 'warnings'])
 """
 
 [tasks."format:clippy"]
