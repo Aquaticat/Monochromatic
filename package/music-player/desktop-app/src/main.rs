@@ -3,19 +3,36 @@
 //! engine, and engine `Update`s are applied to the window's properties from the
 //! event-loop thread. Also handles CLI path arguments and the file-open dialog.
 
-// What:     `slint::include_modules!()` is a MACRO (the `!` marks a macro call)
-//           that pastes in the Rust code generated from `ui/app.slint` by
-//           `build.rs`, bringing the `AppWindow` type into scope.
-// Why:      Without it the compiled-from-markup component is invisible to Rust.
-// Gotcha:   a `name!(...)` call is a macro, NOT a function: it runs at COMPILE
-//           time and can paste in whole declarations. TS has no equivalent; the
-//           closest mental model is a build-step codegen import.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { AppWindow } from "./generated/app.slint"; // produced by a build step
-// ```
-slint::include_modules!();
+/// What:     `mod slint_generated { ... }` creates a private namespace around
+///           Rust emitted by Slint. The lint attribute applies only inside that
+///           namespace, while package-owned Rust remains under the manifest's
+///           denied `implicit_return` lint.
+/// Why:      Slint 1.17 emits tail-expression returns and already marks generated
+///           output as exempt from several Clippy groups. This extra exemption
+///           covers the restriction lint until Slint includes it itself.
+/// Gotcha:   The direct attribute on `slint::include_modules!()` is ignored by
+///           rustc; a module boundary is required for the lint level to apply.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// namespace SlintGenerated {
+///   export * from './app.slint.generated';
+/// }
+/// ```
+#[allow(clippy::implicit_return)]
+mod slint_generated {
+    // What:     `slint::include_modules!()` includes build-time generated Rust.
+    // Why:      `AppWindow` and related UI bindings come from Slint markup.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // export * from './app.slint.generated';
+    // ```
+    slint::include_modules!();
+}
+
+/// Imports every public Slint binding from the generated-only lint boundary.
+use slint_generated::*;
 
 /// What:     `mod ui_progress;` loads the sibling `ui_progress.rs` module into this
 ///           binary crate.
