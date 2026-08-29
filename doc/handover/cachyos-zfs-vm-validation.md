@@ -21,8 +21,10 @@ or evidence unless the user later authorizes cleanup.
 - **Installation result**:
   CachyOS Calamares displayed `All done.` and reported a successful installation.
 - **Current transition**:
-  An ACPI shutdown was requested for the live environment.
-  The next action is to confirm that the domain reached `shut off`.
+  The first ACPI shutdown request did not stop the live environment.
+  The first guest-terminal retry lost leading characters while Konsole was still opening and executed `ls poweroff`.
+  A corrected `systemctl poweroff` was then entered in the focused guest terminal.
+  The domain reached `shut off` immediately after that corrected command.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
@@ -234,6 +236,21 @@ The latest guest completion frame is:
 ```text
 /var/home/user/temp/agent/cachyos-zfs-validation-vnc.png
 ```
+
+## Shutdown transition evidence
+
+The host-side ACPI request did not stop the live environment within 2 minutes.
+This did not prove that CachyOS cannot shut down.
+Guest evidence showed that the first terminal command was mistyped because input began before Konsole had focus:
+
+```text
+ls poweroff
+ls: cannot access 'poweroff': No such file or directory
+```
+
+The command was not a `systemctl` failure.
+The corrected `systemctl poweroff` was entered only after the terminal was visibly focused.
+Process `wait-cachyos-poweroff-retry` observed `shut off` immediately and exited successfully.
 
 ## Immediate next actions
 
