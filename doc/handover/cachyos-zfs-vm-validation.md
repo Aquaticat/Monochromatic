@@ -533,6 +533,31 @@ Boot then reached Ly 1.4.1 with the intended hostname,
 Wayfire session,
 and `user` login.
 
+## Pacman hook transaction evidence
+
+On the clean no-desktop control,
+`pacman --sync --noconfirm tree` exercised the installed hooks at the consumer boundary.
+The pre-transaction hook created
+`zroot/ROOT/be-20260829-125545-pre-install`
+from snapshot `zroot/ROOT/default@be-20260829-125545-pre-install`.
+Its description is `Pre-install Packages: tree`,
+and its command line inherits `%{parent}`.
+The post-transaction hook found one retained environment,
+kept it under the configured retention count of 24,
+verified the ZFSBootMenu EFI image,
+and verified root-backed kernels.
+
+After the transaction,
+`/usr/bin/tree` exists and pacman reports `tree 2.3.2-1` in the running default environment.
+A root-backed marker was created after the hook snapshot.
+The VM is rebooting so ZFSBootMenu can select the pre-install environment and test rollback boundaries.
+Process `intercept-zbm-tree-rollback` is canceling the automatic countdown.
+
+The layout keeps `/var/lib` on `zroot/data/var/lib`,
+not inside a boot environment.
+The rollback check must therefore compare root files with the persistent pacman database;
+a bootable clone alone would not prove package-state consistency.
+
 ## Immediate next actions
 
 1. Under task 37,
