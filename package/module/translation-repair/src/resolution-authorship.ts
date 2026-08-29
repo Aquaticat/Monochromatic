@@ -24,7 +24,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * @example
  * ```ts
- * const authorship: IssueAuthorship = { perIssue: {}, everyIssue: ['hf:zai-org/GLM-5.2',], };
+ * const authorship: IssueAuthorship = { perIssue: {}, everyIssue: ['hf:zai-org/GLM-5.3-Flash',], };
  * ```
  */
 export type IssueAuthorship = {

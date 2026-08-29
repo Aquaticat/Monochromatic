@@ -402,7 +402,7 @@ await describe({
          * Claim about the negation, far from either count.
          */
         const polarity = claimOf({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           category: 'altered-polarity',
           sourceLocator: '她们不吃罐头',
           sourceFocus: '不吃',
@@ -435,7 +435,7 @@ await describe({
          * Third voice quoting a span that contains the other two.
          */
         const wider = claimOf({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           category: 'altered-number',
           sourceLocator: COUNT_SENTENCE_SOURCE,
           sourceFocus: '两只猫睡在窗台上',

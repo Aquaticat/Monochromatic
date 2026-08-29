@@ -62,7 +62,7 @@ const DOCUMENTS = {
  */
 const CRITICS = [
   'hf:openai/gpt-oss-120b',
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
 ] as const;
 
 /**

@@ -45,7 +45,7 @@ await describe({
  * Catalog the comparisons run against.
  */
 const CATALOG: readonly string[] = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ];
 
@@ -59,7 +59,7 @@ await describe({
         + 'per call while nothing said why',
       fn: async () => {
         expect(compareCatalog({
-          served: [{ id: 'hf:zai-org/GLM-5.2', huggingFaceId: 'zai-org/GLM-5.2', },],
+          served: [{ id: 'hf:zai-org/GLM-5.3-Flash', huggingFaceId: 'zai-org/GLM-5.3-Flash', },],
           catalog: CATALOG,
         },).missing,).toStrictEqual(['hf:moonshotai/Kimi-K3',],);
       },
@@ -76,12 +76,16 @@ await describe({
         const comparison = compareCatalog({
           served: [
             {
-              id: 'hf:zai-org/GLM-5.2',
-              huggingFaceId: 'zai-org/GLM-5.2',
+              id: 'hf:zai-org/GLM-5.3-Flash',
+              huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
-              id: 'syn:large:text',
-              huggingFaceId: 'zai-org/GLM-5.2',
+              id: 'hf:moonshotai/Kimi-K3',
+              huggingFaceId: 'moonshotai/Kimi-K3',
+            },
+            {
+              id: 'syn:large:vision',
+              huggingFaceId: 'moonshotai/Kimi-K3',
             },
           ],
           catalog: CATALOG,
@@ -91,7 +95,7 @@ await describe({
         expect(comparison.aliases
           .map(function toId(model,) {
           return model.id;
-        },),).toStrictEqual(['syn:large:text',],);
+        },),).toStrictEqual(['syn:large:vision',],);
       },
     },),
 
@@ -104,8 +108,8 @@ await describe({
         expect(compareCatalog({
           served: [
             {
-              id: 'hf:zai-org/GLM-5.2',
-              huggingFaceId: 'zai-org/GLM-5.2',
+              id: 'hf:zai-org/GLM-5.3-Flash',
+              huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
               id: 'hf:moonshotai/Kimi-K3',
@@ -162,8 +166,8 @@ await describe({
         const comparison = compareCatalog({
           served: [
             {
-              id: 'hf:zai-org/GLM-5.2',
-              huggingFaceId: 'zai-org/GLM-5.2',
+              id: 'hf:zai-org/GLM-5.3-Flash',
+              huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
               id: 'hf:moonshotai/Kimi-K3',

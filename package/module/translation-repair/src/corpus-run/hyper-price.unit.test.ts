@@ -119,6 +119,21 @@ await describe({
     },),
 
     it({
+      name: 'RETAINS RETIRED GLM-5.2 PRICING so historical artifacts remain accountable',
+      fn: async () => {
+        expect(creditsFor({
+          model: 'glm-5.2',
+          promptTokens: ONE_MILLION,
+          completionTokens: ONE_MILLION,
+        },),)
+          .toEqual({
+            inputCredits: 30.49,
+            outputCredits: 95.81,
+          },);
+      },
+    },),
+
+    it({
       name: 'SCALES with the token count rather than stepping per call',
       fn: async () => {
         expect(creditsFor({

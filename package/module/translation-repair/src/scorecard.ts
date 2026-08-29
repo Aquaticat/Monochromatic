@@ -33,7 +33,7 @@ export type CriticAttemptOutcomeKind =
  * @example
  * ```ts
  * const record: CriticAttemptRecord = {
- *   modelId: 'hf:zai-org/GLM-5.2',
+ *   modelId: 'hf:zai-org/GLM-5.3-Flash',
  *   entryId: 'whiskers',
  *   outcomeKind: 'ok',
  *   detail: '',
@@ -105,7 +105,7 @@ export type CriticAttemptRecord = {
  * @example
  * ```ts
  * const row: ModelScorecardRow = {
- *   modelId: 'hf:zai-org/GLM-5.2',
+ *   modelId: 'hf:zai-org/GLM-5.3-Flash',
  *   attempts: 4,
  *   schemaOkRate: 0.75,
  *   refusalRate: 0.25,

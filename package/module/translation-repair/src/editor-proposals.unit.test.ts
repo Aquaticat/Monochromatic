@@ -52,7 +52,7 @@ const ENVELOPE: EditableEnvelope = {
  *
  * @example
  * ```ts
- * const candidate = proposing({ modelId: 'hf:zai-org/GLM-5.2', newText: 'The cat sleeps.', },);
+ * const candidate = proposing({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText: 'The cat sleeps.', },);
  * ```
  */
 function proposing(
@@ -112,7 +112,7 @@ await describe({
         const proposals = collectEnvelopeProposals({
           candidates: [
             proposing({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               newText: 'The cat sleeps on the windowsill.',
             },),
             proposing({
@@ -127,7 +127,7 @@ await describe({
         expect([...creditedTo({ producer: proposals[0]?.producer ?? { kind: 'incumbent', matched: [], }, },),]
           .toSorted(),).toEqual([
           'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
         ],);
       },
     },),
@@ -138,7 +138,7 @@ await describe({
         const proposals = collectEnvelopeProposals({
           candidates: [
             proposing({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               newText: 'The cat sleeps on the windowsill.',
             },),
             proposing({
@@ -158,7 +158,7 @@ await describe({
         expect(proposals.map(function toProducer(proposal,): readonly string[] {
           return creditedTo({ producer: proposal.producer, },);
         },),).toEqual([
-          ['hf:zai-org/GLM-5.2',],
+          ['hf:zai-org/GLM-5.3-Flash',],
           ['hf:moonshotai/Kimi-K3',],
         ],);
       },
@@ -169,7 +169,7 @@ await describe({
       fn: async () => {
         const proposals = collectEnvelopeProposals({
           candidates: [
-            proposing({ modelId: 'hf:zai-org/GLM-5.2', },),
+            proposing({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),
             proposing({
               modelId: 'hf:moonshotai/Kimi-K3',
               newText: 'The cat naps on the windowsill.',

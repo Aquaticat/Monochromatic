@@ -26,7 +26,7 @@ import { buildCrosscheckCensus, } from '../../dist/final/node/index.mjs';
  * Roster the census seats judges from, which is the shipped one.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'minimax-m3',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
@@ -43,7 +43,7 @@ const ROSTER = [
  *
  * @example
  * ```ts
- * const chunk = chunkWith({ claims: [['issue/whisker', ['hf:zai-org/GLM-5.2',],],], },);
+ * const chunk = chunkWith({ claims: [['issue/whisker', ['hf:zai-org/GLM-5.3-Flash',],],], },);
  * ```
  */
 function chunkWith(
@@ -83,7 +83,7 @@ await describe({
               sliceCritics: [
                 chunkWith({
                   claims: [
-                    ['issue/mackerel', ['hf:zai-org/GLM-5.2',],],
+                    ['issue/mackerel', ['hf:zai-org/GLM-5.3-Flash',],],
                     ['issue/sardine', ['hf:openai/gpt-oss-120b',],],
                   ],
                 },),
@@ -113,8 +113,8 @@ await describe({
         // The author is barred and the other five are seated, which is the
         // common case: sole authorship covered 298 of 299 attributed claims.
         expect(accepted?.judges.length,).toBe(ROSTER.length - 1,);
-        expect(accepted?.judges.includes('hf:zai-org/GLM-5.2',),).toBe(false,);
-        expect(accepted?.barred,).toEqual(['hf:zai-org/GLM-5.2',],);
+        expect(accepted?.judges.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
+        expect(accepted?.barred,).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
       },
     },),
 
@@ -216,7 +216,7 @@ await describe({
             {
               id: 'Calico',
               sliceCritics: [
-                chunkWith({ claims: [['issue/known', ['hf:zai-org/GLM-5.2',],],], },),
+                chunkWith({ claims: [['issue/known', ['hf:zai-org/GLM-5.3-Flash',],],], },),
               ],
               issues: [
                 {

@@ -24,8 +24,8 @@ const SETTLED = {
   proposedText: 'The cat maintained a positive outlook on life.',
   text: 'The cat maintained a positive outlook on life.',
   changed: true,
-  refinersHeard: ['hf:zai-org/GLM-5.2',],
-  contributors: ['hf:zai-org/GLM-5.2',],
+  refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
+  contributors: ['hf:zai-org/GLM-5.3-Flash',],
   roundCount: 1,
   gate: {
     choice: 'polished',

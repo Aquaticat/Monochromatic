@@ -456,7 +456,7 @@ await describe({
     },),
 
     it({
-      name: 'sends a picture only where that model can actually read one',
+      name: 'sends GLM-5.3-Flash pictures and text through its sole verified provider',
       fn: async () => {
         /** Stub providers, both answering. */
         const { synthetic, hyper, called, } = stubProviders({},);
@@ -469,22 +469,21 @@ await describe({
           budgets,
         },);
 
-        // READING IS NARROWER THAN TALKING. Both providers serve this model's
-        // text and only the second reports vision for it, so a picture has
-        // exactly one place to go even though the plain call prefers the first.
+        // THE REPLACEMENT HAS NO INHERITED HYPER ROUTE. Synthetic reports image
+        // input for GLM-5.3-Flash, so both call shapes use its sole verified path.
         await client.chatText({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: PICTURE_MESSAGES,
           signal: SIGNAL,
         },);
-        expect(called,).toEqual(['hyper',],);
+        expect(called,).toEqual(['synthetic',],);
 
         await client.chatText({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: SIGNAL,
         },);
-        expect(called,).toEqual(['hyper', 'synthetic',],);
+        expect(called,).toEqual(['synthetic', 'synthetic',],);
       },
     },),
 

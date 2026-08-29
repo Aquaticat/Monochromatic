@@ -14,10 +14,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // it says.
 //
 // READING IS ITS OWN STAGE, which is what makes `#111` workable at all. The
-// vision sub-roster is exactly two models, selection needs a minimum weight of
-// two, and a producer's ballot for its own work counts half, so if those two
-// also translated, no disinterested judge would remain on any slice carrying a
-// picture. Asking them only to READ turns the picture into text, and the
+// cross-provider vision sub-roster is four models, selection needs a minimum weight of
+// two, and a producer's ballot for its own work counts half. Combining image
+// transcription with translation would entangle reading provenance with candidate
+// authorship and its weights. Asking them only to READ turns the picture into text, and the
 // ordinary six-model roster then translates and judges from that text with its
 // weights and its disinterest untouched.
 //
@@ -205,9 +205,8 @@ export async function readImageAsset(
   // spent. Each catalog's answer comes from that provider's own reported
   // modalities, so this is a lookup rather than a guess.
   //
-  // BOTH, because they disagree. `hf:zai-org/GLM-5.2` reads pictures on Charm
-  // Hyper and not on Synthetic, so asking only the older catalog would refuse a
-  // reading this roster can actually buy.
+  // BOTH, because one provider can add or remove image support independently.
+  // Asking only one catalog could refuse a reading another serving path can buy.
   if (!readsImages({ modelId, },)) {
     rl.warn(`${modelId} does not read images, so ${assetName} was not sent`,);
     return {

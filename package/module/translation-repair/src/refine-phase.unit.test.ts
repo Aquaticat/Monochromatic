@@ -65,20 +65,20 @@ const EDITOR_WHO_DID_NOT_REFINE: RosterModelId = 'minimax-m3';
 /**
  * Refiner the scripted client answers as, which is the fixture's other editor.
  */
-const REFINER_THAT_REWROTE: RosterModelId = 'hf:zai-org/GLM-5.2';
+const REFINER_THAT_REWROTE: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Roster with the lane on, refiners disjoint from checkers.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.2',],
-  panelModelIds: ['hf:zai-org/GLM-5.2',],
+  criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  panelModelIds: ['hf:zai-org/GLM-5.3-Flash',],
   editorModelIds: [
     REFINER_THAT_REWROTE,
     EDITOR_WHO_DID_NOT_REFINE,
   ],
   judgeModelIds: [
-    'hf:zai-org/GLM-5.2',
+    'hf:zai-org/GLM-5.3-Flash',
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',

@@ -71,7 +71,7 @@ const SOURCE_PASSAGE = '白胡子数着外面的鸟。';
  * Roster asked at every round.
  */
 const MODEL_IDS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ] as const;

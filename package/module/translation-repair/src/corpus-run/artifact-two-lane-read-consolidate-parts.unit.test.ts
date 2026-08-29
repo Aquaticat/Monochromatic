@@ -68,7 +68,7 @@ const KEPT_STANDING: ArtifactConsolidationTerminal = 'slate-endorsed-standing';
 /**
  * Model that wrote a verdict, from the roster rather than invented.
  */
-const VERDICT_MODEL = 'hf:zai-org/GLM-5.2';
+const VERDICT_MODEL = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Ballot every gate case departs from one field at a time.

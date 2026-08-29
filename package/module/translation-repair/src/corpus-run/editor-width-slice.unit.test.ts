@@ -73,7 +73,7 @@ const SOURCE_TEXT = '猫猫在窗台上睡觉。';
  * again and the wide arm calls them plus one more.
  */
 const SHARED_EDITORS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ] as const;
 

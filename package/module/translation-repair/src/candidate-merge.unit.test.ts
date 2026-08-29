@@ -79,7 +79,7 @@ await describe({
         const merged = mergeIdenticalCandidates({
           candidates: [
             from({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               text: SHARED,
             },),
             from({
@@ -95,7 +95,7 @@ await describe({
             modelId: 'hf:openai/gpt-oss-120b',
           },),)
           .toEqual([
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
           ],);
       },
@@ -109,7 +109,7 @@ await describe({
         const merged = mergeIdenticalCandidates({
           candidates: [
             from({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               text: OTHER,
             },),
             from({

@@ -30,7 +30,7 @@ import {
 /**
  * One model of the roster, used wherever a row's identity does not matter.
  */
-const MODEL_A = 'hf:zai-org/GLM-5.2';
+const MODEL_A = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Second model, for ensemble cases where two models see the same entry.

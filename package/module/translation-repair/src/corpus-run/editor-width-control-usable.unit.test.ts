@@ -156,7 +156,7 @@ await describe({
               ONE_SENTENCE,
               ALSO_ONE_SENTENCE,
             ],
-            judgeModelIds: ['hf:zai-org/GLM-5.2',],
+            judgeModelIds: ['hf:zai-org/GLM-5.3-Flash',],
             signal: AbortSignal.timeout(120_000,),
             l,
           },);

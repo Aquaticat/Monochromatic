@@ -43,7 +43,7 @@ import {
  * Roster this run asks, as the phase assembles one.
  */
 const RUN_SHAPE = refineRunShape({
-  refinerModelIds: ['hf:zai-org/GLM-5.2',],
+  refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
   judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
   checkerModelIds: ['hf:moonshotai/Kimi-K3',],
 },);
@@ -231,7 +231,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: ['hf:zai-org/GLM-5.2',],
+            refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
             judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
             checkerModelIds: ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
           },),
@@ -246,7 +246,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: ['hf:zai-org/GLM-5.2',],
+            refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
             judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
             checkerModelIds: ['hf:moonshotai/Kimi-K3',],
             identityContext: 'Mimi is the cat.',
@@ -323,7 +323,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: ['hf:zai-org/GLM-5.2',],
+            refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
             judgeModelIds: ['hf:Qwen/Qwen3.8-27B',],
             checkerModelIds: ['hf:moonshotai/Kimi-K3',],
             identityContext: '',

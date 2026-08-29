@@ -33,7 +33,7 @@ import {
 const MODELS: RepairModels = {
   criticModelIds: [
     'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.2',
+    'hf:zai-org/GLM-5.3-Flash',
   ],
   panelModelIds: ['hf:Qwen/Qwen3.8-27B',],
   editorModelIds: ['hf:openai/gpt-oss-120b',],
@@ -119,8 +119,11 @@ await describe({
         // `SLICE_CACHE_VERSION` is deliberately NOT bumped: nothing about the
         // question changed, and bumping it would discard every settled slice in
         // the corpus to record a test fixture edit.
+        //
+        // THE SAME CASE MOVED THIS LITERAL ON 2026-08-29 when GLM-5.3-Flash
+        // replaced GLM-5.2 in the fixture roster. Its id is already key input.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('5c4095e02c112db22bd875e4eaad5535f57a973562c243895625e83baa254a53',);
+          .toBe('b5493a0852b930381488e19317aa7e360bb8914c845e1b03c69940bac0d669c4',);
       },
     },),
     it({

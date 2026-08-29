@@ -72,7 +72,7 @@ const CLIENT_WAS_REACHED = 'the refusing client was asked for a completion';
  * Model this lane hands a paragraph to for rewriting, named once so the roster
  * and the finding a case reads both spell the same id.
  */
-const REFINER: RosterModelId = 'hf:zai-org/GLM-5.2';
+const REFINER: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Refiner roster, one model so a lost voice leaves no quorum and the stage's
@@ -85,11 +85,11 @@ const REFINERS: readonly RosterModelId[] = [REFINER,];
  * runs it.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.2',],
-  panelModelIds: ['hf:zai-org/GLM-5.2',],
-  editorModelIds: ['hf:zai-org/GLM-5.2',],
+  criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  panelModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  editorModelIds: ['hf:zai-org/GLM-5.3-Flash',],
   judgeModelIds: [
-    'hf:zai-org/GLM-5.2',
+    'hf:zai-org/GLM-5.3-Flash',
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
   ],

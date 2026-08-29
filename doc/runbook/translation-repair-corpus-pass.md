@@ -499,7 +499,7 @@ and a run made from that checkout recorded none of what they read either.
       minimax-m3: 0.02 credits (27.5%) over 1 calls, in 1000=0.01 out 500=0.01
     metered run total: 0.07 credits
     subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on the METERS line:
-      hf:zai-org/GLM-5.2: 1 calls, in 4096 out 2048
+      hf:zai-org/GLM-5.3-Flash: 1 calls, in 4096 out 2048
     ```
 
     Subscription seats are counted and never priced,
@@ -536,7 +536,7 @@ and a run made from that checkout recorded none of what they read either.
     ledger-report: 2 contests under /path/to/run
     1 ballots named nothing, 0 named a candidate the slate did not have
       gemma-4-26b-a4b-it: 2 candidates, 1 chosen, 66.7% of 3 disinterested ballots, 0 self-votes
-      hf:zai-org/GLM-5.2: 1 candidates, 0 chosen, 0.0% of 2 disinterested ballots, 0 self-votes
+      hf:zai-org/GLM-5.3-Flash: 1 candidates, 0 chosen, 0.0% of 2 disinterested ballots, 0 self-votes
     ```
 
     `disinterested ballots` excludes the seat's own votes for its own candidate,

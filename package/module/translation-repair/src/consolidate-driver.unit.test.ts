@@ -59,7 +59,7 @@ const l = tagged({ tag: 'consolidate-driver-test', },);
 /**
  * Roster this run seats.
  */
-const ROSTER = ['hf:zai-org/GLM-5.2',] as const;
+const ROSTER = ['hf:zai-org/GLM-5.3-Flash',] as const;
 
 /**
  * Per-call bound, never reached because nothing here buys a call.
@@ -575,8 +575,8 @@ await describe({
             proposedText: 'polished wording for slice 0',
             text: 'polished wording for slice 0',
             changed: true,
-            refinersHeard: ['hf:zai-org/GLM-5.2',],
-            contributors: ['hf:zai-org/GLM-5.2',],
+            refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
+            contributors: ['hf:zai-org/GLM-5.3-Flash',],
             rounds: [],
             review: {
               correctionCount: 0,
@@ -1319,8 +1319,8 @@ await describe({
               proposedText: 'The cat maintained a positive outlook on life.',
               text: 'The cat maintained a positive outlook on life.',
               changed: true,
-              refinersHeard: ['hf:zai-org/GLM-5.2',],
-              contributors: ['hf:zai-org/GLM-5.2',],
+              refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
+              contributors: ['hf:zai-org/GLM-5.3-Flash',],
               rounds: [],
               review: {
                 correctionCount: 0,
@@ -1345,7 +1345,7 @@ await describe({
               kind: 'unsettled',
               baseText: 'The cat actively faced the day.',
               proposedText: 'The cat actively faced the day.',
-              refinersHeard: ['hf:zai-org/GLM-5.2',],
+              refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
               contributors: [],
               rounds: [],
               review: {

@@ -48,7 +48,7 @@ const SMOOTH_TEXT =
  * Roster judges are drawn from.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
@@ -57,7 +57,7 @@ const JUDGES: readonly RosterModelId[] = [
 /**
  * Refiners proposing rewrites.
  */
-const REFINERS: readonly RosterModelId[] = ['hf:zai-org/GLM-5.2',];
+const REFINERS: readonly RosterModelId[] = ['hf:zai-org/GLM-5.3-Flash',];
 
 /**
  * Envelopes and definitions of the repaired fixture slice.
@@ -224,7 +224,7 @@ await describe({
         },),);
         expect(result.changed,).toBe(true,);
         expect(result.refinedText,).toBe(SMOOTH_TEXT,);
-        expect([...result.contributors,],).toEqual(['hf:zai-org/GLM-5.2',],);
+        expect([...result.contributors,],).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
       },
     },),
 
@@ -492,11 +492,11 @@ await describe({
             sliceIndex: 0,
             client: scriptedRefiner({ ballot: 1, },),
             refinerModelIds: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
             ],
             judgeModelIds: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
             ],
             sourceText: SOURCE_TEXT,

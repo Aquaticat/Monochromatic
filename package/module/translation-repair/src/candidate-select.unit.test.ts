@@ -126,7 +126,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:zai-org/GLM-5.2',
+      modelId: 'hf:zai-org/GLM-5.3-Flash',
     },
     value: 'first',
     rendered: 'The cat chases butterflies.',
@@ -145,7 +145,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
  * Whole roster selection draws judges from.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
@@ -310,7 +310,7 @@ await describe({
         // take candidate 2.
         const { outcome, calls, } = await runSelection({
           ballots: {
-            'hf:zai-org/GLM-5.2': 1,
+            'hf:zai-org/GLM-5.3-Flash': 1,
             'hf:moonshotai/Kimi-K3': 1,
             'hf:Qwen/Qwen3.8-27B': 2,
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 2,
@@ -331,7 +331,7 @@ await describe({
         // The self-vote is recorded rather than assumed away, so its rate is
         // readable from artifacts instead of argued about.
         expect(outcome.tally.selfVotes,).toBe(2,);
-        expect(outcome.findings,).toContain('select-self-vote (hf:zai-org/GLM-5.2)',);
+        expect(outcome.findings,).toContain('select-self-vote (hf:zai-org/GLM-5.3-Flash)',);
         expect(outcome.findings,).toContain('select-self-vote (hf:Qwen/Qwen3.8-27B)',);
       },
     },),
@@ -347,7 +347,7 @@ await describe({
       fn: async () => {
         const { outcome, } = await runCollapsedSelection({
           contributors: [
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
@@ -368,7 +368,7 @@ await describe({
       fn: async () => {
         const { outcome, } = await runCollapsedSelection({
           contributors: [
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
           ],
@@ -391,7 +391,7 @@ await describe({
             'hf:moonshotai/Kimi-K3': 1,
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 0,
             'hf:openai/gpt-oss-120b': 0,
-            'hf:zai-org/GLM-5.2': 0,
+            'hf:zai-org/GLM-5.3-Flash': 0,
             'hf:Qwen/Qwen3.8-27B': 0,
           },
         },);
@@ -504,7 +504,7 @@ await describe({
       fn: async () => {
         const { outcome, } = await runSelection({
           ballots: {
-            'hf:zai-org/GLM-5.2': 1,
+            'hf:zai-org/GLM-5.3-Flash': 1,
             'hf:moonshotai/Kimi-K3': 1,
             'hf:openai/gpt-oss-120b': 1,
           },
@@ -575,7 +575,7 @@ await describe({
           },),
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               newText: 'The cat chases butterflies.',
             },),
           ],
@@ -591,7 +591,7 @@ await describe({
         expect(selection.soleCount,).toBe(1,);
         expect(selection.judgedCount,).toBe(0,);
         expect(selection.operations.length,).toBe(1,);
-        expect([...selection.contributors,],).toEqual(['hf:zai-org/GLM-5.2',],);
+        expect([...selection.contributors,],).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
         // Recorded as a round of its own kind, so the author survives into
         // the attribution instead of vanishing with the vote that never was.
         expect(selection.rounds.length,).toBe(1,);
@@ -600,7 +600,7 @@ await describe({
         expect(selection.rounds[0]?.slate.length,).toBe(1,);
         expect(selection.rounds[0]?.slate[0]?.producer,).toEqual({
           kind: 'model',
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
         },);
       },
     },),
@@ -620,7 +620,7 @@ await describe({
           },),
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
@@ -654,7 +654,7 @@ await describe({
       fn: async () => {
         /** Repair kept when judges cannot converge, named for its author. */
         const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           newText: 'The cat chases butterflies.',
         },),);
 
@@ -687,7 +687,7 @@ await describe({
               value: candidateFor({
                 modelId: candidate.producer.kind === 'model'
                   ? candidate.producer.modelId
-                  : 'hf:zai-org/GLM-5.2',
+                  : 'hf:zai-org/GLM-5.3-Flash',
                 newText: `Replacement ${String(index + 1,)}.`,
               },).patch,
               rendered: candidate.rendered,
@@ -709,7 +709,7 @@ await describe({
         // editor that wrote this text certify its own work at full weight.
         expect(shippedProducer,).toEqual({
           kind: 'model',
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
         },);
       },
     },),
@@ -720,7 +720,7 @@ await describe({
       fn: async () => {
         /** Repair that must NOT ship over an outright rejection. */
         const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           newText: 'The cat chases butterflies.',
         },),);
 
@@ -749,7 +749,7 @@ await describe({
               value: candidateFor({
                 modelId: candidate.producer.kind === 'model'
                   ? candidate.producer.modelId
-                  : 'hf:zai-org/GLM-5.2',
+                  : 'hf:zai-org/GLM-5.3-Flash',
                 newText: `Replacement ${String(index + 1,)}.`,
               },).patch,
               rendered: candidate.rendered,
@@ -777,7 +777,7 @@ await describe({
 
         /** Text every proposal agreed on. */
         const agreed = candidateFor({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           newText: 'The cat chases butterflies.',
         },).patch;
 
@@ -789,7 +789,7 @@ await describe({
           producer: {
             kind: 'composite',
             contributors: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
             ],
           },

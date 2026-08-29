@@ -20,12 +20,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // `hf:moonshotai/Kimi-K3` refused four times and read it twice, at 377 and 403
 // characters. Nothing about the picture changed between those asks.
 //
-// WHY IT MATTERS MORE THAN IT LOOKS. Corroboration needs BOTH readers, and the
-// vision sub-roster is exactly two because the provider offers exactly two
-// models that read images. So one reader refusing two asks in three does not
-// cost a third of the readings: it costs two thirds of them, and the picture
-// ends `one-reader-only` with a perfectly good transcription thrown away. That
-// is what happened to `Word1.webp` on the run that found this.
+// WHY IT MATTERED MORE THAN IT LOOKED. Corroboration needed both readers, and
+// the vision sub-roster was exactly two when this was measured. One reader
+// refusing two asks in three therefore cost two thirds of the readings, and the
+// picture ended `one-reader-only` with a perfectly good transcription thrown
+// away. That is what happened to `Word1.webp` on the run that found this.
 //
 // AND THEN MEASURED AGAIN, OVER THE WHOLE CORPUS, WHICH CORRECTED THAT.
 // `Word1.webp` is an outlier, not a sample. Across all 191 assets, 119 reader

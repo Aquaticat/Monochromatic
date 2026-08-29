@@ -66,7 +66,7 @@ const l = tagged({ tag: 'document-pictures-reach-the-wire-test', },);
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'minimax-m3',
 ];
 
@@ -137,7 +137,7 @@ const CORROBORATED_READING: PairedReading = {
       text: CORROBORATED_READING_TEXT,
     },
     {
-      modelId: 'hf:zai-org/GLM-5.2',
+      modelId: 'hf:zai-org/GLM-5.3-Flash',
       text: CORROBORATED_READING_TEXT,
     },
   ],
@@ -197,7 +197,7 @@ const UNAVAILABLE_READING: PairedReading = {
   transient: false,
   perReader: [
     'hf:moonshotai/Kimi-K3: describes a sleeping cat',
-    'hf:zai-org/GLM-5.2: describes an empty windowsill',
+    'hf:zai-org/GLM-5.3-Flash: describes an empty windowsill',
   ],
   overlap: 0.104,
 };

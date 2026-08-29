@@ -62,7 +62,7 @@ const CRITIC_PHASE = {
   heardCriticIds: [
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.2',
+    'hf:zai-org/GLM-5.3-Flash',
   ],
   claimAttributions: [{
     claimId: CLAIM_ID,
@@ -72,7 +72,7 @@ const CRITIC_PHASE = {
         emissionCount: 2,
       },
       {
-        modelId: 'hf:zai-org/GLM-5.2',
+        modelId: 'hf:zai-org/GLM-5.3-Flash',
         emissionCount: 1,
       },
     ],
@@ -106,7 +106,7 @@ await describe({
         expect(outcome.heardCriticIds,).toEqual([
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
         ],);
         expect(outcome.claimAttributions,).toEqual([{
           claimId: CLAIM_ID,
@@ -116,7 +116,7 @@ await describe({
               emissionCount: 2,
             },
             {
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               emissionCount: 1,
             },
           ],

@@ -84,7 +84,7 @@ const ISSUES: readonly AdjudicatedIssue[] = [
  * Editors that propose candidates.
  */
 const EDITORS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ] as const;
 

@@ -128,13 +128,13 @@ await describe({
         expect(
           readSpendLine({
             line: logged({
-              tail: 'SPEND provider=synthetic model=hf:zai-org/GLM-5.2 prompt=1 completion=2',
+              tail: 'SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash prompt=1 completion=2',
             },),
           },),
         )
           .toEqual({
             provider: 'synthetic',
-            model: 'hf:zai-org/GLM-5.2',
+            model: 'hf:zai-org/GLM-5.3-Flash',
             prompt: 1,
             completion: 2,
           },);

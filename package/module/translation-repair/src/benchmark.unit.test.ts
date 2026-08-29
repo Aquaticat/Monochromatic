@@ -90,7 +90,7 @@ const CANNED: Readonly<Record<string, {
   readonly kind: 'ok' | 'refusal' | 'mismatch' | 'http';
   readonly json?: string;
 }>> = {
-  'hf:zai-org/GLM-5.2': {
+  'hf:zai-org/GLM-5.3-Flash': {
     kind: 'ok',
     json: HIT_REPORT,
   },
@@ -171,7 +171,7 @@ await describe({
             seeds: [BUTTERFLY_SEED,],
           },],
           modelIds: [
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:openai/gpt-oss-120b',
             'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
@@ -183,7 +183,7 @@ await describe({
 
         /** Record of the model that found the seed. */
         const hit = nonNullishOrThrow(result.attempts.find(function byModel(attempt,) {
-          return attempt.modelId === 'hf:zai-org/GLM-5.2';
+          return attempt.modelId === 'hf:zai-org/GLM-5.3-Flash';
         },),);
         expect(hit.outcomeKind,).toBe('ok',);
         expect(hit.resolvedClaimCount,).toBe(1,);
@@ -209,7 +209,7 @@ await describe({
 
         /** Scorecard row of the hitting model. */
         const hitRow = nonNullishOrThrow(result.scorecard.rows.find(function byModel(row,) {
-          return row.modelId === 'hf:zai-org/GLM-5.2';
+          return row.modelId === 'hf:zai-org/GLM-5.3-Flash';
         },),);
         expect(hitRow.seededRecall,).toBe(1,);
         expect(hitRow.schemaOkRate,).toBe(1,);
@@ -247,7 +247,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           signal: new AbortController().signal,
         },);
         expect(survived.attempts[0]?.outcomeKind,).toBe('http-error',);
@@ -267,7 +267,7 @@ await describe({
               targetText: TARGET_TEXT,
               seeds: [BUTTERFLY_SEED,],
             },],
-            modelIds: ['hf:zai-org/GLM-5.2',],
+            modelIds: ['hf:zai-org/GLM-5.3-Flash',],
             signal: aborted.signal,
           },);
         }
@@ -318,7 +318,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           signal: new AbortController().signal,
         },);
 
@@ -366,7 +366,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           signal: new AbortController().signal,
         },);
 
@@ -407,7 +407,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           signal: new AbortController().signal,
         },);
 
@@ -449,7 +449,7 @@ await describe({
               seeds: [BUTTERFLY_SEED,],
             };
           },),
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
         },);
@@ -502,7 +502,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
         },);
@@ -560,7 +560,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           signal: new AbortController().signal,
           perCallTimeoutMs: 50,
         },);

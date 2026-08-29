@@ -178,8 +178,8 @@ await describe({
         const tally = createSeatTally();
         tally.record({ modelId: 'minimax-m3', outcome: 'threw', },);
         tally.record({ modelId: 'minimax-m3', outcome: 'unusable', },);
-        tally.record({ modelId: 'hf:zai-org/GLM-5.2', outcome: 'unusable', },);
-        tally.record({ modelId: 'hf:zai-org/GLM-5.2', outcome: 'usable', },);
+        tally.record({ modelId: 'hf:zai-org/GLM-5.3-Flash', outcome: 'unusable', },);
+        tally.record({ modelId: 'hf:zai-org/GLM-5.3-Flash', outcome: 'usable', },);
         tally.record({ modelId: 'hf:openai/gpt-oss-120b', outcome: 'usable', },);
 
         expect(tally.dark().map(function toId(count,): string {

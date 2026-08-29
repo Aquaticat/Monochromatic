@@ -33,7 +33,7 @@ const l = tagged({ tag: 'consolidate-produce-test', },);
 /**
  * One producer.
  */
-const ROSTER = ['hf:zai-org/GLM-5.2',] as const;
+const ROSTER = ['hf:zai-org/GLM-5.3-Flash',] as const;
 
 /**
  * Two-line page, the structural standard a line-structured slice is held to.

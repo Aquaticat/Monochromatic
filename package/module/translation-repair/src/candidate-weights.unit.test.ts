@@ -93,7 +93,7 @@ await describe({
               selfVote: false,
             },),
             ballotOf({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               best: 1,
               weight: 0,
               selfVote: true,
@@ -128,7 +128,7 @@ await describe({
               selfVote: false,
             },),
             ballotOf({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               best: 2,
               weight: 1 / 2,
               selfVote: true,

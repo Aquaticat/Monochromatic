@@ -44,7 +44,7 @@ import {
 /**
  * Model that produces candidates in most cases below.
  */
-const PRODUCER_ONE = 'hf:zai-org/GLM-5.2';
+const PRODUCER_ONE = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Second producer, for repeat and overlap cases.

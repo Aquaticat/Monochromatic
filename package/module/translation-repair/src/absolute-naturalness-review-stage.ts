@@ -29,7 +29,7 @@ export const ABSOLUTE_NATURALNESS_REVIEW_QUORUM = 2;
  *
  * @example
  * ```ts
- * const seat: AbsoluteNaturalnessReviewSeat = { modelId: 'hf:zai-org/GLM-5.2', status: 'acceptable', findings: [], reason: 'ready' };
+ * const seat: AbsoluteNaturalnessReviewSeat = { modelId: 'hf:zai-org/GLM-5.3-Flash', status: 'acceptable', findings: [], reason: 'ready' };
  * ```
  */
 export type AbsoluteNaturalnessReviewSeat = {

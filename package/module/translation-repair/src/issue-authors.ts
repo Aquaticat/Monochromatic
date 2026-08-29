@@ -40,7 +40,7 @@ type EnvelopeIssues = readonly [
  *
  * @example
  * ```ts
- * const pair: EnvelopeAuthors = ['envelope-1', ['hf:zai-org/GLM-5.2',],];
+ * const pair: EnvelopeAuthors = ['envelope-1', ['hf:zai-org/GLM-5.3-Flash',],];
  * ```
  */
 type EnvelopeAuthors = readonly [
@@ -53,7 +53,7 @@ type EnvelopeAuthors = readonly [
  *
  * @example
  * ```ts
- * const pair: IssueAuthors = ['adjudicated/whisker', ['hf:zai-org/GLM-5.2',],];
+ * const pair: IssueAuthors = ['adjudicated/whisker', ['hf:zai-org/GLM-5.3-Flash',],];
  * ```
  */
 type IssueAuthors = readonly [
@@ -69,7 +69,7 @@ type IssueAuthors = readonly [
  *
  * @example
  * ```ts
- * const pair: IssueAuthorPair = ['adjudicated/whisker', 'hf:zai-org/GLM-5.2',];
+ * const pair: IssueAuthorPair = ['adjudicated/whisker', 'hf:zai-org/GLM-5.3-Flash',];
  * ```
  */
 type IssueAuthorPair = readonly [

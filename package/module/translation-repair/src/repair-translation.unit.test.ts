@@ -53,10 +53,10 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
  * which made it model a roster production would refuse.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
-  panelModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
-  editorModelIds: ['hf:zai-org/GLM-5.2',],
-  judgeModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+  criticModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+  panelModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+  editorModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  judgeModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
   checkerModelIds: [
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
@@ -1125,7 +1125,7 @@ Meow meow meow meow.
          */
         const refiningModels: RepairModels = {
           ...MODELS,
-          refinerModelIds: ['hf:zai-org/GLM-5.2',],
+          refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
         };
 
         /**
@@ -1521,7 +1521,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
          */
         const refining: RepairModels = {
           ...MODELS,
-          refinerModelIds: ['hf:zai-org/GLM-5.2',],
+          refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
         };
         await expect(repairTranslation({
           client: steeringClient({

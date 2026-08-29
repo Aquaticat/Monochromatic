@@ -43,11 +43,8 @@ const READER: RosterModelId = 'hf:moonshotai/Kimi-K3';
  */
 const TEXT_ONLY: RosterModelId = 'hf:openai/gpt-oss-120b';
 
-// WAS `hf:zai-org/GLM-5.2` UNTIL 2026-08-24, and that model is no longer
-// text-only. It reads pictures on Charm Hyper and not on Synthetic, so the
-// roster's answer changed the day the second provider was admitted. This id is
-// the stronger fixture anyway: BOTH providers serve it and BOTH report no
-// vision, so it stays text-only however the union is computed.
+// This id is the strongest text-only fixture: both providers serve it and both
+// report no vision, so it stays text-only however the union is computed.
 
 /**
  * What a reader returns when it declines, worded the way both real readers

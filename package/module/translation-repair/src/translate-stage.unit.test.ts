@@ -58,7 +58,7 @@ const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with ta
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'minimax-m3',
 ];
 
@@ -364,7 +364,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -389,7 +389,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'is doing the sleeping',
@@ -415,7 +415,7 @@ await describe({
           translations: {
             // Kimi is absent from the script, so its reply arrives wrapped
             // in prose and fails the wire guard.
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'naps on the sill',
@@ -438,7 +438,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': '   \n  ',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'naps on the sill',
@@ -465,7 +465,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -492,7 +492,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -515,7 +515,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -538,7 +538,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': INCUMBENT_TEXT,
-            'hf:zai-org/GLM-5.2': INCUMBENT_TEXT,
+            'hf:zai-org/GLM-5.3-Flash': INCUMBENT_TEXT,
             'minimax-m3': INCUMBENT_TEXT,
           },
           needle: 'is doing the sleeping',
@@ -564,7 +564,7 @@ await describe({
         const present = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -575,7 +575,7 @@ await describe({
         const absent = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -609,7 +609,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -647,7 +647,7 @@ await describe({
         await expect(runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -668,7 +668,7 @@ await describe({
           await runLane({
             translations: {
               'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-              'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+              'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
               'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
             },
             needle: '',
@@ -705,7 +705,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -737,7 +737,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -759,7 +759,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -788,7 +788,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -813,7 +813,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat naps on the sill, its tail hanging near the heater.',
             'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',

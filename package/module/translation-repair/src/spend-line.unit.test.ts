@@ -41,7 +41,7 @@ const HYPER_MODEL = 'qwen3.8-max';
 /**
  * Model served by the subscription provider, from the Synthetic roster.
  */
-const SYNTHETIC_MODEL = 'hf:zai-org/GLM-5.2';
+const SYNTHETIC_MODEL = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Completion carrying the usage block a provider fills in when it reports.
@@ -125,7 +125,7 @@ await describe({
             },),
           },),
         )
-          .toBe('SPEND provider=synthetic model=hf:zai-org/GLM-5.2 prompt=12 completion=34',);
+          .toBe('SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash prompt=12 completion=34',);
       },
     },),
 

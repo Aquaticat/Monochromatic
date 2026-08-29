@@ -405,8 +405,7 @@ await describe({
 
     it({
       name: 'REFUSES A ROSTER OF ONE, since a sole reader has nothing to be corroborated by '
-        + 'however well it reads. The vision sub-roster is two models and this is what happens the '
-        + 'day it is not',
+        + 'however well it reads',
       fn: async () => {
         const { client, asked, } = scriptedClient({
           byModel: { 'hf:moonshotai/Kimi-K3': READING, },

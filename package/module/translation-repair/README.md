@@ -157,16 +157,19 @@ destroys overlap, so letting it vote would refuse readings that are fine.
 What it is reliable at is PRESENCE, six of six against the models in both
 directions.
 
-### Two readers, and a reader asked again
+### Four readers, and a reader asked again
 
 A reading may be used only when a second model, shown the same picture and not
 the first model's answer, agrees with the first at the corroboration threshold.
 A single reading is refused rather than passed along with a caveat.
 
-The vision sub-roster is exactly two because the provider offers exactly two
-models that read images.
-That makes the pair's success rate the weaker reader's read rate, which is why a
-declined reading is asked again, up to four asks.
+The cross-provider vision sub-roster remains four after Synthetic GLM-5.3-Flash
+replaced GLM-5.2.
+The replacement reads images on Synthetic but has no inherited Charm Hyper route.
+Corroboration still requires independent agreement,
+and a declined reading is still asked again up to four times.
+The retry measurement that follows predates the third reader and must not be
+read as its measured refusal rate.
 
 Measured over the whole corpus, 119 reader and picture pairs reached a model,
 109 read on the first ask, and 1 more read only after being asked again.
@@ -496,12 +499,44 @@ or a model that answers nothing readable;
 the run log names which.
 Do not read a run with a dark seat as a comparison of the roster.
 
-#### Current roster cull
+#### Current roster changes
 
 `qwen3.8-max` was removed from roster and Charm Hyper allowlist on 2026-08-28 at owner's instruction.
 Its metered cost was disproportionate and exceptionally expensive.
-No replacement was selected, so current roster has nine models.
+No replacement was selected, so that cull left nine models.
 Dated pricing remains only so historical run artifacts can still be accounted.
+
+Synthetic `hf:zai-org/GLM-5.2` was replaced by
+`hf:zai-org/GLM-5.3-Flash` on 2026-08-29.
+The live endpoint confirmed the successor;
+the operational request reported Synthetic's plan to retire the older model.
+Synthetic's live model endpoint reported the replacement as always-on beta,
+with text and image input,
+a 524288-token context,
+a 65536-token output ceiling,
+and the structured-output features this pipeline requires.
+The old `glm-5.2` Charm Hyper route left the active allowlist because it is the superseded roster identity,
+not a fallback for GLM-5.3-Flash.
+Hyper's live catalog still listed `glm-5.2` but no GLM-5.3-Flash spelling on 2026-08-29.
+The roster remains nine models.
+
+No GLM-5.2 quality result or role calibration transfers to GLM-5.3-Flash.
+It enters only catalog-derived broad-roster and image-reading paths;
+it does not inherit an editor,
+refiner,
+checker,
+or default benchmark-judge seat.
+Admission evidence is replacement-specific:
+the live endpoint facts were read on 2026-08-29,
+the package client completed 20 of 20 schema-constrained calls,
+the full roster health probe heard all nine seats,
+and the image-reading boundary returned a usable transcription without exposing its text.
+The image-boundary call completed in 78.4 seconds,
+inside the production 360-second per-call deadline.
+One call does not characterize its latency tail and does not justify a timeout change.
+These checks establish wire and modality compatibility,
+not actual-output quality.
+Fresh schema-9 passage validation remains mandatory before this replacement contributes readiness evidence.
 
 #### Running out of budget is normal, and the two providers run out differently
 

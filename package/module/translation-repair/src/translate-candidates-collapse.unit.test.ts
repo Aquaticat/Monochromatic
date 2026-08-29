@@ -36,7 +36,7 @@ import {
  * Two seated translators, in roster order.
  */
 const TRANSLATORS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
 ] as const satisfies readonly RosterModelId[];
 

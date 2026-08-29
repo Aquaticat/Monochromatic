@@ -1,12 +1,9 @@
 /**
  * Tests for the cross-provider roster lookup.
  *
- * THE GLM-5.2 VISION CASE IS WHY THIS FILE EXISTS. That model reads pictures on
- * Charm Hyper and not on Synthetic, so the two catalogs disagree while each
- * reports its own serving stack correctly. Every naive way to combine them gets
- * this model wrong in one direction or the other: ask only the older catalog
- * and a readable picture is refused, ask only the newer one and a picture is
- * sent where it cannot be read.
+ * EACH PROVIDER'S CATALOG REMAINS AUTHORITATIVE for its own serving stack.
+ * GLM-5.3-Flash is verified only on Synthetic and reads images there; no
+ * predecessor route or modality may be inherited from GLM-5.2.
  *
  * THE COUNTS ARE PINNED ON PURPOSE. A roster that silently gains or loses a
  * seat changes what a quorum means, and this derivation is exactly where such a
@@ -101,10 +98,10 @@ await describe({
     },),
 
     it({
-      name: 'NAMES a shared model once, under its Synthetic spelling, so one model cannot occupy '
-        + 'two seats on a voting panel and count one opinion as two confirmations',
+      name: 'REPLACES GLM-5.2 rather than double-seating predecessor and successor',
       fn: async () => {
-        expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.2',),).toBe(true,);
+        expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(true,);
+        expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.2' as never,),).toBe(false,);
         expect(ROSTER_MODEL_IDS.includes('glm-5.2' as never,),).toBe(false,);
       },
     },),
@@ -118,10 +115,6 @@ await describe({
       name: 'TRANSLATES a shared model into the spelling the second provider uses, which is the '
         + 'whole reason a roster id and a wire id are different things',
       fn: async () => {
-        expect(hyperIdFor({ modelId: 'hf:zai-org/GLM-5.2', },),).toEqual({
-          served: true,
-          id: 'glm-5.2',
-        },);
         expect(hyperIdFor({ modelId: 'hf:moonshotai/Kimi-K3', },),).toEqual({
           served: true,
           id: 'kimi-k3',
@@ -141,8 +134,10 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS a Synthetic-only model as unserved rather than guessing a wire name for it',
+      name: 'REPORTS Synthetic-only models as unserved rather than inheriting predecessor wire names',
       fn: async () => {
+        expect(hyperIdFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),)
+          .toEqual({ served: false, },);
         expect(hyperIdFor({
           modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
         },),).toEqual({ served: false, },);
@@ -224,17 +219,16 @@ await describe({
   name: visionReachOf.name,
   children: [
     it({
-      name: 'SENDS GLM-5.2 PICTURES TO EXACTLY ONE PROVIDER, because it reads them on Charm Hyper '
-        + 'and not on Synthetic: the same model, the same weights, a different serving stack',
+      name: 'SENDS GLM-5.3-FLASH PICTURES TO SYNTHETIC without inheriting GLM-5.2 Hyper reach',
       fn: async () => {
-        expect(visionReachOf({ modelId: 'hf:zai-org/GLM-5.2', },),).toEqual({
-          onSynthetic: false,
-          onHyper: true,
+        expect(visionReachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
+          onSynthetic: true,
+          onHyper: false,
         },);
 
-        expect(reachOf({ modelId: 'hf:zai-org/GLM-5.2', },),).toEqual({
+        expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           onSynthetic: true,
-          onHyper: true,
+          onHyper: false,
         },);
       },
     },),
@@ -267,7 +261,7 @@ await describe({
   name: readsImages.name,
   children: [
     it({
-      name: 'NAMES READER SUB-ROSTER AS FOUR after costly vision seat was culled',
+      name: 'KEEPS READER SUB-ROSTER AT FOUR after replacing one image-capable model with another',
       fn: async () => {
         expect(ROSTER_MODEL_IDS
           .filter(function reads(modelId,): boolean {
@@ -276,7 +270,7 @@ await describe({
           .toSorted(),).toEqual([
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
           'minimax-m3',
         ],);
       },
@@ -285,7 +279,7 @@ await describe({
     it({
       name: 'ANSWERS true for a model that reads on either provider, not only on both',
       fn: async () => {
-        expect(readsImages({ modelId: 'hf:zai-org/GLM-5.2', },),).toBe(true,);
+        expect(readsImages({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toBe(true,);
       },
     },),
   ],

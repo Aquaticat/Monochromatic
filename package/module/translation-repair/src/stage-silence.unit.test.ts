@@ -45,7 +45,7 @@ await describe({
         expect(everyStageHeard({ findings: [], },),).toBe(true,);
         expect(everyStageHeard({
           findings: [
-            'stage-voice-lost (critic hf:zai-org/GLM-5.2)',
+            'stage-voice-lost (critic hf:zai-org/GLM-5.3-Flash)',
             'stage-short (critic 5/6)',
           ],
         },),).toBe(true,);

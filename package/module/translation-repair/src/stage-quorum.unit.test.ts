@@ -390,7 +390,7 @@ await describe({
         /** Gather over a fully healthy roster. */
         const gather = await gatherStageVoices({
           client: flakyClient({ failuresByModel: {}, calls, },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -402,7 +402,7 @@ await describe({
         expect(gather.voices,).toHaveLength(3,);
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toHaveLength(0,);
-        expect(calls['hf:zai-org/GLM-5.2'],).toBe(1,);
+        expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(1,);
       },
     },),
 
@@ -418,7 +418,7 @@ await describe({
             failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -455,7 +455,7 @@ await describe({
             calls,
           },),
           modelIds: [
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
             'hf:openai/gpt-oss-120b',
@@ -505,7 +505,7 @@ await describe({
             failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -529,7 +529,7 @@ await describe({
         /** Gather over a fully healthy roster. */
         const gather = await gatherStageVoices({
           client: flakyClient({ failuresByModel: {}, calls, },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -558,7 +558,7 @@ await describe({
             calls,
           },),
           modelIds: [
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
             'hf:openai/gpt-oss-120b',
@@ -584,7 +584,7 @@ await describe({
         const calls: Record<string, number> = {};
         /** Full six-model roster where five fail once then answer. */
         const roster: readonly RosterModelId[] = [
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
           'minimax-m3',
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
@@ -612,7 +612,7 @@ await describe({
         },);
         expect(gather.voices,).toHaveLength(6,);
         expect(gather.quorumMet,).toBe(true,);
-        expect(calls['hf:zai-org/GLM-5.2'],).toBe(1,);
+        expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(1,);
         expect(calls['hf:openai/gpt-oss-120b'],).toBe(2,);
       },
     },),
@@ -631,7 +631,7 @@ await describe({
             },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -664,7 +664,7 @@ await describe({
             failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -698,7 +698,7 @@ await describe({
             failuresByModel: { 'hf:moonshotai/Kimi-K3': 1, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -731,7 +731,7 @@ await describe({
             silentModel: 'hf:moonshotai/Kimi-K3',
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -767,7 +767,7 @@ await describe({
             stallingModel: 'hf:moonshotai/Kimi-K3',
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: STALLING_DEADLINE_MS,
@@ -800,10 +800,10 @@ await describe({
         /** Editor-style gather over a roster of one. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:zai-org/GLM-5.2': 2, },
+            failuresByModel: { 'hf:zai-org/GLM-5.3-Flash': 2, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -814,7 +814,7 @@ await describe({
         },);
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(true,);
-        expect(calls['hf:zai-org/GLM-5.2'],).toBe(3,);
+        expect(calls['hf:zai-org/GLM-5.3-Flash'],).toBe(3,);
       },
     },),
 
@@ -837,7 +837,7 @@ await describe({
             hangingModelId: 'hf:moonshotai/Kimi-K3',
             cut,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           // Far longer than the grace, so a gather that waited for the call
@@ -876,7 +876,7 @@ await describe({
             cut,
             lateMs: 20,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 60_000,

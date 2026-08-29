@@ -75,8 +75,8 @@ function rowWith(
     narrowRepeatAgreed,
     verdict,
     usableBallots: 0,
-    narrowProducers: ['hf:zai-org/GLM-5.2',],
-    wideProducers: ['hf:zai-org/GLM-5.2',],
+    narrowProducers: ['hf:zai-org/GLM-5.3-Flash',],
+    wideProducers: ['hf:zai-org/GLM-5.3-Flash',],
   };
 }
 

@@ -105,7 +105,7 @@ const PANEL_TALLY = {
 const PANEL_READING = {
   ballots: [
     {
-      panelistId: 'hf:zai-org/GLM-5.2',
+      panelistId: 'hf:zai-org/GLM-5.3-Flash',
       vote: 'supported' as const,
       weight: 1,
     },

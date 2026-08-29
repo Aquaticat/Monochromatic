@@ -30,7 +30,7 @@ const WHISKER = 'adjudicated/whisker';
 /**
  * Model that wins the envelope rounds below unless a case says otherwise.
  */
-const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.2';
+const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Second model, for composites and for candidates that lose.

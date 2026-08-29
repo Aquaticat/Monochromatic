@@ -27,7 +27,7 @@ import {
  * Roster every case here asks.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
 ] as const;
 
@@ -85,7 +85,9 @@ await describe({
          * Key these fixed inputs derive today.
          */
         const key = laneContestSliceKey(catInputs(),);
-        expect(key,).toBe('7a87b1ed2d28c0ce94439102eb722c6740e58d7babd1b329411a0aa5171ed277',);
+        // MOVED ON 2026-08-29 when the fixture roster replaced GLM-5.2 with
+        // GLM-5.3-Flash. Roster identity is already explicit key material.
+        expect(key,).toBe('6666db346f34d0bf68d5349ceff8874941722b05f5eabb43a82096dbf05eb76a',);
       },
     },),
     it({

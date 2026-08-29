@@ -114,7 +114,7 @@ const INPUT: WidthProbeInput = {
  * Editors seated on the arm.
  */
 const EDITORS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ] as const;
 

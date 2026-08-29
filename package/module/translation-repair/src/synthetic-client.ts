@@ -195,7 +195,7 @@ export function createSyntheticClient(
    *
    * @example
    * ```ts
-   * const limit = limiterFor('hf:zai-org/GLM-5.2',);
+   * const limit = limiterFor('hf:zai-org/GLM-5.3-Flash',);
    * ```
    */
   function limiterFor(modelId: RosterModelId,): LimitFunction {

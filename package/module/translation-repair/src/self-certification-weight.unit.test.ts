@@ -43,7 +43,7 @@ const PAW = 'adjudicated/paw';
 /**
  * Model cast as the one that wrote the text under check.
  */
-const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.2';
+const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Model that wrote none of it.
@@ -76,7 +76,7 @@ const WROTE_THE_CHUNK: IssueAuthorship = {
  *
  * @example
  * ```ts
- * const entry: CheckerBallot = ['hf:zai-org/GLM-5.2', { verdicts: {}, findings: [], },];
+ * const entry: CheckerBallot = ['hf:zai-org/GLM-5.3-Flash', { verdicts: {}, findings: [], },];
  * ```
  */
 type CheckerBallot = readonly [

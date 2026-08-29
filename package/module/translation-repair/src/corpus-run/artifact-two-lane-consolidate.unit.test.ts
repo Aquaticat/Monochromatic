@@ -190,7 +190,7 @@ await describe({
             paragraphDigests: [hashContent({ content: text, },),],
             seats: [
               {
-                modelId: 'hf:zai-org/GLM-5.2' as const,
+                modelId: 'hf:zai-org/GLM-5.3-Flash' as const,
                 status: acceptable ? 'acceptable' as const : 'unacceptable' as const,
                 findings: rejectedFindings,
                 reason: acceptable ? 'ready' : 'material defect remains',
@@ -222,8 +222,8 @@ await describe({
             proposedText: texts[2],
             text: texts[2],
             changed: true,
-            refinersHeard: ['hf:zai-org/GLM-5.2',],
-            contributors: ['hf:zai-org/GLM-5.2',],
+            refinersHeard: ['hf:zai-org/GLM-5.3-Flash',],
+            contributors: ['hf:zai-org/GLM-5.3-Flash',],
             rounds: [],
             gate: {
               choice: 'polished',

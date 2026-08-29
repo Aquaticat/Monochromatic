@@ -24,7 +24,7 @@ const WHISKER = 'adjudicated/whisker';
 /**
  * Model that repaired the text the refiners rewrote.
  */
-const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.2';
+const AUTHOR: RosterModelId = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Second repairing model, for the case where nothing was rewritten at all.

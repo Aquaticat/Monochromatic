@@ -181,7 +181,7 @@ async function ballotSheets(): Promise<readonly string[]> {
     input: INPUT,
     narrow: armShipping({ text: NARROW_TEXT, },),
     wide: armShipping({ text: WIDE_TEXT, },),
-    judgeModelIds: ['hf:zai-org/GLM-5.2',],
+    judgeModelIds: ['hf:zai-org/GLM-5.3-Flash',],
     signal: AbortSignal.timeout(120_000,),
     l,
   },);

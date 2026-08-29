@@ -61,7 +61,7 @@ const ENVELOPE: EditableEnvelope = {
  *
  * @example
  * ```ts
- * const candidate = candidateFor({ modelId: 'hf:zai-org/GLM-5.2', newText, },);
+ * const candidate = candidateFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', newText, },);
  * ```
  */
 function candidateFor(
@@ -110,7 +110,7 @@ await describe({
         const both = mergeProducers({
           left: {
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.2',
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
           },
           right: {
             kind: 'model',
@@ -119,7 +119,7 @@ await describe({
         },);
         expect(both.kind,).toBe('composite',);
         expect([...producerModelIds(both,),],).toEqual([
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
           'hf:Qwen/Qwen3.8-27B',
         ],);
 
@@ -128,22 +128,22 @@ await describe({
         const same = mergeProducers({
           left: {
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.2',
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
           },
           right: {
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.2',
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
           },
         },);
         expect(same.kind,).toBe('model',);
-        expect([...producerModelIds(same,),],).toEqual(['hf:zai-org/GLM-5.2',],);
+        expect([...producerModelIds(same,),],).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
 
         /** Composite absorbing a model already among its contributors. */
         const widened = mergeProducers({
           left: {
             kind: 'composite',
             contributors: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
             ],
           },
@@ -153,7 +153,7 @@ await describe({
           },
         },);
         expect([...producerModelIds(widened,),],).toEqual([
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
         ],);
@@ -167,19 +167,19 @@ await describe({
         const producer: CandidateProducer = {
           kind: 'composite',
           contributors: [
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
           ],
         };
         expect(describeProducer(producer,),).toBe(
-          'composite(hf:zai-org/GLM-5.2 + hf:Qwen/Qwen3.8-27B)',
+          'composite(hf:zai-org/GLM-5.3-Flash + hf:Qwen/Qwen3.8-27B)',
         );
         expect(
           describeProducer({
             kind: 'model',
-            modelId: 'hf:zai-org/GLM-5.2',
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
           },),
-        ).toBe('hf:zai-org/GLM-5.2',);
+        ).toBe('hf:zai-org/GLM-5.3-Flash',);
       },
     },),
   ],
@@ -195,7 +195,7 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
@@ -219,7 +219,7 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               newText: 'The cat chases butterflies.',
             },),
           ],
@@ -263,7 +263,7 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: 'hf:zai-org/GLM-5.2',
+              modelId: 'hf:zai-org/GLM-5.3-Flash',
               newText: agreed,
             },),
           ],
@@ -287,7 +287,7 @@ await describe({
         // Both the editor whose candidate survived and the composite's
         // contributor must stay barred; dropping either lets that model judge
         // text it wrote.
-        expect(stakes.has('hf:zai-org/GLM-5.2',),).toBe(true,);
+        expect(stakes.has('hf:zai-org/GLM-5.3-Flash',),).toBe(true,);
         expect(stakes.has('hf:Qwen/Qwen3.8-27B',),).toBe(true,);
       },
     },),
@@ -302,7 +302,7 @@ await describe({
       fn: async () => {
         /** Editor landing nothing, because its replacement was a no-op. */
         const idle = candidateFor({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           newText: ENVELOPE.baseText,
         },);
 
@@ -339,7 +339,7 @@ await describe({
       fn: async () => {
         /** Two editors each landing exactly one operation. */
         const first = candidateFor({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           newText: 'The cat chases butterflies.',
         },);
 
@@ -383,7 +383,7 @@ await describe({
           editorModelIds: ['hf:moonshotai/Kimi-K3',],
           judgeModelIds: [
             'hf:moonshotai/Kimi-K3',
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
           ],
         },);
@@ -400,11 +400,11 @@ await describe({
           assertJudgeableEditorRoster({
             editorModelIds: [
               'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
             ],
             judgeModelIds: [
               'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
             ],
           },);
@@ -428,11 +428,11 @@ await describe({
           assertJudgeableEditorRoster({
             editorModelIds: [
               'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
             ],
             judgeModelIds: [
               'hf:moonshotai/Kimi-K3',
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
             ],
           },);
         },).toThrow(ProducerRosterError,);
@@ -450,7 +450,7 @@ await describe({
               'hf:moonshotai/Kimi-K3',
             ],
             judgeModelIds: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
             ],
           },);
@@ -460,7 +460,7 @@ await describe({
           assertJudgeableEditorRoster({
             editorModelIds: [],
             judgeModelIds: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
             ],
           },);
@@ -479,7 +479,7 @@ await describe({
         assertCheckerIndependence({
           editorModelIds: ['hf:moonshotai/Kimi-K3',],
           checkerModelIds: [
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:Qwen/Qwen3.8-27B',
           ],
         },);
@@ -488,7 +488,7 @@ await describe({
           assertCheckerIndependence({
             editorModelIds: ['hf:moonshotai/Kimi-K3',],
             checkerModelIds: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:moonshotai/Kimi-K3',
             ],
           },);

@@ -65,7 +65,7 @@ const DOCUMENTS = {
  * Critic roster large enough to reach the block threshold and exceed it.
  */
 const CRITICS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
   'hf:Qwen/Qwen3.8-27B',
   'hf:openai/gpt-oss-120b',

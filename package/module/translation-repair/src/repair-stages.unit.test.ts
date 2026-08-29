@@ -53,7 +53,7 @@ const TARGET_TEXT = 'The cat sleeps on the windowsill.';
  * Panel roster large enough for a majority to be visible.
  */
 const PANELISTS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
   'hf:Qwen/Qwen3.8-27B',
 ] as const;

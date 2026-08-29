@@ -27,7 +27,7 @@ import type {
  * @example
  * ```ts
  * const ballot: PanelClaimBallot = {
- *   panelistId: 'hf:zai-org/GLM-5.2',
+ *   panelistId: 'hf:zai-org/GLM-5.3-Flash',
  *   vote: 'supported',
  *   weight: 1,
  * };

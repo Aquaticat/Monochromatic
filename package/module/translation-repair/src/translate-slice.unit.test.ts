@@ -77,7 +77,7 @@ const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with ta
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'minimax-m3',
 ];
 

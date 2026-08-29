@@ -166,7 +166,7 @@ await describe({
           apiKey: 'test-key',
           transport,
         },).chatText({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: NAP_FORMAT,
@@ -196,7 +196,7 @@ await describe({
           apiKey: 'test-key',
           transport,
         },).chatText({
-          modelId: 'hf:zai-org/GLM-5.2',
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);

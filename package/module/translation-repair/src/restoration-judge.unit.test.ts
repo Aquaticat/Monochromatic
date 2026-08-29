@@ -106,7 +106,7 @@ function judgingClient(
  * Three-judge roster for the stage tests.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ];
@@ -167,7 +167,7 @@ await describe({
         const judgments = await runRestorationJudge({
           client: judgingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.2': ['restored', 'restored',],
+              'hf:zai-org/GLM-5.3-Flash': ['restored', 'restored',],
               'hf:Qwen/Qwen3.8-27B': ['partial', 'restored',],
               'hf:moonshotai/Kimi-K3': ['absent', 'restored',],
             },
@@ -194,7 +194,7 @@ await describe({
         const judgments = await runRestorationJudge({
           client: judgingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.2': ['restored', 'restored',],
+              'hf:zai-org/GLM-5.3-Flash': ['restored', 'restored',],
               'hf:Qwen/Qwen3.8-27B': ['absent', 'restored',],
             },
             silent: new Set(['hf:moonshotai/Kimi-K3',],),
@@ -219,7 +219,7 @@ await describe({
         /** Only one of three judges answers: quorum unmet. */
         const judgments = await runRestorationJudge({
           client: judgingClient({
-            verdictsByModel: { 'hf:zai-org/GLM-5.2': ['restored', 'restored',], },
+            verdictsByModel: { 'hf:zai-org/GLM-5.3-Flash': ['restored', 'restored',], },
             silent: new Set(['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],),
           },),
           judgeModelIds: JUDGES,

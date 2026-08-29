@@ -21,7 +21,7 @@ import {
  * Baseline schema-mismatch record corruptions derive from.
  */
 const MISMATCH_RECORD: CriticAttemptRecord = {
-  modelId: 'hf:zai-org/GLM-5.2',
+  modelId: 'hf:zai-org/GLM-5.3-Flash',
   entryId: 'whiskers',
   outcomeKind: 'schema-mismatch',
   detail: 'content parsed as JSON but failed the caller schema guard',

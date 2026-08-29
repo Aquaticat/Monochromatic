@@ -4,9 +4,9 @@ import type {
 } from './roster-id.ts';
 
 //region Synthetic model catalog
-// Facts verified live on 2026-07-16 against `GET /openai/v1/models` (prices, context
-// lengths, feature flags) and https://synthetic.new/rate-limits (weighting rule:
-// requests are scaled by model input price; the baseline is the provider default
+// Facts verified live on 2026-08-29 against `GET /openai/v1/models` (prices, context
+// lengths, modalities, feature flags) and https://synthetic.new/rate-limits (weighting
+// rule: requests are scaled by model input price; the baseline is the provider default
 // model, currently GLM-5.2, counting as exactly one request). Weights here are
 // planning estimates for routing; live budget truth always comes from `/quotas`.
 
@@ -86,6 +86,15 @@ export type {
  * here can catch. Naming models outright makes a retirement an HTTP 404 we can
  * see rather than a substitution we cannot.
  *
+ * One id was REPLACED 2026-08-29, `zai-org/GLM-5.2` by
+ * `hf:zai-org/GLM-5.3-Flash`, after the live endpoint confirmed the successor
+ * and the operational request reported Synthetic's plan to retire the older model. The endpoint reports
+ * the successor as always-on beta with text and image input, 524288-token
+ * context, 65536-token output, FP8 quantization, and tools, JSON mode,
+ * structured outputs, and reasoning. The pipeline pins the successor rather
+ * than following `syn:large:text`, which still resolved to the retiring model
+ * during this migration.
+ *
  * One id was REPLACED 2026-08-20, `Qwen/Qwen3-point-6-27B` by
  * `hf:Qwen/Qwen3.8-27B`, on notice that the provider would retire the older one
  * shortly and offers no service level agreement, so a retirement lands without
@@ -114,7 +123,7 @@ export type {
  *
  * @example
  * ```ts
- * const info: SyntheticModelInfo = SYNTHETIC_MODELS['hf:zai-org/GLM-5.2'];
+ * const info: SyntheticModelInfo = SYNTHETIC_MODELS['hf:zai-org/GLM-5.3-Flash'];
  * ```
  */
 export type SyntheticModelInfo = {
@@ -133,11 +142,10 @@ export type SyntheticModelInfo = {
    *
    * READ FROM THE PROVIDER RATHER THAN ASSUMED. `GET
    * https://api.synthetic.new/openai/v1/models` reports `input_modalities` per
-   * model, and the values here are that response as of 2026-08-16: two of the
-   * six in the production roster read images, and the provider's only other
-   * vision entries, `syn:large:vision` and `syn:small:vision`, are aliases of
-   * those same two. The vision sub-roster is EXACTLY TWO, so widening it needs
-   * a different provider rather than a different configuration.
+   * model, and the values here are that response as of 2026-08-29: three of the
+   * five Synthetic roster models read images. The provider's other vision
+   * entries, `syn:large:vision` and `syn:small:vision`, are aliases of two of
+   * those same three. The vision sub-roster is now EXACTLY THREE.
    *
    * WHY IT IS A FIELD RATHER THAN A FETCH: the rest of this catalog is static,
    * a build that reached the network would fail closed on a provider outage,
@@ -180,14 +188,14 @@ export type SyntheticModelInfo = {
  * ```
  */
 export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModelInfo>> = {
-  'hf:zai-org/GLM-5.2': {
-    id: 'hf:zai-org/GLM-5.2',
-    readsImages: false,
+  'hf:zai-org/GLM-5.3-Flash': {
+    id: 'hf:zai-org/GLM-5.3-Flash',
+    readsImages: true,
     family: 'zai',
     contextLength: 524_288,
     maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.000001,
-    completionDollarsPerToken: 0.000003,
+    promptDollarsPerToken: 0.00000015,
+    completionDollarsPerToken: 0.0000005,
   },
   'hf:Qwen/Qwen3.8-27B': {
     id: 'hf:Qwen/Qwen3.8-27B',
@@ -228,10 +236,15 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModel
 };
 
 /**
- * Baseline model whose calls count as exactly one request against the five-hour
- * limit; the provider documents the baseline as its current default model.
+ * Input price of one baseline request against the five-hour limit.
+ *
+ * DECOUPLED FROM THE ACTIVE ROSTER because Synthetic still documented its
+ * retiring GLM-5.2 default at this price on 2026-08-29 when the roster moved to
+ * GLM-5.3-Flash. Planning estimates retain the documented denominator without
+ * leaving the retired model callable. Recheck this constant when Synthetic
+ * changes its documented default. Live `/quotas` readings remain authoritative.
  */
-export const SYNTHETIC_BASELINE_MODEL_ID: SyntheticServedId = 'hf:zai-org/GLM-5.2';
+export const SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN = 0.000001;
 
 /**
  * Whether Synthetic serves a roster model at all.
@@ -285,10 +298,7 @@ export function estimateRequestWeight(
   /**
    * Input price of the baseline model.
    */
-  const baselinePrice = SYNTHETIC_MODELS[SYNTHETIC_BASELINE_MODEL_ID]
-    .promptDollarsPerToken;
-
-  return modelPrice / baselinePrice;
+  return modelPrice / SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN;
 }
 
 //endregion Synthetic model catalog

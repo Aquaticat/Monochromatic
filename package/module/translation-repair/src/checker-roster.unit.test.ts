@@ -33,7 +33,7 @@ import {
  */
 const WRITERS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'minimax-m3',
 ];
 
@@ -117,9 +117,9 @@ await describe({
         expect(function refinerChecks() {
           assertCheckerIndependence({
             editorModelIds: ['hf:moonshotai/Kimi-K3',],
-            refinerModelIds: ['hf:zai-org/GLM-5.2',],
+            refinerModelIds: ['hf:zai-org/GLM-5.3-Flash',],
             checkerModelIds: [
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:Qwen/Qwen3.8-27B',
               'hf:openai/gpt-oss-120b',
             ],
@@ -188,7 +188,7 @@ await describe({
         /** Two writers checking their own work, which passes independence under the switch. */
         const twoWriters: readonly RosterModelId[] = [
           'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
         ];
         assertCheckerIndependence({
           editorModelIds: WRITERS,

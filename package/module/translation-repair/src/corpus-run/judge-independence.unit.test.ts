@@ -28,7 +28,7 @@ import {
  * Roster the seatings run against, which is the shipped one.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'minimax-m3',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
@@ -70,7 +70,7 @@ await describe({
         const seating = seatJudges({
           proposers: [
             'hf:moonshotai/Kimi-K3',
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
             'hf:openai/gpt-oss-120b',
           ],
           roster: ROSTER,
@@ -121,11 +121,11 @@ await describe({
         expect(seatJudges({
           proposers: [
             'hf:openai/gpt-oss-120b',
-            'hf:zai-org/GLM-5.2',
+            'hf:zai-org/GLM-5.3-Flash',
           ],
           roster: ROSTER,
         },).barred,).toStrictEqual([
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
           'hf:openai/gpt-oss-120b',
         ],);
       },

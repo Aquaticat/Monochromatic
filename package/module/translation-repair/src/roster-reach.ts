@@ -20,12 +20,11 @@ import {
 // note makes the same argument about aliases: a roster fact that no build
 // checks is a roster fact that changes without anyone noticing.
 //
-// READING IS NARROWER THAN TALKING, and this is the surprise the derivation
-// turned up. `hf:zai-org/GLM-5.2` reads pictures on Charm Hyper and does not on
-// Synthetic; the same model, the same weights, a different serving stack. So a
-// call that carries a picture reaches fewer providers than the same model's
-// text call does, and asking one question for both would either send a picture
-// where it cannot be read or refuse one that can.
+// READING IS NARROWER THAN TALKING. Each provider reports modalities for its
+// own serving stack, so a call carrying a picture reaches only providers that
+// both serve the roster identity and report image input for it. Asking one
+// question for text and images would either send a picture where it cannot be
+// read or refuse one that another serving path can accept.
 
 /**
  * Where one roster model can be reached on Charm Hyper.
@@ -268,9 +267,8 @@ function hyperShowsPictures(
 /**
  * Which providers can take a call carrying a picture for one roster model.
  *
- * NARROWER THAN {@link reachOf} AND NOT ALWAYS BY THE SAME MODELS. The two
- * catalogs disagree about `hf:zai-org/GLM-5.2`, each reporting its own serving
- * stack correctly, so this model's pictures have exactly one place to go.
+ * NARROWER THAN {@link reachOf} AND DERIVED PER PROVIDER. A later catalog
+ * change can alter one serving stack's image support without altering another.
  *
  * @param modelId - roster model to route
  *

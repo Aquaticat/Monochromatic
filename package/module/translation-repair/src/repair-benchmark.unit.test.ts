@@ -63,10 +63,10 @@ const SEEDED_TEXT = 'The cat naps in the sun. The bowl stays full.';
  * Role roster; identities only matter as distinct voices.
  */
 const MODELS: RepairModels = {
-  criticModelIds: ['hf:zai-org/GLM-5.2',],
-  panelModelIds: ['hf:zai-org/GLM-5.2',],
-  editorModelIds: ['hf:zai-org/GLM-5.2',],
-  judgeModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+  criticModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  panelModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  editorModelIds: ['hf:zai-org/GLM-5.3-Flash',],
+  judgeModelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
   checkerModelIds: ['hf:Qwen/Qwen3.8-27B',],
 };
 

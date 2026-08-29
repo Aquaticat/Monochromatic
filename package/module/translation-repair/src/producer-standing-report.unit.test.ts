@@ -41,7 +41,7 @@ import {
  *
  * @example
  * ```ts
- * const standing = standingOf({ modelId: 'hf:zai-org/GLM-5.2', candidates: 4, disinterestedBallots: 8, disinterestedVotes: 6, },);
+ * const standing = standingOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', candidates: 4, disinterestedBallots: 8, disinterestedVotes: 6, },);
  * ```
  */
 function standingOf(
@@ -69,7 +69,7 @@ function standingOf(
  * Model that won most of the ballots cast over its candidates.
  */
 const LEADER = standingOf({
-  modelId: 'hf:zai-org/GLM-5.2',
+  modelId: 'hf:zai-org/GLM-5.3-Flash',
   candidates: 4,
   disinterestedBallots: 8,
   disinterestedVotes: 6,
@@ -104,7 +104,7 @@ await describe({
         + 'no denominator beside it cannot be told apart from a share one ballot wide',
       fn: async () => {
         expect(standingLine({ standing: LEADER, },),).toBe(
-          'hf:zai-org/GLM-5.2: 75.0% (6 of 8 disinterested ballots, over 4 candidates)',
+          'hf:zai-org/GLM-5.3-Flash: 75.0% (6 of 8 disinterested ballots, over 4 candidates)',
         );
       },
     },),
@@ -177,7 +177,7 @@ await describe({
         },).map(function idOf(standing,): string {
           return standing.modelId;
         },),).toEqual([
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
         ],);
@@ -231,7 +231,7 @@ await describe({
           return standing.modelId;
         },),).toEqual([
           'hf:moonshotai/Kimi-K3',
-          'hf:zai-org/GLM-5.2',
+          'hf:zai-org/GLM-5.3-Flash',
         ],);
       },
     },),

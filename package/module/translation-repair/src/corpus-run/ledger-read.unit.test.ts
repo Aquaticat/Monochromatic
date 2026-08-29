@@ -69,7 +69,7 @@ const JOINT_TWO = 'hf:Qwen/Qwen3.8-27B';
 /**
  * Seat writing the third candidate, and the one read in full.
  */
-const THIRD = 'hf:zai-org/GLM-5.2';
+const THIRD = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Judge with no candidate of its own in any fixture.

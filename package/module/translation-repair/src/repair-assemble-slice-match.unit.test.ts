@@ -205,7 +205,7 @@ function outcomeOf(
     heardCritics: 1,
     // NAMED, not just counted: the lane refuses a slice it heard nobody about
     // that carries anything but the archive's wording.
-    heardCriticIds: ['hf:zai-org/GLM-5.2',],
+    heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
     claimAttributions: [],
     findings: [],
   };

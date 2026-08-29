@@ -47,7 +47,7 @@ await describe({
         expect(heardNobodyAbout({
           outcome: {
             ...SILENT,
-            heardCriticIds: ['hf:zai-org/GLM-5.2',],
+            heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
           },
         },),).toBe(false,);
         expect(heardNobodyAbout({
@@ -111,7 +111,7 @@ await describe({
         assertUnheardKeptArchive({
           outcome: {
             ...SILENT,
-            heardCriticIds: ['hf:zai-org/GLM-5.2',],
+            heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
             repairedText: 'The tabby napped on the windowsill.',
             changed: true,
           },

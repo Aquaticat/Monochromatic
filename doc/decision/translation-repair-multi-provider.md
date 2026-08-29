@@ -1057,3 +1057,40 @@ Historical measurements remain evidence about their recorded ten-model roster an
 Rollback requires an explicit owner decision plus new cost evidence.
 Restoring it would require adding the model to roster identity and Hyper catalog together, then rebuilding and validating
 consumer-boundary routing before any live corpus run.
+
+### Synthetic GLM-5.2 is replaced, 2026-08-29
+
+The requested operational change replaces Synthetic `hf:zai-org/GLM-5.2` with
+`hf:zai-org/GLM-5.3-Flash` because the live endpoint confirmed the successor and the operational request reported
+Synthetic's plan to retire the older model.
+This is an availability-driven replacement,
+not a claim that the successor inherits any GLM-5.2 performance result or calibrated role standing.
+It enters catalog-derived broad-roster and image-reading paths only;
+it does not inherit an editor,
+refiner,
+checker,
+or default benchmark-judge seat.
+
+The provider's live model endpoint reports the successor as always-on beta with text and image input,
+a 524288-token context,
+a 65536-token output ceiling,
+and support for tools,
+JSON mode,
+structured output,
+and reasoning.
+The package client completed 20 of 20 schema-constrained calls,
+the full roster health probe heard all nine seats,
+and the image-reading boundary produced a usable transcription without recording its text here.
+
+The replacement reaches every active broad-roster path through the catalog-derived roster.
+The old `glm-5.2` Charm Hyper spelling also leaves the active allowlist:
+it identifies GLM-5.2,
+not GLM-5.3-Flash.
+Hyper's live catalog still listed `glm-5.2` but no GLM-5.3-Flash spelling on 2026-08-29.
+It reported `glm-5.2` vision false that day,
+changed from the vision-true catalog reading recorded on 2026-08-24.
+Dated Hyper pricing retains `glm-5.2` for historical spend accounting.
+
+Wire and modality conformance do not establish translation quality.
+Fresh schema-9 actual-output validation is required before the replacement contributes readiness evidence.
+Historical GLM-5.2 measurements retain their recorded name and do not transfer.

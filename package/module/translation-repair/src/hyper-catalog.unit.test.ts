@@ -4,7 +4,7 @@
  * THIS FILE PINS MEASUREMENTS, not preferences. Every value it checks came from
  * live calls, and each one is a value that a plausible reading of provider
  * docs could get wrong: model answer ceiling can sit below bound `#156`,
- * and that only two models in this pipeline can read a picture.
+ * and provider-specific image input support must be read rather than inferred.
  *
  * A CHANGED VALUE HERE IS A PROVIDER CHANGE, so these cases are meant to fail
  * loudly rather than be updated to match.
@@ -37,7 +37,6 @@ await describe({
           'deepseek-v4-flash-0731',
           'deepseek-v4-pro-0813',
           'gemma-4-26b-a4b-it',
-          'glm-5.2',
           'gpt-oss-120b',
           'kimi-k3',
           'minimax-m3',
@@ -47,7 +46,7 @@ await describe({
     },),
 
     it({
-      name: 'LOWERS the answer ceiling to what a model can actually emit, which two of the eight '
+      name: 'LOWERS the answer ceiling to what a model can actually emit, which two of the seven '
         + 'cannot reach: asking for more than a model emits buys a truncation and reports it as a '
         + 'schema mismatch, sending a reader to the prompt instead of to the ceiling',
       fn: async () => {
@@ -62,16 +61,14 @@ await describe({
       fn: async () => {
         expect(answerCeilingFor({ modelId: 'deepseek-v4-flash-0731', },),).toBe(32_000,);
         expect(answerCeilingFor({ modelId: 'minimax-m3', },),).toBe(32_000,);
-        expect(answerCeilingFor({ modelId: 'glm-5.2', },),).toBe(32_000,);
       },
     },),
 
     it({
-      name: 'NAMES the four models both providers serve, which are the only ones a non-conformant '
-        + 'answer can be re-asked across; the fourth arrived 2026-08-26 on the owner\'s word',
+      name: 'NAMES the three models both providers serve, which are the only ones a non-conformant '
+        + 'answer can be re-asked across',
       fn: async () => {
         expect(modelsServedByBoth().toSorted(),).toEqual([
-          'glm-5.2',
           'gpt-oss-120b',
           'kimi-k3',
           'qwen3.8-27b',
@@ -109,7 +106,6 @@ await describe({
         + 'provider is not part of panelist identity: a slice judged by that model counts once '
         + 'however it was reached',
       fn: async () => {
-        expect(HYPER_MODELS['glm-5.2'].sharedWith,).toBe('hf:zai-org/GLM-5.2',);
         expect(HYPER_MODELS['kimi-k3'].sharedWith,).toBe('hf:moonshotai/Kimi-K3',);
         expect(HYPER_MODELS['gpt-oss-120b'].sharedWith,).toBe('hf:openai/gpt-oss-120b',);
         expect(HYPER_MODELS['qwen3.8-27b'].sharedWith,).toBe('hf:Qwen/Qwen3.8-27B',);
@@ -118,9 +114,7 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS four image readers after the costly model was culled: '
-        + 'the other provider serves exactly two, and widening that needed a different provider '
-        + 'rather than a different configuration',
+      name: 'REPORTS three image readers after the GLM-5.2 route leaves the active allowlist',
       fn: async () => {
         /**
          * Models this provider says can be sent an image.
@@ -135,7 +129,6 @@ await describe({
           },);
 
         expect(readers.toSorted(),).toEqual([
-          'glm-5.2',
           'kimi-k3',
           'minimax-m3',
           'qwen3.8-27b',

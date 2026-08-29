@@ -33,7 +33,7 @@ import {
  * Roster this run seats.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
 ] as const;
 
@@ -41,7 +41,7 @@ const ROSTER = [
  * One contest ballot as the judges record them.
  */
 const BALLOT: LaneContestBallot = {
-  modelId: 'hf:zai-org/GLM-5.2',
+  modelId: 'hf:zai-org/GLM-5.3-Flash',
   choice: 'repair',
   unsupported: [],
   unsupportedRaw: [],
@@ -225,8 +225,11 @@ await describe({
         + 'fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
+        // THE LITERAL MOVED AGAIN ON 2026-08-29 because its fixture roster
+        // replaced GLM-5.2 with GLM-5.3-Flash. The roster is already key input,
+        // so this invalidates its own settlements without a generation bump.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '9289e54cf53c5b6f4707d1253b9c9ec883ab9587ade6fbfac2c0064296ee78dc',
+          'f9777ae52ca7d61367f785efd9d472c02b53516eb1a8a6f24164cdd9e8363e7e',
         );
       },
     },),

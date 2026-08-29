@@ -106,7 +106,7 @@ function probingClient(
  * Three-judge roster for the stage tests.
  */
 const JUDGES: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ];
@@ -164,7 +164,7 @@ await describe({
         const derivability = await runDerivabilityProbe({
           client: probingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.2': ['derivable', 'derivable',],
+              'hf:zai-org/GLM-5.3-Flash': ['derivable', 'derivable',],
               'hf:Qwen/Qwen3.8-27B': ['partially-derivable', 'derivable',],
               'hf:moonshotai/Kimi-K3': ['not-derivable', 'derivable',],
             },
@@ -190,7 +190,7 @@ await describe({
         const derivability = await runDerivabilityProbe({
           client: probingClient({
             verdictsByModel: {
-              'hf:zai-org/GLM-5.2': ['derivable', 'derivable',],
+              'hf:zai-org/GLM-5.3-Flash': ['derivable', 'derivable',],
               'hf:Qwen/Qwen3.8-27B': ['not-derivable', 'derivable',],
             },
             silent: new Set(['hf:moonshotai/Kimi-K3',],),
@@ -215,7 +215,7 @@ await describe({
         /** Only one of three judges answers: quorum unmet. */
         const derivability = await runDerivabilityProbe({
           client: probingClient({
-            verdictsByModel: { 'hf:zai-org/GLM-5.2': ['not-derivable', 'not-derivable',], },
+            verdictsByModel: { 'hf:zai-org/GLM-5.3-Flash': ['not-derivable', 'not-derivable',], },
             silent: new Set(['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],),
           },),
           judgeModelIds: JUDGES,

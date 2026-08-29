@@ -245,7 +245,7 @@ await describe({
             ...SCRAMBLED_ROUND,
             ballots: [
               'hf:openai/gpt-oss-120b',
-              'hf:zai-org/GLM-5.2',
+              'hf:zai-org/GLM-5.3-Flash',
               'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
             ].map(function ballotFor(modelId,) {
               return {

@@ -44,7 +44,7 @@ const TARGET_TEXT = 'The cat slept in the box.\n\nShe did not move all afternoon
  * Roster of two, which is the smallest that can agree.
  */
 const ROSTER = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
 ] as const;
 

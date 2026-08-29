@@ -59,7 +59,7 @@ const CANDIDATES: readonly Candidate<TranslateCandidateValue>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:zai-org/GLM-5.2',
+      modelId: 'hf:zai-org/GLM-5.3-Flash',
     },
     value: {
       text: FRESH_ONE,

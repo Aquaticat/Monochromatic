@@ -53,7 +53,7 @@ const KEEPER = {
 const DROPPER = {
   producer: {
     kind: 'model' as const,
-    modelId: 'hf:zai-org/GLM-5.2' as const,
+    modelId: 'hf:zai-org/GLM-5.3-Flash' as const,
   },
   value: { note: 'drops', },
   rendered: DROPS_ALIAS,

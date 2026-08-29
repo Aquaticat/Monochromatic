@@ -115,7 +115,7 @@ function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
     // as a default. A named author is the only version of this that can fail.
     authorship: {
       perIssue: { 'adjudicated/whisker': ['hf:openai/gpt-oss-120b',], },
-      everyIssue: ['hf:zai-org/GLM-5.2',],
+      everyIssue: ['hf:zai-org/GLM-5.3-Flash',],
     },
     accuracyPatchSelected: true,
     refined: false,
@@ -125,7 +125,7 @@ function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
     heardCritics: 6,
-    heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:zai-org/GLM-5.2',],
+    heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:zai-org/GLM-5.3-Flash',],
     claimAttributions: [],
     findings: [],
   };

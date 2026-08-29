@@ -643,7 +643,7 @@ await describe({
          * Error as the drain would raise it.
          */
         const error = new StreamDegenerateError({
-          label: 'critic hf:zai-org/GLM-5.2',
+          label: 'critic hf:zai-org/GLM-5.3-Flash',
           channel: 'reasoning',
           distinctRatio: 0.0021,
           charsSeen: 412_000,
@@ -658,7 +658,7 @@ await describe({
         // Carried as a property, not only baked into the message: a per-model
         // figure has to read `.label` off every error in a batch, and the
         // message is prose meant for one line of a log rather than for that.
-        expect(error.label,).toBe('critic hf:zai-org/GLM-5.2',);
+        expect(error.label,).toBe('critic hf:zai-org/GLM-5.3-Flash',);
       },
     },),
   ],

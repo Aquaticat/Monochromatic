@@ -55,11 +55,12 @@ const l = tagged({ tag: 'translation-repair-repair-benchmark', },);
 export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
 
 /**
- * Default restoration-judge roster: the three vendor families that complete
- * most reliably on this plan, kept distinct so no single family decides.
+ * Default restoration-judge roster: three established vendor families kept
+ * distinct so no single family decides. GLM-5.3-Flash does not inherit its
+ * predecessor's benchmark role without replacement-specific quality evidence.
  */
 export const DEFAULT_JUDGE_MODEL_IDS: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.2',
+  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ];

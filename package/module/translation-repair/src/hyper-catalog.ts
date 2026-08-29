@@ -74,7 +74,7 @@ export const HYPER_AUTH_HEADER = 'Authorization';
  *
  * @example
  * ```ts
- * const modelId: HyperServedId = 'glm-5.2';
+ * const modelId: HyperServedId = 'deepseek-v4-flash-0731';
  * ```
  */
 export type HyperServedId =
@@ -84,15 +84,14 @@ export type HyperServedId =
   | 'gpt-oss-120b'
   | 'gemma-4-26b-a4b-it'
   | 'deepseek-v4-pro-0813'
-  | 'deepseek-v4-flash-0731'
-  | 'glm-5.2';
+  | 'deepseek-v4-flash-0731';
 
 /**
  * Verified per-model facts the router and the request builder read.
  *
  * @example
  * ```ts
- * const info: HyperModelInfo = HYPER_MODELS['glm-5.2'];
+ * const info: HyperModelInfo = HYPER_MODELS['deepseek-v4-flash-0731'];
  * ```
  */
 export type HyperModelInfo = {
@@ -104,8 +103,8 @@ export type HyperModelInfo = {
   /**
    * Same model reached through the other provider, where there is one.
    *
-   * PROVIDER IS NOT PART OF PANELIST IDENTITY. `glm-5.2` here and
-   * `hf:zai-org/GLM-5.2` there are one panelist for self-certification
+   * PROVIDER IS NOT PART OF PANELIST IDENTITY. `kimi-k3` here and
+   * `hf:moonshotai/Kimi-K3` there are one panelist for self-certification
    * weighting and for the cache key, so a slice judged by that model counts
    * once however it was reached. Which provider actually served a call is
    * recorded per call, for diagnosis, and nowhere else.
@@ -116,10 +115,8 @@ export type HyperModelInfo = {
    * Whether this model can be sent an image alongside its text.
    *
    * READ FROM `capabilities.vision` on this provider's own catalog endpoint.
-   * Four of the eight report true, which doubles available picture serving
-   * paths: the other provider serves exactly two image readers, and
-   * its catalog note correctly said widening that would need a different
-   * provider rather than a different configuration.
+   * Three of the seven report true. The other provider now serves three image
+   * readers after GLM-5.3-Flash replaced GLM-5.2.
    */
   readonly readsImages: boolean;
 
@@ -142,6 +139,10 @@ export type HyperModelInfo = {
  * models accept forced tool choice and answered with schema-conformant input.
  * `qwen3.8-max`, only model requiring automatic choice, was culled 2026-08-28
  * because its metered cost was disproportionate and exceptionally expensive.
+ * `glm-5.2` left the active allowlist 2026-08-29 when its roster identity was
+ * replaced by Synthetic's GLM-5.3-Flash. This provider's live catalog still
+ * listed `glm-5.2` but no GLM-5.3-Flash spelling that day. It also reported
+ * `glm-5.2` vision false, changed from the vision-true reading on 2026-08-24.
  *
  * An earlier reading that `kimi-k3` honoured a forced tool on 1 of 3 attempts
  * was wrong and is retracted here; it measures 20 of 20.
@@ -200,12 +201,6 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
     sharedWith: HYPER_ONLY,
     readsImages: false,
     maxOutputLength: 384_000,
-  },
-  'glm-5.2': {
-    id: 'glm-5.2',
-    sharedWith: 'hf:zai-org/GLM-5.2',
-    readsImages: true,
-    maxOutputLength: 32_768,
   },
 };
 

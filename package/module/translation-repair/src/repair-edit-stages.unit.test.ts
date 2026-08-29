@@ -53,7 +53,7 @@ const PATCHED_TEXT = 'The cat sleeps on the windowsill.';
  * Checker roster, larger than a majority so quorum arithmetic is visible.
  */
 const CHECKERS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
   'hf:Qwen/Qwen3.8-27B',
 ] as const;

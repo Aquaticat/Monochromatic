@@ -6,14 +6,14 @@
 // describe it from their own side.
 //
 // THE ROSTER IS NINE DISTINCT MODELS across two providers: five Synthetic serves,
-// four only Charm Hyper serves, and four of the Synthetic five are served by
+// four only Charm Hyper serves, and three of the Synthetic five are served by
 // both. A model is one roster entry however many providers can reach it, which
 // is the property the adjudication tally depends on: `synthetic-catalog.ts`
 // explains at length why one model occupying two seats would silently overstate
 // agreement, and a second provider is exactly the new way for that to happen.
 //
-// SHARED MODELS ARE NAMED THE SYNTHETIC WAY. `hf:zai-org/GLM-5.2` and `glm-5.2`
-// are one model with two spellings, and the roster needs one of them. Synthetic
+// SHARED MODELS ARE NAMED THE SYNTHETIC WAY. `hf:moonshotai/Kimi-K3` and
+// `kimi-k3` are one model with two spellings, and the roster needs one of them. Synthetic
 // was here first, its ids are already written into settled artifacts, and
 // `roster-reach.ts` translates when a call actually goes to the other provider.
 
@@ -24,13 +24,17 @@
  * which reverses `#136`'s finding that it should stay. That finding compared it
  * against five peers; that wider roster later changed independently.
  *
+ * `hf:zai-org/GLM-5.2` WAS REPLACED 2026-08-29 by GLM-5.3-Flash after the
+ * live endpoint confirmed the successor and the operational request reported
+ * Synthetic's plan to retire the older model.
+ *
  * @example
  * ```ts
- * const modelId: SyntheticServedId = 'hf:zai-org/GLM-5.2';
+ * const modelId: SyntheticServedId = 'hf:zai-org/GLM-5.3-Flash';
  * ```
  */
 export type SyntheticServedId =
-  | 'hf:zai-org/GLM-5.2'
+  | 'hf:zai-org/GLM-5.3-Flash'
   | 'hf:Qwen/Qwen3.8-27B'
   | 'hf:moonshotai/Kimi-K3'
   | 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4'

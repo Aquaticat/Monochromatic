@@ -39,7 +39,7 @@ const TABBY = 'hf:openai/gpt-oss-120b';
 /**
  * Second critic, for independent-support cases.
  */
-const CALICO = 'hf:zai-org/GLM-5.2';
+const CALICO = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Third critic, ordered before both by model id so sorting is observable.

@@ -39,7 +39,7 @@ const l = tagged({ tag: 'stage-call-test', },);
 /**
  * Model the exchanges address.
  */
-const MODEL_ID = 'hf:zai-org/GLM-5.2';
+const MODEL_ID = 'hf:zai-org/GLM-5.3-Flash';
 
 /**
  * Trivial reply payload the scripted clients emit.

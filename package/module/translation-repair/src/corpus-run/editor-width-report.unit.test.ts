@@ -54,7 +54,7 @@ import {
  * Narrow roster the fixture reports on.
  */
 const NARROW: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ];
 

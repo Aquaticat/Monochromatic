@@ -264,7 +264,7 @@ function kittenLanes(): DocumentLanesResult {
       sliceCritics: [
         {
           sliceIndex: 0,
-          heardCriticIds: ['hf:zai-org/GLM-5.2',],
+          heardCriticIds: ['hf:zai-org/GLM-5.3-Flash',],
           claimAttributions: [],
         },
       ],

@@ -83,7 +83,7 @@ const TARGET_TEXT = [
  * the stub answers for every one of them.
  */
 const CRITICS = [
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ] as const;
 
@@ -109,7 +109,7 @@ const JUDGES = ['minimax-m3',] as const;
  */
 const CHECKERS = [
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-  'hf:zai-org/GLM-5.2',
+  'hf:zai-org/GLM-5.3-Flash',
   'hf:moonshotai/Kimi-K3',
 ] as const;
 
