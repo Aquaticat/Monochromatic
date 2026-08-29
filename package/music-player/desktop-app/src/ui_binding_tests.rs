@@ -294,6 +294,23 @@ fn playback_control_pairs_wrap_only_when_width_requires() {
         .next()
         .expect("end-of-track group exists");
 
+    app.window().set_size(slint::LogicalSize::new(480.0, 600.0));
+    let content_sized_mode_widths =
+        ElementHandle::find_by_element_type_name(&app, "PlaybackModeButton")
+            .map(|button| return button.size().width)
+            .collect::<Vec<_>>();
+    app.window().set_size(slint::LogicalSize::new(1000.0, 600.0));
+    let wide_mode_widths = ElementHandle::find_by_element_type_name(&app, "PlaybackModeButton")
+        .map(|button| return button.size().width)
+        .collect::<Vec<_>>();
+    assert_eq!(wide_mode_widths.len(), content_sized_mode_widths.len());
+    for (wide_width, content_width) in wide_mode_widths.iter().zip(&content_sized_mode_widths) {
+        assert!(
+            (wide_width - content_width).abs() < 0.01,
+            "playback mode segment stretched from content width {content_width} to {wide_width}",
+        );
+    }
+
     app.window().set_size(slint::LogicalSize::new(1000.0, 600.0));
     let wide_progress_center =
         progress_pair.absolute_position().y + progress_pair.size().height / 2.0;

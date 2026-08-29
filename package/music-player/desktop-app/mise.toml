@@ -211,18 +211,36 @@ description = "Type-check ui/app.slint with slint-viewer --check (compiles the m
 run = "slint-viewer --check ui/app.slint"
 
 [tasks.screenshot]
-description = "Render ui/app.slint to target/app.slint.png HEADLESS (slint-viewer --screenshot: default property values, no Rust backend, no window) for a quick static-layout snapshot"
+description = "Render ui/app.slint to target/app.slint.png HEADLESS; set SLINT_SCREENSHOT_WIDTH/HEIGHT for responsive snapshots"
 # --screenshot installs slint-viewer's own offscreen platform; SLINT_BACKEND=software
 # pins the software renderer for a deterministic frame. This renders the MARKUP with
 # default property values only (no engine/model data); drive the running app via the
-# `mcp` task's take_screenshot for real-data snapshots.
+# `mcp` task's take_screenshot for real-data snapshots. Optional dimensions create a
+# gitignored derived source so the actual component defaults remain unchanged.
 shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
-const { mkdirSync } = await import('node:fs')
+const { mkdirSync, readFileSync, writeFileSync } = await import('node:fs')
 mkdirSync('target', { recursive: true })
-execFileSync('slint-viewer', ['--screenshot', 'target/app.slint.png', 'ui/app.slint'], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
-console.error('rendered ui/app.slint -> target/app.slint.png')
+const widthText = process.env.SLINT_SCREENSHOT_WIDTH
+const heightText = process.env.SLINT_SCREENSHOT_HEIGHT
+const customSize = widthText !== undefined || heightText !== undefined
+const width = Number(widthText ?? '480')
+const height = Number(heightText ?? '600')
+if (!Number.isFinite(width) || width < 360 || !Number.isFinite(height) || height <= 0) {
+  throw new Error(`Invalid Slint screenshot size: ${width}x${height}`)
+}
+const sourcePath = customSize ? 'target/app.screenshot.slint' : 'ui/app.slint'
+if (customSize) {
+  const source = readFileSync('ui/app.slint', 'utf8')
+  const withWidth = source.replace('preferred-width: 480px;', `preferred-width: ${width}px;`)
+  if (withWidth === source) { throw new Error('AppWindow preferred-width anchor not found') }
+  const sizedSource = withWidth.replace('preferred-height: 600px;', `preferred-height: ${height}px;`)
+  if (sizedSource === withWidth) { throw new Error('AppWindow preferred-height anchor not found') }
+  writeFileSync(sourcePath, sizedSource)
+}
+execFileSync('slint-viewer', ['--screenshot', 'target/app.slint.png', sourcePath], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
+console.error(`rendered ${sourcePath} at ${width}x${height} -> target/app.slint.png`)
 """
 
 [tasks."build:container"]

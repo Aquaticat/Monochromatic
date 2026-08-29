@@ -1,30 +1,18 @@
-// The player window: a seek bar on top, a volume slider, and one combined
-// control row (left to right: Settings and Open buttons, a three-state shuffle radio group
-// (Off / Within page / All), the transport buttons prev / play-pause / next, and
-// a "repeat track" checkbox; the checkbox is the native std-widgets CheckBox and
-// the shuffle radio is a custom control styled to echo Fluent's radio, since Slint
-// ships no standalone RadioButton), then the scrolling queue area. A width
-// breakpoint switches its shape:
-// when the window has room the page-tab bar and selected-page track list sit side
-// by side as two INDEPENDENT scroll containers (each with its own Flickable and
-// scrollbar, so a long list never scrolls the tab bar away and vice versa); when
-// it does not, they collapse into the vertical tab-then-list order under one
-// shared Flickable and scrollbar. That narrow branch folds overflowing page controls
-// to one horizontally scrollable row until its leading disclosure button is pressed.
-// The queue is paginated on two axes (decided per track in Rust): a
-// track in a subfolder gets a page per top-level folder under the loaded root
-// (one level only; the tab is that folder); a track at the loaded root gets a
-// first-letter page (A-Z, plus a `#` catch-all). The list shows only the selected
-// page's tracks, each row showing its path relative to the loaded root (so deeper
-// nesting stays visible). The shuffle mode also chooses what playback loops over
-// (Off/Within page stay inside the current page; All spans the whole queue); that
-// logic lives in Rust. The currently playing (and selected) track is the
-// highlighted row, so no separate now-playing title is drawn; a single click
-// selects a row (loading it paused), and a click on the already-highlighted row
-// toggles play/pause. The window title mirrors the playing track and reverts to
-// "Music Player" when paused. All state comes IN from Rust via properties; all
-// user actions go OUT to Rust via callbacks. No playback logic (including the
-// pagination grouping) lives here.
+// The player window starts with two responsive playback rows. Progress shares a row
+// with content-sized Prev / Play-Pause / Next actions, and volume shares a row with
+// a content-sized "When this track ends" segmented control. Sliders absorb surplus
+// width; control labels and action surfaces keep their intrinsic widths. Complete
+// semantic groups wrap when the window narrows, with Settings and Open on a separate
+// source-action row.
+//
+// Page controls and the selected-page track list follow. Wide layouts place them in
+// independent scroll containers; narrow layouts use a vertical order and fold page
+// controls to one horizontally scrollable row behind a disclosure button. Rust groups
+// subfolder tracks by top-level folder and root tracks by first letter. The highlighted
+// row is the selected and currently playing track; clicking it toggles play/pause.
+// The window title mirrors active playback and reverts to "Music Player" when paused.
+// State arrives from Rust through properties and user actions leave through callbacks;
+// playback and pagination logic remain in Rust.
 //
 // Numeric time values (position/duration) are kept as `float` seconds for the
 // slider, while their human-readable "m:ss" forms arrive as separate string
@@ -1316,7 +1304,7 @@ component PlaybackModeButton inherits Rectangle {
     // Static labels keep their natural width at normal font scales, capped so all
     // four 48px action surfaces still fit the 336px content width at narrow size.
     min-width: root.preserve-label
-        ? min(96px, mode-label.preferred-width + 24px)
+        ? min(94px, mode-label.preferred-width + 24px)
         : 48px;
     preferred-width: mode-label.preferred-width + 24px;
     height: 48px;
@@ -1383,7 +1371,7 @@ component PlaybackModeGroup inherits Rectangle {
     callback select-mode(int);
     height: 48px;
     preferred-width: min(mode-row.preferred-width, 328px);
-    horizontal-stretch: 1;
+    horizontal-stretch: 0;
     accessible-role: radio-group;
     accessible-label: "When this track ends";
     accessible-item-count: 4;
@@ -1711,7 +1699,7 @@ export component AppWindow inherits Window {
                 }
             }
             end-controls := FlexboxLayout {
-                flex-grow: 2;
+                flex-grow: 0;
                 flex-shrink: 1;
                 min-width: 0px;
                 // The outer basis holds the 128px label and 328px default mode group.
@@ -1730,9 +1718,8 @@ export component AppWindow inherits Window {
                     overflow: elide;
                 }
                 PlaybackModeGroup {
-                    flex-grow: 1;
+                    flex-grow: 0;
                     flex-shrink: 1;
-                    flex-basis: 328px;
                     selected-mode: root.playback-mode;
                     current-page: root.selected-page >= 0 && root.page-labels.length > root.selected-page
                         ? root.page-labels[root.selected-page]
