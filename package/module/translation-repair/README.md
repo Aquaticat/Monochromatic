@@ -1433,6 +1433,29 @@ or rejection after correction two remains terminal and retryable.
 Generations 6 through 8 remain readable but cannot satisfy schema-9 correction-chain boundary.
 Another fresh affected rerun remains required before accepting output.
 
+Two fresh schema-9 `Weideriche_` validations after the GLM-5.3-Flash roster replacement each attempted the entry twice,
+failed absolute naturalness on body slice 1,
+and wrote no page or artifact.
+The first exposed reviewers treating Markdown soft breaks as visible sentence breaks even though target MDX renders them as spaces.
+Absolute-review instructions now require flow findings to survive rendered soft-break normalization;
+a replay over same rejected candidate text and reconstructed context then received nine usable approvals.
+The second fresh run still rejected genuinely awkward body wording after both corrections.
+It also exposed required-correction fidelity gate calling rejected base already approved and unanimously restoring it.
+Required-correction gate now receives rejected status and canonical findings;
+base remains fidelity evidence but cannot win merely because improvement is unclear.
+Correction generation and selection now treat findings as minimum defects rather than edit whitelist.
+Replays over exact candidate texts with reconstructed source and identity context moved gate from base to polished
+and selection from partial to broader idiomatic correction.
+Those replays are directional prompt evidence,
+not publication evidence:
+the best replayed correction still received one usable rejection among nine and therefore fails strict floor.
+GLM-5.3-Flash returned usable structured answers and approved reviewed candidates in these diagnostics,
+but this does not grant specialized role standing or production readiness.
+Consolidation cache generation 10 prevents warm reuse of settlements bought under earlier review,
+correction-generation,
+selection,
+or fidelity-gate questions.
+
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.
 `countPairedBlocks` now reports unique source and target reach separately from relation count,

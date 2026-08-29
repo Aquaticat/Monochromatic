@@ -132,7 +132,7 @@ export function buildRefineMessages(
    */
   const correctionPolicy = (renderedFindings.length === 0)
     ? ''
-    : '\n\nAn independent whole-passage review found material naturalness defects, so the current wording cannot be published unchanged. This is the only corrective round. Resolve every listed defect across the complete affected paragraphs; do not stop after one local improvement.';
+    : '\n\nAn independent whole-passage review found material naturalness defects, so the current wording cannot be published unchanged. This is a bounded corrective round. Required findings are a minimum, not an edit whitelist. Resolve every listed defect across the complete affected paragraphs, and correct any additional material naturalness defect a careful native editor would change; do not stop after one local improvement.';
   /**
    * Baseline status differs when independent review has already rejected it.
    */

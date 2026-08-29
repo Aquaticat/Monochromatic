@@ -221,15 +221,17 @@ await describe({
       name: 'PINS THE KEY TO A LITERAL, so a change to this material has to be made on purpose. The value '
         + 'moved on 2026-08-22 for line-structure judging and on 2026-08-28 for target-authoritative '
         + 'metadata contributor spelling, final body polish, target body contributor authority, and '
-        + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction. These policies are not text '
-        + 'fields, '
+        + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction, then on 2026-08-29 for '
+        + 'render-aware absolute review and rejected-base correction prompts. These policies are not text fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
-        // THE LITERAL MOVED AGAIN ON 2026-08-29 because its fixture roster
-        // replaced GLM-5.2 with GLM-5.3-Flash. The roster is already key input,
-        // so this invalidates its own settlements without a generation bump.
+        // THE LITERAL MOVED TWICE ON 2026-08-29. Its fixture roster first
+        // replaced GLM-5.2 with GLM-5.3-Flash, which invalidated its own
+        // settlements. Version 10 then invalidated settlements bought before
+        // corrected absolute-review, correction-generation, selection, and
+        // fidelity-gate questions.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'f9777ae52ca7d61367f785efd9d472c02b53516eb1a8a6f24164cdd9e8363e7e',
+          '8dab970decb7158158c0796ceb750b40f194571b338ae196a71af5ed98a06159',
         );
       },
     },),

@@ -44,8 +44,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 9 permits a second candidate-bound correction when first correction
  * exposes further material defects. Version 8 exhausted after one generation.
+ *
+ * VERSION 10 binds revised absolute-review and required-correction questions:
+ * Markdown soft breaks render as spaces, rejected base is not approved fallback,
+ * and findings are a minimum rather than an edit whitelist.
  */
-export const CONSOLIDATE_CACHE_VERSION = 9;
+export const CONSOLIDATE_CACHE_VERSION = 10;
 
 /**
  * What a line-structured slice appends to its key material.

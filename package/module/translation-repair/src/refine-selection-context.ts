@@ -123,6 +123,7 @@ export function buildRefineSelectionContext(
       'Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed.',
       'Faithful to the Chinese ORIGINAL.',
       'Resolves every REQUIRED FINDING across each affected paragraph.',
+      'Treats findings as a minimum, not an edit whitelist: reward additional material naturalness fixes that preserve exact meaning.',
       'Reads as publication-quality natural English when considered as a whole.',
     ],
     evidence: [

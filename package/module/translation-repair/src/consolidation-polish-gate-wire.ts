@@ -7,6 +7,7 @@ import {
   readCandidateNames,
 } from './contest-ballot-wire.ts';
 import { selectFence, } from './prompt-fence.ts';
+import type { RefineStageMode, } from './refine-selection-context.ts';
 
 //region Consolidation polish gate wire
 
@@ -25,20 +26,29 @@ const POLISH_NAMES: readonly PolishChoice[] = [
 ];
 
 /**
- * Fidelity-first naturalness policy for final body polish.
+ * Fidelity-first policy when approved base remains available.
  */
-const POLISH_POLICY = `You are deciding whether a polished English memorial passage may replace its already-approved base.
+const COMPARATIVE_POLISH_POLICY = `You are deciding whether a polished English memorial passage may replace its already-approved base.
 
 THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content. Naturalness can never compensate for either fault.
 
 Only if both candidates are equally faithful, judge natural English. Reject literal Chinese collocations, calqued verb-object combinations, stiff emotional descriptions, and grammar that a careful native editor would rewrite. Prefer polished only when it is clearly more idiomatic without changing meaning, detail, tone, names, links, Markdown structure, or line structure. Otherwise choose base. Answer neither when no clear naturalness improvement exists.`;
 
 /**
+ * Fidelity-first policy when absolute review already rejected base.
+ */
+const REQUIRED_CORRECTION_POLISH_POLICY = `You are deciding whether a proposed correction may replace an English memorial passage that already failed absolute naturalness review.
+
+THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content. Naturalness can never compensate for either fault.
+
+The base already failed absolute naturalness review. It is evidence for preserving exact meaning, not an approved fallback, and must not win merely because improvement is unclear. Choose polished only when it remains equally faithful, resolves every REQUIRED FINDING, and reads as publication-quality natural English. Choose base only when polished adds, drops, softens, sharpens, or reattributes meaning; the caller will then refuse publication rather than ship base. Answer neither when polished preserves fidelity but fails a REQUIRED FINDING or remains unnatural.`;
+
+/**
  * Subject shown to naturalness gate.
  *
  * @example
  * ```ts
- * const subject: ConsolidationPolishGateSubject = { sourceText: '猫睡了。', archiveText: 'The cat slept.', baseText: 'The cat slept.', polishedText: 'The cat was asleep.', };
+ * const subject: ConsolidationPolishGateSubject = { sourceText: '猫睡了。', archiveText: 'The cat slept.', baseText: 'The cat slept.', polishedText: 'The cat was asleep.', mode: { kind: 'comparative' } };
  * ```
  */
 export type ConsolidationPolishGateSubject = {
@@ -53,7 +63,7 @@ export type ConsolidationPolishGateSubject = {
   readonly archiveText: string;
 
   /**
-   * Already-approved wording that wins every non-clear outcome.
+   * Standing wording, approved only in comparative mode.
    */
   readonly baseText: string;
 
@@ -61,6 +71,11 @@ export type ConsolidationPolishGateSubject = {
    * Naturalness rewrite seeking to replace base.
    */
   readonly polishedText: string;
+
+  /**
+   * Whether base remains available or is rejected correction evidence.
+   */
+  readonly mode: RefineStageMode;
 
   /**
    * Declared names and handles, when documents provide them.
@@ -202,7 +217,25 @@ export function buildConsolidationPolishGateMessages(
       '',
     ];
   /**
-   * Fence absent from every enclosed passage.
+   * Gate mode naming whether base remains available.
+   */
+  const { mode, } = subject;
+  /**
+   * Whether this is exploratory comparison against approved base.
+   */
+  const comparative = mode.kind === 'comparative';
+  /**
+   * Required findings rendered only at prompt boundary.
+   */
+  const requiredFindings = comparative
+    ? []
+    : mode
+      .findings
+      .map(function renderFinding(finding,): string {
+        return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
+      },);
+  /**
+   * Fence absent from every enclosed passage and finding.
    */
   const fence = selectFence({
     texts: [
@@ -210,13 +243,32 @@ export function buildConsolidationPolishGateMessages(
       subject.archiveText,
       subject.baseText,
       subject.polishedText,
+      ...requiredFindings,
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
     ],
   },);
+  /**
+   * Required findings block, absent while approved base remains available.
+   */
+  const correctionEvidence = (requiredFindings.length === 0)
+    ? []
+    : [
+      'REQUIRED FINDINGS from independent absolute review:',
+      `${fence}\n${requiredFindings.join('\n',)}\n${fence}`,
+      '',
+    ];
+  /**
+   * Base label matching whether it remains publishable.
+   */
+  const baseLabel = comparative
+    ? 'CANDIDATE "base" (already approved):'
+    : 'CANDIDATE "base" (rejected naturalness evidence only):';
   return [
     {
       role: 'system',
-      content: POLISH_POLICY,
+      content: comparative
+        ? COMPARATIVE_POLISH_POLICY
+        : REQUIRED_CORRECTION_POLISH_POLICY,
     },
     {
       role: 'user',
@@ -228,12 +280,13 @@ export function buildConsolidationPolishGateMessages(
         'ARCHIVE RENDERING (evidence only):',
         `${fence}\n${subject.archiveText}\n${fence}`,
         '',
-        'CANDIDATE "base" (already approved):',
+        baseLabel,
         `${fence}\n${subject.baseText}\n${fence}`,
         '',
         'CANDIDATE "polished":',
         `${fence}\n${subject.polishedText}\n${fence}`,
         '',
+        ...correctionEvidence,
         `Return JSON: choice one of "polished", "base", "${CONTEST_REFUSAL}";`,
         'unsupported and dropped each a list naming any of "polished", "base";',
         'reason one sentence.',

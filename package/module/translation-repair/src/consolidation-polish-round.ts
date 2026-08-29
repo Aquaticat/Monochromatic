@@ -262,6 +262,7 @@ export async function runConsolidationPolishRound(
       archiveText,
       baseText,
       polishedText: refined.refinedText,
+      mode,
       ...((identityContext === undefined) ? {} : { identityContext, }),
     },
     signal,
