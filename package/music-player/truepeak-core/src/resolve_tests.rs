@@ -18,13 +18,13 @@ struct FakeSource {
 
 impl FakeSource {
     fn new(samples: Vec<f32>, channels: u16, rate: u32, duration_secs: f64) -> FakeSource {
-        FakeSource { samples, channels, rate, duration_secs, cursor: 0, chunk: 4, seeks: Vec::new() }
+        return FakeSource { samples, channels, rate, duration_secs, cursor: 0, chunk: 4, seeks: Vec::new() }
     }
 }
 
 impl TruePeakSource for FakeSource {
     fn spec(&self) -> AudioSpec {
-        AudioSpec { rate: self.rate, channels: self.channels, duration_secs: self.duration_secs }
+        return AudioSpec { rate: self.rate, channels: self.channels, duration_secs: self.duration_secs }
     }
 
     fn next_chunk(&mut self) -> Result<Vec<f32>, TruePeakError> {
@@ -34,13 +34,13 @@ impl TruePeakSource for FakeSource {
         let end = (self.cursor + self.chunk).min(self.samples.len());
         let block = self.samples[self.cursor..end].to_vec();
         self.cursor = end;
-        Ok(block)
+        return Ok(block)
     }
 
     fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError> {
         self.seeks.push(frame);
         self.cursor = frame as usize * self.channels as usize;
-        Ok(())
+        return Ok(())
     }
 }
 
@@ -49,7 +49,7 @@ impl TruePeakSource for FakeSource {
 // probe visits the same evenly-placed bins the old tests reasoned about.
 fn test_policy(short_scan_max_secs: f64, coverage_fraction: f64, probe_window_secs: f64, probe_margin_db: f64) -> Policy {
     let uniform = BucketProbe { coverage_fraction, probe_margin_db };
-    Policy {
+    return Policy {
         short_scan_max_secs,
         probe_window_secs,
         pass1_coverage_fraction: coverage_fraction,

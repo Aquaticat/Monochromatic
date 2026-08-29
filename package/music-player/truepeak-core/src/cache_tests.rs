@@ -6,15 +6,15 @@ use crate::policy::CacheIdentity;
 
 // A fixed identity for the tests; every key column matters for a hit.
 fn identity() -> CacheIdentity {
-    CacheIdentity { policy_id: 11, meter_id: 22, decoder_stack_id: 33, schema_version: 1 }
+    return CacheIdentity { policy_id: 11, meter_id: 22, decoder_stack_id: 33, schema_version: 1 }
 }
 
 fn probe(gain: f32) -> Decision {
-    Decision { gain, kind: DecisionKind::ProbeEstimate, measured_peak: 0.9, duration_secs: 200.0 }
+    return Decision { gain, kind: DecisionKind::ProbeEstimate, measured_peak: 0.9, duration_secs: 200.0 }
 }
 
 fn exact(gain: f32) -> Decision {
-    Decision { gain, kind: DecisionKind::FullScanExact, measured_peak: 1.5, duration_secs: 200.0 }
+    return Decision { gain, kind: DecisionKind::FullScanExact, measured_peak: 1.5, duration_secs: 200.0 }
 }
 
 // A stored decision reads back unchanged for a matching key.

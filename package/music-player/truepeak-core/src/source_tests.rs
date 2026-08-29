@@ -33,7 +33,7 @@ struct FakeSource {
 
 impl TruePeakSource for FakeSource {
     fn spec(&self) -> AudioSpec {
-        AudioSpec {
+        return AudioSpec {
             rate: self.rate,
             channels: self.channels,
             duration_secs: self.samples.len() as f64 / (self.rate as f64 * self.channels as f64),
@@ -47,7 +47,7 @@ impl TruePeakSource for FakeSource {
         let end = (self.cursor + self.chunk).min(self.samples.len());
         let block = self.samples[self.cursor..end].to_vec();
         self.cursor = end;
-        Ok(block)
+        return Ok(block)
     }
 
     fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError> {
@@ -57,7 +57,7 @@ impl TruePeakSource for FakeSource {
             return Err(TruePeakError::Seek { message: format!("frame {frame} past end") });
         }
         self.cursor = target;
-        Ok(())
+        return Ok(())
     }
 }
 

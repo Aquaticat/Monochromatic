@@ -37,7 +37,7 @@ fn starts_are_monotonic_and_bounded() {
     for pair in starts.windows(2) {
         assert!(pair[1] >= pair[0], "starts must be non-decreasing");
     }
-    assert!(starts.iter().all(|&start| start <= last_start));
+    assert!(starts.iter().all(|&start| return start <= last_start));
     assert_eq!(starts[0], 0);
     assert_eq!(*starts.last().unwrap(), last_start);
 }

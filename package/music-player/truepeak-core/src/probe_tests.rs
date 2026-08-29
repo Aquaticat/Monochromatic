@@ -13,13 +13,13 @@ struct FakeSource {
 
 impl FakeSource {
     fn new(samples: Vec<f32>, rate: u32) -> FakeSource {
-        FakeSource { samples, rate, cursor: 0, seeks: Vec::new() }
+        return FakeSource { samples, rate, cursor: 0, seeks: Vec::new() }
     }
 }
 
 impl TruePeakSource for FakeSource {
     fn spec(&self) -> AudioSpec {
-        AudioSpec {
+        return AudioSpec {
             rate: self.rate,
             channels: 1,
             duration_secs: self.samples.len() as f64 / f64::from(self.rate),
@@ -33,13 +33,13 @@ impl TruePeakSource for FakeSource {
         let end = (self.cursor + 4).min(self.samples.len());
         let block = self.samples[self.cursor..end].to_vec();
         self.cursor = end;
-        Ok(block)
+        return Ok(block)
     }
 
     fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError> {
         self.seeks.push(frame);
         self.cursor = (frame as usize).min(self.samples.len());
-        Ok(())
+        return Ok(())
     }
 }
 
@@ -52,7 +52,7 @@ fn track(base: f32, overrides: &[(usize, f32)]) -> Vec<f32> {
             samples[frame] = level;
         }
     }
-    samples
+    return samples
 }
 
 // The climb walks up a shoulder the even pass only grazes and reads the hilltop.
