@@ -2,10 +2,10 @@
 
 - **Status**:
   Blocked on consumer-boundary validation;
-  informal source-only recommendation recorded
+  intended adoption authorized and gated by the migration runbook
 - **Lifecycle phase**:
   Hard-gate screening and source validation complete;
-  consumer-boundary validation deferred
+  consumer-boundary validation required before formal lifecycle advancement
 - **Subject**:
   Rolling Linux desktop with encrypted boot-menu rollback
 - **Scope**:
@@ -31,6 +31,26 @@
   `doc/audit/tech-rolling-linux-desktop-with-encrypted-boot-m-vet-2026-08-29.md` has the incompatible
   fingerprint `636923994432fe5afbe3a13086afb7ffdc004479de4fb2c68842ea6022eff9ce` because it requires Windows
   coexistence and evaluates a KDE Plasma deployment rather than the rehearsed UWSM plus labwc session.
+
+## Adoption authorization
+
+On 2026-08-29,
+the user selected the personal CachyOS ZFS plus ZFSBootMenu recommendation for intended adoption and requested an
+installation runbook.
+This authority is recorded in
+[`doc/decision/cachyos-zfs-desktop.md`](../decision/cachyos-zfs-desktop.md).
+The controlling procedure is
+[`doc/runbook/migrate-bazzite-to-cachyos-zfsbootmenu.md`](../runbook/migrate-bazzite-to-cachyos-zfsbootmenu.md).
+
+The decision does not retroactively satisfy this report's missing equal-depth consumer validation.
+The runbook therefore makes a disposable UEFI encrypted-install,
+rollback,
+promotion,
+and UWSM plus labwc test mandatory before the physical NVMe is erased.
+No candidate advances to the formal `Validated`,
+`Scored`,
+`Recommended`,
+or `Adopted` state from authorization alone.
 
 ## Context
 
@@ -378,8 +398,8 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   Its own Btrfs manual warns that a separate `/boot` is excluded from root snapshots and can make rollback inconsistent.
   That fails the matching-kernel-artifact requirement.
 - **Primary sources**:
-  https://manual.siduction.org/hd-install_en.html
-  and https://manual.siduction.org/sys-admin-btrfs-snapper_en.html,
+  <https://manual.siduction.org/hd-install_en.html>
+  and <https://manual.siduction.org/sys-admin-btrfs-snapper_en.html>,
   accessed 2026-08-29.
 
 ### openSUSE Kalpa
@@ -395,8 +415,8 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   Replacing its supported Plasma session with the complete UWSM plus labwc host stack would create an unsupported
   custom base rather than a ready-to-use candidate.
 - **Primary sources**:
-  https://kalpadesktop.org/documentation/
-  and https://en.opensuse.org/Portal:Kalpa,
+  <https://kalpadesktop.org/documentation/>
+  and <https://en.opensuse.org/Portal:Kalpa>,
   accessed 2026-08-29.
 
 ### NixOS unstable
@@ -420,7 +440,7 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   AerynOS offers boot-time state rollback,
   but its official missing-features page states that disk encryption is not yet supported.
 - **Primary source**:
-  https://aerynos.dev/faq/lacking-features/,
+  <https://aerynos.dev/faq/lacking-features/>,
   accessed 2026-08-29.
 
 ### ObsidianOS
@@ -438,7 +458,7 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `/var/home/user/temp/agent/obsidianos-obsidianctl-20260829` at
   `d5e62067a610e94bc4f2ff9eef9f7e2e45bf6e8a`.
 - **Primary source**:
-  https://github.com/Obsidian-OS/obsidianctl,
+  <https://github.com/Obsidian-OS/obsidianctl>,
   accessed 2026-08-29.
 
 ### Nebula Linux
@@ -456,7 +476,7 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `/var/home/user/temp/agent/nebula-linux-20260829` at
   `68eca22c54d30a96beb625b1bab0beac17ee6b45`.
 - **Primary source**:
-  https://github.com/nebula-linux-os/Nebula-Linux,
+  <https://github.com/nebula-linux-os/Nebula-Linux>,
   accessed 2026-08-29.
 
 ### KDE Linux
@@ -476,8 +496,8 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   and xwayland-satellite would require a custom system extension or image;
   ready-to-use surviving distributions make that custom implementation ineligible.
 - **Primary sources**:
-  https://linux.kde.org/docs/install/
-  and https://linux.kde.org/docs/boot-failure-recovery/,
+  <https://linux.kde.org/docs/install/>
+  and <https://linux.kde.org/docs/boot-failure-recovery/>,
   accessed 2026-08-29.
 
 ## Evidence records
@@ -504,11 +524,11 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `src/main/java/org/limine/snapper/processes/SnapshotManager.java:211-254`
   and `:648-697`.
 - **Primary source**:
-  https://gitlab.com/Zesko/limine-snapper-sync,
+  <https://gitlab.com/Zesko/limine-snapper-sync>,
   accessed 2026-08-29.
 - **Counterevidence**:
   CachyOS documentation still states that snapshots involving kernel updates cannot be rolled back at
-  https://wiki.cachyos.org/configuration/btrfs_snapshots/.
+  <https://wiki.cachyos.org/configuration/btrfs_snapshots/>.
   That statement conflicts with current helper source and the helper author’s explanation.
 - **Remaining limits**:
   Snapshots predating the helper,
@@ -534,15 +554,15 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `src/libcalamares/partition/PartitionSize.cpp:30` maps `M` to `MiB`;
   `src/modules/partition/core/PartitionActions.cpp:175-198` creates a FAT32 ESP using that configured size.
 - **Primary source**:
-  https://github.com/CachyOS/cachyos-calamares,
+  <https://github.com/CachyOS/cachyos-calamares>,
   accessed 2026-08-29.
 - **Documentation discrepancy**:
   The 26.01 changelog says 4,192 MB at
-  https://wiki.cachyos.org/cachyos_basic/changelogs/gui_installer/.
+  <https://wiki.cachyos.org/cachyos_basic/changelogs/gui_installer/>.
   Current source is decisive for the present proposal and does not contain that number.
 - **Historical counterevidence**:
   ISO 260124 could alternate between 2 GB and 4 GB after navigating backward at
-  https://discuss.cachyos.org/t/inconsistent-calamares-behavior-when-selecting-limine-260124/22236.
+  <https://discuss.cachyos.org/t/inconsistent-calamares-behavior-when-selecting-limine-260124/22236>.
   The current source has one Limine override,
   but the current UI path still needs runtime validation.
 
@@ -563,7 +583,7 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
 - **Source path**:
   `cachyos-snapper-support/snapper-template-root-cachyos`.
 - **Primary source**:
-  https://github.com/CachyOS/CachyOS-PKGBUILDS/blob/master/cachyos-snapper-support/snapper-template-root-cachyos,
+  <https://github.com/CachyOS/CachyOS-PKGBUILDS/blob/master/cachyos-snapper-support/snapper-template-root-cachyos>,
   accessed 2026-08-29.
 
 ### openSUSE BLS snapshot-to-kernel association
@@ -586,14 +606,14 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `sdbootutil:1734-1957`,
   and `ARCHITECTURE.md` under “Introducing snapshots”.
 - **Primary sources**:
-  https://github.com/openSUSE/sdbootutil
-  and https://news.opensuse.org/2025/11/13/tw-grub2-bls,
+  <https://github.com/openSUSE/sdbootutil>
+  and <https://news.opensuse.org/2025/11/13/tw-grub2-bls>,
   accessed 2026-08-29.
 - **Capacity behavior**:
   `sdbootutil:1437-1602` protects active and default snapshots,
   then prunes other boot entries from oldest to newest until a new kernel fits.
   A retained Snapper snapshot can therefore lose its boot entry before Snapper deletes the snapshot.
-  The July 2026 XBOOTLDR guidance at https://news.opensuse.org/2026/07/07/xbootldr/ provides a larger separate FAT32
+  The July 2026 XBOOTLDR guidance at <https://news.opensuse.org/2026/07/07/xbootldr/> provides a larger separate FAT32
   boot store when the default 1 GB ESP is insufficient.
 
 ### openSUSE encryption and Snapper defaults
@@ -611,8 +631,8 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   Pass for encryption;
   scored concern for reintroducing qgroup accounting on the same NVMe.
 - **Primary sources**:
-  https://news.opensuse.org/2025/11/13/tw-grub2-bls
-  and https://doc.opensuse.org/documentation/tumbleweed/snapper/,
+  <https://news.opensuse.org/2025/11/13/tw-grub2-bls>
+  and <https://doc.opensuse.org/documentation/tumbleweed/snapper/>,
   accessed 2026-08-29.
 - **Evidence limit**:
   Upstream Snapper’s `data/default-config` leaves `QGROUP` empty;
@@ -643,7 +663,7 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `pkgbuilds/snapper-support/snapper-template-garuda`,
   and `pkgbuilds/garuda-dracut-support/snapshot-overlay.sh:1-22`.
 - **Primary source**:
-  https://forum.garudalinux.org/t/garuda-linux-temeraire-260819/48606,
+  <https://forum.garudalinux.org/t/garuda-linux-temeraire-260819/48606>,
   accessed 2026-08-29.
 - **Version boundary**:
   Temeraire introduced LUKS2 plus Argon2 and ships GRUB 2.14,
@@ -671,8 +691,8 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `scripts/configure.sh` functions `generate_uki_entry()` and `generate_loader_conf()`,
   and `shani-deploy/README.md` under “The blue-green model”.
 - **Primary sources**:
-  https://github.com/shani8dev/os-installer-config
-  and https://github.com/shani8dev/shani-deploy,
+  <https://github.com/shani8dev/os-installer-config>
+  and <https://github.com/shani8dev/shani-deploy>,
   accessed 2026-08-29.
 - **Material limits**:
   only one previous slot is directly bootable;
@@ -695,6 +715,10 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   The third-party installer separates persistent home and application data from `zroot/ROOT/*`,
   creates a baseline environment,
   and keeps 24 pacman-created environments by default.
+  Its `create-baseline-boot-env.sh` sets `org.zfsbootmenu:active=off`,
+  while ZFSBootMenu documents that value as hiding a `mountpoint=/` environment.
+  The adoption runbook explicitly sets the baseline to `on` and creates a post-migration `known-good` environment;
+  neither remediation has received consumer-boundary validation yet.
 - **Gate**:
   Encryption,
   direct rollback,
@@ -704,14 +728,14 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   Pass in architecture and source;
   complete installer execution remains pending.
 - **Primary sources**:
-  https://docs.zfsbootmenu.org/en/latest/general/native-encryption.html,
-  https://docs.zfsbootmenu.org/en/latest/general/bootenvs-and-you.html,
-  https://docs.zfsbootmenu.org/en/latest/online/snapshot-management.html,
-  and https://github.com/fnichol/cachyos-zfs-installer,
+  <https://docs.zfsbootmenu.org/en/latest/general/native-encryption.html>,
+  <https://docs.zfsbootmenu.org/en/latest/general/bootenvs-and-you.html>,
+  <https://docs.zfsbootmenu.org/en/latest/online/snapshot-management.html>,
+  and <https://github.com/fnichol/cachyos-zfs-installer>,
   accessed 2026-08-29.
 - **Kernel pairing**:
   CachyOS packages a `linux-cachyos-zfs` module with an exact dependency such as `linux-cachyos=7.1.8-1` and
-  `Provides: ZFS-MODULE` at https://packages.cachyos.org/package/cachyos/x86_64/linux-cachyos-zfs.
+  `Provides: ZFS-MODULE` at <https://packages.cachyos.org/package/cachyos/x86_64/linux-cachyos-zfs>.
   This avoids an unbounded DKMS/kernel mismatch for supported CachyOS kernels,
   but OpenZFS remains an out-of-tree module and real-time kernels remain unsupported.
 - **Maintenance limit**:
@@ -727,16 +751,16 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
   `iso-profiles`,
   and `garuda-tools` revisions all had successful GitLab pipelines.
   The 260819 Mokka manifest at
-  https://iso.builds.garudalinux.org/iso/garuda/mokka/260819/garuda-mokka-linux-garuda-260819.pkgs.txt
+  <https://iso.builds.garudalinux.org/iso/garuda/mokka/260819/garuda-mokka-linux-garuda-260819.pkgs.txt>
   confirms `grub 2:2.14-1`,
   `garuda-dracut-support 1.6.0-2`,
   Snapper 0.13.1,
   and the Chaotic-AUR keyring and mirror list.
 - Shanios package builds passed repeatedly through 2026-08-29,
   and an image build passed at
-  https://github.com/shani8dev/shani-builder/actions/runs/32534186289.
+  <https://github.com/shani8dev/shani-builder/actions/runs/32534186289>.
   Later image and stable-promotion workflows include failures,
-  including https://github.com/shani8dev/shani-builder/actions/runs/33230049052.
+  including <https://github.com/shani8dev/shani-builder/actions/runs/33230049052>.
 - The third-party CachyOS ZFS installer has no integration-test files;
   its Makefile’s `test` and `check` targets both reduce to shell checks.
   ZFSBootMenu itself has a 38-file test area,
@@ -778,7 +802,7 @@ tty1 shell-profile startup checks,
 and `uwsm app` scope or service launch modes.
 The upstream documentation explicitly supports `uwsm check may-start` plus `exec uwsm start` from a login-shell profile
 and places ordinary applications in separate systemd user units at
-https://github.com/Vladimir-csp/uwsm.
+<https://github.com/Vladimir-csp/uwsm>.
 
 The rehearsed display-manager-free boot therefore transfers without a distribution-specific display manager:
 
@@ -803,10 +827,10 @@ and CachyOS ZFS
 
 All three use the Arch package base for the session:
 
-- `labwc` 0.20.2 is in Arch Extra at https://archlinux.org/packages/extra/x86_64/labwc/;
-- `uwsm` 0.26.7 is in Arch Extra at https://archlinux.org/packages/extra/any/uwsm/;
+- `labwc` 0.20.2 is in Arch Extra at <https://archlinux.org/packages/extra/x86_64/labwc/>;
+- `uwsm` 0.26.7 is in Arch Extra at <https://archlinux.org/packages/extra/any/uwsm/>;
 - `xwayland-satellite` 0.8.2 is in Arch Extra at
-  https://archlinux.org/packages/extra/x86_64/xwayland-satellite/;
+  <https://archlinux.org/packages/extra/x86_64/xwayland-satellite/>;
 - sfwbar 1.0 beta17 is available through the AUR,
   so it requires an inspected AUR build rather than an Arch-signed repository package.
   The AUR recipe at commit `46996951521a2b1d721382fa6db7164f25cbcd98` pins the upstream tag archive with
@@ -828,16 +852,16 @@ UWSM,
 and xwayland-satellite in the distribution.
 The package records are available at:
 
-- https://software.opensuse.org/package/labwc;
-- https://software.opensuse.org/package/uwsm;
-- https://software.opensuse.org/package/xwayland-satellite.
+- <https://software.opensuse.org/package/labwc>;
+- <https://software.opensuse.org/package/uwsm>;
+- <https://software.opensuse.org/package/xwayland-satellite>.
 
 Sfwbar is not in the main Tumbleweed repository,
 but the openSUSE `X11:Wayland` development project publishes sfwbar 1.0 beta17 for Tumbleweed.
 The source RPM dated 2026-08-11 has SHA-256
 `2e3681b52f543ce3c8804438dc62768734d42e322b314a1f73b665a5fc01d60e`.
 The source repository directory is
-https://download.opensuse.org/repositories/X11:/Wayland/openSUSE_Tumbleweed/src/.
+<https://download.opensuse.org/repositories/X11:/Wayland/openSUSE_Tumbleweed/src/>.
 This adds one non-default openSUSE repository but avoids a locally authored package.
 
 The tty1,
@@ -860,10 +884,10 @@ and the shared fstab mounts a persistent `@nix` subvolume.
 Nixpkgs currently packages all four components,
 including sfwbar beta17 and xwayland-satellite 0.8.2 at:
 
-- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/la/labwc/package.nix;
-- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/uw/uwsm/package.nix;
-- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/sf/sfwbar/package.nix;
-- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/xw/xwayland-satellite/package.nix.
+- <https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/la/labwc/package.nix>;
+- <https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/uw/uwsm/package.nix>;
+- <https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/sf/sfwbar/package.nix>;
+- <https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/xw/xwayland-satellite/package.nix>.
 
 A Nix profile can therefore provide the session binaries,
 and the home plus `/etc` overlay can preserve the tty1 and user-unit configuration.
@@ -1033,39 +1057,45 @@ not observed installation or runtime behavior.
 - Rollback correctness: 3.
   `sdbootutil` constructs snapshot-specific BLS entries and matching content-addressed artifacts,
   but boot-storage pruning can remove an entry while its Snapper snapshot remains
-  (https://github.com/openSUSE/sdbootutil).
-- Encryption: 2.5.
+  (<https://github.com/openSUSE/sdbootutil>).
+- Encryption:
+   2.5.
   LUKS2 unlock is distribution-supported,
   while BLS boot artifacts remain on FAT storage
-  (https://news.opensuse.org/2025/11/13/tw-grub2-bls).
-- Rolling and kernel robustness: 3.5.
+  (<https://news.opensuse.org/2025/11/13/tw-grub2-bls>).
+- Rolling and kernel robustness:
+   3.5.
   The boot stack is distribution-owned and actively maintained,
   but the exact encrypted snapshot path has not been exercised here.
-- UWSM plus labwc portability: 3.5.
+- UWSM plus labwc portability:
+   3.5.
   Tumbleweed directly packages labwc,
   UWSM,
   and xwayland-satellite;
   sfwbar comes from `X11:Wayland`
-  (https://software.opensuse.org/package/labwc).
+  (<https://software.opensuse.org/package/labwc>).
 - Gaming and AMD currency: 3.
   Tumbleweed is rolling,
   but no RX 7600 or game workload was run.
 - Storage-pressure control: 2.
   Installed policy uses `QGROUP=1/0` and package snapshots with cleanup,
   although this audit did not establish qgroups as the incumbent stall cause
-  (https://doc.opensuse.org/documentation/tumbleweed/snapper/).
+  (<https://doc.opensuse.org/documentation/tumbleweed/snapper/>).
 - Installer and distribution integration: 4.
   Encryption,
   Snapper,
   BLS synchronization,
   and recovery are distribution-owned.
-- Operational burden: 3.5.
+- Operational burden:
+   3.5.
   Distribution tooling owns the lifecycle,
   but the BLS path and boot-store sizing still require operator attention.
-- Inspectability and provenance: 3.5.
+- Inspectability and provenance:
+   3.5.
   Source and maintenance are inspectable,
   but the inspected `sdbootutil` tree has no local end-to-end test suite.
-- Migration and exit cost: 2.5.
+- Migration and exit cost:
+   2.5.
   Mutable Btrfs can host selected rollback-coupled configuration,
   but the actual host procedure is untested.
 - **Estimate**:
@@ -1096,7 +1126,7 @@ not observed installation or runtime behavior.
   The encrypted snapshot boot was not exercised,
   focused restore tests are absent,
   and the base system includes Chaotic-AUR trust
-  (https://forum.garudalinux.org/t/garuda-linux-temeraire-260819/48606).
+  (<https://forum.garudalinux.org/t/garuda-linux-temeraire-260819/48606>).
 
 ### Informal source-only score: CachyOS Btrfs plus Limine
 
@@ -1122,7 +1152,7 @@ not observed installation or runtime behavior.
   helper tests are disabled,
   documentation retains a stale kernel warning,
   and the current ISO path was not run
-  (https://gitlab.com/Zesko/limine-snapper-sync and https://github.com/CachyOS/cachyos-calamares).
+  (<https://gitlab.com/Zesko/limine-snapper-sync> and <https://github.com/CachyOS/cachyos-calamares>).
 
 ### Informal source-only score: CachyOS ZFS plus ZFSBootMenu
 
@@ -1154,11 +1184,11 @@ not observed installation or runtime behavior.
   The source trace is recorded in the
   [OpenZFS latency investigation](../troubleshooting/openzfs-single-device-latency-masking.md)
   and in current OpenZFS documentation at
-  https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/ZIO%20Scheduler.html.
+  <https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/ZIO%20Scheduler.html>.
   The installer is single-author by measured contribution count and has no installation tests,
   and OpenZFS remains an out-of-tree kernel dependency
-  (https://docs.zfsbootmenu.org/en/latest/online/snapshot-management.html and
-  https://github.com/fnichol/cachyos-zfs-installer).
+  (<https://docs.zfsbootmenu.org/en/latest/online/snapshot-management.html> and
+  <https://github.com/fnichol/cachyos-zfs-installer>).
 
 #### Operational-burden correction
 
@@ -1238,7 +1268,7 @@ This conditional result is not a benchmark result or a formal rubric revision.
   continuous bees deduplication is enabled;
   the labwc path depends on Nixpkgs;
   and the large installer and deployment surface has one maintainer
-  (https://github.com/shani8dev/os-installer-config and https://github.com/shani8dev/shani-deploy).
+  (<https://github.com/shani8dev/os-installer-config> and <https://github.com/shani8dev/shani-deploy>).
 
 ### Informal sensitivity
 

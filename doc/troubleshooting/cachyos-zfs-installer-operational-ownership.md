@@ -32,7 +32,7 @@ The source is:
 CachyOS also publishes `linux-cachyos-zfs` with an exact dependency on its matching kernel and a `ZFS-MODULE`
 provider.
 The package record is
-https://packages.cachyos.org/package/cachyos/x86_64/linux-cachyos-zfs.
+<https://packages.cachyos.org/package/cachyos/x86_64/linux-cachyos-zfs>.
 This avoids requiring the user to compile a DKMS module for the supported kernel.
 It trades that work for version locking:
 a kernel update must wait for the exact matching module package.
@@ -54,6 +54,30 @@ These are reductions in operational burden and make the original 1.5 rating too 
 work alone.
 The third-party integration risk that originally contributed to 1.5 is scored separately under installer integration;
 keeping the operations rating at 1.5 would count part of that evidence twice.
+
+### The factory baseline is created but hidden
+
+`src/calamares/etc/calamares/scripts/create-baseline-boot-env.sh:30-36` creates
+`zroot/ROOT/baseline` and then sets:
+
+```bash
+zfs set \
+  org.zfsbootmenu:active=off \
+  "$baseline_boot_env"
+```
+
+ZFSBootMenu 3.1.0 documents `org.zfsbootmenu:active=off` as hiding an environment whose mountpoint is `/`.
+The relevant implementation is `zfsbootmenu/lib/zfsbootmenu-ui.sh:591-603`.
+This conflicts with the installer README’s instruction to select `baseline` from ZFSBootMenu.
+
+The source-level remediation is:
+
+```bash
+sudo zfs set org.zfsbootmenu:active=on zroot/ROOT/baseline
+```
+
+This property change is included in the adoption runbook but has not been executed in a consumer installation.
+Pacman-created `be-*` environments do not receive `active=off` and remain candidates through their `/` mountpoint.
 
 ### Installed integration files have no package owner or update channel
 
@@ -116,7 +140,7 @@ zfs destroy -r "$boot_env"
 It never lists or destroys the correspondingly named origin snapshots.
 OpenZFS documents that `zfs destroy -r filesystem` destroys that dataset and its children;
 origin snapshots are separate objects:
-https://openzfs.github.io/openzfs-docs/man/master/8/zfs-destroy.8.html.
+<https://openzfs.github.io/openzfs-docs/man/master/8/zfs-destroy.8.html>.
 
 The documented 24-environment retention limit therefore does not bound all generated snapshot objects.
 This is a source-level retention gap.
@@ -179,7 +203,7 @@ OpenZFS feature activation is one-way.
 Its current documentation warns that a newly active feature can prevent an older kernel,
 rescue image,
 or bootloader from importing the pool:
-https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Pool%20Structure/Feature%20Flags.html.
+<https://openzfs.github.io/openzfs-docs/Basic%20Concepts/Pool%20Structure/Feature%20Flags.html>.
 
 This does not require routine tuning.
 It requires avoiding reflexive `zpool upgrade` and ensuring the ZFSBootMenu or rescue environment supports active pool
@@ -190,7 +214,7 @@ ZFSBootMenu offsets recovery burden by providing an embedded recovery shell,
 `zkexec`,
 snapshot management,
 and pool-health views:
-https://docs.zfsbootmenu.org/en/latest/online/recovery-shell.html.
+<https://docs.zfsbootmenu.org/en/latest/online/recovery-shell.html>.
 If the EFI image itself is unusable,
 however,
 recovery media must contain compatible ZFS tooling and modules.
@@ -236,6 +260,9 @@ post = (
 install = (
     root / "src/calamares/etc/calamares/scripts/install-pacman-zfs.sh"
 ).read_text()
+baseline = (
+    root / "src/calamares/etc/calamares/scripts/create-baseline-boot-env.sh"
+).read_text()
 pkgroot = Path(
     "/var/home/user/temp/agent/cachyos-aur-derived-20260829/zfsbootmenu"
 )
@@ -244,6 +271,8 @@ sample_hook = (pkgroot / "99-zfsbootmenu.hook").read_text()
 
 checks = {
     "every package transaction triggers pre-hook": "Target = *" in pre_hook,
+    "installer hides factory baseline":
+        "org.zfsbootmenu:active=off" in baseline,
     "pre-hook creates snapshot and clone":
         'zfs snapshot "$snapshot_name"' in pre
         and 'zfs clone "$snapshot_name" "$full_be_path"' in pre,
@@ -289,6 +318,7 @@ Automatically handled:
 
 Operator-owned or unresolved:
 
+- changing the installer-created baseline from hidden to directly selectable;
 - updates to copied `/usr/local` integration scripts;
 - checking origin-snapshot accumulation and actual space use;
 - ensuring ZFSBootMenu regeneration after relevant upgrades;
@@ -313,6 +343,7 @@ Automatic package delivery would be preferable to maintaining these controls man
 
 ## What does not work
 
+- Assuming the installer-created baseline is listed while it has `org.zfsbootmenu:active=off`.
 - Treating the 24 cloned boot environments as a bound on all origin snapshots.
 - Assuming files copied to `/usr/local` receive fixes when the GitHub installer changes.
 - Assuming the sample `99-zfsbootmenu.hook` is active from its `/usr/share/doc` location.
@@ -325,7 +356,7 @@ Automatic package delivery would be preferable to maintaining these controls man
 No `.out-of-scope/` entry covers the installer.
 Searches of issues and pull requests found no report matching origin-snapshot retention or conditional ZFSBootMenu
 regeneration.
-Existing issue https://github.com/fnichol/cachyos-zfs-installer/issues/1 concerns an installation
+Existing issue <https://github.com/fnichol/cachyos-zfs-installer/issues/1> concerns an installation
 and UEFI-entry failure,
 not these paths.
 
@@ -333,20 +364,20 @@ not these paths.
    Not yet established at the consumer boundary.
    Current source exposes retention and regeneration gaps,
    but no installed-system failure was reproduced.
-2. **Can upstream fix it?**
+1. **Can upstream fix it?**
    Yes if runtime validation confirms the source-level gaps.
    The installer can package its integration,
    delete eligible origin snapshots,
    and install a package-name-correct regeneration hook.
-3. **Are they supporting this use case?**
+1. **Are they supporting this use case?**
    Yes.
    The README and `docs/zfs-be-hooks-readme.md` promise automatic retention and boot-menu updates.
-4. **Would the repository welcome a contribution?**
+1. **Would the repository welcome a contribution?**
    The README invites issues and pull requests and states no AI-specific prohibition.
-5. **Will they likely fix it?**
+1. **Will they likely fix it?**
    No refusal signal was found,
    but the repository has one maintainer and sparse tracker history.
-6. **Has a minimal fix been prototyped?**
+1. **Has a minimal fix been prototyped?**
    No.
    The candidate-fix applicability gate is not met because no current installation reproduced either concern.
 
