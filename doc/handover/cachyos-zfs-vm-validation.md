@@ -297,15 +297,44 @@ The no-desktop installer reported terminal success despite producing an empty ES
 The retained Konsole transcript also showed Calamares fail to export `zroot` during cleanup because the pool was busy.
 No destructive repair was attempted.
 
-A source-based hypothesis is that **No Desktop** omitted every installed kernel package.
-`configure-zfsbootmenu.sh` treats a zero exit from `generate-zbm` as success,
-even if no EFI image was produced,
-and then creates a firmware entry naming a fixed image path.
-This hypothesis is not yet proven against the installed root.
-The next safe diagnostic is to boot the authenticated ISO,
-import the pool without mounting unintended datasets,
-load the disposable native-encryption key,
-and inspect the installed package database and ESP.
+The initial hypothesis that **No Desktop** omitted every installed kernel package was wrong.
+An authenticated-ISO inspection imported the same pool read-only after confirming no concurrent VM used it.
+The first import correctly refused the stale host-id evidence left by the failed installer export.
+A forced but still read-only import then reported `pool 'zroot' is healthy`,
+and the disposable native-encryption passphrase loaded the key successfully.
+
+The installed root contains:
+
+- `linux-cachyos 7.2.2-1`;
+- `linux-cachyos-zfs 7.2.2-1`;
+- `linux-cachyos-lts 6.18.42-1`;
+- `linux-cachyos-lts-zfs 6.18.42-1`;
+- both kernel images and both initramfs images under root-backed `/boot`.
+
+The exact kernel-module pairs are therefore present.
+The same inspection found:
+
+- no installed `zfsbootmenu` package;
+- no installed `zfs-meta` package;
+- no `zroot/ROOT/baseline` dataset;
+- no pacman-ZFS hook artifacts;
+- no ZFSBootMenu image or any other file on the ESP.
+
+The package log records the base ZFS and exact kernel-module installation,
+but no ZFSBootMenu package transaction.
+This proves that the custom post-install pipeline did not execute or persist,
+not that image generation lacked a kernel.
+The reason the custom jobs were skipped remains unresolved.
+Launching and canceling stock Calamares before the pinned installer is a contamination unique to this run,
+so a fresh no-desktop control must avoid that sequence.
+
+After inspection,
+ordinary ZFS unmounts completed but export still reported the pool busy.
+`fuser` named live-system systemd namespace-resource processes as holders.
+No forced export,
+clear,
+or repair was used;
+the live guest was shut down to release the disposable pool.
 
 ## Desktop-selection correction
 
