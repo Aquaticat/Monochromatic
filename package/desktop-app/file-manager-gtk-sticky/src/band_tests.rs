@@ -12,7 +12,7 @@ const PANE_HEIGHT: f64 = 520.0;
 const STRIDE: f64 = 532.0;
 
 fn place(id: u64, column: usize, row: usize, parent: Option<u64>) -> Placement {
-    Placement {
+    return Placement {
         id: PaneId(id),
         column,
         row,
@@ -22,7 +22,7 @@ fn place(id: u64, column: usize, row: usize, parent: Option<u64>) -> Placement {
 
 /// The grown tree: root(0) -> a(1), b(2), c(3); b -> x(4), y(5).
 fn grown_tree() -> Vec<Placement> {
-    vec![
+    return vec![
         place(0, 0, 0, None),
         place(1, 1, 0, Some(0)),
         place(2, 1, 1, Some(0)),
@@ -104,7 +104,7 @@ fn positions_use_the_global_column_grid() {
     let resolved = positions(&tree, 0.0);
     let (_, x, y) = resolved
         .iter()
-        .find(|(id, _, _)| *id == PaneId(4))
+        .find(|(id, _, _)| return *id == PaneId(4))
         .copied()
         .expect("grandchild x resolved");
     assert_eq!(x, 2.0 * 332.0);

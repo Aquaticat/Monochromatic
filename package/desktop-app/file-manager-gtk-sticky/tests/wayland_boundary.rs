@@ -18,16 +18,16 @@ const POLL_INTERVAL: Duration = Duration::from_millis(50);
 const DEADLINE: Duration = Duration::from_secs(10);
 
 fn manifest_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    return PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
 fn compositor_binary() -> PathBuf {
-    manifest_dir()
+    return manifest_dir()
         .join("../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session")
 }
 
 fn app_binary() -> PathBuf {
-    manifest_dir().join("target/release/monochromatic-file-manager-gtk-sticky")
+    return manifest_dir().join("target/release/monochromatic-file-manager-gtk-sticky")
 }
 
 /// Creates the throwaway fixture tree: alpha/ (with one nested directory and one file), beta/
@@ -82,7 +82,7 @@ fn wait_for_state(path: &Path, expected: &[(&str, Value)]) {
             if let Ok(Value::Object(state)) = serde_json::from_str::<Value>(&body)
                 && expected
                     .iter()
-                    .all(|(key, value)| state.get(*key) == Some(value))
+                    .all(|(key, value)| return state.get(*key) == Some(value))
             {
                 return;
             }
