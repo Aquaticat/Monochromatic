@@ -45,6 +45,17 @@ or evidence unless the user later authorizes cleanup.
   Native ZFS encryption was enabled with matching disposable passphrases.
   **No Desktop** is selected.
   Calamares explicitly states that this choice starts in text-only mode and permits installing a desktop later.
+  Only the default CachyOS,
+  shell,
+  base-development,
+  and common package groups remained selected.
+  User `user` and hostname `cachyos-zfs-nodesktop-vm` were configured with the disposable password.
+  The destructive summary again named only `/dev/vda`,
+  with a new GPT,
+  2048 MiB FAT32 EFI partition,
+  and 129021 MiB ZFS root partition.
+  **Install Now** was confirmed after reviewing that boundary.
+  Process `wait-nodesktop-install` is waiting for terminal success or failure.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
