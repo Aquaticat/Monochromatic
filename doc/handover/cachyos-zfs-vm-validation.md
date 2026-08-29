@@ -21,6 +21,10 @@ or evidence unless the user later authorizes cleanup.
 - **Installation result**:
   CachyOS Calamares displayed `All done.` and reported a successful installation.
 - **Current transition**:
+  A fresh patched-layout domain is booting the authenticated ISO for the complete rollback re-test.
+  The local patch applies cleanly to the pinned installer commit and has SHA-256
+  `e9d7271f4f7d2a110b8782049299ee765061d3914b344072d9fa027f2c7341f0`.
+  Process `wait-patched-layout-live` is waiting for CachyOS Hello on loopback VNC display 1.
   The first installed disk reached Ly 1.4.1 after a successful native-encryption unlock.
   It contains Wayfire because the original runbook prescribed Wayfire as a temporary graphical base.
   The user correctly identified **No Desktop** as closer to the intended UWSM plus labwc system.
@@ -294,6 +298,31 @@ The evidence image must retain:
 - pinned-installer debug output;
 - the effective Calamares settings and custom execution sequence;
 - the complete Calamares installation log.
+
+## Patched-layout control identity and storage
+
+- Domain name:
+  `cachyos-zfs-layout-validation`
+- Domain UUID:
+  `65a92c82-6e71-47a1-812e-149795db7708`
+- Primary virtual disk:
+  `/mnt/encrypted/VMs/cachyos-zfs-layout-validation/disk.qcow2`
+- Patched source image:
+  `/mnt/encrypted/VMs/cachyos-zfs-layout-validation/patched-installer-source.img`
+- Writable evidence image:
+  `/mnt/encrypted/VMs/cachyos-zfs-layout-validation/installer-evidence.img`
+- Disposable credentials:
+  `/mnt/encrypted/VMs/cachyos-zfs-layout-validation/disposable-credentials.json`
+- Guest framebuffer:
+  `/var/home/user/temp/agent/cachyos-zfs-layout-vnc.png`
+- Running display:
+  `vnc://127.0.0.1:1`
+
+The read-only source image contains the unchanged pinned archive and the 896-byte local layout patch.
+The patch changes only
+`src/calamares/etc/calamares/modules/zfs.conf`.
+It keeps `data/var` and `data/var/lib` as unmounted namespace parents.
+No physical block device is attached.
 
 ## Attached guest storage
 
