@@ -10,7 +10,7 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `d14e641e6`.
+- Current pipeline commit: `56a47cb81`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
 - Generation-13 continuous correction,
@@ -25,13 +25,14 @@ not current instruction.
   distinct image-reading responsibilities,
   reviewed positives,
   and unresolved-asset pause before lanes.
-- Pending one-sided front-matter support inserts source metadata and preserves target-only metadata.
+- One-sided front-matter support landed in `56a47cb81`:
+  source metadata insertion and exact target-only preservation.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
 - Final generation-15 verification emitted 866 `PASS` lines and zero `FAIL` lines.
 - Final visual-evidence verification emitted 867 `PASS` lines and zero `FAIL` lines.
-- Pending one-sided front-matter verification emitted 867 `PASS` lines and zero `FAIL` lines.
+- Final one-sided front-matter verification emitted 867 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -73,6 +74,15 @@ not current instruction.
   `~/temp/agent/gfp-visual-stopped-classification-green-20260829.log`,
   `~/temp/agent/gfp-visual-distinct-perspectives-red-20260829.log`,
   and `~/temp/agent/gfp-visual-distinct-perspectives-green-20260829.log`.
+- One-sided front-matter GFP logs:
+  `~/temp/agent/gfp-front-matter-insertion-red-20260829.log`,
+  `~/temp/agent/gfp-front-matter-insertion-green-20260829.log`,
+  `~/temp/agent/gfp-front-matter-admission-red-20260829.log`,
+  `~/temp/agent/gfp-front-matter-admission-green-20260829.log`,
+  `~/temp/agent/gfp-front-matter-source-shape-red-20260829.log`,
+  `~/temp/agent/gfp-front-matter-source-shape-green-20260829.log`,
+  `~/temp/agent/gfp-front-matter-stopped-red-20260829.log`,
+  and `~/temp/agent/gfp-front-matter-stopped-green-20260829.log`.
 
 Artifact schema remains 9.
 At `5211c54dd`, cache generations are consolidation 15,

@@ -1737,7 +1737,7 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Translation/insertion must continue from those slices and latest refusal evidence.
 - `assertFinalSelectionSettled` throws when archive wording stands without endorsement.
   Contest/consolidation must reopen unresolved slices with prior ballots as failed-strategy evidence.
-- Pending front-matter support creates insertion slice for source-only metadata,
+- One-sided front-matter support landed in `56a47cb81` and creates insertion slice for source-only metadata,
   deterministically admits it,
   and validates candidate against source YAML shape when archive has none.
   Target-only metadata remains exact archive content outside localized slices.
