@@ -1,5 +1,198 @@
 # Translation repair session handover
 
+## Current handover, 2026-08-29
+
+This section is current working set.
+Everything under `Superseded handover snapshot through 2026-08-27` is retained evidence,
+not current instruction.
+
+### Repository state
+
+- Worktree: `/var/home/user/worktrees/translation-repair`.
+- Branch: `translation-repair-rebased`.
+- Current pipeline commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
+- Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
+- Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
+- Unrelated dirty path: `.idea/.name`; keep it excluded.
+- Whole package passed 859 test groups with zero failures before current runs.
+- OXLint,
+  TypeScript,
+  `git diff --check`,
+  advisor review,
+  and guard-failure mutations passed before commit.
+
+Artifact schema remains 9.
+Consolidation cache generation is 12,
+lane-contest cache generation is 4,
+and pairing cache generation is 2.
+Preparation identity remains v2.
+
+### Current quality mechanism
+
+Absolute naturalness acceptance requires two sequential reviews of exact candidate.
+Each review settles at exact-half usable quorum,
+rounded up for odd rosters.
+Any usable rejection heard before bounded settlement remains decisive and enters existing two-correction path.
+No third correction exists.
+The two accepting draws may contain different responding halves;
+identity overlap is not required.
+
+Every direct roster round now starts straggler grace at exact-half participation.
+Grace may collect more responses,
+but no stage requires every provider seat.
+Participation quorum remains distinct from two-vote corroboration thresholds in pairing and comparative gates.
+
+Schema-9 `confirmations` binds earlier acceptable review to exact candidate,
+paragraph digests,
+roster order,
+and decisive-round order.
+Runtime produces confirmation evidence by construction.
+Reader accepts missing field only for legacy schema-9 readability,
+so fresh validation must come from current writer rather than reconstructed artifact.
+
+`hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` and
+`hf:zai-org/GLM-4.7-Flash` remain unreachable from every active stage.
+`hf:zai-org/GLM-5.3-Flash` uses verified Synthetic route without inherited GLM-5.2 standing.
+
+### Active validation snapshot
+
+Snapshot taken 2026-08-29 at 12:14 UTC.
+Neither active run had terminal `TALLY` at snapshot.
+Process liveness and log writes are evidence of activity,
+not remaining duration.
+
+#### `Weideriche_`
+
+- Process: `proc_a259`.
+- Pipeline digest: `sha256-tree-v1:dc788a666af6bce37b37c55d4d674ac99185656795327d120413c3e1304aec9f58`.
+- Run root: `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829`.
+- Log: `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829.log`.
+- Snapshot state: repair and translate complete; lane contest active.
+- Post-snapshot first-attempt tally:
+  `status=ERROR ms=4840305 aborted=false error=slice 1 did not meet absolute naturalness floor`.
+- First attempt wrote no artifact or page and queued automatic reattempt with 13 additional cache records.
+- Process remains active on second attempt.
+- Expected artifact if published:
+  `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829/artifacts/Weideriche_.json`.
+- Expected page if published:
+  `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829/fixed/people/Weideriche_/page.en.md`.
+- Verification log to create:
+  `~/temp/agent/verify-Weideriche-schema9-half-quorum-v12-20260829.log`.
+- Reading root to create:
+  `~/temp/agent/read-Weideriche-schema9-half-quorum-v12-20260829`.
+
+Stopped all-seat partial root is
+`~/temp/agent/validation-Weideriche-schema9-confirmed-naturalness-v11-20260829`;
+its log is
+`~/temp/agent/validation-Weideriche-schema9-confirmed-naturalness-v11-20260829.log`.
+That root,
+failed fresh schema-9 roots,
+and observability-only root are not publication or readiness evidence.
+
+Generation-11 replay roots and logs remain mechanism evidence for rewriter prompting,
+selector eligibility,
+reviewer nondeterminism,
+and repeated-acceptance diagnosis.
+Key replay root is
+`~/temp/agent/replay-Weideriche-correction-rewriters-v11-20260829`;
+its private log and candidate-review logs remain usable only without quoting their wording.
+
+#### Pull request 386, `Carena0442`
+
+- Process: `proc_3a1c`.
+- Pull request: `https://github.com/one-among-us/data/pull/386`.
+- Pull-request head: `a80634a674f94861ea3b7056fba054ca9eab1a2c`.
+- Fixture pipeline digest: `sha256-tree-v1:2231798fcc453ccb9fe7ff688f4690ec7662e22ae70b833f91d70c7ec5cc9f58`.
+- Run root: `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829`.
+- Log: `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
+- Provenance: `~/temp/agent/pr386-Carena0442-run-provenance-20260829.md`.
+- Snapshot state: 22 slices prepared; first non-metadata repair slice active.
+- Expected artifact if published:
+  `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829/artifacts/Carena0442.json`.
+- Expected page if published:
+  `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829/fixed/people/Carena0442/page.en.md`.
+- Verification log to create:
+  `~/temp/agent/verify-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
+- Reading root to create:
+  `~/temp/agent/read-pr386-Carena0442-schema9-half-quorum-v12-20260829`.
+
+Minimal Git fixture contains exact pull-request versions of six changed files.
+Production `corpus-pass` has no pull-request input flag.
+Uncommitted throwaway pipeline fork changes corpus commit and exposes clone location through
+`TRANSLATION_REPAIR_CORPUS_DIR`.
+
+Startup process `proc_80b4` omitted mise;
+stable log is
+`~/temp/agent/validation-pr386-Carena0442-startup-without-mise-20260829.log`.
+Startup process `proc_d541` used mise before encrypted local environment was linked;
+stable log is
+`~/temp/agent/validation-pr386-Carena0442-startup-without-local-env-20260829.log`.
+Both made no model call,
+produced no run root,
+and are not evidence.
+
+### Completion gates for each active run
+
+1.  Inspect terminal `TALLY`; process exit zero is insufficient.
+2.  Count page and artifact outputs.
+3.  Require current artifact schema 9,
+    preparation identity v2,
+    metadata slice and index zero,
+    and matching corpus and pipeline identities.
+4.  Run `verify-published` against exact run root.
+5.  Read complete published page for fidelity,
+    naturalness,
+    structure,
+    contributor authority,
+    and image-derived claims.
+6.  Retain logs,
+    artifact,
+    published page,
+    verification output,
+    timing report,
+    slice-cost report,
+    and provenance record.
+7.  Treat any naturalness refusal,
+    tie,
+    no-correction,
+    fidelity-base retention,
+    exhausted correction,
+    incomplete passage,
+    or publication mismatch as terminal refusal.
+
+### Time-to-complete work after active runs
+
+Owner requested performance discussion after both runs finish.
+Do not change runtime settings before that discussion.
+Use `doc/planning/translation-repair-entry-time-to-complete.md` as measurement protocol.
+
+Current runs overlap and share provider capacity.
+Their elapsed-time ratio is not matched concurrency evidence.
+Separate time to quorum from post-quorum grace,
+completed calls from abandoned calls,
+and cold generation from resumed cache work.
+Pair every timing result with actual publication-quality outcome.
+
+### Next actions
+
+1.  Let both active runs reach terminal state unless a genuine blocker appears.
+2.  Sanitize and inspect each terminal output without quoting corpus or reviewer wording.
+3.  Run publication verification and complete-page reading where page exists.
+4.  Update this current section and package readiness record with final evidence paths.
+5.  Perform measured time-to-complete analysis and discuss performance with owner.
+6.  Continue targeted `Zha_Ke` and `Toka_ls` validation only after current output is understood.
+7.  Complete live editor and checker calibration before production-readiness claim.
+
+There is no release deadline.
+Strict actual-output quality remains gate.
+Mechanical,
+schema,
+modality,
+replay,
+and reconstructed-context checks do not establish readiness.
+
+## Superseded handover snapshot through 2026-08-27
+
 Status:
 the two-lane pipeline and all five per-slice overlap drivers are built;
 whole-package suite passed 832 cases before live measurement.

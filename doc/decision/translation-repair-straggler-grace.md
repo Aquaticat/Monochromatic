@@ -1,5 +1,21 @@
 # The straggler grace moves from 60 to 180 seconds, on the latency distribution
 
+## Current status, 2026-08-29
+
+Built-in pass grace remains 180000 milliseconds.
+Generation 12 changes when it starts:
+exact-half participation opens grace for every production stage,
+and remaining seats may answer until bound expires.
+Every-seat participation is no longer a requirement.
+Departed GLM-4.7-Flash,
+GLM-5.2,
+qwen3.8-max,
+and Nemotron evidence remains historical and does not set current roster latency.
+
+Active entry-level timing work is
+`doc/planning/translation-repair-entry-time-to-complete.md`.
+No grace change is authorized before active runs finish and matched evidence exists.
+
 Taken 2026-08-17 on the best-quality guideline, against measurement rather than preference.
 
 THIS OVERRIDES A NUMBER THE OWNER CHOSE. Sixty seconds was their figure on 2026-08-14, picked

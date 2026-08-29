@@ -21,6 +21,31 @@ tell a healthy one from a sick one while it runs,
 and afterwards decide whether its output is fit to ship,
 using only this document and access they can obtain.
 
+Concurrent targeted passes require separate run roots,
+logs,
+and publication roots.
+Same immutable build may back more than one pass when no rebuild follows.
+Use separate worktree whenever source differs,
+build it before launching its own process,
+and leave every worktree backing active process unchanged until terminal state.
+Shared provider capacity makes concurrent elapsed times unsuitable as matched performance comparison.
+Record pipeline digest,
+corpus commit,
+and fixture provenance for each pass.
+
+Production `corpus-pass` currently has no pull-request input flag.
+Pull-request 386 procedure used uncommitted throwaway fork that changed corpus commit
+and exposed corpus clone location through `TRANSLATION_REPAIR_CORPUS_DIR`.
+Equivalent pull-request validation must use exact pull-request commit in isolated corpus clone or minimal Git fixture.
+Run `--plan --only <entry>` before spending quota.
+Provenance must name throwaway source changes,
+pull-request head,
+fixture location,
+pipeline commit,
+pipeline digest,
+run root,
+and log without copying credentials or corpus wording.
+
 ## Why this is a runbook rather than a script
 
 Two prerequisites cannot be bridged,
@@ -482,6 +507,22 @@ and a run made from that checkout recorded none of what they read either.
 
     THE EXIT CODE IS `0` EITHER WAY.
     Check for `NO ROUND LINE` in the output rather than reading the exit code as a verdict.
+
+    Read per-slice phase cost separately:
+
+    ```sh
+    mise run //package/module/translation-repair:slice-cost-report -- "${RUNDIR}.log"
+    ```
+
+    `SLICE-COST` covers repair,
+    translate,
+    and consolidation exits.
+    It does not replace entry wall time:
+    pairing,
+    lane contest,
+    persistence,
+    and publication remain outside slice totals.
+    Reconcile summed slices against `TALLY ms=` and name remainder.
 
 5.  Read what the run cost.
 

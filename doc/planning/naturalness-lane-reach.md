@@ -1,5 +1,19 @@
 # How far the naturalness lane actually reaches
 
+## Current status, 2026-08-29
+
+This planning question is superseded by landed syntax-aware preparation and schema-9 review.
+Hard line structure remains syntax-bearing and preserved;
+Markdown soft breaks inside prose are reviewed as rendered spaces.
+Absolute review reads exact would-ship text,
+requires repeated exact-half-quorum acceptance,
+and binds paragraph identities in artifact.
+
+Do not reopen options in this file from current active-run duration.
+Time-to-complete measurement lives in
+`doc/planning/translation-repair-entry-time-to-complete.md` and waits for terminal active runs.
+Remaining text is historical measurement and option reasoning.
+
 Measured 2026-08-13 across all 92 entries at pin
  `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
 This is a PROPOSAL. Nothing here is decided.

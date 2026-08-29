@@ -2155,3 +2155,24 @@ B as before. D is conditional on question 11 resolving to overlap 4; at overlap 
 `CALIBRATION_STRAGGLER_GRACE_MS = 300_000` in `grace-override.ts`, adopted by the calibration through the
 variable; the built-in `STRAGGLER_GRACE_MS` stays 180000 for the pass until `#261`. Record:
 `doc/decision/translation-repair-calibration-overlap.md`.
+
+## Question 13: entry time to complete after quality hardening
+
+Owner deferred performance discussion until active `Weideriche_` and pull-request 386 `Carena0442` runs finish.
+No option is ranked before both terminal tallies,
+phase reports,
+publication verification,
+and complete-page readings exist.
+
+The two active runs are not matched arms:
+they have different corpus inputs and pipeline digests,
+and they overlap against shared provider capacity.
+Their elapsed-time ratio cannot establish scaling or concurrency effect.
+
+`doc/planning/translation-repair-entry-time-to-complete.md` is authoritative protocol.
+It requires phase attribution,
+post-quorum grace accounting,
+completed-versus-abandoned call separation,
+cache state,
+slice and source size,
+and publication-quality outcome before recommendation.

@@ -1150,3 +1150,23 @@ while current rate-limit documentation names Kimi-K3 as one-request baseline.
 Planning denominator therefore moves to Kimi-K3 input price without admitting any alias to roster.
 Diagnosis and consumer-side guard are recorded in
 `doc/troubleshooting/synthetic-rate-limit-default-drift.md`.
+
+### Exact-half validation is active, 2026-08-29
+
+Commits `97fda9f95` and `68c37da59` add repeated absolute acceptance and cap required participation at exact half.
+Two-provider production-pinned `Weideriche_` validation is active as `proc_a259`.
+Pull-request 386 `Carena0442` validation is active as `proc_3a1c` against exact files in isolated fixture.
+Both providers read wet at launch.
+Neither run had terminal tally at 12:14 UTC snapshot.
+`Weideriche_` first attempt later refused absolute naturalness after 4,840,305 milliseconds,
+wrote no artifact or page,
+and queued cache-warm reattempt.
+
+Concurrent runs share provider capacity,
+so their durations do not compare provider performance.
+Provider availability remains a condition recorded beside output,
+not proof of quality or remaining duration.
+Fresh artifact,
+publication verification,
+complete-page reading,
+and checker calibration remain required before readiness claim.

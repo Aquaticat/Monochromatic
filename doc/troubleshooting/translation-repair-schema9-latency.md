@@ -140,6 +140,39 @@ not fresh publication evidence.
 A second generated slate was still selected despite all three candidates later failing exact review,
 which is why repeated absolute acceptance is enforcement rather than selector wording alone.
 
+## Active generation-12 timing evidence
+
+Snapshot taken 2026-08-29 at 12:14 UTC.
+
+`Weideriche_` process `proc_a259` had completed repair and translate after recording these slice costs:
+
+- repair: 0.001, 927.787, 883.347, and 17.230 seconds
+- translate: 427.660, 250.694, 264.892, and 8.567 seconds
+
+Lane contest was active and no terminal tally existed at snapshot.
+First attempt later refused slice 1 absolute naturalness at 4,840,305 milliseconds,
+wrote no artifact or page,
+and queued automatic reattempt with 13 additional cache records.
+Process remained active on cache-warm second attempt.
+Log is
+`~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829.log`.
+
+Pull-request 386 `Carena0442` process `proc_3a1c` had prepared 22 slices and started first non-metadata repair slice.
+Log is
+`~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
+Exact pull-request provenance is in
+`~/temp/agent/pr386-Carena0442-run-provenance-20260829.md`.
+
+These runs overlap and share provider capacity.
+Their elapsed-time ratio cannot measure scaling or concurrency benefit.
+The pull-request fixture also has different pipeline digest
+because corpus pin and clone location are explicit throwaway inputs.
+Wait for terminal tally,
+phase reports,
+publication verification,
+and complete-page quality reading before performance recommendation.
+Detailed protocol is `doc/planning/translation-repair-entry-time-to-complete.md`.
+
 ## Missing observability
 
 Existing logs were sufficient to prove aggregate cause only after correlating:

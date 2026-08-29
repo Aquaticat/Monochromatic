@@ -804,21 +804,43 @@ passed after `--`:
     Use it to check a run's setup, selection and credentials for no quota.
     Measured at 1.88 seconds with no stream opened.
 
-### Do not run another task while a pass is in flight
+### Do not rebuild a worktree while its pass is in flight
 
 Every pass and probe task declares `depends = ["build"]`,
-so invoking one rewrites `dist/final/node` underneath any pass already running.
-A pass computes its pipeline digest ONCE at startup
+so invoking one rewrites `dist/final/node` underneath any pass already running from the same worktree.
+A pass computes its pipeline digest once at startup
 and stamps it into every artifact it writes,
-so a rebuild that changes any output file leaves a running pass
-recording a digest that no longer describes what is on disk,
-and leaves its process holding a mix of old modules and new files.
+so a rebuild that changes output leaves the running pass recording a digest that no longer describes files on disk,
+and leaves its process holding a mixture of old modules and new files.
 
 A rebuild with no source change is byte-identical and harmless,
 which is exactly why this is easy to get away with and worth stating anyway:
 the digest is the only thing that reveals it,
 and it reveals it after the fact.
-Wait for the pass, or run the built entry point directly with `node`.
+Wait for the pass or run the already-built entry point directly.
+Same immutable build may back concurrent passes when no rebuild follows.
+Source-distinct pass requires separate throwaway worktree built before that process launches.
+Never rebuild worktree backing active process.
+
+Concurrent passes require separate run roots,
+logs,
+and publication roots.
+They still share provider capacity,
+so elapsed times are operational results rather than matched performance comparison.
+Record each pipeline digest and corpus commit separately.
+
+Production `corpus-pass` currently has no pull-request input flag.
+Pull-request 386 run uses uncommitted throwaway fork that changes only corpus commit
+and exposes corpus clone path through `TRANSLATION_REPAIR_CORPUS_DIR`.
+For another pull request,
+prepare equivalent source-distinct worktree,
+use exact commit in isolated corpus clone or minimal Git fixture,
+run `--plan --only <entry>` first,
+and retain provenance mapping fixture bytes to pull-request head.
+Supply credentials through trusted worktree environment;
+copying secret values into command,
+log,
+or provenance file is forbidden.
 
 ### Deciding who fills a seat
 
@@ -1566,6 +1588,29 @@ The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.
 `countPairedBlocks` now reports unique source and target reach separately from relation count,
 with one-to-many and many-to-one guards.
+
+Two fresh validations are active from `68c37da59` at 2026-08-29 12:14 UTC.
+`Weideriche_` runs in `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829`;
+repair and translate were complete and lane contest was active at snapshot.
+Its first attempt later refused slice 1 absolute naturalness at 4,840,305 milliseconds,
+wrote no artifact or page,
+and queued automatic cache-warm reattempt that remains active.
+Pull request 386 `Carena0442` runs against exact pull-request files in isolated fixture at
+`~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829`;
+22 slices were prepared and first non-metadata repair slice was active.
+Neither run had terminal tally.
+Artifact and log paths,
+fixture method,
+and failed startup non-evidence are recorded in
+`~/temp/agent/pr386-Carena0442-run-provenance-20260829.md` and
+`doc/handover/translation-repair.md`.
+
+Time-to-complete discussion waits for both terminal outcomes.
+`doc/planning/translation-repair-entry-time-to-complete.md` defines phase attribution,
+comparison controls,
+and completion evidence.
+Concurrent runs share provider capacity and are not matched runtime arms.
+No quality gate or deadline changes before measured discussion.
 
 Corpus-readiness work is defect-driven:
 once output proves reproducible systemic blocker,
