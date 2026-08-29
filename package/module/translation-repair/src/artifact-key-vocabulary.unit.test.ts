@@ -84,9 +84,14 @@ const GENERATION_SEVEN = 7;
 const GENERATION_EIGHT = 8;
 
 /**
+ * Generation adding bounded correction digest chain under same key spelling.
+ */
+const GENERATION_NINE = 9;
+
+/**
  * Generation no table covers, one past newest.
  */
-const GENERATION_UNKNOWN = 9;
+const GENERATION_UNKNOWN = 10;
 
 await describe({
   name: keyVocabularyOf.name,
@@ -154,7 +159,7 @@ await describe({
     },),
 
     it({
-      name: 'gives generations 1 and 2 older spelling and generations 4 through 8 current one, which is '
+      name: 'gives generations 1 and 2 older spelling and generations 4 through 9 current one, which is '
         + 'the whole dispatch',
       fn: async () => {
         expect(keyVocabularyOf({ version: GENERATION_ONE, },),).toBe(CHUNK_SPELLED_KEYS,);
@@ -164,6 +169,7 @@ await describe({
         expect(keyVocabularyOf({ version: GENERATION_SIX, },),).toBe(SLICE_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_SEVEN, },),).toBe(SLICE_SPELLED_KEYS,);
         expect(keyVocabularyOf({ version: GENERATION_EIGHT, },),).toBe(SLICE_SPELLED_KEYS,);
+        expect(keyVocabularyOf({ version: GENERATION_NINE, },),).toBe(SLICE_SPELLED_KEYS,);
       },
     },),
 

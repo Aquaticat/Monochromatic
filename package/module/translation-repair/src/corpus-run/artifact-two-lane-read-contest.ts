@@ -28,6 +28,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
   ARTIFACT_SCHEMA_VERSION_V8,
+  ARTIFACT_SCHEMA_VERSION_V9,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
 
@@ -96,7 +97,8 @@ function parseContestSlice(
       'ballots',
       'usable',
       ...(((generation === ARTIFACT_SCHEMA_VERSION_V7)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V8)) ? ['eligibility',] : []),
+        || (generation === ARTIFACT_SCHEMA_VERSION_V8)
+        || (generation === ARTIFACT_SCHEMA_VERSION_V9)) ? ['eligibility',] : []),
     ],
     path,
   },);
@@ -130,8 +132,13 @@ function parseContestSlice(
       row,
       path: `${path}.eligibility`,
     },);
-  if (((generation === ARTIFACT_SCHEMA_VERSION_V7)
-      || (generation === ARTIFACT_SCHEMA_VERSION_V8))
+  /**
+   * Whether artifact generation requires syntax eligibility evidence.
+   */
+  const eligibilityRequired = (generation === ARTIFACT_SCHEMA_VERSION_V7)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V8)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V9);
+  if (eligibilityRequired
     && (eligibility === undefined)
     && contestEligibilityRequired({ row, })) {
     throw new ArtifactParseError({

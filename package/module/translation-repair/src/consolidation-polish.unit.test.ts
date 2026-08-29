@@ -38,6 +38,11 @@ const BASE = 'She faced life proactively and spent a good time with everyone, wh
 const POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
+ * Second correction resolving a defect exposed after first rewrite.
+ */
+const FINAL_POLISHED = 'She kept a positive outlook and shared good times with everyone, while doing her best to remain hopeful and connected to the people around her.';
+
+/**
  * Short literal prose final polish must still review.
  */
 const SHORT_BASE = 'She had a good time with everyone.';
@@ -116,7 +121,11 @@ const client: SyntheticClient = {
  *
  * @param correctionText - corrective replacement, absent to return second no-op
  *
- * @param rejectCorrection - whether second absolute review still rejects
+ * @param rejectCorrection - whether first corrected text still fails review
+ *
+ * @param secondCorrectionText - replacement for second bounded correction
+ *
+ * @param acceptSecondCorrection - whether final bounded review accepts second correction
  *
  * @param selectionSheets - optional sink receiving candidate-selector prompts
  *
@@ -131,10 +140,14 @@ function boundedCorrectionClient(
   {
     correctionText,
     rejectCorrection = false,
+    secondCorrectionText,
+    acceptSecondCorrection = false,
     selectionSheets,
   }: {
     readonly correctionText?: string;
     readonly rejectCorrection?: boolean;
+    readonly secondCorrectionText?: string;
+    readonly acceptSecondCorrection?: boolean;
     readonly selectionSheets?: string[];
   },
 ): SyntheticClient {
@@ -167,7 +180,12 @@ function boundedCorrectionClient(
           return {
             rewrites: ((calls.refine === 1) || (correctionText === undefined))
               ? []
-              : [{ paragraph: 1, newText: correctionText, },],
+              : [{
+                paragraph: 1,
+                newText: ((calls.refine === 2) || (secondCorrectionText === undefined))
+                  ? correctionText
+                  : secondCorrectionText,
+              },],
           };
         }
         if (schema === 'candidate_ballot') {
@@ -187,7 +205,18 @@ function boundedCorrectionClient(
         }
         if (schema === 'absolute_naturalness_review') {
           calls.review += 1;
-          if ((calls.review === 1) || rejectCorrection) {
+          /**
+           * One-based absolute review round across every roster seat.
+           */
+          const reviewRound = Math.ceil(calls.review / ROSTER.length,);
+          /**
+           * Whether final bounded review remains scripted rejection.
+           */
+          const secondCorrectionRejected = (reviewRound === 3)
+            && (!acceptSecondCorrection);
+          if ((reviewRound === 1)
+            || ((reviewRound === 2) && rejectCorrection)
+            || secondCorrectionRejected) {
             return {
               acceptable: false,
               findings: [{
@@ -322,7 +351,43 @@ await describe({
     },),
 
     it({
-      name: 'RETURNS UNSETTLED when sole correction makes no approved text change',
+      name: 'USES SECOND CORRECTION for defects exposed by exact first corrected-text review',
+      fn: async () => {
+        const polish = await polishConsolidation({
+          client: boundedCorrectionClient({
+            correctionText: POLISHED,
+            rejectCorrection: true,
+            secondCorrectionText: FINAL_POLISHED,
+            acceptSecondCorrection: true,
+          },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-second-correction-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('second bounded correction fixture remained unsettled',);
+        expect(polish.text,).toBe(FINAL_POLISHED,);
+        expect(polish.review.correctionCount,).toBe(2,);
+        expect(polish.review.rounds.length,).toBe(3,);
+        expect(polish.review.corrections.length,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'RETURNS UNSETTLED when correction makes no approved text change',
       fn: async () => {
         const polish = await polishConsolidation({
           client: boundedCorrectionClient({}),
@@ -348,10 +413,14 @@ await describe({
     },),
 
     it({
-      name: 'RETURNS UNSETTLED when post-correction absolute review still rejects',
+      name: 'RETURNS UNSETTLED without third correction when second corrected text still rejects',
       fn: async () => {
         const polish = await polishConsolidation({
-          client: boundedCorrectionClient({ correctionText: POLISHED, rejectCorrection: true, }),
+          client: boundedCorrectionClient({
+            correctionText: POLISHED,
+            rejectCorrection: true,
+            secondCorrectionText: FINAL_POLISHED,
+          },),
           sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
           archiveText: BASE,
           baseText: BASE,
@@ -369,7 +438,8 @@ await describe({
           l: tagged({ tag: 'consolidation-polish-rejection-test', },),
         },);
         expect(polish.kind,).toBe('unsettled',);
-        expect(polish.kind === 'unsettled' ? polish.review.rounds.length : 0,).toBe(2,);
+        expect(polish.kind === 'unsettled' ? polish.review.rounds.length : 0,).toBe(3,);
+        expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(2,);
       },
     },),
 

@@ -63,6 +63,8 @@ function parseStringList(
  *
  * @param reviewRequired - whether generation carries exact-text absolute review
  *
+ * @param correctionChainRequired - whether review requires digest-bound corrections
+ *
  * @returns Parsed polish record
  *
  * @example
@@ -75,10 +77,12 @@ export function parseConsolidationPolish(
     value,
     path,
     reviewRequired = false,
+    correctionChainRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly reviewRequired?: boolean;
+    readonly correctionChainRequired?: boolean;
   },
 ): ArtifactConsolidationPolish {
   /**
@@ -240,6 +244,7 @@ export function parseConsolidationPolish(
           value: record.review,
           path: `${path}.review`,
           finalText: text,
+          correctionChainRequired,
         },),
       }
       : {}),

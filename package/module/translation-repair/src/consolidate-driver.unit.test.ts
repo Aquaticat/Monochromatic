@@ -580,6 +580,7 @@ await describe({
             rounds: [],
             review: {
               correctionCount: 0,
+              corrections: [],
               rounds: [],
             },
             findings: [],
@@ -1323,6 +1324,7 @@ await describe({
               rounds: [],
               review: {
                 correctionCount: 0,
+                corrections: [],
                 rounds: [],
               },
               findings: [],
@@ -1348,6 +1350,7 @@ await describe({
               rounds: [],
               review: {
                 correctionCount: 1,
+                corrections: [],
                 rounds: [],
               },
               findings: ['absolute-naturalness correction made no approved text change',],

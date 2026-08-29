@@ -1,3 +1,4 @@
+import { ABSOLUTE_NATURALNESS_REVIEW_QUORUM, } from '../absolute-naturalness-review-stage.ts';
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
@@ -8,6 +9,7 @@ import {
 } from '../artifact-guard.ts';
 import type {
   ArtifactNaturalnessFinding,
+  ArtifactNaturalnessReviewRound,
   ArtifactNaturalnessReviewSeat,
 } from './artifact-two-lane-consolidate.ts';
 
@@ -210,6 +212,99 @@ export function parseNaturalnessReviewSeat(
     findings,
     reason,
   };
+}
+
+/**
+ * Tests exact ordered equality between located finding lists.
+ *
+ * @param left - first list
+ *
+ * @param right - second list
+ *
+ * @returns Whether same findings occupy same positions
+ *
+ * @example
+ * ```ts
+ * sameNaturalnessFindings({ left, right, });
+ * ```
+ */
+export function sameNaturalnessFindings(
+  {
+    left,
+    right,
+  }: {
+    readonly left: readonly ArtifactNaturalnessFinding[];
+    readonly right: readonly ArtifactNaturalnessFinding[];
+  },
+): boolean {
+  return (left.length === right.length) && left.every(function same(
+    value,
+    index,
+  ): boolean {
+    /**
+     * Finding at same stored position.
+     */
+    const candidate = right[index];
+    return (candidate !== undefined)
+      && (candidate.paragraph === value.paragraph)
+      && (candidate.problem === value.problem);
+  },);
+}
+
+/**
+ * Deduplicates exact located findings in first occurrence order.
+ *
+ * @param findings - roster-ordered findings
+ *
+ * @returns First copy of each exact finding
+ *
+ * @example
+ * ```ts
+ * const unique = uniqueNaturalnessFindings({ findings, });
+ * ```
+ */
+export function uniqueNaturalnessFindings(
+  { findings, }: { readonly findings: readonly ArtifactNaturalnessFinding[]; },
+): readonly ArtifactNaturalnessFinding[] {
+  return findings.filter(function firstOccurrence(
+    finding,
+    index,
+  ): boolean {
+    return findings.findIndex(function same(candidate,): boolean {
+      return (candidate.paragraph === finding.paragraph)
+        && (candidate.problem === finding.problem);
+    },) === index;
+  },);
+}
+
+/**
+ * Derives fail-closed verdict from accounted seats.
+ *
+ * @param seats - every requested reviewer seat
+ *
+ * @returns Verdict implied by quorum and rejection
+ *
+ * @example
+ * ```ts
+ * const verdict = naturalnessVerdictOf({ seats, });
+ * ```
+ */
+export function naturalnessVerdictOf(
+  { seats, }: { readonly seats: readonly ArtifactNaturalnessReviewSeat[]; },
+): ArtifactNaturalnessReviewRound['verdict'] {
+  /**
+   * Seats carrying usable verdict.
+   */
+  const usable = seats.filter(function usableSeat(seat,): boolean {
+    return seat.status !== 'unusable';
+  },);
+  if (usable.length < ABSOLUTE_NATURALNESS_REVIEW_QUORUM)
+    return 'quorum-not-met';
+  if (usable.some(function rejects(seat,): boolean {
+    return seat.status === 'unacceptable';
+  },))
+    return 'unacceptable';
+  return 'acceptable';
 }
 
 //endregion Artifact absolute naturalness seat read

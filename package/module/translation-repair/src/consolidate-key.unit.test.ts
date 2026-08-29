@@ -221,12 +221,12 @@ await describe({
       name: 'PINS THE KEY TO A LITERAL, so a change to this material has to be made on purpose. The value '
         + 'moved on 2026-08-22 for line-structure judging and on 2026-08-28 for target-authoritative '
         + 'metadata contributor spelling, final body polish, target body contributor authority, and '
-        + 'source-grammar calque removal, absolute naturalness review, and required correction mode. These policies are not text '
+        + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction. These policies are not text '
         + 'fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'b2eec2ecbb16c2c4c868d53a5d8d8f690b30982e5cc00d59df2b6a2be43a2dbe',
+          '9289e54cf53c5b6f4707d1253b9c9ec883ab9587ade6fbfac2c0064296ee78dc',
         );
       },
     },),

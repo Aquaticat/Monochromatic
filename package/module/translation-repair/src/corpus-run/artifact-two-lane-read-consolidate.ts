@@ -139,6 +139,8 @@ function assertConsolidationCoversContest(
  *
  * @param reviewRequired - whether polish records absolute naturalness review
  *
+ * @param correctionChainRequired - whether review records digest-bound corrections
+ *
  * @returns What the stage settled, that it did not run, or that this artifact
  * predates the field
  *
@@ -159,6 +161,7 @@ export function parseConsolidation(
     keys,
     polishRequired = false,
     reviewRequired = false,
+    correctionChainRequired = false,
   }: {
     readonly value: unknown;
     readonly laneSelection: ArtifactLaneSelection;
@@ -166,6 +169,7 @@ export function parseConsolidation(
     readonly keys: ArtifactKeyVocabulary;
     readonly polishRequired?: boolean;
     readonly reviewRequired?: boolean;
+    readonly correctionChainRequired?: boolean;
   },
 ): ParsedConsolidation {
   if (value === undefined) {
@@ -225,6 +229,7 @@ export function parseConsolidation(
         keys,
         polishRequired,
         reviewRequired,
+        correctionChainRequired,
       },);
     },);
 

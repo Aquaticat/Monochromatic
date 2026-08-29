@@ -83,6 +83,7 @@ export function assertFinalNaturalnessComplete(
       value: polish.review,
       path: `consolidation.slices[${String(slice.sliceIndex,)}].polish.review`,
       finalText: polish.text,
+      correctionChainRequired: true,
     },);
   }
 }

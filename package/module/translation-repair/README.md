@@ -1370,6 +1370,30 @@ Comparative refinement retains its accepted-input fallback.
 Structural validation,
 fidelity gate,
 and exact-text second absolute review remain mandatory after any selected correction.
+
+The next fresh schema-8 run proved required-correction routing converged,
+but one correction remained an insufficient bound.
+On its first attempt,
+a selected correction passed fidelity review and exact-text absolute review exposed further material defects.
+On its retry,
+a broader correction was selected but fidelity review retained the rejected input.
+Both attempts wrote no page,
+artifact,
+or consolidation cache;
+`verify-published` correctly refused to call the empty run clean.
+Artifact schema 9 and consolidation cache generation 9 permit one further correction only after exact first corrected text receives a new material rejection.
+Each transition records rejected-text digest,
+canonical structured-findings digest,
+gated-text digest,
+and reviewed paragraph digests.
+The reader recomputes every adjacent transition and final paragraph identity.
+No candidate,
+tie,
+no-op,
+fidelity retention,
+thin review,
+or rejection after correction two remains terminal and retryable.
+Generations 6 through 8 remain readable but cannot satisfy schema-9 correction-chain boundary.
 Another fresh affected rerun remains required before accepting output.
 
 The live artifact also exposed misleading diagnostic wording:

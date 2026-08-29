@@ -187,6 +187,11 @@ export type ArtifactNaturalnessReviewRound = {
   readonly paragraphCount: number;
 
   /**
+   * Digest of each reviewed paragraph, required from generation nine.
+   */
+  readonly paragraphDigests?: readonly string[];
+
+  /**
    * Every requested seat in roster order.
    */
   readonly seats: readonly ArtifactNaturalnessReviewSeat[];
@@ -208,21 +213,51 @@ export type ArtifactNaturalnessReviewRound = {
 };
 
 /**
+ * Digest-bound rejected-input to gated-correction transition.
+ *
+ * @example
+ * ```ts
+ * const correction: ArtifactNaturalnessCorrection = { inputDigest, findingsDigest, gatedTextDigest, };
+ * ```
+ */
+export type ArtifactNaturalnessCorrection = {
+  /**
+   * Exact rejected candidate supplied to correction.
+   */
+  readonly inputDigest: string;
+
+  /**
+   * Canonical structured findings supplied to correction.
+   */
+  readonly findingsDigest: string;
+
+  /**
+   * Exact post-fidelity-gate correction reviewed next.
+   */
+  readonly gatedTextDigest: string;
+};
+
+/**
  * Absolute naturalness review audit added in artifact generation eight.
  *
  * @example
  * ```ts
- * const review: ArtifactNaturalnessReview = { correctionCount: 0, rounds: [] };
+ * const review: ArtifactNaturalnessReview = { correctionCount: 0, corrections: [], rounds: [] };
  * ```
  */
 export type ArtifactNaturalnessReview = {
   /**
    * Dedicated correction generations bought.
    */
-  readonly correctionCount: 0 | 1;
+  readonly correctionCount: 0 | 1 | 2;
 
   /**
-   * Initial and optional post-correction absolute reviews.
+   * Digest-bound correction transitions, required from generation nine.
+   */
+  readonly corrections?: readonly ArtifactNaturalnessCorrection[];
+
+  /**
+   * Initial and post-correction absolute reviews.
    */
   readonly rounds: readonly ArtifactNaturalnessReviewRound[];
 };

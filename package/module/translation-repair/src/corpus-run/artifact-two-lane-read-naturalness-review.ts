@@ -4,11 +4,7 @@ import {
   requireArray,
   requireCount,
   requireRecord,
-  requireString,
 } from '../artifact-guard.ts';
-import { ABSOLUTE_NATURALNESS_REVIEW_QUORUM, } from '../absolute-naturalness-review-stage.ts';
-import { finalPolishParagraphs, } from '../consolidation-polish-round.ts';
-import { hashContent, } from '../document-node.ts';
 import type {
   ArtifactNaturalnessFinding,
   ArtifactNaturalnessReview,
@@ -16,123 +12,21 @@ import type {
   ArtifactNaturalnessReviewSeat,
 } from './artifact-two-lane-consolidate.ts';
 import {
+  assertFinalNaturalnessDigests,
+  assertNaturalnessCorrectionChain,
+  parseNaturalnessCorrection,
+  parseParagraphDigests,
+  requireNaturalnessDigest,
+} from './artifact-two-lane-read-naturalness-digest.ts';
+import {
+  naturalnessVerdictOf,
   parseNaturalnessFindings,
   parseNaturalnessReviewSeat,
+  sameNaturalnessFindings,
+  uniqueNaturalnessFindings,
 } from './artifact-two-lane-read-naturalness-seat.ts';
 
 //region Artifact absolute naturalness review read
-
-/**
- * Character length of lowercase hexadecimal SHA-256 digest.
- */
-const SHA256_HEX_LENGTH = 64;
-
-/**
- * Characters allowed in lowercase hexadecimal digest.
- */
-const LOWER_HEX_CHARACTERS = '0123456789abcdef';
-
-/**
- * Tests exact ordered equality between located finding lists.
- *
- * @param left - first list
- *
- * @param right - second list
- *
- * @returns Whether same findings occupy same positions
- */
-function sameFindings(
-  {
-    left,
-    right,
-  }: {
-    readonly left: readonly ArtifactNaturalnessFinding[];
-    readonly right: readonly ArtifactNaturalnessFinding[];
-  },
-): boolean {
-  return (left.length === right.length) && left.every(function same(
-    value,
-    index,
-  ): boolean {
-    /**
-     * Finding at same stored position.
-     */
-    const candidate = right[index];
-    return (candidate !== undefined)
-      && (candidate.paragraph === value.paragraph)
-      && (candidate.problem === value.problem);
-  },);
-}
-
-/**
- * Checks lowercase hexadecimal SHA-256 shape without regular expression.
- *
- * @param value - candidate digest
- *
- * @returns Whether exact ASCII digest shape matches
- *
- * @example
- * ```ts
- * isLowerHexDigest({ value: '0'.repeat(SHA256_HEX_LENGTH,), });
- * ```
- */
-function isLowerHexDigest(
-  { value, }: { readonly value: string; },
-): boolean {
-  if (value.length !== SHA256_HEX_LENGTH)
-    return false;
-  for (let index = 0; index < value.length; index += 1) {
-    if (!LOWER_HEX_CHARACTERS.includes(value.charAt(index,),))
-      return false;
-  }
-  return true;
-}
-
-/**
- * Deduplicates exact located findings in first occurrence order.
- *
- * @param findings - roster-ordered findings
- *
- * @returns First copy of each exact finding
- */
-function uniqueFindings(
-  { findings, }: { readonly findings: readonly ArtifactNaturalnessFinding[]; },
-): readonly ArtifactNaturalnessFinding[] {
-  return findings.filter(function firstOccurrence(
-    finding,
-    index,
-  ): boolean {
-    return findings.findIndex(function same(candidate,): boolean {
-      return (candidate.paragraph === finding.paragraph)
-        && (candidate.problem === finding.problem);
-    },) === index;
-  },);
-}
-
-/**
- * Derives fail-closed verdict from accounted seats.
- *
- * @param seats - every requested reviewer seat
- *
- * @returns Verdict implied by quorum and rejection
- */
-function verdictOf(
-  { seats, }: { readonly seats: readonly ArtifactNaturalnessReviewSeat[]; },
-): ArtifactNaturalnessReviewRound['verdict'] {
-  /**
-   * Seats carrying usable verdict.
-   */
-  const usable = seats.filter(function usableSeat(seat,): boolean {
-    return seat.status !== 'unusable';
-  },);
-  if (usable.length < ABSOLUTE_NATURALNESS_REVIEW_QUORUM)
-    return 'quorum-not-met';
-  if (usable.some(function rejects(seat,): boolean {
-    return seat.status === 'unacceptable';
-  },))
-    return 'unacceptable';
-  return 'acceptable';
-}
 
 /**
  * Reads one candidate-bound absolute review round.
@@ -141,15 +35,19 @@ function verdictOf(
  *
  * @param path - artifact path
  *
+ * @param paragraphDigestsRequired - whether generation binds reviewed paragraph identities
+ *
  * @returns Cross-validated review round
  */
 function parseRound(
   {
     value,
     path,
+    paragraphDigestsRequired,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly paragraphDigestsRequired: boolean;
   },
 ): ArtifactNaturalnessReviewRound {
   /**
@@ -164,6 +62,7 @@ function parseRound(
     allowed: [
       'candidateDigest',
       'paragraphCount',
+      ...(paragraphDigestsRequired ? ['paragraphDigests',] : []),
       'seats',
       'usable',
       'verdict',
@@ -194,6 +93,16 @@ function parseRound(
     value: record.paragraphCount,
     path: `${path}.paragraphCount`,
   },);
+  /**
+   * Reviewed paragraph identities under generation-nine shape.
+   */
+  const paragraphDigests = paragraphDigestsRequired
+    ? parseParagraphDigests({
+      value: record.paragraphDigests,
+      path: `${path}.paragraphDigests`,
+      paragraphCount,
+    },)
+    : [];
   if (seats.some(function outOfRange(seat,): boolean {
     /**
      * Findings this seat attached to reviewed paragraphs.
@@ -243,7 +152,7 @@ function parseRound(
   /**
    * Aggregate findings recomputed in roster order.
    */
-  const findings = uniqueFindings({
+  const findings = uniqueNaturalnessFindings({
     findings: seats.flatMap(function rejected(
       seat,
     ): readonly ArtifactNaturalnessFinding[] {
@@ -257,7 +166,7 @@ function parseRound(
     value: record.findings,
     path: `${path}.findings`,
   },);
-  if (!sameFindings({
+  if (!sameNaturalnessFindings({
     left: findings,
     right: storedFindings,
   },)) {
@@ -269,7 +178,7 @@ function parseRound(
   /**
    * Verdict recomputed from seat statuses.
    */
-  const verdict = verdictOf({ seats, },);
+  const verdict = naturalnessVerdictOf({ seats, },);
   if (record.verdict !== verdict) {
     throw new ArtifactParseError({
       path: `${path}.verdict`,
@@ -279,19 +188,14 @@ function parseRound(
   /**
    * Candidate digest under lowercase SHA-256 shape.
    */
-  const candidateDigest = requireString({
+  const candidateDigest = requireNaturalnessDigest({
     value: record.candidateDigest,
     path: `${path}.candidateDigest`,
   },);
-  if (!isLowerHexDigest({ value: candidateDigest, })) {
-    throw new ArtifactParseError({
-      path: `${path}.candidateDigest`,
-      reason: 'lowercase hexadecimal SHA-256 digest',
-    },);
-  }
   return {
     candidateDigest,
     paragraphCount,
+    ...(paragraphDigestsRequired ? { paragraphDigests, } : {}),
     seats,
     usable,
     verdict,
@@ -300,13 +204,15 @@ function parseRound(
 }
 
 /**
- * Reads schema-eight absolute review and binds final round to final text.
+ * Reads schema-eight or schema-nine absolute review and binds final round to final text.
  *
  * @param value - unknown review field
  *
  * @param path - artifact path
  *
  * @param finalText - exact polish text artifact says ships
+ *
+ * @param correctionChainRequired - whether generation requires transition digests
  *
  * @returns Cross-validated review audit
  *
@@ -320,10 +226,12 @@ export function parseNaturalnessReview(
     value,
     path,
     finalText,
+    correctionChainRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly finalText: string;
+    readonly correctionChainRequired?: boolean;
   },
 ): ArtifactNaturalnessReview {
   /**
@@ -337,6 +245,7 @@ export function parseNaturalnessReview(
     record,
     allowed: [
       'correctionCount',
+      ...(correctionChainRequired ? ['corrections',] : []),
       'rounds',
     ],
     path,
@@ -348,10 +257,14 @@ export function parseNaturalnessReview(
     value: record.correctionCount,
     path: `${path}.correctionCount`,
   },);
-  if ((correctionCount !== 0) && (correctionCount !== 1)) {
+  /**
+   * Maximum corrections this artifact generation can represent.
+   */
+  const maximumCorrections = correctionChainRequired ? 2 : 1;
+  if (correctionCount > maximumCorrections) {
     throw new ArtifactParseError({
       path: `${path}.correctionCount`,
-      reason: 'zero or one bounded correction',
+      reason: `zero to ${String(maximumCorrections,)} bounded corrections`,
     },);
   }
   /**
@@ -368,12 +281,43 @@ export function parseNaturalnessReview(
       return parseRound({
         value: entry,
         path: `${path}.rounds[${String(at,)}]`,
+        paragraphDigestsRequired: correctionChainRequired,
       },);
     },);
-  if (rounds.length !== (correctionCount + 1)) {
+  /**
+   * Correction count narrowed to artifact domain after range validation.
+   */
+  const boundedCorrectionCount = (correctionCount === 0)
+    ? 0
+    : ((correctionCount === 1) ? 1 : 2);
+  if (rounds.length !== (boundedCorrectionCount + 1)) {
     throw new ArtifactParseError({
       path: `${path}.rounds`,
-      reason: `${String(correctionCount + 1,)} rounds for correction count`,
+      reason: `${String(boundedCorrectionCount + 1,)} rounds for correction count`,
+    },);
+  }
+  /**
+   * Digest-bound correction transitions under generation-nine shape.
+   */
+  const corrections = correctionChainRequired
+    ? requireArray({
+      value: record.corrections,
+      path: `${path}.corrections`,
+    },)
+      .map(function readCorrection(
+        entry,
+        at,
+      ) {
+        return parseNaturalnessCorrection({
+          value: entry,
+          path: `${path}.corrections[${String(at,)}]`,
+        },);
+      },)
+    : [];
+  if (correctionChainRequired && (corrections.length !== boundedCorrectionCount)) {
+    throw new ArtifactParseError({
+      path: `${path}.corrections`,
+      reason: `${String(boundedCorrectionCount,)} digest-bound correction transitions`,
     },);
   }
   /**
@@ -390,12 +334,26 @@ export function parseNaturalnessReview(
       reason: 'initial and final absolute review',
     },);
   }
-  if ((correctionCount === 1) && (initial.verdict !== 'unacceptable')) {
+  /**
+   * Reviews that each authorized one correction generation.
+   */
+  const priorRounds = rounds.slice(
+    0,
+    -1,
+  );
+  if (priorRounds.some(function nonRejection(round,): boolean {
+    return round.verdict !== 'unacceptable';
+  },)) {
     throw new ArtifactParseError({
-      path: `${path}.rounds[0].verdict`,
-      reason: 'unacceptable initial review before correction',
+      path: `${path}.rounds`,
+      reason: 'unacceptable review before every correction',
     },);
   }
+  assertNaturalnessCorrectionChain({
+    corrections,
+    rounds,
+    path,
+  },);
   if (final.verdict !== 'acceptable') {
     throw new ArtifactParseError({
       path: `${path}.rounds[${String(rounds.length - 1,)}].verdict`,
@@ -403,24 +361,18 @@ export function parseNaturalnessReview(
     },);
   }
   /**
-   * Correctable paragraphs independently re-derived from final text.
+   * Path of final accepted exact-text review.
    */
-  const finalParagraphCount = finalPolishParagraphs({ text: finalText, })
-    .length;
-  if (final.paragraphCount !== finalParagraphCount) {
-    throw new ArtifactParseError({
-      path: `${path}.rounds[${String(rounds.length - 1,)}].paragraphCount`,
-      reason: 'structurally correctable paragraph count of final polish text',
-    },);
-  }
-  if (final.candidateDigest !== hashContent({ content: finalText, },)) {
-    throw new ArtifactParseError({
-      path: `${path}.rounds[${String(rounds.length - 1,)}].candidateDigest`,
-      reason: 'SHA-256 of final polish text',
-    },);
-  }
+  const finalPath = `${path}.rounds[${String(rounds.length - 1,)}]`;
+  assertFinalNaturalnessDigests({
+    final,
+    finalText,
+    path: finalPath,
+    paragraphDigestsRequired: correctionChainRequired,
+  },);
   return {
-    correctionCount,
+    correctionCount: boundedCorrectionCount,
+    ...(correctionChainRequired ? { corrections, } : {}),
     rounds,
   };
 }

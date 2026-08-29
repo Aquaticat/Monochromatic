@@ -1,5 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
-import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
+import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts';
 import { hashContent, } from './document-node.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -41,8 +41,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 8 makes absolute-review correction a distinct non-fallback mode and
  * gives selectors its required findings. Version 7 selectors answered generic polish question.
+ *
+ * VERSION 9 permits a second candidate-bound correction when first correction
+ * exposes further material defects. Version 8 exhausted after one generation.
  */
-export const CONSOLIDATE_CACHE_VERSION = 8;
+export const CONSOLIDATE_CACHE_VERSION = 9;
 
 /**
  * What a line-structured slice appends to its key material.

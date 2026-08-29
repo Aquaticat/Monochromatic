@@ -140,6 +140,8 @@ function parseGate(
  *
  * @param reviewRequired - whether polish record carries absolute naturalness review
  *
+ * @param correctionChainRequired - whether review carries digest-bound corrections
+ *
  * @returns Parsed consolidation slice
  *
  * @example
@@ -154,12 +156,14 @@ export function parseConsolidateSlice(
     keys,
     polishRequired,
     reviewRequired = false,
+    correctionChainRequired = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly keys: ArtifactKeyVocabulary;
     readonly polishRequired: boolean;
     readonly reviewRequired?: boolean;
+    readonly correctionChainRequired?: boolean;
   },
 ): ArtifactConsolidateSlice {
   /**
@@ -244,6 +248,7 @@ export function parseConsolidateSlice(
           value: record.polish,
           path: `${path}.polish`,
           reviewRequired,
+          correctionChainRequired,
         },),
       }
       : {}),

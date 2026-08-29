@@ -67,7 +67,7 @@ export type AbsoluteNaturalnessReviewVerdict =
  *
  * @example
  * ```ts
- * const review: AbsoluteNaturalnessReviewOutcome = { candidateDigest: 'sha256:abc', paragraphCount: 0, seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ * const review: AbsoluteNaturalnessReviewOutcome = { candidateDigest: 'sha256:abc', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
  * ```
  */
 export type AbsoluteNaturalnessReviewOutcome = {
@@ -80,6 +80,11 @@ export type AbsoluteNaturalnessReviewOutcome = {
    * Structurally correctable paragraphs reviewer was shown.
    */
   readonly paragraphCount: number;
+
+  /**
+   * Digest of each structurally correctable paragraph in reviewer order.
+   */
+  readonly paragraphDigests: readonly string[];
 
   /**
    * Every requested roster seat in request order.
@@ -188,6 +193,13 @@ export async function reviewAbsoluteNaturalness(
   const paragraphCount = subject.paragraphs
     .length;
   /**
+   * Digest of each exact paragraph shown to reviewers.
+   */
+  const paragraphDigests = subject.paragraphs
+    .map(function digestParagraph(paragraph,): string {
+      return hashContent({ content: paragraph, },);
+    },);
+  /**
    * Every requested outcome after every seat has settled or reached deadline.
    */
   const outcomes = await runGatherRound({
@@ -275,6 +287,7 @@ export async function reviewAbsoluteNaturalness(
   return {
     candidateDigest: hashContent({ content: subject.candidateText, },),
     paragraphCount,
+    paragraphDigests,
     seats,
     usable: usableSeats.length,
     verdict,

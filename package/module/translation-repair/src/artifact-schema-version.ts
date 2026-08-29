@@ -10,6 +10,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
   ARTIFACT_SCHEMA_VERSION_V8,
+  ARTIFACT_SCHEMA_VERSION_V9,
 } from './corpus-run/artifact-two-lane-contract.ts';
 
 //region Artifact schema version
@@ -38,8 +39,11 @@ import {
  * A version that does NOT move on a shape change is the failure this field
  * exists to end, so say so here when a field is added compatibly.
  *
+ * VERSION 9, 2026-08-28: absolute review may drive two bounded corrections;
+ * each transition binds rejected text, canonical findings, and gated text digests.
+ *
  * VERSION 8, 2026-08-28: every final body polish records independent absolute
- * naturalness review bound to exact would-ship text and bounded correction.
+ * naturalness review bound to exact would-ship text and one bounded correction.
  *
  * VERSION 7, 2026-08-28: syntax-bearing lane contest records source-backed
  * candidate eligibility, so raw votes for unpublishable candidates are kept
@@ -148,6 +152,7 @@ export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
   ARTIFACT_SCHEMA_VERSION_V8,
+  ARTIFACT_SCHEMA_VERSION_V9,
 ];
 
 /**

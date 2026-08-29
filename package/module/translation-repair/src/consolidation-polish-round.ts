@@ -3,7 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
-import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
+import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts';
 import {
   type ConsolidationPolishGateOutcome,
   gateConsolidationPolish,

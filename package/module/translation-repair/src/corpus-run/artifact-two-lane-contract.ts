@@ -36,6 +36,11 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
  */
+export const ARTIFACT_SCHEMA_VERSION_V9 = 9;
+
+/**
+ * Generation before two bounded correction transitions became auditable.
+ */
 export const ARTIFACT_SCHEMA_VERSION_V8 = 8;
 
 /**
@@ -109,6 +114,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
   ARTIFACT_SCHEMA_VERSION_V8,
+  ARTIFACT_SCHEMA_VERSION_V9,
 ];
 
 /**
@@ -126,7 +132,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V5
   | typeof ARTIFACT_SCHEMA_VERSION_V6
   | typeof ARTIFACT_SCHEMA_VERSION_V7
-  | typeof ARTIFACT_SCHEMA_VERSION_V8;
+  | typeof ARTIFACT_SCHEMA_VERSION_V8
+  | typeof ARTIFACT_SCHEMA_VERSION_V9;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -163,7 +170,8 @@ export function artifactGenerationRequiresPolish(
 ): boolean {
   return (generation === ARTIFACT_SCHEMA_VERSION_V6)
     || (generation === ARTIFACT_SCHEMA_VERSION_V7)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V8);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V8)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V9);
 }
 
 /**
@@ -181,7 +189,26 @@ export function artifactGenerationRequiresPolish(
 export function artifactGenerationRequiresNaturalnessReview(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
-  return generation === ARTIFACT_SCHEMA_VERSION_V8;
+  return (generation === ARTIFACT_SCHEMA_VERSION_V8)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V9);
+}
+
+/**
+ * Reports whether generation binds every correction transition by digest.
+ *
+ * @param generation - known two-lane artifact generation
+ *
+ * @returns Whether review audit requires correction chain
+ *
+ * @example
+ * ```ts
+ * artifactGenerationRequiresNaturalnessCorrectionChain({ generation: 9, });
+ * ```
+ */
+export function artifactGenerationRequiresNaturalnessCorrectionChain(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation === ARTIFACT_SCHEMA_VERSION_V9;
 }
 
 /**
@@ -201,10 +228,12 @@ export function artifactGenerationReadingRequirements(
 ): {
   readonly polishRequired: boolean;
   readonly reviewRequired: boolean;
+  readonly correctionChainRequired: boolean;
 } {
   return {
     polishRequired: artifactGenerationRequiresPolish({ generation, }),
     reviewRequired: artifactGenerationRequiresNaturalnessReview({ generation, }),
+    correctionChainRequired: artifactGenerationRequiresNaturalnessCorrectionChain({ generation, }),
   };
 }
 
@@ -472,7 +501,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V8;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V9;
 
   /**
    * Corpus entry this covers.
