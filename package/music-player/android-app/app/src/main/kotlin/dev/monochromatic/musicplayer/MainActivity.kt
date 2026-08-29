@@ -27,14 +27,14 @@
 //   - `appRoot`: the audio-permission gate + library trigger over a bound
 //     controller. Requests audio access once, shows `permissionGate` until
 //     granted, then signals the service to load and shows `playerScreen`.
-//   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
-//     volume, control row, settings page, page controls + track list). Page
-//     controls default to radios and can switch to multi-row MD1 tabs, segmented
-//     buttons, Chromium-like tabs, LED hardware buttons, or the previous rounded buttons.
+//   - `playerScreen`: the desktop's narrow layout with responsive progress/transport
+//     and volume/end-of-track pairs, source actions, settings, page controls, and tracks.
+//     Each playback pair shares one line when it fits and wraps as a complete group when
+//     the window narrows. Page controls can switch among the supported visual styles.
 //     Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
-//     screens. `seekRow`/`volumeRow`/`controlRow`/`radioOption`/`pageTabs`/
-//     `settingsPage`/`pageTabs`/`trackPager`/`trackRow`: the pieces of the player screen.
+//     screens. `seekRow`/`volumeRow`/`sourceActionRow`/`radioOption`/`pageTabs`/
+//     `settingsPage`/`trackPager`/`trackRow`: pieces of the player screen.
 //   - `formatTime`: format a seconds value as `m:ss`.
 // ============================================================================
 
@@ -373,6 +373,16 @@ import androidx.compose.foundation.layout.IntrinsicSize
 // import { Row } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.Row
+
+// What:     `import androidx.compose.foundation.layout.FlowRowScope` names the receiver shared by
+//           children emitted into a wrapping `FlowRow`; extensions assign per-line weights.
+// Why:      Playback groups share a line when they fit and move to the next line when they do not.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type FlowRowScope = { weight: (share: number, fill?: boolean) => LayoutModifier };
+// ```
+import androidx.compose.foundation.layout.FlowRowScope
 
 // What:     `import androidx.compose.foundation.layout.defaultMinSize` adds minimum-size
 //           constraints without overriding larger content measurements.
@@ -2071,11 +2081,10 @@ private fun rememberPlaybackProgress(controller: PlayerController): PlaybackProg
 // What:     `fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) { ... }`
 //           declares a PUBLIC (Kotlin default) composable taking the brain and an
 //           `onChooseFolder` callback (`() -> Unit`).
-// Why:      The player screen, the desktop's narrow (single-column) layout: a seek bar, a
-//           volume slider, a wrapping control row (settings / open / shuffle / transport / repeat),
-//           then settings or the selected page's controls and track list. No title bar, matching
-//           the desktop's plain window. Tap a track to play it; tap the playing track to
-//           pause or resume.
+// Why:      The player screen mirrors the desktop layout: responsive progress/transport and
+//           volume/end-of-track pairs, Settings/Open actions, then settings or the selected
+//           page's controls and tracks. Each pair wraps only when its usable widths no longer fit.
+//           Tap a track to play it; tap the playing track to pause or resume.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -2173,36 +2182,31 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
                 .padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // What:     `seekRow(position = position, duration = duration, onSeek = { controller.seek(it) })`
-            //           renders the seek bar. `onSeek` is a lambda using the implicit `it`
-            //           (the seeked-to seconds) to call `controller.seek(it)`.
-            // Why:      Show and drive the position scrubber.
+            // What:     `seekRow(playbackProgress, controller)` renders elapsed time, seek slider,
+            //           duration, and transport control as children of one horizontal row.
+            // Why:      Keep Prev, Play/Pause, and Next on the progress line requested by AQU-456.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <seekRow position={position} duration={duration} onSeek={(sec) => controller.seek(sec)}/>
+            // <SeekRow progress={playbackProgress} controller={controller}/>
             // ```
-            seekRow(playbackProgress.position, playbackProgress.duration) { controller.seek(it) }
-            // What:     `volumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })`
-            //           renders the volume slider; `onVolume`'s lambda uses `it` (the new gain).
-            // Why:      Show and drive the volume control.
+            seekRow(playbackProgress, controller)
+            // What:     `volumeRow(controller)` renders volume and end-of-track controls together.
+            // Why:      Keep the label and actual playback-mode control on the volume line.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <volumeRow volume={state.volume} onVolume={(v) => controller.setVolume(v)}/>
+            // <VolumeRow controller={controller}/>
             // ```
-            volumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })
-            // What:     `controlRow(state = state, controller = controller, onOpen = onChooseFolder)`
-            //           renders the open/shuffle/transport/repeat row.
-            // Why:      Show the main control buttons.
+            volumeRow(controller)
+            // What:     `sourceActionRow(...)` renders only Settings and Open callbacks.
+            // Why:      Source actions remain separate from the two playback-semantic lines.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <controlRow state={state} controller={controller} onOpen={onChooseFolder}/>
+            // <SourceActionRow onSettings={() => setShowingSettings(true)} onOpen={onChooseFolder}/>
             // ```
-            controlRow(
-                state = state,
-                controller = controller,
+            sourceActionRow(
                 onSettings = { showingSettings = true },
                 onOpen = onChooseFolder,
             )
@@ -2257,22 +2261,22 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
 // ```ts
 // // (component function)
 // ```
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-// What:     `private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit) { ... }`
-//           declares a private composable. `onSeek: (Double) -> Unit` is a function type
-//           "takes a `Double`, returns void" (TS `(n: number) => void`).
-// Why:      Seek bar: elapsed time, a position slider over the track duration, and total
-//           time.
+// What:     `private fun seekRow(progress: PlaybackProgress, controller: PlayerController) { ... }`
+//           declares a private component receiving sampled progress and the playback boundary.
+// Why:      One row owns elapsed time, seeking, duration, and transport actions.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function seekRow(props: { position: number; duration: number; onSeek: (n: number) => void; }) { ... }
+// function SeekRow(props: { progress: PlaybackProgress; controller: PlayerController }) { ... }
 // ```
-/**
- * Defines seek row behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
- */
-private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit) {
+/** Keeps progress and transport on one line when possible, wrapping the transport group when needed. */
+private fun seekRow(progress: PlaybackProgress, controller: PlayerController) {
+    /** Current elapsed seconds sampled by the parent polling effect. */
+    val position: Double = progress.position
+    /** Current duration seconds sampled by the parent polling effect. */
+    val duration: Double = progress.duration
     // What:     `val maxValue = if (duration > 0.0) duration.toFloat() else 1.0f` declares
     //           `maxValue` from an `if/else` EXPRESSION. `duration.toFloat()` converts the
     //           `Double` to a `Float` (32-bit; the Slider API takes `Float`). `1.0f` is a
@@ -2293,15 +2297,23 @@ private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
      * source and use.
      */
     val maxValue = if (duration > 0.0) duration.toFloat() else 1.0f
-    // What:     `Row(verticalAlignment = Alignment.CenterVertically) { ... }` lays the seek
-    //           controls out horizontally, vertically centered.
-    // Why:      Put elapsed time, slider, and total time on one line.
+    // What:     `FlowRow { Row(...) { ... }; transportControl(...) }` keeps progress and
+    //           transport side by side while their intrinsic widths fit, then wraps the whole
+    //           transport group onto a following line.
+    // Why:      Preserve the requested shared line without squeezing controls past their content.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // <Row verticalAlignment={Alignment.CenterVertically}> ... </Row>
+    // <WrappingRow><ProgressControl/><TransportControl/></WrappingRow>
     // ```
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1.0f, fill = false),
+        ) {
         // What:     `Text(formatTime(position))` shows the elapsed time as `m:ss` via
         //           `formatTime`.
         // Why:      Display the current position.
@@ -2311,17 +2323,12 @@ private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
         // <Text>{formatTime(position)}</Text>
         // ```
         Text(formatTime(position))
-        // What:     `Slider( value = position.toFloat().coerceIn(0.0f, maxValue), onValueChange = {
-        //           onSeek(it.toDouble()) }, valueRange = 0.0f..maxValue, modifier =
-        //           Modifier.weight(1.0f).padding(horizontal = 8.dp), )`
-        //           renders the scrubber. `position.toFloat()` converts the `Double` to a
-        //           `Float`; `.coerceIn(0.0f, maxValue)` CLAMPS it into range. `onValueChange`
-        //           is a lambda using `it` (the new `Float`), converted back with
-        //           `it.toDouble()`. `valueRange = 0.0f..maxValue` is a `ClosedFloatingPointRange`
-        //           built with the `..` RANGE operator (a Kotlin range literal). The modifier
-        //           gives it `weight(1.0f)` (take the remaining row width) plus horizontal
-        //           padding.
-        // Why:      A draggable position control spanning the row between the time labels.
+        // What:     `Slider(...)` renders the scrubber from sampled progress and forwards each
+        //           changed `Float` to `controller.seek` after converting it to a `Double`.
+        //           `valueRange = 0.0f..maxValue` builds the Slider range with Kotlin's `..`
+        //           operator. `Modifier.weight(1.0f)` gives the slider space left after the
+        //           labels and content-width transport group are measured.
+        // Why:      A draggable position control spans the flexible part of the shared progress line.
         // Gotcha:   `0.0f..maxValue` uses the `..` range operator (no TS equivalent; it builds
         //           a range object). The `f` literals are `Float`s to match the Slider API.
         //
@@ -2329,7 +2336,7 @@ private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
         // ```ts
         // <Slider
         //   value={clamp(position, 0, maxValue)}
-        //   onValueChange={(v) => onSeek(v)}
+        //   onValueChange={(v) => controller.seek(v)}
         //   min={0}
         //   max={maxValue}
         //   modifier={Modifier.weight(1).padding({ horizontal: dp(8) })}
@@ -2337,7 +2344,7 @@ private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
         // ```
         Slider(
             value = position.toFloat().coerceIn(0.0f, maxValue),
-            onValueChange = { onSeek(it.toDouble()) },
+            onValueChange = { controller.seek(it.toDouble()) },
             valueRange = 0.0f..maxValue,
             modifier = Modifier
                 .weight(1.0f)
@@ -2350,7 +2357,17 @@ private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
         // ```ts
         // <Text>{formatTime(duration)}</Text>
         // ```
-        Text(formatTime(duration))
+            Text(formatTime(duration))
+        }
+        // What:     `transportControl(controller.uiState.playing, controller)` emits one
+        //           content-sized transport group after the progress group.
+        // Why:      Prev, Play/Pause, and Next stay together and wrap as one unit when needed.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <TransportControl controller={controller}/>
+        // ```
+        transportControl(controller.uiState.playing, controller)
     }
 }
 
@@ -2361,30 +2378,36 @@ private fun seekRow(position: Double, duration: Double, onSeek: (Double) -> Unit
 // ```ts
 // // (component function)
 // ```
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-// What:     `private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) { ... }`
-//           declares a private composable taking a `Float` gain and an `(Float) -> Unit`
-//           callback.
-// Why:      Volume row: a "Volume" label and a 0..1 gain slider.
+// What:     `private fun volumeRow(controller: PlayerController) { ... }` declares a private
+//           component receiving the playback boundary that owns volume and mode state.
+// Why:      One row owns Volume, its slider, the end-of-track label, and its actual control.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function volumeRow(props: { volume: number; onVolume: (n: number) => void; }) { ... }
+// function VolumeRow(props: { controller: PlayerController }) { ... }
 // ```
-/**
- * Defines volume row behavior for this music-player component; the TypeScript-oriented notes above explain its
- * call shape and effects.
- */
-private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
-    // What:     `Row(verticalAlignment = Alignment.CenterVertically) { ... }` lays out the
-    //           label and slider on one centered line.
-    // Why:      Put "Volume" next to its slider.
+/** Keeps volume and end-of-track pairs on one line when possible, wrapping the latter when needed. */
+private fun volumeRow(controller: PlayerController) {
+    /** Compose-observable values used by the slider and playback-mode segments. */
+    val state: PlayerUiState = controller.uiState
+    // What:     `FlowRow` places a volume pair and an end-of-track pair on the same line when
+    //           their intrinsic widths fit, otherwise moving the latter pair to the next line.
+    // Why:      Keep each label with its control without clipping a narrow screen.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // <Row verticalAlignment={Alignment.CenterVertically}> ... </Row>
+    // <WrappingRow><VolumeControl/><PlaybackModeControl/></WrappingRow>
     // ```
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1.0f, fill = false),
+        ) {
         // What:     `Text("Volume")` shows the label.
         // Why:      Label the slider.
         //
@@ -2393,50 +2416,67 @@ private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
         // <Text>Volume</Text>
         // ```
         Text("Volume")
-        // What:     `Slider( value = volume, onValueChange = onVolume, valueRange = 0.0f..1.0f, modifier =
-        //           Modifier.weight(1.0f).padding(start = 8.dp), )`
-        //           renders the gain slider. `value = volume` is the current `Float` gain;
-        //           `onValueChange = onVolume` forwards the callback directly (no wrapping
-        //           lambda needed); `valueRange = 0.0f..1.0f` is the `[0, 1]` `Float` range via
-        //           `..`; the modifier weights it to fill and pads its start (leading) edge.
-        // Why:      A 0..1 gain control filling the row after the label.
+        // What:     `Slider(...)` reads `state.volume`, forwards changed values through
+        //           `controller.setVolume`, and uses the `[0, 1]` `Float` range from `0.0f..1.0f`.
+        //           Its weight shares remaining width with the playback-mode segments.
+        // Why:      Keep gain adjustable while reserving row width for the end-of-track control.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // <Slider
-        //   value={volume}
-        //   onValueChange={onVolume}
+        //   value={state.volume}
+        //   onValueChange={(value) => controller.setVolume(value)}
         //   min={0}
         //   max={1}
         //   modifier={Modifier.weight(1).padding({ start: dp(8) })}
         // />
         // ```
         Slider(
-            value = volume,
-            onValueChange = onVolume,
+            value = state.volume,
+            onValueChange = { controller.setVolume(it) },
             valueRange = 0.0f..1.0f,
             modifier = Modifier
                 .weight(1.0f)
                 .padding(start = 8.dp),
         )
+        // What:     `playbackModeControl(controller)` emits the fixed one-line label followed by
+        //           a weighted, horizontally reachable segmented control into this `Row`.
+        // Why:      The label and actual control stay on the volume line while long page names remain reachable.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <PlaybackModeControl controller={controller}/>
+        // ```
+        }
+        playbackModeControl(controller)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-/** Renders the horizontally reachable single-select playback-mode group. */
-private fun playbackModeControl(state: PlayerUiState, controller: PlayerController) {
+/** Emits one wrapping-item pair containing the end label and horizontally reachable mode control. */
+private fun FlowRowScope.playbackModeControl(controller: PlayerController) {
+    /** Compose-observable playback-mode and page-label state. */
+    val state: PlayerUiState = controller.uiState
     /** Displayed page text used verbatim by the page-shuffle segment. */
     val currentPage: String = state.pageLabels.getOrNull(state.selectedPage) ?: "page"
     /** Dynamic segment label that follows selected page changes. */
     val pageShuffleLabel: String = "Shuffle $currentPage"
-    Text("When this track ends")
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.weight(2.0f, fill = false),
     ) {
-        SingleChoiceSegmentedButtonRow {
+        Text(
+            text = "When this track ends",
+            maxLines = 1,
+            softWrap = false,
+        )
+        Row(
+            modifier = Modifier
+                .weight(1.0f)
+                .horizontalScroll(rememberScrollState()),
+        ) {
+            SingleChoiceSegmentedButtonRow {
             SegmentedButton(
                 selected = state.playbackMode == PlaybackMode.REPEAT,
                 onClick = { controller.setPlaybackMode(PlaybackMode.REPEAT) },
@@ -2460,19 +2500,19 @@ private fun playbackModeControl(state: PlayerUiState, controller: PlayerControll
                 onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_ALL) },
                 shape = SegmentedButtonDefaults.itemShape(index = 3, count = 4),
                 modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-            ) { Text("Shuffle all", maxLines = 1) }
+                ) { Text("Shuffle all", maxLines = 1) }
+            }
         }
     }
 }
 
 @Composable
-/** Renders the overflow-aware Material transport button group. */
-private fun transportControl(state: PlayerUiState, controller: PlayerController) {
+/** Renders the overflow-aware Material transport button group at its content width. */
+private fun transportControl(playing: Boolean, controller: PlayerController) {
     ButtonGroup(
         overflowIndicator = { menuState ->
             ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
         },
-        modifier = Modifier.fillMaxWidth(),
     ) {
         customItem(
             buttonGroupContent = {
@@ -2496,11 +2536,11 @@ private fun transportControl(state: PlayerUiState, controller: PlayerController)
                 Button(
                     onClick = { controller.togglePlay() },
                     modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text(if (state.playing) "Pause" else "Play") }
+                ) { Text(if (playing) "Pause" else "Play") }
             },
             menuContent = { menuState ->
                 DropdownMenuItem(
-                    text = { Text(if (state.playing) "Pause" else "Play") },
+                    text = { Text(if (playing) "Pause" else "Play") },
                     onClick = {
                         controller.togglePlay()
                         menuState.dismiss()
@@ -2530,23 +2570,17 @@ private fun transportControl(state: PlayerUiState, controller: PlayerController)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-/** Renders source actions plus distinct playback-mode and transport groups. */
-private fun controlRow(
-    state: PlayerUiState,
-    controller: PlayerController,
+/** Renders Settings and Open separately from playback-semantic rows. */
+private fun sourceActionRow(
     onSettings: () -> Unit,
     onOpen: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Button(onClick = onSettings) { Text("Settings") }
-            Button(onClick = onOpen) { Text("Open") }
-        }
-        playbackModeControl(state, controller)
-        transportControl(state, controller)
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Button(onClick = onSettings) { Text("Settings") }
+        Button(onClick = onOpen) { Text("Open") }
     }
 }
 

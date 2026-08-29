@@ -238,6 +238,60 @@ fn playback_groups_follow_mode_page_and_transport_state() {
     transport_group.invoke_accessible_decrement_action();
 }
 
+/// Playback-control pairs share wide lines and wrap as intact groups at narrow widths.
+#[test]
+fn playback_control_pairs_wrap_only_when_width_requires() {
+    setup();
+    let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
+    let progress_pair =
+        ElementHandle::find_by_element_id(&app, "AppWindow::progress-slider-group")
+            .next()
+            .expect("progress slider group exists");
+    let transport_pair = ElementHandle::find_by_element_id(&app, "AppWindow::transport-controls")
+        .next()
+        .expect("transport group exists");
+    let volume_pair = ElementHandle::find_by_element_id(&app, "AppWindow::volume-slider-group")
+        .next()
+        .expect("volume slider group exists");
+    let end_pair = ElementHandle::find_by_element_id(&app, "AppWindow::end-controls")
+        .next()
+        .expect("end-of-track group exists");
+
+    app.window().set_size(slint::LogicalSize::new(1000.0, 600.0));
+    let wide_progress_center =
+        progress_pair.absolute_position().y + progress_pair.size().height / 2.0;
+    let wide_transport_center =
+        transport_pair.absolute_position().y + transport_pair.size().height / 2.0;
+    let wide_volume_center = volume_pair.absolute_position().y + volume_pair.size().height / 2.0;
+    let wide_end_center = end_pair.absolute_position().y + end_pair.size().height / 2.0;
+    assert!(
+        (wide_progress_center - wide_transport_center).abs() < 0.001,
+        "wide progress pair shares one line",
+    );
+    assert!(
+        (wide_volume_center - wide_end_center).abs() < 0.001,
+        "wide volume pair shares one line",
+    );
+
+    app.window().set_size(slint::LogicalSize::new(360.0, 600.0));
+    assert!(
+        transport_pair.absolute_position().y > progress_pair.absolute_position().y,
+        "narrow transport pair wraps below progress",
+    );
+    assert!(
+        end_pair.absolute_position().y > volume_pair.absolute_position().y,
+        "narrow end-of-track pair wraps below volume",
+    );
+    assert!(
+        transport_pair.absolute_position().x + transport_pair.size().width <= 360.0,
+        "wrapped transport pair remains inside the narrow window",
+    );
+    assert!(
+        end_pair.absolute_position().x + end_pair.size().width <= 360.0,
+        "wrapped end-of-track pair remains inside the narrow window",
+    );
+}
+
 /// Page reconciliation keeps the displayed page by label and clamps only when removed.
 #[test]
 fn reconciled_pages_keep_displayed_identity() {

@@ -1380,13 +1380,12 @@ component PlaybackModeGroup inherits Rectangle {
     accessible-label: "When this track ends";
     accessible-item-count: 4;
     accessible-action-increment => {
-        mode-scroll.viewport-x = max(
-            mode-scroll.width - mode-scroll.viewport-width,
-            mode-scroll.viewport-x - mode-scroll.width,
-        );
+        // The group now shares a row, so one action jumps to the final segment even when
+        // its narrow viewport would otherwise require several page-width increments.
+        mode-scroll.viewport-x = mode-scroll.width - mode-scroll.viewport-width;
     }
     accessible-action-decrement => {
-        mode-scroll.viewport-x = min(0px, mode-scroll.viewport-x + mode-scroll.width);
+        mode-scroll.viewport-x = 0px;
     }
 
     mode-scroll := Flickable {
@@ -1492,17 +1491,16 @@ component TransportButtonGroup inherits Rectangle {
     callback toggle-play();
     callback next();
     height: 48px;
-    horizontal-stretch: 1;
+    preferred-width: transport-row.preferred-width;
+    horizontal-stretch: 0;
     accessible-role: groupbox;
     accessible-label: "Transport";
     accessible-action-increment => {
-        transport-scroll.viewport-x = max(
-            transport-scroll.width - transport-scroll.viewport-width,
-            transport-scroll.viewport-x - transport-scroll.width,
-        );
+        // Match the playback-mode group's edge-to-edge accessible navigation in the shared row.
+        transport-scroll.viewport-x = transport-scroll.width - transport-scroll.viewport-width;
     }
     accessible-action-decrement => {
-        transport-scroll.viewport-x = min(0px, transport-scroll.viewport-x + transport-scroll.width);
+        transport-scroll.viewport-x = 0px;
     }
 
     transport-scroll := Flickable {
@@ -1636,48 +1634,99 @@ export component AppWindow inherits Window {
         padding: 12px;
         spacing: 8px;
 
-        HorizontalBox {
-            alignment: stretch;
-            Text {
-                text: root.position-text;
-                font-size: Typography.body-rem * 1rem;
-                vertical-alignment: center;
-            }
-            // `seek-slider :=` gives this element a stable id so the embedded MCP
-            // server (`find_elements_by_id "AppWindow::seek-slider"`) and the
-            // ElementHandle regression test can target the seek bar specifically.
-            seek-slider := Slider {
-                horizontal-stretch: 1;
-                minimum: 0;
-                maximum: root.duration > 0 ? root.duration : 1.0;
-                value <=> root.position;
-                changed(value) => {
-                    root.seek(value);
+        // Each semantic group is one flex item: both stay on one line when their preferred
+        // widths fit, and the complete transport group wraps intact when the window narrows.
+        progress-controls := FlexboxLayout {
+            flex-wrap: wrap;
+            spacing-horizontal: 8px;
+            spacing-vertical: 8px;
+            cross-axis-alignment: center;
+            vertical-stretch: 0;
+            progress-slider-group := HorizontalLayout {
+                flex-grow: 1;
+                flex-shrink: 0;
+                // Reserves two time labels plus a usable seek slider before transport wraps.
+                flex-basis: 200px;
+                Text {
+                    text: root.position-text;
+                    font-size: Typography.body-rem * 1rem;
+                    vertical-alignment: center;
+                }
+                // `seek-slider :=` gives this element a stable id so the embedded MCP
+                // server (`find_elements_by_id "AppWindow::seek-slider"`) and the
+                // ElementHandle regression test can target the seek bar specifically.
+                seek-slider := Slider {
+                    horizontal-stretch: 1;
+                    minimum: 0;
+                    maximum: root.duration > 0 ? root.duration : 1.0;
+                    value <=> root.position;
+                    changed(value) => {
+                        root.seek(value);
+                    }
+                }
+                Text {
+                    text: root.duration-text;
+                    font-size: Typography.body-rem * 1rem;
+                    vertical-alignment: center;
                 }
             }
-            Text {
-                text: root.duration-text;
-                font-size: Typography.body-rem * 1rem;
-                vertical-alignment: center;
+            transport-controls := TransportButtonGroup {
+                flex-grow: 0;
+                flex-shrink: 0;
+                playing: root.playing;
+                prev => { root.prev(); }
+                toggle-play => { root.toggle-play(); }
+                next => { root.next(); }
             }
         }
 
-        HorizontalBox {
-            Text {
-                text: "Volume";
-                font-size: Typography.body-rem * 1rem;
-                vertical-alignment: center;
+        // Volume and end-of-track pairs use their own flex bases. They share one line when
+        // both remain usable and wrap as complete pairs instead of clipping their controls.
+        volume-controls := FlexboxLayout {
+            flex-wrap: wrap;
+            spacing-horizontal: 8px;
+            spacing-vertical: 8px;
+            cross-axis-alignment: center;
+            vertical-stretch: 0;
+            volume-slider-group := HorizontalLayout {
+                flex-grow: 1;
+                flex-shrink: 0;
+                // Reserves the body label and slider before the end-of-track pair wraps.
+                flex-basis: 160px;
+                Text {
+                    text: "Volume";
+                    font-size: Typography.body-rem * 1rem;
+                    vertical-alignment: center;
+                }
+                // `volume-slider :=` gives this element a stable id for the same reason as
+                // the seek slider: MCP `find_elements_by_id "AppWindow::volume-slider"`
+                // and the ElementHandle regression test target it directly.
+                volume-slider := Slider {
+                    horizontal-stretch: 1;
+                    minimum: 0;
+                    maximum: 1.0;
+                    value <=> root.volume;
+                    changed(value) => {
+                        root.set-volume(value);
+                    }
+                }
             }
-            // `volume-slider :=` gives this element a stable id for the same reason as
-            // the seek slider: MCP `find_elements_by_id "AppWindow::volume-slider"`
-            // and the ElementHandle regression test target it directly.
-            volume-slider := Slider {
-                horizontal-stretch: 1;
-                minimum: 0;
-                maximum: 1.0;
-                value <=> root.volume;
-                changed(value) => {
-                    root.set-volume(value);
+            end-controls := HorizontalLayout {
+                flex-grow: 2;
+                flex-shrink: 0;
+                // Reserves the one-line label plus a scrollable mode-control viewport.
+                flex-basis: 240px;
+                Text {
+                    text: "When this track ends";
+                    font-size: Typography.body-rem * 1rem;
+                    vertical-alignment: center;
+                }
+                PlaybackModeGroup {
+                    selected-mode: root.playback-mode;
+                    current-page: root.selected-page >= 0 && root.page-labels.length > root.selected-page
+                        ? root.page-labels[root.selected-page]
+                        : "";
+                    select-mode(mode) => { root.set-playback-mode(mode); }
                 }
             }
         }
@@ -1700,24 +1749,6 @@ export component AppWindow inherits Window {
             }
         }
 
-        Text {
-            text: "When this track ends";
-            font-size: Typography.body-rem * 1rem;
-            color: Palette.foreground;
-        }
-        PlaybackModeGroup {
-            selected-mode: root.playback-mode;
-            current-page: root.selected-page >= 0 && root.page-labels.length > root.selected-page
-                ? root.page-labels[root.selected-page]
-                : "";
-            select-mode(mode) => { root.set-playback-mode(mode); }
-        }
-        TransportButtonGroup {
-            playing: root.playing;
-            prev => { root.prev(); }
-            toggle-play => { root.toggle-play(); }
-            next => { root.next(); }
-        }
 
         // 32px gap between the control row and the queue area below. The spacer
         // is 16px because the enclosing VerticalBox adds its own 8px spacing on
