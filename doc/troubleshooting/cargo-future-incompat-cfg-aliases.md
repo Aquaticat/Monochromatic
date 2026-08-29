@@ -308,6 +308,11 @@ its generated lockfile contains `nix` 0.29.0 and only `cfg_aliases` 0.2.2
 The terminal Clippy task changed from a notice naming six packages to no future-incompatibility notice.
 Its 16 tests pass,
 including `pty::tests::spawns_command_and_reads_output` through the upgraded dependency.
+The Fedora container verification uses 4 GiB of memory and 4 CPUs.
+It independently fetches the Git source,
+then passes terminal Clippy,
+the release build,
+and the same 16 tests.
 The truepeak-core 62 tests,
 nested-wayland-session 25 tests,
 and Rust linter 51 tests also pass.
