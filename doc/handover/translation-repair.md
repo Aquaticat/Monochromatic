@@ -10,7 +10,7 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `6369228d5`.
+- Current pipeline commit: `5211c54dd`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
 - Generation-13 continuous correction,
@@ -20,11 +20,11 @@ not current instruction.
   reviewed-rejection strategy history,
   and required-provider gate landed in `cf14b379b`.
 - Deterministic correction-cycle guard landed in `6369228d5`.
-- Pending generation 15 floors every body candidate on target-authoritative contributor survival.
+- Generation-15 contributor-authority floor landed in `5211c54dd`.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
-- Pending generation-15 verification emitted 866 `PASS` lines and zero `FAIL` lines.
+- Final generation-15 verification emitted 866 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -52,9 +52,16 @@ not current instruction.
   `~/temp/agent/gfp-generation14-required-providers-green-20260829.log`,
   `~/temp/agent/gfp-generation14-payload-validation-red-20260829.log`,
   and `~/temp/agent/gfp-generation14-payload-validation-green-20260829.log`.
+- Generation-15 GFP logs:
+  `~/temp/agent/gfp-v15-contributor-floor-red-20260829.log`,
+  `~/temp/agent/gfp-v15-contributor-floor-green-20260829.log`,
+  `~/temp/agent/gfp-v15-contributor-exclusion-red-20260829.log`,
+  `~/temp/agent/gfp-v15-contributor-exclusion-green-20260829.log`,
+  `~/temp/agent/gfp-v15-contributor-baseline-red-20260829.log`,
+  and `~/temp/agent/gfp-v15-contributor-baseline-green-20260829.log`.
 
 Artifact schema remains 9.
-Pending cache generations are consolidation 15,
+At `5211c54dd`, cache generations are consolidation 15,
 lane contest 5,
 translate 9,
 refine 4,

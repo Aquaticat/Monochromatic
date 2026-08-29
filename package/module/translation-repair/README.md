@@ -1743,7 +1743,7 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Missing/misplaced slice and contradictory assembled-page structure are invariants;
   earlier stages must prevent them rather than looping at publication guard.
 - `assertContributorNamesComplete` throws when final attribution drops target-authoritative public form.
-  Generation 15 floors translation candidates,
+  Generation 15 landed in `5211c54dd` and floors translation candidates,
   excludes unrepairable violator voices without fabricated authorship,
   rejects unsafe ordinary lane winners,
   and floors consolidation and polish candidates.
