@@ -129,6 +129,8 @@ const client: SyntheticClient = {
  *
  * @param selectionSheets - optional sink receiving candidate-selector prompts
  *
+ * @param throwOnThirdCorrection - whether unexpected third generation fails fixture
+ *
  * @returns Scripted bounded-correction client
  *
  * @example
@@ -143,12 +145,14 @@ function boundedCorrectionClient(
     secondCorrectionText,
     acceptSecondCorrection = false,
     selectionSheets,
+    throwOnThirdCorrection = false,
   }: {
     readonly correctionText?: string;
     readonly rejectCorrection?: boolean;
     readonly secondCorrectionText?: string;
     readonly acceptSecondCorrection?: boolean;
     readonly selectionSheets?: string[];
+    readonly throwOnThirdCorrection?: boolean;
   },
 ): SyntheticClient {
   /**
@@ -177,6 +181,8 @@ function boundedCorrectionClient(
       const value: unknown = (() => {
         if (schema === 'refine_report') {
           calls.refine += 1;
+          if (throwOnThirdCorrection && (calls.refine > 3))
+            throw new Error('third correction generation exceeded bound',);
           return {
             rewrites: ((calls.refine === 1) || (correctionText === undefined))
               ? []
@@ -420,6 +426,7 @@ await describe({
             correctionText: POLISHED,
             rejectCorrection: true,
             secondCorrectionText: FINAL_POLISHED,
+            throwOnThirdCorrection: true,
           },),
           sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
           archiveText: BASE,
