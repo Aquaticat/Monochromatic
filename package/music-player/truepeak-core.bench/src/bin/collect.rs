@@ -74,10 +74,10 @@ fn probe_spec(path: &Path) -> Result<(u32, u16, f64)> {
     let parsed: serde_json::Value = serde_json::from_slice(&output.stdout)?;
     let stream = &parsed["streams"][0];
     // Pull each field, defaulting duration to zero (the decoded frame count is authoritative).
-    let rate: u32 = stream["sample_rate"].as_str().and_then(|s| s.parse().ok()).unwrap_or(0);
+    let rate: u32 = stream["sample_rate"].as_str().and_then(|s| return s.parse().ok()).unwrap_or(0);
     let channels: u16 = stream["channels"].as_u64().unwrap_or(0) as u16;
-    let duration: f64 = parsed["format"]["duration"].as_str().and_then(|s| s.parse().ok()).unwrap_or(0.0);
-    Ok((rate, channels, duration))
+    let duration: f64 = parsed["format"]["duration"].as_str().and_then(|s| return s.parse().ok()).unwrap_or(0.0);
+    return Ok((rate, channels, duration))
 }
 
 /// Decode a file with ffmpeg and return its full peak, per-bin peaks, and frame count.
@@ -109,8 +109,8 @@ fn decode_and_bin(
         leftover.extend_from_slice(&buf[..read]);
         let complete = leftover.len() / 4 * 4;
         let samples: Vec<f32> = leftover[..complete]
-            .chunks_exact(4)
-            .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+            .as_chunks::<4>().0.iter()
+            .map(|b| return f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
             .collect();
         leftover.drain(..complete);
         total_samples += samples.len() as u64;
@@ -132,9 +132,9 @@ fn decode_and_bin(
         bins.push(meter.take_peak());
     }
     child.wait()?;
-    let full_peak = bins.iter().fold(0.0_f32, |peak, &bin| peak.max(bin));
+    let full_peak = bins.iter().fold(0.0_f32, |peak, &bin| return peak.max(bin));
     let decoded_frames = if channels == 0 { 0 } else { total_samples / u64::from(channels) };
-    Ok((full_peak, bins, decoded_frames))
+    return Ok((full_peak, bins, decoded_frames))
 }
 
 /// Measure one track end to end (probe, decode, bin) into a `TrackMetrics`.
@@ -145,7 +145,7 @@ fn measure(path: &Path, bin_seconds: f64) -> Result<TrackMetrics> {
     }
     let bin_frames = ((bin_seconds * f64::from(rate)) as u64).max(1);
     let (full_peak, bin_peaks, decoded_frames) = decode_and_bin(path, channels, bin_frames)?;
-    Ok(TrackMetrics {
+    return Ok(TrackMetrics {
         path: path.to_string_lossy().into_owned(),
         duration_secs: decoded_frames as f64 / f64::from(rate),
         rate,
@@ -173,18 +173,18 @@ fn collect_audio_files(root: &Path) -> Result<Vec<PathBuf>> {
         }
     }
     files.sort();
-    Ok(files)
+    return Ok(files)
 }
 
 /// Report whether a path has a decodable audio extension and is not an AppleDouble sidecar.
 fn is_audio(path: &Path) -> bool {
-    let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+    let name = path.file_name().and_then(|n| return n.to_str()).unwrap_or("");
     if name.starts_with("._") {
         return false;
     }
-    match path.extension().and_then(|e| e.to_str()) {
-        Some(ext) => AUDIO_EXTENSIONS.contains(&ext.to_lowercase().as_str()),
-        None => false,
+    match path.extension().and_then(|e| return e.to_str()) {
+        Some(ext) => return AUDIO_EXTENSIONS.contains(&ext.to_lowercase().as_str()),
+        None => return false,
     }
 }
 
@@ -194,15 +194,15 @@ fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
         )
         .with_writer(std::io::stderr)
         .init();
     let args: Vec<String> = env::args().collect();
     let root = PathBuf::from(args.get(1).context("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
     let out_path = PathBuf::from(args.get(2).context("usage: collect <root> <out.jsonl> [bin_seconds] [workers]")?);
-    let bin_seconds = args.get(3).and_then(|v| v.parse().ok()).unwrap_or(DEFAULT_BIN_SECONDS);
-    let workers = args.get(4).and_then(|v| v.parse().ok()).unwrap_or(DEFAULT_WORKERS);
+    let bin_seconds = args.get(3).and_then(|v| return v.parse().ok()).unwrap_or(DEFAULT_BIN_SECONDS);
+    let workers = args.get(4).and_then(|v| return v.parse().ok()).unwrap_or(DEFAULT_WORKERS);
 
     let files = collect_audio_files(&root)?;
     let total = files.len();
@@ -245,5 +245,5 @@ fn main() -> Result<()> {
     }
     writer.flush()?;
     println!("collected {measured}/{total} tracks ({failed} failed) bin_seconds={bin_seconds} -> {}", out_path.to_string_lossy());
-    Ok(())
+    return Ok(())
 }

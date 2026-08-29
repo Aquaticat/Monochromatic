@@ -51,7 +51,7 @@ pub fn sweep(
             });
         }
     }
-    scored
+    return scored
 }
 
 /// Rank scored candidates by the decided objective, best first.
@@ -62,7 +62,7 @@ pub fn sweep(
 /// "loudest-safe, then simplest" directly.
 pub fn rank(mut scored: Vec<Scored>, target_secs: f64) -> Vec<Scored> {
     // Drop over-budget points: they cannot ship.
-    scored.retain(|point| point.within_budget);
+    scored.retain(|point| return point.within_budget);
     // Order by the objective; floats are compared through total_cmp to stay total.
     scored.sort_by(|left, right| {
         let quiet = right
@@ -77,7 +77,7 @@ pub fn rank(mut scored: Vec<Scored>, target_secs: f64) -> Vec<Scored> {
         let budget = (target_secs - left.report.decoded_secs)
             .abs()
             .total_cmp(&(target_secs - right.report.decoded_secs).abs());
-        quiet.then(violators).then(budget)
+        return quiet.then(violators).then(budget)
     });
-    scored
+    return scored
 }

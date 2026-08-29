@@ -61,7 +61,7 @@ const WINDOW_COUNTS: &[usize] = &[14, 20, 28, 40];
 fn frange(start: f64, end: f64, step: f64) -> Vec<f64> {
     // Count the steps, then map each index to its value (functional, no mutable cursor).
     let steps = ((end - start) / step).round() as i64;
-    (0..=steps).map(|index| start + index as f64 * step).collect()
+    return (0..=steps).map(|index| return start + index as f64 * step).collect()
 }
 
 /// The stage-two shipped policy's coverage, kept locally so the ledger stays
@@ -86,7 +86,7 @@ fn report_proportional(
 ) -> Result<()> {
     let policy = truepeak_core::default_policy();
     // The optional metadata argument (a non-flag after the corpus path) enables the safe split.
-    let safe: HashSet<String> = match args.iter().skip(2).find(|arg| !arg.starts_with("--")) {
+    let safe: HashSet<String> = match args.iter().skip(2).find(|arg| return !arg.starts_with("--")) {
         Some(meta) => load_safe_paths(Path::new(meta))?,
         None => HashSet::new(),
     };
@@ -122,7 +122,7 @@ fn report_proportional(
             row.margin_db, row.worst_quiet_db, row.clamped, row.clamped_safe, row.total
         );
     }
-    Ok(())
+    return Ok(())
 }
 
 /// The zoom pass-one coverage fraction the answer fixes (a tenth of each long track).
@@ -150,7 +150,7 @@ fn report_zoom(
 ) -> Result<()> {
     let policy = truepeak_core::default_policy();
     // The optional metadata argument (a non-flag after the corpus path) enables the split.
-    let safe: HashSet<String> = match args.iter().skip(2).find(|arg| !arg.starts_with("--")) {
+    let safe: HashSet<String> = match args.iter().skip(2).find(|arg| return !arg.starts_with("--")) {
         Some(meta) => load_safe_paths(Path::new(meta))?,
         None => HashSet::new(),
     };
@@ -181,7 +181,7 @@ fn report_zoom(
     }
     println!();
     for &margin in ZOOM_MARGINS {
-        let m = measure_zoom(&rows, &|_| margin, policy.max_too_loud_db, policy.ceiling_dbtp, tracks.len());
+        let m = measure_zoom(&rows, &|_| return margin, policy.max_too_loud_db, policy.ceiling_dbtp, tracks.len());
         println!(
             "  margin={margin:.1}: clamped={} ({} safe) avg_quiet={:.3}dB worst_quiet={:.2}dB worst_over={:.2}dB",
             m.clamped, m.clamped_safe, m.avg_quiet_db, m.worst_quiet_db, m.worst_over_db
@@ -190,7 +190,7 @@ fn report_zoom(
     if !safe.is_empty() {
         let split = measure_zoom(
             &rows,
-            &|row| if row.safe { ZOOM_SPLIT_SAFE_DB } else { ZOOM_SPLIT_HOT_DB },
+            &|row| if row.safe { return ZOOM_SPLIT_SAFE_DB } else { return ZOOM_SPLIT_HOT_DB },
             policy.max_too_loud_db,
             policy.ceiling_dbtp,
             tracks.len(),
@@ -200,7 +200,7 @@ fn report_zoom(
             split.clamped, split.clamped_safe, split.avg_quiet_db, split.worst_quiet_db, split.worst_over_db
         );
     }
-    Ok(())
+    return Ok(())
 }
 
 /// Entry point: load the corpus, compute the target, search, and print the report.
@@ -209,7 +209,7 @@ fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
         )
         .with_writer(std::io::stderr)
         .init();
@@ -219,7 +219,7 @@ fn main() -> Result<()> {
         .context("usage: truepeak-core-bench <tracks.jsonl>")?;
 
     let tracks = load_tracks(Path::new(corpus_path))?;
-    let full_secs: f64 = tracks.iter().map(|track| track.duration_secs).sum();
+    let full_secs: f64 = tracks.iter().map(|track| return track.duration_secs).sum();
     let target_secs = full_secs / TARGET_DIVISOR;
 
     println!("corpus: {} tracks", tracks.len());
@@ -228,19 +228,19 @@ fn main() -> Result<()> {
 
     // The decided policy: `--proportional [metadata.jsonl]` evaluates it on the corpus and
     // prints the under-read distribution and the margin/clamp tradeoff, then returns.
-    if args.iter().any(|arg| arg == "--proportional") {
+    if args.iter().any(|arg| return arg == "--proportional") {
         return report_proportional(&tracks, full_secs, target_secs, &args);
     }
 
     // The quarter-measure answer: `--zoom [metadata.jsonl]` evaluates the frontier-zoom
     // probe at the full budget and prints the letter's three measures per margin.
-    if args.iter().any(|arg| arg == "--zoom") {
+    if args.iter().any(|arg| return arg == "--zoom") {
         return report_zoom(&tracks, full_secs, target_secs, &args);
     }
 
     // The bucket-first composite: `--buckets <tags-full.jsonl> [flac-profiles.jsonl]`
     // evaluates the decided per-provenance coverage/margin table with FLAC bones.
-    if args.iter().any(|arg| arg == "--buckets") {
+    if args.iter().any(|arg| return arg == "--buckets") {
         return report_buckets(&tracks, full_secs, target_secs, &args);
     }
 
@@ -253,7 +253,7 @@ fn main() -> Result<()> {
     for &window_count in WINDOW_COUNTS {
         let seconds_grid: Vec<f64> = thresholds
             .iter()
-            .map(|&threshold| threshold / window_count as f64)
+            .map(|&threshold| return threshold / window_count as f64)
             .collect();
         let mut points = sweep(&tracks, window_count, &seconds_grid, &margin_grid, target_secs);
         scored.append(&mut points);
@@ -312,7 +312,7 @@ fn main() -> Result<()> {
     let dense_thresholds = frange(40.0, 56.0, 1.0);
     let feasibles = best_feasible(&tracks, &dense_counts, &dense_thresholds, target_secs, quiet_bound_db);
     println!("\nfeasible no-classifier model (no full scans; single fixed margin), best densities:");
-    for point in feasibles.iter().filter(|point| point.feasible).take(30) {
+    for point in feasibles.iter().filter(|point| return point.feasible).take(30) {
         let threshold = point.candidate.window_count as f64 * point.candidate.window_seconds;
         println!(
             "  count={} thr={:.1}s ws={:.4}s | margin={:.3}dB worst_quiet={:+.3}dB | probe_decoded={:.0}s delta={:+.0}s",
@@ -346,5 +346,5 @@ fn main() -> Result<()> {
         );
     }
 
-    Ok(())
+    return Ok(())
 }

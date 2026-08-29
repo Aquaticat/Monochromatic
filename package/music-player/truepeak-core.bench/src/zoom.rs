@@ -22,9 +22,9 @@ use truepeak_core::peak_dbtp;
 /// Convert a linear peak to dBTP, treating silence as a very negative level.
 fn db(peak: f64) -> f64 {
     if peak <= 0.0 {
-        f64::NEG_INFINITY
+        return f64::NEG_INFINITY
     } else {
-        peak_dbtp(peak)
+        return peak_dbtp(peak)
     }
 }
 
@@ -47,12 +47,12 @@ fn even_indices(n: usize, coverage: f64) -> Vec<usize> {
     // The count is proportional to coverage; a single sample sits mid-track.
     let count = ((coverage * n as f64).round() as usize).max(1);
     let span = n - 1;
-    (0..count)
+    return (0..count)
         .map(|index| {
             if count <= 1 {
-                span / 2
+                return span / 2
             } else {
-                ((index as f64 / (count - 1) as f64) * span as f64).round() as usize
+                return ((index as f64 / (count - 1) as f64) * span as f64).round() as usize
             }
         })
         .collect()
@@ -107,7 +107,7 @@ fn zoom_probe(track: &Track, pass1_coverage: f64, total_coverage: f64) -> (f64, 
             decode(index + 1, &mut decoded, &mut heap, &mut used, &mut peak);
         }
     }
-    (f64::from(peak), used as f64 * track.bin_seconds)
+    return (f64::from(peak), used as f64 * track.bin_seconds)
 }
 
 /// Evaluate the zoom policy over the corpus at the full decoded-seconds budget.
@@ -125,13 +125,13 @@ pub fn evaluate_zoom(
     // Split the corpus; shorts are exact and free of error, longs share the budget.
     let short_secs: f64 = tracks
         .iter()
-        .filter(|track| track.duration_secs <= short_scan_max_secs)
-        .map(|track| track.duration_secs)
+        .filter(|track| return track.duration_secs <= short_scan_max_secs)
+        .map(|track| return track.duration_secs)
         .sum();
     let long_secs: f64 = tracks
         .iter()
-        .filter(|track| track.duration_secs > short_scan_max_secs)
-        .map(|track| track.duration_secs)
+        .filter(|track| return track.duration_secs > short_scan_max_secs)
+        .map(|track| return track.duration_secs)
         .sum();
     // A hair under the exact fraction so per-track floor rounding stays inside budget.
     let coverage_epsilon = 0.0001;
@@ -150,7 +150,7 @@ pub fn evaluate_zoom(
             safe: safe_paths.contains(&track.path),
         });
     }
-    (decoded, rows)
+    return (decoded, rows)
 }
 
 /// One margin's outcome over the zoom rows: the three measures of the letter.
@@ -201,7 +201,7 @@ pub fn measure_zoom(
         worst_quiet = worst_quiet.max((applied - necessary).max(0.0));
         worst_over = worst_over.max((necessary - applied).max(0.0));
     }
-    ZoomMeasures {
+    return ZoomMeasures {
         clamped,
         clamped_safe,
         avg_quiet_db: quiet_sum / all_tracks.max(1) as f64,
@@ -214,10 +214,10 @@ pub fn measure_zoom(
 pub fn zoom_under_read_quantile(rows: &[ZoomRow], ceiling_dbtp: f64, fraction: f64) -> f64 {
     let mut values: Vec<f64> = rows
         .iter()
-        .filter(|row| row.full_db > ceiling_dbtp)
-        .map(|row| row.full_db - row.probe_db)
+        .filter(|row| return row.full_db > ceiling_dbtp)
+        .map(|row| return row.full_db - row.probe_db)
         .collect();
     values.sort_by(f64::total_cmp);
     let index = ((values.len() as f64 - 1.0) * fraction).round() as usize;
-    values.get(index).copied().unwrap_or(0.0)
+    return values.get(index).copied().unwrap_or(0.0)
 }

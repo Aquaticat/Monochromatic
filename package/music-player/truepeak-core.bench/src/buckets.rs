@@ -81,7 +81,7 @@ fn bucket_probe(policy: &Policy, bucket: Bucket, bones_present: bool) -> BucketP
         Bucket::Purl => TrackProvenance { youtube_tagged: true, ..TrackProvenance::unknown() },
         Bucket::Bare => TrackProvenance::unknown(),
     };
-    provenance.select(&policy.buckets, bones_present)
+    return provenance.select(&policy.buckets, bones_present)
 }
 
 /// Read the tag sweep into a per-path bucket map; tracks missing from the sweep fall
@@ -111,15 +111,15 @@ pub fn load_buckets(path: &Path) -> Result<HashMap<String, Bucket>> {
         };
         map.insert(row.path, bucket);
     }
-    Ok(map)
+    return Ok(map)
 }
 
 /// The extension-fallback bucket for tracks the tag sweep missed.
 fn bucket_from_extension(path: &str) -> Bucket {
     if path.ends_with(".flac") {
-        Bucket::Flac
+        return Bucket::Flac
     } else {
-        Bucket::Bare
+        return Bucket::Bare
     }
 }
 
@@ -139,19 +139,19 @@ pub fn load_bones(path: &Path, top: usize) -> Result<HashMap<String, Vec<usize>>
         }
         let row: ProfileRow = serde_json::from_str(&line)?;
         let mut order: Vec<usize> = (0..row.bytes.len()).collect();
-        order.sort_by(|&a, &b| row.bytes[b].cmp(&row.bytes[a]));
+        order.sort_by(|&a, &b| return row.bytes[b].cmp(&row.bytes[a]));
         order.truncate(top);
         map.insert(row.path, order);
     }
-    Ok(map)
+    return Ok(map)
 }
 
 /// Convert a linear peak to dBTP, treating silence as a very negative level.
 fn db(peak: f64) -> f64 {
     if peak <= 0.0 {
-        f64::NEG_INFINITY
+        return f64::NEG_INFINITY
     } else {
-        peak_dbtp(peak)
+        return peak_dbtp(peak)
     }
 }
 
@@ -219,7 +219,7 @@ fn hybrid_probe(track: &Track, coverage: f64, even_coverage: f64, bones: Option<
             decode(index + 1, &mut decoded, &mut heap, &mut used, &mut peak);
         }
     }
-    (f64::from(peak), used as f64 * track.bin_seconds)
+    return (f64::from(peak), used as f64 * track.bin_seconds)
 }
 
 /// One probed long track under the composite: levels, margin, and its bucket.
@@ -247,7 +247,7 @@ pub fn report_buckets(
     args: &[String],
 ) -> Result<()> {
     // The side files are the non-flag arguments after the corpus path, in order.
-    let side: Vec<&String> = args.iter().skip(2).filter(|arg| !arg.starts_with("--")).collect();
+    let side: Vec<&String> = args.iter().skip(2).filter(|arg| return !arg.starts_with("--")).collect();
     let tags_path = side
         .first()
         .context("usage: truepeak-core-bench <corpus> <tags-full.jsonl> [flac-profiles.jsonl] --buckets")?;
@@ -261,7 +261,7 @@ pub fn report_buckets(
     println!("\nbucket composite (the SHIPPED default_policy table; flac bones-guided):");
     for bucket in [Bucket::Flac, Bucket::Store, Bucket::Purl, Bucket::Bare] {
         let probe = bucket_probe(&policy, bucket, bucket == Bucket::Flac && !bones.is_empty());
-        let members = rows.iter().filter(|row| row.bucket == bucket).count();
+        let members = rows.iter().filter(|row| return row.bucket == bucket).count();
         println!(
             "  {bucket:?}: coverage={} margin={}dB long_tracks={members}",
             probe.coverage_fraction, probe.probe_margin_db
@@ -300,7 +300,7 @@ pub fn report_buckets(
         worst_quiet,
         worst_over,
     );
-    Ok(())
+    return Ok(())
 }
 
 /// Evaluate the shipped composite over the corpus.
@@ -318,8 +318,8 @@ pub fn evaluate_buckets(
     // Fold each track into the decoded total and its measured row.
     let mut decoded: f64 = tracks
         .iter()
-        .filter(|track| track.duration_secs <= policy.short_scan_max_secs)
-        .map(|track| track.duration_secs)
+        .filter(|track| return track.duration_secs <= policy.short_scan_max_secs)
+        .map(|track| return track.duration_secs)
         .sum();
     let mut rows = Vec::new();
     for track in tracks {
@@ -329,7 +329,7 @@ pub fn evaluate_buckets(
         let bucket = buckets
             .get(&track.path)
             .copied()
-            .unwrap_or_else(|| bucket_from_extension(&track.path));
+            .unwrap_or_else(|| return bucket_from_extension(&track.path));
         let track_bones = if bucket == Bucket::Flac { bones.get(&track.path) } else { None };
         let probe = bucket_probe(policy, bucket, track_bones.is_some());
         let even = if track_bones.is_some() {
@@ -346,5 +346,5 @@ pub fn evaluate_buckets(
             bucket,
         });
     }
-    (decoded, rows)
+    return (decoded, rows)
 }
