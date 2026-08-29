@@ -58,9 +58,16 @@ or evidence unless the user later authorizes cleanup.
   The no-desktop installation reached terminal success:
   `All done.` and `CachyOS has been installed on your computer.`
   **Restart now** remained disabled.
-  The installer was closed,
-  and guest `systemctl poweroff` was entered from the live terminal.
-  Process `wait-nodesktop-poweroff` is waiting for the domain to reach `shut off`.
+  The installer was closed.
+  The first attempted `systemctl poweroff` went into System Settings search rather than Konsole and had no effect.
+  Refocusing the retained Konsole window exposed the installer cleanup transcript,
+  including `Failed to export pool "cannot export 'zroot': pool is busy"` despite terminal Calamares success.
+  No pool repair or clear command was used.
+  The corrected guest `systemctl poweroff` reached `shut off` immediately.
+  Flatpak-packaged `virsh change-media --eject --config` then exited with code 139 and no diagnostic message,
+  but after-state domain XML proved the ISO source had been removed from persistent `hda` configuration.
+  The no-desktop domain restarted from its installed EFI disk.
+  Process `wait-nodesktop-encrypted-boot` is waiting for ZFSBootMenu unlock or installed text login.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
