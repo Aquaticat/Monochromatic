@@ -1583,8 +1583,9 @@ and confirmation order.
 Final-naturalness completeness guard checks settled runtime state and does not duplicate artifact reader's digest validation.
 Legacy schema-9 records without field remain readable.
 Generation 13 landed in `1d16d89c4` and removes two-correction ceiling.
-Pending generation 14 threads every reviewed rejection into failed-strategy evidence
-and durably stores first raw model payload by canonical prompt under run root.
+Generation 14 landed in `cf14b379b` and threads every reviewed rejection into failed-strategy evidence
+while durably storing first raw model payload by canonical prompt under run root.
+Commit `6369228d5` detects exact repeated correction task before dispatch and pauses it as `INCOMPLETE`.
 Interrupted invocation reconstructs exact correction state from payloads without provider resends,
 then continues at first unseen prompt.
 Payload cache carries corpus and model wording;

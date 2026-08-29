@@ -10,24 +10,26 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `1d16d89c4`.
+- Current pipeline commit: `6369228d5`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
 - Generation-13 continuous correction,
   prompt payload reuse,
   and one-provider operation landed in `1d16d89c4`.
-- Pending generation 14 adds reviewed-rejection strategy history,
-  durable raw-payload replay across invocations,
-  and explicit required-provider gate for measured arms.
+- Generation-14 checkpoint,
+  reviewed-rejection strategy history,
+  and required-provider gate landed in `cf14b379b`.
+- Deterministic correction-cycle guard landed in `6369228d5`.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
-- Pending generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
+- Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
-- Pre-commit advisor reviews identified blockers;
+- Pre-commit advisor reviews identified generation-13 blockers;
   remediation followed,
   but no clean post-remediation advisor verdict was recorded before `1d16d89c4`.
+- Generation-14 and correction-cycle commits each received clean pre-commit advisor verdict.
 - Post-commit GFP mutations proved prompt reuse,
   stopped whole-entry retry,
   and third-correction guards fail when removed,
@@ -39,9 +41,18 @@ not current instruction.
   `~/temp/agent/gfp-stopped-entry-green-20260829.log`,
   `~/temp/agent/gfp-continuous-correction-red-20260829.log`,
   and `~/temp/agent/gfp-continuous-correction-green-20260829.log`.
+- Generation-14 GFP logs:
+  `~/temp/agent/gfp-generation14-durable-reuse-red-20260829.log`,
+  `~/temp/agent/gfp-generation14-durable-reuse-green-20260829.log`,
+  `~/temp/agent/gfp-generation14-reviewed-history-red-v2-20260829.log`,
+  `~/temp/agent/gfp-generation14-reviewed-history-green-20260829.log`,
+  `~/temp/agent/gfp-generation14-required-providers-red-20260829.log`,
+  `~/temp/agent/gfp-generation14-required-providers-green-20260829.log`,
+  `~/temp/agent/gfp-generation14-payload-validation-red-20260829.log`,
+  and `~/temp/agent/gfp-generation14-payload-validation-green-20260829.log`.
 
 Artifact schema remains 9.
-Consolidation cache generation is 14 in pending worktree,
+Consolidation cache generation is 14 at `6369228d5`,
 lane-contest cache generation is 4,
 and pairing cache generation is 2.
 Preparation identity remains v2.
@@ -56,6 +67,8 @@ Any usable rejection heard before bounded settlement remains decisive and enters
 Correction uses latest exact rejected text and structured findings,
 has no finite quality ceiling,
 and records any failed strategy into materially different next prompt.
+Exact repeated correction task is detected before dispatch and pauses as `INCOMPLETE`;
+this guard exists because durable payload replay otherwise makes history-loss cycle costless enough to starve timers.
 Schema-9 reader accepts arbitrary complete digest-bound correction chains.
 
 Every direct roster round now starts straggler grace at exact-half participation.
@@ -206,14 +219,13 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  Verify and commit generation-14 checkpoint and provider requirement.
-2.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
-3.  Optimize only measured completion path without weakening quality.
-4.  Rebuild pull-request fixture worktree and launch fresh generation-14 roots only after performance gate,
+1.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+2.  Optimize only measured completion path without weakening quality.
+3.  Rebuild pull-request fixture worktree and launch fresh generation-14 roots only after performance gate,
     passing `--require-providers synthetic,hyper`.
-5.  Verify every successful page and artifact,
+4.  Verify every successful page and artifact,
     then read complete output.
-6.  Continue targeted calibration and remaining pages after current mechanism is proven.
+5.  Continue targeted calibration and remaining pages after current mechanism is proven.
 
 There is no release deadline.
 Strict actual-output quality remains gate.
