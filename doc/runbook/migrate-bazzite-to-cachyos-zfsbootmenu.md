@@ -1069,7 +1069,10 @@ TODO | DONE
     so verify the installed kernel and ZFS-module pairing after boot when that page is absent.
 
 1. Create username `user` and hostname `cachyos-zfs-vm`.
-    Expect the account summary to show exactly `user`.
+    Calamares may auto-fill both fields after the full name is entered.
+    Select each field’s complete existing value with **Ctrl+A** before typing the intended replacement.
+    Expect the account summary to show exactly `user`,
+    not an appended value such as `useruser`.
 
 1. Enter the disposable user password twice.
     Expect Calamares to accept matching entries.
@@ -1091,20 +1094,41 @@ TODO | DONE
     Expect installation progress to begin.
 
 1. Wait for Calamares to report successful completion.
-    Expect no failed job and a log at `/home/liveuser/calamares.install.log`.
+    Expect no failed job and a nonempty log at `/home/liveuser/.cache/calamares/session.log`.
 
 1. Before closing or rebooting the live environment,
     preserve the Calamares log and flush the evidence image:
 
     ```bash
     cp \
-      /home/liveuser/calamares.install.log \
+      /home/liveuser/.cache/calamares/session.log \
       /mnt/zfs-evidence/calamares.install.log \
       && sync \
       && test -s /mnt/zfs-evidence/calamares.install.log
     ```
 
     Expect exit status zero.
+
+1. Select **Done** in Calamares.
+    Expect the Calamares window to close and the debug pipeline to return to its shell prompt.
+
+1. Confirm that neither Calamares nor its evidence writer remains active:
+
+    ```bash
+    test -z "$(pgrep --exact calamares)" \
+      && test -z "$(pgrep --exact tee)"
+    ```
+
+    Expect exit status zero before unmounting the evidence image.
+
+1. Flush and unmount the evidence image:
+
+    ```bash
+    sync \
+      && sudo umount /mnt/zfs-evidence
+    ```
+
+    Expect the unmount to succeed without `target is busy`.
 
 1. Shut down the VM from the live desktop instead of immediately rebooting.
     Expect virt-manager to show **Shutoff**.
@@ -2205,10 +2229,14 @@ TODO | DONE
     Expect **No Desktop** to remain the installation choice.
 
 1. Create username `user`.
-    Expect the account summary to show exactly `user`.
+    Calamares may have auto-filled the field from the full name.
+    Select the complete existing value with **Ctrl+A** before typing.
+    Expect the account summary to show exactly `user`,
+    not an appended value such as `useruser`.
 
 1. Choose the permanent hostname.
-    Expect that hostname in the account summary.
+    Select any auto-filled value with **Ctrl+A** before typing the permanent name.
+    Expect that exact hostname in the account summary.
 
 1. Enter the permanent user password twice.
     Expect matching-password validation.
@@ -2234,7 +2262,10 @@ TODO | DONE
     Expect partitioning and installation progress.
 
 1. Wait for successful completion.
-    Expect no failed job and a log at `/home/liveuser/calamares.install.log`.
+    Expect no failed job and a nonempty log at `/home/liveuser/.cache/calamares/session.log`.
+
+1. Preserve that log outside the target NVMe before closing Calamares.
+    Expect the copied evidence to remain available after leaving the live environment.
 
 1. Select **Done** without automatically rebooting if Calamares offers that choice.
     Expect the installer to close.

@@ -38,7 +38,37 @@ or evidence unless the user later authorizes cleanup.
   measured at 42,821,120 bytes.
   Post-install ZFS properties showed `zroot/data/var` and `zroot/data/var/lib` at `none` plus `off`,
   while every explicit persistent child remained mounted.
-  Process `wait-patched-layout-poweroff` is waiting for clean shutdown before installed boot.
+  The VM shut down cleanly after **Done** closed Calamares and released the evidence-disk `tee` process.
+  Installed boot reached ZFSBootMenu,
+  accepted the disposable native-encryption passphrase,
+  and reached tty1.
+  The actual disposable account `useruser` authenticated successfully.
+  Running root and `/var/lib/pacman` both resolve to `zroot/ROOT/default`.
+  Persistent home resolves to `zroot/data/home/useruser`.
+  The corrected-layout transaction installed `tree` and created
+  `zroot/ROOT/be-20260829-135720-pre-install`.
+  Current `tree` verification reported 7 total files and 0 altered files,
+  and the root-backed post-snapshot marker is present.
+  The first menu interceptor matched stale terminal text and was discarded.
+  A later reboot attempt did not run because `sudo` timed out before receiving a password.
+  After returning to a confirmed shell,
+  unprivileged `systemctl reboot` succeeded.
+  The exact countdown watcher then sent Escape at the real ZFSBootMenu countdown.
+  The native-encryption passphrase was accepted after interception.
+  Process `wait-patched-rollback-menu` is waiting for both default and pre-install menu entries.
+
+  During the timed-out `sudo` attempt,
+  delayed input reached fish after the password prompt closed and printed the disposable VM user password as an unknown
+  command.
+  That credential was immediately replaced through `passwd`.
+  The credential JSON now retains only the replacement,
+  the temporary old-password property was removed,
+  credential-bearing scratch captures were deleted,
+  and the guest console was cleared.
+  No non-disposable resource used that credential.
+  The Pi transcript still contains the revoked value,
+  so it must never be restored.
+  The ZFS passphrase was not exposed.
   The first installed disk reached Ly 1.4.1 after a successful native-encryption unlock.
   It contains Wayfire because the original runbook prescribed Wayfire as a temporary graphical base.
   The user correctly identified **No Desktop** as closer to the intended UWSM plus labwc system.
@@ -338,10 +368,28 @@ The patch changes only
 It keeps `data/var` and `data/var/lib` as unmounted namespace parents.
 No physical block device is attached.
 
-Post-install inspection exposed a separate home-layout anomaly:
-`zroot/data/home/useruser` was mounted at `/home/useruser`.
-No conclusion about its cause or installed-login effect has been drawn.
-The installed boot must verify the account home and backing dataset before desktop setup.
+The copied patched-install evidence has these SHA-256 values:
+
+- `bin-install.log`:
+  `5460e3ac69a2739479ac0336d7da927542a971c8f0e987fd16a7270c6e12f027`
+- `calamares.install.log`:
+  `a7e22594c8aba7d2b6cbc591f24f97705cc8427af045d1a51b95becdf96f5712`
+- `effective-sequence.txt`:
+  `4ce470be1196cd4d73c022e416c39b67eafa49c427b4e282aa3585466f2adbee`
+- `esp-files.txt`:
+  `105d48818686d014d3171a35b2f076ce4c9eaaa415c2fb2f8027b8a41e6a6750`
+- patched `zfs.conf`:
+  `0a3c855dcd5a3c8c61c9512bd5ed22b1d5898b0245f19d69dcc20671f8dc0c30`
+- `zfs-layout.txt`:
+  `a56f8b18aad51d5d700bee5c511b8330443633e873a0b22978df5f9f24d6d4f0`
+
+The `useruser` account and dataset were an input-automation mistake,
+not an installer home-layout anomaly.
+Entering the full name `User` auto-filled login `user`.
+The automation then appended another `user` instead of replacing the existing field.
+Installed login succeeded as `useruser`,
+and its home is correctly backed by `zroot/data/home/useruser`.
+A physical run must replace or confirm every auto-filled identity field before continuing.
 
 ## Attached guest storage
 

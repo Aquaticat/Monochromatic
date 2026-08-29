@@ -55,6 +55,27 @@ work alone.
 The third-party integration risk that originally contributed to 1.5 is scored separately under installer integration;
 keeping the operations rating at 1.5 would count part of that evidence twice.
 
+### Debug evidence remains active until Calamares closes
+
+The instrumented patched-layout installation launched Calamares through a `tee` pipeline writing to removable evidence
+media.
+The **All done** page reported successful installation,
+but Calamares and `tee` remained active until **Done** closed the installer.
+`fuser -vm /mnt/zfs-evidence` identified the active `tee` process when an early unmount failed with
+`target is busy`.
+After selecting **Done**,
+both processes exited,
+the evidence disk unmounted cleanly,
+and the VM powered off.
+
+The measured full Calamares log was
+`/home/liveuser/.cache/calamares/session.log`,
+not `/var/log/Calamares.log`.
+Evidence procedures must copy that file before closing the live environment,
+select **Done**,
+confirm Calamares and `tee` exited,
+then unmount the evidence medium.
+
 ### The factory baseline is created but hidden
 
 `src/calamares/etc/calamares/scripts/create-baseline-boot-env.sh:30-36` creates
