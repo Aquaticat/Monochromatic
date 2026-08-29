@@ -13,7 +13,12 @@ Apply folding to:
 
 - the desktop layout while `AppWindow.width < 900px`;
 - the Android app while the device is in portrait orientation;
-- radio, MD1, rounded, segmented, Chromium, and LED page-control styles.
+- radio,
+   MD1,
+   rounded,
+   segmented,
+   Chromium,
+   and LED page-control styles.
 
 Keep the desktop wide layout and Android landscape layout unchanged.
 
@@ -75,8 +80,12 @@ Desktop checks passed:
 - `lint:slint` compiled `ui/app.slint`;
 - `lint` completed `cargo check`;
 - `lint:rust` completed the repository Rust linter;
-- `test` passed all 95 tests, including every style, disclosure semantics,
-  no overflow, selected-tab reveal, and narrow-to-wide state retention.
+- `test` passed all 95 tests,
+   including every style,
+   disclosure semantics,
+  no overflow,
+   selected-tab reveal,
+   and narrow-to-wide state retention.
 
 The headless Slint MCP boundary rendered a `480px` by `600px` window.
 The collapsed screenshot showed one Chromium row with the leading down-chevron.
@@ -103,7 +112,8 @@ Android checks passed:
 - `test:unit` compiled the Compose UI and passed host-JVM tests;
 - `lint:detekt` passed Kotlin documentation and method-length checks;
 - `lint` passed Android Lint;
-- `run:release` rebuilt both native ABIs, installed the release APK,
+- `run:release` rebuilt both native ABIs,
+   installed the release APK,
   and launched it on Pixel 6 `1C171FDF600KWW`.
 
 The production release showed one collapsed LED row in portrait and automatically brought selected page `A` into view.
