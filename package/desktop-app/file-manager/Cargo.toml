@@ -18,12 +18,12 @@ path = "src/main.rs"
 
 [dependencies]
 # gtk4-rs over system GTK 4.22. GtkListView virtualizes long file lists; GtkDropTarget/GtkDragSource
-# give native Wayland drag-and-drop (the capability the winit/Slint stack lacked). The `v4_10`
-# feature exposes APIs up to GTK 4.10, including `gdk::FileList` (added in 4.6) for the file drop.
+# give native Wayland drag-and-drop (the capability the winit/Slint stack lacked). The `v4_12`
+# feature exposes `CssProvider::load_from_string` and `gdk::FileList` for the file drop.
 # Worker->main-thread delivery of decoded pixels. glib removed `MainContext::channel`, so the
 # gtk4-rs idiom is an async-channel drained by `glib::spawn_future_local` on the main context.
 async-channel = "2"
-gtk4 = { version = "0.11", features = ["v4_10"] }
+gtk4 = { version = "0.11", features = ["v4_12"] }
 # In-process image decoding for preview thumbnails. Memory-safe pure-Rust decoders (no libjpeg/
 # ffmpeg subprocess), matching the plan's "image thumbnails decode in-process with memory-safe Rust".
 # Decoding runs on a worker thread, never the render path.
