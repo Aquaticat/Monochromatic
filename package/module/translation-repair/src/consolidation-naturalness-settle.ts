@@ -384,7 +384,7 @@ export async function settleNaturalnessCorrections(
          * Failed strategy retained as substantive evidence for different next prompt.
          */
         const failed: PriorNaturalnessCorrection = {
-          proposedText: correction.proposedText,
+          candidateText: correction.proposedText,
           findings: correction.findings,
         };
         state = {
@@ -401,12 +401,19 @@ export async function settleNaturalnessCorrections(
         continue;
       }
       /**
+       * Changed correction and exact review for this transition.
+       */
+      const {
+        correction,
+        review,
+      } = step;
+      /**
        * Successful changed transition and exact review added to accumulated audit.
        */
       const reviewed = incorporateReview({
         state: incorporateAttempt({
           state,
-          correction: step.correction,
+          correction,
           correctionCount: state.correctionCount + 1,
         },),
         step,
@@ -414,7 +421,7 @@ export async function settleNaturalnessCorrections(
       /**
        * Exact corrected candidate verdict.
        */
-      const { verdict, } = step.review;
+      const { verdict, } = review;
       if (verdict === 'acceptable') {
         return settledPolish({
           state: reviewed,
@@ -426,7 +433,20 @@ export async function settleNaturalnessCorrections(
           reason: 'quorum-not-met',
         },);
       }
-      state = reviewed;
+      /**
+       * Reviewed rejection retained so later strategy cannot cycle without evidence.
+       */
+      const rejected: PriorNaturalnessCorrection = {
+        candidateText: correction.text,
+        findings: describeReviewFindings({ review, },),
+      };
+      state = {
+        ...reviewed,
+        priorCorrections: [
+          ...reviewed.priorCorrections,
+          rejected,
+        ],
+      };
     }
     throw signal.reason;
   }

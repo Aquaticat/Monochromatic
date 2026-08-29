@@ -126,8 +126,12 @@ Cost reports must count both draws rather than treating second pair as duplicate
 Legacy schema-9 artifacts without confirmation field remain readable.
 
 Generation-13 correction supersedes two-correction cap and quality terminal refusal.
+Generation 14 additionally threads every reviewed rejection into failed-strategy history,
+preventing silent candidate cycles.
 Every rejection continues from latest exact candidate and findings.
-Failed no-change or fidelity strategy becomes evidence for materially different next prompt.
+Failed no-change,
+fidelity,
+or reviewed strategy becomes evidence for materially different next prompt.
 Fidelity gate and exact final absolute review remain unchanged.
 Generation bump prevents reuse of settlements bought under bounded correction,
 relative correction selection,
@@ -176,12 +180,18 @@ measure and optimize completion path toward fresh-run median below two hours wit
 Detailed protocol is `doc/planning/translation-repair-entry-time-to-complete.md`.
 
 Generation 13 adds `TALLY status=INCOMPLETE` for stage-local or operational work that remains.
+Generation 14 persists first raw model payloads under run-root `prompt-payloads/`.
+Interrupted restart deterministically reconstructs correction state without provider resend,
+then continues at first unseen prompt.
+Payload files contain corpus/model wording and must stay unquoted and outside Git.
 It is neither success nor quality verdict,
 and scheduler does not queue whole-entry restart from cache growth.
 Exact duplicate model-plus-prompt calls within invocation reuse first payload without provider call;
 distinct confirmation uses prior-acceptance challenge responsibility.
 One configured provider is normal mode;
 absent provider is dry and exact-half quorum may come entirely from other provider.
+Measured both-provider arms pass `--require-providers synthetic,hyper`;
+keys and live meters must be wet before model calls.
 
 ## Missing observability
 

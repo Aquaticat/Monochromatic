@@ -102,7 +102,7 @@ export function buildRefineMessages(
        */
       const findings = prior.findings
         .join('\n',);
-      return `ATTEMPT ${String(index + 1,)}\nPROPOSAL\n${prior.proposedText}\nFINDINGS\n${findings}`;
+      return `ATTEMPT ${String(index + 1,)}\nCANDIDATE\n${prior.candidateText}\nFINDINGS\n${findings}`;
     },);
   /**
    * Fence longer than any run inside anything this prompt encloses, so no

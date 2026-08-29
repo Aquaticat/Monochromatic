@@ -31,6 +31,7 @@ import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
 import { createHyperClient, } from '../hyper-client.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
+import { promptPayloadStore, } from '../prompt-payload-store.ts';
 import { promptUniqueClient, } from '../prompt-uniqueness-client.ts';
 import {
   createRoutingClient,
@@ -697,7 +698,9 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  * @param transport - HTTP seam handed to both providers' clients; tests inject
  * one to watch where a call goes, production leaves it absent for fetch
  *
- * @returns Ready client, routed across both providers and counted per seat
+ * @param promptPayloadDir - optional durable payload checkpoint beneath run root
+ *
+ * @returns Ready client, routed across configured providers and counted per seat
  *
  * @throws {@link RunConfigError} when both provider key variables are unset or empty
  *
@@ -707,7 +710,13 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  * ```
  */
 export function createRunClient(
-  { transport, }: { readonly transport?: ModelTransport; } = {},
+  {
+    transport,
+    promptPayloadDir,
+  }: {
+    readonly transport?: ModelTransport;
+    readonly promptPayloadDir?: string;
+  } = {},
 ): SyntheticClient {
   /**
    * Logger pre-tagged with this function's name.
@@ -793,6 +802,9 @@ export function createRunClient(
       inner: routed,
       tally: RUN_SEATS,
     },),
+    ...((promptPayloadDir === undefined)
+      ? {}
+      : { store: promptPayloadStore({ dir: promptPayloadDir, },), }),
   },);
 }
 

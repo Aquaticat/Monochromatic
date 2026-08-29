@@ -4,6 +4,13 @@
  * @module
  */
 
+import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -15,6 +22,8 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   polishConsolidation,
+  promptPayloadStore,
+  promptUniqueClient,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -48,6 +57,26 @@ const FINAL_POLISHED = 'She kept a positive outlook and shared good times with e
 const THIRD_POLISHED = 'She stayed optimistic and enjoyed good times with everyone, doing her best to remain hopeful and connected to the people around her.';
 
 /**
+ * Successful transitions in A-B-A-C cycle fixture.
+ */
+const CYCLE_CORRECTION_COUNT = 4;
+
+/**
+ * Initial plus corrected review rounds in A-B-A-C fixture.
+ */
+const CYCLE_REVIEW_COUNT = 5;
+
+/**
+ * Refinement call where checkpoint fixture interrupts after prior corrections.
+ */
+const CHECKPOINT_INTERRUPT_REFINE_CALL = 4;
+
+/**
+ * Successful transitions reconstructed by checkpoint fixture.
+ */
+const CHECKPOINT_CORRECTION_COUNT = 3;
+
+/**
  * Short literal prose final polish must still review.
  */
 const SHORT_BASE = 'She had a good time with everyone.';
@@ -56,6 +85,42 @@ const SHORT_BASE = 'She had a good time with everyone.';
  * Faithful idiomatic rewrite of short prose.
  */
 const SHORT_POLISHED = 'She spent some happy times with everyone.';
+
+/**
+ * Disposable temporary prompt checkpoint directory.
+ */
+type TemporaryDirectory = AsyncDisposable & {
+  /**
+   * Absolute fixture path.
+   */
+  readonly path: string;
+};
+
+/**
+ * Creates disposable prompt checkpoint directory.
+ *
+ * @returns Fixture removed after test
+ *
+ * @example
+ * ```ts
+ * await using dir = await temporaryDirectory();
+ * ```
+ */
+async function temporaryDirectory(): Promise<TemporaryDirectory> {
+  const path = await mkdtemp(join(
+    tmpdir(),
+    'naturalness-checkpoint-',
+  ),);
+  return {
+    path,
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(
+        path,
+        { recursive: true, force: true, },
+      );
+    },
+  };
+}
 
 /**
  * Client serving rewrite, selection and final gate schemas.
@@ -126,6 +191,8 @@ const client: SyntheticClient = {
  *
  * @param correctionText - corrective replacement, absent to return second no-op
  *
+ * @param correctionTexts - exact correction sequence overriding individual text fields
+ *
  * @param rejectCorrection - whether first corrected text still fails review
  *
  * @param secondCorrectionText - replacement for second bounded correction
@@ -160,6 +227,7 @@ const client: SyntheticClient = {
 function boundedCorrectionClient(
   {
     correctionText,
+    correctionTexts,
     rejectCorrection = false,
     secondCorrectionText,
     acceptSecondCorrection = false,
@@ -174,6 +242,7 @@ function boundedCorrectionClient(
     acceptanceByReviewRound,
   }: {
     readonly correctionText?: string;
+    readonly correctionTexts?: readonly string[];
     readonly rejectCorrection?: boolean;
     readonly secondCorrectionText?: string;
     readonly acceptSecondCorrection?: boolean;
@@ -222,6 +291,11 @@ function boundedCorrectionClient(
           onRefineCall?.(calls.refine,);
           if (throwOnThirdCorrection && (calls.refine > 3))
             throw new Error('third correction generation exceeded bound',);
+          /**
+           * Sequence-specified correction for this correction attempt.
+           */
+          const scriptedCorrection = correctionTexts
+            ?.at(calls.refine - 2,);
           return {
             rewrites: ((calls.refine === 1)
               || (calls.refine <= (noOpCorrectionAttempts + 1))
@@ -229,11 +303,12 @@ function boundedCorrectionClient(
               ? []
               : [{
                 paragraph: 1,
-                newText: (calls.refine === 2)
-                  ? correctionText
-                  : ((calls.refine === 3) || (thirdCorrectionText === undefined))
-                    ? secondCorrectionText ?? correctionText
-                    : thirdCorrectionText,
+                newText: scriptedCorrection
+                  ?? ((calls.refine === 2)
+                    ? correctionText
+                    : ((calls.refine === 3) || (thirdCorrectionText === undefined))
+                      ? secondCorrectionText ?? correctionText
+                      : thirdCorrectionText),
               },],
           };
         }
@@ -309,6 +384,36 @@ function boundedCorrectionClient(
     quotas: async () => {
       throw new Error('quotas unused by polish stages',);
     },
+  };
+}
+
+/**
+ * Adapts scripted structured client to raw-text surface prompt memoization reads.
+ *
+ * @param inner - structured fixture client
+ *
+ * @returns Client whose text call serializes structured fixture outcome
+ *
+ * @example
+ * ```ts
+ * const adapted = jsonClientAsText({ inner, });
+ * ```
+ */
+function jsonClientAsText(
+  { inner, }: { readonly inner: SyntheticClient; },
+): SyntheticClient {
+  return {
+    chatText: async function structuredAsText(request,) {
+      const outcome = await inner.chatJson<unknown>({
+        ...request,
+        validate: function acceptUnknown(_value: unknown,): _value is unknown {
+          return true;
+        },
+      },);
+      return { text: outcome.rawText, };
+    },
+    chatJson: inner.chatJson,
+    quotas: inner.quotas,
   };
 }
 
@@ -638,6 +743,145 @@ await describe({
         expect(polish.review.rounds.length,).toBe(4,);
         expect(polish.review.correctionCount,).toBe(3,);
         expect(refineCalls,).toEqual([1, 2, 3, 4,],);
+      },
+    },),
+
+    it({
+      name: 'ESCAPES A-B-A CYCLE using accumulated rejected strategies and payload reuse',
+      fn: async () => {
+        /** Provider calls proving exact duplicates do not reach model twice. */
+        const modelPrompts: string[] = [];
+        const inner = boundedCorrectionClient({
+          correctionText: POLISHED,
+          correctionTexts: [
+            POLISHED,
+            FINAL_POLISHED,
+            POLISHED,
+            THIRD_POLISHED,
+          ],
+          acceptanceByReviewRound: [
+            false,
+            false,
+            false,
+            true,
+            true,
+          ],
+          modelPrompts,
+        },);
+        const polish = await polishConsolidation({
+          client: promptUniqueClient({
+            inner: jsonClientAsText({ inner, },),
+          },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-cycle-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('correction cycle fixture did not settle',);
+        expect(polish.text,).toBe(THIRD_POLISHED,);
+        expect(polish.review.correctionCount,).toBe(CYCLE_CORRECTION_COUNT,);
+        expect(polish.review.rounds,).toHaveLength(CYCLE_REVIEW_COUNT,);
+        expect(polish.review.corrections,).toHaveLength(CYCLE_CORRECTION_COUNT,);
+        expect(new Set(modelPrompts,).size,).toBe(modelPrompts.length,);
+      },
+    },),
+
+    it({
+      name: 'RESUMES INTERRUPTED CORRECTION from durable payloads without resending prompts',
+      fn: async () => {
+        await using dir = await temporaryDirectory();
+        const store = promptPayloadStore({ dir: dir.path, },);
+        const modelPrompts: string[] = [];
+        const interrupted = new AbortController();
+        const inner = boundedCorrectionClient({
+          correctionText: POLISHED,
+          correctionTexts: [
+            POLISHED,
+            FINAL_POLISHED,
+            THIRD_POLISHED,
+          ],
+          acceptanceByReviewRound: [
+            false,
+            false,
+            false,
+            true,
+            true,
+          ],
+          modelPrompts,
+          onRefineCall: function interruptAfterPriorCorrections(count,): void {
+            if (count === CHECKPOINT_INTERRUPT_REFINE_CALL)
+              interrupted.abort(new Error('fixture interruption',),);
+          },
+        },);
+        let firstError: unknown;
+        try {
+          await polishConsolidation({
+            client: promptUniqueClient({
+              inner: jsonClientAsText({ inner, },),
+              store,
+            },),
+            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            archiveText: BASE,
+            baseText: BASE,
+            lineStructured: false,
+            sliceIndex: 1,
+            config: {
+              refinerModelIds: [ROSTER[0],],
+              judgeModelIds: ROSTER,
+              gateModelIds: ROSTER,
+              declaredNames: [],
+              definitions: '',
+            },
+            signal: interrupted.signal,
+            perCallTimeoutMs: 5_000,
+            l: tagged({ tag: 'consolidation-polish-checkpoint-first', },),
+          },);
+        }
+        catch (error) {
+          firstError = error;
+        }
+        expect(firstError,).toBeInstanceOf(Error,);
+
+        const resumed = await polishConsolidation({
+          client: promptUniqueClient({
+            inner: jsonClientAsText({ inner, },),
+            store,
+          },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-checkpoint-resume', },),
+        },);
+        expect(resumed.kind,).toBe('settled',);
+        if (resumed.kind !== 'settled')
+          throw new Error('checkpoint resume fixture did not settle',);
+        expect(resumed.text,).toBe(THIRD_POLISHED,);
+        expect(resumed.review.correctionCount,).toBe(CHECKPOINT_CORRECTION_COUNT,);
+        expect(new Set(modelPrompts,).size,).toBe(modelPrompts.length,);
       },
     },),
 

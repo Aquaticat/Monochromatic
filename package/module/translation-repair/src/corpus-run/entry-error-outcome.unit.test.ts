@@ -11,10 +11,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  DuplicateModelPromptError,
   entryErrorOutcome,
   NaturalnessCompletenessError,
   NaturalnessRepairInterruptedError,
+  PromptPayloadStoreError,
 } from '../../dist/final/node/index.mjs';
 
 await describe({
@@ -23,9 +23,9 @@ await describe({
     ...([
       new NaturalnessRepairInterruptedError({ reason: 'quorum-not-met', }),
       new NaturalnessCompletenessError({ sliceIndex: 1, }),
-      new DuplicateModelPromptError({
-        modelId: 'hf:moonshotai/Kimi-K3',
-        promptDigest: 'sha256:fixture',
+      new PromptPayloadStoreError({
+        promptDigest: 'fixture-digest',
+        operation: 'read',
       },),
     ] as const).map(function stoppedError(error,) {
       return it({

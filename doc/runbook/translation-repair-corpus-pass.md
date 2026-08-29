@@ -151,7 +151,10 @@ TODO | DONE
     Capture both streams as shown: the reading is at `info`
     and a meter that could not be reached warns at `warn`.
 
-    A provider reading `dry` does not block a launch.
+    A provider reading `dry` does not block ordinary launch.
+    Validation or performance arm requiring both must add
+    `-- --require-providers synthetic,hyper`;
+    that mode refuses before model calls unless both keys and meters are wet.
     The budget layer refuses each model no reachable provider can take,
     the stage records a lost voice, and the run continues on whoever answered.
     It does change what the run's output means:
@@ -188,6 +191,12 @@ TODO | DONE
     ```
 
     Expected: the shell prints a job number and a pid, and returns immediately.
+
+    For measured both-provider arm,
+    insert `-- --require-providers synthetic,hyper` after `corpus-pass`.
+    Log must contain `REQUIRED-PROVIDERS synthetic,hyper status=wet` before model traffic.
+    This flag is wired only to `corpus-pass`;
+    probes and calibrations do not support it and cannot serve as required-provider timing arms.
 
     THE PID THE SHELL PRINTS IS NOT THE RUN.
     It is a wrapper, and the work sits two levels below it.
@@ -651,6 +660,19 @@ kill <pid>
 Expected: a later `running corpus-pass.mjs` prints nothing.
 
 A stopped run is resumable and is not wasted.
+Run root `prompt-payloads/` contains raw model payloads keyed by canonical prompt digest.
+It may contain corpus/model wording:
+never quote,
+commit,
+or share it.
+Across interrupted invocations,
+these payloads reconstruct correction state without provider resend.
+Corrupted payload refuses before network rather than being ignored.
+Write failure or corruption retains failed claim for rest of invocation;
+entry cannot recover until operator repairs/removes disposable record and relaunches.
+This is fail-closed handling,
+not quality verdict.
+
 Every stage caches, so a relaunch into the same `TRANSLATION_REPAIR_RUNS_DIR`
 republishes what was already bought rather than re-buying it,
 provided no source file changed in between.

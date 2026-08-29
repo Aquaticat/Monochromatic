@@ -1,6 +1,6 @@
 import { NaturalnessCompletenessError, } from '../naturalness-completeness-error.ts';
 import { NaturalnessRepairInterruptedError, } from '../naturalness-repair-interrupted-error.ts';
-import { DuplicateModelPromptError, } from '../prompt-uniqueness-client.ts';
+import { PromptPayloadStoreError, } from '../prompt-payload-store.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 
 //region Entry failure scheduling
@@ -45,7 +45,7 @@ export function entryErrorOutcome(
    */
   const stopped = (error instanceof NaturalnessRepairInterruptedError)
     || (error instanceof NaturalnessCompletenessError)
-    || (error instanceof DuplicateModelPromptError);
+    || (error instanceof PromptPayloadStoreError);
   return stopped
     ? {
       status: 'INCOMPLETE',

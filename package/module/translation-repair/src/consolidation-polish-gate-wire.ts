@@ -249,7 +249,7 @@ export function buildConsolidationPolishGateMessages(
          */
         const findings = prior.findings
           .join('\n',);
-        return `Attempt ${String(index + 1,)} proposal:\n${prior.proposedText}\nFindings:\n${findings}`;
+        return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
       },);
   /**
    * Fence absent from every enclosed passage and finding.

@@ -1583,6 +1583,12 @@ and confirmation order.
 Final-naturalness completeness guard checks settled runtime state and does not duplicate artifact reader's digest validation.
 Legacy schema-9 records without field remain readable.
 Generation 13 landed in `1d16d89c4` and removes two-correction ceiling.
+Pending generation 14 threads every reviewed rejection into failed-strategy evidence
+and durably stores first raw model payload by canonical prompt under run root.
+Interrupted invocation reconstructs exact correction state from payloads without provider resends,
+then continues at first unseen prompt.
+Payload cache carries corpus and model wording;
+it stays inside disposable run root and is never committed or quoted.
 Every rejection feeds latest exact text and findings into next correction.
 No-change,
 selection decline,
@@ -1651,6 +1657,8 @@ a later invocation replacing interrupted work may repeat provider request,
 but its result is never independent or non-bias evidence against earlier payload.
 Concurrent duplicate waits on first caller's exchange and signal;
 it does not start or cancel separate provider call.
+Corpus pass persists raw payload memo beneath `prompt-payloads/` in run root.
+Corrupted record refuses before provider call.
 
 `TALLY status=INCOMPLETE` means stage-local or operational work remains.
 It is neither success,
@@ -1671,6 +1679,12 @@ One wet provider is valid normal operating mode with reduced provider diversity 
 not reason to stop repair or lower quality.
 Too few live seats for stage participation pauses or retries work as operational state;
 it is not quality rejection.
+
+Ordinary operation permits either provider alone.
+Validation and performance arms requiring both must pass
+`--require-providers synthetic,hyper`.
+Harness verifies both keys and live non-dry meters before any model call,
+then logs `REQUIRED-PROVIDERS synthetic,hyper status=wet`.
 
 The live artifact also exposed misleading diagnostic wording:
 it reported nine pair relations as though nine of eight source blocks had been paired.

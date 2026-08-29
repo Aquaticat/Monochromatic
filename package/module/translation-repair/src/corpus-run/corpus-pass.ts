@@ -57,6 +57,10 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import {
+  assertRequiredProvidersReady,
+  readRequiredProviders,
+} from './required-providers.ts';
 
 //region Corpus pass
 // Runs the pipeline over every complete zh/en corpus pair at the pinned commit,
@@ -494,9 +498,26 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
+   * Providers validation or performance arm explicitly requires wet.
+   */
+  const requiredProviders = readRequiredProviders({ argv: process.argv, },);
+  await assertRequiredProvidersReady({
+    required: requiredProviders,
+    signal: new AbortController().signal,
+  },);
+  if (requiredProviders.length > 0) {
+    console.log(`REQUIRED-PROVIDERS ${requiredProviders.join(',',)} status=wet`,);
+  }
+
+  /**
    * Shared client; per-model concurrency defaults to one.
    */
-  const client = createRunClient();
+  const client = createRunClient({
+    promptPayloadDir: join(
+      runsDir,
+      'prompt-payloads',
+    ),
+  },);
 
   if (process.argv
     .includes('--plan',)) {

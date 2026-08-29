@@ -1163,14 +1163,17 @@ Neither root is publication,
 readiness,
 or completion-time evidence.
 
-Generation 13 continues correction from latest exact rejection,
-uses distinct defect-discovery and acceptance-challenge responsibilities,
-and memoizes model-plus-canonical-prompt payloads per invocation.
-Exact duplicates reuse first payload without another provider call.
+Generation 13 continues correction from latest exact rejection
+and uses distinct defect-discovery and acceptance-challenge responsibilities.
+Generation 14 threads every reviewed rejection into strategy history
+and durably memoizes model-plus-canonical-prompt payloads under run root.
+Exact duplicates and interrupted replay reuse first payload without another provider call.
 One configured or wet provider is valid normal operation;
 absent provider is dry,
 and exact-half participation may come entirely from other provider.
-No provider family or cross-provider response is mandatory.
+No provider family or cross-provider response is mandatory in ordinary operation.
+Measured arms requiring both pass `--require-providers synthetic,hyper`;
+harness checks both keys and live meters before model calls.
 
 Stopped runs shared provider capacity,
 so their durations do not compare provider performance.

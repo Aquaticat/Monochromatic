@@ -92,6 +92,12 @@ export {
   RunConfigError,
 } from './corpus-run/run-config.ts';
 export {
+  assertRequiredProvidersReady,
+  readRequiredProviders,
+  type RequiredProvider,
+  RequiredProviderError,
+} from './corpus-run/required-providers.ts';
+export {
   type AttributionGather,
   gatherAttributionEntries,
   type MalformedArtifact,

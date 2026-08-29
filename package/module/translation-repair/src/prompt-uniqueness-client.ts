@@ -1,3 +1,4 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { readJsonOutcome, } from './chat-json-outcome.ts';
@@ -10,48 +11,18 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
+import {
+  PROMPT_PAYLOAD_MISSING,
+  type PromptPayloadStore,
+  PromptPayloadStoreError,
+} from './prompt-payload-store.ts';
 
 //region Model-prompt uniqueness boundary
 
 /**
- * Raised before duplicate model and substantive prompt reaches provider.
- *
- * @example
- * ```ts
- * throw new DuplicateModelPromptError({ modelId: 'hf:moonshotai/Kimi-K3', promptDigest: 'sha256:abc', });
- * ```
+ * Logger root for privacy-safe payload reuse telemetry.
  */
-export class DuplicateModelPromptError extends Error {
-  /**
-   * Declares message safe to forward because it carries model id and digest only.
-   */
-  readonly messageNamesOnly: true = true;
-
-  /**
-   * Constructs privacy-safe duplicate identity diagnostic.
-   *
-   * @param modelId - exact roster identity duplicate would call
-   *
-   * @param promptDigest - digest of canonical ordered message content
-   *
-   * @example
-   * ```ts
-   * new DuplicateModelPromptError({ modelId, promptDigest, });
-   * ```
-   */
-  public constructor(
-    {
-      modelId,
-      promptDigest,
-    }: {
-      readonly modelId: ChatTextRequest['modelId'];
-      readonly promptDigest: string;
-    },
-  ) {
-    super(`model ${modelId} already received prompt ${promptDigest}`,);
-    this.name = 'DuplicateModelPromptError';
-  }
-}
+const l = tagged({ tag: 'translation-repair', },);
 
 /**
  * Serializes JSON-like prompt value with stable object-key order.
@@ -151,7 +122,9 @@ export function modelPromptDigest(
  *
  * @param inner - routed provider client performing first unique call
  *
- * @returns Client enforcing process-local model-prompt uniqueness by reuse
+ * @param store - optional durable raw-payload checkpoint across invocations
+ *
+ * @returns Client enforcing model-prompt uniqueness by reuse
  *
  * @example
  * ```ts
@@ -159,7 +132,13 @@ export function modelPromptDigest(
  * ```
  */
 export function promptUniqueClient(
-  { inner, }: ForeignBorrowed<{ readonly inner: SyntheticClient; }>,
+  {
+    inner,
+    store,
+  }: ForeignBorrowed<{
+    readonly inner: SyntheticClient;
+    readonly store?: PromptPayloadStore;
+  }>,
 ): SyntheticClient {
   /**
    * Prompt identities mapped to first in-flight or completed provider payload.
@@ -178,12 +157,38 @@ export function promptUniqueClient(
        * Earlier in-flight or completed payload for same identity.
        */
       const existing = claimed.get(promptDigest,);
-      if (existing !== undefined)
-        return await existing;
+      if (existing !== undefined) {
+        /**
+         * Reused payload after owner call completed successfully.
+         */
+        const reply = await existing;
+        l.info(`PROMPT-REUSE source=memory model=${request.modelId} digest=${promptDigest}`,);
+        return reply;
+      }
       /**
-       * First provider exchange claimed synchronously before any await.
+       * Durable payload replay or first provider exchange,
+       * claimed synchronously before any await.
        */
-      const pending = inner.chatText(request,);
+      const pending = (async function buyOrResumeText(): Promise<ChatTextReply> {
+        /**
+         * Durable payload or explicit absence when store is configured.
+         */
+        const stored = await store?.read({ promptDigest, },)
+          ?? PROMPT_PAYLOAD_MISSING;
+        if ((typeof stored) !== 'symbol') {
+          l.info(`PROMPT-REUSE source=disk model=${request.modelId} digest=${promptDigest}`,);
+          return stored;
+        }
+        /**
+         * First provider payload for this prompt identity.
+         */
+        const reply = await inner.chatText(request,);
+        await store?.write({
+          promptDigest,
+          reply,
+        },);
+        return reply;
+      })();
       claimed.set(
         promptDigest,
         pending,
@@ -192,7 +197,12 @@ export function promptUniqueClient(
         return await pending;
       }
       catch (error) {
-        if (!(error instanceof MalformedCompletionError))
+        /**
+         * Whether provider completed payload or durable store failed after claim.
+         */
+        const retainsClaim = (error instanceof MalformedCompletionError)
+          || (error instanceof PromptPayloadStoreError);
+        if (!retainsClaim)
           claimed.delete(promptDigest,);
         throw error;
       }
@@ -209,16 +219,41 @@ export function promptUniqueClient(
        */
       const existing = claimed.get(promptDigest,);
       if (existing !== undefined) {
+        /**
+         * Reused payload after owner call completed successfully.
+         */
+        const reply = await existing;
+        l.info(`PROMPT-REUSE source=memory model=${request.modelId} digest=${promptDigest}`,);
         return readJsonOutcome({
           modelId: request.modelId,
-          reply: await existing,
+          reply,
           validate: request.validate,
         },);
       }
       /**
-       * First provider exchange claimed synchronously before any await.
+       * Durable payload replay or first provider exchange,
+       * claimed synchronously before any await.
        */
-      const pending = inner.chatText(request,);
+      const pending = (async function buyOrResumeJson(): Promise<ChatTextReply> {
+        /**
+         * Durable payload or explicit absence when store is configured.
+         */
+        const stored = await store?.read({ promptDigest, },)
+          ?? PROMPT_PAYLOAD_MISSING;
+        if ((typeof stored) !== 'symbol') {
+          l.info(`PROMPT-REUSE source=disk model=${request.modelId} digest=${promptDigest}`,);
+          return stored;
+        }
+        /**
+         * First provider payload for this prompt identity.
+         */
+        const reply = await inner.chatText(request,);
+        await store?.write({
+          promptDigest,
+          reply,
+        },);
+        return reply;
+      })();
       claimed.set(
         promptDigest,
         pending,
@@ -231,7 +266,12 @@ export function promptUniqueClient(
         },);
       }
       catch (error) {
-        if (!(error instanceof MalformedCompletionError))
+        /**
+         * Whether provider completed payload or durable store failed after claim.
+         */
+        const retainsClaim = (error instanceof MalformedCompletionError)
+          || (error instanceof PromptPayloadStoreError);
+        if (!retainsClaim)
           claimed.delete(promptDigest,);
         throw error;
       }

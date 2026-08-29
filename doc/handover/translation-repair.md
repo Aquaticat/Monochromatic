@@ -16,8 +16,12 @@ not current instruction.
 - Generation-13 continuous correction,
   prompt payload reuse,
   and one-provider operation landed in `1d16d89c4`.
+- Pending generation 14 adds reviewed-rejection strategy history,
+  durable raw-payload replay across invocations,
+  and explicit required-provider gate for measured arms.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
+- Pending generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -37,7 +41,7 @@ not current instruction.
   and `~/temp/agent/gfp-continuous-correction-green-20260829.log`.
 
 Artifact schema remains 9.
-Consolidation cache generation is 13 at `1d16d89c4`,
+Consolidation cache generation is 14 in pending worktree,
 lane-contest cache generation is 4,
 and pairing cache generation is 2.
 Preparation identity remains v2.
@@ -62,9 +66,11 @@ Either provider may supply entire exact half;
 missing provider key marks that provider dry rather than refusing launch.
 Both keys absent still refuse launch.
 
-Run client memoizes first model-plus-canonical-prompt payload per invocation.
+Run client memoizes first model-plus-canonical-prompt payload.
 Exact duplicate calls reuse in-flight or completed payload rather than calling provider again.
-A later invocation repeat replaces interrupted work and is never independent or non-bias evidence.
+Corpus pass stores raw payloads beneath run-root `prompt-payloads/`;
+restart reconstructs correction state without provider resend and continues at first unseen prompt.
+These records contain corpus/model wording and must remain unquoted and outside Git.
 
 Schema-9 `confirmations` binds earlier acceptable review to exact candidate,
 paragraph digests,
@@ -200,12 +206,14 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
-2.  Optimize only measured completion path without weakening quality.
-3.  Rebuild pull-request fixture worktree and launch fresh generation-13 roots only after performance gate.
-4.  Verify every successful page and artifact,
+1.  Verify and commit generation-14 checkpoint and provider requirement.
+2.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+3.  Optimize only measured completion path without weakening quality.
+4.  Rebuild pull-request fixture worktree and launch fresh generation-14 roots only after performance gate,
+    passing `--require-providers synthetic,hyper`.
+5.  Verify every successful page and artifact,
     then read complete output.
-5.  Continue targeted calibration and remaining pages after current mechanism is proven.
+6.  Continue targeted calibration and remaining pages after current mechanism is proven.
 
 There is no release deadline.
 Strict actual-output quality remains gate.

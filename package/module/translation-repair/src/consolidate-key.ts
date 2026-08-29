@@ -59,8 +59,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 13 replaces two-correction terminal refusal with continuous
  * latest-rejection correction and distinct acceptance-challenge review.
+ *
+ * VERSION 14 threads every reviewed rejection into failed-strategy evidence
+ * and adds durable raw-payload replay across interrupted invocations.
  */
-export const CONSOLIDATE_CACHE_VERSION = 13;
+export const CONSOLIDATE_CACHE_VERSION = 14;
 
 /**
  * What a line-structured slice appends to its key material.

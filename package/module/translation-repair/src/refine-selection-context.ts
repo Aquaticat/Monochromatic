@@ -10,14 +10,14 @@ import type { SelectEvidence, } from './candidate-select-wire.ts';
  *
  * @example
  * ```ts
- * const prior: PriorNaturalnessCorrection = { proposedText: 'The cat slept.', findings: ['gate kept rejected input'], };
+ * const prior: PriorNaturalnessCorrection = { candidateText: 'The cat slept.', findings: ['gate kept rejected input'], };
  * ```
  */
 export type PriorNaturalnessCorrection = {
   /**
    * Exact proposal prior round tried to authorize.
    */
-  readonly proposedText: string;
+  readonly candidateText: string;
 
   /**
    * Generation,
@@ -158,7 +158,7 @@ export function buildRefineSelectionContext(
        */
       const findings = prior.findings
         .join('\n',);
-      return `Attempt ${String(index + 1,)} proposal:\n${prior.proposedText}\nFindings:\n${findings}`;
+      return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
     },)
     .join('\n\n',);
   return {

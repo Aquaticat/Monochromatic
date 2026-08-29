@@ -10,8 +10,9 @@ completion path must target fresh-run median below two hours without weakening q
 Quality gates,
 continuous correction,
 distinct confirmation responsibility,
-prompt payload reuse,
-and one-provider operation remain fixed measurement inputs.
+durable prompt payload replay,
+and one-provider ordinary operation remain fixed measurement inputs.
+Measured arms require both providers with `--require-providers synthetic,hyper`.
 
 This work measures **entry time to complete**:
 wall time from entry start through terminal `TALLY`,
@@ -102,6 +103,10 @@ Its different pipeline digest makes it unsuitable as matched runtime arm against
     cache warmth,
     corpus input,
     and provider conditions.
+9.  Require log line `REQUIRED-PROVIDERS synthetic,hyper status=wet`
+    before model traffic for every timing arm.
+10. Record prompt-payload replay count separately from provider calls;
+    resumed replay is not cold-run generation time.
 
 Completion criterion:
 every recorded millisecond belongs to named phase or named uninstrumented remainder,

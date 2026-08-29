@@ -33,10 +33,14 @@ export {
   NoProviderForModelError,
 } from './provider-router.ts';
 export {
-  DuplicateModelPromptError,
   modelPromptDigest,
   promptUniqueClient,
 } from './prompt-uniqueness-client.ts';
+export {
+  type PromptPayloadStore,
+  PromptPayloadStoreError,
+  promptPayloadStore,
+} from './prompt-payload-store.ts';
 export {
   countStates,
   type DrySpan,
