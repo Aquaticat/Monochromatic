@@ -55,7 +55,12 @@ or evidence unless the user later authorizes cleanup.
   2048 MiB FAT32 EFI partition,
   and 129021 MiB ZFS root partition.
   **Install Now** was confirmed after reviewing that boundary.
-  Process `wait-nodesktop-install` is waiting for terminal success or failure.
+  The no-desktop installation reached terminal success:
+  `All done.` and `CachyOS has been installed on your computer.`
+  **Restart now** remained disabled.
+  The installer was closed,
+  and guest `systemctl poweroff` was entered from the live terminal.
+  Process `wait-nodesktop-poweroff` is waiting for the domain to reach `shut off`.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
