@@ -4,7 +4,7 @@ use super::*;
 
 /// Converts string literals to parser-owned argument values.
 fn args(values: &[&str]) -> Vec<String> {
-    values.iter().map(|value| (*value).to_owned()).collect()
+    return values.iter().map(|value| return (*value).to_owned()).collect()
 }
 
 /// Confirms explicit dark and light values enter validated configuration.

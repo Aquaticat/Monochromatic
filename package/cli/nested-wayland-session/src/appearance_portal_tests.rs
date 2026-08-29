@@ -28,7 +28,7 @@ fn private_portal_serves_light_scheme_without_host_bus() -> anyhow::Result<()> {
     drop(connection);
     drop(portal);
     assert!(!directory.exists());
-    Ok(())
+    return Ok(())
 }
 
 /// Confirms standard `ReadAll` serves dark value for non-Slint portal clients.
@@ -51,7 +51,7 @@ fn private_portal_serves_dark_scheme_through_read_all() -> anyhow::Result<()> {
         .get(COLOR_SCHEME_KEY)
         .context("ReadAll omitted color-scheme")?;
     assert_eq!(value.downcast_ref::<u32>()?, 1);
-    Ok(())
+    return Ok(())
 }
 
 /// Confirms unsupported settings return D-Bus errors instead of invented defaults.
@@ -67,5 +67,5 @@ fn private_portal_rejects_unknown_setting() -> anyhow::Result<()> {
     )?;
     let result = proxy.call::<_, _, OwnedValue>("ReadOne", &("org.example", "missing"));
     assert!(result.is_err());
-    Ok(())
+    return Ok(())
 }
