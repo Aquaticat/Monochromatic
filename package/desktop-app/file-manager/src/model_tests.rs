@@ -7,15 +7,15 @@ use crate::model::PaneStripState;
 use crate::types::PaneLocation;
 
 fn dir(path: &str) -> PaneLocation {
-    PaneLocation::Directory(PathBuf::from(path))
+    return PaneLocation::Directory(PathBuf::from(path))
 }
 
 fn preview(path: &str) -> PaneLocation {
-    PaneLocation::Preview(PathBuf::from(path))
+    return PaneLocation::Preview(PathBuf::from(path))
 }
 
 fn panes_in_column(strip: &PaneStripState, column: usize) -> usize {
-    strip.panes().filter(|pane| pane.column == column).count()
+    return strip.panes().filter(|pane| return pane.column == column).count()
 }
 
 #[test]

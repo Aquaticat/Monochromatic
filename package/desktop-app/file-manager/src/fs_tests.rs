@@ -9,7 +9,7 @@ use crate::fs::{read_directory, sort_entries};
 use crate::types::{EntryKind, FileEntry};
 
 fn entry(name: &str, kind: EntryKind) -> FileEntry {
-    FileEntry {
+    return FileEntry {
         name: name.to_owned(),
         path: PathBuf::from(name),
         kind,
@@ -25,7 +25,7 @@ fn unique_tempdir(tag: &str) -> PathBuf {
         .as_nanos();
     let dir = std::env::temp_dir().join(format!("fm-{tag}-{}-{nanos}", std::process::id()));
     fs::create_dir_all(&dir).expect("create temp dir");
-    dir
+    return dir
 }
 
 #[test]
@@ -38,7 +38,7 @@ fn sorts_directories_before_files_then_case_insensitive() {
         entry("Apple.txt", EntryKind::File),
     ];
     sort_entries(&mut entries);
-    let names: Vec<&str> = entries.iter().map(|item| item.name.as_str()).collect();
+    let names: Vec<&str> = entries.iter().map(|item| return item.name.as_str()).collect();
     assert_eq!(names, ["Alpha", "Zulu", "Apple.txt", "beta.txt", "zebra.txt"]);
 }
 
