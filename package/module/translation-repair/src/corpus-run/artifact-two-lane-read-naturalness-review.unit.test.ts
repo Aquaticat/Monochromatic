@@ -50,6 +50,24 @@ function acceptableSeat(
 }
 
 /**
+ * One unavailable requested reviewer seat.
+ *
+ * @param modelId - invented distinct reviewer id
+ *
+ * @returns Accounted seat without usable verdict
+ */
+function unusableSeat(
+  { modelId, }: { readonly modelId: string; },
+): ArtifactNaturalnessReviewSeat {
+  return {
+    modelId,
+    status: 'unusable',
+    findings: [],
+    reason: '',
+  };
+}
+
+/**
  * Valid no-correction review fixture.
  */
 const REVIEW = {
@@ -347,7 +365,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES MUTATED USABLE COUNT, VERDICT, DIGEST, MODEL IDS, PARAGRAPH COUNT, AND CORRECTION COUNT',
+      name: 'REFUSES MUTATED COUNTS, VERDICT, DIGEST, MODEL IDS, PARAGRAPHS, CORRECTIONS, OR BELOW-HALF APPROVAL',
       fn: async () => {
         const cases: readonly unknown[] = [
           {
@@ -379,6 +397,20 @@ await describe({
           {
             ...REVIEW,
             correctionCount: 1,
+          },
+          {
+            ...REVIEW,
+            rounds: [{
+              ...REVIEW.rounds[0],
+              seats: [
+                acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
+                acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
+                unusableSeat({ modelId: 'hf:cat/Cat-C', },),
+                unusableSeat({ modelId: 'hf:cat/Cat-D', },),
+                unusableSeat({ modelId: 'hf:cat/Cat-E', },),
+                unusableSeat({ modelId: 'hf:cat/Cat-F', },),
+              ],
+            },],
           },
         ];
         for (const value of cases) {

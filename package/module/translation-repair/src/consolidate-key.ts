@@ -52,9 +52,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * VERSION 11 requires absolute reviewers and correction rewriters to perform
  * separate local and whole-passage scans, makes publication-quality
  * naturalness a hard selector eligibility floor rather than relative ranking,
- * and requires a second all-seat acceptance before publication approval.
+ * and requires a second acceptance before publication approval.
+ *
+ * VERSION 12 starts every direct roster round and absolute acceptance at
+ * exact-half quorum rather than requiring every provider seat.
  */
-export const CONSOLIDATE_CACHE_VERSION = 11;
+export const CONSOLIDATE_CACHE_VERSION = 12;
 
 /**
  * What a line-structured slice appends to its key material.

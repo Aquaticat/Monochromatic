@@ -111,11 +111,18 @@ and exact review rejected it.
 Two alternate proposals also failed exact absolute review.
 
 Same exact final candidate then flipped from rejection in original run and first replay to eight-seat acceptance in later replay.
-Generation 11 therefore requires one sequential all-seat confirmation after first acceptance.
-A rejection remains immediately decisive;
-accepted text ships only after second all-seat acceptance of exact same candidate.
+Generation 11 therefore requires one sequential exact-half-quorum confirmation after first acceptance.
+A rejection heard before either bounded settlement remains immediately decisive;
+accepted text ships only after second quorum acceptance of exact same candidate.
+Generation 12 applies exact-half required participation to every direct roster round;
+no stage waits on every provider seat as requirement.
+First post-generation-11 validation was stopped during repair lane when this participation correction arrived;
+its partial root is not validation evidence.
 Schema-9 `confirmations` retains earlier acceptable review with candidate and paragraph digests,
 while decisive `rounds` remains one per generated candidate for adjacent correction-chain verification.
+Telemetry emits one privacy-safe absolute-review round and seat-summary line per draw,
+so first-pass acceptance followed by confirmation produces two such pairs for same exact candidate.
+Cost reports must count both draws rather than treating second pair as duplicate logging.
 Legacy schema-9 artifacts without confirmation field remain readable.
 
 Two-correction cap,

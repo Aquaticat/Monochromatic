@@ -6,9 +6,9 @@ import {
 } from './absolute-naturalness-review-stage.ts';
 
 //region Absolute naturalness confirmation
-// Publication approval needs a second all-seat reading of exact same candidate.
-// Rejection remains immediate: it already proves candidate cannot ship and its
-// findings should reach bounded correction without spending on confirmation.
+// Publication approval needs a second exact-half-quorum reading of exact same
+// candidate. Rejection remains immediate: it already proves candidate cannot
+// ship and its findings should reach correction without confirmation spend.
 
 /**
  * Successful review rounds required after first acceptable reading.
@@ -36,7 +36,7 @@ export type ConfirmedAbsoluteNaturalness = {
 };
 
 /**
- * Requires one repeated all-seat acceptance of exact candidate before approval.
+ * Requires one repeated exact-half-quorum acceptance of exact candidate before approval.
  *
  * @param request - exact request each independent review receives
  *
@@ -51,7 +51,7 @@ export async function confirmAbsoluteNaturalness(
   request: ForeignBorrowed<Parameters<typeof reviewAbsoluteNaturalness>[0]>,
 ): Promise<ConfirmedAbsoluteNaturalness> {
   /**
-   * First complete all-seat reading.
+   * First approving quorum reading.
    */
   const initial = await reviewAbsoluteNaturalness(request,);
   if (initial.verdict !== 'acceptable') {

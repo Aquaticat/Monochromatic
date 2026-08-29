@@ -8,7 +8,6 @@ export {
   confirmAbsoluteNaturalness,
 } from './absolute-naturalness-confirmation.ts';
 export {
-  ABSOLUTE_NATURALNESS_REVIEW_QUORUM,
   type AbsoluteNaturalnessReviewOutcome,
   type AbsoluteNaturalnessReviewSeat,
   type AbsoluteNaturalnessReviewVerdict,

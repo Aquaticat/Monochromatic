@@ -19,6 +19,7 @@ import {
   SectionPairingError,
 } from './pair-sections-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
+import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -41,11 +42,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * other side.
  */
 const AGREEMENT_NEEDED = 2;
-
-/**
- * Voices the round waits for before it starts timing out stragglers.
- */
-const HEARD_NEEDED = 2;
 
 /**
  * Schema the reply must satisfy before it reaches the reader.
@@ -276,7 +272,7 @@ export async function pairSectionsWithRoster(
     validate: isSectionPairingWire,
     stage: 'section-pairing',
     l: pl,
-    heardNeeded: HEARD_NEEDED,
+    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
   },);
 
   /**

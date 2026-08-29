@@ -185,7 +185,46 @@ await describe({
       },
     },),
     it({
-      name: 'WAITS FOR DELAYED ELIGIBLE VOICES before grace after fast inadmissible quorum',
+      name: 'RECORDS RAW HALF-QUORUM BALLOTS without waiting for delayed seats excluded downstream',
+      fn: async () => {
+        const outcome = await contestLaneSlice({
+          client: cannedClient({
+            replyByModel: [
+              ballot({ choice: 'repair', },),
+              ballot({ choice: 'repair', },),
+              ballot({ choice: 'translate', },),
+              ballot({ choice: 'translate', },),
+            ],
+            delayByModel: [
+              0,
+              0,
+              100,
+              100,
+            ],
+          },),
+          modelIds: ELIGIBILITY_ROSTER,
+          subject: {
+            ...SUBJECT,
+            ineligibleCandidates: ['repair',],
+          },
+          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          graceMs: 0,
+          l,
+        },);
+        expect(outcome.usable,).toBe(2,);
+        expect(outcome.ballots.filter(function choseTranslate(ballotValue,): boolean {
+          return ballotValue.choice === 'translate';
+        },),).toHaveLength(0,);
+        // RAW STAGE RETAINS BALLOTS UNCHANGED. `lane-contest-driver` applies
+        // deterministic eligibility, settles this as neither, and refuses
+        // persistence, pinned by its unsafe front-matter winner test.
+        expect(outcome.choice,).toBe('repair',);
+      },
+    },),
+
+    it({
+      name: 'KEEPS DELAYED ELIGIBLE VOICES that arrive inside bounded grace',
       fn: async () => {
         const outcome = await contestLaneSlice({
           client: cannedClient({
@@ -209,7 +248,7 @@ await describe({
           },
           signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
           exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-          graceMs: 5,
+          graceMs: 100,
           l,
         },);
         expect(outcome.usable,).toBe(4,);

@@ -19,6 +19,7 @@ import {
   type PolishChoice,
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
+import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -28,11 +29,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * Voices required before polish replaces approved base.
  */
 export const CONSOLIDATION_POLISH_GATE_QUORUM = 2;
-
-/**
- * Voices gathered before grace begins.
- */
-const HEARD_NEEDED = 2;
 
 /**
  * Structured reply contract for naturalness gate.
@@ -204,7 +200,7 @@ export async function gateConsolidationPolish(
     validate: isConsolidationPolishGateWire,
     stage: 'consolidation-polish-gate',
     l: gl,
-    heardNeeded: HEARD_NEEDED,
+    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
   },);
   /**
    * Ballots read from usable voices.

@@ -1,4 +1,3 @@
-import { ABSOLUTE_NATURALNESS_REVIEW_QUORUM, } from '../absolute-naturalness-review-stage.ts';
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
@@ -7,6 +6,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { rosterQuorumSize, } from '../roster-quorum-size.ts';
 import type {
   ArtifactNaturalnessFinding,
   ArtifactNaturalnessReviewRound,
@@ -298,7 +298,11 @@ export function naturalnessVerdictOf(
   const usable = seats.filter(function usableSeat(seat,): boolean {
     return seat.status !== 'unusable';
   },);
-  if (usable.length < ABSOLUTE_NATURALNESS_REVIEW_QUORUM)
+  /**
+   * Same exact-half quorum runtime used for requested roster.
+   */
+  const quorumNeeded = rosterQuorumSize({ rosterSize: seats.length, },);
+  if (usable.length < quorumNeeded)
     return 'quorum-not-met';
   if (usable.some(function rejects(seat,): boolean {
     return seat.status === 'unacceptable';

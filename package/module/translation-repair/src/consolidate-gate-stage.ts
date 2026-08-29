@@ -16,6 +16,7 @@ import {
   isConsolidateGateWire,
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
+import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -41,11 +42,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * TWO, matching the lane contest and every other agreement rule here.
  */
 export const CONSOLIDATE_GATE_QUORUM = 2;
-
-/**
- * Voices the round waits for before it starts timing out stragglers.
- */
-const HEARD_NEEDED = 2;
 
 /**
  * Schema a reply must satisfy before it reaches the reader.
@@ -231,7 +227,7 @@ export async function gateConsolidatedSlice(
     validate: isConsolidateGateWire,
     stage: 'consolidate-gate',
     l: gl,
-    heardNeeded: HEARD_NEEDED,
+    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
   },);
 
   /**

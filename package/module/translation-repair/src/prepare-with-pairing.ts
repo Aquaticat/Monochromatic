@@ -18,6 +18,7 @@ import {
   type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
 import { countPairedBlocks, } from './pair-block-counts.ts';
+import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
 import type {
   BlockPair,
   NumberedBlock,
@@ -263,6 +264,7 @@ export async function prepareDocumentPairWithRoster(
     const key = createHash('sha256',)
       .update(
         [
+          String(PAIRING_CACHE_VERSION,),
           ...sourceBlocks.map(function toText(block,): string {
             return block.text;
           },),

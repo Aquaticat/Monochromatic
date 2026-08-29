@@ -18,7 +18,6 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  hashContent,
   reviewAbsoluteNaturalness,
   type RosterModelId,
   type SyntheticClient,
@@ -31,6 +30,16 @@ const ROSTER = [
   'hf:zai-org/GLM-5.3-Flash',
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
+] as const;
+
+/**
+ * Even reviewer roster making exact-half quorum visible.
+ */
+const SIX_SEAT_ROSTER = [
+  ...ROSTER,
+  'deepseek-v4-flash-0731',
+  'deepseek-v4-pro-0813',
+  'minimax-m3',
 ] as const;
 
 /**
@@ -146,6 +155,10 @@ function reviewClient(
  *
  * @param messages - optional destination for operational logging
  *
+ * @param modelIds - reviewer roster, defaulting to three-seat fixture
+ *
+ * @param graceMs - bounded time to retain post-quorum responses
+ *
  * @returns Absolute review outcome
  *
  * @example
@@ -157,14 +170,18 @@ async function runReview(
   {
     client,
     messages,
+    modelIds = ROSTER,
+    graceMs = 0,
   }: {
     readonly client: SyntheticClient;
     readonly messages?: string[];
+    readonly modelIds?: readonly RosterModelId[];
+    readonly graceMs?: number;
   },
 ): ReturnType<typeof reviewAbsoluteNaturalness> {
   return await reviewAbsoluteNaturalness({
     client,
-    modelIds: ROSTER,
+    modelIds,
     subject: {
       sourceText: '猫猫在窗台上睡觉。',
       candidateText: 'The cat sleeps on the windowsill.',
@@ -172,7 +189,7 @@ async function runReview(
     },
     signal: AbortSignal.timeout(5_000,),
     exchangeTimeoutMs: 5_000,
-    graceMs: 0,
+    graceMs,
     l: (messages === undefined)
       ? tagged({ tag: 'absolute-review-test', },)
       : capturingLogger({ messages, },),
@@ -199,7 +216,7 @@ await describe({
     },),
 
     it({
-      name: 'WAITS FOR DELAYED REJECTION instead of ending on early acceptable quorum',
+      name: 'STARTS GRACE AT HALF instead of requiring delayed final seat',
       fn: async () => {
         const messages: string[] = [];
         const review = await runReview({
@@ -209,32 +226,53 @@ await describe({
           },),
           messages,
         },);
-        expect(review.verdict,).toBe('unacceptable',);
-        /**
-         * Digest expected instead of raw finding wording.
-         */
-        const findingDigest = hashContent({
-          content: 'Replace stiff source-language word order.',
+        expect(review.verdict,).toBe('acceptable',);
+        expect(review.usable,).toBe(2,);
+        expect(review.seats.map(function status(seat,): string {
+          return seat.status;
+        },),).toEqual([
+          'acceptable',
+          'acceptable',
+          'unusable',
+        ],);
+        expect(review.findings,).toEqual([],);
+        expect(messages.some(function leaksPrivateReview(line,): boolean {
+          return line.includes('Replace stiff source-language word order.',)
+            || line.includes('candidate retains translationese',);
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS REJECTION that arrives inside bounded post-quorum grace',
+      fn: async () => {
+        const review = await runReview({
+          client: reviewClient({
+            rejecting: ROSTER[2],
+            delayed: true,
+          },),
+          graceMs: 100,
         },);
-        expect(messages.some(function carriesSeatSummary(line,): boolean {
-          if (!line.includes(
-            'hf:zai-org/GLM-5.3-Flash:acceptable:findings=0:paragraphs=none:digests=none',
-          ))
-            return false;
-          if (!line.includes(
-            `hf:moonshotai/Kimi-K3:unacceptable:findings=1:paragraphs=1:digests=${findingDigest}`,
-          ))
-            return false;
-          if (!line.includes('uniqueFindings=1',))
-            return false;
-          if (line.includes('Replace stiff source-language word order.',))
-            return false;
-          return !line.includes('candidate retains translationese',);
-        },),).toBe(true,);
+        expect(review.verdict,).toBe('unacceptable',);
+        expect(review.usable,).toBe(3,);
         expect(review.findings,).toEqual([{
           paragraph: 1,
           problem: 'Replace stiff source-language word order.',
         },],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TWO USABLE SEATS when six-seat roster needs exact half',
+      fn: async () => {
+        const review = await runReview({
+          client: reviewClient({
+            unavailable: SIX_SEAT_ROSTER.slice(2,),
+          },),
+          modelIds: SIX_SEAT_ROSTER,
+        },);
+        expect(review.verdict,).toBe('quorum-not-met',);
+        expect(review.usable,).toBe(2,);
       },
     },),
 

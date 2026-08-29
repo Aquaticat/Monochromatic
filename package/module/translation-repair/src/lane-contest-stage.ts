@@ -16,6 +16,7 @@ import {
   type LaneContestSubject,
   readLaneContestBallot,
 } from './lane-contest-wire.ts';
+import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -45,11 +46,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * needs a new artifact generation, not a tuned constant.
  */
 export const LANE_CONTEST_QUORUM = 2;
-
-/**
- * Voices the round waits for before it starts timing out stragglers.
- */
-const HEARD_NEEDED = 2;
 
 /**
  * Schema a reply must satisfy before it reaches the reader.
@@ -324,24 +320,13 @@ export async function contestLaneSlice(
   },);
 
   /**
-   * Candidate exclusions deterministic syntax guard supplied.
-   */
-  const { ineligibleCandidates, } = subject;
-  /**
-   * Whether deterministic guard excluded either lane from effective tally.
-   */
-  const laneExcluded = (ineligibleCandidates === undefined)
-    ? false
-    : ineligibleCandidates.some(function isLane(candidate,): boolean {
-      return (candidate === 'repair') || (candidate === 'translate');
-    },);
-  /**
-   * Voices required before grace begins.
+   * Exact-half voices required before grace begins.
    *
-   * Every seat is required when raw choices can be excluded. Otherwise two
-   * fast inadmissible votes could start grace and cut off eligible quorum.
+   * Deterministic exclusions can make fast ballots inadmissible,
+   * but they do not make unreliable whole-roster participation mandatory.
+   * An eligible side lacking corroboration therefore fails closed as neither.
    */
-  const heardNeeded = laneExcluded ? modelIds.length : HEARD_NEEDED;
+  const heardNeeded = rosterQuorumSize({ rosterSize: modelIds.length, },);
 
   /**
    * One reply per voice, heard or lost.

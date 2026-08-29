@@ -1115,7 +1115,8 @@ and dated measurements keep departed id as evidence rather than being rewritten.
 Operational roster narrows from nine models to eight.
 Broad-stage quorum moves from five to four,
 equal to entire Synthetic side.
-A stage not requiring every seat may settle while all four Hyper seats are dark;
+Every production stage now starts straggler grace at exact-half participation rather than requiring every seat.
+A stage may therefore settle while all four Hyper seats are dark;
 that is degraded evidence and cannot establish readiness.
 
 Checker roster cannot simply shrink to two because `MINIMUM_CHECKER_COUNT` refuses roster below three.
@@ -1127,7 +1128,7 @@ not independent optimality of replacement seat;
 fresh checker-seat calibration remains open.
 
 GPT-OSS takes departed default restoration-benchmark judge seat because it already serves production checker and
-whole-roster judging roles.
+judging roles that seat the whole configured roster while settling at exact-half participation.
 No benchmark-specific calibration is inferred from that role overlap.
 
 GLM-4.7-Flash remains absent from roster identity,

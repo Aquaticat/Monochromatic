@@ -18,6 +18,7 @@ import {
 } from './pair-blocks-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
 import { countPairedBlocks, } from './pair-block-counts.ts';
+import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -46,11 +47,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  * which `#93` and `#112` both recorded as the more common failure.
  */
 const AGREEMENT_NEEDED = 2;
-
-/**
- * Voices the round waits for before it starts timing out stragglers.
- */
-const HEARD_NEEDED = 2;
 
 /**
  * Schema the reply must satisfy before it reaches the reader.
@@ -232,7 +228,7 @@ export async function pairBlocksWithRoster(
     validate: isBlockPairingWire,
     stage: 'block-pairing',
     l: pl,
-    heardNeeded: HEARD_NEEDED,
+    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
   },);
 
   /**

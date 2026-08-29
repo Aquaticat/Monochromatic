@@ -6,6 +6,7 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
+import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { runGatherRound, } from './stage-round.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -165,7 +166,7 @@ export async function gatherStageVoices<ValueT,>(
    * decision 2026-08-05, taken when the roster shrank to six: exactly half of
    * an even panel is a quorum.
    */
-  const quorumNeeded = Math.ceil(modelIds.length / 2,);
+  const quorumNeeded = rosterQuorumSize({ rosterSize: modelIds.length, },);
 
   /**
    * Heard voices accumulated across rounds;

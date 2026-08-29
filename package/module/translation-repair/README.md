@@ -525,7 +525,7 @@ In adjacent required-correction reviews it first proposed concrete wording and t
 The roster now has eight models.
 Broad-stage quorum consequently moves from five to four,
 which equals entire Synthetic side;
-a run with all four Hyper seats dark can reach quorum in stages that do not require every seat.
+a run with all four Hyper seats dark can reach exact-half quorum on four Synthetic seats.
 Both-key startup refusal prevents missing credentials but not provider becoming unavailable later,
 so any such run remains degraded evidence rather than readiness proof.
 Kimi-K3 takes departed checker seat rather than shrinking below hard floor of three;
@@ -1358,9 +1358,9 @@ Verdict derivation excludes votes for ineligible candidates without redirecting 
 requires ordinary direct-vote quorum for eligible lane,
 and suppresses archive endorsement when archive itself is ineligible.
 When either lane is excluded,
-contest waits for every seat before straggler grace can begin,
-so fast inadmissible votes cannot cut off delayed eligible quorum.
-No eligible winner remains retryable and uncached.
+contest still starts straggler grace at exact-half quorum rather than requiring every provider seat.
+Fast inadmissible votes may therefore leave no eligible winner;
+that outcome fails closed as retryable and uncached.
 Contest prompt names deterministic exclusions,
 artifact reader recomputes eligibility from stored source and lane texts,
 and final page guard remains independent.
@@ -1441,12 +1441,9 @@ Refinement and consolidation cache generations advance because earlier replies a
 Prompt pressure alone is not publication proof.
 Artifact generation 8 adds independent absolute naturalness review over exact would-ship body text after comparative fidelity gate,
 including unchanged text when refiners propose nothing.
-Every roster seat reaches usable reply,
-malformed reply,
-transport failure,
-or per-call deadline before review settles;
-two usable approvals are minimum,
-and any usable rejection blocks.
+Every requested roster seat remains accounted as usable or unavailable,
+but exact-half usable quorum starts bounded straggler grace and is also minimum for approval.
+Any usable rejection heard before settlement blocks.
 Findings identify one-based structurally correctable paragraph and actionable defect.
 One bounded corrective generation receives those findings as fenced data,
 then existing structure and fidelity gates run before independent review rechecks exact selected text.
@@ -1546,9 +1543,14 @@ More importantly,
 same exact failed candidate was rejected by original run and first replay,
 then accepted by all eight seats in later replay.
 One absolute-review draw is therefore not stable enough for publication approval.
-Generation 11 now requires one sequential all-seat confirmation after first acceptance.
-Any rejection remains immediately decisive and feeds bounded correction;
-an acceptance ships only after second all-seat acceptance of exact candidate.
+Generation 11 now requires one sequential exact-half-quorum confirmation after first acceptance.
+Any rejection heard before either bounded settlement remains immediately decisive and feeds bounded correction;
+an acceptance ships only after second quorum acceptance of exact candidate.
+Generation 12 applies exact-half required participation to every direct roster round;
+no stage waits on every provider seat as requirement.
+Participation quorum is distinct from existing two-vote corroboration thresholds for pairing and comparative gates.
+Sequential naturalness approvals may contain different responding halves;
+requiring identity overlap would restore provider-seat dependency the cap removes.
 Schema-9 `confirmations` retains earlier acceptable draw with candidate and paragraph digests,
 while decisive `rounds` preserves one-review-per-candidate correction-chain invariant.
 Runtime settlement produces confirmation evidence by construction;

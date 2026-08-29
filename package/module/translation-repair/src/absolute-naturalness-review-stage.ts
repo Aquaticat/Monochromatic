@@ -14,15 +14,11 @@ import {
 } from './absolute-naturalness-review-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
+import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { runGatherRound, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Absolute naturalness review stage
-
-/**
- * Usable voices required before absolute review can approve candidate.
- */
-export const ABSOLUTE_NATURALNESS_REVIEW_QUORUM = 2;
 
 /**
  * One roster seat as absolute review accounted for it.
@@ -141,9 +137,9 @@ function uniqueFindings(
 /**
  * Reviews exact would-ship body text against absolute publication naturalness.
  *
- * Every seat reaches usable response, malformed response, transport failure,
- * or per-call deadline before settlement. No early acceptable quorum can cut
- * off delayed rejection.
+ * Exact-half quorum starts bounded grace for remaining seats.
+ * Every usable rejection that arrives before settlement remains decisive,
+ * while one unreliable provider cannot make whole-roster participation mandatory.
  *
  * @param client - provider client
  *
@@ -193,6 +189,10 @@ export async function reviewAbsoluteNaturalness(
     tag: reviewAbsoluteNaturalness.name,
   },);
   /**
+   * Exact-half usable voices required to approve and start straggler grace.
+   */
+  const quorumNeeded = rosterQuorumSize({ rosterSize: modelIds.length, },);
+  /**
    * Structurally correctable paragraphs shown to every reviewer.
    */
   const paragraphCount = subject.paragraphs
@@ -227,7 +227,7 @@ export async function reviewAbsoluteNaturalness(
     },
     stage: 'absolute-naturalness-review',
     l: rl,
-    heardNeeded: modelIds.length,
+    heardNeeded: quorumNeeded,
     ...((graceMs === undefined) ? {} : { graceMs, }),
   },);
   /**
@@ -279,7 +279,7 @@ export async function reviewAbsoluteNaturalness(
    * Fail-closed verdict: thin review cannot approve, and any rejection blocks.
    */
   const verdict: AbsoluteNaturalnessReviewVerdict = (usableSeats.length
-      < ABSOLUTE_NATURALNESS_REVIEW_QUORUM)
+      < quorumNeeded)
     ? 'quorum-not-met'
     : usableSeats.some(function rejected(seat,): boolean {
       return seat.status === 'unacceptable';

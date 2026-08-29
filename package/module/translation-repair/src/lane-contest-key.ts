@@ -24,8 +24,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 3 tells judges which syntax candidates deterministic publication
  * guard rejects. Earlier ballots spent votes on candidates unable to ship.
+ *
+ * VERSION 4 starts straggler grace at exact-half participation even when
+ * deterministic eligibility excludes one lane.
  */
-export const LANE_CONTEST_CACHE_VERSION = 3;
+export const LANE_CONTEST_CACHE_VERSION = 4;
 
 /**
  * Everything about this run that changes what the judges are ASKED, folded into
