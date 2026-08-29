@@ -123,6 +123,7 @@ const CHAINED_REVIEW = {
   rounds: [
     {
       candidateDigest: hashContent({ content: INITIAL_TEXT, },),
+      candidateText: INITIAL_TEXT,
       paragraphCount: 1,
       paragraphDigests: [hashContent({ content: INITIAL_TEXT, },),],
       seats: [
@@ -135,6 +136,7 @@ const CHAINED_REVIEW = {
     },
     {
       candidateDigest: hashContent({ content: FIRST_CORRECTION_TEXT, },),
+      candidateText: FIRST_CORRECTION_TEXT,
       paragraphCount: 1,
       paragraphDigests: [hashContent({ content: FIRST_CORRECTION_TEXT, },),],
       seats: [
@@ -147,6 +149,7 @@ const CHAINED_REVIEW = {
     },
     {
       candidateDigest: hashContent({ content: FINAL_TEXT, },),
+      candidateText: FINAL_TEXT,
       paragraphCount: 1,
       paragraphDigests: [hashContent({ content: FINAL_TEXT, },),],
       seats: [
@@ -192,6 +195,17 @@ await describe({
       name: 'REFUSES MUTATED CORRECTION OR FINAL PARAGRAPH DIGEST in generation-nine chain',
       fn: async () => {
         const cases: readonly unknown[] = [
+          {
+            ...CHAINED_REVIEW,
+            rounds: [
+              {
+                ...CHAINED_REVIEW.rounds[0],
+                candidateText: `${INITIAL_TEXT} Extra sentence.`,
+              },
+              CHAINED_REVIEW.rounds[1],
+              CHAINED_REVIEW.rounds[2],
+            ],
+          },
           {
             ...CHAINED_REVIEW,
             corrections: [

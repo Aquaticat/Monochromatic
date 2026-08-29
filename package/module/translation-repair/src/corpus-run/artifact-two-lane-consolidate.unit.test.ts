@@ -28,6 +28,8 @@ import {
   type ConsolidationSettlement,
   type ConsolidationTerminal,
   describeConsolidateSlice,
+  hashContent,
+  parseConsolidationPolish,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -160,6 +162,128 @@ await describe({
         },);
 
         expect(slice.shipped.kind,).toBe('consolidated',);
+      },
+    },),
+
+    it({
+      name: 'ROUND-TRIPS WRITTEN TWO-CORRECTION POLISH through JSON and schema-nine reader',
+      fn: async () => {
+        /** Exact reviewed candidates in bounded order. */
+        const texts = [
+          'The cat performs sleeping.',
+          'The cat is sleeping.',
+          'The cat sleeps.',
+        ] as const;
+        /** Located findings authorizing each correction. */
+        const findings = [
+          [{ paragraph: 1, problem: 'Replace nominalized verb.', },],
+          [{ paragraph: 1, problem: 'Prefer concise habitual form.', },],
+        ] as const;
+        /** Review rounds written by runtime settlement. */
+        const reviews = texts.map(function reviewOf(text, index,) {
+          const rejectedFindings = findings[index] ?? [];
+          const acceptable = index === (texts.length - 1);
+          return {
+            candidateDigest: hashContent({ content: text, },),
+            candidateText: text,
+            paragraphCount: 1,
+            paragraphDigests: [hashContent({ content: text, },),],
+            seats: [
+              {
+                modelId: 'hf:zai-org/GLM-5.2' as const,
+                status: acceptable ? 'acceptable' as const : 'unacceptable' as const,
+                findings: rejectedFindings,
+                reason: acceptable ? 'ready' : 'material defect remains',
+              },
+              {
+                modelId: 'hf:Qwen/Qwen3.8-27B' as const,
+                status: 'acceptable' as const,
+                findings: [],
+                reason: 'ready',
+              },
+            ],
+            usable: 2,
+            verdict: acceptable ? 'acceptable' as const : 'unacceptable' as const,
+            findings: rejectedFindings,
+          };
+        },);
+        /** Every review narrowed from fixed three-candidate fixture. */
+        const [initialReview, firstReview, finalReview,] = reviews;
+        if ((initialReview === undefined)
+          || (firstReview === undefined)
+          || (finalReview === undefined))
+          throw new Error('fixed schema-nine review fixture lost a round',);
+        /** Consolidation settlement carrying schema-nine audit chain. */
+        const settlement: ConsolidationSettlement = {
+          ...settledAs({ terminal: 'consolidated', text: texts[2], },),
+          polish: {
+            kind: 'settled',
+            baseText: texts[0],
+            proposedText: texts[2],
+            text: texts[2],
+            changed: true,
+            refinersHeard: ['hf:zai-org/GLM-5.2',],
+            contributors: ['hf:zai-org/GLM-5.2',],
+            rounds: [],
+            gate: {
+              choice: 'polished',
+              ships: 'polished',
+              ballots: [
+                {
+                  choice: 'polished',
+                  unsupported: [],
+                  unsupportedRaw: [],
+                  dropped: [],
+                  droppedRaw: [],
+                  reason: 'faithful correction',
+                },
+                {
+                  choice: 'polished',
+                  unsupported: [],
+                  unsupportedRaw: [],
+                  dropped: [],
+                  droppedRaw: [],
+                  reason: 'faithful correction',
+                },
+              ],
+              usable: 2,
+              findings: [],
+            },
+            review: {
+              correctionCount: 2,
+              corrections: [
+                {
+                  inputDigest: initialReview.candidateDigest,
+                  findingsDigest: hashContent({ content: JSON.stringify(findings[0],), },),
+                  gatedTextDigest: firstReview.candidateDigest,
+                },
+                {
+                  inputDigest: firstReview.candidateDigest,
+                  findingsDigest: hashContent({ content: JSON.stringify(findings[1],), },),
+                  gatedTextDigest: finalReview.candidateDigest,
+                },
+              ],
+              rounds: [
+                initialReview,
+                firstReview,
+                finalReview,
+              ],
+            },
+            findings: [],
+          },
+        };
+        const slice = describeConsolidateSlice({ sliceIndex: 2, settlement, },);
+        /** JSON bytes crossing artifact persistence boundary. */
+        const json = JSON.stringify(slice.polish,);
+        /** Parsed artifact polish as reader receives it. */
+        const serialized: unknown = JSON.parse(json,);
+        const parsed = parseConsolidationPolish({
+          value: serialized,
+          path: 'consolidation.slices[0].polish',
+          reviewRequired: true,
+          correctionChainRequired: true,
+        },);
+        expect(parsed,).toEqual(slice.polish,);
       },
     },),
 

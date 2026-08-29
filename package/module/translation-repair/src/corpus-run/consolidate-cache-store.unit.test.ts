@@ -134,9 +134,9 @@ async function scratchDir(): Promise<{
  * const resumed = await roundTrip({ settlement, },);
  * ```
  */
-async function roundTrip(
+async function roundTripValue(
   { settlement, }: { readonly settlement: unknown; },
-): Promise<boolean> {
+): Promise<unknown> {
   await using scratch = await scratchDir();
 
   /**
@@ -159,7 +159,25 @@ async function roundTrip(
     generation: TEST_GENERATION,
   },);
   return reading.resumed
-    .has(CAT_KEY,);
+    .get(CAT_KEY,);
+}
+
+/**
+ * Writes one settlement and reports whether fresh store resumes it.
+ *
+ * @param settlement - value to persist, valid or not
+ *
+ * @returns Whether second store resumed key
+ *
+ * @example
+ * ```ts
+ * const resumed = await roundTrip({ settlement, });
+ * ```
+ */
+async function roundTrip(
+  { settlement, }: { readonly settlement: unknown; },
+): Promise<boolean> {
+  return (await roundTripValue({ settlement, },)) !== undefined;
 }
 
 await describe({
@@ -171,6 +189,46 @@ await describe({
         + 'and errors nowhere',
       fn: async () => {
         expect(await roundTrip({ settlement: CAT_SETTLEMENT, },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'ROUND-TRIPS SCHEMA-NINE TWO-CORRECTION AUDIT without dropping transition evidence',
+      fn: async () => {
+        /** Digest fixture with valid lowercase SHA-256 shape. */
+        const digest = 'd'.repeat(64,);
+        /** Settlement carrying exact bounded correction audit. */
+        const settlement = {
+          ...CAT_SETTLEMENT,
+          polish: {
+            kind: 'settled',
+            baseText: 'The cat conducted a nap.',
+            proposedText: 'The cat napped peacefully.',
+            text: 'The cat napped peacefully.',
+            changed: true,
+            refinersHeard: ['hf:cat/Cat-A',],
+            contributors: ['hf:cat/Cat-A',],
+            rounds: [],
+            review: {
+              correctionCount: 2,
+              corrections: [
+                {
+                  inputDigest: digest,
+                  findingsDigest: digest,
+                  gatedTextDigest: digest,
+                },
+                {
+                  inputDigest: digest,
+                  findingsDigest: digest,
+                  gatedTextDigest: digest,
+                },
+              ],
+              rounds: [],
+            },
+            findings: [],
+          },
+        } as const;
+        expect(await roundTripValue({ settlement, },),).toEqual(settlement,);
       },
     },),
 

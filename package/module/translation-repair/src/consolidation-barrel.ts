@@ -35,6 +35,7 @@ export {
   type ArtifactConsolidateSlice,
   type ArtifactConsolidation,
   type ArtifactConsolidationPolish,
+  type ArtifactNaturalnessCorrection,
   type ArtifactNaturalnessFinding,
   type ArtifactNaturalnessReview,
   type ArtifactNaturalnessReviewRound,
@@ -44,6 +45,7 @@ export {
 export { consolidateDocument, } from './consolidate-driver.ts';
 export {
   type ConsolidationNaturalnessAudit,
+  type ConsolidationNaturalnessCorrectionAudit,
   type ConsolidationPolish,
   type ConsolidationPolishConfig,
   polishConsolidation,

@@ -1386,7 +1386,9 @@ Each transition records rejected-text digest,
 canonical structured-findings digest,
 gated-text digest,
 and reviewed paragraph digests.
-The reader recomputes every adjacent transition and final paragraph identity.
+The reader recomputes every exact reviewed candidate,
+its paragraph identities,
+and every adjacent transition.
 No candidate,
 tie,
 no-op,

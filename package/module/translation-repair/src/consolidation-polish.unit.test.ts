@@ -129,9 +129,13 @@ const client: SyntheticClient = {
  *
  * @param selectionSheets - optional sink receiving candidate-selector prompts
  *
+ * @param retainFirstCorrectionAtGate - whether fidelity gate keeps rejected input
+ *
  * @param throwOnThirdCorrection - whether unexpected third generation fails fixture
  *
  * @param onRefineCall - optional observer of one-based refinement call count
+ *
+ * @param onReviewRound - optional observer of one-based absolute review round
  *
  * @returns Scripted bounded-correction client
  *
@@ -146,17 +150,21 @@ function boundedCorrectionClient(
     rejectCorrection = false,
     secondCorrectionText,
     acceptSecondCorrection = false,
+    retainFirstCorrectionAtGate = false,
     selectionSheets,
     throwOnThirdCorrection = false,
     onRefineCall,
+    onReviewRound,
   }: {
     readonly correctionText?: string;
     readonly rejectCorrection?: boolean;
     readonly secondCorrectionText?: string;
     readonly acceptSecondCorrection?: boolean;
+    readonly retainFirstCorrectionAtGate?: boolean;
     readonly selectionSheets?: string[];
     readonly throwOnThirdCorrection?: boolean;
     readonly onRefineCall?: (count: number) => void;
+    readonly onReviewRound?: (round: number) => void;
   },
 ): SyntheticClient {
   /**
@@ -165,6 +173,7 @@ function boundedCorrectionClient(
   const calls = {
     refine: 0,
     review: 0,
+    gate: 0,
   };
   return {
     chatText: async () => {
@@ -207,11 +216,18 @@ function boundedCorrectionClient(
           };
         }
         if (schema === 'consolidation_polish_gate') {
+          calls.gate += 1;
+          /**
+           * One-based fidelity gate round across every roster seat.
+           */
+          const gateRound = Math.ceil(calls.gate / ROSTER.length,);
           return {
-            choice: 'polished',
+            choice: (retainFirstCorrectionAtGate && (gateRound === 1))
+              ? 'base'
+              : 'polished',
             unsupported: [],
             dropped: [],
-            reason: 'correction remains faithful',
+            reason: 'scripted fidelity comparison',
           };
         }
         if (schema === 'absolute_naturalness_review') {
@@ -220,6 +236,7 @@ function boundedCorrectionClient(
            * One-based absolute review round across every roster seat.
            */
           const reviewRound = Math.ceil(calls.review / ROSTER.length,);
+          onReviewRound?.(reviewRound,);
           /**
            * Whether final bounded review remains scripted rejection.
            */
@@ -420,6 +437,48 @@ await describe({
         },);
         expect(polish.kind,).toBe('unsettled',);
         expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'STOPS AFTER FIRST CORRECTION when fidelity gate retains rejected input',
+      fn: async () => {
+        /** One-based refinement calls observed before fidelity refusal. */
+        const refineCalls: number[] = [];
+        /** One-based absolute review rounds observed before fidelity refusal. */
+        const reviewRounds: number[] = [];
+        const polish = await polishConsolidation({
+          client: boundedCorrectionClient({
+            correctionText: POLISHED,
+            retainFirstCorrectionAtGate: true,
+            onRefineCall: function recordRefineCall(count,): void {
+              refineCalls.push(count,);
+            },
+            onReviewRound: function recordReviewRound(round,): void {
+              reviewRounds.push(round,);
+            },
+          },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-fidelity-refusal-test', },),
+        },);
+        expect(polish.kind,).toBe('unsettled',);
+        expect(polish.kind === 'unsettled' ? polish.review.correctionCount : 0,).toBe(1,);
+        expect(polish.kind === 'unsettled' ? polish.review.rounds.length : 0,).toBe(1,);
+        expect(refineCalls,).toEqual([1, 2,],);
+        expect([...new Set(reviewRounds,),],).toEqual([1,],);
       },
     },),
 

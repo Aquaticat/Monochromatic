@@ -182,6 +182,11 @@ export type ArtifactNaturalnessReviewRound = {
   readonly candidateDigest: string;
 
   /**
+   * Exact reviewed candidate, required from generation nine.
+   */
+  readonly candidateText?: string;
+
+  /**
    * Structurally correctable paragraphs reviewer was shown.
    */
   readonly paragraphCount: number;

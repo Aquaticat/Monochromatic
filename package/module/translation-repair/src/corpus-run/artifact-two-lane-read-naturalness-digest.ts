@@ -250,6 +250,70 @@ export function assertNaturalnessCorrectionChain(
 }
 
 /**
+ * Verifies one reviewed candidate and paragraph identity list from exact text.
+ *
+ * @param candidateText - exact reviewed candidate
+ *
+ * @param candidateDigest - stored candidate digest
+ *
+ * @param paragraphCount - stored correctable paragraph count
+ *
+ * @param paragraphDigests - stored correctable paragraph identities
+ *
+ * @param path - review round path
+ *
+ * @example
+ * ```ts
+ * assertReviewedCandidateDigests({ candidateText, candidateDigest, paragraphCount, paragraphDigests, path, });
+ * ```
+ */
+export function assertReviewedCandidateDigests(
+  {
+    candidateText,
+    candidateDigest,
+    paragraphCount,
+    paragraphDigests,
+    path,
+  }: {
+    readonly candidateText: string;
+    readonly candidateDigest: string;
+    readonly paragraphCount: number;
+    readonly paragraphDigests: readonly string[];
+    readonly path: string;
+  },
+): void {
+  /**
+   * Exact structurally correctable paragraphs from candidate text.
+   */
+  const paragraphs = finalPolishParagraphs({ text: candidateText, });
+  /**
+   * Digests independently re-derived from candidate paragraph text.
+   */
+  const derivedParagraphDigests = paragraphs
+    .map(function digestParagraph(paragraph,): string {
+      return hashContent({ content: paragraph, },);
+    },);
+  if (paragraphCount !== paragraphs.length) {
+    throw new ArtifactParseError({
+      path: `${path}.paragraphCount`,
+      reason: 'structurally correctable paragraph count of reviewed candidate text',
+    },);
+  }
+  if (JSON.stringify(paragraphDigests,) !== JSON.stringify(derivedParagraphDigests,)) {
+    throw new ArtifactParseError({
+      path: `${path}.paragraphDigests`,
+      reason: 'SHA-256 digest of every structurally correctable reviewed paragraph',
+    },);
+  }
+  if (candidateDigest !== hashContent({ content: candidateText, },)) {
+    throw new ArtifactParseError({
+      path: `${path}.candidateDigest`,
+      reason: 'SHA-256 of exact reviewed candidate text',
+    },);
+  }
+}
+
+/**
  * Verifies final candidate and paragraph digests against exact final text.
  *
  * @param final - final accepted review
@@ -278,28 +342,36 @@ export function assertFinalNaturalnessDigests(
     readonly paragraphDigestsRequired: boolean;
   },
 ): void {
+  if (paragraphDigestsRequired) {
+    if (final.candidateText !== finalText) {
+      throw new ArtifactParseError({
+        path: `${path}.candidateText`,
+        reason: 'exact final polish text',
+      },);
+    }
+    if (final.paragraphDigests === undefined) {
+      throw new ArtifactParseError({
+        path: `${path}.paragraphDigests`,
+        reason: 'reviewed paragraph identities',
+      },);
+    }
+    assertReviewedCandidateDigests({
+      candidateText: finalText,
+      candidateDigest: final.candidateDigest,
+      paragraphCount: final.paragraphCount,
+      paragraphDigests: final.paragraphDigests,
+      path,
+    },);
+    return;
+  }
   /**
-   * Exact structurally correctable paragraphs from final text.
+   * Exact structurally correctable paragraphs from legacy final text.
    */
   const paragraphs = finalPolishParagraphs({ text: finalText, });
-  /**
-   * Digests independently re-derived from final paragraph text.
-   */
-  const paragraphDigests = paragraphs
-    .map(function digestParagraph(paragraph,): string {
-      return hashContent({ content: paragraph, },);
-    },);
   if (final.paragraphCount !== paragraphs.length) {
     throw new ArtifactParseError({
       path: `${path}.paragraphCount`,
       reason: 'structurally correctable paragraph count of final polish text',
-    },);
-  }
-  if (paragraphDigestsRequired
-    && (JSON.stringify(final.paragraphDigests,) !== JSON.stringify(paragraphDigests,))) {
-    throw new ArtifactParseError({
-      path: `${path}.paragraphDigests`,
-      reason: 'SHA-256 digest of every structurally correctable final paragraph',
     },);
   }
   if (final.candidateDigest !== hashContent({ content: finalText, },)) {

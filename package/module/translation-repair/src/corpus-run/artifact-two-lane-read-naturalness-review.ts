@@ -4,6 +4,7 @@ import {
   requireArray,
   requireCount,
   requireRecord,
+  requireString,
 } from '../artifact-guard.ts';
 import type {
   ArtifactNaturalnessFinding,
@@ -14,6 +15,7 @@ import type {
 import {
   assertFinalNaturalnessDigests,
   assertNaturalnessCorrectionChain,
+  assertReviewedCandidateDigests,
   parseNaturalnessCorrection,
   parseParagraphDigests,
   requireNaturalnessDigest,
@@ -61,6 +63,7 @@ function parseRound(
     record,
     allowed: [
       'candidateDigest',
+      ...(paragraphDigestsRequired ? ['candidateText',] : []),
       'paragraphCount',
       ...(paragraphDigestsRequired ? ['paragraphDigests',] : []),
       'seats',
@@ -192,8 +195,27 @@ function parseRound(
     value: record.candidateDigest,
     path: `${path}.candidateDigest`,
   },);
+  /**
+   * Exact reviewed candidate under generation-nine shape.
+   */
+  const candidateText = paragraphDigestsRequired
+    ? requireString({
+      value: record.candidateText,
+      path: `${path}.candidateText`,
+    },)
+    : '';
+  if (paragraphDigestsRequired) {
+    assertReviewedCandidateDigests({
+      candidateText,
+      candidateDigest,
+      paragraphCount,
+      paragraphDigests,
+      path,
+    },);
+  }
   return {
     candidateDigest,
+    ...(paragraphDigestsRequired ? { candidateText, } : {}),
     paragraphCount,
     ...(paragraphDigestsRequired ? { paragraphDigests, } : {}),
     seats,

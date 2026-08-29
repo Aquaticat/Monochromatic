@@ -67,7 +67,7 @@ export type AbsoluteNaturalnessReviewVerdict =
  *
  * @example
  * ```ts
- * const review: AbsoluteNaturalnessReviewOutcome = { candidateDigest: 'sha256:abc', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ * const review: AbsoluteNaturalnessReviewOutcome = { candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
  * ```
  */
 export type AbsoluteNaturalnessReviewOutcome = {
@@ -75,6 +75,11 @@ export type AbsoluteNaturalnessReviewOutcome = {
    * Digest binding review to exact candidate bytes.
    */
   readonly candidateDigest: string;
+
+  /**
+   * Exact candidate text reviewer was shown.
+   */
+  readonly candidateText: string;
 
   /**
    * Structurally correctable paragraphs reviewer was shown.
@@ -286,6 +291,7 @@ export async function reviewAbsoluteNaturalness(
   );
   return {
     candidateDigest: hashContent({ content: subject.candidateText, },),
+    candidateText: subject.candidateText,
     paragraphCount,
     paragraphDigests,
     seats,
