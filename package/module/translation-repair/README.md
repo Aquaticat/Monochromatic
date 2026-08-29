@@ -1719,6 +1719,48 @@ completion evidence,
 and objective.
 Concurrent runs share provider capacity and are not matched runtime arms.
 
+### Terminal quality-refusal audit, 2026-08-29
+
+Naturalness rejection no longer ends with `do not publish`:
+generation 14 continuously corrects,
+checkpoints payloads,
+and pauses only on operational interruption or exact deterministic task cycle.
+Publication gates remain strict.
+
+Remaining terminal and bypass findings must move to stage-local repair before fresh runs:
+
+- `assertArchiveReviewed` throws on target blocks outside source claims during preparation.
+  Pairing/review must classify and revise those blocks instead of ending entry.
+- `assertPublishableTranslation` throws when source passages remain unfilled.
+  Insertion admission does not throw separately;
+  its inconclusive or uncorroborated outcome feeds this final unfilled list.
+  Translation/insertion must continue from those slices and latest refusal evidence.
+- `assertFinalSelectionSettled` throws when archive wording stands without endorsement.
+  Contest/consolidation must reopen unresolved slices with prior ballots as failed-strategy evidence.
+- `assertFrontMatterComplete` combines multiple classes.
+  `incumbent-fallback` and candidate YAML/schema invalidity are repairable metadata quality.
+  One-sided metadata presence needs earlier preparation support.
+  Missing/misplaced slice and contradictory assembled-page structure are invariants;
+  earlier stages must prevent them rather than looping at publication guard.
+- `assertContributorNamesComplete` throws when final attribution drops target-authoritative public form.
+  Deterministic authority restoration should repair final attribution and rerun validation.
+
+- Image-reading exhaustion currently remains unavailable evidence rather than terminal refusal.
+  That can let visual content bypass review;
+  image-dependent slices must continue reading with distinct prompts or pause operationally before publication.
+
+On fresh generation-14 corpus path,
+`assertFinalNaturalnessComplete` is runtime persistence invariant after continuous naturalness,
+not ordinary quality outcome.
+Existing artifact readers do not invoke it.
+Parser,
+ledger,
+assembly,
+filesystem,
+provider,
+and cancellation failures are operational errors rather than quality verdicts.
+No fresh validation starts until remaining repairable quality paths stop producing terminal refusal.
+
 Corpus-readiness work is defect-driven:
 once output proves reproducible systemic blocker,
 stop unrelated corpus arms,
