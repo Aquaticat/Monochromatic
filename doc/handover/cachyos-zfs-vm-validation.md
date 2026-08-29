@@ -21,10 +21,19 @@ or evidence unless the user later authorizes cleanup.
 - **Installation result**:
   CachyOS Calamares displayed `All done.` and reported a successful installation.
 - **Current transition**:
-  A fresh patched-layout domain is booting the authenticated ISO for the complete rollback re-test.
-  The local patch applies cleanly to the pinned installer commit and has SHA-256
+  The patched-layout domain is installing the no-desktop encrypted-ZFS system to virtual `/dev/vda`.
+  The local patch applied cleanly to the pinned installer commit and has SHA-256
   `e9d7271f4f7d2a110b8782049299ee765061d3914b344072d9fa027f2c7341f0`.
-  Process `wait-patched-layout-live` is waiting for CachyOS Hello on loopback VNC display 1.
+  The archive and patch hashes,
+  patched `zfs.conf`,
+  and effective Calamares settings are being preserved on the evidence disk.
+  The effective sequence contained all 7 custom ZFS jobs,
+  and exactly 1 Calamares process was running before destructive confirmation.
+  The summary selected only virtual `/dev/vda`,
+  native encryption,
+  no desktop,
+  and the default base package groups.
+  Process `wait-patched-layout-install` is waiting for installer completion on loopback VNC display 1.
   The first installed disk reached Ly 1.4.1 after a successful native-encryption unlock.
   It contains Wayfire because the original runbook prescribed Wayfire as a temporary graphical base.
   The user correctly identified **No Desktop** as closer to the intended UWSM plus labwc system.
