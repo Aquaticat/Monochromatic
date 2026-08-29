@@ -141,7 +141,7 @@ fn install_backend() -> Result<()> {
     //           converts missing env to `false`.
     // Why:      Preserve the sibling app's software-renderer escape hatch.
     let force_software = std::env::var("SLINT_BACKEND")
-        .map(|value| value.contains("software"))
+        .map(|value| return value.contains("software"))
         .unwrap_or(false);
     // What:     `if force_software { ... }` conditionally changes the builder.
     // Why:      Headless or no-GPU sessions can force Slint's software renderer;
@@ -161,7 +161,7 @@ fn install_backend() -> Result<()> {
         .expect("no Slint platform should already be set");
     // What:     `Ok(())` returns success from a unit-returning `Result`.
     // Why:      The platform is installed.
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `fn color_from_rgb(rgb: Rgb) -> Color` converts this crate's color
@@ -171,7 +171,7 @@ fn color_from_rgb(rgb: Rgb) -> Color {
     // What:     `Color::from_rgb_u8(...)` constructs a Slint color from 8-bit
     //           channels. `::` calls an associated function.
     // Why:      Both Ghostty and Slint use byte RGB for this path.
-    Color::from_rgb_u8(rgb.red, rgb.green, rgb.blue)
+    return Color::from_rgb_u8(rgb.red, rgb.green, rgb.blue)
 }
 
 /// What:     `fn to_slint_cell(cell: &terminal_app::render::TerminalCell) -> TerminalCell`
@@ -182,7 +182,7 @@ fn to_slint_cell(cell: &terminal_app::render::TerminalCell) -> TerminalCell {
     //           `as i32` narrows `usize` indexes to Slint `int`; `.as_str().into()`
     //           converts owned `String` to `SharedString`.
     // Why:      Slint model values must use Slint's generated field types.
-    TerminalCell {
+    return TerminalCell {
         row: cell.row as i32,
         col: cell.col as i32,
         text: SharedString::from(cell.text.as_str()),
@@ -255,7 +255,7 @@ fn refresh_from_scroll(
     // Why:      Avoid nested mutable borrows if Slint emits another notification.
     drop(engine);
     apply_snapshot(app, snapshot);
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `fn refresh_from_resize(...) -> Result<()>` handles Slint
@@ -285,7 +285,7 @@ fn refresh_from_resize(
     let snapshot = engine.snapshot(mapping)?;
     drop(engine);
     apply_snapshot(app, snapshot);
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `fn refresh_from_pty_events(...) -> Result<()>` drains PTY reader
@@ -364,7 +364,7 @@ fn refresh_from_pty_events(
     }
     // What:     `Ok(())` returns success.
     // Why:      All ready PTY events were handled.
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `fn write_terminal_key(...) -> Result<()>` converts one Slint key
@@ -386,7 +386,7 @@ fn write_terminal_key(
     }
     // What:     `Ok(())` returns success.
     // Why:      The key was either written or intentionally ignored.
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `fn log_callback_error(context: &str, error: anyhow::Error)` logs
@@ -406,7 +406,7 @@ fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
         )
         .with_writer(std::io::stderr)
         .init();
@@ -498,5 +498,5 @@ fn main() -> Result<()> {
 
     app.run()?;
     output_timer.stop();
-    Ok(())
+    return Ok(())
 }

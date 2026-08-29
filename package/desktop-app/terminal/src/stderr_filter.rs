@@ -169,7 +169,7 @@ pub fn install_ghostty_stderr_filter() -> io::Result<()> {
     thread::spawn(move || forward_filtered_stderr(reader_file, writer_file));
     // What:     `Ok(())` returns success with no payload.
     // Why:      fd 2 now routes through the filter.
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `pub fn install_ghostty_stderr_filter() -> io::Result<()>` is the
@@ -200,7 +200,7 @@ fn create_pipe() -> io::Result<PipeFileDescriptors> {
     }
     // What:     `Ok(PipeFileDescriptors { ... })` wraps both raw fd numbers.
     // Why:      The caller can now close or transfer them by name.
-    Ok(PipeFileDescriptors {
+    return Ok(PipeFileDescriptors {
         read_fd: pipe_fds[0],
         write_fd: pipe_fds[1],
     })
@@ -220,7 +220,7 @@ fn duplicate_fd(fd: c_int) -> io::Result<c_int> {
     }
     // What:     `Ok(result)` returns the duplicated fd number.
     // Why:      The caller owns that fd and must eventually close it.
-    Ok(result)
+    return Ok(result)
 }
 
 /// What:     `fn replace_stderr_with_pipe(write_fd: c_int) -> io::Result<()>` wraps
@@ -238,7 +238,7 @@ fn replace_stderr_with_pipe(write_fd: c_int) -> io::Result<()> {
     }
     // What:     `Ok(())` returns success with no payload.
     // Why:      stderr now points at the pipe write end.
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `fn close_fd(fd: c_int)` wraps Unix `close` and discards errors.
@@ -257,7 +257,7 @@ fn close_fd(fd: c_int) {
 fn file_from_fd(fd: c_int) -> File {
     // What:     `unsafe { File::from_raw_fd(fd) }` tells Rust it now owns `fd`.
     // Why:      The fd came from `pipe` or `dup`, so no other Rust `File` owns it.
-    unsafe { File::from_raw_fd(fd) }
+    unsafe { return File::from_raw_fd(fd) }
 }
 
 /// What:     `fn forward_filtered_stderr(...)` reads redirected stderr and writes kept
@@ -309,8 +309,8 @@ fn should_suppress_stderr_line(line: &[u8]) -> bool {
     // What:     `.windows(...).any(|window| ...)` scans overlapping byte windows with
     //           a Rust closure. It is the byte-slice sibling of string `includes`.
     // Why:      This finds the marker without regex or UTF-8 assumptions.
-    line.windows(SUPPRESSED_GHOSTTY_OSC_LOG.len())
-        .any(|window| window == SUPPRESSED_GHOSTTY_OSC_LOG)
+    return line.windows(SUPPRESSED_GHOSTTY_OSC_LOG.len())
+        .any(|window| return window == SUPPRESSED_GHOSTTY_OSC_LOG)
 }
 
 /// What:     `#[cfg(test)] #[path = "stderr_filter_tests.rs"] mod tests;`

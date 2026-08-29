@@ -161,7 +161,7 @@ impl ViewportGeometry {
         // ```ts
         // return { cols, rows, cellWidthPx: safeCellWidthPx, cellHeightPx: safeCellHeightPx };
         // ```
-        Self {
+        return Self {
             cols,
             rows,
             cell_width_px: safe_cell_width_px,
@@ -318,7 +318,7 @@ impl TerminalEngine {
         // ```ts
         // return { terminal, renderState: new RenderState(), rowIterator: new RowIterator(), cellIterator: new CellIterator() };
         // ```
-        Ok(Self {
+        return Ok(Self {
             terminal,
             render_state: RenderState::new()?,
             row_iterator: RowIterator::new()?,
@@ -375,7 +375,7 @@ impl TerminalEngine {
         // ```ts
         // return;
         // ```
-        Ok(())
+        return Ok(())
     }
 
     /// What:     `pub fn resize(&mut self, geometry: ViewportGeometry) -> Result...`
@@ -424,7 +424,7 @@ impl TerminalEngine {
         }
         // What:     `Ok(())` returns success after the resize.
         // Why:      Match the method's `Result` return type.
-        Ok(())
+        return Ok(())
     }
 
     /// What:     `pub fn scrollback_rows(&self) -> Result<usize, TerminalError>`
@@ -437,7 +437,7 @@ impl TerminalEngine {
         let rows = self.terminal.scrollback_rows()?;
         // What:     `Ok(rows)` wraps the count in a successful `Result`.
         // Why:      The method promised `Result` for error propagation.
-        Ok(rows)
+        return Ok(rows)
     }
 
     /// What:     `pub fn set_pixel_scroll(...) -> Result<ScrollMapping, ...>` maps
@@ -459,7 +459,7 @@ impl TerminalEngine {
         self.set_viewport_top_row(mapping.whole_row_offset)?;
         // What:     `Ok(mapping)` returns the same mapping to the caller.
         // Why:      Slint status can show fractional pixels and row offset.
-        Ok(mapping)
+        return Ok(mapping)
     }
 
     /// What:     `pub fn snapshot(...) -> Result<TerminalSnapshot, ...>` extracts a
@@ -589,7 +589,7 @@ impl TerminalEngine {
         let title = self.terminal.title()?.to_string();
         // What:     `Ok(TerminalSnapshot { ... })` constructs and returns the frame.
         // Why:      The binary receives one owned value with all UI data.
-        Ok(TerminalSnapshot {
+        return Ok(TerminalSnapshot {
             cells,
             viewport_rows,
             viewport_cols,
@@ -638,7 +638,7 @@ impl TerminalEngine {
         self.viewport_top_row = target;
         // What:     `Ok(())` returns success.
         // Why:      The helper has completed the row scroll.
-        Ok(())
+        return Ok(())
     }
 }
 
@@ -654,9 +654,9 @@ fn resolve_inverse(
     // What:     `if inverse { ... } else { ... }` returns one tuple or the other.
     // Why:      SGR inverse means foreground and background trade places.
     if inverse {
-        (background, foreground)
+        return (background, foreground)
     } else {
-        (foreground, background)
+        return (foreground, background)
     }
 }
 
@@ -670,7 +670,7 @@ fn should_copy_cell(
     // What:     `!text.is_empty() || background.is_some() || inverse` combines three
     //           visibility reasons. `Option::is_some` checks for a present value.
     // Why:      Text, explicit backgrounds, and inverse blanks all need drawing.
-    !text.is_empty() || background.is_some() || inverse
+    return !text.is_empty() || background.is_some() || inverse
 }
 
 /// What:     `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`
