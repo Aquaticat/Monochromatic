@@ -1,10 +1,10 @@
 # Rolling Linux desktop with encrypted boot-menu rollback vet report
 
 - **Status**:
-  In progress
+  Blocked on consumer-boundary validation
 - **Lifecycle phase**:
-  Discovery recorded;
-  targeted hard-gate validation in progress
+  Hard-gate screening and source validation complete;
+  consumer-boundary validation deferred
 - **Subject**:
   Rolling Linux desktop with encrypted boot-menu rollback
 - **Scope**:
@@ -23,7 +23,8 @@
 - **Compatibility fingerprint**:
   `911c473022b23ef4a3fb839b75f9a348613ecd9cccf70e0dd2e25ff613dc08b0`
 - **Active audit owner**:
-  Pi session `01a04220-8e59-7772-ad8a-2c5eb2dedb7b`
+  None;
+  last active owner was Pi session `01a04220-8e59-7772-ad8a-2c5eb2dedb7b`
 - **Prior compatible report**:
   None found.
   `doc/audit/tech-rolling-linux-desktop-with-encrypted-boot-m-vet-2026-08-29.md` has the incompatible
@@ -715,6 +716,32 @@ and Nebula exit during targeted screening for the candidate-specific reasons rec
 - **Maintenance limit**:
   the installer is 97.1 percent single-author by GitHub contribution count and is not an official CachyOS component.
 
+### Source tests and maintenance signals
+
+- `limine-snapper-sync` 1.31.0 has no test source tree,
+  and `build.gradle.kts` explicitly sets `tasks.test.enabled = false`.
+- `openSUSE/sdbootutil` has no repository test tree,
+  but its latest ten inspected pull requests included nine merged fixes and the project is packaged through openSUSE.
+- Garuda’s pinned `pkgbuilds`,
+  `iso-profiles`,
+  and `garuda-tools` revisions all had successful GitLab pipelines.
+  The 260819 Mokka manifest at
+  https://iso.builds.garudalinux.org/iso/garuda/mokka/260819/garuda-mokka-linux-garuda-260819.pkgs.txt
+  confirms `grub 2:2.14-1`,
+  `garuda-dracut-support 1.6.0-2`,
+  Snapper 0.13.1,
+  and the Chaotic-AUR keyring and mirror list.
+- Shanios package builds passed repeatedly through 2026-08-29,
+  and an image build passed at
+  https://github.com/shani8dev/shani-builder/actions/runs/32534186289.
+  Later image and stable-promotion workflows include failures,
+  including https://github.com/shani8dev/shani-builder/actions/runs/33230049052.
+- The third-party CachyOS ZFS installer has no integration-test files;
+  its Makefile’s `test` and `check` targets both reduce to shell checks.
+  ZFSBootMenu itself has a 38-file test area,
+  and current upstream build and script-analysis workflows passed at commit
+  `e15503228f40b3c95ded551fab86e91f3e3d230f`.
+
 ### High-trust integration surface
 
 The measured non-test integration surfaces,
@@ -781,6 +808,8 @@ All three use the Arch package base for the session:
   https://archlinux.org/packages/extra/x86_64/xwayland-satellite/;
 - sfwbar 1.0 beta17 is available through the AUR,
   so it requires an inspected AUR build rather than an Arch-signed repository package.
+  The AUR recipe at commit `46996951521a2b1d721382fa6db7164f25cbcd98` pins the upstream tag archive with
+  SHA-256 `a4915bc7dd0873c45d0d6b01b070e39a91fd16cfadf730d6a9e48db68a8cd09e`.
 
 The complete session can be installed natively and uses the same systemd user behavior on all three architectures.
 The ZFS variant changes storage and boot recovery,
@@ -824,8 +853,10 @@ UWSM,
 sfwbar,
 or xwayland-satellite.
 Its read-only root also blocks persistent `pacman` installation.
-The shipped Nix store is a separate persistent subvolume,
-and Nixpkgs currently packages all four components,
+The desktop image includes `shani-core`,
+whose package source depends on Nix,
+and the shared fstab mounts a persistent `@nix` subvolume.
+Nixpkgs currently packages all four components,
 including sfwbar beta17 and xwayland-satellite 0.8.2 at:
 
 - https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/la/labwc/package.nix;
@@ -865,13 +896,60 @@ That is a scored rollback-scope disadvantage rather than an encryption or direct
 
 ## Execution manifests
 
-No third-party candidate code has been executed for the successor audit.
-Read-only official documentation,
-package-index queries,
-and repository inspection do not cross the external-execution gate.
-Any installer dry run,
-VM installation,
-or source test requires a separately recorded bounded execution manifest.
+### Read-only source syntax validation
+
+- **Candidates and revisions**:
+  the pinned revisions listed in the evidence records.
+- **Commands**:
+  `bash --noprofile --norc -n` over relevant shell sources and Python `ast.parse()` over relevant Python sources.
+- **Reachable commands**:
+  Bash and Python parse only;
+  candidate code is not sourced or executed.
+- **Expected reads**:
+  cloned source files under `/var/home/user/temp/agent`.
+- **Expected writes and network**:
+  none.
+- **Environment**:
+  incumbent Fedora 44 x86-64 host;
+  no credentials passed;
+  at most two concurrent parser processes.
+- **Success condition**:
+  every parsed file exits zero.
+- **Failure condition**:
+  first syntax error is recorded against the candidate;
+  no retry with relaxed parsing.
+- **Evidence limit**:
+  syntax validation does not validate installer behavior,
+  bootability,
+  or recovery correctness.
+
+### Syntax-validation result
+
+The first sweep incorrectly omitted `xargs --max-args=1`,
+which meant Bash parsed only the first file in each batch and treated later names as positional arguments.
+That result is discarded.
+The corrected command parsed each file in a separate Bash invocation.
+It passed for 9 CachyOS Limine shell files,
+3 openSUSE BLS files,
+20 Garuda shell files,
+11 Shanios shell files,
+and 9 third-party ZFS-installer shell files.
+Python `ast.parse()` also accepted 16 inspected installer Python files.
+The command printed `PER_FILE_SOURCE_SYNTAX_VALIDATION_COMPLETE` and exited zero.
+Elapsed time was not captured.
+
+### Deferred consumer-boundary validation
+
+The user explicitly declined downloading every finalist ISO in this session.
+No fresh encrypted install,
+firmware-to-boot-menu run,
+snapshot selection,
+or rollback promotion has therefore been executed for any finalist.
+This prevents the audit from reaching the governing skill’s `Validated`,
+`Scored`,
+or `Recommended` lifecycle states.
+Source and official integration evidence can order follow-up validation priority,
+but cannot be presented as a completed adoption recommendation.
 
 ## Hard-gate outcomes
 
@@ -910,17 +988,151 @@ or source test requires a separately recorded bounded execution manifest.
 
 ## Validation
 
-Pending equal-depth finalist validation.
-No installer has been run and no disk has been repartitioned.
+No finalist reaches `Validated` because none received a fresh encrypted installation,
+direct boot-menu selection,
+and rollback-promotion run in a disposable VM.
+No disk was repartitioned and no ISO was downloaded.
+
+Source-level results differ materially:
+
+- CachyOS Btrfs plus Limine has the deepest inspected recovery path,
+  but `limine-snapper-sync` disables Gradle tests and has no test source tree.
+- Garuda’s 260819 package manifest confirms `grub 2:2.14-1`,
+  and current package/profile pipelines passed at the pinned revisions;
+  no focused snapshot-restore test exists in the inspected integration sources.
+- openSUSE’s BLS design has distribution-owned source,
+  active maintenance,
+  and package integration,
+  but no local `sdbootutil` test suite was present and no exact encrypted Tumbleweed snapshot-boot openQA result was
+  established.
+- ZFSBootMenu’s current build and script-analysis workflows passed,
+  but the third-party CachyOS installer’s `test` target is shell checking and contains no integration tests.
+- Shanios has a 1,014-line update and rollback harness that was not run because it requires built images.
+  Its image workflow passed on 2026-08-21,
+  while later image and stable-promotion runs failed;
+  package-build runs continued to pass.
+
+The observed CI outcomes are project evidence,
+not substitutes for this audit’s missing consumer-boundary run.
 
 ## Scoring and sensitivity
 
-Pending finalist validation.
-No preliminary soft score controls candidate promotion.
+Not performed.
+The governing workflow permits scoring only validated finalists,
+and hard-gate source evidence cannot be converted into soft scores to bypass the missing installation evidence.
+Sensitivity analysis is therefore also not applicable yet.
+
+## Source-evidence validation priority
+
+This is an order for future runtime validation,
+not a completed recommendation or adoption decision.
+
+### 1. CachyOS with Btrfs plus Limine
+
+#### Pros
+
+qgroups and timeline snapshots are disabled by default;
+Arch directly packages the main labwc stack;
+current source pairs snapshots with content-addressed boot artifacts;
+the installer automatically reserves 4 GiB for boot history.
+
+#### Cons
+
+boot artifacts remain on unencrypted FAT;
+the helper’s own test task is disabled;
+current documentation still carries a disproven kernel-rollback warning;
+restore depends on preserved boot history and adequate FAT capacity.
+
+### 2. Garuda with Btrfs plus GRUB
+
+#### Pros
+
+qgroups and timeline snapshots are disabled;
+kernels stay inside the encrypted snapshotted root;
+GRUB 2.14 supports the installer’s LUKS2 plus Argon2 format;
+the read-only snapshot overlay is compact and inspectable.
+
+#### Cons
+
+GRUB performs the early encrypted-root read;
+snapshot integration has no focused test suite;
+Garuda includes Chaotic-AUR trust and packaging in the base system;
+sfwbar still comes from the AUR.
+
+### 3. openSUSE Tumbleweed with Btrfs plus BLS
+
+#### Pros
+
+the installer,
+FDE,
+Snapper,
+boot-entry synchronization,
+and recovery tooling are distribution-owned;
+`sdbootutil` explicitly constructs matching kernel and initramfs artifacts;
+labwc 0.9.6 matches the rehearsed VM baseline.
+
+#### Cons
+
+the default root policy enables qgroups;
+the current BLS stack is newer than openSUSE’s traditional GRUB integration;
+boot-storage pressure can prune an entry while its Snapper snapshot remains;
+sfwbar requires the non-default `X11:Wayland` repository.
+
+### 4. CachyOS with ZFS plus ZFSBootMenu
+
+#### Pros
+
+ZFSBootMenu has the strongest native boot-environment UI in the finalist set;
+kernel and root state live together;
+native encryption is supported;
+CachyOS provides version-locked precompiled ZFS modules.
+
+#### Cons
+
+the installer is unofficial and 97.1 percent single-author by contribution count;
+OpenZFS remains an out-of-tree kernel dependency;
+the integration has no installation test;
+the quick-start path executes downloaded root-level code unless replaced with a pinned local checkout.
+
+### 5. Shanios blue/green
+
+#### Pros
+
+LUKS2 plus Argon2id,
+signed per-slot UKIs,
+one directly bootable previous slot,
+and automatic failed-boot fallback are structurally simple;
+the Nix store can persist the required labwc packages outside the immutable roots.
+
+#### Cons
+
+the deployment and installer surface is 13,806 measured code lines from one maintainer;
+recent image-pipeline failures are unresolved in this audit;
+continuous bees deduplication adds background filesystem work;
+selected writable configuration and `/etc` do not roll back with a slot;
+the primary session would depend on Nixpkgs despite the user’s NixOS governance objection.
+
+Priority order:
+CachyOS Btrfs plus Limine > Garuda Btrfs plus GRUB > openSUSE Tumbleweed BLS > CachyOS ZFS plus
+ZFSBootMenu > Shanios.
+
+CachyOS precedes Garuda because its exact snapshot-to-boot-history path received deeper source tracing and its installer
+reserves dedicated history capacity,
+while Garuda retains an earlier encrypted GRUB stage and less focused recovery validation.
+Garuda precedes Tumbleweed because it avoids qgroups and keeps kernel artifacts inside the encrypted snapshot with a
+smaller custom integration surface;
+openSUSE’s broader institutional testing does not yet prove the exact deferred runtime path.
+Tumbleweed precedes the ZFS assembly because the whole boot and recovery chain is distribution-owned,
+whereas the ZFS integration is a single-author third-party layer over an out-of-tree module.
+The ZFS assembly precedes Shanios because ZFSBootMenu and OpenZFS provide staffed,
+well-documented primitives beneath a smaller integration layer,
+while Shanios concentrates a larger whole-system mechanism in one maintainer and does not natively ship the required
+session.
 
 ## Ranking and recommendation
 
-No recommendation is available before hard-gate confirmation,
-equal-depth finalist validation,
+No adoption recommendation is issued in this report state.
+The five-item source-evidence order names where runtime validation should start;
+it does not satisfy the equal-depth validation,
 scoring,
-and sensitivity analysis.
+or sensitivity gates required for a recommendation.
