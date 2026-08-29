@@ -71,3 +71,18 @@ impl qobject::AppBridge {
         tracing::info!(target: "app_bridge", message = %message, "logFromQml invoked from QML");
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{AppBridgeRust, QString};
+
+    #[test]
+    fn default_state_carries_the_qml_greeting() {
+        let bridge = AppBridgeRust::default();
+
+        assert_eq!(
+            bridge.greeting,
+            QString::from("Monochromatic file manager (Qt / cxx-qt)"),
+        );
+    }
+}
