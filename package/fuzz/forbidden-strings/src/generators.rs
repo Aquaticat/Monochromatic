@@ -176,8 +176,8 @@ impl<'a> Arbitrary<'a> for RuleLine {
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let tag = u.int_in_range(0u8..=7)?;
         return Ok(match tag {
-            0 | 1 | 2 => RuleLine::Literal(SafeBytes::arbitrary(u)?),
-            3 | 4 | 5 => RuleLine::Regex {
+            0..=2 => RuleLine::Literal(SafeBytes::arbitrary(u)?),
+            3..=5 => RuleLine::Regex {
                 body: AlnumBytes::arbitrary(u)?,
                 flags: FlagRun::arbitrary(u)?,
             },
