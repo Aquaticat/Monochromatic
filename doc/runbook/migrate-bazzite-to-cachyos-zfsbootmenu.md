@@ -837,6 +837,19 @@ TODO | DONE
 
    Expect `mcopy` to exit zero.
 
+1. Create a 256 MiB writable FAT image for installer evidence:
+
+   ```bash
+   truncate \
+     --size=256M \
+     /home/user/cachyos-zfs-validation/installer-evidence.img \
+     && mkfs.vfat \
+       -n ZFSEVID \
+       /home/user/cachyos-zfs-validation/installer-evidence.img
+   ```
+
+   Expect `mkfs.fat` to report successful filesystem creation.
+
 1. Create the bounded UEFI virtual machine:
 
    ```bash
@@ -849,6 +862,7 @@ TODO | DONE
      --vcpus 4 \
      --disk path=/home/user/cachyos-zfs-validation/disk.qcow2,size=128,bus=virtio,format=qcow2,sparse=yes \
      --disk path=/home/user/cachyos-zfs-validation/labwc-configs.img,device=disk,bus=virtio,readonly=on \
+     --disk path=/home/user/cachyos-zfs-validation/installer-evidence.img,device=disk,bus=virtio \
      --cdrom /home/user/Downloads/cachyos-zfs-260809/cachyos-desktop-linux-260809.iso \
      --boot uefi \
      --graphics spice,gl=on \
@@ -877,8 +891,30 @@ TODO | DONE
 1. Select the **default CachyOS live entry** and press **Enter**.
    Expect the CachyOS live desktop.
 
-1. Open the live terminal.
+1. Open the live terminal without clicking **Launch installer** in CachyOS Hello.
     Expect a prompt for `liveuser`.
+    Stock Calamares must not run before the pinned profile is applied.
+
+1. Confirm that no Calamares process already exists:
+
+    ```bash
+    if pgrep --exact calamares; then
+      printf '%s\n' 'Unexpected stock Calamares process' >&2
+      exit 1
+    fi
+    ```
+
+    Expect no process ID and exit status zero.
+
+1. Mount the writable evidence image:
+
+    ```bash
+    sudo install --directory --mode=0700 /mnt/zfs-evidence \
+      && sudo mount /dev/vdc /mnt/zfs-evidence \
+      && sudo chown liveuser:liveuser /mnt/zfs-evidence
+    ```
+
+    Expect `findmnt /mnt/zfs-evidence` to name `/dev/vdc`.
 
 1. Confirm that the VM booted through UEFI:
 
@@ -927,14 +963,49 @@ TODO | DONE
 
     Expect the command to exit zero.
 
-1. Launch the pinned installer inside the VM:
+1. Launch the pinned installer inside the VM with debug output retained:
 
     ```bash
     cd /home/liveuser/cachyos-zfs-installer \
-      && sudo -E ./bin/install
+      && bash \
+        -o pipefail \
+        -c 'sudo -E env DEBUG=1 ./bin/install 2>&1 | tee /mnt/zfs-evidence/bin-install.log'
     ```
 
     Expect terminal sections ending in `Launching calamares installer` and a Calamares window.
+
+1. Open a second live terminal without closing the pinned Calamares window.
+    Expect another `liveuser` prompt.
+
+1. Verify that the effective Calamares execution sequence contains the custom jobs:
+
+    ```bash
+    grep \
+      --fixed-strings \
+      --line-number \
+      -e 'shellprocess@copy_zfs_scripts' \
+      -e 'shellprocess@configure_zfsbootmenu' \
+      -e 'shellprocess@configure_zfs_encryption' \
+      -e 'shellprocess@configure_mkinitcpio' \
+      -e 'shellprocess@create_baseline_boot_env' \
+      -e 'shellprocess@install_pacman_zfs' \
+      -e 'shellprocess@setup_user_home_zfs' \
+      /usr/share/calamares/settings.conf \
+      | tee /mnt/zfs-evidence/effective-sequence.txt
+    ```
+
+    Expect every named custom job once.
+    Stop before partition confirmation if any job is absent.
+
+1. Preserve the full effective settings file:
+
+    ```bash
+    cp \
+      /usr/share/calamares/settings.conf \
+      /mnt/zfs-evidence/settings.conf
+    ```
+
+    Expect the copied file to be non-empty.
 
 1. In Calamares,
     select the intended **Language**.
@@ -992,6 +1063,19 @@ TODO | DONE
 
 1. Wait for Calamares to report successful completion.
     Expect no failed job and a log at `/home/liveuser/calamares.install.log`.
+
+1. Before closing or rebooting the live environment,
+    preserve the Calamares log and flush the evidence image:
+
+    ```bash
+    cp \
+      /home/liveuser/calamares.install.log \
+      /mnt/zfs-evidence/calamares.install.log \
+      && sync \
+      && test -s /mnt/zfs-evidence/calamares.install.log
+    ```
+
+    Expect exit status zero.
 
 1. Shut down the VM from the live desktop instead of immediately rebooting.
     Expect virt-manager to show **Shutoff**.
