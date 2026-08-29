@@ -198,7 +198,7 @@ pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>) {
             //           reschedule the timer for another `POLL_INTERVAL` from now (tail
             //           expression of the closure).
             // Why:      Keep polling until the loop stops.
-            TimeoutAction::ToDuration(POLL_INTERVAL)
+            return TimeoutAction::ToDuration(POLL_INTERVAL)
         })
         .expect("failed to register the child-exit poll timer");
 }

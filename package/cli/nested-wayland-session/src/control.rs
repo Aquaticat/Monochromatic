@@ -129,7 +129,7 @@ pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) -> Result
 
     // What:     `Ok(())`. Success.
     // Why:      Signal the control API is up.
-    Ok(())
+    return Ok(())
 }
 
 /// Bind (and clean up any stale) the control Unix socket.
@@ -158,7 +158,7 @@ fn bind_listener(path: &Path) -> Result<UnixListener> {
 
     // What:     `Ok(listener)`. Return the bound listener.
     // Why:      Hand it to the control thread.
-    Ok(listener)
+    return Ok(listener)
 }
 
 /// The control thread body: accept connections and handle each in turn.
@@ -245,7 +245,7 @@ fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) -> Res
 
     // What:     `Ok(())`. The client closed the connection normally.
     // Why:      Signal clean end-of-connection.
-    Ok(())
+    return Ok(())
 }
 
 /// Parse one line and, if valid, run it on the main thread and await its response.
@@ -287,8 +287,8 @@ fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response {
     //           means the reply sender was dropped.
     // Why:      Return the executed command's result.
     match reply_rx.recv() {
-        Ok(response) => response,
-        Err(_) => Response::Err("compositor dropped the request".to_string()),
+        Ok(response) => return response,
+        Err(_) => return Response::Err("compositor dropped the request".to_string()),
     }
 }
 
@@ -307,22 +307,22 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
     // What:     `match command { ... }`. One arm per command variant.
     // Why:      Route to screenshot, input, resize, or lifecycle handling.
     match command {
-        Command::Ping => Response::Ok,
+        Command::Ping => return Response::Ok,
         Command::Screenshot(path) => {
             // What:     `match screenshot::capture(state, &path) { Ok(()) => Response::Ok,
             //           Err(err) => Response::Err(format!("{err:#}")) }`. Capture and map the
             //           result. `{err:#}` formats the anyhow error with its full context chain.
             // Why:      Report a screenshot failure with its cause.
             match screenshot::capture(state, &path) {
-                Ok(()) => Response::Ok,
-                Err(err) => Response::Err(format!("{err:#}")),
+                Ok(()) => return Response::Ok,
+                Err(err) => return Response::Err(format!("{err:#}")),
             }
         }
         Command::Click { x, y, button } => {
             // What:     `input::click(state, x, y, button);`. Inject the click.
             // Why:      Perform the requested click.
             input::click(state, x, y, button);
-            Response::Ok
+            return Response::Ok
         }
         Command::Key { name, action } => {
             // What:     `match keymap::named_key(&name) { Some(evdev) => { input::key(...);
@@ -332,22 +332,22 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             match keymap::named_key(&name) {
                 Some(evdev) => {
                     input::key(state, evdev, action);
-                    Response::Ok
+                    return Response::Ok
                 }
-                None => Response::Err(format!("unknown key: {name}")),
+                None => return Response::Err(format!("unknown key: {name}")),
             }
         }
         Command::Type(text) => {
             // What:     `input::type_text(state, &text);`. Type the run of text.
             // Why:      Perform the requested typing.
             input::type_text(state, &text);
-            Response::Ok
+            return Response::Ok
         }
         Command::Resize { width, height } => {
             // What:     `resize(state, width, height);`. Request the window resize.
             // Why:      Change the nested screen size.
             resize(state, width, height);
-            Response::Ok
+            return Response::Ok
         }
         Command::DropFile { path, x, y } => {
             // What:     `match dnd::drop_file(state, &path, x, y) { Ok(()) => Response::Ok,
@@ -357,8 +357,8 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             // Why:      Report a drop-file setup failure (missing file, unmapped app) with its
             //           cause; the drop itself completes asynchronously on the release timer.
             match dnd::drop_file(state, &path, x, y) {
-                Ok(()) => Response::Ok,
-                Err(err) => Response::Err(format!("{err:#}")),
+                Ok(()) => return Response::Ok,
+                Err(err) => return Response::Err(format!("{err:#}")),
             }
         }
         Command::Record { dir, fps, format } => {
@@ -372,11 +372,11 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
                     //           Start recording; map the outcome.
                     // Why:      Begin the capture, reporting any setup failure.
                     match recorder::start(state, dir, fps, fmt) {
-                        Ok(()) => Response::Ok,
-                        Err(err) => Response::Err(format!("{err:#}")),
+                        Ok(()) => return Response::Ok,
+                        Err(err) => return Response::Err(format!("{err:#}")),
                     }
                 }
-                Err(message) => Response::Err(message),
+                Err(message) => return Response::Err(message),
             }
         }
         Command::RecordStop => {
@@ -385,11 +385,11 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             //           measured statistics as the response payload.
             // Why:      Make the achieved fps / drop count observable to the caller.
             match recorder::stop(state) {
-                Some(stats) => Response::OkWith(format!(
+                Some(stats) => return Response::OkWith(format!(
                     "captured={} dropped={} failures={} seconds={:.3} fps={:.1}",
                     stats.captured, stats.dropped, stats.failures, stats.seconds, stats.fps
                 )),
-                None => Response::Err("not recording".to_string()),
+                None => return Response::Err("not recording".to_string()),
             }
         }
         Command::Quit => {

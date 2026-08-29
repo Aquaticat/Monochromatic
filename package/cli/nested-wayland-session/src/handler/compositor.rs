@@ -46,7 +46,7 @@ impl CompositorHandler for Compositor {
     fn compositor_state(&mut self) -> &mut CompositorState {
         // What:     `&mut self.compositor_state`. Mutable borrow (tail expression).
         // Why:      Return the state Smithay asked for.
-        &mut self.compositor_state
+        return &mut self.compositor_state
     }
 
     /// What:     `fn client_compositor_state<'a>(&self, client: &'a Client) -> &'a
@@ -65,7 +65,7 @@ impl CompositorHandler for Compositor {
         //           data we inserted at connect); `.unwrap()` asserts it is present;
         //           then we borrow its `compositor_state` field.
         // Why:      Hand back this client's compositor sub-state.
-        &client.get_data::<ClientState>().unwrap().compositor_state
+        return &client.get_data::<ClientState>().unwrap().compositor_state
     }
 
     /// What:     `fn commit(&mut self, surface: &WlSurface)`. Called every time a
@@ -108,7 +108,7 @@ impl CompositorHandler for Compositor {
             if let Some(window) = self
                 .space
                 .elements()
-                .find(|w| w.toplevel().unwrap().wl_surface() == &root)
+                .find(|w| return w.toplevel().unwrap().wl_surface() == &root)
             {
                 window.on_commit();
             }
@@ -145,7 +145,7 @@ impl ShmHandler for Compositor {
     fn shm_state(&self) -> &ShmState {
         // What:     `&self.shm_state`. Borrow the field (tail expression).
         // Why:      Return the shm state.
-        &self.shm_state
+        return &self.shm_state
     }
 }
 

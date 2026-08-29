@@ -413,7 +413,7 @@ impl Compositor {
         // ```ts
         // return { startTime, socketName, displayHandle: dh, space, /* ... */ };
         // ```
-        Self {
+        return Self {
             start_time,
             socket_name,
             display_handle: dh,
@@ -537,14 +537,14 @@ impl Compositor {
                     // What:     `Ok(PostAction::Continue)`. Tell calloop the source is
                     //           healthy and should keep listening. Tail expression.
                     // Why:      Keep dispatching on future readiness.
-                    Ok(PostAction::Continue)
+                    return Ok(PostAction::Continue)
                 },
             )
             .expect("failed to register the Wayland display source");
 
         // What:     `socket_name`. Bare tail expression returning the owned name.
         // Why:      Hand the chosen socket name back to `new`.
-        socket_name
+        return socket_name
     }
 
     /// Find the surface (and its position) under a point on the plane, if any.
@@ -579,7 +579,7 @@ impl Compositor {
         // const [window, location] = hit;
         // ...
         // ```
-        self.space.element_under(pos).and_then(|(window, location)| {
+        return self.space.element_under(pos).and_then(|(window, location)| {
             // What:     `window.surface_under(pos - location.to_f64(),
             //           WindowSurfaceType::ALL).map(|(s, p)| (s, (p + location).to_f64()))`.
             //           `location.to_f64()` converts the integer point to floating so it
@@ -588,12 +588,12 @@ impl Compositor {
             //           found `(surface, point)` back into plane coordinates by adding
             //           `location`.
             // Why:      Translate between plane and window-local coordinates for the hit.
-            window
+            return window
                 .surface_under(
                     pos - location.to_f64(),
                     smithay::desktop::WindowSurfaceType::ALL,
                 )
-                .map(|(surface, point)| (surface, (point + location).to_f64()))
+                .map(|(surface, point)| return (surface, (point + location).to_f64()))
         })
     }
 }

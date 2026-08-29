@@ -153,7 +153,7 @@ pub fn read_frame(state: &mut Compositor, buffer: &mut Vec<u8>) -> Result<(u32, 
 
     // What:     `Ok((width, height))`. Return the dimensions (tail expression).
     // Why:      The caller needs them to encode.
-    Ok((width, height))
+    return Ok((width, height))
 }
 
 /// Render the current frame and write it to `path` as a single PNG.
@@ -190,5 +190,5 @@ pub fn capture(state: &mut Compositor, path: &Path) -> Result<()> {
 
     // What:     `Ok(())`. Success.
     // Why:      Signal the screenshot was written.
-    Ok(())
+    return Ok(())
 }

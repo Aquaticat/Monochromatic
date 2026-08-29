@@ -542,7 +542,7 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
     // ```ts
     // return { childCommand, controlSocket, width, height };
     // ```
-    Ok(Config {
+    return Ok(Config {
         child_command,
         control_socket,
         width,
@@ -656,7 +656,7 @@ fn parse_size(spec: &str) -> Result<(i32, i32)> {
     // ```ts
     // return [width, height];
     // ```
-    Ok((width, height))
+    return Ok((width, height))
 }
 
 /// Verifies color-scheme argument parsing without opening a compositor.

@@ -41,7 +41,7 @@ impl DmabufHandler for Compositor {
     fn dmabuf_state(&mut self) -> &mut DmabufState {
         // What:     `&mut self.dmabuf_state`. Mutable borrow (tail expression).
         // Why:      Return the dmabuf state.
-        &mut self.dmabuf_state
+        return &mut self.dmabuf_state
     }
 
     /// What:     `fn dmabuf_imported(&mut self, _global: &DmabufGlobal, dmabuf: Dmabuf,

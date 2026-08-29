@@ -63,9 +63,9 @@ impl PointerButton {
         //           Tail expression, so the matched value is returned.
         // Why:      Provide the exact code the input event expects.
         match self {
-            PointerButton::Left => 0x110,
-            PointerButton::Right => 0x111,
-            PointerButton::Middle => 0x112,
+            PointerButton::Left => return 0x110,
+            PointerButton::Right => return 0x111,
+            PointerButton::Middle => return 0x112,
         }
     }
 }
@@ -216,9 +216,9 @@ pub fn format_response(response: &Response) -> String {
     //           strings.
     // Why:      Produce the exact bytes the client parses.
     match response {
-        Response::Ok => "ok".to_string(),
-        Response::OkWith(data) => format!("ok {data}"),
-        Response::Err(message) => format!("err {message}"),
+        Response::Ok => return "ok".to_string(),
+        Response::OkWith(data) => return format!("ok {data}"),
+        Response::Err(message) => return format!("err {message}"),
     }
 }
 
@@ -289,20 +289,20 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
     //           First token or an error if the line was blank. `.ok_or_else(closure)`
     //           turns `None` into `Err`; `?` unwraps.
     // Why:      Every command starts with a verb.
-    let verb = tokens.next().ok_or_else(|| "empty command".to_string())?;
+    let verb = tokens.next().ok_or_else(|| return "empty command".to_string())?;
 
     // What:     `match verb { ... }`. Dispatch on the verb. Each arm parses its remaining
     //           tokens with a helper and returns a `Command` or an error.
     // Why:      Route to the right parser.
     match verb {
-        "ping" => Ok(Command::Ping),
-        "quit" => Ok(Command::Quit),
-        "click" => parse_click(&mut tokens),
-        "key" => parse_key(&mut tokens),
-        "resize" => parse_resize(&mut tokens),
-        "drop-file" => parse_drop_file(&mut tokens),
-        "record" => parse_record(&mut tokens),
-        other => Err(format!("unknown command: {other}")),
+        "ping" => return Ok(Command::Ping),
+        "quit" => return Ok(Command::Quit),
+        "click" => return parse_click(&mut tokens),
+        "key" => return parse_key(&mut tokens),
+        "resize" => return parse_resize(&mut tokens),
+        "drop-file" => return parse_drop_file(&mut tokens),
+        "record" => return parse_record(&mut tokens),
+        other => return Err(format!("unknown command: {other}")),
     }
 }
 
@@ -318,7 +318,7 @@ fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
     // Why:      A bare `record` is ambiguous.
     let first = tokens
         .next()
-        .ok_or_else(|| "record requires a directory or 'stop'".to_string())?;
+        .ok_or_else(|| return "record requires a directory or 'stop'".to_string())?;
 
     // What:     `if first == "stop" { if tokens.next().is_some() { return Err(...); } return
     //           Ok(Command::RecordStop); }`. Handle the stop form (which takes no more args).
@@ -341,7 +341,7 @@ fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
     let fps = match tokens.next() {
         Some(text) => text
             .parse::<f64>()
-            .map_err(|_| "record fps is not a number".to_string())?,
+            .map_err(|_| return "record fps is not a number".to_string())?,
         None => 60.0,
     };
 
@@ -359,7 +359,7 @@ fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
     // What:     `Ok(Command::Record { dir, fps, format })`. Build the command (tail
     //           expression).
     // Why:      Return the parsed record request.
-    Ok(Command::Record { dir, fps, format })
+    return Ok(Command::Record { dir, fps, format })
 }
 
 /// Parse the arguments of a `click` command.
@@ -393,7 +393,7 @@ fn parse_click(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String
 
     // What:     `Ok(Command::Click { x, y, button })`. Build the command (tail expression).
     // Why:      Return the parsed click.
-    Ok(Command::Click { x, y, button })
+    return Ok(Command::Click { x, y, button })
 }
 
 /// Parse the arguments of a `key` command.
@@ -407,7 +407,7 @@ fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> 
     // Why:      Identify which key.
     let name = tokens
         .next()
-        .ok_or_else(|| "key requires a name".to_string())?
+        .ok_or_else(|| return "key requires a name".to_string())?
         .to_string();
 
     // What:     `let action = match tokens.next() { Some("press") => Press, Some("release")
@@ -423,7 +423,7 @@ fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> 
 
     // What:     `Ok(Command::Key { name, action })`. Build the command.
     // Why:      Return the parsed key command.
-    Ok(Command::Key { name, action })
+    return Ok(Command::Key { name, action })
 }
 
 /// Parse the arguments of a `resize` command.
@@ -449,7 +449,7 @@ fn parse_resize(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
 
     // What:     `Ok(Command::Resize { width, height })`. Build the command.
     // Why:      Return the parsed resize.
-    Ok(Command::Resize { width, height })
+    return Ok(Command::Resize { width, height })
 }
 
 /// Parse the arguments of a `drop-file` command (`<path> [x y]`).
@@ -467,7 +467,7 @@ fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) -> Result<Command, St
     let path = PathBuf::from(
         tokens
             .next()
-            .ok_or_else(|| "drop-file requires a path".to_string())?,
+            .ok_or_else(|| return "drop-file requires a path".to_string())?,
     );
 
     // What:     `let x = parse_opt_f64(tokens.next(), "drop-file x")?;`. Parse the optional
@@ -494,7 +494,7 @@ fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) -> Result<Command, St
 
     // What:     `Ok(Command::DropFile { path, x, y })`. Build the command (tail expression).
     // Why:      Return the parsed drop-file request.
-    Ok(Command::DropFile { path, x, y })
+    return Ok(Command::DropFile { path, x, y })
 }
 
 /// Parse an optional-and-may-be-absent token as `f64`, with a field name for errors.
@@ -509,8 +509,8 @@ fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>, String
     //           parse failure to a message, then rewrap as `Some`. Tail expression.
     // Why:      Distinguish "not given" (fine) from "given but not a number" (error).
     match token {
-        None => Ok(None),
-        Some(text) => Ok(Some(
+        None => return Ok(None),
+        Some(text) => return Ok(Some(
             text.parse::<f64>()
                 .map_err(|_| format!("{field} is not a number"))?,
         )),
@@ -528,7 +528,7 @@ fn parse_f64(token: Option<&str>, field: &str) -> Result<f64, String> {
     //           parse it, converting both the missing and the non-numeric cases into
     //           messages. Tail expression.
     // Why:      One place for the "present and numeric" check.
-    token
+    return token
         .ok_or_else(|| format!("{field} missing"))?
         .parse::<f64>()
         .map_err(|_| format!("{field} is not a number"))
@@ -542,7 +542,7 @@ fn parse_i32(token: Option<&str>, field: &str) -> Result<i32, String> {
     // What:     `token.ok_or_else(...)?.parse::<i32>().map_err(...)`. Same shape as
     //           `parse_f64` for integers.
     // Why:      One place for the integer check.
-    token
+    return token
         .ok_or_else(|| format!("{field} missing"))?
         .parse::<i32>()
         .map_err(|_| format!("{field} is not an integer"))
@@ -558,10 +558,10 @@ fn parse_button(name: &str) -> Result<PointerButton, String> {
     //           Ok(Middle), other => Err(...) }`. Map names to variants.
     // Why:      Reject unknown button names cleanly.
     match name {
-        "left" => Ok(PointerButton::Left),
-        "right" => Ok(PointerButton::Right),
-        "middle" => Ok(PointerButton::Middle),
-        other => Err(format!("unknown button: {other}")),
+        "left" => return Ok(PointerButton::Left),
+        "right" => return Ok(PointerButton::Right),
+        "middle" => return Ok(PointerButton::Middle),
+        other => return Err(format!("unknown button: {other}")),
     }
 }
 

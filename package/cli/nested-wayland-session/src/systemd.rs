@@ -71,7 +71,7 @@ pub fn default_quota_percent() -> u32 {
     //           .unwrap_or(1);`. Logical core count, or 1 if it cannot be queried.
     // Why:      The basis for the reservation.
     let cores = std::thread::available_parallelism()
-        .map(|n| n.get())
+        .map(|n| return n.get())
         .unwrap_or(1);
 
     // What:     `let reserved = (cores / RESERVED_FRACTION).max(1);`. Cores held back for
@@ -87,7 +87,7 @@ pub fn default_quota_percent() -> u32 {
     // What:     `(app_cores * PERCENT_PER_CORE) as u32`. Convert to a percentage (tail
     //           expression).
     // Why:      systemd's `CPUQuota` is expressed in percent-of-one-core.
-    (app_cores * PERCENT_PER_CORE) as u32
+    return (app_cores * PERCENT_PER_CORE) as u32
 }
 
 /// Whether `systemd-run` and a user manager are usable here.
@@ -107,13 +107,13 @@ pub fn available() -> bool {
     //           output; `.map(...).unwrap_or(false)` treats a spawn error (binary missing)
     //           as unavailable. Tail expression.
     // Why:      A cheap, definitive availability probe.
-    Command::new("systemd-run")
+    return Command::new("systemd-run")
         .arg("--user")
         .arg("--version")
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status()
-        .map(|status| status.success())
+        .map(|status| return status.success())
         .unwrap_or(false)
 }
 
@@ -196,7 +196,7 @@ pub fn build_child_command(program: &str, args: &[String], isolation: &Isolation
 
     // What:     `cmd`. Return the configured wrapper command (tail expression).
     // Why:      The caller adds Wayland env and spawns it.
-    cmd
+    return cmd
 }
 
 /// Build a direct (un-isolated) command for the app.
@@ -215,5 +215,5 @@ fn direct(program: &str, args: &[String]) -> Command {
 
     // What:     `cmd`. Return it (tail expression).
     // Why:      Hand it back to the caller.
-    cmd
+    return cmd
 }

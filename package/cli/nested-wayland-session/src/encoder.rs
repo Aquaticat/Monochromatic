@@ -92,9 +92,9 @@ impl Format {
         // What:     `match name { "png" => Ok(Png), "bmp" => Ok(Bmp), other => Err(...) }`.
         // Why:      Only two supported formats.
         match name {
-            "png" => Ok(Format::Png),
-            "bmp" => Ok(Format::Bmp),
-            other => Err(format!("unknown capture format: {other} (want png or bmp)")),
+            "png" => return Ok(Format::Png),
+            "bmp" => return Ok(Format::Bmp),
+            other => return Err(format!("unknown capture format: {other} (want png or bmp)")),
         }
     }
 
@@ -106,8 +106,8 @@ impl Format {
         // What:     `match self { Png => "png", Bmp => "bmp" }`. Tail expression.
         // Why:      Name the file correctly.
         match self {
-            Format::Png => "png",
-            Format::Bmp => "bmp",
+            Format::Png => return "png",
+            Format::Bmp => return "bmp",
         }
     }
 }
@@ -223,7 +223,7 @@ impl EncoderPool {
         //           and `format` are captured by the workers, not stored, so they are not
         //           fields.
         // Why:      Return it to the recorder.
-        EncoderPool {
+        return EncoderPool {
             work_tx,
             free_rx,
             free_tx,
@@ -241,7 +241,7 @@ impl EncoderPool {
         // What:     `self.free_rx.try_recv().ok()`. Non-blocking take; `.ok()` turns the
         //           empty/disconnected error into `None`. Tail expression.
         // Why:      Never block the 60fps render thread waiting for a buffer.
-        self.free_rx.try_recv().ok()
+        return self.free_rx.try_recv().ok()
     }
 
     /// Submit a filled frame to the encoder pool.
@@ -254,7 +254,7 @@ impl EncoderPool {
         // What:     `self.work_tx.try_send(frame).map_err(|err| err.into_inner())`. Try to
         //           enqueue; on failure recover the `Frame` from the send error.
         // Why:      Return the buffer to the caller for reuse when dropping.
-        self.work_tx.try_send(frame).map_err(|err| err.into_inner())
+        return self.work_tx.try_send(frame).map_err(|err| return err.into_inner())
     }
 
     /// Return a buffer to the free pool (used when a frame is dropped or reclaimed).
@@ -287,7 +287,7 @@ impl EncoderPool {
 
         // What:     `self.failures.load(Ordering::Relaxed)`. Read the final failure count.
         // Why:      Report it to the caller.
-        self.failures.load(Ordering::Relaxed)
+        return self.failures.load(Ordering::Relaxed)
     }
 }
 
@@ -392,7 +392,7 @@ pub fn write_flipped(raw: &[u8], width: u32, height: u32, path: &Path, format: F
     // What:     `write(&flipped, width, height, path, format)`. Encode the flipped pixels
     //           (tail expression).
     // Why:      Produce the upright file.
-    write(&flipped, width, height, path, format)
+    return write(&flipped, width, height, path, format)
 }
 
 /// Encode top-down RGBA pixels to `path` in `format`.
@@ -405,8 +405,8 @@ fn write(pixels: &[u8], width: u32, height: u32, path: &Path, format: Format) ->
     //           format (tail expression).
     // Why:      Select the encoder.
     match format {
-        Format::Png => write_png(pixels, width, height, path),
-        Format::Bmp => write_bmp(pixels, width, height, path),
+        Format::Png => return write_png(pixels, width, height, path),
+        Format::Bmp => return write_bmp(pixels, width, height, path),
     }
 }
 
@@ -444,7 +444,7 @@ pub fn write_png(pixels: &[u8], width: u32, height: u32, path: &Path) -> Result<
 
     // What:     `Ok(())`. Success.
     // Why:      Frame written.
-    Ok(())
+    return Ok(())
 }
 
 /// Encode top-down RGBA pixels to an uncompressed BMP file.
@@ -469,5 +469,5 @@ pub fn write_bmp(pixels: &[u8], width: u32, height: u32, path: &Path) -> Result<
 
     // What:     `Ok(())`. Success.
     // Why:      Frame written.
-    Ok(())
+    return Ok(())
 }

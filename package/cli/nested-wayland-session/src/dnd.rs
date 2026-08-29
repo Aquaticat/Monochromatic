@@ -260,7 +260,7 @@ pub fn drop_file(state: &mut Compositor, path: &Path, x: Option<f64>, y: Option<
 
     // What:     `Ok(())`. The drag is under way; the drop completes on the timer.
     // Why:      Report success to the control caller.
-    Ok(())
+    return Ok(())
 }
 
 /// Compute the centre of the single hosted window in logical coordinates.
@@ -299,7 +299,7 @@ fn window_centre(state: &Compositor) -> Result<(f64, f64)> {
 
     // What:     `Ok((cx, cy))`. The centre point (tail expression).
     // Why:      Hand the drop point back to `drop_file`.
-    Ok((cx, cy))
+    return Ok((cx, cy))
 }
 
 /// Schedule the drag's button release after [`DWELL_MS`] on the event loop.
@@ -327,13 +327,13 @@ fn schedule_release(state: &mut Compositor, button: u32) -> Result<()> {
 
             // What:     `TimeoutAction::Drop`. Tell calloop not to re-arm the timer.
             // Why:      The release is a one-shot.
-            TimeoutAction::Drop
+            return TimeoutAction::Drop
         })
         .map_err(|err| anyhow!("scheduling the drop-file release timer failed: {err}"))?;
 
     // What:     `Ok(())`. The timer is armed.
     // Why:      Signal the release is scheduled.
-    Ok(())
+    return Ok(())
 }
 
 /// Release the held left button, ending the server grab and delivering the drop.
@@ -383,5 +383,5 @@ fn event_time(state: &Compositor) -> u32 {
     // What:     `state.start_time.elapsed().as_millis() as u32`. Elapsed ms, narrowed. Tail
     //           expression.
     // Why:      Provide the event timestamp.
-    state.start_time.elapsed().as_millis() as u32
+    return state.start_time.elapsed().as_millis() as u32
 }
