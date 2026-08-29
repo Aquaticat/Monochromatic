@@ -5,7 +5,10 @@
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -15,6 +18,7 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  hashContent,
   reviewAbsoluteNaturalness,
   type RosterModelId,
   type SyntheticClient,
@@ -28,6 +32,38 @@ const ROSTER = [
   'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ] as const;
+
+/**
+ * Builds logger retaining operational messages for assertions.
+ *
+ * @param messages - destination in emission order
+ *
+ * @returns Logger appending every level to destination
+ *
+ * @example
+ * ```ts
+ * const messages: string[] = [];
+ * const l = capturingLogger({ messages, },);
+ * ```
+ */
+function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
+  /**
+   * Retains one emitted message.
+   */
+  function keep(message: string,): void {
+    messages.push(message,);
+  }
+
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    info: keep,
+    trace: keep,
+    warn: keep,
+    flush: async function flush(): Promise<void> {},
+  };
+}
 
 /**
  * Builds reviewer client from per-model status and optional delayed rejection.
@@ -108,6 +144,8 @@ function reviewClient(
  *
  * @param client - scripted reviewer
  *
+ * @param messages - optional destination for operational logging
+ *
  * @returns Absolute review outcome
  *
  * @example
@@ -116,7 +154,13 @@ function reviewClient(
  * ```
  */
 async function runReview(
-  { client, }: { readonly client: SyntheticClient; },
+  {
+    client,
+    messages,
+  }: {
+    readonly client: SyntheticClient;
+    readonly messages?: string[];
+  },
 ): ReturnType<typeof reviewAbsoluteNaturalness> {
   return await reviewAbsoluteNaturalness({
     client,
@@ -129,7 +173,9 @@ async function runReview(
     signal: AbortSignal.timeout(5_000,),
     exchangeTimeoutMs: 5_000,
     graceMs: 0,
-    l: tagged({ tag: 'absolute-review-test', },),
+    l: (messages === undefined)
+      ? tagged({ tag: 'absolute-review-test', },)
+      : capturingLogger({ messages, },),
   },);
 }
 
@@ -155,13 +201,36 @@ await describe({
     it({
       name: 'WAITS FOR DELAYED REJECTION instead of ending on early acceptable quorum',
       fn: async () => {
+        const messages: string[] = [];
         const review = await runReview({
           client: reviewClient({
             rejecting: ROSTER[2],
             delayed: true,
           },),
+          messages,
         },);
         expect(review.verdict,).toBe('unacceptable',);
+        /**
+         * Digest expected instead of raw finding wording.
+         */
+        const findingDigest = hashContent({
+          content: 'Replace stiff source-language word order.',
+        },);
+        expect(messages.some(function carriesSeatSummary(line,): boolean {
+          if (!line.includes(
+            'hf:zai-org/GLM-5.3-Flash:acceptable:findings=0:paragraphs=none:digests=none',
+          ))
+            return false;
+          if (!line.includes(
+            `hf:moonshotai/Kimi-K3:unacceptable:findings=1:paragraphs=1:digests=${findingDigest}`,
+          ))
+            return false;
+          if (!line.includes('uniqueFindings=1',))
+            return false;
+          if (line.includes('Replace stiff source-language word order.',))
+            return false;
+          return !line.includes('candidate retains translationese',);
+        },),).toBe(true,);
         expect(review.findings,).toEqual([{
           paragraph: 1,
           problem: 'Replace stiff source-language word order.',

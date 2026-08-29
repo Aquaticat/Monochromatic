@@ -30,7 +30,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import {
   type ArtifactContestSlice,
@@ -45,6 +48,8 @@ import {
   type ProjectedLanes,
   type SliceCache,
   type SliceNeighbourContext,
+  SLICE_COST_MARKER,
+  SLICE_START_MARKER,
   type SyntheticClient,
   TRANSLATE_LINE_STRUCTURE_RULE,
   type TranslateDecision,
@@ -55,6 +60,38 @@ import {
  * Logger the driver writes through, whose output is not under test.
  */
 const l = tagged({ tag: 'consolidate-driver-test', },);
+
+/**
+ * Builds logger retaining operational messages for assertions.
+ *
+ * @param messages - destination in emission order
+ *
+ * @returns Logger appending every level to destination
+ *
+ * @example
+ * ```ts
+ * const messages: string[] = [];
+ * const l = capturingLogger({ messages, },);
+ * ```
+ */
+function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
+  /**
+   * Retains one emitted message.
+   */
+  function keep(message: string,): void {
+    messages.push(message,);
+  }
+
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    info: keep,
+    trace: keep,
+    warn: keep,
+    flush: async function flush(): Promise<void> {},
+  };
+}
 
 /**
  * Roster this run seats.
@@ -436,6 +473,8 @@ function settlementReaching(
  *
  * @param activity - optional successful-call overlap instrument
  *
+ * @param messages - optional destination for operational logging
+ *
  * @returns Records the driver produced beside the keys it wrote
  *
  * @example
@@ -455,6 +494,7 @@ async function driveWith(
     neighbourContextBySlice = new Map(),
     overlap = 1,
     activity,
+    messages,
   }: {
     readonly contests: readonly ArtifactContestSlice[];
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
@@ -466,6 +506,7 @@ async function driveWith(
     readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
     readonly overlap?: number;
     readonly activity?: ConsolidationConcurrency;
+    readonly messages?: string[];
   },
 ) {
   /**
@@ -521,7 +562,7 @@ async function driveWith(
     lineStructuredSlices,
     pictureContextBySlice,
     neighbourContextBySlice,
-    l,
+    l: (messages === undefined) ? l : capturingLogger({ messages, },),
   },);
 
   return {
@@ -586,11 +627,23 @@ await describe({
             findings: [],
           },
         };
+        const messages: string[] = [];
         const resumed = await driveWith({
           contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           resumed: new Map<string, ConsolidationSettlement>([[key, settled,],]),
+          messages,
         },);
         expect(resumed.written,).toEqual([],);
+        expect(messages.some(function started(line,): boolean {
+          return line.includes(
+            `${SLICE_START_MARKER} lane=consolidation chunk=0 sourceChars=3`,
+          );
+        },),).toBe(true,);
+        expect(messages.some(function finished(line,): boolean {
+          return line.includes(
+            `${SLICE_COST_MARKER} lane=consolidation chunk=0 sourceChars=3`,
+          ) && line.endsWith('exit=resumed',);
+        },),).toBe(true,);
         expect(resumed.slices[0]?.polish?.kind,).toBe('settled',);
         expect(resumed.slices[0]?.polish?.kind === 'settled'
           ? resumed.slices[0].polish.changed
@@ -604,12 +657,17 @@ await describe({
         + 'would pass just as well against a driver that had stopped calling the roster at all',
       fn: async () => {
         /**
+         * Operational messages naming unfinished slice exit.
+         */
+        const messages: string[] = [];
+        /**
          * What the driver did when handed an empty cache.
          */
         let raised: unknown;
         try {
           await driveWith({
             contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+            messages,
           },);
         } catch (error: unknown) {
           raised = error;
@@ -617,6 +675,10 @@ await describe({
 
         expect(raised,).toBeInstanceOf(Error,);
         expect(String(raised,).includes('bought a call it should not have',),).toBe(true,);
+        expect(messages.some(function namesAbortedExit(line,): boolean {
+          return line.includes(`${SLICE_COST_MARKER} lane=consolidation chunk=0`,)
+            && line.endsWith('exit=aborted',);
+        },),).toBe(true,);
       },
     },),
 
@@ -892,6 +954,7 @@ await describe({
            * Same question stamped at both positions.
            */
           const twinFixture = recordingClient();
+          const messages: string[] = [];
           const { slices, written, } = await driveWith({
             client: twinFixture.client,
             projected: twinSliceDocument(),
@@ -900,11 +963,20 @@ await describe({
               contestSettling({ sliceIndex: 1, lane: 'repair', },),
             ],
             overlap,
+            messages,
           },);
           expect(singleFixture.bodies.length,).toBeGreaterThan(0,);
           expect(twinFixture.bodies.length,).toBe(singleFixture.bodies.length,);
           expect(single.written.length,).toBe(1,);
           expect(written.length,).toBe(1,);
+          expect(messages.filter(function computed(line,): boolean {
+            return line.includes(`${SLICE_COST_MARKER} lane=consolidation`,)
+              && line.endsWith('exit=computed',);
+          },),).toHaveLength(1,);
+          expect(messages.filter(function reused(line,): boolean {
+            return line.includes(`${SLICE_COST_MARKER} lane=consolidation`,)
+              && line.endsWith('exit=reused',);
+          },),).toHaveLength(1,);
           expect(slices.map(function toIndex(slice,) {
             return slice.sliceIndex;
           },),).toEqual([

@@ -25,6 +25,7 @@ import {
 import {
   armSliceCost,
   readSliceCosts,
+  SLICE_START_MARKER,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -81,7 +82,7 @@ await describe({
   children: [
     it({
       name:
-        'ACCEPTS a cost line from each lane and ignores every line that carries no marker, so a pass '
+        'ACCEPTS repair and translate cost lines and ignores every line that carries no marker, so a pass '
         + 'log can be read without being filtered first',
       fn: async () => {
         const { rows, dropped, } = readSliceCosts({ log: TWO_LANE_LOG, },);
@@ -177,7 +178,7 @@ await describe({
   children: [
     it({
       name:
-        'REPORTS a slice that was left EARLY, which is the case a closing call would miss: both lanes '
+        'REPORTS a slice that was left EARLY, which is the case a closing call would miss: slice stages '
         + 'leave their loop body by more than one path',
       fn: async () => {
         const said: string[] = [];
@@ -201,7 +202,10 @@ await describe({
           continue;
         }
 
-        expect(said,).toHaveLength(2,);
+        expect(said,).toHaveLength(4,);
+        expect(said.filter(function isStart(line,): boolean {
+          return line.startsWith(SLICE_START_MARKER,);
+        },),).toHaveLength(2,);
       },
     },),
     it({
@@ -229,6 +233,32 @@ await describe({
           ?.sliceIndex,).toBe(12,);
         expect(rows[0]
           ?.sourceChars,).toBe(843,);
+        expect(said[0],).toBe('SLICE-START lane=translate chunk=12 sourceChars=843',);
+      },
+    },),
+    it({
+      name:
+        'REPORTS consolidation before it finishes and keeps an unsettled exit distinct from completed work',
+      fn: async () => {
+        const said: string[] = [];
+        {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'consolidation',
+            sliceIndex: 2,
+            sourceChars: 73,
+            signal: LIVE_RUN.signal,
+          },);
+          cost.left({ exit: 'unsettled', },);
+        }
+
+        const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+        expect(dropped,).toHaveLength(0,);
+        expect(said[0],).toBe('SLICE-START lane=consolidation chunk=2 sourceChars=73',);
+        expect(rows[0]
+          ?.lane,).toBe('consolidation',);
+        expect(rows[0]
+          ?.exit,).toBe('unsettled',);
       },
     },),
     it({
@@ -312,6 +342,49 @@ await describe({
 
         const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
         expect(dropped,).toHaveLength(0,);
+        expect(rows[0]
+          ?.exit,).toBe('aborted',);
+      },
+    },),
+    it({
+      name: 'REPORTS non-abort consolidation failure distinctly from completed work',
+      fn: async () => {
+        const said: string[] = [];
+        {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'consolidation',
+            sliceIndex: 6,
+            sourceChars: 89,
+            signal: LIVE_RUN.signal,
+          },);
+          cost.left({ exit: 'failed', },);
+        }
+
+        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+        expect(rows[0]
+          ?.exit,).toBe('failed',);
+      },
+    },),
+    it({
+      name:
+        'REPORTS provisional failure as aborted when caller signal stopped active slice',
+      fn: async () => {
+        const said: string[] = [];
+        const stopped = new AbortController();
+        {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'consolidation',
+            sliceIndex: 8,
+            sourceChars: 144,
+            signal: stopped.signal,
+          },);
+          cost.left({ exit: 'failed', },);
+          stopped.abort(new Error('caller stopped active consolidation',),);
+        }
+
+        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
         expect(rows[0]
           ?.exit,).toBe('aborted',);
       },

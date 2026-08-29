@@ -27,6 +27,7 @@ import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
 import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import { armSliceCost, } from './slice-cost-log.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import {
@@ -293,6 +294,18 @@ export async function consolidateDocument(
       throw new ConsolidationLedgerGapError({ sliceIndex: row.sliceIndex, },);
 
     /**
+     * Wall-time bracket making this slice visible before and after settlement.
+     */
+    using cost = armSliceCost({
+      l: dl,
+      lane: 'consolidation',
+      sliceIndex: row.sliceIndex,
+      sourceChars: sourceText.length,
+      signal,
+    },);
+    cost.left({ exit: 'failed', },);
+
+    /**
      * Lane contest selected, or refusal of both.
      */
     const choice = laneChoiceOf({ verdict: contest.verdict, },);
@@ -427,9 +440,16 @@ export async function consolidateDocument(
     /**
      * What the roster settled here, bought, resumed, or reused from a twin.
      */
-    const settlement = await (async function resumeOrBuy(): Promise<ConsolidationSettlement> {
-      if (resumed !== undefined)
-        return resumed;
+    const acquired = await (async function resumeOrBuy(): Promise<{
+      readonly settlement: ConsolidationSettlement;
+      readonly exit: 'computed' | 'resumed' | 'reused';
+    }> {
+      if (resumed !== undefined) {
+        return {
+          settlement: resumed,
+          exit: 'resumed',
+        };
+      }
 
       /**
        * Twin's persisted settlement or this row's fresh purchase.
@@ -473,17 +493,34 @@ export async function consolidateDocument(
         persistedOf: storedConsolidationOf,
         l: dl,
       },);
-      if (asked.kind === 'reused')
-        return asked.twin;
-      return asked.bought
-        .settlement;
+      if (asked.kind === 'reused') {
+        return {
+          settlement: asked.twin,
+          exit: 'reused',
+        };
+      }
+      /**
+       * Fresh settlement unwrapped after memo accounting.
+       */
+      const { settlement, } = asked.bought;
+      return {
+        settlement,
+        exit: 'computed',
+      };
     })();
     /**
      * Final polish decision before artifact projection.
      */
+    const { settlement, } = acquired;
+    /**
+     * Final polish state deciding whether any exact text may leave stage.
+     */
     const { polish, } = settlement;
-    if (polish?.kind === 'unsettled')
+    if (polish?.kind === 'unsettled') {
+      cost.left({ exit: 'unsettled', },);
       throw new NaturalnessCompletenessError({ sliceIndex: row.sliceIndex, },);
+    }
+    cost.left({ exit: acquired.exit, },);
     return describeConsolidateSlice({
       sliceIndex: row.sliceIndex,
       settlement,

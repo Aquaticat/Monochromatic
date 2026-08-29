@@ -14,10 +14,10 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 // elapsed time. A reader needs the log and nothing else, so whatever `#96`
 // decides about artifact contents cannot reach this measurement.
 //
-// ELAPSED IS WALL TIME AND MEANS SOMETHING because both lanes walk their slices
-// SEQUENTIALLY (`translate-document.ts` and `repair-translation.ts` each hold one
-// `for (const slice of ...)`). Under concurrency this number would fold in
-// waiting on shared rate limits and would not be a per-slice cost at all.
+// ELAPSED IS WALL TIME. With overlap one it prices one slice directly. With
+// higher overlap it deliberately includes contention for shared provider limits,
+// so readers must compare runs carrying same overlap rather than treating it as
+// isolated service time.
 //
 // EVERY LINE NAMES HOW ITS SLICE WAS LEFT, because the paths cost wildly
 // different things and only one of them answers the question. A slice resumed
@@ -42,6 +42,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 export const SLICE_COST_LANES = [
   'translate',
   'repair',
+  'consolidation',
 ] as const;
 
 /**
@@ -66,8 +67,11 @@ export type SliceCostLane = typeof SLICE_COST_LANES[number];
 export const SLICE_COST_EXITS = [
   'computed',
   'resumed',
+  'reused',
   'no-translation',
   'unfilled',
+  'unsettled',
+  'failed',
   'aborted',
 ] as const;
 
@@ -75,10 +79,10 @@ export const SLICE_COST_EXITS = [
  * How a lane left one slice, which decides whether its cost is a measurement of
  * anything.
  *
- * Only `computed` prices work. `resumed` answered from cache, `no-translation`
- * found nothing to repair, and `unfilled` bought calls that produced no usable
- * candidate, so its time is real but prices a failure rather than a slice.
- * `aborted` was cut mid-flight, so its time prices the deadline.
+ * Only `computed` prices fresh completed work. `resumed` answered from cache,
+ * `reused` shared an identical purchase in same run, and `no-translation`
+ * found nothing to repair. `unfilled`, `unsettled`, and `failed` bought work but
+ * produced no final answer. `aborted` was cut mid-flight and prices deadline.
  *
  * @example
  * ```ts
@@ -118,6 +122,20 @@ const ABORTED_EXIT: SliceCostExit = 'aborted';
 export const SLICE_COST_MARKER = 'SLICE-COST';
 
 /**
+ * Token every slice opening line starts with.
+ *
+ * Paired with {@link SLICE_COST_MARKER} so an operator can identify current
+ * slice before it finishes rather than infer progress from cache modification
+ * times.
+ *
+ * @example
+ * ```ts
+ * const isStartLine = line.includes(SLICE_START_MARKER,);
+ * ```
+ */
+export const SLICE_START_MARKER = 'SLICE-START';
+
+/**
  * Open cost measurement, which reports when it leaves scope.
  *
  * @example
@@ -144,8 +162,8 @@ export type SliceCostSpan = {
 /**
  * Starts measuring one slice, reporting when the measurement leaves scope.
  *
- * BOUND TO SCOPE RATHER THAN TO A CALL AT THE END, because both lanes leave a
- * slice by more than one path: a cached answer, a slice no lane applies to, and
+ * BOUND TO SCOPE RATHER THAN TO A CALL AT THE END, because slice-paying stages
+ * leave by more than one path: a cached answer, a slice no lane applies to, and
  * an ordinary completion all exit the same loop body. A closing call would
  * record whichever paths someone remembered.
  *
@@ -188,6 +206,10 @@ export function armSliceCost(
    */
   const startedAt = Date.now();
 
+  l.info(
+    `${SLICE_START_MARKER} lane=${lane} chunk=${String(sliceIndex,)} sourceChars=${String(sourceChars,)}`,
+  );
+
   /**
    * How this slice was left, until a path says otherwise.
    *
@@ -205,11 +227,17 @@ export function armSliceCost(
       /**
        * Exit this line reports.
        *
-       * A NAMED PATH WINS over the signal, since a lane that said `resumed`
-       * bought nothing whether the run was later torn down or not. Only a slice
-       * that named nothing can have been cut mid-flight.
+       * A TERMINAL NAMED PATH WINS over signal, since a lane that said
+       * `resumed` bought nothing whether run was later torn down or not.
+       * Ordinary work and provisional `failed` both remain in flight until
+       * scope exit, so caller abort decides those paths.
        */
-      const exit = ((taken.exit === DEFAULT_EXIT) && signal.aborted)
+      const mayStillBeInFlight = (taken.exit === DEFAULT_EXIT)
+        || (taken.exit === 'failed');
+      /**
+       * Exit after caller abort takes precedence over in-flight fallback.
+       */
+      const exit = mayStillBeInFlight && signal.aborted
         ? ABORTED_EXIT
         : taken.exit;
 

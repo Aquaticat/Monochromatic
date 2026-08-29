@@ -286,8 +286,57 @@ export async function reviewAbsoluteNaturalness(
     },)
       ? 'unacceptable'
       : 'acceptable';
+  /**
+   * Per-seat status and finding identities without candidate or reviewer wording.
+   */
+  const seatSummary = seats
+    .map(function summarizeSeat(seat,): string {
+      /**
+       * Finding count rendered without finding wording.
+       */
+      const findingCount = String(seat.findings
+        .length,);
+      /**
+       * Located paragraphs making repeated findings comparable across rounds.
+       */
+      const findingParagraphParts = seat.findings
+        .map(function paragraphOf(finding,): string {
+          return String(finding.paragraph,);
+        },);
+      /**
+       * Located paragraph sequence before empty fallback.
+       */
+      const joinedFindingParagraphs = findingParagraphParts.join('+',);
+      /**
+       * Located paragraph sequence or explicit absence.
+       */
+      const findingParagraphs = joinedFindingParagraphs === ''
+        ? 'none'
+        : joinedFindingParagraphs;
+      /**
+       * Wording digests making recurrence comparable without exposing wording.
+       */
+      const findingDigestParts = seat.findings
+        .map(function digestFinding(finding,): string {
+          return hashContent({ content: finding.problem, },);
+        },);
+      /**
+       * Wording digest sequence before empty fallback.
+       */
+      const joinedFindingDigests = findingDigestParts.join('+',);
+      /**
+       * Wording digest sequence or explicit absence.
+       */
+      const findingDigests = joinedFindingDigests === ''
+        ? 'none'
+        : joinedFindingDigests;
+      return `${seat.modelId}:${seat.status}:findings=${findingCount}`
+        + `:paragraphs=${findingParagraphs}:digests=${findingDigests}`;
+    },)
+    .join(';',);
   rl.info(
-    `absolute naturalness review: ${String(usableSeats.length,)}/${String(modelIds.length,)} usable, ${verdict}`,
+    `absolute naturalness review: ${String(usableSeats.length,)}/${String(modelIds.length,)} usable, ${verdict}, `
+      + `seats=${seatSummary}, uniqueFindings=${String(findings.length,)}`,
   );
   return {
     candidateDigest: hashContent({ content: subject.candidateText, },),

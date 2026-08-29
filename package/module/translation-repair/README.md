@@ -554,6 +554,50 @@ Planning denominator now follows Kimi-K3 input price and has GFP coverage;
 live `/quotas` remains authoritative.
 See `doc/troubleshooting/synthetic-rate-limit-default-drift.md`.
 
+#### Eight-seat schema-9 latency diagnosis
+
+Fresh eight-seat `Weideriche_` validation from `88049530a` failed closed after first entry spent
+6,433,300 milliseconds.
+It wrote no page or artifact;
+operator stopped second entry after first terminal refusal.
+Matched prior first entries took 3,014,684 and 3,774,160 milliseconds.
+This was active work rather than deadlock:
+round logs assign 4,797,358 milliseconds,
+79.96 minutes,
+to post-quorum grace.
+GLM-5.3-Flash reached 180,000-millisecond grace cap eleven times,
+compared with two and four in matched runs.
+Current pass also bought more quality work,
+including twenty-seven consolidation rounds compared with ten and fourteen.
+
+Exact final-candidate replay heard all eight seats.
+Seven accepted;
+GPT-OSS returned one idiomatic-naturalness finding in paragraph three.
+Affected phrase preceded second correction and survived all three second-correction proposals.
+Previous-candidate replay was also unacceptable,
+with GPT-OSS and DeepSeek Flash each returning one different finding;
+adjacent GPT findings did not match.
+Evidence supports iterative defect discovery,
+not claim latest required finding was ignored.
+Final floor correctly refused publication after correction cap.
+No reviewer wording or corpus wording is retained in readiness record.
+
+Existing round logs proved aggregate cause,
+but lacked active consolidation slice,
+terminal consolidation exit,
+and per-seat absolute-review status.
+Pipeline now logs `SLICE-START` plus `SLICE-COST` for consolidation,
+distinguishes cache reuse,
+unsettled,
+failure,
+and abort exits,
+and reports only absolute-review seat ids,
+statuses,
+finding counts,
+paragraph numbers,
+and wording digests.
+See `doc/troubleshooting/translation-repair-schema9-latency.md`.
+
 No GLM-5.2 quality result or role calibration transfers to GLM-5.3-Flash.
 It enters only catalog-derived broad-roster and image-reading paths;
 it does not inherit an editor,

@@ -99,6 +99,7 @@ export {
 export {
   armSliceCost,
   SLICE_COST_MARKER,
+  SLICE_START_MARKER,
   type SliceCostLane,
   type SliceCostSpan,
 } from './slice-cost-log.ts';

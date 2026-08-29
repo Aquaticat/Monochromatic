@@ -106,7 +106,7 @@ const TOTAL_WIDTH = 8;
 /**
  * Width a lane name is padded to.
  */
-const LANE_WIDTH = 10;
+const LANE_WIDTH = 13;
 
 /**
  * Lanes a pass reports, in the order it runs them.
@@ -114,6 +114,7 @@ const LANE_WIDTH = 10;
 const LANES = [
   'repair',
   'translate',
+  'consolidation',
 ] as const;
 
 /**
