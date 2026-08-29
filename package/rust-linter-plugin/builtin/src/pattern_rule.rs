@@ -12,13 +12,16 @@ use crate::rule::Rule;
 use crate::severity::Category;
 /// Imports the source-range and edit types a pattern fix produces.
 use crate::span::Span;
+/// Imports source edits, grouped repairs, and repair trust levels a pattern rewrite produces.
 use monochromatic_rust_linter_core::fix::{Edit, Fix, FixKind};
 
 /// Imports the on-disk shape of one configured pattern rule.
 use monochromatic_rust_linter_core::config::file::PatternConfig;
-/// Imports the pattern cascade, matcher and rewrite renderer.
+/// Imports the parser that turns configured pattern text into a matchable fragment.
 use monochromatic_rust_linter_pattern::fragment::parse as parse_fragment;
+/// Imports the matcher that locates every occurrence of a parsed pattern.
 use monochromatic_rust_linter_pattern::matcher::find_all;
+/// Imports rewrite rendering and validation of template holes against matched bindings.
 use monochromatic_rust_linter_pattern::rewrite::{render, unbound_metavariables};
 
 // What:     `pub const PLUGIN: &str = "pattern";`. The plugin name every
