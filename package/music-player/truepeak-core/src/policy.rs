@@ -228,10 +228,10 @@ fn mix(hash: u64, word: u64) -> u64 {
     // for (const byte of toLeBytes(word)) h = (h ^ BigInt(byte)) * FNV_PRIME;
     // return h;
     // ```
-    word.to_le_bytes()
+    return word.to_le_bytes()
         .iter()
         .fold(hash, |accumulator, &byte| {
-            (accumulator ^ byte as u64).wrapping_mul(FNV_PRIME)
+            return (accumulator ^ byte as u64).wrapping_mul(FNV_PRIME)
         })
 }
 
@@ -252,7 +252,7 @@ fn hash_words(words: &[u64]) -> u64 {
     // ```ts
     // return words.reduce((hash, word) => mix(hash, word), FNV_OFFSET);
     // ```
-    words.iter().fold(FNV_OFFSET, |hash, &word| mix(hash, word))
+    return words.iter().fold(FNV_OFFSET, |hash, &word| return mix(hash, word))
 }
 
 /// What:     `fn hash_bytes(bytes: &[u8]) -> u64`. FNV-1a over raw bytes. `&[u8]`
@@ -274,10 +274,10 @@ fn hash_bytes(bytes: &[u8]) -> u64 {
     // ```ts
     // return bytes.reduce((hash, byte) => (hash ^ BigInt(byte)) * FNV_PRIME, FNV_OFFSET);
     // ```
-    bytes
+    return bytes
         .iter()
         .fold(FNV_OFFSET, |hash, &byte| {
-            (hash ^ byte as u64).wrapping_mul(FNV_PRIME)
+            return (hash ^ byte as u64).wrapping_mul(FNV_PRIME)
         })
 }
 
@@ -299,7 +299,7 @@ pub fn meter_id() -> u64 {
     // ```ts
     // return hashBytes(utf8(METER_DESCRIPTION));
     // ```
-    hash_bytes(METER_DESCRIPTION.as_bytes())
+    return hash_bytes(METER_DESCRIPTION.as_bytes())
 }
 
 /// What:     `pub fn stack_id(description: &str) -> u64`. The id of a platform's decoder
@@ -320,7 +320,7 @@ pub fn stack_id(description: &str) -> u64 {
     // ```ts
     // return hashBytes(utf8(description));
     // ```
-    hash_bytes(description.as_bytes())
+    return hash_bytes(description.as_bytes())
 }
 
 /// What:     `#[derive(Clone, Copy, Debug, PartialEq)] pub struct Policy { ... }`. The
@@ -472,7 +472,7 @@ impl Policy {
         // ```ts
         // return hashWords(words);
         // ```
-        hash_words(&words)
+        return hash_words(&words)
     }
 
     /// What:     `pub fn cache_identity(&self, decoder_stack_id: u64) -> CacheIdentity`.
@@ -494,7 +494,7 @@ impl Policy {
         // ```ts
         // return { policyId: this.policyId(), meterId: meterId(), decoderStackId, schemaVersion: SCHEMA_VERSION };
         // ```
-        CacheIdentity {
+        return CacheIdentity {
             policy_id: self.policy_id(),
             meter_id: meter_id(),
             decoder_stack_id,
@@ -568,7 +568,7 @@ pub fn default_policy() -> Policy {
     // ```ts
     // return { shortScanMaxSecs: SHORT_SCAN_MAX_SECS, ... };
     // ```
-    Policy {
+    return Policy {
         short_scan_max_secs: SHORT_SCAN_MAX_SECS,
         probe_window_secs: PROBE_WINDOW_SECS,
         pass1_coverage_fraction: PASS1_COVERAGE_FRACTION,

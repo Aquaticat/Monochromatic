@@ -37,7 +37,7 @@ fn sniff_flac(bytes: &[u8]) -> bool {
         let offset = 10 + tag_size + footer;
         return bytes.len() >= offset + 4 && &bytes[offset..offset + 4] == b"fLaC";
     }
-    false
+    return false
 }
 
 /// The resolver's inputs from a file's raw bytes.
@@ -63,7 +63,7 @@ pub fn probe_inputs_from_bytes(bytes: &[u8], policy: &Policy) -> (TrackProvenanc
             None
         }
     };
-    (provenance, bones)
+    return (provenance, bones)
 }
 
 /// The resolver's inputs from a file path.
@@ -75,7 +75,7 @@ pub fn probe_inputs_from_bytes(bytes: &[u8], policy: &Policy) -> (TrackProvenanc
 pub fn probe_inputs_from_file(path: &Path, policy: &Policy) -> (TrackProvenance, Option<Vec<usize>>) {
     // The degradation contract: any read failure lands in the bare bucket, cause logged.
     match fs::read(path) {
-        Ok(bytes) => probe_inputs_from_bytes(&bytes, policy),
+        Ok(bytes) => return probe_inputs_from_bytes(&bytes, policy),
         Err(error) => {
             // Unreadable file: record why before degrading to the uninformed provenance.
             tracing::warn!(
@@ -83,7 +83,7 @@ pub fn probe_inputs_from_file(path: &Path, policy: &Policy) -> (TrackProvenance,
                 cause = %error,
                 "could not read file for probe inputs; using the bare bucket"
             );
-            (TrackProvenance::unknown(), None)
+            return (TrackProvenance::unknown(), None)
         }
     }
 }

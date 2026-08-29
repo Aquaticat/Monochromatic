@@ -142,7 +142,7 @@ pub struct CacheError {
 impl fmt::Display for CacheError {
     /// Write the cache error message on one line.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "true-peak cache: {}", self.message)
+        return write!(formatter, "true-peak cache: {}", self.message)
     }
 }
 
@@ -165,7 +165,7 @@ impl std::error::Error for CacheError {}
 impl From<turso::Error> for CacheError {
     /// Wrap a turso error's text.
     fn from(error: turso::Error) -> CacheError {
-        CacheError { message: error.to_string() }
+        return CacheError { message: error.to_string() }
     }
 }
 
@@ -185,9 +185,9 @@ fn kind_to_int(kind: DecisionKind) -> i64 {
     // switch (kind) { case "shortFullScan": return 0; ... }
     // ```
     match kind {
-        DecisionKind::ShortFullScan => 0,
-        DecisionKind::ProbeEstimate => 1,
-        DecisionKind::FullScanExact => 2,
+        DecisionKind::ShortFullScan => return 0,
+        DecisionKind::ProbeEstimate => return 1,
+        DecisionKind::FullScanExact => return 2,
     }
 }
 
@@ -209,13 +209,13 @@ fn kind_from_int(value: i64) -> Result<DecisionKind, CacheError> {
     // switch (value) { case 0: return "shortFullScan"; ... default: throw new CacheError(...); }
     // ```
     match value {
-        0 => Ok(DecisionKind::ShortFullScan),
-        1 => Ok(DecisionKind::ProbeEstimate),
-        2 => Ok(DecisionKind::FullScanExact),
+        0 => return Ok(DecisionKind::ShortFullScan),
+        1 => return Ok(DecisionKind::ProbeEstimate),
+        2 => return Ok(DecisionKind::FullScanExact),
         other => {
             // An unknown kind is row corruption or a future schema; fail loudly.
             tracing::error!(value = other, "unknown decision kind in cache row");
-            Err(CacheError { message: format!("unknown decision kind {other}") })
+            return Err(CacheError { message: format!("unknown decision kind {other}") })
         }
     }
 }
@@ -239,10 +239,10 @@ fn real_at(row: &turso::Row, index: usize) -> Result<f64, CacheError> {
     // ```ts
     // const real = row.getValue(index).asReal();
     // ```
-    row.get_value(index)?
+    return row.get_value(index)?
         .as_real()
         .copied()
-        .ok_or_else(|| CacheError { message: format!("column {index} is not a real") })
+        .ok_or_else(|| return CacheError { message: format!("column {index} is not a real") })
         .inspect_err(|error| tracing::error!(index, cause = %error.message, "cache real column corrupt"))
 }
 
@@ -318,7 +318,7 @@ impl DecisionCache {
         // ```ts
         // return new DecisionCache(conn);
         // ```
-        Ok(DecisionCache { conn })
+        return Ok(DecisionCache { conn })
     }
 
     /// What:     `pub async fn get(&self, fingerprint: u64, identity: CacheIdentity) ->
@@ -382,7 +382,7 @@ impl DecisionCache {
                 let kind_value = *row
                     .get_value(0)?
                     .as_integer()
-                    .ok_or_else(|| CacheError { message: "column 0 is not an integer".to_string() })
+                    .ok_or_else(|| return CacheError { message: "column 0 is not an integer".to_string() })
                     .inspect_err(|error| tracing::error!(cause = %error.message, "cache kind column corrupt"))?;
                 // What:     `Ok(Some(Decision { ... }))`. Build the decision from the columns;
                 //           `real_at` reads each REAL, `as f32` narrows the gain and peak.
@@ -393,7 +393,7 @@ impl DecisionCache {
                 // ```ts
                 // return { kind, gain: realAt(row,1), measuredPeak: realAt(row,2), durationSecs: realAt(row,3) };
                 // ```
-                Ok(Some(Decision {
+                return Ok(Some(Decision {
                     kind: kind_from_int(kind_value)?,
                     gain: real_at(&row, 1)? as f32,
                     measured_peak: real_at(&row, 2)? as f32,
@@ -403,7 +403,7 @@ impl DecisionCache {
             None => {
                 // No row for this key: a cache miss.
                 tracing::debug!(fingerprint, "cache get miss");
-                Ok(None)
+                return Ok(None)
             }
         }
     }
@@ -459,7 +459,7 @@ impl DecisionCache {
         // ```ts
         // return;
         // ```
-        Ok(())
+        return Ok(())
     }
 
     /// What:     `pub async fn exact_fingerprints(&self, identity: CacheIdentity) ->
@@ -526,7 +526,7 @@ impl DecisionCache {
             let stored = *row
                 .get_value(0)?
                 .as_integer()
-                .ok_or_else(|| CacheError { message: "column 0 is not an integer".to_string() })
+                .ok_or_else(|| return CacheError { message: "column 0 is not an integer".to_string() })
                 .inspect_err(|error| tracing::error!(cause = %error.message, "cache fingerprint column corrupt"))?;
             // What:     `set.insert(stored as u64);`. Reverse the write-side `u64 as i64`
             //           bit-cast; the round-trip is bijective.
@@ -545,7 +545,7 @@ impl DecisionCache {
         // ```ts
         // return set;
         // ```
-        Ok(set)
+        return Ok(set)
     }
 }
 

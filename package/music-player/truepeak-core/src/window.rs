@@ -50,7 +50,7 @@ pub fn window_frames(window_seconds: f64, rate: u32) -> u64 {
     // ```ts
     // return Math.max(1, frames);
     // ```
-    frames.max(1)
+    return frames.max(1)
 }
 
 /// What:     `pub fn window_frame_starts(total_frames: u64, window_count: usize,
@@ -118,7 +118,7 @@ pub fn window_frame_starts(total_frames: u64, window_count: usize, window_frames
     // ```ts
     // return Array.from({ length: windowCount }, (_, index) => { ... });
     // ```
-    (0..window_count)
+    return (0..window_count)
         .map(|index| {
             // What:     `let fraction = index as f64 / divisor;`. The 0..1 position of
             //           this window: 0 at the first, 1 at the last.
@@ -147,7 +147,7 @@ pub fn window_frame_starts(total_frames: u64, window_count: usize, window_frames
             // ```ts
             // return Math.min(start, lastStart);
             // ```
-            start.min(last_start)
+            return start.min(last_start)
         })
         .collect()
 }
@@ -226,7 +226,7 @@ impl WindowPlacement {
         // ```ts
         // return { windowFrames: frames, starts: windowFrameStarts(totalFrames, windowCount, frames) };
         // ```
-        WindowPlacement {
+        return WindowPlacement {
             window_frames: frames,
             starts: window_frame_starts(total_frames, window_count, frames),
         }

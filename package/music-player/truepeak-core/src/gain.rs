@@ -77,7 +77,7 @@ pub fn normalization_gain(true_peak: f32) -> f32 {
     // ```ts
     // return Math.min(CEILING / truePeak, 1);
     // ```
-    (CEILING / true_peak).min(1.0)
+    return (CEILING / true_peak).min(1.0)
 }
 
 /// What:     `pub fn peak_dbtp(peak: f64) -> f64`. Convert a linear amplitude to
@@ -101,7 +101,7 @@ pub fn peak_dbtp(peak: f64) -> f64 {
     // ```ts
     // return DBTP_SCALE * Math.log10(peak);
     // ```
-    DBTP_SCALE * peak.log10()
+    return DBTP_SCALE * peak.log10()
 }
 
 /// What:     `pub fn probe_estimated_peak(sampled_max_peak: f64, margin_db: f64) -> f64`.
@@ -128,7 +128,7 @@ pub fn probe_estimated_peak(sampled_max_peak: f64, margin_db: f64) -> f64 {
     // ```ts
     // return sampledMax * DB_BASE ** (marginDb / DBTP_SCALE);
     // ```
-    sampled_max_peak * DB_BASE.powf(margin_db / DBTP_SCALE)
+    return sampled_max_peak * DB_BASE.powf(margin_db / DBTP_SCALE)
 }
 
 /// What:     `#[cfg(test)] #[path = "gain_tests.rs"] mod tests;`. Test-only submodule

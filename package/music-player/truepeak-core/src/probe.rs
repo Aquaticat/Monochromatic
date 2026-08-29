@@ -51,7 +51,7 @@ pub(crate) fn measure_window(
         fed += chunk.len() as u64 / channels as u64;
         meter.feed(&chunk);
     }
-    Ok(meter.peak())
+    return Ok(meter.peak())
 }
 
 /// The frontier state one zoom run threads through its measurements.
@@ -90,7 +90,7 @@ fn measure_bin(
         frontier.peak = window_peak;
     }
     frontier.heap.push((window_peak.to_bits(), index));
-    Ok(())
+    return Ok(())
 }
 
 /// Run the zoom probe and return the loudest measured window peak.
@@ -160,7 +160,7 @@ pub(crate) fn zoom_probe(
     }
     // The zoom is done: how many bins were measured and the loudest window found.
     tracing::debug!(used = frontier.used, peak = frontier.peak, "zoom done");
-    Ok(frontier.peak)
+    return Ok(frontier.peak)
 }
 
 /// What:     `#[cfg(test)] #[path = "probe_tests.rs"] mod tests;`. Test-only submodule in
