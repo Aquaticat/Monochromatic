@@ -89,7 +89,8 @@ Windows coexistence is not applicable because the NVMe is now dedicated to Linux
 ## Hard constraints
 
 - Rolling release.
-- At least one usable rollback target selectable directly from the boot menu without first repairing the installed system.
+- At least one usable rollback target selectable directly from the boot menu
+  without first repairing the installed system.
 - A rollback target must pair the root state with bootable matching kernel and initramfs or UKI artifacts.
 - Root data encrypted at rest.
 - AMD Radeon RX 7600 support through an actively maintained kernel and Mesa stack.
@@ -736,6 +737,131 @@ not quality.
 They omit upstream bootloaders,
 filesystems,
 and general distribution installers shared by the candidates.
+
+## UWSM plus labwc portability
+
+### Common session mechanism
+
+UWSM itself supplies the required labwc plugin,
+tty1 shell-profile startup checks,
+`app-graphical.slice`,
+`background-graphical.slice`,
+`session-graphical.slice`,
+and `uwsm app` scope or service launch modes.
+The upstream documentation explicitly supports `uwsm check may-start` plus `exec uwsm start` from a login-shell profile
+and places ordinary applications in separate systemd user units at
+https://github.com/Vladimir-csp/uwsm.
+
+The rehearsed display-manager-free boot therefore transfers without a distribution-specific display manager:
+
+- disable the installed display manager;
+- add a `getty@tty1` autologin drop-in;
+- guard `exec uwsm start -- labwc` in the login profile;
+- keep `xwayland-satellite.service` ordered after the graphical session;
+- launch applications with `uwsm app`,
+  using service units when clean activation-environment inheritance is required.
+
+Flatpak is available on every finalist.
+The portal routing,
+GTK configuration,
+sfwbar files,
+labwc XML,
+and user services live in the user’s home and are independent of the root filesystem choice.
+The VM-only SPICE agent override does not transfer to physical hardware.
+
+### CachyOS Btrfs,
+Garuda,
+and CachyOS ZFS
+
+All three use the Arch package base for the session:
+
+- `labwc` 0.20.2 is in Arch Extra at https://archlinux.org/packages/extra/x86_64/labwc/;
+- `uwsm` 0.26.7 is in Arch Extra at https://archlinux.org/packages/extra/any/uwsm/;
+- `xwayland-satellite` 0.8.2 is in Arch Extra at
+  https://archlinux.org/packages/extra/x86_64/xwayland-satellite/;
+- sfwbar 1.0 beta17 is available through the AUR,
+  so it requires an inspected AUR build rather than an Arch-signed repository package.
+
+The complete session can be installed natively and uses the same systemd user behavior on all three architectures.
+The ZFS variant changes storage and boot recovery,
+not desktop packaging.
+CachyOS and Garuda package versions have advanced beyond the VM’s labwc 0.9.6,
+UWSM 0.26.1,
+sfwbar beta16,
+and xwayland-satellite 0.8.1 baselines;
+configuration compatibility must therefore be exercised in a finalist VM rather than inferred.
+
+### openSUSE Tumbleweed
+
+Tumbleweed directly packages labwc,
+UWSM,
+and xwayland-satellite in the distribution.
+The package records are available at:
+
+- https://software.opensuse.org/package/labwc;
+- https://software.opensuse.org/package/uwsm;
+- https://software.opensuse.org/package/xwayland-satellite.
+
+Sfwbar is not in the main Tumbleweed repository,
+but the openSUSE `X11:Wayland` development project publishes sfwbar 1.0 beta17 for Tumbleweed.
+The source RPM dated 2026-08-11 has SHA-256
+`2e3681b52f543ce3c8804438dc62768734d42e322b314a1f73b665a5fc01d60e`.
+The source repository directory is
+https://download.opensuse.org/repositories/X11:/Wayland/openSUSE_Tumbleweed/src/.
+This adds one non-default openSUSE repository but avoids a locally authored package.
+
+The tty1,
+UWSM,
+user-systemd,
+and Flatpak design transfers directly.
+Tumbleweed’s package naming and paths require a fresh generated host procedure;
+the Bazzite `rpm-ostree` commands must not be copied.
+
+### Shanios
+
+The official Shanios image does not contain labwc,
+UWSM,
+sfwbar,
+or xwayland-satellite.
+Its read-only root also blocks persistent `pacman` installation.
+The shipped Nix store is a separate persistent subvolume,
+and Nixpkgs currently packages all four components,
+including sfwbar beta17 and xwayland-satellite 0.8.2 at:
+
+- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/la/labwc/package.nix;
+- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/uw/uwsm/package.nix;
+- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/sf/sfwbar/package.nix;
+- https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/by-name/xw/xwayland-satellite/package.nix.
+
+A Nix profile can therefore provide the session binaries,
+and the home plus `/etc` overlay can preserve the tty1 and user-unit configuration.
+This path has material drawbacks:
+
+- the primary host session depends on Nixpkgs even though NixOS was excluded for governance concerns;
+- Shanios does not build or test this session in its images;
+- the user must maintain absolute Nix store paths or profile indirection in systemd integration;
+- the shared `/etc` overlay and home do not roll back with an OS slot;
+- writable selected application configuration cannot naturally follow the blue/green slot.
+
+The alternative is maintaining a custom Shanios image profile,
+which is a larger ongoing ownership burden than installing packages on the mutable finalists.
+
+### Selected application configuration
+
+The Btrfs and ZFS finalists all exclude home from system rollback by default,
+which correctly keeps documents,
+media,
+and saves current.
+For the mutable-root finalists,
+a bounded writable directory inside the rolled-back root or boot-environment dataset can hold only selected
+configuration trees;
+symlinks from home can point to those trees.
+This makes those selected files follow the system snapshot while the rest of home remains current.
+The design must be tested for applications that write configuration during a read-only snapshot trial.
+
+Shanios cannot provide the same coupling without new per-slot writable state because both home and its writable `/etc`
+overlay are shared across slots.
+That is a scored rollback-scope disadvantage rather than an encryption or direct-boot failure.
 
 ## Execution manifests
 
