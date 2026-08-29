@@ -26,7 +26,7 @@ use tracing_subscriber::EnvFilter;
 /// ```
 pub fn init() {
     // The level filter from RUST_LOG, or `info` when the variable is unset or malformed.
-    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
+    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| return EnvFilter::new("info"));
     // A fmt subscriber writing to stderr; `.finish()` returns it without touching `log`.
     let subscriber = tracing_subscriber::fmt()
         .with_env_filter(filter)

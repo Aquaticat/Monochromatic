@@ -126,7 +126,7 @@ impl CacheHandle {
         // ```ts
         // return { readTx, writeTx };
         // ```
-        CacheHandle { read_tx, write_tx }
+        return CacheHandle { read_tx, write_tx }
     }
 
     /// What:     `#[cfg(test)] pub(crate) fn open_at(path: PathBuf) -> CacheHandle`.
@@ -228,7 +228,7 @@ impl CacheHandle {
         // ```ts
         // return (await replyRx) ?? null;
         // ```
-        reply_rx.blocking_recv().ok().flatten()
+        return reply_rx.blocking_recv().ok().flatten()
     }
 
     /// What:     `pub(crate) fn upsert(&self, fingerprint: u64, decision: Decision)`.
@@ -286,6 +286,6 @@ impl CacheHandle {
         // ```ts
         // return (await replyRx) ?? new Set();
         // ```
-        reply_rx.blocking_recv().unwrap_or_default()
+        return reply_rx.blocking_recv().unwrap_or_default()
     }
 }

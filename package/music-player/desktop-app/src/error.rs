@@ -203,7 +203,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "i/o error: " + e;
             // ```
-            PlayerError::Io(e) => write!(f, "i/o error: {e}"),
+            PlayerError::Io(e) => return write!(f, "i/o error: {e}"),
             // What:     `PlayerError::Decode(e) => write!(f, "decode error: {e}")`.
             //           Same shape: bind the inner symphonia error `e`, write a
             //           prefixed message.
@@ -213,7 +213,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "decode error: " + e;
             // ```
-            PlayerError::Decode(e) => write!(f, "decode error: {e}"),
+            PlayerError::Decode(e) => return write!(f, "decode error: {e}"),
             // What:     `PlayerError::Opus(e) => write!(f, "opus error: {e}")`. Bind
             //           the inner opus error `e` and write a prefixed message.
             // Why:      Surface opus failures with their own detail.
@@ -222,7 +222,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "opus error: " + e;
             // ```
-            PlayerError::Opus(e) => write!(f, "opus error: {e}"),
+            PlayerError::Opus(e) => return write!(f, "opus error: {e}"),
             // What:     `PlayerError::Unsupported(m) => write!(f, "unsupported: {m}")`.
             //           `m` is the `&String` message borrowed from the variant.
             // Why:      Surface the explanation we built when constructing the error.
@@ -231,7 +231,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "unsupported: " + m;
             // ```
-            PlayerError::Unsupported(m) => write!(f, "unsupported: {m}"),
+            PlayerError::Unsupported(m) => return write!(f, "unsupported: {m}"),
             // What:     `PlayerError::Audio(m) => write!(f, "audio error: {m}")`. `m`
             //           is the borrowed audio message.
             // Why:      Surface the flattened audio-output explanation.
@@ -240,7 +240,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "audio error: " + m;
             // ```
-            PlayerError::Audio(m) => write!(f, "audio error: {m}"),
+            PlayerError::Audio(m) => return write!(f, "audio error: {m}"),
         }
     }
 }
@@ -287,7 +287,7 @@ impl From<std::io::Error> for PlayerError {
         // ```ts
         // return { kind: "io", cause: e };
         // ```
-        PlayerError::Io(e)
+        return PlayerError::Io(e)
     }
 }
 
@@ -317,7 +317,7 @@ impl From<symphonia::core::errors::Error> for PlayerError {
         // ```ts
         // return { kind: "decode", cause: e };
         // ```
-        PlayerError::Decode(e)
+        return PlayerError::Decode(e)
     }
 }
 
@@ -346,6 +346,6 @@ impl From<opus::Error> for PlayerError {
         // ```ts
         // return { kind: "opus", cause: e };
         // ```
-        PlayerError::Opus(e)
+        return PlayerError::Opus(e)
     }
 }

@@ -113,7 +113,7 @@ impl GeometryState {
         self.expected_count = count;
         self.controls = vec![None; count];
         tracing::debug!(generation = self.generation, count, "beginning LED row geometry generation");
-        self.generation
+        return self.generation
     }
 
     /// Records one report only when generation and count remain current.
@@ -134,7 +134,7 @@ impl GeometryState {
             return true;
         }
         tracing::warn!(index, count, "ignoring out-of-range LED row geometry report");
-        false
+        return false
     }
 }
 
@@ -145,10 +145,10 @@ fn measured_rows(controls: &[Option<ControlGeometry>]) -> Option<Vec<RowGeometry
         return None;
     }
     measured.sort_by(|left, right| {
-        left.y
+        return left.y
             .partial_cmp(&right.y)
             .unwrap_or(Ordering::Equal)
-            .then_with(|| left.x.partial_cmp(&right.x).unwrap_or(Ordering::Equal))
+            .then_with(|| return left.x.partial_cmp(&right.x).unwrap_or(Ordering::Equal))
     });
     let rows = measured.into_iter().fold(Vec::<RowGeometry>::new(), |mut rows, control| {
         if let Some(row) = rows.last_mut()
@@ -163,9 +163,9 @@ fn measured_rows(controls: &[Option<ControlGeometry>]) -> Option<Vec<RowGeometry
             left: control.x,
             right: control.x + control.width,
         });
-        rows
+        return rows
     });
-    Some(rows)
+    return Some(rows)
 }
 
 /// Builds row-edge ownership only after every cap reports.
@@ -175,21 +175,21 @@ fn completed_update(controls: &[Option<ControlGeometry>]) -> Option<RowUpdate> {
     let starts = measured
         .iter()
         .map(|control| {
-            rows.iter().any(|row| {
-                (row.y - control.y).abs() <= ROW_EPSILON && (row.left - control.x).abs() <= ROW_EPSILON
+            return rows.iter().any(|row| {
+                return (row.y - control.y).abs() <= ROW_EPSILON && (row.left - control.x).abs() <= ROW_EPSILON
             })
         })
         .collect();
     let ends = measured
         .iter()
         .map(|control| {
-            rows.iter().any(|row| {
-                (row.y - control.y).abs() <= ROW_EPSILON
+            return rows.iter().any(|row| {
+                return (row.y - control.y).abs() <= ROW_EPSILON
                     && (row.right - control.x - control.width).abs() <= ROW_EPSILON
             })
         })
         .collect();
-    Some(RowUpdate { starts, ends })
+    return Some(RowUpdate { starts, ends })
 }
 
 /// Writes complete row ownership or clears it for an empty generation.
@@ -221,7 +221,7 @@ pub(crate) fn apply(app: &AppWindow) {
         if count == 0 && let Some(app) = begin_weak.upgrade() {
             update_global(&app.global::<LedRowGeometry>(), None);
         }
-        generation
+        return generation
     });
     let report_weak = app.as_weak();
     global.on_report(move |generation, index, count, x, y, width| {

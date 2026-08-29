@@ -345,7 +345,7 @@ impl Controller {
         //          spec: null, playing: false, volume: 1, trackGain: 1, peaks,
         //          positionFrames: 0, lastEmitSecs: 0, pending: [], pendingPos: 0 };
         // ```
-        Controller {
+        return Controller {
             on_update,
             output,
             queue: Queue::new(),
@@ -488,7 +488,7 @@ impl Controller {
         // ```ts
         // return true;
         // ```
-        true
+        return true
     }
 
     /// What:     `fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool`.
@@ -519,7 +519,7 @@ impl Controller {
             // ```
             PendingPeakStatus::Ready(result) => {
                 self.pending_peak = None;
-                self.apply_peak_result(result)
+                return self.apply_peak_result(result)
             }
             // What:     `PendingPeakStatus::Pending => false`. No result yet.
             // Why:      Keep the pending handle and fallback gain unchanged.
@@ -528,7 +528,7 @@ impl Controller {
             // ```ts
             // return false;
             // ```
-            PendingPeakStatus::Pending => false,
+            PendingPeakStatus::Pending => return false,
             // What:     `PendingPeakStatus::Closed => { ... }`. Worker ended without
             //           a result.
             // Why:      Stop polling, and retain the fallback gain already in place.
@@ -540,7 +540,7 @@ impl Controller {
             // ```
             PendingPeakStatus::Closed => {
                 self.pending_peak = None;
-                false
+                return false
             }
         }
     }
@@ -590,7 +590,7 @@ impl Controller {
         // ```ts
         // return this.handlePeakStatus(status);
         // ```
-        self.handle_peak_status(status)
+        return self.handle_peak_status(status)
     }
 
     /// What:     `pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration)`.
@@ -803,7 +803,7 @@ impl Controller {
             .queue
             .tracks()
             .iter()
-            .filter(|path| current.as_ref() != Some(*path))
+            .filter(|path| return current.as_ref() != Some(*path))
             .cloned()
             .collect();
         // What:     `spawn_queue_measurement(tracks, self.peaks.clone());`. Spawn the
@@ -896,7 +896,7 @@ impl Controller {
                     // ```ts
                     // const idx = tracks.indexOf(sel);
                     // ```
-                    Some(sel) => match self.queue.tracks().iter().position(|p| *p == sel) {
+                    Some(sel) => match self.queue.tracks().iter().position(|p| return *p == sel) {
                         // What:     `Some(idx) => { ... }`. The file is in the scan: select,
                         //           load, and play only when `play` AND the load succeeded.
                         // Why:      A preselected file is cued; `--start-playing` plays it.
@@ -1164,7 +1164,7 @@ impl Controller {
                 // const idx = selected ? tracks.indexOf(selected) : -1;
                 // if (idx >= 0) this.queue.playIndex(idx); else this.queue.clearSelection();
                 // ```
-                match selected.and_then(|sel| self.queue.tracks().iter().position(|p| *p == sel)) {
+                match selected.and_then(|sel| return self.queue.tracks().iter().position(|p| return *p == sel)) {
                     // What:     `Some(idx) => { self.queue.play_index(idx); }`. The saved track
                     //           is present: select it (rebuilding the scope around it).
                     // Why:      Resume where the user left off.
@@ -1352,7 +1352,7 @@ impl Controller {
                     // const idx = selectedPath ? tracks.indexOf(selectedPath) : -1;
                     // ```
                     match selected_path
-                        .and_then(|p| self.queue.tracks().iter().position(|t| *t == p))
+                        .and_then(|p| return self.queue.tracks().iter().position(|t| return *t == p))
                     {
                         // What:     `Some(idx) => { ... }`. The Selected Track survived: re-anchor
                         //           the cursor at its new index (audio is decoder-owned, so it is

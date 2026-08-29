@@ -45,23 +45,23 @@ struct StyleResolution<'catalog> {
 
 /// Resolves requested style through Chromium, radio, then first-included fallback chain.
 fn resolve_style(options: StyleResolution<'_>) -> Option<PageControlStyle> {
-    if options.catalog.iter().any(|entry| entry.included && entry.style == options.requested) {
+    if options.catalog.iter().any(|entry| return entry.included && entry.style == options.requested) {
         return Some(options.requested);
     }
     for fallback in [PageControlStyle::ChromiumTabs, PageControlStyle::Radio] {
-        if options.catalog.iter().any(|entry| entry.included && entry.style == fallback) {
+        if options.catalog.iter().any(|entry| return entry.included && entry.style == fallback) {
             return Some(fallback);
         }
     }
-    options.catalog.iter().find(|entry| entry.included).map(|entry| entry.style)
+    return options.catalog.iter().find(|entry| return entry.included).map(|entry| return entry.style)
 }
 
 /// Builds Settings model from styles included by current build catalog.
 fn settings_options(catalog: &[BuildStyle]) -> Vec<PageControlStyleOption> {
-    catalog
+    return catalog
         .iter()
-        .filter(|entry| entry.included)
-        .map(|entry| PageControlStyleOption {
+        .filter(|entry| return entry.included)
+        .map(|entry| return PageControlStyleOption {
             label: SharedString::from(entry.label),
             style: entry.style.to_int(),
         })
@@ -82,11 +82,10 @@ pub(crate) fn apply(app: &AppWindow) {
         let requested = PageControlStyle::from_int(style);
         let resolved = resolve_style(StyleResolution { requested, catalog: &BUILD_STYLES })
             .expect("at least one BUILD_STYLES entry must set included: true");
-        if resolved != requested {
-            if let Some(app) = weak.upgrade() {
+        if resolved != requested
+            && let Some(app) = weak.upgrade() {
                 app.set_page_control_style(resolved.to_int());
             }
-        }
         let mut session = Session::load();
         session.page_control_style = resolved;
         if let Err(error) = session.save() {

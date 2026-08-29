@@ -123,7 +123,7 @@ pub(crate) fn config_dir() -> Option<PathBuf> {
     // ```ts
     // const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
     // ```
-    directories::ProjectDirs::from(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION)
+    return directories::ProjectDirs::from(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION)
         // What:     `.map(|dirs| dirs.config_dir().to_path_buf())`. Runs only on `Some`.
         //           `dirs.config_dir()` borrows a `&Path` from the temporary `dirs`, so
         //           `.to_path_buf()` copies it into an owned `PathBuf` before `dirs`
@@ -134,7 +134,7 @@ pub(crate) fn config_dir() -> Option<PathBuf> {
         // ```ts
         // return dirs ? dirs.configDir : null;
         // ```
-        .map(|dirs| dirs.config_dir().to_path_buf())
+        .map(|dirs| return dirs.config_dir().to_path_buf())
 }
 
 /// What:     `#[cfg(test)] #[path = "identity_tests.rs"] mod tests;`. Declare the

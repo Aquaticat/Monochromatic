@@ -202,9 +202,9 @@ impl OpusSource {
         let audio_params = track
             .codec_params
             .as_ref()
-            .and_then(|cp| cp.audio())
+            .and_then(|cp| return cp.audio())
             .ok_or_else(|| {
-                PlayerError::Unsupported("opus: no audio codec parameters".to_string())
+                return PlayerError::Unsupported("opus: no audio codec parameters".to_string())
             })?;
 
         // What:     `let channels = match &audio_params.channels { ... };`. Pattern-match
@@ -372,7 +372,7 @@ impl OpusSource {
         // ```ts
         // return new OpusSource(format, decoder, trackId, channels, spec, scratch, preSkip);
         // ```
-        Ok(OpusSource {
+        return Ok(OpusSource {
             format,
             decoder,
             track_id,
@@ -409,7 +409,7 @@ impl Source for OpusSource {
         // ```ts
         // return this.spec;
         // ```
-        self.spec
+        return self.spec
     }
 
     /// What:     `fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError>`. Pulls the next
@@ -640,6 +640,6 @@ impl Source for OpusSource {
         // ```ts
         // return;
         // ```
-        Ok(())
+        return Ok(())
     }
 }

@@ -218,7 +218,7 @@ fn letter_key(name: &str) -> (u8, String) {
         // if (/[a-z]/i.test(c)) return [LETTER_GROUP, c.toUpperCase()];
         // ```
         Some(c) if c.is_ascii_alphabetic() => {
-            (LETTER_GROUP, c.to_ascii_uppercase().to_string())
+            return (LETTER_GROUP, c.to_ascii_uppercase().to_string())
         }
         // What:     `_ => (CATCH_ALL_GROUP, CATCH_ALL_LABEL.to_string())`. The wildcard `_`
         //           matches everything else: a digit, symbol, CJK or accented/non-English
@@ -230,7 +230,7 @@ fn letter_key(name: &str) -> (u8, String) {
         // ```ts
         // return [CATCH_ALL_GROUP, CATCH_ALL_LABEL];
         // ```
-        _ => (CATCH_ALL_GROUP, CATCH_ALL_LABEL.to_string()),
+        _ => return (CATCH_ALL_GROUP, CATCH_ALL_LABEL.to_string()),
     }
 }
 
@@ -268,7 +268,7 @@ fn page_key(name: &str) -> (u8, String) {
         // ```ts
         // if (slash >= 0) return [FOLDER_GROUP, name.slice(0, slash)];
         // ```
-        Some(slash) => (FOLDER_GROUP, name[..slash].to_string()),
+        Some(slash) => return (FOLDER_GROUP, name[..slash].to_string()),
         // What:     `None => letter_key(name)`. No folder: fall back to the first-letter
         //           bucket.
         // Why:      Root-level tracks paginate by letter.
@@ -277,7 +277,7 @@ fn page_key(name: &str) -> (u8, String) {
         // ```ts
         // return letterKey(name);
         // ```
-        None => letter_key(name),
+        None => return letter_key(name),
     }
 }
 
@@ -306,7 +306,7 @@ fn sort_key(label: &str) -> String {
     // ```ts
     // return label.toUpperCase();
     // ```
-    label.to_uppercase()
+    return label.to_uppercase()
 }
 
 /// What:     `pub fn paginate(names: &[String]) -> Vec<Page>`. Group the display strings
@@ -419,9 +419,9 @@ pub fn paginate(names: &[String]) -> Vec<Page> {
     // ```ts
     // return [...groups].map(([[, , label], entries]) => ({ label, entries }));
     // ```
-    groups
+    return groups
         .into_iter()
-        .map(|((_, _, label), entries)| Page { label, entries })
+        .map(|((_, _, label), entries)| return Page { label, entries })
         .collect()
 }
 
@@ -453,9 +453,9 @@ pub fn page_of_index(pages: &[Page], index: usize) -> Option<usize> {
     // const p = pages.findIndex((page) => page.entries.some((e) => e.index === index));
     // return p < 0 ? null : p;
     // ```
-    pages
+    return pages
         .iter()
-        .position(|page| page.entries.iter().any(|entry| entry.index == index))
+        .position(|page| return page.entries.iter().any(|entry| return entry.index == index))
 }
 
 /// What:     `pub fn row_display<'a>(label: &str, name: &'a str) -> &'a str`. Given a page's
@@ -504,7 +504,7 @@ pub fn row_display<'a>(label: &str, name: &'a str) -> &'a str {
         // ```ts
         // return rest !== undefined && rest.startsWith("/") ? rest.slice(1) : name;
         // ```
-        Some(rest) => rest.strip_prefix('/').unwrap_or(name),
+        Some(rest) => return rest.strip_prefix('/').unwrap_or(name),
         // What:     `None => name`. `name` did not start with `label` at all (e.g. the `#`
         //           catch-all label against `#tag.flac` once `#` is stripped there is no `/`,
         //           but a name like `élan.flac` under `#` never matched `#` to begin with).
@@ -515,7 +515,7 @@ pub fn row_display<'a>(label: &str, name: &'a str) -> &'a str {
         // ```ts
         // return name;
         // ```
-        None => name,
+        None => return name,
     }
 }
 

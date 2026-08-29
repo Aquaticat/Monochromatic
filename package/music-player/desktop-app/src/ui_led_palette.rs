@@ -40,14 +40,14 @@ pub(crate) fn mix_with_neutral(options: OklchNeutralMix) -> Color {
     let lightness =
         source.lightness + (options.neutral_lightness - source.lightness) * lightness_fraction;
     let chroma = source.chroma * (1.0 - chroma_fraction);
-    Color::from_oklch(lightness, chroma, source.hue, source.alpha)
+    return Color::from_oklch(lightness, chroma, source.hue, source.alpha)
 }
 
 /// Replaces alpha after converting pigment to OKLCH coordinates.
 #[must_use]
 pub(crate) fn with_alpha(options: OklchAlpha) -> Color {
     let source = options.color.to_oklch();
-    Color::from_oklch(
+    return Color::from_oklch(
         source.lightness,
         source.chroma,
         source.hue,
@@ -59,14 +59,14 @@ pub(crate) fn with_alpha(options: OklchAlpha) -> Color {
 pub(crate) fn apply(app: &AppWindow) {
     let adapter = app.global::<LedPaletteAdapter>();
     adapter.on_mix_neutral(|color, neutral_lightness, lightness_fraction, chroma_fraction| {
-        mix_with_neutral(OklchNeutralMix {
+        return mix_with_neutral(OklchNeutralMix {
             color,
             neutral_lightness,
             lightness_fraction,
             chroma_fraction,
         })
     });
-    adapter.on_set_alpha(|color, alpha| with_alpha(OklchAlpha { color, alpha }));
+    adapter.on_set_alpha(|color, alpha| return with_alpha(OklchAlpha { color, alpha }));
 }
 
 /// Verifies OKLCH pigment derivation independently from rendered scene state.

@@ -342,7 +342,7 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
             // ```ts
             // return startWorker(() => runWorker(t, c, ca, k));
             // ```
-            thread::spawn(move || run_worker(tracks, cursor, cache, known))
+            return thread::spawn(move || run_worker(tracks, cursor, cache, known))
         })
         .collect();
     // What:     `for handle in handles { let _ = handle.join(); }`. Wait for every worker;
@@ -394,7 +394,7 @@ fn worker_count(track_count: usize) -> usize {
     // const cores = navigator.hardwareConcurrency ?? 1;
     // ```
     let cores = thread::available_parallelism()
-        .map(|n| n.get())
+        .map(|n| return n.get())
         .unwrap_or(1);
     // What:     `cores.min(track_count)`. Never more workers than tracks. Tail -> return.
     // Why:      Extra threads beyond the work would just exit immediately.
@@ -403,7 +403,7 @@ fn worker_count(track_count: usize) -> usize {
     // ```ts
     // return Math.min(cores, trackCount);
     // ```
-    cores.min(track_count)
+    return cores.min(track_count)
 }
 
 /// What:     `fn run_worker(tracks: Arc<[PathBuf]>, cursor: Arc<AtomicUsize>, cache: CacheHandle, known: Arc<HashSet<u64>>)`.

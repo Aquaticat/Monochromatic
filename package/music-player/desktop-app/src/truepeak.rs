@@ -117,7 +117,7 @@ impl TruePeakSource for DesktopSource {
         // ```ts
         // return { rate: spec.rate, channels: spec.channels, durationSecs: spec.durationSecs };
         // ```
-        AudioSpec {
+        return AudioSpec {
             rate: spec.rate,
             channels: spec.channels,
             duration_secs: spec.duration_secs,
@@ -142,9 +142,9 @@ impl TruePeakSource for DesktopSource {
         // ```ts
         // return mapErr(this.inner.nextChunk(), (e) => ({ kind: "decode", message: String(e) }));
         // ```
-        self.inner
+        return self.inner
             .next_chunk()
-            .map_err(|error| TruePeakError::Decode { message: error.to_string() })
+            .map_err(|error| return TruePeakError::Decode { message: error.to_string() })
     }
 
     /// What:     `fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError>`. Seek
@@ -186,9 +186,9 @@ impl TruePeakSource for DesktopSource {
         // ```ts
         // return mapErr(this.inner.seek(seconds), (e) => ({ kind: "seek", message: String(e) }));
         // ```
-        self.inner
+        return self.inner
             .seek(seconds)
-            .map_err(|error| TruePeakError::Seek { message: error.to_string() })
+            .map_err(|error| return TruePeakError::Seek { message: error.to_string() })
     }
 }
 
@@ -211,7 +211,7 @@ fn open_adapter(path: &Path) -> Result<DesktopSource, TruePeakError> {
     // const inner = decode.open(path);
     // ```
     let inner =
-        decode::open(path).map_err(|error| TruePeakError::Decode { message: error.to_string() })?;
+        decode::open(path).map_err(|error| return TruePeakError::Decode { message: error.to_string() })?;
     // What:     `Ok(DesktopSource { inner })`. Wrap it. Tail -> return.
     // Why:      Hand back the adapter the resolver drives.
     //
@@ -219,7 +219,7 @@ fn open_adapter(path: &Path) -> Result<DesktopSource, TruePeakError> {
     // ```ts
     // return new DesktopSource(inner);
     // ```
-    Ok(DesktopSource { inner })
+    return Ok(DesktopSource { inner })
 }
 
 /// What:     `pub(crate) fn resolve_current(path: &Path) -> Result<Decision, TruePeakError>`.
@@ -263,7 +263,7 @@ pub(crate) fn resolve_current(path: &Path) -> Result<Decision, TruePeakError> {
     // ```ts
     // return resolveDecisionFor(policy, source, provenance, bones);
     // ```
-    resolve_decision_for(&policy, &mut source, provenance, bones.as_deref())
+    return resolve_decision_for(&policy, &mut source, provenance, bones.as_deref())
 }
 
 /// What:     `pub(crate) fn resolve_full(path: &Path) -> Result<Decision, TruePeakError>`.
@@ -294,7 +294,7 @@ pub(crate) fn resolve_full(path: &Path) -> Result<Decision, TruePeakError> {
     // ```ts
     // return resolveFullScan(defaultPolicy(), source);
     // ```
-    resolve_full_scan(&default_policy(), &mut source)
+    return resolve_full_scan(&default_policy(), &mut source)
 }
 
 /// What:     `#[cfg(test)] #[path = "truepeak_tests.rs"] mod tests;` declares a test-only

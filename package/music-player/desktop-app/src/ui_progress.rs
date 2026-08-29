@@ -108,7 +108,7 @@ fn progress_fraction(app: &AppWindow) -> f64 {
         // ```ts
         // return app.position / duration;
         // ```
-        f64::from(app.get_position() / duration)
+        return f64::from(app.get_position() / duration)
     } else {
         // What:     `0.0`. The fallback fraction for absent or zero-length media. Tail of
         //           this branch.
@@ -118,7 +118,7 @@ fn progress_fraction(app: &AppWindow) -> f64 {
         // ```ts
         // return 0;
         // ```
-        0.0
+        return 0.0
     }
 }
 
@@ -222,7 +222,7 @@ fn should_surface_progress(
     // ```ts
     // return debouncer.shouldSurface(elapsed, kind);
     // ```
-    debouncer.should_surface(elapsed, kind)
+    return debouncer.should_surface(elapsed, kind)
 }
 
 /// What:     `pub(crate) fn apply_update_with_progress_debounce(app: &AppWindow, launcher: &Launcher, progress_debouncer: &Mutex<ProgressDebouncer>, elapsed: Duration, update: Update)`.

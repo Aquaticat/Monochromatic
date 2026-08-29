@@ -234,7 +234,7 @@ impl PendingPeakMeasurement {
         // ```ts
         // return { receiver };
         // ```
-        PendingPeakMeasurement { receiver }
+        return PendingPeakMeasurement { receiver }
     }
 
     /// What:     `pub(crate) fn try_result(&self) -> PendingPeakStatus`. Poll once
@@ -264,7 +264,7 @@ impl PendingPeakMeasurement {
             // ```ts
             // return { kind: "ready", result };
             // ```
-            Ok(result) => PendingPeakStatus::Ready(result),
+            Ok(result) => return PendingPeakStatus::Ready(result),
             // What:     `Err(TryRecvError::Empty) => PendingPeakStatus::Pending`.
             //           The worker has not sent yet.
             // Why:      Keep the fallback active and poll later.
@@ -273,7 +273,7 @@ impl PendingPeakMeasurement {
             // ```ts
             // return { kind: "pending" };
             // ```
-            Err(TryRecvError::Empty) => PendingPeakStatus::Pending,
+            Err(TryRecvError::Empty) => return PendingPeakStatus::Pending,
             // What:     `Err(TryRecvError::Disconnected) => PendingPeakStatus::Closed`.
             //           The sender disappeared without a value.
             // Why:      Measurement failed, so there is nothing left to wait for.
@@ -282,7 +282,7 @@ impl PendingPeakMeasurement {
             // ```ts
             // return { kind: "closed" };
             // ```
-            Err(TryRecvError::Disconnected) => PendingPeakStatus::Closed,
+            Err(TryRecvError::Disconnected) => return PendingPeakStatus::Closed,
         }
     }
 
@@ -313,7 +313,7 @@ impl PendingPeakMeasurement {
             // ```ts
             // return { kind: "ready", result };
             // ```
-            Ok(result) => PendingPeakStatus::Ready(result),
+            Ok(result) => return PendingPeakStatus::Ready(result),
             // What:     `Err(RecvTimeoutError::Timeout) => PendingPeakStatus::Pending`.
             //           The one-second window expired.
             // Why:      Start with fallback now and keep polling for the later swap.
@@ -322,7 +322,7 @@ impl PendingPeakMeasurement {
             // ```ts
             // return { kind: "pending" };
             // ```
-            Err(RecvTimeoutError::Timeout) => PendingPeakStatus::Pending,
+            Err(RecvTimeoutError::Timeout) => return PendingPeakStatus::Pending,
             // What:     `Err(RecvTimeoutError::Disconnected) => PendingPeakStatus::Closed`.
             //           The worker ended without sending a result.
             // Why:      Clear the pending handle and keep the fallback gain.
@@ -331,7 +331,7 @@ impl PendingPeakMeasurement {
             // ```ts
             // return { kind: "closed" };
             // ```
-            Err(RecvTimeoutError::Disconnected) => PendingPeakStatus::Closed,
+            Err(RecvTimeoutError::Disconnected) => return PendingPeakStatus::Closed,
         }
     }
 }
@@ -409,7 +409,7 @@ pub(crate) fn peak_swap_wait() -> Duration {
     // ```ts
     // return PEAK_SWAP_WAIT_SECS * 1000;
     // ```
-    Duration::from_secs(PEAK_SWAP_WAIT_SECS)
+    return Duration::from_secs(PEAK_SWAP_WAIT_SECS)
 }
 
 /// What:     `pub(crate) fn fallback_track_gain() -> f32`. Return the temporary
@@ -430,7 +430,7 @@ pub(crate) fn fallback_track_gain() -> f32 {
     // ```ts
     // return normalizationGain(1);
     // ```
-    normalization_gain(1.0)
+    return normalization_gain(1.0)
 }
 
 /// What:     `pub(crate) fn cached_track_gain(path: &Path, cache: &CacheHandle) -> Option<f32>`.
@@ -469,7 +469,7 @@ pub(crate) fn cached_track_gain(path: &Path, cache: &CacheHandle) -> Option<f32>
     // ```ts
     // return decision.gain;
     // ```
-    Some(decision.gain)
+    return Some(decision.gain)
 }
 
 /// What:     `pub(crate) fn prepare_track_gain(...) -> TrackGainResolution`. Prepare
@@ -542,7 +542,7 @@ pub(crate) fn prepare_track_gain(
     // ```ts
     // return { kind: "pending", pending };
     // ```
-    TrackGainResolution::Pending(pending)
+    return TrackGainResolution::Pending(pending)
 }
 
 /// What:     `fn spawn_current_track_measurement(...) -> PendingPeakMeasurement`. Spawn
@@ -621,7 +621,7 @@ fn spawn_current_track_measurement(
     // ```ts
     // return PendingPeakMeasurement.fromReceiver(receiver);
     // ```
-    PendingPeakMeasurement::from_receiver(receiver)
+    return PendingPeakMeasurement::from_receiver(receiver)
 }
 
 /// What:     `fn measure_and_store_gain(...) -> Option<f32>`. Resolve the current track's
@@ -676,7 +676,7 @@ fn measure_and_store_gain(
     // ```ts
     // return decision.gain;
     // ```
-    Some(decision.gain)
+    return Some(decision.gain)
 }
 
 /// What:     `#[cfg(test)] #[path = "peak_swap_tests.rs"] mod tests;` declares a

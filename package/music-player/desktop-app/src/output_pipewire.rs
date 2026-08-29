@@ -412,7 +412,7 @@ impl Output {
             // ```ts
             // // throws new PlayerError.Audio(`thread loop: ${e}`) on failure
             // ```
-            .map_err(|e| PlayerError::Audio(format!("thread loop: {e:?}")))?;
+            .map_err(|e| return PlayerError::Audio(format!("thread loop: {e:?}")))?;
 
         // What:     `let context = ContextRc::new(&thread_loop, None).map_err(...)?`.
         //           `ContextRc::new` takes a reference to anything loop-like
@@ -425,7 +425,7 @@ impl Output {
         // const context = new Context(threadLoop);
         // ```
         let context = ContextRc::new(&thread_loop, None)
-            .map_err(|e| PlayerError::Audio(format!("context: {e:?}")))?;
+            .map_err(|e| return PlayerError::Audio(format!("context: {e:?}")))?;
 
         // What:     `let core = context.connect_rc(None).map_err(...)?`. `connect_rc` opens
         //           the session; `None` = default connection properties.
@@ -437,7 +437,7 @@ impl Output {
         // ```
         let core = context
             .connect_rc(None)
-            .map_err(|e| PlayerError::Audio(format!("core connect: {e:?}")))?;
+            .map_err(|e| return PlayerError::Audio(format!("core connect: {e:?}")))?;
 
         // What:     `thread_loop.start();`. Spawns the loop's OS thread and begins
         //           processing. After this, callbacks can fire on that thread.
@@ -470,7 +470,7 @@ impl Output {
         // ```ts
         // return new Output(null, null, core, context, threadLoop, playing, worker);
         // ```
-        Ok(Output {
+        return Ok(Output {
             listener: None,
             stream: None,
             core,
@@ -615,7 +615,7 @@ impl Output {
                 *pw::keys::MEDIA_ROLE => "Music",
             },
         )
-        .map_err(|e| PlayerError::Audio(format!("stream new: {e:?}")))?;
+        .map_err(|e| return PlayerError::Audio(format!("stream new: {e:?}")))?;
 
         // What:     `let listener = stream.add_local_listener_with_user_data(process_data).process(|stream, pd| { ... }).register().map_err(...)?`.
         //           Attach our state as the callback's user data, set the `process`
@@ -955,7 +955,7 @@ impl Output {
             // .register()
             // ```
             .register()
-            .map_err(|e| PlayerError::Audio(format!("listener: {e:?}")))?;
+            .map_err(|e| return PlayerError::Audio(format!("listener: {e:?}")))?;
 
         // What:     `let mut info = AudioInfoRaw::new();`. Build the format descriptor. `mut`
         //           because we set fields next.
@@ -1041,7 +1041,7 @@ impl Output {
                 properties: info.into(),
             }),
         )
-        .map_err(|e| PlayerError::Audio(format!("pod serialize: {e:?}")))?
+        .map_err(|e| return PlayerError::Audio(format!("pod serialize: {e:?}")))?
         .0
         .into_inner();
 
@@ -1055,7 +1055,7 @@ impl Output {
         // const pod = Pod.fromBytes(values); if (!pod) throw new PlayerError("invalid format pod");
         // ```
         let pod = Pod::from_bytes(&values)
-            .ok_or_else(|| PlayerError::Audio("invalid format pod".to_string()))?;
+            .ok_or_else(|| return PlayerError::Audio("invalid format pod".to_string()))?;
 
         // What:     `let mut params = [pod];`. A fixed array of one pod reference; `mut`
         //           because `connect` takes `&mut [&Pod]`.
@@ -1086,7 +1086,7 @@ impl Output {
                 StreamFlags::AUTOCONNECT | StreamFlags::MAP_BUFFERS | StreamFlags::RT_PROCESS,
                 &mut params,
             )
-            .map_err(|e| PlayerError::Audio(format!("connect: {e:?}")))?;
+            .map_err(|e| return PlayerError::Audio(format!("connect: {e:?}")))?;
 
         // What:     `self.stream = Some(stream);`. Store the new stream (moves it into the
         //           struct; the C object it points to stays put, so the listener's pointer
@@ -1126,7 +1126,7 @@ impl Output {
         // ```ts
         // return producer;
         // ```
-        Ok(producer)
+        return Ok(producer)
     }
 
     /// What:     `pub fn set_playing(&self, on: bool)`. Flip the shared pause/play flag.

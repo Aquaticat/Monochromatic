@@ -183,7 +183,7 @@ impl Queue {
             // ```ts
             // // ...mapped to a 64-bit number
             // ```
-            .map(|d| d.as_nanos() as u64)
+            .map(|d| return d.as_nanos() as u64)
             // What:     `.unwrap_or(0x9e3779b97f4a7c15)` extracts the Ok number, or
             //           substitutes this constant (a well-known mixing constant) if the
             //           clock was weird. `_or` DROPS the error.
@@ -202,7 +202,7 @@ impl Queue {
         // ```ts
         // return Queue.withRngSeed(seed);
         // ```
-        Queue::with_rng_seed(seed)
+        return Queue::with_rng_seed(seed)
     }
 
     /// What:     `pub fn with_rng_seed(seed: u64) -> Queue` builds a queue with a
@@ -225,7 +225,7 @@ impl Queue {
         // return { tracks: [], order: [], pos: null, shuffle: "off",
         //          repeatTrack: false, rngState: seed === 0n ? 1n : seed };
         // ```
-        Queue {
+        return Queue {
             tracks: Vec::new(),
             order: Vec::new(),
             pos: None,
@@ -316,7 +316,7 @@ impl Queue {
         // ```ts
         // return x;
         // ```
-        x
+        return x
     }
 
     /// Number of tracks in the queue.
@@ -337,7 +337,7 @@ impl Queue {
         // ```ts
         // return this.tracks.length;
         // ```
-        self.tracks.len()
+        return self.tracks.len()
     }
 
     /// Tracks in load order (as opened), regardless of shuffle.
@@ -359,7 +359,7 @@ impl Queue {
         // ```ts
         // return this.tracks;
         // ```
-        &self.tracks
+        return &self.tracks
     }
 
     /// Whether the queue has no tracks.
@@ -378,7 +378,7 @@ impl Queue {
         // ```ts
         // return this.tracks.length === 0;
         // ```
-        self.tracks.is_empty()
+        return self.tracks.is_empty()
     }
 
     /// Current completion and transport mode.
@@ -391,7 +391,7 @@ impl Queue {
     // ```
     pub fn playback_mode(&self) -> PlaybackMode {
         // Return the same enum value used by navigation and persistence.
-        self.mode
+        return self.mode
     }
 
     /// What:     `pub fn display_paths(&self) -> Vec<String>` returns owned display strings
@@ -417,7 +417,7 @@ impl Queue {
         // ```ts
         // return relativeDisplayPaths(this.tracks);
         // ```
-        crate::relpath::relative_display_paths(&self.tracks)
+        return crate::relpath::relative_display_paths(&self.tracks)
     }
 
     /// What:     `pub fn current_index(&self) -> Option<usize>` returns the LOAD-ORDER index
@@ -440,7 +440,7 @@ impl Queue {
         // ```ts
         // return this.pos === null ? null : this.order[this.pos];
         // ```
-        self.pos.map(|p| self.order[p])
+        return self.pos.map(|p| return self.order[p])
     }
 
     /// What:     `pub fn current_path(&self) -> Option<&PathBuf>` returns a BORROWED
@@ -465,7 +465,7 @@ impl Queue {
         // ```ts
         // const i = this.currentIndex(); return i === null ? null : this.tracks[i];
         // ```
-        self.current_index().map(|i| &self.tracks[i])
+        return self.current_index().map(|i| return &self.tracks[i])
     }
 
     /// What:     `pub fn set_tracks(&mut self, tracks: Vec<PathBuf>)`. The parameter is taken
@@ -632,7 +632,7 @@ impl Queue {
             // ```ts
             // return pages[p].entries.map((e) => e.index);
             // ```
-            Some(p) => pages[p].entries.iter().map(|e| e.index).collect(),
+            Some(p) => return pages[p].entries.iter().map(|e| return e.index).collect(),
             // What:     `None => (0..self.tracks.len()).collect()`. The anchor was not found
             //           on any page (only happens for an empty/invalid anchor); fall back to
             //           the whole queue.
@@ -642,7 +642,7 @@ impl Queue {
             // ```ts
             // return [...Array(this.tracks.length).keys()];
             // ```
-            None => (0..self.tracks.len()).collect(),
+            None => return (0..self.tracks.len()).collect(),
         }
     }
 
@@ -697,7 +697,7 @@ impl Queue {
         // let remaining = scope.filter((i) => !played.has(i));
         // ```
         let mut remaining: Vec<usize> =
-            scope.iter().copied().filter(|i| !played.contains(i)).collect();
+            scope.iter().copied().filter(|i| return !played.contains(i)).collect();
         // What:     `if remaining.is_empty() { ... }`. Cycle exhausted: begin a new one.
         // Why:      Without replacement means a full cycle covers the whole scope; then reshuffle.
         //
@@ -723,7 +723,7 @@ impl Queue {
             // ```ts
             // remaining = scope.filter((i) => i !== current);
             // ```
-            remaining = scope.iter().copied().filter(|&i| i != current).collect();
+            remaining = scope.iter().copied().filter(|&i| return i != current).collect();
             // What:     `if remaining.is_empty() { remaining = scope; }`. A single-track scope
             //           has nothing else; replay it.
             // Why:      Avoid an empty candidate list when the scope is one track.
@@ -752,7 +752,7 @@ impl Queue {
         // ```ts
         // return remaining[j];
         // ```
-        remaining[j]
+        return remaining[j]
     }
 
     /// What:     `fn rebuild_scope_order(&mut self, anchor: Option<usize>)`. Recompute the
@@ -864,7 +864,7 @@ impl Queue {
             // ```ts
             // const p = scope.indexOf(anchor);
             // ```
-            let pos = scope.iter().position(|&x| x == anchor);
+            let pos = scope.iter().position(|&x| return x == anchor);
             // What:     `self.order = scope; self.pos = pos.or(Some(0));`. Adopt the sequential
             //           order and point the cursor at the anchor (or the start).
             // Why:      Off's `order` is the full scope, walked sequentially with looping.
@@ -957,7 +957,7 @@ impl Queue {
     pub fn set_page_scope(&mut self, indices: Vec<usize>) {
         let valid: Vec<usize> = indices
             .into_iter()
-            .filter(|index| *index < self.tracks.len())
+            .filter(|index| return *index < self.tracks.len())
             .collect();
         if valid == self.page_scope {
             return;
@@ -1000,7 +1000,7 @@ impl Queue {
             let names = self.display_paths();
             let pages = crate::pagination::paginate(&names);
             self.page_scope = match crate::pagination::page_of_index(&pages, track) {
-                Some(page) => pages[page].entries.iter().map(|entry| entry.index).collect(),
+                Some(page) => pages[page].entries.iter().map(|entry| return entry.index).collect(),
                 None => (0..self.tracks.len()).collect(),
             };
         }
@@ -1028,7 +1028,7 @@ impl Queue {
             // ```ts
             // const p = this.order.indexOf(track);
             // ```
-            match self.order.iter().position(|&x| x == track) {
+            match self.order.iter().position(|&x| return x == track) {
                 // What:     `Some(p) => self.pos = Some(p)`. Already in scope: move the cursor.
                 // Why:      Clicking another track on the same page keeps the scope intact.
                 //
@@ -1066,7 +1066,7 @@ impl Queue {
         // ```ts
         // return track;
         // ```
-        Some(track)
+        return Some(track)
     }
 
     /// Restores a relocated selected track without replacing the displayed-page scope.
@@ -1231,7 +1231,7 @@ impl Queue {
         // ```ts
         // return this.order[0];
         // ```
-        Some(self.order[self.sequential_start])
+        return Some(self.order[self.sequential_start])
     }
 
     /// What:     `pub fn prev(&mut self) -> Option<usize>` steps backward. In `Off` it walks the
@@ -1350,7 +1350,7 @@ impl Queue {
         // ```ts
         // return this.order[last];
         // ```
-        Some(self.order[last])
+        return Some(self.order[last])
     }
 }
 
@@ -1378,7 +1378,7 @@ impl Default for Queue {
         // ```ts
         // return Queue.new();
         // ```
-        Queue::new()
+        return Queue::new()
     }
 }
 

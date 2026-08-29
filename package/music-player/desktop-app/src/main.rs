@@ -357,7 +357,7 @@ pub(crate) fn format_time(secs: f64) -> String {
     // ```ts
     // return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
     // ```
-    format!("{}:{:02}", whole / 60, whole % 60)
+    return format!("{}:{:02}", whole / 60, whole % 60)
 }
 
 /// What:     `fn refresh_page(app: &AppWindow, target: PageNav)`. Rebuild the
@@ -389,7 +389,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // ```ts
     // const names: string[] = [...app.queue];
     // ```
-    let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();
+    let names: Vec<String> = app.get_queue().iter().map(|s| return s.to_string()).collect();
     // What:     `let pages = pagination::paginate(&names);`. Call the module function,
     //           passing `&names` which BORROWS the vector (lends it read-only without
     //           giving up ownership). Returns the grouped pages (folder pages, then
@@ -417,7 +417,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // ```
     let labels: Vec<SharedString> = pages
         .iter()
-        .map(|page| SharedString::from(page.label.as_str()))
+        .map(|page| return SharedString::from(page.label.as_str()))
         .collect();
     // What:     `app.set_page_labels(Rc::new(VecModel::from(labels)).into());`.
     //           `VecModel::from(labels)` wraps the vector in a list model;
@@ -579,7 +579,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
         Some(page) => page
             .entries
             .iter()
-            .map(|entry| PageItem {
+            .map(|entry| return PageItem {
                 name: pagination::row_display(&page.label, &entry.name).into(),
                 index: entry.index as i32,
             })
@@ -921,7 +921,7 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     // ```ts
     // return trimmed;
     // ```
-    Some(PathBuf::from(trimmed))
+    return Some(PathBuf::from(trimmed))
 }
 
 /// What:     `#[cfg(not(unix))] fn xdg_user_dir_music() -> Option<PathBuf>`. The
@@ -978,7 +978,7 @@ fn music_dir() -> Option<PathBuf> {
     // return (process.env.XDG_MUSIC_DIR ?? userDirs()?.audioDir ?? xdgUserDirMusic())
     //   ?.let((p) => isDir(p) ? p : null) ?? null;
     // ```
-    std::env::var_os("XDG_MUSIC_DIR")
+    return std::env::var_os("XDG_MUSIC_DIR")
         // What:     `.map(PathBuf::from)`. On `Some(osStr)`, convert the `OsString`
         //           into an owned `PathBuf`; passing `PathBuf::from` (the function
         //           itself) is the closure shorthand. `None` stays `None`.
@@ -1015,8 +1015,8 @@ fn music_dir() -> Option<PathBuf> {
             // ```ts
             // userDirs()?.audioDir;
             // ```
-            directories::UserDirs::new()
-                .and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))
+            return directories::UserDirs::new()
+                .and_then(|dirs| return dirs.audio_dir().map(|p| return p.to_path_buf()))
         })
         // What:     `.or_else(xdg_user_dir_music)`. If both the env var and the
         //           user-dirs file came up empty, fall back to the `xdg-user-dir`
@@ -1039,7 +1039,7 @@ fn music_dir() -> Option<PathBuf> {
         // ```ts
         // // ?.let((p) => isDir(p) ? p : null)
         // ```
-        .filter(|p| p.is_dir())
+        .filter(|p| return p.is_dir())
 }
 
 /// What:     `fn main() -> Result<()>`. The entry point. The return type is
@@ -1136,7 +1136,7 @@ fn main() -> Result<()> {
         // const forceSoftware = (process.env.SLINT_BACKEND ?? "").includes("software");
         // ```
         let force_software = std::env::var("SLINT_BACKEND")
-            .map(|value| value.contains("software"))
+            .map(|value| return value.contains("software"))
             .unwrap_or(false);
         // What:     `if force_software { builder = builder.with_renderer_name("software"); }`.
         //           Reassign `builder` (allowed because it is `mut`) to one pinned to
@@ -1753,8 +1753,8 @@ fn main() -> Result<()> {
                 // ```
                 let root = path
                     .parent()
-                    .map(|p| p.to_path_buf())
-                    .unwrap_or_else(|| PathBuf::from("."));
+                    .map(|p| return p.to_path_buf())
+                    .unwrap_or_else(|| return PathBuf::from("."));
                 engine.send(Command::OpenRoot {
                     root,
                     select: Some(path),
@@ -1789,7 +1789,7 @@ fn main() -> Result<()> {
             // ```ts
             // const root = (session.sourceRoot && isDir(session.sourceRoot)) ? session.sourceRoot : null;
             // ```
-            let root = session.source_root.clone().filter(|r| r.is_dir());
+            let root = session.source_root.clone().filter(|r| return r.is_dir());
             // What:     `if let Some(root) = root { ... } else if let Some(music_dir) = music_dir() { ... }`.
             //           Restore the saved root with its Selected Track and position, else
             //           restore the music directory carrying the saved settings but no
@@ -1837,5 +1837,5 @@ fn main() -> Result<()> {
     // return;
     // ```
     app.run()?;
-    Ok(())
+    return Ok(())
 }

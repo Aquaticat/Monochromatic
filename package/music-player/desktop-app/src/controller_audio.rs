@@ -113,7 +113,7 @@ impl Controller {
         // const positionSecs = framesToSecs(this.positionFrames, this.spec ? this.spec.rate : 0);
         // ```
         let position_secs =
-            frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| s.rate));
+            frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| return s.rate));
         // What:     `Session::load().page_control_style` reads only the UI preference
         //           from the existing session before the playback snapshot replaces it.
         // Why:      Page style belongs to the UI rather than the audio controller, but
@@ -137,7 +137,7 @@ impl Controller {
         //          positionSecs, volume: this.volume, shuffle: this.queue.shuffleMode(),
         //          repeatTrack: this.queue.repeatTrack() };
         // ```
-        Session {
+        return Session {
             source_root: self.source_root.clone(),
             selected: self.queue.current_path().cloned(),
             position_secs,
@@ -216,7 +216,7 @@ impl Controller {
         // ```ts
         // const name = index != null ? names[index] ?? "" : "";
         // ```
-        let name = index.and_then(|i| names.get(i).cloned()).unwrap_or_default();
+        let name = index.and_then(|i| return names.get(i).cloned()).unwrap_or_default();
         // What:     `let duration = if index.is_some() { self.spec...duration_secs } else { 0.0 };`.
         //           The loaded track's duration when a track stays selected, else 0.0.
         // Why:      A cleared selection (file left the root) has no duration; otherwise the
@@ -227,7 +227,7 @@ impl Controller {
         // const duration = index != null ? this.spec?.durationSecs ?? 0 : 0;
         // ```
         let duration = if index.is_some() {
-            self.spec.as_ref().map_or(0.0, |s| s.duration_secs)
+            self.spec.as_ref().map_or(0.0, |s| return s.duration_secs)
         } else {
             0.0
         };
@@ -625,8 +625,8 @@ impl Controller {
         // const name = index != null ? this.queue.displayPaths()[index] : fileNameOf(path);
         // ```
         let name = index
-            .and_then(|i| self.queue.display_paths().into_iter().nth(i))
-            .unwrap_or_else(|| file_name_of(path));
+            .and_then(|i| return self.queue.display_paths().into_iter().nth(i))
+            .unwrap_or_else(|| return file_name_of(path));
         // What:     `self.emit(Update::NowPlaying { index, name, duration: spec.duration_secs });`.
         //           Tell the UI the new track (struct-variant literal).
         // Why:      Update the now-playing label and seek-bar maximum.
@@ -1024,7 +1024,7 @@ impl Controller {
         // ```ts
         // return true;
         // ```
-        true
+        return true
     }
 
     /// What:     `fn on_track_end(&mut self)`. Natural end of the current track: advance the
@@ -1073,7 +1073,7 @@ impl Controller {
         // ```ts
         // const channels = this.spec ? this.spec.channels : 0;
         // ```
-        let channels = self.spec.as_ref().map_or(0, |s| s.channels) as u64;
+        let channels = self.spec.as_ref().map_or(0, |s| return s.channels) as u64;
         // What:     `if channels == 0 { return; }`. Avoid divide-by-zero.
         // Why:      No valid spec yet.
         //
@@ -1100,7 +1100,7 @@ impl Controller {
         // ```ts
         // const rate = this.spec ? this.spec.rate : 0;
         // ```
-        let rate = self.spec.as_ref().map_or(0, |s| s.rate);
+        let rate = self.spec.as_ref().map_or(0, |s| return s.rate);
         // What:     `if rate == 0 { return; }`. Avoid divide-by-zero.
         // Why:      Cannot compute seconds.
         //
