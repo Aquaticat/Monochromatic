@@ -959,11 +959,14 @@ TODO | DONE
 1. Enter the disposable VM encryption passphrase twice.
     Expect Calamares to accept matching entries.
 
-1. Choose **Wayfire** as the single initial desktop.
-    Expect only **Wayfire** to remain selected.
+1. Choose **No Desktop**.
+    Expect no preinstalled desktop or window-manager package group to remain selected.
+    This keeps the validation base aligned with the intended UWSM plus labwc session.
 
-1. Select the normal CachyOS kernel rather than a real-time kernel.
-    Expect the package summary to include `linux-cachyos` and not an `-rt` kernel.
+1. If the installer presents a kernel chooser,
+    select the normal CachyOS kernel rather than a real-time kernel.
+    The pinned 260809 package page did not present a separate kernel chooser during the first VM installation,
+    so verify the installed kernel and ZFS-module pairing after boot when that page is absent.
 
 1. Create username `user` and hostname `cachyos-zfs-vm`.
     Expect the account summary to show exactly `user`.
@@ -971,8 +974,9 @@ TODO | DONE
 1. Enter the disposable user password twice.
     Expect Calamares to accept matching entries.
 
-1. Enter the ZFS passphrase again when the installer’s keyfile dialog requests it.
-    Expect the dialog to close without an error.
+1. If the installer’s keyfile dialog requests the ZFS passphrase again,
+    enter the same disposable passphrase.
+    The pinned installer reused the partition-page passphrase without displaying a second dialog in the first VM run.
 
 1. Review the installation summary without clicking **Install** yet.
     Expect the summary to erase only the 128 GiB virtual disk,
@@ -1007,12 +1011,13 @@ TODO | DONE
     which hides it until the validation phase explicitly enables it.
 
 1. Select **`default`** and press **Enter**.
-    Expect CachyOS to reach the Wayfire login or desktop without a second ZFS passphrase.
+    Expect CachyOS to reach an installed console or login path without a second ZFS passphrase.
+    Do not expect a preinstalled desktop session.
 
 ### Validate encrypted rollback in the VM
 
-1. Open a terminal in the installed VM.
-   Expect a prompt for `user@cachyos-zfs-vm`.
+1. Log in through the installed console as `user`.
+   Expect a shell prompt for `user@cachyos-zfs-vm`.
 
 1. Confirm the running root dataset:
 
@@ -2072,15 +2077,19 @@ TODO | DONE
 1. Enter the permanent ZFS passphrase twice.
     Expect matching-passphrase validation.
 
-1. Choose **Wayfire** as the single initial desktop.
-    Expect only **Wayfire** to remain selected.
+1. Choose **No Desktop**.
+    Expect no preinstalled desktop or window-manager package group to remain selected.
 
-1. Select the normal CachyOS kernel rather than a real-time kernel.
-    Expect `linux-cachyos`,
-    not an `-rt` kernel.
+1. If the installer presents a kernel chooser,
+    select the normal CachyOS kernel rather than a real-time kernel.
+    If no chooser appears,
+    continue and verify `linux-cachyos` plus its exact ZFS-module dependency after boot.
 
-1. Select desired package groups but do not add another desktop environment.
-    Expect the summary to retain only **Wayfire**.
+1. Keep the required CachyOS,
+    shell,
+    base,
+    and common package groups without adding a desktop environment.
+    Expect **No Desktop** to remain the installation choice.
 
 1. Create username `user`.
     Expect the account summary to show exactly `user`.
@@ -2100,9 +2109,9 @@ TODO | DONE
 1. Verify that the summary includes an EFI system partition,
     ZFS root,
     encryption,
-    the normal CachyOS kernel,
-    Wayfire,
+    no preinstalled desktop,
     and user `user`.
+    Verify the normal CachyOS kernel after boot if the installer did not expose a kernel chooser.
     Expect no Samsung disk and no Windows-preservation action.
 
 1. Click **Install** only when the summary matches the required layout.
@@ -2150,7 +2159,8 @@ TODO | DONE
     The physical validation phase explicitly makes the installed `baseline` selectable.
 
 1. Select **`default`** and press **Enter**.
-    Expect the installed Wayfire login or desktop without a second ZFS passphrase.
+    Expect an installed console or login path without a second ZFS passphrase.
+    Do not expect a preinstalled desktop session.
 
 ### Verify and harden the physical installation
 
@@ -2894,7 +2904,7 @@ TODO | DONE
     systemctl reboot
     ```
 
-    Expect ZFSBootMenu and then the initial Wayfire login.
+    Expect ZFSBootMenu and then the installed console or login path.
 
 1. Switch to tty2 with **Ctrl+Alt+F2**.
     Expect a text login prompt.
@@ -4141,10 +4151,10 @@ TODO | DONE
      && systemctl reboot
    ```
 
-   Expect the initial Wayfire display manager.
+   Expect the installed console or login path without automatic labwc startup.
 
 1. Keep the root-backed labwc files for diagnosis.
-   Expect them to remain available without affecting the Wayfire login.
+   Expect them to remain available without starting a graphical session.
 
 ### Return selected configuration to persistent home
 

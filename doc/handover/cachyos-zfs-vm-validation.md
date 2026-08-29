@@ -21,10 +21,12 @@ or evidence unless the user later authorizes cleanup.
 - **Installation result**:
   CachyOS Calamares displayed `All done.` and reported a successful installation.
 - **Current transition**:
-  The first ACPI shutdown request did not stop the live environment.
-  The first guest-terminal retry lost leading characters while Konsole was still opening and executed `ls poweroff`.
-  A corrected `systemctl poweroff` was then entered in the focused guest terminal.
-  The domain reached `shut off` immediately after that corrected command.
+  The first installed disk reached Ly 1.4.1 after a successful native-encryption unlock.
+  It contains Wayfire because the original runbook prescribed Wayfire as a temporary graphical base.
+  The user correctly identified **No Desktop** as closer to the intended UWSM plus labwc system.
+  The Wayfire disk is retained as installation and encrypted-boot evidence,
+  but it is no longer the target desktop-validation base.
+  Task 39 will create a separate no-desktop installation without deleting this disk.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
 - **Newly relaxed requirement**:
@@ -204,6 +206,36 @@ The current package page did not expose the kernel-choice page described by the 
 No real-time kernel was selected manually.
 Installed package verification must establish the actual kernel and exact ZFS module pairing after first boot.
 
+## Desktop-selection correction
+
+The Calamares desktop page visibly offered **No Desktop**.
+The runbook nevertheless prescribed Wayfire as a known graphical fallback,
+and that instruction was followed without reconsidering whether the fallback matched the target architecture.
+That was an error.
+
+Wayfire adds an unrelated compositor,
+its packages,
+and a preconfigured graphical login path before the intended UWSM plus labwc stack is tested.
+This weakens the consumer-boundary test because successful graphics could depend on the fallback environment.
+**No Desktop** is the correct installation choice for this migration.
+It forces the validation to prove that the intended session packages,
+services,
+portal selection,
+login flow,
+and configuration are sufficient by themselves.
+
+The first disk remains useful for:
+
+- authenticated installer execution;
+- the `/dev/vda`-only erase boundary;
+- native ZFS encryption;
+- ZFSBootMenu launch and passphrase prompt;
+- first installed boot to Ly.
+
+It is not accepted as the final UWSM plus labwc validation environment.
+A second retained disk and domain must repeat installation with **No Desktop**.
+The migration runbook was corrected before that repeat installation began.
+
 ## Reviewed destructive summary
 
 Before installation,
@@ -252,26 +284,32 @@ The command was not a `systemctl` failure.
 The corrected `systemctl poweroff` was entered only after the terminal was visibly focused.
 Process `wait-cachyos-poweroff-retry` observed `shut off` immediately and exited successfully.
 
+## Installed boot transition
+
+After the successful installer result:
+
+- the live system reached `shut off` through guest `systemctl poweroff`;
+- the authenticated ISO was ejected from persistent `hda` configuration;
+- XML inspection found no remaining ISO source path;
+- `/dev/vdb` and `/dev/vdc` remained attached as instructed;
+- the domain started successfully;
+- its VM-only display returned at `vnc://127.0.0.1:0`.
+
+ZFSBootMenu reached an 8-second automatic-boot countdown for `zroot/ROOT/default` without prior input.
+This countdown alone does not establish that encryption was bypassed:
+ZFSBootMenu can discover an encrypted environment before requesting its key during boot selection.
+The next watcher distinguished the states successfully.
+After the countdown,
+ZFSBootMenu displayed `Enter passphrase for 'zroot':`.
+No second input had been sent before that prompt appeared.
+The disposable ZFS passphrase was accepted for the continuing boot attempt.
+Boot then reached Ly 1.4.1 with the intended hostname,
+Wayfire session,
+and `user` login.
+
 ## Immediate next actions
 
-1. Confirm the domain is shut off:
-
-   ```bash
-   flatpak run \
-     --command=virsh \
-     org.virt_manager.virt-manager \
-     --connect qemu:///session \
-     domstate cachyos-zfs-validation
-   ```
-
-1. Eject the CachyOS ISO from `hda` in both live and persistent configuration.
-   Do not remove the ISO file.
-
-1. Keep `/dev/vdb` and `/dev/vdc` attached because the user prohibited cleanup.
-
-1. Start the domain and confirm that firmware launches the installed boot path.
-
-1. Enter the disposable ZFS passphrase through the VM-only helper.
+1. Enter the disposable ZFS passphrase through the VM-only helper when the unlock prompt is visible.
 
 1. Confirm whether ZFSBootMenu lists only `default` before the hidden baseline is enabled.
 
@@ -357,13 +395,16 @@ is real and recoverable.
   completed.
 - Task 36,
   install encrypted CachyOS ZFS:
-  in progress pending first installed boot.
+  completed after ZFSBootMenu unlock and installed boot reached Ly 1.4.1.
 - Task 37,
   validate rollback and desktop:
-  pending after task 36.
+  pending after task 39.
 - Task 38,
   evaluate ZFS recovery without ZFSBootMenu:
-  pending after task 36.
+  pending.
+- Task 39,
+  install no-desktop CachyOS validation:
+  in progress.
 
 ## Stop conditions
 
