@@ -403,6 +403,58 @@ each running root matched its intended dataset.
 Every temporary mount was then absent.
 This proves a supported refresh path without reusing either revoked password.
 
+### Clone-based authenticated recovery preserves the corrected boundary
+
+A separate retained recovery domain copied the patched-layout disk before testing emergency reconstruction.
+The original patched domain was shut off and its disk was not attached to the recovery domain.
+The pinned live ISO imported the copied pool with:
+
+```bash
+sudo zpool import -N -R /mnt/recovery -f zroot
+sudo zfs load-key -L prompt zroot
+```
+
+No dataset mounted during import.
+The recovery test cloned
+`zroot/ROOT/default@be-20260829-154436-pre-install`
+to the new writable root
+`zroot/ROOT/usb-recovery-20260829`.
+It did not use in-place `zfs rollback`.
+
+The mounted clone kept package files and `/var/lib/pacman` inside the same root environment.
+The persistent home dataset remained separate.
+`tree` reported 7 files with 0 altered files,
+so clone-based emergency recovery did not reintroduce the original package-database split.
+The historical clone's local credential was refreshed with `passwd --root` only after `findmnt` proved the mounted root
+identity.
+
+The live environment rebuilt the clone's installed initramfs,
+copied matching kernel and initramfs artifacts to the ESP,
+and wrote a systemd-boot entry containing:
+
+```text
+options zfs=zroot/ROOT/usb-recovery-20260829 rw
+```
+
+Pool `bootfs` named the same clone.
+The accepted recovery initramfs uses `FILES=()`,
+omits the irrelevant generic `fsck` hook,
+and contains no `/etc/zfs/keys/zroot.key`.
+Pool `keylocation=prompt` forced native-encryption authentication before direct boot.
+
+After that prompt,
+the clone reached the automatic UWSM plus labwc session.
+Final runtime checks found `/` and `/var/lib/pacman` on the recovered clone,
+home on `zroot/data/home/useruser`,
+matching command-line and `bootfs` values,
+active labwc and xwayland-satellite services,
+and successful fresh sudo authentication.
+The retained ZFSBootMenu image also booted the clone as an independent fallback.
+
+This proves that the corrected package boundary survives the accepted authenticated-media recovery path.
+It does not make a root snapshot independently bootable:
+the FAT ESP still requires matching reconstructed boot artifacts.
+
 ## What does not work
 
 ### Treating a successful boot as rollback proof

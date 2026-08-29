@@ -15,6 +15,8 @@ It then verifies:
   and pre-transaction boot environments;
 - matching CachyOS kernel and ZFS module packages;
 - rollback selection and promotion in the disposable VM;
+- authenticated-media recovery into a writable clone with matching direct boot artifacts;
+- native-encryption prompting without placing the ZFS key in an ESP initramfs;
 - a persistent home and data boundary outside root boot-environment rollback;
 - UWSM plus labwc,
   sfwbar,
@@ -32,66 +34,57 @@ The backup requirement remains mandatory.
 
 ## Current validation gate
 
-Do not execute the physical-installation sections yet.
-The disposable consumer test found that the installer mounts all of `/var/lib` from persistent
-`zroot/data/var/lib`,
-while pacman hooks snapshot only the root boot environment.
-Booting a pre-transaction environment restored root package files but left `/var/lib/pacman` at the newer state.
-`pacman -Qkk tree` then reported the rolled-back package files missing.
+The disposable consumer checks passed.
+The physical gate opens only after the commit containing this recovery record exists.
+Physical installation has not started.
+Proceed only after the backup,
+authenticated-media,
+and protected-drive isolation checks in this runbook pass on the installation day.
 
-A real-ZFS prototype corrected the boundary by keeping `zroot/data/var` and `zroot/data/var/lib` as
-namespace-only parents while preserving selected child datasets.
-A fresh retained VM then passed these checks:
-
-- the patched source remained traceable to the pinned archive through recorded archive,
-  patch,
-  and patched-file hashes;
-- the effective Calamares sequence contained every custom ZFS job;
-- native-encryption installation and ZFSBootMenu boot succeeded;
-- `/var/lib/pacman` remained inside each root environment;
-- a pacman transaction created a bootable pre-transaction environment;
-- package files and pacman database state agreed in the pre-transaction and current environments;
-- returning to default restored the package,
-  binary,
-  marker,
-  and clean package verification.
-
-The test also proved that `/etc/shadow` rolls back with root.
-Changing a compromised local password does not revoke its older hash inside retained boot environments.
-Destroy or deliberately refresh every baseline,
-known-good environment,
-and transaction clone containing that hash before treating the credential as revoked.
-Never authenticate with a credential known to be compromised merely to test an older environment.
-
-The corrected baseline and independently created known-good environment also passed encrypted menu selection,
-boot,
-and package-coherence checks.
-Baseline required both `mountpoint=/` and `org.zfsbootmenu:active=on` before it appeared.
-Known-good accepted the post-snapshot rotated password and preserved persistent home.
-Promoting known-good through pool `bootfs` survived an unattended boot,
-and restoring `bootfs=zroot/ROOT/default` returned to coherent default state.
-
-Credential revocation was rehearsed across every retained environment.
-Copying a byte-identical shadow hash with offline `usermod --root` was rejected because default still refused a fresh
-`sudo` authentication.
-Running `passwd --root` against each older environment's temporary `zfsutil` mount succeeded.
-Known-good inherited the final disposable credential when created.
-Baseline,
+The first consumer test exposed a package rollback defect:
+persistent `zroot/data/var/lib` kept newer pacman metadata while root package files rolled back.
+A real-ZFS prototype and fresh retained installation proved the correction:
+keep `zroot/data/var` and `zroot/data/var/lib` as namespace-only parents,
+with only selected child datasets persistent.
+The patched installation passed encrypted boot,
+coherent package rollback,
+baseline,
 known-good,
-default,
-and all 4 retained transaction environments passed fresh `sudo` authentication after reboot or direct selection.
-Do not substitute raw hash copying for the supported password operation.
+durable `bootfs` promotion,
+and return-to-default checks.
+See the [package rollback diagnosis][package-rollback-diagnosis].
 
-The corrected no-desktop base also passed the intended desktop boundary:
+The credential test proved `/etc/shadow` is boot-environment state.
+All retained environments received the protected final disposable credential through supported `passwd` operations.
+Every environment passed fresh authentication.
+Do not copy raw password hashes and do not reuse a credential exposed by rollback.
+
+The no-desktop base passed the intended desktop boundary:
 UWSM plus labwc starts from tty1 without a display manager,
 respawns after compositor exit,
 runs xwayland-satellite at `DISPLAY=:12`,
 uses independent application services,
 and renders pavucontrol with Breeze-Dark.
 
-The physical gate remains closed until the authenticated-USB alternative is either fully rehearsed or removed from the
-accepted recovery paths.
-See the [package rollback diagnosis][package-rollback-diagnosis].
+A separate retained domain passed authenticated-media recovery:
+
+- the pinned live ISO imported the pool with `-N` and an altroot before mounting anything;
+- native encryption unlocked through `keylocation=prompt`;
+- a historical root snapshot was cloned to a new writable dataset rather than rolled back in place;
+- `/` and `/var/lib/pacman` retained one coherent rollback boundary;
+- persistent home remained separate;
+- systemd-boot directly selected the recovered clone;
+- matching kernel and initramfs files were copied to the ESP;
+- `/etc/zfs/keys/zroot.key` was absent from the ESP initramfs;
+- the ZFS-only direct initramfs omitted the irrelevant generic `fsck` hook;
+- the native-encryption prompt appeared before the recovered system booted;
+- labwc and xwayland-satellite reached their active state;
+- fresh sudo authentication passed;
+- the retained ZFSBootMenu EFI image independently booted the recovered clone as a fallback.
+
+This validation does not make single-device ZFS redundant and does not prove that the official CachyOS installer owns
+the direct recovery architecture.
+It proves the documented emergency reconstruction against the retained patched installation.
 
 ## Why this is a manual runbook
 
@@ -176,6 +169,10 @@ Stop without erasing the NVMe if any condition is true:
 - the installer archive checksum differs;
 - the disposable VM cannot boot the encrypted pool through ZFSBootMenu;
 - the VM cannot boot and promote a pre-transaction environment;
+- authenticated media cannot import with `-N` plus an altroot and clone a coherent root snapshot;
+- a direct recovery initramfs on the ESP contains `/etc/zfs/keys/zroot.key`;
+- direct recovery does not require the native ZFS passphrase;
+- direct recovery cannot reach labwc and pass fresh sudo authentication;
 - bare-metal Calamares lists the 4 TB Samsung SSD;
 - Calamares proposes erasing a disk other than the identified SPCC NVMe;
 - the installation summary does not show ZFS plus encryption;
@@ -4328,44 +4325,646 @@ Run the following checks from the physical `default` environment.
 Status:
 TODO | DONE
 
-### Remove only the disposable validation state
+### Recover a coherent root through authenticated media
 
-1. Shut down the validation VM:
+Use this procedure when no existing root environment can boot reliably or matching boot artifacts must be rebuilt.
+Prefer ordinary ZFSBootMenu selection for routine package regressions.
+This procedure creates a new writable clone and does not roll the only working root backward in place.
+
+Do not run `zfs rollback`,
+`zpool upgrade`,
+`zpool clear`,
+or destructive repair to bypass a stop condition.
+Do not continue if another machine may still own or write the pool.
+
+1. Boot the authenticated CachyOS USB in UEFI mode.
+   Expect the pinned live environment.
+
+1. Enter a temporary Bash subshell from the live Fish terminal:
+
+   ```bash
+   bash
+   ```
+
+   Expect a Bash prompt.
+
+1. Confirm the target NVMe and protected SATA boundary:
+
+   ```bash
+   lsblk \
+     --bytes \
+     --output NAME,PATH,SIZE,TYPE,FSTYPE,MODEL,SERIAL,MOUNTPOINTS
+   ```
+
+   Expect the SPCC NVMe serial `A240827N4M204800049`.
+   During installer recovery,
+   expect the protected Samsung serial `S596NE0N102120M` to remain absent.
+
+1. Confirm the pool is not imported and no target dataset is mounted:
+
+   ```bash
+   sudo zpool list \
+     && findmnt --types zfs
+   ```
+
+   Expect no imported `zroot` and no target ZFS mount.
+   Stop if another system still owns the pool.
+
+1. Inspect importable pools without importing them:
+
+   ```bash
+   sudo zpool import
+   ```
+
+   Expect exactly one intended `zroot` on the SPCC NVMe.
+   Stop if the pool identity or backing device is ambiguous.
+
+1. Import without mounting datasets and establish an alternate root:
+
+   ```bash
+   sudo install --directory --mode=0755 /mnt/recovery \
+     && sudo zpool import \
+       -N \
+       -R /mnt/recovery \
+       -f \
+       zroot
+   ```
+
+   Expect no automatic root,
+home,
+   or persistent-data mount.
+   `-f` is accepted only after the single-owner device check proves that no other machine can still write this pool.
+
+1. Prove the import did not mount datasets:
+
+   ```bash
+   sudo zfs list \
+     --no-headers \
+     --output name,mounted,mountpoint \
+     -recursive \
+     zroot \
+     | awk '$2 == "yes" { print }'
+   ```
+
+   Expect no output.
+
+1. Load native encryption through the console prompt:
+
+   ```bash
+   sudo zfs load-key -L prompt zroot
+   ```
+
+   Enter the native ZFS passphrase only at the prompt.
+   Expect no error.
+
+1. List root snapshots before choosing one:
+
+   ```bash
+   sudo zfs list \
+     --types snapshot \
+     --output name,creation,used,refer \
+     -s creation \
+     zroot/ROOT
+   ```
+
+   Expect candidate snapshots under a coherent root environment.
+   Do not choose only by timestamp.
+   Use known package state,
+   markers,
+   and incident context.
+
+1. Enter the chosen snapshot name and validate its shape:
+
+   ```bash
+   read -r -p 'Source snapshot (zroot/ROOT/name@snapshot): ' source_snapshot
+   case "$source_snapshot" in
+     zroot/ROOT/*@*) ;;
+     *)
+       printf '%s\n' 'Refusing unexpected snapshot name' >&2
+       exit 1
+       ;;
+   esac
+   sudo zfs list \
+     --types snapshot \
+     --no-headers \
+     --output name \
+     "$source_snapshot"
+   ```
+
+   Expect the exact selected snapshot name.
+
+1. Choose a fresh recovery-clone name:
+
+   ```bash
+   recovered_root="zroot/ROOT/recovery-$(date --utc +%Y%m%dT%H%M%SZ)"
+   existing_roots="$(
+     sudo zfs list \
+       --no-headers \
+       --output name \
+       --recursive \
+       zroot/ROOT
+   )" || exit 1
+   if grep \
+     --fixed-strings \
+     --line-regexp \
+     --quiet \
+     "$recovered_root" \
+     <<< "$existing_roots"; then
+     printf 'REFUSING: %s already exists\n' "$recovered_root" >&2
+     exit 1
+   fi
+   printf 'Recovered root: %s\n' "$recovered_root"
+   ```
+
+   Expect a new `zroot/ROOT/recovery-...` name.
+   Stop if it already exists.
+
+1. Clone the snapshot and set explicit boot-environment properties:
+
+   ```bash
+   sudo zfs clone \
+     "$source_snapshot" \
+     "$recovered_root" \
+     && sudo zfs set \
+       canmount=noauto \
+       mountpoint=/ \
+       org.zfsbootmenu:active=on \
+       'org.zfsbootmenu:commandline=%{parent}' \
+       "$recovered_root" \
+     && sudo zfs get \
+       --no-headers \
+       --output name,property,value,source \
+       origin,canmount,mountpoint,org.zfsbootmenu:active \
+       "$recovered_root"
+   ```
+
+   Expect the selected snapshot as `origin`,
+   `noauto`,
+   `/`,
+   and `on`.
+
+1. Mount only the recovered clone with `zfsutil` semantics:
+
+   ```bash
+   sudo install --directory --mode=0755 /mnt/recovered-root \
+     && sudo mount \
+       --types zfs \
+       --options zfsutil \
+       "$recovered_root" \
+       /mnt/recovered-root \
+     && findmnt \
+       --noheadings \
+       --output SOURCE,FSTYPE,TARGET \
+       /mnt/recovered-root
+   ```
+
+   Expect the selected recovery clone,
+   `zfs`,
+   and `/mnt/recovered-root`.
+
+1. Verify package files and pacman metadata share the recovered root:
+
+   ```bash
+   test "$(
+     findmnt \
+       --noheadings \
+       --output SOURCE \
+       --target /mnt/recovered-root
+   )" = "$recovered_root" \
+     && test "$(
+       findmnt \
+         --noheadings \
+         --output SOURCE \
+         --target /mnt/recovered-root/var/lib/pacman
+     )" = "$recovered_root" \
+     && echo 'recovered package boundary: coherent'
+   ```
+
+   Expect exactly `recovered package boundary: coherent`.
+
+1. Inspect package and marker state before changing boot artifacts:
+
+   ```bash
+   sudo arch-chroot /mnt/recovered-root pacman --query --check tree \
+     && sudo test -x /mnt/recovered-root/usr/bin/tree
+   ```
+
+   Adapt the package and marker probes to the selected recovery point.
+   Any mismatch is a stop condition.
+
+1. Verify the root-backed Fish bridge exists and parses:
+
+   ```bash
+   sudo test \
+     -f /mnt/recovered-root/etc/user-rollback/user/start-labwc.fish \
+     && sudo arch-chroot \
+       /mnt/recovered-root \
+       fish \
+       --no-execute \
+       /etc/user-rollback/user/start-labwc.fish
+   ```
+
+   Expect no output.
+   If the selected snapshot predates that file,
+   restore it from the root-backed session section of this runbook and re-run the parser before continuing.
+
+1. Identify the intended local account inside the recovered clone:
+
+   ```bash
+   read -r -p 'Recovered local account name: ' recovered_user
+   case "$recovered_user" in
+     ''|*[!a-z0-9_-]*|[0-9-]*)
+       printf '%s\n' 'Refusing unexpected account name' >&2
+       exit 1
+       ;;
+   esac
+   sudo arch-chroot \
+     /mnt/recovered-root \
+     getent \
+     passwd \
+     "$recovered_user" \
+     > /dev/null
+   expected_home="zroot/data/home/$recovered_user"
+   ```
+
+   Expect no output.
+   Stop if the account is absent.
+
+1. Refresh the local account password inside the clone without reusing a revoked credential:
+
+   ```bash
+   test "$(
+     findmnt \
+       --noheadings \
+       --output SOURCE \
+       --target /mnt/recovered-root
+   )" = "$recovered_root" \
+     && sudo passwd \
+       --root /mnt/recovered-root \
+       "$recovered_user"
+   ```
+
+   Enter a current protected credential twice.
+   Expect `password updated successfully`.
+   Do not copy a hash from another root.
+
+1. Identify and mount only the SPCC ESP:
+
+   ```bash
+   target_disk='/dev/disk/by-id/nvme-SPCC_M.2_PCIe_SSD_A240827N4M204800049'
+   esp="${target_disk}-part1"
+   lsblk \
+     --fs \
+     "$target_disk" \
+     "$esp" \
+     && sudo install \
+       --directory \
+       --mode=0755 \
+       /mnt/recovered-root/boot/efi \
+     && sudo mount \
+       "$esp" \
+       /mnt/recovered-root/boot/efi \
+     && findmnt \
+       --noheadings \
+       --output SOURCE,FSTYPE,TARGET \
+       /mnt/recovered-root/boot/efi
+   ```
+
+   Expect the SPCC partition ending in `-part1`,
+   `vfat`,
+   and `/mnt/recovered-root/boot/efi`.
+   Stop if the device or filesystem differs.
+
+1. Preserve the original mkinitcpio configuration once:
+
+   ```bash
+   sudo test \
+     -e /mnt/recovered-root/etc/mkinitcpio.conf.before-authenticated-recovery \
+     || sudo cp \
+       --archive \
+       /mnt/recovered-root/etc/mkinitcpio.conf \
+       /mnt/recovered-root/etc/mkinitcpio.conf.before-authenticated-recovery
+   ```
+
+   Expect no error.
+
+1. Remove the keyfile and generic `fsck` hook from the direct recovery initramfs configuration:
+
+   ```bash
+   sudo sed \
+     --in-place \
+     's|^FILES=.*|FILES=()|; s/ filesystems fsck)/ filesystems)/' \
+     /mnt/recovered-root/etc/mkinitcpio.conf \
+     && grep \
+       --extended-regexp \
+       '^(FILES|HOOKS)=' \
+       /mnt/recovered-root/etc/mkinitcpio.conf
+   ```
+
+   Expect `FILES=()`,
+   a `zfs` hook,
+   and no `fsck` hook.
+   Stop if the actual hook line differs in a way this command did not correct.
+
+1. Require native-encryption prompting for the direct recovery path:
+
+   ```bash
+   sudo zfs set keylocation=prompt zroot \
+     && sudo zfs get \
+       --no-headers \
+       --output property,value \
+       keylocation \
+       zroot
+   ```
+
+   Expect `keylocation` and `prompt`.
+
+1. Rebuild every installed initramfs preset inside the recovered root:
+
+   ```bash
+   sudo arch-chroot \
+     /mnt/recovered-root \
+     mkinitcpio \
+     --allpresets
+   ```
+
+   Expect both installed presets to build without error.
+
+1. Prove the direct initramfs does not contain the native ZFS key:
+
+   ```bash
+   if sudo arch-chroot \
+     /mnt/recovered-root \
+     lsinitcpio \
+     /boot/initramfs-linux-cachyos.img \
+     | grep \
+       --fixed-strings \
+       --quiet \
+       'etc/zfs/keys/zroot.key'; then
+     printf '%s\n' 'REFUSING: recovered initramfs contains zroot.key' >&2
+     exit 1
+   fi
+   printf '%s\n' 'recovered initramfs: key absent'
+   ```
+
+   Expect exactly `recovered initramfs: key absent`.
+
+1. Install systemd-boot on the verified ESP:
+
+   ```bash
+   sudo arch-chroot \
+     /mnt/recovered-root \
+     bootctl \
+     --esp-path=/boot/efi \
+     install
+   ```
+
+   Expect a successful installation and firmware entry update.
+
+1. Copy matching direct boot artifacts from the recovered root:
+
+   ```bash
+   sudo install \
+     --directory \
+     --mode=0755 \
+     /mnt/recovered-root/boot/efi/EFI/CachyOS \
+     /mnt/recovered-root/boot/efi/loader/entries \
+     && sudo install \
+       --mode=0644 \
+       /mnt/recovered-root/boot/vmlinuz-linux-cachyos \
+       /mnt/recovered-root/boot/efi/EFI/CachyOS/vmlinuz-linux-cachyos \
+     && sudo install \
+       --mode=0644 \
+       /mnt/recovered-root/boot/initramfs-linux-cachyos.img \
+       /mnt/recovered-root/boot/efi/EFI/CachyOS/initramfs-linux-cachyos.img
+   ```
+
+   Expect no error.
+
+1. Verify both ESP artifacts byte for byte:
+
+   ```bash
+   sudo cmp \
+     --silent \
+     /mnt/recovered-root/boot/vmlinuz-linux-cachyos \
+     /mnt/recovered-root/boot/efi/EFI/CachyOS/vmlinuz-linux-cachyos \
+     && sudo cmp \
+       --silent \
+       /mnt/recovered-root/boot/initramfs-linux-cachyos.img \
+       /mnt/recovered-root/boot/efi/EFI/CachyOS/initramfs-linux-cachyos.img \
+     && echo 'direct recovery artifacts: matched'
+   ```
+
+   Expect exactly `direct recovery artifacts: matched`.
+
+1. Write a direct loader entry that names the recovered clone:
+
+   ```bash
+   printf '%s\n' \
+     'default cachyos-recovery.conf' \
+     'timeout 5' \
+     'console-mode keep' \
+     'editor no' \
+     | sudo tee \
+       /mnt/recovered-root/boot/efi/loader/loader.conf \
+       > /dev/null \
+     && printf '%s\n' \
+       'title CachyOS authenticated-media recovered ZFS root' \
+       'linux /EFI/CachyOS/vmlinuz-linux-cachyos' \
+       'initrd /EFI/CachyOS/initramfs-linux-cachyos.img' \
+       "options zfs=$recovered_root rw" \
+       | sudo tee \
+         /mnt/recovered-root/boot/efi/loader/entries/cachyos-recovery.conf \
+         > /dev/null
+   ```
+
+   Expect no error.
+
+1. Set the pool boot target to the same recovered clone:
+
+   ```bash
+   sudo zpool set \
+     "bootfs=$recovered_root" \
+     zroot \
+     && sudo zpool get \
+       --no-headers \
+       --output property,value \
+       bootfs \
+       zroot
+   ```
+
+   Expect the exact recovered clone name.
+
+1. Confirm the retained ZFSBootMenu image still exists:
+
+   ```bash
+   sudo test \
+     -f /mnt/recovered-root/boot/efi/EFI/ZFSBootMenu/vmlinuz-linux-cachyos.EFI \
+     && echo 'ZFSBootMenu recovery fallback: retained'
+   ```
+
+   Expect exactly `ZFSBootMenu recovery fallback: retained`.
+   If its firmware entry is absent,
+   recreate it only after confirming `target_disk` and `esp`:
+
+   ```bash
+   sudo efibootmgr \
+     --create \
+     --disk "$target_disk" \
+     --part 1 \
+     --label 'ZFSBootMenu retained fallback' \
+     --loader '\EFI\ZFSBootMenu\vmlinuz-linux-cachyos.EFI'
+   ```
+
+   Expect a new fallback boot number.
+
+1. Inspect firmware entries before cleanup:
+
+   ```bash
+   sudo efibootmgr --verbose
+   ```
+
+   Expect a direct Linux Boot Manager entry and the retained ZFSBootMenu fallback.
+   Keep the direct path first for the recovery boot and ZFSBootMenu second.
+
+1. Unmount and export cleanly:
+
+   ```bash
+   sudo umount /mnt/recovered-root/boot/efi \
+     && sudo umount /mnt/recovered-root \
+     && sudo zpool export zroot
+   ```
+
+   Expect no busy mount and no imported `zroot` afterward.
+
+1. Reboot from the recovered disk:
+
+   ```bash
+   systemctl reboot
+   ```
+
+   Expect systemd-boot to select the direct recovery entry without entering ZFSBootMenu.
+
+1. Require the native-encryption prompt.
+   Expect exactly one prompt naming `zroot` before the system continues.
+   Stop if the direct path boots without the passphrase.
+
+1. Enter the native ZFS passphrase.
+   Expect tty1 autologin and UWSM plus labwc startup.
+
+1. Open a graphical terminal and prove the final runtime boundary:
+
+   ```bash
+   recovered_user="${USER:?}" \
+     && expected_home="zroot/data/home/$recovered_user" \
+     && current_root="$(
+       findmnt \
+         --noheadings \
+         --output SOURCE \
+         --target /
+     )" \
+     && test "$current_root" = "$(
+       sudo zpool get \
+         --no-headers \
+         --output value \
+         bootfs \
+         zroot
+     )" \
+     && test "$current_root" = "$(
+       findmnt \
+         --noheadings \
+         --output SOURCE \
+         --target /var/lib/pacman
+     )" \
+     && test "$(
+       findmnt \
+         --noheadings \
+         --output SOURCE \
+         --target "/home/$recovered_user"
+     )" = "$expected_home" \
+     && grep \
+       --fixed-strings \
+       --quiet \
+       "zfs=$current_root" \
+       /proc/cmdline \
+     && test "$(
+       sudo zfs get \
+         --no-headers \
+         --output value \
+         keylocation \
+         zroot
+     )" = 'prompt' \
+     && systemctl \
+       --user \
+       is-active \
+       wayland-wm@labwc.service \
+     && systemctl \
+       --user \
+       is-active \
+       xwayland-satellite.service \
+     && echo 'authenticated-media recovered root: verified'
+   ```
+
+   Expect exactly `authenticated-media recovered root: verified` after the two service states.
+
+1. Re-prove the ESP initramfs remains keyless:
+
+   ```bash
+   if sudo lsinitcpio \
+     /boot/efi/EFI/CachyOS/initramfs-linux-cachyos.img \
+     | grep \
+       --fixed-strings \
+       --quiet \
+       'etc/zfs/keys/zroot.key'; then
+     printf '%s\n' 'REFUSING: ESP initramfs contains zroot.key' >&2
+     exit 1
+   fi
+   printf '%s\n' 'ESP initramfs: key absent'
+   ```
+
+   Expect exactly `ESP initramfs: key absent`.
+
+1. Require fresh account authentication:
+
+   ```bash
+   sudo --reset-timestamp \
+     && sudo --validate \
+     && echo 'recovered account authentication: verified'
+   ```
+
+   Enter the protected current account password.
+   Expect exactly `recovered account authentication: verified`.
+
+1. Keep the recovered clone until a later verified environment supersedes it.
+   Do not destroy its origin snapshot while the clone depends on it.
+
+### Retain disposable validation state
+
+The retained domains,
+virtual disks,
+source images,
+credential files,
+and evidence artifacts are part of the validation record.
+The current user instruction forbids cleanup without later explicit authorization.
+
+1. List the retained validation domains:
 
    ```bash
    flatpak run \
      --command=virsh \
      org.virt_manager.virt-manager \
      --connect qemu:///session \
-     shutdown cachyos-zfs-validation
+     list \
+     --all
    ```
 
-   Expect the domain to reach `shut off`.
+   Expect the original patched-layout and authenticated-recovery domains to remain defined.
 
-1. Undefine the validation domain after physical migration succeeds:
-
-   ```bash
-   flatpak run \
-     --command=virsh \
-     org.virt_manager.virt-manager \
-     --connect qemu:///session \
-     undefine cachyos-zfs-validation \
-     --nvram
-   ```
-
-   Expect confirmation that the domain was undefined.
-
-1. Remove only the two named validation storage files:
-
-   ```bash
-   rm \
-     --force \
-     /home/user/cachyos-zfs-validation/disk.qcow2 \
-     /home/user/cachyos-zfs-validation/labwc-configs.img \
-     && rmdir /home/user/cachyos-zfs-validation
-   ```
-
-   Expect the directory to be removed if empty.
+1. Do not run `virsh undefine`,
+   `rm`,
+   `qemu-img rebase`,
+   or storage-pool deletion against any retained validation path.
+   Expect all evidence to remain available for later review.
 
 ### Recover when the physical installer fails
 

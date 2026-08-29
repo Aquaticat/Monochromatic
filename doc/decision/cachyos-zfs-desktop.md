@@ -2,7 +2,11 @@
 
 ## Decision status
 
-Adoption is authorized but installation is gated.
+Adoption is authorized and the disposable-VM checks have passed.
+The physical gate opens when the commit containing this recovery record exists.
+Physical installation has not started and still requires the runbook's backup,
+media-authentication,
+and drive-isolation checks.
 The user authorized this choice on 2026-08-29 with:
 
 > I'll go with your personal recommendation.
@@ -37,14 +41,27 @@ compositor-exit respawn,
 xwayland-satellite,
 application-service,
 and dark GTK checks.
-The overall gate remains closed only pending authenticated-USB recovery or explicit removal of that alternative.
 
-Until that gate passes,
-the technology-vetting lifecycle remains at source-validated finalist rather than formally `Validated`,
+A separate retained domain then passed authenticated-media recovery from a historical root snapshot.
+The live ISO imported the pool without automatic mounts,
+loaded native encryption through a prompt,
+cloned the snapshot instead of rolling back in place,
+rebuilt matching direct boot artifacts,
+and booted the clone to labwc.
+The final direct initramfs excludes `/etc/zfs/keys/zroot.key`,
+uses `keylocation=prompt`,
+and omits the irrelevant generic `fsck` hook.
+Fresh sudo authentication passed after boot.
+The retained ZFSBootMenu image independently booted the same recovered clone as a fallback.
+
+This satisfies the technical disposable consumer boundary for the user-authorized CachyOS path.
+Committing the recovery record satisfies the remaining documentation boundary.
+The broader technology-vetting lifecycle remains at source-validated finalist because equal-depth validation of every
+finalist has not occurred.
+The personal authorization does not advance CachyOS to formal `Validated`,
 `Scored`,
 `Recommended`,
-or `Adopted`.
-The authorization selects the intended adoption target without misreporting the incomplete formal lifecycle.
+or `Adopted` status in the comparative audit.
 
 ## Adopted target
 
@@ -54,6 +71,8 @@ The intended physical architecture is:
 - CachyOS desktop ISO `260809` for the gated installation;
 - encrypted single-device OpenZFS root pool `zroot`;
 - ZFSBootMenu 3.1.0 or the version supplied by the pinned installation transaction;
+- authenticated CachyOS media capable of clone-based recovery and direct systemd-boot reconstruction;
+- a keyless direct recovery initramfs on the ESP with `keylocation=prompt`;
 - `fnichol/cachyos-zfs-installer` 0.5.1 at
   `9d587de2d34a35ea33094735002d8599afed7eac`;
 - installer archive SHA-256
@@ -174,6 +193,12 @@ The runbook must apply and verify these boundaries:
 - make the installer-created `baseline` visible by setting
   `org.zfsbootmenu:active=on`;
 - retain the static primary and backup ZFSBootMenu EFI images;
+- retain ZFSBootMenu as the routine rollback interface and tested emergency fallback;
+- when authenticated media reconstructs a direct recovery entry,
+  name the recovered clone explicitly in both `bootfs` and the `zfs=` kernel option;
+- keep `/etc/zfs/keys/zroot.key` out of every initramfs stored on the unencrypted ESP;
+- set recovery `keylocation=prompt` and require the native-encryption passphrase;
+- omit the generic `fsck` hook from the ZFS-only direct recovery initramfs;
 - add an active pacman hook covering `linux-cachyos`,
   `linux-cachyos-zfs`,
   `zfs-meta`,
@@ -212,7 +237,8 @@ Its order is mandatory:
    boot selection,
    rollback,
    promotion,
-   and labwc tests in the disposable UEFI VM;
+   labwc,
+   and authenticated-media recovery tests in disposable UEFI VMs;
 1. write authenticated USB media;
 1. disconnect the 4 TB SSD;
 1. erase only the identified 2 TB NVMe;
@@ -237,7 +263,11 @@ exit consists of deleting the disposable VM and leaving Bazzite unchanged.
 After the NVMe is erased:
 
 - boot a prior ZFS environment for a root or package regression;
-- use the ZFSBootMenu recovery shell or pinned CachyOS media for boot-image repair;
+- use the ZFSBootMenu recovery shell for routine repair;
+- use pinned authenticated CachyOS media to import with `-N` plus an altroot,
+  clone a coherent snapshot,
+  refresh local authentication when required,
+  and reconstruct a keyless direct boot path;
 - use the `known-good` environment for a complete migrated-session fallback;
 - re-enable the initial Wayfire display manager from tty2 if labwc startup fails;
 - reinstall Bazzite from authenticated official media if abandoning CachyOS;
@@ -253,7 +283,8 @@ Reopen this decision when any condition occurs:
 - the disposable encrypted-install,
   rollback,
   promotion,
-  or labwc gate fails;
+  labwc,
+  or authenticated-recovery gate fails on a future pinned input;
 - CachyOS no longer publishes an exact matching `linux-cachyos-zfs` package with its normal kernel;
 - ZFSBootMenu regeneration fails after a targeted package update;
 - the primary and backup EFI images are both unavailable;

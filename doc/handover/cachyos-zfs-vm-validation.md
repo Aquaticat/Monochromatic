@@ -302,16 +302,196 @@ or evidence unless the user later authorizes cleanup.
   This is a stop-condition failure rather than a usable no-desktop installation.
 - **Installed path under test**:
   Third-party CachyOS encrypted ZFS installer with ZFSBootMenu.
-- **Newly relaxed requirement**:
+- **Accepted recovery requirement**:
   A directly selectable boot-menu rollback target is no longer mandatory.
-  Recovery from an authenticated USB environment is acceptable.
-- **New open design question**:
-  Determine whether an official CachyOS encrypted-ZFS installation plus a rehearsed USB recovery procedure can replace
-  the third-party ZFSBootMenu integration.
+  Authenticated-media recovery is accepted because the retained recovery domain passed clone,
+  direct-boot reconstruction,
+  native-encryption authentication,
+  graphical startup,
+  and fresh user-authentication checks.
+- **Recovery architecture result**:
+  Keep the installed ZFSBootMenu EFI image as a tested fallback.
+  Authenticated media can reconstruct an independent systemd-boot path that explicitly names a recovered clone.
 - **Physical disks**:
   No physical host disk is attached to the VM.
 - **Cleanup**:
   Forbidden by current user instruction.
+
+## Authenticated recovery validation
+
+Task 38 passed in a separate retained UEFI domain.
+The test did not mutate the original patched-layout disk.
+It used a compressed copy and the pinned authenticated CachyOS ISO as recovery media.
+No physical host disk was attached.
+
+### Retained recovery environment
+
+- Domain:
+  `cachyos-zfs-usb-recovery-validation`
+- UUID:
+  `1e85631f-d7e1-436e-a06b-c0e9d8d48758`
+- Disk:
+  `/mnt/encrypted/VMs/cachyos-zfs-usb-recovery-validation/disk.qcow2`
+- Virtual size:
+  128 GiB
+- Allocated size after compressed copy:
+  `7109890048` bytes
+- SHA-256 before recovery work:
+  `200c2d5296cb1a738e46e5d3d46bf838605718a490781bcaaeb69d6e176b6be0`
+- Disk mode:
+  `0600`
+- Credential file:
+  `/mnt/encrypted/VMs/cachyos-zfs-usb-recovery-validation/disposable-credentials.json`
+- Credential-file mode:
+  `0600`
+- Current media state:
+  the ISO is ejected from the persistent and live domain configuration.
+- Current boot order:
+  direct systemd-boot first,
+  retained ZFSBootMenu second,
+  and firmware UI third.
+- Domain state at final verification on 2026-08-29:
+  running on the final recovered graphical environment.
+
+The original domain
+`cachyos-zfs-layout-validation`
+remains shut off with its disk unchanged by the recovery procedure.
+
+### Recovery-media compatibility
+
+The pinned live ISO booted kernel `7.1.6-1-cachyos` with OpenZFS module and userspace version `2.4.3-1`.
+The installed target used OpenZFS `2.4.3-2`.
+The live environment discovered the pool but did not mount it automatically.
+
+The accepted import sequence was:
+
+```bash
+sudo zpool import -N -R /mnt/recovery -f zroot
+sudo zfs load-key -L prompt zroot
+```
+
+`-N` prevented automatic dataset mounting.
+`-R /mnt/recovery` established an alternate root.
+The force import was confined to the retained single-owner disk copy after its source VM was shut off.
+The protected native-encryption passphrase was accepted through the guest console.
+No passphrase or current credential was printed.
+
+### Clone-based restoration
+
+The recovery environment listed candidate snapshots before selecting one.
+It cloned:
+
+```text
+zroot/ROOT/default@be-20260829-154436-pre-install
+```
+
+into the writable dataset:
+
+```text
+zroot/ROOT/usb-recovery-20260829
+```
+
+The clone retained its origin relationship and was not an in-place rollback.
+The original default,
+baseline,
+known-good,
+and transaction environments remained intact.
+The clone reported the expected pre-transaction marker and package state.
+`tree` verified 7 files with 0 altered files.
+Persistent home remained outside the recovered root on `zroot/data/home/useruser`.
+
+The historical clone's local password state and root-backed Fish bridge were deliberately refreshed before final boot.
+The password refresh used supported `passwd --root` behavior only after `findmnt` proved the mounted root identity.
+Neither revoked credential was reused.
+Both Fish files passed `fish --no-execute`.
+
+### Direct boot reconstruction
+
+The live environment mounted the recovered root and the copied disk's ESP after verifying both identities.
+It rebuilt the clone's installed initramfs and installed a separate systemd-boot path:
+
+- kernel:
+  `/EFI/CachyOS/vmlinuz-linux-cachyos`
+- initramfs:
+  `/EFI/CachyOS/initramfs-linux-cachyos.img`
+- loader entry:
+  `/loader/entries/cachyos-usb-recovery.conf`
+- kernel options:
+  `zfs=zroot/ROOT/usb-recovery-20260829 rw`
+- pool boot target:
+  `zroot/ROOT/usb-recovery-20260829`
+
+The copied kernel and initramfs matched their root-backed sources byte for byte.
+The pool exported cleanly before the first direct boot.
+The direct path booted the recovered clone without entering ZFSBootMenu.
+
+The retained ZFSBootMenu EFI image was not removed.
+A separate firmware entry targeting that image also booted the recovered clone successfully.
+This proves the fallback independently of the direct systemd-boot path.
+
+### Initramfs security correction
+
+The first direct reconstruction was rejected after inspection found
+`/etc/zfs/keys/zroot.key`
+inside the initramfs copied to the unencrypted ESP.
+The cause was the installer-provided `FILES` entry in `/etc/mkinitcpio.conf`.
+A bootable result was not accepted as recovery proof while that key remained exposed.
+
+The accepted clone now has:
+
+```text
+FILES=()
+keylocation=prompt
+```
+
+Both installed presets were rebuilt.
+`lsinitcpio` proved the key path absent before the rebuilt image replaced the ESP copy.
+`cmp` then proved the ESP image and root-backed initramfs were byte-identical.
+
+The generic `fsck` hook was also removed from this ZFS-only initramfs.
+With a `zfs=` root command line,
+that hook had emitted:
+
+```text
+ERROR: device '', not found. Skipping fsck.
+```
+
+The hook had no block-device root to check.
+After removing it and rebuilding both presets,
+the direct boot reached the native ZFS passphrase prompt without that error.
+The accepted image remained free of `/etc/zfs/keys/zroot.key`.
+
+### Final consumer-boundary checks
+
+The final direct boot visibly required:
+
+```text
+Enter passphrase for 'zroot':
+```
+
+Entering the protected native-encryption passphrase reached the recovered labwc desktop.
+The final runtime checks proved:
+
+- `/` is `zroot/ROOT/usb-recovery-20260829`;
+- `/var/lib/pacman` has the same recovered-root rollback semantics;
+- home is the persistent `zroot/data/home/useruser` dataset;
+- `/proc/cmdline` names `zroot/ROOT/usb-recovery-20260829`;
+- pool `bootfs` names `zroot/ROOT/usb-recovery-20260829`;
+- pool `keylocation` is `prompt`;
+- `FILES=()` remains configured;
+- the ZFS hook remains present;
+- the generic `fsck` hook remains absent;
+- labwc is active;
+- xwayland-satellite is active;
+- `tree` package files and pacman metadata agree;
+- the ESP initramfs does not contain `/etc/zfs/keys/zroot.key`;
+- direct systemd-boot remains first in firmware order;
+- retained ZFSBootMenu remains second;
+- a fresh `sudo -k; sudo -v` accepted the protected final disposable credential.
+
+The authenticated recovery requirement is therefore satisfied.
+This does not prove that the official CachyOS installer owns the direct architecture.
+It proves that pinned authenticated media can safely reconstruct and boot it from the validated third-party installation.
 
 ## User control constraint
 
@@ -795,10 +975,10 @@ No upstream issue was posted.
 Rollback promotion,
 return to default,
 credential revocation,
-and UWSM plus labwc validation are complete under tasks 37 and 40.
-
-1. Under task 38,
-evaluate authenticated-USB recovery without ZFSBootMenu using the corrected dataset boundary.
+UWSM plus labwc validation,
+and authenticated-media recovery are complete under tasks 37,
+38,
+and 40.
 
 1. Retain every domain,
 disk,
@@ -806,14 +986,20 @@ source image,
 credential file,
 and evidence artifact.
 
-1. Keep the physical-install gate closed until authenticated-USB recovery passes.
+1. Keep formal finalist scoring separate from the user-authorized CachyOS adoption path.
+Tasks 21,
+23,
+24,
+and 25 remain pending.
 
-1. Update this handover after each material recovery milestone.
+1. Do not begin physical installation until this recovery milestone is committed and the runbook checks pass.
 
-## ZFSBootMenu-free recovery question
+1. Require the protected Samsung SSD to be physically disconnected before the physical installer runs.
+
+## Authenticated recovery design
 
 The relaxed requirement does not make snapshots independently bootable.
-A valid USB recovery design must prove all of these operations:
+The validated authenticated-media design proved all of these operations:
 
 - boot an authenticated environment with a ZFS module compatible with the pool;
 - discover and import the pool without mounting datasets at unintended host paths;
@@ -833,21 +1019,18 @@ A root snapshot does not contain the FAT EFI system partition.
 Without ZFSBootMenu,
 matching boot artifacts become explicit recovery work rather than menu-managed state.
 
-The evaluation must distinguish:
+The result distinguishes:
 
-- official CachyOS installer ownership;
-- third-party installer ownership;
-- routine recovery complexity;
-- emergency USB recovery complexity;
-- whether native encryption and systemd-boot are supported together by the official installer;
-- whether the recovery media ships a compatible OpenZFS module;
-- whether a clone-based recovery can be tested without destructive in-place rollback.
+- third-party installer ownership of the installed ZFS layout and ZFSBootMenu setup;
+- manual authenticated-media ownership of the direct recovery reconstruction;
+- routine ZFSBootMenu rollback from emergency clone reconstruction;
+- keyless ESP artifacts from root-keystore convenience;
+- source snapshot retention from writable recovered-root activation.
 
-Do not claim that the official CachyOS installer supports this architecture until current source
-and a consumer installation prove it.
-Do not change the active VM architecture mid-installation.
-Use the completed ZFSBootMenu installation as evidence while testing any simpler path
-in a separate disposable disk or domain.
+Do not claim that the official CachyOS installer owns this architecture.
+The tested direct path is an emergency reconstruction procedure,
+not a substitute installer profile.
+Keep ZFSBootMenu as the routine rollback interface and tested fallback.
 
 ## Existing project documents
 
@@ -862,9 +1045,9 @@ in a separate disposable disk or domain.
 - OpenZFS latency investigation:
   `doc/troubleshooting/openzfs-single-device-latency-masking.md`
 
-These documents still describe ZFSBootMenu as part of the selected architecture.
-Do not revise the adoption decision until task 38 establishes whether the official or simplified alternative
-is real and recoverable.
+These documents retain ZFSBootMenu as part of the selected architecture.
+The direct systemd-boot path is a tested authenticated-media recovery result,
+not a replacement for routine ZFSBootMenu ownership.
 
 ## Task state
 
@@ -879,13 +1062,21 @@ is real and recoverable.
   completed after ZFSBootMenu unlock and installed boot reached Ly 1.4.1.
 - Task 37,
   validate rollback and desktop:
-  in progress on the clean no-desktop control.
+  completed after durable promotion,
+  return-to-default,
+  and graphical-session checks.
 - Task 38,
   evaluate ZFS recovery without ZFSBootMenu:
-  pending.
+  completed after authenticated-media clone recovery,
+  keyless direct boot,
+  graphical startup,
+  and fresh sudo authentication.
 - Task 39,
   install no-desktop CachyOS validation:
   completed after encrypted boot reached the authenticated tty1 user shell.
+- Task 40,
+  rehearse boot-environment credential revocation:
+  completed after all retained environments passed fresh authentication.
 
 ## Stop conditions
 
