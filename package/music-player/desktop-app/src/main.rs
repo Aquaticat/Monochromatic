@@ -38,6 +38,9 @@ mod ui_progress;
 /// ```
 mod ui_page;
 
+/// Playback mode conversion and displayed-page scope projection.
+mod ui_playback;
+
 /// What:     `mod ui_font_scale;` loads the sibling `ui_font_scale.rs` module.
 /// Why:      The OS-font-tracking scale handler uses the generated `AppWindow`, so it
 ///           belongs beside `main.rs`; splitting it out also keeps `main.rs` under the
@@ -193,7 +196,7 @@ use std::time::Instant;
 /// ```ts
 /// import { Command, PlaybackMode, Update } from "music-player/command";
 /// ```
-use music_player::command::{Command, PlaybackMode, Update};
+use music_player::command::{Command, Update};
 
 /// What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
 ///           from our library crate (its fields are `start_playing` and `paths`).
@@ -313,51 +316,8 @@ use slint::{ComponentHandle, Model, SharedString, VecModel};
 /// import { setNowPlaying, setQueueModel, PageNav } from "./ui_page";
 /// ```
 use ui_page::{set_now_playing, set_queue_model, PageNav};
-
-/// What:     `fn playback_mode_to_int(mode: PlaybackMode) -> i32`. Map the enum to the
-///           integer the UI property uses (Off=0, WithinPage=1, All=2). `i32` is a
-///           32-bit signed integer; siblings: `u32` (unsigned), `i64`/`usize`.
-/// Why:      Slint has no Rust enum; it stores the mode as an `int` (which is `i32`
-///           on the Rust side) the radio group compares against, so `i32` matches
-///           the generated property type exactly.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function shuffleToInt(mode: PlaybackMode): number { ... }
-/// ```
-fn playback_mode_to_int(mode: PlaybackMode) -> i32 {
-    if mode == PlaybackMode::Repeat {
-        return 0;
-    }
-    if mode == PlaybackMode::InOrder {
-        return 1;
-    }
-    if mode == PlaybackMode::ShufflePage {
-        return 2;
-    }
-    return 3;
-}
-
-/// What:     `fn int_to_playback_mode(value: i32) -> PlaybackMode`. Inverse of the above:
-///           the UI radio's selected `i32` back into a `PlaybackMode` enum value.
-/// Why:      Turn the radio group's selected integer back into a `PlaybackMode`.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function intToShuffle(value: number): PlaybackMode { ... }
-/// ```
-fn int_to_playback_mode(value: i32) -> PlaybackMode {
-    if value == 0 {
-        return PlaybackMode::Repeat;
-    }
-    if value == 2 {
-        return PlaybackMode::ShufflePage;
-    }
-    if value == 3 {
-        return PlaybackMode::ShuffleAll;
-    }
-    return PlaybackMode::InOrder;
-}
+/// Playback-mode conversion and displayed-page scope helpers.
+use ui_playback::{int_to_playback_mode, page_scope, playback_mode_to_int};
 
 /// What:     `fn format_time(secs: f64) -> String`. Format seconds as "m:ss".
 ///           `f64` is a 64-bit float (sibling: `f32`); `String` is an owned heap
@@ -652,19 +612,6 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // app.selectedPage = clamped;
     // ```
     app.set_selected_page(clamped);
-}
-
-/// Returns load-order indices belonging to one displayed page.
-fn page_scope(app: &AppWindow, page: i32) -> Vec<usize> {
-    let names: Vec<String> = app.get_queue().iter().map(|name| name.to_string()).collect();
-    let pages = pagination::paginate(&names);
-    if page < 0 {
-        return Vec::new();
-    }
-    let Some(selected) = pages.get(page as usize) else {
-        return Vec::new();
-    };
-    return selected.entries.iter().map(|entry| entry.index).collect();
 }
 
 /// What:     `fn apply_update(app: &AppWindow, update: &Update)`. Apply one engine

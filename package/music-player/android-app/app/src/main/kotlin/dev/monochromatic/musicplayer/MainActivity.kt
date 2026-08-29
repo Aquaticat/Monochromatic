@@ -2422,26 +2422,121 @@ private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
     }
 }
 
-// What:     `@OptIn(...)` acknowledges experimental FlowRow and segmented-button APIs.
-// Why:      The stable Material button-group API and current segmented API are used together.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // No TypeScript equivalent.
-// ```
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-/** Renders distinct playback-mode and transport Material button groups. */
+/** Renders the horizontally reachable single-select playback-mode group. */
+private fun playbackModeControl(state: PlayerUiState, controller: PlayerController) {
+    /** Displayed page text used verbatim by the page-shuffle segment. */
+    val currentPage: String = state.pageLabels.getOrNull(state.selectedPage) ?: "page"
+    /** Dynamic segment label that follows selected page changes. */
+    val pageShuffleLabel: String = "Shuffle $currentPage"
+    Text("When this track ends")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+    ) {
+        SingleChoiceSegmentedButtonRow {
+            SegmentedButton(
+                selected = state.playbackMode == PlaybackMode.REPEAT,
+                onClick = { controller.setPlaybackMode(PlaybackMode.REPEAT) },
+                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 4),
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) { Text("Repeat", maxLines = 1) }
+            SegmentedButton(
+                selected = state.playbackMode == PlaybackMode.IN_ORDER,
+                onClick = { controller.setPlaybackMode(PlaybackMode.IN_ORDER) },
+                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 4),
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) { Text("In order", maxLines = 1) }
+            SegmentedButton(
+                selected = state.playbackMode == PlaybackMode.SHUFFLE_PAGE,
+                onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE) },
+                shape = SegmentedButtonDefaults.itemShape(index = 2, count = 4),
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) { Text(pageShuffleLabel, maxLines = 1) }
+            SegmentedButton(
+                selected = state.playbackMode == PlaybackMode.SHUFFLE_ALL,
+                onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_ALL) },
+                shape = SegmentedButtonDefaults.itemShape(index = 3, count = 4),
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) { Text("Shuffle all", maxLines = 1) }
+        }
+    }
+}
+
+@Composable
+/** Renders the overflow-aware Material transport button group. */
+private fun transportControl(state: PlayerUiState, controller: PlayerController) {
+    ButtonGroup(
+        overflowIndicator = { menuState ->
+            ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        customItem(
+            buttonGroupContent = {
+                Button(
+                    onClick = { controller.prev() },
+                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                ) { Text("Prev") }
+            },
+            menuContent = { menuState ->
+                DropdownMenuItem(
+                    text = { Text("Prev") },
+                    onClick = {
+                        controller.prev()
+                        menuState.dismiss()
+                    },
+                )
+            },
+        )
+        customItem(
+            buttonGroupContent = {
+                Button(
+                    onClick = { controller.togglePlay() },
+                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                ) { Text(if (state.playing) "Pause" else "Play") }
+            },
+            menuContent = { menuState ->
+                DropdownMenuItem(
+                    text = { Text(if (state.playing) "Pause" else "Play") },
+                    onClick = {
+                        controller.togglePlay()
+                        menuState.dismiss()
+                    },
+                )
+            },
+        )
+        customItem(
+            buttonGroupContent = {
+                Button(
+                    onClick = { controller.next() },
+                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+                ) { Text("Next") }
+            },
+            menuContent = { menuState ->
+                DropdownMenuItem(
+                    text = { Text("Next") },
+                    onClick = {
+                        controller.next()
+                        menuState.dismiss()
+                    },
+                )
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+/** Renders source actions plus distinct playback-mode and transport groups. */
 private fun controlRow(
     state: PlayerUiState,
     controller: PlayerController,
     onSettings: () -> Unit,
     onOpen: () -> Unit,
 ) {
-    /** Displayed page text used verbatim by the page-shuffle segment. */
-    val currentPage: String = state.pageLabels.getOrNull(state.selectedPage) ?: "page"
-    /** Dynamic segment label that follows selected page changes. */
-    val pageShuffleLabel: String = "Shuffle $currentPage"
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -2450,99 +2545,8 @@ private fun controlRow(
             Button(onClick = onSettings) { Text("Settings") }
             Button(onClick = onOpen) { Text("Open") }
         }
-
-        Text("When this track ends")
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-        ) {
-            SingleChoiceSegmentedButtonRow {
-                SegmentedButton(
-                    selected = state.playbackMode == PlaybackMode.REPEAT,
-                    onClick = { controller.setPlaybackMode(PlaybackMode.REPEAT) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 4),
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text("Repeat", maxLines = 1) }
-                SegmentedButton(
-                    selected = state.playbackMode == PlaybackMode.IN_ORDER,
-                    onClick = { controller.setPlaybackMode(PlaybackMode.IN_ORDER) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 4),
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text("In order", maxLines = 1) }
-                SegmentedButton(
-                    selected = state.playbackMode == PlaybackMode.SHUFFLE_PAGE,
-                    onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 2, count = 4),
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text(pageShuffleLabel, maxLines = 1) }
-                SegmentedButton(
-                    selected = state.playbackMode == PlaybackMode.SHUFFLE_ALL,
-                    onClick = { controller.setPlaybackMode(PlaybackMode.SHUFFLE_ALL) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 3, count = 4),
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                ) { Text("Shuffle all", maxLines = 1) }
-            }
-        }
-
-        ButtonGroup(
-            overflowIndicator = { menuState ->
-                ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
-            },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            customItem(
-                buttonGroupContent = {
-                    Button(
-                        onClick = { controller.prev() },
-                        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                    ) { Text("Prev") }
-                },
-                menuContent = { menuState ->
-                    DropdownMenuItem(
-                        text = { Text("Prev") },
-                        onClick = {
-                            controller.prev()
-                            menuState.dismiss()
-                        },
-                    )
-                },
-            )
-            customItem(
-                buttonGroupContent = {
-                    Button(
-                        onClick = { controller.togglePlay() },
-                        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                    ) { Text(if (state.playing) "Pause" else "Play") }
-                },
-                menuContent = { menuState ->
-                    DropdownMenuItem(
-                        text = { Text(if (state.playing) "Pause" else "Play") },
-                        onClick = {
-                            controller.togglePlay()
-                            menuState.dismiss()
-                        },
-                    )
-                },
-            )
-            customItem(
-                buttonGroupContent = {
-                    Button(
-                        onClick = { controller.next() },
-                        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                    ) { Text("Next") }
-                },
-                menuContent = { menuState ->
-                    DropdownMenuItem(
-                        text = { Text("Next") },
-                        onClick = {
-                            controller.next()
-                            menuState.dismiss()
-                        },
-                    )
-                },
-            )
-        }
+        playbackModeControl(state, controller)
+        transportControl(state, controller)
     }
 }
 

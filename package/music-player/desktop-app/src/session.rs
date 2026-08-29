@@ -116,6 +116,7 @@ struct StoredSession {
 
 /// Supplies defaults for missing fields in the permissive input shape.
 impl Default for StoredSession {
+    /// Returns missing-field defaults for current and former JSON shapes.
     fn default() -> StoredSession {
         return StoredSession {
             source_root: None,
@@ -132,6 +133,7 @@ impl Default for StoredSession {
 
 /// Supplies first-run values for the current session shape.
 impl Default for Session {
+    /// Returns first-run desktop session values.
     fn default() -> Session {
         return Session {
             source_root: None,

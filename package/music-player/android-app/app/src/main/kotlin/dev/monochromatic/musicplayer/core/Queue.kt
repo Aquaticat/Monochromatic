@@ -671,7 +671,7 @@ class Queue private constructor(private val rng: Random) {
                 trackPages[trackPage].entries.map { entry -> entry.index }
             }
         }
-        // What:     `if (mode == PlaybackMode.IN_ORDER || mode == PlaybackMode.REPEAT) { ... } else { ... }` branches on
+        // What:     The condition distinguishes both sequential modes from shuffle.
         //           the shuffle mode. `==` compares the `shuffle` field against the
         //           `OFF` enum constant (enum value equality, like TS `===`).
         // Why:      Just-in-time shuffle keeps NO reusable precomputed order, so a
@@ -1334,7 +1334,7 @@ class Queue private constructor(private val rng: Random) {
          * source and use.
          */
         val clamped: Int = minOf(anchor, tracks.size - 1)
-        // What:     `if (mode == PlaybackMode.IN_ORDER || mode == PlaybackMode.REPEAT) { ... } else { ... }` branches the
+        // What:     The condition sends Repeat and In order through sequential rebuild.
         //           rebuild on shuffle mode. `==` is enum value equality.
         // Why:      `OFF` builds the FULL sequential page scope up front (it is
         //           deterministic and needs no play history). The shuffle modes build no
@@ -1344,7 +1344,7 @@ class Queue private constructor(private val rng: Random) {
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (this.shuffle === PlaybackMode.IN_ORDER) { /* full sequential scope */ } else { /* [anchor] + reset cycle */ }
+        // sequential ? rebuildFullScope(anchor) : resetShuffleHistory(anchor);
         // ```
         if (mode == PlaybackMode.IN_ORDER || mode == PlaybackMode.REPEAT) {
             // What:     `val scope: List<Int> = scopeIndices(clamped)` is the page's
