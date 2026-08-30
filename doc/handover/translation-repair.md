@@ -46,6 +46,11 @@ not current instruction.
 - Final-selection recovery verification emitted 871 `PASS` lines and zero `FAIL` lines.
 - Final destination-recovery verification emitted 871 `PASS` lines and zero `FAIL` lines;
   its log contains both repair-standing and complete-pass destination-recovery tests.
+- Continuous-repair audit is `doc/audit/translation-repair-continuous-repair-invariant.md`.
+  Focused verification emitted 17 `PASS` lines and zero `FAIL` lines.
+  All 82 handover-named GFP logs exist:
+  41 red logs contain `] FAIL `,
+  and 41 green logs contain `] PASS ` with no `] FAIL `.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -393,12 +398,11 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  Verify continuous-repair invariant across current stage-local loops.
-2.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
-3.  Optimize only measured completion path without weakening quality.
-4.  Rebuild pull-request fixture worktree and launch fresh roots only after quality and performance gates,
+1.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+2.  Optimize only measured completion path without weakening quality.
+3.  Rebuild pull-request fixture worktree and launch fresh roots only after quality and performance gates,
     passing `--require-providers synthetic,hyper`.
-5.  Verify every successful page and artifact,
+4.  Verify every successful page and artifact,
     then read complete output.
 
 There is no release deadline.

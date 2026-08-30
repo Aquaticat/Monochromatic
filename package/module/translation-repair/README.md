@@ -1815,7 +1815,9 @@ filesystem,
 provider,
 and cancellation failures are operational errors rather than quality verdicts.
 The code-level terminal-quality register is closed.
-Fresh validation remains gated by continuous-repair verification and Carena completion-path analysis.
+Continuous-repair verification is recorded in
+`doc/audit/translation-repair-continuous-repair-invariant.md`.
+Fresh validation remains gated by Carena completion-path analysis.
 Exact deterministic cycles deliberately pause as `INCOMPLETE` until strategy or evidence changes;
 they never authorize fallback publication.
 
