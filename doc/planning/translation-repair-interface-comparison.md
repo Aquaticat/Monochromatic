@@ -1135,6 +1135,15 @@ Second tuple component counts every confirmed finding.
 No free-form severity,
 score,
 or naturalness verdict enters selection.
+Quorum agrees on candidate,
+slot,
+and defect class rather than exact anchor text;
+anchors prove each claim is located while allowing auditors to quote different spans of same defect.
+One invalid or unbound finding makes whole auditor response unusable.
+Strict response loss is preferred over silently pruning unauditable claims;
+reduced-quorum table then preserves finite baseline behavior.
+Total finding comparison can still reward shared auditor blind spots,
+so retained-output calibration must reproduce known human comparisons before graph spend.
 
 Reduced-quorum behavior is manifest-owned:
 
