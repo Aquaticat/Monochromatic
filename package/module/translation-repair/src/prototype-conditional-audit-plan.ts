@@ -121,7 +121,6 @@ export function conditionalAuditMessages(
   const candidateEvidence = candidates.map(function candidate(item,) {
     return {
       id: item.id,
-      priority: item.priority,
       slots: item.response.slots,
       document: item.document,
     };

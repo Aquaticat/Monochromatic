@@ -60,6 +60,13 @@ export type ConditionalCandidate = {
   readonly document: string;
 };
 
+export type ConditionalResolutionBallot = {
+  readonly approves: boolean;
+  readonly baselineFindingKeys: readonly string[];
+  readonly resolutionFindingKeys: readonly string[];
+  readonly newResolutionFindingKeys: readonly string[];
+};
+
 export type ConditionalBaselineDecision = {
   readonly candidate: ConditionalCandidate;
   readonly votes: Readonly<Record<string, number>>;

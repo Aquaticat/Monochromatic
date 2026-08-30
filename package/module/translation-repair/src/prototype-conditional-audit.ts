@@ -4,6 +4,7 @@ import {
   type ConditionalAuditResponse,
   type ConditionalBaselineDecision,
   type ConditionalCandidate,
+  type ConditionalResolutionBallot,
   type ConfirmedConditionalFinding,
   SEVERE_CONDITIONAL_DEFECT_CLASSES,
 } from './prototype-conditional-audit-model.ts';
@@ -162,6 +163,32 @@ function auditFindingKeys(
   },),);
 }
 
+export function conditionalResolutionBallot(
+  {
+    audit,
+    baselineId,
+    resolutionId,
+  }: {
+    readonly audit: ConditionalAuditResponse;
+    readonly baselineId: string;
+    readonly resolutionId: string;
+  },
+): ConditionalResolutionBallot {
+  const baselineKeys = auditFindingKeys({ audit, candidateId: baselineId, });
+  const resolutionKeys = auditFindingKeys({ audit, candidateId: resolutionId, });
+  const newResolutionFindingKeys = [...resolutionKeys,]
+    .filter(function introduced(key,) { return !baselineKeys.has(key,); })
+    .toSorted();
+  return {
+    approves: (baselineKeys.size > 0)
+      && (resolutionKeys.size < baselineKeys.size)
+      && (newResolutionFindingKeys.length === 0),
+    baselineFindingKeys: [...baselineKeys,].toSorted(),
+    resolutionFindingKeys: [...resolutionKeys,].toSorted(),
+    newResolutionFindingKeys,
+  };
+}
+
 export function shouldAdoptConditionalResolutionByAuditorVotes(
   {
     audits,
@@ -174,11 +201,7 @@ export function shouldAdoptConditionalResolutionByAuditorVotes(
   },
 ): boolean {
   const approvals = audits.filter(function approves(audit,) {
-    const baselineKeys = auditFindingKeys({ audit, candidateId: baselineId, });
-    const resolutionKeys = auditFindingKeys({ audit, candidateId: resolutionId, });
-    return (baselineKeys.size > 0)
-      && (resolutionKeys.size < baselineKeys.size)
-      && [...resolutionKeys,].every(function existed(key,) { return baselineKeys.has(key,); });
+    return conditionalResolutionBallot({ audit, baselineId, resolutionId, }).approves;
   },).length;
   return approvals >= 2;
 }

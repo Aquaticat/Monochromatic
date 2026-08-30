@@ -2,6 +2,7 @@
 
 import { carriesPicture, } from './chat-contract.ts';
 import {
+  conditionalResolutionBallot,
   confirmConditionalFindings,
   selectConditionalBaseline,
   selectConditionalBaselineByAuditorVotes,
@@ -20,6 +21,11 @@ import {
   CONDITIONAL_AUDIT_NODES,
   conditionalAuditStructuralGuard,
 } from './prototype-conditional-audit-plan.ts';
+import {
+  collectLocatedConditionalFindings,
+  conditionalResolverMessages,
+  resolverChangedOnlyLocatedSlots,
+} from './prototype-conditional-resolver.ts';
 import { compileSlotDocument, } from './prototype-slot-compile.ts';
 import type { SlotDocumentResponse, } from './prototype-slot-model.ts';
 import { buildImmutableShell, } from './prototype-slot-shell.ts';
@@ -93,6 +99,8 @@ export function runConditionalAuditControls(): void {
   },);
   if (!carriesPicture({ messages, }))
     throw new Error('conditional audit vision control failed');
+  if (JSON.stringify(messages,).includes('"priority":',))
+    throw new Error('conditional audit hidden priority control failed');
   const badSlot: ConditionalAuditResponse = {
     candidates: {
       preferred: { findings: [], },
@@ -107,14 +115,14 @@ export function runConditionalAuditControls(): void {
       flawed: { findings: [{ ...finding, candidateAnchor: 'absent', },], },
     },
   };
-  if (guard(badAnchor,))
-    throw new Error('conditional audit quote binding control failed');
   if (!structuralGuard(badAnchor,))
     throw new Error('conditional audit structural admission control failed');
   const badAnchorAdmission = admitConditionalAudit({ shell, candidates, response: badAnchor, });
   if ((badAnchorAdmission.response.candidates.flawed?.findings.length !== 0)
     || (badAnchorAdmission.rejectedFindings[0]?.reason !== 'candidate-anchor-unbound'))
     throw new Error('conditional audit unbound finding pruning control failed');
+  if (guard(badAnchor,))
+    throw new Error('conditional audit quote binding control failed');
   const duplicate: ConditionalAuditResponse = {
     candidates: {
       preferred: { findings: [], },
@@ -187,6 +195,19 @@ export function runConditionalAuditControls(): void {
     resolutionId: 'resolution',
   },))
     throw new Error('conditional audit post-regression vote control failed');
+  if (!shouldAdoptConditionalResolutionByAuditorVotes({
+    audits: [approvingAudit, approvingAudit, regressingAudit,],
+    baselineId: 'baseline',
+    resolutionId: 'resolution',
+  },))
+    throw new Error('conditional audit two-approval adoption control failed');
+  const regressionBallot = conditionalResolutionBallot({
+    audit: regressingAudit,
+    baselineId: 'baseline',
+    resolutionId: 'resolution',
+  },);
+  if (regressionBallot.approves || (regressionBallot.newResolutionFindingKeys.length !== 1))
+    throw new Error('conditional audit post-dissent evidence control failed');
   const emptyPostAudit: ConditionalAuditResponse = {
     candidates: {
       baseline: { findings: [], },
@@ -238,4 +259,52 @@ export function runConditionalAuditControls(): void {
     resolverChangedOnlyLocatedSlots: true,
   },))
     throw new Error('conditional audit empty baseline control failed');
+  const locatedFindings = collectLocatedConditionalFindings({ audits: [audit, audit,], candidateId: 'flawed', });
+  if ((locatedFindings.length !== 1) || (locatedFindings[0]?.support !== 2))
+    throw new Error('conditional resolver located finding control failed');
+  const resolvedResponse = {
+    slots: {
+      ...flawedResponse.slots,
+      [firstSlot.key]: `${flawedResponse.slots[firstSlot.key] ?? ''} resolved`,
+    },
+  };
+  const locatedChange = resolverChangedOnlyLocatedSlots({
+    baseline: flawedResponse,
+    resolution: resolvedResponse,
+    findings: locatedFindings,
+  },);
+  if (!locatedChange.accepted || (locatedChange.changedSlotKeys[0] !== firstSlot.key))
+    throw new Error('conditional resolver located diff control failed');
+  const unlocatedSlot = shell.slots.find(function different(slot,) { return slot.key !== firstSlot.key; },);
+  if (unlocatedSlot === undefined)
+    throw new Error('conditional resolver unlocated fixture control failed');
+  const unlocatedResponse = {
+    slots: {
+      ...resolvedResponse.slots,
+      [unlocatedSlot.key]: `${flawedResponse.slots[unlocatedSlot.key] ?? ''} changed`,
+    },
+  };
+  if (resolverChangedOnlyLocatedSlots({
+    baseline: flawedResponse,
+    resolution: unlocatedResponse,
+    findings: locatedFindings,
+  },).accepted)
+    throw new Error('conditional resolver unlocated diff control failed');
+  if (resolverChangedOnlyLocatedSlots({
+    baseline: flawedResponse,
+    resolution: flawedResponse,
+    findings: locatedFindings,
+  },).accepted)
+    throw new Error('conditional resolver unchanged control failed');
+  const resolverMessages = conditionalResolverMessages({
+    shell,
+    sourceText: SOURCE,
+    archiveText: ARCHIVE,
+    baselineResponse: flawedResponse,
+    baselineDocument: compileSlotDocument({ shell, response: flawedResponse, }),
+    findings: locatedFindings,
+    media: [{ assetName: 'cat.webp', dataUri: 'data:image/webp;base64,AA==', digest: 'fixture', },],
+  },);
+  if (!carriesPicture({ messages: resolverMessages, }))
+    throw new Error('conditional resolver vision control failed');
 }

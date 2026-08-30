@@ -125,6 +125,11 @@ description = "PROTOTYPE: replay Candidate E1 double-prime admission over retain
 depends = ["build"]
 run = "node dist/final/node/prototype-conditional-audit-replay.mjs"
 
+[tasks."prototype-conditional-shell"]
+description = "PROTOTYPE: run Candidate E1 double-prime conditional immutable-shell graph on Carena; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-conditional-shell.mjs"
+
 [tasks."prototype-immutable-shell"]
 description = "PROTOTYPE: run Candidate D immutable-shell candidate graph on Carena; SPENDS QUOTA"
 depends = ["build"]
