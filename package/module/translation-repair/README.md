@@ -1752,8 +1752,22 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   final would-ship page must retain every exact anchored region that proved full coverage.
   This exact-region rule can conservatively pause semantically equivalent rewrites as `INCOMPLETE`.
   `assertPublishableTranslation` is now defensive invariant and cannot trigger fresh whole-entry retry.
-- `assertFinalSelectionSettled` throws when archive wording stands without endorsement.
-  Contest/consolidation must reopen unresolved slices with prior ballots as failed-strategy evidence.
+- Continuous final-selection recovery landed in `a84bb3a7a`, with role-alias guard in `f858ab538`.
+  Consolidation version 16 treats every unendorsed or publication-ineligible standing baseline as unfinished.
+  It threads prior selection slate,
+  anonymized producer and judge roles,
+  selection ballots,
+  gate ballots,
+  terminal,
+  and findings into substantively distinct producer recovery.
+  Recovery continues until a fresh consolidation wins selection and fidelity gate,
+  provider operation stops,
+  caller aborts,
+  or exact evidence cycle repeats.
+  Identical unsafe twins share one recovery chain;
+  only final safe settlement persists.
+  `assertFinalSelectionSettled` remains a defensive invariant,
+  classified as `INCOMPLETE` rather than whole-entry quality retry.
 - One-sided front-matter support landed in `56a47cb81` and creates insertion slice for source-only metadata,
   deterministically admits it,
   and validates candidate against source YAML shape when archive has none.
@@ -1774,7 +1788,7 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Cache generations move to translate 11,
   refine 4,
   lane contest 5,
-  and consolidation 15.
+  and consolidation 16.
 
 - Visual-evidence guard landed in `d14e641e6` and gives each image retry substantively distinct responsibility:
   complete transcription,
