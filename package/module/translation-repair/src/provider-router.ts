@@ -15,7 +15,7 @@ import {
   type SyntheticClient,
 } from './chat-contract.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
-import { SyntheticHttpError, } from './completion-shape.ts';
+import { isBudgetRefusal, } from './provider-budget-refusal.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type {
   ProviderBudgets,
@@ -53,29 +53,6 @@ import {
 // RE-ROUTED EXACTLY ONCE. A second failure is the answer, not an invitation to
 // keep going: with two providers the only remaining destination is the one that
 // just refused us, and `routeProviderFor` raises rather than return it.
-
-/**
- * How a subscription reports that its allowance is spent.
- */
-const HTTP_TOO_MANY_REQUESTS = 429;
-
-/**
- * How a credit balance reports that it has nothing left.
- */
-const HTTP_PAYMENT_REQUIRED = 402;
-
-/**
- * Statuses that mean a provider is out of budget rather than unwell.
- *
- * BOTH, BECAUSE THE TWO PROVIDERS SAY IT DIFFERENTLY. A subscription reports
- * exhaustion as a rate limit, and a credit balance reports it as payment due.
- * A retry ladder already rides 429 as transient; arriving here means the ladder
- * gave up, which is what distinguishes a burst from an empty account.
- */
-const BUDGET_REFUSAL_STATUSES: ReadonlySet<number> = new Set([
-  HTTP_TOO_MANY_REQUESTS,
-  HTTP_PAYMENT_REQUIRED,
-],);
 
 /**
  * Logger root for the routing layer.
@@ -165,26 +142,6 @@ type RoutedReply = {
    */
   readonly reply: ChatTextReply;
 };
-
-/**
- * Whether a thrown failure says the provider is out of budget.
- *
- * @param error - whatever the call threw
- *
- * @returns Whether the other provider should be asked instead
- *
- * @example
- * ```ts
- * if (isBudgetRefusal({ error, },)) budgets.markRefused({ provider, },);
- * ```
- */
-function isBudgetRefusal(
-  { error, }: { readonly error: unknown; },
-): boolean {
-  if (!(error instanceof SyntheticHttpError))
-    return false;
-  return BUDGET_REFUSAL_STATUSES.has(error.status,);
-}
 
 /**
  * What a re-ask came back with.
