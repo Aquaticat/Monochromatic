@@ -20,34 +20,24 @@ import { runSlotLocalControls, } from '../prototype-slot-controls.ts';
 import {
   selectSlotAuthor,
   slotAuthorMessages,
+  slotReviserMessages,
   SLOT_AUTHOR_NODES,
+  SLOT_REVISER_NODE,
 } from '../prototype-slot-plan.ts';
 import { publishSlotPrototype, } from '../prototype-slot-publication.ts';
-import {
-  executeSlotNode,
-  restartSlotNode,
-  settleSlotNode,
-  type SlotNodeRecord,
-} from '../prototype-slot-runtime.ts';
+import { runSlotCandidateNode, type SlotState, } from '../prototype-slot-wave.ts';
 import { createSlotScriptedClient, } from '../prototype-slot-scripted-client.ts';
 import type { SlotDocumentResponse, } from '../prototype-slot-model.ts';
 import { buildImmutableShell, } from '../prototype-slot-shell.ts';
 import {
   slotDocumentGuard,
   slotResponseFormat,
-  validateSlotCandidate,
 } from '../prototype-slot-wire.ts';
 import { passArchiveText, } from './pass-archive.ts';
 import { createRunClient, } from './run-config.ts';
 
 const ENTRY_ID = 'Carena0442';
 const PR_HEAD = 'a80634a674f94861ea3b7056fba054ca9eab1a2c';
-
-type SlotState = {
-  readonly record: SlotNodeRecord;
-  readonly value?: SlotDocumentResponse;
-  readonly document?: string;
-};
 
 const outputDir = process.env.TRANSLATION_REPAIR_PROTOTYPE_DIR ?? '';
 if (outputDir === '')
@@ -81,14 +71,14 @@ const responseFormat = slotResponseFormat({ shell, });
 const manifestPlan = {
   version: 1,
   prototype: 'immutable-shell-slot-compiler-d',
-  validator: 'immutable-shell-v1',
+  validator: 'immutable-shell-v2',
   entryId: ENTRY_ID,
   sourceDigest: hashContent({ content: sourceText, }),
   archiveDigest: hashContent({ content: archiveText, }),
   shellDigest: shell.shellDigest,
   slotKeys: shell.slots.map(function key(slot,) { return slot.key; },),
   media: media.map(function manifest(item,) { return { assetName: item.assetName, digest: item.digest, }; },),
-  waves: [SLOT_AUTHOR_NODES,],
+  waves: [SLOT_AUTHOR_NODES, [SLOT_REVISER_NODE,],],
   retryLimit: 0,
 } as const;
 const manifestDigest = hashContent({ content: JSON.stringify(manifestPlan,), },);
@@ -102,7 +92,9 @@ if (restart) {
 else
   await writePrototypeJson({ path: join(outputDir, 'manifest.json',), value: { manifestDigest, ...manifestPlan, }, },);
 const scripted = process.env.TRANSLATION_REPAIR_PROTOTYPE_SCRIPTED;
-const invalidAuthors = scripted === 'primary-invalid'
+const invalidAuthors = scripted === 'reviser-invalid'
+  ? new Set([SLOT_REVISER_NODE.id,])
+  : scripted === 'primary-invalid'
   ? new Set(['primary-author',])
   : scripted === 'primary-fallback-invalid'
     ? new Set(['primary-author', 'fallback-author',])
@@ -121,61 +113,21 @@ process.once('SIGTERM', function abortOnSigterm() { controller.abort(new Error('
 const { signal, } = controller;
 
 const states = await Promise.all(SLOT_AUTHOR_NODES.map(async function runAuthor(node,): Promise<SlotState> {
-  const messages = slotAuthorMessages({ node, shell, sourceText, archiveText, media, });
-  const validate = slotDocumentGuard({ shell, });
-  if (restart) {
-    const stored = await restartSlotNode({
-      outputDir,
-      id: node.id,
-      modelId: node.modelId,
-      manifestDigest,
-      messages,
-      responseFormat,
-      validate,
-      signal,
-    },);
-    if (stored.kind !== 'pending') {
-      if (stored.kind === 'usable') {
-        const document = validateSlotCandidate({
-          shell,
-          response: stored.value,
-          sourceText,
-          archiveText,
-          sourcePictures,
-        },);
-        return { record: stored.record, value: stored.value, document, };
-      }
-      return { record: stored.record, };
-    }
-  }
-  const execution = await executeSlotNode({
+  return await runSlotCandidateNode({
     outputDir,
     client,
-    id: node.id,
-    modelId: node.modelId,
+    node,
     manifestDigest,
-    messages,
+    messages: slotAuthorMessages({ node, shell, sourceText, archiveText, media, }),
     responseFormat,
-    validate,
+    validate: slotDocumentGuard({ shell, }),
+    shell,
+    sourceText,
+    archiveText,
+    sourcePictures,
+    restart,
     signal,
   },);
-  if (execution.kind === 'unusable')
-    return { record: execution.record, };
-  try {
-    const document = validateSlotCandidate({
-      shell,
-      response: execution.value,
-      sourceText,
-      archiveText,
-      sourcePictures,
-    },);
-    const record = await settleSlotNode({ outputDir, execution, usable: true, },);
-    return { record, value: execution.value, document, };
-  }
-  catch (error) {
-    const record = await settleSlotNode({ outputDir, execution, usable: false, failure: error, },);
-    return { record, };
-  }
 },));
 const usable = new Map<string, { readonly response: SlotDocumentResponse; readonly document: string; }>();
 for (const [index, state,] of states.entries()) {
@@ -184,27 +136,53 @@ for (const [index, state,] of states.entries()) {
     usable.set(node.id, { response: state.value, document: state.document, },);
 }
 const selected = selectSlotAuthor({ usable, });
-const records = states.map(function record(state,) { return state.record; },);
+const authorRecords = states.map(function record(state,) { return state.record; },);
 if (selected === undefined) {
   await writePrototypeJson({ path: join(outputDir, 'result.json',), value: {
     prototype: 'immutable-shell-slot-compiler-d',
     status: 'production-unavailable',
-    payloadCeiling: SLOT_AUTHOR_NODES.length,
-    dependencyWaves: 1,
+    payloadCeiling: SLOT_AUTHOR_NODES.length + 1,
+    dependencyWaves: 2,
     manifestDigest,
     slotCount: shell.slots.length,
-    nodeRecords: records,
+    nodeRecords: authorRecords,
+    unattemptedNodes: [SLOT_REVISER_NODE.id,],
     invocationDurationMs: Date.now() - startedAt,
   }, },);
   throw new Error('ProductionUnavailableError: every finite immutable-shell author was unusable');
 }
+const reviserState = await runSlotCandidateNode({
+  outputDir,
+  client,
+  node: SLOT_REVISER_NODE,
+  manifestDigest,
+  messages: slotReviserMessages({
+    shell,
+    sourceText,
+    archiveText,
+    baseResponse: selected.response,
+    baseDocument: selected.document,
+    media,
+  },),
+  responseFormat,
+  validate: slotDocumentGuard({ shell, }),
+  shell,
+  sourceText,
+  archiveText,
+  sourcePictures,
+  restart,
+  signal,
+},);
+const finalDocument = reviserState.document ?? selected.document;
 await publishSlotPrototype({
   outputDir,
   entryId: ENTRY_ID,
   manifestDigest,
-  selected,
+  selectedAuthor: selected,
+  finalDocument,
+  ...(reviserState.document === undefined ? {} : { reviserDocument: reviserState.document, }),
   usable,
-  records,
+  records: [...authorRecords, reviserState.record,],
   slotCount: shell.slots.length,
   startedAt,
   signal,

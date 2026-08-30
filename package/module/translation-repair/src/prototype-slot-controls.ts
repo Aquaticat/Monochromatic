@@ -14,8 +14,8 @@ import {
   validateSlotCandidate,
 } from './prototype-slot-wire.ts';
 
-const SOURCE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# 猫\n\n猫在[家](https://example.com)休息。![图](cat.webp)[^1]\n\n[^1]: 注。\n\n本条目贡献者：猫\n`;
-const ARCHIVE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# Cat\n\nThe cat rests at [home](https://example.com).![Picture](cat.webp)[^1]\n\n[^1]: Note.\n\nContributor for this entry: Cat\n`;
+const SOURCE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# 猫\n\n猫在[家](https://example.com)休息。![图](cat.webp)[^1]，继续。\n\n[^1]: 注。\n\n本条目贡献者：猫\n`;
+const ARCHIVE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# Cat\n\nThe cat rests at [home](https://example.com).![Picture](cat.webp)[^1] and continues.\n\n[^1]: Note.\n\nContributor for this entry: Cat\n`;
 const CONTRIBUTOR_LINE = 'Contributor for this entry: Cat';
 
 function sourceResponse(
@@ -84,6 +84,26 @@ export function runSlotLocalControls(): void {
   const compiled = compileSlotDocument({ shell, response: injected, });
   if (!compiled.includes('\\]',) || !compiled.includes('\\{unsafe\\}',) || !compiled.includes('\\`marker\\`',))
     throw new Error('immutable shell syntax encoding control failed');
+  const afterReference = shell.slots.find(function referenceBoundary(slot,) {
+    return shell.body[slot.startOffset - 1] === ']';
+  },);
+  const afterLink = shell.slots.find(function linkBoundary(slot,) {
+    return shell.body[slot.startOffset - 1] === ')';
+  },);
+  if ((afterReference === undefined) || (afterLink === undefined))
+    throw new Error('immutable shell inline boundary census control failed');
+  const spaced = compileSlotDocument({
+    shell,
+    response: {
+      slots: {
+        ...response.slots,
+        [afterReference.key]: ' after reference',
+        [afterLink.key]: ' after link',
+      },
+    },
+  },);
+  if (!spaced.includes('] after reference',) || !spaced.includes(') after link',))
+    throw new Error('immutable shell inline boundary spacing control failed');
   const paragraph = shell.slots.find(function paragraphSlot(slot,) { return slot.parentKind === 'paragraph'; },);
   if (paragraph === undefined)
     throw new Error('immutable shell paragraph slot control failed');

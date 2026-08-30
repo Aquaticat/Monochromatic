@@ -41,6 +41,7 @@ export function createSlotScriptedClient(
         { token: 'priority-zero', id: 'primary-author', },
         { token: 'priority-one', id: 'fallback-author', },
         { token: 'priority-two', id: 'reserve-author', },
+        { token: 'finite final holistic', id: 'final-reviser', },
       ].filter(function matches(role,) { return system.includes(role.token,); },);
       const role = roles[0];
       if ((roles.length !== 1) || (role === undefined))

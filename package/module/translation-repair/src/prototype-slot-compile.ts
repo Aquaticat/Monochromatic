@@ -7,13 +7,23 @@ import {
   type SlotDocumentResponse,
 } from './prototype-slot-model.ts';
 
-function escapeMarkdownText({ text, }: { readonly text: string; }): string {
+function escapeMarkdownText(
+  {
+    text,
+    preserveLeadingSpace,
+  }: {
+    readonly text: string;
+    readonly preserveLeadingSpace: boolean;
+  },
+): string {
   const escapedCharacters = new Set(['\\', '`', '*', '_', '{', '}', '[', ']', '<', '>',],);
-  return [...text.trim(),].map(function escape(character,): string {
+  const leadingSpace = preserveLeadingSpace && (text.trimStart() !== text) ? ' ' : '';
+  const core = [...text.trim(),].map(function escape(character,): string {
     if ((character === '\n') || (character === '\r'))
       return ' ';
     return escapedCharacters.has(character,) ? `\\${character}` : character;
   },).join('',);
+  return `${leadingSpace}${core}`;
 }
 
 export function compileSlotBody(
@@ -31,7 +41,9 @@ export function compileSlotBody(
     const value = values[slot.key];
     if (value === undefined)
       throw new Error(`immutable shell value is absent for ${slot.key}`);
-    const escaped = escapeMarkdownText({ text: value, });
+    const priorCharacter = body[slot.startOffset - 1];
+    const preserveLeadingSpace = priorCharacter !== undefined && (priorCharacter.trim() !== '');
+    const escaped = escapeMarkdownText({ text: value, preserveLeadingSpace, });
     if (escaped === '')
       throw new Error(`immutable shell value is empty for ${slot.key}`);
     return `${current.slice(0, slot.startOffset)}${escaped}${current.slice(slot.endOffset)}`;
