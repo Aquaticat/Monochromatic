@@ -1359,9 +1359,9 @@ not reusable architecture.
 Candidate E1 triple-prime correction requires:
 
 - at least 2 usable author candidates from distinct model identities before comparative floor can pass
-- at least 2 agreeing auditor model identities
-- at least 1 winning auditor whose model identity differs from selected author
-- `evidenceFloorMet: false` publication when any comparative condition fails
+- at least 2 agreeing auditor model identities;
+  this necessarily includes external vote because selected author has 1 model identity
+- `evidenceFloorMet: false` publication when any floor condition fails
 - Hyper-only reserve author and auditor selected only after structured vision and complete-document validation
 - persisted schema-mismatch detail distinguishing unparseable output from caller-guard rejection
 - evaluation of 2 concurrent fixed resolver seats as alternative to one over-eager resolver nullifying every located fix
