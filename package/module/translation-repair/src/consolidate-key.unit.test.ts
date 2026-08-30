@@ -237,9 +237,10 @@ await describe({
         // Version 13 continues correction beyond two and separates discovery
         // from acceptance-challenge review. Version 14 threads reviewed
         // rejections and durably replays raw model payloads. Version 15 floors
-        // candidates on target-authoritative contributor identity.
+        // candidates on target-authoritative contributor identity. Version 16
+        // continues unendorsed final selection from prior failed settlement.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '3d06cc7838ea4d10ff5fc387077de4efd8c62e704645603372e98a54551d34cc',
+          '3804be24336a7186d34e22259d2b7669a2fa274059b62f5a76194ffc7c3ee2ac',
         );
       },
     },),

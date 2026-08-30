@@ -65,8 +65,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  *
  * VERSION 15 floors every candidate on target-authoritative contributor identity.
  * Earlier settlements could resume wording final publication guard rejects.
+ *
+ * VERSION 16 continuously replaces unendorsed standing wording using prior
+ * consolidation slate, ballots, gate ballots, terminal, and findings.
+ * Version 15 could resume settlement final publication guard rejects.
  */
-export const CONSOLIDATE_CACHE_VERSION = 15;
+export const CONSOLIDATE_CACHE_VERSION = 16;
 
 /**
  * What a line-structured slice appends to its key material.

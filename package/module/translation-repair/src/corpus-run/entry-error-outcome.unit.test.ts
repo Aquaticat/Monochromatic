@@ -19,6 +19,7 @@ import {
   PromptPayloadStoreError,
   TranslationRepairInterruptedError,
   UnfilledPageError,
+  UnsettledFinalSelectionError,
   VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
 
@@ -45,6 +46,10 @@ await describe({
           reason: 'not-corroborated',
           findings: [],
         },],
+      },),
+      new UnsettledFinalSelectionError({
+        entryId: 'Cat',
+        sliceIndices: [1,],
       },),
       new VisualEvidenceInterruptedError({ unavailableCount: 1, }),
     ] as const).map(function stoppedError(error,) {

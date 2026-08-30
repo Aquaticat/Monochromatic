@@ -3,7 +3,11 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { renderConsolidationBrief, } from './consolidate-brief.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
+import type { GateBallot, } from './consolidate-gate-wire.ts';
+import type { ConsolidationTerminal, } from './consolidate-settle.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
+import type { TranslateOrigin, } from './translate-candidates.ts';
+import type { TranslateDecision, } from './translate-stage-result.ts';
 import { selectFence, } from './prompt-fence.ts';
 import {
   TRANSLATE_FRONT_MATTER_RULE,
@@ -85,6 +89,82 @@ const CONSOLIDATE_REPLY_RULE =
   'Reply with ONLY a JSON object of shape {"translation": "..."}. No prose, no code fences, no commentary.';
 
 /**
+ * Anonymized producer relation retained across failed slate and ballots.
+ */
+export type ConsolidationFailureProducer =
+  | {
+    readonly kind: 'model';
+    readonly alias: string
+  }
+  | {
+    readonly kind: 'composite';
+    readonly aliases: readonly string[]
+  }
+  | {
+    readonly kind: 'incumbent';
+    readonly matchedAliases: readonly string[]
+  };
+
+/**
+ * Prior candidate without provider identity.
+ */
+export type ConsolidationFailureSlateEntry = {
+  readonly index: number;
+  readonly text: string;
+  readonly hash: string;
+  readonly origin: TranslateOrigin;
+  readonly producer: ConsolidationFailureProducer;
+};
+
+/**
+ * Prior selection ballot without provider identity.
+ */
+export type ConsolidationFailureSelectionBallot = {
+  readonly judgeAlias: string;
+  readonly best: number;
+  readonly reason: string;
+  readonly weight: number;
+  readonly selfVote: boolean;
+};
+
+/**
+ * Latest consolidation strategy that retained unendorsed standing wording.
+ *
+ * @example
+ * ```ts
+ * const failure: ConsolidationFailureEvidence = {
+ *   terminal: 'gate-kept-standing', findings: [], selectionBallots: [], selectionSlate: [], gateBallots: [],
+ * };
+ * ```
+ */
+export type ConsolidationFailureEvidence = {
+  /**
+   * Terminal reached by failed strategy.
+   */
+  readonly terminal: ConsolidationTerminal;
+  /**
+   * Selection decision when slate reached judges.
+   */
+  readonly selectionDecision?: TranslateDecision;
+  /**
+   * Candidate slate prior judges saw.
+   */
+  readonly selectionSlate: readonly ConsolidationFailureSlateEntry[];
+  /**
+   * Selection ballots retaining their reasons.
+   */
+  readonly selectionBallots: readonly ConsolidationFailureSelectionBallot[];
+  /**
+   * Fidelity-gate ballots retaining their reasons.
+   */
+  readonly gateBallots: readonly GateBallot[];
+  /**
+   * Stage findings explaining voice loss, refusal, or decline.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
  * What a consolidating producer is shown for one slice.
  */
 export type ConsolidateSubject = {
@@ -122,6 +202,11 @@ export type ConsolidateSubject = {
    * looked and found nothing.
    */
   readonly ballots: readonly LaneContestBallot[];
+
+  /**
+   * Latest failed consolidation strategy, present only on stage-local recovery.
+   */
+  readonly priorFailure?: ConsolidationFailureEvidence;
 
   /**
    * Names and handles both documents' front matter declares, when either does.
@@ -268,6 +353,13 @@ export function buildConsolidateMessages(
   const brief = renderConsolidationBrief({ ballots: subject.ballots, },);
 
   /**
+   * Latest failed strategy rendered structurally, empty on initial production.
+   */
+  const priorFailure = subject.priorFailure === undefined
+    ? ''
+    : JSON.stringify(subject.priorFailure,);
+
+  /**
    * Fence no enclosed text can reproduce, chosen against every string this
    * sheet carries, since all of them are arbitrary prose.
    */
@@ -280,6 +372,7 @@ export function buildConsolidateMessages(
       declared,
       pictures,
       brief,
+      priorFailure,
     ],
   },);
 
@@ -293,6 +386,9 @@ export function buildConsolidateMessages(
    */
   const system = [
     CONSOLIDATE_RULES,
+    (priorFailure === ''
+      ? ''
+      : 'A prior consolidation strategy failed to replace unendorsed standing wording. Use its slate, ballots, gate ballots, terminal, and findings as failed-strategy evidence. Produce a materially different solution rather than repeating rejected wording.'),
     (subject.syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : ''),
     (subject.lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : ''),
     CONSOLIDATE_REPLY_RULE,
@@ -355,6 +451,11 @@ export function buildConsolidateMessages(
           fence,
           label: 'WHAT THE JUDGES FOUND, claims to check against the original',
           text: brief,
+        },),
+        ...renderBlock({
+          fence,
+          label: 'PRIOR FAILED CONSOLIDATION STRATEGY',
+          text: priorFailure,
         },),
         `${fence} END ${fence}`,
       ].join('\n',),

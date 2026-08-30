@@ -112,8 +112,16 @@ export {
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
 export {
+  consolidationFailureEvidence,
+  consolidationNeedsRecovery,
+} from './consolidation-stage-repair.ts';
+export {
   buildConsolidateMessages,
   type ConsolidateSubject,
+  type ConsolidationFailureEvidence,
+  type ConsolidationFailureProducer,
+  type ConsolidationFailureSelectionBallot,
+  type ConsolidationFailureSlateEntry,
 } from './consolidate-wire.ts';
 
 //endregion Consolidation barrel

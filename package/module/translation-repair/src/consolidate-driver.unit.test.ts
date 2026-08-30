@@ -46,6 +46,7 @@ import {
   createSyntheticClient,
   persistConsolidationSettlement,
   type ProjectedLanes,
+  type RosterModelId,
   type SliceCache,
   type SliceNeighbourContext,
   SLICE_COST_MARKER,
@@ -53,6 +54,7 @@ import {
   type SyntheticClient,
   TRANSLATE_LINE_STRUCTURE_RULE,
   type TranslateDecision,
+  TranslationRepairInterruptedError,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
 
@@ -97,6 +99,14 @@ function capturingLogger({ messages, }: { readonly messages: string[]; },): Logg
  * Roster this run seats.
  */
 const ROSTER = ['hf:zai-org/GLM-5.3-Flash',] as const;
+
+/** Roster wide enough for independent recovery selection. */
+const RECOVERY_ROSTER = [
+  ...ROSTER,
+  'hf:Qwen/Qwen3.8-27B',
+  'hf:moonshotai/Kimi-K3',
+  'hf:openai/gpt-oss-120b',
+] as const;
 
 /**
  * Per-call bound, never reached because nothing here buys a call.
@@ -180,7 +190,7 @@ function recordingClient(): {
  * ballot schema, so the schema name alone cannot tell them apart and a case
  * reading `the judges' sheet` would otherwise be reading the gate's half the time.
  */
-const GATE_MARKER = 'Return JSON: choice one of "consolidated", "standing"';
+const GATE_MARKER = 'unsupported and dropped each a list';
 
 /**
  * Builds a client that records every request and answers each role usefully.
@@ -272,6 +282,143 @@ function answeringClient(): {
 }
 
 /**
+ * Finds numbered candidate carrying scripted wording in serialized request.
+ *
+ * @param sent - serialized request body
+ *
+ * @param needle - candidate wording marker
+ *
+ * @returns One-based candidate index, or zero when absent
+ *
+ * @example
+ * ```ts
+ * const best = candidateCarrying({ sent, needle: 'rests naturally', });
+ * ```
+ */
+function candidateCarrying(
+  {
+    sent,
+    needle,
+  }: {
+    readonly sent: string;
+    readonly needle: string;
+  },
+): number {
+  /** Candidate heading marker. */
+  const marker = 'CANDIDATE ';
+  for (let cursor = sent.indexOf(marker,); cursor >= 0;) {
+    /** Start of next candidate block, or request end. */
+    const next = sent.indexOf(marker, cursor + marker.length,);
+    /** Current serialized candidate block. */
+    const block = sent.slice(cursor, next === (-1) ? sent.length : next,);
+    if (block.includes(needle,)) {
+      return Number(sent.charAt(cursor + marker.length,),);
+    }
+    cursor = next;
+  }
+  return 0;
+}
+
+/**
+ * Reads only messages from serialized provider request.
+ *
+ * @param body - serialized provider request
+ *
+ * @returns Serialized messages without provider model field
+ */
+function requestMessages({ body, }: { readonly body: string; }): string {
+  /** Parsed request envelope. */
+  const parsed = JSON.parse(body,) as { readonly messages?: unknown; };
+  return JSON.stringify(parsed.messages ?? [],);
+}
+
+/**
+ * Builds client whose first gate keeps unsafe standing and second endorses recovery.
+ *
+ * @returns Client plus producer sheets and full payloads proving failed evidence reached follow-up
+ *
+ * @example
+ * ```ts
+ * const { client, producerSheets, } = recoveringClient();
+ * ```
+ */
+function recoveringClient(
+  {
+    abortOnRecovery,
+    initialText = 'A cat asleep in the sun.',
+    recoveryText = 'The cat rests naturally in the sunlight.',
+  }: {
+    readonly abortOnRecovery?: AbortController;
+    readonly initialText?: string;
+    readonly recoveryText?: string;
+  } = {},
+): {
+  readonly client: SyntheticClient;
+  readonly producerSheets: readonly string[];
+  readonly producerPayloads: readonly string[];
+} {
+  /** Producer requests in dispatch order. */
+  const producerSheets: string[] = [];
+  /** Full producer payloads retaining model identity for uniqueness checks. */
+  const producerPayloads: string[] = [];
+  return {
+    client: createSyntheticClient({
+      apiKey: 'test-key',
+      transport: async function recoverOnSecondStrategy(exchange,) {
+        /** Complete request body carrying stage sheet. */
+        const sent = exchange.bodyJson ?? '';
+        /** Current role inferred from schema and gate marker. */
+        const role = sent.includes('translation_report',)
+          ? 'produce'
+          : (sent.includes(GATE_MARKER,) ? 'gate' : 'judge');
+        /** Structured answer for current role. */
+        const answer = (function answerByRole(): string {
+          if (role === 'produce') {
+            producerSheets.push(requestMessages({ body: sent, }),);
+            producerPayloads.push(sent,);
+            if (sent.includes('PRIOR FAILED CONSOLIDATION STRATEGY',))
+              abortOnRecovery?.abort(new Error('recovery abort',),);
+            return JSON.stringify({
+              translation: sent.includes('PRIOR FAILED CONSOLIDATION STRATEGY',)
+                ? recoveryText
+                : initialText,
+            },);
+          }
+          if (role === 'judge') {
+            return JSON.stringify({
+              best: candidateCarrying({
+                sent,
+                needle: sent.includes(recoveryText,)
+                  ? recoveryText
+                  : initialText,
+              },),
+              reason: 'best supported rendering',
+            },);
+          }
+          return JSON.stringify({
+            choice: sent.includes(recoveryText,) ? 'consolidated' : 'standing',
+            unsupported: [],
+            dropped: [],
+            reason: 'recovery now improves fidelity',
+          },);
+        })();
+        return {
+          status: 200,
+          bodyText: `data: ${JSON.stringify({
+            choices: [{
+              index: 0,
+              delta: { content: answer, },
+            },],
+          },)}\n\ndata: [DONE]\n\n`,
+        };
+      },
+    },),
+    producerSheets,
+    producerPayloads,
+  };
+}
+
+/**
  * Builds both ledgers for a document of two slices.
  *
  * @returns Projection shaped as the lanes leave one
@@ -302,55 +449,6 @@ function twoSliceDocument(): ProjectedLanes {
         return {
           sliceIndex: row.sliceIndex,
           sourceText: `原文${String(row.sliceIndex,)}`,
-        };
-      },),
-      translate: [],
-    },
-  } as unknown as ProjectedLanes;
-}
-
-/**
- * Builds identical metadata question whose standing repair text is unpublishable.
- *
- * @returns Projection whose syntax-bearing keys match by content
- *
- * @example
- * ```ts
- * const projected = frontMatterTwinDocument();
- * ```
- */
-function frontMatterTwinDocument(): ProjectedLanes {
-  /**
-   * Source metadata repeating same identity as name and alias.
-   */
-  const sourceText = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
-  /**
-   * Archive metadata retaining directory id as visible name.
-   */
-  const incumbentText = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
-  /**
-   * Valid translated metadata offered by translate lane.
-   */
-  const translateText = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
-  /**
-   * Same question stamped at both positions.
-   */
-  const comparison = [0, 1,].map(function toRow(sliceIndex,) {
-    return {
-      sliceIndex,
-      incumbentKind: 'present',
-      incumbentText,
-      repairText: incumbentText,
-      translateText,
-    };
-  },);
-  return {
-    comparison,
-    delivery: {
-      repair: comparison.map(function toDelivery(row,) {
-        return {
-          sliceIndex: row.sliceIndex,
-          sourceText,
         };
       },),
       translate: [],
@@ -475,6 +573,10 @@ function settlementReaching(
  *
  * @param messages - optional destination for operational logging
  *
+ * @param writes - optional external persistence capture
+ *
+ * @param signal - optional caller cancellation
+ *
  * @returns Records the driver produced beside the keys it wrote
  *
  * @example
@@ -492,9 +594,12 @@ async function driveWith(
     frontMatterSlices = new Set(),
     pictureContextBySlice = new Map(),
     neighbourContextBySlice = new Map(),
+    modelIds = ROSTER,
     overlap = 1,
     activity,
     messages,
+    writes,
+    signal = AbortSignal.timeout(CALL_TIMEOUT_MS,),
   }: {
     readonly contests: readonly ArtifactContestSlice[];
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
@@ -504,15 +609,18 @@ async function driveWith(
     readonly frontMatterSlices?: ReadonlySet<number>;
     readonly pictureContextBySlice?: ReadonlyMap<number, string>;
     readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
+    readonly modelIds?: readonly RosterModelId[];
     readonly overlap?: number;
     readonly activity?: ConsolidationConcurrency;
     readonly messages?: string[];
+    readonly writes?: string[];
+    readonly signal?: AbortSignal;
   },
 ) {
   /**
    * Keys the driver decided were worth resuming later.
    */
-  const written: string[] = [];
+  const written: string[] = writes ?? [];
 
   /**
    * Cache standing in for the entry store, recording every write.
@@ -553,10 +661,10 @@ async function driveWith(
     client: measuredClient,
     projected,
     contests,
-    modelIds: ROSTER,
+    modelIds,
     frontMatterSlices,
     cache,
-    signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
+    signal,
     perCallTimeoutMs: CALL_TIMEOUT_MS,
     overlap,
     lineStructuredSlices,
@@ -712,11 +820,16 @@ await describe({
       },
     },),
     it({
-      name: 'PUTS ARCHIVE IN DECLINE RECOVERY SLATE AS BASELINE, not either lane contest rejected',
+      name: 'CONTINUES archive-declined standing with prior settlement evidence until gate endorses replacement',
       fn: async () => {
-        const { client, judgeSheets, } = answeringClient();
+        const {
+          client,
+          producerSheets,
+          producerPayloads,
+        } = recoveringClient();
         const { slices, written, } = await driveWith({
           client,
+          modelIds: RECOVERY_ROSTER,
           contests: [{
             sliceIndex: 0,
             verdict: {
@@ -728,12 +841,172 @@ await describe({
           },],
         },);
 
-        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(new Set(producerSheets,).size,).toBe(2);
+        expect(new Set(producerPayloads,).size,).toBe(producerPayloads.length);
+        expect(producerSheets.filter(function initial(sheet,): boolean {
+          return !sheet.includes('PRIOR FAILED CONSOLIDATION STRATEGY',);
+        },),).toHaveLength(RECOVERY_ROSTER.length);
+        expect(producerSheets.filter(function carriesPriorFailure(sheet,): boolean {
+          return sheet.includes('PRIOR FAILED CONSOLIDATION STRATEGY',)
+            && sheet.includes('gate-kept-standing',)
+            && sheet.includes('recovery now improves fidelity',)
+            && sheet.includes('A cat asleep in the sun.',);
+        },),).toHaveLength(RECOVERY_ROSTER.length);
+        const recoveryMessages = producerSheets.filter(function recovery(sheet,): boolean {
+          return sheet.includes('PRIOR FAILED CONSOLIDATION STRATEGY',);
+        },);
+        for (const message of recoveryMessages) {
+          for (const modelId of RECOVERY_ROSTER)
+            expect(message.includes(modelId,),).toBe(false,);
+          expect(message,).toContain('role/1');
+        }
+        expect(slices[0]?.terminal,).toBe('consolidated');
+        expect(written,).toHaveLength(1);
+      },
+    },),
+    it({
+      name: 'RECOVERS unjudged settled-neither standing under same endorsement requirement',
+      fn: async () => {
+        const { client, } = recoveringClient();
+        const { slices, written, } = await driveWith({
+          client,
+          modelIds: RECOVERY_ROSTER,
+          contests: [{
+            sliceIndex: 0,
+            verdict: { kind: 'settled-neither', },
+            ballots: [],
+            usable: RECOVERY_ROSTER.length,
+          },],
+        },);
+
+        expect(slices[0]?.terminal,).toBe('consolidated');
+        expect(written,).toHaveLength(1);
+      },
+    },),
+    it({
+      name: 'SHARES one final-selection recovery chain across identical unsafe twins',
+      fn: async () => {
+        const {
+          client,
+          producerPayloads,
+        } = recoveringClient();
+        const { slices, written, } = await driveWith({
+          client,
+          modelIds: RECOVERY_ROSTER,
+          projected: twinSliceDocument(),
+          contests: [
+            {
+              sliceIndex: 0,
+              verdict: { kind: 'settled-neither', archive: 'declined', },
+              ballots: [],
+              usable: RECOVERY_ROSTER.length,
+            },
+            {
+              sliceIndex: 1,
+              verdict: { kind: 'settled-neither', archive: 'declined', },
+              ballots: [],
+              usable: RECOVERY_ROSTER.length,
+            },
+          ],
+          overlap: 2,
+        },);
+
+        expect(producerPayloads,).toHaveLength(RECOVERY_ROSTER.length * 2);
+        expect(slices,).toHaveLength(2);
+        expect(slices.every(function recovered(slice,): boolean {
+          return slice.terminal === 'consolidated';
+        },),).toBe(true,);
+        expect(written,).toHaveLength(1);
+      },
+    },),
+    it({
+      name: 'PAUSES exact repeated final-selection strategy instead of reviving declined archive',
+      fn: async () => {
+        const { client, judgeSheets, } = answeringClient();
+        const writes: string[] = [];
+        let thrown: unknown;
+        try {
+          await driveWith({
+            client,
+            writes,
+            contests: [{
+              sliceIndex: 0,
+              verdict: {
+                kind: 'settled-neither',
+                archive: 'declined',
+              },
+              ballots: [],
+              usable: ROSTER.length,
+            },],
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
+
+        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
+        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('final-selection-unresolved');
         expect(judgeSheets.every(function carriesArchiveBaseline(sheet,): boolean {
           return sheet.includes('archive wording for slice 0',);
         },),).toBe(true,);
-        expect(slices[0]?.terminal,).not.toBe('no-standing-text',);
-        expect(written,).toEqual([]);
+        expect(writes,).toEqual([]);
+      },
+    },),
+    it({
+      name: 'PAUSES provider-silent unsafe standing as unavailable without persisting it',
+      fn: async () => {
+        const { client, } = recordingClient();
+        const writes: string[] = [];
+        let thrown: unknown;
+        try {
+          await driveWith({
+            client,
+            writes,
+            contests: [{
+              sliceIndex: 0,
+              verdict: { kind: 'settled-neither', archive: 'declined', },
+              ballots: [],
+              usable: ROSTER.length,
+            },],
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
+
+        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
+        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
+        expect(writes,).toEqual([]);
+      },
+    },),
+    it({
+      name: 'PRESERVES exact caller abort identity during unsafe-standing recovery',
+      fn: async () => {
+        const controller = new AbortController();
+        const { client, } = recoveringClient({ abortOnRecovery: controller, });
+        const writes: string[] = [];
+        let thrown: unknown;
+        try {
+          await driveWith({
+            client,
+            writes,
+            signal: controller.signal,
+            modelIds: RECOVERY_ROSTER,
+            contests: [{
+              sliceIndex: 0,
+              verdict: { kind: 'settled-neither', archive: 'declined', },
+              ballots: [],
+              usable: RECOVERY_ROSTER.length,
+            },],
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
+
+        expect((controller.signal.reason as Error).message,).toBe('recovery abort');
+        expect(thrown,).toBe(controller.signal.reason,);
+        expect(writes,).toEqual([]);
       },
     },),
     it({
@@ -985,44 +1258,6 @@ await describe({
             1,
           ],);
         },),);
-      },
-    },),
-
-    it({
-      name: 'REBUYS IDENTICAL FRONT MATTER standing text that cannot ship instead of persisting or twin-memoizing it',
-      fn: async () => {
-        /**
-         * One unsafe consolidation as purchase positive control.
-         */
-        const singleFixture = recordingClient();
-        const single = await driveWith({
-          client: singleFixture.client,
-          projected: frontMatterTwinDocument(),
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          frontMatterSlices: new Set([0,]),
-          overlap: 2,
-        },);
-        /**
-         * Same unsafe question repeated at two positions.
-         */
-        const twinFixture = recordingClient();
-        const twin = await driveWith({
-          client: twinFixture.client,
-          projected: frontMatterTwinDocument(),
-          contests: [
-            contestSettling({ sliceIndex: 0, lane: 'repair', },),
-            contestSettling({ sliceIndex: 1, lane: 'repair', },),
-          ],
-          frontMatterSlices: new Set([
-            0,
-            1,
-          ],),
-          overlap: 2,
-        },);
-        expect(singleFixture.bodies.length,).toBeGreaterThan(0,);
-        expect(single.written,).toEqual([],);
-        expect(twinFixture.bodies.length,).toBe(singleFixture.bodies.length * 2,);
-        expect(twin.written,).toEqual([],);
       },
     },),
 
