@@ -38,6 +38,8 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "probe-sensitivity": "./src/corpus-run/probe-sensitivity.ts",
     "probe-verify": "./src/corpus-run/probe-verify.ts",
     "prototype-accountable-editor": "./src/corpus-run/prototype-accountable-editor.ts",
+    "prototype-serial-controls": "./src/corpus-run/prototype-serial-controls.ts",
+    "prototype-serial-producers": "./src/corpus-run/prototype-serial-producers.ts",
     "recall-benchmark": "./src/corpus-run/recall-benchmark.ts",
     "roster-bench": "./src/corpus-run/roster-bench.ts",
     "score-agreement": "./src/corpus-run/score-agreement.ts",
