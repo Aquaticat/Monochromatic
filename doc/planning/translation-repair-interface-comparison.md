@@ -1494,6 +1494,265 @@ Semantic slot truncation,
 identity fabrication,
 and same-family correlation are now explicit design inputs.
 
+## Next definition round
+
+### Rejected Candidate F: witness-switched donor assembly
+
+Candidate F would remove Candidate E resolver
+and let deterministic compiler replace only whole immutable-shell slots copied from already complete candidates.
+Auditors would compare baseline and donor defect sets;
+a donor slot would be eligible after 2 independent per-auditor strict-subset findings,
+then 2 post auditors would compare baseline and composite.
+
+#### Pros
+
+- Resolver cannot author unsupported prose.
+- Every unchanged slot remains byte-identical.
+- Donor substitutions preserve shell structure and bounded authority.
+- Static graph can fit 5 retained authors,
+  3 comparative auditors,
+  and 2 post auditors in 3 dependency waves.
+
+#### Cons
+
+- Reported defect sets are open-world under-approximations.
+  Missing donor finding is not evidence donor is clean.
+- Two auditors can miss same new donor defect,
+  especially among correlated model families.
+- Whole-slot mixing can damage document voice and cross-slot reference.
+- Empty finding set can mean abstention or missed evidence rather than clean coverage.
+- Candidate identity must be removed from comparison key,
+  while slot plus defect class is too coarse to distinguish source obligations.
+
+Candidate F is rejected at design gate.
+It improves mutation safety over E but cannot turn missing findings into quality proof.
+A closed-world source-obligation checklist and explicit checked-clean states
+would change interface enough to be different candidate.
+
+### Candidate G proposal: verified realization ledger
+
+Candidate G moves seam to whole-candidate admission against closed-world source obligations.
+No prose resolver,
+donor splice,
+postdraft editor,
+or generated work exists.
+Model-produced realization is claim;
+independent verification is evidence,
+not mathematical proof.
+
+```ts
+export type SourceSpan = {
+  readonly startOffset: number;
+  readonly endOffset: number;
+  readonly digest: string;
+};
+
+export type SourceObligation = {
+  readonly id: ObligationId;
+  readonly kind: 'clause' | 'relation' | 'identity' | 'link' | 'media' | 'format' | 'archive-authority';
+  readonly sourceSpans: readonly SourceSpan[];
+  readonly relationEndpoints: readonly ObligationId[];
+  readonly targetCardinality: 'one-or-more' | 'shell-owned';
+  readonly authority: 'source' | 'archive-allowed' | 'shell-locked';
+  readonly evidenceDigest: string;
+};
+
+export type TargetAnchor = {
+  readonly slotKey: SlotKey;
+  readonly startOffset: number;
+  readonly endOffset: number;
+  readonly digest: string;
+};
+
+export type RealizedCandidate = {
+  readonly candidateId: CandidateId;
+  readonly modelId: ModelIdentity;
+  readonly candidateDigest: string;
+  readonly slots: Readonly<Record<SlotKey, string>>;
+  readonly realization: Readonly<Record<ObligationId, readonly TargetAnchor[]>>;
+};
+
+export type CandidateVerification = {
+  readonly candidateId: CandidateId;
+  readonly candidateDigest: string;
+  readonly obligations: Readonly<Record<ObligationId, {
+    readonly status: 'preserved' | 'defect';
+    readonly verifiedTargetAnchors: readonly TargetAnchor[];
+  }>>;
+  readonly globalChecks: Readonly<Record<GlobalCriterion, 'clean' | 'defect'>>;
+  readonly findings: readonly LocatedFinding[];
+};
+
+export type VerifierBallot = {
+  readonly verifierModelId: ModelIdentity;
+  readonly manifestDigest: string;
+  readonly candidates: Readonly<Record<CandidateId, CandidateVerification>>;
+};
+```
+
+Clause obligations carry contiguous parsed source spans.
+Relation obligations name endpoint obligation ids and source connective spans.
+Identity obligations bind canonical person and contributor forms.
+Link and media obligations bind exact destination or asset digest.
+Format and archive-authority obligations identify shell-owned or explicitly archive-allowed regions.
+Target offsets disambiguate repeated phrases;
+string equality alone never locates anchor.
+Located finding names exactly 1 obligation id or global criterion,
+defect class,
+manifest-owned source spans,
+and zero or more exact target anchors.
+Runtime assigns candidate id,
+model id,
+and candidate digest after validating raw author slots and map;
+author cannot self-assert those bindings.
+
+#### Fixed call graph
+
+1.  Deterministically split source shell text into bounded clause obligations from parsed source offsets.
+    Add identity,
+    relation,
+    link,
+    contributor,
+    media,
+    formatting,
+    and archive-only obligations without model work.
+2.  In wave 1,
+    ask fixed author roster concurrently for complete immutable-shell slot map plus total realization ledger.
+    Every author owns full fidelity,
+    completeness,
+    identity,
+    grammar,
+    reference,
+    tense,
+    relation,
+    and register contract.
+3.  Admit candidate only when every non-shell obligation has required anchor cardinality,
+    every target offset and digest binds exact declared slot,
+    every shell key appears once,
+    and existing deterministic guards pass.
+    Mapping remains untrusted semantic claim.
+4.  In wave 2,
+    ask fixed verifier roster concurrently to inspect every admitted whole candidate against complete source,
+    archive,
+    realization ledger,
+    and all page-referenced images.
+    Candidate aliases hide author model and priority.
+    Every verifier independently marks every candidate-obligation pair and every global criterion.
+5.  Admit ballot only when verifier identity,
+    manifest digest,
+    every candidate digest,
+    full candidate-obligation matrix,
+    and global-check matrix match manifest.
+    Preserved status requires verifier-confirmed exact target offsets.
+    Defect status requires finding linked to obligation or global criterion.
+    Omission may have no target anchor;
+    unsupported addition uses target-only global finding.
+    Empty,
+    partial,
+    or duplicate ballot abstains.
+6.  Candidates with 2 complete clean ballots from distinct verifier model identities rank ahead.
+    Dissent persists.
+    Hidden fixed priority selects within same evidence class.
+    Same-family identity remains correlated evidence,
+    not independence proof.
+7.  Calibration writes selected whole candidate only to private review root,
+    with `evidenceFloorMet: false` when no candidate has 2 clean ballots.
+    Verifier failure cannot withhold structurally usable private candidate.
+    Calibration never calls production `PublicationPort` or returns `CompletedEntry`.
+    No candidate text is mixed or revised after authorship.
+
+Prototype ceiling is 7 payloads:
+4 complete authors and 3 complete-candidate verifiers in 2 dependency waves.
+Before live spend,
+serialized worst-case author and verifier schemas must fit 32,000-token project ceiling with measured headroom.
+Qwen3.8 Flash previously used 27,922 completion tokens to audit only 3 candidates,
+so unmeasured 4-candidate matrix is blocker rather than assumed fit.
+Manifest binds exact obligation ledger,
+author and verifier identities,
+source,
+archive,
+shell,
+media,
+schemas,
+provider mode,
+and fixed priority.
+Each model plus canonical substantive prompt receives at most 1 provider payload.
+One wet provider supplies whole manifest;
+cross-provider responses are never correctness dependency.
+
+#### Stage postconditions
+
+Deterministic obligation ledger is total over parsed source text but makes no semantic claim.
+Author realization anchors cannot certify their own meaning.
+Verifier record is structurally complete only when it covers every candidate-obligation pair and every global criterion,
+binds candidate digests,
+and carries verifier model identity.
+Verifier independently checks semantic source-to-target realization;
+author map is only navigation claim.
+Candidate selection never treats missing finding as checked-clean.
+Verifier timeout,
+refusal,
+or malformed response has no effect and never suspends calibration.
+Every model node receives `photo1.webp` and never presentation-only profile image.
+Restart,
+indeterminate transmission,
+caller abort,
+cache eligibility,
+and prompt uniqueness reuse Candidate E proven controls.
+
+#### Pros
+
+- Makes unmapped source clauses visible even when every slot key is populated.
+- Whole candidate preserves voice and cross-paragraph coherence.
+- Closed-world coverage replaces Candidate E open-world defect-count comparison.
+- Verifiers inspect output-specific identity,
+fidelity,
+and English defects before selection.
+- No model can create repair work or mutate selected prose.
+- Finite 2-wave graph remains highly parallel.
+
+#### Cons
+
+- Exact anchor can support wrong semantic mapping;
+  verification remains fallible judgment.
+- Author ledger expands output and may increase truncation risk.
+- Valid mapping can falsely attach omitted meaning to unrelated exact anchor.
+- Large all-candidate verifier schema may exceed output ceiling.
+- Fixed-priority private review below evidence floor does not solve production normal-return contract.
+- Same-family verifier agreement remains correlated even with distinct model ids.
+- Production eligibility still requires complete-page acceptance across repeated isolated runs.
+
+### Next-round ranking
+
+Ranking:
+Candidate G > rejected Candidate F.
+G ranks above F because explicit total coverage can distinguish checked-clean from unobserved,
+whereas F treats absent donor findings as improvement evidence.
+F retains safer mutation than Candidate E but cannot close donor-defect blind spot.
+
+Candidate G enters scripted controls and retained-output calibration only.
+Controls must cover omitted clause,
+fabricated identity,
+wrong relation,
+unsupported addition,
+repeated anchor,
+archive-regurgitated text,
+partial and empty ballot,
+dissent,
+all-verifier failure,
+and known Qwen3.6 Plus truncation with concise valid negative control.
+Restart,
+indeterminate transmission,
+cache binding,
+prompt uniqueness,
+provider isolation,
+and exact caller abort must pass for both waves.
+It is not selected for production,
+and no live payload is authorized before schema-size measurement,
+implementation review,
+GFP controls,
+and advisor pre-spend review.
+
 ## Required lifecycle migration
 
 Replacement must remove current terminal-looking outcomes in
