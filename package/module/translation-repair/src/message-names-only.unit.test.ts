@@ -88,6 +88,7 @@ const MARKED_CLASSES: readonly string[] = [
   'GenerationDriftError',
   'GradedSheetExistsError',
   'HardCapOverrideError',
+  'HyperExpansionHttpError',
   'LaneComparisonError',
   'LaneSliceCoverageError',
   'LedgerShapeError',

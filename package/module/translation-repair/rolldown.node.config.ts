@@ -47,6 +47,8 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-conditional-audit-replay": "./src/corpus-run/prototype-conditional-audit-replay.ts",
     "prototype-conditional-shell": "./src/corpus-run/prototype-conditional-shell.ts",
     "prototype-hyper-reserve-evaluation": "./src/corpus-run/prototype-hyper-reserve-evaluation.ts",
+    "prototype-hyper-expansion-client": "./src/prototype-hyper-expansion-client.ts",
+    "prototype-hyper-roster-expansion": "./src/corpus-run/prototype-hyper-roster-expansion.ts",
     "prototype-immutable-shell": "./src/corpus-run/prototype-immutable-shell.ts",
     "prototype-immutable-shell-controls": "./src/corpus-run/prototype-immutable-shell-controls.ts",
     "prototype-serial-controls": "./src/corpus-run/prototype-serial-controls.ts",

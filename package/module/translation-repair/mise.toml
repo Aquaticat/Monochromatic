@@ -135,6 +135,11 @@ description = "PROTOTYPE: evaluate MiniMax M3 as Hyper reserve author and audito
 depends = ["build"]
 run = "node dist/final/node/prototype-hyper-reserve-evaluation.mjs"
 
+[tasks."prototype-hyper-roster-expansion"]
+description = "PROTOTYPE: evaluate live out-of-roster Hyper models equally on Carena; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-hyper-roster-expansion.mjs"
+
 [tasks."prototype-immutable-shell"]
 description = "PROTOTYPE: run Candidate D immutable-shell candidate graph on Carena; SPENDS QUOTA"
 depends = ["build"]
