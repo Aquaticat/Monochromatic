@@ -1247,6 +1247,20 @@ Candidate E1 double-prime changes audit admission and decision semantics rather 
 8.  At least 2 post-auditors must establish strict subset before resolution can be adopted.
     Otherwise baseline survives byte-for-byte.
 
+Auditor prompts omit manifest candidate priority.
+Auditors may evaluate output from same model family,
+but exact anchors,
+independent role prompts,
+and 2-vote decision prevent one self-review from controlling selection or adoption.
+Finding-empty ballot abstains rather than voting fixed priority.
+Every post-auditor ballot persists baseline keys,
+resolution keys,
+new resolution keys,
+approval,
+and whether auditor shares resolver model identity.
+A third dissent is recorded but does not veto 2 independent approvals;
+this implements stated 2-auditor adoption rule rather than silently changing it to unanimity.
+
 Zero-spend digest-bound replay over exact E1 prime provider replies admitted every completed ballot:
 
 - D1 had 3 usable auditors;
@@ -1260,11 +1274,36 @@ Zero-spend digest-bound replay over exact E1 prime provider replies admitted eve
 
 Replay completed in 48 milliseconds without provider calls.
 It calibrates audit admission and decisions only.
-Candidate E1 double-prime remains unselected until located-only resolver diff,
-full fixed graph,
-restart,
-abort,
-GFP,
+
+Full scripted graph fixes ceiling at 10 payloads across 4 waves and proved:
+
+- base run selected fallback author on 3 defect-based votes,
+  constrained resolver to located slot,
+  received 3 post approvals,
+  and adopted complete resolution
+- all-author failure terminated with `ProductionUnavailableError` after 3 author nodes and no later calls
+- no usable author-audit ballot published fixed-priority baseline with `evidenceFloorMet: false`
+- invalid or unlocated resolver,
+  invalid post wave,
+  and regression post wave each preserved baseline byte-for-byte
+- 2 usable approving post auditors plus 1 unusable auditor adopted;
+  2 approvals plus 1 located dissent also adopted and retained dissent keys
+- completed restart left 31 non-result files byte-identical,
+  all 10 node mtimes unchanged,
+  and normalized result byte-identical
+- resolver SIGTERM restart retained exact `CallerAbort`,
+  did not redispatch,
+  and published baseline
+- post SIGTERM recorded 3 `CallerAbort` nodes;
+  restart preserved their digests and baseline
+- post SIGKILL left 3 dispatched nodes;
+  restart converted all to `IndeterminateTransmission` and preserved baseline
+- types,
+  local controls,
+  and complete suite passed with 871 suite verdicts and no failures
+
+Candidate E1 double-prime remains unselected until full-graph GFP,
+one-provider evidence,
 fresh Carena publication,
 and complete-page reading pass.
 
