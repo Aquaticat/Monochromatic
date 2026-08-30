@@ -71,7 +71,7 @@ const responseFormat = slotResponseFormat({ shell, });
 const manifestPlan = {
   version: 1,
   prototype: 'immutable-shell-slot-compiler-d',
-  validator: 'immutable-shell-v2',
+  validator: 'immutable-shell-v3',
   entryId: ENTRY_ID,
   sourceDigest: hashContent({ content: sourceText, }),
   archiveDigest: hashContent({ content: archiveText, }),
@@ -92,6 +92,12 @@ if (restart) {
 else
   await writePrototypeJson({ path: join(outputDir, 'manifest.json',), value: { manifestDigest, ...manifestPlan, }, },);
 const scripted = process.env.TRANSLATION_REPAIR_PROTOTYPE_SCRIPTED;
+const primaryAuthor = SLOT_AUTHOR_NODES[0];
+if (primaryAuthor === undefined)
+  throw new Error('immutable shell primary author is absent');
+const sourceEchoAuthors = scripted === 'primary-source-echo'
+  ? new Set([primaryAuthor.id,])
+  : new Set<string>();
 const invalidAuthors = scripted === 'reviser-invalid'
   ? new Set([SLOT_REVISER_NODE.id,])
   : scripted === 'primary-invalid'
@@ -106,7 +112,12 @@ const client = scripted === undefined
     promptPayloadDir: join(outputDir, 'prompt-payloads',),
     retryPolicy: { limit: 0, baseMs: 0, },
   },)
-  : createSlotScriptedClient({ shell, invalidAuthors, hang: scripted === 'hang', });
+  : createSlotScriptedClient({
+      shell,
+      invalidAuthors,
+      sourceEchoAuthors,
+      hang: scripted === 'hang',
+    },);
 const controller = new AbortController();
 process.once('SIGINT', function abortOnSigint() { controller.abort(new Error('caller abort: SIGINT'),); },);
 process.once('SIGTERM', function abortOnSigterm() { controller.abort(new Error('caller abort: SIGTERM'),); },);

@@ -10,6 +10,7 @@ import {
 } from './prototype-slot-model.ts';
 import { buildImmutableShell, } from './prototype-slot-shell.ts';
 import {
+  DestinationScriptError,
   slotDocumentGuard,
   validateSlotCandidate,
 } from './prototype-slot-wire.ts';
@@ -18,7 +19,19 @@ const SOURCE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# 猫\n\n猫在[家](h
 const ARCHIVE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# Cat\n\nThe cat rests at [home](https://example.com).![Picture](cat.webp)[^1] and continues.\n\n[^1]: Note.\n\nContributor for this entry: Cat\n`;
 const CONTRIBUTOR_LINE = 'Contributor for this entry: Cat';
 
-function sourceResponse(
+function englishResponse(
+  { shell, }: { readonly shell: ReturnType<typeof buildImmutableShell>; },
+): SlotDocumentResponse {
+  return {
+    slots: Object.fromEntries(shell.slots.map(function pair(slot,) {
+      const prior = shell.body[slot.startOffset - 1];
+      const leadingSpace = (prior !== undefined) && (prior.trim() !== '') ? ' ' : '';
+      return [slot.key, `${leadingSpace}English text for ${slot.key}.`,];
+    },),),
+  };
+}
+
+function sourceEchoResponse(
   { shell, }: { readonly shell: ReturnType<typeof buildImmutableShell>; },
 ): SlotDocumentResponse {
   return {
@@ -42,7 +55,7 @@ export function runSlotLocalControls(): void {
       return (slot.startOffset < contributorEnd) && (contributorStart < slot.endOffset);
     },))
     throw new Error('immutable shell contributor authority control failed');
-  const response = sourceResponse({ shell, });
+  const response = englishResponse({ shell, });
   const isSlotDocumentResponse = slotDocumentGuard({ shell, });
   if (!isSlotDocumentResponse(response,))
     throw new Error('immutable shell valid response control failed');
@@ -71,6 +84,22 @@ export function runSlotLocalControls(): void {
   },);
   if (!document.includes('https://example.com',) || !document.includes('cat.webp',) || !document.includes('[^1]',))
     throw new Error('immutable shell syntax preservation control failed');
+  let sourceEchoRefused = false;
+  try {
+    validateSlotCandidate({
+      shell,
+      response: sourceEchoResponse({ shell, }),
+      sourceText: SOURCE,
+      archiveText: ARCHIVE,
+      sourcePictures: photoReferences({ text: SOURCE, }),
+    },);
+  }
+  catch (error) {
+    sourceEchoRefused = error instanceof DestinationScriptError
+      && error.message.includes('in s',);
+  }
+  if (!sourceEchoRefused)
+    throw new Error('immutable shell destination-script control failed');
   const injected: SlotDocumentResponse = {
     slots: { ...response.slots, [firstKey]: '] {unsafe} `marker`', },
   };

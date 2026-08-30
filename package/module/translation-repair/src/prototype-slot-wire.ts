@@ -10,6 +10,48 @@ import {
 } from './prototype-slot-model.ts';
 import { validateSerialCandidate, } from './prototype-serial-producer-plan.ts';
 
+export class DestinationScriptError extends Error {
+  public constructor(message: string,) {
+    super(message,);
+    this.name = DestinationScriptError.name;
+  }
+}
+
+function isHanCodePoint({ codePoint, }: { readonly codePoint: number; }): boolean {
+  // Unicode 17 unified and compatibility ideograph ranges include Extension I.
+  // Punctuation is intentionally outside this zh-to-en source-echo refusal.
+  return ((codePoint >= 0x3400) && (codePoint <= 0x4DBF))
+    || ((codePoint >= 0x4E00) && (codePoint <= 0x9FFF))
+    || ((codePoint >= 0xF900) && (codePoint <= 0xFAFF))
+    || ((codePoint >= 0x20000) && (codePoint <= 0x2EE5D))
+    || ((codePoint >= 0x2F800) && (codePoint <= 0x2FA1F))
+    || ((codePoint >= 0x30000) && (codePoint <= 0x323AF));
+}
+
+function containsHanScript({ text, }: { readonly text: string; }): boolean {
+  return [...text,].some(function han(character,) {
+    const codePoint = character.codePointAt(0,);
+    return (codePoint !== undefined) && isHanCodePoint({ codePoint, });
+  },);
+}
+
+function assertDestinationScript(
+  {
+    shell,
+    response,
+  }: {
+    readonly shell: ImmutableShell;
+    readonly response: SlotDocumentResponse;
+  },
+): void {
+  const retained = shell.slots.find(function retainedHan(slot,) {
+    const value = response.slots[slot.key];
+    return (value !== undefined) && containsHanScript({ text: value, });
+  },);
+  if (retained !== undefined)
+    throw new DestinationScriptError(`immutable shell candidate retained Han script in ${retained.key}`);
+}
+
 function structuralSignature({ text, }: { readonly text: string; }): string {
   const parsed = parseDocument({ text, },);
   return JSON.stringify({
@@ -34,6 +76,7 @@ export function validateSlotCandidate(
     readonly sourcePictures: readonly { readonly assetName: string; }[];
   },
 ): string {
+  assertDestinationScript({ shell, response, });
   const document = compileSlotDocument({ shell, response, });
   if (structuralSignature({ text: document, }) !== structuralSignature({ text: shell.controlDocument, }))
     throw new Error('immutable shell structural signature changed');

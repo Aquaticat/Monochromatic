@@ -9,10 +9,12 @@ export function createSlotScriptedClient(
   {
     shell,
     invalidAuthors,
+    sourceEchoAuthors,
     hang,
   }: {
     readonly shell: ImmutableShell;
     readonly invalidAuthors: ReadonlySet<string>;
+    readonly sourceEchoAuthors: ReadonlySet<string>;
     readonly hang: boolean;
   },
 ): SyntheticClient {
@@ -54,7 +56,11 @@ export function createSlotScriptedClient(
           return !(invalidAuthors.has(authorId,) && (index === 0));
         },)
         .map(function pair(slot,): readonly [string, string] {
-          return [slot.key, slot.source,];
+          if (sourceEchoAuthors.has(authorId,))
+            return [slot.key, slot.source,];
+          const prior = shell.body[slot.startOffset - 1];
+          const leadingSpace = (prior !== undefined) && (prior.trim() !== '') ? ' ' : '';
+          return [slot.key, `${leadingSpace}English text for ${slot.key}.`,];
         },);
       const value: SlotDocumentResponse = { slots: Object.fromEntries(pairs,), };
       const rawText = JSON.stringify(value,);
