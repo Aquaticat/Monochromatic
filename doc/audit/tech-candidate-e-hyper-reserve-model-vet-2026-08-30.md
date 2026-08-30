@@ -93,9 +93,33 @@ and Anthropic Messages image input.
 
 ## Query ledger
 
-No external query has run yet.
-Current provider catalog enumeration is complete and finite at 7 rows.
-No pagination applies to repository source.
+Initial web search ran every frozen query on 2026-08-30.
+Provider returned 10 results for each web query page;
+all newly discovered serious candidates were then checked against primary sources.
+
+- `MiniMax M3 official model vision structured output context length`:
+  official MiniMax model page,
+  GitHub model repository,
+  and framework docs discovered.
+- `MiniMax M3 API tool use JSON schema official`:
+  official MiniMax Tool Use guide and API references discovered.
+- `Charm Hyper MiniMax M3 model catalog vision`:
+  official Hyper model and list-model endpoint docs discovered.
+- `MiniMax M3 alternative vision language model API`:
+  official MiniMax model page and peer gateway pages discovered.
+
+One expansion round then ran and froze discovery permanently:
+
+- `Kimi K2.6 official vision multimodal model output context`
+- `Qwen 3.7 official vision model flash plus multimodal`
+- `Hyper Anthropic Messages forced tool choice image attachment structured output`
+- `MiniMax M3 forced tool choice strict JSON schema Anthropic`
+
+Official Hyper `GET /v1/models` returned 29 rows.
+Direct saved response at `~/temp/agent/hyper-models-E1-reserve-20260830.json` listed 11 vision-capable rows.
+Checked-in project catalog is an allowlist of 7 rows rather than live-catalog mirror.
+No pagination applies to provider endpoint or repository source.
+Discovery is saturated for current provider and active project roster.
 
 ## Candidate ledger
 
@@ -117,13 +141,15 @@ No pagination applies to repository source.
 
 ### `minimax-m3`
 
-- Discovery: current Hyper catalog.
+- Discovery: checked-in Hyper allowlist and live provider catalog.
 - Screening: serious alternative.
-- Static evidence: Hyper-only identity,
-  image capability true,
+- Static evidence: active Hyper-only roster identity,
+  live image capability true,
   provider maximum output 512,000 tokens,
   with project answer ceiling 32,000 tokens.
-- Pending: official-source check,
+- Official MiniMax model page and repository describe native multimodality and 1M upstream context.
+- Official Tool Use guide documents Anthropic-compatible tool input schemas and interleaved reasoning.
+- Pending: strict-schema vision probe,
   strict-schema vision probe,
   complete author validation,
   quote-bound audit validation,
@@ -152,8 +178,35 @@ No pagination applies to repository source.
 
 - Discovery: current Hyper catalog.
 - Screening: exits.
-- Hard-gate failure: image capability false.
+- Hard-gate failure: live `capabilities.vision` is false.
 - Width-64 structured-shape success does not satisfy image hard gate.
+
+### Live vision rows outside active roster
+
+Live provider catalog also lists:
+
+- `kimi-k2.6`
+- `kimi-k2.7-code`
+- `qwen3.6-flash`
+- `qwen3.6-plus`
+- `qwen3.7-flash`
+- `qwen3.7-plus`
+- `qwen3.8-flash`
+- `qwen3.8-max`
+
+They exit this bounded evaluation because none is current `RosterModelId` or checked-in Hyper allowlist row.
+Selecting one would first require separate roster-expansion evaluation and owner allowlisting,
+not reserve-seat selection among existing integrated models.
+`qwen3.8-max` also remains excluded by prior owner decision and unreachable-run evidence.
+This exit is compatibility scope,
+not quality judgment.
+
+### Provider documentation contradiction
+
+Hyper model prose says attachment-capable examples include DeepSeek V4 Flash and GLM 5.1.
+Same provider's live `GET /v1/models` reports `capabilities.vision: false` for both.
+Live machine-readable endpoint controls screening because API docs instruct clients to use that field before attachments.
+The contradiction is recorded separately in troubleshooting documentation.
 
 ## Managed-service gates
 
@@ -195,6 +248,10 @@ Sensitivity will vary each weight from 1 through 5 and every medium or low-confi
 No candidate command has run yet.
 Planned execution uses existing inspected project client and task runner,
 not third-party local code.
+`hyper-client.ts` builds Anthropic Messages request,
+forces schema tool,
+streams response,
+and applies provider-neutral JSON guard.
 It sends 2 zero-retry Hyper payloads for only surviving finalist:
 
 - complete 23-slot immutable-shell author with full source,
@@ -220,7 +277,51 @@ No retry or alternate model is authorized by this manifest.
 
 ## Evidence records
 
-No targeted validation evidence yet.
+### Official MiniMax capability
+
+- Candidate: MiniMax M3 through existing Hyper service.
+- Claim: native multimodality and long context fit complete source plus image.
+- Status: hard-gate support pending provider-bound validation.
+- Primary sources:
+  `https://www.minimax.io/models/text/m3` and
+  `https://github.com/MiniMax-AI/MiniMax-M3`,
+  accessed 2026-08-30.
+- Evidence: both describe native multimodal model;
+  official page states 1M upstream context with guaranteed minimum 512K.
+- Outcome: pass documentation gate,
+  runtime pending.
+
+### Official tool schema capability
+
+- Candidate: MiniMax M3.
+- Claim: accepts Anthropic-compatible tool schemas.
+- Status: hard-gate support pending Hyper gateway validation.
+- Primary source:
+  `https://platform.minimax.io/docs/guides/text-m3-function-call`,
+  accessed 2026-08-30.
+- Evidence: guide shows Anthropic `tools[].input_schema`,
+  tool-use blocks,
+  and complete reasoning preservation.
+- Outcome: pass documentation gate,
+  strict forced-tool runtime pending.
+
+### Hyper live model capability
+
+- Candidate: every current Hyper model.
+- Claim: model id,
+  output ceiling,
+  and image capability.
+- Status: primary operational evidence.
+- Primary source:
+  `https://hyper.charm.land/v1/models`,
+  accessed and saved 2026-08-30.
+- Command:
+  `curl --silent --show-error --fail https://hyper.charm.land/v1/models`.
+- Result: 29 rows,
+  11 with `capabilities.vision: true`;
+  `minimax-m3` reports 512,000 context and output tokens.
+- Outcome: MiniMax passes provider static gate;
+  current active-roster peers fail identity or image gates.
 
 ## Scoring and sensitivity
 
