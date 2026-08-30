@@ -20,8 +20,10 @@ import { runSlotLocalControls, } from '../prototype-slot-controls.ts';
 import {
   selectSlotAuthor,
   slotAuthorMessages,
+  slotCopyEditorMessages,
   slotReviserMessages,
   SLOT_AUTHOR_NODES,
+  SLOT_COPY_EDITOR_NODE,
   SLOT_REVISER_NODE,
 } from '../prototype-slot-plan.ts';
 import { publishSlotPrototype, } from '../prototype-slot-publication.ts';
@@ -71,14 +73,14 @@ const responseFormat = slotResponseFormat({ shell, });
 const manifestPlan = {
   version: 1,
   prototype: 'immutable-shell-slot-compiler-d',
-  validator: 'immutable-shell-v3',
+  validator: 'immutable-shell-v4',
   entryId: ENTRY_ID,
   sourceDigest: hashContent({ content: sourceText, }),
   archiveDigest: hashContent({ content: archiveText, }),
   shellDigest: shell.shellDigest,
   slotKeys: shell.slots.map(function key(slot,) { return slot.key; },),
   media: media.map(function manifest(item,) { return { assetName: item.assetName, digest: item.digest, }; },),
-  waves: [SLOT_AUTHOR_NODES, [SLOT_REVISER_NODE,],],
+  waves: [SLOT_AUTHOR_NODES, [SLOT_REVISER_NODE,], [SLOT_COPY_EDITOR_NODE,],],
   retryLimit: 0,
 } as const;
 const manifestDigest = hashContent({ content: JSON.stringify(manifestPlan,), },);
@@ -98,8 +100,15 @@ if (primaryAuthor === undefined)
 const sourceEchoAuthors = scripted === 'primary-source-echo'
   ? new Set([primaryAuthor.id,])
   : new Set<string>();
+const presentationArtifactAuthors = scripted === 'primary-presentation-artifact'
+  ? new Set([primaryAuthor.id,])
+  : new Set<string>();
 const invalidAuthors = scripted === 'reviser-invalid'
   ? new Set([SLOT_REVISER_NODE.id,])
+  : scripted === 'copy-editor-invalid'
+    ? new Set([SLOT_COPY_EDITOR_NODE.id,])
+    : scripted === 'reviser-copy-editor-invalid'
+      ? new Set([SLOT_REVISER_NODE.id, SLOT_COPY_EDITOR_NODE.id,])
   : scripted === 'primary-invalid'
   ? new Set(['primary-author',])
   : scripted === 'primary-fallback-invalid'
@@ -116,6 +125,7 @@ const client = scripted === undefined
       shell,
       invalidAuthors,
       sourceEchoAuthors,
+      presentationArtifactAuthors,
       hang: scripted === 'hang',
     },);
 const controller = new AbortController();
@@ -152,12 +162,12 @@ if (selected === undefined) {
   await writePrototypeJson({ path: join(outputDir, 'result.json',), value: {
     prototype: 'immutable-shell-slot-compiler-d',
     status: 'production-unavailable',
-    payloadCeiling: SLOT_AUTHOR_NODES.length + 1,
-    dependencyWaves: 2,
+    payloadCeiling: SLOT_AUTHOR_NODES.length + 2,
+    dependencyWaves: 3,
     manifestDigest,
     slotCount: shell.slots.length,
     nodeRecords: authorRecords,
-    unattemptedNodes: [SLOT_REVISER_NODE.id,],
+    unattemptedNodes: [SLOT_REVISER_NODE.id, SLOT_COPY_EDITOR_NODE.id,],
     invocationDurationMs: Date.now() - startedAt,
   }, },);
   throw new Error('ProductionUnavailableError: every finite immutable-shell author was unusable');
@@ -184,7 +194,31 @@ const reviserState = await runSlotCandidateNode({
   restart,
   signal,
 },);
-const finalDocument = reviserState.document ?? selected.document;
+const currentResponse = reviserState.value ?? selected.response;
+const currentDocument = reviserState.document ?? selected.document;
+const copyEditorState = await runSlotCandidateNode({
+  outputDir,
+  client,
+  node: SLOT_COPY_EDITOR_NODE,
+  manifestDigest,
+  messages: slotCopyEditorMessages({
+    shell,
+    sourceText,
+    archiveText,
+    currentResponse,
+    currentDocument,
+    media,
+  },),
+  responseFormat,
+  validate: slotDocumentGuard({ shell, }),
+  shell,
+  sourceText,
+  archiveText,
+  sourcePictures,
+  restart,
+  signal,
+},);
+const finalDocument = copyEditorState.document ?? currentDocument;
 await publishSlotPrototype({
   outputDir,
   entryId: ENTRY_ID,
@@ -192,8 +226,9 @@ await publishSlotPrototype({
   selectedAuthor: selected,
   finalDocument,
   ...(reviserState.document === undefined ? {} : { reviserDocument: reviserState.document, }),
+  ...(copyEditorState.document === undefined ? {} : { copyEditorDocument: copyEditorState.document, }),
   usable,
-  records: [...authorRecords, reviserState.record,],
+  records: [...authorRecords, reviserState.record, copyEditorState.record,],
   slotCount: shell.slots.length,
   startedAt,
   signal,

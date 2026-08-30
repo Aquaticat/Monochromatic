@@ -7,7 +7,11 @@ import {
 import { join, } from 'node:path';
 
 import { hashContent, } from './document-node.ts';
-import { SLOT_AUTHOR_NODES, SLOT_REVISER_NODE, } from './prototype-slot-plan.ts';
+import {
+  SLOT_AUTHOR_NODES,
+  SLOT_COPY_EDITOR_NODE,
+  SLOT_REVISER_NODE,
+} from './prototype-slot-plan.ts';
 import type { SlotNodeRecord, } from './prototype-slot-runtime.ts';
 import { writePrototypeJson, } from './prototype-brief-editor-runtime.ts';
 import { writeFileAtomic, } from './corpus-run/atomic-write.ts';
@@ -20,6 +24,7 @@ export async function publishSlotPrototype(
     selectedAuthor,
     finalDocument,
     reviserDocument,
+    copyEditorDocument,
     usable,
     records,
     slotCount,
@@ -32,6 +37,7 @@ export async function publishSlotPrototype(
     readonly selectedAuthor: { readonly id: string; readonly document: string; };
     readonly finalDocument: string;
     readonly reviserDocument?: string;
+    readonly copyEditorDocument?: string;
     readonly usable: ReadonlyMap<string, { readonly document: string; }>;
     readonly records: readonly SlotNodeRecord[];
     readonly slotCount: number;
@@ -63,6 +69,16 @@ export async function publishSlotPrototype(
       candidateDigest: reviserDocument === undefined ? null : hashContent({ content: reviserDocument, }),
     },
   },);
+  await writePrototypeJson({
+    path: join(outputDir, `decision-${SLOT_COPY_EDITOR_NODE.id}.json`,),
+    value: {
+      id: SLOT_COPY_EDITOR_NODE.id,
+      modelId: SLOT_COPY_EDITOR_NODE.modelId,
+      manifestDigest,
+      adopted: copyEditorDocument !== undefined,
+      candidateDigest: copyEditorDocument === undefined ? null : hashContent({ content: copyEditorDocument, }),
+    },
+  },);
   const pagePath = join(outputDir, 'fixed', 'people', entryId, 'page.en.md',);
   try {
     await mkdir(join(outputDir, 'fixed', 'people', entryId,), { recursive: true, },);
@@ -82,16 +98,17 @@ export async function publishSlotPrototype(
     value: {
       prototype: 'immutable-shell-slot-compiler-d',
       status: 'written-pending-output-review',
-      payloadCeiling: SLOT_AUTHOR_NODES.length + 1,
-      dependencyWaves: 2,
+      payloadCeiling: SLOT_AUTHOR_NODES.length + 2,
+      dependencyWaves: 3,
       manifestDigest,
       slotCount,
       selectedAuthor: selectedAuthor.id,
       reviserAdopted: reviserDocument !== undefined,
+      copyEditorAdopted: copyEditorDocument !== undefined,
       nodeRecords: records,
       invocationDurationMs,
       finalDigest: hashContent({ content: finalDocument, }),
     },
   },);
-  console.log(`PROTOTYPE ${entryId} design=D status=written-pending-output-review author=${selectedAuthor.id} reviser=${String(reviserDocument !== undefined,)} slots=${String(slotCount,)} ms=${String(invocationDurationMs,)}`,);
+  console.log(`PROTOTYPE ${entryId} design=D status=written-pending-output-review author=${selectedAuthor.id} reviser=${String(reviserDocument !== undefined,)} copyEditor=${String(copyEditorDocument !== undefined,)} slots=${String(slotCount,)} ms=${String(invocationDurationMs,)}`,);
 }

@@ -10,11 +10,13 @@ export function createSlotScriptedClient(
     shell,
     invalidAuthors,
     sourceEchoAuthors,
+    presentationArtifactAuthors,
     hang,
   }: {
     readonly shell: ImmutableShell;
     readonly invalidAuthors: ReadonlySet<string>;
     readonly sourceEchoAuthors: ReadonlySet<string>;
+    readonly presentationArtifactAuthors: ReadonlySet<string>;
     readonly hang: boolean;
   },
 ): SyntheticClient {
@@ -44,6 +46,7 @@ export function createSlotScriptedClient(
         { token: 'priority-one', id: 'fallback-author', },
         { token: 'priority-two', id: 'reserve-author', },
         { token: 'finite final holistic', id: 'final-reviser', },
+        { token: 'finite final copy', id: 'final-copy-editor', },
       ].filter(function matches(role,) { return system.includes(role.token,); },);
       const role = roles[0];
       if ((roles.length !== 1) || (role === undefined))
@@ -60,7 +63,10 @@ export function createSlotScriptedClient(
             return [slot.key, slot.source,];
           const prior = shell.body[slot.startOffset - 1];
           const leadingSpace = (prior !== undefined) && (prior.trim() !== '') ? ' ' : '';
-          return [slot.key, `${leadingSpace}English text for ${slot.key}.`,];
+          const artifact = presentationArtifactAuthors.has(authorId,) && (slot.key === shell.slots[0]?.key)
+            ? '↵'
+            : '';
+          return [slot.key, `${leadingSpace}English${artifact} text for ${slot.key} by ${authorId}.`,];
         },);
       const value: SlotDocumentResponse = { slots: Object.fromEntries(pairs,), };
       const rawText = JSON.stringify(value,);

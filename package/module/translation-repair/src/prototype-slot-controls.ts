@@ -2,7 +2,12 @@
 
 import { carriesPicture, } from './chat-contract.ts';
 import { photoReferences, } from './photo-reference.ts';
-import { slotAuthorMessages, selectSlotAuthor, SLOT_AUTHOR_NODES, } from './prototype-slot-plan.ts';
+import {
+  selectSlotAuthor,
+  slotAuthorMessages,
+  slotCopyEditorMessages,
+  SLOT_AUTHOR_NODES,
+} from './prototype-slot-plan.ts';
 import { compileSlotDocument, } from './prototype-slot-compile.ts';
 import {
   MAX_SLOT_CHARACTERS,
@@ -10,6 +15,7 @@ import {
 } from './prototype-slot-model.ts';
 import { buildImmutableShell, } from './prototype-slot-shell.ts';
 import {
+  CandidatePresentationArtifactError,
   DestinationScriptError,
   slotDocumentGuard,
   validateSlotCandidate,
@@ -119,6 +125,39 @@ export function runSlotLocalControls(): void {
     if (!rangeBoundaryRefused)
       throw new Error(`immutable shell destination-script range control failed at ${String(codePoint,)}`);
   }
+  for (const codePoint of [0x0000, 0x0009, 0x001F, 0x007F, 0x009F, 0x21B5, 0x23CE, 0x2400, 0x2426, 0xFFFD,]) {
+    let artifactRefused = false;
+    try {
+      validateSlotCandidate({
+        shell,
+        response: {
+          slots: { ...response.slots, [firstKey]: `English ${String.fromCodePoint(codePoint,)} text`, },
+        },
+        sourceText: SOURCE,
+        archiveText: ARCHIVE,
+        sourcePictures: photoReferences({ text: SOURCE, }),
+      },);
+    }
+    catch (error) {
+      artifactRefused = error instanceof CandidatePresentationArtifactError
+        && error.message.includes(firstKey,)
+        && error.message.includes(`U+${codePoint.toString(16,).toUpperCase().padStart(4, '0',)}`,);
+    }
+    if (!artifactRefused)
+      throw new Error(`immutable shell presentation-artifact control failed at ${String(codePoint,)}`);
+  }
+  const lineBreakResponse: SlotDocumentResponse = {
+    slots: { ...response.slots, [firstKey]: 'English\ntext', },
+  };
+  const lineBreakDocument = validateSlotCandidate({
+    shell,
+    response: lineBreakResponse,
+    sourceText: SOURCE,
+    archiveText: ARCHIVE,
+    sourcePictures: photoReferences({ text: SOURCE, }),
+  },);
+  if (!lineBreakDocument.includes('English text',))
+    throw new Error('immutable shell compiler line-break normalization control failed');
   const injected: SlotDocumentResponse = {
     slots: { ...response.slots, [firstKey]: '] {unsafe} `marker`', },
   };
@@ -201,4 +240,14 @@ export function runSlotLocalControls(): void {
   },);
   if (!carriesPicture({ messages, }))
     throw new Error('immutable shell vision control failed');
+  const copyEditorMessages = slotCopyEditorMessages({
+    shell,
+    sourceText: SOURCE,
+    archiveText: ARCHIVE,
+    currentResponse: response,
+    currentDocument: document,
+    media: [{ assetName: 'cat.webp', dataUri: 'data:image/webp;base64,AA==', digest: 'fixture', },],
+  },);
+  if (!carriesPicture({ messages: copyEditorMessages, }))
+    throw new Error('immutable shell copy-editor vision control failed');
 }

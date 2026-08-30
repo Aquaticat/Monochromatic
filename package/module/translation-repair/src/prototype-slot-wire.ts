@@ -17,6 +17,54 @@ export class DestinationScriptError extends Error {
   }
 }
 
+export class CandidatePresentationArtifactError extends Error {
+  public constructor(message: string,) {
+    super(message,);
+    this.name = CandidatePresentationArtifactError.name;
+  }
+}
+
+function isPresentationArtifactCodePoint({ codePoint, }: { readonly codePoint: number; }): boolean {
+  // LF and CR are compiler-normalized; every other C0/C1 control is refused.
+  // Unicode 17 assigns control pictures only through U+2426.
+  const isRawC0 = ((codePoint >= 0x0000) && (codePoint <= 0x0009))
+    || ((codePoint >= 0x000B) && (codePoint <= 0x000C))
+    || ((codePoint >= 0x000E) && (codePoint <= 0x001F));
+  const isRawC1 = (codePoint >= 0x007F) && (codePoint <= 0x009F);
+  const isControlPicture = (codePoint >= 0x2400) && (codePoint <= 0x2426);
+  return isRawC0
+    || isRawC1
+    || isControlPicture
+    || (codePoint === 0x21B5)
+    || (codePoint === 0x23CE)
+    || (codePoint === 0xFFFD);
+}
+
+function assertNoPresentationArtifacts(
+  {
+    shell,
+    response,
+  }: {
+    readonly shell: ImmutableShell;
+    readonly response: SlotDocumentResponse;
+  },
+): void {
+  for (const slot of shell.slots) {
+    const value = response.slots[slot.key];
+    if (value === undefined)
+      continue;
+    for (const character of value) {
+      const codePoint = character.codePointAt(0,);
+      if ((codePoint === undefined) || !isPresentationArtifactCodePoint({ codePoint, }))
+        continue;
+      const locator = `U+${codePoint.toString(16,).toUpperCase().padStart(4, '0',)}`;
+      throw new CandidatePresentationArtifactError(
+        `immutable shell candidate retained presentation artifact ${locator} in ${slot.key}`,
+      );
+    }
+  }
+}
+
 function isHanCodePoint({ codePoint, }: { readonly codePoint: number; }): boolean {
   // Unicode 17 unified and compatibility ideograph ranges include Extension I.
   // Punctuation is intentionally outside this zh-to-en source-echo refusal.
@@ -77,6 +125,7 @@ export function validateSlotCandidate(
   },
 ): string {
   assertDestinationScript({ shell, response, });
+  assertNoPresentationArtifacts({ shell, response, });
   const document = compileSlotDocument({ shell, response, });
   if (structuralSignature({ text: document, }) !== structuralSignature({ text: shell.controlDocument, }))
     throw new Error('immutable shell structural signature changed');

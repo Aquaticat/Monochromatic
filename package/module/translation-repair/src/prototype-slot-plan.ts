@@ -45,6 +45,13 @@ export const SLOT_REVISER_NODE: SlotAuthorNode = {
   role: 'finite final holistic immutable-shell reviser',
 };
 
+export const SLOT_COPY_EDITOR_NODE: SlotAuthorNode = {
+  id: 'final-copy-editor',
+  modelId: 'hf:Qwen/Qwen3.8-27B',
+  priority: 0,
+  role: 'finite final copy editor for complete immutable-shell candidate',
+};
+
 export function slotAuthorMessages(
   {
     node,
@@ -60,7 +67,7 @@ export function slotAuthorMessages(
     readonly media: readonly PrototypeMedia[];
   },
 ): readonly (ChatMessage | VisionMessage)[] {
-  const system = `You are ${node.role}. Produce every value of one complete English slot record. Together the slots compile into one publication-ready document. Own correct meaning, every source proposition, no unsupported addition, identity, attribution, grammar, usage, clear reference, consistent tense, chronology, paragraph relations, register, and coherent whole-page voice. Inspect every image. Preserve source-supported details, rhetorical repetitions, specific roles, and established archive wording. Every value must be English: source echo or retained Han-script prose is unusable. Reject source-language calques; use idiomatic English while preserving meaning and register. Each manifest key must appear exactly once. Shell boundaries are immutable: do not move words across adjacent syntax, and include leading target-language spacing inside a value when its left shell context requires it. Return plain prose for that slot only: no Markdown container syntax, front matter, links, image syntax, footnote markers, alternatives, scores, approvals, audit ids, or finding-only report.`;
+  const system = `You are ${node.role}. Produce every value of one complete English slot record. Together the slots compile into one publication-ready document. Own correct meaning, every source proposition, no unsupported addition, identity, attribution, grammar, usage, clear reference, consistent tense, chronology, paragraph relations, register, and coherent whole-page voice. Inspect every image. Preserve source-supported details, rhetorical repetitions, specific roles, and established archive wording. Every value must be English: source echo or retained Han-script prose is unusable. Reject source-language calques; use idiomatic English while preserving meaning and register. Each manifest key must appear exactly once. Shell boundaries are immutable: do not move words across adjacent syntax, and include leading target-language spacing inside a value when its left shell context requires it. Do not emit visible line-break or control glyphs; shell owns paragraph structure. Return plain prose for that slot only: no Markdown container syntax, front matter, links, image syntax, footnote markers, alternatives, scores, approvals, audit ids, or finding-only report.`;
   const slotContract = shell.slots.map(function contract(slot,) {
     return {
       key: slot.key,
@@ -104,7 +111,7 @@ export function slotReviserMessages(
     readonly media: readonly PrototypeMedia[];
   },
 ): readonly (ChatMessage | VisionMessage)[] {
-  const system = `You are ${SLOT_REVISER_NODE.role}. Return one complete English slot record that compiles into final publication-ready document. Read every source slot against BASE, preserve every source-supported fact, specific role, identity, rhetorical repetition, paragraph relation, and sound base wording, while correcting concrete wrong meaning, omission, unsupported addition, grammar, reference, tense, register, or awkward literal phrasing. Every value must be English: source echo or retained Han-script prose is unusable. Do not shorten merely for style. Inspect every image. Before returning, line-edit the complete page for idiomatic English, precise technical verbs, unambiguous pronouns, and exact attribution of every action to its source actor. Shell boundaries are immutable: do not move words across adjacent syntax, and include leading target-language spacing inside a value when its left shell context requires it. Each manifest key must appear exactly once. Return plain prose values only, with no Markdown container syntax, front matter, links, image syntax, footnote markers, alternatives, scores, approvals, audit ids, or finding-only report.`;
+  const system = `You are ${SLOT_REVISER_NODE.role}. Return one complete English slot record that compiles into final publication-ready document. Read every source slot against BASE, preserve every source-supported fact, specific role, identity, rhetorical repetition, paragraph relation, and sound base wording, while correcting concrete wrong meaning, omission, unsupported addition, grammar, reference, tense, register, or awkward literal phrasing. Every value must be English: source echo or retained Han-script prose is unusable. Do not shorten merely for style. Inspect every image. Before returning, line-edit the complete page for idiomatic English, precise technical verbs, unambiguous pronouns, and exact attribution of every action to its source actor. Shell boundaries are immutable: do not move words across adjacent syntax, and include leading target-language spacing inside a value when its left shell context requires it. Each manifest key must appear exactly once. Do not emit visible line-break or control glyphs; shell owns paragraph structure. Return plain prose values only, with no Markdown container syntax, front matter, links, image syntax, footnote markers, alternatives, scores, approvals, audit ids, or finding-only report.`;
   const slotContract = shell.slots.map(function contract(slot,) {
     return {
       key: slot.key,
@@ -116,6 +123,50 @@ export function slotReviserMessages(
     };
   },);
   const text = `SOURCE DOCUMENT:\n${sourceText}\n\nARCHIVE EVIDENCE:\n${archiveText}\n\nSLOT CONTRACT:\n${JSON.stringify(slotContract,)}\n\nBASE SLOT RECORD:\n${JSON.stringify(baseResponse,)}\n\nBASE DOCUMENT:\n${baseDocument}`;
+  const content: readonly ContentPart[] = [
+    { type: 'text', text, },
+    ...media.flatMap(function image(item,): readonly ContentPart[] {
+      return [
+        { type: 'text', text: `MEDIA ${item.assetName}`, },
+        { type: 'image_url', image_url: { url: item.dataUri, }, },
+      ];
+    },),
+  ];
+  return [
+    { role: 'system', content: system, },
+    { role: 'user', content, },
+  ];
+}
+
+export function slotCopyEditorMessages(
+  {
+    shell,
+    sourceText,
+    archiveText,
+    currentResponse,
+    currentDocument,
+    media,
+  }: {
+    readonly shell: ImmutableShell;
+    readonly sourceText: string;
+    readonly archiveText: string;
+    readonly currentResponse: SlotDocumentResponse;
+    readonly currentDocument: string;
+    readonly media: readonly PrototypeMedia[];
+  },
+): readonly (ChatMessage | VisionMessage)[] {
+  const system = `You are ${SLOT_COPY_EDITOR_NODE.role}. Return one complete English slot record that compiles into final publication-ready document. CURRENT may be unrevised author output or holistic revision, so own entire quality contract rather than assuming prior work is sound. Read complete CURRENT against full source and archive. Preserve every source proposition, identity, specific role, rhetorical repetition, chronology, paragraph relation, and sound wording. Correct every source-language calque, grammar or idiom defect, imprecise technical or legal term, ambiguous pronoun, wrong actor attribution, chronology contradiction, register error, unsupported addition, and omission. Inspect every image. Every value must be English, with no retained Han-script prose. Do not shorten merely for style. Shell boundaries are immutable: do not move words across adjacent syntax, and include leading target-language spacing inside a value when its left shell context requires it. Each manifest key must appear exactly once. Do not emit visible line-break or control glyphs; shell owns paragraph structure. Return plain prose values only, with no Markdown container syntax, front matter, links, image syntax, footnote markers, alternatives, scores, approvals, audit ids, or finding-only report.`;
+  const slotContract = shell.slots.map(function contract(slot,) {
+    return {
+      key: slot.key,
+      source: slot.source,
+      kind: slot.kind,
+      parentKind: slot.parentKind,
+      leftShellContext: shell.body.slice(Math.max(0, slot.startOffset - 24,), slot.startOffset,),
+      rightShellContext: shell.body.slice(slot.endOffset, slot.endOffset + 24,),
+    };
+  },);
+  const text = `SOURCE DOCUMENT:\n${sourceText}\n\nARCHIVE EVIDENCE:\n${archiveText}\n\nSLOT CONTRACT:\n${JSON.stringify(slotContract,)}\n\nCURRENT SLOT RECORD:\n${JSON.stringify(currentResponse,)}\n\nCURRENT DOCUMENT:\n${currentDocument}`;
   const content: readonly ContentPart[] = [
     { type: 'text', text, },
     ...media.flatMap(function image(item,): readonly ContentPart[] {
