@@ -35,23 +35,70 @@ and
 as replacement architecture.
 Moving them behind new interface would not fix design.
 
-### Quality deficit is never terminal no-output result
+### A normal run returns good output
 
-Successful run always returns good output.
-Pipeline must not call quality refusal,
+A normal run with working model and publication infrastructure always returns one good complete document.
+Pipeline must not return quality refusal,
 `ERROR`,
-or `INCOMPLETE` terminal completion.
-Rejected wording is not output,
-but its rejection cannot end run with nothing.
+`INCOMPLETE`,
+or visible suspended translation because a reviewer,
+auditor,
+reviser,
+or generic quality Gate failed.
+That behavior leaves caller hanging and does not meet output contract.
 
-Operational loss can suspend durable work.
-Suspended work is not terminal run result and resumes from checkpoint without whole-entry restart.
-Only terminal state visible as completed run carries publishable output.
+Model nodes are preparation-evidence or candidate-producer nodes.
+Preparation-evidence node may produce brief or specification before authorship;
+its failure contributes nothing and cannot withhold producer work.
+Every post-preparation model node is candidate producer.
+First adopted producer owns full concrete quality contract:
+fidelity,
+completeness,
+identity,
+grammar,
+clear references,
+consistent tense,
+paragraph relations,
+and register.
+Later stages improve named defect classes and are not required rescue for deficient baseline.
+Each stage returns a complete candidate under one named responsibility,
+or it has no effect and prior complete candidate remains available byte-for-byte.
+A non-producing node cannot gain authority to withhold output.
+Before first candidate exists,
+finite manifest may try each statically named fallback producer once.
+Operational run begins after provider preflight and finite manifest persistence.
+First candidate is adopted only after one producer yields complete document passing deterministic obligations.
+If every planned producer has transport failure or unusable response before first adoption,
+command throws bounded `ProductionUnavailableError` with exhausted nodes.
+It does not suspend,
+auto-requeue,
+or publish unchecked archive fallback.
+`ProductionUnavailableError` concerns exhausted candidate producers only;
+failed preparation-evidence node never causes it.
+This physical infrastructure or model-output failure is only no-output exception.
 
-Finite invocation and nonterminal suspension must be kept distinct.
-An invocation may checkpoint after finite planned work;
-run remains open until output exists.
-This does not authorize hidden unbounded loop in process.
+Deterministic checkpoints retain completed nodes for exact cancellation and restart.
+They are internal recovery mechanics,
+not user-visible terminal or indefinite suspended state.
+Restart requires same manifest digest and checkpoint,
+executes pending nodes only,
+and cannot add manifest nodes.
+Completed,
+failed,
+unusable,
+aborted,
+or indeterminate nodes are spent.
+Indeterminate transmission may reuse recorded payload but may never resend canonical prompt.
+Caller abort bypasses fallback and throws exact `signal.reason`.
+
+Assembly,
+atomic write,
+or readback failure after candidate exists throws bounded `PublicationUnavailableError`.
+It does not suspend,
+auto-requeue,
+publish partial bytes,
+publish archive fallback,
+or become quality outcome.
 
 ### Naturalness is not a measurement
 
@@ -91,8 +138,9 @@ or another correction loop treats symptom.
 Replacement must make quality responsibility part of transformation that creates wording.
 
 Every text-producing stage needs explicit postcondition and accountable owner.
-Later stage may consume evidence or assemble approved work,
-but cannot be catch-all panel that rescues arbitrary upstream defects.
+Later stage returns complete candidate plus exact edit transaction anchored to prior bytes and source evidence.
+Deterministic adoption rejects undeclared edits and preserves prior candidate when revision is unusable.
+Later stage cannot be catch-all panel that rescues arbitrary upstream defects.
 Final assembly should enforce deterministic integrity and publication mechanics,
 not ask models whether combined pipeline happened to be good enough.
 
@@ -187,11 +235,10 @@ Candidate replacement should make these responsibilities explicit:
     media evidence,
     and archive-supported context.
 2.  Give one accountable document editor whole specification and whole archive context.
-3.  Collect one finite,
-    role-partitioned audit wave over draft.
-    Roles discover concrete defects rather than assign naturalness score.
-4.  Give one accountable reconciliation editor complete deduplicated defect dossier once.
-    Accepted regions are locked unless dossier requires change.
+3.  Execute one finite sequence of role-partitioned whole-document producers.
+    Roles correct concrete defect classes rather than assign score or emit blocking opinion.
+4.  Make each specialist a bounded producer of one complete responsibility-specific revision.
+    Unusable specialist output has no effect and cannot withhold prior complete candidate.
 5.  Assemble and verify deterministic structure,
     completeness,
     identity,
@@ -205,12 +252,13 @@ Design-it-twice comparison must include alternatives with different seam placeme
 ## Questions design must answer
 
 - How does one editor prove complete source coverage without per-slice candidate tournament?
-- Which editorial defects require corroboration,
-and which deterministic facts are enough alone?
-- How can reviewer roles partition responsibility so same general opinion is not multiplied?
-- How does reconciliation preserve accepted wording while resolving cross-paragraph issues?
-- What finite frontier exists when reconciliation output still contains concrete defect?
-- How does durable suspension resume without converting finite invocation into hidden unbounded retry?
+- Which editorial responsibilities belong to source fidelity,
+expression,
+and document continuity producers?
+- How can producer roles partition responsibility so same general opinion is not multiplied?
+- How does each complete revision preserve accepted wording while resolving cross-paragraph issues?
+- How does every later producer preserve prior complete candidate when its own output is unusable?
+- How does deterministic restart reuse completed nodes without creating a visible suspended translation?
 - Which current caches and artifacts remain useful evidence,
 and which encode architecture being removed?
 - What user-facing interface makes one entry trivial to run,

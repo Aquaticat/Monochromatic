@@ -6,6 +6,126 @@ Takes an original text plus its translation,
 returns a structured issue list anchored to an immutable document model,
 and a repaired candidate translation.
 
+## Standing redesign constraints
+
+These constraints govern task 41 replacement work and supersede historical architecture notes in this file.
+Current shipped pipeline and corpus runbook predate them and remain non-conforming until replacement lands.
+Every section after `Standing redesign constraints` describes current or historical implementation
+and is non-normative for replacement architecture.
+A normal run with working model and publication infrastructure must return one good complete document.
+It must not leave its caller with a suspended translation because an auditor,
+reviewer,
+reviser,
+or generic quality Gate timed out,
+refused,
+or disliked wording.
+A node that does not produce usable text cannot receive authority to withhold usable text.
+
+Every model invocation belongs to a statically finite manifest.
+No finding,
+text change,
+round,
+nonce,
+cache event,
+or failed review may add work.
+No hidden scheduler may keep creating manifests.
+One model plus one canonical substantive prompt may produce at most one provider payload.
+Caller cancellation throws exact abort identity and deterministic restart reuses completed nodes.
+
+Model nodes have two kinds.
+Preparation-evidence node may produce brief or specification before authorship;
+its unusable response contributes nothing and cannot withhold producer work.
+Candidate-producer node returns complete candidate under one concrete responsibility,
+or it has no effect and prior complete candidate survives byte-for-byte.
+Every model stage after preparation is candidate producer.
+First adopted producer owns full concrete quality contract,
+including fidelity,
+completeness,
+identity,
+grammar,
+clear references,
+consistent tense,
+paragraph relations,
+and appropriate register.
+Later stages are targeted improvements,
+not required rescue for deficient baseline.
+Before first candidate exists,
+the manifest may try statically named fallback producers once each.
+Operational run begins after provider preflight and finite manifest persistence.
+First candidate is adopted only after one response yields complete document passing deterministic obligations.
+If every planned producer has transport failure or unusable response before first adoption,
+command throws bounded `ProductionUnavailableError` with exhausted node identities.
+It does not suspend,
+wait for human continuation,
+automatically create another manifest,
+or publish archive text as though repaired.
+`ProductionUnavailableError` concerns exhausted candidate producers only;
+failed preparation-evidence node never causes it.
+This physical infrastructure or model-output failure is only no-output exception.
+
+Runtime quality responsibility belongs to these producing stages,
+not a final generic model Gate.
+Deterministic adoption checks protect source coverage,
+identities,
+structure,
+links,
+media,
+formatting,
+and publication bytes.
+A later producer supplies complete candidate plus exact edit transaction anchored to prior bytes and source evidence.
+Deterministic adoption recomputes candidate from transaction,
+rejects undeclared changes,
+and preserves prior text when transaction or candidate fails.
+These checks bound change authority but cannot prove semantic judgment.
+Every prototype comparison and every readiness claim must read complete actual output,
+not only artifact,
+status,
+or tally.
+Any repeatable concrete defect means producer contract is not ready.
+
+`naturalness`,
+`absolute naturalness`,
+and similar aggregate labels are not measurements,
+thresholds,
+floors,
+or verdicts in new work.
+Use concrete located defect classes such as wrong meaning,
+omission,
+addition,
+identity change,
+grammar,
+unclear reference,
+tense inconsistency,
+broken paragraph relation,
+and register mismatch.
+One wet provider remains normal operation.
+Manifest planning builds complete role and fallback roster reachable through whichever provider is wet;
+no cross-provider response is correctness dependency.
+Measured arms may explicitly require both providers.
+Each node prompt digest binds exact source,
+archive,
+brief,
+prior-candidate bytes or explicit absence marker,
+role,
+and response contract so restart cannot change fallback into different revision task.
+Restart requires same manifest digest and checkpoint and may execute pending nodes only.
+Completed,
+failed,
+unusable,
+aborted,
+or indeterminate nodes are spent.
+Indeterminate transmission may reuse recorded payload but may never resend canonical prompt.
+Caller abort bypasses fallback immediately and throws exact `signal.reason`.
+
+Assembly,
+atomic write,
+or readback failure after candidate exists throws bounded `PublicationUnavailableError`.
+It does not suspend,
+automatically requeue,
+publish partial bytes,
+publish archive fallback,
+or become quality outcome.
+
 ## Operating a corpus pass
 
 This file describes the design.
@@ -1600,7 +1720,11 @@ First acceptance uses defect-discovery responsibility;
 confirmation uses prior-acceptance challenge responsibility rather than repeated prompt.
 No further validation may reuse generation-12 consolidation cache.
 
-### Standing operation invariants
+### Superseded generation-14 operation history
+
+This section records behavior of generation 14 and is not standing guidance.
+The finite producer constraints in `Standing redesign constraints`
+replace its unbounded correction and suspension rules.
 
 A quality rejection is repair work,
 not final `do not publish` answer.
