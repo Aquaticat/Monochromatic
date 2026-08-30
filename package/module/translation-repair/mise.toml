@@ -100,6 +100,11 @@ description = "PROTOTYPE: run superseded five-payload accountable-editor design 
 depends = ["build"]
 run = "node dist/final/node/prototype-accountable-editor.mjs"
 
+[tasks."provider-concurrency-probe"]
+description = "PROTOTYPE: measure live same-model provider concurrency with unique tiny tasks; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/provider-concurrency-probe.mjs"
+
 [tasks."prototype-serial-controls"]
 description = "PROTOTYPE: run provider-free serial producer transaction controls"
 depends = ["build"]
