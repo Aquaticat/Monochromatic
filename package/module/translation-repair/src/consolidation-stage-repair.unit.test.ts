@@ -21,6 +21,9 @@ import {
 /** Provider identity that must never enter recovery producer prompt. */
 const MODEL_ID = 'hf:zai-org/GLM-5.3-Flash';
 
+/** Judge identity absent from producer provenance but still requiring alias. */
+const JUDGE_ID = 'hf:Qwen/Qwen3.8-27B';
+
 /**
  * Builds failed settlement with attributed slate and ballots.
  *
@@ -42,24 +45,33 @@ function failedSettlement(): ConsolidationSettlement {
       decision: 'judged',
       voteWeight: 1 / 2,
       tally: {
-        judgesAvailable: 1,
-        ballots: 1,
-        abstentions: 0,
+        judgesAvailable: 2,
+        ballots: 2,
+        abstentions: 1,
         selfVotes: 1,
       },
-      ballots: [{
-        modelId: MODEL_ID,
-        best: 1,
-        reason: `${MODEL_ID} preferred its own wording`,
-        weight: 1 / 2,
-        selfVote: true,
-      },],
+      ballots: [
+        {
+          modelId: MODEL_ID,
+          best: 1,
+          reason: `${MODEL_ID} preferred its own wording`,
+          weight: 1 / 2,
+          selfVote: true,
+        },
+        {
+          modelId: JUDGE_ID,
+          best: 0,
+          reason: `${JUDGE_ID} declined the slate`,
+          weight: 0,
+          selfVote: false,
+        },
+      ],
       heardTranslators: 1,
       candidateCount: 1,
       findings: [],
       slate: [{
         index: 1,
-        text: `The cat sleeps, according to ${MODEL_ID}.`,
+        text: `The cat sleeps, according to ${MODEL_ID} and ${JUDGE_ID}.`,
         hash: 'sha256:fixture',
         origin: 'fresh',
         producer: { kind: 'model', modelId: MODEL_ID, },
@@ -84,7 +96,7 @@ function failedSettlement(): ConsolidationSettlement {
     },
     rewrapped: false,
     demoted: false,
-    findings: [`${MODEL_ID} settlement failed`,],
+    findings: [`${MODEL_ID} and ${JUDGE_ID} settlement failed`,],
   } as unknown as ConsolidationSettlement;
 }
 
@@ -116,13 +128,16 @@ await describe({
         const serialized = JSON.stringify(evidence,);
 
         expect(serialized.includes(MODEL_ID,),).toBe(false,);
+        expect(serialized.includes(JUDGE_ID,),).toBe(false,);
         expect(serialized,).toContain('role/1');
+        expect(serialized,).toContain('role/2');
         expect(evidence.selectionSlate[0]?.producer,).toEqual({
           kind: 'model',
           alias: 'role/1',
         },);
         expect(evidence.selectionBallots[0]?.judgeAlias,).toBe('role/1');
         expect(evidence.selectionBallots[0]?.selfVote,).toBe(true,);
+        expect(evidence.selectionBallots[1]?.judgeAlias,).toBe('role/2');
         expect(evidence.gateBallots[0]?.reason,).toContain('role/1');
       },
     },),
