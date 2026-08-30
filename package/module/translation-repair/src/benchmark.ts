@@ -133,10 +133,8 @@ function gradeHits(
 /**
  * Runs the critic benchmark: every model reviews every seeded entry.
  * Models run in parallel;
- * each model works its entry queue sequentially,
- * because the dispatch bench proved one stream per model is the fastest
- * dispatch on this plan,
- * so wall time approaches the slowest model's whole queue.
+ * each model works its entry queue sequentially so run-budget admission
+ * cuts same tail entries for every model and benchmark rows remain comparable.
  * A transient-shaped failure (truncation or HTTP-failure record) earns one
  * retry with a fresh deadline;
  * the final record keeps the discarded first detail in
@@ -468,7 +466,7 @@ export async function runCriticBenchmark(
        */
       const records: CriticAttemptRecord[] = [];
       for (const entry of prepared) {
-        // oxlint-disable-next-line no-await-in-loop -- sequential by design: the dispatch bench proved one stream per model is the fastest dispatch on this plan
+        // oxlint-disable-next-line no-await-in-loop -- sequential by design: model-major benchmark queues keep run-budget tail admission comparable; provider capacity is not the reason
         records.push(await attemptModelEntry({
           modelId,
           entry,

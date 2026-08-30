@@ -300,8 +300,7 @@ async function runRecallBenchmark(): Promise<void> {
   );
 
   /**
-   * Shared client; per-model concurrency defaults to one, which the measured
-   * per-model serialization says is correct.
+   * Shared client using measured production provider concurrency.
    */
   const client = createRunClient();
 

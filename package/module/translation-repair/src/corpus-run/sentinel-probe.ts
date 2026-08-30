@@ -57,7 +57,7 @@ async function probeCorpusEntries(): Promise<void> {
   const targets = named.length > 0 ? named : DEFAULT_SENTINELS;
 
   /**
-   * Shared client; per-model concurrency defaults to one.
+   * Shared client using measured production provider concurrency.
    */
   const client = createRunClient();
 
@@ -72,7 +72,7 @@ async function probeCorpusEntries(): Promise<void> {
       /**
        * Original zh page text for this entry.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- probe entries run sequentially so their logs stay legible and per-model streams do not contend */
+      /* oxlint-disable-next-line no-await-in-loop -- diagnostic entries remain sequential so each log and failure belongs to one named sentinel; provider capacity is not the reason */
       const sourceText = await readCorpusFile({
         pin: RUN_CORPUS_PIN,
         relPath: `people/${id}/page.md`,

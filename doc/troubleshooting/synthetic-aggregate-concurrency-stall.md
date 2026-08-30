@@ -10,6 +10,32 @@ Everything below is stated as measured,
 with client-side factors we could not rule out listed separately
 so that nothing here overclaims.
 
+## Resolution update on 2026-08-30
+
+The stall did not reproduce against the current account and active model roster
+with short structured requests.
+Two zero-retry arms each completed 20 of 20 concurrent calls,
+5 on every active model,
+in 4,113 ms and 3,943 ms.
+Every response was HTTP 200 and carried an exact schema-valid answer.
+
+A width-25 arm kept three models at 5 and raised `gpt-oss-120b` to 10.
+The gpt-oss backend returned 7 HTTP 200 responses and 3 HTTP 429 responses,
+while every width-5 model completed.
+The current safe shared value is therefore 5 per model,
+not the production default of 1 and not a model-size-based 10.
+
+The original July evidence remains valid for its account state,
+roster,
+and real review workload.
+The new result resolves the immediate assumption that aggregate load above roughly 7 always collapses.
+It does not prove that 20 corpus-sized generations have the same behavior.
+Method,
+current results,
+source impact,
+and evidence digests are recorded in
+`doc/troubleshooting/translation-repair-provider-concurrency.md`.
+
 ## Summary
 
 With more than one concurrent request per model

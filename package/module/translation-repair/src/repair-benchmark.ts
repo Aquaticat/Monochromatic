@@ -291,7 +291,7 @@ export async function runRepairBenchmark(
       specs: entry.seeds,
     },);
     try {
-      /* oxlint-disable no-await-in-loop -- sequential by design: each repair run already fans out one call per model per stage, and aggregate concurrency beyond that collapses throughput on this plan */
+      /* oxlint-disable no-await-in-loop -- sequential by design: each benchmark row mutates one seeded fixture and is recorded before next; provider capacity is not reason */
       /**
        * Whole-pipeline result over the seeded pair.
        */

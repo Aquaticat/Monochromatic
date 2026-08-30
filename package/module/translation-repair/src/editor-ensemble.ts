@@ -253,7 +253,7 @@ export async function selectPerEnvelope(
     /**
      * Judges verdict over the distinct proposals for this envelope.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- envelopes are judged sequentially so per-model concurrency stays at one, which the measured provider serialization requires */
+    /* oxlint-disable-next-line no-await-in-loop -- current envelope winners mutate ordered attribution state; replacement DAG must separate concurrent selection from ordered reduction */
     const outcome = await selectBestCandidate({
       client,
       candidates: proposals,

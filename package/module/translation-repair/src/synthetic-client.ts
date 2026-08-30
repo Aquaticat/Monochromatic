@@ -52,6 +52,20 @@ import {
 // matching the pack count keeps queues short and aborts responsive).
 
 /**
+ * Concurrent requests available to each Synthetic model on current account.
+ *
+ * Measured live on 2026-08-30 with two zero-retry aggregate arms:
+ * 5 calls on each of 4 active models completed together,
+ * while raising gpt-oss alone to 10 produced HTTP 429 responses.
+ *
+ * @example
+ * ```ts
+ * const slots = SYNTHETIC_PER_MODEL_CONCURRENCY;
+ * ```
+ */
+export const SYNTHETIC_PER_MODEL_CONCURRENCY = 5;
+
+/**
  * Logger root for this package's model-facing shell.
  */
 const l = tagged({ tag: 'translation-repair', },);
@@ -161,7 +175,7 @@ export function createSyntheticClient(
     transport = fetchTransport,
     chatBaseUrl = SYNTHETIC_CHAT_BASE_URL,
     quotasUrl = SYNTHETIC_QUOTAS_URL,
-    perModelConcurrency = 1,
+    perModelConcurrency = SYNTHETIC_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
   }: {
     readonly apiKey: string;
