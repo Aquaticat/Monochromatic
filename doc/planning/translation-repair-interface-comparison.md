@@ -696,12 +696,12 @@ No rejected candidate can be retried or selected under same design.
 Candidate D makes models author translatable content,
 not Markdown structure or semantic audit identifiers.
 Deterministic parsing derives translatable slots and immutable shell from source plus archive authority.
-Slots include translatable front-matter values,
-headings,
+Slots include headings,
 paragraphs,
 footnote prose,
-and other human-language text.
-Contributor identity fields remain shell-owned even when represented as front-matter scalars.
+and other body-language text.
+Existing English front matter remains byte-authoritative,
+including contributor identity fields and translated scalar values.
 Shell also owns front-matter delimiters and keys,
 links,
 media references,
@@ -727,16 +727,22 @@ Each producer owns full concrete quality contract across every slot and whole-pa
 3.  Compile and validate all three records independently.
     Adopt first usable candidate by fixed manifest priority,
     never completion order.
-4.  Atomically publish and read back adopted complete document.
+4.  Ask one statically named holistic reviser for complete slot record against selected base,
+    full source,
+    archive,
+    and all images.
+    Adopt usable complete response;
+    otherwise preserve selected base byte-for-byte.
+5.  Atomically publish and read back final complete document.
 
-Payload ceiling is 3 in one provider wave.
+Payload ceiling is 4 in two provider waves.
 No preparation model,
-postdraft reviser,
 Gate,
 review-only node,
 retry,
 or response-created work exists.
-Every node is independent and can establish first complete candidate.
+All four provider nodes return complete candidate records or have no effect.
+Each first-wave node can establish first complete candidate.
 Role-differentiated canonical prompts preserve uniqueness when one provider and one model fill multiple seats.
 Candidate D inherits manifest-bound restart without redispatch,
 exact abort identity,
@@ -764,7 +770,7 @@ Alternative D2 asks each author for unrestricted complete Markdown and validates
   and C from model authority
 - fixed-key structural properties remove model-authored semantic identifier values that failed B and C
 - one whole-document authorship response still controls voice across every translatable slot
-- three independent complete-candidate producers provide bounded fallback without postdraft dependency
+- three independent complete-candidate producers provide bounded fallback before one finite holistic revision
 
 #### D1 cons
 
@@ -772,6 +778,73 @@ Alternative D2 asks each author for unrestricted complete Markdown and validates
 - sentence relations crossing slot boundaries remain model judgment
 - fixed slot boundaries can constrain rhetorical reorganization
 - fixed-key schema still needs corpus-sized provider validation
+
+#### D1 measured output evidence and D1.1 correction
+
+Fresh live D1 completed all three concurrent author payloads and published fixed-priority Kimi candidate.
+Invocation duration was 347,578 milliseconds.
+Published page occupied 20,014 bytes across 55 lines.
+All three node records completed,
+all reply-cache filenames exactly matched recorded cache keys,
+and publication digest matched primary decision digest.
+This was first replacement candidate to produce page.
+
+Complete source,
+archive,
+selected page,
+and both alternate candidates were read from beginning through footnote.
+Selected Kimi page was not publication-ready:
+
+- shell removed author-supplied leading spaces after inline footnote and link syntax
+- one source role was genericized
+- concrete overdose,
+  repeated-school-year,
+  posture,
+  and blackmail wording was defective
+- one protest relation gained unsupported alongside implication
+- source recognition and support content was omitted
+- one intentional happiness repetition was collapsed
+
+Complete Qwen alternate preserved role,
+overdose,
+repeated-school-year,
+posture,
+recognition and support,
+and rhetorical repetition more faithfully.
+It also carried literal or awkward phrasing in future relation,
+death counterfactual,
+queer identity,
+and closing imagery.
+GLM alternate repeated more selected-candidate defects.
+Fixed priority therefore changes from Kimi to Qwen on output evidence,
+not completion time or model preference.
+
+D1 artifacts remain private at
+`~/temp/agent/prototype-Carena-D-immutable-shell-20260830/`.
+Preserved copy is
+`~/Downloads/Carena0442-candidate-D1-output-review-20260830/`.
+Raw replies are quality evidence only inside this private comparison and are never publication fallback.
+
+D1.1 changes compiler contract rather than retrying same prompts:
+
+- preserve one author-supplied leading space when left shell byte is non-whitespace
+- expose adjacent shell context and state that words cannot cross immutable syntax boundary
+- use Qwen as fixed-priority base author from complete-page evidence
+- add one finite Kimi holistic reviser returning complete slot record
+- preserve Qwen base byte-for-byte when reviser is unusable
+
+D1.1 has new manifest digest,
+role prompts,
+dependency wave,
+and payload ceiling.
+Scripted controls cover Qwen primary,
+Kimi fallback,
+GLM reserve,
+reviser adoption,
+reviser failure preservation,
+all-author exhaustion,
+and four-node restart without redispatch.
+Candidate D1.1 remains unselected until fresh live output is read completely.
 
 #### D2 pros
 
@@ -791,10 +864,9 @@ Ranking:
 D1 > D2,
 because D1 removes measured structural admission failures while retaining whole-document authorship;
 D2 preserves flexibility by retaining same failure authority already exhausted in three candidates.
-Candidate D1 is proposal only until scripted controls,
-GFP evidence,
-fresh Carena publication,
-and complete-page reading succeed.
+Candidate D1.1 remains proposal until fresh Carena publication,
+complete-page reading,
+and independent review succeed.
 
 ## Required lifecycle migration
 
