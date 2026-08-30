@@ -532,7 +532,8 @@ Interpretation is frozen before dispatch:
 - Qwen3.6 Plus populated every key but semantically truncated at least 4 long slots.
   Two affected slots held 62 and 55 characters where every peer held at least 1,426 and 2,003.
 - Qwen3.7 Flash reproduced archive wording and inherited archive defects.
-  Its 1,426-character and 2,003-character slots were byte-identical to archive spans and to Qwen3.6 Flash,
+  Its 1,426-character and 2,003-character slot strings were byte-identical to archive substrings
+  and to Qwen3.6 Flash,
   despite distinct prompt keys and live node durations.
   This is direct archive-regurgitation and same-family correlation evidence.
 - Qwen3.7 Plus remained non-publication-ready on grammar,

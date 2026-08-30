@@ -402,6 +402,71 @@ No model Gate follows final producer.
 - Distinct producers can damage document voice established by renderer.
 - Highest migration cost and largest new correctness surface.
 
+### Rejected Candidate B evidence
+
+Candidate B implemented its five-payload graph with one specification author,
+one renderer,
+and three concurrent complete-document fallback specialists.
+Scripted controls proved valid-renderer preservation,
+fixed-priority fallback selection,
+raw-specification fallback,
+restart without redispatch,
+image-bearing prompts,
+and transaction guards.
+The complete unit suite recorded 871 passes and no failures.
+Eight guard mutations covered specification identifiers,
+realization locators,
+transaction replay,
+cross-role conflicts,
+anchor drift,
+fallback priority,
+output envelope,
+and image transmission.
+Initial conflict mutation exposed a control that did not isolate conflict handling.
+Commit `98931789a` corrected that control,
+a repeated mutation failed it,
+and all mutations were restored.
+Both providers were wet immediately before live execution.
+
+Fresh Carena execution exhausted all five nodes after 726,466 milliseconds and threw bounded
+`ProductionUnavailableError`.
+It wrote no candidate or publication receipt:
+
+- specification author completed after 101,952 milliseconds but did not satisfy response schema
+- renderer exceeded stream envelope after 214,597 milliseconds
+- fidelity fallback stream was cut after 24,686 milliseconds
+- authority fallback completed after 170,936 milliseconds but introduced footnote relation defect
+- expression fallback completed after 409,737 milliseconds but supplied absent realization locator;
+  exact runtime-validator replay also found footnote relation defect
+
+The complete preserved tree contains no `fixed` page.
+The two completed fallback documents each carried all 22 manifest source identifiers,
+`fallback` mode,
+null base digest,
+and empty change list.
+Those shape facts were insufficient for admission.
+All five node records carry distinct structured contract digests.
+The reply cache contains only three completed transport replies,
+which usage records map to specification,
+authority,
+and expression nodes.
+Cut and overrun nodes have no reply artifact by store design.
+The specification schema-mismatch record has neither failure digest nor explicit reply-cache key;
+next prototype must close that audit-binding gap.
+Candidate B is rejected rather than retried,
+repaired from quarantined responses,
+or selected without output reading.
+Prototype commits are
+`de651603d`,
+`3c6dbd3c2`,
+and
+`98931789a`.
+Private artifacts remain at
+`~/temp/agent/prototype-Carena-B-specification-compiler-20260830/`.
+A preserved private copy is at
+`~/Downloads/Carena0442-candidate-B-rejected-20260830/`.
+Raw responses are operational and contract evidence only.
+
 ## Candidate C: Brief-before-prose editorial room
 
 ### Seam and interface
@@ -489,6 +554,66 @@ or meaning defects before output exists.
 - Mechanical integrity cannot prove finished prose quality.
 - Risk is shifted to offline validation rather than reduced inside run.
 
+### Rejected Candidate C evidence
+
+Candidate C ran on fresh Carena inputs after scripted full-graph,
+restart,
+abort,
+vision,
+and deterministic-admission controls passed.
+Its fixed manifest named three concurrent preparation briefs followed by two concurrent complete-document editors.
+Both providers were wet at preflight.
+The live invocation exhausted that graph after 370,068 milliseconds and threw bounded
+`ProductionUnavailableError`.
+It wrote no selected candidate,
+final digest,
+or publication receipt.
+
+One preparation brief completed.
+Two preparation responses were unusable:
+
+- source brief exceeded specialist responsibility after 71,635 milliseconds
+- expression brief supplied an unlocated anchor after 9,961 milliseconds
+
+Those failures were nonblocking as designed.
+Both complete-document editors then received same immutable packet and all image inputs.
+Neither response passed deterministic first-candidate admission:
+
+- primary editor completed after 221,049 milliseconds but returned invalid front matter
+- fallback editor completed after 233,245 milliseconds but returned source-realization identifiers
+  differing from manifest
+
+Failure digests bind these categories without exposing response wording:
+
+- `d28cd3694f5d448d868ec30fae6b14dd05970ce2e09d416495b9a2be25a0008c`:
+  `brief item exceeds specialist responsibility`
+- `0388f479397f9004f5163be1ecfd156dc7f1bab93bb9d2a90659bb0aa8f31915`:
+  `brief item anchor is not located`
+- `bc25fe043161a9e242a717ff29287ab4897b128b603c848bf0d42559b62c7cd4`:
+  `candidate front matter invalid`
+- `2a6cf4aca78445f8872b3c21838f96a1f26b47f5398aa8c4b24258abbc01ee5a`:
+  `source realization ids differ from manifest`
+
+Prototype implementation and guard commits are
+`e7f69e076`,
+`1c92c961a`,
+and
+`6d1a50dee`.
+Result and node records remain private at
+`~/temp/agent/prototype-Carena-C-brief-editor-20260830/`.
+A private checksum-preserved copy is at
+`~/Downloads/Carena0442-candidate-C-rejected-20260830/`.
+The copy contains 19 files and occupies 110,332 bytes as measured after preservation.
+Raw responses are operational and contract evidence only.
+Do not score,
+rank,
+average,
+quote,
+repair,
+or use them as translation-quality samples.
+Candidate C is rejected rather than retried or salvaged with deterministic text mutation.
+A materially changed brief-before-prose design would be a new candidate.
+
 ## Measured concurrency implications
 
 Production uses 5 Synthetic slots per active model
@@ -498,14 +623,16 @@ with width 64 corroborated on live request shape.
 The Hyper account's 1,000 requests-per-hour limit is separate from simultaneous in-flight work.
 See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
 
-Candidate C can execute its five payloads in two dependency waves.
-Candidate B can execute its five payloads in three waves:
+Candidate C executed its five payloads in two dependency waves before rejection.
+Candidate B executed its five payloads in three waves:
 specification,
 renderer,
 then three independent specialist transactions.
-Static fixed priority preserves deterministic adoption regardless of response order.
-No cross-provider response is required,
-and one model never receives same canonical substantive prompt twice.
+Its concurrent specialist wave ended when slowest GLM response completed after 409,737 milliseconds.
+Static fixed priority remained deterministic,
+but no candidate was usable.
+No cross-provider response was required,
+and one model never received same canonical substantive prompt twice.
 
 These are scheduling consequences,
 not quality evidence.
@@ -539,24 +666,833 @@ The pipeline must not disguise it as quality refusal,
 automatically retry it,
 or publish archive fallback as repaired output.
 
-## Provisional working order pending complete B and C outputs
+## Selection after A, B, and C rejection
 
-Working order:
-C > B > A.
+No tested candidate is eligible for production selection.
+All three exhausted their finite graph without a published page,
+so no complete output exists to compare for fidelity,
+grammar,
+identity,
+structure,
+or media handling.
+Operational evidence cannot be promoted into output-quality evidence.
 
-C ranks over B on design evidence only because it tests whether quality information placed before prose
-can avoid invalid first output with five payloads and smaller interface.
-This edge is not empirical quality evidence and remains paper-only until both complete Carena outputs are read.
+Historical learning order is:
+rejected C > rejected B > rejected A.
 
-B ranks over A because typed source obligations may prevent concrete structure,
+Rejected C ranks over rejected B because its two-wave pre-authorship graph had fewer stateful seams,
+and one preparation brief was usable;
+neither design adopted a candidate.
+Rejected B ranks over rejected A because it proved raw-specification fallback,
+concurrent bounded specialist execution,
+and deterministic transaction controls before exhausting.
+Rejected A ranks last because two implementations wrote no output,
+and A1 allowed non-producing audit work to withhold complete draft.
+This order records design learning only.
+No rejected candidate can be retried or selected under same design.
+
+## Candidate D proposal: Immutable-shell slot compiler
+
+Candidate D makes models author translatable content,
+not Markdown structure or semantic audit identifiers.
+Deterministic parsing derives translatable slots and immutable shell from source plus archive authority.
+Slots include headings,
+paragraphs,
+footnote prose,
+and other body-language text.
+Existing English front matter remains byte-authoritative,
+including contributor identity fields and translated scalar values.
+Shell also owns front-matter delimiters and keys,
+links,
+media references,
+footnote relations,
+comments,
+and node order.
+
+A producer receives full source,
+archive,
+all page-referenced images,
+slot contract,
+and complete shell context.
+It returns one fixed-key slot record with manifest-derived structural keys such as `s0`.
+Exact schema properties bind each translation to one slot without asking model to invent or repeat semantic identifiers.
+Compiler reconstructs complete document and applies existing deterministic integrity validation before adoption.
+Each producer owns full concrete quality contract across every slot and whole-page relation.
+
+### Fixed call graph
+
+1.  Deterministically derive immutable shell and fixed-key slot record schema.
+2.  In parallel,
+    ask primary and two statically named fallback authors for complete slot records from same evidence.
+3.  Compile and validate all three records independently.
+    Adopt first usable candidate by fixed manifest priority,
+    never completion order.
+4.  Ask one statically named holistic reviser for complete slot record against selected base,
+    full source,
+    archive,
+    and all page-referenced images.
+    Adopt usable complete response;
+    otherwise preserve selected base byte-for-byte.
+5.  Ask one statically named copy editor for complete slot record against latest usable candidate,
+    full source,
+    archive,
+    and all page-referenced images.
+    Adopt usable complete response;
+    otherwise preserve latest usable candidate byte-for-byte.
+6.  Atomically publish and read back final complete document.
+
+Payload ceiling is 5 in three provider waves.
+No preparation model,
+Gate,
+review-only node,
+retry,
+or response-created work exists.
+All five provider nodes return complete candidate records or have no effect.
+Each first-wave node can establish first complete candidate.
+Role-differentiated canonical prompts preserve uniqueness when one provider and one model fill multiple seats.
+Candidate D inherits manifest-bound restart without redispatch,
+exact abort identity,
+zero transport retries,
+and durable transaction states from prototype runtime.
+Schema-mismatch handling must additionally persist response digest,
+base prompt digest,
+and reply-cache key before response becomes spent-unusable.
+
+Model-authored front-matter delimiters,
+links,
+media,
+and footnote markers cannot cause rejection because those bytes are outside model response.
+A model can still mistranslate slot content;
+only complete-page reading can provide quality evidence.
+
+### Design alternative
+
+Alternative D2 asks each author for unrestricted complete Markdown and validates it after return.
+
+#### D1 pros
+
+- immutable shell removes structural failure classes observed in A,
+  B,
+  and C from model authority
+- fixed-key structural properties remove model-authored semantic identifier values that failed B and C
+- one whole-document authorship response still controls voice across every translatable slot
+- three independent complete-candidate producers provide bounded fallback before two finite complete-record editors
+
+#### D1 cons
+
+- parser must classify every translatable and immutable region correctly
+- sentence relations crossing slot boundaries remain model judgment
+- fixed slot boundaries can constrain rhetorical reorganization
+- fixed-key schema still needs corpus-sized provider validation
+
+#### D1 measured output evidence and D1.1 correction
+
+Fresh live D1 completed all three concurrent author payloads and published fixed-priority Kimi candidate.
+Invocation duration was 347,578 milliseconds.
+Published page occupied 20,014 bytes across 55 lines.
+All three node records completed,
+all reply-cache filenames exactly matched recorded cache keys,
+and publication digest matched primary decision digest.
+This was first replacement candidate to produce page.
+
+Complete source,
+archive,
+selected page,
+and both alternate candidates were read from beginning through footnote.
+Selected Kimi page was not publication-ready:
+
+- shell removed author-supplied leading spaces after inline footnote and link syntax
+- one source role was genericized
+- concrete overdose,
+  repeated-school-year,
+  posture,
+  and blackmail wording was defective
+- one protest relation gained unsupported alongside implication
+- source recognition and support content was omitted
+- one intentional happiness repetition was collapsed
+
+Complete Qwen alternate preserved role,
+overdose,
+repeated-school-year,
+posture,
+recognition and support,
+and rhetorical repetition more faithfully.
+It also carried literal or awkward phrasing in future relation,
+death counterfactual,
+queer identity,
+and closing imagery.
+GLM alternate repeated more selected-candidate defects.
+Fixed priority therefore changes from Kimi to Qwen on output evidence,
+not completion time or model preference.
+
+D1 artifacts remain private at
+`~/temp/agent/prototype-Carena-D-immutable-shell-20260830/`.
+Preserved copy is
+`~/Downloads/Carena0442-candidate-D1-output-review-20260830/`.
+Raw replies are quality evidence only inside this private comparison and are never publication fallback.
+
+D1.1 changes compiler contract rather than retrying same prompts:
+
+- preserve one author-supplied leading space when left shell byte is non-whitespace
+- expose adjacent shell context and state that words cannot cross immutable syntax boundary
+- use Qwen as fixed-priority base author from complete-page evidence
+- add one finite Kimi holistic reviser returning complete slot record
+- preserve Qwen base byte-for-byte when reviser is unusable
+
+D1.1 has new manifest digest,
+role prompts,
+dependency wave,
+and payload ceiling.
+Scripted controls cover Qwen primary,
+Kimi fallback,
+GLM reserve,
+reviser adoption,
+reviser failure preservation,
+all-author exhaustion,
+and four-node restart without redispatch.
+Candidate D1.1 remains unselected until fresh live output is read completely.
+
+Fresh live D1.1 completed four payloads in two waves and published revised document after 732,142 milliseconds.
+All node and publication digests bound correctly.
+Published file occupied 21,241 bytes across 55 lines.
+Complete page,
+source,
+archive,
+all three author candidates,
+and revised candidate were read.
+The boundary spacing defect and role genericization were corrected,
+and source repetition plus footnote details survived.
+Page was still not publication-ready:
+
+- opening compensation idiom lacked object and could be read as fabrication
+- future relation,
+  emotional coercion,
+  temporary responsibility,
+  and school-suspension phrasing remained source-language calques
+- laboratory staining was rendered as ordinary dyeing
+- one protest phrase left actor attribution ambiguous
+- recognition and support relation was grammatically malformed
+- one positive unrestrained expression became morally negative
+- closing dialogue remained awkward English
+
+More importantly,
+fixed-priority Qwen response echoed source-language slot content instead of translating it.
+Schema and deterministic integrity validation incorrectly marked that response complete.
+Kimi reviser produced published English page,
+but if reviser had been unusable D1.1 would have preserved Chinese base as `page.en.md`.
+D1.1 is therefore rejected under tested admission contract.
+Its preserved private artifact is
+`~/Downloads/Carena0442-candidate-D1.1-output-review-20260830/`.
+
+D1.2 changes canonical prompts and validator identity rather than redispatching D1.1 graph unchanged.
+Every slot value containing Unicode Han ideographs is now spent-unusable before compilation.
+Guard covers unified ideographs through Extension I plus compatibility supplements;
+CJK punctuation is intentionally outside this source-echo check.
+This is pinned zh-to-en prototype guard,
+not general destination-language classifier.
+Prompt adds complete-page idiom,
+technical-verb,
+pronoun,
+and actor-attribution responsibilities.
+
+Scripted source-echo control now records Qwen as `DestinationScriptError` with response,
+cache,
+and failure digests,
+then deterministically selects Kimi fallback.
+Restored controls and 871-suite build passed.
+GFP mutations proved whole destination-script check and supplementary range boundary each load-bearing.
+Four-node v3 restart did not redispatch.
+Candidate D1.2 remains unselected until fresh live output is read completely.
+
+Fresh live D1.2 completed four payloads in two waves and published after 689,075 milliseconds.
+Published file occupied 21,887 bytes across 55 lines.
+All provider nodes completed,
+Qwen returned English rather than source echo,
+and publication digest matched reviser decision.
+Complete final page and all author candidates were read against source,
+archive,
+footnote,
 contributor,
-and completeness failures measured in A2.
-B remains unproven and carries larger artifact schema.
+link,
+and image.
+D1.2 was still not publication-ready:
 
-A ranks last because both measured implementations wrote no output.
-A1 let non-producing auditor withhold draft;
-A2 received all planned model responses but every response failed concrete adoption obligation.
-No runtime or quality advantage can compensate for violating required output contract.
+- 7 visible return-marker glyphs appeared inside two published paragraphs
+- dedication punctuation after immutable footnote boundary was awkward
+- emotional-coercion wording remained source-language calque
+- roommate description and background pronouns remained unclear
+- laboratory staining was still mistranslated as ordinary dyeing
+- legal statement was rendered as confession
+- parent identity became broader relative identity once
+- final regret passage claimed narrator had asked Carena not to worry immediately after stating this was never said
+
+D1.2 Qwen base and Kimi revision both carried visible return markers.
+Under corrected admission both are unusable;
+Kimi fallback did not carry markers but retained more calques.
+D1.2 is rejected under tested presentation-admission contract.
+Preserved private artifact is
+`~/Downloads/Carena0442-candidate-D1.2-output-review-20260830/`.
+
+D1.3 changes prompts and validator identity again.
+Deterministic guard refuses visible return symbols,
+control pictures,
+replacement character,
+and raw C0/C1 controls before compilation.
+LF and CR remain accepted because compiler normalizes them to spaces.
+One static third-wave Qwen copy editor receives latest usable complete candidate,
+full source,
+archive,
+and page image.
+It owns whole contract whether holistic reviser succeeded or not,
+with general idiom,
+technical and legal terminology,
+actor,
+pronoun,
+chronology,
+and register responsibilities.
+
+D1.3 remains finite:
+5 payloads,
+3 waves,
+zero retries,
+and no response-created work.
+Scripted evidence covers copy adoption,
+copy failure preserving reviser,
+reviser failure followed by copy adoption,
+both editors failing while preserving author,
+presentation-artifact author fallback,
+all-author exhaustion,
+and five-node restart without redispatch.
+Wave-three SIGTERM records `CallerAbort` and restart publishes reviser without redispatch.
+Wave-three SIGKILL leaves dispatched copy node;
+restart records `IndeterminateTransmission` and publishes reviser without redispatch.
+Stored-completed response revalidation currently fails run rather than degrading node;
+manifest and prompt identity prevent cross-validator replay,
+but corruption hardening remains production migration work.
+Role-distinct fixture digests make preservation observable.
+GFP mutations prove artifact refusal,
+copy preservation,
+author preservation,
+and fixed priority load-bearing.
+Restored controls and 871-suite build passed.
+Candidate D1.3 remains unselected until fresh live output is read completely.
+If D1.3 produces another unacceptable page on new prose defect classes,
+serial editor layering stops and Candidate D returns to architecture selection.
+
+Fresh live D1.3 completed all 5 payloads in 3 waves and published after 1,508,884 milliseconds.
+Published file occupied 21,322 bytes across 55 lines.
+All node,
+decision,
+and readback digests bound correctly;
+page contained no Han source echo or visible return marker.
+Complete final page and complete holistic-reviser candidate were read against source,
+archive,
+footnote,
+contributor,
+link,
+and image.
+D1.3 final was not publication-ready:
+
+- emotional description became generic and awkward
+- future relation remained literal
+- responsibility and emotional-coercion language remained calqued
+- school-suspension idiom remained opaque
+- roommate background reference remained ambiguous
+- laboratory staining was still mistranslated as ordinary dyeing
+- police entrapment wording was imprecise
+- queer identity wording became essentializing and awkward
+- final sections drifted from retrospective past into present tense
+- closing carefree register became indifference
+
+Complete Kimi reviser already retained future,
+emotional-coercion,
+school-suspension,
+laboratory-staining,
+protest-attribution,
+and closing-register defects.
+Qwen copy editor failed to correct those classes and introduced further generic wording,
+fragments,
+imprecise police phrasing,
+and tense drift.
+Serial quality was therefore non-monotonic.
+Deterministic validation can prove output usable but cannot prove later usable candidate better than prior candidate;
+byte-preservation handles unusable output only.
+
+D1.3 meets documented stop condition.
+Candidate D is rejected under tested fixed-priority plus unconditional-serial-adoption design.
+No further prompt iteration or serial editor layer is allowed.
+Immutable shell,
+source-echo guard,
+presentation-artifact guard,
+and audit runtime remain eligible components for a different architecture;
+D graph itself is not eligible for production selection.
+All tested Candidates A,
+B,
+C,
+and D are rejected.
+Next candidate must use comparative or conditional adoption grounded in concrete located defect classes,
+not unconditional later-output adoption or terminal reviewer failure.
+Preserved private D1.3 artifact is
+`~/Downloads/Carena0442-candidate-D1.3-output-review-20260830/`.
+
+Page evidence includes one `PhotoScroll` asset,
+and every page-referenced image reaches every producer.
+Entry profile image is presentation metadata from `info.yml`,
+not document content or translation evidence,
+and remains outside page prompt manifest.
+
+#### D2 pros
+
+- author has unrestricted freedom to reorganize Markdown and prose
+- response contract is simpler than slot record plus shell compiler
+
+#### D2 cons
+
+- repeats invalid front matter,
+  structure,
+  footnote,
+  and identifier failure surfaces already measured
+- deterministic rejection again happens only after full-document generation spend
+- unrestricted structure makes exact authority preservation harder
+
+Within reusable D components,
+immutable-shell D1 > unrestricted-Markdown D2,
+because D1 removes measured structural admission failures while retaining whole-document authorship;
+D2 preserves flexibility by retaining same failure authority already exhausted in three candidates.
+This component ranking does not select Candidate D graph.
+No tested architecture is selected after complete D1.3 reading.
+
+## Candidate E proposal: quote-bound conditional shell adoption
+
+Candidate E reuses immutable shell,
+source-echo refusal,
+presentation-artifact refusal,
+and transaction runtime,
+but discards fixed-priority quality selection and unconditional serial adoption.
+Quality evidence is concrete defect class located to fixed candidate and slot,
+with exact source and candidate anchors.
+No auditor may return naturalness score or unlocated preference.
+
+### Candidate E1 prime fixed graph
+
+1.  Derive immutable shell and fixed-key slot schema.
+2.  Ask 3 independent complete authors concurrently.
+3.  Ask 3 independent full-contract auditors concurrently to inspect all complete candidates against source,
+    archive,
+    and page-referenced images.
+4.  Validate every finding anchor deterministically against source slot and candidate slot.
+5.  Confirm finding only when at least 2 usable auditors agree on candidate,
+    slot,
+    and concrete defect class.
+6.  Select baseline by lexicographic defect tuple:
+    fewer severe confirmed findings,
+    then fewer total confirmed findings,
+    then fixed manifest priority.
+7.  Ask one complete resolver to correct selected confirmed-defect slots only.
+    Resolver receives no alternate candidate.
+8.  Refuse resolver response if any unlocated slot changes or deterministic candidate guard fails.
+9.  Ask 3 post-auditors concurrently to inspect baseline and resolution.
+10. Adopt resolution only when
+    at least 2 post-auditors are usable and resolution finding set is strict subset of baseline finding set.
+    Otherwise publish baseline byte-for-byte.
+11. Atomically publish and read back selected complete document.
+
+Payload ceiling is 10 in 4 dependency waves.
+Every author and resolver returns complete candidate or has no effect.
+Auditors cannot withhold existing complete candidate.
+No response creates new node,
+retry,
+Gate,
+or work queue.
+
+Finding schema has fixed candidate properties and bounded arrays.
+Each entry contains fixed-key slot,
+concrete defect class,
+exact nonempty source anchor,
+and exact nonempty candidate anchor.
+Classes are:
+
+- wrong meaning
+- omission
+- unsupported addition
+- identity or attribution
+- actor or reference
+- chronology
+- technical or legal term
+- grammar or usage
+- tense
+- register
+- source-language calque
+
+Severe tuple component counts wrong meaning,
+omission,
+unsupported addition,
+identity or attribution,
+actor or reference,
+chronology,
+and technical or legal term.
+Second tuple component counts every confirmed finding.
+No free-form severity,
+score,
+or naturalness verdict enters selection.
+Quorum agrees on candidate,
+slot,
+and defect class rather than exact anchor text;
+anchors prove each claim is located while allowing auditors to quote different spans of same defect.
+One invalid or unbound finding makes whole auditor response unusable.
+Strict response loss is preferred over silently pruning unauditable claims;
+reduced-quorum table then preserves finite baseline behavior.
+Total finding comparison can still reward shared auditor blind spots,
+so retained-output calibration must reproduce known human comparisons before graph spend.
+
+Reduced-quorum behavior is manifest-owned:
+
+- 3 usable auditors require any 2 agreeing
+- 2 usable auditors require both agreeing
+- 1 or 0 usable auditors produce no confirmed findings and fixed-priority baseline
+- fewer than 2 usable post-auditors always preserve baseline
+
+Post-audit adoption compares whole documents only.
+Per-slot mixing is forbidden because it would recreate transaction conflicts and lose whole-page voice.
+Resolution must change at least one confirmed-defect slot and no other slot.
+Resolution finding keys must be strict subset of baseline finding keys;
+new confirmed defect or unresolved key preserves baseline.
+
+### Alternatives
+
+#### E1 prime pros
+
+- replaces blind author priority with quote-bound comparative evidence
+- prevents D1.3 regression through conditional whole-document adoption
+- resolver changes are limited to auditor-located slots
+- auditor failure preserves complete baseline and never suspends publication
+
+#### E1 prime cons
+
+- 10 payloads and 4 waves increase latency
+- auditor agreement can miss shared model blind spots
+- terse bounded matrices need provider conformance validation
+- resolver may fail to correct located defects and then has no effect
+
+#### E3 pros
+
+- author comparison fixes D1 blind selection with fewer waves
+- no resolver means no later-output regression
+
+#### E3 cons
+
+- every measured first-wave author candidate remained below publication bar
+- selection alone cannot exceed measured author ceiling
+
+#### E2 pros
+
+- authors receive shared source-risk context before writing
+- one brief can focus all candidates on difficult source relations
+
+#### E2 cons
+
+- repeats Candidate C brief-before-prose dependency
+- one brief defect correlates across every downstream author
+- brief producer does not establish complete candidate
+
+Ranking:
+E1 prime > E3 > E2,
+because E1 prime addresses both blind selection and later regression;
+E3 addresses blind selection but cannot repair measured author defects;
+E2 repeats rejected shared-preparation dependency.
+Candidate E1 prime entered retained-output calibration before any new candidate publication spend.
+
+### Rejected Candidate E1 prime calibration
+
+Candidate E1 prime dispatched 9 zero-retry auditor payloads in one dependency wave against retained D outputs.
+The bounded run ended after 1,170,562 milliseconds.
+Strict whole-response admission made only 3 responses usable:
+
+- D1 comparison had 0 usable auditors and fell back to known-inferior primary author
+- D1.3 post comparison had 1 usable auditor and no quorum
+- seeded comparison had 2 usable auditors and confirmed all 3 planted defects
+- 5 responses parsed as JSON but failed caller guard
+- 1 GLM D1.3 response ended with `StreamCutShortError`
+
+Every parsed provider reply was already stored privately by prompt digest.
+Digest-bound replay proved all 5 caller-guard failures were structurally valid ballots.
+Across those ballots,
+72 of 80 findings had exact source and candidate anchors and unique candidate-slot-class keys.
+Strict response admission discarded those 72 located findings together with 3 duplicates,
+3 source-anchor misses,
+and 2 candidate-anchor misses.
+Candidate E1 prime is rejected under whole-response admission;
+it cannot proceed to resolver or publication spend.
+Private evidence is preserved at
+`~/Downloads/Carena0442-candidate-E1-prime-calibration-rejected-20260830/`.
+
+### Candidate E1 double-prime admission
+
+Candidate E1 double-prime changes audit admission and decision semantics rather than changing prose prompts:
+
+1.  Structurally valid fixed-candidate ballot becomes usable.
+2.  Each finding is independently admitted only when exact source and candidate anchors bind within named slot.
+3.  Duplicate candidate-slot-class finding and unbound finding are excluded and recorded by candidate,
+    slot,
+    class,
+    and deterministic rejection reason.
+4.  Each usable auditor independently applies severe-count,
+    total-count,
+    then manifest-priority tuple to complete author candidates.
+5.  At least 2 auditors must select same baseline.
+    Otherwise fixed-priority baseline is published with explicit `evidenceFloorMet: false`;
+    such run cannot qualify as architecture quality evidence.
+6.  Resolver receives union of admitted located findings for selected baseline and may change only those slots.
+7.  Each usable post-auditor independently establishes nonempty-baseline strict-subset relation.
+8.  At least 2 post-auditors must establish strict subset before resolution can be adopted.
+    Otherwise baseline survives byte-for-byte.
+
+Auditor prompts omit manifest candidate priority.
+Auditors may evaluate output from same model family,
+but exact anchors,
+independent role prompts,
+and 2-vote decision prevent one self-review from controlling selection or adoption.
+Finding-empty ballot abstains rather than voting fixed priority.
+Every post-auditor ballot persists baseline keys,
+resolution keys,
+new resolution keys,
+approval,
+and whether auditor shares resolver model identity.
+A third dissent is recorded but does not veto 2 independent approvals;
+this implements stated 2-auditor adoption rule rather than silently changing it to unanimity.
+
+Zero-spend digest-bound replay over exact E1 prime provider replies admitted every completed ballot:
+
+- D1 had 3 usable auditors;
+  votes were 2 for Qwen fallback,
+  with one empty admitted ballot abstaining,
+  reproducing complete-page comparison
+- D1.3 had 2 usable auditors;
+  each located at least 1 concrete defect and neither established resolution strict subset,
+  reproducing copy-editor rejection
+- seeded arm had 3 usable auditors and retained quorum confirmation for every planted slot
+
+Replay completed in 48 milliseconds without provider calls.
+It calibrates audit admission and decisions only.
+
+Full scripted graph fixes ceiling at 10 payloads across 4 waves and proved:
+
+- base run selected fallback author on 3 defect-based votes,
+  constrained resolver to located slot,
+  received 3 post approvals,
+  and adopted complete resolution
+- all-author failure terminated with `ProductionUnavailableError` after 3 author nodes and no later calls
+- no usable author-audit ballot published fixed-priority baseline with `evidenceFloorMet: false`
+- invalid or unlocated resolver,
+  invalid post wave,
+  and regression post wave each preserved baseline byte-for-byte
+- 2 usable approving post auditors plus 1 unusable auditor adopted;
+  2 approvals plus 1 located dissent also adopted and retained dissent keys
+- completed restart left 31 non-result files byte-identical,
+  all 10 node mtimes unchanged,
+  and normalized result byte-identical
+- resolver SIGTERM restart retained exact `CallerAbort`,
+  did not redispatch,
+  and published baseline
+- post SIGTERM recorded 3 `CallerAbort` nodes;
+  restart preserved their digests and baseline
+- post SIGKILL left 3 dispatched nodes;
+  restart converted all to `IndeterminateTransmission` and preserved baseline
+- types,
+  local controls,
+  and complete suite passed with 871 suite verdicts and no failures
+
+Restored GFP mutations separately proved located-only resolver change,
+nonempty resolver change,
+2-vote post floor,
+strict-subset new-key exclusion,
+empty-ballot abstention,
+and hidden-priority refusal.
+Earlier admission mutations proved structural slot membership,
+source and candidate anchor binding,
+duplicate pruning,
+and author-selection vote floor.
+Every mutation failed named control and restored suite again passed 871 verdicts with no failures.
+
+### Rejected E1 double-prime Hyper-only output
+
+Fresh Hyper-only run completed in 1,142,906 milliseconds and published complete Qwen baseline.
+Run proved one-provider bounded operation but did not produce publication-ready page:
+
+- Qwen author completed
+- Kimi author consumed 16,000 output tokens and returned empty content,
+  then structural guard recorded schema mismatch
+- GLM author and relation auditor failed locally with `NoProviderForModelError`
+- 2 usable auditors inspected only Qwen candidate and both selected it
+- runtime incorrectly marked `evidenceFloorMet: true` although no comparative candidate existed
+- auditors located findings in 7 slots
+- resolver completed but changed 13 slots,
+  including 6 outside located set,
+  so located-only gate rejected whole response before post audit
+- publication correctly preserved Qwen baseline byte-for-byte
+
+Complete-page reading rejected baseline for concrete defects in existing classes:
+unsupported addition,
+source-detail omission,
+role generalization,
+technical-term misuse,
+actor and device-reference ambiguity,
+wrong causal basis,
+chronology wording,
+and lost rhetorical repetition.
+Source shell,
+front matter,
+contributor link,
+footnote relation,
+page media reference,
+Han-script refusal,
+presentation-artifact refusal,
+and publication readback remained correct.
+Page image showed memorial,
+trans identity,
+and chemistry context consistent with translated content and no additional text obligation.
+Private evidence is preserved at
+`~/Downloads/Carena0442-candidate-E1-double-prime-hyper-only-output-review-20260830/`.
+
+This rejects E1 double-prime output and its current evidence-floor predicate,
+not reusable architecture.
+Candidate E1 triple-prime correction requires:
+
+- at least 2 usable author candidates from distinct model identities before comparative floor can pass
+- at least 2 agreeing auditor model identities;
+  this necessarily includes external vote because selected author has 1 model identity
+- `evidenceFloorMet: false` publication when any floor condition fails
+- Hyper-only reserve author and auditor selected only after structured vision and complete-document validation
+- persisted schema-mismatch detail distinguishing unparseable output from caller-guard rejection
+- evaluation of 2 concurrent fixed resolver seats as alternative to one over-eager resolver nullifying every located fix
+
+No defect wording from this run may enter new prompts.
+Retained output remains negative calibration evidence only.
+### Rejected E1 triple-prime under active Hyper roster
+
+E1 triple-prime comparative-floor correction is implemented and tested:
+
+- candidates and ballots persist model identity
+- evidence requires at least 2 votes,
+  2 candidate model identities,
+  and 2 agreeing auditor model identities
+- one candidate or repeated auditor identity cannot satisfy floor
+- schema mismatch preserves stable reason distinguishing guard rejection,
+  invalid JSON,
+  truncated thinking,
+  and other mismatches
+- controls,
+  retained replay,
+  scripted one-author behavior,
+  restored build,
+  and 871 suites pass
+- GFP independently proves candidate diversity,
+  auditor diversity,
+  parser-reason,
+  and persistence guards load-bearing
+
+Hyper reserve evaluation then exhausted current active roster.
+MiniMax M3 was only distinct image-capable integrated model.
+Its quote-bound auditor completed strict response with 4 admitted findings and 1 duplicate pruned.
+Its complete author consumed requested 32,000 output tokens,
+ended `max_tokens`,
+and returned unparseable JSON missing final outer brace.
+Node correctly persisted `spent-unusable` with `schema-mismatch` and `unparseable-json` detail.
+Caller repair is forbidden,
+and prompt uniqueness forbids redispatching same model plus canonical author prompt with changed ceiling.
+Schema-invalid response remains operational evidence and was not read as page-quality evidence.
+
+No current active Hyper model distinct from Qwen and Kimi satisfies image,
+complete-author,
+and quote-bound-auditor contracts.
+Full triple-prime graph run would therefore begin from known failed comparative-author precondition:
+with Hyper alone it must set `evidenceFloorMet: false`,
+skip conditional repair,
+and republish same Qwen baseline already rejected by complete-page reading.
+Further resolver controls cannot repair absent comparative evidence.
+Running that graph would spend payloads without changing admissible outcome,
+so it is not performed.
+
+Private MiniMax evidence is preserved at
+`~/Downloads/Carena0442-minimax-reserve-validation-rejected-20260830/`.
+Technology vet report is
+`doc/audit/tech-candidate-e-hyper-reserve-model-vet-2026-08-30.md`
+on main branch.
+
+### Rejected E1 triple-prime after Hyper roster expansion
+
+A frozen roster-expansion evaluation then screened every out-of-roster Hyper vision row.
+Kimi K2.6 and K2.7 Code exited before spend
+because direct-service documentation did not support required named forced-tool schema
+under default or mandatory thinking.
+Hyper gateway translation remained unprobed,
+so this is conservative integration screening rather than observed gateway incompatibility.
+Owner-excluded Qwen3.8 Max remained excluded.
+
+Five Qwen alternatives each received one canonical complete-author payload and one quote-bound D1-auditor payload.
+All 10 zero-retry Hyper arms completed strict schema in one dependency wave.
+Every compiled author page was read completely against pinned source,
+archive,
+and page-referenced image.
+One analyst's complete-page review found all 5 failed publication-ready author hard gate:
+1 hid severe semantic truncation behind populated slot keys,
+3 retained concrete grammar,
+reference,
+provenance,
+or source-carryover defects,
+and strongest complete candidate introduced unsupported actor gender plus fidelity and English defects.
+Strongest auditor cannot satisfy reserve requirement because same model's author failed.
+All runtime survivors also remain Qwen-family siblings,
+so distinct ids would not prove cross-family independence.
+
+No roster candidate is recommended.
+Prompt uniqueness forbids repeating any model plus canonical prompt pair from this run.
+Private artifacts and located review are retained under
+`~/Downloads/Carena0442-hyper-roster-expansion-validation-20260830/`.
+Full technology evidence is in
+`doc/audit/tech-candidate-e-hyper-roster-expansion-vet-2026-08-30.md`.
+
+Candidate E1 double-prime and triple-prime are rejected under tested active-roster and expansion designs.
+Reusable components remain immutable shell,
+per-finding admission,
+model-diverse comparative floor,
+located-only resolution,
+strict-subset adoption,
+finite runtime,
+restart,
+abort identity,
+and provider-isolation controls.
+No Candidate E output is eligible for publication or production integration.
+
+Final Candidate E learning order:
+rejected expanded E1 triple-prime > rejected active-roster E1 triple-prime >
+rejected E1 double-prime > E3 > E2 > rejected E1 prime.
+Expanded triple-prime proves finite roster exhaustion;
+active-roster triple-prime corrects false comparative evidence but lacks candidate diversity;
+double-prime recovers located evidence but falsely passed one-candidate floor;
+E3 cannot exceed measured author ceiling;
+E2 repeats Candidate C dependency;
+E1 prime discarded most valid ballot evidence.
+
+## Measured selection outcome
+
+No replacement architecture is selected.
+Tested deployment candidates across A through E have zero survivor under fixed completion and quality contract.
+A1 ended in `StreamCutShortError` and A2 in bounded `ProductionUnavailableError` before adoption.
+B and C failed complete-page quality.
+D failed complete-page quality after repeated bounded refinements.
+Active-roster E lacked qualifying reserve and did not run full triple-prime graph;
+expansion E produced distinct ids but every tested author failed complete-page quality.
+
+Production replacement planning remains blocked.
+Continuation requires fresh finite architecture definition based on measured failures,
+not another serial editor,
+retry loop,
+Candidate E payload,
+or relaxation of publication-ready output.
+Semantic slot truncation,
+identity fabrication,
+and same-family correlation are now explicit design inputs.
 
 ## Required lifecycle migration
 
@@ -578,11 +1514,9 @@ not terminal quality refusal.
 
 ## Prototype acceptance evidence
 
-Before selecting for production:
+Before selecting any replacement for production:
 
-- static manifest proves declared ceiling:
-  A at most 4 payloads,
-  B and C at most 5
+- static manifest proves declared finite payload ceiling
 - positive controls cover seeded omission,
 wrong meaning,
 identity change,
@@ -600,7 +1534,7 @@ and register mismatch
 - each unusable later producer preserves prior complete candidate and execution reaches publication
 - first-producer failure exercises statically named fallback producer without adding manifest work
 - deterministic publication guards still GFP-fail when removed
-- complete actual Carena output from every candidate is read by human and independent reviewer;
+- complete actual Carena output from selected candidate is read by human and independent reviewer;
   artifact or tally alone is not comparison evidence
 - recurring output defect changes brief,
 producer responsibility,
