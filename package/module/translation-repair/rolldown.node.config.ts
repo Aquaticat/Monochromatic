@@ -44,6 +44,8 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-brief-editor-controls": "./src/corpus-run/prototype-brief-editor-controls.ts",
     "prototype-serial-controls": "./src/corpus-run/prototype-serial-controls.ts",
     "prototype-serial-producers": "./src/corpus-run/prototype-serial-producers.ts",
+    "prototype-specification-compiler": "./src/corpus-run/prototype-specification-compiler.ts",
+    "prototype-specification-compiler-controls": "./src/corpus-run/prototype-specification-compiler-controls.ts",
     "recall-benchmark": "./src/corpus-run/recall-benchmark.ts",
     "roster-bench": "./src/corpus-run/roster-bench.ts",
     "score-agreement": "./src/corpus-run/score-agreement.ts",

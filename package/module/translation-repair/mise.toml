@@ -130,6 +130,16 @@ description = "PROTOTYPE: run corrected four-payload serial producer design over
 depends = ["build"]
 run = "node dist/final/node/prototype-serial-producers.mjs"
 
+[tasks."prototype-specification-compiler"]
+description = "PROTOTYPE: run Candidate B finite specification compiler on Carena; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-specification-compiler.mjs"
+
+[tasks."prototype-specification-compiler-controls"]
+description = "PROTOTYPE: run Candidate B local controls"
+depends = ["build"]
+run = "node dist/final/node/prototype-specification-compiler-controls.mjs"
+
 [tasks."coverage-probe"]
 description = "PROTOTYPE for question 28: ask a roster whether the translation already carries each passage the aligners refuse to pair, at both scales; SPENDS QUOTA (pass --only ids and --cap n after --)"
 depends = ["build"]
