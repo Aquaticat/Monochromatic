@@ -86,7 +86,7 @@ import {
  * const width = HYPER_PER_MODEL_CONCURRENCY;
  * ```
  */
-export const HYPER_PER_MODEL_CONCURRENCY = Number.POSITIVE_INFINITY;
+export const HYPER_PER_MODEL_CONCURRENCY: number = Number.POSITIVE_INFINITY;
 
 /**
  * Logger root for this package's model-facing shell.
