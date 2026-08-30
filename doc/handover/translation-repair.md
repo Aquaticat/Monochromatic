@@ -10,7 +10,7 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `f858ab538`.
+- Current pipeline commit: `0dc6e510c`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
 - Generation-13 continuous correction,
@@ -34,6 +34,7 @@ not current instruction.
   contributor-floor test landed in `78ab244a2`.
 - Consolidation version 16 final-selection recovery landed in `a84bb3a7a`;
   role-alias guard test landed in `f858ab538`.
+- Translate version 12 and source-destination recovery landed in `0dc6e510c`.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
@@ -43,6 +44,8 @@ not current instruction.
 - Final translate-version-11 verification emitted 869 `PASS` lines and zero `FAIL` lines.
 - Final archive-block verification emitted 870 `PASS` lines and zero `FAIL` lines.
 - Final-selection recovery verification emitted 871 `PASS` lines and zero `FAIL` lines.
+- Final destination-recovery verification emitted 871 `PASS` lines and zero `FAIL` lines;
+  its log contains both repair-standing and complete-pass destination-recovery tests.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -96,6 +99,15 @@ not current instruction.
 - Translate version-10 GFP logs:
   `~/temp/agent/gfp-translate-v10-decline-challenge-red-20260829.log`
   and `~/temp/agent/gfp-translate-v10-decline-challenge-green-20260829.log`.
+- Destination-recovery GFP logs:
+  `~/temp/agent/gfp-translate-incumbent-source-floor-red-20260829.log`,
+  `~/temp/agent/gfp-translate-incumbent-source-floor-green-20260829.log`,
+  `~/temp/agent/gfp-consolidation-standing-source-floor-red-20260829.log`,
+  `~/temp/agent/gfp-consolidation-standing-source-floor-green-20260829.log`,
+  `~/temp/agent/gfp-destination-prewrite-guard-red-20260829.log`,
+  `~/temp/agent/gfp-destination-prewrite-guard-green-20260829.log`,
+  `~/temp/agent/gfp-destination-scheduler-red-20260829.log`,
+  and `~/temp/agent/gfp-destination-scheduler-green-20260829.log`.
 - Final-selection recovery GFP logs:
   `~/temp/agent/gfp-final-selection-recovery-condition-red-20260829.log`,
   `~/temp/agent/gfp-final-selection-recovery-condition-green-20260829.log`,
@@ -139,9 +151,9 @@ not current instruction.
   and `~/temp/agent/gfp-unfilled-scheduler-stopped-green-20260829.log`.
 
 Artifact schema remains 9.
-At `f858ab538`, cache generations are consolidation 16,
+At `0dc6e510c`, cache generations are consolidation 16,
 lane contest 5,
-translate 11,
+translate 12,
 refine 4,
 repair 30,
 and pairing 2.
@@ -210,6 +222,28 @@ caller abort,
 and exact failed-evidence cycle pause as `INCOMPLETE`;
 identical twins share final safe chain and no unsafe intermediate settlement persists.
 `assertFinalSelectionSettled` remains defensive and maps to stopped work.
+
+Source destinations now have two stage-local recovery paths.
+Translate version 12 excludes archive incumbent that fails deterministic source atoms and treats fallback as absent.
+Consolidation validates ordinary standing as well as syntax-bearing standing,
+so contest-endorsed repair wording missing a source destination enters version-16 recovery.
+Incumbent validation intentionally uses archive text as its own page-shape baseline;
+source-derived atoms are the meaningful floor there.
+Final page destination comparison occurs before filesystem mutation and is a defensive `INCOMPLETE` invariant.
+
+The task-24 terminal-quality register is closed at code level:
+scripted integration,
+full suite,
+and GFP pass.
+Live provider rejection has not yet traversed every new recovery loop;
+that is task 26 and no production-readiness claim precedes it.
+Exact deterministic cycle is accepted policy:
+it blocks publication indefinitely until prompt strategy,
+roster,
+or evidence changes,
+and is not fallback authorization.
+`UnansweredContestSliceError` remains ordinary resumable `ERROR` because it is artifact/tally inconsistency,
+not quality verdict.
 
 Every direct roster round now starts straggler grace at exact-half participation.
 Grace may collect more responses,
@@ -359,11 +393,12 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
-2.  Optimize only measured completion path without weakening quality.
-3.  Rebuild pull-request fixture worktree and launch fresh roots only after quality and performance gates,
+1.  Verify continuous-repair invariant across current stage-local loops.
+2.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+3.  Optimize only measured completion path without weakening quality.
+4.  Rebuild pull-request fixture worktree and launch fresh roots only after quality and performance gates,
     passing `--require-providers synthetic,hyper`.
-4.  Verify every successful page and artifact,
+5.  Verify every successful page and artifact,
     then read complete output.
 
 There is no release deadline.

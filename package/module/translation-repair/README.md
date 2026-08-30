@@ -1727,7 +1727,7 @@ checkpoints payloads,
 and pauses only on operational interruption or exact deterministic task cycle.
 Publication gates remain strict.
 
-Remaining terminal and bypass findings must move to stage-local repair before fresh runs:
+Audited terminal and bypass findings are integrated as follows:
 
 - Archive-only block repair landed in `ccaad1f53`, with contributor-floor test in `78ab244a2`.
   Preparation now scopes each unclaimed target block to expected aligned source section,
@@ -1752,6 +1752,11 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   final would-ship page must retain every exact anchored region that proved full coverage.
   This exact-region rule can conservatively pause semantically equivalent rewrites as `INCOMPLETE`.
   `assertPublishableTranslation` is now defensive invariant and cannot trigger fresh whole-entry retry.
+- Source-destination recovery landed in `0dc6e510c`.
+  Translate version 12 excludes archive fallback that misses source atoms and continues as absent-mode translation.
+  Ordinary repair-lane or archive standing is validated before consolidation eligibility,
+  so a contest-endorsed linkless candidate enters version-16 recovery instead of becoming final.
+  Final destination comparison runs before any page write and pauses as names-only `INCOMPLETE` invariant.
 - Continuous final-selection recovery landed in `a84bb3a7a`, with role-alias guard in `f858ab538`.
   Consolidation version 16 treats every unendorsed or publication-ineligible standing baseline as unfinished.
   It threads prior selection slate,
@@ -1785,7 +1790,7 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Body-slice floor does not replace front-matter comment authority,
   which remains in metadata validator.
   Final completeness guard remains defensive.
-  Cache generations move to translate 11,
+  Cache generations move to translate 12,
   refine 4,
   lane contest 5,
   and consolidation 16.
@@ -1809,7 +1814,10 @@ assembly,
 filesystem,
 provider,
 and cancellation failures are operational errors rather than quality verdicts.
-No fresh validation starts until remaining repairable quality paths stop producing terminal refusal.
+The code-level terminal-quality register is closed.
+Fresh validation remains gated by continuous-repair verification and Carena completion-path analysis.
+Exact deterministic cycles deliberately pause as `INCOMPLETE` until strategy or evidence changes;
+they never authorize fallback publication.
 
 Corpus-readiness work is defect-driven:
 once output proves reproducible systemic blocker,
