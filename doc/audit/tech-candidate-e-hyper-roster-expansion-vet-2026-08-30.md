@@ -361,6 +361,19 @@ or completion.
 Stopped or schema-invalid response is operational evidence only.
 No later model or retry is generated from response.
 
+Interpretation is frozen before dispatch:
+
+- deadline-aborted arm is inconclusive under this 360,000-millisecond envelope,
+  not candidate hard-gate failure;
+  prompt uniqueness still forbids redispatch
+- distinct Qwen ids satisfy implemented identity predicate but never prove cross-family independence
+- post-run balance sample records measured debit;
+  preflight balance alone is not spend measurement
+- actual completed payload files and node records prove execution count;
+  manifest ceiling is plan only
+- 872 passing suites prove evaluation tooling,
+  never candidate output quality
+
 ## Evidence records
 
 ### Hyper live inventory
