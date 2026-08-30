@@ -21,11 +21,13 @@ const PROVIDER_VAR = 'TRANSLATION_REPAIR_CONCURRENCY_PROVIDER';
 const MODEL_VAR = 'TRANSLATION_REPAIR_CONCURRENCY_MODEL';
 const WIDTHS_VAR = 'TRANSLATION_REPAIR_CONCURRENCY_WIDTHS';
 const TIMEOUT_VAR = 'TRANSLATION_REPAIR_CONCURRENCY_TIMEOUT_MS';
+const TASK_BASE_VAR = 'TRANSLATION_REPAIR_CONCURRENCY_TASK_BASE';
 const DEFAULT_TIMEOUT_MS = 120_000;
 const MAX_LOCAL_CONCURRENCY = 128;
 const MAX_PROBE_WIDTH = 64;
 const MAX_TOTAL_LOGICAL_CALLS = 200;
 const MAX_ANSWER_CHARS = 1_000;
+const TASK_BLOCK_SIZE = 1_000;
 const BUDGET_OR_RATE_STATUSES: ReadonlySet<number> = new Set([402, 429,]);
 
 type Provider = 'synthetic' | 'hyper';
@@ -45,7 +47,7 @@ function requiredEnvironment({ name, }: { readonly name: string; }): string {
 
 function positiveInteger({ written, name, }: { readonly written: string; readonly name: string; }): number {
   const value = Number(written,);
-  if ((!Number.isInteger(value,)) || (value < 1) || (String(value,) !== written))
+  if ((!Number.isSafeInteger(value,)) || (value < 1) || (String(value,) !== written))
     throw new Error(`${name} must be canonical positive integer`);
   return value;
 }
@@ -100,6 +102,7 @@ if ((provider === 'hyper') && (!hyperIdFor({ modelId, }).served))
 const widths = readWidths();
 const timeoutWritten = process.env[TIMEOUT_VAR] ?? String(DEFAULT_TIMEOUT_MS,);
 const exchangeTimeoutMs = positiveInteger({ written: timeoutWritten, name: TIMEOUT_VAR, });
+const taskBase = positiveInteger({ written: requiredEnvironment({ name: TASK_BASE_VAR, }), name: TASK_BASE_VAR, });
 const controller = new AbortController();
 process.once('SIGINT', function abortOnSigint() { controller.abort(new Error('caller abort: SIGINT'),); },);
 process.once('SIGTERM', function abortOnSigterm() { controller.abort(new Error('caller abort: SIGTERM'),); },);
@@ -140,6 +143,7 @@ console.log(JSON.stringify({
   modelId,
   widths,
   exchangeTimeoutMs,
+  taskBase,
   maxAnswerChars: MAX_ANSWER_CHARS,
   retryPolicy: DEFAULT_RETRY_POLICY,
   scope: 'end-to-end model behavior, not isolated provider admission',
@@ -157,8 +161,10 @@ for (const [armIndex, width,] of widths.entries()) {
   const calls = Array.from({ length: width, }, function makeCall() {
     taskOrdinal += 1;
     const ordinal = taskOrdinal;
-    const left = 10_000 + ordinal;
-    const right = 20_000 + (ordinal * 2);
+    const left = (taskBase * TASK_BLOCK_SIZE) + ordinal;
+    const right = (taskBase * TASK_BLOCK_SIZE * 2) + (ordinal * 2);
+    if ((!Number.isSafeInteger(left,)) || (!Number.isSafeInteger(right,)))
+      throw new Error(`${TASK_BASE_VAR} task range exceeds safe integer`);
     const expected = String(left + right,);
     return async function call(): Promise<LogicalCallObservation> {
       const started = Date.now();
