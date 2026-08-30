@@ -966,6 +966,9 @@ and five-node restart without redispatch.
 Wave-three SIGTERM records `CallerAbort` and restart publishes reviser without redispatch.
 Wave-three SIGKILL leaves dispatched copy node;
 restart records `IndeterminateTransmission` and publishes reviser without redispatch.
+Stored-completed response revalidation currently fails run rather than degrading node;
+manifest and prompt identity prevent cross-validator replay,
+but corruption hardening remains production migration work.
 Role-distinct fixture digests make preservation observable.
 GFP mutations prove artifact refusal,
 copy preservation,
