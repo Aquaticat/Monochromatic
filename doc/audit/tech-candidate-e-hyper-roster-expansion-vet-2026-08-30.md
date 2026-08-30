@@ -1,7 +1,7 @@
 # Candidate E Hyper roster expansion vet report
 
-- Status: screening in progress
-- Lifecycle phase: discovered
+- Status: targeted validation pending
+- Lifecycle phase: serious alternative
 - Subject: Candidate E Hyper roster expansion
 - Scope: select out-of-roster Charm Hyper model for distinct complete author and quote-bound auditor seat
 - Started: 2026-08-30
@@ -125,7 +125,39 @@ Out-of-roster image-capable rows are finite candidate set.
 Official endpoint has no pagination.
 No negative filter was used during enumeration.
 
-New web queries have not run yet.
+Every frozen web query ran on 2026-08-30 through fast search.
+Each query returned 10 results;
+primary official pages were fetched for every model family and provider protocol.
+No query used include or exclude filters.
+Result ordering was provider relevance order.
+
+Initial official-model queries discovered no additional candidate id beyond live Hyper enumeration.
+They confirmed:
+
+- Kimi K2.6 is general purpose,
+  image-capable,
+  tool-capable,
+  and default-thinking.
+- Kimi K2.7 Code is dedicated coding model,
+  image-capable,
+  tool-capable,
+  and cannot disable thinking.
+- Qwen3.6 Flash and Plus are native vision-language models with function calling and structured output.
+- Qwen3.7 Flash and Plus are native vision-language models with function calling and structured output.
+- Qwen3.8 Flash is multimodal,
+  supports structured output,
+  and advertises Anthropic compatibility.
+
+One expansion round ran exactly:
+
+- `Kimi K2.6 Hyper Anthropic thinking disabled tool choice`
+- `Qwen3.7 Hyper Anthropic effort default`
+- `Qwen3.8 Flash Hyper exact hosted model relationship`
+
+Expansion found no new candidate id.
+It established model-mode and forced-tool compatibility as Kimi screening gate.
+Schedule is now permanently frozen.
+Discovery terminal result is saturated with 5 screening survivors after 2 Kimi integration exits and owner-excluded Qwen Max.
 
 ## Candidate ledger
 
@@ -140,7 +172,14 @@ New web queries have not run yet.
   reasoning effort low through high with medium default.
 - Risk: output ceiling is below MiniMax's measured 32,000-token author truncation;
   candidate-specific completion remains unmeasured and cannot be inferred from another model.
-- Screening: serious alternative pending official-source and runtime gates.
+- Official hard-gate conflict: thinking defaults enabled,
+  and Kimi documentation allows `tool_choice` only `auto` or `none` in thinking mode.
+- Project request builder intentionally sets no thinking parameter and forces named answer tool for strict schema.
+- Same Hyper path previously let Kimi-K3 consume full 16,000-token ceiling without answer,
+  consistent with default-thinking budget risk but not proof about K2.6.
+- Residual uncertainty: Hyper could translate model-specific tool semantics differently from direct Kimi API;
+  no such behavior is documented.
+- Screening: exits because supported current integration cannot issue required strict forced-tool contract without violating owner no-thinking-knob policy.
 
 ### `kimi-k2.7-code`
 
@@ -150,9 +189,15 @@ New web queries have not run yet.
 - Live static evidence: vision true and 16,000 output.
 - Risk: same provider's Kimi-K3 exhausted same numerical ceiling on canonical author prompt,
   but different model behavior is not hard-gate evidence for this candidate.
-- Screening: serious alternative pending category-fit,
-  official-source,
-  and runtime gates.
+- Official hard-gate conflict: model cannot disable thinking,
+  while Kimi documentation allows `tool_choice` only `auto` or `none`.
+- Project strict schema requires named forced answer tool.
+- Same Hyper path previously let Kimi-K3 exhaust identical 16,000-token numerical ceiling without answer,
+  corroborating budget risk without treating sibling behavior as candidate proof.
+- Hyper live row reports no reasoning metadata,
+  but direct model documentation says thinking is mandatory;
+  no gateway override is documented.
+- Screening: exits as documented integration-incompatible before spend.
 
 ### `qwen3.6-flash`
 
@@ -160,7 +205,12 @@ New web queries have not run yet.
 - Base category: managed service model under incumbent provider.
 - Overlays: sensitive data and roster extension.
 - Live static evidence: vision true and 64,000 output.
-- Screening: serious alternative pending official-source and runtime gates.
+- Official Qwen page confirms image input,
+  function calling,
+  structured output,
+  1M context,
+  and 65K direct-service output.
+- Screening: serious alternative pending equal-depth Hyper runtime gates.
 
 ### `qwen3.6-plus`
 
@@ -168,7 +218,12 @@ New web queries have not run yet.
 - Base category: managed service model under incumbent provider.
 - Overlays: sensitive data and roster extension.
 - Live static evidence: vision true and 64,000 output.
-- Screening: serious alternative pending official-source and runtime gates.
+- Official Qwen page confirms image input,
+  function calling,
+  structured output,
+  1M context,
+  and 65K direct-service output.
+- Screening: serious alternative pending equal-depth Hyper runtime gates.
 
 ### `qwen3.7-flash`
 
@@ -178,7 +233,12 @@ New web queries have not run yet.
 - Live static evidence: vision true,
   1,000,000 context,
   and 64,000 output.
-- Screening: serious alternative pending official-source and runtime gates.
+- Official Qwen page confirms image input,
+  function calling,
+  structured output,
+  1M context,
+  and 131K direct-service output.
+- Screening: serious alternative pending equal-depth Hyper runtime gates.
 
 ### `qwen3.7-plus`
 
@@ -188,7 +248,12 @@ New web queries have not run yet.
 - Live static evidence: vision true,
   1,000,000 context,
   and 64,000 output.
-- Screening: serious alternative pending official-source and runtime gates.
+- Official Qwen page confirms image input,
+  function calling,
+  structured output,
+  1M context,
+  and 131K direct-service output.
+- Screening: serious alternative pending equal-depth Hyper runtime gates.
 
 ### `qwen3.8-flash`
 
@@ -198,7 +263,12 @@ New web queries have not run yet.
 - Live static evidence: vision true,
   1,000,000 context,
   and 128,000 output.
-- Screening: serious alternative pending official-source and runtime gates.
+- Official Qwen page confirms image input,
+  structured output,
+  1M context,
+  131K direct-service output,
+  and both OpenAI and Anthropic API compatibility.
+- Screening: serious alternative pending equal-depth Hyper runtime gates.
 
 ### `qwen3.8-max`
 
@@ -265,8 +335,8 @@ immutable shell,
 retained comparison candidates,
 and page-referenced `photo1.webp`.
 
-Maximum planned payloads are 14:
-2 independent payloads for each of 7 screening survivors,
+Maximum planned payloads are 10:
+2 independent payloads for each of 5 screening survivors,
 zero retries,
 and one dependency wave.
 Calls may run concurrently because they are dependency-independent.
@@ -293,7 +363,60 @@ No later model or retry is generated from response.
 
 ## Evidence records
 
-Targeted evidence pending discovery and screening completion.
+### Hyper live inventory
+
+- Candidates: every report row.
+- Gate: current service,
+  vision,
+  context,
+  output,
+  and reasoning metadata.
+- Status: pass for enumerated row presence;
+  other hard gates pending.
+- Primary source:
+  `https://hyper.charm.land/v1/models`,
+  accessed 2026-08-30.
+- Saved response:
+  `~/temp/agent/hyper-models-E1-reserve-20260830.json`.
+- Outcome: 29 total rows,
+  11 image-capable rows,
+  finite out-of-roster candidate set saturated.
+
+### Kimi forced-tool compatibility
+
+- Candidates: `kimi-k2.6` and `kimi-k2.7-code`.
+- Gate: strict fixed-key schema through current request builder.
+- Status: fail.
+- Primary sources:
+  `https://platform.kimi.ai/docs/guide/kimi-k2-6-quickstart` and
+  `https://platform.kimi.ai/docs/guide/kimi-k2-7-code-quickstart`,
+  accessed 2026-08-30.
+- Evidence: K2.6 thinking defaults enabled;
+  K2.7 cannot disable thinking;
+  both permit only automatic or no tool choice while thinking.
+- Consumer boundary:
+  `package/module/translation-repair/src/anthropic-request.ts` forces named answer tool and records owner instruction never to set thinking parameters.
+- Outcome: both exit without provider spend.
+
+### Qwen hosted capability
+
+- Candidates: Qwen3.6 Flash and Plus,
+  Qwen3.7 Flash and Plus,
+  Qwen3.8 Flash.
+- Gate: vision,
+  function or structured output,
+  and sufficient provider envelope.
+- Status: pass documentation screening;
+  Hyper runtime pending.
+- Primary sources:
+  exact QwenCloud model pages for Qwen3.6 and Qwen3.7,
+  plus `https://www.qianwenai.com/models/qwen3.8-flash`,
+  accessed 2026-08-30.
+- Evidence: all 5 accept image input and text output;
+  model pages expose function calling and structured output.
+- Counterevidence: first-party direct-service ceilings differ from Hyper rows;
+  Hyper live machine-readable row controls actual request cap.
+- Outcome: 5 finalists require identical consumer-boundary validation.
 
 ## Scoring and sensitivity
 
@@ -312,5 +435,8 @@ strict schema,
 complete author output,
 translation quality,
 or audit recall.
-Family labels do not establish response independence;
-family independence remains scored concern rather than hard gate.
+Family labels do not establish response independence.
+All surviving candidates are Qwen-family siblings of incumbent Qwen3.8-27B.
+Distinct ids satisfy implemented evidence predicate,
+but correlated defect patterns can overstate independence and no weighted score can turn same-family agreement into cross-family proof.
+Family independence remains scored concern plus explicit limit on comparative-floor interpretation.
