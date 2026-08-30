@@ -6,8 +6,7 @@ import type { SliceSyntax, } from './chunk-document.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
-import { produceTranslateSlate, } from './translate-produce.ts';
-import { judgeSlateWithRetry, } from './translate-retry.ts';
+import { runTranslateRepairs, } from './translate-stage-repair.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 //region Translate stage
@@ -88,9 +87,8 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  * roster could not select anything: repeats on either side, no translator, or
  * judges too few to reach the minimum weight
  *
- * @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
- * nothing to write, which every fallback here would otherwise report as a
- * settled slice carrying the archive's own wording, of which there is none
+ * @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
+ * when absent-passage correction repeats exact task or providers remain unavailable
  *
  * @throws {@link BlankSelectionError} when selection chose text that says
  * nothing for a source that says something, in EITHER mode, since that is a
@@ -145,49 +143,22 @@ export async function runTranslateStage(
     role: 'translator',
   },);
 
-  /**
-   * Slate this slice produced, bought once.
-   */
-  const produced = await produceTranslateSlate({
+  return await runTranslateRepairs({
     client,
     translatorModelIds,
+    judgeModelIds,
     sourceText,
     incumbentText,
+    incumbentKind,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     signal,
     perCallTimeoutMs,
     l,
-  },);
-
-  // JUDGED THROUGH THE RETRY rather than directly, so a panel that declines is
-  // asked once more about the same candidates before the slice is recorded as
-  // one nothing backed. The window trial drives the halves itself and does not
-  // get this, which is correct: judging one slate repeatedly IS its experiment.
-  return await judgeSlateWithRetry({
-    judging: {
-      client,
-      produced,
-      judgeModelIds,
-      sourceText,
-      incumbentText,
-      incumbentKind,
-      ...((identityContext === undefined) ? {} : { identityContext, }),
-      ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
-      ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
-      ...((pictureContext === undefined) ? {} : { pictureContext, }),
-      ...((syntax === undefined) ? {} : { syntax, }),
-      // THE SAME VALUE THE PRODUCER WAS GIVEN, read from one binding rather
-      // than derived twice. A slate written under the verse rule and judged
-      // without it is the contradiction `#150` fixed for producers alone, and
-      // two derivations of one fact are how it would come back.
-      lineStructured,
-      signal,
-      perCallTimeoutMs,
-      l,
-    },
   },);
 }
 

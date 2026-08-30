@@ -74,6 +74,7 @@ export {
   type SliceAttempt,
 } from './translate-slice-attempt.ts';
 export { runTranslateStage, } from './translate-stage.ts';
+export { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 export {
   type TranslateDecision,
   type TranslateStageResult,
@@ -105,6 +106,7 @@ export {
   isTranslateReportWire,
   TRANSLATE_LINE_STRUCTURE_RULE,
   TRANSLATE_RESPONSE_FORMAT,
+  type TranslateFollowupEvidence,
   type TranslatePromptPlan,
   type TranslateReportWire,
 } from './translate-wire.ts';
@@ -163,6 +165,7 @@ export {
   buildCoverageMessages,
   COVERAGE_RESPONSE_FORMAT,
   type CoverageDegree,
+  type CoverageFollowupEvidence,
   type CoveragePromptPlan,
   type CoverageReportWire,
   isCoverageReportWire,

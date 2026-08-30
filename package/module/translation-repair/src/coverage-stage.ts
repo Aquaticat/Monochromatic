@@ -8,6 +8,7 @@ import {
 } from './coverage-verdict.ts';
 import {
   buildCoverageMessages,
+  type CoverageFollowupEvidence,
   COVERAGE_RESPONSE_FORMAT,
   type CoverageReportWire,
   isCoverageReportWire,
@@ -58,6 +59,8 @@ export type CoverageAnswer = {
  *
  * @param translation - whole translation, searched and used to anchor quotes
  *
+ * @param followupEvidence - latest unresolved placement evidence
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param exchangeTimeoutMs - deadline per exchange
@@ -77,6 +80,7 @@ export async function runCoverageStage(
     modelIds,
     sourcePassage,
     translation,
+    followupEvidence,
     signal,
     exchangeTimeoutMs,
     l,
@@ -85,6 +89,7 @@ export async function runCoverageStage(
     readonly modelIds: readonly RosterModelId[];
     readonly sourcePassage: string;
     readonly translation: AnchorTarget;
+    readonly followupEvidence?: CoverageFollowupEvidence;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -96,6 +101,7 @@ export async function runCoverageStage(
   const plan = buildCoverageMessages({
     sourcePassage,
     translationText: translation.text,
+    ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
   },);
 
   /**

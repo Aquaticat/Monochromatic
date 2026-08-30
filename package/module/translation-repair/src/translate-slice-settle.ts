@@ -105,6 +105,16 @@ export type TranslateSliceOutcome = {
    */
   readonly resumedFromDisk: boolean;
 } | {
+  /**
+   * Coverage proved source-only passage already rendered elsewhere.
+   */
+  readonly kind: 'carried';
+
+  /**
+   * Slice whose insertion is unnecessary.
+   */
+  readonly sliceIndex: number;
+} | {
   readonly kind: 'unfilled';
 
   /**
@@ -147,8 +157,9 @@ export type TranslateSliceSettlement = {
  * @param slicePosition - where it sits in `prepared.slices`, which the window
  * is addressed by
  *
- * @param insertionAdmitted - whether, for an original with no translation
- * beside it, the page has room to be missing it
+ * @param insertionAdmitted - whether source-only passage may be inserted
+ *
+ * @param insertionCarried - whether passage is fully rendered elsewhere
  *
  * @param pictureReadings - what the document's pictures were read as
  *
@@ -183,6 +194,7 @@ export async function settleTranslateSlice(
     slice,
     slicePosition,
     insertionAdmitted,
+    insertionCarried = false,
     pictureReadings,
     runShape,
     sliceCache,
@@ -197,6 +209,7 @@ export async function settleTranslateSlice(
     readonly slice: ChunkPair;
     readonly slicePosition: number;
     readonly insertionAdmitted: boolean;
+    readonly insertionCarried?: boolean;
     readonly pictureReadings: ReadonlyMap<string, PairedReading>;
     readonly runShape: string;
     readonly sliceCache?: SliceCache<TranslateSliceRecord>;
@@ -210,6 +223,18 @@ export async function settleTranslateSlice(
    * Global index of this slice, which every record and replacement names.
    */
   const { sliceIndex, } = slice.target;
+
+  if (isInsertionChunk(slice.target,) && insertionCarried) {
+    l.info(`slice ${String(sliceIndex,)}: source passage already carried elsewhere`,);
+    return {
+      outcome: {
+        kind: 'carried',
+        sliceIndex,
+      },
+      refusedCacheFindings: [],
+      unfilledFindings: [],
+    };
+  }
 
   if (isInsertionChunk(slice.target,) && (!insertionAdmitted)) {
     // NOTHING IS BOUGHT HERE. The pairing says this original went unrendered,

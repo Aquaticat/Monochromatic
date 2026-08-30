@@ -322,9 +322,18 @@ const REVIEWED_VISUAL_ENTRY = {
 const GAP_FRESH = "The cat's final [record](https://example.test/cat-record) says she died at age 26.";
 
 /**
+ * Entry whose source-only block is already rendered inside target page.
+ */
+const CARRIED_ENTRY = {
+  id: 'CatEntryCarriedGap',
+  sourceText: GAP_SOURCE_TEXT,
+  targetText: `${GAP_TARGET_TEXT}\n${GAP_FRESH}\n`,
+};
+
+/**
  * Coverage behavior of pass fixture.
  */
-type CoverageScript = 'lost' | 'absent';
+type CoverageScript = 'lost' | 'absent' | 'full';
 
 /**
  * Renders one slice the way a translator that respected block structure would.
@@ -444,11 +453,17 @@ function replyFor(
   if (schema === 'coverage_report') {
     if (coverageScript === 'lost')
       throw new Error('scripted coverage voice lost',);
-    return {
-      coverage: 'none',
-      quote: '',
-      reason: 'scripted source passage absent',
-    };
+    return coverageScript === 'full'
+      ? {
+        coverage: 'full',
+        quote: GAP_FRESH,
+        reason: 'scripted source passage carried',
+      }
+      : {
+        coverage: 'none',
+        quote: '',
+        reason: 'scripted source passage absent',
+      };
   }
   if (schema === 'critic_report')
     return { issues: [], };
@@ -1373,8 +1388,7 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES artifact and page publication when coverage cannot corroborate a known source gap, '
-        + 'retaining caches and reporting one entry error instead of settling an incomplete memorial',
+      name: 'PAUSES before lanes when coverage cannot resolve known source-gap placement',
       fn: async () => {
         await using dirs = await throwawayDirs();
         /**
@@ -1406,16 +1420,47 @@ await describe({
           return line.startsWith(`TALLY ${GAP_ENTRY.id} `,);
         },);
         expect(tally,).toHaveLength(1,);
-        expect(tally[0],).toContain('status=ERROR',);
+        expect(tally[0],).toContain('status=INCOMPLETE',);
       },
     },),
     it({
-      name: 'REFUSES publication when coverage admits a source gap but every translator voice is lost, '
-        + 'because provider outage cannot turn known missing content into settled page',
+      name: 'PUBLISHES source-only passage proven carried elsewhere when final page retains proof region',
       fn: async () => {
         await using dirs = await throwawayDirs();
         const served: string[] = [];
-        await settleEntry({
+        const outcome = await settleEntry({
+          client: entryClient({
+            served,
+            coverageScript: 'full',
+          },),
+          entry: CARRIED_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        expect(outcome,).toEqual({ kind: 'settled', },);
+        expect(served,).toContain('coverage_report',);
+        const page = await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: CARRIED_ENTRY.id,
+          },),
+          'utf8',
+        );
+        expect(page,).toContain(GAP_FRESH,);
+      },
+    },),
+    it({
+      name: 'PAUSES when coverage admits source gap but every translator voice is lost',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        const served: string[] = [];
+        const outcome = await settleEntry({
           client: entryClient({
             served,
             failOnSchema: 'translation_report',
@@ -1431,6 +1476,7 @@ await describe({
           baseSignal: new AbortController().signal,
         },);
 
+        expect(outcome,).toEqual({ kind: 'stopped', },);
         expect(served,).toContain('coverage_report',);
         expect(served,).not.toContain('lane_contest',);
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([],);

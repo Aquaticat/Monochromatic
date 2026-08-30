@@ -64,12 +64,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  * spelling in metadata comments and version 8 for body contributor public
  * identities. Version 9 adds deterministic complete-form contributor floor.
  * Version 10 replaces identical decline retry with distinct challenge task.
+ * Version 11 continues absent passages from latest rejection evidence.
  * These questions changed without input fields.
  *
  * The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  * leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '9026678273516371ecdfb1a27772924ddafc409c77ffa6043577c937c9c4d69d';
+const LEGACY_WINDOWLESS_KEY = '573b77f3e43915bfd46353733d1ac272dc8befa9a4e2d82c8343e3316c8fd50a';
 
 /**
  * One slice's key, with whatever this case wants to vary.

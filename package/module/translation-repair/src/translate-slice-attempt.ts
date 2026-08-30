@@ -14,15 +14,14 @@ import type {
   TranslateSliceRecord,
 } from './translate-document-contract.ts';
 import { settleTranslateSlice, } from './translate-slice.ts';
+import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 
 //region Translate slice attempt
-// One slice's round, with its two honest endings named.
+// One slice's round, with settled and defensive legacy-unfilled shapes named.
 //
-// A slice either settles into a record or produces nothing to record, and the
-// second is not a failure of the run: a passage the archive never translated,
-// which this round could not translate either, leaves the document exactly as
-// it found it. The driver has to tell those apart to know whether to cache, to
-// splice, and what to say in its findings.
+// Production stage continuously repairs absent passages and never returns
+// unfilled quality outcome. Union remains for deterministic direct-library
+// admission and old record readers; leaked stage absence pauses operationally.
 //
 // SPLIT FROM THE DRIVER so the union has a home and the driver keeps its line
 // budget for the loop it exists to run. What lives here is only the shape of
@@ -181,11 +180,12 @@ export async function attemptTranslateSlice(
       // means the two were handed different slices.
       if (!isInsertionChunk(slice.target,))
         throw error;
-      return {
-        kind: 'unfilled',
-        reason: error.reason,
+      throw new TranslationRepairInterruptedError({
+        reason: error.reason === 'no-voice-heard'
+          ? 'provider-unavailable'
+          : 'production-cycle',
         findings: error.findings,
-      };
+      },);
     }
     throw error;
   }

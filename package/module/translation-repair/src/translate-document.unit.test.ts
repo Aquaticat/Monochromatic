@@ -20,7 +20,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  absenceFinding,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type InsertionAdmission,
@@ -32,6 +31,7 @@ import {
   type RosterModelId,
   translateDocument,
   type TranslateModels,
+  TranslationRepairInterruptedError,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
 
@@ -1328,70 +1328,14 @@ The cat is doing the sleeping on the windowsill.
     },),
 
     it({
-      name: 'SETTLES A DOCUMENT whose one unfillable passage has no translation in the archive, names '
-        + 'that passage rather than reporting it as a slice the judges left alone, and caches nothing '
-        + 'for it, so the next run asks again while every other slice keeps what it cost. The reason '
-        + 'is `no-voice-heard` rather than `no-candidate` because this fixture fails every translate '
-        + 'call for that source, which the harness documents as standing in for a provider that is '
-        + 'down: until `#198` those were one word',
+      name: 'PAUSES absent-passage repair when no translator is available instead of settling unfilled page',
       fn: async () => {
-        const {
-          result,
-          persisted,
-          prepared,
-        } = await runDriver({
+        await expect(runDriver({
           sourceText: SHORT_SOURCE,
           targetText: SHORT_TARGET,
           anchorSource: MISSING_SOURCE,
           silentForSource: MISSING_SOURCE,
-        },);
-
-        /** Index the appended anchor holds. */
-        const anchorIndex = prepared.slices
-          .length - 1;
-        // The entry SETTLED: one refused passage does not cost the document.
-        expect(result.sliceCount,).toBe(prepared.slices
-          .length,);
-        expect(result.status,).toBe('unfilled',);
-        expect(result.unfilled
-          .map(function toIndex(passage,): number {
-            return passage.sliceIndex;
-          },),).toEqual([anchorIndex,],);
-        expect(result.unfilled[0]
-          ?.reason,).toBe('no-voice-heard',);
-        // The evidence has an owner rather than being flattened into one list
-        // where nothing says which passage it belongs to.
-        expect(result.unfilled[0]
-          ?.findings
-          .some(function namesTheSlate(finding: string,): boolean {
-            return finding.startsWith('translate-candidates',);
-          },),).toBe(true,);
-        expect(result.findings,).toContain(
-          `${absenceFinding({ reason: 'no-voice-heard', },)} chunk ${String(anchorIndex,)}`,
-        );
-        // No record for a slice that produced nothing, and one row per prepared
-        // slice all the same, so a reader joining the lanes sees the whole
-        // document rather than a shorter one.
-        expect(result.slices
-          .length,).toBe(prepared.slices
-          .length - 1,);
-        expect(result.sliceTexts
-          .length,).toBe(prepared.slices
-          .length,);
-        // NAMED as reached and unfillable rather than left with no wording,
-        // which is how a reader tells it from a slice nobody got to.
-        expect(result.sliceTexts[anchorIndex]
-          ?.outcome
-          .kind,).toBe('unfilled',);
-        // NOTHING CACHED for it, which is what makes the next run ask again;
-        // every other slice was heard and persisted.
-        expect(persisted.size,).toBe(result.slices
-          .length,);
-        // The document carries the gap the archive came with: the anchor ships
-        // nothing, and the slices around it are unaffected.
-        expect(result.changedSliceIndices,).not.toContain(anchorIndex,);
-        expect(result.translatedText,).toContain(FRESH,);
-        expect(result.translatedText,).not.toContain('晒太阳',);
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
       },
     },),
 
@@ -1414,6 +1358,34 @@ The cat is doing the sleeping on the windowsill.
         expect(result.changedSliceIndices,).toContain(anchorIndex,);
         expect(result.translatedText,).toContain(MISSING_FRESH,);
         expect(result.findings,).toContain('insertion-corroboration fixture admitted',);
+      },
+    },),
+
+    it({
+      name: 'TREATS source-only passage proven carried elsewhere as complete without local insertion',
+      fn: async () => {
+        const { result, prepared, calls, } = await runDriver({
+          anchorSource: MISSING_SOURCE,
+          insertionAdmission: {
+            positions: new Set(),
+            carried: [{
+              position: 2,
+              sliceIndex: 2,
+              sourceText: MISSING_SOURCE,
+              evidence: ['The cat is doing the sleeping on the windowsill.',],
+            },],
+            findings: ['insertion-coverage fixture carried',],
+          },
+        },);
+        const anchorIndex = prepared.slices.length - 1;
+
+        expect(anchorIndex,).toBe(2,);
+        expect(result.status,).toBe('complete',);
+        expect(result.unfilled,).toEqual([],);
+        expect(result.sliceTexts[anchorIndex]?.outcome,).toEqual({ kind: 'not-applicable', },);
+        expect(result.findings,).toContain('insertion-coverage fixture carried',);
+        expect(calls.translateAttempts,).toBeGreaterThan(0,);
+        expect(result.translatedText,).not.toContain(MISSING_FRESH,);
       },
     },),
 

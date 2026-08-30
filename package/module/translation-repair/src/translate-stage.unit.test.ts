@@ -36,6 +36,7 @@ import {
   type RosterModelId,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
+  TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -141,6 +142,8 @@ function pickCandidate(
  *
  * @param translations - what each translator returns
  *
+ * @param followupTranslations - alternate renderings after exact rejection evidence
+ *
  * @param needle - text the judges vote for, absent when they should abstain
  *
  * @param needleAfterRetry - text the judges vote for once the panel has been
@@ -163,16 +166,20 @@ function pickCandidate(
 function laneClient(
   {
     translations,
+    followupTranslations,
     needle,
     needleAfterRetry,
     calls,
     judgeSheets,
+    producerPrompts,
   }: {
     readonly translations: TranslateScript;
+    readonly followupTranslations?: readonly TranslateScript[];
     readonly needle: string;
     readonly needleAfterRetry?: string;
     readonly calls: CallLog;
     readonly judgeSheets: string[];
+    readonly producerPrompts: string[];
   },
 ): SyntheticClient {
   return {
@@ -189,13 +196,33 @@ function laneClient(
         ?.json_schema
         .name;
       if (schema === 'translation_report') {
+        /**
+         * Zero-based production round before this call is counted.
+         */
+        const productionRound = Math.floor(calls.translate / TRANSLATORS.length,);
         calls.translate += 1;
+        producerPrompts.push(JSON.stringify({
+          modelId: request.modelId,
+          messages: request.messages,
+        },),);
 
         /**
          * Rendering this translator was scripted to return, absent when it was
          * scripted to answer unusably.
          */
-        const scripted = translations[request.modelId];
+        /**
+         * Whether this request is grounded in latest rejected slate.
+         */
+        const isFollowup = request.messages.some(function carriesRejection(message,): boolean {
+          return messageText({ message, },).includes('LATEST REJECTION',);
+        },);
+        /**
+         * Script selected by initial or repair responsibility.
+         */
+        const selectedTranslations = (isFollowup && (followupTranslations !== undefined))
+          ? (followupTranslations[productionRound - 1] ?? translations)
+          : translations;
+        const scripted = selectedTranslations[request.modelId];
         if (scripted === undefined) {
           return {
             kind: 'schema-mismatch',
@@ -276,6 +303,8 @@ function laneClient(
  *
  * @param translations - what each translator returns
  *
+ * @param followupTranslations - alternate outputs for stage-local repair
+ *
  * @param needle - text the judges vote for, empty to make them decline
  *
  * @param incumbentText - translation as it stands
@@ -290,6 +319,7 @@ function laneClient(
 async function runLane(
   {
     translations,
+    followupTranslations,
     needle,
     needleAfterRetry,
     incumbentText,
@@ -298,6 +328,7 @@ async function runLane(
     lineStructured = false,
   }: {
     readonly translations: TranslateScript;
+    readonly followupTranslations?: readonly TranslateScript[];
     readonly needle: string;
     readonly needleAfterRetry?: string;
     readonly incumbentText: string;
@@ -326,14 +357,20 @@ async function runLane(
    * Judge sheets this round produced, so a case can read what judges were told.
    */
   const judgeSheets: string[] = [];
+  /**
+   * Exact model-plus-message identities for producer calls.
+   */
+  const producerPrompts: string[] = [];
 
   const result = await runTranslateStage({
     client: laneClient({
       translations,
+      ...((followupTranslations === undefined) ? {} : { followupTranslations, }),
       needle,
       ...((needleAfterRetry === undefined) ? {} : { needleAfterRetry, }),
       calls,
       judgeSheets,
+      producerPrompts,
     },),
     translatorModelIds: TRANSLATORS,
     judgeModelIds: JUDGES,
@@ -350,6 +387,7 @@ async function runLane(
     result,
     calls,
     judgeSheets,
+    producerPrompts,
   };
 }
 
@@ -623,9 +661,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES rather than settling when a slice with no translation gets nothing usable: every '
-        + 'fallback here ships the wording already in the archive, and where there is none the same '
-        + 'fallback ships the empty string while the record reads as a slice that settled',
+      name: 'PAUSES operationally rather than settling when absent passage hears no translator voice',
       fn: async () => {
         await expect(runLane({
           // Nobody is scripted, so every reply arrives wrapped in prose and
@@ -635,14 +671,12 @@ await describe({
           needle: 'dozes',
           incumbentText: '',
           incumbentKind: 'absent',
-        },),).rejects.toThrow(TranslateAbsenceError,);
+        },),).rejects.toThrow('translation repair interrupted: provider-unavailable',);
       },
     },),
 
     it({
-      name: 'REFUSES a DECLINE for the same slice, which the ordinary path answers by keeping the '
-        + 'archive`s wording. Judges who could not agree have said nothing about a translation that '
-        + 'does not exist, so there is nothing their silence can protect',
+      name: 'CONTINUES a declined absent passage until exact rejected slate and findings form a cycle',
       fn: async () => {
         await expect(runLane({
           translations: {
@@ -653,12 +687,71 @@ await describe({
           needle: '',
           incumbentText: '',
           incumbentKind: 'absent',
-        },),).rejects.toThrow(TranslateAbsenceError,);
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
       },
     },),
 
     it({
-      name: 'carries the evidence into the refusal rather than losing it with the exception, so a run '
+      name: 'FILLS an absent passage by producing from latest exact rejected slate instead of ending on decline',
+      fn: async () => {
+        const { result, calls, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'A cat rests at the window.',
+            'hf:zai-org/GLM-5.3-Flash': 'A cat rests beside the heater.',
+            'minimax-m3': 'The cat is near a window.',
+          },
+          followupTranslations: [{
+            'hf:moonshotai/Kimi-K3': 'The repaired cat dozes on the windowsill, tail beside the radiator.',
+            'hf:zai-org/GLM-5.3-Flash': 'A repaired cat naps on the sill, its tail beside the heater.',
+            'minimax-m3': 'The repaired cat sleeps by the radiator.',
+          },],
+          needle: 'repaired',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },);
+
+        expect(result.origin,).toBe('fresh',);
+        expect(result.text,).toContain('repaired',);
+        expect(calls.translate,).toBe(TRANSLATORS.length * 2,);
+        expect(calls.select,).toBe(JUDGES.length * 3,);
+      },
+    },),
+
+    it({
+      name: 'CONTINUES through two different rejected follow-ups with unique producer prompts',
+      fn: async () => {
+        const { result, calls, producerPrompts, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The first cat rests.',
+            'hf:zai-org/GLM-5.3-Flash': 'The first cat waits.',
+            'minimax-m3': 'The first cat sits.',
+          },
+          followupTranslations: [
+            {
+              'hf:moonshotai/Kimi-K3': 'The second cat rests.',
+              'hf:zai-org/GLM-5.3-Flash': 'The second cat waits.',
+              'minimax-m3': 'The second cat sits.',
+            },
+            {
+              'hf:moonshotai/Kimi-K3': 'The final repaired cat dozes.',
+              'hf:zai-org/GLM-5.3-Flash': 'The final repaired cat naps.',
+              'minimax-m3': 'The final repaired cat sleeps.',
+            },
+          ],
+          needle: 'final repaired',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },);
+
+        expect(result.text,).toContain('final repaired',);
+        expect(calls.translate,).toBe(TRANSLATORS.length * 3,);
+        expect(calls.select,).toBe(JUDGES.length * 5,);
+        expect(new Set(producerPrompts,).size,).toBe(calls.translate,);
+      },
+    },),
+
+    it({
+      name: 'carries the evidence into interruption rather than losing it with the exception, so a run '
         + 'reporting a passage it could not fill can say which translators were heard and what the '
         + 'judges counted',
       fn: async () => {
@@ -679,13 +772,10 @@ await describe({
         catch (error) {
           raised = error;
         }
-        expect(raised instanceof TranslateAbsenceError,).toBe(true,);
-        if (!(raised instanceof TranslateAbsenceError))
-          throw new Error('expected the absent-mode refusal',);
-        // NAMED FOR THE PAIR OF ROUNDS, not for either one: the panel saw these
-        // same candidates twice and backed none of them, which is a stronger
-        // statement than one round's rejection and the one worth recording.
-        expect(raised.reason,).toBe('no-candidate-backed',);
+        expect(raised instanceof TranslationRepairInterruptedError,).toBe(true,);
+        if (!(raised instanceof TranslationRepairInterruptedError))
+          throw new Error('expected absent-passage repair interruption',);
+        expect(raised.message,).toContain('production-cycle',);
         expect(raised.findings,).toContain('translate-declined (rejection)',);
         expect(raised.findings,).toContain('translate-declined-retried',);
         expect(raised.findings

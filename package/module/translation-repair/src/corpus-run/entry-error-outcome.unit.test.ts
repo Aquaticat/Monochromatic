@@ -17,6 +17,8 @@ import {
   NaturalnessCompletenessError,
   NaturalnessRepairInterruptedError,
   PromptPayloadStoreError,
+  TranslationRepairInterruptedError,
+  UnfilledPageError,
   VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
 
@@ -31,6 +33,18 @@ await describe({
       new PromptPayloadStoreError({
         promptDigest: 'fixture-digest',
         operation: 'read',
+      },),
+      new TranslationRepairInterruptedError({
+        reason: 'production-cycle',
+        findings: [],
+      },),
+      new UnfilledPageError({
+        entryId: 'Cat',
+        unfilled: [{
+          sliceIndex: 1,
+          reason: 'not-corroborated',
+          findings: [],
+        },],
       },),
       new VisualEvidenceInterruptedError({ unavailableCount: 1, }),
     ] as const).map(function stoppedError(error,) {

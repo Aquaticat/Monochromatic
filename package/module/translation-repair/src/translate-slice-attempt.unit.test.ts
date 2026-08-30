@@ -1,10 +1,8 @@
 /**
  * Tests for one slice's attempt at translation, as the document driver asks it.
  *
- * The attempt has two doors out: a settled record, or an unfilled slice when
- * the archive never translated the passage and this run could not either. The
- * second door is a backstop that only an insertion may take; a content slice
- * always settles, keeping its incumbent when nobody is heard.
+ * The attempt settles a record or propagates operational interruption.
+ * An absent passage never becomes a settled empty or unfilled quality result.
  *
  * Fixtures are cat-themed invention.
  *
@@ -27,6 +25,7 @@ import {
   type PreparedDocumentPair,
   type SyntheticClient,
   type TranslateModels,
+  TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -196,8 +195,7 @@ await describe({
   name: attemptTranslateSlice.name,
   children: [
     it({
-      name: 'REPORTS an insertion nobody could fill as unfilled, with the absence reason and the findings, '
-        + 'rather than throwing the run away or settling an empty string',
+      name: 'PAUSES an insertion when no translator is available rather than settling empty text',
       fn: async () => {
         /**
          * Pair carrying the untranslated passage as an insertion.
@@ -213,16 +211,10 @@ await describe({
         if (insertion === undefined)
           throw new Error('the fixture pair carries no insertion slice',);
 
-        const attempt = await attemptSilently({
+        await expect(attemptSilently({
           prepared,
           slice: insertion,
-        },);
-
-        expect(attempt.kind,).toBe('unfilled',);
-        if (attempt.kind === 'unfilled') {
-          expect(attempt.reason.length,).toBeGreaterThan(0,);
-          expect(attempt.findings.length,).toBeGreaterThan(0,);
-        }
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
       },
     },),
 

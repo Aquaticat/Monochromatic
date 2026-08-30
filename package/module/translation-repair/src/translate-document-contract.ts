@@ -73,8 +73,10 @@ import type { SliceSelection, } from './slice-selection.ts';
  * incumbent authorship.
  *
  * VERSION 10 replaces identical second judging with prior-decline challenge.
+ *
+ * VERSION 11 continues absent passages from latest rejected slate and findings.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 10;
+export const TRANSLATE_SLICE_CACHE_VERSION = 11;
 
 /**
  * Models the translate lane seats.

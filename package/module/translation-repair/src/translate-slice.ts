@@ -77,10 +77,8 @@ import { runTranslateStage, } from './translate-stage.ts';
  *
  * @returns Settled record, whether the stage's text was accepted or refused
  *
- * @throws {@link import('./translate-absence.ts').TranslateAbsenceError} when
- * this slice has no translation in the archive and the stage produced none, so
- * there is no record to settle: the driver above records the slice as unfilled
- * and leaves the gap the archive already had
+ * @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
+ * when absent-passage correction repeats exact task or providers remain unavailable
  *
  * @example
  * ```ts

@@ -97,11 +97,70 @@ export type CoveragePromptPlan = {
 };
 
 /**
+ * Latest structured verdict that did not resolve insertion placement.
+ *
+ * @example
+ * ```ts
+ * const evidence: CoverageFollowupEvidence = {
+ *   verdictKind: 'split',
+ *   anchoredFull: 1,
+ *   anchoredPartial: 1,
+ *   absent: 1,
+ *   heard: 3,
+ *   asked: 3,
+ *   evidence: ['The cat sleeps.',],
+ *   missingDestinationCount: 0,
+ *   shortfallAdmitted: false,
+ * };
+ * ```
+ */
+export type CoverageFollowupEvidence = {
+  /**
+   * Latest semantic outcome.
+   */
+  readonly verdictKind: 'carried' | 'partly-carried' | 'absent' | 'split' | 'inconclusive';
+  /**
+   * Full anchored voices.
+   */
+  readonly anchoredFull: number;
+  /**
+   * Partial anchored voices.
+   */
+  readonly anchoredPartial: number;
+  /**
+   * Absence voices.
+   */
+  readonly absent: number;
+  /**
+   * Voices heard.
+   */
+  readonly heard: number;
+  /**
+   * Models asked.
+   */
+  readonly asked: number;
+  /**
+   * Exact target regions latest roster anchored.
+   */
+  readonly evidence: readonly string[];
+  /**
+   * Source destinations absent from target.
+   */
+  readonly missingDestinationCount: number;
+  /**
+   * Whether whole-page shortfall admits passage.
+   */
+  readonly shortfallAdmitted: boolean;
+};
+
+/**
  * Builds the sheet asking whether a translation carries one passage.
  *
  * @param sourcePassage - original-side text whose coverage is in question
  *
  * @param translationText - translation searched, whole rather than neighbouring
+ *
+ * @param followupEvidence - latest unresolved verdict and deterministic evidence
  *
  * @returns Messages for the call
  *
@@ -114,9 +173,11 @@ export function buildCoverageMessages(
   {
     sourcePassage,
     translationText,
+    followupEvidence,
   }: {
     readonly sourcePassage: string;
     readonly translationText: string;
+    readonly followupEvidence?: CoverageFollowupEvidence;
   },
 ): CoveragePromptPlan {
   /**
@@ -126,20 +187,27 @@ export function buildCoverageMessages(
     texts: [
       sourcePassage,
       translationText,
+      ...(followupEvidence?.evidence ?? []),
     ],
   },);
   return {
     messages: [
       {
         role: 'system',
-        content: `${COVERAGE_RULES}\n\n${COVERAGE_REPLY_RULE}`,
+        content: followupEvidence === undefined
+          ? `${COVERAGE_RULES}\n\n${COVERAGE_REPLY_RULE}`
+          : `${COVERAGE_RULES}\n\nA prior coverage pass did not establish a publishable placement. Re-evaluate independently, test every specific source fact against exact English spans, and resolve whether coverage is full, partial, or none. Do not repeat prior classification without checking each fact.\n\n${COVERAGE_REPLY_RULE}`,
       },
       {
         role: 'user',
         content: `${fence} PASSAGE ${fence}
 ${sourcePassage}
 ${fence} ENGLISH TRANSLATION ${fence}
-${translationText}
+${translationText}${followupEvidence === undefined
+    ? ''
+    : `
+${fence} PRIOR UNRESOLVED VERDICT ${fence}
+${JSON.stringify(followupEvidence,)}`}
 ${fence} END ${fence}`,
       },
     ],

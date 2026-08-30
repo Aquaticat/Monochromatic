@@ -14,12 +14,10 @@
 // where a rendering belongs and none exists, and a content span that genuinely
 // holds nothing but whitespace, where the archive's own wording is the blank.
 //
-// AN ERROR RATHER THAN A RESULT, because there is no honest result to build.
-// The stage returns the text that ships plus who produced it, and in this case
-// nothing ships and nobody produced it; every field would have to be invented.
-// The driver above catches this, records the slice as unfilled, and leaves the
-// archive's gap exactly as it found it, so one refused anchor costs its own
-// slice rather than the entry.
+// AN INTERNAL CORRECTION SIGNAL RATHER THAN A RESULT, because there is no honest
+// result to build. Judging raises it with latest evidence; translate stage uses
+// that evidence to produce next distinct task. It must not escape production as
+// a terminal quality verdict or become publishable empty text.
 
 /**
  * Whether a slice has a translation to fall back on.
@@ -173,7 +171,7 @@ export class BlankSelectionError extends Error {
 }
 
 /**
- * Raised when a slice with no incumbent produced no translation to write.
+ * Raised internally when one absent-passage slate produced no translation.
  *
  * CARRIES ITS FINDINGS, because the work that led here is real evidence: which
  * translators were heard, what collapsed, what the judges counted. Thrown away

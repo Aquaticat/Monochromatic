@@ -41,11 +41,9 @@ import type { TwinMemo, } from './twin-memo.ts';
 // that needed no translation, and the settled slices are already in the cache
 // for the next attempt.
 //
-// ONE EXCEPTION, and it is not an unvisited slice: a passage the archive never
-// translated that this run could not translate either. Nothing was skipped
-// there and nothing is claimed; the document keeps the gap it came with, the
-// result says `unfilled` and names the passage, and the entry still settles so
-// the rest of its slices keep what they cost.
+// DIRECT-LIBRARY ADMISSION may still return deterministic `not-corroborated`
+// unfilled row. Production admission pauses unresolved placement before lanes,
+// and absent-passage translation continuously repairs or pauses operationally.
 //
 // OVERLAP CHANGES WHEN INDEPENDENT SLICES RUN, NOT WHAT THE ARTIFACT SAYS.
 // `mapOverlapped` returns settlements in slice order, and every finding comes
@@ -167,8 +165,16 @@ export async function translateDocument(
       sourceText: prepared.sourceText,
       targetText: prepared.targetText,
     },),
+    carried: [],
     findings: [],
   };
+  /**
+   * Prepared positions whose source is fully rendered elsewhere.
+   */
+  const carriedPositions = new Set((admission.carried ?? [])
+    .map(function carriedPosition(carried,): number {
+      return carried.position;
+    },),);
 
   /**
    * Purchases in this run by shared key, exposing only persisted records.
@@ -191,6 +197,10 @@ export async function translateDocument(
       const insertionAdmitted = admission
         .positions
         .has(slicePosition,);
+      /**
+       * Whether source-only passage needs no local rendering.
+       */
+      const insertionCarried = carriedPositions.has(slicePosition,);
       return await settleTranslateSlice({
         client,
         prepared,
@@ -198,6 +208,7 @@ export async function translateDocument(
         slice,
         slicePosition,
         insertionAdmitted,
+        insertionCarried,
         pictureReadings,
         runShape,
         ...((sliceCache === undefined) ? {} : { sliceCache, }),
@@ -232,6 +243,17 @@ export async function translateDocument(
   },);
 
   /**
+   * Slice indexes whose source is already rendered elsewhere.
+   */
+  const carriedChunkIndices = settlements.flatMap(function toCarried(
+    { outcome, },
+  ): readonly number[] {
+    return (outcome.kind === 'carried')
+      ? [outcome.sliceIndex,]
+      : [];
+  },);
+
+  /**
    * Slices recovered from disk, excluding twins reused within this run.
    */
   const resumedSliceCount = settlements
@@ -259,6 +281,7 @@ export async function translateDocument(
     prepared,
     settled,
     unfilled,
+    carriedChunkIndices,
     resumedSliceCount,
     findings,
     l: tl,

@@ -39,8 +39,9 @@ import { heardNobody, } from './translate-unheard.ts';
  *
  * @param settled - one record per slice the lane settled, in document order
  *
- * @param unfilled - passages the lane reached and could not fill, which settle
- * no record because there was nothing to record
+ * @param unfilled - passages lane reached and could not fill
+ *
+ * @param carriedChunkIndices - source-only passages rendered elsewhere
  *
  * @param resumedSliceCount - slices answered from the cache, for the log line
  *
@@ -61,6 +62,7 @@ export function assembleTranslation(
     prepared,
     settled: producedRecords,
     unfilled,
+    carriedChunkIndices = [],
     resumedSliceCount,
     findings,
     l,
@@ -68,6 +70,7 @@ export function assembleTranslation(
     readonly prepared: PreparedDocumentPair;
     readonly settled: readonly TranslateSliceRecord[];
     readonly unfilled: readonly UnfilledSlice[];
+    readonly carriedChunkIndices?: readonly number[];
     readonly resumedSliceCount: number;
     readonly findings: readonly string[];
     readonly l: Logger;
@@ -257,6 +260,7 @@ export function assembleTranslation(
       unfilledChunkIndices: unfilled.map(function toIndex(passage,): number {
         return passage.sliceIndex;
       },),
+      carriedChunkIndices,
     },),
     resumedSliceCount,
     // Passages the archive has not translated and this run could not either.

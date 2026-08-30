@@ -24,6 +24,7 @@ export {
 } from './prepare-with-pairing.ts';
 export {
   admitInsertions,
+  type CarriedInsertion,
   type InsertionAdmission,
 } from './insertion-admission.ts';
 export {

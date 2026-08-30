@@ -9,6 +9,7 @@ import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
 import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
 import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
+import { assertCarriedInsertionsRemain, } from './carried-insertion-completeness.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
@@ -263,9 +264,9 @@ async function runEntryPipeline(
     /**
      * Semantic and deterministic proof for every source-only slice.
      *
-     * BOUGHT BEFORE THE LANES so a known omission is either licensed for the
-     * translate lane to fill or remains unfilled and trips the publication
-     * guard. The coverage roster searches whole target, independent of pairing;
+     * BOUGHT BEFORE THE LANES so known omission is licensed for translation or
+     * unresolved placement pauses stage as incomplete. Coverage roster searches
+     * whole target, independent of pairing;
      * page shortfall or a missing destination supplies second corroboration.
      */
     const translateInsertionAdmission = await decidePassInsertionAdmission({
@@ -305,11 +306,9 @@ async function runEntryPipeline(
     deadline.callSignal
       .throwIfAborted();
 
-    // A KNOWN GAP IS NOT A SETTLED PAGE. The translate lane records unfilled
-    // source passages so a caller can choose whether to retain the archive's
-    // omission. The corpus pass has no such choice: publishing that page would
-    // knowingly omit source content, so it fails the entry and keeps every
-    // bought slice in cache for a later attempt.
+    // DEFENSIVE BOUNDARY. Production admission and translation repair must
+    // settle or pause before returning a known gap. Any unfilled row reaching
+    // here is pipeline invariant failure and never publication authorization.
     /**
      * Source passages translation could not fill.
      */
@@ -432,6 +431,15 @@ async function runEntryPipeline(
      * a slice it was obliged to decide has not settled the document, and no
      * artifact should claim it did; the stage caches still hold every answer, so
      * a re-run reproduces the contradiction rather than losing it.
+     */
+    assertCarriedInsertionsRemain({
+      artifact,
+      slices: prepared.slices,
+      targetText: archiveText,
+      carried: translateInsertionAdmission.carried ?? [],
+    },);
+    /**
+     * Tally proven readable before any persistence.
      */
     const tally = settledTallyLine({ artifact, },);
 

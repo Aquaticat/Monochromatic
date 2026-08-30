@@ -22,9 +22,11 @@ import {
   decidePassInsertionAdmission,
   type InsertionAdmission,
   makeInsertionChunk,
+  messageText,
   type PreparedDocumentPair,
   type RosterModelId,
   type SyntheticClient,
+  TranslationRepairInterruptedError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -115,7 +117,9 @@ function preparedGap(
 /**
  * Client returning one scripted coverage reply per seat, or failing that seat.
  *
- * @param replies - roster-order replies; undefined means provider failure
+ * @param replies - initial roster-order replies
+ *
+ * @param followupReplies - replies to prior-verdict challenge
  *
  * @returns Client serving only coverage stage
  *
@@ -127,14 +131,20 @@ function preparedGap(
 function coverageClient(
   {
     replies,
+    followupReplies = [],
   }: {
     readonly replies: readonly ScriptedCoverageOutcome[];
+    readonly followupReplies?: readonly ScriptedCoverageOutcome[];
   },
 ): SyntheticClient {
   /**
    * Iterator advancing one response per roster seat.
    */
   const responses = replies.values();
+  /**
+   * Follow-up responses advanced independently from initial recovery retries.
+   */
+  const followups = followupReplies.values();
   return {
     chatText: async () => {
       throw new Error('chatText unused by coverage',);
@@ -145,7 +155,13 @@ function coverageClient(
       /**
        * Next scripted seat outcome, which must exist for every requested seat.
        */
-      const next = responses.next();
+      /**
+       * Whether latest unresolved verdict is present in this prompt.
+       */
+      const isFollowup = request.messages.some(function hasPriorVerdict(message,): boolean {
+        return messageText({ message, },).includes('PRIOR UNRESOLVED VERDICT',);
+      },);
+      const next = isFollowup ? followups.next() : responses.next();
       if (next.done === true)
         throw new Error('coverage stage asked beyond scripted roster',);
       const { value: reply, } = next;
@@ -179,7 +195,9 @@ function coverageClient(
  *
  * @param targetText - whole target page
  *
- * @param replies - roster replies
+ * @param replies - initial roster replies
+ *
+ * @param followupReplies - replies to prior-verdict challenge
  *
  * @returns Admission from production module
  *
@@ -193,14 +211,19 @@ async function runAdmission(
     sourcePassage,
     targetText,
     replies,
+    followupReplies,
   }: {
     readonly sourcePassage: string;
     readonly targetText: string;
     readonly replies: readonly ScriptedCoverageOutcome[];
+    readonly followupReplies?: readonly ScriptedCoverageOutcome[];
   },
 ): Promise<InsertionAdmission> {
   return await decidePassInsertionAdmission({
-    client: coverageClient({ replies, },),
+    client: coverageClient({
+      replies,
+      ...((followupReplies === undefined) ? {} : { followupReplies, }),
+    },),
     prepared: preparedGap({ sourcePassage, targetText, },),
     modelIds: ROSTER,
     overlap: 1,
@@ -257,41 +280,48 @@ await describe({
     it({
       name: 'REFUSES an absent verdict with neither deterministic corroborator, preserving duplicate protection',
       fn: async () => {
-        const admission = await runAdmission({
+        await expect(runAdmission({
           sourcePassage: '猫的记录没有译文。',
           targetText: LONG_TARGET,
           replies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
       },
     },),
     it({
-      name: 'REFUSES destination evidence when roster anchors full coverage, since missing link alone '
-        + 'does not license duplicating facts already rendered',
+      name: 'RECORDS full coverage as carried elsewhere instead of insertion or interruption',
       fn: async () => {
         const admission = await runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
           targetText: LONG_TARGET,
-          replies: unanimous({ coverage: 'full', quote: 'The cat sleeps in warm sunlight.', },),
+          replies: unanimous({ coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },),
         },);
         expect([...admission.positions,],).toEqual([],);
+        expect(admission.carried,).toEqual([{
+          position: 0,
+          sliceIndex: 0,
+          sourceText: '[Cat](https://example.test/cat-record) sleeps.',
+          evidence: [
+            '## Cats\n\nThe cat sleeps in warm sunlight.',
+            '## Cats\n\nThe cat sleeps in warm sunlight.',
+            '## Cats\n\nThe cat sleeps in warm sunlight.',
+          ],
+        },],);
       },
     },),
     it({
       name: 'REFUSES partial coverage because inserting whole passage would duplicate carried content',
       fn: async () => {
-        const admission = await runAdmission({
+        await expect(runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps and dreams.',
           targetText: LONG_TARGET,
           replies: unanimous({ coverage: 'partial', quote: 'The cat sleeps in warm sunlight.', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
       },
     },),
     it({
       name: 'REFUSES a split roster rather than treating one absence voice as proof',
       fn: async () => {
-        const admission = await runAdmission({
+        await expect(runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
           targetText: LONG_TARGET,
           replies: [
@@ -299,30 +329,43 @@ await describe({
             { coverage: 'none', quote: '', },
             COVERAGE_VOICE_LOST,
           ],
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
+      },
+    },),
+    it({
+      name: 'CONTINUES split placement with distinct follow-up and admits when latest roster proves absence',
+      fn: async () => {
+        const admission = await runAdmission({
+          sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
+          targetText: LONG_TARGET,
+          replies: [
+            { coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },
+            { coverage: 'none', quote: '', },
+            COVERAGE_VOICE_LOST,
+          ],
+          followupReplies: unanimous({ coverage: 'none', quote: '', },),
         },);
-        expect([...admission.positions,],).toEqual([],);
+        expect([...admission.positions,],).toEqual([0,],);
       },
     },),
     it({
       name: 'REFUSES an inconclusive roster when every coverage voice is lost',
       fn: async () => {
-        const admission = await runAdmission({
+        await expect(runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
           targetText: LONG_TARGET,
           replies: [ COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, ],
-        },);
-        expect([...admission.positions,],).toEqual([],);
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
       },
     },),
     it({
       name: 'TREATS trailing-slash destination spellings as same address rather than false local corroboration',
       fn: async () => {
-        const admission = await runAdmission({
+        await expect(runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record/) sleeps.',
           targetText: `${LONG_TARGET}\nhttps://example.test/cat-record`,
           replies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
+        },),).rejects.toThrow(TranslationRepairInterruptedError,);
       },
     },),
     it({

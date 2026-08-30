@@ -5,6 +5,7 @@ import type { SliceSyntax, } from './chunk-document.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
+import type { TranslateAbsenceReason, } from './translate-absence.ts';
 
 //region Translate wire
 // The translator sheet and the guard on what comes back, both of which
@@ -134,6 +135,35 @@ export type TranslatePromptPlan = {
 };
 
 /**
+ * Latest exact rejected slate and structured findings grounding next rendering.
+ *
+ * @example
+ * ```ts
+ * const evidence: TranslateFollowupEvidence = {
+ *   reason: 'declined-rejection',
+ *   candidateTexts: ['The cat sleeps.',],
+ *   findings: ['translate-declined (rejection)',],
+ * };
+ * ```
+ */
+export type TranslateFollowupEvidence = {
+  /**
+   * Why latest slate could not fill absent passage.
+   */
+  readonly reason: TranslateAbsenceReason;
+
+  /**
+   * Exact candidate texts latest panel rejected.
+   */
+  readonly candidateTexts: readonly string[];
+
+  /**
+   * Latest structured stage findings.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
  * Builds the translator sheet for one passage.
  *
  * @param sourceText - original passage to render
@@ -143,6 +173,9 @@ export type TranslatePromptPlan = {
  * @param identityContext - declared names and handles, omitted when absent
  *
  * @param syntax - syntax role requiring dedicated preservation rules
+ *
+ * @param followupEvidence - latest exact rejected slate and findings when this
+ * is stage-local repair rather than initial rendering
  *
  * @param lineStructured - whether the enclosing CHUNK's original is
  * line-structured, decided by the caller because a slice is too small a unit to
@@ -162,6 +195,7 @@ export function buildTranslateMessages(
     identityContext = '',
     pictureContext = '',
     syntax,
+    followupEvidence,
     lineStructured = false,
   }: {
     readonly sourceText: string;
@@ -169,6 +203,7 @@ export function buildTranslateMessages(
     readonly identityContext?: string;
     readonly pictureContext?: string;
     readonly syntax?: SliceSyntax;
+    readonly followupEvidence?: TranslateFollowupEvidence;
     readonly lineStructured?: boolean;
   },
 ): TranslatePromptPlan {
@@ -182,6 +217,8 @@ export function buildTranslateMessages(
       existingText,
       identityContext,
       pictureContext,
+      ...(followupEvidence?.candidateTexts ?? []),
+      ...(followupEvidence?.findings ?? []),
     ],
   },);
 
@@ -191,6 +228,9 @@ export function buildTranslateMessages(
    */
   const system = [
     TRANSLATE_RULES,
+    followupEvidence === undefined
+      ? ''
+      : `This is stage-local repair after prior ${followupEvidence.reason}. Produce a materially new rendering that resolves every listed finding and does not repeat any rejected candidate. Recheck complete source coverage, fidelity, Markdown structure, contributor identity, and natural English.`,
     syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : '',
     lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : '',
     TRANSLATE_REPLY_RULE,
@@ -199,6 +239,40 @@ export function buildTranslateMessages(
       return part !== '';
     },)
     .join('\n\n',);
+
+  /**
+   * Exact rejected candidates rendered as independently fenced blocks.
+   */
+  const rejectedCandidates = followupEvidence === undefined
+    ? ''
+    : followupEvidence
+      .candidateTexts
+      .map(function rejectedCandidate(
+        text,
+        index,
+      ): string {
+        return `${fence} REJECTED CANDIDATE ${String(index + 1,)} ${fence}\n${text}`;
+      },)
+      .join('\n',);
+  /**
+   * Latest structured findings as prompt text.
+   */
+  const followupFindings = followupEvidence === undefined
+    ? ''
+    : followupEvidence
+      .findings
+      .join('\n',);
+  /**
+   * Latest rejection evidence shown only on stage-local repair.
+   */
+  const followupSection = followupEvidence === undefined
+    ? ''
+    : `
+${fence} LATEST REJECTION ${fence}
+reason: ${followupEvidence.reason}
+findings:
+${followupFindings}
+${rejectedCandidates}`;
 
   return {
     messages: [
@@ -223,7 +297,7 @@ ${existingText === '' ? '(none: this passage has no translation yet)' : existing
             : `
 ${fence} DECLARED NAMES ${fence}
 ${identityContext}`
-        }
+        }${followupSection}
 ${fence} END ${fence}`,
       },
     ],

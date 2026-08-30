@@ -25,7 +25,42 @@ import { admitWithinShortfall, } from './coverage-corroboration.ts';
 // pairing found a merge rather than an omission.
 
 /**
- * Authoritative insertion positions beside evidence explaining their admission.
+ * Source-only passage already rendered elsewhere in target page.
+ *
+ * @example
+ * ```ts
+ * const carried: CarriedInsertion = {
+ *   position: 2,
+ *   sliceIndex: 4,
+ *   sourceText: '猫。',
+ *   evidence: ['The cat.',],
+ * };
+ * ```
+ */
+export type CarriedInsertion = {
+  /**
+   * Position in prepared slice order.
+   */
+  readonly position: number;
+
+  /**
+   * Stable slice index used by lane reports.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   * Original passage roster found fully carried.
+   */
+  readonly sourceText: string;
+
+  /**
+   * Exact target regions supporting full-coverage votes.
+   */
+  readonly evidence: readonly string[];
+};
+
+/**
+ * Authoritative insertion outcomes beside evidence explaining each.
  *
  * @example
  * ```ts
@@ -37,6 +72,11 @@ export type InsertionAdmission = {
    * Positions in prepared slice order that may be translated as insertions.
    */
   readonly positions: ReadonlySet<number>;
+
+  /**
+   * Source-only passages proven fully rendered elsewhere.
+   */
+  readonly carried?: readonly CarriedInsertion[];
 
   /**
    * Count-only semantic and deterministic evidence for every candidate.

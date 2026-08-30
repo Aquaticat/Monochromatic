@@ -30,9 +30,9 @@ import { heardNobody, } from './translate-unheard.ts';
  *
  * @param settled - records the lane settled, unheard ones included
  *
- * @param unfilledChunkIndices - passages the lane reached and could not fill,
- * which have no wording because there is none to have, neither the archive's
- * nor one this run produced
+ * @param unfilledChunkIndices - passages lane reached and could not fill
+ *
+ * @param carriedChunkIndices - source-only passages rendered elsewhere
  *
  * @returns One wording per prepared slice, in document order
  *
@@ -50,10 +50,12 @@ export function translateLaneWordings(
     slices,
     settled,
     unfilledChunkIndices,
+    carriedChunkIndices = [],
   }: {
     readonly slices: readonly ChunkPair[];
     readonly settled: readonly TranslateSliceRecord[];
     readonly unfilledChunkIndices: readonly number[];
+    readonly carriedChunkIndices?: readonly number[];
   },
 ): readonly LaneSliceText[] {
   /**
@@ -70,6 +72,7 @@ export function translateLaneWordings(
     // a partial document, so a gap it has not named is a defect.
     undecided: 'refuse',
     unfilledChunkIndices,
+    notApplicableChunkIndices: carriedChunkIndices,
     unheardChunkIndices: settled
       .filter(function answeredByNobody(record,): boolean {
         return heardNobody({ record, },);

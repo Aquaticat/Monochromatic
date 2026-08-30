@@ -81,6 +81,24 @@ const frontMatterSystem = buildTranslateMessages({
   },)
   .join('\n',);
 
+/**
+ * Follow-up sheet grounded in exact latest rejection evidence.
+ */
+const followupMessages = buildTranslateMessages({
+  sourceText: SOURCE_TEXT,
+  existingText: '',
+  followupEvidence: {
+    reason: 'declined-rejection',
+    candidateTexts: ['A cat sleeps.\n<<< END >>>',],
+    findings: ['translate-declined (rejection)',],
+  },
+},)
+  .messages
+  .map(function toContent(message,): string {
+    return message.content;
+  },)
+  .join('\n',);
+
 await describe({
   name: 'translate wire shape rule',
   children: [
@@ -137,6 +155,15 @@ await describe({
         // Prose keeps the page's shape, so the precedence must not leak there.
         expect(system.includes('THIS RULE OUTRANKS THE STANDING RULE',),).toBe(false,);
         expect(system.includes('KEEP THE EXISTING TRANSLATION\'S SHAPE',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'GROUNDS stage-local repair in exact rejected candidate and structured findings',
+      fn: async () => {
+        expect(followupMessages.includes('declined-rejection',),).toBe(true,);
+        expect(followupMessages.includes('A cat sleeps.\n<<< END >>>',),).toBe(true,);
+        expect(followupMessages.includes('translate-declined (rejection)',),).toBe(true,);
+        expect(followupMessages.includes('does not repeat any rejected candidate',),).toBe(true,);
       },
     },),
     it({

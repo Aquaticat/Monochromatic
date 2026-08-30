@@ -6,7 +6,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
-import { admitWithinShortfall, } from '../coverage-corroboration.ts';
 import { runCoverageStage, } from '../coverage-stage.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import type { InsertionAdmission, } from '../insertion-admission.ts';
@@ -14,101 +13,18 @@ import { mapOverlapped, } from '../overlapped-map.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { droppedDestinations, } from './dropped-destinations.ts';
+import {
+  classifyInsertionCoverage,
+  type InsertionCandidate,
+  type InsertionCoverageRow,
+} from './insertion-coverage-model.ts';
+import { repairInsertionCoverageRow, } from './insertion-coverage-repair.ts';
 
 //region Pass insertion admission
 // Production proof for writing source-only passages into a memorial page.
-// Coverage is the semantic verdict; page shortfall or a missing destination is
-// independent corroboration. Every refusal remains visible to the publication
-// completeness guard rather than silently shipping a known gap.
-
-/**
- * One source-only slice proposed by preparation.
- *
- * @example
- * ```ts
- * const candidate: InsertionCandidate = { position: 2, sliceIndex: 4, sourceText: '猫的记录。', };
- * ```
- */
-type InsertionCandidate = {
-  /**
-   * Position in prepared slice order.
-   */
-  readonly position: number;
-
-  /**
-   * Stable slice index recorded in artifacts.
-   */
-  readonly sliceIndex: number;
-
-  /**
-   * Original passage proposed for insertion.
-   */
-  readonly sourceText: string;
-
-  /**
-   * Whether syntax-bearing metadata deterministically requires insertion.
-   */
-  readonly frontMatter: boolean;
-};
-
-/**
- * One source-only slice beside evidence deciding whether it may be translated.
- *
- * @example
- * ```ts
- * const row: InsertionCoverageRow = {
- *   position: 2,
- *   sliceIndex: 4,
- *   sourceText: '猫的记录。',
- *   verdictKind: 'absent',
- *   missingDestinationCount: 0,
- *   coverageFinding: 'insertion-coverage (slice 4)',
- *   stageFindings: [],
- *   destinationFindings: [],
- * };
- * ```
- */
-type InsertionCoverageRow = {
-  /**
-   * Position in prepared slice order.
-   */
-  readonly position: number;
-
-  /**
-   * Stable slice index recorded in artifacts.
-   */
-  readonly sliceIndex: number;
-
-  /**
-   * Original passage the coverage roster searched for.
-   */
-  readonly sourceText: string;
-
-  /**
-   * Semantic verdict from whole-document coverage.
-   */
-  readonly verdictKind: 'carried' | 'partly-carried' | 'absent' | 'split' | 'inconclusive';
-
-  /**
-   * Source destinations this passage carries and target page does not.
-   */
-  readonly missingDestinationCount: number;
-
-  /**
-   * Count-only verdict evidence safe for artifact findings.
-   */
-  readonly coverageFinding: string;
-
-  /**
-   * Lost-voice and quorum findings from coverage stage.
-   */
-  readonly stageFindings: readonly string[];
-
-  /**
-   * Parser downgrade findings from destination comparison.
-   */
-  readonly destinationFindings: readonly string[];
-};
+// Coverage is semantic verdict; page shortfall or missing destination is
+// independent corroboration. Unresolved placement pauses before lanes rather
+// than becoming unfilled quality result at publication boundary.
 
 /**
  * Decides which source-only slices a corpus pass may ask translators to fill.
@@ -128,6 +44,10 @@ type InsertionCoverageRow = {
  * @param l - entry logger
  *
  * @returns Admitted positions and count-only evidence for every candidate
+ *
+ * @throws {@link import('../translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
+ * when source-only prose
+ * placement remains unresolved
  *
  * @example
  * ```ts
@@ -219,7 +139,7 @@ export async function decidePassInsertionAdmission(
   /**
    * Semantic and destination evidence per source-only slice.
    */
-  const rows = await mapOverlapped({
+  const initialRows = await mapOverlapped({
     items: semanticCandidates,
     overlap,
     oneItem: async function readCandidate({ item: candidate, },): Promise<InsertionCoverageRow> {
@@ -271,87 +191,104 @@ export async function decidePassInsertionAdmission(
       return {
         ...candidate,
         verdictKind: verdict.kind,
+        anchoredFull: verdict.anchoredFull,
+        anchoredPartial: verdict.anchoredPartial,
+        absentCount: verdict.absent,
+        heard: verdict.heard,
+        asked: verdict.asked,
         missingDestinationCount,
         coverageFinding: `insertion-coverage (slice ${String(sliceIndex,)}, verdict ${verdict.kind}, `
           + `full ${String(verdict.anchoredFull,)}, partial ${String(verdict.anchoredPartial,)}, `
           + `absent ${String(verdict.absent,)}, heard ${String(verdict.heard,)} of ${String(verdict.asked,)})`,
         stageFindings,
+        coverageEvidence: verdict.evidence,
         destinationFindings: destinations.findings,
       };
     },
   },);
 
   /**
-   * Candidates semantic roster found wholly absent.
+   * Canonical unresolved placement tasks already attempted per candidate.
    */
-  const absent = rows.filter(function absentVerdict(row,): boolean {
-    return row.verdictKind === 'absent';
-  },);
-
-  /**
-   * Absent candidates with no local destination proof, admitted only while
-   * whole-page shortfall has budget for them.
-   */
-  const shortfallPassages = absent
-    .filter(function needsShortfall(row,): boolean {
-      return row.missingDestinationCount === 0;
-    },)
-    .map(function toPassage(row,) {
-      return {
-        where: String(row.position,),
-        sourceText: row.sourceText,
-      };
-    },);
-  /**
-   * Positions admitted by remaining whole-page shortfall budget.
-   */
-  const shortfallAdmitted = new Set(
-    admitWithinShortfall({
-      sourceText: prepared.sourceText,
-      targetText: prepared.targetText,
-      passages: shortfallPassages,
-    },)
-      .map(Number,),
-  );
-
-  /**
-   * Positions backed by semantic absence and either deterministic signal.
-   */
-  const positions = new Set([
-    ...frontMatterPositions,
-    ...absent
-      .filter(function corroborated(row,): boolean {
-        return (row.missingDestinationCount > 0) || shortfallAdmitted.has(row.position,);
-      },)
-      .map(function toPosition(row,): number {
-        return row.position;
-      },),
-  ],);
-
-  return {
-    positions,
-    findings: [
-      ...candidates
-        .filter(function isFrontMatter(candidate,): boolean {
-          return candidate.frontMatter;
-        },)
-        .map(function metadataFinding(candidate,): string {
-          return `insertion-front-matter-admitted (slice ${String(candidate.sliceIndex,)})`;
-        },),
-      ...rows.flatMap(function evidence(row,): readonly string[] {
+  const attemptedPlacementTasks = new Set<string>();
+  {
+    /**
+     * Latest row per candidate, replaced only by distinct follow-up evidence.
+     */
+    let rows = initialRows;
+    while (!signal.aborted) {
+      /**
+       * Current inserted, carried, and unresolved classifications.
+       */
+      const classification = classifyInsertionCoverage({
+        candidates,
+        rows,
+        frontMatterPositions,
+        sourceText: prepared.sourceText,
+        targetText: prepared.targetText,
+      },);
+      /**
+       * Current classification fields used in this iteration.
+       */
+      const {
+        positions,
+        carried,
+        unresolvedRows,
+        shortfallAdmitted,
+        findings,
+      } = classification;
+      /**
+       * Unresolved passage count safe for operational log.
+       */
+      const unresolvedCount = unresolvedRows.length;
+      if (unresolvedCount === 0) {
+        return {
+          positions,
+          carried,
+          findings,
+        };
+      }
+      al.info(
+        `continuing insertion placement repair for ${String(unresolvedCount,)} source passages`,
+      );
+      /* oxlint-disable no-await-in-loop -- each placement task depends on latest unresolved verdict */
+      /**
+       * Follow-up coverage rows for currently unresolved candidates.
+       */
+      const repairedRows = await mapOverlapped({
+        items: unresolvedRows,
+        overlap,
+        oneItem: async function repairPlacement({ item: row, },): Promise<InsertionCoverageRow> {
+          return await repairInsertionCoverageRow({
+            client,
+            modelIds,
+            row,
+            target,
+            shortfallAdmitted: shortfallAdmitted.has(row.position,),
+            attemptedTasks: attemptedPlacementTasks,
+            priorFindings: findings,
+            signal,
+            exchangeTimeoutMs: perCallTimeoutMs,
+            l: al,
+          },);
+        },
+      },);
+      /* oxlint-enable no-await-in-loop */
+      /**
+       * Latest repaired row by prepared position.
+       */
+      const repairedByPosition = new Map(repairedRows.map(function repairedEntry(row,) {
         return [
-          row.coverageFinding,
-          `insertion-corroboration (slice ${String(row.sliceIndex,)}, shortfall ${
-            shortfallAdmitted.has(row.position,) ? 'admitted' : 'refused'
-          }, missing destinations ${String(row.missingDestinationCount,)}, admission ${
-            positions.has(row.position,) ? 'admitted' : 'refused'
-          })`,
-          ...row.stageFindings,
-          ...row.destinationFindings,
-        ];
-      },),
-    ],
-  };
+          row.position,
+          row,
+        ] as const;
+      },),);
+      rows = rows.map(function replaceRepaired(row,): InsertionCoverageRow {
+        return repairedByPosition.get(row.position,) ?? row;
+      },);
+    }
+  }
+  throw signal.reason;
 }
 
 //endregion Pass insertion admission

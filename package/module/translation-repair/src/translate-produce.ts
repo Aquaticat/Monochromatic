@@ -19,6 +19,7 @@ import {
   buildTranslateMessages,
   isTranslateReportWire,
   TRANSLATE_RESPONSE_FORMAT,
+  type TranslateFollowupEvidence,
 } from './translate-wire.ts';
 
 //region Translate produce
@@ -85,6 +86,8 @@ export type ProducedSlate = {
  *
  * @param syntax - syntax role requiring dedicated preservation rules
  *
+ * @param followupEvidence - latest rejected slate and findings grounding retry
+ *
  * @param lineStructured - whether the enclosing chunk's original is
  * line-structured, decided by the caller
  *
@@ -110,6 +113,7 @@ export async function produceTranslateSlate(
     identityContext,
     pictureContext,
     syntax,
+    followupEvidence,
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -122,6 +126,7 @@ export async function produceTranslateSlate(
     readonly identityContext?: string;
     readonly pictureContext?: string;
     readonly syntax?: SliceSyntax;
+    readonly followupEvidence?: TranslateFollowupEvidence;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -146,6 +151,7 @@ export async function produceTranslateSlate(
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
     ...((syntax === undefined) ? {} : { syntax, }),
+    ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
     lineStructured,
   },);
 
