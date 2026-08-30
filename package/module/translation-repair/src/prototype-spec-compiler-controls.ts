@@ -151,13 +151,13 @@ export function runSpecificationCompilerControls(): void {
     allowedKinds: new Set(['wrong-meaning',]),
   },);
   const preserved = adoptCompilerRole({
-    current: first.document,
+    current: archiveText,
     accepted: first.accepted,
     response: conflict,
     located: conflictLocated,
     validate: function validate() {},
   },);
-  if (preserved.applied || (preserved.document !== first.document))
+  if (preserved.applied || (preserved.document !== archiveText))
     throw new Error('specification compiler conflict preservation control failed');
   const drift: CompilerDocument = {
     ...revision,
