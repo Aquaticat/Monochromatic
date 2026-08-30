@@ -7,7 +7,10 @@ import {
 import { join, } from 'node:path';
 
 import { hashContent, } from './document-node.ts';
-import { EDITOR_NODES, } from './prototype-brief-editor-plan.ts';
+import {
+  BRIEF_NODES,
+  EDITOR_NODES,
+} from './prototype-brief-editor-plan.ts';
 import type { BriefEditorNodeRecord, } from './prototype-brief-editor-runtime.ts';
 import { writePrototypeJson, } from './prototype-brief-editor-runtime.ts';
 import type { BriefEditorDocument, } from './prototype-brief-editor-wire.ts';
@@ -74,7 +77,7 @@ export async function publishBriefEditorPrototype(
     value: {
       prototype: 'brief-before-prose-c',
       status: 'written-pending-output-review',
-      payloadCeiling: 5,
+      payloadCeiling: BRIEF_NODES.length + EDITOR_NODES.length,
       dependencyWaves: 2,
       usableBriefs,
       selectedEditor: selected.id,
