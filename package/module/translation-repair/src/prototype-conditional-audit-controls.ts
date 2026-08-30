@@ -99,7 +99,13 @@ export function runConditionalAuditControls(): void {
   },);
   if (!carriesPicture({ messages, }))
     throw new Error('conditional audit vision control failed');
-  if (JSON.stringify(messages,).includes('"priority":',))
+  const auditUserMessage = messages[1];
+  const auditUserText = (auditUserMessage === undefined) || !Array.isArray(auditUserMessage.content)
+    ? ''
+    : auditUserMessage.content.flatMap(function text(part,): readonly string[] {
+      return part.type === 'text' ? [part.text,] : [];
+    },).join('\n',);
+  if (auditUserText.includes('"priority":',))
     throw new Error('conditional audit hidden priority control failed');
   const badSlot: ConditionalAuditResponse = {
     candidates: {
