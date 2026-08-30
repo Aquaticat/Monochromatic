@@ -137,7 +137,6 @@ const MARKED_CLASSES: readonly string[] = [
   'UnpositionedContainerError',
   'UnpositionedNodeError',
   'UnpreparedSliceError',
-  'UnreviewedArchiveError',
   'UnsettledFinalSelectionError',
   'UnsafeSeedError',
   'VisualEvidenceInterruptedError',

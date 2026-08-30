@@ -208,6 +208,16 @@ const ENTRY = {
   targetText: TARGET_TEXT,
 };
 
+/** Unsupported archive-only factual block removed before lanes. */
+const UNSUPPORTED_ARCHIVE_BLOCK = 'The cat won an interplanetary award.';
+
+/** Entry proving preparation correction reaches artifact and page boundaries. */
+const ARCHIVE_REVISION_ENTRY = {
+  id: 'CatEntryArchiveRevision',
+  sourceText: SOURCE_TEXT,
+  targetText: `${TARGET_TEXT.trimEnd()}\n\n${UNSUPPORTED_ARCHIVE_BLOCK}\n`,
+};
+
 /**
  * Source page made entirely of visible metadata.
  */
@@ -446,9 +456,23 @@ function replyFor(
   // corresponds, which keeps this fixture's slicing exactly as it was before the
   // stage existed.
   if (schema === 'block_pairing') {
+    if (content.includes(UNSUPPORTED_ARCHIVE_BLOCK,)) {
+      return { pairs: [
+        { source: 0, target: 0, },
+        { source: 1, target: 1, },
+      ], };
+    }
     return content.includes('cat-record',)
       ? { pairs: [{ source: 0, target: 0, },], }
       : { pairs: [], };
+  }
+  if (schema === 'archive_block_review') {
+    return {
+      disposition: 'revise',
+      sourceQuote: '',
+      replacementText: '',
+      finding: 'Remove unsupported archive-only factual wording.',
+    };
   }
   if (schema === 'coverage_report') {
     if (coverageScript === 'lost')
@@ -486,7 +510,7 @@ function replyFor(
   }
   if (schema === 'candidate_ballot') {
     return {
-      best: pickCandidate({ content, },),
+      best: content.includes('archive-only block',) ? 1 : pickCandidate({ content, }),
       reason: 'scripted',
     };
   }
@@ -1175,6 +1199,42 @@ await describe({
         expect(page,).not.toContain(POLISH_BASE_PARAGRAPH,);
         expect(served,).toContain('consolidation_polish_gate',);
         expect(served,).toContain('absolute_naturalness_review',);
+      },
+    },),
+    it({
+      name: 'PUBLISHES preparation-stage archive correction through lanes, artifact, and page',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /** Model schemas reached across complete revised entry. */
+        const served: string[] = [];
+        const outcome = await settleEntry({
+          client: entryClient({ served, }),
+          entry: ARCHIVE_REVISION_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+        /** Serialized artifact text for absence proof. */
+        const artifactText = await readFile(
+          join(dirs.artifactsDir, `${ARCHIVE_REVISION_ENTRY.id}.json`,),
+          'utf8',
+        );
+        /** Published page produced from same corrected preparation. */
+        const page = await readFile(fixedPagePath({
+          publishDir: dirs.publishDir,
+          entryId: ARCHIVE_REVISION_ENTRY.id,
+        },), 'utf8',);
+
+        expect(outcome,).toEqual({ kind: 'settled', });
+        expect(served,).toContain('archive_block_review');
+        expect(artifactText.includes(UNSUPPORTED_ARCHIVE_BLOCK,),).toBe(false,);
+        expect(page.includes(UNSUPPORTED_ARCHIVE_BLOCK,),).toBe(false,);
+        expect(page,).toContain(FRESH);
+        expect(page,).toContain(BIRD_FRESH);
       },
     },),
     it({

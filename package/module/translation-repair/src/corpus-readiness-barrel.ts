@@ -4,13 +4,23 @@
 
 export { assertCarriedInsertionsRemain, } from './corpus-run/carried-insertion-completeness.ts';
 export {
+  isArchiveSourceQuoteAnchored,
+  isVerifiableEditorialArchiveBlock,
+} from './archive-block-evidence.ts';
+export {
+  type ArchiveBlockReviewOutcome,
+  repairArchiveBlock,
+  runArchiveBlockReviewStage,
+} from './archive-block-review-stage.ts';
+export {
+  archiveBlockIdentity,
+  repairArchiveBlocks,
+} from './corpus-run/archive-block-repair.ts';
+export { archiveBlockSourceContexts, } from './corpus-run/archive-block-source-context.ts';
+export {
   assertPublishableTranslation,
   UnfilledPageError,
 } from './corpus-run/publish-completeness.ts';
-export {
-  assertArchiveReviewed,
-  UnreviewedArchiveError,
-} from './corpus-run/unreviewed-archive.ts';
 export { assertFinalNaturalnessComplete, } from './corpus-run/final-naturalness-completeness.ts';
 export {
   assertFinalSelectionSettled,

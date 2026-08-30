@@ -244,6 +244,10 @@ async function runEntryPipeline(
       exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       l: tagged({ tag: entry.id, },),
     },);
+    /**
+     * Archive after preparation-stage review corrections.
+     */
+    const settledArchiveText = prepared.targetText;
 
     /**
      * Complete reviewed visual evidence required before insertion and lanes.
@@ -435,7 +439,7 @@ async function runEntryPipeline(
     assertCarriedInsertionsRemain({
       artifact,
       slices: prepared.slices,
-      targetText: archiveText,
+      targetText: settledArchiveText,
       carried: translateInsertionAdmission.carried ?? [],
     },);
     /**
@@ -455,7 +459,7 @@ async function runEntryPipeline(
     const destinations = await persistSettledEntry({
       artifact,
       slices: prepared.slices,
-      archiveText,
+      archiveText: settledArchiveText,
       sourceText: entry.sourceText,
       entryId: entry.id,
       publishDir,

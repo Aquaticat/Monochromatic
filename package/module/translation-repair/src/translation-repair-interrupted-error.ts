@@ -21,6 +21,16 @@ export class TranslationRepairInterruptedError extends Error {
   readonly messageNamesOnly: true = true;
 
   /**
+   * Named stage state preventing unique continuation.
+   */
+  public readonly reason:
+    | 'archive-block-unresolved'
+    | 'carried-evidence-lost'
+    | 'insertion-placement-unresolved'
+    | 'production-cycle'
+    | 'provider-unavailable';
+
+  /**
    * Latest stage findings available when repair paused.
    */
   public readonly findings: readonly string[];
@@ -46,6 +56,7 @@ export class TranslationRepairInterruptedError extends Error {
       findings,
     }: {
       readonly reason:
+        | 'archive-block-unresolved'
         | 'carried-evidence-lost'
         | 'insertion-placement-unresolved'
         | 'production-cycle'
@@ -55,6 +66,7 @@ export class TranslationRepairInterruptedError extends Error {
   ) {
     super(`translation repair interrupted: ${reason}`,);
     this.name = 'TranslationRepairInterruptedError';
+    this.reason = reason;
     this.findings = findings;
   }
 }

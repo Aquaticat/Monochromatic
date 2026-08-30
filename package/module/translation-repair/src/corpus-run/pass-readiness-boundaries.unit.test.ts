@@ -23,13 +23,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  createSyntheticClient,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   NaturalnessCompletenessError,
   type PipelineDigest,
   preparePassEntry,
   persistSettledEntry,
   type SettledArtifact,
-  UnreviewedArchiveError,
+  type SyntheticClient,
   UnsettledFinalSelectionError,
 } from '../../dist/final/node/index.mjs';
 
@@ -61,25 +62,43 @@ const l = tagged({ tag: 'pass-readiness-boundaries-test', },);
  * const client = pairingClient();
  * ```
  */
-function pairingClient(): ReturnType<typeof createSyntheticClient> {
-  return createSyntheticClient({
-    apiKey: 'test-key',
-    transport: async function pairedTransport() {
-      /**
-       * Pairing reply shared by both seats.
-       */
-      const content = '{"pairs":[{"source":0,"target":0}]}';
+function pairingClient(): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      /** Stage schema deciding scripted reply. */
+      const schema = request.responseFormat?.json_schema.name ?? '';
+      /** Pairing or archive-review value. */
+      const value: unknown = schema === 'archive_block_review'
+        ? {
+          disposition: 'editorial-context',
+          sourceQuote: '',
+          replacementText: '',
+          finding: 'This is an archive note.',
+        }
+        : schema === 'absolute_naturalness_review'
+        ? {
+          acceptable: true,
+          findings: [],
+          reason: 'The attribution is natural and publication-ready.',
+        }
+        : { pairs: [{ source: 0, target: 0, },], };
+      if (!request.validate(value,))
+        throw new Error(`scripted ${schema} reply failed validator`,);
       return {
-        status: 200,
-        bodyText: `data: ${JSON.stringify({
-          choices: [{
-            index: 0,
-            delta: { content, },
-          },],
-        },)}\n\ndata: [DONE]\n\n`,
+        kind: 'ok',
+        value,
+        rawText: JSON.stringify(value,),
       };
     },
-  },);
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
 }
 
 /**
@@ -184,30 +203,27 @@ await describe({
   name: 'pass readiness boundaries',
   children: [
     it({
-      name: 'REFUSES roster-unclaimed archive in pass preparation before lane work',
+      name: 'REVIEWS roster-unclaimed editorial archive before lane work',
       fn: async () => {
         const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-readiness-',),);
-        let thrown: unknown;
-        try {
-          await preparePassEntry({
-            client: pairingClient(),
-            entryId: 'Cat',
-            entryCacheDir: dir,
-            pipelineDigest: GENERATION,
-            modelIds: ROSTER,
-            sourceText: 'Cats nap.',
-            targetText: 'Cats nap.\n\nAn inherited aside.',
-            signal: new AbortController().signal,
-            exchangeTimeoutMs: 5_000,
-            l,
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
+        const paired = await preparePassEntry({
+          client: pairingClient(),
+          entryId: 'Cat',
+          entryCacheDir: dir,
+          pipelineDigest: GENERATION,
+          modelIds: ROSTER,
+          sourceText: 'Cats nap.',
+          targetText: 'Cats nap.\n\nTranslator: Cat Friend.',
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
         await rm(dir, { recursive: true, force: true, },);
 
-        expect(thrown,).toBeInstanceOf(UnreviewedArchiveError,);
+        expect(paired.prepared.targetText,).toContain('Translator: Cat Friend.');
+        expect(paired.findings.some(function namesRetainedBlock(finding,): boolean {
+          return finding.startsWith('archive block reviewed and retained: ');
+        },),).toBe(true,);
       },
     },),
     it({
