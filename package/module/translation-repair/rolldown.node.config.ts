@@ -35,6 +35,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "model-health": "./src/corpus-run/model-health.ts",
     "probe-relabel": "./src/corpus-run/probe-relabel.ts",
     "producer-calibrate": "./src/corpus-run/producer-calibrate.ts",
+    "provider-concurrency-aggregate-probe": "./src/corpus-run/provider-concurrency-aggregate-probe.ts",
     "provider-concurrency-probe": "./src/corpus-run/provider-concurrency-probe.ts",
     "probe-sensitivity": "./src/corpus-run/probe-sensitivity.ts",
     "probe-verify": "./src/corpus-run/probe-verify.ts",
