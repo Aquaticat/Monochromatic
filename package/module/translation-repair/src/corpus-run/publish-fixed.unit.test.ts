@@ -50,6 +50,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   ContributorCompletenessError,
   type DestinationCheck,
+  DroppedDestinationError,
   type ChunkPair,
   fixedPagePath,
   publishFixedPage,
@@ -839,23 +840,32 @@ await describe({
   name: `${publishFixedPage.name} destinations`,
   children: [
     it({
-      name: 'REPORTS a source destination the published page lacks, without refusing the page',
+      name: 'PAUSES source destination loss before writing page',
       fn: async () => {
         await using tree = await throwawayTree();
-
-        /**
-         * Page published from a source that links to a home page the archive
-         * never carried, so the link is absent from what ships.
-         */
-        const published = await publishAndRead({
-          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+        const path = fixedPagePath({
           publishDir: tree.publishDir,
-          sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
+          entryId: 'BookshopCat',
         },);
+        let thrown: unknown;
+        try {
+          await publishFixedPage({
+            artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+            slices: documentSlices(),
+            archiveText: ARCHIVE,
+            sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
+            entryId: 'BookshopCat',
+            publishDir: tree.publishDir,
+            l: tagged({ tag: 'publish-test', },),
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
 
-        expect(existsSync(published.path,),).toBe(true,);
-        expect(published.destinations.dropped,).toStrictEqual(['https://example.org/tabby',],);
-        expect(published.destinations.page,).toStrictEqual([],);
+        expect(thrown,).toBeInstanceOf(DroppedDestinationError,);
+        expect((thrown as DroppedDestinationError).droppedCount,).toBe(1);
+        expect(existsSync(path,),).toBe(false,);
       },
     },),
 

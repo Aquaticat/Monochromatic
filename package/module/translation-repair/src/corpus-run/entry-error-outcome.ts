@@ -1,5 +1,6 @@
 import { NaturalnessCompletenessError, } from '../naturalness-completeness-error.ts';
 import { ContributorCompletenessError, } from './contributor-completeness.ts';
+import { DroppedDestinationError, } from './destination-completeness.ts';
 import { FrontMatterCompletenessError, } from './front-matter-completeness.ts';
 import { NaturalnessRepairInterruptedError, } from '../naturalness-repair-interrupted-error.ts';
 import { PromptPayloadStoreError, } from '../prompt-payload-store.ts';
@@ -50,6 +51,7 @@ export function entryErrorOutcome(
    * Whether error names stage-local incomplete or invariant work.
    */
   const stopped = (error instanceof ContributorCompletenessError)
+    || (error instanceof DroppedDestinationError)
     || (error instanceof FrontMatterCompletenessError)
     || (error instanceof NaturalnessRepairInterruptedError)
     || (error instanceof NaturalnessCompletenessError)

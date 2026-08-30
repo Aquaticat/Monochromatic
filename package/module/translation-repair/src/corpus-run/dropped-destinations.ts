@@ -34,11 +34,9 @@ import type { DeepReadonlyData, } from '../readonly-data.ts';
 // two. For destinations the difference does not matter: a link is a link under
 // both, and the bare-run scan catches what either tree would not.
 //
-// A DROPPED DESTINATION IS REPORTED, NOT REFUSED. The page is what both
-// deciders approved, and a refusal here would hold a whole entry for one link
-// the pipeline cannot restore at this point; the count goes on stdout beside
-// the tally line and the addresses go to the run log, where the reading picks
-// them up.
+// A DROPPED DESTINATION IS STRUCTURED EVIDENCE. Production checks this result
+// before writing and pauses as an invariant if stage-local translation failed
+// to restore a source destination. Reporting tools may still read all fields.
 
 /**
  * Parsed page, read-only.

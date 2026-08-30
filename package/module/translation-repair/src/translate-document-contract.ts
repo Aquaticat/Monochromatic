@@ -75,8 +75,11 @@ import type { SliceSelection, } from './slice-selection.ts';
  * VERSION 10 replaces identical second judging with prior-decline challenge.
  *
  * VERSION 11 continues absent passages from latest rejected slate and findings.
+ *
+ * VERSION 12 excludes archive wording that fails deterministic source floor
+ * and treats it as absent fallback until stage-local translation settles.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 11;
+export const TRANSLATE_SLICE_CACHE_VERSION = 12;
 
 /**
  * Models the translate lane seats.

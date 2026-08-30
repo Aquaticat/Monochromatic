@@ -29,6 +29,7 @@ import {
 import { assertFrontMatterComplete, } from './front-matter-completeness.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
 import { assertContributorNamesComplete, } from './contributor-completeness.ts';
+import { assertDestinationsComplete, } from './destination-completeness.ts';
 import {
   type DestinationCheck,
   droppedDestinations,
@@ -278,7 +279,19 @@ export async function publishFixedPage(
   },);
 
   /**
-   * Where it goes.
+   * What would-ship page carries of source destinations.
+   */
+  const destinations = droppedDestinations({
+    sourceText,
+    pageText,
+  },);
+  assertDestinationsComplete({
+    entryId,
+    destinations,
+  },);
+
+  /**
+   * Where it goes after every completeness invariant passes.
    */
   const path = fixedPagePath({
     publishDir,
@@ -296,41 +309,6 @@ export async function publishFixedPage(
     `publish: wrote ${String(replacements.length,)} slices into a page of `
       + `${String(pageText.length,)} characters`,
   );
-
-  /**
-   * What the page carries of the source's destinations.
-   *
-   * AFTER THE WRITE AND NEVER A REFUSAL: the page is what both deciders
-   * approved, and a link the pipeline cannot restore here is reported for
-   * the reading rather than holding the entry. See the module note in
-   * `dropped-destinations.ts`.
-   */
-  const destinations = droppedDestinations({
-    sourceText,
-    pageText,
-  },);
-
-  /**
-   * Source destinations the page lacks, counted for the log line.
-   */
-  const droppedCount = destinations
-    .dropped
-    .length;
-
-  /**
-   * Destinations the source carries, the denominator of that line.
-   */
-  const sourceCount = destinations
-    .source
-    .length;
-  if (droppedCount > 0) {
-    l.warn(
-      `publish: ${String(droppedCount,)} of ${String(sourceCount,)} `
-        + 'source destinations are absent from the page',
-    );
-    for (const url of destinations.dropped)
-      l.info(`publish: dropped destination ${url}`,);
-  }
   for (const finding of destinations.findings)
     l.warn(`publish: ${finding}`,);
   return {

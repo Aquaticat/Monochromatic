@@ -4,6 +4,10 @@
 
 export { assertCarriedInsertionsRemain, } from './corpus-run/carried-insertion-completeness.ts';
 export {
+  assertDestinationsComplete,
+  DroppedDestinationError,
+} from './corpus-run/destination-completeness.ts';
+export {
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';

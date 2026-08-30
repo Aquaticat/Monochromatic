@@ -309,6 +309,8 @@ function laneClient(
  *
  * @param incumbentText - translation as it stands
  *
+ * @param sourceText - original passage, defaulting to shared fixture
+ *
  * @returns Stage result plus the call log
  *
  * @example
@@ -324,6 +326,7 @@ async function runLane(
     needleAfterRetry,
     incumbentText,
     incumbentKind = 'present',
+    sourceText = SOURCE_TEXT,
     neighbouringSourceText,
     lineStructured = false,
   }: {
@@ -333,6 +336,7 @@ async function runLane(
     readonly needleAfterRetry?: string;
     readonly incumbentText: string;
     readonly incumbentKind?: IncumbentKind;
+    readonly sourceText?: string;
     readonly neighbouringSourceText?: string;
 
     /**
@@ -374,7 +378,7 @@ async function runLane(
     },),
     translatorModelIds: TRANSLATORS,
     judgeModelIds: JUDGES,
-    sourceText: SOURCE_TEXT,
+    sourceText,
     incumbentText,
     incumbentKind,
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
@@ -443,6 +447,29 @@ await describe({
       },
     },),
 
+    it({
+      name: 'EXCLUDES archive fallback missing source destination and settles source-complete rendering',
+      fn: async () => {
+        const sourceText = '[The cat slept](https://example.test/cat-record).';
+        const incumbentText = 'The cat slept.';
+        const fresh = '[The cat slept](https://example.test/cat-record).';
+        const { result, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': fresh,
+            'hf:zai-org/GLM-5.3-Flash': fresh,
+            'minimax-m3': fresh,
+          },
+          needle: 'cat-record',
+          sourceText,
+          incumbentText,
+        },);
+
+        expect(result.origin,).toBe('fresh');
+        expect(result.text,).toBe(fresh);
+        expect(result.findings,).toContain('translate incumbent excluded by deterministic source floor');
+        expect(result.candidateCount,).toBe(1);
+      },
+    },),
     it({
       name: 'NAMES a translator whose reply arrives wrapped in prose and ships '
         + 'from the voices that remain, since a smaller slate that says '

@@ -8,6 +8,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import { runTranslateRepairs, } from './translate-stage-repair.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
+import { validateTranslatedSlice, } from './translate-validate.ts';
 
 //region Translate stage
 // Every slice is translated from the ORIGINAL by several models independently,
@@ -143,13 +144,32 @@ export async function runTranslateStage(
     role: 'translator',
   },);
 
+  /**
+   * Whether archive wording itself may remain candidate or fallback.
+   */
+  const incumbentEligible = (incumbentKind === 'present')
+    && (validateTranslatedSlice({
+      sourceText,
+      candidateText: incumbentText,
+      pageText: incumbentText,
+      ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
+    },)
+      .kind
+      === 'valid');
+  /**
+   * Existing fallback kind after deterministic source floor.
+   */
+  const effectiveIncumbentKind: IncumbentKind = incumbentEligible ? 'present' : 'absent';
+
   return await runTranslateRepairs({
     client,
     translatorModelIds,
     judgeModelIds,
     sourceText,
     incumbentText,
-    incumbentKind,
+    incumbentKind: effectiveIncumbentKind,
+    incumbentEligible,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),

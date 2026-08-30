@@ -65,12 +65,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  * identities. Version 9 adds deterministic complete-form contributor floor.
  * Version 10 replaces identical decline retry with distinct challenge task.
  * Version 11 continues absent passages from latest rejection evidence.
+ * Version 12 excludes archive fallback that fails deterministic source floor.
  * These questions changed without input fields.
  *
  * The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  * leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '573b77f3e43915bfd46353733d1ac272dc8befa9a4e2d82c8343e3316c8fd50a';
+const LEGACY_WINDOWLESS_KEY = 'e3f85c77f819ac32acae01adab73e0a3ad63633b1c7ad39ef487011fe6d12efb';
 
 /**
  * One slice's key, with whatever this case wants to vary.

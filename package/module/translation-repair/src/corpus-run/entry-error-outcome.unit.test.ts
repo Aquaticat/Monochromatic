@@ -12,6 +12,7 @@ import {
 
 import {
   ContributorCompletenessError,
+  DroppedDestinationError,
   entryErrorOutcome,
   FrontMatterCompletenessError,
   NaturalnessCompletenessError,
@@ -28,6 +29,7 @@ await describe({
   children: [
     ...([
       new ContributorCompletenessError({ entryId: 'Cat', droppedCount: 1, }),
+      new DroppedDestinationError({ entryId: 'Cat', droppedCount: 1, }),
       new FrontMatterCompletenessError({ entryId: 'Cat', reason: 'missing-slice', }),
       new NaturalnessRepairInterruptedError({ reason: 'quorum-not-met', }),
       new NaturalnessCompletenessError({ sliceIndex: 1, }),

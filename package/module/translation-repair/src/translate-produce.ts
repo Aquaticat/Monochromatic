@@ -81,6 +81,8 @@ export type ProducedSlate = {
  * @param incumbentText - translation as it stands, blank where this slice has
  * none
  *
+ * @param incumbentEligible - whether existing translation passes deterministic source floor
+ *
  * @param identityContext - declared names from both sides' front matter,
  * omitted when neither declares anything
  *
@@ -110,6 +112,7 @@ export async function produceTranslateSlate(
     translatorModelIds,
     sourceText,
     incumbentText,
+    incumbentEligible = true,
     identityContext,
     pictureContext,
     syntax,
@@ -123,6 +126,7 @@ export async function produceTranslateSlate(
     readonly translatorModelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly incumbentText: string;
+    readonly incumbentEligible?: boolean;
     readonly identityContext?: string;
     readonly pictureContext?: string;
     readonly syntax?: SliceSyntax;
@@ -202,7 +206,7 @@ export async function produceTranslateSlate(
   const built = buildTranslateCandidates({
     voices: repaired.voices,
     translatorModelIds,
-    incumbentText,
+    incumbentText: incumbentEligible ? incumbentText : '',
   },);
 
   return {
@@ -216,6 +220,7 @@ export async function produceTranslateSlate(
       ...gather.findings,
       ...repaired.findings,
       ...built.findings,
+      ...(incumbentEligible ? [] : ['translate incumbent excluded by deterministic source floor',]),
       `translate-candidates (${String(gather.voices
         .length,)}/${String(translatorModelIds.length,)} heard, ${
         String(built.candidates

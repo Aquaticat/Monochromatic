@@ -884,6 +884,39 @@ await describe({
       },
     },),
     it({
+      name: 'RECOVERS repair-lane standing that drops source destination before final publisher',
+      fn: async () => {
+        const destination = 'https://example.test/cat-record';
+        const sourceText = `[猫猫的记录](${destination})。`;
+        const initialText = `[The cat record](${destination}).`;
+        const recoveryText = `[The cat's final record](${destination}).`;
+        const { client, } = recoveringClient({ initialText, recoveryText, });
+        const projected = {
+          comparison: [{
+            sliceIndex: 0,
+            incumbentKind: 'present',
+            incumbentText: 'The archive mentions the cat record.',
+            repairText: 'The repair lane mentions the cat record.',
+            translateText: initialText,
+          },],
+          delivery: {
+            repair: [{ sliceIndex: 0, sourceText, },],
+            translate: [],
+          },
+        } as unknown as ProjectedLanes;
+        const { slices, written, } = await driveWith({
+          client,
+          modelIds: RECOVERY_ROSTER,
+          projected,
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
+        },);
+
+        expect(slices[0]?.terminal,).toBe('consolidated');
+        expect(slices[0]?.shipped,).toEqual({ kind: 'consolidated', text: recoveryText, });
+        expect(written,).toHaveLength(1);
+      },
+    },),
+    it({
       name: 'SHARES one final-selection recovery chain across identical unsafe twins',
       fn: async () => {
         const {

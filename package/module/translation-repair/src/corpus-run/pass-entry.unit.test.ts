@@ -291,22 +291,15 @@ const MISSING_VISUAL_ENTRY = {
 /**
  * Original carrying a linked factual paragraph absent from archive.
  */
-const GAP_SOURCE_TEXT = `${SOURCE_TEXT}
-> The cat said goodbye.
->
-> Thank you all.
+const GAP_SOURCE_TEXT = `猫猫在睡觉。
 
-The cat's final [record](https://example.test/cat-record) says she died at age 26.
+猫猫最后的[记录](https://example.test/cat-record)说她去世时 26 岁。
 `;
 
 /**
- * Archive preserving quoted letter and omitting factual paragraph after it.
+ * Archive omitting linked factual paragraph.
  */
-const GAP_TARGET_TEXT = `${TARGET_TEXT}
-> The cat said goodbye.
->
-> Thank you all.
-`;
+const GAP_TARGET_TEXT = 'The cat sleeps.\n';
 
 /**
  * Entry reproducing known source gap at publication seam.
@@ -315,6 +308,13 @@ const GAP_ENTRY = {
   id: 'CatEntryGap',
   sourceText: GAP_SOURCE_TEXT,
   targetText: GAP_TARGET_TEXT,
+};
+
+/** Entry whose aligned archive wording dropped source destination. */
+const LINK_RECOVERY_ENTRY = {
+  id: 'CatEntryLinkRecovery',
+  sourceText: '[猫猫的记录](https://example.test/cat-record)。',
+  targetText: 'The archive mentions the cat record.',
 };
 
 /**
@@ -364,6 +364,8 @@ function renderingFor({ content, }: { readonly content: string; },): string {
     return `## Section one\n\n${FRESH}`;
   if (content.includes('第二节',))
     return `## Section two\n\n${BIRD_FRESH}`;
+  if (content.includes('missing.webp',))
+    return MISSING_VISUAL;
   if (content.includes('cat-record',))
     return GAP_FRESH;
   return FRESH;
@@ -426,6 +428,8 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
  *
  * @param polishScript - whether final naturalness rewrite is exercised
  *
+ * @param contestChoice - lane scripted contest endorses
+ *
  * @returns Wire value for that stage
  *
  * @throws {@link Error} when a stage this script does not serve asks
@@ -442,12 +446,14 @@ function replyFor(
     coverageScript,
     consolidation = false,
     polishScript = false,
+    contestChoice = 'translate',
   }: {
     readonly schema: string;
     readonly content: string;
     readonly coverageScript: CoverageScript;
     readonly consolidation?: boolean;
     readonly polishScript?: boolean;
+    readonly contestChoice?: 'repair' | 'translate';
   },
 ): unknown {
   // THE PAIRING ROUND RUNS BEFORE EITHER LANE, so the script has to serve it or
@@ -522,7 +528,7 @@ function replyFor(
   // of the stage reaching an answer.
   if (schema === 'lane_contest') {
     return {
-      choice: 'translate',
+      choice: contestChoice,
       unsupported: [],
       dropped: [],
       reason: 'scripted',
@@ -568,6 +574,8 @@ function replyFor(
  *
  * @param polishScript - whether final naturalness rewrite is exercised
  *
+ * @param contestChoice - lane scripted contest endorses
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -582,12 +590,14 @@ function entryClient(
     activity,
     coverageScript = 'lost',
     polishScript = false,
+    contestChoice = 'translate',
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
     readonly activity?: PassConcurrency;
     readonly coverageScript?: CoverageScript;
     readonly polishScript?: boolean;
+    readonly contestChoice?: 'repair' | 'translate';
   },
 ): SyntheticClient {
   return {
@@ -656,6 +666,7 @@ function entryClient(
         coverageScript,
         consolidation: isConsolidation,
         polishScript,
+        contestChoice,
       },);
       if (!request.validate(value,))
         throw new Error(`scripted ${schema} failed the wire guard`,);
@@ -1235,6 +1246,36 @@ await describe({
         expect(page.includes(UNSUPPORTED_ARCHIVE_BLOCK,),).toBe(false,);
         expect(page,).toContain(FRESH);
         expect(page,).toContain(BIRD_FRESH);
+      },
+    },),
+    it({
+      name: 'RECOVERS repair-lane source destination loss through consolidation before page write',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        const served: string[] = [];
+        const outcome = await settleEntry({
+          client: entryClient({
+            served,
+            contestChoice: 'repair',
+          },),
+          entry: LINK_RECOVERY_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+        const page = await readFile(fixedPagePath({
+          publishDir: dirs.publishDir,
+          entryId: LINK_RECOVERY_ENTRY.id,
+        },), 'utf8',);
+
+        expect(outcome,).toEqual({ kind: 'settled', });
+        expect(served,).toContain('lane_contest');
+        expect(served,).toContain('consolidate_gate');
+        expect(page,).toContain('https://example.test/cat-record');
       },
     },),
     it({

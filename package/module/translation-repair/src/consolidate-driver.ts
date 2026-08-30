@@ -337,14 +337,13 @@ export async function consolidateDocument(
     /**
      * Syntax verdict for standing text, or ordinary prose admission.
      */
-    const standingValidation = (syntax === undefined)
-      ? { kind: 'valid', } as const
-      : validateTranslatedSlice({
-        sourceText,
-        candidateText: standingText,
-        pageText: row.incumbentText,
-        syntax,
-      },);
+    const standingValidation = validateTranslatedSlice({
+      sourceText,
+      candidateText: standingText,
+      pageText: row.incumbentText,
+      ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
+    },);
     /**
      * Whether standing text itself passes syntax-bearing publication rules.
      */

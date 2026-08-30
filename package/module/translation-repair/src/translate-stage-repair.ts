@@ -34,7 +34,9 @@ const INITIAL_TRANSLATION_TASK: unique symbol = Symbol('translation stage has no
  *
  * @param incumbentText - existing translation, blank for absent passage
  *
- * @param incumbentKind - whether fallback text exists
+ * @param incumbentKind - whether fallback text exists and passes deterministic source floor
+ *
+ * @param incumbentEligible - whether existing text may appear on candidate slate
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -57,6 +59,7 @@ export async function runTranslateRepairs(
     sourceText,
     incumbentText,
     incumbentKind,
+    incumbentEligible = true,
     identityContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
@@ -73,6 +76,7 @@ export async function runTranslateRepairs(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
+    readonly incumbentEligible?: boolean;
     readonly identityContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
@@ -118,6 +122,7 @@ export async function runTranslateRepairs(
       translatorModelIds,
       sourceText,
       incumbentText,
+      incumbentEligible,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),
       ...((syntax === undefined) ? {} : { syntax, }),

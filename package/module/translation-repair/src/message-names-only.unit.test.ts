@@ -78,6 +78,7 @@ const MARKED_CLASSES: readonly string[] = [
   'DeliveryCoherenceError',
   'DeliveryInvariantError',
   'DrawReconcileError',
+  'DroppedDestinationError',
   'EmptyConversationError',
   'EmptyPoolError',
   'EnvelopeOverlapError',
