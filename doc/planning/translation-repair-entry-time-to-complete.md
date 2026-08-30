@@ -296,14 +296,33 @@ which has no matched corpus evidence
 cache,
 or provider capacity between timing arms
 
-Task 32 launches Carena with
-`TRANSLATION_REPAIR_SLICE_OVERLAP=4`
-and `--require-providers synthetic,hyper`.
-If first fresh arm exposes reproducible quality or operational blocker,
-measurement stops and code is fixed before another arm.
-If first arm settles but exceeds objective,
-its phase report decides next scheduling change;
-no quality policy changes to fit target.
+Task 32 was canceled after first current-digest arm exposed structural settlement failure.
+No additional timing arm is authorized under this architecture.
+`TRANSLATION_REPAIR_SLICE_OVERLAP=4` remains result of older matched scheduling pairs,
+but is withdrawn as Carena completion-path candidate.
+
+Current-digest run 1 started 18 contested consolidation slices with four-slice overlap.
+After 8,735 seconds in consolidation,
+only one of first four slices had terminated,
+with `exit=failed`;
+remaining three were still buying correction,
+selection,
+review,
+and polish rounds.
+Run was stopped by user after 16,659 seconds of retained log time,
+with no `TALLY`,
+artifact,
+or fixed page.
+Both required providers remained wet.
+
+This censored run proves overlap cannot meet objective while settlement can generate open-ended quality work.
+It does not measure completion time or median.
+Active work moves to
+`doc/planning/translation-repair-pipeline-redesign.md`.
+No final quality Gate,
+shorter grace,
+looser quorum,
+or naturalness threshold substitutes for root redesign.
 
 ## Evidence to collect before and during fresh current-digest runs
 
