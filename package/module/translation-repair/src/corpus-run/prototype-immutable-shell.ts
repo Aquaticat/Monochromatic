@@ -104,9 +104,11 @@ else
 const scripted = process.env.TRANSLATION_REPAIR_PROTOTYPE_SCRIPTED;
 const invalidAuthors = scripted === 'primary-invalid'
   ? new Set(['primary-author',])
-  : scripted === 'all-invalid'
-    ? new Set(SLOT_AUTHOR_NODES.map(function id(node,) { return node.id; },))
-    : new Set<string>();
+  : scripted === 'primary-fallback-invalid'
+    ? new Set(['primary-author', 'fallback-author',])
+    : scripted === 'all-invalid'
+      ? new Set(SLOT_AUTHOR_NODES.map(function id(node,) { return node.id; },))
+      : new Set<string>();
 const client = scripted === undefined
   ? createRunClient({
     promptPayloadDir: join(outputDir, 'prompt-payloads',),

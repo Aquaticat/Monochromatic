@@ -26,17 +26,26 @@ export function createSlotScriptedClient(
         throw new Error('scripted immutable shell call omitted images');
       if (request.responseFormat?.json_schema.name !== 'immutable_shell_slots')
         throw new Error('scripted immutable shell received unknown schema');
-      if (hang)
-        await wait(60_000,);
+      if (hang) {
+        for (let elapsedMs = 0; elapsedMs < 60_000; elapsedMs += 10) {
+          if (request.signal.aborted)
+            throw request.signal.reason;
+          await wait(10,);
+        }
+      }
       const systemMessage = request.messages[0];
       const system = systemMessage === undefined || typeof systemMessage.content !== 'string'
         ? ''
         : systemMessage.content;
-      const authorId = system.includes('priority-zero')
-        ? 'primary-author'
-        : system.includes('priority-one')
-          ? 'fallback-author'
-          : 'reserve-author';
+      const roles = [
+        { token: 'priority-zero', id: 'primary-author', },
+        { token: 'priority-one', id: 'fallback-author', },
+        { token: 'priority-two', id: 'reserve-author', },
+      ].filter(function matches(role,) { return system.includes(role.token,); },);
+      const role = roles[0];
+      if ((roles.length !== 1) || (role === undefined))
+        throw new Error('scripted immutable shell author role is ambiguous');
+      const authorId = role.id;
       if (authorId === 'primary-author')
         await wait(20,);
       const pairs = shell.slots

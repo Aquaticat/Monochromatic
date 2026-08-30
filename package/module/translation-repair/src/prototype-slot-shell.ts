@@ -12,6 +12,7 @@ import {
 } from './parse-mdx.ts';
 import { parseDocument, } from './parse-document.ts';
 import { compileSlotBody, } from './prototype-slot-compile.ts';
+import { assertSourceLeafCoverage, } from './prototype-slot-coverage.ts';
 import type { ImmutableShell, ImmutableSlot, } from './prototype-slot-model.ts';
 
 type PositionedNode = Nodes & {
@@ -221,8 +222,10 @@ export function buildImmutableShell(
     sourceBody: source.body,
     sourceBodyOffset: source.bodyOffset,
   },);
+  const root = parseShellRoot({ body: authority.body, }) as PositionedNode;
+  assertSourceLeafCoverage({ node: root, body: authority.body, });
   const unkeyed = slotsInNode({
-    node: parseShellRoot({ body: authority.body, }) as PositionedNode,
+    node: root,
     body: authority.body,
     parentKind: 'root',
     lockedRanges: authority.lockedRanges,
@@ -247,11 +250,13 @@ export function buildImmutableShell(
     frontMatter,
     body: authority.body,
     slots,
+    lockedRanges: authority.lockedRanges,
     controlDocument,
     shellDigest: hashContent({ content: JSON.stringify({
       frontMatter,
       body: authority.body,
       slots,
+      lockedRanges: authority.lockedRanges,
     },), }),
   };
 }

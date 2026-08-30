@@ -14,8 +14,9 @@ import {
   validateSlotCandidate,
 } from './prototype-slot-wire.ts';
 
-const SOURCE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# 猫\n\n猫在[家](https://example.com)休息。![图](cat.webp)[^1]\n\n[^1]: 注。\n`;
-const ARCHIVE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# Cat\n\nThe cat rests at [home](https://example.com).![Picture](cat.webp)[^1]\n\n[^1]: Note.\n`;
+const SOURCE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# 猫\n\n猫在[家](https://example.com)休息。![图](cat.webp)[^1]\n\n[^1]: 注。\n\n本条目贡献者：猫\n`;
+const ARCHIVE = `---\nname: Cat\ninfo:\n  alias: Cat\n---\n# Cat\n\nThe cat rests at [home](https://example.com).![Picture](cat.webp)[^1]\n\n[^1]: Note.\n\nContributor for this entry: Cat\n`;
+const CONTRIBUTOR_LINE = 'Contributor for this entry: Cat';
 
 function sourceResponse(
   { shell, }: { readonly shell: ReturnType<typeof buildImmutableShell>; },
@@ -31,6 +32,16 @@ export function runSlotLocalControls(): void {
   const shell = buildImmutableShell({ sourceText: SOURCE, archiveText: ARCHIVE, });
   if (shell.slots.length < 4)
     throw new Error('immutable shell slot census control failed');
+  const contributorStart = shell.body.indexOf(CONTRIBUTOR_LINE,);
+  const contributorEnd = contributorStart + CONTRIBUTOR_LINE.length;
+  if ((contributorStart < 0)
+    || !shell.lockedRanges.some(function exact(range,) {
+      return (range.startOffset === contributorStart) && (range.endOffset === contributorEnd);
+    },)
+    || shell.slots.some(function overlaps(slot,) {
+      return (slot.startOffset < contributorEnd) && (contributorStart < slot.endOffset);
+    },))
+    throw new Error('immutable shell contributor authority control failed');
   const response = sourceResponse({ shell, });
   const isSlotDocumentResponse = slotDocumentGuard({ shell, });
   if (!isSlotDocumentResponse(response,))
@@ -73,6 +84,36 @@ export function runSlotLocalControls(): void {
   const compiled = compileSlotDocument({ shell, response: injected, });
   if (!compiled.includes('\\]',) || !compiled.includes('\\{unsafe\\}',) || !compiled.includes('\\`marker\\`',))
     throw new Error('immutable shell syntax encoding control failed');
+  const paragraph = shell.slots.find(function paragraphSlot(slot,) { return slot.parentKind === 'paragraph'; },);
+  if (paragraph === undefined)
+    throw new Error('immutable shell paragraph slot control failed');
+  let structuralInjectionRefused = false;
+  try {
+    validateSlotCandidate({
+      shell,
+      response: { slots: { ...response.slots, [paragraph.key]: '# injected heading', }, },
+      sourceText: SOURCE,
+      archiveText: ARCHIVE,
+      sourcePictures: photoReferences({ text: SOURCE, }),
+    },);
+  }
+  catch (error) {
+    structuralInjectionRefused = error !== undefined;
+  }
+  if (!structuralInjectionRefused)
+    throw new Error('immutable shell line-start syntax control failed');
+  let uncoveredSourceRefused = false;
+  try {
+    buildImmutableShell({
+      sourceText: SOURCE.replace('# 猫', '# 猫\n\n<Widget title="中文" />',),
+      archiveText: ARCHIVE.replace('# Cat', '# Cat\n\n<Widget title="English" />',),
+    },);
+  }
+  catch (error) {
+    uncoveredSourceRefused = error !== undefined;
+  }
+  if (!uncoveredSourceRefused)
+    throw new Error('immutable shell source-leaf coverage control failed');
   const usable = new Map([
     ['fallback-author', { response, document, },],
     ['reserve-author', { response, document, },],

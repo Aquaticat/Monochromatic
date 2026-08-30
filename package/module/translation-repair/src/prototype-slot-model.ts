@@ -16,6 +16,7 @@ export type ImmutableShell = {
   readonly frontMatter: string;
   readonly body: string;
   readonly slots: readonly ImmutableSlot[];
+  readonly lockedRanges: readonly { readonly startOffset: number; readonly endOffset: number; }[];
   readonly controlDocument: string;
   readonly shellDigest: string;
 };
