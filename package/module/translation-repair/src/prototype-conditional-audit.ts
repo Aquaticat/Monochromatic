@@ -2,6 +2,7 @@
 
 import {
   type ConditionalAuditResponse,
+  type ConditionalBaselineDecision,
   type ConditionalCandidate,
   type ConfirmedConditionalFinding,
   SEVERE_CONDITIONAL_DEFECT_CLASSES,
@@ -105,6 +106,81 @@ export function selectConditionalBaseline(
   if (selected === undefined)
     throw new Error('conditional shell candidate set is empty');
   return selected;
+}
+
+export function selectConditionalBaselineByAuditorVotes(
+  {
+    candidates,
+    audits,
+  }: {
+    readonly candidates: readonly ConditionalCandidate[];
+    readonly audits: readonly ConditionalAuditResponse[];
+  },
+): ConditionalBaselineDecision {
+  const selections = audits.flatMap(function ballot(audit,): readonly string[] {
+    const findings: readonly ConfirmedConditionalFinding[] = candidates.flatMap(function candidateFindings(candidate,) {
+      return (audit.candidates[candidate.id]?.findings ?? []).map(function finding(item,) {
+        return {
+          candidateId: candidate.id,
+          slotKey: item.slotKey,
+          defectClass: item.defectClass,
+          support: 1,
+        };
+      },);
+    },);
+    return findings.length === 0 ? [] : [selectConditionalBaseline({ candidates, findings, }).id,];
+  },);
+  const votes = Object.fromEntries(candidates.map(function candidateVotes(candidate,) {
+    return [candidate.id, selections.filter(function selected(id,) { return id === candidate.id; },).length,];
+  },),);
+  const requiredVotes = 2;
+  const winner = candidates.toSorted(function mostVotes(left, right,) {
+    return ((votes[right.id] ?? 0) - (votes[left.id] ?? 0)) || (left.priority - right.priority);
+  },)[0];
+  const fallback = candidates.toSorted(function priority(left, right,) { return left.priority - right.priority; },)[0];
+  if ((winner === undefined) || (fallback === undefined))
+    throw new Error('conditional shell candidate set is empty');
+  const evidenceFloorMet = (votes[winner.id] ?? 0) >= requiredVotes;
+  return {
+    candidate: evidenceFloorMet ? winner : fallback,
+    votes,
+    evidenceFloorMet,
+  };
+}
+
+function auditFindingKeys(
+  {
+    audit,
+    candidateId,
+  }: {
+    readonly audit: ConditionalAuditResponse;
+    readonly candidateId: string;
+  },
+): ReadonlySet<string> {
+  return new Set((audit.candidates[candidateId]?.findings ?? []).map(function key(finding,) {
+    return findingKey({ candidateId: '', slotKey: finding.slotKey, defectClass: finding.defectClass, });
+  },),);
+}
+
+export function shouldAdoptConditionalResolutionByAuditorVotes(
+  {
+    audits,
+    baselineId,
+    resolutionId,
+  }: {
+    readonly audits: readonly ConditionalAuditResponse[];
+    readonly baselineId: string;
+    readonly resolutionId: string;
+  },
+): boolean {
+  const approvals = audits.filter(function approves(audit,) {
+    const baselineKeys = auditFindingKeys({ audit, candidateId: baselineId, });
+    const resolutionKeys = auditFindingKeys({ audit, candidateId: resolutionId, });
+    return (baselineKeys.size > 0)
+      && (resolutionKeys.size < baselineKeys.size)
+      && [...resolutionKeys,].every(function existed(key,) { return baselineKeys.has(key,); });
+  },).length;
+  return approvals >= 2;
 }
 
 export function shouldAdoptConditionalResolution(

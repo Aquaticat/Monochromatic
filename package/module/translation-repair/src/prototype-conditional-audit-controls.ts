@@ -4,7 +4,9 @@ import { carriesPicture, } from './chat-contract.ts';
 import {
   confirmConditionalFindings,
   selectConditionalBaseline,
+  selectConditionalBaselineByAuditorVotes,
   shouldAdoptConditionalResolution,
+  shouldAdoptConditionalResolutionByAuditorVotes,
 } from './prototype-conditional-audit.ts';
 import type {
   ConditionalAuditResponse,
@@ -12,9 +14,11 @@ import type {
   ConfirmedConditionalFinding,
 } from './prototype-conditional-audit-model.ts';
 import {
+  admitConditionalAudit,
   conditionalAuditGuard,
   conditionalAuditMessages,
   CONDITIONAL_AUDIT_NODES,
+  conditionalAuditStructuralGuard,
 } from './prototype-conditional-audit-plan.ts';
 import { compileSlotDocument, } from './prototype-slot-compile.ts';
 import type { SlotDocumentResponse, } from './prototype-slot-model.ts';
@@ -73,6 +77,7 @@ export function runConditionalAuditControls(): void {
     },
   };
   const guard = conditionalAuditGuard({ shell, candidates, });
+  const structuralGuard = conditionalAuditStructuralGuard({ shell, candidates, });
   if (!guard(audit,))
     throw new Error('conditional audit valid response control failed');
   const auditNode = CONDITIONAL_AUDIT_NODES[0];
@@ -96,6 +101,12 @@ export function runConditionalAuditControls(): void {
   };
   if (guard(badAnchor,))
     throw new Error('conditional audit quote binding control failed');
+  if (!structuralGuard(badAnchor,))
+    throw new Error('conditional audit structural admission control failed');
+  const badAnchorAdmission = admitConditionalAudit({ shell, candidates, response: badAnchor, });
+  if ((badAnchorAdmission.response.candidates.flawed?.findings.length !== 0)
+    || (badAnchorAdmission.rejectedFindings[0]?.reason !== 'candidate-anchor-unbound'))
+    throw new Error('conditional audit unbound finding pruning control failed');
   const duplicate: ConditionalAuditResponse = {
     candidates: {
       preferred: { findings: [], },
@@ -104,12 +115,33 @@ export function runConditionalAuditControls(): void {
   };
   if (guard(duplicate,))
     throw new Error('conditional audit duplicate finding control failed');
+  if (!structuralGuard(duplicate,))
+    throw new Error('conditional audit duplicate structural control failed');
+  const duplicateAdmission = admitConditionalAudit({ shell, candidates, response: duplicate, });
+  if ((duplicateAdmission.response.candidates.flawed?.findings.length !== 1)
+    || (duplicateAdmission.rejectedFindings[0]?.reason !== 'duplicate-key'))
+    throw new Error('conditional audit duplicate pruning control failed');
   const confirmed = confirmConditionalFindings({
     audits: [audit, audit,],
     candidateIds: candidates.map(function id(candidate,) { return candidate.id; },),
   },);
   if ((confirmed.length !== 1) || (selectConditionalBaseline({ candidates, findings: confirmed, }).id !== 'preferred'))
     throw new Error('conditional audit comparative selection control failed');
+  const voted = selectConditionalBaselineByAuditorVotes({ candidates, audits: [audit, audit,], });
+  if (!voted.evidenceFloorMet || (voted.candidate.id !== 'preferred') || (voted.votes.preferred !== 2))
+    throw new Error('conditional audit selection vote control failed');
+  const degradedVote = selectConditionalBaselineByAuditorVotes({ candidates, audits: [audit,], });
+  if (degradedVote.evidenceFloorMet || (degradedVote.candidate.id !== 'flawed'))
+    throw new Error('conditional audit selection evidence floor control failed');
+  const emptyAudit: ConditionalAuditResponse = {
+    candidates: {
+      preferred: { findings: [], },
+      flawed: { findings: [], },
+    },
+  };
+  const abstained = selectConditionalBaselineByAuditorVotes({ candidates, audits: [emptyAudit, emptyAudit,], });
+  if (abstained.evidenceFloorMet || (abstained.votes.preferred !== 0) || (abstained.votes.flawed !== 0))
+    throw new Error('conditional audit empty ballot abstention control failed');
   const reduced = confirmConditionalFindings({
     audits: [audit,],
     candidateIds: candidates.map(function id(candidate,) { return candidate.id; },),
@@ -123,6 +155,30 @@ export function runConditionalAuditControls(): void {
   const resolutionFindings: readonly ConfirmedConditionalFinding[] = [
     { candidateId: 'resolution', slotKey: firstSlot.key, defectClass: 'register', support: 2, },
   ];
+  const approvingAudit: ConditionalAuditResponse = {
+    candidates: {
+      baseline: { findings: [finding, { ...finding, defectClass: 'register', },], },
+      resolution: { findings: [finding,], },
+    },
+  };
+  if (!shouldAdoptConditionalResolutionByAuditorVotes({
+    audits: [approvingAudit, approvingAudit,],
+    baselineId: 'baseline',
+    resolutionId: 'resolution',
+  },))
+    throw new Error('conditional audit post-adoption vote control failed');
+  const regressingAudit: ConditionalAuditResponse = {
+    candidates: {
+      baseline: { findings: [finding,], },
+      resolution: { findings: [{ ...finding, defectClass: 'tense', },], },
+    },
+  };
+  if (shouldAdoptConditionalResolutionByAuditorVotes({
+    audits: [approvingAudit, regressingAudit,],
+    baselineId: 'baseline',
+    resolutionId: 'resolution',
+  },))
+    throw new Error('conditional audit post-regression vote control failed');
   if (!shouldAdoptConditionalResolution({
     baselineFindings,
     resolutionFindings,

@@ -41,11 +41,29 @@ export type ConditionalAuditResponse = {
   }>>;
 };
 
+export type ConditionalRejectedFinding = {
+  readonly candidateId: string;
+  readonly slotKey: string;
+  readonly defectClass: ConditionalDefectClass;
+  readonly reason: 'source-anchor-unbound' | 'candidate-anchor-unbound' | 'duplicate-key';
+};
+
+export type ConditionalAuditAdmission = {
+  readonly response: ConditionalAuditResponse;
+  readonly rejectedFindings: readonly ConditionalRejectedFinding[];
+};
+
 export type ConditionalCandidate = {
   readonly id: string;
   readonly priority: number;
   readonly response: SlotDocumentResponse;
   readonly document: string;
+};
+
+export type ConditionalBaselineDecision = {
+  readonly candidate: ConditionalCandidate;
+  readonly votes: Readonly<Record<string, number>>;
+  readonly evidenceFloorMet: boolean;
 };
 
 export type ConfirmedConditionalFinding = {

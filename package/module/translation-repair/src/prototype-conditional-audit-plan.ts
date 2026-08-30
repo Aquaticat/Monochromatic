@@ -6,8 +6,11 @@ import type { JsonSchemaResponseFormat, VisionMessage, } from './chat-contract.t
 import type { PrototypeMedia, } from './prototype-brief-editor-input.ts';
 import {
   CONDITIONAL_DEFECT_CLASSES,
+  type ConditionalAuditAdmission,
+  type ConditionalAuditFinding,
   type ConditionalAuditResponse,
   type ConditionalCandidate,
+  type ConditionalRejectedFinding,
 } from './prototype-conditional-audit-model.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 import type { RosterModelId, } from './roster-id.ts';
@@ -139,7 +142,7 @@ export function conditionalAuditMessages(
   ];
 }
 
-export function conditionalAuditGuard(
+export function conditionalAuditStructuralGuard(
   {
     shell,
     candidates,
@@ -148,12 +151,9 @@ export function conditionalAuditGuard(
     readonly candidates: readonly ConditionalCandidate[];
   },
 ): (value: unknown) => value is ConditionalAuditResponse {
-  const candidateById = new Map(candidates.map(function pair(candidate,) {
-    return [candidate.id, candidate,] as const;
-  },),);
-  const slotByKey = new Map(shell.slots.map(function pair(slot,) { return [slot.key, slot,] as const; },),);
+  const slotKeys = new Set(shell.slots.map(function key(slot,) { return slot.key; },),);
   const candidateIds = candidates.map(function id(candidate,) { return candidate.id; },);
-  return function isConditionalAuditResponse(value: unknown): value is ConditionalAuditResponse {
+  return function isStructurallyValidAudit(value: unknown): value is ConditionalAuditResponse {
     if ((typeof value !== 'object') || (value === null) || !('candidates' in value))
       return false;
     const records = value.candidates;
@@ -168,37 +168,92 @@ export function conditionalAuditGuard(
         return false;
       if (record.findings.length > MAX_FINDINGS_PER_CANDIDATE)
         return false;
-      const candidate = candidateById.get(id,);
-      if (candidate === undefined)
-        return false;
-      const seen = new Set<string>();
       return record.findings.every(function validFinding(finding,) {
         if ((typeof finding !== 'object') || (finding === null))
           return false;
-        const item = finding as Partial<Record<keyof import('./prototype-conditional-audit-model.ts').ConditionalAuditFinding, unknown>>;
-        if ((typeof item.slotKey !== 'string')
-          || (typeof item.defectClass !== 'string')
-          || !CONDITIONAL_DEFECT_CLASSES.includes(item.defectClass as typeof CONDITIONAL_DEFECT_CLASSES[number],)
-          || (typeof item.sourceAnchor !== 'string')
-          || (item.sourceAnchor.length === 0)
-          || (item.sourceAnchor.length > MAX_ANCHOR_CHARACTERS)
-          || (typeof item.candidateAnchor !== 'string')
-          || (item.candidateAnchor.length === 0)
-          || (item.candidateAnchor.length > MAX_ANCHOR_CHARACTERS))
-          return false;
-        const slot = slotByKey.get(item.slotKey,);
-        const candidateSlot = candidate.response.slots[item.slotKey];
-        if ((slot === undefined)
-          || (candidateSlot === undefined)
-          || !slot.source.includes(item.sourceAnchor,)
-          || !candidateSlot.includes(item.candidateAnchor,))
-          return false;
-        const key = `${item.slotKey}:${item.defectClass}`;
-        if (seen.has(key,))
-          return false;
-        seen.add(key,);
-        return true;
+        const item = finding as Partial<Record<keyof ConditionalAuditFinding, unknown>>;
+        return (typeof item.slotKey === 'string')
+          && slotKeys.has(item.slotKey,)
+          && (typeof item.defectClass === 'string')
+          && CONDITIONAL_DEFECT_CLASSES.includes(item.defectClass as typeof CONDITIONAL_DEFECT_CLASSES[number],)
+          && (typeof item.sourceAnchor === 'string')
+          && (item.sourceAnchor.length > 0)
+          && (item.sourceAnchor.length <= MAX_ANCHOR_CHARACTERS)
+          && (typeof item.candidateAnchor === 'string')
+          && (item.candidateAnchor.length > 0)
+          && (item.candidateAnchor.length <= MAX_ANCHOR_CHARACTERS);
       },);
     },);
+  };
+}
+
+export function admitConditionalAudit(
+  {
+    shell,
+    candidates,
+    response,
+  }: {
+    readonly shell: ImmutableShell;
+    readonly candidates: readonly ConditionalCandidate[];
+    readonly response: ConditionalAuditResponse;
+  },
+): ConditionalAuditAdmission {
+  const slotByKey = new Map(shell.slots.map(function pair(slot,) { return [slot.key, slot,] as const; },),);
+  const admissions = candidates.map(function candidateAdmission(candidate,) {
+    const seen = new Set<string>();
+    const findings = response.candidates[candidate.id]?.findings ?? [];
+    const classified = findings.map(function classify(finding,) {
+      const key = `${finding.slotKey}:${finding.defectClass}`;
+      const sourceSlot = slotByKey.get(finding.slotKey,);
+      const candidateSlot = candidate.response.slots[finding.slotKey];
+      const reason: ConditionalRejectedFinding['reason'] | undefined =
+        ((sourceSlot === undefined) || !sourceSlot.source.includes(finding.sourceAnchor,))
+          ? 'source-anchor-unbound'
+          : ((candidateSlot === undefined) || !candidateSlot.includes(finding.candidateAnchor,))
+            ? 'candidate-anchor-unbound'
+            : seen.has(key,)
+              ? 'duplicate-key'
+              : undefined;
+      seen.add(key,);
+      return { finding, reason, };
+    },);
+    return { candidate, classified, };
+  },);
+  return {
+    response: {
+      candidates: Object.fromEntries(admissions.map(function admitted(admission,) {
+        return [admission.candidate.id, {
+          findings: admission.classified.flatMap(function keep(item,): readonly ConditionalAuditFinding[] {
+            return item.reason === undefined ? [item.finding,] : [];
+          },),
+        },];
+      },),),
+    },
+    rejectedFindings: admissions.flatMap(function rejected(admission,) {
+      return admission.classified.flatMap(function evidence(item,): readonly ConditionalRejectedFinding[] {
+        return item.reason === undefined ? [] : [{
+          candidateId: admission.candidate.id,
+          slotKey: item.finding.slotKey,
+          defectClass: item.finding.defectClass,
+          reason: item.reason,
+        },];
+      },);
+    },),
+  };
+}
+
+export function conditionalAuditGuard(
+  {
+    shell,
+    candidates,
+  }: {
+    readonly shell: ImmutableShell;
+    readonly candidates: readonly ConditionalCandidate[];
+  },
+): (value: unknown) => value is ConditionalAuditResponse {
+  const structurallyValid = conditionalAuditStructuralGuard({ shell, candidates, });
+  return function isStrictlyValidAudit(value: unknown): value is ConditionalAuditResponse {
+    return structurallyValid(value,)
+      && (admitConditionalAudit({ shell, candidates, response: value, }).rejectedFindings.length === 0);
   };
 }
