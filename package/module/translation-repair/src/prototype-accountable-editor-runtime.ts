@@ -153,17 +153,26 @@ export async function runPrototypeNode<ValueT,>(
   },
 ): Promise<ValueT> {
   const promptDigest = modelPromptDigest({ request: { modelId, messages, signal, }, },);
+  const existing = records.find(function sameNode(record,): boolean {
+    return record.id === id;
+  },);
+  if ((existing !== undefined) && ((existing.modelId !== modelId) || (existing.promptDigest !== promptDigest)))
+    throw new Error(`prototype resume identity changed for ${id}`);
   const startedAt = new Date().toISOString();
   const startedMs = Date.now();
-  await writeFile(join(outputDir, `node-${id}.json`,), `${JSON.stringify({
-    id,
-    modelId,
-    promptDigest,
-    state: 'dispatched',
-    payload: 'fresh',
-    startedAt,
-  }, null, 2,)}\n`,);
+  if (existing === undefined) {
+    await writeFile(join(outputDir, `node-${id}.json`,), `${JSON.stringify({
+      id,
+      modelId,
+      promptDigest,
+      state: 'dispatched',
+      payload: 'fresh',
+      startedAt,
+    }, null, 2,)}\n`,);
+  }
   const value = await askPrototypeJson({ client, modelId, messages, responseFormat, validate, signal, },);
+  if (existing !== undefined)
+    return value;
   const record: PrototypeNodeRecord = {
     id,
     modelId,

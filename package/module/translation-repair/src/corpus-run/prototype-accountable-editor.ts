@@ -188,8 +188,10 @@ async function runPrototype(
   await writeResult({ outputDir, value: {
     prototype: 'accountable-editor-a',
     status: 'written-pending-output-review',
-    freshPayloads: orderedRecords.length,
-    durationMs: Date.now() - startedAt,
+    nodesTotal: orderedRecords.length,
+    freshPayloadsAcrossRun: orderedRecords.length,
+    invocationDurationMs: Date.now() - startedAt,
+    elapsedFromFirstNodeMs: Date.now() - Date.parse(orderedRecords[0]?.startedAt ?? new Date().toISOString(),),
     findingCount: dossier.length,
     patchCount: commit.patches.length,
     mediaReferenceCount: sourcePictures.length,
@@ -204,13 +206,32 @@ function manifestPosition(id: string,): number {
   return order.indexOf(id,);
 }
 
+async function loadCompletedRecords(
+  { outputDir, }: { readonly outputDir: string; },
+): Promise<PrototypeNodeRecord[]> {
+  const records: PrototypeNodeRecord[] = [];
+  for (const id of ['draft', 'audit-fidelity', 'audit-expression', 'audit-continuity', 'commit',]) {
+    try {
+      const parsed: unknown = JSON.parse(await readFile(join(outputDir, `node-${id}.json`,), 'utf8',),);
+      if ((typeof parsed === 'object') && (parsed !== null) && ('state' in parsed) && (parsed.state === 'completed'))
+        records.push(parsed as PrototypeNodeRecord,);
+    }
+    catch {
+      continue;
+    }
+  }
+  return records;
+}
+
 const outputDir = process.env.TRANSLATION_REPAIR_PROTOTYPE_DIR ?? '';
+const resume = process.env.TRANSLATION_REPAIR_PROTOTYPE_RESUME === '1';
 if (outputDir === '')
   throw new Error('set TRANSLATION_REPAIR_PROTOTYPE_DIR');
-if (existsSync(outputDir,))
+if (existsSync(outputDir,) && (!resume))
   throw new Error('prototype output root must be fresh');
 await mkdir(outputDir, { recursive: true, },);
-const records: PrototypeNodeRecord[] = [];
+const records = resume ? await loadCompletedRecords({ outputDir, },) : [];
+const invocationStartedAt = Date.now();
 try {
   await runPrototype({ outputDir, records, },);
 }
@@ -219,8 +240,11 @@ catch (error) {
     prototype: 'accountable-editor-a',
     status: 'suspended',
     cause: String(error,),
+    invocationDurationMs: Date.now() - invocationStartedAt,
     completedNodes: records.toSorted((left, right,) => manifestPosition(left.id,) - manifestPosition(right.id,)),
-    resumeAuthority: 'new-external-evidence-or-human-authorized-plan',
+    resumeAuthority: records.length > 0
+      ? 'unfinished-node-from-same-manifest'
+      : 'new-external-evidence-or-human-authorized-plan',
   }, },);
   console.log(`PROTOTYPE ${ENTRY_ID} design=A status=suspended completedNodes=${String(records.length,)}`,);
 }
