@@ -349,6 +349,23 @@ await describe({
       },
     },),
     it({
+      name: 'PAUSES exact repeated partial-placement task as deterministic cycle',
+      fn: async () => {
+        await expect(runAdmission({
+          sourcePassage: '[Cat](https://example.test/cat-record) sleeps and dreams.',
+          targetText: LONG_TARGET,
+          replies: unanimous({
+            coverage: 'partial',
+            quote: '## Cats\n\nThe cat sleeps in warm sunlight.',
+          },),
+          followupReplies: unanimous({
+            coverage: 'partial',
+            quote: '## Cats\n\nThe cat sleeps in warm sunlight.',
+          },),
+        },),).rejects.toThrow('translation repair interrupted: insertion-placement-unresolved',);
+      },
+    },),
+    it({
       name: 'REFUSES an inconclusive roster when every coverage voice is lost',
       fn: async () => {
         await expect(runAdmission({
