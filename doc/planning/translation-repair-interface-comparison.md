@@ -1368,15 +1368,73 @@ Candidate E1 triple-prime correction requires:
 
 No defect wording from this run may enter new prompts.
 Retained output remains negative calibration evidence only.
-Candidate E1 triple-prime remains unselected pending model evaluation,
-new controls,
-GFP,
-fresh Hyper-only run,
-and complete-page reading.
+### Rejected E1 triple-prime under active Hyper roster
 
-Revised ranking:
-E1 double-prime > E3 > E2 > rejected E1 prime,
-because E1 double-prime recovers measured located evidence and keeps conditional repair;
+E1 triple-prime comparative-floor correction is implemented and tested:
+
+- candidates and ballots persist model identity
+- evidence requires at least 2 votes,
+  2 candidate model identities,
+  and 2 agreeing auditor model identities
+- one candidate or repeated auditor identity cannot satisfy floor
+- schema mismatch preserves stable reason distinguishing guard rejection,
+  invalid JSON,
+  truncated thinking,
+  and other mismatches
+- controls,
+  retained replay,
+  scripted one-author behavior,
+  restored build,
+  and 871 suites pass
+- GFP independently proves candidate diversity,
+  auditor diversity,
+  parser-reason,
+  and persistence guards load-bearing
+
+Hyper reserve evaluation then exhausted current active roster.
+MiniMax M3 was only distinct image-capable integrated model.
+Its quote-bound auditor completed strict response with 4 admitted findings and 1 duplicate pruned.
+Its complete author consumed requested 32,000 output tokens,
+ended `max_tokens`,
+and returned unparseable JSON missing final outer brace.
+Node correctly persisted `spent-unusable` with `schema-mismatch` and `unparseable-json` detail.
+Caller repair is forbidden,
+and prompt uniqueness forbids redispatching same model plus canonical author prompt with changed ceiling.
+Schema-invalid response remains operational evidence and was not read as page-quality evidence.
+
+No current active Hyper model distinct from Qwen and Kimi satisfies image,
+complete-author,
+and quote-bound-auditor contracts.
+Full triple-prime graph run would therefore begin from known failed comparative-author precondition:
+with Hyper alone it must set `evidenceFloorMet: false`,
+skip conditional repair,
+and republish same Qwen baseline already rejected by complete-page reading.
+Further resolver controls cannot repair absent comparative evidence.
+Running that graph would spend payloads without changing admissible outcome,
+so it is not performed.
+
+Private MiniMax evidence is preserved at
+`~/Downloads/Carena0442-minimax-reserve-validation-rejected-20260830/`.
+Technology vet report is
+`doc/audit/tech-candidate-e-hyper-reserve-model-vet-2026-08-30.md`
+on main branch.
+
+Candidate E1 double-prime and triple-prime are rejected under tested active-roster design.
+Reusable components remain immutable shell,
+per-finding admission,
+model-diverse comparative floor,
+located-only resolution,
+strict-subset adoption,
+finite runtime,
+restart,
+abort identity,
+and provider-isolation controls.
+No Candidate E output is eligible for publication or production integration.
+
+Final Candidate E ranking:
+rejected E1 triple-prime > rejected E1 double-prime > E3 > E2 > rejected E1 prime,
+because triple-prime corrects false comparative evidence but cannot create required Hyper candidate diversity;
+double-prime recovers located evidence but falsely passed one-candidate floor;
 E3 cannot exceed measured author ceiling;
 E2 repeats Candidate C dependency;
 E1 prime discarded most valid ballot evidence.
