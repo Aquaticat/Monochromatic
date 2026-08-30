@@ -1729,8 +1729,19 @@ Publication gates remain strict.
 
 Remaining terminal and bypass findings must move to stage-local repair before fresh runs:
 
-- `assertArchiveReviewed` throws on target blocks outside source claims during preparation.
-  Pairing/review must classify and revise those blocks instead of ending entry.
+- Archive-only block repair landed in `ccaad1f53`, with contributor-floor test in `78ab244a2`.
+  Preparation now scopes each unclaimed target block to expected aligned source section,
+  requires exact anchored source support or deterministically shaped editorial apparatus,
+  and lets any revise voice block retention.
+  Retained wording receives defect-discovery naturalness review plus distinct acceptance challenge.
+  Corrections preserve target-authoritative contributors,
+  undergo independent whole-roster selection,
+  splice in reverse offset order,
+  and re-enter preparation before lanes.
+  Exact correction and archive-state cycles pause as `INCOMPLETE`.
+  A sibling revision intentionally causes remaining unclaimed blocks to be reviewed again;
+  this costs calls but avoids carrying a license across changed parser locations and source context.
+  The old `assertArchiveReviewed` terminal and `UnreviewedArchiveError` are removed.
 - Unfilled-passage continuation landed in `ed756993b`, with cycle guard test in `1649c480d`.
   Translate version 11 produces from latest exact rejected slate and findings without finite correction count.
   Insertion placement rechecks latest semantic, destination, and shortfall evidence until admitted,

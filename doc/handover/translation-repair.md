@@ -10,7 +10,7 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `1649c480d`.
+- Current pipeline commit: `78ab244a2`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
 - Generation-13 continuous correction,
@@ -30,6 +30,8 @@ not current instruction.
 - Translate version 10 prior-decline challenge landed in `504a407fc`.
 - Translate version 11 unfilled-passage continuation landed in `ed756993b`;
   exact placement-cycle test landed in `1649c480d`.
+- Archive-only block repair landed in `ccaad1f53`;
+  contributor-floor test landed in `78ab244a2`.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
@@ -37,6 +39,7 @@ not current instruction.
 - Final visual-evidence verification emitted 867 `PASS` lines and zero `FAIL` lines.
 - Final one-sided front-matter verification emitted 867 `PASS` lines and zero `FAIL` lines.
 - Final translate-version-11 verification emitted 869 `PASS` lines and zero `FAIL` lines.
+- Final archive-block verification emitted 870 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -90,6 +93,21 @@ not current instruction.
 - Translate version-10 GFP logs:
   `~/temp/agent/gfp-translate-v10-decline-challenge-red-20260829.log`
   and `~/temp/agent/gfp-translate-v10-decline-challenge-green-20260829.log`.
+- Archive-block GFP logs:
+  `~/temp/agent/gfp-archive-anchor-red-20260829.log`,
+  `~/temp/agent/gfp-archive-anchor-green-20260829.log`,
+  `~/temp/agent/gfp-archive-post-anchor-quorum-red-20260829.log`,
+  `~/temp/agent/gfp-archive-post-anchor-quorum-green-20260829.log`,
+  `~/temp/agent/gfp-archive-revise-blocks-retention-red-20260829.log`,
+  `~/temp/agent/gfp-archive-revise-blocks-retention-green-20260829.log`,
+  `~/temp/agent/gfp-archive-naturalness-red-20260829.log`,
+  `~/temp/agent/gfp-archive-naturalness-green-20260829.log`,
+  `~/temp/agent/gfp-archive-inner-cycle-red-20260829.log`,
+  `~/temp/agent/gfp-archive-inner-cycle-green-20260829.log`,
+  `~/temp/agent/gfp-archive-outer-cycle-red-20260829.log`,
+  `~/temp/agent/gfp-archive-outer-cycle-green-20260829.log`,
+  `~/temp/agent/gfp-archive-contributor-floor-red-20260829.log`,
+  and `~/temp/agent/gfp-archive-contributor-floor-green-20260829.log`.
 - Translate version-11 GFP logs:
   `~/temp/agent/gfp-unfilled-followup-evidence-red-20260829.log`,
   `~/temp/agent/gfp-unfilled-followup-evidence-green-20260829.log`,
@@ -103,7 +121,7 @@ not current instruction.
   and `~/temp/agent/gfp-unfilled-scheduler-stopped-green-20260829.log`.
 
 Artifact schema remains 9.
-At `1649c480d`, cache generations are consolidation 15,
+At `78ab244a2`, cache generations are consolidation 15,
 lane contest 5,
 translate 11,
 refine 4,
@@ -136,6 +154,24 @@ This retention is intentionally conservative:
 semantically equivalent rewrite that removes exact region can pause until strategy changes.
 Restarting unchanged cycle replays durable payloads and re-derives same pause;
 new strategy or evidence is required before relaunch.
+
+Archive-only wording no longer terminates preparation unreviewed.
+Source-supported retention requires substantive exact quote inside expected aligned section;
+editorial retention requires contributor,
+citation,
+media,
+or comment shape.
+Post-filter exact-half participation,
+any-revise rejection,
+two distinct naturalness responsibilities,
+contributor survival,
+and independent correction selection all apply.
+Selected corrections reprepare document and corrected preparation drives lanes,
+artifact,
+and page.
+Repeated correction task or archive state pauses as `INCOMPLETE`.
+Remaining unclaimed blocks are intentionally reviewed again after sibling revision,
+because parser locations and source context may have changed.
 
 Every direct roster round now starts straggler grace at exact-half participation.
 Grace may collect more responses,
@@ -285,13 +321,12 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  Replace terminal unreviewed-archive refusal with stage-local classification and repair.
-2.  Reopen unresolved lane choices from latest ballots until settled or operationally interrupted.
-3.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
-4.  Optimize only measured completion path without weakening quality.
-5.  Rebuild pull-request fixture worktree and launch fresh roots only after quality and performance gates,
+1.  Reopen unresolved lane choices from latest ballots until settled or operationally interrupted.
+2.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+3.  Optimize only measured completion path without weakening quality.
+4.  Rebuild pull-request fixture worktree and launch fresh roots only after quality and performance gates,
     passing `--require-providers synthetic,hyper`.
-6.  Verify every successful page and artifact,
+5.  Verify every successful page and artifact,
     then read complete output.
 
 There is no release deadline.
