@@ -70,7 +70,183 @@ The pull-request run uses exact pull-request files in minimal Git fixture.
 Throwaway pipeline source changes only supply pull-request commit and corpus location.
 Its different pipeline digest makes it unsuitable as matched runtime arm against production-pinned run.
 
-## Evidence to collect before and during fresh generation-13 runs
+## Carena stopped-trace phase analysis
+
+The stopped Carena trace ran for 3,586 seconds and never left repair lane.
+Pre-lanes preparation interval was 27 seconds.
+Its block-pairing round consumed 26.156 seconds,
+leaving 0.844 seconds of uninstrumented pre-lanes work;
+repair then consumed 3,559 seconds through log end.
+This is liveness and phase-shape evidence only:
+Carena and Weideriche overlapped and shared provider capacity,
+and no terminal tally exists.
+
+Repair completed metadata slice 0 and content slices 1 to 5.
+Slice 6 was still active;
+slices 7 to 21 had not started.
+Completed content-slice costs were 406.356,
+479.550,
+556.523,
+1,047.759,
+and 303.092 seconds.
+Their sum was 2,793.280 seconds and arithmetic mean was 558.656 seconds.
+Active slice 6 had already consumed at least 761.653 seconds at final logged round.
+These values do not predict completion under isolated providers,
+but they prove serial repair is completion-path bottleneck in this trace.
+
+Repair emitted 66 completed round records totaling 3,554.810 seconds.
+Post-quorum grace totaled 2,994.680 seconds:
+84.24 percent of round time and 84.14 percent of repair phase wall time.
+Four rounds reached at least 175 seconds of grace and four calls were abandoned at 180-second grace.
+Round families by count were critic 10,
+panel 9,
+editor 6,
+selection 31,
+checker 5,
+and introduced-defect probe 5.
+Critic,
+panel,
+and selection together occupied 86.89 percent of repair wall time.
+Selection alone occupied 1,306.585 seconds;
+panel occupied 1,043.602 seconds;
+critic occupied 742.160 seconds.
+
+Completed streams do not show uniform provider slowdown.
+Their medians ranged from 2.034 seconds for DeepSeek Pro to 39.184 seconds for GLM-5.3-Flash.
+Qwen,
+Minimax,
+and GLM had long tails,
+but abandoned calls are excluded from completed-stream percentiles.
+The trace therefore supports scheduling work that overlaps independent slices;
+it does not support reducing grace,
+quorum,
+review responsibilities,
+or model eligibility.
+
+## Completion objective and measurement protocol
+
+The objective is median fresh `Carena0442` entry time below 7,200,000 milliseconds.
+At least three isolated successful runs on one unchanged optimized pipeline digest are required.
+The unchanged-run band is maximum minus minimum wall time across those first three successes.
+No optimization delta smaller than that band is credited.
+
+A successful sample requires all of:
+
+- `TALLY Carena0442 status=SETTLED`
+- process exit zero
+- exactly one schema-9 artifact
+- exactly one published page
+- `verify-published` success against same artifact and preparation
+- complete source,
+  archive,
+  and published-page reading with no quality blocker
+- `REQUIRED-PROVIDERS synthetic,hyper status=wet` before first model call
+
+`INCOMPLETE`,
+`ERROR`,
+operator stop,
+missing artifact,
+missing page,
+verification refusal,
+or quality finding is censored unfinished work.
+None enters median.
+Every result reports censored attempt count and reasons beside successful-sample median,
+so median is not misread as unconditional completion probability.
+
+Every arm uses exact PR head `a80634a674f94861ea3b7056fba054ca9eab1a2c`,
+one built pipeline tree,
+one pipeline digest,
+one model roster,
+one prompt inventory,
+one provider requirement,
+and a fresh isolated run root.
+No slice cache,
+consolidation cache,
+lane cache,
+reading cache,
+or prompt-payload file crosses roots.
+Only one provider-consuming arm runs at a time.
+Process logs,
+artifact,
+page,
+verification,
+phase report,
+slice-cost report,
+and provenance stay under that root or its named companion logs.
+
+Positive controls run before provider measurement:
+
+1.  Phase parser must recover 3,586 seconds,
+    66 repair rounds,
+    2,994.680 seconds of repair grace,
+    and no completion sample from stopped Carena log.
+2.  Overlap driver tests must show peak one under overlap 1,
+    peak greater than one under candidate overlap,
+    and output order unchanged.
+3.  Publication verifier must accept intact disposable artifact and page,
+    then refuse deliberately altered disposable page.
+4.  Required-provider gate must refuse dry fixture before model dispatch and accept wet fixture.
+
+For each successful arm,
+partition entry wall time into preparation,
+repair,
+translate,
+lane contest,
+consolidation,
+publication,
+and exact uninstrumented remainder.
+Round time to quorum and post-quorum grace are reported separately.
+Completed,
+unusable,
+retried,
+abandoned,
+and payload-replayed calls are counted separately by model and stage.
+The sum of named phases plus remainder must equal entry wall time.
+
+Stop and reset measurement when any of these occurs:
+
+- pipeline source,
+prompt,
+cache generation,
+roster,
+provider requirement,
+or PR fixture changes
+- another provider-consuming process overlaps arm
+- required provider is dry before dispatch
+- quality or defensive invariant stops entry
+- output fails publication verification or complete reading
+- phase accounting cannot reconcile to wall time
+
+A transient operational failure does not lower global timeout or quality policy.
+Investigate it,
+then start a fresh isolated root only after cause is understood.
+A reproducible quality blocker stops all performance arms until code fix is verified.
+
+The production overlap fallback remains 1 during objective definition.
+Task 31 may compare a scheduling-only candidate against overlap 1 on disposable same-digest arms.
+A candidate may ship only if it preserves ordering,
+cache eligibility,
+exact abort identity,
+strict quality,
+and warm-run-equivalent twin reuse.
+
+## Objective positive controls
+
+Objective-definition controls passed without provider spend:
+
+- `~/temp/agent/Carena0442-stopped-phase-analysis-20260829.json` records 66 repair rounds and 2,994.680 seconds of grace.
+- `~/temp/agent/Carena0442-stopped-latency-analysis-20260829.json` records 3,586 stopped-trace seconds and no terminal completion.
+- `~/temp/agent/test-Carena-objective-positive-controls-20260829.log` records seven runner `PASS` lines and zero `FAIL` lines for ordered overlap,
+  pass overlap wiring,
+  artifact preparation agreement,
+  and required-provider dry/wet fixture controls.
+- `~/temp/agent/verify-positive-control-Carena-objective-20260829.log` accepts one intact historical artifact/page pair with no missing wording and exact expected length.
+- `~/temp/agent/verify-negative-control-Carena-objective-20260829.log` refuses a disposable page altered by 17 characters with `WRONG LENGTH` and zero verified pages.
+
+These controls prove instruments can show expected state transitions.
+They do not predict current Carena runtime or output quality.
+
+## Evidence to collect before and during fresh current-digest runs
 
 1.  Record terminal `TALLY`,
     process exit,
