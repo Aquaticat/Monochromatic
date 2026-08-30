@@ -711,7 +711,7 @@ and node order.
 
 A producer receives full source,
 archive,
-all images,
+all page-referenced images,
 slot contract,
 and complete shell context.
 It returns one fixed-key slot record with manifest-derived structural keys such as `s0`.
@@ -730,18 +730,24 @@ Each producer owns full concrete quality contract across every slot and whole-pa
 4.  Ask one statically named holistic reviser for complete slot record against selected base,
     full source,
     archive,
-    and all images.
+    and all page-referenced images.
     Adopt usable complete response;
     otherwise preserve selected base byte-for-byte.
-5.  Atomically publish and read back final complete document.
+5.  Ask one statically named copy editor for complete slot record against latest usable candidate,
+    full source,
+    archive,
+    and all page-referenced images.
+    Adopt usable complete response;
+    otherwise preserve latest usable candidate byte-for-byte.
+6.  Atomically publish and read back final complete document.
 
-Payload ceiling is 4 in two provider waves.
+Payload ceiling is 5 in three provider waves.
 No preparation model,
 Gate,
 review-only node,
 retry,
 or response-created work exists.
-All four provider nodes return complete candidate records or have no effect.
+All five provider nodes return complete candidate records or have no effect.
 Each first-wave node can establish first complete candidate.
 Role-differentiated canonical prompts preserve uniqueness when one provider and one model fill multiple seats.
 Candidate D inherits manifest-bound restart without redispatch,
@@ -770,7 +776,7 @@ Alternative D2 asks each author for unrestricted complete Markdown and validates
   and C from model authority
 - fixed-key structural properties remove model-authored semantic identifier values that failed B and C
 - one whole-document authorship response still controls voice across every translatable slot
-- three independent complete-candidate producers provide bounded fallback before one finite holistic revision
+- three independent complete-candidate producers provide bounded fallback before two finite complete-record editors
 
 #### D1 cons
 
@@ -898,6 +904,75 @@ GFP mutations proved whole destination-script check and supplementary range boun
 Four-node v3 restart did not redispatch.
 Candidate D1.2 remains unselected until fresh live output is read completely.
 
+Fresh live D1.2 completed four payloads in two waves and published after 689,075 milliseconds.
+Published file occupied 21,887 bytes across 55 lines.
+All provider nodes completed,
+Qwen returned English rather than source echo,
+and publication digest matched reviser decision.
+Complete final page and all author candidates were read against source,
+archive,
+footnote,
+contributor,
+link,
+and image.
+D1.2 was still not publication-ready:
+
+- 7 visible return-marker glyphs appeared inside two published paragraphs
+- dedication punctuation after immutable footnote boundary was awkward
+- emotional-coercion wording remained source-language calque
+- roommate description and background pronouns remained unclear
+- laboratory staining was still mistranslated as ordinary dyeing
+- legal statement was rendered as confession
+- parent identity became broader relative identity once
+- final regret passage claimed narrator had asked Carena not to worry immediately after stating this was never said
+
+D1.2 Qwen base and Kimi revision both carried visible return markers.
+Under corrected admission both are unusable;
+Kimi fallback did not carry markers but retained more calques.
+D1.2 is rejected under tested presentation-admission contract.
+Preserved private artifact is
+`~/Downloads/Carena0442-candidate-D1.2-output-review-20260830/`.
+
+D1.3 changes prompts and validator identity again.
+Deterministic guard refuses visible return symbols,
+control pictures,
+replacement character,
+and raw C0/C1 controls before compilation.
+LF and CR remain accepted because compiler normalizes them to spaces.
+One static third-wave Qwen copy editor receives latest usable complete candidate,
+full source,
+archive,
+and page image.
+It owns whole contract whether holistic reviser succeeded or not,
+with general idiom,
+technical and legal terminology,
+actor,
+pronoun,
+chronology,
+and register responsibilities.
+
+D1.3 remains finite:
+5 payloads,
+3 waves,
+zero retries,
+and no response-created work.
+Scripted evidence covers copy adoption,
+copy failure preserving reviser,
+reviser failure followed by copy adoption,
+both editors failing while preserving author,
+presentation-artifact author fallback,
+all-author exhaustion,
+and five-node restart without redispatch.
+Role-distinct fixture digests make preservation observable.
+GFP mutations prove artifact refusal,
+copy preservation,
+author preservation,
+and fixed priority load-bearing.
+Restored controls and 871-suite build passed.
+Candidate D1.3 remains unselected until fresh live output is read completely.
+If D1.3 produces another unacceptable page on new prose defect classes,
+serial editor layering stops and Candidate D returns to architecture selection.
+
 Page evidence includes one `PhotoScroll` asset,
 and every page-referenced image reaches every producer.
 Entry profile image is presentation metadata from `info.yml`,
@@ -922,7 +997,7 @@ Ranking:
 D1 > D2,
 because D1 removes measured structural admission failures while retaining whole-document authorship;
 D2 preserves flexibility by retaining same failure authority already exhausted in three candidates.
-Candidate D1.2 remains proposal until fresh Carena publication,
+Candidate D1.3 remains proposal until fresh Carena publication,
 complete-page reading,
 and independent review succeed.
 
