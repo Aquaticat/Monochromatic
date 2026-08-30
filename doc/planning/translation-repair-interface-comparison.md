@@ -846,6 +846,64 @@ all-author exhaustion,
 and four-node restart without redispatch.
 Candidate D1.1 remains unselected until fresh live output is read completely.
 
+Fresh live D1.1 completed four payloads in two waves and published revised document after 732,142 milliseconds.
+All node and publication digests bound correctly.
+Published file occupied 21,241 bytes across 55 lines.
+Complete page,
+source,
+archive,
+all three author candidates,
+and revised candidate were read.
+The boundary spacing defect and role genericization were corrected,
+and source repetition plus footnote details survived.
+Page was still not publication-ready:
+
+- opening compensation idiom lacked object and could be read as fabrication
+- future relation,
+  emotional coercion,
+  temporary responsibility,
+  and school-suspension phrasing remained source-language calques
+- laboratory staining was rendered as ordinary dyeing
+- one protest phrase left actor attribution ambiguous
+- recognition and support relation was grammatically malformed
+- one positive unrestrained expression became morally negative
+- closing dialogue remained awkward English
+
+More importantly,
+fixed-priority Qwen response echoed source-language slot content instead of translating it.
+Schema and deterministic integrity validation incorrectly marked that response complete.
+Kimi reviser produced published English page,
+but if reviser had been unusable D1.1 would have preserved Chinese base as `page.en.md`.
+D1.1 is therefore rejected under tested admission contract.
+Its preserved private artifact is
+`~/Downloads/Carena0442-candidate-D1.1-output-review-20260830/`.
+
+D1.2 changes canonical prompts and validator identity rather than redispatching D1.1 graph unchanged.
+Every slot value containing Unicode Han ideographs is now spent-unusable before compilation.
+Guard covers unified ideographs through Extension I plus compatibility supplements;
+CJK punctuation is intentionally outside this source-echo check.
+This is pinned zh-to-en prototype guard,
+not general destination-language classifier.
+Prompt adds complete-page idiom,
+technical-verb,
+pronoun,
+and actor-attribution responsibilities.
+
+Scripted source-echo control now records Qwen as `DestinationScriptError` with response,
+cache,
+and failure digests,
+then deterministically selects Kimi fallback.
+Restored controls and 871-suite build passed.
+GFP mutations proved whole destination-script check and supplementary range boundary each load-bearing.
+Four-node v3 restart did not redispatch.
+Candidate D1.2 remains unselected until fresh live output is read completely.
+
+Page evidence includes one `PhotoScroll` asset,
+and every page-referenced image reaches every producer.
+Entry profile image is presentation metadata from `info.yml`,
+not document content or translation evidence,
+and remains outside page prompt manifest.
+
 #### D2 pros
 
 - author has unrestricted freedom to reorganize Markdown and prose
@@ -864,7 +922,7 @@ Ranking:
 D1 > D2,
 because D1 removes measured structural admission failures while retaining whole-document authorship;
 D2 preserves flexibility by retaining same failure authority already exhausted in three candidates.
-Candidate D1.1 remains proposal until fresh Carena publication,
+Candidate D1.2 remains proposal until fresh Carena publication,
 complete-page reading,
 and independent review succeed.
 
