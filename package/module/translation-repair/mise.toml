@@ -95,6 +95,11 @@ description = "#115: read a persisted settled-audit run: the archive and fresh h
 depends = ["build"]
 run = "node dist/final/node/rendering-audit-settled-report.mjs"
 
+[tasks."prototype-accountable-editor"]
+description = "PROTOTYPE: run fixed five-payload accountable-editor design over Carena fixture; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-accountable-editor.mjs"
+
 [tasks."coverage-probe"]
 description = "PROTOTYPE for question 28: ask a roster whether the translation already carries each passage the aligners refuse to pair, at both scales; SPENDS QUOTA (pass --only ids and --cap n after --)"
 depends = ["build"]

@@ -37,6 +37,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "producer-calibrate": "./src/corpus-run/producer-calibrate.ts",
     "probe-sensitivity": "./src/corpus-run/probe-sensitivity.ts",
     "probe-verify": "./src/corpus-run/probe-verify.ts",
+    "prototype-accountable-editor": "./src/corpus-run/prototype-accountable-editor.ts",
     "recall-benchmark": "./src/corpus-run/recall-benchmark.ts",
     "roster-bench": "./src/corpus-run/roster-bench.ts",
     "score-agreement": "./src/corpus-run/score-agreement.ts",
