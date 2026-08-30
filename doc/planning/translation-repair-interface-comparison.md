@@ -253,7 +253,7 @@ No model Gate follows final producer.
 
 ### Pros
 
-- A responsive producer establishes output that later node failure cannot withhold.
+- A usable producer establishes output that later node failure cannot withhold.
 - Every specialist improves text directly rather than manufacturing blocking work.
 - Payload ceiling is 4 with no panel,
 vote,
@@ -271,7 +271,7 @@ or reconciliation call.
   infrastructure cannot create translation output;
   fixed roster must exhaust into bounded production-unavailable diagnostic.
 
-### Superseded A1 evidence
+### Rejected Candidate A evidence
 
 First throwaway A1 implemented draft,
 three finding-only auditors,
@@ -286,6 +286,32 @@ a non-producing auditor could withhold complete producer output.
 A1 result remains operational evidence at
 `~/temp/agent/prototype-Carena-A-accountable-editor-20260830/result.json`,
 but is not quality evidence and must not be averaged with corrected Candidate A.
+
+Corrected A2 ran four serial complete-document producer nodes on fresh Carena root.
+Both providers were wet at preflight.
+Four prompt-payload artifacts and four `SPEND` records exist;
+provider-internal request attempts were not counted.
+Process exhausted graph with exit code 1 after 432 seconds;
+recorded invocation duration was 429,690 milliseconds.
+No candidate was adopted and no accepted or published page existed:
+
+- whole-document response document field introduced structural parse regression
+- fidelity fallback response document field dropped one contributor form
+- expression fallback response document field introduced footnote relation defect
+- continuity fallback response document field had invalid front matter
+
+A2 did not leave suspended work,
+but bounded `ProductionUnavailableError` still left caller without output.
+This falsifies Candidate A against user requirement.
+Raw responses remain private under
+`~/temp/agent/prototype-Carena-A2-serial-producers-20260830/`.
+Do not score,
+rank,
+average,
+quote,
+or use them as translation-quality samples.
+They are operational and contract evidence only.
+Candidate A is rejected rather than repaired with another retry or Gate.
 
 ## Candidate B: Specification-first translation compiler
 
@@ -477,56 +503,24 @@ The pipeline must not disguise it as quality refusal,
 automatically retry it,
 or publish archive fallback as repaired output.
 
-## Provisional paper ranking
+## Provisional working order pending complete B and C outputs
 
-This ranking only orders prototype work.
-It cannot select production architecture before complete Carena outputs are read and compared.
+Working order:
+C > B > A.
 
-Ranking:
-A > C > B.
+C ranks over B on design evidence only because it tests whether quality information placed before prose
+can avoid invalid first output with five payloads and smaller interface.
+This edge is not empirical quality evidence and remains paper-only until both complete Carena outputs are read.
 
-A ranks over C because responsibility-specific producers can repair concrete output defects
-that pre-prose briefs cannot observe,
-while each stage still returns complete usable document and no model Gate follows.
-Four-payload ceiling remains finite and directly replaces 186-round churn.
+B ranks over A because typed source obligations may prevent concrete structure,
+contributor,
+and completeness failures measured in A2.
+B remains unproven and carries larger artifact schema.
 
-C ranks over B because it most cleanly tests root hypothesis with five payloads and smaller new interface.
-It is weaker on output-specific defect discovery,
-but weakness is measurable in throwaway prototype without committing large semantic specification system.
-
-B ranks last because strongest contract vocabulary rests on unproven model-authored semantic specification,
-and five-payload graph carries largest artifact schema.
-It offers best omission locality,
-but highest implementation and validation surface before root hypothesis is tested.
-
-## Recommended hybrid prototype
-
-Prototype corrected Candidate A with Candidate B's smallest useful element:
-a deterministic `DocumentBrief` carrying existing proven obligations,
-not new semantic interpretation engine.
-
-Reuse only obligations already backed by current implementation and fixtures:
-
-- parsed structure and front matter
-- prepared source and archive spans
-- contributor authority
-- destinations and media evidence
-- carried insertion anchors
-- line structure
-- supported archive-only context
-
-Do not attempt deterministic extraction of all source propositions in first prototype.
-Every serial producer still reads full source.
-
-Prototype external interface remains Candidate A's `produce`.
-Implementation has exactly four serial producer nodes.
-Each response is a complete candidate or has no effect.
-No stage loop,
-no per-slice panel,
-no candidate tournament,
-no generic final Gate,
-no user-visible suspension,
-and no new naturalness metric.
+A ranks last because both measured implementations wrote no output.
+A1 let non-producing auditor withhold draft;
+A2 received all planned model responses but every response failed concrete adoption obligation.
+No runtime or quality advantage can compensate for violating required output contract.
 
 ## Required lifecycle migration
 

@@ -101,6 +101,15 @@ and register mismatch.
 One wet provider remains normal operation.
 Manifest planning builds complete role and fallback roster reachable through whichever provider is wet;
 no cross-provider response is correctness dependency.
+Finite manifest does not imply serial execution.
+Replacement scheduler must dispatch dependency-independent nodes concurrently
+up to dated live-measured per-provider and per-model limits.
+Dependency edges still serialize work whose prompt consumes prior output.
+Concurrency and request-rate limits are separate constraints and must be measured separately.
+Synthetic and Hyper concurrency must be re-probed before production values change;
+configuration folklore is not evidence.
+A2's 432-second intentionally serial run measures its implementation,
+not provider concurrency capacity.
 Measured arms may explicitly require both providers.
 Each node prompt digest binds exact source,
 archive,
