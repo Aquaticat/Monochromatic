@@ -1,7 +1,7 @@
 # Candidate E Hyper reserve model vet report
 
-- Status: screening in progress
-- Lifecycle phase: serious alternative
+- Status: completed without recommendation
+- Lifecycle phase: rejected at hard gate
 - Subject: Candidate E Hyper reserve model
 - Scope: select third distinct vision-capable author and auditor model identity for Candidate E Hyper-only operation
 - Started: 2026-08-30
@@ -142,18 +142,18 @@ Discovery is saturated for current provider and active project roster.
 ### `minimax-m3`
 
 - Discovery: checked-in Hyper allowlist and live provider catalog.
-- Screening: serious alternative.
+- Screening: exits after targeted validation.
 - Static evidence: active Hyper-only roster identity,
   live image capability true,
   provider maximum output 512,000 tokens,
   with project answer ceiling 32,000 tokens.
 - Official MiniMax model page and repository describe native multimodality and 1M upstream context.
 - Official Tool Use guide documents Anthropic-compatible tool input schemas and interleaved reasoning.
-- Pending: strict-schema vision probe,
-  strict-schema vision probe,
-  complete author validation,
-  quote-bound audit validation,
-  full-page quality reading.
+- Runtime audit response passed strict structural schema and exact-anchor admission.
+- Runtime complete-author response consumed full 32,000-token project ceiling,
+  ended `max_tokens`,
+  and was unparseable JSON.
+- Hard-gate failure: did not return complete fixed-key author response within actual project envelope.
 
 ### `gpt-oss-120b`
 
@@ -245,35 +245,46 @@ Sensitivity will vary each weight from 1 through 5 and every medium or low-confi
 
 ## Execution manifest
 
-No candidate command has run yet.
-Planned execution uses existing inspected project client and task runner,
+Validation runner is committed as `3f160d740`.
+It uses existing inspected project client and task runner,
 not third-party local code.
 `hyper-client.ts` builds Anthropic Messages request,
 forces schema tool,
 streams response,
 and applies provider-neutral JSON guard.
-It sends 2 zero-retry Hyper payloads for only surviving finalist:
+It sent 2 concurrent zero-retry Hyper payloads for only surviving finalist:
 
 - complete 23-slot immutable-shell author with full source,
   archive,
   and page-referenced `photo1.webp`;
 - strict quote-bound auditor over retained complete candidates with same evidence.
 
-Expected network endpoint is existing Charm Hyper Messages API.
-Expected local writes are fresh private prototype root,
+Network endpoint was existing Charm Hyper Messages API.
+Local writes were fresh private prototype root,
 prompt-keyed reply artifacts,
 node records,
-admission records,
-and compiled candidate for private reading.
+admission record,
+and result.
+No candidate was compiled because author failed strict admission.
 No production corpus,
 main worktree output,
-or credential file is modified.
-Stop conditions are schema failure,
-provider failure,
-missing image carriage,
-invalid deterministic candidate guard,
-or completed two-payload validation.
-No retry or alternate model is authorized by this manifest.
+or credential file was modified.
+Stop condition was schema failure after both independent payloads settled.
+No retry or alternate model was dispatched.
+
+Manifest digest `0f85c5852b4603ada93e4e27b3425a0eb71d7929f9254add7b864ddf79d6175d`
+binds corpus,
+source,
+archive,
+shell,
+`photo1.webp`,
+retained candidate digests,
+model identities,
+Hyper-only routing,
+32,000 requested output tokens,
+2-payload ceiling,
+1 dependency wave,
+and zero retries.
 
 ## Evidence records
 
@@ -281,29 +292,30 @@ No retry or alternate model is authorized by this manifest.
 
 - Candidate: MiniMax M3 through existing Hyper service.
 - Claim: native multimodality and long context fit complete source plus image.
-- Status: hard-gate support pending provider-bound validation.
+- Status: documentation support confirmed;
+  provider-bound author validation failed.
 - Primary sources:
   `https://www.minimax.io/models/text/m3` and
   `https://github.com/MiniMax-AI/MiniMax-M3`,
   accessed 2026-08-30.
 - Evidence: both describe native multimodal model;
   official page states 1M upstream context with guaranteed minimum 512K.
-- Outcome: pass documentation gate,
-  runtime pending.
+- Outcome: pass documentation gate;
+  complete-author runtime later failed.
 
 ### Official tool schema capability
 
 - Candidate: MiniMax M3.
 - Claim: accepts Anthropic-compatible tool schemas.
-- Status: hard-gate support pending Hyper gateway validation.
+- Status: Hyper gateway validation completed.
 - Primary source:
   `https://platform.minimax.io/docs/guides/text-m3-function-call`,
   accessed 2026-08-30.
 - Evidence: guide shows Anthropic `tools[].input_schema`,
   tool-use blocks,
   and complete reasoning preservation.
-- Outcome: pass documentation gate,
-  strict forced-tool runtime pending.
+- Outcome: pass documentation gate;
+  forced-tool auditor passed while complete author failed.
 
 ### Hyper live model capability
 
@@ -323,21 +335,107 @@ No retry or alternate model is authorized by this manifest.
 - Outcome: MiniMax passes provider static gate;
   current active-roster peers fail identity or image gates.
 
+### MiniMax targeted validation
+
+- Candidate: `minimax-m3`.
+- Claim: same model can fill complete immutable-shell author and quote-bound auditor seats.
+- Evidence type: direct provider and consumer-boundary validation.
+- Date: 2026-08-30.
+- Preflight: fresh live catalog still reported vision true and output at least 32,000;
+  provider budget sample reported Hyper wet with balance 7,055.
+- Command: `mise run //package/module/translation-repair:prototype-hyper-reserve-evaluation`.
+- Build evidence: package `buildAndTest` passed 871 suite verdicts with no failures before spend.
+- Independent review: advisor found no pre-commit or pre-spend blocker and required fresh catalog plus budget preflight,
+  both performed.
+- Actual dispatch: 2 Hyper `minimax-m3` payloads and zero retries.
+- Provider evidence: manifest-bound `providerSelection: hyper-only` used routing branch whose isolation was previously GFP-proven;
+  no Synthetic route was eligible.
+- Duration: 154,875 milliseconds.
+- Private run root:
+  `~/temp/agent/prototype-Carena-minimax-reserve-evaluation-20260830/`.
+- Preserved private evidence:
+  `~/Downloads/Carena0442-minimax-reserve-validation-rejected-20260830/`.
+- Preservation check: all 8 files byte-identical by relative-path SHA-256 lists.
+
+Author record:
+
+- prompt tokens: 14,407
+- completion tokens: 32,000
+- finish reason: `max_tokens`
+- response text characters: 19,650
+- reasoning stream characters: 119,487
+- all 23 slot keys appeared,
+  but provider output lacked final outer JSON brace
+- persisted state: `spent-unusable`
+- failure type: `schema-mismatch`
+- failure detail: `unparseable-json`
+
+Appending missing byte would parse output,
+but caller repair is forbidden:
+producer must return complete candidate itself or have no effect.
+Schema-rejected output is operational evidence only and was not read or scored as page quality.
+
+Auditor record:
+
+- prompt tokens: 38,925
+- completion tokens: 20,917
+- finish reason: `tool_use`
+- strict structural response completed
+- exact-anchor admission retained 4 findings across 3 candidates
+- duplicate-key pruning rejected 1 additional finding
+- admitted examples included omitted water support in slot `s4` and unsupported language-version detail in slot `s21`
+- response located only subset of defects already established by complete D1 reading
+
+Audit proves schema and quote binding,
+but cannot compensate for failed complete-author hard gate.
+
+Inherited guard coverage:
+structural slot membership,
+source and candidate anchor binding,
+duplicate pruning,
+source echo,
+presentation artifacts,
+prompt uniqueness,
+and provider isolation were already GFP-proven in Candidate E controls.
+Runner introduced wiring only,
+not new admission logic.
+
 ## Scoring and sensitivity
 
-Pending finalist validation.
+No weighted score is calculated.
+MiniMax failed complete-document hard gate before scoring,
+and every other candidate exited earlier hard gate.
+Sensitivity cannot change hard-gate outcome.
 
 ## Ranking
 
-No recommendation yet.
-Static hard gates leave `minimax-m3` as sole serious alternative,
-but it cannot be recommended before runtime and complete-page validation.
+Recommendation: none.
 
-## Open questions
+No current active Hyper roster model distinct from Qwen3.8-27B and Kimi-K3 satisfies every required author and auditor gate under tested request contract.
+MiniMax ranks first among rejected reserve candidates because it alone passed identity,
+vision,
+and strict-auditor gates;
+it still cannot be adopted because complete author failed.
+All other active candidates fail identity or image gate before targeted validation.
 
-- Does current Hyper route MiniMax M3 image plus strict schema through Anthropic Messages correctly?
-- Can MiniMax M3 finish complete slot response within 32,000 requested output tokens?
-- Does author output improve candidate diversity without creating unacceptable fidelity or English defects?
-- Does auditor return concrete exact anchors without excessive pruning?
-- Should validated model hold author and auditor seats only,
-or also second concurrent resolver seat?
+Ranking:
+rejected MiniMax M3 > rejected non-vision active rows,
+because MiniMax reached both runtime roles and passed auditor contract while non-vision models cannot receive mandatory page evidence.
+Incumbent Qwen and Kimi are not reserve alternatives because model identity is not distinct.
+
+## Resolved questions
+
+- Hyper accepted image-bearing MiniMax request and returned strict auditor schema;
+  text-only findings do not prove image attention.
+- MiniMax did not finish complete author JSON within 32,000 requested output tokens.
+- Provider advertises higher ceiling,
+  but one-model plus one-canonical-prompt uniqueness forbids redispatching same author prompt with altered ceiling.
+  Any future run requires distinct substantive contract and new manifest,
+  not retry of this validation.
+- Author quality is not evaluated because schema-invalid response is ineligible quality evidence.
+- Auditor returned exact anchors with one deterministic duplicate pruned,
+  but recalled only subset of known D1 defects.
+- MiniMax must not receive author,
+  auditor,
+  or resolver seat in Candidate E production roster under tested contract.
+- Evaluating live models outside active roster requires separate roster-expansion decision and new compatibility fingerprint.
