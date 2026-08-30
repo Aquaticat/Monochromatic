@@ -489,6 +489,65 @@ or meaning defects before output exists.
 - Mechanical integrity cannot prove finished prose quality.
 - Risk is shifted to offline validation rather than reduced inside run.
 
+### Rejected Candidate C evidence
+
+Candidate C ran on fresh Carena inputs after scripted full-graph,
+restart,
+abort,
+vision,
+and deterministic-admission controls passed.
+Its fixed manifest named three concurrent preparation briefs followed by two concurrent complete-document editors.
+Both providers were wet at preflight.
+The live invocation exhausted that graph after 370,068 milliseconds and threw bounded
+`ProductionUnavailableError`.
+It wrote no selected candidate,
+final digest,
+or publication receipt.
+
+One preparation brief completed.
+Two preparation responses were unusable:
+
+- source brief exceeded specialist responsibility after 71,635 milliseconds
+- expression brief supplied an unlocated anchor after 9,961 milliseconds
+
+Those failures were nonblocking as designed.
+Both complete-document editors then received same immutable packet and all image inputs.
+Neither response passed deterministic first-candidate admission:
+
+- primary editor completed after 221,049 milliseconds but returned invalid front matter
+- fallback editor completed after 233,245 milliseconds but returned source-realization identifiers differing from manifest
+
+Failure digests bind these categories without exposing response wording:
+
+- `d28cd3694f5d448d868ec30fae6b14dd05970ce2e09d416495b9a2be25a0008c`:
+  `brief item exceeds specialist responsibility`
+- `0388f479397f9004f5163be1ecfd156dc7f1bab93bb9d2a90659bb0aa8f31915`:
+  `brief item anchor is not located`
+- `bc25fe043161a9e242a717ff29287ab4897b128b603c848bf0d42559b62c7cd4`:
+  `candidate front matter invalid`
+- `2a6cf4aca78445f8872b3c21838f96a1f26b47f5398aa8c4b24258abbc01ee5a`:
+  `source realization ids differ from manifest`
+
+Prototype implementation and guard commits are
+`e7f69e076`,
+`1c92c961a`,
+and
+`6d1a50dee`.
+Result and node records remain private at
+`~/temp/agent/prototype-Carena-C-brief-editor-20260830/`.
+A private checksum-preserved copy is at
+`~/Downloads/Carena0442-candidate-C-rejected-20260830/`.
+The copy contains 19 files and occupies 110,332 bytes as measured after preservation.
+Raw responses are operational and contract evidence only.
+Do not score,
+rank,
+average,
+quote,
+repair,
+or use them as translation-quality samples.
+Candidate C is rejected rather than retried or salvaged with deterministic text mutation.
+A materially changed brief-before-prose design would be a new candidate.
+
 ## Measured concurrency implications
 
 Production uses 5 Synthetic slots per active model
@@ -498,8 +557,8 @@ with width 64 corroborated on live request shape.
 The Hyper account's 1,000 requests-per-hour limit is separate from simultaneous in-flight work.
 See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
 
-Candidate C can execute its five payloads in two dependency waves.
-Candidate B can execute its five payloads in three waves:
+Candidate C executed its five payloads in two dependency waves before rejection.
+Candidate B can execute its proposed five payloads in three waves:
 specification,
 renderer,
 then three independent specialist transactions.
@@ -539,24 +598,29 @@ The pipeline must not disguise it as quality refusal,
 automatically retry it,
 or publish archive fallback as repaired output.
 
-## Provisional working order pending complete B and C outputs
+## Working order after A and C rejection
 
-Working order:
-C > B > A.
+Prototype eligibility is Candidate B only.
+Candidate B is unrefuted,
+not selected.
+It still requires fresh Carena publication and complete-page reading.
+Candidates C and A are rejected and ineligible for another arm under same design.
 
-C ranks over B on design evidence only because it tests whether quality information placed before prose
-can avoid invalid first output with five payloads and smaller interface.
-This edge is not empirical quality evidence and remains paper-only until both complete Carena outputs are read.
+A total historical order is:
+B > rejected C > rejected A.
 
-B ranks over A because typed source obligations may prevent concrete structure,
-contributor,
-and completeness failures measured in A2.
-B remains unproven and carries larger artifact schema.
+B ranks over rejected C because B still has an untested path to complete output,
+while C exhausted both complete-document producers without adoption.
+This is eligibility ordering,
+not evidence that B will produce good text.
 
-A ranks last because both measured implementations wrote no output.
-A1 let non-producing auditor withhold draft;
-A2 received all planned model responses but every response failed concrete adoption obligation.
-No runtime or quality advantage can compensate for violating required output contract.
+Rejected C ranks over rejected A only as design-learning history:
+C demonstrated finite two-wave execution,
+nonblocking preparation failures,
+and bounded exhaustion without suspension.
+A ranks last because two implementations wrote no output,
+and A1 allowed a non-producing auditor to withhold complete draft.
+Neither rejected candidate can be selected from this order.
 
 ## Required lifecycle migration
 
@@ -578,11 +642,9 @@ not terminal quality refusal.
 
 ## Prototype acceptance evidence
 
-Before selecting for production:
+Before selecting Candidate B for production:
 
-- static manifest proves declared ceiling:
-  A at most 4 payloads,
-  B and C at most 5
+- static Candidate B manifest proves declared ceiling of at most 5 payloads
 - positive controls cover seeded omission,
 wrong meaning,
 identity change,
@@ -600,7 +662,7 @@ and register mismatch
 - each unusable later producer preserves prior complete candidate and execution reaches publication
 - first-producer failure exercises statically named fallback producer without adding manifest work
 - deterministic publication guards still GFP-fail when removed
-- complete actual Carena output from every candidate is read by human and independent reviewer;
+- complete actual Candidate B Carena output is read by human and independent reviewer;
   artifact or tally alone is not comparison evidence
 - recurring output defect changes brief,
 producer responsibility,
