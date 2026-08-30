@@ -10,9 +10,11 @@ import {
   adoptCompilerRole,
   validateCompilerDocument,
 } from './prototype-spec-compiler-transaction.ts';
-import type {
-  CompilerDocument,
-  SpecificationResponse,
+import {
+  type CompilerDocument,
+  isCompilerDocument,
+  MAX_COMPILER_DOCUMENT_CHARACTERS,
+  type SpecificationResponse,
 } from './prototype-spec-compiler-wire.ts';
 
 function expectRefusal(
@@ -63,6 +65,24 @@ export function runSpecificationCompilerControls(): void {
     sourceUnits: units,
     sourcePictures: [],
     allowedKinds: new Set(),
+  },);
+  expectRefusal({
+    name: 'realization-locator',
+    invoke: function rejectLocator() {
+      validateCompilerDocument({
+        response: {
+          ...renderer,
+          realizations: [{ ...renderer.realizations[0]!, targetQuote: 'Dogs', },],
+        },
+        expectedMode: 'render',
+        expectedBaseDigest: null,
+        sourceText,
+        archiveText,
+        sourceUnits: units,
+        sourcePictures: [],
+        allowedKinds: new Set(),
+      },);
+    },
   },);
   const baseDigest = compilerBaseDigest({ base: archiveText, });
   const revision: CompilerDocument = {
@@ -139,6 +159,35 @@ export function runSpecificationCompilerControls(): void {
   },);
   if (preserved.applied || (preserved.document !== first.document))
     throw new Error('specification compiler conflict preservation control failed');
+  const drift: CompilerDocument = {
+    ...revision,
+    document: 'Felines rest.',
+    realizations: [{ ...revision.realizations[0]!, targetQuote: 'Felines', },],
+    changes: [{ ...revision.changes[0]!, before: 'Cats', after: 'Felines', },],
+  };
+  const driftLocated = validateCompilerDocument({
+    response: drift,
+    expectedMode: 'revision',
+    expectedBaseDigest: baseDigest,
+    sourceText,
+    archiveText,
+    sourceUnits: units,
+    sourcePictures: [],
+    base: archiveText,
+    allowedKinds: new Set(['wrong-meaning',]),
+  },);
+  const drifted = adoptCompilerRole({
+    current: 'Cats Cats sleep.',
+    accepted: first.accepted,
+    response: drift,
+    located: driftLocated,
+    validate: function validate() {},
+  },);
+  if (drifted.applied || (drifted.document !== 'Cats Cats sleep.'))
+    throw new Error('specification compiler anchor-drift preservation control failed');
+  const tooLarge = { ...renderer, document: 'x'.repeat(MAX_COMPILER_DOCUMENT_CHARACTERS + 1,), };
+  if (isCompilerDocument(tooLarge,))
+    throw new Error('specification compiler output-envelope control failed');
   const selected = selectCompilerFallback({
     usable: new Map([
       ['expression-specialist', 'finished-first',],

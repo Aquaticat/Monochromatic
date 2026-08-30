@@ -151,6 +151,7 @@ export function isCompilerDocument(value: unknown,): value is CompilerDocument {
     || ((typeof value.baseDigest !== 'string') && (value.baseDigest !== null))
     || (typeof value.document !== 'string')
     || (value.document === '')
+    || (value.document.length > MAX_COMPILER_DOCUMENT_CHARACTERS)
     || (!Array.isArray(value.realizations,))
     || (!Array.isArray(value.changes,)))
     return false;
