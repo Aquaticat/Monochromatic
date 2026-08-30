@@ -1314,9 +1314,65 @@ duplicate pruning,
 and author-selection vote floor.
 Every mutation failed named control and restored suite again passed 871 verdicts with no failures.
 
-Candidate E1 double-prime remains unselected until one-provider evidence,
-fresh Carena publication,
-and complete-page reading pass.
+### Rejected E1 double-prime Hyper-only output
+
+Fresh Hyper-only run completed in 1,142,906 milliseconds and published complete Qwen baseline.
+Run proved one-provider bounded operation but did not produce publication-ready page:
+
+- Qwen author completed
+- Kimi author consumed 16,000 output tokens and returned empty content,
+  then structural guard recorded schema mismatch
+- GLM author and relation auditor failed locally with `NoProviderForModelError`
+- 2 usable auditors inspected only Qwen candidate and both selected it
+- runtime incorrectly marked `evidenceFloorMet: true` although no comparative candidate existed
+- auditors located findings in 7 slots
+- resolver completed but changed 13 slots,
+  including 6 outside located set,
+  so located-only gate rejected whole response before post audit
+- publication correctly preserved Qwen baseline byte-for-byte
+
+Complete-page reading rejected baseline for concrete defects in existing classes:
+unsupported addition,
+source-detail omission,
+role generalization,
+technical-term misuse,
+actor and device-reference ambiguity,
+wrong causal basis,
+chronology wording,
+and lost rhetorical repetition.
+Source shell,
+front matter,
+contributor link,
+footnote relation,
+page media reference,
+Han-script refusal,
+presentation-artifact refusal,
+and publication readback remained correct.
+Page image showed memorial,
+trans identity,
+and chemistry context consistent with translated content and no additional text obligation.
+Private evidence is preserved at
+`~/Downloads/Carena0442-candidate-E1-double-prime-hyper-only-output-review-20260830/`.
+
+This rejects E1 double-prime output and its current evidence-floor predicate,
+not reusable architecture.
+Candidate E1 triple-prime correction requires:
+
+- at least 2 usable author candidates from distinct model identities before comparative floor can pass
+- at least 2 agreeing auditor model identities
+- at least 1 winning auditor whose model identity differs from selected author
+- `evidenceFloorMet: false` publication when any comparative condition fails
+- Hyper-only reserve author and auditor selected only after structured vision and complete-document validation
+- persisted schema-mismatch detail distinguishing unparseable output from caller-guard rejection
+- evaluation of 2 concurrent fixed resolver seats as alternative to one over-eager resolver nullifying every located fix
+
+No defect wording from this run may enter new prompts.
+Retained output remains negative calibration evidence only.
+Candidate E1 triple-prime remains unselected pending model evaluation,
+new controls,
+GFP,
+fresh Hyper-only run,
+and complete-page reading.
 
 Revised ranking:
 E1 double-prime > E3 > E2 > rejected E1 prime,
