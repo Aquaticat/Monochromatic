@@ -130,6 +130,11 @@ description = "PROTOTYPE: run Candidate E1 double-prime conditional immutable-sh
 depends = ["build"]
 run = "node dist/final/node/prototype-conditional-shell.mjs"
 
+[tasks."prototype-hyper-reserve-evaluation"]
+description = "PROTOTYPE: evaluate MiniMax M3 as Hyper reserve author and auditor on Carena; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-hyper-reserve-evaluation.mjs"
+
 [tasks."prototype-immutable-shell"]
 description = "PROTOTYPE: run Candidate D immutable-shell candidate graph on Carena; SPENDS QUOTA"
 depends = ["build"]
