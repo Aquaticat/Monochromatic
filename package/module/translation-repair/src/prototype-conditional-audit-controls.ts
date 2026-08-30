@@ -93,6 +93,14 @@ export function runConditionalAuditControls(): void {
   },);
   if (!carriesPicture({ messages, }))
     throw new Error('conditional audit vision control failed');
+  const badSlot: ConditionalAuditResponse = {
+    candidates: {
+      preferred: { findings: [], },
+      flawed: { findings: [{ ...finding, slotKey: 'absent-slot', },], },
+    },
+  };
+  if (structuralGuard(badSlot,))
+    throw new Error('conditional audit structural slot control failed');
   const badAnchor: ConditionalAuditResponse = {
     candidates: {
       preferred: { findings: [], },
@@ -179,6 +187,18 @@ export function runConditionalAuditControls(): void {
     resolutionId: 'resolution',
   },))
     throw new Error('conditional audit post-regression vote control failed');
+  const emptyPostAudit: ConditionalAuditResponse = {
+    candidates: {
+      baseline: { findings: [], },
+      resolution: { findings: [], },
+    },
+  };
+  if (shouldAdoptConditionalResolutionByAuditorVotes({
+    audits: [emptyPostAudit, emptyPostAudit,],
+    baselineId: 'baseline',
+    resolutionId: 'resolution',
+  },))
+    throw new Error('conditional audit post-empty-baseline control failed');
   if (!shouldAdoptConditionalResolution({
     baselineFindings,
     resolutionFindings,
