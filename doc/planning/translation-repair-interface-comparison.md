@@ -1062,6 +1062,138 @@ D2 preserves flexibility by retaining same failure authority already exhausted i
 This component ranking does not select Candidate D graph.
 No tested architecture is selected after complete D1.3 reading.
 
+## Candidate E proposal: quote-bound conditional shell adoption
+
+Candidate E reuses immutable shell,
+source-echo refusal,
+presentation-artifact refusal,
+and transaction runtime,
+but discards fixed-priority quality selection and unconditional serial adoption.
+Quality evidence is concrete defect class located to fixed candidate and slot,
+with exact source and candidate anchors.
+No auditor may return naturalness score or unlocated preference.
+
+### Candidate E1 prime fixed graph
+
+1.  Derive immutable shell and fixed-key slot schema.
+2.  Ask 3 independent complete authors concurrently.
+3.  Ask 3 independent full-contract auditors concurrently to inspect all complete candidates against source,
+    archive,
+    and page-referenced images.
+4.  Validate every finding anchor deterministically against source slot and candidate slot.
+5.  Confirm finding only when at least 2 usable auditors agree on candidate,
+    slot,
+    and concrete defect class.
+6.  Select baseline by lexicographic defect tuple:
+    fewer severe confirmed findings,
+    then fewer total confirmed findings,
+    then fixed manifest priority.
+7.  Ask one complete resolver to correct selected confirmed-defect slots only.
+    Resolver receives no alternate candidate.
+8.  Refuse resolver response if any unlocated slot changes or deterministic candidate guard fails.
+9.  Ask 3 post-auditors concurrently to inspect baseline and resolution.
+10. Adopt resolution only when
+    at least 2 post-auditors are usable and resolution finding set is strict subset of baseline finding set.
+    Otherwise publish baseline byte-for-byte.
+11. Atomically publish and read back selected complete document.
+
+Payload ceiling is 10 in 4 dependency waves.
+Every author and resolver returns complete candidate or has no effect.
+Auditors cannot withhold existing complete candidate.
+No response creates new node,
+retry,
+Gate,
+or work queue.
+
+Finding schema has fixed candidate properties and bounded arrays.
+Each entry contains fixed-key slot,
+concrete defect class,
+exact nonempty source anchor,
+and exact nonempty candidate anchor.
+Classes are:
+
+- wrong meaning
+- omission
+- unsupported addition
+- identity or attribution
+- actor or reference
+- chronology
+- technical or legal term
+- grammar or usage
+- tense
+- register
+- source-language calque
+
+Severe tuple component counts wrong meaning,
+omission,
+unsupported addition,
+identity or attribution,
+actor or reference,
+chronology,
+and technical or legal term.
+Second tuple component counts every confirmed finding.
+No free-form severity,
+score,
+or naturalness verdict enters selection.
+
+Reduced-quorum behavior is manifest-owned:
+
+- 3 usable auditors require any 2 agreeing
+- 2 usable auditors require both agreeing
+- 1 or 0 usable auditors produce no confirmed findings and fixed-priority baseline
+- fewer than 2 usable post-auditors always preserve baseline
+
+Post-audit adoption compares whole documents only.
+Per-slot mixing is forbidden because it would recreate transaction conflicts and lose whole-page voice.
+Resolution must change at least one confirmed-defect slot and no other slot.
+Resolution finding keys must be strict subset of baseline finding keys;
+new confirmed defect or unresolved key preserves baseline.
+
+### Alternatives
+
+#### E1 prime pros
+
+- replaces blind author priority with quote-bound comparative evidence
+- prevents D1.3 regression through conditional whole-document adoption
+- resolver changes are limited to auditor-located slots
+- auditor failure preserves complete baseline and never suspends publication
+
+#### E1 prime cons
+
+- 10 payloads and 4 waves increase latency
+- auditor agreement can miss shared model blind spots
+- terse bounded matrices need provider conformance validation
+- resolver may fail to correct located defects and then has no effect
+
+#### E3 pros
+
+- author comparison fixes D1 blind selection with fewer waves
+- no resolver means no later-output regression
+
+#### E3 cons
+
+- every measured first-wave author candidate remained below publication bar
+- selection alone cannot exceed measured author ceiling
+
+#### E2 pros
+
+- authors receive shared source-risk context before writing
+- one brief can focus all candidates on difficult source relations
+
+#### E2 cons
+
+- repeats Candidate C brief-before-prose dependency
+- one brief defect correlates across every downstream author
+- brief producer does not establish complete candidate
+
+Ranking:
+E1 prime > E3 > E2,
+because E1 prime addresses both blind selection and later regression;
+E3 addresses blind selection but cannot repair measured author defects;
+E2 repeats rejected shared-preparation dependency.
+Candidate E1 prime remains proposal until retained D outputs calibrate auditor prompts and selection logic
+without new candidate publication spend.
+
 ## Required lifecycle migration
 
 Replacement must remove current terminal-looking outcomes in
