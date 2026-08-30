@@ -979,6 +979,62 @@ Candidate D1.3 remains unselected until fresh live output is read completely.
 If D1.3 produces another unacceptable page on new prose defect classes,
 serial editor layering stops and Candidate D returns to architecture selection.
 
+Fresh live D1.3 completed all 5 payloads in 3 waves and published after 1,508,884 milliseconds.
+Published file occupied 21,322 bytes across 55 lines.
+All node,
+decision,
+and readback digests bound correctly;
+page contained no Han source echo or visible return marker.
+Complete final page and complete holistic-reviser candidate were read against source,
+archive,
+footnote,
+contributor,
+link,
+and image.
+D1.3 final was not publication-ready:
+
+- emotional description became generic and awkward
+- future relation remained literal
+- responsibility and emotional-coercion language remained calqued
+- school-suspension idiom remained opaque
+- roommate background reference remained ambiguous
+- laboratory staining was still mistranslated as ordinary dyeing
+- police entrapment wording was imprecise
+- queer identity wording became essentializing and awkward
+- final sections drifted from retrospective past into present tense
+- closing carefree register became indifference
+
+Complete Kimi reviser already retained future,
+emotional-coercion,
+school-suspension,
+laboratory-staining,
+protest-attribution,
+and closing-register defects.
+Qwen copy editor failed to correct those classes and introduced further generic wording,
+fragments,
+imprecise police phrasing,
+and tense drift.
+Serial quality was therefore non-monotonic.
+Deterministic validation can prove output usable but cannot prove later usable candidate better than prior candidate;
+byte-preservation handles unusable output only.
+
+D1.3 meets documented stop condition.
+Candidate D is rejected under tested fixed-priority plus unconditional-serial-adoption design.
+No further prompt iteration or serial editor layer is allowed.
+Immutable shell,
+source-echo guard,
+presentation-artifact guard,
+and audit runtime remain eligible components for a different architecture;
+D graph itself is not eligible for production selection.
+All tested Candidates A,
+B,
+C,
+and D are rejected.
+Next candidate must use comparative or conditional adoption grounded in concrete located defect classes,
+not unconditional later-output adoption or terminal reviewer failure.
+Preserved private D1.3 artifact is
+`~/Downloads/Carena0442-candidate-D1.3-output-review-20260830/`.
+
 Page evidence includes one `PhotoScroll` asset,
 and every page-referenced image reaches every producer.
 Entry profile image is presentation metadata from `info.yml`,
@@ -999,13 +1055,12 @@ and remains outside page prompt manifest.
 - deterministic rejection again happens only after full-document generation spend
 - unrestricted structure makes exact authority preservation harder
 
-Ranking:
-D1 > D2,
+Within reusable D components,
+immutable-shell D1 > unrestricted-Markdown D2,
 because D1 removes measured structural admission failures while retaining whole-document authorship;
 D2 preserves flexibility by retaining same failure authority already exhausted in three candidates.
-Candidate D1.3 remains proposal until fresh Carena publication,
-complete-page reading,
-and independent review succeed.
+This component ranking does not select Candidate D graph.
+No tested architecture is selected after complete D1.3 reading.
 
 ## Required lifecycle migration
 
