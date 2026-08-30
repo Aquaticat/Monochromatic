@@ -110,6 +110,16 @@ description = "PROTOTYPE: run Candidate C local controls"
 depends = ["build"]
 run = "node dist/final/node/prototype-brief-editor-controls.mjs"
 
+[tasks."prototype-immutable-shell"]
+description = "PROTOTYPE: run Candidate D immutable-shell candidate graph on Carena; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-immutable-shell.mjs"
+
+[tasks."prototype-immutable-shell-controls"]
+description = "PROTOTYPE: run Candidate D local controls"
+depends = ["build"]
+run = "node dist/final/node/prototype-immutable-shell-controls.mjs"
+
 [tasks."provider-concurrency-aggregate-probe"]
 description = "PROTOTYPE: measure live aggregate Synthetic concurrency across active models; SPENDS QUOTA"
 depends = ["build"]

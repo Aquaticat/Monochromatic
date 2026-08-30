@@ -42,6 +42,8 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-accountable-editor": "./src/corpus-run/prototype-accountable-editor.ts",
     "prototype-brief-editor": "./src/corpus-run/prototype-brief-editor.ts",
     "prototype-brief-editor-controls": "./src/corpus-run/prototype-brief-editor-controls.ts",
+    "prototype-immutable-shell": "./src/corpus-run/prototype-immutable-shell.ts",
+    "prototype-immutable-shell-controls": "./src/corpus-run/prototype-immutable-shell-controls.ts",
     "prototype-serial-controls": "./src/corpus-run/prototype-serial-controls.ts",
     "prototype-serial-producers": "./src/corpus-run/prototype-serial-producers.ts",
     "prototype-specification-compiler": "./src/corpus-run/prototype-specification-compiler.ts",
