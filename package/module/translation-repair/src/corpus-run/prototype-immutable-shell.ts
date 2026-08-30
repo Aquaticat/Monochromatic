@@ -103,6 +103,11 @@ const sourceEchoAuthors = scripted === 'primary-source-echo'
 const presentationArtifactAuthors = scripted === 'primary-presentation-artifact'
   ? new Set([primaryAuthor.id,])
   : new Set<string>();
+const hangAuthors = scripted === 'copy-editor-hang'
+  ? new Set([SLOT_COPY_EDITOR_NODE.id,])
+  : scripted === 'hang'
+    ? new Set([...SLOT_AUTHOR_NODES.map(function id(node,) { return node.id; },), SLOT_REVISER_NODE.id, SLOT_COPY_EDITOR_NODE.id,])
+    : new Set<string>();
 const invalidAuthors = scripted === 'reviser-invalid'
   ? new Set([SLOT_REVISER_NODE.id,])
   : scripted === 'copy-editor-invalid'
@@ -126,7 +131,7 @@ const client = scripted === undefined
       invalidAuthors,
       sourceEchoAuthors,
       presentationArtifactAuthors,
-      hang: scripted === 'hang',
+      hangAuthors,
     },);
 const controller = new AbortController();
 process.once('SIGINT', function abortOnSigint() { controller.abort(new Error('caller abort: SIGINT'),); },);

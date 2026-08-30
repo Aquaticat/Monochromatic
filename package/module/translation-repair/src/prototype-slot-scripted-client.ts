@@ -11,13 +11,13 @@ export function createSlotScriptedClient(
     invalidAuthors,
     sourceEchoAuthors,
     presentationArtifactAuthors,
-    hang,
+    hangAuthors,
   }: {
     readonly shell: ImmutableShell;
     readonly invalidAuthors: ReadonlySet<string>;
     readonly sourceEchoAuthors: ReadonlySet<string>;
     readonly presentationArtifactAuthors: ReadonlySet<string>;
-    readonly hang: boolean;
+    readonly hangAuthors: ReadonlySet<string>;
   },
 ): SyntheticClient {
   return {
@@ -30,13 +30,6 @@ export function createSlotScriptedClient(
         throw new Error('scripted immutable shell call omitted images');
       if (request.responseFormat?.json_schema.name !== 'immutable_shell_slots')
         throw new Error('scripted immutable shell received unknown schema');
-      if (hang) {
-        for (let elapsedMs = 0; elapsedMs < 60_000; elapsedMs += 10) {
-          if (request.signal.aborted)
-            throw request.signal.reason;
-          await wait(10,);
-        }
-      }
       const systemMessage = request.messages[0];
       const system = systemMessage === undefined || typeof systemMessage.content !== 'string'
         ? ''
@@ -52,6 +45,14 @@ export function createSlotScriptedClient(
       if ((roles.length !== 1) || (role === undefined))
         throw new Error('scripted immutable shell author role is ambiguous');
       const authorId = role.id;
+      if (hangAuthors.has(authorId,)) {
+        console.log(`PROTOTYPE scripted hang node=${authorId}`,);
+        for (let elapsedMs = 0; elapsedMs < 60_000; elapsedMs += 10) {
+          if (request.signal.aborted)
+            throw request.signal.reason;
+          await wait(10,);
+        }
+      }
       if (authorId === 'primary-author')
         await wait(20,);
       const pairs = shell.slots
