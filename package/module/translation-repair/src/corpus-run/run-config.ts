@@ -703,9 +703,11 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  *
  * @param retryPolicy - optional shared transport policy for bounded probes
  *
+ * @param providerSelection - optional one-provider proof mode; default keeps every configured provider
+ *
  * @returns Ready client, routed across configured providers and counted per seat
  *
- * @throws {@link RunConfigError} when both provider key variables are unset or empty
+ * @throws {@link RunConfigError} when every enabled provider key is unset or empty
  *
  * @example
  * ```ts
@@ -717,10 +719,12 @@ export function createRunClient(
     transport,
     promptPayloadDir,
     retryPolicy,
+    providerSelection = 'all',
   }: {
     readonly transport?: ModelTransport;
     readonly promptPayloadDir?: string;
     readonly retryPolicy?: RetryPolicy;
+    readonly providerSelection?: 'all' | 'synthetic-only' | 'hyper-only';
   } = {},
 ): SyntheticClient {
   /**
@@ -734,20 +738,26 @@ export function createRunClient(
   /**
    * Synthetic API key, resolved by name from the mise-injected env.
    */
-  const apiKey = process.env
-    .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
-    ?? '';
+  const apiKey = providerSelection === 'hyper-only'
+    ? ''
+    : process.env.TRANSLATION_REPAIR_SYNTHETIC_API_KEY ?? '';
   /**
    * Second provider key,
    * independently optional because either provider may run alone.
    */
-  const hyperKey = process.env
-    .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
-    ?? '';
+  const hyperKey = providerSelection === 'synthetic-only'
+    ? ''
+    : process.env.TRANSLATION_REPAIR_CHARM_HYPER_API_KEY ?? '';
   if ((apiKey === '') && (hyperKey === '')) {
-    throw new RunConfigError({
-      variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY or TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
-    },);
+    /**
+     * Enabled key variable operator must provide for selected proof mode.
+     */
+    const variable = providerSelection === 'hyper-only'
+      ? 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY'
+      : providerSelection === 'synthetic-only'
+        ? 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY'
+        : 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY or TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
+    throw new RunConfigError({ variable, },);
   }
 
   /**

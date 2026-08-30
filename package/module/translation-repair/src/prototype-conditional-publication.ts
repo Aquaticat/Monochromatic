@@ -15,6 +15,7 @@ export async function publishConditionalPrototype(
     manifestDigest,
     finalDocument,
     selectedAuthor,
+    providerSelection,
     evidenceFloorMet,
     votes,
     resolverAttempted,
@@ -32,6 +33,7 @@ export async function publishConditionalPrototype(
     readonly manifestDigest: string;
     readonly finalDocument: string;
     readonly selectedAuthor: string;
+    readonly providerSelection: 'all' | 'synthetic-only' | 'hyper-only';
     readonly evidenceFloorMet: boolean;
     readonly votes: Readonly<Record<string, number>>;
     readonly resolverAttempted: boolean;
@@ -69,6 +71,7 @@ export async function publishConditionalPrototype(
       manifestDigest,
       slotCount,
       selectedAuthor,
+      providerSelection,
       evidenceFloorMet,
       votes,
       resolverAttempted,

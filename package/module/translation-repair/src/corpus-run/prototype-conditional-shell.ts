@@ -53,6 +53,12 @@ const cloneDir = process.env.TRANSLATION_REPAIR_CORPUS_DIR ?? '';
 if (cloneDir === '')
   throw new Error('set TRANSLATION_REPAIR_CORPUS_DIR');
 const restart = process.env.TRANSLATION_REPAIR_PROTOTYPE_RESTART === '1';
+const providerSelectionValue = process.env.TRANSLATION_REPAIR_PROTOTYPE_PROVIDER ?? 'all';
+if ((providerSelectionValue !== 'all')
+  && (providerSelectionValue !== 'synthetic-only')
+  && (providerSelectionValue !== 'hyper-only'))
+  throw new Error('TRANSLATION_REPAIR_PROTOTYPE_PROVIDER must be all, synthetic-only, or hyper-only');
+const providerSelection: 'all' | 'synthetic-only' | 'hyper-only' = providerSelectionValue;
 if (!restart) {
   try {
     await mkdir(outputDir,);
@@ -92,6 +98,7 @@ const manifestPlan = {
   ],
   payloadCeiling: 10,
   retryLimit: 0,
+  providerSelection,
   authorSelectionVotesRequired: 2,
   postAdoptionVotesRequired: 2,
 } as const;
@@ -110,6 +117,7 @@ const client = scripted === undefined
   ? createRunClient({
     promptPayloadDir: join(outputDir, 'prompt-payloads',),
     retryPolicy: { limit: 0, baseMs: 0, },
+    providerSelection,
   },)
   : createConditionalScriptedClient({ shell, scenario: scripted, });
 const controller = new AbortController();
@@ -185,6 +193,7 @@ const locatedFindings = collectLocatedConditionalFindings({ audits: authorAudits
 await writePrototypeJson({ path: join(outputDir, 'decision-author-selection.json',), value: {
   manifestDigest,
   selectedAuthor: baseline.id,
+  providerSelection,
   evidenceFloorMet: baselineDecision.evidenceFloorMet,
   votes: baselineDecision.votes,
   locatedFindingCount: locatedFindings.length,
@@ -319,6 +328,7 @@ await publishConditionalPrototype({
   manifestDigest,
   finalDocument,
   selectedAuthor: baseline.id,
+  providerSelection,
   evidenceFloorMet: baselineDecision.evidenceFloorMet,
   votes: baselineDecision.votes,
   resolverAttempted,

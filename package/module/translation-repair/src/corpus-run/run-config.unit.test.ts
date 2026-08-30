@@ -354,6 +354,34 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES Hyper-only proof mode when only Synthetic key exists and names required Hyper key',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: '', },);
+        const refusal = caught(function buildWithoutEnabledKey() {
+          createRunClient({ providerSelection: 'hyper-only', },);
+        },);
+        expect(refusal,).toBeInstanceOf(RunConfigError,);
+        expect((refusal as Error).message,).toContain(HYPER_KEY_VAR,);
+        expect((refusal as Error).message.includes(API_KEY_VAR,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES Synthetic-only proof mode when only Hyper key exists and names required Synthetic key',
+      fn: async () => {
+        using _unset = withoutApiKey();
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        const refusal = caught(function buildWithoutEnabledKey() {
+          createRunClient({ providerSelection: 'synthetic-only', },);
+        },);
+        expect(refusal,).toBeInstanceOf(RunConfigError,);
+        expect((refusal as Error).message,).toContain(API_KEY_VAR,);
+        expect((refusal as Error).message.includes(HYPER_KEY_VAR,),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'refuses as a STATED refusal, so the CLI boundary repeats the '
         + 'variable name and exits 6 instead of printing a fault with frames: '
         + 'the message names a variable and a fix, never content',
@@ -588,6 +616,38 @@ async function askSeat(
 await describe({
   name: `${createRunClient.name} wiring`,
   children: [
+    it({
+      name: 'ROUTES shared seat only to Hyper in Hyper-only proof mode',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+        const { transport, urls, } = recordingTransport();
+        await askSeat({
+          client: createRunClient({ transport, providerSelection: 'hyper-only', },),
+          modelId: SHARED_SEAT,
+        },);
+        expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(true,);
+        expect(urls.some(isFirstProviderChat,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'ROUTES shared seat only to Synthetic in Synthetic-only proof mode',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+        const { transport, urls, } = recordingTransport();
+        await askSeat({
+          client: createRunClient({ transport, providerSelection: 'synthetic-only', },),
+          modelId: SHARED_SEAT,
+        },);
+        expect(urls.some(isFirstProviderChat,),).toBe(true,);
+        expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
+      },
+    },),
+
     it({
       name: 'ROUTES a Charm Hyper endpoint label to the second provider and '
         + 'never to the first, with the first provider live: serving '
