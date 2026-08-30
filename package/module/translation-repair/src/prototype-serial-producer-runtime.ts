@@ -18,6 +18,8 @@ import type { RosterModelId, } from './roster-id.ts';
 import { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 
 export class PrototypeProducerUnavailableError extends Error {
+  readonly messageNamesOnly: true = true;
+
   public constructor({ modelId, }: { readonly modelId: RosterModelId; },) {
     super(`prototype producer ${modelId} returned no usable response`);
     this.name = 'PrototypeProducerUnavailableError';
