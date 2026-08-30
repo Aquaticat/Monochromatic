@@ -100,6 +100,25 @@ export function runSlotLocalControls(): void {
   }
   if (!sourceEchoRefused)
     throw new Error('immutable shell destination-script control failed');
+  for (const codePoint of [0x2EE5D, 0x2FA1F,]) {
+    let rangeBoundaryRefused = false;
+    try {
+      validateSlotCandidate({
+        shell,
+        response: {
+          slots: { ...response.slots, [firstKey]: String.fromCodePoint(codePoint,), },
+        },
+        sourceText: SOURCE,
+        archiveText: ARCHIVE,
+        sourcePictures: photoReferences({ text: SOURCE, }),
+      },);
+    }
+    catch (error) {
+      rangeBoundaryRefused = error instanceof DestinationScriptError;
+    }
+    if (!rangeBoundaryRefused)
+      throw new Error(`immutable shell destination-script range control failed at ${String(codePoint,)}`);
+  }
   const injected: SlotDocumentResponse = {
     slots: { ...response.slots, [firstKey]: '] {unsafe} `marker`', },
   };
