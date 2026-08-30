@@ -106,8 +106,14 @@ Replacement scheduler must dispatch dependency-independent nodes concurrently
 up to dated live-measured per-provider and per-model limits.
 Dependency edges still serialize work whose prompt consumes prior output.
 Concurrency and request-rate limits are separate constraints and must be measured separately.
-Synthetic and Hyper concurrency must be re-probed before production values change;
-configuration folklore is not evidence.
+Production uses 5 Synthetic slots per active model
+and can expose 20 aggregate slots across the four-model roster.
+A width-10 gpt-oss arm returned 3 HTTP 429 responses,
+so model size does not justify a larger setting.
+Hyper has no local concurrency ceiling;
+a live width-64 arm completed 64 of 64 structured calls.
+Its 1,000 requests-per-hour account limit remains a separate rate budget.
+See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
 A2's 432-second intentionally serial run measures its implementation,
 not provider concurrency capacity.
 Measured arms may explicitly require both providers.

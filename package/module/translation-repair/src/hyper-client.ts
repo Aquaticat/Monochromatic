@@ -69,24 +69,24 @@ import {
 // wrong is silent rather than loud.
 
 /**
- * Concurrent requests granted to each model, measured live on 2026-08-24.
+ * Local representation of Hyper's absence of per-model concurrency ceiling.
  *
- * THIS PROVIDER DOES NOT SERIALISE PER MODEL. Bursts of 4, 8, 16 and 32
- * simultaneous calls to `minimax-m3` all returned schema-valid answers with
- * zero refusals, and each burst finished in about the time ONE call takes: 32
- * calls in 2482ms against a single-call band of 994 to 1641ms over 5 runs.
- * Serialised, those 32 would have taken some 40 seconds. The other provider's
- * bound of one comes from its published rule about subscribed packs and does
- * not transfer here; inheriting it would have cost a factor of 32 in exactly
- * the capacity this provider was added to supply.
+ * Live probes on 2026-08-24 completed widths through 32 on `minimax-m3`.
+ * A second structured probe on 2026-08-30 completed 64 of 64 calls to
+ * `deepseek-v4-flash-0731` in 2,147 ms without retry or non-200 status.
+ * The owner confirmed Hyper has no concurrency ceiling and separately limits
+ * this account to 1,000 requests per hour.
  *
- * HELD AT 8 RATHER THAN AT THE 32 PROVEN, because the probe sent a two-line
- * prompt and a corpus call carries orders of magnitude more. What was measured
- * is that the provider accepts the width; what was not measured is 32 large
- * bodies streaming at once through our own drain and guards. Eight is eight
- * times the inherited bound and a quarter of the proven ceiling.
+ * `p-limit` explicitly accepts positive infinity as unbounded concurrency.
+ * Keeping that value inside injected limiter seam preserves tests that set
+ * finite widths without inventing provider serialization in normal operation.
+ *
+ * @example
+ * ```ts
+ * const width = HYPER_PER_MODEL_CONCURRENCY;
+ * ```
  */
-const MEASURED_PER_MODEL_CONCURRENCY = 8;
+export const HYPER_PER_MODEL_CONCURRENCY = Number.POSITIVE_INFINITY;
 
 /**
  * Logger root for this package's model-facing shell.
@@ -180,9 +180,8 @@ function wholeMessage(attemptReply: TransportReply,): void {
  *
  * @param creditsUrl - balance endpoint, overridable for tests
  *
- * @param perModelConcurrency - concurrent requests granted to each model;
- * this provider was measured not to serialise per model, so the default is
- * eight rather than the other provider's one
+ * @param perModelConcurrency - optional local test or caller bound;
+ * normal operation remains unbounded because provider has no concurrency ceiling
  *
  * @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
  *
@@ -199,7 +198,7 @@ export function createHyperClient(
     transport = fetchTransport,
     messagesUrl = HYPER_MESSAGES_URL,
     creditsUrl = HYPER_CREDITS_URL,
-    perModelConcurrency = MEASURED_PER_MODEL_CONCURRENCY,
+    perModelConcurrency = HYPER_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
   }: {
     readonly apiKey: string;

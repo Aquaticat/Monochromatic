@@ -74,12 +74,21 @@ Owner's policy, to be driven by the quota readers:
 - Synthetic out of quota on EITHER the 5-hour limit or the weekly limit sends work to Hyper.
 - Both providers dry throws an error saying so, ending the run.
 
-Synthetic's per-model concurrency is 1 in production.
-`createSyntheticClient` defaults `perModelConcurrency` to 1 in `synthetic-client.ts`,
-and `run-config.ts` constructs the client without overriding it.
-The provider serves one request per model per subscribed pack and queues the excess server-side.
-So the overflow rule is concrete: one in-flight call per model on Synthetic,
-and every concurrent call beyond that for the same model goes to Hyper.
+Synthetic production concurrency is 5 per active model.
+`SYNTHETIC_PER_MODEL_CONCURRENCY` is shared by direct client and router defaults,
+so overflow begins only after those measured slots or when quota requires it.
+Two zero-retry aggregate width-20 arms completed with 5 calls per model
+and no non-200 statuses.
+A gpt-oss width-10 arm returned 3 HTTP 429 responses,
+so model size does not justify a larger setting.
+
+Hyper has no provider concurrency ceiling by owner confirmation.
+Production therefore leaves its local per-model concurrency unbounded.
+A width-64 arm completed 64 of 64 concurrent structured calls on 2026-08-30,
+corroborating removal of artificial local cap.
+Its owner-supplied 1,000 requests-per-hour account limit is a separate rate budget.
+Full method and caveats are in
+`doc/troubleshooting/translation-repair-provider-concurrency.md`.
 
 ### Quota sources
 

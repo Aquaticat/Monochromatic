@@ -338,14 +338,21 @@ export type TranslationSpecification = {
 1.  Ask specification author for typed source specification.
 2.  Deterministically admit valid units and preserve raw source spans for any unsupported unit.
 3.  Ask renderer for complete document plus unit-to-span realization map.
-4.  Ask fidelity and omission producer for complete revised document and updated map.
-5.  Ask identity,
+4.  In parallel,
+    ask fidelity and omission producer,
+    identity,
     structure,
-    and media producer for complete revised document and updated map.
-6.  Ask expression and document-relations producer for complete revised document and updated map.
-7.  After each document response,
-    adopt only exact specification-linked edit transaction that passes deterministic obligations.
-8.  Publish final surviving candidate atomically.
+    and media producer,
+    and expression and document-relations producer
+    for complete revised document and exact specification-linked transaction against same renderer base.
+    If renderer was unusable,
+    each receives explicit absence marker and can establish first candidate from source and specification.
+5.  Validate all transactions independently.
+    When base exists,
+    merge non-conflicting valid transactions in fixed responsibility order.
+    When base is absent,
+    adopt first valid complete candidate in that same fixed order.
+6.  Publish final surviving candidate atomically.
 
 Provider payload ceiling is 5.
 Specification-author failure leaves raw source envelope as renderer input and cannot block document production.
@@ -430,10 +437,14 @@ export type AuthorshipPlan = {
     preserve disagreements,
     and fit one bounded editorial packet.
     Missing or unusable brief contributes nothing and cannot block authorship.
-4.  Ask primary document editor to produce final whole document once.
-5.  If primary response is unavailable or fails deterministic obligations,
-    ask one statically named fallback editor with same packet and responsibility.
-6.  Verify deterministic integrity and publish first adopted whole document.
+4.  In parallel,
+    ask primary and statically named fallback document editors
+    to produce final whole document once from exact same immutable packet.
+5.  Validate both responses independently.
+    Adopt primary when usable;
+    otherwise adopt fallback.
+    Fallback completion time never overrides fixed priority.
+6.  Verify deterministic integrity and publish adopted whole document.
 
 Provider payload ceiling is 5.
 No candidate selection,
@@ -459,6 +470,9 @@ and publication bytes.
 - Attacks root cause most directly:
   quality information arrives before text is created.
 - Payload ceiling is 5 including one fixed editor fallback.
+- Two provider waves expose all independent work:
+  three briefs,
+  then two fixed-priority editors.
 - No postdraft panel can manufacture more work.
 - One adopted editor controls complete document voice.
 - Simplest call graph,
@@ -474,6 +488,28 @@ or meaning defects before output exists.
 - Realization map can be confidently wrong.
 - Mechanical integrity cannot prove finished prose quality.
 - Risk is shifted to offline validation rather than reduced inside run.
+
+## Measured concurrency implications
+
+Production uses 5 Synthetic slots per active model
+and exposes 20 aggregate Synthetic slots across the current roster.
+Hyper has no provider concurrency ceiling,
+with width 64 corroborated on live request shape.
+The Hyper account's 1,000 requests-per-hour limit is separate from simultaneous in-flight work.
+See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
+
+Candidate C can execute its five payloads in two dependency waves.
+Candidate B can execute its five payloads in three waves:
+specification,
+renderer,
+then three independent specialist transactions.
+Static fixed priority preserves deterministic adoption regardless of response order.
+No cross-provider response is required,
+and one model never receives same canonical substantive prompt twice.
+
+These are scheduling consequences,
+not quality evidence.
+Corpus-sized generation and complete-page reading remain prototype acceptance requirements.
 
 ## Finite work and guaranteed output
 

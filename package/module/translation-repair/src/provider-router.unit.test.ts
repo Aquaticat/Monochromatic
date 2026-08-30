@@ -56,6 +56,11 @@ const SIGNAL = new AbortController().signal;
 const SLOT_HOLD_MS = 50;
 
 /**
+ * Production Synthetic slots measured per active model.
+ */
+const EXPECTED_SYNTHETIC_SLOTS = 5;
+
+/**
  * Builds a pair of stub providers recording which took each call.
  *
  * @param syntheticStatus - status the first provider refuses with, zero to answer
@@ -518,6 +523,53 @@ await describe({
         // The second call finds the one slot busy and goes elsewhere rather
         // than queueing behind it.
         expect(called.toSorted(),).toEqual(['hyper', 'synthetic',],);
+      },
+    },),
+
+    it({
+      name: 'uses five Synthetic slots before default routing overflows to Hyper',
+      fn: async () => {
+        /** Providers asked, in call order. */
+        const called: ProviderName[] = [];
+        /** First provider holding every admitted slot. */
+        const synthetic = {
+          chatText: async function chatText() {
+            called.push('synthetic',);
+            await wait(SLOT_HOLD_MS,);
+            return { text: '{"spot":"windowsill"}', };
+          },
+        };
+        /** Overflow provider answering without a local concurrency ceiling. */
+        const hyper = {
+          chatText: async function chatText() {
+            called.push('hyper',);
+            return { text: '{"spot":"windowsill"}', };
+          },
+        };
+        /** Budget view with money on both sides. */
+        const { budgets, } = stubBudgets({},);
+        /** Router using production default slot count. */
+        const client = createRoutingClient({ synthetic, hyper, budgets, },);
+        /** One more concurrent call than Synthetic has measured slots. */
+        const calls = Array.from(
+          { length: EXPECTED_SYNTHETIC_SLOTS + 1, },
+          function callModel() {
+            return client.chatText({
+              modelId: 'hf:moonshotai/Kimi-K3',
+              messages: MESSAGES,
+              signal: SIGNAL,
+            },);
+          },
+        );
+
+        await Promise.all(calls,);
+
+        expect(called.filter(function syntheticCall(provider,) {
+          return provider === 'synthetic';
+        },),).toHaveLength(EXPECTED_SYNTHETIC_SLOTS,);
+        expect(called.filter(function hyperCall(provider,) {
+          return provider === 'hyper';
+        },),).toHaveLength(1,);
       },
     },),
 

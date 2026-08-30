@@ -205,7 +205,10 @@ export {
   prepareBenchmarkEntry,
   type PreparedEntry,
 } from './prepare-entry.ts';
-export { createSyntheticClient, } from './synthetic-client.ts';
+export {
+  createSyntheticClient,
+  SYNTHETIC_PER_MODEL_CONCURRENCY,
+} from './synthetic-client.ts';
 export {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,

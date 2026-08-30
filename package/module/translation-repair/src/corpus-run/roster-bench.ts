@@ -345,7 +345,7 @@ async function main(): Promise<void> {
     },);
   },);
   for (const run of runs) {
-    /* oxlint-disable no-await-in-loop -- sequential by design: each stage call already fans out one call per model, and aggregate concurrency beyond one stream per model collapses throughput on this plan; the report write is ordered with them so a killed bench keeps every row it bought */
+    /* oxlint-disable no-await-in-loop -- sequential by design: each benchmark row is written before the next starts so a killed bench keeps every complete purchase; provider capacity is not the reason */
     /**
      * What this slice decided at this width.
      */

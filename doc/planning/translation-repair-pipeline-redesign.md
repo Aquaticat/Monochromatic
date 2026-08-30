@@ -235,7 +235,9 @@ Candidate replacement should make these responsibilities explicit:
     media evidence,
     and archive-supported context.
 2.  Give one accountable document editor whole specification and whole archive context.
-3.  Execute one finite sequence of role-partitioned whole-document producers.
+3.  Execute one finite dependency graph of role-partitioned whole-document producers.
+    Dispatch ready independent nodes concurrently;
+    preserve order only when a prompt consumes another node's output.
     Roles correct concrete defect classes rather than assign score or emit blocking opinion.
 4.  Make each specialist a bounded producer of one complete responsibility-specific revision.
     Unusable specialist output has no effect and cannot withhold prior complete candidate.
@@ -248,6 +250,31 @@ Candidate replacement should make these responsibilities explicit:
 
 This shape is only initial design target.
 Design-it-twice comparison must include alternatives with different seam placement.
+
+## Measured scheduler capacity
+
+Live short structured probes on 2026-08-30 established these planning bounds:
+
+- Synthetic: 5 in-flight calls per active model and 20 across four-model roster
+- Hyper: no provider concurrency ceiling,
+  with width 64 corroborated on live request shape
+- Hyper request rate: owner-supplied account limit of 1,000 requests per hour,
+  separate from in-flight concurrency
+
+Synthetic aggregate width 20 completed twice without retry or non-200 status.
+Raising only gpt-oss to width 10 produced 3 HTTP 429 responses,
+so scheduler design must not infer slots from model size.
+Corpus-sized generation still requires user-boundary validation.
+See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
+
+Concurrency changes graph waves,
+not semantic dependencies.
+Candidate C's three preparation briefs belong in one wave.
+Its primary and fallback editors can also start together from the same immutable packet,
+with fixed primary priority and fallback adoption only when primary is unusable.
+Candidate B should expose independent specialist transactions in one wave against the same adopted base,
+then merge them deterministically.
+No design may add panel work merely to occupy provider slots.
 
 ## Questions design must answer
 

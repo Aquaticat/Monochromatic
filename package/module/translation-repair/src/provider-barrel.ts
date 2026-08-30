@@ -168,6 +168,7 @@ export {
 } from './hyper-catalog.ts';
 export {
   createHyperClient,
+  HYPER_PER_MODEL_CONCURRENCY,
   type HyperClient,
   ModelNotServedError,
 } from './hyper-client.ts';

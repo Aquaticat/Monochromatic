@@ -22,6 +22,7 @@ import type {
   ProviderName,
 } from './provider-budget.ts';
 import type { RosterModelId, } from './roster-id.ts';
+import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
 import {
   reachOf,
   visionReachOf,
@@ -239,7 +240,7 @@ export function createRoutingClient(
     synthetic,
     hyper,
     budgets,
-    syntheticSlotsPerModel = 1,
+    syntheticSlotsPerModel = SYNTHETIC_PER_MODEL_CONCURRENCY,
   }: {
     readonly synthetic: Pick<SyntheticClient, 'chatText'>;
     readonly hyper: Pick<HyperClient, 'chatText'>;

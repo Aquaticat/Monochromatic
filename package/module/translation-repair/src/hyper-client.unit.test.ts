@@ -18,6 +18,7 @@ import {
   HYPER_API_VERSION,
   HYPER_CREDITS_URL,
   HYPER_MESSAGES_URL,
+  HYPER_PER_MODEL_CONCURRENCY,
   isJsonRecord,
   MalformedCompletionError,
   ModelNotServedError,
@@ -35,10 +36,15 @@ const SLOW_TRANSPORT_MS = 30;
 /**
  * Calls fired at one model to show they are not serialised.
  *
- * Well under the width measured live, so this asserts overlap rather than the
- * ceiling: the ceiling belongs to the provider and cannot be replayed.
+ * One beyond width measured live,
+ * proving measured arm did not become artificial local ceiling.
  */
-const OVERLAPPING_CALLS = 4;
+const OVERLAPPING_CALLS = 65;
+
+/**
+ * Injected finite width proving test seam remains functional.
+ */
+const FINITE_TEST_WIDTH = 2;
 
 /**
  * Single user message reused across exchanges.
@@ -713,6 +719,8 @@ await describe({
           };
         }
 
+        expect(HYPER_PER_MODEL_CONCURRENCY,).toBe(Number.POSITIVE_INFINITY,);
+
         /** Client under test on its own default width. */
         const client = createHyperClient({
           apiKey: 'test-key',
@@ -730,11 +738,63 @@ await describe({
           },
         ),);
 
-        // MEASURED LIVE on 2026-08-24: bursts of 4, 8, 16 and 32 simultaneous
-        // calls to one model all returned answers with zero refusals, each
-        // burst finishing in about the time one call takes. Inheriting the
-        // other provider's bound of one would serialise these.
+        // OWNER-CONFIRMED UNBOUNDED, with width 64 measured live on
+        // 2026-08-30. One call beyond that measured arm proves the production
+        // default does not turn the observed width into an artificial ceiling.
         expect(widest,).toBe(OVERLAPPING_CALLS,);
+      },
+    },),
+
+    it({
+      name: 'honors injected finite Hyper width without changing production default',
+      fn: async () => {
+        /** Gate holding transport calls until overlap is observed. */
+        const gate = Promise.withResolvers<void>();
+        /** Calls inside transport now. */
+        let inFlight = 0;
+        /** Widest observed transport overlap. */
+        let widest = 0;
+
+        /**
+         * Transport whose gate exposes limiter width.
+         *
+         * @returns Recorded completion after gate opens
+         *
+         * @example
+         * ```ts
+         * await transport();
+         * ```
+         */
+        async function transport(): Promise<TransportReply> {
+          inFlight += 1;
+          widest = Math.max(widest, inFlight,);
+          await gate.promise;
+          inFlight -= 1;
+          return { status: 200, bodyText: TOOL_CALL_BODY, };
+        }
+
+        /** Client with deliberately finite injected width. */
+        const client = createHyperClient({
+          apiKey: 'test-key',
+          transport,
+          perModelConcurrency: FINITE_TEST_WIDTH,
+        },);
+        /** One more call than injected width. */
+        const calls = Array.from(
+          { length: FINITE_TEST_WIDTH + 1, },
+          function callModel() {
+            return client.chatText({
+              modelId: 'minimax-m3',
+              messages: MESSAGES,
+              signal: new AbortController().signal,
+            },);
+          },
+        );
+        await wait(SLOW_TRANSPORT_MS,);
+
+        expect(widest,).toBe(FINITE_TEST_WIDTH,);
+        gate.resolve();
+        await Promise.all(calls,);
       },
     },),
 

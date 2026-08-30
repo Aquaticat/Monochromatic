@@ -510,7 +510,7 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * Shared client; per-model concurrency defaults to one.
+   * Shared client using measured production provider concurrency.
    */
   const client = createRunClient({
     promptPayloadDir: join(

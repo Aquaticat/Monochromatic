@@ -182,9 +182,9 @@ export async function readPastRefusal(
       `${modelId} declined ${assetName}, asking again (${String(ask,)} of ${String(REFUSAL_ASK_LIMIT,)})`,
     );
 
-    // SEQUENTIAL ON PURPOSE. Asking the same model concurrently would queue
-    // behind its own per-model limiter and spend every ask even after one
-    // succeeds, which is the opposite of what the limit is for.
+    // SEQUENTIAL ON PURPOSE. Each later perspective exists only when prior
+    // response was refusal-shaped. Concurrent asks would ignore dependency
+    // and spend every perspective even after one succeeds.
     /**
      * Distinct visual responsibility for this retry.
      */

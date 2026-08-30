@@ -22,6 +22,7 @@ import {
   stripThinkBlock,
   SyntheticHttpError,
   SyntheticModelNotServedError,
+  SYNTHETIC_PER_MODEL_CONCURRENCY,
   SyntheticRequestTooLargeError,
   type TransportExchange,
   type TransportReply,
@@ -31,6 +32,11 @@ import {
  * Milliseconds granted for queued microtasks and limiter slots to settle.
  */
 const SETTLE_MS = 10;
+
+/**
+ * Production slots measured for every active Synthetic model.
+ */
+const EXPECTED_DEFAULT_WIDTH = 5;
 
 /**
  * Delay of the deliberately slow test transport.
@@ -871,7 +877,7 @@ await describe({
     },),
 
     it({
-      name: 'serializes same-model calls and parallelizes cross-model calls',
+      name: 'grants five default same-model slots and parallelizes cross-model calls',
       fn: async () => {
         /** Gate holding every transport call open until released. */
         const gate = Promise.withResolvers<void>();
@@ -899,41 +905,43 @@ await describe({
           await gate.promise;
           return { status: 200, bodyText: COMPLETION_BODY, };
         }
+        expect(SYNTHETIC_PER_MODEL_CONCURRENCY,).toBe(EXPECTED_DEFAULT_WIDTH,);
+
         /** Client under test. */
         const client = createSyntheticClient({
           apiKey: 'test-key',
           transport: gatedTransport,
         },);
 
-        /** Two same-model calls plus one cross-model call, all in flight. */
-        const inFlight = [
-          client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
-            messages: MESSAGES,
-            signal: new AbortController().signal,
-          },),
-          client.chatText({
-            modelId: 'hf:openai/gpt-oss-120b',
-            messages: MESSAGES,
-            signal: new AbortController().signal,
-          },),
-          client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
-            messages: MESSAGES,
-            signal: new AbortController().signal,
-          },),
-        ];
+        /** One more same-model call than measured slots permit. */
+        const sameModelCalls = Array.from(
+          { length: EXPECTED_DEFAULT_WIDTH + 1, },
+          function callModel() {
+            return client.chatText({
+              modelId: 'hf:openai/gpt-oss-120b',
+              messages: MESSAGES,
+              signal: new AbortController().signal,
+            },);
+          },
+        );
+        /** Cross-model call proving slots are keyed by model identity. */
+        const crossModelCall = client.chatText({
+          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+        },);
         await wait(SETTLE_MS,);
 
-        // First Flash call and the GLM-5.2 call run; second Flash call is queued.
-        expect(entered,).toEqual([
-          'hf:openai/gpt-oss-120b',
-          'hf:zai-org/GLM-5.3-Flash',
-        ],);
+        expect(entered.filter(function gpt(id,) {
+          return id === 'hf:openai/gpt-oss-120b';
+        },),).toHaveLength(EXPECTED_DEFAULT_WIDTH,);
+        expect(entered.filter(function glm(id,) {
+          return id === 'hf:zai-org/GLM-5.3-Flash';
+        },),).toHaveLength(1,);
 
         gate.resolve();
-        await Promise.all(inFlight,);
-        expect(entered,).toHaveLength(3,);
+        await Promise.all([...sameModelCalls, crossModelCall,],);
+        expect(entered,).toHaveLength(EXPECTED_DEFAULT_WIDTH + 2,);
       },
     },),
 
