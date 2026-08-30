@@ -25,6 +25,33 @@ extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
+[tasks."format:realization"]
+description = "Auto-fix Candidate G prototype files with package-local type-aware Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
+  '--type-aware',
+  '--fix',
+  'src/prototype-json-member-guard.ts',
+  'src/prototype-realization.ts',
+  'src/prototype-realization-admission.ts',
+  'src/prototype-realization-author.ts',
+  'src/prototype-realization-coordinate.ts',
+  'src/prototype-realization-ledger-grammar.ts',
+  'src/prototype-realization-ledger-validation.ts',
+  'src/prototype-realization-ledger.ts',
+  'src/prototype-realization-manifest.ts',
+  'src/prototype-realization-obligation.ts',
+  'src/prototype-realization-model.ts',
+  'src/prototype-realization-selection.ts',
+  'src/prototype-realization-verifier-admission.ts',
+  'src/prototype-realization-verifier-schema.ts',
+  'src/prototype-realization-verifier.ts',
+  'src/prototype-realization.unit.test.ts',
+])
+"""
+
 [tasks."lint:types"]
 extends = "lint:types"
 

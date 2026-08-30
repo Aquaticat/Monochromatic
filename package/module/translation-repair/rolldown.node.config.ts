@@ -51,6 +51,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-hyper-roster-expansion": "./src/corpus-run/prototype-hyper-roster-expansion.ts",
     "prototype-immutable-shell": "./src/corpus-run/prototype-immutable-shell.ts",
     "prototype-immutable-shell-controls": "./src/corpus-run/prototype-immutable-shell-controls.ts",
+    "prototype-realization": "./src/prototype-realization.ts",
     "prototype-serial-controls": "./src/corpus-run/prototype-serial-controls.ts",
     "prototype-serial-producers": "./src/corpus-run/prototype-serial-producers.ts",
     "prototype-specification-compiler": "./src/corpus-run/prototype-specification-compiler.ts",
