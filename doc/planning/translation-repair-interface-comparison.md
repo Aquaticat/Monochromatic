@@ -1302,8 +1302,19 @@ Full scripted graph fixes ceiling at 10 payloads across 4 waves and proved:
   local controls,
   and complete suite passed with 871 suite verdicts and no failures
 
-Candidate E1 double-prime remains unselected until full-graph GFP,
-one-provider evidence,
+Restored GFP mutations separately proved located-only resolver change,
+nonempty resolver change,
+2-vote post floor,
+strict-subset new-key exclusion,
+empty-ballot abstention,
+and hidden-priority refusal.
+Earlier admission mutations proved structural slot membership,
+source and candidate anchor binding,
+duplicate pruning,
+and author-selection vote floor.
+Every mutation failed named control and restored suite again passed 871 verdicts with no failures.
+
+Candidate E1 double-prime remains unselected until one-provider evidence,
 fresh Carena publication,
 and complete-page reading pass.
 
