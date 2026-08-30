@@ -1,7 +1,8 @@
 # Candidate E Hyper roster expansion vet report
 
-- Status: targeted validation pending
-- Lifecycle phase: serious alternative
+- Status: complete,
+  no recommendation
+- Lifecycle phase: rejected
 - Subject: Candidate E Hyper roster expansion
 - Scope: select out-of-roster Charm Hyper model for distinct complete author and quote-bound auditor seat
 - Started: 2026-08-30
@@ -17,18 +18,25 @@
 
 ## Context
 
-Candidate E needs at least 2 complete author candidates from distinct model identities and 2 agreeing auditor identities.
+Candidate E needs at least 2 complete author candidates from distinct model identities
+and 2 agreeing auditor identities.
 Hyper-only E1 double-prime produced one complete Qwen author,
 while Kimi author exhausted output and GLM had no Hyper mapping.
 Complete-page reading rejected surviving Qwen baseline.
 
-Current-roster reserve evaluation found MiniMax M3 could audit but did not complete strict author JSON within 32,000-token request.
+Current-roster reserve evaluation found MiniMax M3 could audit
+but did not complete strict author JSON within 32,000-token request.
 Current active Hyper roster therefore has no acceptable third model under tested contract.
 Provider live catalog exposes additional image-capable models outside project roster.
-This report evaluates those rows equally before deciding whether Candidate E can retain architecture through explicit roster expansion.
+This report evaluates those rows equally
+before deciding whether Candidate E can retain architecture through explicit roster expansion.
 
-Evaluation does not adopt model or change production roster.
-Product mutation and decision record remain behind separate adoption boundary.
+Evaluation did not adopt model or change production roster.
+All 5 equal-depth Qwen candidates completed author and auditor contracts,
+but complete-page review rejected every author.
+No candidate reached finalist status,
+so no weighted score or roster recommendation is valid.
+Candidate E triple-prime cannot obtain required reserve author and auditor under current scope.
 
 ## Hard constraints
 
@@ -157,7 +165,8 @@ One expansion round ran exactly:
 Expansion found no new candidate id.
 It established model-mode and forced-tool compatibility as Kimi screening gate.
 Schedule is now permanently frozen.
-Discovery terminal result is saturated with 5 screening survivors after 2 Kimi integration exits and owner-excluded Qwen Max.
+Discovery terminal result is saturated with 5 screening survivors
+after 2 Kimi integration exits and owner-excluded Qwen Max.
 
 ## Candidate ledger
 
@@ -179,7 +188,8 @@ Discovery terminal result is saturated with 5 screening survivors after 2 Kimi i
   consistent with default-thinking budget risk but not proof about K2.6.
 - Residual uncertainty: Hyper could translate model-specific tool semantics differently from direct Kimi API;
   no such behavior is documented.
-- Screening: exits because supported current integration cannot issue required strict forced-tool contract without violating owner no-thinking-knob policy.
+- Screening: exits because supported current integration cannot issue required strict forced-tool contract
+  without violating owner no-thinking-knob policy.
 
 ### `kimi-k2.7-code`
 
@@ -210,7 +220,11 @@ Discovery terminal result is saturated with 5 screening survivors after 2 Kimi i
   structured output,
   1M context,
   and 65K direct-service output.
-- Screening: serious alternative pending equal-depth Hyper runtime gates.
+- Runtime: author and auditor both schema-valid.
+- Page review: rejects malformed opening,
+  missing temporal subject,
+  and footnote grammar.
+- Lifecycle: rejected.
 
 ### `qwen3.6-plus`
 
@@ -223,7 +237,10 @@ Discovery terminal result is saturated with 5 screening survivors after 2 Kimi i
   structured output,
   1M context,
   and 65K direct-service output.
-- Screening: serious alternative pending equal-depth Hyper runtime gates.
+- Runtime: author and auditor both schema-valid.
+- Page review: rejects semantic truncation across multiple populated slots;
+  fixed-key presence concealed missing prose.
+- Lifecycle: rejected.
 
 ### `qwen3.7-flash`
 
@@ -238,7 +255,11 @@ Discovery terminal result is saturated with 5 screening survivors after 2 Kimi i
   structured output,
   1M context,
   and 131K direct-service output.
-- Screening: serious alternative pending equal-depth Hyper runtime gates.
+- Runtime: author and auditor both schema-valid.
+- Page review: rejects archive-regurgitated grammar,
+  actor ambiguity,
+  and footnote provenance omission.
+- Lifecycle: rejected.
 
 ### `qwen3.7-plus`
 
@@ -253,7 +274,12 @@ Discovery terminal result is saturated with 5 screening survivors after 2 Kimi i
   structured output,
   1M context,
   and 131K direct-service output.
-- Screening: serious alternative pending equal-depth Hyper runtime gates.
+- Runtime: author and auditor both schema-valid.
+- Page review: rejects grammar,
+  actor ambiguity,
+  source-language carryover,
+  and malformed footnote prose.
+- Lifecycle: rejected.
 
 ### `qwen3.8-flash`
 
@@ -268,7 +294,14 @@ Discovery terminal result is saturated with 5 screening survivors after 2 Kimi i
   1M context,
   131K direct-service output,
   and both OpenAI and Anthropic API compatibility.
-- Screening: serious alternative pending equal-depth Hyper runtime gates.
+- Runtime: author and auditor both schema-valid.
+- Page review: strongest complete author,
+  but rejects unsupported actor gender,
+  source-language calques,
+  and wrong-meaning wording in sensitive record acquisition.
+- Auditor had strongest relative D1 coverage,
+  but usable audit cannot compensate for failed author hard gate.
+- Lifecycle: rejected.
 
 ### `qwen3.8-max`
 
@@ -282,8 +315,9 @@ Discovery terminal result is saturated with 5 screening survivors after 2 Kimi i
 Charm Hyper is same incumbent service for every candidate.
 Historical and operational domains were inspected in prior provider decision and current-roster report.
 They are inherited common-mode risks and cannot order model ids.
-Before recommendation,
-report will recheck current terms,
+No model survived model hard gates,
+so recommendation-stage provider recheck did not activate.
+Existing provider decision remains controlling for terms,
 pricing,
 status,
 privacy,
@@ -296,7 +330,8 @@ export,
 deprecation,
 geography,
 ownership,
-and business-continuity sources for material change.
+and business continuity.
+Current wet preflight and live model inventory were remeasured for this run.
 
 No candidate introduces local executable,
 new source artifact,
@@ -324,42 +359,45 @@ Sensitivity varies every defaultable weight from 1 through 5,
 every medium or low-confidence rating by 1,
 and every low-signal range endpoint.
 
-## Planned execution manifest
+## Executed manifest
 
-No candidate command has run.
-Validation will use one canonical complete-author prompt and one canonical quote-bound-auditor prompt per surviving model.
-Each model receives at most one payload per substantive prompt.
-Every candidate receives identical pinned source,
+Prototype tooling commit `3ac43461e` sent one canonical complete-author prompt
+and one canonical quote-bound-auditor prompt per surviving model.
+Each model received one payload per substantive prompt.
+Every candidate received identical pinned source,
 archive,
 immutable shell,
 retained comparison candidates,
 and page-referenced `photo1.webp`.
 
-Maximum planned payloads are 10:
-2 independent payloads for each of 5 screening survivors,
+Manifest digest was
+`7750902b33c3845d2d8d4b4ea007c778ecfa1997202d46c42b6ed09add406b11`.
+It bound Hyper Messages endpoint,
+5 exact model ids,
+32,000-token project ceiling,
+10-payload ceiling,
 zero retries,
 and one dependency wave.
-Calls may run concurrently because they are dependency-independent.
-Provider rate budget and local concurrency remain separate controls.
+Calls ran concurrently because they were dependency-independent.
+Provider rate budget and local concurrency remained separate controls.
 
-Execution tooling will live only on prototype branch and private scratch output.
-It will not add production catalog rows or adopt candidates.
-Expected endpoint is existing Hyper Messages API.
-Expected private writes are manifest,
-prompt-keyed replies,
-node records,
-admission records,
-strictly compiled candidates,
+Run emitted 10 completed node records,
+10 durable prompt-keyed payloads,
+5 strict author responses,
+5 strict audit responses,
+5 compiled candidates,
 and result summary.
-No production corpus or main worktree output changes.
+No production corpus,
+roster,
+or main-worktree output changed.
 
-Stop conditions per node are provider error,
+Every node ended by completion;
+none stopped on provider error,
 caller abort,
-strict schema mismatch,
-deterministic candidate guard rejection,
-or completion.
-Stopped or schema-invalid response is operational evidence only.
-No later model or retry is generated from response.
+schema mismatch,
+guard rejection,
+or 360,000-millisecond deadline.
+No response generated retry or new work.
 
 Interpretation is frozen before dispatch:
 
@@ -384,8 +422,7 @@ Interpretation is frozen before dispatch:
   context,
   output,
   and reasoning metadata.
-- Status: pass for enumerated row presence;
-  other hard gates pending.
+- Status: pass for enumerated row presence.
 - Primary source:
   `https://hyper.charm.land/v1/models`,
   accessed 2026-08-30.
@@ -408,7 +445,8 @@ Interpretation is frozen before dispatch:
   K2.7 cannot disable thinking;
   both permit only automatic or no tool choice while thinking.
 - Consumer boundary:
-  `package/module/translation-repair/src/anthropic-request.ts` forces named answer tool and records owner instruction never to set thinking parameters.
+  `package/module/translation-repair/src/anthropic-request.ts` forces named answer tool
+  and records owner instruction never to set thinking parameters.
 - Outcome: both exit without provider spend.
 
 ### Qwen hosted capability
@@ -419,8 +457,7 @@ Interpretation is frozen before dispatch:
 - Gate: vision,
   function or structured output,
   and sufficient provider envelope.
-- Status: pass documentation screening;
-  Hyper runtime pending.
+- Status: pass documentation screening and Hyper runtime envelope.
 - Primary sources:
   exact QwenCloud model pages for Qwen3.6 and Qwen3.7,
   plus `https://www.qianwenai.com/models/qwen3.8-flash`,
@@ -429,27 +466,192 @@ Interpretation is frozen before dispatch:
   model pages expose function calling and structured output.
 - Counterevidence: first-party direct-service ceilings differ from Hyper rows;
   Hyper live machine-readable row controls actual request cap.
-- Outcome: 5 finalists require identical consumer-boundary validation.
+- Outcome: all 5 advanced to equal-depth consumer-boundary validation.
+
+### Equal-depth runtime
+
+- Candidates: 5 Qwen alternatives.
+- Gate: exact Hyper model routing,
+  forced-tool schema,
+  image carriage,
+  output capacity,
+  zero retries,
+  and bounded completion.
+- Status: pass.
+- Evidence: private manifest,
+  prompt payloads,
+  node records,
+  responses,
+  admissions,
+  candidates,
+  result,
+  and process log.
+- All 10 arms finished with `tool_use`;
+  all 10 nodes recorded `completed`;
+  all 10 prompt keys were distinct.
+- Manifest model order was Qwen3.6 Flash,
+  Qwen3.6 Plus,
+  Qwen3.7 Flash,
+  Qwen3.7 Plus,
+  then Qwen3.8 Flash.
+- Author completion tokens in that named order were 18,594,
+  7,418,
+  20,822,
+  8,285,
+  and 15,493.
+- Auditor completion tokens in that named order were 14,493,
+  1,175,
+  10,476,
+  4,197,
+  and 27,922.
+- Longest arm was Qwen3.8 Flash audit at 262,037 milliseconds,
+  below frozen 360,000-millisecond deadline.
+- Entire dependency wave completed in 262,253 milliseconds.
+- Hyper balance moved from 7,052 to 7,046;
+  measured debit was 6 balance units.
+- Outcome: transport and strict structural envelope did not distinguish a winner.
+
+### Complete-page author review
+
+- Gate: publication-ready fidelity,
+  identity preservation,
+  completeness,
+  English,
+  archive use,
+  structure,
+  media,
+  and contributor authority.
+- Status: fail for every candidate.
+- Method: one analyst read full source,
+  full archive,
+  page-referenced image,
+  and every compiled candidate.
+- Qwen3.6 Flash failed located opening,
+  temporal-completeness,
+  and footnote grammar checks.
+- Qwen3.6 Plus populated every key but semantically truncated at least 4 long slots.
+  Two affected slots held 62 and 55 characters where every peer held at least 1,426 and 2,003.
+- Qwen3.7 Flash reproduced archive wording and inherited archive defects.
+  Its 1,426-character and 2,003-character slots were byte-identical to archive spans and to Qwen3.6 Flash,
+  despite distinct prompt keys and live node durations.
+  This is direct archive-regurgitation and same-family correlation evidence.
+- Qwen3.7 Plus remained non-publication-ready on grammar,
+  actor reference,
+  carryover,
+  and footnote prose.
+- Qwen3.8 Flash was strongest and complete,
+  but failed identity authority by assigning unsupported gender to an actor,
+  plus located fidelity and English defects.
+- Exact candidate anchors are retained only in private quality-review artifact.
+- Structural shell,
+  `photo1.webp`,
+  front matter,
+  contributor relation,
+  links,
+  ordering,
+  and publication syntax remained intact across candidates.
+- Outcome: no candidate passed author hard gate.
+
+### Quote-bound auditor review
+
+- Gate: concrete located defect coverage with admissible source and candidate anchors.
+- Status: no recommendation because paired author gate failed.
+- Auditors produced 102 admitted findings and 46 structural rejections.
+- Structural rejects were duplicate candidate-slot-class keys or unbound candidate anchors;
+  they are not counted as semantic false positives.
+- Qwen3.6 Flash and Qwen3.7 Flash had comparatively grounded but narrow findings.
+- Qwen3.6 Plus and Qwen3.7 Plus had admitted semantic overcalls;
+  Qwen3.7 Plus also had most structural rejects.
+- Qwen3.8 Flash had broadest useful relative coverage,
+  with 44 admitted findings and 1 structural reject,
+  but also some admitted overcalls.
+- Relative coverage uses analyst-curated retained-D1 defect evidence,
+  not seeded or independently validated absolute-recall denominator.
+- Auditors reviewed retained D1 candidates,
+  not expansion-author pages;
+  evidence does not establish Qwen-family self-audit independence.
+- Outcome: Qwen3.8 Flash showed auditor-seat promise only,
+  which cannot satisfy paired author and auditor reserve requirement.
+
+### Preservation and security
+
+- Original run root contains 42 files.
+- Private evidence directory contains 47 files:
+  those 42 byte-identical files,
+  4 supplemental preflight and postflight records,
+  and private located quality review.
+- Preservation path is
+  `~/Downloads/Carena0442-hyper-roster-expansion-validation-20260830/`.
+- Credential-marker and broad bearer searches returned zero matches across run artifacts.
+- Provider HTTP errors expose only model id and status,
+  and unit guard proved provider body remains private.
+- Exactly one manifest media row exists,
+  for page-referenced `photo1.webp`;
+  presentation-only profile image did not enter prompt evidence.
+- No production roster,
+  corpus,
+  provider,
+  or publication changed.
+
+## Production debt discovered
+
+Fixed-key schema currently proves slot presence,
+not semantic completion within each slot.
+Qwen3.6 Plus passed all key and presentation guards while several long slots ended mid-sentence.
+Production migration needs deterministic per-slot truncation evidence,
+such as source-bound coverage plus incomplete-terminal detection,
+before fixed-key admission can stand in for completeness.
+Heuristic must use measured positive and negative controls
+and cannot reject legitimate concise translations by length alone.
 
 ## Scoring and sensitivity
 
-Pending equal-depth validation.
+Frozen methodology permits weighted scoring only after hard gates.
+No candidate passed complete-page author gate,
+so there is no finalist,
+no weighted score,
+and no sensitivity result.
+Assigning scores to rejected alternatives would let arithmetic override hard constraints.
 
-## Ranking
+## Ranking and disposition
 
-No recommendation yet.
-Every non-excluded live candidate remains pending same-depth screening and validation.
+No candidate is recommended.
+Qwen3.8 Flash is strongest observed auditor and author alternative,
+but ranks outside recommendation because its author fails identity,
+fidelity,
+and English hard gates.
+Every other tested candidate fails at least same publication gate,
+and 2 Kimi candidates exited integration gate before spend.
+
+Roster expansion is rejected.
+Candidate E triple-prime remains rejected for deployment:
+active roster,
+MiniMax reserve,
+and this expansion set provide no qualifying distinct author plus auditor.
+Prompt uniqueness forbids repeating these canonical model-prompt pairs.
+No production roster change or Candidate E graph run follows.
+All measured architecture candidates A through E now have zero surviving deployment candidate.
+Task #50 therefore closes with no selection;
+continued redesign requires fresh architecture definition rather than another Candidate E payload or serial editor.
 
 ## Evidence limits
 
+One live response per model-role pair gives low-confidence reliability evidence.
 Live provider catalog proves served identity and declared capability only.
 It does not prove image attention,
-strict schema,
+strict schema reliability across runs,
 complete author output,
 translation quality,
-or audit recall.
-Family labels do not establish response independence.
-All surviving candidates are Qwen-family siblings of incumbent Qwen3.8-27B.
-Distinct ids satisfy implemented evidence predicate,
-but correlated defect patterns can overstate independence and no weighted score can turn same-family agreement into cross-family proof.
-Family independence remains scored concern plus explicit limit on comparative-floor interpretation.
+or absolute audit recall.
+
+All runtime survivors are Qwen-family siblings of incumbent Qwen3.8-27B.
+Distinct ids satisfy implemented identity predicate,
+but correlated defects can overstate independence.
+No weighted score can turn same-family agreement into cross-family proof.
+Archive-regurgitation and D1-only auditor scope sharpen that limit.
+
+Publication review is one analyst's complete-page assessment.
+Private located anchors make findings auditable,
+but no independent human review or seeded author-quality control exists.
+These limits can weaken capability generalization;
+they do not reverse observed hard-gate defects in pinned output.
