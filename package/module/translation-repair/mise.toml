@@ -110,6 +110,16 @@ description = "PROTOTYPE: run Candidate C local controls"
 depends = ["build"]
 run = "node dist/final/node/prototype-brief-editor-controls.mjs"
 
+[tasks."prototype-conditional-audit-calibration"]
+description = "PROTOTYPE: calibrate Candidate E quote-bound auditors against retained Carena outputs; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-conditional-audit-calibration.mjs"
+
+[tasks."prototype-conditional-audit-controls"]
+description = "PROTOTYPE: run Candidate E quote-bound audit local controls"
+depends = ["build"]
+run = "node dist/final/node/prototype-conditional-audit-controls.mjs"
+
 [tasks."prototype-immutable-shell"]
 description = "PROTOTYPE: run Candidate D immutable-shell candidate graph on Carena; SPENDS QUOTA"
 depends = ["build"]
