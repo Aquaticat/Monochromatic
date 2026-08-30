@@ -402,6 +402,71 @@ No model Gate follows final producer.
 - Distinct producers can damage document voice established by renderer.
 - Highest migration cost and largest new correctness surface.
 
+### Rejected Candidate B evidence
+
+Candidate B implemented its five-payload graph with one specification author,
+one renderer,
+and three concurrent complete-document fallback specialists.
+Scripted controls proved valid-renderer preservation,
+fixed-priority fallback selection,
+raw-specification fallback,
+restart without redispatch,
+image-bearing prompts,
+and transaction guards.
+The complete unit suite recorded 871 passes and no failures.
+Eight guard mutations covered specification identifiers,
+realization locators,
+transaction replay,
+cross-role conflicts,
+anchor drift,
+fallback priority,
+output envelope,
+and image transmission.
+Initial conflict mutation exposed a control that did not isolate conflict handling.
+Commit `98931789a` corrected that control,
+a repeated mutation failed it,
+and all mutations were restored.
+Both providers were wet immediately before live execution.
+
+Fresh Carena execution exhausted all five nodes after 726,466 milliseconds and threw bounded
+`ProductionUnavailableError`.
+It wrote no candidate or publication receipt:
+
+- specification author completed after 101,952 milliseconds but did not satisfy response schema
+- renderer exceeded stream envelope after 214,597 milliseconds
+- fidelity fallback stream was cut after 24,686 milliseconds
+- authority fallback completed after 170,936 milliseconds but introduced footnote relation defect
+- expression fallback completed after 409,737 milliseconds but supplied absent realization locator;
+  exact runtime-validator replay also found footnote relation defect
+
+The complete preserved tree contains no `fixed` page.
+The two completed fallback documents each carried all 22 manifest source identifiers,
+`fallback` mode,
+null base digest,
+and empty change list.
+Those shape facts were insufficient for admission.
+All five node records carry distinct structured contract digests.
+The reply cache contains only three completed transport replies,
+which usage records map to specification,
+authority,
+and expression nodes.
+Cut and overrun nodes have no reply artifact by store design.
+The specification schema-mismatch record has neither failure digest nor explicit reply-cache key;
+next prototype must close that audit-binding gap.
+Candidate B is rejected rather than retried,
+repaired from quarantined responses,
+or selected without output reading.
+Prototype commits are
+`de651603d`,
+`3c6dbd3c2`,
+and
+`98931789a`.
+Private artifacts remain at
+`~/temp/agent/prototype-Carena-B-specification-compiler-20260830/`.
+A preserved private copy is at
+`~/Downloads/Carena0442-candidate-B-rejected-20260830/`.
+Raw responses are operational and contract evidence only.
+
 ## Candidate C: Brief-before-prose editorial room
 
 ### Seam and interface
@@ -515,7 +580,8 @@ Both complete-document editors then received same immutable packet and all image
 Neither response passed deterministic first-candidate admission:
 
 - primary editor completed after 221,049 milliseconds but returned invalid front matter
-- fallback editor completed after 233,245 milliseconds but returned source-realization identifiers differing from manifest
+- fallback editor completed after 233,245 milliseconds but returned source-realization identifiers
+  differing from manifest
 
 Failure digests bind these categories without exposing response wording:
 
@@ -558,13 +624,15 @@ The Hyper account's 1,000 requests-per-hour limit is separate from simultaneous 
 See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
 
 Candidate C executed its five payloads in two dependency waves before rejection.
-Candidate B can execute its proposed five payloads in three waves:
+Candidate B executed its five payloads in three waves:
 specification,
 renderer,
 then three independent specialist transactions.
-Static fixed priority preserves deterministic adoption regardless of response order.
-No cross-provider response is required,
-and one model never receives same canonical substantive prompt twice.
+Its concurrent specialist wave ended when slowest GLM response completed after 409,737 milliseconds.
+Static fixed priority remained deterministic,
+but no candidate was usable.
+No cross-provider response was required,
+and one model never received same canonical substantive prompt twice.
 
 These are scheduling consequences,
 not quality evidence.
@@ -598,29 +666,135 @@ The pipeline must not disguise it as quality refusal,
 automatically retry it,
 or publish archive fallback as repaired output.
 
-## Working order after A and C rejection
+## Selection after A, B, and C rejection
 
-Prototype eligibility is Candidate B only.
-Candidate B is unrefuted,
-not selected.
-It still requires fresh Carena publication and complete-page reading.
-Candidates C and A are rejected and ineligible for another arm under same design.
+No tested candidate is eligible for production selection.
+All three exhausted their finite graph without a published page,
+so no complete output exists to compare for fidelity,
+grammar,
+identity,
+structure,
+or media handling.
+Operational evidence cannot be promoted into output-quality evidence.
 
-A total historical order is:
-B > rejected C > rejected A.
+Historical learning order is:
+rejected C > rejected B > rejected A.
 
-B ranks over rejected C because B still has an untested path to complete output,
-while C exhausted both complete-document producers without adoption.
-This is eligibility ordering,
-not evidence that B will produce good text.
+Rejected C ranks over rejected B because its two-wave pre-authorship graph had fewer stateful seams,
+and one preparation brief was usable;
+neither design adopted a candidate.
+Rejected B ranks over rejected A because it proved raw-specification fallback,
+concurrent bounded specialist execution,
+and deterministic transaction controls before exhausting.
+Rejected A ranks last because two implementations wrote no output,
+and A1 allowed non-producing audit work to withhold complete draft.
+This order records design learning only.
+No rejected candidate can be retried or selected under same design.
 
-Rejected C ranks over rejected A only as design-learning history:
-C demonstrated finite two-wave execution,
-nonblocking preparation failures,
-and bounded exhaustion without suspension.
-A ranks last because two implementations wrote no output,
-and A1 allowed a non-producing auditor to withhold complete draft.
-Neither rejected candidate can be selected from this order.
+## Candidate D proposal: Immutable-shell slot compiler
+
+Candidate D makes models author translatable content,
+not Markdown structure or semantic audit identifiers.
+Deterministic parsing derives translatable slots and immutable shell from source plus archive authority.
+Slots include translatable front-matter values,
+headings,
+paragraphs,
+footnote prose,
+and other human-language text.
+Contributor identity fields remain shell-owned even when represented as front-matter scalars.
+Shell also owns front-matter delimiters and keys,
+links,
+media references,
+footnote relations,
+comments,
+and node order.
+
+A producer receives full source,
+archive,
+all images,
+slot contract,
+and complete shell context.
+It returns one fixed-key slot record with manifest-derived structural keys such as `s0`.
+Exact schema properties bind each translation to one slot without asking model to invent or repeat semantic identifiers.
+Compiler reconstructs complete document and applies existing deterministic integrity validation before adoption.
+Each producer owns full concrete quality contract across every slot and whole-page relation.
+
+### Fixed call graph
+
+1.  Deterministically derive immutable shell and fixed-key slot record schema.
+2.  In parallel,
+    ask primary and two statically named fallback authors for complete slot records from same evidence.
+3.  Compile and validate all three records independently.
+    Adopt first usable candidate by fixed manifest priority,
+    never completion order.
+4.  Atomically publish and read back adopted complete document.
+
+Payload ceiling is 3 in one provider wave.
+No preparation model,
+postdraft reviser,
+Gate,
+review-only node,
+retry,
+or response-created work exists.
+Every node is independent and can establish first complete candidate.
+Role-differentiated canonical prompts preserve uniqueness when one provider and one model fill multiple seats.
+Candidate D inherits manifest-bound restart without redispatch,
+exact abort identity,
+zero transport retries,
+and durable transaction states from prototype runtime.
+Schema-mismatch handling must additionally persist response digest,
+base prompt digest,
+and reply-cache key before response becomes spent-unusable.
+
+Model-authored front-matter delimiters,
+links,
+media,
+and footnote markers cannot cause rejection because those bytes are outside model response.
+A model can still mistranslate slot content;
+only complete-page reading can provide quality evidence.
+
+### Design alternative
+
+Alternative D2 asks each author for unrestricted complete Markdown and validates it after return.
+
+#### D1 pros
+
+- immutable shell removes structural failure classes observed in A,
+  B,
+  and C from model authority
+- fixed-key structural properties remove model-authored semantic identifier values that failed B and C
+- one whole-document authorship response still controls voice across every translatable slot
+- three independent complete-candidate producers provide bounded fallback without postdraft dependency
+
+#### D1 cons
+
+- parser must classify every translatable and immutable region correctly
+- sentence relations crossing slot boundaries remain model judgment
+- fixed slot boundaries can constrain rhetorical reorganization
+- fixed-key schema still needs corpus-sized provider validation
+
+#### D2 pros
+
+- author has unrestricted freedom to reorganize Markdown and prose
+- response contract is simpler than slot record plus shell compiler
+
+#### D2 cons
+
+- repeats invalid front matter,
+  structure,
+  footnote,
+  and identifier failure surfaces already measured
+- deterministic rejection again happens only after full-document generation spend
+- unrestricted structure makes exact authority preservation harder
+
+Ranking:
+D1 > D2,
+because D1 removes measured structural admission failures while retaining whole-document authorship;
+D2 preserves flexibility by retaining same failure authority already exhausted in three candidates.
+Candidate D1 is proposal only until scripted controls,
+GFP evidence,
+fresh Carena publication,
+and complete-page reading succeed.
 
 ## Required lifecycle migration
 
@@ -642,9 +816,9 @@ not terminal quality refusal.
 
 ## Prototype acceptance evidence
 
-Before selecting Candidate B for production:
+Before selecting any replacement for production:
 
-- static Candidate B manifest proves declared ceiling of at most 5 payloads
+- static manifest proves declared finite payload ceiling
 - positive controls cover seeded omission,
 wrong meaning,
 identity change,
@@ -662,7 +836,7 @@ and register mismatch
 - each unusable later producer preserves prior complete candidate and execution reaches publication
 - first-producer failure exercises statically named fallback producer without adding manifest work
 - deterministic publication guards still GFP-fail when removed
-- complete actual Candidate B Carena output is read by human and independent reviewer;
+- complete actual Carena output from selected candidate is read by human and independent reviewer;
   artifact or tally alone is not comparison evidence
 - recurring output defect changes brief,
 producer responsibility,
