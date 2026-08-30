@@ -10,7 +10,7 @@ not current instruction.
 
 - Worktree: `/var/home/user/worktrees/translation-repair`.
 - Branch: `translation-repair-rebased`.
-- Current pipeline commit: `504a407fc`.
+- Current pipeline commit: `1649c480d`.
 - Naturalness-confirmation commit: `97fda9f95b424d8e16326e97169c06ab471ece97`.
 - Exact-half corrective commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
 - Generation-13 continuous correction,
@@ -28,12 +28,15 @@ not current instruction.
 - One-sided front-matter support landed in `56a47cb81`:
   source metadata insertion and exact target-only preservation.
 - Translate version 10 prior-decline challenge landed in `504a407fc`.
+- Translate version 11 unfilled-passage continuation landed in `ed756993b`;
+  exact placement-cycle test landed in `1649c480d`.
 - Unrelated dirty path: `.idea/.name`; keep it excluded.
 - Pre-commit generation-13 verification emitted 862 `PASS` lines and zero `FAIL` lines.
 - Final generation-14 verification emitted 865 `PASS` lines and zero `FAIL` lines.
 - Final generation-15 verification emitted 866 `PASS` lines and zero `FAIL` lines.
 - Final visual-evidence verification emitted 867 `PASS` lines and zero `FAIL` lines.
 - Final one-sided front-matter verification emitted 867 `PASS` lines and zero `FAIL` lines.
+- Final translate-version-11 verification emitted 869 `PASS` lines and zero `FAIL` lines.
 - OXLint,
   TypeScript,
   and `git diff --check` passed before commit.
@@ -87,11 +90,22 @@ not current instruction.
 - Translate version-10 GFP logs:
   `~/temp/agent/gfp-translate-v10-decline-challenge-red-20260829.log`
   and `~/temp/agent/gfp-translate-v10-decline-challenge-green-20260829.log`.
+- Translate version-11 GFP logs:
+  `~/temp/agent/gfp-unfilled-followup-evidence-red-20260829.log`,
+  `~/temp/agent/gfp-unfilled-followup-evidence-green-20260829.log`,
+  `~/temp/agent/gfp-carried-insertion-final-guard-red-20260829.log`,
+  `~/temp/agent/gfp-carried-insertion-final-guard-green-20260829.log`,
+  `~/temp/agent/gfp-insertion-placement-cycle-red-20260829.log`,
+  `~/temp/agent/gfp-insertion-placement-cycle-green-20260829.log`,
+  `~/temp/agent/gfp-translation-provider-interruption-red-20260829.log`,
+  `~/temp/agent/gfp-translation-provider-interruption-green-20260829.log`,
+  `~/temp/agent/gfp-unfilled-scheduler-stopped-red-20260829.log`,
+  and `~/temp/agent/gfp-unfilled-scheduler-stopped-green-20260829.log`.
 
 Artifact schema remains 9.
-At `504a407fc`, cache generations are consolidation 15,
+At `1649c480d`, cache generations are consolidation 15,
 lane contest 5,
-translate 10,
+translate 11,
 refine 4,
 repair 30,
 and pairing 2.
@@ -110,6 +124,18 @@ and records any failed strategy into materially different next prompt.
 Exact repeated correction task is detected before dispatch and pauses as `INCOMPLETE`;
 this guard exists because durable payload replay otherwise makes history-loss cycle costless enough to starve timers.
 Schema-9 reader accepts arbitrary complete digest-bound correction chains.
+
+Absent-passage translation now continues from latest exact rejected slate and findings.
+Insertion placement continues from latest coverage verdict,
+anchored target evidence,
+missing destinations,
+and shortfall outcome.
+Exact task cycles and provider silence pause as `INCOMPLETE` without whole-entry retry.
+Full coverage records passage carried elsewhere and final would-ship page must retain every exact anchored proof region.
+This retention is intentionally conservative:
+semantically equivalent rewrite that removes exact region can pause until strategy changes.
+Restarting unchanged cycle replays durable payloads and re-derives same pause;
+new strategy or evidence is required before relaunch.
 
 Every direct roster round now starts straggler grace at exact-half participation.
 Grace may collect more responses,
@@ -259,13 +285,14 @@ Pair every timing result with actual publication-quality outcome.
 
 ### Next actions
 
-1.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
-2.  Optimize only measured completion path without weakening quality.
-3.  Rebuild pull-request fixture worktree and launch fresh generation-14 roots only after performance gate,
+1.  Replace terminal unreviewed-archive refusal with stage-local classification and repair.
+2.  Reopen unresolved lane choices from latest ballots until settled or operationally interrupted.
+3.  Analyze stopped Carena log by phase and define sub-two-hour matched measurement.
+4.  Optimize only measured completion path without weakening quality.
+5.  Rebuild pull-request fixture worktree and launch fresh roots only after quality and performance gates,
     passing `--require-providers synthetic,hyper`.
-4.  Verify every successful page and artifact,
+6.  Verify every successful page and artifact,
     then read complete output.
-5.  Continue targeted calibration and remaining pages after current mechanism is proven.
 
 There is no release deadline.
 Strict actual-output quality remains gate.

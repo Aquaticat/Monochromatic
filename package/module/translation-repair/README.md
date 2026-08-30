@@ -1731,12 +1731,16 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
 
 - `assertArchiveReviewed` throws on target blocks outside source claims during preparation.
   Pairing/review must classify and revise those blocks instead of ending entry.
-- `assertPublishableTranslation` throws when source passages remain unfilled.
-  Insertion admission does not throw separately;
-  its inconclusive or uncorroborated outcome feeds this final unfilled list.
-  Translation/insertion must continue from those slices and latest refusal evidence.
-  Translate version 10 landed in `504a407fc` and replaces identical decline retry with distinct prior-decline challenge;
-  no-candidate production still needs continuous strategy.
+- Unfilled-passage continuation landed in `ed756993b`, with cycle guard test in `1649c480d`.
+  Translate version 11 produces from latest exact rejected slate and findings without finite correction count.
+  Insertion placement rechecks latest semantic, destination, and shortfall evidence until admitted,
+  proven carried elsewhere,
+  operationally interrupted,
+  or exact task cycle repeats.
+  Carried passages map to `not-applicable` at insertion anchor;
+  final would-ship page must retain every exact anchored region that proved full coverage.
+  This exact-region rule can conservatively pause semantically equivalent rewrites as `INCOMPLETE`.
+  `assertPublishableTranslation` is now defensive invariant and cannot trigger fresh whole-entry retry.
 - `assertFinalSelectionSettled` throws when archive wording stands without endorsement.
   Contest/consolidation must reopen unresolved slices with prior ballots as failed-strategy evidence.
 - One-sided front-matter support landed in `56a47cb81` and creates insertion slice for source-only metadata,
@@ -1756,7 +1760,7 @@ Remaining terminal and bypass findings must move to stage-local repair before fr
   Body-slice floor does not replace front-matter comment authority,
   which remains in metadata validator.
   Final completeness guard remains defensive.
-  Cache generations move to translate 10,
+  Cache generations move to translate 11,
   refine 4,
   lane contest 5,
   and consolidation 15.
