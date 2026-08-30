@@ -59,12 +59,14 @@ export function runConditionalAuditControls(): void {
   const candidates: readonly ConditionalCandidate[] = [
     {
       id: 'preferred',
+      modelId: 'hf:Qwen/Qwen3.8-27B',
       priority: 1,
       response: preferredResponse,
       document: compileSlotDocument({ shell, response: preferredResponse, }),
     },
     {
       id: 'flawed',
+      modelId: 'hf:moonshotai/Kimi-K3',
       priority: 0,
       response: flawedResponse,
       document: compileSlotDocument({ shell, response: flawedResponse, }),
@@ -149,10 +151,32 @@ export function runConditionalAuditControls(): void {
   },);
   if ((confirmed.length !== 1) || (selectConditionalBaseline({ candidates, findings: confirmed, }).id !== 'preferred'))
     throw new Error('conditional audit comparative selection control failed');
-  const voted = selectConditionalBaselineByAuditorVotes({ candidates, audits: [audit, audit,], });
+  const voted = selectConditionalBaselineByAuditorVotes({
+    candidates,
+    audits: [audit, audit,],
+    auditorModelIds: ['hf:moonshotai/Kimi-K3', 'hf:zai-org/GLM-5.3-Flash',],
+  },);
   if (!voted.evidenceFloorMet || (voted.candidate.id !== 'preferred') || (voted.votes.preferred !== 2))
     throw new Error('conditional audit selection vote control failed');
-  const degradedVote = selectConditionalBaselineByAuditorVotes({ candidates, audits: [audit,], });
+  const singleCandidateVote = selectConditionalBaselineByAuditorVotes({
+    candidates: [candidates[1] as ConditionalCandidate,],
+    audits: [audit, audit,],
+    auditorModelIds: ['hf:Qwen/Qwen3.8-27B', 'hf:zai-org/GLM-5.3-Flash',],
+  },);
+  if (singleCandidateVote.evidenceFloorMet)
+    throw new Error('conditional audit candidate diversity control failed');
+  const sameAuditorVote = selectConditionalBaselineByAuditorVotes({
+    candidates,
+    audits: [audit, audit,],
+    auditorModelIds: ['hf:moonshotai/Kimi-K3', 'hf:moonshotai/Kimi-K3',],
+  },);
+  if (sameAuditorVote.evidenceFloorMet)
+    throw new Error('conditional audit auditor diversity control failed');
+  const degradedVote = selectConditionalBaselineByAuditorVotes({
+    candidates,
+    audits: [audit,],
+    auditorModelIds: ['hf:moonshotai/Kimi-K3',],
+  },);
   if (degradedVote.evidenceFloorMet || (degradedVote.candidate.id !== 'flawed'))
     throw new Error('conditional audit selection evidence floor control failed');
   const emptyAudit: ConditionalAuditResponse = {
@@ -161,7 +185,11 @@ export function runConditionalAuditControls(): void {
       flawed: { findings: [], },
     },
   };
-  const abstained = selectConditionalBaselineByAuditorVotes({ candidates, audits: [emptyAudit, emptyAudit,], });
+  const abstained = selectConditionalBaselineByAuditorVotes({
+    candidates,
+    audits: [emptyAudit, emptyAudit,],
+    auditorModelIds: ['hf:moonshotai/Kimi-K3', 'hf:zai-org/GLM-5.3-Flash',],
+  },);
   if (abstained.evidenceFloorMet || (abstained.votes.preferred !== 0) || (abstained.votes.flawed !== 0))
     throw new Error('conditional audit empty ballot abstention control failed');
   const reduced = confirmConditionalFindings({

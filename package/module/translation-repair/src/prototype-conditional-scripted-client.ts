@@ -204,7 +204,9 @@ export function createConditionalScriptedClient(
           : scriptedAuthor({
             shell,
             authorId: role.id,
-            invalid: (scenario === 'all-author-invalid') || ((scenario === 'primary-invalid') && (role.id === 'primary-author')),
+            invalid: (scenario === 'all-author-invalid')
+              || ((scenario === 'primary-invalid') && (role.id === 'primary-author'))
+              || ((scenario === 'single-author') && (role.id !== 'primary-author')),
           },);
         const value = (scenario === 'resolver-invalid') && (role.id === 'conditional-resolver')
           ? {
@@ -214,7 +216,12 @@ export function createConditionalScriptedClient(
         const rawText = JSON.stringify(value,);
         return request.validate(value,)
           ? { kind: 'ok', value, rawText, }
-          : { kind: 'schema-mismatch', rawText, detail: 'guard rejected scripted conditional slots', };
+          : {
+            kind: 'schema-mismatch',
+            rawText,
+            reason: 'caller-guard-rejected',
+            detail: 'guard rejected scripted conditional slots',
+          };
       }
       if (schemaName !== 'conditional_shell_audit')
         throw new Error('scripted conditional shell received unknown schema');
@@ -253,7 +260,12 @@ export function createConditionalScriptedClient(
       const rawText = JSON.stringify(value,);
       return request.validate(value,)
         ? { kind: 'ok', value, rawText, }
-        : { kind: 'schema-mismatch', rawText, detail: 'guard rejected scripted conditional audit', };
+        : {
+          kind: 'schema-mismatch',
+          rawText,
+          reason: 'caller-guard-rejected',
+          detail: 'guard rejected scripted conditional audit',
+        };
     },
     quotas: async function unusedQuotas() {
       await Promise.resolve();

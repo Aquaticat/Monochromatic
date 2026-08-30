@@ -141,6 +141,7 @@ await describe({
         const outcome = read({ text: '<think>还在想猫的事情', },);
 
         expect(outcome.kind,).toBe('schema-mismatch',);
+        expect(outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,).toBe('truncated-thinking',);
         // It sends a reader to the token ceiling rather than to the prompt.
         expect(
           outcome.kind === 'schema-mismatch'
@@ -171,6 +172,7 @@ await describe({
         },);
 
         expect(outcome.kind,).toBe('schema-mismatch',);
+        expect(outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,).toBe('unparseable-json',);
         // A cut-off reply and a malformed one arrive identically and need
         // opposite remediation.
         expect(
@@ -188,6 +190,7 @@ await describe({
         const outcome = read({ text: '{"verdict":7}', },);
 
         expect(outcome.kind,).toBe('schema-mismatch',);
+        expect(outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,).toBe('caller-guard-rejected',);
       },
     },),
 

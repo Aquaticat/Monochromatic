@@ -4,6 +4,7 @@ import { mkdir, readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { hashContent, } from './document-node.ts';
+import type { ConditionalBaselineBallot, } from './prototype-conditional-audit-model.ts';
 import { writePrototypeJson, } from './prototype-brief-editor-runtime.ts';
 import type { SlotNodeRecord, } from './prototype-slot-runtime.ts';
 import { writeFileAtomic, } from './corpus-run/atomic-write.ts';
@@ -18,6 +19,7 @@ export async function publishConditionalPrototype(
     providerSelection,
     evidenceFloorMet,
     votes,
+    authorBallots,
     resolverAttempted,
     resolverChangedOnlyLocated,
     resolutionAdopted,
@@ -36,6 +38,7 @@ export async function publishConditionalPrototype(
     readonly providerSelection: 'all' | 'synthetic-only' | 'hyper-only';
     readonly evidenceFloorMet: boolean;
     readonly votes: Readonly<Record<string, number>>;
+    readonly authorBallots: readonly ConditionalBaselineBallot[];
     readonly resolverAttempted: boolean;
     readonly resolverChangedOnlyLocated: boolean;
     readonly resolutionAdopted: boolean;
@@ -74,6 +77,7 @@ export async function publishConditionalPrototype(
       providerSelection,
       evidenceFloorMet,
       votes,
+      authorBallots,
       resolverAttempted,
       resolverChangedOnlyLocated,
       resolutionAdopted,

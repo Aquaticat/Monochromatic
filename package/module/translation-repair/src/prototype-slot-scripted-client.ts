@@ -75,6 +75,7 @@ export function createSlotScriptedClient(
         return {
           kind: 'schema-mismatch',
           rawText,
+          reason: 'caller-guard-rejected',
           detail: 'guard rejected scripted slot record',
         };
       }

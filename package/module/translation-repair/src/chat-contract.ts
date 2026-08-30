@@ -295,6 +295,12 @@ export type ChatJsonRequest<ValueT,> = ChatTextRequest & {
  * const outcome: ChatJsonOutcome<Verdict> = { kind: 'ok', value, rawText, };
  * ```
  */
+export type SchemaMismatchReason =
+  | 'caller-guard-rejected'
+  | 'unparseable-json'
+  | 'truncated-thinking'
+  | 'other-schema-mismatch';
+
 export type ChatJsonOutcome<ValueT,> =
   | {
     /**
@@ -352,6 +358,11 @@ export type ChatJsonOutcome<ValueT,> =
      * Verbatim model text for audit trails.
      */
     readonly rawText: string;
+
+    /**
+     * Stable reason known at parser boundary; optional for injected legacy clients.
+     */
+    readonly reason?: SchemaMismatchReason;
 
     /**
      * What failed: parse step, guard, or thinking truncation.

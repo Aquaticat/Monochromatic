@@ -48,12 +48,14 @@ async function readCandidate(
     root,
     id,
     outputId,
+    modelId,
     priority,
     shell,
   }: {
     readonly root: string;
     readonly id: string;
     readonly outputId: string;
+    readonly modelId: ConditionalCandidate['modelId'];
     readonly priority: number;
     readonly shell: ReturnType<typeof buildImmutableShell>;
   },
@@ -63,6 +65,7 @@ async function readCandidate(
   ) as SlotDocumentResponse;
   return {
     id: outputId,
+    modelId,
     priority,
     response,
     document: compileSlotDocument({ shell, response, }),
@@ -100,6 +103,7 @@ function damageCalibrationCandidate(
   return {
     candidate: {
       id: 'damaged',
+      modelId: baseline.modelId,
       priority: 1,
       response,
       document: compileSlotDocument({ shell, response, }),
@@ -122,14 +126,36 @@ const [sourceText, archiveText,] = await Promise.all([
 const shell = buildImmutableShell({ sourceText, archiveText, });
 const media = await gatherPrototypeMedia({ pin, entryId: ENTRY_ID, sourceText, });
 const d1Candidates = await Promise.all([
-  readCandidate({ root: d1Root, id: 'primary-author', outputId: 'primary-author', priority: 0, shell, }),
-  readCandidate({ root: d1Root, id: 'fallback-author', outputId: 'fallback-author', priority: 1, shell, }),
-  readCandidate({ root: d1Root, id: 'reserve-author', outputId: 'reserve-author', priority: 2, shell, }),
+  readCandidate({
+    root: d1Root,
+    id: 'primary-author',
+    outputId: 'primary-author',
+    modelId: 'hf:moonshotai/Kimi-K3',
+    priority: 0,
+    shell,
+  },),
+  readCandidate({
+    root: d1Root,
+    id: 'fallback-author',
+    outputId: 'fallback-author',
+    modelId: 'hf:Qwen/Qwen3.8-27B',
+    priority: 1,
+    shell,
+  },),
+  readCandidate({
+    root: d1Root,
+    id: 'reserve-author',
+    outputId: 'reserve-author',
+    modelId: 'hf:zai-org/GLM-5.3-Flash',
+    priority: 2,
+    shell,
+  },),
 ]);
 const d13Baseline = await readCandidate({
   root: d13Root,
   id: 'final-reviser',
   outputId: 'baseline',
+  modelId: 'hf:moonshotai/Kimi-K3',
   priority: 0,
   shell,
 },);
@@ -137,6 +163,7 @@ const d13Resolution = await readCandidate({
   root: d13Root,
   id: 'final-copy-editor',
   outputId: 'resolution',
+  modelId: 'hf:Qwen/Qwen3.8-27B',
   priority: 1,
   shell,
 },);

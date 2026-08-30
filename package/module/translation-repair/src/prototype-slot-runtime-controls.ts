@@ -42,9 +42,13 @@ export async function runSlotRuntimeControls(): Promise<void> {
   const root = await mkdtemp(join(tmpdir(), 'immutable-shell-runtime-',),);
   const abortDir = join(root, 'abort',);
   const indeterminateDir = join(root, 'indeterminate',);
+  const guardMismatchDir = join(root, 'guard-mismatch',);
+  const unparseableDir = join(root, 'unparseable',);
   await Promise.all([
     mkdir(abortDir,),
     mkdir(indeterminateDir,),
+    mkdir(guardMismatchDir,),
+    mkdir(unparseableDir,),
   ],);
   const reason = new Error('fixture exact abort');
   const controller = new AbortController();
@@ -78,6 +82,63 @@ export async function runSlotRuntimeControls(): Promise<void> {
   const abortRecord = JSON.parse(await readFile(join(abortDir, 'node-abort-author.json',), 'utf8',),) as SlotNodeRecord;
   if ((abortRecord.state !== 'spent-unusable') || (abortRecord.failureType !== 'CallerAbort'))
     throw new Error('immutable shell abort record control failed');
+
+  const mismatchCases = [
+    {
+      id: 'guard-mismatch',
+      outputDir: guardMismatchDir,
+      reason: 'caller-guard-rejected',
+      expected: 'caller-guard-rejected',
+    },
+    {
+      id: 'unparseable',
+      outputDir: unparseableDir,
+      reason: 'unparseable-json',
+      expected: 'unparseable-json',
+    },
+    {
+      id: 'truncated-thinking',
+      outputDir: join(root, 'truncated-thinking',),
+      reason: 'truncated-thinking',
+      expected: 'truncated-thinking',
+    },
+    {
+      id: 'other-schema-mismatch',
+      outputDir: join(root, 'other-schema-mismatch',),
+      reason: undefined,
+      expected: 'other-schema-mismatch',
+    },
+  ] as const;
+  await Promise.all(mismatchCases.slice(2,).map(async function create(item,) {
+    await mkdir(item.outputDir,);
+  },),);
+  await Promise.all(mismatchCases.map(async function mismatch(item,) {
+    const mismatchClient: SyntheticClient = {
+      ...unusedClientMethods(),
+      chatJson: async function mismatchJson() {
+        await Promise.resolve();
+        return {
+          kind: 'schema-mismatch' as const,
+          rawText: '{}',
+          ...(item.reason === undefined ? {} : { reason: item.reason, }),
+          detail: 'fixture schema mismatch',
+        };
+      },
+    };
+    const outcome = await executeSlotNode({
+      outputDir: item.outputDir,
+      client: mismatchClient,
+      id: item.id,
+      modelId: MODEL_ID,
+      manifestDigest: `${item.id}-manifest`,
+      messages: MESSAGES,
+      responseFormat: RESPONSE_FORMAT,
+      validate: function validates(_value: unknown): _value is unknown { return true; },
+      signal: new AbortController().signal,
+    },);
+    if ((outcome.kind !== 'unusable') || (outcome.record.failureDetailType !== item.expected))
+      throw new Error(`immutable shell ${item.id} detail control failed`);
+  },),);
 
   const response = { value: 'fixture', };
   const successClient: SyntheticClient = {

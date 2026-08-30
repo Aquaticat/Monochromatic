@@ -1,5 +1,6 @@
 // PROTOTYPE ONLY: Candidate E quote-bound defect audit model.
 
+import type { RosterModelId, } from './roster-id.ts';
 import type { SlotDocumentResponse, } from './prototype-slot-model.ts';
 
 export const CONDITIONAL_DEFECT_CLASSES = [
@@ -55,6 +56,7 @@ export type ConditionalAuditAdmission = {
 
 export type ConditionalCandidate = {
   readonly id: string;
+  readonly modelId: RosterModelId;
   readonly priority: number;
   readonly response: SlotDocumentResponse;
   readonly document: string;
@@ -67,9 +69,15 @@ export type ConditionalResolutionBallot = {
   readonly newResolutionFindingKeys: readonly string[];
 };
 
+export type ConditionalBaselineBallot = {
+  readonly auditorModelId: RosterModelId;
+  readonly selectedCandidateId: string | null;
+};
+
 export type ConditionalBaselineDecision = {
   readonly candidate: ConditionalCandidate;
   readonly votes: Readonly<Record<string, number>>;
+  readonly ballots: readonly ConditionalBaselineBallot[];
   readonly evidenceFloorMet: boolean;
 };
 

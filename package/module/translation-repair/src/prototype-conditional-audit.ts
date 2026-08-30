@@ -113,12 +113,19 @@ export function selectConditionalBaselineByAuditorVotes(
   {
     candidates,
     audits,
+    auditorModelIds,
   }: {
     readonly candidates: readonly ConditionalCandidate[];
     readonly audits: readonly ConditionalAuditResponse[];
+    readonly auditorModelIds: readonly ConditionalCandidate['modelId'][];
   },
 ): ConditionalBaselineDecision {
-  const selections = audits.flatMap(function ballot(audit,): readonly string[] {
+  if (audits.length !== auditorModelIds.length)
+    throw new Error('conditional shell auditor identities differ from ballots');
+  const ballots = audits.map(function ballot(audit, index,) {
+    const auditorModelId = auditorModelIds[index];
+    if (auditorModelId === undefined)
+      throw new Error('conditional shell auditor identity is absent');
     const findings: readonly ConfirmedConditionalFinding[] = candidates.flatMap(function candidateFindings(candidate,) {
       return (audit.candidates[candidate.id]?.findings ?? []).map(function finding(item,) {
         return {
@@ -129,10 +136,17 @@ export function selectConditionalBaselineByAuditorVotes(
         };
       },);
     },);
-    return findings.length === 0 ? [] : [selectConditionalBaseline({ candidates, findings, }).id,];
+    return {
+      auditorModelId,
+      selectedCandidateId: findings.length === 0
+        ? null
+        : selectConditionalBaseline({ candidates, findings, }).id,
+    };
   },);
   const votes = Object.fromEntries(candidates.map(function candidateVotes(candidate,) {
-    return [candidate.id, selections.filter(function selected(id,) { return id === candidate.id; },).length,];
+    return [candidate.id, ballots.filter(function selected(ballot,) {
+      return ballot.selectedCandidateId === candidate.id;
+    },).length,];
   },),);
   const requiredVotes = 2;
   const winner = candidates.toSorted(function mostVotes(left, right,) {
@@ -141,10 +155,16 @@ export function selectConditionalBaselineByAuditorVotes(
   const fallback = candidates.toSorted(function priority(left, right,) { return left.priority - right.priority; },)[0];
   if ((winner === undefined) || (fallback === undefined))
     throw new Error('conditional shell candidate set is empty');
-  const evidenceFloorMet = (votes[winner.id] ?? 0) >= requiredVotes;
+  const winningBallots = ballots.filter(function selected(ballot,) {
+    return ballot.selectedCandidateId === winner.id;
+  },);
+  const evidenceFloorMet = (votes[winner.id] ?? 0) >= requiredVotes
+    && (new Set(candidates.map(function model(candidate,) { return candidate.modelId; },),).size >= 2)
+    && (new Set(winningBallots.map(function model(ballot,) { return ballot.auditorModelId; },),).size >= 2);
   return {
     candidate: evidenceFloorMet ? winner : fallback,
     votes,
+    ballots,
     evidenceFloorMet,
   };
 }

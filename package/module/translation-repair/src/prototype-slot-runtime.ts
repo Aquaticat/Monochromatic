@@ -28,6 +28,7 @@ export type SlotNodeRecord = {
   readonly providerResponseDigest?: string;
   readonly replyCacheKey?: string;
   readonly failureType?: string;
+  readonly failureDetailType?: 'caller-guard-rejected' | 'unparseable-json' | 'truncated-thinking' | 'other-schema-mismatch';
   readonly failureDigest?: string;
 };
 
@@ -134,6 +135,9 @@ export async function executeSlotNode<ValueT,>(
         providerResponseDigest: hashContent({ content: outcome.rawText, }),
         replyCacheKey: baseDigest,
         failureType: outcome.kind,
+        ...(outcome.kind === 'schema-mismatch'
+          ? { failureDetailType: outcome.reason ?? 'other-schema-mismatch', }
+          : {}),
         failureDigest: digestFailure({ value: `${outcome.kind}:${detail}`, }),
       };
       await writeSlotNode({ outputDir, record, },);

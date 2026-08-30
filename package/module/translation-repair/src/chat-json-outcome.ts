@@ -172,6 +172,7 @@ export function readJsonOutcome<ValueT,>(
     return {
       kind: 'schema-mismatch',
       rawText: reply.text,
+      reason: 'truncated-thinking',
       detail: 'output was truncated inside its thinking block;'
         + ' raise or omit maxTokens (thinking tokens count against it)',
       ...usageSpread,
@@ -222,6 +223,7 @@ export function readJsonOutcome<ValueT,>(
     return {
       kind: 'schema-mismatch',
       rawText: reply.text,
+      reason: 'unparseable-json',
       detail: `content is not valid JSON: ${attempt.detail}${stopped}`,
       ...usageSpread,
     };
@@ -237,6 +239,7 @@ export function readJsonOutcome<ValueT,>(
     return {
       kind: 'schema-mismatch',
       rawText: reply.text,
+      reason: 'caller-guard-rejected',
       detail: 'content parsed as JSON but failed the caller schema guard',
       ...usageSpread,
     };

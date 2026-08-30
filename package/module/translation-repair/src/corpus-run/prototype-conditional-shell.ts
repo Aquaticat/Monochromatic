@@ -145,7 +145,7 @@ const candidates = authorStates.flatMap(function candidate(state, index,): reado
   const node = SLOT_AUTHOR_NODES[index];
   return (node === undefined) || (state.value === undefined) || (state.document === undefined)
     ? []
-    : [{ id: node.id, priority: node.priority, response: state.value, document: state.document, },];
+    : [{ id: node.id, modelId: node.modelId, priority: node.priority, response: state.value, document: state.document, },];
 },);
 const records = authorStates.map(function record(state,) { return state.record; },);
 if (candidates.length === 0) {
@@ -181,13 +181,21 @@ const authorAuditStates = await Promise.all(CONDITIONAL_AUDIT_NODES.map(async fu
   },);
 },));
 records.push(...authorAuditStates.map(function record(state,) { return state.record; },),);
-const authorAudits = authorAuditStates.flatMap(function response(state,) {
-  return state.response === undefined ? [] : [state.response,];
+const authorAuditEntries = authorAuditStates.flatMap(function response(state, index,) {
+  const node = CONDITIONAL_AUDIT_NODES[index];
+  return (state.response === undefined) || (node === undefined)
+    ? []
+    : [{ response: state.response, modelId: node.modelId, },];
 },);
+const authorAudits = authorAuditEntries.map(function audit(entry,) { return entry.response; },);
 let rejectedFindingCount = authorAuditStates.reduce(function count(sum, state,) {
   return sum + state.rejectedFindingCount;
 }, 0,);
-const baselineDecision = selectConditionalBaselineByAuditorVotes({ candidates, audits: authorAudits, });
+const baselineDecision = selectConditionalBaselineByAuditorVotes({
+  candidates,
+  audits: authorAudits,
+  auditorModelIds: authorAuditEntries.map(function model(entry,) { return entry.modelId; },),
+},);
 const baseline = baselineDecision.candidate;
 const locatedFindings = collectLocatedConditionalFindings({ audits: authorAudits, candidateId: baseline.id, });
 await writePrototypeJson({ path: join(outputDir, 'decision-author-selection.json',), value: {
@@ -196,6 +204,7 @@ await writePrototypeJson({ path: join(outputDir, 'decision-author-selection.json
   providerSelection,
   evidenceFloorMet: baselineDecision.evidenceFloorMet,
   votes: baselineDecision.votes,
+  ballots: baselineDecision.ballots,
   locatedFindingCount: locatedFindings.length,
   candidateDigests: Object.fromEntries(candidates.map(function digest(candidate,) {
     return [candidate.id, hashContent({ content: candidate.document, }),];
@@ -254,8 +263,20 @@ else {
       unattemptedNodes.push(...postNodeIds,);
     else {
       const postCandidates: readonly ConditionalCandidate[] = [
-        { id: 'baseline', priority: 0, response: baseline.response, document: baseline.document, },
-        { id: 'resolution', priority: 1, response: resolverState.value, document: resolverState.document, },
+        {
+          id: 'baseline',
+          modelId: baseline.modelId,
+          priority: 0,
+          response: baseline.response,
+          document: baseline.document,
+        },
+        {
+          id: 'resolution',
+          modelId: CONDITIONAL_RESOLVER_NODE.modelId,
+          priority: 1,
+          response: resolverState.value,
+          document: resolverState.document,
+        },
       ];
       const postStates = await Promise.all(CONDITIONAL_AUDIT_NODES.map(async function audit(node,) {
         return await runConditionalAuditNode({
@@ -331,6 +352,7 @@ await publishConditionalPrototype({
   providerSelection,
   evidenceFloorMet: baselineDecision.evidenceFloorMet,
   votes: baselineDecision.votes,
+  authorBallots: baselineDecision.ballots,
   resolverAttempted,
   resolverChangedOnlyLocated,
   resolutionAdopted,

@@ -41,12 +41,14 @@ async function readCandidate(
     root,
     responseId,
     candidateId,
+    modelId,
     priority,
     shell,
   }: {
     readonly root: string;
     readonly responseId: string;
     readonly candidateId: string;
+    readonly modelId: ConditionalCandidate['modelId'];
     readonly priority: number;
     readonly shell: ReturnType<typeof buildImmutableShell>;
   },
@@ -54,6 +56,7 @@ async function readCandidate(
   const response = await readJson({ path: join(root, `response-${responseId}.json`,), }) as SlotDocumentResponse;
   return {
     id: candidateId,
+    modelId,
     priority,
     response,
     document: compileSlotDocument({ shell, response, }),
@@ -87,6 +90,7 @@ function seededCandidate(
   return {
     candidate: {
       id: 'damaged',
+      modelId: baseline.modelId,
       priority: 1,
       response,
       document: compileSlotDocument({ shell, response, }),
@@ -117,14 +121,36 @@ const [sourceText, archiveText,] = await Promise.all([
 ]);
 const shell = buildImmutableShell({ sourceText, archiveText, });
 const d1Candidates = await Promise.all([
-  readCandidate({ root: d1Root, responseId: 'primary-author', candidateId: 'primary-author', priority: 0, shell, }),
-  readCandidate({ root: d1Root, responseId: 'fallback-author', candidateId: 'fallback-author', priority: 1, shell, }),
-  readCandidate({ root: d1Root, responseId: 'reserve-author', candidateId: 'reserve-author', priority: 2, shell, }),
+  readCandidate({
+    root: d1Root,
+    responseId: 'primary-author',
+    candidateId: 'primary-author',
+    modelId: 'hf:moonshotai/Kimi-K3',
+    priority: 0,
+    shell,
+  },),
+  readCandidate({
+    root: d1Root,
+    responseId: 'fallback-author',
+    candidateId: 'fallback-author',
+    modelId: 'hf:Qwen/Qwen3.8-27B',
+    priority: 1,
+    shell,
+  },),
+  readCandidate({
+    root: d1Root,
+    responseId: 'reserve-author',
+    candidateId: 'reserve-author',
+    modelId: 'hf:zai-org/GLM-5.3-Flash',
+    priority: 2,
+    shell,
+  },),
 ]);
 const d13Baseline = await readCandidate({
   root: d13Root,
   responseId: 'final-reviser',
   candidateId: 'baseline',
+  modelId: 'hf:moonshotai/Kimi-K3',
   priority: 0,
   shell,
 },);
@@ -132,6 +158,7 @@ const d13Resolution = await readCandidate({
   root: d13Root,
   responseId: 'final-copy-editor',
   candidateId: 'resolution',
+  modelId: 'hf:Qwen/Qwen3.8-27B',
   priority: 1,
   shell,
 },);
@@ -150,7 +177,7 @@ const replayed = await Promise.all(retained.nodeRecords.map(async function repla
       : 'seeded-positive';
   const candidates = datasets[datasetId];
   if ((candidates === undefined) || (record.replyCacheKey === undefined))
-    return { nodeId: record.id, datasetId, state: 'unavailable' as const, };
+    return { nodeId: record.id, modelId: record.modelId, datasetId, state: 'unavailable' as const, };
   const envelope = await readJson({
     path: join(calibrationRoot, 'prompt-payloads', `${record.replyCacheKey}.json`,),
   }) as ReplyEnvelope;
@@ -162,28 +189,40 @@ const replayed = await Promise.all(retained.nodeRecords.map(async function repla
     parsed = JSON.parse(rawText,) as unknown;
   }
   catch {
-    return { nodeId: record.id, datasetId, state: 'structural-mismatch' as const, };
+    return { nodeId: record.id, modelId: record.modelId, datasetId, state: 'structural-mismatch' as const, };
   }
   const guard = conditionalAuditStructuralGuard({ shell, candidates, });
   if (!guard(parsed,))
-    return { nodeId: record.id, datasetId, state: 'structural-mismatch' as const, };
+    return { nodeId: record.id, modelId: record.modelId, datasetId, state: 'structural-mismatch' as const, };
   const admission = admitConditionalAudit({ shell, candidates, response: parsed, });
   return {
     nodeId: record.id,
+    modelId: record.modelId,
     datasetId,
     state: 'admitted' as const,
     response: admission.response,
     rejectedFindings: admission.rejectedFindings,
   };
 },),);
-const auditsFor = function auditsFor(datasetId: string,): readonly ConditionalAuditResponse[] {
-  return replayed.flatMap(function admitted(item,): readonly ConditionalAuditResponse[] {
-    return (item.datasetId === datasetId) && (item.state === 'admitted') ? [item.response,] : [];
+const auditEntriesFor = function auditEntriesFor(datasetId: string,): readonly {
+  readonly response: ConditionalAuditResponse;
+  readonly modelId: ConditionalCandidate['modelId'];
+}[] {
+  return replayed.flatMap(function admitted(item,) {
+    return (item.datasetId === datasetId) && (item.state === 'admitted')
+      ? [{ response: item.response, modelId: item.modelId, },]
+      : [];
   },);
 };
-const d1Audits = auditsFor('d1-selection',);
-const d1Decision = selectConditionalBaselineByAuditorVotes({ candidates: d1Candidates, audits: d1Audits, });
-const d13Audits = auditsFor('d13-post',);
+const d1Entries = auditEntriesFor('d1-selection',);
+const d1Audits = d1Entries.map(function audit(entry,) { return entry.response; },);
+const d1Decision = selectConditionalBaselineByAuditorVotes({
+  candidates: d1Candidates,
+  audits: d1Audits,
+  auditorModelIds: d1Entries.map(function model(entry,) { return entry.modelId; },),
+},);
+const d13Entries = auditEntriesFor('d13-post',);
+const d13Audits = d13Entries.map(function audit(entry,) { return entry.response; },);
 const d13Adopt = shouldAdoptConditionalResolutionByAuditorVotes({
   audits: d13Audits,
   baselineId: d13Baseline.id,
@@ -192,7 +231,7 @@ const d13Adopt = shouldAdoptConditionalResolutionByAuditorVotes({
 const d13EveryAuditorLocatedDefect = d13Audits.every(function nonempty(audit,) {
   return Object.values(audit.candidates,).some(function findings(candidate,) { return candidate.findings.length > 0; },);
 },);
-const seededAudits = auditsFor('seeded-positive',);
+const seededAudits = auditEntriesFor('seeded-positive',).map(function audit(entry,) { return entry.response; },);
 const seededFindings = confirmConditionalFindings({
   audits: seededAudits,
   candidateIds: [d13Baseline.id, planted.candidate.id,],
