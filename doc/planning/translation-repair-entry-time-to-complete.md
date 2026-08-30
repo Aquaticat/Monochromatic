@@ -246,6 +246,65 @@ Objective-definition controls passed without provider spend:
 These controls prove instruments can show expected state transitions.
 They do not predict current Carena runtime or output quality.
 
+## Selected completion-path candidate
+
+Task 31 selects explicit slice overlap 4 under built-in 180,000-millisecond grace for Carena measurement.
+This is a run-arm setting,
+not a production fallback change;
+`readPassOverlap` fallback remains 1.
+No source implementation is required because all five per-slice drivers already receive one entry-level overlap value,
+preserve ordered aggregation,
+stop starting work after lowest-position failure,
+normalize caller abort,
+and share only cache-eligible twins.
+
+The scheduling candidate is evidence-supported across every non-null matched corpus pair already run:
+
+- `keyword233`: overlap 4 reduced wall time 19.2 percent and normalized wall time 23.9 percent.
+- `Toka_ls`: overlap 4 reduced wall time 66.7 percent and normalized wall time 64.9 percent with same 61 unheard voices.
+- `Zha_Ke`: overlap 4 reduced wall time 71.9 percent and normalized wall time 53.7 percent.
+- `Weideriche_`: overlap 4 reduced wall time 41.7 percent and normalized wall time 46.6 percent.
+- One-slice `ArtsEpiphany` was expected null control because no second slice could overlap.
+
+Older output blockers in those runs do not prove readiness,
+but paired timing effect is a scheduling result:
+both arms in each pair ran same old digest and same quality mechanism,
+and defects were not created by overlap setting.
+Current full suite and GFP preserve overlap ordering,
+cache eligibility,
+exact abort identity,
+and strict publication on newer pipeline.
+
+Carena stopped trace makes this candidate relevant:
+repair serialized independent work across 22 slices,
+spent 84.14 percent of observed repair wall time in post-quorum grace,
+and had only five content slices complete after 59 minutes.
+Overlap fills one slice's grace wait with useful rounds from other slices without shortening review window.
+
+Task 31 rejects these unmeasured or quality-weakening alternatives:
+
+- reducing 180-second grace
+- reducing exact-half participation or corroboration
+- removing reviewer,
+checker,
+confirmation,
+or fidelity responsibilities
+- lowering model eligibility or using one provider for measured arm
+- overlap greater than 4,
+which has no matched corpus evidence
+- sharing run root,
+cache,
+or provider capacity between timing arms
+
+Task 32 launches Carena with
+`TRANSLATION_REPAIR_SLICE_OVERLAP=4`
+and `--require-providers synthetic,hyper`.
+If first fresh arm exposes reproducible quality or operational blocker,
+measurement stops and code is fixed before another arm.
+If first arm settles but exceeds objective,
+its phase report decides next scheduling change;
+no quality policy changes to fit target.
+
 ## Evidence to collect before and during fresh current-digest runs
 
 1.  Record terminal `TALLY`,
