@@ -100,6 +100,16 @@ description = "PROTOTYPE: run superseded five-payload accountable-editor design 
 depends = ["build"]
 run = "node dist/final/node/prototype-accountable-editor.mjs"
 
+[tasks."prototype-brief-editor"]
+description = "PROTOTYPE: run Candidate C brief-before-prose finite DAG on Carena; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/prototype-brief-editor.mjs"
+
+[tasks."prototype-brief-editor-controls"]
+description = "PROTOTYPE: run Candidate C local controls"
+depends = ["build"]
+run = "node dist/final/node/prototype-brief-editor-controls.mjs"
+
 [tasks."provider-concurrency-aggregate-probe"]
 description = "PROTOTYPE: measure live aggregate Synthetic concurrency across active models; SPENDS QUOTA"
 depends = ["build"]

@@ -43,6 +43,7 @@ import {
 } from '../seat-tally.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
+import type { RetryPolicy, } from '../transient-retry.ts';
 import { resolveGit, } from './git-command.ts';
 
 //region Corpus-run configuration
@@ -700,6 +701,8 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  *
  * @param promptPayloadDir - optional durable payload checkpoint beneath run root
  *
+ * @param retryPolicy - optional shared transport policy for bounded probes
+ *
  * @returns Ready client, routed across configured providers and counted per seat
  *
  * @throws {@link RunConfigError} when both provider key variables are unset or empty
@@ -713,9 +716,11 @@ export function createRunClient(
   {
     transport,
     promptPayloadDir,
+    retryPolicy,
   }: {
     readonly transport?: ModelTransport;
     readonly promptPayloadDir?: string;
+    readonly retryPolicy?: RetryPolicy;
   } = {},
 ): SyntheticClient {
   /**
@@ -761,6 +766,7 @@ export function createRunClient(
     : createSyntheticClient({
       apiKey,
       ...seam,
+      ...(retryPolicy === undefined ? {} : { retryPolicy, }),
     },);
 
   /**
@@ -771,6 +777,7 @@ export function createRunClient(
     : createHyperClient({
       apiKey: hyperKey,
       ...seam,
+      ...(retryPolicy === undefined ? {} : { retryPolicy, }),
     },);
 
   /**
