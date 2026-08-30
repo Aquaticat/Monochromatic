@@ -1200,8 +1200,80 @@ E1 prime > E3 > E2,
 because E1 prime addresses both blind selection and later regression;
 E3 addresses blind selection but cannot repair measured author defects;
 E2 repeats rejected shared-preparation dependency.
-Candidate E1 prime remains proposal until retained D outputs calibrate auditor prompts and selection logic
-without new candidate publication spend.
+Candidate E1 prime entered retained-output calibration before any new candidate publication spend.
+
+### Rejected Candidate E1 prime calibration
+
+Candidate E1 prime dispatched 9 zero-retry auditor payloads in one dependency wave against retained D outputs.
+The bounded run ended after 1,170,562 milliseconds.
+Strict whole-response admission made only 3 responses usable:
+
+- D1 comparison had 0 usable auditors and fell back to known-inferior primary author
+- D1.3 post comparison had 1 usable auditor and no quorum
+- seeded comparison had 2 usable auditors and confirmed all 3 planted defects
+- 5 responses parsed as JSON but failed caller guard
+- 1 GLM D1.3 response ended with `StreamCutShortError`
+
+Every parsed provider reply was already stored privately by prompt digest.
+Digest-bound replay proved all 5 caller-guard failures were structurally valid ballots.
+Across those ballots,
+72 of 80 findings had exact source and candidate anchors and unique candidate-slot-class keys.
+Strict response admission discarded those 72 located findings together with 3 duplicates,
+3 source-anchor misses,
+and 2 candidate-anchor misses.
+Candidate E1 prime is rejected under whole-response admission;
+it cannot proceed to resolver or publication spend.
+Private evidence is preserved at
+`~/Downloads/Carena0442-candidate-E1-prime-calibration-rejected-20260830/`.
+
+### Candidate E1 double-prime admission
+
+Candidate E1 double-prime changes audit admission and decision semantics rather than changing prose prompts:
+
+1.  Structurally valid fixed-candidate ballot becomes usable.
+2.  Each finding is independently admitted only when exact source and candidate anchors bind within named slot.
+3.  Duplicate candidate-slot-class finding and unbound finding are excluded and recorded by candidate,
+    slot,
+    class,
+    and deterministic rejection reason.
+4.  Each usable auditor independently applies severe-count,
+    total-count,
+    then manifest-priority tuple to complete author candidates.
+5.  At least 2 auditors must select same baseline.
+    Otherwise fixed-priority baseline is published with explicit `evidenceFloorMet: false`;
+    such run cannot qualify as architecture quality evidence.
+6.  Resolver receives union of admitted located findings for selected baseline and may change only those slots.
+7.  Each usable post-auditor independently establishes nonempty-baseline strict-subset relation.
+8.  At least 2 post-auditors must establish strict subset before resolution can be adopted.
+    Otherwise baseline survives byte-for-byte.
+
+Zero-spend digest-bound replay over exact E1 prime provider replies admitted every completed ballot:
+
+- D1 had 3 usable auditors;
+  votes were 2 for Qwen fallback,
+  with one empty admitted ballot abstaining,
+  reproducing complete-page comparison
+- D1.3 had 2 usable auditors;
+  each located at least 1 concrete defect and neither established resolution strict subset,
+  reproducing copy-editor rejection
+- seeded arm had 3 usable auditors and retained quorum confirmation for every planted slot
+
+Replay completed in 48 milliseconds without provider calls.
+It calibrates audit admission and decisions only.
+Candidate E1 double-prime remains unselected until located-only resolver diff,
+full fixed graph,
+restart,
+abort,
+GFP,
+fresh Carena publication,
+and complete-page reading pass.
+
+Revised ranking:
+E1 double-prime > E3 > E2 > rejected E1 prime,
+because E1 double-prime recovers measured located evidence and keeps conditional repair;
+E3 cannot exceed measured author ceiling;
+E2 repeats Candidate C dependency;
+E1 prime discarded most valid ballot evidence.
 
 ## Required lifecycle migration
 
