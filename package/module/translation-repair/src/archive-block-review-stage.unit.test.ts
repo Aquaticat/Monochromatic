@@ -237,6 +237,44 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES correction slate that drops target-authoritative contributor identity',
+      fn: async () => {
+        const prompts: string[] = [];
+        let thrown: unknown;
+        try {
+          await runArchiveBlockReviewStage({
+            client: scriptedClient({
+              prompts,
+              replyFor: ({ schema, },) => schema === 'archive_block_review'
+                ? {
+                  disposition: 'revise',
+                  sourceQuote: '',
+                  replacementText: '',
+                  finding: 'Remove the attribution block.',
+                }
+                : {
+                  best: 1,
+                  reason: 'Remove the only candidate.',
+                },
+            },),
+            modelIds: ROSTER,
+            sourceText: '',
+            targetText: 'Contributors for this entry: Cat Friend',
+            blockText: 'Contributors for this entry: Cat Friend',
+            priorFindings: [],
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: 5_000,
+            l,
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
+        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
+        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('archive-block-unresolved');
+      },
+    },),
+    it({
       name: 'CONTINUES naturalness rejection into distinct provenance correction strategy',
       fn: async () => {
         const prompts: string[] = [];
