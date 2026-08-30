@@ -963,6 +963,9 @@ both editors failing while preserving author,
 presentation-artifact author fallback,
 all-author exhaustion,
 and five-node restart without redispatch.
+Wave-three SIGTERM records `CallerAbort` and restart publishes reviser without redispatch.
+Wave-three SIGKILL leaves dispatched copy node;
+restart records `IndeterminateTransmission` and publishes reviser without redispatch.
 Role-distinct fixture digests make preservation observable.
 GFP mutations prove artifact refusal,
 copy preservation,
