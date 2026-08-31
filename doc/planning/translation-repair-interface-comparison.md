@@ -2484,10 +2484,10 @@ Cons:
 Candidate J's Kimi third-author expansion is rejected.
 It adds demonstrated truncating producer and twelve-payload graph while no Kimi route satisfies verifier hard gate.
 
-Candidate I remains private prototype,
-not production selection.
-GLM route is manifest-bound and transport-validated;
-complete Carena consumer validation remains pending.
+Candidate I remained a private prototype,
+not production selection,
+until the calibration recorded in the next section.
+GLM route was manifest-bound and transport-validated before consumer validation.
 It inherits Candidate H's zero-retry and pre-dispatch exchange cap,
 Hyper-only provider binding,
 indeterminate-transmission quarantine,
@@ -2496,7 +2496,8 @@ process lease,
 exact caller-abort identity after sibling settlement,
 prompt claims,
 and complete-candidate no-effect publication guards.
-Prototype HEAD `28d548d84fe1fcb51765b0e9a845c6361bf6359c` implements fixed graph and passed targeted type-aware lint with zero diagnostics,
+Prototype HEAD `28d548d84fe1fcb51765b0e9a845c6361bf6359c` implements the fixed graph.
+It passed targeted type-aware lint with zero diagnostics,
 type checking,
 and full `buildAndTest` with 877 suite `PASS` lines and no suite `FAIL` line.
 GFP mutations failed after rebuild for family exclusion,
@@ -2513,6 +2514,81 @@ finding algebra,
 status-row expansion,
 and unusable-author verifier skips.
 Every mutation was restored before final green run.
+
+### Candidate I pinned-Carena disposition
+
+Candidate I is rejected after its one zero-retry pinned-Carena calibration.
+Harness SHA-256
+`90455077ef109c50750728dc9cb975acde33459d91a4d55ca6ace5dc881e37ff`
+ran prototype commit `28d548d84fe1fcb51765b0e9a845c6361bf6359c` against corpus commit
+`a80634a674f94861ea3b7056fba054ca9eab1a2c`.
+Its fixed manifest dispatched all eight nodes once,
+then proved restart with zero additional transport calls.
+Every request carried `photo1.webp` and used default reasoning and sampling.
+
+Both authors completed and admitted complete candidates.
+Verifier settlement was:
+
+- Qwen candidate:
+  Qwen failed JSON syntax,
+  GLM was cut at the 360-second call deadline,
+  and MiniMax returned a clean ballot;
+- MiniMax candidate:
+  Qwen returned a clean ballot,
+  GLM was cut at the 360-second call deadline,
+  and MiniMax reached `max_tokens` before a tool ballot.
+
+Four nodes completed and four became spent-unusable.
+No node was skipped.
+Each candidate had only one clean nonself family.
+Neither candidate met the two-family nonself floor.
+The deterministic private fallback selected the Qwen candidate with
+`evidenceFloorMet: false` and `productionEligible: false`.
+
+Complete-page review read the source,
+archive,
+both candidate documents,
+private selected document,
+and page image before interpreting selection metadata.
+Both candidates preserved front matter,
+block order,
+media syntax,
+contributor identity and link,
+and source footnote link.
+The Qwen candidate still contained an opening punctuation defect,
+an incomplete possessive construction,
+and one source-and-image relation mistranslation.
+The MiniMax candidate contained sentence fragments,
+several unidiomatic constructions,
+and one omitted contrast.
+Neither document was publication ready.
+No output was published.
+
+Metadata summary SHA-256 is
+`48c4607d29a90aebacc27f5130e7e45d8d83f4529958419bfd937b35afe3e115`.
+Private complete-page review SHA-256 is
+`f5368388a184fbe394eccedb923933bd69e0deeef1c40e702e743b821c62373b`.
+Candidate I must not be retried,
+repaired,
+or integrated.
+
+The next finite design must reduce load-bearing model review from the 134-item mixed structural-and-language ledger.
+Deterministic admission already owns syntax,
+structure,
+links,
+media,
+identity,
+and boundary separators.
+A successor should ask model verifiers only for source-to-target semantic and language judgments over compiled
+translation slots plus page-level criteria.
+It must retain complete source,
+archive,
+candidate,
+and image access,
+family-aware nonself evidence,
+exact status coverage,
+and the same zero-retry lifecycle.
+This is a new substantive verifier contract and cannot redispatch any Candidate I prompt.
 
 ## Required lifecycle migration
 

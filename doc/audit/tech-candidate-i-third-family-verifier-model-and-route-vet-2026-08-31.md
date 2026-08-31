@@ -2,10 +2,10 @@
 
 - Status:
   synthetic route and schema validated;
-  consumer validation pending;
-  no recommendation.
+  pinned-Carena consumer validation failed;
+  rejected for Candidate I.
 - Lifecycle phase:
-  one serious alternative passed transport hard gate.
+  serious alternative passed transport hard gate and failed consumer hard gate.
 - Subject:
   Candidate I third-family verifier model and route.
 - Decision scope:
@@ -170,6 +170,10 @@ and K3
   and 1,607-millisecond duration.
 - Screening:
   serious alternative advanced to Candidate I prototype and pinned-Carena consumer validation.
+- Consumer validation:
+  both candidate-scoped GLM streams were cut at the 360-second call deadline before returning a ballot.
+- Consumer disposition:
+  reject GLM 5.3 Flash as Candidate I's load-bearing third-family verifier.
 
 ## Managed-service gates
 
@@ -299,8 +303,52 @@ No redispatch occurred.
 
 Synthetic run proves exact route and schema behavior only;
 it does not satisfy corpus-image or translation-review constraints.
-GLM advances to Candidate I prototype controls and one pinned-Carena calibration with complete-page review.
-No recommendation follows from synthetic probe alone.
+GLM advanced to Candidate I prototype controls and one pinned-Carena calibration with complete-page review.
+That consumer validation failed.
+
+### Pinned-Carena consumer run
+
+The zero-retry harness at
+`~/temp/agent/run-candidate-i-carena-20260831.mjs`,
+SHA-256 `90455077ef109c50750728dc9cb975acde33459d91a4d55ca6ace5dc881e37ff`,
+ran prototype commit `28d548d84fe1fcb51765b0e9a845c6361bf6359c` against corpus commit
+`a80634a674f94861ea3b7056fba054ca9eab1a2c`.
+It dispatched the fixed eight-node manifest once.
+Every request carried the sole page image and used default reasoning and sampling.
+Restart verification caused zero transport calls.
+
+Both authors completed and produced complete candidates.
+Both GLM candidate-scoped verifier streams were cut at 360 seconds before a ballot.
+One MiniMax ballot completed cleanly for the Qwen candidate;
+the other reached `max_tokens` before a tool ballot.
+One Qwen ballot completed cleanly for the MiniMax candidate;
+the other failed JSON syntax.
+The run therefore recorded four completed nodes,
+four spent-unusable nodes,
+and no skipped nodes.
+Neither candidate met the two-family nonself evidence floor.
+
+Complete-page review read the source,
+archive,
+both candidates,
+private fallback selection,
+and sole image.
+Both candidates retained structure,
+links,
+media,
+order,
+and contributor identity,
+but both had publication-blocking English or fidelity defects.
+No candidate was publication eligible and nothing was published.
+
+Metadata summary is
+`~/temp/agent/prototype-Carena-I-candidate-ballot-20260831/calibration-summary.json`,
+SHA-256 `48c4607d29a90aebacc27f5130e7e45d8d83f4529958419bfd937b35afe3e115`.
+Private complete-page review is
+`~/temp/agent/prototype-Carena-I-candidate-ballot-20260831/complete-page-review.json`,
+SHA-256 `f5368388a184fbe394eccedb923933bd69e0deeef1c40e702e743b821c62373b`.
+Network evidence remains metadata-only.
+No retry or redispatch is authorized from this result.
 
 ## Evidence records
 
@@ -372,8 +420,7 @@ No recommendation follows from synthetic probe alone.
 - Gate:
   hard publication evidence and scored quality.
 - Status:
-  prototype controls pass;
-  pinned-Carena calibration pending.
+  consumer hard gate failed.
 - Prototype evidence:
   commit `28d548d84fe1fcb51765b0e9a845c6361bf6359c`,
   targeted type-aware lint with zero diagnostics,
@@ -391,18 +438,21 @@ No recommendation follows from synthetic probe alone.
   status algebra,
   durable expansion,
   and deterministic skips.
-- Counterevidence:
-  prototype controls and prior Synthetic probes are not translation-review evidence.
+- Consumer evidence:
+  both GLM verifier streams were cut at 360 seconds before returning a ballot;
+  neither candidate met the family-aware evidence floor;
+  complete-page review rejected both complete candidates.
 - Outcome:
-  advance to pinned-Carena calibration;
-  no recommendation before complete consumer review.
+  reject for Candidate I.
 
 ## Current disposition
 
-No recommendation.
-GLM 5.3 Flash is only serious alternative after exhaustive family screening and passed exact Hyper Anthropic forced-tool
-route probe.
-It passed Candidate I structural prototype controls and may enter pinned-Carena consumer validation.
-Product allowlist,
-production code,
-and decision records must not adopt it before pinned-Carena completion and complete-page review.
+Reject GLM 5.3 Flash as Candidate I's load-bearing third-family verifier.
+It remains the only third-family Hyper vision route that passed the synthetic forced-tool screen,
+but both exact pinned-Carena verifier calls failed to return ballots before the fixed deadline.
+Transport conformance did not establish consumer fit.
+Candidate I also failed its publication objective:
+neither complete candidate met the evidence floor or complete-page review.
+Do not add this route to the production allowlist,
+do not retry spent prompts,
+and do not integrate Candidate I.
