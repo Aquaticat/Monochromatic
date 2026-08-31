@@ -299,6 +299,7 @@ export type SchemaMismatchReason =
   | 'caller-guard-rejected'
   | 'unparseable-json'
   | 'truncated-thinking'
+  | 'truncated-completion'
   | 'other-schema-mismatch';
 
 export type ChatJsonOutcome<ValueT,> =
@@ -365,7 +366,7 @@ export type ChatJsonOutcome<ValueT,> =
     readonly reason?: SchemaMismatchReason;
 
     /**
-     * What failed: parse step, guard, or thinking truncation.
+     * What failed: parse step, guard, or completion truncation.
      */
     readonly detail: string;
 

@@ -28,7 +28,7 @@ export type SlotNodeRecord = {
   readonly providerResponseDigest?: string;
   readonly replyCacheKey?: string;
   readonly failureType?: string;
-  readonly failureDetailType?: 'caller-guard-rejected' | 'unparseable-json' | 'truncated-thinking' | 'other-schema-mismatch';
+  readonly failureDetailType?: 'caller-guard-rejected' | 'unparseable-json' | 'truncated-thinking' | 'truncated-completion' | 'other-schema-mismatch';
   readonly failureDigest?: string;
 };
 

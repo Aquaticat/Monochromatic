@@ -91,6 +91,43 @@ await describe({
       },
     },),
 
+    ...(['max_tokens', 'length',] as const).map(function truncatingReason(reason,) {
+      return it({
+        name: `REFUSES parsed content stopped by ${reason}`,
+        fn: async () => {
+          /** Provider text that forms complete JSON despite ceiling stop. */
+          const text = '{"verdict":"nap"}';
+          /** Usage that must survive no-effect admission. */
+          const usage = {
+            prompt_tokens: 13,
+            completion_tokens: 21,
+          };
+          /** Outcome of syntactically complete content cut at provider limit. */
+          const outcome = readJsonOutcome({
+            modelId: MODEL_ID,
+            reply: {
+              text,
+              finishReason: reason,
+              usage,
+            },
+            validate: isCatVerdict,
+          },);
+
+          expect(outcome.kind,).toBe('schema-mismatch',);
+          expect(outcome.rawText,).toBe(text,);
+          expect(outcome.usage,).toEqual(usage,);
+          expect(
+            outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,
+          ).toBe('truncated-completion',);
+          expect(
+            outcome.kind === 'schema-mismatch' ? outcome.detail : undefined,
+          ).toBe(
+            `provider reported a truncating completion (model stopped with finish_reason=${reason})`,
+          );
+        },
+      },);
+    },),
+
     it({
       name: 'FORWARDS the api refusal field ahead of every content heuristic',
       fn: async () => {
@@ -108,6 +145,30 @@ await describe({
         // A refusal with no content falls back to the refusal text itself, so
         // an audit trail is never empty.
         expect(outcome.rawText,).toBe('不能回答。',);
+      },
+    },),
+
+    it({
+      name: 'FORWARDS api refusal ahead of token-limit marker',
+      fn: async () => {
+        /** Content ignored because explicit provider refusal is authoritative. */
+        const text = '{"verdict":"nap"}';
+        /** Outcome carrying both explicit refusal and token-limit marker. */
+        const outcome = readJsonOutcome({
+          modelId: MODEL_ID,
+          reply: {
+            text,
+            refusal: 'provider refused this request',
+            finishReason: 'max_tokens',
+          },
+          validate: isCatVerdict,
+        },);
+
+        expect(outcome.kind,).toBe('refusal-shaped',);
+        expect(outcome.rawText,).toBe(text,);
+        expect(
+          outcome.kind === 'refusal-shaped' ? outcome.marker : '',
+        ).toBe('api-refusal-field',);
       },
     },),
 
@@ -172,7 +233,7 @@ await describe({
         },);
 
         expect(outcome.kind,).toBe('schema-mismatch',);
-        expect(outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,).toBe('unparseable-json',);
+        expect(outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,).toBe('truncated-completion',);
         // A cut-off reply and a malformed one arrive identically and need
         // opposite remediation.
         expect(
