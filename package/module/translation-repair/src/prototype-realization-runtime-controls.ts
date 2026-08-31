@@ -627,6 +627,7 @@ export async function runRealizationRuntimeControls(): Promise<void> {
         abortReason: reason,
         delaySchemaName: wave === 'author' ? 'verified_realization_author' : 'verified_realization_ballot',
         delayModelId: delayedModelId,
+        abortObservationDelayMs: 100,
       },);
       const caught = await capturedFailure(async function abortWave() {
         await runFixtureGraph({

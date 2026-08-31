@@ -53,6 +53,7 @@ export function createRealizationScriptedClient({
   abortAfterResponseModelId,
   delaySchemaName,
   delayModelId,
+  abortObservationDelayMs = 0,
   throwSchemaName,
   throwModelId,
 }: {
@@ -67,6 +68,7 @@ export function createRealizationScriptedClient({
   readonly abortAfterResponseModelId?: RosterModelId;
   readonly delaySchemaName?: string;
   readonly delayModelId?: RosterModelId;
+  readonly abortObservationDelayMs?: number;
   readonly throwSchemaName?: string;
   readonly throwModelId?: RosterModelId;
 } = {}): {
@@ -97,8 +99,10 @@ export function createRealizationScriptedClient({
         if ((schemaName === delaySchemaName)
           && ((delayModelId === undefined) || (delayModelId === request.modelId))) {
           for (let elapsedMs = 0; elapsedMs < 1_000; elapsedMs += 10) {
-            if (request.signal.aborted)
+            if (request.signal.aborted) {
+              await wait(abortObservationDelayMs,);
               throw request.signal.reason;
+            }
             await wait(10,);
           }
         }
