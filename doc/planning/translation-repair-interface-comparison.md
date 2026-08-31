@@ -1750,11 +1750,12 @@ cache binding,
 prompt uniqueness,
 provider isolation,
 and exact caller abort must pass for both waves.
-It is not selected for production,
-and no live payload is authorized before schema-size measurement,
+It is not selected for production.
+Live calls are authorized;
+Candidate G did not proceed before schema-size measurement,
 implementation review,
 GFP controls,
-and advisor pre-spend review.
+and advisor review.
 
 ### Candidate G envelope disposition
 
@@ -1823,7 +1824,7 @@ escape,
 and emoji arms still exceeded the ceiling.
 The experiment was reverted rather than weakening author authority or declaring semantic invalidity a transport bound.
 
-Candidate G remains unauthorized because it has no qualified author.
+Candidate G is not production-selected because it has no qualified author.
 Its four-candidate verifier completion headroom is unproven under planned model tokenizers and blocks pre-spend.
 Its reusable findings are closed-world obligation coverage,
 manifest-ordered status arrays,
@@ -1986,7 +1987,7 @@ unavailable tokenizers remain explicit roster blockers rather than guessed equiv
 
 ### Candidate H envelope disposition
 
-Candidate H remains unauthorized before implementation and spend.
+Candidate H is not production-selected.
 Its compact schema-stress witness proves that the schema is overpermissive,
 not that the provider-returnable author envelope is unbounded.
 Its slot-only author uses the immutable-shell response envelope from Candidates D and E:
@@ -2008,7 +2009,8 @@ The five retained complete Qwen pages prove only that those rejected outputs fit
 they do not prove that a publication-ready candidate cannot require more.
 The compact schema-stress failure no longer rejects Candidate H by itself.
 Candidate H code is implemented on the finite-prototype branch,
-but no live payload is authorized because its targeted lint and completion-headroom evidence remain unfinished and it has no qualified author roster.
+but it is not production-selected because targeted lint remains unfinished and it has no qualified author roster.
+Live calibration is an authorized next evidence step after targeted lint.
 
 Candidate H contributes one reusable interface idea:
 complete status arrays plus exact overflow algebra can bound defect narration without treating missing findings as clean evidence.
@@ -2113,8 +2115,8 @@ but they are not by themselves a normal-run architecture rejection.
 This interpretation removes Candidate G and Candidate H envelope-only rejections.
 It does not reverse their independent blockers:
 Candidate G has no qualified author and its four-candidate verifier interface remains unmeasured under the planned model tokenizers;
-Candidate H remains unimplemented and has no qualified author roster.
-No live spend is authorized.
+Candidate H is implemented but has no qualified author roster and has not completed targeted lint.
+Live Hyper and Synthetic use is authorized without another permission checkpoint.
 
 Consumer hardening is required first.
 `readJsonOutcome` currently admits parseable guard-valid JSON even when `finishReason` is `max_tokens`.
@@ -2156,7 +2158,7 @@ The fresh restored package run reports 876 passing suites and no failure lines.
 GFP removal of overflow algebra and family-floor checks fails at their intended Candidate H controls;
 restored targeted and full runs pass.
 
-Candidate H's admitted field-count-maximum Carena verifier witness measured:
+Candidate H's synthetic structurally admitted field-count-maximum Carena verifier witness measured:
 
 - 23 immutable-shell slots,
   134 obligations,
@@ -2164,37 +2166,50 @@ Candidate H's admitted field-count-maximum Carena verifier witness measured:
   eight findings per candidate,
   and three anchors per finding;
 - 17,780 compact bytes and 5,927 tokens under the project three-bytes-per-token estimate;
-- 7,778 comparison-only tokens under official `openai/gpt-oss-120b` tokenizer commit
-  `b5c939de8f754692c1647ca79fbf85e8c1e70f8a`,
-  leaving 24,222 tokens below Hyper's 32,000-token completion ceiling;
-- 9,945 comparison-only tokens under `Qwen/Qwen3.6-27B` tokenizer commit
-  `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`,
-  leaving 22,055 tokens below the ceiling;
+- 7,737 raw JSON tokens under exact MiniMax M3 tokenizer;
+- 8,011 raw JSON tokens under each exact DeepSeek V4 verifier tokenizer,
+  yielding 23,989 tokens of raw-wire arithmetic reserve below Hyper's 32,000-token completion ceiling;
 - compact wire SHA-256
   `5600dbd91e34c2b3319eaf38a6c14e3f71f77792e96e6757da8f26f24f004e25`.
 
 The witness is field-count-maximum,
 not byte-maximum.
 It passed full Candidate H admission for all planned verifier identities.
-The retained complete slot record is used only as realistic shell text and offset scale,
+
+A realistic complete Carena author response measured 21,412 compact bytes with SHA-256
+`bb61c6dcb2cde515e04748cccabb99e15579edf9091e634b156e633c3159ef08`.
+Its exact raw JSON counts are 4,585 Qwen3.8 tokens,
+4,594 Kimi K3 tokens,
+4,563 GLM 5.3 Flash tokens,
+and 4,553 gpt-oss tokens.
+The lowest author-witness raw-wire arithmetic reserve is 27,406 tokens.
+The retained response is used only as realistic size evidence,
 not as evidence that its rejected author identity is qualified.
 
-Exact current tokenizers remain unavailable for planned Qwen3.8,
-Kimi K3,
-GLM 5.3,
-MiniMax M3,
-and both DeepSeek V4 variants.
-The Qwen3.6 comparison cannot prove those families.
-These unavailable tokenizer bindings remain explicit pre-spend measurement blockers,
-separate from author-quality roster blockers.
+Official tokenizer artifacts are pinned at:
+
+- Qwen3.8 `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`;
+- Kimi K3 `a590ce090cb049c93a33dfe8c208ec652aa20503`;
+- GLM 5.3 Flash `04c4e9e95c5da8862dced7e5056455116f83a7e0`;
+- gpt-oss `b5c939de8f754692c1647ca79fbf85e8c1e70f8a`;
+- MiniMax M3 `f0e1c1e04d40177e4673a22097036854f536e9c0`;
+- DeepSeek V4 Flash 0731 `7872f01b1d1fe23eabc4c98b48bffcef5a386062`;
+- DeepSeek V4 Pro 0813 `72e1d3230f6c080a530b0a1d46f8eb4602340597`.
+
+Raw-wire headroom does not include model reasoning or tool-call framing.
+Provider `usage.output_tokens` and finish reason remain required live calibration evidence.
+`doc/troubleshooting/charm-hyper-token-count-evidence.md` records the endpoint research,
+artifact hashes,
+and exact method.
 
 Envelope measurement code is committed as `be0c178d6`.
 The fresh package run after that change reports 876 passing suites and no failure lines;
 type lint passes.
 
-No live spend is authorized until Candidate H-specific Oxlint migration,
-planned-roster tokenizer evidence,
-and a fresh advisor pre-spend review pass.
+The user has authorized Hyper and Synthetic calls without another permission checkpoint.
+Candidate H calibration remains sequenced after Candidate H-specific Oxlint migration and a fresh advisor review so live calls produce interpretable evidence;
+this is an engineering evidence order,
+not an authorization gate.
 
 ## Required lifecycle migration
 
