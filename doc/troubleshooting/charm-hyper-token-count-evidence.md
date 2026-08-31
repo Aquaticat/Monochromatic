@@ -240,8 +240,12 @@ This proves Hyper's Anthropic route accepted exact image,
 forced-tool,
 and low-effort field combination for Kimi K3.
 It does not prove Hyper forwarded effort upstream or that low effort reduces reasoning on Candidate I workload.
-Prompt uniqueness forbids sending same model and canonical substantive prompt twice for default-versus-low comparison;
-effectiveness therefore remains one-shot Candidate I calibration evidence.
+Prompt uniqueness forbids sending same model and canonical substantive prompt twice for default-versus-low comparison.
+Package request contracts also record owner's standing instruction not to set thinking,
+budget,
+or effort parameters after prior serving-stack failures.
+The probe therefore remains transport evidence only;
+Candidate I does not adopt low-effort path.
 
 Initial local launch lacked credential injection because it ran outside configured project worktree.
 Its failure digest exactly matched pre-dispatch absent-key error and made no provider request.

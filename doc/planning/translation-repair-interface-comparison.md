@@ -2365,7 +2365,7 @@ export type CandidateIVerification = {
 
 export type CandidateIVerifierProfile = {
   readonly modelId: ModelIdentity;
-  readonly outputEffort?: 'low';
+  readonly responseRoute: 'anthropic-tool' | 'openai-json-schema';
 };
 ```
 
@@ -2389,25 +2389,28 @@ No admitted dissent is allowed.
 Private fixed-priority fallback may preserve complete candidate below floor,
 but cannot claim production eligibility.
 
-Kimi verifier profiles contain `outputEffort: 'low'`;
-Qwen and MiniMax profiles omit `outputEffort`.
-Candidate I-bound Hyper client converts only Kimi profile to exact Anthropic
-`output_config.effort: low`,
-persists requested profile,
-and never retries without it.
+Candidate I does not set thinking,
+budget,
+or effort parameters.
+Package contracts record owner's standing instruction against those knobs after measured serving-stack failures.
+The Kimi verifier id and route remain pending focused incumbent-roster vet.
+Current serious path uses Hyper OpenAI Chat Completions structured output at model default,
+with simple schema and caller validation;
+Qwen and MiniMax retain Anthropic forced-tool route.
+Manifest persists exact route per verifier.
 Unsupported,
 truncated,
-or malformed output abstains without default-effort fallback.
-Silent provider disregard is not observable from HTTP acceptance and remains calibration risk.
-A bounded Hyper acceptance probe sent one image and one forced tool with low effort.
+or malformed output abstains without route or parameter fallback.
+
+A bounded Hyper probe sent one image and one forced tool with low effort to Kimi K3.
 It returned HTTP 200,
 `tool_use`,
 96 output tokens,
 214 reasoning characters,
 and expected parseable verdict after 2,955 milliseconds.
 This proves route combination acceptance only.
-It does not prove lower reasoning on Candidate I workload;
-full calibration remains effectiveness test.
+It does not prove lower reasoning and cannot override owner no-effort policy.
+Candidate I will not use low-effort path.
 
 Candidate I intends to move target-language separators out of model authority.
 Immutable shell manifest gains AST-derived boundary atoms for target text adjacent to locked inline syntax.
@@ -2447,7 +2450,7 @@ truncation,
 and indeterminate-transmission failures remain separate operational classes.
 Finish reason,
 usage,
-effort profile,
+response route,
 request and response digests,
 and attempt count become durable node evidence.
 
@@ -2468,16 +2471,16 @@ Cons:
 
 - only two author wordings enter selection;
 - Kimi remains load-bearing verifier;
-- low-effort effectiveness is unproven on full Carena ballot;
+- default-parameter Kimi id and structured-output route remain unselected;
 - neither retained Candidate H author passed complete-page publication review.
 
-Candidate J adds low-effort Kimi as third author and runs same three verifiers for every candidate.
+Candidate J adds selected default-parameter Kimi model as third author and runs same three verifiers for every candidate.
 
 Pros:
 
 - adds one distinct-family complete candidate when Kimi authorship succeeds;
 - preserves same evidence rules and candidate-scoped ballots;
-- tests low effort in authorship as well as verification.
+- tests selected Kimi route in authorship as well as verification.
 
 Cons:
 
@@ -2488,7 +2491,7 @@ Cons:
 Ranking:
 Candidate I > Candidate J.
 Candidate I ranks above Candidate J because it tests load-bearing Kimi verifier path while excluding known Kimi author failure.
-Candidate J becomes eligible only after low-effort Kimi independently returns and passes complete-page author review.
+Candidate J becomes eligible only after selected default-parameter Kimi route independently returns and passes complete-page author review.
 
 Candidate I is next private prototype,
 not production selection.
