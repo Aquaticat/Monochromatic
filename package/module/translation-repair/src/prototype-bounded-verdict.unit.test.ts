@@ -1679,6 +1679,12 @@ await describe({
         expect(settled.map(function status(result,) {
           return result.status;
         },).toSorted(),).toEqual(['fulfilled', 'rejected',],);
+        const rejection = settled.find(function rejected(result,) {
+          return result.status === 'rejected';
+        },);
+        expect((rejection !== undefined) && (rejection.status === 'rejected')
+          ? caughtValueText(rejection.reason,)
+          : '',).toBe('realization runtime output root already has live owner',);
         expect(calls,).toHaveLength(6,);
       },
       timeout: 20_000,
