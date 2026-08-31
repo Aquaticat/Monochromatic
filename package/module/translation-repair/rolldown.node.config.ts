@@ -52,6 +52,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-immutable-shell": "./src/corpus-run/prototype-immutable-shell.ts",
     "prototype-immutable-shell-controls": "./src/corpus-run/prototype-immutable-shell-controls.ts",
     "prototype-realization": "./src/prototype-realization.ts",
+    "prototype-realization-envelope": "./src/prototype-realization-envelope.ts",
     "prototype-realization-test-support": "./test/prototype-realization-test-support.ts",
     "prototype-serial-controls": "./src/corpus-run/prototype-serial-controls.ts",
     "prototype-serial-producers": "./src/corpus-run/prototype-serial-producers.ts",
