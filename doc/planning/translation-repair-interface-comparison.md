@@ -1962,14 +1962,11 @@ H3 > H1 > H2.
 H3 ranks above H1 because it keeps closed-world comparison in one bounded ballot without multiplying calls.
 H1 ranks above H2 because one atomic verifier response is more auditable than independently generated status and evidence halves.
 
-Candidate H is an unresolved calibration proposal,
+Candidate H is an implemented private calibration prototype,
 not yet a viable successor.
-It enters schema-envelope and scripted controls only.
-The author envelope remains unsolved:
-slot-only authors still permit schema-authorized output beyond 32,000 tokens,
-and no arbitrary prose cap may replace contributor authority or publication quality.
-The verifier envelope is also only a hypothesis until one numeric cap `C` is frozen and the actual four-candidate maximum is serialized.
-The active evidence also contains no qualified author roster:
+The output-envelope boundary resolution supersedes abstract schema stress as architecture rejection.
+The verifier finding cap is frozen at `C = 8`.
+The active evidence still contains no qualified author roster:
 all five Qwen expansion authors failed complete-page review,
 and MiniMax returned an unusable author response.
 
@@ -2010,7 +2007,8 @@ No source-derived prose cap is authorized.
 The five retained complete Qwen pages prove only that those rejected outputs fit their measured lengths;
 they do not prove that a publication-ready candidate cannot require more.
 The compact schema-stress failure no longer rejects Candidate H by itself.
-No Candidate H code or live payload is authorized because Candidate H remains unimplemented and has no qualified author roster.
+Candidate H code is implemented on the finite-prototype branch,
+but no live payload is authorized because its targeted lint and completion-headroom evidence remain unfinished and it has no qualified author roster.
 
 Candidate H contributes one reusable interface idea:
 complete status arrays plus exact overflow algebra can bound defect narration without treating missing findings as clean evidence.
@@ -2122,7 +2120,45 @@ Consumer hardening is required first.
 `readJsonOutcome` currently admits parseable guard-valid JSON even when `finishReason` is `max_tokens`.
 That contradicts truncation-as-no-effect semantics and is documented in
 `doc/troubleshooting/charm-hyper-max-tokens-tool-json.md`.
-A successor cannot rely on I1 until that boundary rejects truncating finish reasons and GFP proves the guard load-bearing.
+The shared provider boundary now rejects Anthropic `max_tokens` and OpenAI-compatible `length` before parsing.
+Commit `44ed76c59` added dist-based controls,
+and GFP showed both parseable truncation cases fail when the predicate is removed.
+
+### Candidate H implementation status
+
+Prototype commit `7ceaec899` implements Candidate H with:
+
+- four immutable-shell whole-document authors and three all-candidate verifiers in two dependency waves;
+- complete manifest-ordered obligation and global status arrays;
+- eight bounded exact findings per candidate and exact `overflow === D > 8` algebra;
+- obligation-indexed omissions,
+  non-overlapping UTF-16 target anchors,
+  and raw duplicate-member refusal;
+- complete author-wave settlement,
+  whole-ballot abstention,
+  hidden priority,
+  family-aware evidence floors,
+  and no-dissent production eligibility;
+- frozen provider binding,
+  one-payload prompt claims,
+  process-incarnation lease,
+  deterministic restart,
+  indeterminate-transmission quarantine,
+  and exact caller-abort propagation after sibling settlement;
+- Hyper-only provider masking,
+  all page-image carriage,
+  blocked internal node subpaths,
+  and private output only.
+
+Targeted Candidate H controls pass.
+Type lint passes.
+The fresh restored package run reports 876 passing suites and no failure lines.
+GFP removal of overflow algebra and family-floor checks fails at their intended Candidate H controls;
+restored targeted and full runs pass.
+
+No live spend is authorized until Candidate H-specific Oxlint migration,
+four-candidate verifier completion-headroom measurement under planned tokenizers,
+and a fresh advisor pre-spend review pass.
 
 ## Required lifecycle migration
 
