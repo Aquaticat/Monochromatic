@@ -14,6 +14,10 @@ import type {
 } from './prototype-review-unit-model.ts';
 import type { RealizationCandidatePlan, } from './prototype-realization-model.ts';
 import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
+import {
+  REVIEW_UNIT_FINDING_RULE_DIGEST,
+  REVIEW_UNIT_FINDING_RULES,
+} from './prototype-review-unit-rules.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 
 /**
@@ -48,6 +52,8 @@ const VERIFIER_PACKET_KEYS = [
   'candidateOrdinal',
   'findingCap',
   'defectClasses',
+  'findingRuleDigest',
+  'findingRules',
   'sourceText',
   'archiveText',
   'shell',
@@ -328,6 +334,8 @@ export function reviewUnitVerifierMessages({
     candidateOrdinal: candidate.candidateOrdinal,
     findingCap: manifest.findingCap,
     defectClasses,
+    findingRuleDigest: REVIEW_UNIT_FINDING_RULE_DIGEST,
+    findingRules: REVIEW_UNIT_FINDING_RULES,
     sourceText,
     archiveText,
     shell: {

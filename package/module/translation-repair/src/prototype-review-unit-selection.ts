@@ -61,13 +61,18 @@ function isClean({
     && (response.findings
       .length
       === 0)
-    && (!response.frontMatterStatuses.includes('d',))
-    && response.clauseStatusesBySlot.every(function clean(statuses,) {
+    && (!response.frontMatterStatuses
+      .includes('d',))
+    && response.clauseStatusesBySlot
+    .every(function clean(statuses,) {
       return !statuses.includes('d',);
     },)
-    && (!response.relationStatuses.includes('d',))
-    && (!response.slotLanguageStatuses.includes('d',))
-    && (!response.globalStatuses.includes('d',));
+    && (!response.relationStatuses
+      .includes('d',))
+    && (!response.slotLanguageStatuses
+      .includes('d',))
+    && (!response.globalStatuses
+      .includes('d',));
 }
 
 /**

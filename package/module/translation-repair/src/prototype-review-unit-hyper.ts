@@ -14,6 +14,11 @@ import {
 } from './synthetic-transport.ts';
 
 /**
+ * Candidate K provisional local request deadline.
+ */
+export const REVIEW_UNIT_REQUEST_TIMEOUT_MS = 900_000;
+
+/**
  * Private proof that concrete client was bound to one route table.
  */
 const REVIEW_UNIT_ROUTE_CLIENT: unique symbol = Symbol('review unit route client',);
@@ -33,7 +38,7 @@ export type ReviewUnitHyperModel = HyperExpansionModel & {
   /**
    * Candidate K provisional local call deadline.
    */
-  readonly requestTimeoutMs: 900_000;
+  readonly requestTimeoutMs: typeof REVIEW_UNIT_REQUEST_TIMEOUT_MS;
 };
 
 /**
@@ -63,21 +68,21 @@ export const REVIEW_UNIT_HYPER_MODELS: readonly ReviewUnitHyperModel[] = [
     id: 'qwen3.8-27b',
     requestOutputTokens: 32_000,
     readsImages: true,
-    requestTimeoutMs: 900_000,
+    requestTimeoutMs: REVIEW_UNIT_REQUEST_TIMEOUT_MS,
   },
   {
     requestId: 'hf:zai-org/GLM-5.3-Flash',
     id: 'glm-5.3-flash',
     requestOutputTokens: 32_000,
     readsImages: true,
-    requestTimeoutMs: 900_000,
+    requestTimeoutMs: REVIEW_UNIT_REQUEST_TIMEOUT_MS,
   },
   {
     requestId: 'minimax-m3',
     id: 'minimax-m3',
     requestOutputTokens: 32_000,
     readsImages: true,
-    requestTimeoutMs: 900_000,
+    requestTimeoutMs: REVIEW_UNIT_REQUEST_TIMEOUT_MS,
   },
 ];
 

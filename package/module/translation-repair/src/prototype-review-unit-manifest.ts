@@ -22,6 +22,7 @@ import {
   REVIEW_UNIT_VERIFIER_PROTOCOL_DIGEST,
 } from './prototype-review-unit-prompt.ts';
 import { realizationCandidateAlias, } from './prototype-realization-author.ts';
+import { REVIEW_UNIT_FINDING_RULE_DIGEST, } from './prototype-review-unit-rules.ts';
 import {
   assertReviewUnitPlan,
   type ReviewUnitPlan,
@@ -309,6 +310,7 @@ export function createReviewUnitManifest({
       content: JSON.stringify(slotResponseFormat({ shell, }),),
     },),
     verifierProtocolDigest: REVIEW_UNIT_VERIFIER_PROTOCOL_DIGEST,
+    verifierRuleDigest: REVIEW_UNIT_FINDING_RULE_DIGEST,
     findingCap: REVIEW_UNIT_FINDING_CAP,
     sourcePictures,
     payloadCountCeiling: MAX_REVIEW_UNIT_PAYLOAD_COUNT,

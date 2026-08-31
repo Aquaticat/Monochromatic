@@ -277,7 +277,8 @@ export async function runReviewUnitVerifierNode({
     validate,
     validateRawText,
     failureCategory,
-    exchangeTimeoutMs: reviewUnitHyperModel({ modelId: verifierModelId, }).requestTimeoutMs,
+    exchangeTimeoutMs: reviewUnitHyperModel({ modelId: verifierModelId, })
+      .requestTimeoutMs,
     signal,
   },);
   if (execution.kind === 'unusable')

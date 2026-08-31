@@ -241,7 +241,8 @@ export async function runReviewUnitAuthorNode({
     responseFormat,
     validate,
     validateRawText: validateCandidateAuthorRawText,
-    exchangeTimeoutMs: reviewUnitHyperModel({ modelId: plan.modelId, }).requestTimeoutMs,
+    exchangeTimeoutMs: reviewUnitHyperModel({ modelId: plan.modelId, })
+      .requestTimeoutMs,
     signal,
   },);
   if (execution.kind === 'unusable')

@@ -129,8 +129,12 @@ export function admitReviewUnitAuthorResponse({
   /**
    * Synthetic exact-anchor slots for immutable target front matter.
    */
-  const frontMatterSlots = Object.fromEntries(reviewPlan.frontMatterSubjects.map(function entry(subject,) {
-    return [subject.targetSlotKey, subject.targetText,];
+  const frontMatterSlots = Object.fromEntries(reviewPlan.frontMatterSubjects
+    .map(function entry(subject,) {
+    return [
+      subject.targetSlotKey,
+      subject.targetText,
+    ];
   },),);
   /**
    * Body and front-matter target records used by verifier anchors.

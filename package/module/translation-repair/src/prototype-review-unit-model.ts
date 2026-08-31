@@ -34,7 +34,14 @@ export const MAX_REVIEW_UNIT_PAYLOAD_COUNT = 12;
  */
 export const REVIEW_UNIT_FINDING_CAP = 64;
 
-/** Closed defect vocabulary shared by Candidate K ballot scopes. */
+/**
+ * Maximum exact target anchors retained by one finding.
+ */
+export const REVIEW_UNIT_MAX_TARGET_ANCHORS = 4;
+
+/**
+ * Closed defect vocabulary shared by Candidate K ballot scopes.
+ */
 export const REVIEW_UNIT_DEFECT_CLASSES = [
   'wrong-meaning',
   'omission',
@@ -51,7 +58,9 @@ export const REVIEW_UNIT_DEFECT_CLASSES = [
   'image-relation',
 ] as const;
 
-/** One Candidate K defect classification. */
+/**
+ * One Candidate K defect classification.
+ */
 export type ReviewUnitDefectClass = typeof REVIEW_UNIT_DEFECT_CLASSES[number];
 
 /**
@@ -124,6 +133,10 @@ export type ReviewUnitManifest = {
    * Canonical candidate-scoped verifier protocol identity.
    */
   readonly verifierProtocolDigest: string;
+  /**
+   * Model-facing scope and evidence-rule identity.
+   */
+  readonly verifierRuleDigest: string;
   /**
    * Bound finding capacity.
    */
@@ -217,58 +230,106 @@ export type ReviewUnitCandidate = {
   readonly deterministicProofDigest: string;
 };
 
-/** Candidate K defect subject scope. */
+/**
+ * Candidate K defect subject scope.
+ */
 export type ReviewUnitFindingScope = 'c' | 'fm' | 'g' | 'r' | 'sl';
 
-/** Located bounded defect witness linked by review subject. */
+/**
+ * Located bounded defect witness linked by review subject.
+ */
 export type ReviewUnitFinding = {
-  /** Clause, relation, slot-language, or global scope. */
+  /**
+   * Clause, relation, slot-language, or global scope.
+   */
   readonly scope: ReviewUnitFindingScope;
-  /** Subject index in relevant review-plan sequence. */
+  /**
+   * Subject index in relevant review-plan sequence.
+   */
   readonly subjectIndex: number;
-  /** Canonical defect vocabulary index. */
+  /**
+   * Canonical defect vocabulary index.
+   */
   readonly defectClassIndex: number;
-  /** Readable source evidence positions supporting witness. */
+  /**
+   * Readable source evidence positions supporting witness.
+   */
   readonly sourceEvidenceIndexes: readonly number[];
-  /** Manifest page-image positions supporting witness. */
+  /**
+   * Manifest page-image positions supporting witness.
+   */
   readonly imageEvidenceIndexes: readonly number[];
-  /** Exact target evidence after deterministic boundary insertion. */
+  /**
+   * Exact target evidence after deterministic boundary insertion.
+   */
   readonly targetAnchors: readonly RealizationTargetAnchor[];
 };
 
-/** Complete compact response for exactly one anonymous candidate. */
+/**
+ * Complete compact response for exactly one anonymous candidate.
+ */
 export type ReviewUnitResponse = {
-  /** Candidate alias copied from prompt. */
+  /**
+   * Candidate alias copied from prompt.
+   */
   readonly candidateId: string;
-  /** Candidate digest copied from prompt. */
+  /**
+   * Candidate digest copied from prompt.
+   */
   readonly candidateDigest: string;
-  /** Readable review plan identity copied from prompt. */
+  /**
+   * Readable review plan identity copied from prompt.
+   */
   readonly reviewPlanDigest: string;
-  /** Deterministic admission proof copied from prompt. */
+  /**
+   * Deterministic admission proof copied from prompt.
+   */
   readonly deterministicProofDigest: string;
-  /** One `p` or `d` code per semantic front-matter string. */
+  /**
+   * One `p` or `d` code per semantic front-matter string.
+   */
   readonly frontMatterStatuses: string;
-  /** One clause-status string per slot group. */
+  /**
+   * One clause-status string per slot group.
+   */
   readonly clauseStatusesBySlot: readonly string[];
-  /** One `p` or `d` code per relation subject. */
+  /**
+   * One `p` or `d` code per relation subject.
+   */
   readonly relationStatuses: string;
-  /** One `c` or `d` code per translatable slot. */
+  /**
+   * One `c` or `d` code per translatable slot.
+   */
   readonly slotLanguageStatuses: string;
-  /** One `c` or `d` code per page-level global criterion. */
+  /**
+   * One `c` or `d` code per page-level global criterion.
+   */
   readonly globalStatuses: string;
-  /** Whether defective subjects exceed retained finding capacity. */
+  /**
+   * Whether defective subjects exceed retained finding capacity.
+   */
   readonly overflow: boolean;
-  /** Bounded located defect witnesses. */
+  /**
+   * Bounded located defect witnesses.
+   */
   readonly findings: readonly ReviewUnitFinding[];
 };
 
-/** Runtime-expanded manifest-indexed status row. */
+/**
+ * Runtime-expanded manifest-indexed status row.
+ */
 export type ReviewUnitStatusRow = {
-  /** Clause, relation, slot-language, or global scope. */
+  /**
+   * Clause, relation, slot-language, or global scope.
+   */
   readonly scope: ReviewUnitFindingScope;
-  /** Index in relevant review-plan sequence. */
+  /**
+   * Index in relevant review-plan sequence.
+   */
   readonly subjectIndex: number;
-  /** Compact status copied from provider response. */
+  /**
+   * Compact status copied from provider response.
+   */
   readonly status: 'p' | 'c' | 'd';
 };
 

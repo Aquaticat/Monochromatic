@@ -81,6 +81,10 @@ export type ReviewUnitVerifierWavePlan = {
    */
   readonly verifierProtocolDigest: string;
   /**
+   * Model-facing finding-rule binding.
+   */
+  readonly verifierRuleDigest: string;
+  /**
    * Finding capacity binding.
    */
   readonly findingCap: number;
@@ -156,7 +160,8 @@ export function createReviewUnitVerifierWavePlan({
           content: JSON.stringify(reviewUnitResponseFormat({
             reviewPlan,
             candidate,
-            pictureCount: manifest.sourcePictures.length,
+            pictureCount: manifest.sourcePictures
+              .length,
           }),),
         },),
       };
@@ -171,6 +176,7 @@ export function createReviewUnitVerifierWavePlan({
     nodes,
     reviewPlanDigest: reviewPlan.reviewPlanDigest,
     verifierProtocolDigest: manifest.verifierProtocolDigest,
+    verifierRuleDigest: manifest.verifierRuleDigest,
     findingCap: manifest.findingCap,
   };
   return {

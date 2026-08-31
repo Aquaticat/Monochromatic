@@ -4,21 +4,37 @@ import { hashContent, } from './document-node.ts';
 import type { ReviewUnitManifest, } from './prototype-review-unit-model.ts';
 import type { ResolvedCandidateTargetBoundary, } from './prototype-target-boundary.ts';
 
-/** Mechanically decidable candidate identity proven after admission. */
+/**
+ * Mechanically decidable candidate identity proven after admission.
+ */
 export type ReviewUnitProofInput = {
-  /** Opaque runtime candidate alias. */
+  /**
+   * Opaque runtime candidate alias.
+   */
   readonly candidateId: string;
-  /** Manifest author ordinal. */
+  /**
+   * Manifest author ordinal.
+   */
   readonly candidateOrdinal: number;
-  /** Complete compiled document digest. */
+  /**
+   * Complete compiled document digest.
+   */
   readonly documentDigest: string;
-  /** Compiled slot-record digest. */
+  /**
+   * Compiled slot-record digest.
+   */
   readonly slotDigest: string;
-  /** Raw author slot-record digest. */
+  /**
+   * Raw author slot-record digest.
+   */
   readonly rawSlotDigest: string;
-  /** Candidate-specific runtime boundary resolutions. */
+  /**
+   * Candidate-specific runtime boundary resolutions.
+   */
   readonly resolvedBoundaries: readonly ResolvedCandidateTargetBoundary[];
-  /** Bound page-image names in manifest order. */
+  /**
+   * Bound page-image names in manifest order.
+   */
   readonly sourcePictureNames: readonly string[];
 };
 
@@ -55,7 +71,14 @@ export function reviewUnitProofDigest({
   });
 }
 
-/** Refuses candidate deterministic-proof drift. */
+/**
+ * Refuses candidate deterministic-proof drift.
+ *
+ * @example
+ * ```ts
+ * assertReviewUnitProof({ manifest, input, expectedDigest, });
+ * ```
+ */
 export function assertReviewUnitProof({
   manifest,
   input,
@@ -65,6 +88,9 @@ export function assertReviewUnitProof({
   readonly input: ReviewUnitProofInput;
   readonly expectedDigest: string;
 }): void {
-  if (reviewUnitProofDigest({ manifest, input, }) !== expectedDigest)
+  if (reviewUnitProofDigest({
+    manifest,
+    input,
+  }) !== expectedDigest)
     throw new Error('review unit deterministic proof differs');
 }

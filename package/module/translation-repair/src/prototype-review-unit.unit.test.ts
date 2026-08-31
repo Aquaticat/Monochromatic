@@ -29,6 +29,8 @@ import {
   MAX_REVIEW_UNIT_PAYLOAD_COUNT,
   REVIEW_UNIT_DEFECT_CLASSES,
   REVIEW_UNIT_FINDING_CAP,
+  REVIEW_UNIT_FINDING_RULE_DIGEST,
+  REVIEW_UNIT_FINDING_RULES,
   REVIEW_UNIT_GLOBAL_CRITERIA,
   REVIEW_UNIT_HYPER_MODELS,
   reviewUnitHyperRouteDigest,
@@ -181,7 +183,9 @@ function settledFixture(): Fixture & {
   readonly settlement: ReviewUnitAuthorSettlement;
 } {
   const fixture = createFixture();
-  const sourcePictures = MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; });
+  const sourcePictures = MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },);
   const candidates = fixture.manifest.candidatePlan.map(function candidate(plan,) {
     return admitReviewUnitAuthorResponse({
       response: authorResponse({ fixture, plan, }),
@@ -292,7 +296,9 @@ function ballot({
     shell: fixture.shell,
     sourceText: fixture.source,
     archiveText: fixture.archive,
-    sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+    sourcePictures: MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },),
   },);
 }
 
@@ -314,7 +320,9 @@ function selection({
     shell: fixture.shell,
     sourceText: fixture.source,
     archiveText: fixture.archive,
-    sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+    sourcePictures: MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },),
   },);
 }
 
@@ -335,7 +343,9 @@ function verifierPacket(request: ChatJsonRequest<unknown>,): Readonly<Record<str
   const [, message,] = request.messages;
   if ((message === undefined) || ((typeof message.content) === 'string'))
     throw new Error('review unit verifier packet is absent');
-  const textPart = message.content.find(function text(part,) { return part.type === 'text'; });
+  const textPart = message.content.find(function text(part,) {
+    return part.type === 'text';
+  },);
   if ((textPart === undefined) || (textPart.type !== 'text'))
     throw new Error('review unit verifier packet text is absent');
   const marker = 'REVIEW_UNIT_VERIFIER_PACKET:\n';
@@ -569,6 +579,15 @@ await describe({
       },
     }),
     it({
+      name: 'requires exact non-string front-matter scalar survival',
+      fn: async () => {
+        await Promise.resolve();
+        const source = SOURCE.replace('name: 猫', 'name: 猫\nrating: 1',);
+        const archive = ARCHIVE.replace('name: Cat', 'name: Cat\nrating: 2',);
+        expect(() => createFixture({ source, archive, })).toThrow();
+      },
+    }),
+    it({
       name: 'binds three authors nine verifiers routes caps and deadlines',
       fn: async () => {
         await Promise.resolve();
@@ -577,12 +596,16 @@ await describe({
         expect(fixture.manifest.verifierPlan.length).toBe(3,);
         expect(fixture.manifest.payloadCountCeiling).toBe(MAX_REVIEW_UNIT_PAYLOAD_COUNT,);
         expect(MAX_REVIEW_UNIT_PAYLOAD_COUNT).toBe(12,);
-        expect(REVIEW_UNIT_HYPER_MODELS.map(function cap(route,) { return route.requestOutputTokens; })).toEqual([
+        expect(REVIEW_UNIT_HYPER_MODELS.map(function cap(route,) {
+          return route.requestOutputTokens;
+        },)).toEqual([
           32_000,
           32_000,
           32_000,
         ],);
-        expect(REVIEW_UNIT_HYPER_MODELS.map(function deadline(route,) { return route.requestTimeoutMs; })).toEqual([
+        expect(REVIEW_UNIT_HYPER_MODELS.map(function deadline(route,) {
+          return route.requestTimeoutMs;
+        },)).toEqual([
           900_000,
           900_000,
           900_000,
@@ -590,6 +613,7 @@ await describe({
         expect(reviewUnitHyperRouteDigest({ routes: REVIEW_UNIT_HYPER_MODELS, })).toBe(
           fixture.manifest.providerRouteDigest,
         );
+        expect(fixture.manifest.verifierRuleDigest).toBe(REVIEW_UNIT_FINDING_RULE_DIGEST,);
       },
     }),
     it({
@@ -599,6 +623,16 @@ await describe({
         const fixture = createFixture();
         expect(() => assertReviewUnitManifest({
           manifest: { ...fixture.manifest, reviewPlanDigest: digest({ text: 'stale', }), },
+          ledger: fixture.ledger,
+          shell: fixture.shell,
+          sourceText: fixture.source,
+          sourceBody: fixture.shell.body,
+          archiveBody: fixture.archive,
+          reviewPlan: fixture.reviewPlan,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+        },)).toThrow();
+        expect(() => assertReviewUnitManifest({
+          manifest: { ...fixture.manifest, verifierRuleDigest: digest({ text: 'stale-rule', }), },
           ledger: fixture.ledger,
           shell: fixture.shell,
           sourceText: fixture.source,
@@ -630,7 +664,7 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
+        const [candidate,] = fixture.candidates;
         if (candidate === undefined)
           throw new Error('review unit candidate fixture absent');
         expect(candidate.deterministicProofDigest.length).toBe(64,);
@@ -641,7 +675,9 @@ await describe({
           shell: fixture.shell,
           sourceText: fixture.source,
           archiveText: fixture.archive,
-          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+          sourcePictures: MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },),
         },)).toThrow();
       },
     }),
@@ -650,7 +686,7 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
+        const [candidate,] = fixture.candidates;
         if (candidate === undefined)
           throw new Error('review unit candidate fixture absent');
         const response = cleanResponse({ fixture, candidate, });
@@ -680,13 +716,43 @@ await describe({
       },
     }),
     it({
+      name: 'carries digest-bound scope rules in every verifier packet',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const [candidate,] = fixture.candidates;
+        if (candidate === undefined)
+          throw new Error('review unit rule packet candidate absent');
+        const messages = reviewUnitVerifierMessages({
+          manifest: fixture.manifest,
+          shell: fixture.shell,
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          authorSettlementDigest: fixture.settlement.settlementDigest,
+          verifierPlanDigest: digest({ text: 'rule-packet-plan', }),
+          defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          media: MEDIA,
+        },);
+        const packet = verifierPacket({
+          modelId: 'minimax-m3',
+          messages,
+          validate: (_value: unknown): _value is unknown => true,
+          signal: new AbortController().signal,
+        },);
+        expect(packet.findingRuleDigest).toBe(REVIEW_UNIT_FINDING_RULE_DIGEST,);
+        expect(packet.findingRules).toEqual(REVIEW_UNIT_FINDING_RULES,);
+      },
+    }),
+    it({
       name: 'admits clause omission and ordered relation witnesses',
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
-        const clause = fixture.reviewPlan.clauses[0];
-        const relation = fixture.reviewPlan.relations[0];
+        const [candidate,] = fixture.candidates;
+        const [clause,] = fixture.reviewPlan.clauses;
+        const [relation,] = fixture.reviewPlan.relations;
         if ((candidate === undefined) || (clause === undefined) || (relation === undefined))
           throw new Error('review unit evidence fixture absent');
         const base = cleanResponse({ fixture, candidate, });
@@ -694,7 +760,7 @@ await describe({
           return value.clauseSubjectIndexes.includes(clause.subjectIndex,);
         },);
         const clausePosition = fixture.reviewPlan.slotGroups[clauseGroupIndex]
-          ?.clauseSubjectIndexes.indexOf(clause.subjectIndex,) ?? -1;
+          ?.clauseSubjectIndexes.indexOf(clause.subjectIndex,) ?? (-1);
         const clauseStatuses = [...base.clauseStatusesBySlot,];
         const clauseGroup = clauseStatuses[clauseGroupIndex] ?? '';
         clauseStatuses[clauseGroupIndex] = `${clauseGroup.slice(0, clausePosition)}d${clauseGroup.slice(clausePosition + 1,)}`;
@@ -737,9 +803,10 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
+        const [candidate,] = fixture.candidates;
         const visualIndex = REVIEW_UNIT_GLOBAL_CRITERIA.indexOf('source-image-target-relation',);
-        const slotKey = fixture.reviewPlan.slotGroups[0]?.slotKey;
+        const [firstSlot,] = fixture.reviewPlan.slotGroups;
+        const slotKey = firstSlot?.slotKey;
         if ((candidate === undefined) || (slotKey === undefined))
           throw new Error('review unit visual fixture absent');
         const base = cleanResponse({ fixture, candidate, });
@@ -775,8 +842,8 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
-        const subject = fixture.reviewPlan.frontMatterSubjects[0];
+        const [candidate,] = fixture.candidates;
+        const [subject,] = fixture.reviewPlan.frontMatterSubjects;
         if ((candidate === undefined) || (subject === undefined))
           throw new Error('review unit front matter fixture absent');
         const base = cleanResponse({ fixture, candidate, });
@@ -805,11 +872,11 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
-        const frontMatter = fixture.reviewPlan.frontMatterSubjects[0];
-        const clause = fixture.reviewPlan.clauses[0];
-        const relation = fixture.reviewPlan.relations[0];
-        const slot = fixture.reviewPlan.slotGroups[0];
+        const [candidate,] = fixture.candidates;
+        const [frontMatter,] = fixture.reviewPlan.frontMatterSubjects;
+        const [clause,] = fixture.reviewPlan.clauses;
+        const [relation,] = fixture.reviewPlan.relations;
+        const [slot,] = fixture.reviewPlan.slotGroups;
         if ((candidate === undefined)
           || (frontMatter === undefined)
           || (clause === undefined)
@@ -832,7 +899,8 @@ await describe({
         };
         /** Invalid clause image defect. */
         const clauseStatuses = [...base.clauseStatusesBySlot,];
-        clauseStatuses[0] = `d${(clauseStatuses[0] ?? '').slice(1,)}`;
+        const [firstClauseStatuses = '',] = clauseStatuses;
+        clauseStatuses[0] = `d${firstClauseStatuses.slice(1,)}`;
         const invalidClause: ReviewUnitResponse = {
           ...base,
           clauseStatusesBySlot: clauseStatuses,
@@ -921,10 +989,12 @@ await describe({
             plan,
             sourceText: fixture.source,
             archiveText: fixture.archive,
-            sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+            sourcePictures: MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },),
           },);
         },);
-        const candidate = candidates[0];
+        const [candidate,] = candidates;
         if (candidate === undefined)
           throw new Error('review unit overflow author absent');
         const base = cleanResponse({ fixture, candidate, });
@@ -935,7 +1005,7 @@ await describe({
             return value.clauseSubjectIndexes.includes(clause.subjectIndex,);
           },);
           const position = fixture.reviewPlan.slotGroups[groupIndex]
-            ?.clauseSubjectIndexes.indexOf(clause.subjectIndex,) ?? -1;
+            ?.clauseSubjectIndexes.indexOf(clause.subjectIndex,) ?? (-1);
           const current = statuses[groupIndex] ?? '';
           statuses[groupIndex] = `${current.slice(0, position)}d${current.slice(position + 1,)}`;
         }
@@ -980,7 +1050,9 @@ await describe({
           shell: fixture.shell,
           sourceText: fixture.source,
           archiveText: fixture.archive,
-          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+          sourcePictures: MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },),
         },)).not.toThrow();
         expect(() => admitReviewUnitResponse({
           response: { ...base, clauseStatusesBySlot: statuses, overflow: true, findings: findings.toReversed(), },
@@ -995,7 +1067,9 @@ await describe({
           shell: fixture.shell,
           sourceText: fixture.source,
           archiveText: fixture.archive,
-          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+          sourcePictures: MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },),
         },)).toThrow();
       },
     }),
@@ -1004,7 +1078,7 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[1];
+        const [, candidate,] = fixture.candidates;
         if (candidate === undefined)
           throw new Error('review unit GLM candidate absent');
         const response = cleanResponse({ fixture, candidate, });
@@ -1025,8 +1099,9 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[1];
-        const slotKey = fixture.reviewPlan.slotGroups[0]?.slotKey;
+        const [, candidate,] = fixture.candidates;
+        const [firstSlot,] = fixture.reviewPlan.slotGroups;
+        const slotKey = firstSlot?.slotKey;
         if ((candidate === undefined) || (slotKey === undefined))
           throw new Error('review unit self evidence fixture absent');
         const clean = cleanResponse({ fixture, candidate, });
@@ -1070,7 +1145,7 @@ await describe({
       fn: async () => {
         await using directory = await temporaryDirectory();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
+        const [candidate,] = fixture.candidates;
         if (candidate === undefined)
           throw new Error('review unit pre-dispatch candidate absent');
         const mutated = {
@@ -1119,7 +1194,9 @@ await describe({
           reviewPlan: fixture.reviewPlan,
           sourceText: fixture.source,
           archiveText: fixture.archive,
-          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+          sourcePictures: MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, };
+    },),
           restart: false,
           signal: new AbortController().signal,
         },)).rejects.toThrow();
@@ -1160,7 +1237,9 @@ await describe({
           restart: true,
         });
         expect(restartCalls.length).toBe(0,);
-        expect(JSON.parse(await readFile(join(directory.path, 'review-unit-plan.json',), 'utf8',))).toEqual(
+        expect(
+          JSON.parse(await readFile(join(directory.path, 'review-unit-plan.json',), 'utf8',)),
+        ).toEqual(
           fixture.reviewPlan,
         );
       },
@@ -1239,7 +1318,7 @@ await describe({
       fn: async () => {
         await Promise.resolve();
         const fixture = settledFixture();
-        const candidate = fixture.candidates[0];
+        const [candidate,] = fixture.candidates;
         if (candidate === undefined)
           throw new Error('review unit envelope candidate absent');
         const format = reviewUnitResponseFormat({

@@ -4,6 +4,7 @@ import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import {
   REVIEW_UNIT_DEFECT_CLASSES,
   REVIEW_UNIT_FINDING_CAP,
+  REVIEW_UNIT_MAX_TARGET_ANCHORS,
   type ReviewUnitCandidate,
 } from './prototype-review-unit-model.ts';
 import {
@@ -14,7 +15,9 @@ import {
 } from './prototype-review-unit-plan.ts';
 import { MAX_REALIZATION_FINDING_ANCHORS, } from './prototype-realization-model.ts';
 
-/** Strict schema for exact UTF-16 target anchors. */
+/**
+ * Strict schema for exact UTF-16 target anchors.
+ */
 const TARGET_ANCHOR_SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -67,25 +70,54 @@ export function reviewUnitResponseFormat({
   readonly candidate: ReviewUnitCandidate;
   readonly pictureCount: number;
 }): JsonSchemaResponseFormat {
-  if ((reviewPlan.clauses.length === 0)
-    || (reviewPlan.clauses.length > MAX_REVIEW_UNIT_CLAUSES)
-    || (reviewPlan.slotGroups.length === 0)
-    || (reviewPlan.slotGroups.length > MAX_REVIEW_UNIT_SLOT_GROUPS)
-    || (reviewPlan.relations.length > MAX_REVIEW_UNIT_RELATIONS)
+  if ((reviewPlan.clauses
+    .length
+    === 0)
+    || (reviewPlan.clauses
+      .length
+      > MAX_REVIEW_UNIT_CLAUSES)
+    || (reviewPlan.slotGroups
+      .length
+      === 0)
+    || (reviewPlan.slotGroups
+      .length
+      > MAX_REVIEW_UNIT_SLOT_GROUPS)
+    || (reviewPlan.relations
+      .length
+      > MAX_REVIEW_UNIT_RELATIONS)
     || (!Number.isInteger(pictureCount,))
     || (pictureCount < 0))
     throw new Error('review unit schema dimensions are outside finite bound');
-  /** Highest evidence index accepted by integer schema. */
-  const maxSourceEvidenceIndex = Math.max(0, reviewPlan.sourceEvidence.length - 1,);
-  /** Highest image index accepted by integer schema. */
-  const maxImageEvidenceIndex = Math.max(0, pictureCount - 1,);
-  /** Highest subject index across review scopes. */
+  /**
+   * Highest evidence index accepted by integer schema.
+   */
+  const maxSourceEvidenceIndex = Math.max(
+    0,
+    reviewPlan.sourceEvidence
+      .length
+      - 1,
+  );
+  /**
+   * Highest image index accepted by integer schema.
+   */
+  const maxImageEvidenceIndex = Math.max(
+    0,
+    pictureCount - 1,
+  );
+  /**
+   * Highest subject index across review scopes.
+   */
   const maxSubjectIndex = Math.max(
-    reviewPlan.frontMatterSubjects.length,
-    reviewPlan.clauses.length,
-    reviewPlan.relations.length,
-    reviewPlan.slotGroups.length,
-    reviewPlan.globalCriteria.length,
+    reviewPlan.frontMatterSubjects
+      .length,
+    reviewPlan.clauses
+      .length,
+    reviewPlan.relations
+      .length,
+    reviewPlan.slotGroups
+      .length,
+    reviewPlan.globalCriteria
+      .length,
   ) - 1;
   return {
     type: 'json_schema',
@@ -127,13 +159,17 @@ export function reviewUnitResponseFormat({
           },
           frontMatterStatuses: {
             type: 'string',
-            minLength: reviewPlan.frontMatterSubjects.length,
-            maxLength: reviewPlan.frontMatterSubjects.length,
+            minLength: reviewPlan.frontMatterSubjects
+              .length,
+            maxLength: reviewPlan.frontMatterSubjects
+              .length,
           },
           clauseStatusesBySlot: {
             type: 'array',
-            minItems: reviewPlan.slotGroups.length,
-            maxItems: reviewPlan.slotGroups.length,
+            minItems: reviewPlan.slotGroups
+              .length,
+            maxItems: reviewPlan.slotGroups
+              .length,
             items: {
               type: 'string',
               minLength: 1,
@@ -142,18 +178,24 @@ export function reviewUnitResponseFormat({
           },
           relationStatuses: {
             type: 'string',
-            minLength: reviewPlan.relations.length,
-            maxLength: reviewPlan.relations.length,
+            minLength: reviewPlan.relations
+              .length,
+            maxLength: reviewPlan.relations
+              .length,
           },
           slotLanguageStatuses: {
             type: 'string',
-            minLength: reviewPlan.slotGroups.length,
-            maxLength: reviewPlan.slotGroups.length,
+            minLength: reviewPlan.slotGroups
+              .length,
+            maxLength: reviewPlan.slotGroups
+              .length,
           },
           globalStatuses: {
             type: 'string',
-            minLength: reviewPlan.globalCriteria.length,
-            maxLength: reviewPlan.globalCriteria.length,
+            minLength: reviewPlan.globalCriteria
+              .length,
+            maxLength: reviewPlan.globalCriteria
+              .length,
           },
           overflow: { type: 'boolean', },
           findings: {
@@ -205,7 +247,10 @@ export function reviewUnitResponseFormat({
                 imageEvidenceIndexes: {
                   type: 'array',
                   minItems: 0,
-                  maxItems: Math.max(1, pictureCount,),
+                  maxItems: Math.max(
+                    1,
+                    pictureCount,
+                  ),
                   items: {
                     type: 'integer',
                     minimum: 0,
@@ -215,7 +260,10 @@ export function reviewUnitResponseFormat({
                 targetAnchors: {
                   type: 'array',
                   minItems: 0,
-                  maxItems: Math.max(4, MAX_REALIZATION_FINDING_ANCHORS,),
+                  maxItems: Math.max(
+                    REVIEW_UNIT_MAX_TARGET_ANCHORS,
+                    MAX_REALIZATION_FINDING_ANCHORS,
+                  ),
                   items: TARGET_ANCHOR_SCHEMA,
                 },
               },
