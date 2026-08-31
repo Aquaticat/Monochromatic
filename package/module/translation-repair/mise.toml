@@ -129,6 +129,79 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
 ])
 """
 
+[tasks."format:candidate-ballot"]
+description = "Auto-fix Candidate I prototype files with package-local type-aware Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
+  '--type-aware',
+  '--fix',
+  'src/prototype-candidate-ballot.ts',
+  'src/prototype-candidate-ballot-admission.ts',
+  'src/prototype-candidate-ballot-author.ts',
+  'src/prototype-candidate-ballot-author-node.ts',
+  'src/prototype-candidate-ballot-evidence.ts',
+  'src/prototype-candidate-ballot-guard.ts',
+  'src/prototype-candidate-ballot-hyper.ts',
+  'src/prototype-candidate-ballot-manifest.ts',
+  'src/prototype-candidate-ballot-model.ts',
+  'src/prototype-candidate-ballot-node-execute.ts',
+  'src/prototype-candidate-ballot-node-record.ts',
+  'src/prototype-candidate-ballot-node-restart.ts',
+  'src/prototype-candidate-ballot-prompt.ts',
+  'src/prototype-candidate-ballot-runtime.ts',
+  'src/prototype-candidate-ballot-runtime-plan.ts',
+  'src/prototype-candidate-ballot-runtime-support.ts',
+  'src/prototype-candidate-ballot-schema.ts',
+  'src/prototype-candidate-ballot-selection.ts',
+  'src/prototype-candidate-ballot-settlement.ts',
+  'src/prototype-candidate-ballot-test-support.ts',
+  'src/prototype-candidate-ballot-verifier-node.ts',
+  'src/prototype-candidate-ballot-verifier-state.ts',
+  'src/prototype-candidate-ballot.unit.test.ts',
+  'src/prototype-hyper-expansion-client.ts',
+  'src/prototype-target-boundary.ts',
+  'src/prototype-target-boundary-compile.ts',
+])
+"""
+
+[tasks."lint:candidate-ballot"]
+description = "Lint Candidate I prototype files with package-local type-aware Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
+  '--type-aware',
+  'src/prototype-candidate-ballot.ts',
+  'src/prototype-candidate-ballot-admission.ts',
+  'src/prototype-candidate-ballot-author.ts',
+  'src/prototype-candidate-ballot-author-node.ts',
+  'src/prototype-candidate-ballot-evidence.ts',
+  'src/prototype-candidate-ballot-guard.ts',
+  'src/prototype-candidate-ballot-hyper.ts',
+  'src/prototype-candidate-ballot-manifest.ts',
+  'src/prototype-candidate-ballot-model.ts',
+  'src/prototype-candidate-ballot-node-execute.ts',
+  'src/prototype-candidate-ballot-node-record.ts',
+  'src/prototype-candidate-ballot-node-restart.ts',
+  'src/prototype-candidate-ballot-prompt.ts',
+  'src/prototype-candidate-ballot-runtime.ts',
+  'src/prototype-candidate-ballot-runtime-plan.ts',
+  'src/prototype-candidate-ballot-runtime-support.ts',
+  'src/prototype-candidate-ballot-schema.ts',
+  'src/prototype-candidate-ballot-selection.ts',
+  'src/prototype-candidate-ballot-settlement.ts',
+  'src/prototype-candidate-ballot-test-support.ts',
+  'src/prototype-candidate-ballot-verifier-node.ts',
+  'src/prototype-candidate-ballot-verifier-state.ts',
+  'src/prototype-candidate-ballot.unit.test.ts',
+  'src/prototype-hyper-expansion-client.ts',
+  'src/prototype-target-boundary.ts',
+  'src/prototype-target-boundary-compile.ts',
+])
+"""
+
 [tasks."lint:types"]
 extends = "lint:types"
 

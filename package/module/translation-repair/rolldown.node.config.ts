@@ -44,6 +44,8 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-brief-editor-controls": "./src/corpus-run/prototype-brief-editor-controls.ts",
     "prototype-bounded-verdict": "./src/prototype-bounded-verdict.ts",
     "prototype-bounded-verdict-test-support": "./src/prototype-bounded-verdict-test-support.ts",
+    "prototype-candidate-ballot": "./src/prototype-candidate-ballot.ts",
+    "prototype-candidate-ballot-test-support": "./src/prototype-candidate-ballot-test-support.ts",
     "prototype-conditional-audit-calibration": "./src/corpus-run/prototype-conditional-audit-calibration.ts",
     "prototype-conditional-audit-controls": "./src/corpus-run/prototype-conditional-audit-controls.ts",
     "prototype-conditional-audit-replay": "./src/corpus-run/prototype-conditional-audit-replay.ts",

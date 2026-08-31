@@ -24,14 +24,29 @@ import {
   HYPER_AUTH_HEADER,
   HYPER_MESSAGES_URL,
 } from './hyper-catalog.ts';
+import type { RosterModelId, } from './roster-id.ts';
 import type { QuotaSnapshot, } from './synthetic-quota.ts';
 import {
   fetchTransport,
   type ModelTransport,
 } from './synthetic-transport.ts';
+
 export type { TransportExchange, } from './synthetic-transport.ts';
 
+/**
+ * Default bounded evaluation deadline.
+ */
 const EVALUATION_TIMEOUT_MS = 360_000;
+
+/**
+ * Inclusive successful HTTP status floor.
+ */
+const HTTP_SUCCESS_MIN = 200;
+
+/**
+ * Exclusive successful HTTP status ceiling.
+ */
+const HTTP_SUCCESS_MAX = 300;
 
 //region Evaluation model contract
 
@@ -44,10 +59,19 @@ const EVALUATION_TIMEOUT_MS = 360_000;
  * ```
  */
 export type HyperExpansionModel = {
-  /** Exact provider model id. */
+  /**
+   * Exact provider model id.
+   */
   readonly id: string;
 
-  /** Output ceiling bound into evaluation manifest. */
+  /**
+   * Canonical roster identity when provider spelling differs.
+   */
+  readonly requestId?: RosterModelId;
+
+  /**
+   * Output ceiling bound into evaluation manifest.
+   */
   readonly requestOutputTokens: number;
 };
 
@@ -61,7 +85,9 @@ export type HyperExpansionModel = {
  * ```
  */
 export class HyperExpansionHttpError extends Error {
-  /** Message is safe because it contains model id and status only. */
+  /**
+   * Message is safe because it contains model id and status only.
+   */
   readonly messageNamesOnly: true = true;
 
   /**
@@ -72,7 +98,13 @@ export class HyperExpansionHttpError extends Error {
    * @param status - HTTP response status
    */
   public constructor(
-    { modelId, status, }: { readonly modelId: string; readonly status: number; },
+    {
+      modelId,
+      status,
+    }: {
+      readonly modelId: string;
+      readonly status: number
+    },
   ) {
     super(`Hyper expansion model ${modelId} returned HTTP ${String(status,)}`,);
     this.name = 'HyperExpansionHttpError';
@@ -99,6 +131,9 @@ function modelFor(
     readonly modelId: string;
   },
 ): HyperExpansionModel {
+  /**
+   * Configured route row for canonical request identity.
+   */
   const model = models[modelId];
   if (model === undefined)
     throw new Error(`undeclared Hyper expansion model ${modelId}`);
@@ -123,7 +158,13 @@ function evaluationBody(
     readonly model: HyperExpansionModel;
   },
 ): Record<string, unknown> {
+  /**
+   * Canonical system instruction lifted from provider-neutral messages.
+   */
   const instruction = systemTextOf({ messages: request.messages, });
+  /**
+   * Request ceiling bounded by manifest route.
+   */
   const maxTokens = Math.min(
     model.requestOutputTokens,
     request.maxTokens ?? model.requestOutputTokens,
@@ -137,6 +178,9 @@ function evaluationBody(
       messages: speakingTurns({ messages: request.messages, }),
     };
   }
+  /**
+   * Forced answer tool derived from caller schema.
+   */
   const tool = answerToolDefinition({ responseFormat: request.responseFormat, });
   return {
     model: model.id,
@@ -148,13 +192,26 @@ function evaluationBody(
     },),
     messages: speakingTurns({ messages: request.messages, }),
     tools: [tool,],
-    tool_choice: { type: 'tool', name: tool.name, },
+    tool_choice: {
+      type: 'tool',
+      name: tool.name,
+    },
   };
 }
 
 //endregion Evaluation model contract
 
 //region Client
+
+/**
+ * Unsupported quota operation required by provider-neutral client interface.
+ *
+ * @returns Never resolves because expansion route has no quota endpoint
+ */
+async function unsupportedQuotas(): Promise<QuotaSnapshot> {
+  await Promise.resolve();
+  throw new Error('Hyper expansion evaluation client has no Synthetic quota endpoint');
+}
 
 /**
  * Creates zero-retry Hyper client for out-of-roster model evaluation.
@@ -190,9 +247,20 @@ export function createHyperExpansionClient(
     readonly transport?: ModelTransport;
   },
 ): SyntheticClient {
+  /**
+   * Route rows indexed by canonical request identity.
+   */
   const modelById: Readonly<Record<string, HyperExpansionModel>> = Object.fromEntries(
-    models.map(function row(model,) { return [model.id, model,]; },),
+    models.map(function row(model,) {
+      return [
+        model.requestId ?? model.id,
+        model,
+      ];
+    },),
   );
+  /**
+   * Fixed Hyper Anthropic request headers.
+   */
   const headers: Readonly<Record<string, string>> = {
     [HYPER_AUTH_HEADER]: `Bearer ${apiKey}`,
     'content-type': 'application/json',
@@ -209,26 +277,44 @@ export function createHyperExpansionClient(
   async function chatText(
     request: ForeignBorrowed<ChatTextRequest>,
   ): Promise<ChatTextReply> {
-    const model = modelFor({ models: modelById, modelId: request.modelId, });
+    /**
+     * Manifest-bound provider route.
+     */
+    const model = modelFor({
+      models: modelById,
+      modelId: request.modelId,
+    });
+    /**
+     * Joined per-call deadline.
+     */
     using deadline = armCallDeadline({
       signal: request.signal,
       timeoutMs: request.exchangeTimeoutMs ?? EVALUATION_TIMEOUT_MS,
       label: model.id,
     },);
+    /**
+     * Complete provider response stream.
+     */
     const reply = await transport({
       url: HYPER_MESSAGES_URL,
       label: model.id,
       method: 'POST',
       headers,
-      bodyJson: JSON.stringify(evaluationBody({ request, model, }),),
+      bodyJson: JSON.stringify(evaluationBody({
+        request,
+        model,
+      }),),
       signal: deadline.callSignal,
       wireFormat: 'anthropic',
       ...(request.maxAnswerChars === undefined
         ? {}
         : { maxAnswerChars: request.maxAnswerChars, }),
     },);
-    if ((reply.status < 200) || (reply.status >= 300))
-      throw new HyperExpansionHttpError({ modelId: model.id, status: reply.status, });
+    if ((reply.status < HTTP_SUCCESS_MIN) || (reply.status >= HTTP_SUCCESS_MAX))
+      throw new HyperExpansionHttpError({
+        modelId: model.id,
+        status: reply.status,
+      });
     return extractAnthropicCompletion({ bodyText: reply.bodyText, });
   }
 
@@ -243,9 +329,7 @@ export function createHyperExpansionClient(
         validate: request.validate,
       },);
     },
-    quotas: async function unsupportedQuotas(): Promise<QuotaSnapshot> {
-      throw new Error('Hyper expansion evaluation client has no Synthetic quota endpoint');
-    },
+    quotas: unsupportedQuotas,
   };
 }
 
