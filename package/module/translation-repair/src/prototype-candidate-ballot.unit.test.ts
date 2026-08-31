@@ -694,14 +694,15 @@ await describe({
         expect(boundaries.some(function footnote(item,) {
           return (item.edge === 'after') && (item.syntaxRole === 'footnote');
         },),).toBe(true,);
+        const response = {
+          slots: Object.fromEntries(shell.slots.map(function text(slot,) {
+            return [slot.key, slot.source === '。' ? '.' : 'English',];
+          },),),
+        };
         const compilation = compileCandidateBallotCandidate({
           shell,
           boundaries,
-          response: {
-            slots: Object.fromEntries(shell.slots.map(function text(slot,) {
-              return [slot.key, slot.source === '。' ? '.' : 'English',];
-            },),),
-          },
+          response,
         },);
         expect(compilation.document.includes(') English',),).toBe(true,);
         expect(compilation.document.includes('English[^n]',),).toBe(true,);
@@ -720,6 +721,42 @@ await describe({
         expect(compilation.resolvedBoundaries.find(function same(item,) {
           return (item.slotKey === linkBoundary.slotKey) && (item.edge === 'before');
         },)?.separator,).toBe(' ',);
+        const ledger = buildRealizationObligationLedger({
+          sourceBody: shell.body,
+          archiveBody: archive,
+          slots: shell.slots,
+          shellDigest: shell.shellDigest,
+        },);
+        const manifest = createCandidateBallotManifest({
+          ledger,
+          shell,
+          archiveBody: archive,
+          candidatePlan: [
+            { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', priority: 0, },
+            { ordinal: 1, modelId: 'minimax-m3', priority: 1, },
+          ],
+          verifierPlan: [
+            { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', },
+            { ordinal: 1, modelId: 'hf:zai-org/GLM-5.3-Flash', },
+            { ordinal: 2, modelId: 'minimax-m3', },
+          ],
+          providerSelection: 'hyper-only',
+          sourcePictures: [],
+        },);
+        const [plan,] = manifest.candidatePlan;
+        if (plan === undefined)
+          throw new Error('candidate ballot boundary author plan is absent');
+        const candidate = admitCandidateBallotAuthorResponse({
+          response,
+          shell,
+          manifest,
+          plan,
+          sourceText: source,
+          archiveText: archive,
+          sourcePictures: [],
+        },);
+        expect(candidate.slots[linkBoundary.slotKey]?.startsWith(' ',),).toBe(true,);
+        expect(candidate.rawSlots[linkBoundary.slotKey]?.startsWith(' ',),).toBe(false,);
         const punctuation = compileCandidateBallotDocument({
           shell,
           boundaries,
