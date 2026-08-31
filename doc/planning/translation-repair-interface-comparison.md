@@ -1758,7 +1758,8 @@ and advisor pre-spend review.
 
 ### Candidate G envelope disposition
 
-Candidate G failed its pre-spend output-envelope gate on 2026-08-31.
+Candidate G failed the compact schema-stress gate used on 2026-08-31.
+The output-envelope boundary resolution supersedes that gate as an architecture rejection criterion.
 No live Candidate G payload was sent.
 
 The pinned Carena shell has 23 slots and 134 obligations.
@@ -1806,8 +1807,9 @@ loaded directly from `tokenizer.json` through Python `tokenizers` 0.22.2,
 with no chat-template wrapper.
 The completion ceiling is 32,000 tokens.
 The author upper stress witness tokenized with Qwen3.6-27B exceeded it by 2,285,000 tokens.
-One schema-authorized compact response beyond the ceiling is enough to fail the required maximum-response guarantee;
-model behavior and post-transport semantic rejection cannot turn that interface into a bounded one.
+That proves the schema permits responses outside the provider envelope.
+It does not prove that a working model can return those responses under the manifested transport cap,
+and deterministic admission still gives truncated output no effect.
 The verifier token counts remain Qwen-specific evidence and are not attributed to MiniMax or DeepSeek tokenizers.
 Measurement tooling and structural controls are committed as `a15bd65df`.
 
@@ -1821,14 +1823,13 @@ escape,
 and emoji arms still exceeded the ceiling.
 The experiment was reverted rather than weakening author authority or declaring semantic invalidity a transport bound.
 
-Candidate G is rejected in its current verified-realization-ledger form.
+Candidate G remains unauthorized because it has no qualified author.
+Its four-candidate verifier completion headroom is unproven under planned model tokenizers and blocks pre-spend.
 Its reusable findings are closed-world obligation coverage,
 manifest-ordered status arrays,
 runtime-owned digests,
 and the distinction between schema maximum and semantically acceptable output.
-A successor must reduce the complete verifier response itself without capping publication-quality prose,
-dropping split-anchor evidence,
-or treating post-transport rejection as output-budget enforcement.
+Any Candidate G continuation must measure complete provider-returnable verifier responses without capping publication-quality prose or dropping split-anchor evidence.
 
 ### Candidate H proposal: closed-world verdict with bounded defect evidence
 
@@ -1988,7 +1989,9 @@ unavailable tokenizers remain explicit roster blockers rather than guessed equiv
 
 ### Candidate H envelope disposition
 
-Candidate H is rejected before implementation and spend.
+Candidate H remains unauthorized before implementation and spend.
+Its compact schema-stress witness proves that the schema is overpermissive,
+not that the provider-returnable author envelope is unbounded.
 Its slot-only author uses the immutable-shell response envelope from Candidates D and E:
 23 required slot strings,
 each permitting 20,000 characters.
@@ -2006,13 +2009,120 @@ Post-transport presentation rejection cannot enforce the output envelope.
 No source-derived prose cap is authorized.
 The five retained complete Qwen pages prove only that those rejected outputs fit their measured lengths;
 they do not prove that a publication-ready candidate cannot require more.
-Because the current Candidate H slot-only author interface fails independently at its author boundary,
-freezing overflow cap `C` or implementing verifier controls cannot make this bounded-verdict design satisfy the project's pre-spend maximum-response gate.
-No Candidate H code or live payload is authorized.
+The compact schema-stress failure no longer rejects Candidate H by itself.
+No Candidate H code or live payload is authorized because Candidate H remains unimplemented and has no qualified author roster.
 
 Candidate H contributes one reusable interface idea:
 complete status arrays plus exact overflow algebra can bound defect narration without treating missing findings as clean evidence.
 That idea may be reused only by a successor whose author boundary has a defensible envelope and whose roster contains a completely read acceptable author.
+
+### Output-envelope boundary resolution
+
+Candidate G and Candidate H prove that the current schemas are overpermissive.
+They do not prove that every free-prose author interface exceeds the provider envelope.
+Four different response sets must not be conflated:
+
+1.  abstract JSON instances satisfying response schema;
+2.  compact canonical serializations of those instances;
+3.  provider-returnable output under the manifested completion-token cap;
+4.  provider-returnable responses admitted by deterministic publication guards.
+
+Optional JSON whitespace makes the set of textual schema serializations unbounded unless a canonical grammar is part of the contract.
+Provider-returnable output is bounded by the provider completion cap by definition.
+Deterministic admission is a subset of returned output.
+The current measurements establish only that schema-valid compact stress instances can exceed the cap and that some pass structural guards before later rejection.
+The provider implementation of JSON Schema string-length semantics and whitespace generation has not yet been measured.
+
+Task #60 operationalized the pre-spend gate as a compact schema-stress maximum.
+That interpretation is superseded.
+The original normal-run objective qualifies success by a working model,
+so pre-spend acceptance covers provider-returnable responses that deterministic guards can admit.
+Candidate G and Candidate H are not rejected by their schema-stress witnesses alone.
+Their lack of a qualified author and complete-page quality evidence remain independent blockers.
+
+#### I1: transport-limited deterministic-admission boundary
+
+Treat manifested provider completion tokens as the hard transport maximum.
+Keep fixed-key immutable-shell slot JSON and require realistic plus adversarial deterministic-admission witnesses,
+model-specific completion tokenization with framing reserve,
+and full-page author acceptance before spend.
+Schema-valid but semantically invalid floods may truncate and become no-effect output.
+
+Pros:
+publication prose and contributor authority remain unrestricted inside the actual provider envelope;
+existing structure and restart guards survive.
+
+Cons:
+not every abstract schema-valid compact stress instance can complete;
+model-specific token accounting and provider behavior become part of evidence.
+
+#### I3: measured repository prose budget
+
+Add per-slot or aggregate limits measured from source and accepted outputs.
+This mechanism can be combined with I1,
+but it cannot define correctness by itself.
+
+Pros:
+simple preflight arithmetic and smaller unusable-output region.
+
+Cons:
+cap can reject the only publication-quality wording;
+retained rejected pages do not prove an acceptable-page ceiling.
+
+#### I2: token-id experiment
+
+Ask authors to print tokenizer ids and decode them into prose.
+This is not an exact provider-token envelope as previously stated:
+decimal digits,
+commas,
+JSON framing,
+whitespace,
+special tokens,
+and invalid sequences consume provider completion tokens independently of decoded ids.
+
+Pros:
+model-specific decoded length is explicit.
+
+Cons:
+wire accounting remains nontrivial;
+models are not calibrated for reliable tokenizer-id authorship;
+provider and model swaps change encoding.
+No implementation is warranted without a zero-spend reliability prototype.
+
+Ranking:
+I1 > I3 > I2.
+I1 ranks above I3 because it preserves prose authority and matches truncation-as-unusable semantics.
+I3 ranks above I2 because a measured aggregate budget is implementable despite editorial risk,
+while token-id authorship has neither reliable generation nor exact provider accounting.
+
+Provider research completed on 2026-08-31:
+
+- Hyper documents Anthropic Messages `max_tokens` as required maximum output tokens;
+- `buildAnthropicBody` applies the package-wide 32,000-token measured answer bound to every Hyper call,
+  lowered only by model or caller cap;
+- tool input streams as model-produced partial JSON strings and finalizes as an object;
+  neither Hyper nor Anthropic promises compact whitespace;
+- streaming usage reports cumulative output tokens;
+- `stop_reason: max_tokens` explicitly means truncation.
+
+The normal-run objective is qualified by a working model.
+Accordingly,
+future architecture work adopts the intersection of provider-returnable responses and deterministic admission,
+not every abstract schema-valid stress instance.
+Schema stress witnesses remain robustness evidence and can prove overpermissiveness,
+but they are not by themselves a normal-run architecture rejection.
+
+This interpretation removes Candidate G and Candidate H envelope-only rejections.
+It does not reverse their independent blockers:
+Candidate G has no qualified author and its four-candidate verifier interface remains unmeasured under the planned model tokenizers;
+Candidate H remains unimplemented and has no qualified author roster.
+No live spend is authorized.
+
+Consumer hardening is required first.
+`readJsonOutcome` currently admits parseable guard-valid JSON even when `finishReason` is `max_tokens`.
+That contradicts truncation-as-no-effect semantics and is documented in
+`doc/troubleshooting/charm-hyper-max-tokens-tool-json.md`.
+A successor cannot rely on I1 until that boundary rejects truncating finish reasons and GFP proves the guard load-bearing.
 
 ## Required lifecycle migration
 
