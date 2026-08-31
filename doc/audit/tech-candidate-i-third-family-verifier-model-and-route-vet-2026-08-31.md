@@ -1,10 +1,11 @@
 # Candidate I third-family verifier model and route vet
 
 - Status:
-  validation pending;
+  synthetic route and schema validated;
+  consumer validation pending;
   no recommendation.
 - Lifecycle phase:
-  one serious alternative identified.
+  one serious alternative passed transport hard gate.
 - Subject:
   Candidate I third-family verifier model and route.
 - Decision scope:
@@ -161,9 +162,14 @@ and K3
 - Route caveat:
   Z.ai OpenAI documentation says `tool_choice` supports only `auto`;
   Candidate I requires Hyper Anthropic forced tool,
-  whose exact GLM mapping is unverified.
+  whose exact GLM mapping was unverified before route probe.
+- Route validation:
+  one exact Hyper Anthropic forced-tool attempt passed caller guard with HTTP 200,
+  `tool_use`,
+  143 output tokens,
+  and 1,607-millisecond duration.
 - Screening:
-  serious alternative pending one-attempt exact route probe and pinned-Carena consumer validation.
+  serious alternative advanced to Candidate I prototype and pinned-Carena consumer validation.
 
 ## Managed-service gates
 
@@ -245,14 +251,16 @@ With one surviving candidate,
 sensitivity still varies defaultable weights from one through five and every uncertain rating by one;
 any low-signal endpoint prevents recommendation.
 
-## Planned execution manifest
+## Executed route manifest
 
-Exact model is live `glm-5.3-flash`.
-Fresh catalog must match vision,
+Exact model was live `glm-5.3-flash`.
+Fresh catalog matched vision,
 maximum output,
 and default reasoning immediately before spend.
+Catalog digest remained
+`d68a71501ffa7c67825467ef935c177ad0abb01560f81f17c3fe65fe88742ab7`.
 
-One inspected Node scratch runner will send exactly one Hyper Anthropic Messages payload with:
+One inspected Node scratch runner sent exactly one Hyper Anthropic Messages payload with:
 
 - one synthetic 1 by 1 image;
 - Candidate I-shaped compact verifier forced tool;
@@ -262,28 +270,36 @@ One inspected Node scratch runner will send exactly one Hyper Anthropic Messages
 - streaming;
 - no retry.
 
-Network endpoints are public `GET /v1/models` and authenticated `POST /v1/messages` only.
-Expected writes are private metadata-only files under `~/temp/agent/`.
+Network endpoints were public `GET /v1/models` and authenticated `POST /v1/messages` only.
+Writes were private metadata-only files under
+`~/temp/agent/probe-hyper-glm53-candidate-i-anthropic-tool-20260831/`.
 No raw response,
 credential,
 corpus text,
-or repository image is retained.
-Success requires HTTP 200,
-`tool_use`,
-one exact tool invocation,
+or repository image was retained.
+
+Script SHA-256 is
+`3b3f7604f3b595c8e0cbd9f65d7ffa80db18d9690550206295b4df7985da4f65`.
+Imported duplicate-member scanner SHA-256 is
+`d59b7b3452113b8a19ad388e4d1cbe73bf73ad33afbfe612bac2ae62d890bcd1`.
+Summary SHA-256 is
+`1d040ae31568bc2912df14cd715a33d596fb2210f009d148ce21661cd513c599`.
+
+One request settled after 1,607 milliseconds with HTTP 200,
+one `tool_use` block,
+terminal `tool_use`,
+zero text characters,
+zero reported reasoning characters,
+143 output tokens,
 raw duplicate-member pass,
-exact status strings,
-and one durable attempt row.
-Synthetic run proves transport and schema behavior only;
+and exact caller-guard pass.
+Provider reported zero input tokens;
+that field is retained as provider evidence without interpreting accounting accuracy.
+No redispatch occurred.
+
+Synthetic run proves exact route and schema behavior only;
 it does not satisfy corpus-image or translation-review constraints.
-
-Runner uses inspected Node standard library and direct HTTPS from credential-configured worktree.
-It starts no subprocess and writes no repository file.
-One request receives 360,000-millisecond abort signal.
-Failure is spent evidence and causes no redispatch.
-
-If route passes,
-GLM advances to same Candidate I prototype controls and one pinned-Carena calibration with complete-page review.
+GLM advances to Candidate I prototype controls and one pinned-Carena calibration with complete-page review.
 No recommendation follows from synthetic probe alone.
 
 ## Evidence records
@@ -335,12 +351,14 @@ No recommendation follows from synthetic probe alone.
 - Gate:
   hard route and structured-output boundary.
 - Status:
-  pending.
+  one-attempt pass.
 - Counterevidence:
   official Z.ai OpenAI function-calling page documents only automatic tool choice;
   protocol and gateway may differ.
+- Runtime evidence:
+  `~/temp/agent/probe-hyper-glm53-candidate-i-anthropic-tool-20260831/summary.json`.
 - Outcome:
-  one-attempt metadata-only probe required.
+  advance to Candidate I prototype and pinned-Carena consumer validation.
 
 ### Translation-review consumer fit
 
@@ -363,11 +381,11 @@ No recommendation follows from synthetic probe alone.
 ## Current disposition
 
 No recommendation.
-GLM 5.3 Flash is only serious alternative after exhaustive family screening.
-It may enter one exact Hyper Anthropic forced-tool probe.
+GLM 5.3 Flash is only serious alternative after exhaustive family screening and passed exact Hyper Anthropic forced-tool
+route probe.
+It may enter Candidate I structural prototype and pinned-Carena consumer validation.
 Product allowlist,
 production code,
-and decision records must not adopt it before route pass,
-Candidate I control pass,
+and decision records must not adopt it before Candidate I control pass,
 pinned-Carena completion,
 and complete-page review.
