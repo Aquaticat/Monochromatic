@@ -136,7 +136,77 @@ They do not establish total provider completion usage.
 A retained Qwen3.8 Flash expansion response reported 15,493 completion tokens,
 while its compact raw JSON used 4,585 Qwen3.8-27B tokens.
 This cross-model comparison shows that raw encoding alone does not account for reasoning and tool framing.
-Actual `usage.output_tokens` and finish reason remain required calibration evidence.
+Actual `usage.output_tokens` and finish reason were required and recorded by live calibration.
+
+### Live Candidate H accounting
+
+Candidate H calibration used prototype commit
+`5f3ca0946e690dcef7cabeb2e3482c951d915679`
+and manifest SHA-256
+`c289fbb230e28cd29ab94deee4dbd13778f76556fc3d9a5d7349169c91825353`.
+A separate injected `chatJson` transport control against same built client generated request ceilings of 32,000 tokens
+for Qwen,
+16,000 for Kimi,
+and 32,000 for MiniMax.
+Live exchange audit did not retain `max_tokens`,
+so this control establishes client behavior but not exact field in retained live request body.
+Private control output is retained at
+`~/temp/agent/candidate-h-chatjson-max-tokens-control-20260831.log`.
+The live runner used no transport retries and recorded exactly six HTTP 200 exchanges.
+
+Author responses reported:
+
+- Qwen:
+  `end_turn`,
+  59,438 output tokens,
+  admitted;
+- Kimi:
+  `max_tokens`,
+  16,000 output tokens,
+  rejected as truncated;
+- MiniMax:
+  `tool_use`,
+  18,680 output tokens,
+  admitted.
+
+Verifier responses reported:
+
+- Qwen:
+  `end_turn`,
+  47,553 output tokens,
+  rejected as unparseable JSON;
+- Kimi:
+  `max_tokens`,
+  16,000 output tokens,
+  rejected as truncated;
+- MiniMax:
+  `tool_use`,
+  9,031 output tokens,
+  rejected by exact caller guard.
+
+Kimi reached `max_tokens` in both roles despite raw-wire arithmetic reserves of 11,406 author tokens and
+10,284 verifier tokens,
+and neither response carried complete parseable tool JSON.
+Metadata does not prove which internal token category consumed reserve.
+The Qwen usage values exceeded 32,000 tokens while returning `end_turn`.
+The separate same-client control generated 32,000-token Qwen requests,
+but retained live audit does not prove exact live request field.
+These observations do not establish one directly comparable accounting boundary between reported `output_tokens` and
+request `max_tokens`.
+They also do not distinguish whether Hyper excluded hidden reasoning from generation limit,
+reported extra reasoning in usage,
+or applied another provider-specific interpretation.
+Finish reason and deterministic response admission remain authoritative.
+
+Private metadata-only evidence is retained at
+`~/temp/agent/prototype-Carena-H-bounded-verdict-20260831/calibration-summary.json`.
+It contains request and response digests,
+byte counts,
+roles,
+wire model ids,
+status,
+finish reason,
+and usage without raw provider text.
 
 ## Verified workarounds
 
@@ -150,15 +220,17 @@ Tradeoff:
 provider deployment can diverge from model repository.
 A live accepted response must still record provider usage and finish reason.
 
-### Keep a measured raw-wire reserve
+### Keep a measured raw-wire reserve as screening evidence
 
-Require measured raw JSON to leave room for provider framing and model reasoning.
-Candidate H's current verifier raw-wire reserve is at least 10,284 tokens across exact current verifier tokenizers and model-specific output maxima.
+Require measured raw JSON to leave room for provider framing and model reasoning,
+but do not treat arithmetic reserve as completion evidence.
+Candidate H's exact raw-wire screening reserve was at least 10,284 verifier tokens,
+yet Kimi still exhausted its 16,000-token limit before returning complete tool JSON.
 
 Tradeoff:
-reserve is evidence,
-not proof of a model's reasoning consumption.
-Only calibration observes that behavior.
+reserve can reject clearly impossible envelopes,
+but cannot qualify model whose hidden reasoning is unbounded within provider completion accounting.
+Only admitted live completion establishes operational headroom.
 
 ### Reject token-limit completion before parsing
 
@@ -175,6 +247,8 @@ a response completed exactly at limit is conservatively rejected.
 - Treating raw JSON token count as total completion usage.
 - Assuming Anthropic's documented count route exists on Hyper because `/v1/messages` is compatible.
 - Raising project completion ceiling instead of measuring current bounded response and finish reason.
+- Treating raw-wire arithmetic reserve as proof hidden reasoning will leave room for tool JSON.
+- Treating `usage.output_tokens` as directly bounded by requested `max_tokens` across every Hyper model.
 
 ## Upstream filing decision
 

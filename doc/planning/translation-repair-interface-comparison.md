@@ -2011,8 +2011,9 @@ The five retained complete Qwen pages prove only that those rejected outputs fit
 they do not prove that a publication-ready candidate cannot require more.
 The compact schema-stress failure no longer rejects Candidate H by itself.
 Candidate H code is implemented on the finite-prototype branch,
-but it is not production-selected because it has no qualified author roster and live calibration is unfinished.
-Live calibration is an authorized next evidence step after fresh advisor review.
+but it is not production-selected.
+Its completed live calibration rejects the current roster and ballot interface as recorded in
+"Rejected Candidate H live calibration."
 
 Candidate H contributes one reusable interface idea:
 complete status arrays plus exact overflow algebra can bound defect narration without treating missing findings as clean evidence.
@@ -2117,7 +2118,8 @@ but they are not by themselves a normal-run architecture rejection.
 This interpretation removes Candidate G and Candidate H envelope-only rejections.
 It does not reverse their independent blockers:
 Candidate G has no qualified author and its four-candidate verifier interface remains unmeasured under the planned model tokenizers;
-Candidate H is implemented and targeted-lint-clean but has no qualified author roster.
+Candidate H is implemented and targeted-lint-clean,
+but its completed live calibration admitted no verifier ballot and produced no publication-eligible candidate.
 Live Hyper and Synthetic use is authorized without another permission checkpoint.
 
 Consumer hardening is required first.
@@ -2204,7 +2206,7 @@ Current roster tokenizer artifacts are pinned at:
 - MiniMax M3 `f0e1c1e04d40177e4673a22097036854f536e9c0`.
 
 Raw-wire headroom does not include model reasoning or tool-call framing.
-Provider `usage.output_tokens` and finish reason remain required live calibration evidence.
+Provider `usage.output_tokens` and finish reason were therefore required and are recorded by live calibration.
 `doc/troubleshooting/charm-hyper-token-count-evidence.md` records the endpoint research,
 artifact hashes,
 and exact method.
@@ -2242,22 +2244,77 @@ Task #69 already GFP-proves shared truncating-finish refusal.
 Restored targeted lint and types pass;
 the restored full run reports 876 passing suites and no failure lines.
 
-The private calibration transport will use `retryPolicy.limit = 0`,
-so each manifested node can send at most one network exchange.
-It will persist request and response digests,
-wire model and schema role,
+### Rejected Candidate H live calibration
+
+Private Carena calibration ran from prototype commit
+`5f3ca0946e690dcef7cabeb2e3482c951d915679`
+against corpus commit
+`a80634a674f94861ea3b7056fba054ca9eab1a2c`.
+Manifest SHA-256 was
+`c289fbb230e28cd29ab94deee4dbd13778f76556fc3d9a5d7349169c91825353`.
+The fresh Hyper catalog still reported all three manifested models as vision-capable with expected maxima.
+An injected transient control made exactly one transport attempt under `retryPolicy.limit = 0`.
+Forced-tool controls bound all three canonical model ids to expected Hyper wire ids,
+tool name,
+and tool choice.
+
+The run sent exactly six exchanges,
+one for each durable node row,
+and completed in 1,025,027 milliseconds.
+Every exchange record carries request and response digests,
+bytes,
+role,
+wire model,
 HTTP status,
-response bytes,
 stop reason,
-provider usage,
-and exact exchange count without raw provider text.
-Six is maximum exchange count;
-actual durable node rows establish execution when author failure skips verifier wave.
+and provider usage without retained raw payload text.
+All six responses returned HTTP 200:
+
+- Qwen author reported `end_turn` and 59,438 output tokens;
+  complete response was admitted.
+- Kimi author reported `max_tokens` and exactly 16,000 output tokens;
+  truncation guard made it spent-unusable.
+- MiniMax author reported `tool_use` and 18,680 output tokens;
+  complete response was admitted.
+- Qwen verifier reported `end_turn` and 47,553 output tokens;
+  extracted tool answer was not parseable JSON and whole ballot abstained.
+- Kimi verifier reported `max_tokens` and exactly 16,000 output tokens;
+  truncation guard made it spent-unusable.
+- MiniMax verifier reported `tool_use` and 9,031 output tokens;
+  parsed response failed exact caller guard and whole ballot abstained.
+
+The two admitted authors demonstrate bounded candidate retention in this run despite one author failure.
+The three verifier abstentions left no clean or dissenting ballot.
+Private fixed-priority fallback selected Qwen with `evidenceFloorMet: false` and
+`productionEligible: false`;
+it did not authorize publication.
+
+Complete-page review read source,
+archive,
+both admitted candidate pages,
+and page-referenced `photo1.webp` at 2,048 by 2,048 pixels.
+The selected document preserved front matter,
+node order,
+link target,
+media reference,
+contributor attribution,
+and all source passages.
+It was not publication-ready.
+The footnote boundary omitted required English whitespace between link and following prose.
+Both admitted candidates carry same boundary defect,
+so fixed priority cannot avoid it.
+Complete reading also found unresolved English idiom in flight-ticket comparison.
+
+Candidate H is rejected rather than retried or repaired from spent outputs.
+Its complete status-array idea remains useful,
+but current all-candidate response interface did not yield one admissible ballot from three vision models.
+Raw-wire arithmetic reserve also failed to predict Kimi's reasoning-inclusive truncation.
+Private artifacts remain at
+`~/temp/agent/prototype-Carena-H-bounded-verdict-20260831/`.
 
 The user has authorized Hyper and Synthetic calls without another permission checkpoint.
-A fresh advisor review immediately precedes Candidate H calibration so live calls produce interpretable evidence;
-this is an engineering evidence order,
-not an authorization gate.
+Advisor review preceded live calibration as engineering evidence ordering,
+not as an authorization gate.
 
 ## Required lifecycle migration
 
