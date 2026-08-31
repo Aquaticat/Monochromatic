@@ -1062,6 +1062,8 @@ await describe({
       name: 'REFUSES duplicate candidate aliases at author settlement boundary',
       fn: async () => {
         const { first, second, ledger, shell, manifest, } = admittedPair();
+        expect(() => createRealizationAuthorSettlement({ states: [], manifest, }),)
+          .toThrow('settlement row count differs');
         expect(() => selectRealizationCandidate({
           candidates: [first, { ...second, candidateId: first.candidateId, },],
           ballots: [],
