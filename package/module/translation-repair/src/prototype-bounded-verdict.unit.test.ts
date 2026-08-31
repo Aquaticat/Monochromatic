@@ -1146,6 +1146,67 @@ await describe({
     },),
 
     it({
+      name: 'SPENDS duplicate canonical prompt without second dispatch',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createBoundedLifecycleFixture();
+        let calls = 0;
+        const inner: SyntheticClient = {
+          chatText: async () => {
+            await Promise.resolve();
+            throw new Error('bounded prompt-claim chatText unused');
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            calls += 1;
+            const value: unknown = { verdict: 'ok', };
+            if (!request.validate(value,))
+              throw new Error('bounded prompt-claim fixture failed guard');
+            return { kind: 'ok', value, rawText: JSON.stringify(value,), };
+          },
+          quotas: async () => {
+            await Promise.resolve();
+            throw new Error('bounded prompt-claim quotas unused');
+          },
+        };
+        const bound = bindBoundedClient({
+          manifest: fixture.manifest,
+          outputDir: directory.path,
+          clients: { all: inner, synthetic: inner, hyper: inner, },
+        },);
+        const {signal} = new AbortController();
+        const request = {
+          modelId: 'hf:Qwen/Qwen3.8-27B' as const,
+          messages: [{ role: 'user' as const, content: 'same prompt', },],
+          responseFormat: {
+            type: 'json_schema' as const,
+            json_schema: {
+              name: 'bounded_prompt_claim_fixture',
+              schema: {
+                type: 'object',
+                properties: { verdict: { type: 'string', }, },
+                required: ['verdict',],
+              },
+            },
+          },
+          validate(value: unknown,): value is { readonly verdict: string; } {
+            return isJsonRecord(value,) && ((typeof value.verdict) === 'string');
+          },
+          signal,
+        };
+        const outcomes = await Promise.all([
+          bound.client.chatJson(request,),
+          bound.client.chatJson(request,),
+        ],);
+        expect(calls,).toBe(1,);
+        expect(outcomes.map(function kind(outcome,) {
+          return outcome.kind;
+        },).toSorted(),).toEqual(['ok', 'schema-mismatch',],);
+      },
+    },),
+
+    it({
       name: 'SETTLES duplicate-member authors unusable without verifier work',
       fn: async () => {
         await using directory = await temporaryDirectory();
@@ -1211,6 +1272,42 @@ await describe({
           fixture.manifest.verifierModelIds,
         );
         expect(result.selection,).toBeUndefined();
+        await rm(join(directory.path, 'prompt-claims',), {
+          recursive: true,
+          force: true,
+        },);
+        const restartCalls: string[] = [];
+        const restartClient = scriptedClient({
+          responseFor,
+          calls: restartCalls,
+          prompts: [],
+          peak: { value: 0, inFlight: 0, },
+        },);
+        const restarted = await runBoundedRuntime({
+          outputDir: directory.path,
+          boundClient: bindBoundedClient({
+            manifest: fixture.manifest,
+            outputDir: directory.path,
+            clients: {
+              all: refusingClient(),
+              synthetic: refusingClient(),
+              hyper: restartClient,
+            },
+          },),
+          manifest: fixture.manifest,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+          shell: fixture.shell,
+          ledger: fixture.ledger,
+          sourceText: BOUNDED_LIFECYCLE_SOURCE,
+          archiveText: BOUNDED_LIFECYCLE_ARCHIVE,
+          media: BOUNDED_LIFECYCLE_MEDIA,
+          restart: true,
+          signal: new AbortController().signal,
+        },);
+        expect(restartCalls,).toEqual([],);
+        expect(restarted.authorSettlement.rows.every(function unusable(row,) {
+          return row.state === 'spent-unusable';
+        },),).toBe(true,);
       },
       timeout: 20_000,
     },),
@@ -1536,6 +1633,53 @@ await describe({
         expect(restarted.selection?.candidate.candidateDigest,).toBe(
           result.selection?.candidate.candidateDigest,
         );
+      },
+      timeout: 20_000,
+    },),
+
+    it({
+      name: 'REFUSES concurrent runtime sharing exact output root',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createBoundedLifecycleFixture();
+        const responseFor = boundedLifecycleResponseForRequest({ fixture, });
+        const calls: string[] = [];
+        const hyper = scriptedClient({
+          responseFor,
+          calls,
+          prompts: [],
+          peak: { value: 0, inFlight: 0, },
+        },);
+        const firstBound = bindBoundedClient({
+          manifest: fixture.manifest,
+          outputDir: directory.path,
+          clients: { all: hyper, synthetic: hyper, hyper, },
+        },);
+        const secondBound = bindBoundedClient({
+          manifest: fixture.manifest,
+          outputDir: directory.path,
+          clients: { all: hyper, synthetic: hyper, hyper, },
+        },);
+        const common = {
+          outputDir: directory.path,
+          manifest: fixture.manifest,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+          shell: fixture.shell,
+          ledger: fixture.ledger,
+          sourceText: BOUNDED_LIFECYCLE_SOURCE,
+          archiveText: BOUNDED_LIFECYCLE_ARCHIVE,
+          media: BOUNDED_LIFECYCLE_MEDIA,
+          restart: false,
+          signal: new AbortController().signal,
+        };
+        const settled = await Promise.allSettled([
+          runBoundedRuntime({ ...common, boundClient: firstBound, },),
+          runBoundedRuntime({ ...common, boundClient: secondBound, },),
+        ],);
+        expect(settled.map(function status(result,) {
+          return result.status;
+        },).toSorted(),).toEqual(['fulfilled', 'rejected',],);
+        expect(calls,).toHaveLength(6,);
       },
       timeout: 20_000,
     },),
