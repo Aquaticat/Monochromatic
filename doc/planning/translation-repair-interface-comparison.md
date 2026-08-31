@@ -2572,8 +2572,8 @@ Candidate I must not be retried,
 repaired,
 or integrated.
 
-The next finite design must reduce load-bearing model review from 134 clause-and-relation obligations plus ten global
-criteria.
+The next finite design must reduce the opaque review burden without dropping any of the 134 clause-and-relation
+obligations or ten global criteria.
 Deterministic admission already owns syntax,
 structure,
 links,
@@ -2590,6 +2590,419 @@ family-aware nonself evidence,
 exact status coverage,
 and the same zero-retry lifecycle.
 This is a new substantive verifier contract and cannot redispatch any Candidate I prompt.
+
+## Candidate K plan: three-family authors with conjunctive review units
+
+Candidate K addresses both Candidate I failure surfaces.
+It adds GLM as a third independent whole-document producer,
+so a strong GLM candidate can qualify from Qwen and MiniMax evidence without depending on a GLM self-verdict.
+It also replaces the opaque digest-only verifier ledger with readable compiled review groups.
+It retains one explicit status for every clause and relation obligation.
+The unit compiler retains every original obligation,
+its semantic evidence,
+and its exact mapping.
+
+### Static graph
+
+The manifest fixes twelve node templates before any provider contact:
+
+1.  Qwen3.8-27B,
+    GLM 5.3 Flash,
+    and MiniMax M3 each receive one substantively new complete-candidate author prompt in the concurrent author wave;
+2.  Qwen,
+    GLM,
+    and MiniMax each verify every usable candidate with one combined fidelity-and-English ballot in the concurrent
+    verifier wave;
+3.  deterministic selection runs only after every dispatched sibling settles.
+
+Maximum payload count is twelve in two waves.
+If an author is unusable,
+its three statically named verifier nodes become durable deterministic skips.
+Actual payload count is therefore three plus three times the number of usable authors.
+Dependency-independent nodes remain concurrent.
+No response creates a node,
+retry,
+route fallback,
+or correction request.
+
+Every node remains Hyper-only and receives every page-referenced image.
+One model and one canonical substantive prompt produce at most one payload.
+A local request deadline remains finite and manifest-bound;
+the initial prototype value is 900,000 milliseconds.
+That value is provisional validation input,
+not evidence that GLM will complete.
+Deadline-aborted outputs are spent-unusable and have no selection effect.
+No model request sets thinking,
+reasoning budget,
+temperature,
+effort,
+or another sampling knob.
+The initial route output ceiling remains the vetted 32,000 tokens for each model.
+A higher ceiling requires a separate new-protocol route vet before implementation may rely on it.
+
+### Substantively new producer contract
+
+Candidate I's Qwen and MiniMax author prompts are spent and cannot be sent again.
+Candidate K author protocol changes both instruction and packet semantics:
+
+- it receives the compiled review-unit plan instead of the raw per-clause status ledger;
+- it treats source text as semantic authority and archive text only as permitted wording evidence;
+- it explicitly owns complete meaning,
+  every actor and relation,
+  idiomatic sentence boundaries,
+  unambiguous references,
+  terminology,
+  chronology,
+  memorial register,
+  and image-related meaning;
+- it returns every immutable-shell slot exactly once and returns no audit or repair claims;
+- it must produce one complete publication candidate or have no effect.
+
+GLM has not received a Candidate I author prompt.
+Qwen and MiniMax may enter Candidate K only under this genuinely changed protocol and packet,
+not a digest-only rename.
+All three producers are peers;
+none reads or edits another producer's output.
+This preserves the ban on serial editor layering.
+
+### Review-unit compiler
+
+The compiler template is fixed before authors run.
+Candidate binding after author settlement instantiates already-manifested templates with candidate id,
+candidate digest,
+and deterministic-proof digest;
+it does not create work.
+
+Candidate K bounds one manifest at 192 slot groups,
+192 clause subjects,
+191 relation subjects,
+six global subjects,
+and 64 retained findings.
+For pinned Carena,
+the compiler must produce:
+
+- 23 slot groups containing all 112 clause subjects and one status per clause;
+- 22 relation subjects preserving every relation obligation as its own status;
+- 23 slot-language subjects;
+- six page-level global subjects.
+
+Each slot group stores its slot key,
+source-slot range,
+source text,
+digest,
+authority,
+and ordered clause subjects.
+Each clause subject carries obligation id,
+canonical source ranges and text,
+authority,
+allowed target slot keys,
+and evidence digest.
+The ballot returns one clause status for every member,
+so no clause disappears behind a slot conjunction.
+Grouping makes evidence readable without reducing status granularity.
+
+Each relation subject carries obligation id,
+`adjacent-source-slot` kind,
+ordered left and right clause endpoints,
+canonical endpoint source ranges and text,
+authority,
+allowed target slot keys,
+and evidence digest.
+Relation findings may use multiple target anchors across authorized endpoint slots.
+Slot-language subjects bind exactly one candidate slot and its complete candidate text.
+All readable plan structure is included in `reviewPlanDigest`;
+opaque digests never substitute for evidence the verifier must inspect.
+The six global subjects are:
+
+- cross-slot actor identity and coreference;
+- cross-slot chronology and semantic relations;
+- technical and legal terminology consistency;
+- document-wide grammar,
+  tense,
+  register,
+  and rhetorical coherence;
+- contributor voice and authority;
+- source,
+  image,
+  and target relation.
+
+Ownership intentionally overlaps.
+Terminology,
+coreference,
+register,
+and image-alt prose may be rejected by either fidelity or language evidence.
+A verifier cannot defer a defect because another responsibility also owns it.
+
+The compiler persists an exact coverage map from Candidate I criteria into Candidate K subjects:
+
+- unsupported addition,
+  identity attribution,
+  actor reference,
+  chronology,
+  and technical or legal meaning map to slot fidelity,
+  relation,
+  and overlapping global subjects;
+- grammar and usage,
+  tense,
+  register,
+  and source-language calque map to slot-language and overlapping global subjects;
+- paragraph relations map to relation units and the chronology-and-relations global subject.
+
+Tests must prove that every 112 clause obligation belongs to exactly one slot group and has exactly one status,
+every 22 relation obligation remains exactly once,
+every translatable slot has a language subject,
+and every prior global criterion has at least one explicit successor owner.
+They must also prove every readable source excerpt matches its bound range and digest,
+every relation endpoint and direction match the original ordered obligation,
+and no compiler output exceeds the static bounds.
+
+### Deterministic proof boundary
+
+Deterministic admission owns only mechanically decidable properties:
+
+- raw duplicate-member refusal and exact response key sets;
+- exact slot-key set,
+  nonempty values,
+  and compiled-document envelope;
+- immutable syntax and locked-range survival;
+- runtime-owned separators and target boundaries;
+- front-matter key shape;
+- link destination,
+  media path,
+  contributor identity and URL,
+  and footnote destination survival;
+- candidate,
+  manifest,
+  review-plan,
+  document,
+  slot,
+  image,
+  and proof digests.
+
+It does not claim that translated front matter,
+link labels,
+image-alt prose,
+visual relations,
+contributor voice,
+or any other target wording is semantically correct.
+Those remain model-reviewed.
+The candidate-bound proof is recomputed before verifier dispatch and before selection.
+
+### Combined ballot and finding algebra
+
+Each verifier returns:
+
+```ts
+export type CandidateKBallot = {
+  readonly candidateId: CandidateId;
+  readonly candidateDigest: string;
+  readonly reviewPlanDigest: string;
+  readonly deterministicProofDigest: string;
+  readonly clauseStatusesBySlot: readonly string[];
+  readonly relationStatuses: string;
+  readonly slotLanguageStatuses: string;
+  readonly globalStatuses: string;
+  readonly overflow: boolean;
+  readonly findings: readonly CandidateKFinding[];
+};
+
+export type CandidateKFinding = {
+  readonly scope: 'c' | 'r' | 'sl' | 'g';
+  readonly subjectIndex: number;
+  readonly defectClassIndex: number;
+  readonly sourceEvidenceIndexes: readonly number[];
+  readonly imageEvidenceIndexes: readonly number[];
+  readonly targetAnchors: readonly TargetAnchor[];
+};
+```
+
+`clauseStatusesBySlot` contains one string per slot group,
+and every string length equals that group's clause count.
+Clause and relation alphabets are `p` or `d`;
+language and global alphabets are `c` or `d`.
+Raw duplicate members,
+wrong characters,
+wrong outer or inner lengths,
+stale bindings,
+invalid evidence indexes,
+and unbound anchors abstain atomically.
+
+A status is one Boolean subject state,
+not a defect count.
+Canonical subject order is clause groups and members in manifest order,
+then relations,
+slot language,
+and globals.
+Let `D` be the number of defective subjects and let fixed `C` equal 64.
+`overflow` must equal `D > C`.
+Without overflow,
+exactly one witness finding binds every defective subject.
+With overflow,
+findings must bind exactly the first `C` defective subjects in canonical order.
+Multiple defects inside one subject do not change `D` and do not create an unverifiable finding-count claim.
+
+Every finding field is present;
+scope controls whether its arrays must be empty or populated:
+
+- clause findings cite the subject's source evidence;
+  omission findings have no target anchor,
+  while every other clause defect anchors inside an allowed target slot;
+- relation findings cite both ordered endpoint source records and one to four disjoint target anchors across authorized
+  endpoint slots;
+- slot-language findings have empty source and image evidence arrays and one to three target anchors inside their slot;
+- nonvisual global findings require target anchors and no image evidence;
+- source-image-target relation findings require at least one exact manifest image index and target anchor,
+  plus any relevant source evidence.
+
+Defect-class scopes are closed in the manifest.
+An omission class is legal only for clause scope;
+an image-relation class is legal only where image evidence is permitted.
+All source evidence indexes resolve to readable plan records with exact range and digest.
+All image indexes resolve to manifest-bound page images.
+
+Seeded controls must include multiple defects in one slot,
+a cross-slot relation defect,
+terminology drift,
+actor-coreference ambiguity,
+register failure,
+image-relation failure,
+and a mixed fidelity-and-language defect that both roles may veto.
+
+### Evidence and selection
+
+For a Qwen candidate,
+clean MiniMax and GLM ballots provide two nonself families.
+For a MiniMax candidate,
+clean Qwen and GLM ballots provide two nonself families.
+For a GLM candidate,
+clean Qwen and MiniMax ballots provide two nonself families.
+
+One candidate is production eligible only when:
+
+- deterministic proof passes at every boundary;
+- both nonself family ballots are valid and clean across every status string;
+- no admitted ballot from any family contains a defect or overflow;
+- contributor,
+  structure,
+  media,
+  prompt-claim,
+  provider,
+  restart,
+  and cancellation controls pass.
+
+Self-clean evidence never contributes to the floor.
+A valid self defect or overflow vetoes.
+Malformed,
+partial,
+truncated,
+late,
+or stale ballots abstain with no selection effect.
+Selection among eligible candidates uses fixed hidden priority only after all siblings settle.
+A complete private fallback remains explicitly below floor and cannot authorize publication.
+
+### Alternatives
+
+#### Option A: three authors with combined ballots (recommended)
+
+Pros:
+
+- adds a genuinely new GLM producer and gives that candidate Qwen plus MiniMax nonself evidence;
+- performs one complete-page review per family and candidate;
+- retains separate fidelity,
+  relation,
+  language,
+  and global acceptance predicates inside one atomic ballot;
+- fixes Candidate I finding algebra without duplicating full-page inputs.
+
+Cons:
+
+- one malformed combined ballot loses both fidelity and language evidence from that family;
+- three concurrent GLM verifier calls remain unmeasured under the smaller contract and longer deadline;
+- Qwen and MiniMax producer quality may remain correlated with prior family defects;
+- no finite selection rule can publish when all three independent whole candidates are defective,
+  so producer quality remains a calibration hard gate.
+
+#### Option B: three authors with separate fidelity and language ballots
+
+Pros:
+
+- isolates role instructions and schema failures;
+- one failed role does not erase valid evidence from the other role.
+
+Cons:
+
+- has 21 statically named nodes and sends six concurrent full-page verifier calls per model when all authors succeed;
+- has the same family-aware acceptance predicate as Option A;
+- repeats complete source,
+  archive,
+  candidate,
+  shell,
+  proof,
+  and images for each responsibility;
+- specialization benefit has no measured consumer evidence.
+
+#### Option C: one GLM author with Qwen and MiniMax ballots
+
+Pros:
+
+- has three payloads when every node completes;
+- avoids using GLM as its own qualifying verifier.
+
+Cons:
+
+- one unusable author leaves no complete candidate;
+- offers no alternate wording when the complete candidate has a defect;
+- cannot satisfy the normal-run resilience objective.
+
+Ranking:
+Option A > Option B > Option C.
+Option A ranks over Option B because both enforce the same conjunction,
+while Option A avoids duplicated full-page load and same-model concurrency.
+Option B ranks over Option C because its producer redundancy and isolated evidence survive one producer failure;
+Option C has a single producer point of failure.
+A first-defect-only ballot is excluded before ranking because it cannot demonstrate complete review coverage.
+
+### Prototype acceptance controls
+
+Candidate K cannot enter live calibration until:
+
+- the manifest fixes three authors,
+  nine candidate verifier templates,
+  twelve-payload ceiling,
+  route ids,
+  vetted 32,000-token caps,
+  provisional 900,000-millisecond local deadlines,
+  and two dependency waves;
+- review-plan compilation proves exact obligation and prior-criterion coverage,
+  readable evidence binding,
+  static unit bounds,
+  and relation direction;
+- deterministic proof excludes every semantic claim named in its boundary section;
+- combined-ballot schema and guard pass seeded positive and negative controls;
+- family floor,
+  self-veto,
+  prompt uniqueness,
+  image reach,
+  exact provider mask,
+  duplicate-member,
+  abort identity,
+  spent-node restart,
+  lease,
+  and deterministic-skip guards GFP-fail when removed;
+- type-aware lint,
+  types,
+  targeted rebuilt tests,
+  and full `buildAndTest` pass;
+- advisor reviews the exact implementation and the zero-retry calibration harness;
+- complete source,
+  archive,
+  every candidate,
+  selected document,
+  and every page image are read before any production-eligibility claim.
+
+Candidate K is selected for structural prototyping only.
+It is not selected for production.
+It carries no permission to reuse Candidate I prompts or outputs as new provider work.
 
 ## Required lifecycle migration
 
