@@ -563,6 +563,31 @@ function delayedVerifierAbortClient({
   };
 }
 
+/** Client counting forbidden restart calls before refusing them. */
+function countingRefusingClient({
+  calls,
+}: {
+  readonly calls: { value: number };
+}): SyntheticClient {
+  return {
+    chatText: async () => {
+      calls.value += 1;
+      await Promise.resolve();
+      throw new Error('counted candidate ballot text client called');
+    },
+    chatJson: async () => {
+      calls.value += 1;
+      await Promise.resolve();
+      throw new Error('counted candidate ballot json client called');
+    },
+    quotas: async () => {
+      calls.value += 1;
+      await Promise.resolve();
+      throw new Error('counted candidate ballot quota client called');
+    },
+  };
+}
+
 /** Client proving excluded route or restart made no provider call. */
 function refusingClient(): SyntheticClient {
   return {
@@ -958,13 +983,17 @@ await describe({
         expect(new Set(prompts.map(function claim(prompt, index,) {
           return `${calls[index] ?? ''}:${prompt}`;
         },)).size,).toBe(prompts.length,);
+        const restartCalls = { value: 0, };
         const restartClient = bindCandidateBallotClient({
           manifest: fixture.manifest,
           outputDir: root.path,
           clients: {
             all: refusingClient(),
             synthetic: refusingClient(),
-            hyper: scriptedRouteClient({ fixture, client: refusingClient(), }),
+            hyper: scriptedRouteClient({
+              fixture,
+              client: countingRefusingClient({ calls: restartCalls, }),
+            }),
           },
         },);
         const restarted = await runCandidateBallotRuntime({
@@ -983,6 +1012,7 @@ await describe({
         expect(restarted.completedNodeCount,).toBe(MAX_CANDIDATE_BALLOT_PAYLOAD_COUNT,);
         expect(restarted.selection?.candidate.candidateDigest,)
           .toBe(first.selection?.candidate.candidateDigest,);
+        expect(restartCalls.value,).toBe(0,);
       },
     },),
 
@@ -1183,6 +1213,7 @@ await describe({
           'utf8',
         );
         expect(nodeText,).toContain('"failureCategory": "raw-duplicate"',);
+        const restartCalls = { value: 0, };
         const restarted = await runCandidateBallotRuntime({
           outputDir: root.path,
           boundClient: bindCandidateBallotClient({
@@ -1191,7 +1222,10 @@ await describe({
             clients: {
               all: refusingClient(),
               synthetic: refusingClient(),
-              hyper: scriptedRouteClient({ fixture, client: refusingClient(), }),
+              hyper: scriptedRouteClient({
+                fixture,
+                client: countingRefusingClient({ calls: restartCalls, }),
+              }),
             },
           },),
           manifest: fixture.manifest,
@@ -1206,6 +1240,7 @@ await describe({
         },);
         expect(restarted.spentUnusableNodeCount,).toBe(3,);
         expect(calls,).toHaveLength(MAX_CANDIDATE_BALLOT_PAYLOAD_COUNT,);
+        expect(restartCalls.value,).toBe(0,);
       },
     },),
   ],
