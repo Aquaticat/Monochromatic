@@ -102,6 +102,7 @@ export async function executeSlotNode<ValueT,>(
     messages,
     responseFormat,
     validate,
+    validateRawText,
     signal,
   }: {
     readonly outputDir: string;
@@ -112,6 +113,7 @@ export async function executeSlotNode<ValueT,>(
     readonly messages: readonly (ChatMessage | VisionMessage)[];
     readonly responseFormat: JsonSchemaResponseFormat;
     readonly validate: (value: unknown) => value is ValueT;
+    readonly validateRawText?: (rawText: string) => void;
     readonly signal: AbortSignal;
   },
 ): Promise<SlotExecution<ValueT>> {
@@ -142,6 +144,24 @@ export async function executeSlotNode<ValueT,>(
       };
       await writeSlotNode({ outputDir, record, },);
       return { kind: 'unusable', record, };
+    }
+    if (validateRawText !== undefined) {
+      try {
+        validateRawText(outcome.rawText,);
+      }
+      catch (error) {
+        const record: SlotNodeRecord = {
+          ...binding,
+          durationMs,
+          state: 'spent-unusable',
+          providerResponseDigest: hashContent({ content: outcome.rawText, }),
+          replyCacheKey: baseDigest,
+          failureType: error instanceof Error ? error.constructor.name : 'unknown',
+          failureDigest: digestFailure({ value: error, }),
+        };
+        await writeSlotNode({ outputDir, record, },);
+        return { kind: 'unusable', record, };
+      }
     }
     return {
       kind: 'usable',
@@ -227,6 +247,7 @@ export async function restartSlotNode<ValueT,>(
     messages,
     responseFormat,
     validate,
+    validateRawText,
     signal,
   }: {
     readonly outputDir: string;
@@ -236,6 +257,7 @@ export async function restartSlotNode<ValueT,>(
     readonly messages: readonly (ChatMessage | VisionMessage)[];
     readonly responseFormat: JsonSchemaResponseFormat;
     readonly validate: (value: unknown) => value is ValueT;
+    readonly validateRawText?: (rawText: string) => void;
     readonly signal: AbortSignal;
   },
 ): Promise<RestartedSlotNode<ValueT>> {
@@ -284,6 +306,8 @@ export async function restartSlotNode<ValueT,>(
   const responseText = await readFile(join(outputDir, `response-${id}.json`,), 'utf8',);
   if (record.responseDigest !== hashContent({ content: responseText, }))
     throw new Error(`immutable shell restart response digest differs at ${id}`);
+  if (validateRawText !== undefined)
+    validateRawText(responseText,);
   const value: unknown = JSON.parse(responseText,);
   if (!validate(value,))
     throw new Error(`immutable shell restart response schema differs at ${id}`);

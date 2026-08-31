@@ -4,6 +4,11 @@ export {
   admitRealizationAuthorResponse,
 } from './prototype-realization-admission.ts';
 export {
+  candidatesFromRealizationAuthorSettlement,
+  type RealizationAuthorSettlement,
+  type RealizationAuthorSettlementRow,
+} from './prototype-realization-author-settlement.ts';
+export {
   realizationAuthorResponseFormat,
   realizationAuthorResponseGuard,
   realizationCandidateAlias,
@@ -14,6 +19,9 @@ export {
 export {
   normalizeRealizationLineEndings,
 } from './prototype-realization-coordinate.ts';
+export {
+  runRealizationNodeLifecycleControls,
+} from './prototype-realization-node-lifecycle-controls.ts';
 export {
   buildRealizationObligationLedger,
 } from './prototype-realization-ledger.ts';
@@ -32,6 +40,7 @@ export type {
   RealizationManifest,
   RealizationObligation,
   RealizationObligationLedger,
+  RealizationProviderSelection,
   RealizationSelection,
   RealizationTargetAnchor,
   RealizationVerifierBallot,
@@ -39,7 +48,7 @@ export type {
   RealizedCandidate,
 } from './prototype-realization-model.ts';
 export {
-  assertRealizationCandidateSetMatchesManifest,
+  assertRealizationCandidatesAuthorizedByManifest,
   assertRealizationManifest,
   createRealizationManifest,
   realizationLedgerDigest,
@@ -56,6 +65,16 @@ export {
   MAX_REALIZATION_VERIFIERS,
   REALIZATION_GLOBAL_CRITERIA,
 } from './prototype-realization-model.ts';
+export {
+  runRealizationRuntimeControls,
+} from './prototype-realization-runtime-controls.ts';
+export {
+  bindRealizationClient,
+  runRealizationRuntime,
+  type RealizationBoundClient,
+  type RealizationProviderClients,
+  type RealizationRuntimeResult,
+} from './prototype-realization-runtime.ts';
 export {
   selectRealizationCandidate,
 } from './prototype-realization-selection.ts';

@@ -181,6 +181,9 @@ export type RealizationCandidatePlan = {
   readonly priority: number;
 };
 
+/** Provider reach authorized for one immutable calibration graph. */
+export type RealizationProviderSelection = 'all' | 'synthetic-only' | 'hyper-only';
+
 /**
  * Immutable finite Candidate G plan and canonical identity.
  */
@@ -190,6 +193,14 @@ export type RealizationManifest = {
   readonly ledgerDigest: string;
   readonly candidatePlan: readonly RealizationCandidatePlan[];
   readonly verifierModelIds: readonly RosterModelId[];
+  readonly providerSelection: RealizationProviderSelection;
+  readonly authorProtocolDigest: string;
+  readonly authorSchemaDigest: string;
+  readonly verifierProtocolDigest: string;
+  readonly sourcePictures: readonly {
+    readonly assetName: string;
+    readonly digest: string;
+  }[];
   readonly payloadCeiling: number;
   readonly dependencyWaves: 2;
   readonly manifestDigest: string;

@@ -3,9 +3,10 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  assertRealizationCandidateSetMatchesManifest,
-  assertRealizationManifest,
-} from './prototype-realization-manifest.ts';
+  candidatesFromRealizationAuthorSettlement,
+  type RealizationAuthorSettlement,
+} from './prototype-realization-author-settlement.ts';
+import { assertRealizationManifest, } from './prototype-realization-manifest.ts';
 import { assertRealizedCandidateBinding, } from './prototype-realization-candidate-binding.ts';
 import { admitRealizationVerifierResponse, } from './prototype-realization-verifier-admission.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
@@ -31,7 +32,7 @@ const l = tagged({ tag: 'translation-repair-realization', },);
 function ballotIsAdmitted({
   ballot,
   ledger,
-  candidates,
+  authorSettlement,
   shell,
   manifest,
   expectedManifestDigest,
@@ -41,7 +42,7 @@ function ballotIsAdmitted({
 }: {
   readonly ballot: RealizationVerifierBallot;
   readonly ledger: RealizationObligationLedger;
-  readonly candidates: readonly RealizedCandidate[];
+  readonly authorSettlement: RealizationAuthorSettlement;
   readonly shell: ImmutableShell;
   readonly manifest: RealizationManifest;
   readonly expectedManifestDigest: string;
@@ -53,7 +54,7 @@ function ballotIsAdmitted({
     admitRealizationVerifierResponse({
       response: ballot.response,
       ledger,
-      candidates,
+      authorSettlement,
       verifierModelId: ballot.verifierModelId,
       manifest,
       expectedManifestDigest,
@@ -109,7 +110,7 @@ function verificationIsClean({ verification, }: {
  * Selects private review candidate without claiming cross-family independence.
  */
 export function selectRealizationCandidate({
-  candidates,
+  authorSettlement,
   ballots,
   manifest,
   expectedManifestDigest,
@@ -119,7 +120,7 @@ export function selectRealizationCandidate({
   archiveText,
   sourcePictures,
 }: {
-  readonly candidates: readonly RealizedCandidate[];
+  readonly authorSettlement: RealizationAuthorSettlement;
   readonly ballots: readonly RealizationVerifierBallot[];
   readonly manifest: RealizationManifest;
   readonly expectedManifestDigest: string;
@@ -136,6 +137,7 @@ export function selectRealizationCandidate({
     archiveBody: archiveText,
     expectedManifestDigest,
   },);
+  const candidates = candidatesFromRealizationAuthorSettlement({ settlement: authorSettlement, manifest, });
   const {
     manifestDigest,
     verifierModelIds: plannedVerifierModelIds,
@@ -164,10 +166,6 @@ export function selectRealizationCandidate({
   },);
   if ((new Set(candidateIds,).size !== candidateIds.length) || (!aliasesAreOpaque))
     throw new Error('realization selection candidate alias differs');
-  assertRealizationCandidateSetMatchesManifest({
-    candidates,
-    manifest,
-  });
   for (const candidate of candidates) {
     assertRealizedCandidateBinding({
       candidate,
@@ -223,7 +221,7 @@ export function selectRealizationCandidate({
         && ballotIsAdmitted({
           ballot,
           ledger,
-          candidates,
+          authorSettlement,
           shell,
           manifest,
           expectedManifestDigest,

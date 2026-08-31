@@ -2,9 +2,10 @@
 
 import { assertRealizedCandidateBinding, } from './prototype-realization-candidate-binding.ts';
 import {
-  assertRealizationCandidateSetMatchesManifest,
-  assertRealizationManifest,
-} from './prototype-realization-manifest.ts';
+  candidatesFromRealizationAuthorSettlement,
+  type RealizationAuthorSettlement,
+} from './prototype-realization-author-settlement.ts';
+import { assertRealizationManifest, } from './prototype-realization-manifest.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 import { realizationVerifierResponseGuard, } from './prototype-realization-verifier.ts';
 import {
@@ -208,7 +209,7 @@ function assertCandidateVerification({
 export function admitRealizationVerifierResponse({
   response,
   ledger,
-  candidates,
+  authorSettlement,
   verifierModelId,
   manifest,
   expectedManifestDigest,
@@ -219,7 +220,7 @@ export function admitRealizationVerifierResponse({
 }: {
   readonly response: RealizationVerifierResponse;
   readonly ledger: RealizationObligationLedger;
-  readonly candidates: readonly RealizedCandidate[];
+  readonly authorSettlement: RealizationAuthorSettlement;
   readonly verifierModelId: RealizationVerifierBallot['verifierModelId'];
   readonly manifest: RealizationManifest;
   readonly expectedManifestDigest: string;
@@ -235,10 +236,12 @@ export function admitRealizationVerifierResponse({
     archiveBody: archiveText,
     expectedManifestDigest,
   },);
-  assertRealizationCandidateSetMatchesManifest({
-    candidates,
+  const candidates = candidatesFromRealizationAuthorSettlement({
+    settlement: authorSettlement,
     manifest,
-  });
+  },);
+  if (candidates.length === 0)
+    throw new Error('realization verifier author settlement has no candidate');
   if (!manifest.verifierModelIds
     .includes(verifierModelId,))
     throw new Error('realization verifier identity is not manifested');

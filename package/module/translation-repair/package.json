@@ -12,6 +12,18 @@
       "default": "./dist/final/node/index.mjs"
     },
     "./ts": "./src/index.ts",
+    "./ts/prototype-realization-author-settlement": null,
+    "./ts/prototype-realization-author-settlement.ts": null,
+    "./ts/prototype-realization-author-wave": null,
+    "./ts/prototype-realization-author-wave.ts": null,
+    "./ts/prototype-realization-persistence": null,
+    "./ts/prototype-realization-persistence.ts": null,
+    "./ts/prototype-realization-prompt-client": null,
+    "./ts/prototype-realization-prompt-client.ts": null,
+    "./ts/prototype-realization-runtime-lease": null,
+    "./ts/prototype-realization-runtime-lease.ts": null,
+    "./ts/prototype-realization-verifier-wave": null,
+    "./ts/prototype-realization-verifier-wave.ts": null,
     "./ts/*": "./src/*"
   },
   "dependencies": {

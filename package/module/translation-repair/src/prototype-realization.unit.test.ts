@@ -8,7 +8,7 @@ import {
 
 import {
   admitRealizationAuthorResponse,
-  admitRealizationVerifierResponse,
+  admitRealizationVerifierResponse as admitBoundRealizationVerifierResponse,
   assertNoDuplicateJsonMembers,
   assertRealizationLedgerBindsShell,
   assertRealizationManifest,
@@ -21,8 +21,9 @@ import {
   realizationCandidateAlias,
   realizationObligationEvidenceDigest,
   realizationVerifierResponseGuard,
-  selectRealizationCandidate,
+  selectRealizationCandidate as selectBoundRealizationCandidate,
   type RealizationAuthorResponse,
+  type RealizationAuthorSettlement,
   type RealizationCandidatePlan,
   type RealizationCandidateVerification,
   type RealizationManifest,
@@ -32,6 +33,7 @@ import {
   type RealizationVerifierResponse,
   type RealizedCandidate,
 } from '../dist/final/node/prototype-realization.mjs';
+import { createRealizationAuthorSettlement, } from '../dist/final/node/prototype-realization-test-support.mjs';
 
 /** Source fixture with two bounded clause obligations in one slot. */
 const SOURCE = `---
@@ -113,12 +115,14 @@ function manifestFor({
   candidatePlan,
   verifierModelIds = VERIFIER_MODELS,
   archiveBody = ARCHIVE,
+  providerSelection = 'all',
 }: {
   readonly ledger: RealizationObligationLedger;
   readonly shell: ReturnType<typeof buildImmutableShell>;
   readonly candidatePlan: readonly RealizationCandidatePlan[];
   readonly verifierModelIds?: readonly string[];
   readonly archiveBody?: string;
+  readonly providerSelection?: RealizationManifest['providerSelection'];
 }): RealizationManifest {
   return createRealizationManifest({
     ledger,
@@ -126,6 +130,8 @@ function manifestFor({
     archiveBody,
     candidatePlan,
     verifierModelIds: verifierModelIds as never,
+    providerSelection,
+    sourcePictures: [],
   },);
 }
 
@@ -255,6 +261,75 @@ function candidatePlan(candidates: readonly RealizedCandidate[],): readonly {
       modelId: candidate.modelId,
       priority: candidate.priority,
     };
+  },);
+}
+
+/** Builds total author-wave settlement around supplied completed candidate subset. */
+function authorSettlement({ candidates, manifest, }: {
+  readonly candidates: readonly RealizedCandidate[];
+  readonly manifest: RealizationManifest;
+}): RealizationAuthorSettlement {
+  const states = manifest.candidatePlan.map(function state(plan,) {
+    const candidate = candidates.find(function ordinal(value,) {
+      return value.candidateOrdinal === plan.ordinal;
+    },);
+    const binding = {
+      id: `realization-author-${String(plan.ordinal,)}`,
+      modelId: plan.modelId,
+      manifestDigest: manifest.manifestDigest,
+      basePromptDigest: '1'.repeat(64,),
+      promptDigest: '2'.repeat(64,),
+      startedAt: '2026-08-31T00:00:00.000Z',
+      durationMs: 1,
+    };
+    return candidate === undefined
+      ? {
+        record: {
+          ...binding,
+          state: 'spent-unusable' as const,
+          failureType: 'FixtureUnusable',
+          failureDigest: '4'.repeat(64,),
+        },
+      }
+      : {
+        record: {
+          ...binding,
+          state: 'completed' as const,
+          responseDigest: '3'.repeat(64,),
+          providerResponseDigest: '4'.repeat(64,),
+          replyCacheKey: binding.basePromptDigest,
+        },
+        candidate,
+      };
+  },);
+  return createRealizationAuthorSettlement({ states, manifest, });
+}
+
+/** Adapts candidate-list test fixtures through closed-world author settlement. */
+function admitRealizationVerifierResponse(
+  input: Omit<
+    Parameters<typeof admitBoundRealizationVerifierResponse>[0],
+    'authorSettlement'
+  > & { readonly candidates: readonly RealizedCandidate[]; },
+): ReturnType<typeof admitBoundRealizationVerifierResponse> {
+  const { candidates, ...rest } = input;
+  return admitBoundRealizationVerifierResponse({
+    ...rest,
+    authorSettlement: authorSettlement({ candidates, manifest: input.manifest, }),
+  },);
+}
+
+/** Adapts candidate-list selection fixtures through closed-world author settlement. */
+function selectRealizationCandidate(
+  input: Omit<
+    Parameters<typeof selectBoundRealizationCandidate>[0],
+    'authorSettlement'
+  > & { readonly candidates: readonly RealizedCandidate[]; },
+): ReturnType<typeof selectBoundRealizationCandidate> {
+  const { candidates, ...rest } = input;
+  return selectBoundRealizationCandidate({
+    ...rest,
+    authorSettlement: authorSettlement({ candidates, manifest: input.manifest, }),
   },);
 }
 
@@ -800,6 +875,8 @@ await describe({
           archiveBody: ARCHIVE,
           candidatePlan: manifest.candidatePlan,
           verifierModelIds: manifest.verifierModelIds,
+          providerSelection: manifest.providerSelection,
+          sourcePictures: manifest.sourcePictures,
         },);
         expect(() => assertRealizationManifest({
           manifest: forgedManifest,
@@ -878,7 +955,7 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES coherently redigested metadata and partial verifier candidate sets',
+      name: 'REFUSES coherently redigested metadata and accepts authorized candidate subset',
       fn: async () => {
         const { first, second, ledger, shell, manifest, } = admittedPair();
         const changedModel = 'qwen3.8-flash' as never;
@@ -907,8 +984,8 @@ await describe({
           sourceText: SOURCE,
           archiveText: ARCHIVE,
           sourcePictures: [],
-        },),).toThrow('candidate set authorization differs');
-        expect(() => admitRealizationVerifierResponse({
+        },),).toThrow('settlement candidate row is not completed');
+        const subset = admitRealizationVerifierResponse({
           response: cleanResponse({ candidates: [first,], ledger, }),
           ledger,
           candidates: [first,],
@@ -919,7 +996,8 @@ await describe({
           sourceText: SOURCE,
           archiveText: ARCHIVE,
           sourcePictures: [],
-        },),).toThrow('candidate set length differs');
+        },);
+        expect(subset.response.candidates.length,).toBe(1,);
       },
     },),
     it({
@@ -961,11 +1039,27 @@ await describe({
           sourceText: SOURCE,
           archiveText: ARCHIVE,
           sourcePictures: [],
-        },),).toThrow('candidate set authorization differs');
+        },),).toThrow('settlement candidate row is not completed');
+        const manifestVariants: readonly RealizationManifest[] = [
+          { ...manifest, providerSelection: 'synthetic-only', },
+          { ...manifest, authorProtocolDigest: '4'.repeat(64,), },
+          { ...manifest, authorSchemaDigest: '5'.repeat(64,), },
+          { ...manifest, verifierProtocolDigest: '6'.repeat(64,), },
+          { ...manifest, sourcePictures: [{ assetName: 'other.webp', digest: '7'.repeat(64,), },], },
+        ];
+        for (const changedManifest of manifestVariants) {
+          expect(() => assertRealizationManifest({
+            manifest: changedManifest,
+            ledger,
+            shell,
+            archiveBody: ARCHIVE,
+            expectedManifestDigest: manifest.manifestDigest,
+          },),).toThrow();
+        }
       },
     },),
     it({
-      name: 'REFUSES duplicate candidate aliases at independent selection boundary',
+      name: 'REFUSES duplicate candidate aliases at author settlement boundary',
       fn: async () => {
         const { first, second, ledger, shell, manifest, } = admittedPair();
         expect(() => selectRealizationCandidate({
@@ -978,7 +1072,7 @@ await describe({
           sourceText: SOURCE,
           archiveText: ARCHIVE,
           sourcePictures: [],
-        },),).toThrow('candidate alias differs');
+        },),).toThrow('candidate alias repeats');
       },
     },),
     it({

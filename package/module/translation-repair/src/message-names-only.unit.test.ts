@@ -111,6 +111,8 @@ const MARKED_CLASSES: readonly string[] = [
   'PrototypeProducerUnavailableError',
   'PublishedPageDisagreesError',
   'QuotaShapeError',
+  'RealizationJsonMemberError',
+  'RealizationRuntimeBusyError',
   'RepairUnheardError',
   'RequiredProviderError',
   'RoundsNotRecordedError',

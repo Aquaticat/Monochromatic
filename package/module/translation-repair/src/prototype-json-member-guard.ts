@@ -74,10 +74,19 @@ function afterWhitespace({
 
 //region Public guard
 
+/** Raw response carries duplicate decoded member name within one JSON object. */
+export class RealizationJsonMemberError extends Error {
+  public readonly messageNamesOnly: true = true;
+
+  public constructor() {
+    super('realization JSON object member repeats',);
+    this.name = 'RealizationJsonMemberError';
+  }
+}
+
 /**
  * Refuses duplicate raw object members before ordinary JSON parsing erases them.
- * Future Candidate G response reader must invoke this before shared `parseModelJson`;
- * exporting this guard does not alter shared parser by itself.
+ * Candidate G node execution invokes this against provider text before admission.
  *
  * @example
  * ```ts
@@ -111,7 +120,7 @@ export function assertNoDuplicateJsonMembers({ text, }: { readonly text: string;
         const key = parsedKey;
         if (frame.keys
           .has(key,))
-          throw new Error('realization JSON object member repeats');
+          throw new RealizationJsonMemberError();
         frame.keys
           .add(key,);
         frame.expectsKey = false;
