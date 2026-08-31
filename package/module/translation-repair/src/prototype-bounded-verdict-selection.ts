@@ -253,10 +253,10 @@ export function selectBoundedCandidate({
   /**
    * Admitted verifier identities in stable order.
    */
-  const validIdentities = validBallots.map(function identity(ballot,) {
+  const validIdentities = new Set(validBallots.map(function identity(ballot,) {
     return ballot.verifierModelId;
   },)
-    .toSorted();
+    .toSorted());
   /**
    * Clean verifier identities indexed by anonymous candidate alias.
    */
@@ -265,7 +265,8 @@ export function selectBoundedCandidate({
      * Verifier identities explicitly certifying this candidate clean.
      */
     const cleanIds = validBallots.filter(function clean(ballot,) {
-      return isClean({
+      return (ballot.verifierModelId !== candidate.modelId)
+        && isClean({
         verification: verificationFor({
           ballot,
           candidateId: candidate.candidateId,
@@ -314,15 +315,20 @@ export function selectBoundedCandidate({
    */
   const cleanVerifierModelIds = cleanByCandidate.get(selected.candidateId,) ?? [];
   /**
-   * Membership set separating clean votes from dissent.
+   * Admitted verifier identities explicitly finding selected candidate unclean.
    */
-  const cleanSet = new Set(cleanVerifierModelIds,);
-  /**
-   * Admitted verifier identities explicitly not clean for selection.
-   */
-  const dissentingVerifierModelIds = validIdentities.filter(function dissent(modelId,) {
-    return !cleanSet.has(modelId,);
-  },);
+  const dissentingVerifierModelIds = validBallots.filter(function dissent(ballot,) {
+    return !isClean({
+      verification: verificationFor({
+        ballot,
+        candidateId: selected.candidateId,
+      }),
+    },);
+  },)
+    .map(function identity(ballot,) {
+    return ballot.verifierModelId;
+  },)
+    .toSorted();
   /**
    * Conservative model families represented by clean verifier identities.
    */
@@ -346,7 +352,7 @@ export function selectBoundedCandidate({
     independenceScope: 'distinct-author-and-verifier-model-families',
     dissentingVerifierModelIds,
     abstainingVerifierModelIds: plannedIdentities.filter(function abstained(modelId,) {
-      return !validIdentities.includes(modelId,);
+      return !validIdentities.has(modelId,);
     },),
   };
 }

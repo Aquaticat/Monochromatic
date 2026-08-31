@@ -23,6 +23,7 @@ export {
   createBoundedVerdictManifest,
 } from './prototype-bounded-verdict-manifest.ts';
 export {
+  BOUNDED_AUTHOR_COUNT,
   BOUNDED_VERDICT_FINDING_CAP,
   MAX_BOUNDED_PAYLOAD_COUNT,
   type BoundedAuthorSettlement,

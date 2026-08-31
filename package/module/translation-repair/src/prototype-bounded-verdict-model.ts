@@ -14,9 +14,14 @@ import type {
 export const BOUNDED_VERDICT_FINDING_CAP = 8;
 
 /**
- * Maximum provider payloads in fixed four-author, three-verifier graph.
+ * Whole-document authors in one-provider vision-capable graph.
  */
-export const MAX_BOUNDED_PAYLOAD_COUNT = 7;
+export const BOUNDED_AUTHOR_COUNT = 3;
+
+/**
+ * Maximum provider payloads in fixed three-author, three-verifier graph.
+ */
+export const MAX_BOUNDED_PAYLOAD_COUNT = 6;
 
 /**
  * Compact obligation outcome in manifest order.

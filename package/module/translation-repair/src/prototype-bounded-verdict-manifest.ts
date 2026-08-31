@@ -1,9 +1,11 @@
 // PROTOTYPE ONLY: Candidate H immutable finite manifest.
 
 import { hashContent, } from './document-node.ts';
+import { HYPER_MODELS, } from './hyper-catalog.ts';
 import { photoReferences, } from './photo-reference.ts';
 import { boundedModelFamily, } from './prototype-bounded-verdict-family.ts';
 import {
+  BOUNDED_AUTHOR_COUNT,
   BOUNDED_VERDICT_FINDING_CAP,
   MAX_BOUNDED_PAYLOAD_COUNT,
   type BoundedCandidate,
@@ -14,9 +16,9 @@ import {
   BOUNDED_VERIFIER_PROTOCOL_DIGEST,
 } from './prototype-bounded-verdict-prompt.ts';
 import { realizationCandidateAlias, } from './prototype-realization-author.ts';
+import { hyperIdFor, } from './roster-reach.ts';
 import { assertRealizationLedgerBindsShell, } from './prototype-realization-ledger-validation.ts';
 import {
-  MAX_REALIZATION_CANDIDATES,
   MAX_REALIZATION_VERIFIERS,
   type RealizationCandidatePlan,
   type RealizationObligationLedger,
@@ -68,7 +70,7 @@ function assertRoster({
   readonly candidatePlan: readonly RealizationCandidatePlan[];
   readonly verifierModelIds: BoundedVerdictManifest['verifierModelIds'];
 }): void {
-  if ((candidatePlan.length !== MAX_REALIZATION_CANDIDATES)
+  if ((candidatePlan.length !== BOUNDED_AUTHOR_COUNT)
     || (verifierModelIds.length !== MAX_REALIZATION_VERIFIERS)
     || ((candidatePlan.length + verifierModelIds.length)
       !== MAX_BOUNDED_PAYLOAD_COUNT))
@@ -101,6 +103,22 @@ function assertRoster({
     return plan.priority;
   },);
   /**
+   * Every canonical model identity dispatched across both fixed waves.
+   */
+  const allModels = [
+    ...models,
+    ...verifierModelIds,
+  ];
+  if (allModels.some(function unavailable(modelId,) {
+    /**
+     * Hyper wire spelling and service reach for canonical model.
+     */
+    const spelling = hyperIdFor({ modelId, });
+    return (!spelling.served) || (!HYPER_MODELS[spelling.id]
+      .readsImages);
+  },))
+    throw new Error('bounded verdict Hyper roster lacks image capability');
+  /**
    * Conservative author families available for diversity evidence.
    */
   const authorFamilies = new Set(ordered.map(function family(plan,) {
@@ -116,11 +134,8 @@ function assertRoster({
     || (new Set(models,).size !== models.length)
     || (new Set(priorities,).size !== priorities.length)
     || (new Set(verifierModelIds,).size !== verifierModelIds.length)
-    || models.some(function selfReview(modelId,) {
-      return verifierModelIds.includes(modelId,);
-    },)
-    || (authorFamilies.size < 2)
-    || (verifierFamilies.size < 2)
+    || (authorFamilies.size !== BOUNDED_AUTHOR_COUNT)
+    || (verifierFamilies.size !== MAX_REALIZATION_VERIFIERS)
     || ordered.some(function noncontiguous(
       plan,
       index,
@@ -215,10 +230,8 @@ export function createBoundedVerdictManifest({
     shell,
     sourcePictures,
   });
-  if ((providerSelection !== 'all')
-    && (providerSelection !== 'synthetic-only')
-    && (providerSelection !== 'hyper-only'))
-    throw new Error('bounded verdict provider selection differs');
+  if (providerSelection !== 'hyper-only')
+    throw new Error('bounded verdict provider selection is not Hyper-only');
   /**
    * Author plan persisted in canonical ordinal order.
    */

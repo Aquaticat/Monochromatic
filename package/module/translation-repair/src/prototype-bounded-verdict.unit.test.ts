@@ -47,7 +47,11 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  createHyperClient,
+  HYPER_MODELS,
+  hyperIdFor,
   isJsonRecord,
+  type ModelTransport,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -80,6 +84,64 @@ async function temporaryDirectory(): Promise<TemporaryDirectory> {
 /** SHA-256 over exact UTF-16-selected JavaScript string bytes. */
 function digest({ text, }: { readonly text: string; }): string {
   return createHash('sha256',).update(text,).digest('hex',);
+}
+
+/**
+ * Builds terminated Anthropic text stream for transport mapping control.
+ *
+ * @returns Whole finite SSE body carrying one text token
+ */
+function hyperMappingReplyBody(): string {
+  /** Serialized message events in provider stream order. */
+  const events = [
+    {
+      type: 'message_start',
+      message: { usage: { input_tokens: 1, output_tokens: 1, }, },
+    },
+    {
+      type: 'content_block_start',
+      index: 0,
+      content_block: { type: 'text', text: '', },
+    },
+    {
+      type: 'content_block_delta',
+      index: 0,
+      delta: { type: 'text_delta', text: 'ok', },
+    },
+    { type: 'content_block_stop', index: 0, },
+    {
+      type: 'message_delta',
+      delta: { stop_reason: 'end_turn', },
+      usage: { output_tokens: 1, },
+    },
+    { type: 'message_stop', },
+  ];
+  return [
+    ...events.map(function line(event,) {
+      return `data: ${JSON.stringify(event,)}`;
+    },),
+    '',
+  ].join('\n\n',);
+}
+
+/**
+ * Builds transport recording actual Hyper request-body model spellings.
+ *
+ * @mutates wireIds - Appends each request body's model spelling
+ *
+ * @returns Finite transport returning terminated text stream
+ */
+function recordingHyperTransport({ wireIds, }: {
+  readonly wireIds: string[];
+}): ModelTransport {
+  return async function transport(exchange,) {
+    await Promise.resolve();
+    const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
+    if ((!isJsonRecord(body,)) || ((typeof body.model) !== 'string'))
+      throw new Error('bounded Hyper request body model is absent');
+    wireIds.push(body.model,);
+    return { status: 200, bodyText: hyperMappingReplyBody(), };
+  };
 }
 
 /** Source carrying independent clauses and one page image. */
@@ -120,13 +182,12 @@ function createBoundedLifecycleFixture(): BoundedLifecycleFixture {
   const candidatePlan = [
     { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', priority: 0, },
     { ordinal: 1, modelId: 'hf:moonshotai/Kimi-K3', priority: 1, },
-    { ordinal: 2, modelId: 'hf:zai-org/GLM-5.3-Flash', priority: 2, },
-    { ordinal: 3, modelId: 'hf:openai/gpt-oss-120b', priority: 3, },
+    { ordinal: 2, modelId: 'minimax-m3', priority: 2, },
   ] as const satisfies readonly RealizationCandidatePlan[];
   const verifierModelIds = [
+    'hf:Qwen/Qwen3.8-27B',
+    'hf:moonshotai/Kimi-K3',
     'minimax-m3',
-    'deepseek-v4-flash-0731',
-    'deepseek-v4-pro-0813',
   ] as const;
   const manifest = createBoundedVerdictManifest({
     ledger,
@@ -463,7 +524,7 @@ function scriptedClient({
       const barrier = schemaName === 'immutable_shell_slots'
         ? authorBarrier
         : verifierBarrier;
-      const requiredArrivals = schemaName === 'immutable_shell_slots' ? 4 : 3;
+      const requiredArrivals = 3;
       if (calls.filter(function same(value,) {
         return value === schemaName;
       },).length === requiredArrivals)
@@ -619,13 +680,14 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS source-located omission without target anchor',
+      name: 'ACCEPTS source-located omission and REFUSES global omission',
       fn: async () => {
         const fixture = settledFixture();
         const clean = cleanResponse({ fixture, });
         const [first,] = clean.candidates;
-        if (first === undefined)
-          throw new Error('bounded omission row is absent');
+        const [candidate,] = fixture.candidates;
+        if ((first === undefined) || (candidate === undefined))
+          throw new Error('bounded omission fixture is absent');
         const response = replaceRow({
           response: clean,
           candidateId: first.candidateId,
@@ -657,7 +719,11 @@ await describe({
               scope: 'g',
               manifestIndex: 0,
               defectClassIndex: defectClassIndex({ name: 'omission', }),
-              targetAnchors: [],
+              targetAnchors: [anchor({
+                candidate,
+                startOffset: 0,
+                endOffset: 3,
+              },),],
             },],
           },
         },);
@@ -798,32 +864,25 @@ await describe({
     },),
 
     it({
-      name: 'BINDS maximum graph to seven payloads in two waves',
+      name: 'BINDS maximum graph to six payloads in two waves',
       fn: async () => {
         const fixture = createBoundedLifecycleFixture();
-        const manifest = createBoundedVerdictManifest({
+        const { manifest, } = fixture;
+        expect(manifest.payloadCountCeiling,).toBe(6,);
+        expect(manifest.dependencyWaves,).toBe(2,);
+        expect(manifest.findingCap,).toBe(BOUNDED_VERDICT_FINDING_CAP,);
+        expect(() => createBoundedVerdictManifest({
           ledger: fixture.ledger,
           shell: fixture.shell,
           archiveBody: BOUNDED_LIFECYCLE_ARCHIVE,
           candidatePlan: [
-            { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', priority: 0, },
-            { ordinal: 1, modelId: 'hf:moonshotai/Kimi-K3', priority: 1, },
-            { ordinal: 2, modelId: 'hf:zai-org/GLM-5.3-Flash', priority: 2, },
-            { ordinal: 3, modelId: 'hf:openai/gpt-oss-120b', priority: 3, },
+            ...manifest.candidatePlan,
+            { ordinal: 3, modelId: 'hf:zai-org/GLM-5.3-Flash', priority: 3, },
           ],
-          verifierModelIds: [
-            'minimax-m3',
-            'deepseek-v4-flash-0731',
-            'deepseek-v4-pro-0813',
-          ],
+          verifierModelIds: manifest.verifierModelIds,
           providerSelection: 'hyper-only',
-          sourcePictures: BOUNDED_LIFECYCLE_MEDIA.map(function picture(item,) {
-            return { assetName: item.assetName, digest: item.digest, };
-          },),
-        },);
-        expect(manifest.payloadCountCeiling,).toBe(7,);
-        expect(manifest.dependencyWaves,).toBe(2,);
-        expect(manifest.findingCap,).toBe(BOUNDED_VERDICT_FINDING_CAP,);
+          sourcePictures: manifest.sourcePictures,
+        },),).toThrow();
         expect(() => createBoundedVerdictManifest({
           ledger: fixture.ledger,
           shell: fixture.shell,
@@ -831,11 +890,32 @@ await describe({
           candidatePlan: manifest.candidatePlan,
           verifierModelIds: [
             ...manifest.verifierModelIds,
-            'gemma-4-26b-a4b-it',
+            'deepseek-v4-pro-0813',
           ],
           providerSelection: 'hyper-only',
           sourcePictures: manifest.sourcePictures,
         },),).toThrow();
+        const authorModelIds = manifest.candidatePlan.map(function model(plan,) {
+          return plan.modelId;
+        },);
+        expect(manifest.verifierModelIds.every(function overlaps(modelId,) {
+          return authorModelIds.includes(modelId,);
+        },),).toBe(true,);
+        const wireIds = [
+          ...authorModelIds,
+          ...manifest.verifierModelIds,
+        ].map(function wireId(modelId,) {
+          const spelling = hyperIdFor({ modelId, });
+          if (!spelling.served)
+            throw new Error('bounded Hyper wire model is unserved');
+          expect(HYPER_MODELS[spelling.id].readsImages,).toBe(true,);
+          return spelling.id;
+        },);
+        expect([...new Set(wireIds,),].toSorted(),).toEqual([
+          'kimi-k3',
+          'minimax-m3',
+          'qwen3.8-27b',
+        ],);
         expect(() => createBoundedVerdictManifest({
           ledger: fixture.ledger,
           shell: fixture.shell,
@@ -849,6 +929,42 @@ await describe({
           providerSelection: 'hyper-only',
           sourcePictures: manifest.sourcePictures,
         },),).toThrow();
+        expect(() => createBoundedVerdictManifest({
+          ledger: fixture.ledger,
+          shell: fixture.shell,
+          archiveBody: BOUNDED_LIFECYCLE_ARCHIVE,
+          candidatePlan: manifest.candidatePlan,
+          verifierModelIds: manifest.verifierModelIds,
+          providerSelection: 'synthetic-only',
+          sourcePictures: manifest.sourcePictures,
+        },),).toThrow();
+      },
+    },),
+
+    it({
+      name: 'MAPS every canonical vision identity onto Hyper request body',
+      fn: async () => {
+        const fixture = createBoundedLifecycleFixture();
+        const wireIds: string[] = [];
+        const transport = recordingHyperTransport({ wireIds, });
+        const client = createHyperClient({
+          apiKey: 'fixture',
+          transport,
+        },);
+        await Promise.all(fixture.manifest.candidatePlan.map(async function call(
+          plan,
+        ) {
+          await client.chatText({
+            modelId: plan.modelId,
+            messages: [{ role: 'user', content: 'fixture', },],
+            signal: new AbortController().signal,
+          },);
+        },),);
+        expect(wireIds.toSorted(),).toEqual([
+          'kimi-k3',
+          'minimax-m3',
+          'qwen3.8-27b',
+        ],);
       },
     },),
 
@@ -889,12 +1005,12 @@ await describe({
         expect(duplicateSelection.abstainingVerifierModelIds,).toContain(
           cleanZero.verifierModelId,
         );
-        const sameFamilySelection = selection({
+        const selfReviewSelection = selection({
           fixture,
-          ballots: [cleanZero, cleanOne,],
+          ballots: [cleanZero,],
         },);
-        expect(sameFamilySelection.cleanVerifierModelIds,).toHaveLength(2,);
-        expect(sameFamilySelection.evidenceFloorMet,).toBe(false,);
+        expect(selfReviewSelection.cleanVerifierModelIds,).toHaveLength(0,);
+        expect(selfReviewSelection.evidenceFloorMet,).toBe(false,);
       },
     },),
 
@@ -904,7 +1020,7 @@ await describe({
         const fixture = settledFixture();
         const clean = cleanResponse({ fixture, });
         const twoClean = [
-          ballot({ fixture, response: clean, verifierOrdinal: 0, }),
+          ballot({ fixture, response: clean, verifierOrdinal: 1, }),
           ballot({ fixture, response: clean, verifierOrdinal: 2, }),
         ];
         const selected = selectBoundedCandidate({
@@ -946,7 +1062,7 @@ await describe({
           authorSettlement: fixture.settlement,
           ballots: [
             ...twoClean,
-            ballot({ fixture, response: dissentResponse, verifierOrdinal: 1, }),
+            ballot({ fixture, response: dissentResponse, verifierOrdinal: 0, }),
           ],
           manifest: fixture.manifest,
           expectedManifestDigest: fixture.manifest.manifestDigest,
@@ -1020,7 +1136,6 @@ await describe({
           'immutable_shell_slots',
           'immutable_shell_slots',
           'immutable_shell_slots',
-          'immutable_shell_slots',
         ],);
         expect(result.authorSettlement.rows.every(function unusable(row,) {
           return row.state === 'spent-unusable';
@@ -1083,7 +1198,7 @@ await describe({
           restart: false,
           signal: new AbortController().signal,
         },);
-        expect(calls,).toBe(7,);
+        expect(calls,).toBe(6,);
         expect(first.authorSettlement.rows[0]?.state,).toBe('spent-unusable',);
         expect(first.authorSettlement.rows[1]?.state,).toBe('completed',);
         const record = await readFile(join(
@@ -1165,7 +1280,7 @@ await describe({
           restart: false,
           signal: new AbortController().signal,
         },);
-        expect(calls,).toBe(7,);
+        expect(calls,).toBe(6,);
         expect(first.verifierStates.filter(function admitted(state,) {
           return state.ballot !== undefined;
         },),).toHaveLength(2,);
@@ -1207,7 +1322,14 @@ await describe({
         await using directory = await temporaryDirectory();
         const fixture = createBoundedLifecycleFixture();
         const responseFor = boundedLifecycleResponseForRequest({ fixture, });
-        const [, duplicateVerifierModelId,] = fixture.manifest.verifierModelIds;
+        const [selectedAuthorPlan,] = fixture.manifest.candidatePlan;
+        if (selectedAuthorPlan === undefined)
+          throw new Error('bounded selected author plan is absent');
+        const duplicateVerifierModelId = fixture.manifest.verifierModelIds.find(
+          function selectedAuthor(modelId,) {
+            return modelId === selectedAuthorPlan.modelId;
+          },
+        );
         if (duplicateVerifierModelId === undefined)
           throw new Error('bounded duplicate verifier identity is absent');
         const client: SyntheticClient = {
@@ -1303,12 +1425,11 @@ await describe({
           'immutable_shell_slots',
           'immutable_shell_slots',
           'immutable_shell_slots',
-          'immutable_shell_slots',
           'bounded_verdict_ballot',
           'bounded_verdict_ballot',
           'bounded_verdict_ballot',
         ],);
-        expect(peak.value,).toBe(4,);
+        expect(peak.value,).toBe(3,);
         expect(prompts.every(function image(prompt,) {
           return prompt.includes('image_url',);
         },),).toBe(true,);

@@ -70,11 +70,7 @@ export function bindBoundedClient({
   /**
    * Concrete route selected before excluded clients become unreachable.
    */
-  const client = manifest.providerSelection === 'synthetic-only'
-    ? clients.synthetic
-    : manifest.providerSelection === 'hyper-only'
-      ? clients.hyper
-      : clients.all;
+  const client = clients.hyper;
   return Object.freeze({
     providerSelection: manifest.providerSelection,
     manifestDigest: manifest.manifestDigest,
