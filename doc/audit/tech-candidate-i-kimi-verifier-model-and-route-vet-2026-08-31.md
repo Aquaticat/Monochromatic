@@ -1,14 +1,14 @@
 # Candidate I Kimi verifier model and route vet
 
 - Status:
-  validation pending;
+  rejected;
   no recommendation.
 - Lifecycle phase:
-  serious alternatives identified.
+  no serious alternative survived hard gates.
 - Subject:
   Candidate I Kimi verifier model and route.
 - Decision scope:
-  choose one Hyper-hosted vision-capable Kimi verifier and default-parameter structured-output route for
+  choose one Hyper-hosted vision-capable Kimi verifier and default-reasoning structured-output route for
   Candidate I.
 - Started:
   2026-08-31.
@@ -19,7 +19,7 @@
 - Governing skill SHA-256:
   `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 - Compatibility fingerprint:
-  `7f293b1f3b49686e6cf239f8530706e087f37c02fe98061fc8e99bd375a361aa`.
+  `576ae770137b000ed5e89109bb848c2a263b4f2348a44e7281eed2ff20d29012`.
 - Active audit owner:
   Pi session `01a041b2-cb17-798b-a0ba-f71c9e0ffd51`.
 - Prior compatible report:
@@ -37,14 +37,19 @@ Candidate H's Kimi K3 author and all-candidate verifier both reached 16,000 outp
 Candidate I reduces one verifier response to one candidate and replaces status arrays with exact compact status strings.
 
 Owner's standing instruction in `package/module/translation-repair/src/anthropic-request.ts` and
-`package/module/translation-repair/src/chat-contract.ts` forbids thinking,
-budget,
+`package/module/translation-repair/src/chat-contract.ts` forbids non-default thinking,
+reasoning-budget,
 temperature,
 or effort knobs because prior serving stacks returned errors,
 degraded output,
 or truncation.
 A low-effort transport acceptance probe does not authorize changing that policy.
-Every candidate in this vet therefore runs at provider and model defaults.
+Every candidate in this vet therefore ran at provider and model defaults.
+
+Repository route evidence at `package/module/translation-repair/src/hyper-catalog.ts:21-25` already said Hyper OpenAI Chat
+Completions accepts and ignores `response_format`.
+The initial plan did not honor that deciding source and was wrong to advance OpenAI structured output to spend.
+The equal-depth probe reproduced recorded failure and all Kimi alternatives exited.
 
 Hard constraints:
 
@@ -57,7 +62,8 @@ Hard constraints:
 - structured JSON with caller validation;
 - measured complete candidate-scoped response within provider output cap;
 - no retry or route fallback;
-- default model parameters only.
+- default sampling and reasoning parameters;
+- explicit output ceiling permitted.
 
 Base category is managed service or SaaS.
 Overlays are incumbent model-route replacement and sensitive data.
@@ -72,7 +78,7 @@ cost is not criterion.
 ### Fingerprint input
 
 ```json
-{"schemaVersion":1,"subject":"Candidate I Kimi verifier model and route","decisionScope":"Choose one Hyper-hosted vision-capable Kimi verifier and default-parameter structured-output route for Candidate I.","hardConstraints":["Hyper-only normal operation","complete compact status coverage","default model parameters only","distinct Kimi model family","measured complete candidate-scoped response within provider output cap","no retries","source archive and every page-referenced image in each request","structured JSON with caller validation","vision-capable"],"deployment":{"provider":"Charm Hyper","protocols":["Anthropic Messages","OpenAI Chat Completions"],"runtime":"Node.js on Linux x64"},"trustBoundary":"Restricted translation corpus and page-referenced images cross managed-service boundary; no raw provider output enters publication without caller validation.","incumbentName":"Charm Hyper Anthropic Messages with Kimi K3","incumbentVersion":null,"baseCategories":["managed service or SaaS"],"overlays":["incumbent model-route replacement","sensitive data"]}
+{"schemaVersion":1,"subject":"Candidate I Kimi verifier model and route","decisionScope":"Choose one Hyper-hosted vision-capable Kimi verifier and default-reasoning structured-output route for Candidate I.","hardConstraints":["Hyper-only normal operation","complete compact status coverage","default sampling and reasoning parameters; explicit output ceiling permitted","distinct Kimi model family","measured complete candidate-scoped response within provider output cap","no retries","source archive and every page-referenced image in each request","structured JSON with caller validation","vision-capable"],"deployment":{"provider":"Charm Hyper","protocols":["Anthropic Messages","OpenAI Chat Completions"],"runtime":"Node.js on Linux x64"},"trustBoundary":"Restricted translation corpus and page-referenced images cross managed-service boundary; no raw provider output enters publication without caller validation.","incumbentName":"Charm Hyper Anthropic Messages with Kimi K3","incumbentVersion":null,"baseCategories":["managed service or SaaS"],"overlays":["incumbent model-route replacement","sensitive data"]}
 ```
 
 ## Discovery schedule and result
@@ -158,9 +164,14 @@ Discovery is saturated through exhaustive incumbent catalog plus official model-
   `oneOf`,
   and deep nesting.
 - Parameters:
-  defaults only.
+  default reasoning and sampling;
+  explicit `max_tokens` at live output ceiling.
+- Runtime:
+  HTTP 200 and `stop` after 140 completion tokens;
+  366 content characters did not parse as JSON;
+  exact guard failed.
 - Screening:
-  serious alternative pending exact route and consumer validation.
+  hard-gate exit because direct route did not return structured JSON.
 
 ### Kimi K2.7 Code with Hyper OpenAI structured output
 
@@ -182,9 +193,14 @@ Discovery is saturated through exhaustive incumbent catalog plus official model-
   code-specialized model has unproven translation-review fit,
   and output ceiling equals K3 ceiling exhausted by Candidate H.
 - Parameters:
-  defaults only.
+  default reasoning and sampling;
+  explicit `max_tokens` at live output ceiling.
+- Runtime:
+  HTTP 200 and `stop` after 139 completion tokens;
+  364 content characters did not parse as JSON;
+  exact guard failed.
 - Screening:
-  serious alternative pending exact route and consumer validation.
+  hard-gate exit because direct route did not return structured JSON.
 
 ### Kimi K3 with Hyper OpenAI structured output
 
@@ -210,9 +226,13 @@ Discovery is saturated through exhaustive incumbent catalog plus official model-
   Candidate I asks for one candidate and compact strings,
   so H result does not prove candidate-scoped response fails.
 - Parameters:
-  defaults only.
+  default reasoning and sampling;
+  explicit `max_tokens` at live output ceiling.
+- Runtime:
+  HTTP 200 and `stop` after 5,853 completion tokens and 17,139 reasoning characters;
+  content parsed as JSON but failed exact caller guard.
 - Screening:
-  serious alternative with measured truncation risk.
+  hard-gate exit because strict schema request did not produce exact required status semantics.
 
 ### Kimi K3 low-effort Anthropic tool route
 
@@ -224,11 +244,11 @@ Discovery is saturated through exhaustive incumbent catalog plus official model-
   96 output tokens,
   214 reasoning characters.
 - Hard-gate exit:
-  violates owner default-parameter-only policy and does not prove effort was honored.
+  violates owner default-reasoning policy and does not prove effort was honored.
 
 ## Managed-service gates
 
-Charm Hyper is incumbent service and common to every surviving candidate.
+Charm Hyper is incumbent service and common to every evaluated candidate.
 `doc/audit/tech-candidate-e-hyper-roster-expansion-vet-2026-08-30.md` and existing provider decisions already inspect:
 
 - layoffs and headcount;
@@ -299,20 +319,21 @@ three good,
 and four strong.
 Maximum score is
 `(5 + 5 + 4 + 3 + 1) * 4 = 72`.
-No rating is assigned before equal-depth runtime and consumer-boundary validation.
-Sensitivity will raise each defaultable weight from one through five,
-vary medium and low-confidence ratings by one,
-and test every low-signal endpoint.
+No rating is assigned because every candidate failed hard gate before quality scoring.
+Sensitivity cannot change hard-gate outcome.
 
-## Planned execution manifest
+## Executed manifest
 
-Candidate versions are exact live ids `kimi-k2.6`,
+Candidate versions were exact live ids `kimi-k2.6`,
 `kimi-k2.7-code`,
 and `kimi-k3`.
-Fresh catalog snapshot and response digest will pin hosted state immediately before spend.
+Fresh catalog digest matched pre-spend snapshot:
+`d68a71501ffa7c67825467ef935c177ad0abb01560f81f17c3fe65fe88742ab7`.
 
-Planned command is one inspected Node scratch runner using built-in `fetch` only.
-It sends one payload per model concurrently to Hyper OpenAI Chat Completions with:
+Inspected Node scratch runner used built-in `fetch` only.
+Script SHA-256 was
+`223f6cb6d17d39af6ff5e40b8e715d7a4a037e82a5656f138bde833e39d5795c`.
+It sent one payload per model concurrently to Hyper OpenAI Chat Completions with:
 
 - same synthetic 1 by 1 image;
 - same compact Candidate I-shaped JSON Schema;
@@ -322,32 +343,27 @@ It sends one payload per model concurrently to Hyper OpenAI Chat Completions wit
 - streaming enabled;
 - no retry.
 
-Expected network endpoints are public `GET /v1/models` and authenticated `POST /v1/chat/completions` only.
-Expected writes are private metadata-only files under `~/temp/agent/`.
+Network endpoints were public `GET /v1/models` and authenticated `POST /v1/chat/completions` only.
+Writes were private metadata-only files under
+`~/temp/agent/probe-hyper-kimi-candidate-i-json-schema-20260831/`.
 No raw response,
 credential,
 corpus text,
-or image from repository is retained.
-Success requires HTTP 200,
-non-truncating finish,
-parseable exact status strings,
-and one durable attempt row per model.
-This synthetic image run proves transport and schema behavior only;
-it does not satisfy Candidate I corpus-image or translation-review constraint.
-Pinned-Carena validation sends actual page-referenced image and supplies consumer evidence.
-Failure remains candidate evidence and causes no redispatch.
+or repository image was retained.
+Summary SHA-256 is
+`f2fd14972da243503e7078197965ecd87d7ee98715d5549adad783bff0cc6ee1`.
+Exactly three attempt rows settled and no redispatch occurred.
 
-Execution runs on host rather than container because existing credential injection is scoped to project worktree and runner uses
-only inspected standard-library code plus direct HTTPS.
-It receives no home-directory path other than exact private output,
-starts no subprocess,
-and writes no repository file.
-Process tool supplies lifecycle and stop notification;
-each HTTP request has 360,000-millisecond abort signal.
+Run was on host because credential injection is scoped to project worktree and runner used only inspected standard-library
+code plus direct HTTPS.
+It started no subprocess and wrote no repository file.
+Each HTTP request had 360,000-millisecond abort signal.
 
-After transport validation,
-every survivor receives equal-depth pinned-Carena Candidate I verifier calibration and complete consumer-boundary review.
-No model can be recommended from synthetic schema probe alone.
+All three responses returned HTTP 200 with terminal `stop`.
+None passed caller guard.
+This synthetic image run proves route failure only;
+it does not satisfy Candidate I corpus-image or translation-review constraint and does not justify Carena spend.
+No Kimi model advances to consumer validation.
 
 ## Evidence records
 
@@ -391,26 +407,34 @@ No model can be recommended from synthetic schema probe alone.
 - Gate:
   hard structured-output boundary.
 - Status:
-  documentation pass,
-  runtime pending.
-- Primary source:
+  runtime hard-gate failure for all three models.
+- Provider documentation:
+  `https://hyper.charm.land/docs/api/openai-chat-completions.html`,
+  accessed 2026-08-31,
+  says standard OpenAI parameters are accepted.
+- Model documentation:
   `https://platform.moonshot.ai/docs/guide/response_format`,
-  accessed 2026-08-31.
-- Counterevidence:
-  official docs warn K2.6 may violate complex schemas;
-  caller validation remains mandatory.
+  accessed 2026-08-31,
+  documents model-side capability.
+- Deciding repository evidence:
+  `package/module/translation-repair/src/hyper-catalog.ts:21-25` records that Hyper accepts and ignores
+  `response_format`.
+- Runtime evidence:
+  `~/temp/agent/probe-hyper-kimi-candidate-i-json-schema-20260831/summary.json`.
 - Outcome:
-  all three advance to same synthetic route probe.
+  no Kimi OpenAI route advanced.
 
-### Default-thinking policy
+### Default reasoning and sampling policy
 
 - Candidate:
   every survivor.
 - Claim:
   no non-default thinking,
+  reasoning budget,
   effort,
-  budget,
-  or sampling parameter may be sent.
+  temperature,
+  or other sampling parameter may be sent;
+  output token ceiling remains explicit transport bound.
 - Gate:
   hard repository policy.
 - Status:
@@ -437,16 +461,16 @@ No model can be recommended from synthetic schema probe alone.
 - Evidence:
   `~/temp/agent/prototype-Carena-H-bounded-verdict-20260831/calibration-summary.json`.
 - Outcome:
-  K3 enters validation with measured downside.
+  K3 candidate-scoped OpenAI route also failed exact guard before Carena validation.
 
 ## Current disposition
 
 No recommendation.
-K2.6,
-K2.7 Code,
-and K3 remain serious alternatives pending equal-depth route probe and pinned-Carena Candidate I consumer validation.
-Product code,
-dependency configuration,
-and decision records must not adopt one before report reaches validated,
-scored,
-and sensitivity-stable state.
+K2.5 failed vision gate.
+K2.6 and K2.7 Code returned non-JSON content despite strict schema request.
+K3 returned parseable JSON but failed exact caller guard.
+Low-effort K3 tool route remains prohibited by owner policy.
+No Kimi model and route met Candidate I hard constraints,
+so this focused vet closes rejected before scoring or pinned-Carena spend.
+A replacement architecture needs a different third model family or different evidence floor;
+it must not silently adopt OpenAI `response_format` on Hyper.

@@ -2329,7 +2329,7 @@ Its fixed graph manifests:
 
 1.  one Qwen3.8-27B author and one MiniMax M3 author in concurrent first wave;
 2.  one Qwen,
-    one Kimi,
+    one independently vetted third-family model,
     and one MiniMax verifier for each author ordinal in concurrent second wave;
 3.  deterministic selection and private publication after every dispatched sibling settles.
 
@@ -2365,7 +2365,7 @@ export type CandidateIVerification = {
 
 export type CandidateIVerifierProfile = {
   readonly modelId: ModelIdentity;
-  readonly responseRoute: 'anthropic-tool' | 'openai-json-schema';
+  readonly responseRoute: 'anthropic-tool';
 };
 ```
 
@@ -2380,23 +2380,27 @@ A malformed status length or character abstains atomically and records privacy-s
 not raw provider text.
 
 For Qwen-authored candidate,
-clean Kimi and MiniMax ballots satisfy two-family nonself evidence floor.
+clean third-family and MiniMax ballots satisfy two-family nonself evidence floor.
 For MiniMax-authored candidate,
-clean Qwen and Kimi ballots satisfy same floor.
+clean Qwen and third-family ballots satisfy same floor.
 Clean self-model ballot never contributes to floor;
 a valid self-model defect or overflow still vetoes candidate.
 No admitted dissent is allowed.
 Private fixed-priority fallback may preserve complete candidate below floor,
 but cannot claim production eligibility.
 
-Candidate I does not set thinking,
-budget,
+Candidate I does not set non-default thinking,
+reasoning-budget,
+temperature,
 or effort parameters.
-Package contracts record owner's standing instruction against those knobs after measured serving-stack failures.
-The Kimi verifier id and route remain pending focused incumbent-roster vet.
-Current serious path uses Hyper OpenAI Chat Completions structured output at model default,
-with simple schema and caller validation;
-Qwen and MiniMax retain Anthropic forced-tool route.
+It still sends protocol-required or live-catalog output ceiling.
+Package contracts record owner's standing instruction against reasoning and sampling knobs after measured serving-stack
+failures.
+Focused Kimi vet rejected every available route under those constraints.
+K2.6 and K2.7 Code returned non-JSON content despite strict Hyper OpenAI schema request;
+K3 returned parseable JSON that failed exact caller guard.
+Repository transport source already records that Hyper OpenAI route accepts and ignores `response_format`.
+Candidate I therefore requires a different third model family over Anthropic forced-tool route.
 Manifest persists exact route per verifier.
 Unsupported,
 truncated,
@@ -2454,14 +2458,14 @@ response route,
 request and response digests,
 and attempt count become durable node evidence.
 
-### Candidate I and J comparison
+### Candidate I posture after Kimi route rejection
 
 Candidate I uses two authors and six candidate-scoped verifiers.
 
 Pros:
 
 - removes demonstrated Kimi author truncation from producer wave;
-- preserves three verifier families needed for two-family nonself evidence;
+- preserves three verifier-family positions needed for two-family nonself evidence;
 - reduces each ballot from all candidates to one candidate;
 - isolates one malformed candidate response to one ballot;
 - keeps eight-payload,
@@ -2470,31 +2474,16 @@ Pros:
 Cons:
 
 - only two author wordings enter selection;
-- Kimi remains load-bearing verifier;
-- default-parameter Kimi id and structured-output route remain unselected;
+- independently vetted third-family Hyper verifier remains load-bearing and unselected;
+- Hyper OpenAI structured output is unavailable as candidate route;
 - neither retained Candidate H author passed complete-page publication review.
 
-Candidate J adds selected default-parameter Kimi model as third author and runs same three verifiers for every candidate.
+Candidate J's Kimi third-author expansion is rejected.
+It adds demonstrated truncating producer and twelve-payload graph while no Kimi route satisfies verifier hard gate.
 
-Pros:
-
-- adds one distinct-family complete candidate when Kimi authorship succeeds;
-- preserves same evidence rules and candidate-scoped ballots;
-- tests selected Kimi route in authorship as well as verification.
-
-Cons:
-
-- adds demonstrated truncating producer back before it has qualifying output;
-- expands graph to twelve payloads without adding verifier family;
-- increases verifier input and audit volume before core Kimi ballot path is proven.
-
-Ranking:
-Candidate I > Candidate J.
-Candidate I ranks above Candidate J because it tests load-bearing Kimi verifier path while excluding known Kimi author failure.
-Candidate J becomes eligible only after selected default-parameter Kimi route independently returns and passes complete-page author review.
-
-Candidate I is next private prototype,
+Candidate I remains structural prototype shape,
 not production selection.
+A focused third-family vet must bind its remaining verifier position before live Carena calibration.
 It inherits Candidate H's zero-retry and pre-dispatch exchange cap,
 Hyper-only provider binding,
 indeterminate-transmission quarantine,
