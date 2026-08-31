@@ -11,6 +11,12 @@ export {
   CONDITIONAL_DEFECT_CLASSES,
 } from './prototype-conditional-audit-model.ts';
 export {
+  BOUNDED_HYPER_COMPLETION_CEILING,
+  maximalBoundedVerifierResponse,
+  measureBoundedVerifierEnvelope,
+  type BoundedEnvelopeMeasurement,
+} from './prototype-bounded-verdict-envelope.ts';
+export {
   assertBoundedCandidatesAuthorized,
   assertBoundedVerdictManifest,
   boundedLedgerDigest,

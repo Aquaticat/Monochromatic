@@ -23,6 +23,8 @@ import {
   boundedVerifierResponseGuard,
   createBoundedVerdictManifest,
   CONDITIONAL_DEFECT_CLASSES,
+  maximalBoundedVerifierResponse,
+  measureBoundedVerifierEnvelope,
   REALIZATION_GLOBAL_CRITERIA,
   runBoundedRuntime,
   selectBoundedCandidate,
@@ -573,6 +575,32 @@ await describe({
             row: { ...overflowRow, overflow: false, },
           },),
         }),).toThrow();
+      },
+    },),
+
+    it({
+      name: 'ADMITS maximum bounded verifier witness with estimated headroom',
+      fn: async () => {
+        const fixture = settledFixture();
+        const response = maximalBoundedVerifierResponse({
+          ledger: fixture.ledger,
+          candidates: fixture.candidates,
+        },);
+        expect(ballot({ fixture, response, }).response,).toEqual(response,);
+        expect(response.candidates.every(function capped(row,) {
+          return row.overflow
+            && (row.findings.length === BOUNDED_VERDICT_FINDING_CAP)
+            && row.findings.every(function anchored(finding,) {
+              return finding.targetAnchors.length === 3;
+            },);
+        },),).toBe(true,);
+        const measurement = measureBoundedVerifierEnvelope({
+          ledger: fixture.ledger,
+          candidates: fixture.candidates,
+          response,
+        },);
+        expect(measurement.bytes,).toBeGreaterThan(0,);
+        expect(measurement.estimatedHeadroomTokens,).toBeGreaterThan(0,);
       },
     },),
 
