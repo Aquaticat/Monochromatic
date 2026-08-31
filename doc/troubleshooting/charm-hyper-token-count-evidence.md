@@ -31,7 +31,7 @@ The Anthropic-compatible page says all standard Anthropic parameters are accepte
 but it does not document Anthropic's separate `POST /v1/messages/count_tokens` route.
 
 Model authors publish tokenizer artifacts independently.
-The exact planned Candidate H labels have official artifacts:
+Candidate H's current and evaluated roster labels have official artifacts:
 
 - `Qwen/Qwen3.8-27B`:
   `tokenizer.json`;
@@ -83,15 +83,15 @@ Pinned official artifacts:
   `encoding_k3.py` SHA-256 `49ff03305fdc4be26867972788d36150b67f8a9e852e62bb7959d87482223676`,
   `tokenization_kimi.py` SHA-256 `f28ea66e2d862a2a5814970b2ce40c2f7d8296ff09aed90a7e7def689b906944`,
   and `tokenizer_config.json` SHA-256 `5d0803c94db9cd78763499e0956c95fd5a225c14a727e5a6cf5db3f96f010a6e`;
-- GLM 5.3 Flash commit `04c4e9e95c5da8862dced7e5056455116f83a7e0`,
+- earlier evaluated GLM 5.3 Flash commit `04c4e9e95c5da8862dced7e5056455116f83a7e0`,
   `tokenizer.json` SHA-256 `19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d`;
-- gpt-oss-120b commit `b5c939de8f754692c1647ca79fbf85e8c1e70f8a`,
+- earlier evaluated gpt-oss-120b commit `b5c939de8f754692c1647ca79fbf85e8c1e70f8a`,
   `tokenizer.json` SHA-256 `0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3`;
 - MiniMax M3 commit `f0e1c1e04d40177e4673a22097036854f536e9c0`,
   `tokenizer.json` SHA-256 `bb1f1626cf01448f1e3b6036d0a061ffc66c91d9046aada14ea23a5441b5ad6e`;
-- DeepSeek V4 Flash 0731 commit `7872f01b1d1fe23eabc4c98b48bffcef5a386062`,
+- earlier evaluated DeepSeek V4 Flash 0731 commit `7872f01b1d1fe23eabc4c98b48bffcef5a386062`,
   `tokenizer.json` SHA-256 `8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf`;
-- DeepSeek V4 Pro 0813 commit `72e1d3230f6c080a530b0a1d46f8eb4602340597`,
+- earlier evaluated DeepSeek V4 Pro 0813 commit `72e1d3230f6c080a530b0a1d46f8eb4602340597`,
   `tokenizer.json` SHA-256 `8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf`.
 
 Standard tokenizer JSON used Python `tokenizers` 0.22.2.
@@ -100,36 +100,34 @@ DeepSeek's two exact variants publish byte-identical tokenizer artifacts at thes
 
 ### Candidate H raw-wire results
 
-The synthetic structurally admitted four-candidate verifier witness is 17,780 compact bytes with SHA-256
-`5600dbd91e34c2b3319eaf38a6c14e3f71f77792e96e6757da8f26f24f004e25`.
+The current synthetic structurally admitted three-candidate verifier witness is 13,339 compact bytes with SHA-256
+`85d8eeee934173552d5b631f47a580f7f1f47039102302eff966b51629befbc8`.
 
 Exact raw JSON token counts:
 
+- Qwen3.8-27B:
+  7,473;
+- Kimi K3:
+  5,716;
 - MiniMax M3:
-  7,737;
-- DeepSeek V4 Flash 0731:
-  8,011;
-- DeepSeek V4 Pro 0813:
-  8,011.
+  5,816.
 
-The lowest verifier raw-wire arithmetic reserve below 32,000 is therefore 23,989 tokens.
+The lowest verifier raw-wire arithmetic reserve is 10,284 tokens under Kimi's 16,000-token model maximum.
 
 The realistic complete author witness is 21,412 compact bytes with SHA-256
 `bb61c6dcb2cde515e04748cccabb99e15579edf9091e634b156e633c3159ef08`.
 It is retained rejected output used only as size evidence.
 
-Exact raw JSON token counts:
+Exact raw JSON token counts for current author roster:
 
 - Qwen3.8-27B:
   4,585;
 - Kimi K3:
   4,594;
-- GLM 5.3 Flash:
-  4,563;
-- gpt-oss-120b:
-  4,553.
+- MiniMax M3:
+  4,524.
 
-The lowest author-witness raw-wire arithmetic reserve below 32,000 is therefore 27,406 tokens.
+The lowest author-witness raw-wire arithmetic reserve is 11,406 tokens under Kimi's 16,000-token model maximum.
 
 ### Positive interpretation boundary
 
@@ -155,7 +153,7 @@ A live accepted response must still record provider usage and finish reason.
 ### Keep a measured raw-wire reserve
 
 Require measured raw JSON to leave room for provider framing and model reasoning.
-Candidate H's current verifier raw-wire reserve exceeds 23,000 tokens for every planned verifier tokenizer.
+Candidate H's current verifier raw-wire reserve is at least 10,284 tokens across exact current verifier tokenizers and model-specific output maxima.
 
 Tradeoff:
 reserve is evidence,

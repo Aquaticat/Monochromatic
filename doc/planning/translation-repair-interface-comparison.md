@@ -1910,7 +1910,7 @@ or dynamic node follows it.
 #### Candidate H fixed graph
 
 1.  Build immutable shell and closed-world obligation ledger deterministically.
-2.  Run four whole-document authors concurrently.
+2.  Run three whole-document authors concurrently.
 3.  Admit every complete candidate independently;
     unusable author output has no effect.
 4.  Run three all-candidate verifiers concurrently.
@@ -1922,13 +1922,15 @@ or dynamic node follows it.
     and correct overflow accounting.
     One malformed candidate row makes the whole verifier abstain;
     retained row evidence is audit-only and cannot vote.
-6.  Set calibration evidence floor only with at least two admitted candidate model identities and two complete clean ballots from distinct verifier identities.
+6.  Set calibration evidence floor only with at least two admitted candidate model identities and two complete clean ballots from distinct verifier families other than candidate's own author model.
     Hidden manifest priority supplies private calibration fallback below the evidence floor.
+    Candidate's own verifier ballot cannot certify it clean,
+    while explicit self-model defect still counts as dissent.
     Production eligibility additionally requires no admitted dissenting defect or overflow ballot.
 7.  Write only to private review root;
     no production publication is authorized by calibration status.
 
-The proposed graph remains seven payloads in two dependency waves.
+The proposed graph has at most six payloads in two dependency waves.
 One wet provider remains sufficient.
 Every node receives all page-referenced images.
 A verifier failure abstains and cannot suspend or mutate a complete candidate.
@@ -1945,17 +1947,17 @@ Candidate H3,
 the all-candidate compact matrix with bounded defect evidence,
 is preferred.
 It preserves one verifier view across candidates,
-keeps the seven-payload graph,
+keeps the six-payload graph,
 and makes overflow an explicit losing verdict.
 Its cost is reduced per-defect exhaustiveness after the cap.
 
 Candidate H1 would run one verbose verifier payload per candidate.
 It preserves familiar verbose rows,
-but expands the graph to sixteen payloads and leaves one-candidate worst-case findings near the output ceiling.
+but expands the graph to twelve payloads and leaves one-candidate worst-case findings near the output ceiling.
 
 Candidate H2 would split each verifier-candidate pair into status and finding payloads.
 Each payload is smaller,
-but the graph reaches twenty-eight payloads and independently generated halves can disagree,
+but the graph reaches twenty-one payloads and independently generated halves can disagree,
 turning a working verifier into an abstention.
 
 Ranking:
@@ -2128,9 +2130,18 @@ and GFP showed both parseable truncation cases fail when the predicate is remove
 
 ### Candidate H implementation status
 
-Prototype commit `7ceaec899` implements Candidate H with:
+Prototype commits `7ceaec899` and `f2e35fd2c` implement Candidate H with:
 
-- four immutable-shell whole-document authors and three all-candidate verifiers in two dependency waves;
+- three immutable-shell whole-document authors and three all-candidate verifiers in two dependency waves;
+- one Hyper-only vision roster used in both roles:
+  Qwen3.8-27B,
+  Kimi K3,
+  and MiniMax M3;
+- canonical roster identities mapped to exact Hyper wire ids
+  `qwen3.8-27b`,
+  `kimi-k3`,
+  and `minimax-m3`;
+- self-model clean certification excluded while self-model defect remains dissent;
 - complete manifest-ordered obligation and global status arrays;
 - eight bounded exact findings per candidate and exact `overflow === D > 8` algebra;
 - obligation-indexed omissions,
@@ -2162,15 +2173,16 @@ Candidate H's synthetic structurally admitted field-count-maximum Carena verifie
 
 - 23 immutable-shell slots,
   134 obligations,
-  four candidates,
+  three candidates,
   eight findings per candidate,
   and three anchors per finding;
-- 17,780 compact bytes and 5,927 tokens under the project three-bytes-per-token estimate;
-- 7,737 raw JSON tokens under exact MiniMax M3 tokenizer;
-- 8,011 raw JSON tokens under each exact DeepSeek V4 verifier tokenizer,
-  yielding 23,989 tokens of raw-wire arithmetic reserve below Hyper's 32,000-token completion ceiling;
+- 13,339 compact bytes and 4,447 tokens under the project three-bytes-per-token estimate;
+- 7,473 raw JSON tokens under exact Qwen3.8 tokenizer;
+- 5,716 raw JSON tokens under exact Kimi K3 tokenizer;
+- 5,816 raw JSON tokens under exact MiniMax M3 tokenizer;
+- 10,284 tokens of lowest raw-wire arithmetic reserve under Kimi's 16,000-token model cap;
 - compact wire SHA-256
-  `5600dbd91e34c2b3319eaf38a6c14e3f71f77792e96e6757da8f26f24f004e25`.
+  `85d8eeee934173552d5b631f47a580f7f1f47039102302eff966b51629befbc8`.
 
 The witness is field-count-maximum,
 not byte-maximum.
@@ -2180,21 +2192,16 @@ A realistic complete Carena author response measured 21,412 compact bytes with S
 `bb61c6dcb2cde515e04748cccabb99e15579edf9091e634b156e633c3159ef08`.
 Its exact raw JSON counts are 4,585 Qwen3.8 tokens,
 4,594 Kimi K3 tokens,
-4,563 GLM 5.3 Flash tokens,
-and 4,553 gpt-oss tokens.
-The lowest author-witness raw-wire arithmetic reserve is 27,406 tokens.
+and 4,524 MiniMax M3 tokens.
+The lowest author-witness raw-wire arithmetic reserve is 11,406 tokens under Kimi's 16,000-token model cap.
 The retained response is used only as realistic size evidence,
 not as evidence that its rejected author identity is qualified.
 
-Official tokenizer artifacts are pinned at:
+Current roster tokenizer artifacts are pinned at:
 
 - Qwen3.8 `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`;
 - Kimi K3 `a590ce090cb049c93a33dfe8c208ec652aa20503`;
-- GLM 5.3 Flash `04c4e9e95c5da8862dced7e5056455116f83a7e0`;
-- gpt-oss `b5c939de8f754692c1647ca79fbf85e8c1e70f8a`;
-- MiniMax M3 `f0e1c1e04d40177e4673a22097036854f536e9c0`;
-- DeepSeek V4 Flash 0731 `7872f01b1d1fe23eabc4c98b48bffcef5a386062`;
-- DeepSeek V4 Pro 0813 `72e1d3230f6c080a530b0a1d46f8eb4602340597`.
+- MiniMax M3 `f0e1c1e04d40177e4673a22097036854f536e9c0`.
 
 Raw-wire headroom does not include model reasoning or tool-call framing.
 Provider `usage.output_tokens` and finish reason remain required live calibration evidence.
@@ -2213,6 +2220,39 @@ and the fresh full run reports 876 passing suites and no failure lines.
 The migration also split verifier schema from parsed guard,
 moved lifecycle fixture construction to the dist-importing unit test,
 and preserved exact `IndeterminateTransmission` operational evidence.
+
+Fresh Hyper `GET /v1/models` evidence confirms current vision capability and provider maxima:
+Qwen3.8-27B true and 128,000,
+Kimi K3 true and 16,000,
+and MiniMax M3 true and 512,000.
+Both prior DeepSeek verifier ids remain vision false and are rejected by Candidate H manifest.
+The package applies 32,000-token project cap where model maximum is higher.
+
+H-specific GFP rejects removal of global-omission refusal,
+Hyper vision filtering,
+Hyper-only provider binding,
+canonical-to-Hyper reach,
+self-certification exclusion,
+prompt claims,
+fresh raw-member refusal,
+spent-node restart,
+runtime lease identity,
+and all-settled abort behavior.
+Task #69 already GFP-proves shared truncating-finish refusal.
+Restored targeted lint and types pass;
+the restored full run reports 876 passing suites and no failure lines.
+
+The private calibration transport will use `retryPolicy.limit = 0`,
+so each manifested node can send at most one network exchange.
+It will persist request and response digests,
+wire model and schema role,
+HTTP status,
+response bytes,
+stop reason,
+provider usage,
+and exact exchange count without raw provider text.
+Six is maximum exchange count;
+actual durable node rows establish execution when author failure skips verifier wave.
 
 The user has authorized Hyper and Synthetic calls without another permission checkpoint.
 A fresh advisor review immediately precedes Candidate H calibration so live calls produce interpretable evidence;
