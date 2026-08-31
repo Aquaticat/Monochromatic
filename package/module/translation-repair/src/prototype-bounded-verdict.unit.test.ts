@@ -9,6 +9,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   describe,
   expect,
@@ -21,6 +22,8 @@ import {
   bindBoundedClient,
   BOUNDED_VERDICT_FINDING_CAP,
   boundedVerifierResponseGuard,
+  buildImmutableShell,
+  buildRealizationObligationLedger,
   createBoundedVerdictManifest,
   CONDITIONAL_DEFECT_CLASSES,
   maximalBoundedVerifierResponse,
@@ -36,14 +39,10 @@ import {
   type BoundedVerifierBallot,
   type BoundedVerifierResponse,
   type BoundedVerdictManifest,
+  type RealizationCandidatePlan,
 } from '../dist/final/node/prototype-bounded-verdict.mjs';
 import {
-  BOUNDED_LIFECYCLE_ARCHIVE,
-  BOUNDED_LIFECYCLE_MEDIA,
-  BOUNDED_LIFECYCLE_SOURCE,
-  boundedLifecycleResponseForRequest,
   createBoundedAuthorSettlement,
-  createBoundedLifecycleFixture,
 } from '../dist/final/node/prototype-bounded-verdict-test-support.mjs';
 import {
   type ChatJsonOutcome,
@@ -53,7 +52,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /** Simulated transport outcome whose transmission cannot be disproved. */
-class IndeterminateTransmission extends Error {}
+class IndeterminateTransmissionError extends Error {
+  override readonly name = 'IndeterminateTransmissionError';
+}
+
+// Runtime persistence currently derives operation identity from constructor name.
+Object.defineProperty(
+  IndeterminateTransmissionError,
+  'name',
+  { value: 'IndeterminateTransmission', },
+);
 
 /** Disposable private runtime fixture root. */
 type TemporaryDirectory = AsyncDisposable & { readonly path: string; };
@@ -74,6 +82,179 @@ function digest({ text, }: { readonly text: string; }): string {
   return createHash('sha256',).update(text,).digest('hex',);
 }
 
+/** Source carrying independent clauses and one page image. */
+const BOUNDED_LIFECYCLE_SOURCE = `---\nname: 猫\n---\n# 猫\n\n猫休息。猫醒来。\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
+
+/** Archive carrying destination shell authority. */
+const BOUNDED_LIFECYCLE_ARCHIVE = `---\nname: Cat\n---\n# Cat\n\nThe cat rests. The cat wakes.\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
+
+/** Page image payload attached to every node. */
+const BOUNDED_DATA_URI = 'data:image/webp;base64,AA==';
+
+/** Page image inventory and exact payload. */
+const BOUNDED_LIFECYCLE_MEDIA = [{
+  assetName: 'fixture.webp',
+  dataUri: BOUNDED_DATA_URI,
+  digest: digest({ text: BOUNDED_DATA_URI, }),
+},] as const;
+
+/** Deterministic shell, ledger, and Hyper-only plan. */
+type BoundedLifecycleFixture = {
+  readonly shell: ReturnType<typeof buildImmutableShell>;
+  readonly ledger: ReturnType<typeof buildRealizationObligationLedger>;
+  readonly manifest: BoundedVerdictManifest;
+};
+
+/** Creates four-author, three-verifier finite fixture. */
+function createBoundedLifecycleFixture(): BoundedLifecycleFixture {
+  const shell = buildImmutableShell({
+    sourceText: BOUNDED_LIFECYCLE_SOURCE,
+    archiveText: BOUNDED_LIFECYCLE_ARCHIVE,
+  },);
+  const ledger = buildRealizationObligationLedger({
+    sourceBody: shell.body,
+    archiveBody: BOUNDED_LIFECYCLE_ARCHIVE,
+    slots: shell.slots,
+    shellDigest: shell.shellDigest,
+  },);
+  const candidatePlan = [
+    { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', priority: 0, },
+    { ordinal: 1, modelId: 'hf:moonshotai/Kimi-K3', priority: 1, },
+    { ordinal: 2, modelId: 'hf:zai-org/GLM-5.3-Flash', priority: 2, },
+    { ordinal: 3, modelId: 'hf:openai/gpt-oss-120b', priority: 3, },
+  ] as const satisfies readonly RealizationCandidatePlan[];
+  const verifierModelIds = [
+    'minimax-m3',
+    'deepseek-v4-flash-0731',
+    'deepseek-v4-pro-0813',
+  ] as const;
+  const manifest = createBoundedVerdictManifest({
+    ledger,
+    shell,
+    archiveBody: BOUNDED_LIFECYCLE_ARCHIVE,
+    candidatePlan,
+    verifierModelIds,
+    providerSelection: 'hyper-only',
+    sourcePictures: BOUNDED_LIFECYCLE_MEDIA.map(function picture(item,) {
+      return { assetName: item.assetName, digest: item.digest, };
+    },),
+  },);
+  return { shell, ledger, manifest, };
+}
+
+/** Builds complete deterministic author slot map. */
+function lifecycleAuthorResponse({
+  fixture,
+  plan,
+}: {
+  readonly fixture: BoundedLifecycleFixture;
+  readonly plan: RealizationCandidatePlan;
+}): { readonly slots: Readonly<Record<string, string>>; } {
+  return {
+    slots: Object.fromEntries(fixture.shell.slots.map(function slot(item, index,) {
+      return [
+        item.key,
+        `Author ${String(plan.ordinal,)} complete English slot ${String(index,)}.`,
+      ];
+    },),),
+  };
+}
+
+/** Candidate evidence subset present in anonymous verifier packet. */
+type BoundedCandidateEvidence = Pick<
+  BoundedCandidate,
+  'candidateId' | 'candidateDigest'
+>;
+
+/** Guards anonymous candidate evidence before scripted response. */
+function isCandidateEvidence(value: unknown,): value is BoundedCandidateEvidence {
+  return isJsonRecord(value,)
+    && ((typeof value.candidateId) === 'string')
+    && ((typeof value.candidateDigest) === 'string');
+}
+
+/** Reads canonical packet from first text part. */
+function lifecyclePacketFromRequest(
+  request: ChatJsonRequest<unknown>,
+): Readonly<Record<string, unknown>> {
+  const [, message,] = request.messages;
+  if ((message === undefined) || ((typeof message.content) === 'string'))
+    throw new Error('bounded lifecycle verifier packet is absent');
+  const textPart = message.content.find(function text(part,) {
+    return part.type === 'text';
+  },);
+  if ((textPart === undefined) || (textPart.type !== 'text'))
+    throw new Error('bounded lifecycle verifier packet text is absent');
+  const marker = 'BOUNDED_VERIFIER_PACKET:\n';
+  const start = textPart.text.indexOf(marker,);
+  if (start === (-1))
+    throw new Error('bounded lifecycle verifier packet marker is absent');
+  const value: unknown = JSON.parse(textPart.text.slice(start + marker.length,),);
+  if (!isJsonRecord(value,))
+    throw new Error('bounded lifecycle verifier packet differs');
+  return value;
+}
+
+/** Reads anonymous candidate bindings from canonical packet. */
+function lifecycleCandidatesFromRequest(
+  request: ChatJsonRequest<unknown>,
+): readonly BoundedCandidateEvidence[] {
+  const packet = lifecyclePacketFromRequest(request,);
+  const { candidates, } = packet;
+  if ((!Array.isArray(candidates,)) || (!candidates.every(isCandidateEvidence,)))
+    throw new Error('bounded lifecycle candidate evidence differs');
+  return candidates;
+}
+
+/** Builds one complete checked-clean all-candidate response. */
+function lifecycleCleanResponse({
+  fixture,
+  candidates,
+}: {
+  readonly fixture: BoundedLifecycleFixture;
+  readonly candidates: readonly BoundedCandidateEvidence[];
+}): BoundedVerifierResponse {
+  return {
+    candidates: candidates.map(function row(candidate,) {
+      return {
+        candidateId: candidate.candidateId,
+        candidateDigest: candidate.candidateDigest,
+        obligationStatuses: fixture.ledger.obligations.map(function preserved() {
+          return 'p' as const;
+        },),
+        globalStatuses: REALIZATION_GLOBAL_CRITERIA.map(function clean() {
+          return 'c' as const;
+        },),
+        overflow: false,
+        findings: [],
+      };
+    },),
+  };
+}
+
+/** Returns deterministic response for author or verifier request. */
+function boundedLifecycleResponseForRequest({ fixture, }: {
+  readonly fixture: BoundedLifecycleFixture;
+}): (request: ChatJsonRequest<unknown>) => unknown {
+  return function response(request,): unknown {
+    const schemaName = request.responseFormat?.json_schema.name;
+    if (schemaName === 'immutable_shell_slots') {
+      const plan = fixture.manifest.candidatePlan.find(function model(item,) {
+        return item.modelId === request.modelId;
+      },);
+      if (plan === undefined)
+        throw new Error('bounded lifecycle author model differs');
+      return lifecycleAuthorResponse({ fixture, plan, });
+    }
+    if (schemaName !== 'bounded_verdict_ballot')
+      throw new Error('bounded lifecycle schema differs');
+    return lifecycleCleanResponse({
+      fixture,
+      candidates: lifecycleCandidatesFromRequest(request,),
+    },);
+  };
+}
+
 /** Builds exact half-open anchor inside candidate slot. */
 function anchor({
   candidate,
@@ -84,7 +265,7 @@ function anchor({
   readonly startOffset: number;
   readonly endOffset: number;
 }): BoundedFinding['targetAnchors'][number] {
-  const slotKey = Object.keys(candidate.slots,)[0];
+  const [slotKey,] = Object.keys(candidate.slots,);
   if (slotKey === undefined)
     throw new Error('bounded test candidate slot is absent');
   const text = candidate.slots[slotKey];
@@ -247,7 +428,7 @@ function defectClassIndex({ name, }: {
   readonly name: typeof CONDITIONAL_DEFECT_CLASSES[number];
 }): number {
   const index = CONDITIONAL_DEFECT_CLASSES.indexOf(name,);
-  if (index < 0)
+  if (index === (-1))
     throw new Error('bounded test defect class is absent');
   return index;
 }
@@ -264,6 +445,8 @@ function scriptedClient({
   readonly prompts: string[];
   readonly peak: { value: number; inFlight: number; };
 }): SyntheticClient {
+  const authorBarrier = Promise.withResolvers<undefined>();
+  const verifierBarrier = Promise.withResolvers<undefined>();
   return {
     chatText: async () => {
       await Promise.resolve();
@@ -277,11 +460,15 @@ function scriptedClient({
       const schemaName = request.responseFormat?.json_schema.name ?? '';
       calls.push(schemaName,);
       prompts.push(JSON.stringify(request.messages,),);
+      const barrier = schemaName === 'immutable_shell_slots'
+        ? authorBarrier
+        : verifierBarrier;
       const requiredArrivals = schemaName === 'immutable_shell_slots' ? 4 : 3;
-      while (calls.filter(function same(value,) {
+      if (calls.filter(function same(value,) {
         return value === schemaName;
-      },).length < requiredArrivals)
-        await wait(1,);
+      },).length === requiredArrivals)
+        barrier.resolve(undefined,);
+      await barrier.promise;
       const value = responseFor(request,);
       peak.inFlight -= 1;
       if (!request.validate(value,))
@@ -343,16 +530,18 @@ await describe({
           candidates: fixture.candidates,
         },);
         expect(guard({ ...clean, priority: 0, },),).toBe(false,);
-        const first = clean.candidates[0];
-        const candidate = fixture.candidates[0];
+        const [first,] = clean.candidates;
+        const [candidate,] = fixture.candidates;
         if ((first === undefined) || (candidate === undefined))
           throw new Error('bounded hidden-member fixture is absent');
         const hiddenRow = { ...first, priority: 0, };
-        expect(guard(replaceRow({
+        expect(
+          guard(replaceRow({
           response: clean,
           candidateId: first.candidateId,
           row: hiddenRow,
-        },),),).toBe(false,);
+        },),),
+        ).toBe(false,);
         const target = anchor({ candidate, startOffset: 0, endOffset: 3, });
         const defectRow = {
           ...first,
@@ -367,11 +556,13 @@ await describe({
             priority: 0,
           },],
         };
-        expect(guard(replaceRow({
+        expect(
+          guard(replaceRow({
           response: clean,
           candidateId: first.candidateId,
           row: defectRow,
-        },),),).toBe(false,);
+        },),),
+        ).toBe(false,);
         const hiddenAnchor = { ...target, priority: 0, };
         const hiddenAnchorRow = {
           ...defectRow,
@@ -382,11 +573,13 @@ await describe({
             targetAnchors: [hiddenAnchor,],
           },],
         };
-        expect(guard(replaceRow({
+        expect(
+          guard(replaceRow({
           response: clean,
           candidateId: first.candidateId,
           row: hiddenAnchorRow,
-        },),),).toBe(false,);
+        },),),
+        ).toBe(false,);
       },
     },),
 
@@ -395,7 +588,7 @@ await describe({
       fn: async () => {
         const fixture = settledFixture();
         const clean = cleanResponse({ fixture, });
-        const first = clean.candidates[0];
+        const [first,] = clean.candidates;
         if (first === undefined)
           throw new Error('bounded test row is absent');
         const incomplete = replaceRow({
@@ -430,7 +623,7 @@ await describe({
       fn: async () => {
         const fixture = settledFixture();
         const clean = cleanResponse({ fixture, });
-        const first = clean.candidates[0];
+        const [first,] = clean.candidates;
         if (first === undefined)
           throw new Error('bounded omission row is absent');
         const response = replaceRow({
@@ -477,8 +670,8 @@ await describe({
       fn: async () => {
         const fixture = settledFixture();
         const clean = cleanResponse({ fixture, });
-        const first = clean.candidates[0];
-        const candidate = fixture.candidates[0];
+        const [first,] = clean.candidates;
+        const [candidate,] = fixture.candidates;
         if ((first === undefined) || (candidate === undefined))
           throw new Error('bounded anchor fixture is absent');
         const anchors = [
@@ -506,8 +699,8 @@ await describe({
             row,
           },),
         }).response.candidates,).toHaveLength(fixture.candidates.length,);
-        const firstFinding = row.findings[0];
-        const firstAnchor = anchors[0];
+        const [firstFinding,] = row.findings;
+        const [firstAnchor,] = anchors;
         if ((firstFinding === undefined) || (firstAnchor === undefined))
           throw new Error('bounded overlap fixture is absent');
         const overlapping: BoundedCandidateVerification = {
@@ -536,8 +729,8 @@ await describe({
       fn: async () => {
         const fixture = settledFixture();
         const clean = cleanResponse({ fixture, });
-        const first = clean.candidates[0];
-        const candidate = fixture.candidates[0];
+        const [first,] = clean.candidates;
+        const [candidate,] = fixture.candidates;
         if ((first === undefined) || (candidate === undefined))
           throw new Error('bounded overflow fixture is absent');
         const globalStatuses = first.globalStatuses.map(function defect(
@@ -664,7 +857,7 @@ await describe({
       fn: async () => {
         const fixture = settledFixture();
         const clean = cleanResponse({ fixture, });
-        const first = clean.candidates[0];
+        const [first,] = clean.candidates;
         if (first === undefined)
           throw new Error('bounded malformed ballot row is absent');
         const cleanZero = ballot({ fixture, response: clean, verifierOrdinal: 0, });
@@ -729,7 +922,7 @@ await describe({
         },);
         expect(selected.evidenceFloorMet,).toBe(true,);
         expect(selected.productionEligible,).toBe(true,);
-        const first = clean.candidates[0];
+        const [first,] = clean.candidates;
         if (first === undefined)
           throw new Error('bounded dissent row is absent');
         const dissentResponse = replaceRow({
@@ -860,7 +1053,7 @@ await describe({
             if ((request.responseFormat?.json_schema.name === 'immutable_shell_slots')
               && (request.modelId === fixture.manifest.candidatePlan[0]?.modelId)) {
               await wait(5,);
-              throw new IndeterminateTransmission('bounded transmission unknown');
+              throw new IndeterminateTransmissionError('bounded transmission unknown');
             }
             const value = responseFor(request,);
             if (!request.validate(value,))
@@ -944,7 +1137,7 @@ await describe({
             calls += 1;
             if ((request.responseFormat?.json_schema.name === 'bounded_verdict_ballot')
               && (request.modelId === fixture.manifest.verifierModelIds[0]))
-              throw new IndeterminateTransmission('bounded verifier transmission unknown');
+              throw new IndeterminateTransmissionError('bounded verifier transmission unknown');
             const value = responseFor(request,);
             if (!request.validate(value,))
               throw new Error('bounded verifier indeterminate fixture failed guard');
@@ -1014,7 +1207,9 @@ await describe({
         await using directory = await temporaryDirectory();
         const fixture = createBoundedLifecycleFixture();
         const responseFor = boundedLifecycleResponseForRequest({ fixture, });
-        let verifierOrdinal = 0;
+        const [, duplicateVerifierModelId,] = fixture.manifest.verifierModelIds;
+        if (duplicateVerifierModelId === undefined)
+          throw new Error('bounded duplicate verifier identity is absent');
         const client: SyntheticClient = {
           chatText: async () => {
             await Promise.resolve();
@@ -1024,16 +1219,12 @@ await describe({
             request: ChatJsonRequest<ValueT>,
           ): Promise<ChatJsonOutcome<ValueT>> => {
             const schemaName = request.responseFormat?.json_schema.name;
-            const current = schemaName === 'bounded_verdict_ballot'
-              ? verifierOrdinal
-              : (-1);
-            if (schemaName === 'bounded_verdict_ballot')
-              verifierOrdinal += 1;
             const value = responseFor(request,);
             if (!request.validate(value,))
               throw new Error('bounded abstention fixture failed guard');
             const serialized = JSON.stringify(value,);
-            if (current === 0) {
+            if ((schemaName === 'bounded_verdict_ballot')
+              && (request.modelId === duplicateVerifierModelId)) {
               const body = serialized.slice(1, -1,);
               return {
                 kind: 'ok',
@@ -1226,7 +1417,7 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(Error.isError(caught,) ? caught.message : '',).toBe(
+        expect(caughtValueText(caught,),).toBe(
           'immutable shell restart binding differs at bounded-author-0',
         );
       },
@@ -1268,7 +1459,7 @@ await describe({
           'response-bounded-verifier-0.json',
         );
         const response: unknown = JSON.parse(await readFile(responsePath, 'utf8',),);
-        if (!isJsonRecord(response,) || !Array.isArray(response.candidates,))
+        if ((!isJsonRecord(response,)) || (!Array.isArray(response.candidates,)))
           throw new Error('bounded stored response fixture differs');
         const member = `"candidates":${JSON.stringify(response.candidates,)}`;
         const duplicate = `{${member},${member}}`;
@@ -1309,7 +1500,7 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(Error,);
-        expect(Error.isError(caught,) ? caught.message : '',).toBe(
+        expect(caughtValueText(caught,),).toBe(
           'realization JSON object member repeats',
         );
       },
@@ -1326,20 +1517,23 @@ await describe({
           '@monochromatic-dev/module-translation-repair/ts/prototype-bounded-verdict-prompt',
           '@monochromatic-dev/module-translation-repair/ts/prototype-bounded-verdict-runtime-support',
           '@monochromatic-dev/module-translation-repair/ts/prototype-bounded-verdict-settlement',
+          '@monochromatic-dev/module-translation-repair/ts/prototype-bounded-verdict-test-support',
           '@monochromatic-dev/module-translation-repair/ts/prototype-bounded-verdict-verifier-wave',
         ];
-        for (const specifier of specifiers) {
-          let caught: unknown;
+        const codes = await Promise.all(specifiers.map(async function code(
+          specifier,
+        ): Promise<unknown> {
           try {
             await import(specifier,);
+            return undefined;
           }
           catch (error) {
-            caught = error;
+            return isJsonRecord(error,) ? error.code : undefined;
           }
-          expect(
-            isJsonRecord(caught,) ? caught.code : undefined,
-          ).toBe('ERR_PACKAGE_PATH_NOT_EXPORTED',);
-        }
+        },),);
+        codes.forEach(function blocked(code,) {
+          expect(code,).toBe('ERR_PACKAGE_PATH_NOT_EXPORTED',);
+        },);
       },
     },),
 
@@ -1415,7 +1609,7 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(Error.isError(caught,) ? caught.message : '',).toBe(
+        expect(caughtValueText(caught,),).toBe(
           'bounded runtime provider or output binding differs',
         );
       },

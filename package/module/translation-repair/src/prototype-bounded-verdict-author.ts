@@ -8,17 +8,43 @@ import type {
 } from './prototype-bounded-verdict-model.ts';
 import { realizationCandidateAlias, } from './prototype-realization-author.ts';
 import type { RealizationCandidatePlan, } from './prototype-realization-model.ts';
-import type { ImmutableShell, SlotDocumentResponse, } from './prototype-slot-model.ts';
+import type {
+  ImmutableShell,
+  SlotDocumentResponse,
+} from './prototype-slot-model.ts';
 import { validateSlotCandidate, } from './prototype-slot-wire.ts';
 
-/** Runtime-owned candidate digest excluding self reference. */
+/**
+ * Runtime-owned candidate digest excluding self reference.
+ *
+ * @param candidate - Identity whose immutable members need binding
+ *
+ * @returns Digest over candidate identity before self digest
+ */
 function candidateDigest(
   candidate: Omit<BoundedCandidate, 'candidateDigest'>,
 ): string {
   return hashContent({ content: JSON.stringify(candidate,), });
 }
 
-/** Admits one complete slot map and attaches hidden author authority. */
+/**
+ * Admits one complete slot map and attaches hidden author authority.
+ *
+ * @returns Runtime-bound candidate after deterministic publication checks
+ *
+ * @example
+ * ```ts
+ * const candidate = admitBoundedAuthorResponse({
+ *   response,
+ *   shell,
+ *   manifest,
+ *   plan,
+ *   sourceText,
+ *   archiveText,
+ *   sourcePictures,
+ * });
+ * ```
+ */
 export function admitBoundedAuthorResponse({
   response,
   shell,
@@ -36,12 +62,19 @@ export function admitBoundedAuthorResponse({
   readonly archiveText: string;
   readonly sourcePictures: readonly { readonly assetName: string; }[];
 }): BoundedCandidate {
-  const authorized = manifest.candidatePlan.find(function ordinal(value,) {
+  /**
+   * Exact plan authorized for supplied non-priority ordinal.
+   */
+  const authorized = manifest.candidatePlan
+    .find(function ordinal(value,) {
     return value.ordinal === plan.ordinal;
   },);
   if ((authorized === undefined)
     || (JSON.stringify(authorized,) !== JSON.stringify(plan,)))
     throw new Error('bounded verdict author plan is not manifest-authorized');
+  /**
+   * Complete document compiled through immutable shell validation.
+   */
   const document = validateSlotCandidate({
     shell,
     response,
@@ -49,12 +82,25 @@ export function admitBoundedAuthorResponse({
     archiveText,
     sourcePictures,
   },);
-  const slots = Object.fromEntries(shell.slots.map(function slot(item,) {
+  /**
+   * Slot record normalized into immutable shell order.
+   */
+  const slots = Object.fromEntries(shell.slots
+    .map(function slot(item,) {
+    /**
+     * Exact author text assigned to this shell slot.
+     */
     const text = response.slots[item.key];
     if (text === undefined)
       throw new Error(`bounded verdict author slot ${item.key} is absent`);
-    return [item.key, text,];
+    return [
+      item.key,
+      text,
+    ];
   },),);
+  /**
+   * Runtime-owned candidate members participating in self digest.
+   */
   const identity = {
     candidateId: realizationCandidateAlias({
       manifestDigest: manifest.manifestDigest,
@@ -75,7 +121,21 @@ export function admitBoundedAuthorResponse({
   };
 }
 
-/** Revalidates persisted candidate against source and immutable bindings. */
+/**
+ * Revalidates persisted candidate against source and immutable bindings.
+ *
+ * @example
+ * ```ts
+ * assertBoundedCandidateBinding({
+ *   candidate,
+ *   manifest,
+ *   shell,
+ *   sourceText,
+ *   archiveText,
+ *   sourcePictures,
+ * });
+ * ```
+ */
 export function assertBoundedCandidateBinding({
   candidate,
   manifest,
@@ -91,7 +151,13 @@ export function assertBoundedCandidateBinding({
   readonly archiveText: string;
   readonly sourcePictures: readonly { readonly assetName: string; }[];
 }): void {
-  assertBoundedCandidatesAuthorized({ candidates: [candidate,], manifest, });
+  assertBoundedCandidatesAuthorized({
+    candidates: [candidate,],
+    manifest,
+  });
+  /**
+   * Candidate recomputed from persisted slots and runtime authority.
+   */
   const expected = admitBoundedAuthorResponse({
     response: { slots: candidate.slots, },
     shell,

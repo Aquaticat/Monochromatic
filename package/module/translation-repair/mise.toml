@@ -72,6 +72,63 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
 ])
 """
 
+[tasks."format:bounded-verdict"]
+description = "Auto-fix Candidate H prototype files with package-local type-aware Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
+  '--type-aware',
+  '--fix',
+  'src/prototype-bounded-verdict.ts',
+  'src/prototype-bounded-verdict-admission.ts',
+  'src/prototype-bounded-verdict-author.ts',
+  'src/prototype-bounded-verdict-author-wave.ts',
+  'src/prototype-bounded-verdict-envelope.ts',
+  'src/prototype-bounded-verdict-family.ts',
+  'src/prototype-bounded-verdict-manifest.ts',
+  'src/prototype-bounded-verdict-model.ts',
+  'src/prototype-bounded-verdict-prompt.ts',
+  'src/prototype-bounded-verdict-runtime.ts',
+  'src/prototype-bounded-verdict-runtime-support.ts',
+  'src/prototype-bounded-verdict-selection.ts',
+  'src/prototype-bounded-verdict-settlement.ts',
+  'src/prototype-bounded-verdict-verifier-guard.ts',
+  'src/prototype-bounded-verdict-verifier-schema.ts',
+  'src/prototype-bounded-verdict-verifier-wave.ts',
+  'src/prototype-bounded-verdict.unit.test.ts',
+  'src/prototype-bounded-verdict-test-support.ts',
+])
+"""
+
+[tasks."lint:bounded-verdict"]
+description = "Lint Candidate H prototype files with package-local type-aware Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
+  '--type-aware',
+  'src/prototype-bounded-verdict.ts',
+  'src/prototype-bounded-verdict-admission.ts',
+  'src/prototype-bounded-verdict-author.ts',
+  'src/prototype-bounded-verdict-author-wave.ts',
+  'src/prototype-bounded-verdict-envelope.ts',
+  'src/prototype-bounded-verdict-family.ts',
+  'src/prototype-bounded-verdict-manifest.ts',
+  'src/prototype-bounded-verdict-model.ts',
+  'src/prototype-bounded-verdict-prompt.ts',
+  'src/prototype-bounded-verdict-runtime.ts',
+  'src/prototype-bounded-verdict-runtime-support.ts',
+  'src/prototype-bounded-verdict-selection.ts',
+  'src/prototype-bounded-verdict-settlement.ts',
+  'src/prototype-bounded-verdict-verifier-guard.ts',
+  'src/prototype-bounded-verdict-verifier-schema.ts',
+  'src/prototype-bounded-verdict-verifier-wave.ts',
+  'src/prototype-bounded-verdict.unit.test.ts',
+  'src/prototype-bounded-verdict-test-support.ts',
+])
+"""
+
 [tasks."lint:types"]
 extends = "lint:types"
 

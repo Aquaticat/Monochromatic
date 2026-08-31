@@ -43,7 +43,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-brief-editor": "./src/corpus-run/prototype-brief-editor.ts",
     "prototype-brief-editor-controls": "./src/corpus-run/prototype-brief-editor-controls.ts",
     "prototype-bounded-verdict": "./src/prototype-bounded-verdict.ts",
-    "prototype-bounded-verdict-test-support": "./test/prototype-bounded-verdict-test-support.ts",
+    "prototype-bounded-verdict-test-support": "./src/prototype-bounded-verdict-test-support.ts",
     "prototype-conditional-audit-calibration": "./src/corpus-run/prototype-conditional-audit-calibration.ts",
     "prototype-conditional-audit-controls": "./src/corpus-run/prototype-conditional-audit-controls.ts",
     "prototype-conditional-audit-replay": "./src/corpus-run/prototype-conditional-audit-replay.ts",

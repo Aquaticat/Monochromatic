@@ -24,21 +24,43 @@ import {
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 import { slotResponseFormat, } from './prototype-slot-wire.ts';
 
-/** Canonical digest of full closed-world obligation ledger. */
+/**
+ * SHA-256 hexadecimal character count.
+ */
+const SHA256_HEX_LENGTH = 64;
+
+/**
+ * Canonical digest of full closed-world obligation ledger.
+ *
+ * @returns Digest binding every immutable ledger member
+ *
+ * @example
+ * ```ts
+ * const digest = boundedLedgerDigest({ ledger, });
+ * ```
+ */
 export function boundedLedgerDigest({ ledger, }: {
   readonly ledger: RealizationObligationLedger;
 }): string {
   return hashContent({ content: JSON.stringify(ledger,), });
 }
 
-/** Canonical digest input excluding self reference. */
+/**
+ * Canonical digest input excluding self reference.
+ *
+ * @param value - Manifest identity before self digest attaches
+ *
+ * @returns Digest over canonical manifest identity
+ */
 function manifestDigest(
   value: Omit<BoundedVerdictManifest, 'manifestDigest'>,
 ): string {
   return hashContent({ content: JSON.stringify(value,), });
 }
 
-/** Refuses duplicate or invalid author and verifier authorization. */
+/**
+ * Refuses duplicate or invalid author and verifier authorization.
+ */
 function assertRoster({
   candidatePlan,
   verifierModelIds,
@@ -51,15 +73,42 @@ function assertRoster({
     || ((candidatePlan.length + verifierModelIds.length)
       !== MAX_BOUNDED_PAYLOAD_COUNT))
     throw new Error('bounded verdict roster count differs from fixed graph');
-  const ordered = candidatePlan.toSorted(function ordinal(left, right,) {
+  /**
+   * Author plan normalized by non-priority ordinal.
+   */
+  const ordered = candidatePlan.toSorted(function ordinal(
+    left,
+    right,
+  ) {
     return left.ordinal - right.ordinal;
   },);
-  const ordinals = ordered.map(function ordinal(plan,) { return plan.ordinal; });
-  const models = ordered.map(function model(plan,) { return plan.modelId; });
-  const priorities = ordered.map(function priority(plan,) { return plan.priority; });
+  /**
+   * Ordinals required to be unique and contiguous.
+   */
+  const ordinals = ordered.map(function ordinal(plan,) {
+    return plan.ordinal;
+  },);
+  /**
+   * Author model identities required to be unique.
+   */
+  const models = ordered.map(function model(plan,) {
+    return plan.modelId;
+  },);
+  /**
+   * Hidden priorities required to be unique.
+   */
+  const priorities = ordered.map(function priority(plan,) {
+    return plan.priority;
+  },);
+  /**
+   * Conservative author families available for diversity evidence.
+   */
   const authorFamilies = new Set(ordered.map(function family(plan,) {
     return boundedModelFamily({ modelId: plan.modelId, });
   },));
+  /**
+   * Conservative verifier families available for diversity evidence.
+   */
   const verifierFamilies = new Set(verifierModelIds.map(function family(modelId,) {
     return boundedModelFamily({ modelId, });
   },));
@@ -72,7 +121,10 @@ function assertRoster({
     },)
     || (authorFamilies.size < 2)
     || (verifierFamilies.size < 2)
-    || ordered.some(function noncontiguous(plan, index,) {
+    || ordered.some(function noncontiguous(
+      plan,
+      index,
+    ) {
       return plan.ordinal !== index;
     },)
     || priorities.some(function invalid(priority,) {
@@ -81,7 +133,9 @@ function assertRoster({
     throw new Error('bounded verdict roster identity or priority differs');
 }
 
-/** Refuses source image list not equal to page references. */
+/**
+ * Refuses source image list not equal to page references.
+ */
 function assertPictures({
   shell,
   sourcePictures,
@@ -89,21 +143,48 @@ function assertPictures({
   readonly shell: ImmutableShell;
   readonly sourcePictures: BoundedVerdictManifest['sourcePictures'];
 }): void {
+  /**
+   * Manifest image names, before exact page-reference comparison.
+   */
   const names = sourcePictures.map(function name(picture,) {
     return picture.assetName;
   },);
+  /**
+   * Unique page-referenced image names in deterministic order.
+   */
   const referenced = [...new Set(photoReferences({ text: shell.body, })
     .map(function name(picture,) { return picture.assetName; }),),]
     .toSorted();
   if ((new Set(names,).size !== names.length)
     || (JSON.stringify(names.toSorted(),) !== JSON.stringify(referenced,))
     || sourcePictures.some(function malformed(picture,) {
-      return (picture.assetName.length === 0) || (picture.digest.length !== 64);
+      return (picture.assetName
+        .length
+        === 0) || (picture.digest
+          .length
+          !== SHA256_HEX_LENGTH);
     },))
     throw new Error('bounded verdict picture binding differs');
 }
 
-/** Creates Candidate H manifest with exactly two finite payload waves. */
+/**
+ * Creates Candidate H manifest with exactly two finite payload waves.
+ *
+ * @returns Canonical manifest with self digest attached
+ *
+ * @example
+ * ```ts
+ * const manifest = createBoundedVerdictManifest({
+ *   ledger,
+ *   shell,
+ *   archiveBody,
+ *   candidatePlan,
+ *   verifierModelIds,
+ *   providerSelection: 'hyper-only',
+ *   sourcePictures,
+ * });
+ * ```
+ */
 export function createBoundedVerdictManifest({
   ledger,
   shell,
@@ -121,17 +202,39 @@ export function createBoundedVerdictManifest({
   readonly providerSelection: BoundedVerdictManifest['providerSelection'];
   readonly sourcePictures: BoundedVerdictManifest['sourcePictures'];
 }): BoundedVerdictManifest {
-  assertRealizationLedgerBindsShell({ ledger, shell, archiveBody, });
-  assertRoster({ candidatePlan, verifierModelIds, });
-  assertPictures({ shell, sourcePictures, });
+  assertRealizationLedgerBindsShell({
+    ledger,
+    shell,
+    archiveBody,
+  });
+  assertRoster({
+    candidatePlan,
+    verifierModelIds,
+  });
+  assertPictures({
+    shell,
+    sourcePictures,
+  });
   if ((providerSelection !== 'all')
     && (providerSelection !== 'synthetic-only')
     && (providerSelection !== 'hyper-only'))
     throw new Error('bounded verdict provider selection differs');
-  const orderedPlan = candidatePlan.toSorted(function ordinal(left, right,) {
+  /**
+   * Author plan persisted in canonical ordinal order.
+   */
+  const orderedPlan = candidatePlan.toSorted(function ordinal(
+    left,
+    right,
+  ) {
     return left.ordinal - right.ordinal;
   },);
+  /**
+   * Verifier identities persisted in canonical lexical order.
+   */
   const orderedVerifiers = [...verifierModelIds,].toSorted();
+  /**
+   * Manifest members participating in self digest.
+   */
   const identity = {
     version: 2,
     shellDigest: shell.shellDigest,
@@ -155,7 +258,20 @@ export function createBoundedVerdictManifest({
   };
 }
 
-/** Refuses manifest, shell, ledger, media, or roster substitution. */
+/**
+ * Refuses manifest, shell, ledger, media, or roster substitution.
+ *
+ * @example
+ * ```ts
+ * assertBoundedVerdictManifest({
+ *   manifest,
+ *   ledger,
+ *   shell,
+ *   archiveBody,
+ *   expectedManifestDigest,
+ * });
+ * ```
+ */
 export function assertBoundedVerdictManifest({
   manifest,
   ledger,
@@ -169,6 +285,9 @@ export function assertBoundedVerdictManifest({
   readonly archiveBody: string;
   readonly expectedManifestDigest: string;
 }): void {
+  /**
+   * Manifest recomputed from supplied immutable dependencies.
+   */
   const expected = createBoundedVerdictManifest({
     ledger,
     shell,
@@ -183,7 +302,14 @@ export function assertBoundedVerdictManifest({
     throw new Error('bounded verdict manifest identity differs');
 }
 
-/** Refuses anonymous candidate set outside manifest authorization. */
+/**
+ * Refuses anonymous candidate set outside manifest authorization.
+ *
+ * @example
+ * ```ts
+ * assertBoundedCandidatesAuthorized({ candidates, manifest, });
+ * ```
+ */
 export function assertBoundedCandidatesAuthorized({
   candidates,
   manifest,
@@ -192,13 +318,19 @@ export function assertBoundedCandidatesAuthorized({
   readonly manifest: BoundedVerdictManifest;
 }): void {
   if ((candidates.length === 0)
-    || (candidates.length > manifest.candidatePlan.length)
+    || (candidates.length
+      > manifest.candidatePlan
+      .length)
     || (new Set(candidates.map(function id(candidate,) {
       return candidate.candidateId;
     },)).size !== candidates.length))
     throw new Error('bounded verdict candidate set length or alias differs');
   for (const candidate of candidates) {
-    const plan = manifest.candidatePlan.find(function authorized(value,) {
+    /**
+     * Manifest plan whose opaque alias identifies current candidate.
+     */
+    const plan = manifest.candidatePlan
+      .find(function authorized(value,) {
       return realizationCandidateAlias({
         manifestDigest: manifest.manifestDigest,
         ordinal: value.ordinal,

@@ -2,7 +2,9 @@
 
 import type { RosterModelId, } from './roster-id.ts';
 
-/** Model lineage used only to avoid claiming same-family independence. */
+/**
+ * Model lineage used only to avoid claiming same-family independence.
+ */
 export type BoundedModelFamily =
   | 'deepseek'
   | 'gemma'
@@ -12,7 +14,16 @@ export type BoundedModelFamily =
   | 'openai'
   | 'qwen';
 
-/** Maps frozen roster identity to conservative model family. */
+/**
+ * Maps frozen roster identity to conservative model family.
+ *
+ * @returns Family used only for evidence diversity
+ *
+ * @example
+ * ```ts
+ * const family = boundedModelFamily({ modelId: 'minimax-m3', },);
+ * ```
+ */
 export function boundedModelFamily({ modelId, }: {
   readonly modelId: RosterModelId;
 }): BoundedModelFamily {

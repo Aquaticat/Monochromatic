@@ -27,7 +27,10 @@ import {
   createBoundedAuthorSettlement,
   type BoundedAuthorState,
 } from './prototype-bounded-verdict-settlement.ts';
-import { runBoundedVerifierNode, type BoundedVerifierState, } from './prototype-bounded-verdict-verifier-wave.ts';
+import {
+  runBoundedVerifierNode,
+  type BoundedVerifierState,
+} from './prototype-bounded-verdict-verifier-wave.ts';
 import { boundedVerifierResponseFormat, } from './prototype-bounded-verdict-verifier-schema.ts';
 import type { PrototypeMedia, } from './prototype-brief-editor-input.ts';
 import {
@@ -39,7 +42,9 @@ import { acquireRealizationRuntimeLease, } from './prototype-realization-runtime
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 import { writePrototypeJson, } from './prototype-brief-editor-runtime.ts';
 
-/** Persisted Candidate H result before any production boundary. */
+/**
+ * Persisted Candidate H result before any production boundary.
+ */
 export type BoundedRuntimeResult = {
   readonly manifestDigest: string;
   readonly providerSelection: BoundedVerdictManifest['providerSelection'];
@@ -52,7 +57,28 @@ export type BoundedRuntimeResult = {
   readonly selection?: BoundedSelection;
 };
 
-/** Executes fixed Candidate H graph in exactly two dependency waves. */
+/**
+ * Executes fixed Candidate H graph in exactly two dependency waves.
+ *
+ * @returns Persisted private result after every authorized node settles
+ *
+ * @example
+ * ```ts
+ * const result = await runBoundedRuntime({
+ *   outputDir,
+ *   boundClient,
+ *   manifest,
+ *   expectedManifestDigest,
+ *   shell,
+ *   ledger,
+ *   sourceText,
+ *   archiveText,
+ *   media,
+ *   restart,
+ *   signal,
+ * });
+ * ```
+ */
 export async function runBoundedRuntime({
   outputDir,
   boundClient,
@@ -85,20 +111,37 @@ export async function runBoundedRuntime({
     archiveBody: archiveText,
     expectedManifestDigest,
   },);
-  assertBoundedClient({ boundClient, manifest, outputDir, });
+  assertBoundedClient({
+    boundClient,
+    manifest,
+    outputDir,
+  });
   if (signal.aborted)
     throw signal.reason;
+  /**
+   * Exclusive process-incarnation lease for exact output root.
+   */
   await using runtimeLease = await acquireRealizationRuntimeLease({ outputDir, });
   await persistRealizationImmutableJson({
-    path: join(outputDir, 'manifest-bounded-verdict.json',),
+    path: join(
+      outputDir,
+      'manifest-bounded-verdict.json',
+    ),
     value: manifest,
     label: 'bounded manifest',
   },);
+  /**
+   * Page-reference names consumed by deterministic candidate checks.
+   */
   const sourcePictures = media.map(function picture(item,) {
     return { assetName: item.assetName, };
   },);
+  /**
+   * Complete terminal author states after concurrent first wave.
+   */
   const authorStates = await awaitBoundedWave({
-    nodes: manifest.candidatePlan.map(async function author(plan,) {
+    nodes: manifest.candidatePlan
+      .map(async function author(plan,) {
       return await runBoundedAuthorNode({
         outputDir,
         client: boundClient.client,
@@ -125,19 +168,31 @@ export async function runBoundedRuntime({
     },),
     signal,
   },);
+  /**
+   * Runtime-owned total settlement deriving downstream candidate set.
+   */
   const authorSettlement = createBoundedAuthorSettlement({
     states: authorStates,
     manifest,
   },);
   await persistRealizationImmutableJson({
-    path: join(outputDir, 'bounded-author-settlement.json',),
+    path: join(
+      outputDir,
+      'bounded-author-settlement.json',
+    ),
     value: authorSettlement,
     label: 'bounded author settlement',
   },);
+  /**
+   * Complete admitted candidate subset from immutable settlement.
+   */
   const candidates = candidatesFromBoundedSettlement({
     settlement: authorSettlement,
     manifest,
   },);
+  /**
+   * Dynamic verifier schema digest or explicit no-candidate sentinel.
+   */
   const verifierSchemaDigest = candidates.length === 0
     ? 'skipped-no-candidate'
     : hashContent({
@@ -146,6 +201,9 @@ export async function runBoundedRuntime({
         candidates,
       },),),
     },);
+  /**
+   * Verifier-wave dependencies participating in plan digest.
+   */
   const verifierPlanIdentity = {
     manifestDigest: manifest.manifestDigest,
     authorSettlementDigest: authorSettlement.settlementDigest,
@@ -160,6 +218,9 @@ export async function runBoundedRuntime({
     verifierSchemaDigest,
     findingCap: manifest.findingCap,
   };
+  /**
+   * Immutable verifier-wave plan with self digest attached.
+   */
   const verifierPlan = {
     ...verifierPlanIdentity,
     verifierPlanDigest: hashContent({
@@ -167,14 +228,21 @@ export async function runBoundedRuntime({
     },),
   };
   await persistRealizationImmutableJson({
-    path: join(outputDir, 'bounded-verifier-plan.json',),
+    path: join(
+      outputDir,
+      'bounded-verifier-plan.json',
+    ),
     value: verifierPlan,
     label: 'bounded verifier plan',
   },);
+  /**
+   * Complete terminal verifier states after concurrent second wave.
+   */
   const verifierStates = candidates.length === 0
     ? []
     : await awaitBoundedWave({
-      nodes: manifest.verifierModelIds.map(async function verifier(
+      nodes: manifest.verifierModelIds
+        .map(async function verifier(
         verifierModelId,
         verifierOrdinal,
       ) {
@@ -210,6 +278,9 @@ export async function runBoundedRuntime({
       },),
       signal,
     },);
+  /**
+   * Private selected candidate or absence when no author was usable.
+   */
   const selection = candidates.length === 0
     ? undefined
     : selectBoundedCandidate({
@@ -223,7 +294,16 @@ export async function runBoundedRuntime({
       archiveText,
       sourcePictures,
     },);
-  const states = [...authorStates, ...verifierStates,];
+  /**
+   * Every terminal node state across fixed dependency graph.
+   */
+  const states = [
+    ...authorStates,
+    ...verifierStates,
+  ];
+  /**
+   * Private persisted runtime result and node-state counts.
+   */
   const result: BoundedRuntimeResult = {
     manifestDigest: manifest.manifestDigest,
     providerSelection: manifest.providerSelection,
@@ -234,15 +314,24 @@ export async function runBoundedRuntime({
       ? manifest.verifierModelIds
       : [],
     completedNodeCount: states.filter(function completed(state,) {
-      return state.record.state === 'completed';
-    },).length,
+      return state.record
+        .state
+        === 'completed';
+    },)
+      .length,
     spentUnusableNodeCount: states.filter(function unusable(state,) {
-      return state.record.state === 'spent-unusable';
-    },).length,
+      return state.record
+        .state
+        === 'spent-unusable';
+    },)
+      .length,
     ...(selection === undefined ? {} : { selection, }),
   };
   await writePrototypeJson({
-    path: join(outputDir, 'result-bounded-verdict.json',),
+    path: join(
+      outputDir,
+      'result-bounded-verdict.json',
+    ),
     value: result,
   },);
   return result;

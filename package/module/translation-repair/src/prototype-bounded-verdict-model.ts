@@ -8,19 +8,29 @@ import type {
   RealizationTargetAnchor,
 } from './prototype-realization-model.ts';
 
-/** Maximum concrete defect certificates retained for one candidate row. */
+/**
+ * Maximum concrete defect certificates retained for one candidate row.
+ */
 export const BOUNDED_VERDICT_FINDING_CAP = 8;
 
-/** Maximum provider payloads in fixed four-author, three-verifier graph. */
+/**
+ * Maximum provider payloads in fixed four-author, three-verifier graph.
+ */
 export const MAX_BOUNDED_PAYLOAD_COUNT = 7;
 
-/** Compact obligation outcome in manifest order. */
+/**
+ * Compact obligation outcome in manifest order.
+ */
 export type BoundedObligationCode = 'p' | 'd';
 
-/** Compact global-criterion outcome in canonical order. */
+/**
+ * Compact global-criterion outcome in canonical order.
+ */
 export type BoundedGlobalCode = 'c' | 'd';
 
-/** Candidate H immutable plan and protocol binding. */
+/**
+ * Candidate H immutable plan and protocol binding.
+ */
 export type BoundedVerdictManifest = {
   readonly version: 2;
   readonly shellDigest: string;
@@ -41,7 +51,9 @@ export type BoundedVerdictManifest = {
   readonly manifestDigest: string;
 };
 
-/** Runtime-owned whole immutable-shell author candidate. */
+/**
+ * Runtime-owned whole immutable-shell author candidate.
+ */
 export type BoundedCandidate = {
   readonly candidateId: string;
   readonly candidateOrdinal: number;
@@ -55,7 +67,9 @@ export type BoundedCandidate = {
   readonly slots: Readonly<Record<string, string>>;
 };
 
-/** Located bounded certificate linked by manifest index. */
+/**
+ * Located bounded certificate linked by manifest index.
+ */
 export type BoundedFinding = {
   readonly scope: 'o' | 'g';
   readonly manifestIndex: number;
@@ -63,7 +77,9 @@ export type BoundedFinding = {
   readonly targetAnchors: readonly RealizationTargetAnchor[];
 };
 
-/** Complete compact matrix row for one anonymous candidate. */
+/**
+ * Complete compact matrix row for one anonymous candidate.
+ */
 export type BoundedCandidateVerification = {
   readonly candidateId: string;
   readonly candidateDigest: string;
@@ -73,19 +89,25 @@ export type BoundedCandidateVerification = {
   readonly findings: readonly BoundedFinding[];
 };
 
-/** Atomic all-candidate verifier response. */
+/**
+ * Atomic all-candidate verifier response.
+ */
 export type BoundedVerifierResponse = {
   readonly candidates: readonly BoundedCandidateVerification[];
 };
 
-/** Runtime-owned verifier identity around admitted atomic response. */
+/**
+ * Runtime-owned verifier identity around admitted atomic response.
+ */
 export type BoundedVerifierBallot = {
   readonly verifierModelId: RosterModelId;
   readonly manifestDigest: string;
   readonly response: BoundedVerifierResponse;
 };
 
-/** Complete terminal row for every manifested author plan. */
+/**
+ * Complete terminal row for every manifested author plan.
+ */
 export type BoundedAuthorSettlementRow = {
   readonly ordinal: number;
   readonly modelId: RosterModelId;
@@ -95,7 +117,9 @@ export type BoundedAuthorSettlementRow = {
   readonly candidate?: BoundedCandidate;
 };
 
-/** Runtime-owned total author-wave settlement. */
+/**
+ * Runtime-owned total author-wave settlement.
+ */
 export type BoundedAuthorSettlement = {
   readonly version: 1;
   readonly manifestDigest: string;
@@ -103,7 +127,9 @@ export type BoundedAuthorSettlement = {
   readonly settlementDigest: string;
 };
 
-/** Private Candidate H selection and evidence classification. */
+/**
+ * Private Candidate H selection and evidence classification.
+ */
 export type BoundedSelection = {
   readonly candidate: BoundedCandidate;
   readonly cleanVerifierModelIds: readonly RosterModelId[];
@@ -114,7 +140,9 @@ export type BoundedSelection = {
   readonly abstainingVerifierModelIds: readonly RosterModelId[];
 };
 
-/** Candidate H fixture input shared by manifest and verifier logic. */
+/**
+ * Candidate H fixture input shared by manifest and verifier logic.
+ */
 export type BoundedVerdictContext = {
   readonly manifest: BoundedVerdictManifest;
   readonly ledger: RealizationObligationLedger;

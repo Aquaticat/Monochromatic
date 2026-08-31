@@ -24,6 +24,8 @@
     "./ts/prototype-bounded-verdict-runtime-support.ts": null,
     "./ts/prototype-bounded-verdict-settlement": null,
     "./ts/prototype-bounded-verdict-settlement.ts": null,
+    "./ts/prototype-bounded-verdict-test-support": null,
+    "./ts/prototype-bounded-verdict-test-support.ts": null,
     "./ts/prototype-bounded-verdict-verifier-wave": null,
     "./ts/prototype-bounded-verdict-verifier-wave.ts": null,
     "./ts/prototype-realization-author-settlement": null,

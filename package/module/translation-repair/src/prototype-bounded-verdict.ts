@@ -47,8 +47,10 @@ export {
   selectBoundedCandidate,
 } from './prototype-bounded-verdict-selection.ts';
 export {
-  boundedVerifierResponseFormat,
   boundedVerifierResponseGuard,
+} from './prototype-bounded-verdict-verifier-guard.ts';
+export {
+  boundedVerifierResponseFormat,
 } from './prototype-bounded-verdict-verifier-schema.ts';
 export {
   buildRealizationObligationLedger,
