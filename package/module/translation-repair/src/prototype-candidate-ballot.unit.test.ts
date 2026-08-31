@@ -99,7 +99,7 @@ const ABORT_NOT_CAUGHT: unique symbol = Symbol('candidate ballot abort absent',)
 const ALTERED_ROUTE_OUTPUT_TOKENS = 31_999;
 
 /** Aborted getter read corresponding to immediate pre-verifier dispatch guard. */
-const PRE_VERIFIER_ABORT_READ = 6;
+const PRE_VERIFIER_ABORT_READ = 8;
 
 /** Terminated Anthropic text stream for local route mapping control. */
 const HYPER_TEXT_BODY = `${[
