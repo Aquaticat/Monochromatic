@@ -2,6 +2,7 @@ import { createHash, } from 'node:crypto';
 import {
   mkdtemp,
   readFile,
+  readdir,
   rm,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -465,6 +466,57 @@ function scriptedClient({
   };
 }
 
+/** Builds client aborting only after every verifier sibling enters transport. */
+function verifierAbortClient({
+  fixture,
+  controller,
+  reason,
+  settled,
+}: {
+  readonly fixture: Fixture;
+  readonly controller: AbortController;
+  readonly reason: unknown;
+  readonly settled: { value: number };
+}): SyntheticClient {
+  const responseFor = responseForRequest({ fixture, });
+  const authorBarrier = Promise.withResolvers<undefined>();
+  const verifierBarrier = Promise.withResolvers<undefined>();
+  const arrivals = { authors: 0, verifiers: 0, };
+  return {
+    chatText: async () => {
+      await Promise.resolve();
+      throw new Error('review unit abort text route unused');
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      const author = request.responseFormat?.json_schema.name === 'immutable_shell_slots';
+      if (author) {
+        arrivals.authors += 1;
+        if (arrivals.authors === 3)
+          authorBarrier.resolve(undefined,);
+        await authorBarrier.promise;
+        const value = responseFor(request,);
+        if (!request.validate(value,))
+          throw new Error('review unit abort author response differs');
+        return { kind: 'ok', value: value as ValueT, rawText: JSON.stringify(value,), };
+      }
+      arrivals.verifiers += 1;
+      if (arrivals.verifiers === 9) {
+        controller.abort(reason,);
+        verifierBarrier.resolve(undefined,);
+      }
+      await verifierBarrier.promise;
+      settled.value += 1;
+      throw request.signal.reason;
+    },
+    quotas: async () => {
+      await Promise.resolve();
+      throw new Error('review unit abort quota route unused');
+    },
+  };
+}
+
 /** Binds scripted client to fixture route digest without provider traffic. */
 function scriptedRouteClient({
   fixture,
@@ -479,17 +531,39 @@ function scriptedRouteClient({
   },);
 }
 
+/** Builds provider client that records any forbidden route use. */
+function forbiddenClient({ calls, }: { readonly calls: { value: number } }): SyntheticClient {
+  return {
+    chatText: async () => {
+      calls.value += 1;
+      throw new Error('review unit forbidden text provider used');
+    },
+    chatJson: async <ValueT,>(): Promise<ChatJsonOutcome<ValueT>> => {
+      calls.value += 1;
+      throw new Error('review unit forbidden JSON provider used');
+    },
+    quotas: async () => {
+      calls.value += 1;
+      throw new Error('review unit forbidden quota provider used');
+    },
+  };
+}
+
 /** Runs full fixture graph through provider-neutral client. */
 async function runFixture({
   fixture,
   outputDir,
   client,
+  allClient = client,
+  syntheticClient = client,
   restart,
   signal = new AbortController().signal,
 }: {
   readonly fixture: Fixture;
   readonly outputDir: string;
   readonly client: SyntheticClient;
+  readonly allClient?: SyntheticClient;
+  readonly syntheticClient?: SyntheticClient;
   readonly restart: boolean;
   readonly signal?: AbortSignal;
 }): Promise<Awaited<ReturnType<typeof runReviewUnitRuntime>>> {
@@ -499,8 +573,8 @@ async function runFixture({
       manifest: fixture.manifest,
       outputDir,
       clients: {
-        all: client,
-        synthetic: client,
+        all: allClient,
+        synthetic: syntheticClient,
         hyper: scriptedRouteClient({ fixture, client, }),
       },
     },),
@@ -1241,6 +1315,11 @@ await describe({
           ballots: [ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 1, response: clean, }),],
         });
         expect(onlySelf.evidenceFloorMet).toBe(false,);
+        const oneNonself = selection({
+          fixture,
+          ballots: [ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 0, response: clean, }),],
+        });
+        expect(oneNonself.evidenceFloorMet).toBe(false,);
         const language = `d${clean.slotLanguageStatuses.slice(1,)}`;
         const selfDefect = ballot({
           fixture,
@@ -1397,6 +1476,47 @@ await describe({
       },
     }),
     it({
+      name: 'settles every verifier sibling before forwarding exact cancellation',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createFixture();
+        const controller = new AbortController();
+        const reason = new Error('exact Candidate K wave cancellation');
+        const settled = { value: 0, };
+        await expect(runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: verifierAbortClient({ fixture, controller, reason, settled, }),
+          restart: false,
+          signal: controller.signal,
+        })).rejects.toBe(reason,);
+        expect(settled.value).toBe(9,);
+      },
+    }),
+    it({
+      name: 'masks every provider route except manifest-bound Hyper',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createFixture();
+        const forbiddenCalls = { value: 0, };
+        const client = scriptedClient({
+          fixture,
+          calls: [],
+          prompts: [],
+          peak: { value: 0, inFlight: 0, },
+        });
+        await runFixture({
+          fixture,
+          outputDir: directory.path,
+          client,
+          allClient: forbiddenClient({ calls: forbiddenCalls, }),
+          syntheticClient: forbiddenClient({ calls: forbiddenCalls, }),
+          restart: false,
+        });
+        expect(forbiddenCalls.value).toBe(0,);
+      },
+    }),
+    it({
       name: 'runs twelve static nodes in two concurrent waves and restarts without dispatch',
       fn: async () => {
         await using directory = await temporaryDirectory();
@@ -1413,6 +1533,14 @@ await describe({
         });
         expect(calls.length).toBe(12,);
         expect(new Set(prompts,).size).toBe(12,);
+        expect(prompts.every(function image(prompt,) {
+          return prompt.includes('"image_url"',);
+        },)).toBe(true,);
+        expect((await readdir(join(
+          directory.path,
+          'prompt-claims',
+          fixture.manifest.manifestDigest,
+        ))).length).toBe(12,);
         expect(peak.value).toBe(9,);
         expect(result.completedNodeCount).toBe(12,);
         expect(result.spentUnusableNodeCount).toBe(0,);
@@ -1455,6 +1583,20 @@ await describe({
         expect(result.completedNodeCount).toBe(8,);
         expect(result.spentUnusableNodeCount).toBe(1,);
         expect(result.skippedNodeCount).toBe(3,);
+        const restartCalls: string[] = [];
+        await runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: scriptedClient({
+            fixture,
+            controls: { failAuthorOrdinal: 1, },
+            calls: restartCalls,
+            prompts: [],
+            peak: { value: 0, inFlight: 0, },
+          }),
+          restart: true,
+        });
+        expect(restartCalls.length).toBe(0,);
       },
     }),
     it({
