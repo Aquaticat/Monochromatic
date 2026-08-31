@@ -166,7 +166,10 @@ export function slotDocumentGuard(
 ): (value: unknown) => value is SlotDocumentResponse {
   const expected = shell.slots.map(function key(slot,) { return slot.key; },);
   return function isSlotDocumentResponse(value: unknown): value is SlotDocumentResponse {
-    if ((typeof value !== 'object') || (value === null) || !('slots' in value))
+    if ((typeof value !== 'object')
+      || (value === null)
+      || (Object.keys(value,).length !== 1)
+      || !('slots' in value))
       return false;
     const { slots, } = value;
     if ((typeof slots !== 'object') || (slots === null))
