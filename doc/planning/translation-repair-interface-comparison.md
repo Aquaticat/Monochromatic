@@ -2156,8 +2156,44 @@ The fresh restored package run reports 876 passing suites and no failure lines.
 GFP removal of overflow algebra and family-floor checks fails at their intended Candidate H controls;
 restored targeted and full runs pass.
 
+Candidate H's admitted field-count-maximum Carena verifier witness measured:
+
+- 23 immutable-shell slots,
+  134 obligations,
+  four candidates,
+  eight findings per candidate,
+  and three anchors per finding;
+- 17,780 compact bytes and 5,927 tokens under the project three-bytes-per-token estimate;
+- 7,778 comparison-only tokens under official `openai/gpt-oss-120b` tokenizer commit
+  `b5c939de8f754692c1647ca79fbf85e8c1e70f8a`,
+  leaving 24,222 tokens below Hyper's 32,000-token completion ceiling;
+- 9,945 comparison-only tokens under `Qwen/Qwen3.6-27B` tokenizer commit
+  `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`,
+  leaving 22,055 tokens below the ceiling;
+- compact wire SHA-256
+  `5600dbd91e34c2b3319eaf38a6c14e3f71f77792e96e6757da8f26f24f004e25`.
+
+The witness is field-count-maximum,
+not byte-maximum.
+It passed full Candidate H admission for all planned verifier identities.
+The retained complete slot record is used only as realistic shell text and offset scale,
+not as evidence that its rejected author identity is qualified.
+
+Exact current tokenizers remain unavailable for planned Qwen3.8,
+Kimi K3,
+GLM 5.3,
+MiniMax M3,
+and both DeepSeek V4 variants.
+The Qwen3.6 comparison cannot prove those families.
+These unavailable tokenizer bindings remain explicit pre-spend measurement blockers,
+separate from author-quality roster blockers.
+
+Envelope measurement code is committed as `be0c178d6`.
+The fresh package run after that change reports 876 passing suites and no failure lines;
+type lint passes.
+
 No live spend is authorized until Candidate H-specific Oxlint migration,
-four-candidate verifier completion-headroom measurement under planned tokenizers,
+planned-roster tokenizer evidence,
 and a fresh advisor pre-spend review pass.
 
 ## Required lifecycle migration
