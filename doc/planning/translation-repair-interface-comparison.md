@@ -103,14 +103,17 @@ must be replaced rather than adapted.
 
 Shared ports:
 
-- `ModelWorkPort`: true-external provider work,
+- `ModelWorkPort`:
+  true-external provider work,
   with routed production adapter and scripted test adapter
-- `RunJournalPort`: local-substitutable plan,
+- `RunJournalPort`:
+  local-substitutable plan,
   payload,
   audit,
   checkpoint,
   and artifact journal
-- `PublicationPort`: local-substitutable atomic write and readback verification
+- `PublicationPort`:
+  local-substitutable atomic write and readback verification
 
 Manifest planning follows provider preflight.
 For each supported single-provider mode,
@@ -1752,6 +1755,80 @@ and no live payload is authorized before schema-size measurement,
 implementation review,
 GFP controls,
 and advisor pre-spend review.
+
+### Candidate G envelope disposition
+
+Candidate G failed its pre-spend output-envelope gate on 2026-08-31.
+No live Candidate G payload was sent.
+
+The pinned Carena shell has 23 slots and 134 obligations.
+The strict author schema serialized to 2,994 bytes;
+the four-candidate verifier schema serialized to 7,397 bytes.
+Compact response witnesses excluded optional JSON whitespace,
+which is not bounded by JSON Schema.
+
+Four compact schema-valid stress witnesses were serialized.
+They are not claimed as mathematical tokenizer extrema.
+All four pass committed structural guards,
+but none is candidate-admissible or evidence-admissible:
+the author witnesses violate target cardinality or presentation requirements,
+the lower verifier witness has defect statuses without findings,
+and the upper verifier witness repeats findings against clean statuses.
+Their measurements were:
+
+- author lower witness:
+  7,294 bytes,
+  2,432 tokens under the project three-bytes-per-token estimate,
+  and 2,528 tokens under the official Qwen3.6-27B tokenizer;
+- author upper stress witness:
+  2,820,201 bytes,
+  940,067 estimated tokens,
+  and 2,317,000 Qwen tokens;
+- four-candidate verifier lower witness:
+  93,488 bytes,
+  31,163 estimated tokens,
+  and 46,671 Qwen tokens;
+- four-candidate verifier upper stress witness:
+  437,076 bytes,
+  145,692 estimated tokens,
+  and 139,331 Qwen tokens.
+
+The witness SHA-256 digests in the same order are:
+
+- `6f931d1f874d583816823f8b2e68036fb3d8ca22cff04b93d1dc5e9f190ed38e`;
+- `cc8ec3c3902a4090966a892036a54fceb67471d44fbf24e8c646aeb636179c22`;
+- `3ca1631bdfd98dd894a567386ad09d70bfc2278c5b3f44621cb8f19780d73f59`;
+- `88039b143e279111d27b7f7b3292314ba2694a39fd775c11e2d49b18bed011aa`.
+
+The exact tokenizer was `Qwen/Qwen3.6-27B` at commit
+`6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`,
+loaded directly from `tokenizer.json` through Python `tokenizers` 0.22.2,
+with no chat-template wrapper.
+The completion ceiling is 32,000 tokens.
+The author upper stress witness tokenized with Qwen3.6-27B exceeded it by 2,285,000 tokens.
+One schema-authorized compact response beyond the ceiling is enough to fail the required maximum-response guarantee;
+model behavior and post-transport semantic rejection cannot turn that interface into a bounded one.
+The verifier token counts remain Qwen-specific evidence and are not attributed to MiniMax or DeepSeek tokenizers.
+Measurement tooling and structural controls are committed as `a15bd65df`.
+
+A private compact-wire experiment kept three disjoint author and finding anchors,
+made runtime own target digests,
+and replaced repeated ids with manifest indexes.
+It reduced usable witnesses,
+but a source-derived per-slot prose cap remained substantively unproved,
+and schema-valid control,
+escape,
+and emoji arms still exceeded the ceiling.
+The experiment was reverted rather than weakening author authority or declaring semantic invalidity a transport bound.
+
+Candidate G is rejected in its current verified-realization-ledger form.
+Its reusable findings are closed-world obligation coverage,
+manifest-ordered status arrays,
+runtime-owned digests,
+and the distinction between schema maximum and semantically acceptable output.
+A successor must reduce the complete verifier response itself without capping publication-quality prose,
+dropping split-anchor evidence,
+or treating post-transport rejection as output-budget enforcement.
 
 ## Required lifecycle migration
 
