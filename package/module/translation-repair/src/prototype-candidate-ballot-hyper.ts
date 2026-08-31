@@ -2,6 +2,7 @@
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
+import type { CandidateBallotManifest, } from './prototype-candidate-ballot-model.ts';
 import {
   createHyperExpansionClient,
   type HyperExpansionModel,
@@ -13,17 +14,40 @@ import {
 } from './synthetic-transport.ts';
 
 /**
- * Candidate-local model route proven without mutating product allowlist.
+ * Private proof that concrete client was bound to one route table.
+ */
+const CANDIDATE_BALLOT_ROUTE_CLIENT: unique symbol = Symbol('candidate ballot route client',);
+
+/**
+ * Candidate-local model route proven without product allowlist mutation.
  */
 export type CandidateBallotHyperModel = HyperExpansionModel & {
   /**
-   * Canonical identity used for author and verifier independence.
+   * Canonical identity used for model-family independence.
    */
   readonly requestId: RosterModelId;
   /**
    * Whether current Hyper row accepts page image.
    */
   readonly readsImages: true;
+};
+
+/**
+ * Concrete client branded with route-table identity.
+ */
+export type CandidateBallotRouteClient = {
+  /**
+   * Provider-neutral client using exact wire routes.
+   */
+  readonly client: SyntheticClient;
+  /**
+   * Manifest route-table digest.
+   */
+  readonly providerRouteDigest: string;
+  /**
+   * Module-local route binding brand.
+   */
+  readonly [CANDIDATE_BALLOT_ROUTE_CLIENT]: true;
 };
 
 /**
@@ -51,17 +75,21 @@ export const CANDIDATE_BALLOT_HYPER_MODELS: readonly CandidateBallotHyperModel[]
 ];
 
 /**
- * Digests exact local route ids and output caps.
+ * Digests exact route ids and output caps.
  *
  * @returns Route-table identity bound into Candidate I manifest
  *
  * @example
  * ```ts
- * const digest = candidateBallotHyperRouteDigest();
+ * const digest = candidateBallotHyperRouteDigest({ routes, });
  * ```
  */
-export function candidateBallotHyperRouteDigest(): string {
-  return hashContent({ content: JSON.stringify(CANDIDATE_BALLOT_HYPER_MODELS,), });
+export function candidateBallotHyperRouteDigest({
+  routes,
+}: {
+  readonly routes: readonly CandidateBallotHyperModel[];
+}): string {
+  return hashContent({ content: JSON.stringify(routes,), });
 }
 
 /**
@@ -91,25 +119,83 @@ export function candidateBallotHyperModel({
 }
 
 /**
- * Creates zero-retry Candidate I Hyper client from local mapping.
+ * Brands controlled client with exact route identity.
  *
- * @returns Provider-neutral client preserving canonical identities
+ * Test support uses this only for scripted clients that make no provider request.
+ * Production callers use {@link createCandidateBallotHyperClient}.
+ *
+ * @returns Frozen route-bound client
  *
  * @example
  * ```ts
- * const client = createCandidateBallotHyperClient({ apiKey: 'test', });
+ * const routeClient = bindCandidateBallotRouteClient({ client, providerRouteDigest, });
+ * ```
+ */
+export function bindCandidateBallotRouteClient({
+  client,
+  providerRouteDigest,
+}: {
+  readonly client: SyntheticClient;
+  readonly providerRouteDigest: string;
+}): CandidateBallotRouteClient {
+  return Object.freeze({
+    client,
+    providerRouteDigest,
+    [CANDIDATE_BALLOT_ROUTE_CLIENT]: true as const,
+  });
+}
+
+/**
+ * Refuses forged or stale route-client binding.
+ *
+ * @example
+ * ```ts
+ * assertCandidateBallotRouteClient({ routeClient, manifest, });
+ * ```
+ */
+export function assertCandidateBallotRouteClient({
+  routeClient,
+  manifest,
+}: {
+  readonly routeClient: CandidateBallotRouteClient;
+  readonly manifest: CandidateBallotManifest;
+}): void {
+  if ((!routeClient[CANDIDATE_BALLOT_ROUTE_CLIENT])
+    || (routeClient.providerRouteDigest !== manifest.providerRouteDigest))
+    throw new Error('candidate ballot concrete route binding differs');
+}
+
+/**
+ * Creates zero-retry Candidate I Hyper client from manifest routes.
+ *
+ * @returns Route-bound provider-neutral client preserving canonical identities
+ *
+ * @example
+ * ```ts
+ * const routeClient = createCandidateBallotHyperClient({ apiKey: 'test', manifest, });
  * ```
  */
 export function createCandidateBallotHyperClient({
   apiKey,
+  manifest,
   transport = fetchTransport,
 }: {
   readonly apiKey: string;
+  readonly manifest: CandidateBallotManifest;
   readonly transport?: ModelTransport;
-}): SyntheticClient {
-  return createHyperExpansionClient({
-    apiKey,
-    models: CANDIDATE_BALLOT_HYPER_MODELS,
-    transport,
-  },);
+}): CandidateBallotRouteClient {
+  /**
+   * Route digest recomputed before constructing concrete client.
+   */
+  const routeDigest = candidateBallotHyperRouteDigest({ routes: manifest.providerRoutes, });
+  if (routeDigest !== manifest.providerRouteDigest)
+    throw new Error('candidate ballot manifest route digest differs');
+  return bindCandidateBallotRouteClient({
+    client: createHyperExpansionClient({
+      apiKey,
+      models: manifest.providerRoutes,
+      transport,
+    },),
+    providerRouteDigest: routeDigest,
+  });
 }

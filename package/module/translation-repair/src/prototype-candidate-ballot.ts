@@ -20,6 +20,7 @@ export {
   candidateBallotHyperRouteDigest,
   createCandidateBallotHyperClient,
   type CandidateBallotHyperModel,
+  type CandidateBallotRouteClient,
 } from './prototype-candidate-ballot-hyper.ts';
 export {
   assertCandidateBallotManifest,
@@ -55,6 +56,7 @@ export {
   candidateBallotResponseFormat,
 } from './prototype-candidate-ballot-schema.ts';
 export {
+  candidateBallotModelsIndependent,
   selectCandidateBallot,
 } from './prototype-candidate-ballot-selection.ts';
 export {

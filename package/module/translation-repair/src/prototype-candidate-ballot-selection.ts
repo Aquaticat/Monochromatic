@@ -10,6 +10,7 @@ import { assertCandidateBallotManifest, } from './prototype-candidate-ballot-man
 import {
   CANDIDATE_BALLOT_VERIFIER_COUNT,
   type CandidateBallotAuthorSettlement,
+  type CandidateBallotCandidate,
   type CandidateBallotResponse,
   type CandidateBallotSelection,
   type CandidateBallotManifest,
@@ -23,6 +24,27 @@ import type { ImmutableShell, } from './prototype-slot-model.ts';
  * Logger root for privacy-safe ballot abstention.
  */
 const l = tagged({ tag: 'translation-repair-candidate-ballot', },);
+
+/**
+ * Whether author and verifier model families provide independent evidence.
+ *
+ * @returns Whether conservative family identities differ
+ *
+ * @example
+ * ```ts
+ * const independent = candidateBallotModelsIndependent({ authorModelId, verifierModelId, });
+ * ```
+ */
+export function candidateBallotModelsIndependent({
+  authorModelId,
+  verifierModelId,
+}: {
+  readonly authorModelId: CandidateBallotCandidate['modelId'];
+  readonly verifierModelId: CandidateScopedBallot['verifierModelId'];
+}): boolean {
+  return boundedModelFamily({ modelId: authorModelId, })
+    !== boundedModelFamily({ modelId: verifierModelId, });
+}
 
 /**
  * Whether complete compact response explicitly certifies candidate clean.
@@ -254,8 +276,10 @@ export function selectCandidateBallot({
      */
     const cleanIds = (validByCandidate.get(candidate.candidateId,) ?? [])
       .filter(function clean(ballot,) {
-        return (boundedModelFamily({ modelId: ballot.verifierModelId, })
-          !== boundedModelFamily({ modelId: candidate.modelId, }))
+        return candidateBallotModelsIndependent({
+          authorModelId: candidate.modelId,
+          verifierModelId: ballot.verifierModelId,
+        },)
           && isClean({ response: ballot.response, });
       },)
       .map(function identity(ballot,) { return ballot.verifierModelId; })

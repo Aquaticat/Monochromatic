@@ -277,7 +277,9 @@ export function createCandidateBallotManifest({
     },),
     providerSelection,
     providerRoutes: CANDIDATE_BALLOT_HYPER_MODELS,
-    providerRouteDigest: candidateBallotHyperRouteDigest(),
+    providerRouteDigest: candidateBallotHyperRouteDigest({
+      routes: CANDIDATE_BALLOT_HYPER_MODELS,
+    },),
     authorProtocolDigest: CANDIDATE_BALLOT_AUTHOR_PROTOCOL_DIGEST,
     authorSchemaDigest: hashContent({
       content: JSON.stringify(slotResponseFormat({ shell, }),),

@@ -3,6 +3,10 @@
 import { join, } from 'node:path';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import {
+  assertCandidateBallotRouteClient,
+  type CandidateBallotRouteClient,
+} from './prototype-candidate-ballot-hyper.ts';
 import type {
   CandidateBallotManifest,
   CandidateScopedBallot,
@@ -43,7 +47,7 @@ export type CandidateBallotProviderClients = {
   /**
    * Manifest-selected Hyper route.
    */
-  readonly hyper: SyntheticClient;
+  readonly hyper: CandidateBallotRouteClient;
 };
 
 /**
@@ -62,6 +66,10 @@ export type CandidateBallotClient = {
    * Exact output root binding.
    */
   readonly outputDir: string;
+  /**
+   * Concrete route-table binding.
+   */
+  readonly providerRouteDigest: string;
   /**
    * Prompt-unique concrete client.
    */
@@ -91,12 +99,19 @@ export function bindCandidateBallotClient({
   readonly outputDir: string;
   readonly clients: CandidateBallotProviderClients;
 }): CandidateBallotClient {
+  assertCandidateBallotRouteClient({
+    routeClient: clients.hyper,
+    manifest,
+  });
   return Object.freeze({
     providerSelection: manifest.providerSelection,
     manifestDigest: manifest.manifestDigest,
     outputDir,
+    providerRouteDigest: clients.hyper
+      .providerRouteDigest,
     client: realizationPromptUniqueClient({
-      inner: clients.hyper,
+      inner: clients.hyper
+        .client,
       claimsDir: join(
         outputDir,
         'prompt-claims',
@@ -127,7 +142,8 @@ export function assertCandidateBallotClient({
   if ((!boundClient[CANDIDATE_BALLOT_CLIENT])
     || (boundClient.providerSelection !== manifest.providerSelection)
     || (boundClient.manifestDigest !== manifest.manifestDigest)
-    || (boundClient.outputDir !== outputDir))
+    || (boundClient.outputDir !== outputDir)
+    || (boundClient.providerRouteDigest !== manifest.providerRouteDigest))
     throw new Error('candidate ballot provider or output binding differs');
 }
 

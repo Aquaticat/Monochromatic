@@ -22,6 +22,8 @@ import {
   buildImmutableShell,
   buildRealizationObligationLedger,
   candidateBallotHyperModel,
+  candidateBallotHyperRouteDigest,
+  candidateBallotModelsIndependent,
   candidateBallotResponseGuard,
   CANDIDATE_BALLOT_FINDING_CAP,
   compileCandidateBallotCandidate,
@@ -39,10 +41,12 @@ import {
   type CandidateBallotCandidate,
   type CandidateBallotManifest,
   type CandidateBallotResponse,
+  type CandidateBallotRouteClient,
   type CandidateScopedBallot,
   type RealizationCandidatePlan,
 } from '../dist/final/node/prototype-candidate-ballot.mjs';
 import {
+  bindCandidateBallotRouteClient,
   createCandidateBallotAuthorSettlement,
 } from '../dist/final/node/prototype-candidate-ballot-test-support.mjs';
 import {
@@ -94,6 +98,9 @@ const ABORT_NOT_CAUGHT: unique symbol = Symbol('candidate ballot abort absent',)
 /** Deliberately stale route ceiling proving manifest binding. */
 const ALTERED_ROUTE_OUTPUT_TOKENS = 31_999;
 
+/** Aborted getter read corresponding to immediate pre-verifier dispatch guard. */
+const PRE_VERIFIER_ABORT_READ = 6;
+
 /** Terminated Anthropic text stream for local route mapping control. */
 const HYPER_TEXT_BODY = `${[
   { type: 'message_start', message: { usage: { input_tokens: 1, output_tokens: 1, }, }, },
@@ -119,6 +126,48 @@ function recordingCandidateHyperTransport({
     wire.modelId = body.model;
     return { status: 200, bodyText: HYPER_TEXT_BODY, };
   };
+}
+
+/** Builds signal becoming aborted exactly at selected getter read. */
+function stagedAbortSignal({
+  reason,
+  abortAtRead,
+  reads,
+}: {
+  readonly reason: unknown;
+  readonly abortAtRead: number;
+  readonly reads: { value: number };
+}): AbortSignal {
+  /** Real signal supplying event-target methods and internal brand. */
+  const real = new AbortController().signal;
+  /** Proxy overriding only cancellation observations. */
+  const handler: ProxyHandler<AbortSignal> = {
+    get(target, property, receiver,): unknown {
+      if (property === 'aborted') {
+        reads.value += 1;
+        return reads.value >= abortAtRead;
+      }
+      if (property === 'reason')
+        return reason;
+      const value: unknown = Reflect.get(target, property, receiver,);
+      return (typeof value) === 'function' ? value.bind(target,) : value;
+    },
+  };
+  return new Proxy(real, handler,);
+}
+
+/** Binds scripted client to fixture route digest without provider traffic. */
+function scriptedRouteClient({
+  fixture,
+  client,
+}: {
+  readonly fixture: Fixture;
+  readonly client: SyntheticClient;
+}): CandidateBallotRouteClient {
+  return bindCandidateBallotRouteClient({
+    client,
+    providerRouteDigest: fixture.manifest.providerRouteDigest,
+  },);
 }
 
 /** Complete deterministic fixture. */
@@ -555,25 +604,49 @@ await describe({
         const fixture = createFixture();
         expect(fixture.manifest.providerRoutes,).toHaveLength(3,);
         expect(fixture.manifest.providerRouteDigest,).toHaveLength(64,);
+        const changedRoutes = fixture.manifest.providerRoutes.map(function mutate(route,) {
+          return route.id === 'glm-5.3-flash'
+            ? { ...route, requestOutputTokens: ALTERED_ROUTE_OUTPUT_TOKENS, }
+            : route;
+        },);
+        const changedManifest: CandidateBallotManifest = {
+          ...fixture.manifest,
+          providerRoutes: changedRoutes,
+          providerRouteDigest: candidateBallotHyperRouteDigest({ routes: changedRoutes, }),
+        };
         expect(() => assertCandidateBallotManifest({
-          manifest: {
-            ...fixture.manifest,
-            providerRoutes: fixture.manifest.providerRoutes.map(function mutate(route,) {
-              return route.id === 'glm-5.3-flash'
-                ? { ...route, requestOutputTokens: ALTERED_ROUTE_OUTPUT_TOKENS, }
-                : route;
-            },),
-          },
+          manifest: changedManifest,
           ledger: fixture.ledger,
           shell: fixture.shell,
           archiveBody: ARCHIVE,
           expectedManifestDigest: fixture.manifest.manifestDigest,
         },),).toThrow();
+        const routeCalls: string[] = [];
+        const staleRouteClient = scriptedRouteClient({
+          fixture,
+          client: scriptedClient({
+            fixture,
+            calls: routeCalls,
+            prompts: [],
+            peak: { value: 0, inFlight: 0, },
+          }),
+        });
+        expect(() => bindCandidateBallotClient({
+          manifest: changedManifest,
+          outputDir: 'candidate-ballot-stale-route',
+          clients: {
+            all: refusingClient(),
+            synthetic: refusingClient(),
+            hyper: staleRouteClient,
+          },
+        },),).toThrow();
+        expect(routeCalls,).toHaveLength(0,);
         const wire = { modelId: '', };
         const reply = await createCandidateBallotHyperClient({
           apiKey: 'private-test-key',
+          manifest: fixture.manifest,
           transport: recordingCandidateHyperTransport({ wire, }),
-        },).chatText({
+        },).client.chatText({
           modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
@@ -586,8 +659,8 @@ await describe({
     it({
       name: 'OWNS spaces after links, footnotes, code, and HTML while punctuation stays attached',
       fn: async () => {
-        const source = '# 猫\n\n[猫](https://example.com)醒。猫[^n]醒。`猫`醒。<span>猫</span>醒。**猫**醒。_猫_醒。~~猫~~醒。{cat}醒。\n\n[^n]: 注。\n';
-        const archive = '# Cat\n\n[Cat](https://example.com) wakes. Cat[^n] wakes. `cat` wakes. <span>Cat</span> wakes. **Cat** wakes. _Cat_ wakes. ~~Cat~~ wakes. {cat} wakes.\n\n[^n]: Note.\n';
+        const source = '# 猫\n\n[猫](https://example.com)醒。猫[^n]醒。`猫`醒。<span>猫</span>醒。**猫**醒。*猫*醒。~~猫~~醒。{cat}醒。\n\n[^n]: 注。\n';
+        const archive = '# Cat\n\n[Cat](https://example.com) wakes. Cat[^n] wakes. `cat` wakes. <span>Cat</span> wakes. **Cat** wakes. *Cat* wakes. ~~Cat~~ wakes. {cat} wakes.\n\n[^n]: Note.\n';
         const shell = buildImmutableShell({ sourceText: source, archiveText: archive, });
         const boundaries = targetBoundariesForShell({ shell, });
         expect(boundaries.some(function link(item,) {
@@ -610,7 +683,7 @@ await describe({
         expect(compilation.document.includes('` English',),).toBe(true,);
         expect(compilation.document.includes('> English',),).toBe(true,);
         expect(compilation.document.includes('** English',),).toBe(true,);
-        expect(compilation.document.includes('_ English',),).toBe(true,);
+        expect(compilation.document.includes('* English',),).toBe(true,);
         expect(compilation.document.includes('~~ English',),).toBe(true,);
         expect(compilation.document.includes('} English',),).toBe(true,);
         const linkBoundary = boundaries.find(function link(item,) {
@@ -698,6 +771,14 @@ await describe({
         if (candidate === undefined)
           throw new Error('candidate ballot selection candidate is absent');
         const clean = cleanResponse({ fixture, candidate, });
+        expect(candidateBallotModelsIndependent({
+          authorModelId: 'deepseek-v4-pro-0813',
+          verifierModelId: 'deepseek-v4-flash-0731',
+        },),).toBe(false,);
+        expect(candidateBallotModelsIndependent({
+          authorModelId: 'hf:Qwen/Qwen3.8-27B',
+          verifierModelId: 'minimax-m3',
+        },),).toBe(true,);
         const cleanBallots = [0, 1, 2,].map(function verifier(verifierOrdinal,) {
           return ballot({ fixture, candidateOrdinal: 0, verifierOrdinal, response: clean, });
         },);
@@ -846,7 +927,11 @@ await describe({
         const boundClient = bindCandidateBallotClient({
           manifest: fixture.manifest,
           outputDir: root.path,
-          clients: { all: refusingClient(), synthetic: refusingClient(), hyper: client, },
+          clients: {
+            all: refusingClient(),
+            synthetic: refusingClient(),
+            hyper: scriptedRouteClient({ fixture, client, }),
+          },
         },);
         const first = await runCandidateBallotRuntime({
           outputDir: root.path,
@@ -876,7 +961,11 @@ await describe({
         const restartClient = bindCandidateBallotClient({
           manifest: fixture.manifest,
           outputDir: root.path,
-          clients: { all: refusingClient(), synthetic: refusingClient(), hyper: refusingClient(), },
+          clients: {
+            all: refusingClient(),
+            synthetic: refusingClient(),
+            hyper: scriptedRouteClient({ fixture, client: refusingClient(), }),
+          },
         },);
         const restarted = await runCandidateBallotRuntime({
           outputDir: root.path,
@@ -898,6 +987,62 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES wave-two dispatch when cancellation arrives during verifier-plan persistence',
+      fn: async () => {
+        await using root = await temporaryDirectory();
+        const fixture = createFixture();
+        const calls: string[] = [];
+        const reason = { operation: 'candidate-ballot-pre-verifier-abort', };
+        const reads = { value: 0, };
+        const signal = stagedAbortSignal({
+          reason,
+          abortAtRead: PRE_VERIFIER_ABORT_READ,
+          reads,
+        });
+        const caught = await (async function captureAbort(): Promise<unknown> {
+          try {
+            await runCandidateBallotRuntime({
+              outputDir: root.path,
+              boundClient: bindCandidateBallotClient({
+                manifest: fixture.manifest,
+                outputDir: root.path,
+                clients: {
+                  all: refusingClient(),
+                  synthetic: refusingClient(),
+                  hyper: scriptedRouteClient({
+                    fixture,
+                    client: scriptedClient({
+                      fixture,
+                      calls,
+                      prompts: [],
+                      peak: { value: 0, inFlight: 0, },
+                    }),
+                  }),
+                },
+              },),
+              manifest: fixture.manifest,
+              expectedManifestDigest: fixture.manifest.manifestDigest,
+              shell: fixture.shell,
+              ledger: fixture.ledger,
+              sourceText: SOURCE,
+              archiveText: ARCHIVE,
+              media: MEDIA,
+              restart: false,
+              signal,
+            },);
+          }
+          catch (error) {
+            return error;
+          }
+          return ABORT_NOT_CAUGHT;
+        })();
+        expect(caught,).toBe(reason,);
+        expect(calls,).toHaveLength(2,);
+        expect(reads.value,).toBe(PRE_VERIFIER_ABORT_READ,);
+      },
+    },),
+
+    it({
       name: 'WAITS for every verifier sibling before forwarding exact caller abort identity',
       fn: async () => {
         await using root = await temporaryDirectory();
@@ -915,11 +1060,14 @@ await describe({
                 clients: {
                   all: refusingClient(),
                   synthetic: refusingClient(),
-                  hyper: delayedVerifierAbortClient({
+                  hyper: scriptedRouteClient({
                     fixture,
-                    controller,
-                    reason,
-                    settledSiblingCount,
+                    client: delayedVerifierAbortClient({
+                      fixture,
+                      controller,
+                      reason,
+                      settledSiblingCount,
+                    }),
                   }),
                 },
               },),
@@ -962,7 +1110,11 @@ await describe({
           boundClient: bindCandidateBallotClient({
             manifest: fixture.manifest,
             outputDir: root.path,
-            clients: { all: refusingClient(), synthetic: refusingClient(), hyper: client, },
+            clients: {
+              all: refusingClient(),
+              synthetic: refusingClient(),
+              hyper: scriptedRouteClient({ fixture, client, }),
+            },
           },),
           manifest: fixture.manifest,
           expectedManifestDigest: fixture.manifest.manifestDigest,
@@ -1000,12 +1152,15 @@ await describe({
             clients: {
               all: refusingClient(),
               synthetic: refusingClient(),
-              hyper: scriptedClient({
+              hyper: scriptedRouteClient({
                 fixture,
-                controls: { duplicateRawCandidateOrdinal: 0, },
-                calls,
-                prompts: [],
-                peak: { value: 0, inFlight: 0, },
+                client: scriptedClient({
+                  fixture,
+                  controls: { duplicateRawCandidateOrdinal: 0, },
+                  calls,
+                  prompts: [],
+                  peak: { value: 0, inFlight: 0, },
+                }),
               }),
             },
           },),
@@ -1033,7 +1188,11 @@ await describe({
           boundClient: bindCandidateBallotClient({
             manifest: fixture.manifest,
             outputDir: root.path,
-            clients: { all: refusingClient(), synthetic: refusingClient(), hyper: refusingClient(), },
+            clients: {
+              all: refusingClient(),
+              synthetic: refusingClient(),
+              hyper: scriptedRouteClient({ fixture, client: refusingClient(), }),
+            },
           },),
           manifest: fixture.manifest,
           expectedManifestDigest: fixture.manifest.manifestDigest,
