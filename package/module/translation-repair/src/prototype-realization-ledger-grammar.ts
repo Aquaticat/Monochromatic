@@ -11,6 +11,9 @@ import {
 
 //region Ledger grammar
 
+/** Sentinel for source span not owned by exactly one source slot. */
+export const SOURCE_SLOT_ABSENT: unique symbol = Symbol('realization source slot absent',);
+
 /**
  * Selects normalized text namespace addressed by one source span.
  */
@@ -40,7 +43,16 @@ function obligationIdMatchesKind({ obligation, }: { readonly obligation: Realiza
     return false;
   const suffix = obligation.id
     .slice(prefix.length,);
-  return (suffix.length === 3) && [...suffix,].every(function digit(character,) {
+  const characters = Array.from(
+    { length: suffix.length, },
+    function characterAt(
+      _value,
+      index,
+    ) {
+    return suffix.charAt(index,);
+  },
+  );
+  return (suffix.length === 3) && characters.every(function digit(character,) {
     return (character >= '0') && (character <= '9');
   },);
 }
@@ -54,13 +66,14 @@ export function sourceSlotForSpan({
 }: {
   readonly span: RealizationSourceSpan;
   readonly sourceSlots: ReadonlyMap<string, RealizationSourceSlot>;
-}): RealizationSourceSlot | undefined {
+}): RealizationSourceSlot | typeof SOURCE_SLOT_ABSENT {
   if (span.namespace !== 'source-body')
-    return undefined;
+    return SOURCE_SLOT_ABSENT;
   const matches = [...sourceSlots.values(),].filter(function contains(slot,) {
     return (span.startOffset >= slot.startOffset) && (span.endOffset <= slot.endOffset);
   },);
-  return matches.length === 1 ? matches[0] : undefined;
+  const [only,] = matches;
+  return (matches.length === 1) && (only !== undefined) ? only : SOURCE_SLOT_ABSENT;
 }
 
 /**
@@ -179,7 +192,7 @@ export function assertObligationGrammar({
       span: clauseSpan,
       sourceSlots,
     });
-    if ((sourceSlot === undefined)
+    if ((sourceSlot === SOURCE_SLOT_ABSENT)
       || (obligation.allowedTargetSlotKeys
         .length
         !== 1)

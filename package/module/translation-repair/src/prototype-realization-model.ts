@@ -172,14 +172,18 @@ export type RealizationAuthorResponse = {
   readonly realization: readonly RealizationClaim[];
 };
 
-/** Manifest-owned author identity and priority authorization. */
+/**
+ * Manifest-owned author identity and priority authorization.
+ */
 export type RealizationCandidatePlan = {
   readonly ordinal: number;
   readonly modelId: RosterModelId;
   readonly priority: number;
 };
 
-/** Immutable finite Candidate G plan and canonical identity. */
+/**
+ * Immutable finite Candidate G plan and canonical identity.
+ */
 export type RealizationManifest = {
   readonly version: 1;
   readonly shellDigest: string;

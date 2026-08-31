@@ -13,17 +13,23 @@ import {
 } from './prototype-realization-model.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 
-/** Canonical digest of full immutable obligation ledger. */
+/**
+ * Canonical digest of full immutable obligation ledger.
+ */
 export function realizationLedgerDigest({ ledger, }: { readonly ledger: RealizationObligationLedger; }): string {
   return hashContent({ content: JSON.stringify(ledger,), });
 }
 
-/** Canonical digest input excluding self-referential manifest digest. */
+/**
+ * Canonical digest input excluding self-referential manifest digest.
+ */
 function manifestIdentity(value: Omit<RealizationManifest, 'manifestDigest'>,): string {
   return hashContent({ content: JSON.stringify(value,), });
 }
 
-/** Creates finite manifest after shell, ledger, author, and verifier authorization. */
+/**
+ * Creates finite manifest after shell, ledger, author, and verifier authorization.
+ */
 export function createRealizationManifest({
   ledger,
   shell,
@@ -37,7 +43,11 @@ export function createRealizationManifest({
   readonly candidatePlan: readonly RealizationCandidatePlan[];
   readonly verifierModelIds: RealizationManifest['verifierModelIds'];
 }): RealizationManifest {
-  assertRealizationLedgerBindsShell({ ledger, shell, archiveBody, });
+  assertRealizationLedgerBindsShell({
+    ledger,
+    shell,
+    archiveBody,
+  });
   if ((candidatePlan.length === 0) || (candidatePlan.length > MAX_REALIZATION_CANDIDATES))
     throw new Error('realization manifest candidate count is outside finite bound');
   if ((verifierModelIds.length === 0) || (verifierModelIds.length > MAX_REALIZATION_VERIFIERS))
@@ -49,11 +59,17 @@ export function createRealizationManifest({
     || (new Set(authorModels,).size !== authorModels.length)
     || (new Set(priorities,).size !== priorities.length)
     || (new Set(verifierModelIds,).size !== verifierModelIds.length)
-    || ordinals.some(function invalid(value,) { return !Number.isInteger(value,) || (value < 0); })
-    || priorities.some(function invalid(value,) { return !Number.isInteger(value,) || (value < 0); }))
+    || ordinals.some(function invalid(value,) { return (!Number.isInteger(value,)) || (value < 0); })
+    || priorities.some(function invalid(value,) { return (!Number.isInteger(value,)) || (value < 0); }))
     throw new Error('realization manifest identity or priority repeats or is invalid');
-  const orderedPlan = candidatePlan.toSorted(function ordinal(left, right,) { return left.ordinal - right.ordinal; },);
-  if (orderedPlan.some(function nonContiguous(plan, index,) { return plan.ordinal !== index; }))
+  const orderedPlan = candidatePlan.toSorted(function ordinal(
+    left,
+    right,
+  ) { return left.ordinal - right.ordinal; },);
+  if (orderedPlan.some(function nonContiguous(
+    plan,
+    index,
+  ) { return plan.ordinal !== index; }))
     throw new Error('realization manifest candidate ordinals are not contiguous');
   const orderedVerifierModelIds = [...verifierModelIds,].toSorted();
   const identity = {
@@ -65,15 +81,25 @@ export function createRealizationManifest({
     payloadCeiling: orderedPlan.length + verifierModelIds.length,
     dependencyWaves: 2,
   } as const;
-  return { ...identity, manifestDigest: manifestIdentity(identity,), };
+  return {
+    ...identity,
+    manifestDigest: manifestIdentity(identity,),
+  };
 }
 
-/** Refuses partial, extra, or unauthorized runtime candidate set. */
-export function assertRealizationCandidateSetMatchesManifest({ candidates, manifest, }: {
+/**
+ * Refuses partial, extra, or unauthorized runtime candidate set.
+ */
+export function assertRealizationCandidateSetMatchesManifest({
+  candidates,
+  manifest,
+}: {
   readonly candidates: readonly RealizedCandidate[];
   readonly manifest: RealizationManifest;
 }): void {
-  if (candidates.length !== manifest.candidatePlan.length)
+  if (candidates.length
+    !== manifest.candidatePlan
+    .length)
     throw new Error('realization candidate set length differs from manifest');
   for (const plan of manifest.candidatePlan) {
     const candidateId = realizationCandidateAlias({
@@ -90,7 +116,9 @@ export function assertRealizationCandidateSetMatchesManifest({ candidates, manif
   }
 }
 
-/** Refuses manifest, ledger, shell, roster, or digest substitution. */
+/**
+ * Refuses manifest, ledger, shell, roster, or digest substitution.
+ */
 export function assertRealizationManifest({
   manifest,
   ledger,

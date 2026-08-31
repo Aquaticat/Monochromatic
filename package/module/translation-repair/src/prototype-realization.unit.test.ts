@@ -28,6 +28,7 @@ import {
   type RealizationManifest,
   type RealizationObligationLedger,
   type RealizationTargetAnchor,
+  type RealizationVerifierBallot,
   type RealizationVerifierResponse,
   type RealizedCandidate,
 } from '../dist/final/node/prototype-realization.mjs';
@@ -318,6 +319,59 @@ function cleanResponse({ candidates, ledger, }: {
   };
 }
 
+/** Admits one verifier response against paired fixture manifest. */
+function admittedPairBallot({
+  response,
+  modelId,
+  fixture: pair,
+}: {
+  readonly response: RealizationVerifierResponse;
+  readonly modelId: string;
+  readonly fixture: ReturnType<typeof admittedPair>;
+}): RealizationVerifierBallot {
+  return admitRealizationVerifierResponse({
+    response,
+    ledger: pair.ledger,
+    candidates: [pair.first, pair.second,],
+    verifierModelId: modelId as never,
+    manifest: pair.manifest,
+    expectedManifestDigest: pair.manifest.manifestDigest,
+    shell: pair.shell,
+    sourceText: SOURCE,
+    archiveText: ARCHIVE,
+    sourcePictures: [],
+  },);
+}
+
+/** Replaces one candidate global check with located planted defect. */
+function withGlobalDefect({
+  response,
+  candidateId,
+  criterion,
+  defectClass,
+  anchor,
+}: {
+  readonly response: RealizationVerifierResponse;
+  readonly candidateId: string;
+  readonly criterion: typeof REALIZATION_GLOBAL_CRITERIA[number];
+  readonly defectClass: 'identity-attribution' | 'unsupported-addition' | 'source-language-calque';
+  readonly anchor: RealizationTargetAnchor;
+}): RealizationVerifierResponse {
+  return {
+    candidates: response.candidates.map(function candidate(value,) {
+      if (value.candidateId !== candidateId)
+        return value;
+      return {
+        ...value,
+        globalChecks: value.globalChecks.map(function defect(status,) {
+          return status.criterion === criterion ? { ...status, status: 'defect' as const, } : status;
+        },),
+        findings: [{ scope: 'global', criterion, defectClass, targetAnchors: [anchor,], },],
+      };
+    },),
+  };
+}
+
 await describe({
   name: 'Candidate G realization schema',
   children: [
@@ -334,20 +388,29 @@ await describe({
       name: 'REFUSES unknown span namespace and obligation metadata drift',
       fn: async () => {
         const { shell, ledger, } = fixture();
-        const changed = structuredClone(ledger,) as unknown as {
-          offsetEncoding: string;
-          obligations: { sourceSpans: { namespace: string; }[]; }[];
-        };
-        changed.offsetEncoding = 'byte';
-        changed.obligations[0]?.sourceSpans.splice(0, 1, {
-          ...(ledger.obligations[0]?.sourceSpans[0] as object),
-          namespace: 'other',
-        } as never,);
+        const conventions: readonly RealizationObligationLedger[] = [
+          { ...ledger, offsetEncoding: 'byte' as never, },
+          { ...ledger, rangeConvention: 'closed' as never, },
+          { ...ledger, lineEndings: 'crlf' as never, },
+          { ...ledger, digestAlgorithm: 'other' as never, },
+        ];
+        for (const changed of conventions) {
+          expect(() => assertRealizationObligationLedger({
+            ledger: changed,
+            sourceBody: shell.body,
+            archiveBody: ARCHIVE,
+          },),).toThrow('coordinate or digest convention differs');
+        }
+        const changedNamespace = structuredClone(ledger,);
+        const changedSpan = changedNamespace.obligations[0]?.sourceSpans[0];
+        if (changedSpan === undefined)
+          throw new Error('namespace fixture span is absent');
+        Object.defineProperty(changedSpan, 'namespace', { value: 'other', },);
         expect(() => assertRealizationObligationLedger({
-          ledger: changed as never,
+          ledger: changedNamespace,
           sourceBody: shell.body,
           archiveBody: ARCHIVE,
-        },),).toThrow();
+        },),).toThrow('namespace is unknown');
       },
     },),
     it({
@@ -447,6 +510,7 @@ await describe({
       fn: async () => {
         expect(() => assertNoDuplicateJsonMembers({ text: '{"a":1,"a":2}', },),).toThrow('member repeats');
         expect(() => assertNoDuplicateJsonMembers({ text: '{"a":1,"\\u0061":2}', },),).toThrow('member repeats');
+        expect(() => assertNoDuplicateJsonMembers({ text: '{"nested":{"a":1,"a":2}}', },),).toThrow('member repeats');
         expect(() => assertNoDuplicateJsonMembers({ text: '{"a":1,"nested":{"a":2}}', },),).not.toThrow();
       },
     },),
@@ -918,7 +982,7 @@ await describe({
       },
     },),
     it({
-      name: 'treats forged partial and duplicate-identity ballots as abstentions',
+      name: 'treats forged partial, empty, and duplicate-identity ballots as abstentions',
       fn: async () => {
         const { first, second, ledger, shell, manifest, } = admittedPair();
         const response = cleanResponse({ candidates: [first, second,], ledger, });
@@ -951,6 +1015,225 @@ await describe({
           archiveText: ARCHIVE,
           sourcePictures: [],
         },);
+        expect(selected.evidenceFloorMet,).toBe(false,);
+        expect(selected.abstainingVerifierModelIds,).toEqual(['kimi-k3', 'minimax-m3', 'qwen3.8-flash',],);
+      },
+    },),
+    it({
+      name: 'selects clean whole candidate around identity and addition dissent',
+      fn: async () => {
+        const pair = admittedPair();
+        const clean = cleanResponse({ candidates: [pair.first, pair.second,], ledger: pair.ledger, });
+        const firstObligationId = pair.ledger.obligations[0]?.id ?? '';
+        const firstAnchor = pair.first.realization[firstObligationId]?.[0];
+        const secondAnchor = pair.second.realization[firstObligationId]?.[0];
+        if ((firstAnchor === undefined) || (secondAnchor === undefined))
+          throw new Error('selection defect fixture anchor is absent');
+        const firstDefective = withGlobalDefect({
+          response: clean,
+          candidateId: pair.first.candidateId,
+          criterion: 'identity-attribution',
+          defectClass: 'identity-attribution',
+          anchor: firstAnchor,
+        },);
+        const selectedDefective = withGlobalDefect({
+          response: clean,
+          candidateId: pair.second.candidateId,
+          criterion: 'unsupported-addition',
+          defectClass: 'unsupported-addition',
+          anchor: secondAnchor,
+        },);
+        const ballots = [
+          admittedPairBallot({ response: firstDefective, modelId: 'minimax-m3', fixture: pair, }),
+          admittedPairBallot({ response: firstDefective, modelId: 'kimi-k3', fixture: pair, }),
+          admittedPairBallot({ response: selectedDefective, modelId: 'qwen3.8-flash', fixture: pair, }),
+        ];
+        const selected = selectRealizationCandidate({
+          candidates: [pair.first, pair.second,],
+          ballots,
+          manifest: pair.manifest,
+          expectedManifestDigest: pair.manifest.manifestDigest,
+          ledger: pair.ledger,
+          shell: pair.shell,
+          sourceText: SOURCE,
+          archiveText: ARCHIVE,
+          sourcePictures: [],
+        },);
+        expect(selected.candidate.candidateId,).toBe(pair.second.candidateId,);
+        expect(selected.evidenceFloorMet,).toBe(true,);
+        expect(selected.dissentingVerifierModelIds,).toEqual(['qwen3.8-flash',],);
+      },
+    },),
+    it({
+      name: 'admits located archive-carryover and relation defects without treating omission as silence',
+      fn: async () => {
+        const pair = admittedPair();
+        const clean = cleanResponse({ candidates: [pair.first, pair.second,], ledger: pair.ledger, });
+        const obligationId = pair.ledger.obligations[0]?.id ?? '';
+        const firstAnchor = pair.first.realization[obligationId]?.[0];
+        if (firstAnchor === undefined)
+          throw new Error('archive carryover fixture anchor is absent');
+        const carryover = withGlobalDefect({
+          response: clean,
+          candidateId: pair.first.candidateId,
+          criterion: 'source-language-calque',
+          defectClass: 'source-language-calque',
+          anchor: firstAnchor,
+        },);
+        expect(admittedPairBallot({
+          response: carryover,
+          modelId: 'minimax-m3',
+          fixture: pair,
+        },).response.candidates[0]?.findings.length,).toBe(1,);
+
+        const relation = relationFixture();
+        const plans: readonly RealizationCandidatePlan[] = [
+          { ordinal: 0, modelId: 'qwen3.8-flash' as never, priority: 0, },
+        ];
+        const manifest = manifestFor({
+          ledger: relation.ledger,
+          shell: relation.shell,
+          archiveBody: RELATION_ARCHIVE,
+          candidatePlan: plans,
+        },);
+        const candidate = admitRealizationAuthorResponse({
+          response: relation.response,
+          shell: relation.shell,
+          ledger: relation.ledger,
+          manifest,
+          expectedManifestDigest: manifest.manifestDigest,
+          candidateOrdinal: 0,
+          sourceText: RELATION_SOURCE,
+          archiveText: RELATION_ARCHIVE,
+          sourcePictures: [],
+        },);
+        const relationClean = cleanResponse({ candidates: [candidate,], ledger: relation.ledger, });
+        const relationObligation = relation.ledger.obligations.find(function row(value,) {
+          return value.kind === 'relation';
+        },);
+        const relationAnchor = relationObligation === undefined
+          ? undefined
+          : candidate.realization[relationObligation.id]?.[0];
+        if ((relationObligation === undefined) || (relationAnchor === undefined))
+          throw new Error('relation defect fixture is incomplete');
+        const verification = relationClean.candidates[0];
+        if (verification === undefined)
+          throw new Error('relation verifier fixture is absent');
+        const relationDefect: RealizationVerifierResponse = {
+          candidates: [{
+            ...verification,
+            obligations: verification.obligations.map(function defect(status,) {
+              return status.obligationId === relationObligation.id
+                ? { ...status, status: 'defect' as const, }
+                : status;
+            },),
+            findings: [{
+              scope: 'obligation',
+              obligationId: relationObligation.id,
+              defectClass: 'wrong-meaning',
+              targetAnchors: [relationAnchor,],
+            },],
+          },],
+        };
+        const ballot = admitRealizationVerifierResponse({
+          response: relationDefect,
+          ledger: relation.ledger,
+          candidates: [candidate,],
+          verifierModelId: 'minimax-m3' as never,
+          manifest,
+          expectedManifestDigest: manifest.manifestDigest,
+          shell: relation.shell,
+          sourceText: RELATION_SOURCE,
+          archiveText: RELATION_ARCHIVE,
+          sourcePictures: [],
+        },);
+        expect(ballot.response.candidates[0]?.findings.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'REFUSES planted truncation ownership while accepting concise complete mapping',
+      fn: async () => {
+        const { shell, ledger, slotKey, } = fixture();
+        const shortText = 'First.';
+        const manifest = manifestFor({
+          ledger,
+          shell,
+          candidatePlan: [{ ordinal: 0, modelId: 'qwen3.6-flash' as never, priority: 0, },],
+        },);
+        const shared = anchor({ slotKey, text: shortText, quote: shortText, });
+        const truncated: RealizationAuthorResponse = {
+          slots: [{ slotKey, text: shortText, },],
+          realization: ledger.obligations.map(function claim(obligation,) {
+            return { obligationId: obligation.id, targetAnchors: [shared,], };
+          },),
+        };
+        expect(() => admitRealizationAuthorResponse({
+          response: truncated,
+          shell,
+          ledger,
+          manifest,
+          expectedManifestDigest: manifest.manifestDigest,
+          candidateOrdinal: 0,
+          sourceText: SOURCE,
+          archiveText: ARCHIVE,
+          sourcePictures: [],
+        },),).toThrow('ownership overlaps');
+
+        const conciseSource = '好。';
+        const conciseArchive = 'Good.';
+        const conciseShell = buildImmutableShell({ sourceText: conciseSource, archiveText: conciseArchive, });
+        const conciseLedger = buildRealizationObligationLedger({
+          sourceBody: conciseShell.body,
+          archiveBody: conciseArchive,
+          slots: conciseShell.slots,
+          shellDigest: conciseShell.shellDigest,
+        },);
+        const concisePlan: readonly RealizationCandidatePlan[] = [
+          { ordinal: 0, modelId: 'qwen3.6-flash' as never, priority: 0, },
+        ];
+        const conciseManifest = manifestFor({
+          ledger: conciseLedger,
+          shell: conciseShell,
+          archiveBody: conciseArchive,
+          candidatePlan: concisePlan,
+        },);
+        const conciseSlot = conciseShell.slots[0]?.key ?? '';
+        const conciseResponse: RealizationAuthorResponse = {
+          slots: [{ slotKey: conciseSlot, text: conciseArchive, },],
+          realization: [{
+            obligationId: conciseLedger.obligations[0]?.id ?? '',
+            targetAnchors: [anchor({ slotKey: conciseSlot, text: conciseArchive, quote: conciseArchive, }),],
+          },],
+        };
+        expect(admitRealizationAuthorResponse({
+          response: conciseResponse,
+          shell: conciseShell,
+          ledger: conciseLedger,
+          manifest: conciseManifest,
+          expectedManifestDigest: conciseManifest.manifestDigest,
+          candidateOrdinal: 0,
+          sourceText: conciseSource,
+          archiveText: conciseArchive,
+          sourcePictures: [],
+        },).document,).toContain(conciseArchive,);
+      },
+    },),
+    it({
+      name: 'keeps private fallback when all verifier ballots are absent',
+      fn: async () => {
+        const pair = admittedPair();
+        const selected = selectRealizationCandidate({
+          candidates: [pair.first, pair.second,],
+          ballots: [],
+          manifest: pair.manifest,
+          expectedManifestDigest: pair.manifest.manifestDigest,
+          ledger: pair.ledger,
+          shell: pair.shell,
+          sourceText: SOURCE,
+          archiveText: ARCHIVE,
+          sourcePictures: [],
+        },);
+        expect(selected.candidate.candidateId,).toBe(pair.first.candidateId,);
         expect(selected.evidenceFloorMet,).toBe(false,);
         expect(selected.abstainingVerifierModelIds,).toEqual(['kimi-k3', 'minimax-m3', 'qwen3.8-flash',],);
       },

@@ -27,13 +27,18 @@ import {
 
 //region Primitive guards
 
+/** Sentinel distinguishing non-record verifier values without nullish union. */
+const VERIFIER_RECORD_ABSENT: unique symbol = Symbol('realization verifier record absent',);
+
 /**
  * Reads unknown object without unsafe property access.
  */
-function asRecord(value: unknown,): Readonly<Record<string, unknown>> | undefined {
-  return ((typeof value) === 'object') && (value !== null)
-    ? value as Readonly<Record<string, unknown>>
-    : undefined;
+function asRecord(
+  value: unknown,
+): Readonly<Record<string, unknown>> | typeof VERIFIER_RECORD_ABSENT {
+  if (((typeof value) !== 'object') || (value === null))
+    return VERIFIER_RECORD_ABSENT;
+  return Object.fromEntries(Object.entries(value,),);
 }
 
 /**
@@ -69,7 +74,7 @@ function isGlobalCriterion(value: unknown,): value is RealizationGlobalCriterion
  */
 function isTargetAnchor(value: unknown,): value is RealizationTargetAnchor {
   const record = asRecord(value,);
-  return (record !== undefined)
+  return (record !== VERIFIER_RECORD_ABSENT)
     && exactKeys({
       value: record,
       expected: [
@@ -93,7 +98,7 @@ function isTargetAnchor(value: unknown,): value is RealizationTargetAnchor {
  */
 function isObligationStatus(value: unknown,): value is RealizationObligationStatus {
   const record = asRecord(value,);
-  return (record !== undefined)
+  return (record !== VERIFIER_RECORD_ABSENT)
     && exactKeys({
       value: record,
       expected: [
@@ -105,7 +110,9 @@ function isObligationStatus(value: unknown,): value is RealizationObligationStat
     })
     && ((typeof record.obligationId) === 'string')
     && ((typeof record.obligationEvidenceDigest) === 'string')
-    && (record.obligationEvidenceDigest.length === 64)
+    && (record.obligationEvidenceDigest
+      .length
+      === 64)
     && ((record.status === 'preserved') || (record.status === 'defect'))
     && Array.isArray(record.verifiedTargetAnchors,)
     && (record.verifiedTargetAnchors
@@ -120,7 +127,7 @@ function isObligationStatus(value: unknown,): value is RealizationObligationStat
  */
 function isGlobalStatus(value: unknown,): value is RealizationGlobalStatus {
   const record = asRecord(value,);
-  return (record !== undefined)
+  return (record !== VERIFIER_RECORD_ABSENT)
     && exactKeys({
       value: record,
       expected: [
@@ -185,7 +192,7 @@ function isGlobalFinding(value: Readonly<Record<string, unknown>>,): value is Re
  */
 function isFinding(value: unknown,): value is RealizationFinding {
   const record = asRecord(value,);
-  return (record !== undefined) && (isObligationFinding(record,) || isGlobalFinding(record,));
+  return (record !== VERIFIER_RECORD_ABSENT) && (isObligationFinding(record,) || isGlobalFinding(record,));
 }
 
 /**
@@ -193,7 +200,7 @@ function isFinding(value: unknown,): value is RealizationFinding {
  */
 function isCandidateVerification(value: unknown,): value is RealizationCandidateVerification {
   const record = asRecord(value,);
-  return (record !== undefined)
+  return (record !== VERIFIER_RECORD_ABSENT)
     && exactKeys({
       value: record,
       expected: [
@@ -253,7 +260,7 @@ export function realizationVerifierResponseGuard({
     throw new Error('realization verifier guard manifest identity repeats');
   return function isRealizationVerifierResponse(value: unknown,): value is RealizationVerifierResponse {
     const record = asRecord(value,);
-    if ((record === undefined)
+    if ((record === VERIFIER_RECORD_ABSENT)
       || (!exactKeys({
         value: record,
         expected: ['candidates',],

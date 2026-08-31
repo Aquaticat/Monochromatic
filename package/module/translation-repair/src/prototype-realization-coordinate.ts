@@ -20,19 +20,22 @@ export const CLAUSE_TERMINALS: ReadonlySet<string> = new Set([
  * Normalizes CRLF and CR without regex or repeated accumulator rebuilding.
  */
 export function normalizeRealizationLineEndings({ text, }: { readonly text: string; }): string {
-  const output: string[] = [];
-  let cursor = 0;
-  while (cursor < text.length) {
-    const character = text[cursor];
-    if (character !== '\r') {
-      if (character !== undefined)
-        output.push(character,);
-      cursor += 1;
-      continue;
+  const output = (function collectNormalizedUnits(): readonly string[] {
+    const units: string[] = [];
+    let cursor = 0;
+    while (cursor < text.length) {
+      const character = text[cursor];
+      if (character !== '\r') {
+        if (character !== undefined)
+          units.push(character,);
+        cursor += 1;
+        continue;
+      }
+      units.push('\n',);
+      cursor += text[cursor + 1] === '\n' ? 2 : 1;
     }
-    output.push('\n',);
-    cursor += text[cursor + 1] === '\n' ? 2 : 1;
-  }
+    return units;
+  })();
   return output.join('',);
 }
 

@@ -6,10 +6,8 @@ import {
   assertRealizationCandidateSetMatchesManifest,
   assertRealizationManifest,
 } from './prototype-realization-manifest.ts';
-import {
-  admitRealizationVerifierResponse,
-  assertRealizedCandidateBinding,
-} from './prototype-realization-verifier-admission.ts';
+import { assertRealizedCandidateBinding, } from './prototype-realization-candidate-binding.ts';
+import { admitRealizationVerifierResponse, } from './prototype-realization-verifier-admission.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 import {
   MAX_REALIZATION_CANDIDATES,
@@ -22,10 +20,14 @@ import {
   type RealizedCandidate,
 } from './prototype-realization-model.ts';
 
-/** Logger root for private calibration ballot abstention. */
+/**
+ * Logger root for private calibration ballot abstention.
+ */
 const l = tagged({ tag: 'translation-repair-realization', },);
 
-/** Revalidates structurally typed ballot before it can vote. */
+/**
+ * Revalidates structurally typed ballot before it can vote.
+ */
 function ballotIsAdmitted({
   ballot,
   ledger,
@@ -144,16 +146,28 @@ export function selectRealizationCandidate({
   const aliasesAreOpaque = candidateIds.every(function opaque(candidateId,) {
     const prefix = 'candidate-';
     const suffix = candidateId.slice(prefix.length,);
+    const characters = Array.from(
+      { length: suffix.length, },
+      function characterAt(
+        _value,
+        index,
+      ) {
+      return suffix.charAt(index,);
+    },
+    );
     return candidateId.startsWith(prefix,)
       && (suffix.length === 16)
-      && [...suffix,].every(function hexadecimal(character,) {
+      && characters.every(function hexadecimal(character,) {
         return ((character >= '0') && (character <= '9'))
           || ((character >= 'a') && (character <= 'f'));
       },);
   },);
   if ((new Set(candidateIds,).size !== candidateIds.length) || (!aliasesAreOpaque))
     throw new Error('realization selection candidate alias differs');
-  assertRealizationCandidateSetMatchesManifest({ candidates, manifest, });
+  assertRealizationCandidateSetMatchesManifest({
+    candidates,
+    manifest,
+  });
   for (const candidate of candidates) {
     assertRealizedCandidateBinding({
       candidate,
@@ -189,14 +203,17 @@ export function selectRealizationCandidate({
   const duplicateIdentities = plannedIdentities.filter(function duplicated(modelId,) {
     return plannedBallots.filter(function sameIdentity(ballot,) {
       return ballot.verifierModelId === modelId;
-    },).length > 1;
+    },)
+      .length
+      > 1;
   },);
   duplicateIdentities.forEach(function logDuplicate(modelId,) {
     l.debug(`realization ballot abstains after duplicate verifier identity: ${modelId}`,);
   },);
   plannedBallots.filter(function stale(ballot,) {
     return ballot.manifestDigest !== manifestDigest;
-  },).forEach(function logStale(ballot,) {
+  },)
+    .forEach(function logStale(ballot,) {
     l.debug(`realization ballot abstains after stale manifest: ${ballot.verifierModelId}`,);
   },);
   const validBallots = plannedBallots

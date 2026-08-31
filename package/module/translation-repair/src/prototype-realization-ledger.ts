@@ -47,21 +47,31 @@ function clausesForSlot({
     slot.endOffset,
   ) !== slot.source)
     throw new Error(`realization source slot ${slot.key} differs from normalized body`);
-  const boundaries: number[] = [];
-  let cursor = slot.startOffset;
-  while (cursor < slot.endOffset) {
-    const character = sourceBody[cursor];
-    cursor += 1;
-    if ((character !== undefined) && CLAUSE_TERMINALS.has(character,))
-      boundaries.push(cursor,);
-  }
-  if (boundaries.at(-1,) !== slot.endOffset)
-    boundaries.push(slot.endOffset,);
+  const collectedBoundaries = (function collectBoundaries(): readonly number[] {
+    const held: number[] = [];
+    let cursor = slot.startOffset;
+    while (cursor < slot.endOffset) {
+      const character = sourceBody[cursor];
+      cursor += 1;
+      if ((character !== undefined) && CLAUSE_TERMINALS.has(character,))
+        held.push(cursor,);
+    }
+    return held;
+  })();
+  const boundaries = collectedBoundaries.at(-1,) === slot.endOffset
+    ? collectedBoundaries
+    : [
+      ...collectedBoundaries,
+      slot.endOffset,
+    ];
   const ranges = boundaries.map(function range(
     boundary,
     index,
   ) {
-    const priorBoundary = index === 0 ? slot.startOffset : boundaries[index - 1] ?? slot.startOffset;
+    const previousBoundary = boundaries[index - 1];
+    const priorBoundary = (index === 0) || (previousBoundary === undefined)
+      ? slot.startOffset
+      : previousBoundary;
     const startOffset = trimStart({
       text: sourceBody,
       startOffset: priorBoundary,

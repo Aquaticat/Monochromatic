@@ -98,7 +98,8 @@ export function admitRealizationAuthorResponse({
     archiveBody: archiveText,
     expectedManifestDigest,
   },);
-  const plan = manifest.candidatePlan.find(function planned(value,) { return value.ordinal === candidateOrdinal; },);
+  const plan = manifest.candidatePlan
+    .find(function planned(value,) { return value.ordinal === candidateOrdinal; },);
   if (plan === undefined)
     throw new Error('realization author candidate ordinal is not manifested');
   const guard = realizationAuthorResponseGuard({
@@ -141,11 +142,17 @@ export function admitRealizationAuthorResponse({
         slots,
         obligation,
       });
-    const canonicalAnchors = row.targetAnchors.toSorted(function location(left, right,) {
-      return left.slotKey.localeCompare(right.slotKey,)
+    const canonicalAnchors = row.targetAnchors
+      .toSorted(function location(
+        left,
+        right,
+      ) {
+      return left.slotKey
+        .localeCompare(right.slotKey,)
         || (left.startOffset - right.startOffset)
         || (left.endOffset - right.endOffset)
-        || left.digest.localeCompare(right.digest,);
+        || left.digest
+        .localeCompare(right.digest,);
     },);
     const anchorKeys = canonicalAnchors
       .map(function key(anchor,) {
@@ -203,8 +210,12 @@ export function admitRealizationAuthorResponse({
     sourcePictures,
   },);
   const documentDigest = hashContent({ content: document, });
-  const slotDigest = hashContent({ content: JSON.stringify(shell.slots.map(function binding(slot,) {
-    return [slot.key, slots[slot.key],];
+  const slotDigest = hashContent({ content: JSON.stringify(shell.slots
+    .map(function binding(slot,) {
+    return [
+      slot.key,
+      slots[slot.key],
+    ];
   },),), });
   const realizationDigest = hashContent({ content: JSON.stringify(ledger.obligations
     .map(function binding(obligation,) {

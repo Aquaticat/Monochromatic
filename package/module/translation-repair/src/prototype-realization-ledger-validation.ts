@@ -4,6 +4,7 @@ import { hashContent, } from './document-node.ts';
 import {
   assertObligationGrammar,
   assertSourceSpan,
+  SOURCE_SLOT_ABSENT,
   sourceSlotForSpan,
 } from './prototype-realization-ledger-grammar.ts';
 import { realizationObligationEvidenceDigest, } from './prototype-realization-obligation.ts';
@@ -81,15 +82,13 @@ function assertClauseCoverage({
       .filter(function clause(obligation,) { return obligation.kind === 'clause'; },)
       .flatMap(function owned(obligation,): readonly RealizationSourceSpan[] {
         const span = obligation.sourceSpans[0];
-        return (span !== undefined)
-          && (sourceSlotForSpan({
-            span,
-            sourceSlots,
-          })
-            ?.slotKey
-            === slot.slotKey)
-          ? [span,]
-          : [];
+        if (span === undefined)
+          return [];
+        const sourceSlot = sourceSlotForSpan({
+          span,
+          sourceSlots,
+        });
+        return (sourceSlot !== SOURCE_SLOT_ABSENT) && (sourceSlot.slotKey === slot.slotKey) ? [span,] : [];
       },)
       .toSorted(function position(
         left,
@@ -116,18 +115,29 @@ function assertClauseCoverage({
   }
 }
 
-/** Proves ledger source slots and shell digest match supplied immutable shell. */
-export function assertRealizationLedgerBindsShell({ ledger, shell, archiveBody, }: {
+/**
+ * Proves ledger source slots and shell digest match supplied immutable shell.
+ */
+export function assertRealizationLedgerBindsShell({
+  ledger,
+  shell,
+  archiveBody,
+}: {
   readonly ledger: RealizationObligationLedger;
   readonly shell: ImmutableShell;
   readonly archiveBody: string;
 }): void {
-  const expected = shell.slots.map(function sourceSlot(slot,) {
+  const expected = shell.slots
+    .map(function sourceSlot(slot,) {
     return {
       slotKey: slot.key,
       startOffset: slot.startOffset,
       endOffset: slot.endOffset,
-      digest: hashContent({ content: shell.body.slice(slot.startOffset, slot.endOffset,), }),
+      digest: hashContent({ content: shell.body
+        .slice(
+          slot.startOffset,
+          slot.endOffset,
+        ), }),
     };
   },);
   if ((ledger.shellDigest !== shell.shellDigest)

@@ -175,13 +175,18 @@ export function realizationAuthorResponseFormat({
 
 //region Structural guards
 
+/** Sentinel distinguishing non-record wire values without nullish union. */
+const AUTHOR_RECORD_ABSENT: unique symbol = Symbol('realization author record absent',);
+
 /**
  * Reads unknown value as readonly record without widening to any.
  */
-function recordValue({ value, }: { readonly value: unknown; }): Readonly<Record<string, unknown>> | undefined {
-  return ((typeof value) === 'object') && (value !== null)
-    ? value as Readonly<Record<string, unknown>>
-    : undefined;
+function recordValue({ value, }: {
+  readonly value: unknown;
+}): Readonly<Record<string, unknown>> | typeof AUTHOR_RECORD_ABSENT {
+  if (((typeof value) !== 'object') || (value === null))
+    return AUTHOR_RECORD_ABSENT;
+  return Object.fromEntries(Object.entries(value,),);
 }
 
 /**
@@ -203,7 +208,7 @@ function hasExactKeys({
  */
 function isTargetAnchor(value: unknown,): value is RealizationTargetAnchor {
   const record = recordValue({ value, });
-  return (record !== undefined)
+  return (record !== AUTHOR_RECORD_ABSENT)
     && hasExactKeys({
       value: record,
       expected: [
@@ -227,7 +232,7 @@ function isTargetAnchor(value: unknown,): value is RealizationTargetAnchor {
  */
 function isRealizationClaim(value: unknown,): value is RealizationClaim {
   const record = recordValue({ value, });
-  return (record !== undefined)
+  return (record !== AUTHOR_RECORD_ABSENT)
     && hasExactKeys({
       value: record,
       expected: [
@@ -266,7 +271,7 @@ export function realizationAuthorResponseGuard({
     .map(function id(obligation,) { return obligation.id; },);
   return function isRealizationAuthorResponse(value: unknown,): value is RealizationAuthorResponse {
     const record = recordValue({ value, });
-    if ((record === undefined)
+    if ((record === AUTHOR_RECORD_ABSENT)
       || (!hasExactKeys({
         value: record,
         expected: [
@@ -285,10 +290,10 @@ export function realizationAuthorResponseGuard({
       return false;
     const slotRows = record.slots
       .map(recordValueFromUnknown,);
-    if (slotRows.some(function absent(row,) { return row === undefined; }))
+    if (slotRows.some(function absent(row,) { return row === AUTHOR_RECORD_ABSENT; }))
       return false;
     const slotKeys = slotRows.flatMap(function slot(row,): readonly string[] {
-      if ((row === undefined)
+      if ((row === AUTHOR_RECORD_ABSENT)
         || (!hasExactKeys({
           value: row,
           expected: [
@@ -324,7 +329,9 @@ export function realizationAuthorResponseGuard({
 /**
  * Adapts unknown value for array map without destructuring ambiguity.
  */
-function recordValueFromUnknown(value: unknown,): Readonly<Record<string, unknown>> | undefined {
+function recordValueFromUnknown(
+  value: unknown,
+): Readonly<Record<string, unknown>> | typeof AUTHOR_RECORD_ABSENT {
   return recordValue({ value, });
 }
 
