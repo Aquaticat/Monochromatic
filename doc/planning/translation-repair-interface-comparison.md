@@ -2572,7 +2572,8 @@ Candidate I must not be retried,
 repaired,
 or integrated.
 
-The next finite design must reduce load-bearing model review from the 134-item mixed structural-and-language ledger.
+The next finite design must reduce load-bearing model review from 134 clause-and-relation obligations plus ten global
+criteria.
 Deterministic admission already owns syntax,
 structure,
 links,

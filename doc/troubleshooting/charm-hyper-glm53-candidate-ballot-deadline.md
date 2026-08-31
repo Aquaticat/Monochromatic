@@ -237,7 +237,7 @@ Maximum output metadata does not establish time-to-ballot.
 ### Depending on compact wire output alone
 
 The required ballot was a compact pair of status strings plus bounded findings.
-The prompt still required review of a 134-item mixed obligation ledger.
+The prompt still required review of 134 clause-and-relation obligations plus ten global criteria.
 Small expected JSON did not make the reasoning workload small.
 
 ### Repeating either request with a longer deadline
