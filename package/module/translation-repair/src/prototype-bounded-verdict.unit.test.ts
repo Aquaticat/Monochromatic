@@ -153,6 +153,9 @@ const BOUNDED_LIFECYCLE_ARCHIVE = `---\nname: Cat\n---\n# Cat\n\nThe cat rests. 
 /** Page image payload attached to every node. */
 const BOUNDED_DATA_URI = 'data:image/webp;base64,AA==';
 
+/** Delay proving abort propagation waits for slower siblings. */
+const ABORT_SIBLING_SETTLEMENT_DELAY_MS = 500;
+
 /** Page image inventory and exact payload. */
 const BOUNDED_LIFECYCLE_MEDIA = [{
   assetName: 'fixture.webp',
@@ -543,6 +546,69 @@ function scriptedClient({
     quotas: async () => {
       await Promise.resolve();
       throw new Error('bounded runtime quotas unused');
+    },
+  };
+}
+
+/**
+ * Builds client whose designated aborting node settles before sibling nodes.
+ *
+ * @returns Scripted client proving runtime awaits complete wave settlement
+ */
+function delayedAbortClient({
+  fixture,
+  responseFor,
+  controller,
+  reason,
+  wave,
+}: {
+  readonly fixture: BoundedLifecycleFixture;
+  readonly responseFor: ReturnType<typeof boundedLifecycleResponseForRequest>;
+  readonly controller: AbortController;
+  readonly reason: unknown;
+  readonly wave: 'author' | 'verifier';
+}): SyntheticClient {
+  const authorBarrier = Promise.withResolvers<undefined>();
+  const verifierBarrier = Promise.withResolvers<undefined>();
+  const arrivals = { author: 0, verifier: 0, };
+  return {
+    chatText: async () => {
+      await Promise.resolve();
+      throw new Error('bounded delayed-abort chatText unused');
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      const schemaName = request.responseFormat?.json_schema.name;
+      const author = schemaName === 'immutable_shell_slots';
+      const barrier = author ? authorBarrier : verifierBarrier;
+      if (author) {
+        arrivals.author += 1;
+        if (arrivals.author === fixture.manifest.candidatePlan.length)
+          barrier.resolve(undefined,);
+      }
+      else {
+        arrivals.verifier += 1;
+        if (arrivals.verifier === fixture.manifest.verifierModelIds.length)
+          barrier.resolve(undefined,);
+      }
+      await barrier.promise;
+      const designatedModelId = author
+        ? fixture.manifest.candidatePlan[0]?.modelId
+        : fixture.manifest.verifierModelIds[0];
+      const designatedWave = (wave === 'author') === author;
+      if (designatedWave && (request.modelId === designatedModelId))
+        controller.abort(reason,);
+      else if (designatedWave)
+        await wait(ABORT_SIBLING_SETTLEMENT_DELAY_MS,);
+      const value = responseFor(request,);
+      if (!request.validate(value,))
+        throw new Error('bounded delayed-abort fixture failed guard');
+      return { kind: 'ok', value, rawText: JSON.stringify(value,), };
+    },
+    quotas: async () => {
+      await Promise.resolve();
+      throw new Error('bounded delayed-abort quotas unused');
     },
   };
 }
@@ -1744,19 +1810,12 @@ await describe({
         const responseFor = boundedLifecycleResponseForRequest({ fixture, });
         const controller = new AbortController();
         const reason = new Error('bounded caller abort identity');
-        let authorCalls = 0;
-        const client = scriptedClient({
-          responseFor: function aborting(request,) {
-            if (request.responseFormat?.json_schema.name === 'immutable_shell_slots') {
-              authorCalls += 1;
-              if (authorCalls === fixture.manifest.candidatePlan.length)
-                controller.abort(reason,);
-            }
-            return responseFor(request,);
-          },
-          calls: [],
-          prompts: [],
-          peak: { value: 0, inFlight: 0, },
+        const client = delayedAbortClient({
+          fixture,
+          responseFor,
+          controller,
+          reason,
+          wave: 'author',
         },);
         const boundClient = bindBoundedClient({
           manifest: fixture.manifest,
@@ -1806,19 +1865,12 @@ await describe({
         const responseFor = boundedLifecycleResponseForRequest({ fixture, });
         const controller = new AbortController();
         const reason = new Error('bounded verifier abort identity');
-        let verifierCalls = 0;
-        const client = scriptedClient({
-          responseFor: function aborting(request,) {
-            if (request.responseFormat?.json_schema.name === 'bounded_verdict_ballot') {
-              verifierCalls += 1;
-              if (verifierCalls === fixture.manifest.verifierModelIds.length)
-                controller.abort(reason,);
-            }
-            return responseFor(request,);
-          },
-          calls: [],
-          prompts: [],
-          peak: { value: 0, inFlight: 0, },
+        const client = delayedAbortClient({
+          fixture,
+          responseFor,
+          controller,
+          reason,
+          wave: 'verifier',
         },);
         const boundClient = bindBoundedClient({
           manifest: fixture.manifest,
