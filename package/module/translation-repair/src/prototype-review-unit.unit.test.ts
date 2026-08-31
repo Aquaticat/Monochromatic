@@ -636,6 +636,26 @@ await describe({
         const [relation,] = fixture.reviewPlan.relations;
         if (relation === undefined)
           throw new Error('review unit relation fixture absent');
+        for (const plan of [
+          {
+            ...fixture.reviewPlan,
+            frontMatterStructureDigest: digest({ text: 'stale-structure', }),
+          },
+          {
+            ...fixture.reviewPlan,
+            frontMatterScalarDigest: digest({ text: 'stale-scalar', }),
+          },
+        ]) {
+          expect(() => assertReviewUnitPlan({
+            plan,
+            ledger: fixture.ledger,
+            shell: fixture.shell,
+            sourceText: fixture.source,
+            sourceBody: fixture.shell.body,
+            archiveBody: fixture.archive,
+            ledgerDigest: fixture.manifest.ledgerDigest,
+          })).toThrow();
+        }
         expect(() => assertReviewUnitPlan({
           plan: {
             ...fixture.reviewPlan,
@@ -675,6 +695,13 @@ await describe({
           source: nonfiniteSource,
           archive: nonfiniteArchive,
         })).toThrow();
+        const supportedScalars = '\nemptyMap: {}\nemptyList: []\nenabled: true\nunset: null\ncount: 42\nratio: 1.5';
+        const supportedSource = SOURCE.replace('name: 猫', `name: 猫${supportedScalars}`,);
+        const supportedArchive = ARCHIVE.replace('name: Cat', `name: Cat${supportedScalars}`,);
+        expect(() => createFixture({
+          source: supportedSource,
+          archive: supportedArchive,
+        })).not.toThrow();
       },
     }),
     it({
@@ -688,6 +715,46 @@ await describe({
         expect(() => assertReviewUnitFrontMatterSlotKeys({
           subjects: [subject,],
           bodySlotKeys: [subject.targetSlotKey,],
+        })).toThrow();
+      },
+    }),
+    it({
+      name: 'invokes collision guard from review-plan compiler',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = createFixture();
+        const [firstSlot, ...otherSlots] = fixture.shell.slots;
+        if (firstSlot === undefined)
+          throw new Error('review unit compiler collision slot absent');
+        const oldKey = firstSlot.key;
+        const collisionKey = fixture.reviewPlan.frontMatterSubjects[0]?.targetSlotKey;
+        if (collisionKey === undefined)
+          throw new Error('review unit compiler collision key absent');
+        const shell = {
+          ...fixture.shell,
+          slots: [{ ...firstSlot, key: collisionKey, }, ...otherSlots,],
+        };
+        const ledger = {
+          ...fixture.ledger,
+          sourceSlots: fixture.ledger.sourceSlots.map(function slot(value,) {
+            return value.slotKey === oldKey ? { ...value, slotKey: collisionKey, } : value;
+          },),
+          obligations: fixture.ledger.obligations.map(function obligation(value,) {
+            return {
+              ...value,
+              allowedTargetSlotKeys: value.allowedTargetSlotKeys.map(function key(item,) {
+                return item === oldKey ? collisionKey : item;
+              },),
+            };
+          },),
+        };
+        expect(() => createReviewUnitPlan({
+          ledger,
+          shell,
+          sourceText: fixture.source,
+          sourceBody: shell.body,
+          archiveBody: fixture.archive,
+          ledgerDigest: digest({ text: JSON.stringify(ledger,), }),
         })).toThrow();
       },
     }),
