@@ -208,6 +208,55 @@ status,
 finish reason,
 and usage without raw provider text.
 
+### Kimi low-effort Anthropic acceptance probe
+
+Current Anthropic Messages documentation places effort at
+`output_config.effort`
+and includes `low` in its allowed values.
+Hyper documents acceptance of standard Anthropic parameters,
+and its live Kimi K3 catalog row advertises low,
+high,
+and max effort with max default.
+Kimi's own documentation uses top-level `reasoning_effort` on OpenAI Chat Completions,
+so Anthropic-route translation still required direct evidence.
+
+One bounded Hyper Messages request used:
+
+- Kimi K3;
+- one synthetic 1 by 1 image;
+- one forced tool with one enum-valued field;
+- `output_config.effort: low`;
+- `max_tokens: 16000`;
+- no retry.
+
+Hyper returned HTTP 200 after 2,955 milliseconds.
+Stream metadata recorded one thinking block,
+one tool-use block,
+214 reasoning characters,
+a parseable expected tool verdict,
+`tool_use` stop reason,
+and 96 output tokens.
+This proves Hyper's Anthropic route accepted exact image,
+forced-tool,
+and low-effort field combination for Kimi K3.
+It does not prove Hyper forwarded effort upstream or that low effort reduces reasoning on Candidate I workload.
+Prompt uniqueness forbids sending same model and canonical substantive prompt twice for default-versus-low comparison;
+effectiveness therefore remains one-shot Candidate I calibration evidence.
+
+Initial local launch lacked credential injection because it ran outside configured project worktree.
+Its failure digest exactly matched pre-dispatch absent-key error and made no provider request.
+Relaunch from configured worktree made one provider request.
+Private metadata-only evidence is retained at
+`~/temp/agent/probe-hyper-kimi-k3-anthropic-low-effort-20260831.json`.
+Script SHA-256 is
+`81e55286abd0ad23b458c59dbc67d70aa7a54c11a4353f4669d6e36e8dda8c47`.
+Metadata-file SHA-256 is
+`1c5bfe888daabb4e93cac96e7895ec409ae4d1b4f32e60e636b9d95728d651f9`.
+Recorded request-body SHA-256 is
+`e369c5782534c3be93a7a8daed599b58e204ef6b3ab3e51a29e5073c8f56401f`;
+response-body SHA-256 is
+`e07e7a670aeece38562025070ef890c4c5199a51eac1e7b090032d917e47618c`.
+
 ## Verified workarounds
 
 ### Pin official model tokenizer artifacts

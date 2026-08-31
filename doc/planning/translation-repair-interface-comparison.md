@@ -2311,10 +2311,211 @@ but current all-candidate response interface did not yield one admissible ballot
 Raw-wire arithmetic reserve also failed to predict Kimi's reasoning-inclusive truncation.
 Private artifacts remain at
 `~/temp/agent/prototype-Carena-H-bounded-verdict-20260831/`.
+Complete source,
+archive,
+image,
+and both-candidate review record is
+`complete-page-review.json` with SHA-256
+`efe09e54068c7aa9b45557818119b4fb88b53cf6b363446857ace4f3b322c646`.
 
 The user has authorized Hyper and Synthetic calls without another permission checkpoint.
 Advisor review preceded live calibration as engineering evidence ordering,
 not as an authorization gate.
+
+## Candidate I plan: candidate-scoped compact ballots
+
+Candidate I keeps immutable-shell whole-document authorship but replaces all-candidate verifier matrices.
+Its fixed graph manifests:
+
+1.  one Qwen3.8-27B author and one MiniMax M3 author in concurrent first wave;
+2.  one Qwen,
+    one Kimi,
+    and one MiniMax verifier for each author ordinal in concurrent second wave;
+3.  deterministic selection and private publication after every dispatched sibling settles.
+
+Maximum payload count is eight in two provider waves.
+An unusable author writes durable terminal state and deterministically skips its three candidate-scoped verifier nodes.
+It does not cause replacement author,
+retry,
+or generated verifier work.
+All nodes remain Hyper-only and receive every page-referenced image.
+One model and one canonical substantive prompt still produce at most one provider payload.
+Canonical verifier prompt includes manifested candidate ordinal,
+opaque candidate id,
+and candidate digest;
+ordinal keeps prompts distinct even if two candidate documents and digests are byte-identical.
+
+Every verifier receives one complete anonymous candidate,
+complete source,
+archive,
+immutable shell,
+closed-world obligation ledger,
+and all images.
+Its response keeps complete manifest coverage in compact strings:
+
+```ts
+export type CandidateIVerification = {
+  readonly candidateId: CandidateId;
+  readonly candidateDigest: string;
+  readonly obligationStatuses: string;
+  readonly globalStatuses: string;
+  readonly overflow: boolean;
+  readonly findings: readonly CandidateHFinding[];
+};
+
+export type CandidateIVerifierProfile = {
+  readonly modelId: ModelIdentity;
+  readonly outputEffort?: 'low';
+};
+```
+
+`obligationStatuses` has exactly one `p` or `d` code per manifested obligation.
+`globalStatuses` has exactly one `c` or `d` code per global criterion.
+Runtime expands strings into durable manifest-indexed audit rows before selection.
+Candidate and digest binding,
+finding anchors,
+duplicate-member refusal,
+and Candidate H overflow algebra remain exact.
+A malformed status length or character abstains atomically and records privacy-safe guard category,
+not raw provider text.
+
+For Qwen-authored candidate,
+clean Kimi and MiniMax ballots satisfy two-family nonself evidence floor.
+For MiniMax-authored candidate,
+clean Qwen and Kimi ballots satisfy same floor.
+Clean self-model ballot never contributes to floor;
+a valid self-model defect or overflow still vetoes candidate.
+No admitted dissent is allowed.
+Private fixed-priority fallback may preserve complete candidate below floor,
+but cannot claim production eligibility.
+
+Kimi verifier profiles contain `outputEffort: 'low'`;
+Qwen and MiniMax profiles omit `outputEffort`.
+Candidate I-bound Hyper client converts only Kimi profile to exact Anthropic
+`output_config.effort: low`,
+persists requested profile,
+and never retries without it.
+Unsupported,
+truncated,
+or malformed output abstains without default-effort fallback.
+Silent provider disregard is not observable from HTTP acceptance and remains calibration risk.
+A bounded Hyper acceptance probe sent one image and one forced tool with low effort.
+It returned HTTP 200,
+`tool_use`,
+96 output tokens,
+214 reasoning characters,
+and expected parseable verdict after 2,955 milliseconds.
+This proves route combination acceptance only.
+It does not prove lower reasoning on Candidate I workload;
+full calibration remains effectiveness test.
+
+Candidate I intends to move target-language separators out of model authority.
+Immutable shell manifest gains AST-derived boundary atoms for target text adjacent to locked inline syntax.
+For each such relation,
+manifest states exact separator and neighboring syntax roles.
+Prototype compiler must insert separator before candidate hashing;
+verifier input and persisted candidate must use exact post-insertion document.
+It does not trim or normalize arbitrary prose.
+Positive and negative fixtures cover link-to-prose,
+footnote,
+punctuation,
+code,
+URL,
+media,
+and block boundaries.
+This addresses Candidate H's shared footnote boundary defect without editing model prose.
+
+Candidate I replaces coarse caller-guard detail with finite privacy-safe union:
+
+```ts
+export type CandidateIGuardFailure =
+  | 'key-set'
+  | 'candidate-binding'
+  | 'status-length'
+  | 'status-alphabet'
+  | 'finding-shape'
+  | 'anchor'
+  | 'overflow'
+  | 'raw-duplicate'
+  | 'json-syntax';
+```
+
+Every caller-guard rejection records one category without retaining reviewer wording.
+Transport,
+abort,
+truncation,
+and indeterminate-transmission failures remain separate operational classes.
+Finish reason,
+usage,
+effort profile,
+request and response digests,
+and attempt count become durable node evidence.
+
+### Candidate I and J comparison
+
+Candidate I uses two authors and six candidate-scoped verifiers.
+
+Pros:
+
+- removes demonstrated Kimi author truncation from producer wave;
+- preserves three verifier families needed for two-family nonself evidence;
+- reduces each ballot from all candidates to one candidate;
+- isolates one malformed candidate response to one ballot;
+- keeps eight-payload,
+  two-wave finite graph.
+
+Cons:
+
+- only two author wordings enter selection;
+- Kimi remains load-bearing verifier;
+- low-effort effectiveness is unproven on full Carena ballot;
+- neither retained Candidate H author passed complete-page publication review.
+
+Candidate J adds low-effort Kimi as third author and runs same three verifiers for every candidate.
+
+Pros:
+
+- adds one distinct-family complete candidate when Kimi authorship succeeds;
+- preserves same evidence rules and candidate-scoped ballots;
+- tests low effort in authorship as well as verification.
+
+Cons:
+
+- adds demonstrated truncating producer back before it has qualifying output;
+- expands graph to twelve payloads without adding verifier family;
+- increases verifier input and audit volume before core Kimi ballot path is proven.
+
+Ranking:
+Candidate I > Candidate J.
+Candidate I ranks above Candidate J because it tests load-bearing Kimi verifier path while excluding known Kimi author failure.
+Candidate J becomes eligible only after low-effort Kimi independently returns and passes complete-page author review.
+
+Candidate I is next private prototype,
+not production selection.
+It inherits Candidate H's zero-retry and pre-dispatch exchange cap,
+Hyper-only provider binding,
+indeterminate-transmission quarantine,
+spent-node restart,
+process lease,
+exact caller-abort identity after sibling settlement,
+prompt claims,
+and complete-candidate no-effect publication guards.
+Before live calibration,
+controls and GFP must cover compact status length and alphabet,
+manifest expansion,
+overflow algebra,
+self-certification,
+family floor,
+boundary atoms and post-insertion hashes,
+exact diagnostic categories,
+duplicate JSON members,
+image carriage,
+prompt claims,
+restart,
+lease,
+provider binding,
+indeterminate transmission,
+and all-sibling abort settlement.
 
 ## Required lifecycle migration
 
