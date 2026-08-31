@@ -1986,6 +1986,34 @@ and exact concurrent abort cleanup.
 Maximum compact schema witnesses and realistic complete Carena author outputs must be tokenized under every planned model tokenizer available;
 unavailable tokenizers remain explicit roster blockers rather than guessed equivalence.
 
+### Candidate H envelope disposition
+
+Candidate H is rejected before implementation and spend.
+Its slot-only author uses the immutable-shell response envelope from Candidates D and E:
+23 required slot strings,
+each permitting 20,000 characters.
+A Candidate H-specific compact stress witness was constructed against the schema returned by `slotResponseFormat` as
+`{ slots: Record<SlotKey, string> }`.
+`slotDocumentGuard` accepted the witness.
+It measured 2,760,208 bytes and 2,300,131 tokens under `Qwen/Qwen3.6-27B` tokenizer commit
+`6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`.
+Its SHA-256 is
+`bbd5a9efc8c16d465d784525c8396f2ba1ca467e6a57ff2df110302ef22f46a8`.
+The author response schema itself measured 1,664 bytes.
+These token counts are Qwen3.6-specific because Candidate H has no frozen qualified roster.
+Post-transport presentation rejection cannot enforce the output envelope.
+
+No source-derived prose cap is authorized.
+The five retained complete Qwen pages prove only that those rejected outputs fit their measured lengths;
+they do not prove that a publication-ready candidate cannot require more.
+Because the current Candidate H slot-only author interface fails independently at its author boundary,
+freezing overflow cap `C` or implementing verifier controls cannot make this bounded-verdict design satisfy the project's pre-spend maximum-response gate.
+No Candidate H code or live payload is authorized.
+
+Candidate H contributes one reusable interface idea:
+complete status arrays plus exact overflow algebra can bound defect narration without treating missing findings as clean evidence.
+That idea may be reused only by a successor whose author boundary has a defensible envelope and whose roster contains a completely read acceptable author.
+
 ## Required lifecycle migration
 
 Replacement must remove current terminal-looking outcomes in
