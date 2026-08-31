@@ -2009,8 +2009,8 @@ The five retained complete Qwen pages prove only that those rejected outputs fit
 they do not prove that a publication-ready candidate cannot require more.
 The compact schema-stress failure no longer rejects Candidate H by itself.
 Candidate H code is implemented on the finite-prototype branch,
-but it is not production-selected because targeted lint remains unfinished and it has no qualified author roster.
-Live calibration is an authorized next evidence step after targeted lint.
+but it is not production-selected because it has no qualified author roster and live calibration is unfinished.
+Live calibration is an authorized next evidence step after fresh advisor review.
 
 Candidate H contributes one reusable interface idea:
 complete status arrays plus exact overflow algebra can bound defect narration without treating missing findings as clean evidence.
@@ -2115,7 +2115,7 @@ but they are not by themselves a normal-run architecture rejection.
 This interpretation removes Candidate G and Candidate H envelope-only rejections.
 It does not reverse their independent blockers:
 Candidate G has no qualified author and its four-candidate verifier interface remains unmeasured under the planned model tokenizers;
-Candidate H is implemented but has no qualified author roster and has not completed targeted lint.
+Candidate H is implemented and targeted-lint-clean but has no qualified author roster.
 Live Hyper and Synthetic use is authorized without another permission checkpoint.
 
 Consumer hardening is required first.
@@ -2206,8 +2206,16 @@ Envelope measurement code is committed as `be0c178d6`.
 The fresh package run after that change reports 876 passing suites and no failure lines;
 type lint passes.
 
+Candidate H targeted lint is clean in prototype-branch commit `ebf5a7f7d`:
+18 files checked against 484 Oxlint rules report no warnings or errors,
+type lint passes,
+and the fresh full run reports 876 passing suites and no failure lines.
+The migration also split verifier schema from parsed guard,
+moved lifecycle fixture construction to the dist-importing unit test,
+and preserved exact `IndeterminateTransmission` operational evidence.
+
 The user has authorized Hyper and Synthetic calls without another permission checkpoint.
-Candidate H calibration remains sequenced after Candidate H-specific Oxlint migration and a fresh advisor review so live calls produce interpretable evidence;
+A fresh advisor review immediately precedes Candidate H calibration so live calls produce interpretable evidence;
 this is an engineering evidence order,
 not an authorization gate.
 
