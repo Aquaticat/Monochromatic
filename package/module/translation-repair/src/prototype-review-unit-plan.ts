@@ -3,6 +3,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { hashContent, } from './document-node.ts';
+import { assertReviewUnitFrontMatterSlotKeys, } from './prototype-review-unit-front-matter-slot.ts';
 import { compileReviewUnitFrontMatter, } from './prototype-review-unit-front-matter.ts';
 import { reviewUnitGlobalOwnership, } from './prototype-review-unit-global-ownership.ts';
 import {
@@ -97,12 +98,11 @@ export function createReviewUnitPlan({
     sourceText,
     targetText: `${shell.frontMatter}${shell.body}`,
   },);
-  if (frontMatter.subjects
-    .some(function collision(subject,) {
-    return shell.slots
-      .some(function same(slot,) { return slot.key === subject.targetSlotKey; });
-  },))
-    throw new Error('review unit front matter target slot collides');
+  assertReviewUnitFrontMatterSlotKeys({
+    subjects: frontMatter.subjects,
+    bodySlotKeys: shell.slots
+      .map(function key(slot,) { return slot.key; }),
+  },);
   /**
    * Every source span carried by obligation ledger.
    */
@@ -260,6 +260,7 @@ export function createReviewUnitPlan({
     shellDigest: shell.shellDigest,
     ledgerDigest,
     frontMatterSubjects: frontMatter.subjects,
+    frontMatterStructureDigest: frontMatter.structureDigest,
     frontMatterScalarDigest: frontMatter.scalarDigest,
     sourceEvidence,
     clauses,

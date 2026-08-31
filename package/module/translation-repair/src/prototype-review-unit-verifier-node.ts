@@ -132,6 +132,8 @@ export async function runReviewUnitVerifierNode({
     messages,
     sourcePictures,
   });
+  if (signal.aborted)
+    throw signal.reason;
   if (manifest.verifierPlan[verifierOrdinal]
     ?.modelId
     !== verifierModelId)

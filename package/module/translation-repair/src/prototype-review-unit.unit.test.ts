@@ -17,6 +17,7 @@ import {
   admitReviewUnitAuthorResponse,
   admitReviewUnitResponse,
   assertReviewUnitBinding,
+  assertReviewUnitFrontMatterSlotKeys,
   assertReviewUnitManifest,
   assertReviewUnitPlan,
   bindReviewUnitClient,
@@ -585,6 +586,35 @@ await describe({
         const source = SOURCE.replace('name: 猫', 'name: 猫\nrating: 1',);
         const archive = ARCHIVE.replace('name: Cat', 'name: Cat\nrating: 2',);
         expect(() => createFixture({ source, archive, })).toThrow();
+        const mapSource = SOURCE.replace('name: 猫', 'name: 猫\nempty: {}',);
+        const sequenceArchive = ARCHIVE.replace('name: Cat', 'name: Cat\nempty: []',);
+        expect(() => createFixture({ source: mapSource, archive: sequenceArchive, })).toThrow();
+        const negativeZeroSource = SOURCE.replace('name: 猫', 'name: 猫\nrating: -0',);
+        const zeroArchive = ARCHIVE.replace('name: Cat', 'name: Cat\nrating: 0',);
+        expect(() => createFixture({ source: negativeZeroSource, archive: zeroArchive, })).toThrow();
+        const unsafeSource = SOURCE.replace('name: 猫', 'name: 猫\nrating: 9007199254740993',);
+        const unsafeArchive = ARCHIVE.replace('name: Cat', 'name: Cat\nrating: 9007199254740993',);
+        expect(() => createFixture({ source: unsafeSource, archive: unsafeArchive, })).toThrow();
+        const nonfiniteSource = SOURCE.replace('name: 猫', 'name: 猫\nrating: .nan',);
+        const nonfiniteArchive = ARCHIVE.replace('name: Cat', 'name: Cat\nrating: .nan',);
+        expect(() => createFixture({
+          source: nonfiniteSource,
+          archive: nonfiniteArchive,
+        })).toThrow();
+      },
+    }),
+    it({
+      name: 'refuses synthetic front-matter and body-slot key collision',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = createFixture();
+        const [subject,] = fixture.reviewPlan.frontMatterSubjects;
+        if (subject === undefined)
+          throw new Error('review unit collision subject absent');
+        expect(() => assertReviewUnitFrontMatterSlotKeys({
+          subjects: [subject,],
+          bodySlotKeys: [subject.targetSlotKey,],
+        })).toThrow();
       },
     }),
     it({
@@ -835,6 +865,30 @@ await describe({
             findings: [{ ...visual, imageEvidenceIndexes: [], },],
           },
         })).toThrow();
+        expect(() => ballot({
+          fixture,
+          candidateOrdinal: candidate.candidateOrdinal,
+          verifierOrdinal: 1,
+          response: {
+            ...base,
+            globalStatuses: `d${base.globalStatuses.slice(1,)}`,
+            findings: [{ ...visual, subjectIndex: 0, },],
+          },
+        })).toThrow();
+        expect(() => ballot({
+          fixture,
+          candidateOrdinal: candidate.candidateOrdinal,
+          verifierOrdinal: 1,
+          response: {
+            ...base,
+            globalStatuses: globals,
+            findings: [{
+              ...visual,
+              defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('wrong-meaning',),
+              imageEvidenceIndexes: [],
+            },],
+          },
+        })).toThrow();
       },
     }),
     it({
@@ -961,6 +1015,83 @@ await describe({
           invalidLanguage,
           invalidGlobal,
         ]) {
+          expect(() => ballot({
+            fixture,
+            candidateOrdinal: candidate.candidateOrdinal,
+            verifierOrdinal: 1,
+            response,
+          })).toThrow();
+        }
+      },
+    }),
+    it({
+      name: 'refuses four anchors in every three-anchor scope',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const [candidate,] = fixture.candidates;
+        const [frontMatter,] = fixture.reviewPlan.frontMatterSubjects;
+        const [clause,] = fixture.reviewPlan.clauses;
+        const [slot,] = fixture.reviewPlan.slotGroups;
+        if ((candidate === undefined)
+          || (frontMatter === undefined)
+          || (clause === undefined)
+          || (slot === undefined))
+          throw new Error('review unit anchor cardinality fixture absent');
+        /** Explicitly narrowed candidate captured by local helper. */
+        const boundCandidate: ReviewUnitCandidate = candidate;
+        /** Four disjoint anchors in requested target slot. */
+        function fourAnchors(
+          slotKey: string,
+        ): readonly ReviewUnitFinding['targetAnchors'][number][] {
+          return [
+            anchor({ candidate: boundCandidate, slotKey, startOffset: 0, endOffset: 1, }),
+            anchor({ candidate: boundCandidate, slotKey, startOffset: 1, endOffset: 2, }),
+            anchor({ candidate: boundCandidate, slotKey, startOffset: 2, endOffset: 3, }),
+            anchor({ candidate: boundCandidate, slotKey, startOffset: 3, endOffset: 4, }),
+          ];
+        }
+        const base = cleanResponse({ fixture, candidate, });
+        const frontResponse: ReviewUnitResponse = {
+          ...base,
+          frontMatterStatuses: `d${base.frontMatterStatuses.slice(1,)}`,
+          findings: [{
+            scope: 'fm',
+            subjectIndex: 0,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('wrong-meaning',),
+            sourceEvidenceIndexes: [],
+            imageEvidenceIndexes: [],
+            targetAnchors: fourAnchors(frontMatter.targetSlotKey,),
+          },],
+        };
+        const clauseStatuses = [...base.clauseStatusesBySlot,];
+        const [firstClauseStatuses = '',] = clauseStatuses;
+        clauseStatuses[0] = `d${firstClauseStatuses.slice(1,)}`;
+        const clauseResponse: ReviewUnitResponse = {
+          ...base,
+          clauseStatusesBySlot: clauseStatuses,
+          findings: [{
+            scope: 'c',
+            subjectIndex: clause.subjectIndex,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('wrong-meaning',),
+            sourceEvidenceIndexes: clause.sourceEvidenceIndexes,
+            imageEvidenceIndexes: [],
+            targetAnchors: fourAnchors(clause.slotKey,),
+          },],
+        };
+        const languageResponse: ReviewUnitResponse = {
+          ...base,
+          slotLanguageStatuses: `d${base.slotLanguageStatuses.slice(1,)}`,
+          findings: [{
+            scope: 'sl',
+            subjectIndex: slot.groupIndex,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('grammar-usage',),
+            sourceEvidenceIndexes: [],
+            imageEvidenceIndexes: [],
+            targetAnchors: fourAnchors(slot.slotKey,),
+          },],
+        };
+        for (const response of [frontResponse, clauseResponse, languageResponse,]) {
           expect(() => ballot({
             fixture,
             candidateOrdinal: candidate.candidateOrdinal,
@@ -1200,6 +1331,68 @@ await describe({
           restart: false,
           signal: new AbortController().signal,
         },)).rejects.toThrow();
+        expect(calls).toBe(0,);
+      },
+    }),
+    it({
+      name: 'forwards exact cancellation before verifier dispatch with zero calls',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = settledFixture();
+        const [candidate,] = fixture.candidates;
+        if (candidate === undefined)
+          throw new Error('review unit cancellation candidate absent');
+        let calls = 0;
+        const client: SyntheticClient = {
+          chatText: async () => {
+            calls += 1;
+            throw new Error('review unit cancellation reached text transport');
+          },
+          chatJson: async <ValueT,>(): Promise<ChatJsonOutcome<ValueT>> => {
+            calls += 1;
+            throw new Error('review unit cancellation reached JSON transport');
+          },
+          quotas: async () => {
+            calls += 1;
+            throw new Error('review unit cancellation reached quota transport');
+          },
+        };
+        const messages = reviewUnitVerifierMessages({
+          manifest: fixture.manifest,
+          shell: fixture.shell,
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          authorSettlementDigest: fixture.settlement.settlementDigest,
+          verifierPlanDigest: digest({ text: 'cancellation-verifier-plan', }),
+          defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          media: MEDIA,
+        },);
+        const controller = new AbortController();
+        const reason = new Error('exact Candidate K cancellation');
+        controller.abort(reason,);
+        await expect(runReviewUnitVerifierNode({
+          outputDir: directory.path,
+          client,
+          candidate,
+          verifierOrdinal: 0,
+          verifierModelId: 'hf:Qwen/Qwen3.8-27B',
+          manifest: fixture.manifest,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+          messages,
+          authorSettlement: fixture.settlement,
+          shell: fixture.shell,
+          ledger: fixture.ledger,
+          reviewPlan: fixture.reviewPlan,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          sourcePictures: MEDIA.map(function picture(item,) {
+            return { assetName: item.assetName, };
+          },),
+          restart: false,
+          signal: controller.signal,
+        },)).rejects.toBe(reason,);
         expect(calls).toBe(0,);
       },
     }),

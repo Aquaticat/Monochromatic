@@ -50,6 +50,12 @@ export {
   type ReviewUnitBallot,
 } from './prototype-review-unit-model.ts';
 export {
+  assertReviewUnitFrontMatterSlotKeys,
+} from './prototype-review-unit-front-matter-slot.ts';
+export {
+  compileReviewUnitFrontMatter,
+} from './prototype-review-unit-front-matter.ts';
+export {
   assertReviewUnitPlan,
   createReviewUnitPlan,
   MAX_REVIEW_UNIT_CLAUSES,
@@ -70,10 +76,12 @@ export {
   REVIEW_UNIT_FINDING_RULES,
   REVIEW_UNIT_NARROW_TARGET_ANCHOR_MAX,
   assertReviewUnitRuleCardinality,
+  reviewUnitAllowedDefectClassIndexes,
   reviewUnitFindingRule,
   type ReviewUnitFindingRule,
   type ReviewUnitImageEvidenceMode,
   type ReviewUnitSourceEvidenceMode,
+  type ReviewUnitSubjectClassRule,
   type ReviewUnitTargetAnchorMode,
 } from './prototype-review-unit-rules.ts';
 export {

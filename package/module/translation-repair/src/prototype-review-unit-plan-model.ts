@@ -262,6 +262,10 @@ export type ReviewUnitPlan = {
    */
   readonly frontMatterSubjects: readonly ReviewUnitFrontMatterSubject[];
   /**
+   * Deterministically equal front-matter key and container identity.
+   */
+  readonly frontMatterStructureDigest: string;
+  /**
    * Deterministically equal non-string front-matter scalar identity.
    */
   readonly frontMatterScalarDigest: string;

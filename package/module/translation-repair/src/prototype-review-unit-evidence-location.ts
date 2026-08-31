@@ -14,6 +14,7 @@ import {
 import { reviewUnitFindingTargetSlots, } from './prototype-review-unit-evidence-target.ts';
 import {
   assertReviewUnitRuleCardinality,
+  reviewUnitAllowedDefectClassIndexes,
   reviewUnitFindingRule,
 } from './prototype-review-unit-rules.ts';
 import type { RealizationTargetAnchor, } from './prototype-realization-model.ts';
@@ -303,9 +304,15 @@ export function assertReviewUnitFinding({
    * Digest-bound model-facing rule for current scope.
    */
   const rule = reviewUnitFindingRule({ scope: finding.scope, });
+  /**
+   * Subject-specific or scope-default defect classes.
+   */
+  const allowedDefectClassIndexes = reviewUnitAllowedDefectClassIndexes({
+    rule,
+    subjectIndex: finding.subjectIndex,
+  },);
   if ((defectClass === undefined)
-    || (!rule.allowedDefectClassIndexes
-      .includes(finding.defectClassIndex,)))
+    || (!allowedDefectClassIndexes.includes(finding.defectClassIndex,)))
     refuseReviewUnit({
       failureCategory: 'finding-shape',
       message: 'review unit defect class differs',

@@ -9,6 +9,7 @@ import {
   type ReviewUnitFinding,
   type ReviewUnitFindingScope,
 } from './prototype-review-unit-model.ts';
+import { REVIEW_UNIT_GLOBAL_IMAGE_INDEX, } from './prototype-review-unit-plan-model.ts';
 
 /**
  * Maximum target anchors for one non-relation subject.
@@ -36,6 +37,20 @@ export type ReviewUnitTargetAnchorMode =
   | 'one-to-three';
 
 /**
+ * Subject-specific defect-class override inside one scope.
+ */
+export type ReviewUnitSubjectClassRule = {
+  /**
+   * Subject position governed by override.
+   */
+  readonly subjectIndex: number;
+  /**
+   * Exact defect classes legal for subject.
+   */
+  readonly allowedDefectClassIndexes: readonly number[];
+};
+
+/**
  * Complete scope-specific model-facing finding rule.
  */
 export type ReviewUnitFindingRule = {
@@ -47,6 +62,10 @@ export type ReviewUnitFindingRule = {
    * Exact defect-class indexes legal for scope.
    */
   readonly allowedDefectClassIndexes: readonly number[];
+  /**
+   * Subject-specific class rules overriding scope default.
+   */
+  readonly subjectClassOverrides: readonly ReviewUnitSubjectClassRule[];
   /**
    * Source evidence cardinality and ownership.
    */
@@ -98,6 +117,7 @@ export const REVIEW_UNIT_FINDING_RULES: readonly ReviewUnitFindingRule[] = [
       'register',
       'source-language-calque',
     ],),
+    subjectClassOverrides: [],
     sourceEvidenceMode: 'empty',
     imageEvidenceMode: 'empty',
     targetAnchorMode: 'omission-empty-otherwise-one-to-three',
@@ -107,6 +127,7 @@ export const REVIEW_UNIT_FINDING_RULES: readonly ReviewUnitFindingRule[] = [
     allowedDefectClassIndexes: classIndexes(REVIEW_UNIT_DEFECT_CLASSES.filter(function clause(value,) {
       return (value !== 'paragraph-relation') && (value !== 'image-relation');
     },),),
+    subjectClassOverrides: [],
     sourceEvidenceMode: 'subject-exact',
     imageEvidenceMode: 'empty',
     targetAnchorMode: 'omission-empty-otherwise-one-to-three',
@@ -120,6 +141,7 @@ export const REVIEW_UNIT_FINDING_RULES: readonly ReviewUnitFindingRule[] = [
       'technical-legal-term',
       'paragraph-relation',
     ],),
+    subjectClassOverrides: [],
     sourceEvidenceMode: 'subject-exact',
     imageEvidenceMode: 'empty',
     targetAnchorMode: 'one-to-four',
@@ -134,6 +156,7 @@ export const REVIEW_UNIT_FINDING_RULES: readonly ReviewUnitFindingRule[] = [
       'register',
       'source-language-calque',
     ],),
+    subjectClassOverrides: [],
     sourceEvidenceMode: 'empty',
     imageEvidenceMode: 'empty',
     targetAnchorMode: 'one-to-three',
@@ -141,8 +164,12 @@ export const REVIEW_UNIT_FINDING_RULES: readonly ReviewUnitFindingRule[] = [
   {
     scope: 'g',
     allowedDefectClassIndexes: classIndexes(REVIEW_UNIT_DEFECT_CLASSES.filter(function global(value,) {
-      return value !== 'omission';
+      return (value !== 'omission') && (value !== 'image-relation');
     },),),
+    subjectClassOverrides: [{
+      subjectIndex: REVIEW_UNIT_GLOBAL_IMAGE_INDEX,
+      allowedDefectClassIndexes: classIndexes(['image-relation',],),
+    },],
     sourceEvidenceMode: 'optional',
     imageEvidenceMode: 'image-relation-required-otherwise-empty',
     targetAnchorMode: 'one-to-four',
@@ -179,6 +206,31 @@ export function reviewUnitFindingRule({
   if (rule === undefined)
     throw new Error('review unit finding rule scope is absent');
   return rule;
+}
+
+/**
+ * Returns defect classes legal for one exact subject.
+ *
+ * @returns Subject override or scope default indexes
+ *
+ * @example
+ * ```ts
+ * const indexes = reviewUnitAllowedDefectClassIndexes({ rule, subjectIndex: 0, });
+ * ```
+ */
+export function reviewUnitAllowedDefectClassIndexes({
+  rule,
+  subjectIndex,
+}: {
+  readonly rule: ReviewUnitFindingRule;
+  readonly subjectIndex: number;
+}): readonly number[] {
+  /**
+   * Subject-specific class override when one exists.
+   */
+  const override = rule.subjectClassOverrides
+    .find(function subject(value,) { return value.subjectIndex === subjectIndex; });
+  return override?.allowedDefectClassIndexes ?? rule.allowedDefectClassIndexes;
 }
 
 /**

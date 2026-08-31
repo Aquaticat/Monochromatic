@@ -13,6 +13,28 @@ import {
 type FrontMatterScalarValue = boolean | number | 'yaml-null';
 
 /**
+ * Canonical front-matter key, container, and scalar type row.
+ */
+type FrontMatterShapeRow = {
+  /**
+   * YAML object path.
+   */
+  readonly path: readonly string[];
+  /**
+   * Value or container kind.
+   */
+  readonly kind: 'array' | 'boolean' | 'null' | 'number' | 'object' | 'string';
+  /**
+   * Sorted object keys, empty for nonobjects.
+   */
+  readonly keys: readonly string[];
+  /**
+   * Array length, zero for nonarrays.
+   */
+  readonly length: number;
+};
+
+/**
  * Internal front-matter scalar leaf before equality proof.
  */
 type FrontMatterScalarLeaf = {
@@ -39,6 +61,114 @@ type FrontMatterLeaf = {
    */
   readonly text: string;
 };
+
+/**
+ * Refuses number values whose parsed identity is not stable.
+ *
+ * @param value - parsed YAML numeric scalar
+ */
+function assertSupportedFrontMatterNumber(value: number,): void {
+  if ((!Number.isFinite(value,))
+    || Object.is(
+      value,
+      -0,
+    )
+    || (Number.isInteger(value,) && (!Number.isSafeInteger(value,))))
+    throw new Error('review unit unsupported front matter number differs');
+}
+
+/**
+ * Collects canonical key, container, and scalar type shape.
+ *
+ * @returns Structural rows including empty containers
+ */
+function frontMatterShape({
+  value,
+  path = [],
+}: {
+  readonly value: unknown;
+  readonly path?: readonly string[];
+}): readonly FrontMatterShapeRow[] {
+  if (value === undefined)
+    return [];
+  if (value === null)
+    return [{
+      path,
+      kind: 'null',
+      keys: [],
+      length: 0,
+    },];
+  if ((typeof value) === 'string')
+    return [{
+      path,
+      kind: 'string',
+      keys: [],
+      length: 0,
+    },];
+  if ((typeof value) === 'boolean')
+    return [{
+      path,
+      kind: 'boolean',
+      keys: [],
+      length: 0,
+    },];
+  if ((typeof value) === 'number') {
+    assertSupportedFrontMatterNumber(value,);
+    return [{
+      path,
+      kind: 'number',
+      keys: [],
+      length: 0,
+    },];
+  }
+  if (Array.isArray(value,))
+    return [
+      {
+        path,
+        kind: 'array',
+        keys: [],
+        length: value.length,
+      },
+      ...value.flatMap(function child(
+        item,
+        index,
+      ) {
+        return frontMatterShape({
+          value: item,
+          path: [
+            ...path,
+            String(index,),
+          ],
+        });
+      },),
+    ];
+  if ((typeof value) === 'object') {
+    /**
+     * Stable object keys independent of YAML source order.
+     */
+    const keys = Object.keys(value,)
+      .toSorted();
+    return [
+      {
+        path,
+        kind: 'object',
+        keys,
+        length: 0,
+      },
+      ...Object.entries(value,)
+        .flatMap(function child([key, item,],) {
+        return frontMatterShape({
+          value: item,
+          path: [
+            ...path,
+            key,
+          ],
+        });
+      },),
+    ];
+  }
+  throw new Error('review unit unsupported front matter scalar differs');
+}
 
 /**
  * Collects every bounded structural string leaf from parsed YAML.
@@ -101,11 +231,18 @@ function frontMatterScalarLeaves({
       path,
       value: 'yaml-null',
     },];
-  if (((typeof value) === 'boolean') || ((typeof value) === 'number'))
+  if ((typeof value) === 'boolean')
     return [{
       path,
       value,
     },];
+  if ((typeof value) === 'number') {
+    assertSupportedFrontMatterNumber(value,);
+    return [{
+      path,
+      value,
+    },];
+  }
   if (Array.isArray(value,))
     return value.flatMap(function child(
       item,
@@ -180,6 +317,7 @@ export function compileReviewUnitFrontMatter({
   readonly targetText: string;
 }): {
   readonly subjects: readonly ReviewUnitFrontMatterSubject[];
+  readonly structureDigest: string;
   readonly scalarDigest: string;
 } {
   /**
@@ -194,6 +332,16 @@ export function compileReviewUnitFrontMatter({
   const targetValue = splitFrontMatter({ text: targetText, })
     .frontMatter
     ?.data;
+  /**
+   * Canonical source key and container shape.
+   */
+  const sourceShape = frontMatterShape({ value: sourceValue, });
+  /**
+   * Canonical target key and container shape.
+   */
+  const targetShape = frontMatterShape({ value: targetValue, });
+  if (JSON.stringify(sourceShape,) !== JSON.stringify(targetShape,))
+    throw new Error('review unit front matter structure differs');
   /**
    * Canonical source scalar records.
    */
@@ -268,6 +416,7 @@ export function compileReviewUnitFrontMatter({
   },);
   return {
     subjects,
+    structureDigest: hashContent({ content: JSON.stringify(sourceShape,), }),
     scalarDigest: hashContent({ content: JSON.stringify(sourceScalars,), }),
   };
 }
