@@ -515,7 +515,7 @@ export async function runRealizationRuntimeControls(): Promise<void> {
     const subsequentLease = await acquireRealizationRuntimeLease({ outputDir: staleLeaseDir, });
     await subsequentLease[Symbol.asyncDispose]();
     const secondHistory = await readdir(staleLeaseDir,);
-    if (!firstHistory.some(function election(name,) { return name.includes('.reclaim-',); })
+    if (!firstHistory.includes('.realization-runtime.lock.reclaim-stale-fixture',)
       || !firstHistory.every(function retained(name,) { return secondHistory.includes(name,); }))
       throw new Error('realization reclaim election history retention control failed');
     await writeFile(join(staleLeaseDir, 'realization-runtime.lock',), `${JSON.stringify({
