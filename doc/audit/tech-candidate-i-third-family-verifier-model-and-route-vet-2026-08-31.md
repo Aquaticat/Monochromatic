@@ -372,10 +372,29 @@ No recommendation follows from synthetic probe alone.
 - Gate:
   hard publication evidence and scored quality.
 - Status:
-  pending exact Candidate I prototype and Carena calibration.
+  prototype controls pass;
+  pinned-Carena calibration pending.
+- Prototype evidence:
+  commit `28d548d84fe1fcb51765b0e9a845c6361bf6359c`,
+  targeted type-aware lint with zero diagnostics,
+  passing types,
+  and full `buildAndTest` with 877 suite `PASS` lines and no suite `FAIL` line.
+- Guard evidence:
+  GFP mutations failed for route ids and caps,
+  route digest,
+  family independence,
+  AST and punctuation boundaries,
+  compiled anchors,
+  cancellation,
+  atomic diagnostics,
+  restart,
+  status algebra,
+  durable expansion,
+  and deterministic skips.
 - Counterevidence:
-  prior Synthetic schema and image probes are not translation-review evidence.
+  prototype controls and prior Synthetic probes are not translation-review evidence.
 - Outcome:
+  advance to pinned-Carena calibration;
   no recommendation before complete consumer review.
 
 ## Current disposition
@@ -383,9 +402,7 @@ No recommendation follows from synthetic probe alone.
 No recommendation.
 GLM 5.3 Flash is only serious alternative after exhaustive family screening and passed exact Hyper Anthropic forced-tool
 route probe.
-It may enter Candidate I structural prototype and pinned-Carena consumer validation.
+It passed Candidate I structural prototype controls and may enter pinned-Carena consumer validation.
 Product allowlist,
 production code,
-and decision records must not adopt it before Candidate I control pass,
-pinned-Carena completion,
-and complete-page review.
+and decision records must not adopt it before pinned-Carena completion and complete-page review.

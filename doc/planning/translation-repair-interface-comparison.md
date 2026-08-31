@@ -2329,7 +2329,7 @@ Its fixed graph manifests:
 
 1.  one Qwen3.8-27B author and one MiniMax M3 author in concurrent first wave;
 2.  one Qwen,
-    one independently vetted third-family model,
+    one GLM 5.3 Flash,
     and one MiniMax verifier for each author ordinal in concurrent second wave;
 3.  deterministic selection and private publication after every dispatched sibling settles.
 
@@ -2380,9 +2380,9 @@ A malformed status length or character abstains atomically and records privacy-s
 not raw provider text.
 
 For Qwen-authored candidate,
-clean third-family and MiniMax ballots satisfy two-family nonself evidence floor.
+clean GLM and MiniMax ballots satisfy two-family nonself evidence floor.
 For MiniMax-authored candidate,
-clean Qwen and third-family ballots satisfy same floor.
+clean Qwen and GLM ballots satisfy same floor.
 Clean self-model ballot never contributes to floor;
 a valid self-model defect or overflow still vetoes candidate.
 No admitted dissent is allowed.
@@ -2400,8 +2400,11 @@ Focused Kimi vet rejected every available route under those constraints.
 K2.6 and K2.7 Code returned non-JSON content despite strict Hyper OpenAI schema request;
 K3 returned parseable JSON that failed exact caller guard.
 Repository transport source already records that Hyper OpenAI route accepts and ignores `response_format`.
-Candidate I therefore requires a different third model family over Anthropic forced-tool route.
-Manifest persists exact route per verifier.
+Focused third-family vet selected Hyper `glm-5.3-flash` over Anthropic forced-tool route for prototype validation.
+Manifest persists canonical id,
+wire id,
+output cap,
+and exact route-table digest for every verifier.
 Unsupported,
 truncated,
 or malformed output abstains without route or parameter fallback.
@@ -2474,16 +2477,17 @@ Pros:
 Cons:
 
 - only two author wordings enter selection;
-- independently vetted third-family Hyper verifier remains load-bearing and unselected;
+- GLM remains load-bearing and lacks complete Carena translation-review evidence;
 - Hyper OpenAI structured output is unavailable as candidate route;
 - neither retained Candidate H author passed complete-page publication review.
 
 Candidate J's Kimi third-author expansion is rejected.
 It adds demonstrated truncating producer and twelve-payload graph while no Kimi route satisfies verifier hard gate.
 
-Candidate I remains structural prototype shape,
+Candidate I remains private prototype,
 not production selection.
-A focused third-family vet must bind its remaining verifier position before live Carena calibration.
+GLM route is manifest-bound and transport-validated;
+complete Carena consumer validation remains pending.
 It inherits Candidate H's zero-retry and pre-dispatch exchange cap,
 Hyper-only provider binding,
 indeterminate-transmission quarantine,
@@ -2492,22 +2496,23 @@ process lease,
 exact caller-abort identity after sibling settlement,
 prompt claims,
 and complete-candidate no-effect publication guards.
-Before live calibration,
-controls and GFP must cover compact status length and alphabet,
-manifest expansion,
-overflow algebra,
-self-certification,
-family floor,
-boundary atoms and post-insertion hashes,
-exact diagnostic categories,
-duplicate JSON members,
-image carriage,
-prompt claims,
-restart,
-lease,
-provider binding,
-indeterminate transmission,
-and all-sibling abort settlement.
+Prototype HEAD `28d548d84fe1fcb51765b0e9a845c6361bf6359c` implements fixed graph and passed targeted type-aware lint with zero diagnostics,
+type checking,
+and full `buildAndTest` with 877 suite `PASS` lines and no suite `FAIL` line.
+GFP mutations failed after rebuild for family exclusion,
+pre-verifier abort,
+atomic guard category,
+spent restart,
+compiled anchor slots,
+AST roles,
+punctuation spacing,
+all three wire mappings and caps,
+route digest,
+status length and alphabet,
+finding algebra,
+status-row expansion,
+and unusable-author verifier skips.
+Every mutation was restored before final green run.
 
 ## Required lifecycle migration
 
