@@ -1241,6 +1241,11 @@ await describe({
         expect(restarted.spentUnusableNodeCount,).toBe(3,);
         expect(calls,).toHaveLength(MAX_CANDIDATE_BALLOT_PAYLOAD_COUNT,);
         expect(restartCalls.value,).toBe(0,);
+        const restartedNodeText = await readFile(
+          join(root.path, 'node-candidate-ballot-verifier-0-1.json',),
+          'utf8',
+        );
+        expect(restartedNodeText,).toBe(nodeText,);
       },
     },),
   ],
