@@ -1830,6 +1830,162 @@ A successor must reduce the complete verifier response itself without capping pu
 dropping split-anchor evidence,
 or treating post-transport rejection as output-budget enforcement.
 
+### Candidate H proposal: closed-world verdict with bounded defect evidence
+
+Candidate H removes author self-realization and separates complete checking from exhaustive defect narration.
+A verifier still returns one status for every source obligation and global criterion,
+but status arrays are manifest-ordered compact codes rather than repeated objects.
+Concrete findings remain exact and split-anchor-capable.
+
+```ts
+export type CandidateHAuthorResponse = {
+  readonly slots: Readonly<Record<SlotKey, string>>;
+};
+
+export type CandidateHFinding = {
+  readonly scope: 'obligation' | 'global';
+  readonly manifestIndex: number;
+  readonly defectClassIndex: number;
+  readonly targetAnchors: readonly TargetAnchor[];
+};
+
+export type CandidateHVerification = {
+  readonly candidateId: CandidateId;
+  readonly candidateDigest: string;
+  readonly obligationStatuses: readonly ('preserved' | 'defect')[];
+  readonly globalStatuses: readonly ('clean' | 'defect')[];
+  readonly overflow: boolean;
+  readonly findings: readonly CandidateHFinding[];
+};
+```
+
+Every author returns one complete immutable-shell slot map and owns the full quality contract.
+Runtime attaches candidate identity,
+model identity,
+document digest,
+slot digest,
+and manifest binding.
+No author ledger or author-generated audit claim is required.
+
+Every verifier receives complete source,
+archive,
+shell,
+closed-world obligation ledger,
+all admitted anonymous candidates,
+and every page-referenced image.
+Each candidate response has exactly one status per obligation and global criterion.
+A clean candidate is one whose statuses are all preserved or clean,
+whose `overflow` is false,
+and whose findings are empty.
+
+A defective candidate does not need an exhaustive prose dossier to lose:
+
+For manifested per-candidate finding cap `C` and defect-status count `D`:
+
+- `overflow` must equal `D > C`;
+- with `overflow: false`,
+  every defect status has one unique concrete finding,
+  every finding links to a defect status,
+  and clean statuses have no findings;
+- with `overflow: true`,
+  findings have length `C`,
+  each finding links to a distinct defect status,
+  and the candidate is unconditionally unclean;
+- an absent finding never makes a candidate cleaner,
+  because selection uses explicit complete status arrays rather than finding counts.
+
+These findings are bounded certificates that a candidate is unclean,
+not an exhaustive defect inventory.
+This keeps concrete evidence while bounding narration.
+`overflow` is not truncation recovery or response-created work.
+It is a manifested terminal classification saying that bounded evidence already proves the whole candidate cannot win.
+No resolver,
+donor splice,
+editor,
+retry,
+or dynamic node follows it.
+
+#### Candidate H fixed graph
+
+1.  Build immutable shell and closed-world obligation ledger deterministically.
+2.  Run four whole-document authors concurrently.
+3.  Admit every complete candidate independently;
+    unusable author output has no effect.
+4.  Run three all-candidate verifiers concurrently.
+5.  Admit only whole all-candidate ballots covering exactly the candidate set derived from one complete author-wave settlement.
+    Bind settlement digest,
+    candidate digests,
+    exact finding indexes,
+    split target anchors,
+    and correct overflow accounting.
+    One malformed candidate row makes the whole verifier abstain;
+    retained row evidence is audit-only and cannot vote.
+6.  Set calibration evidence floor only with at least two admitted candidate model identities and two complete clean ballots from distinct verifier identities.
+    Hidden manifest priority supplies private calibration fallback below the evidence floor.
+    Production eligibility additionally requires no admitted dissenting defect or overflow ballot.
+7.  Write only to private review root;
+    no production publication is authorized by calibration status.
+
+The proposed graph remains seven payloads in two dependency waves.
+One wet provider remains sufficient.
+Every node receives all page-referenced images.
+A verifier failure abstains and cannot suspend or mutate a complete candidate.
+Candidate aliases and ballot order are derived independently of author identity and fallback priority;
+priority exists only in private manifest metadata.
+Wire anchors may omit repeated digests only when runtime recomputes and persists exact candidate-substring SHA-256 values,
+and restart reproduces byte-identical enriched evidence.
+Omission findings remain source-located by obligation index;
+other findings require target anchors.
+
+#### Candidate H options considered
+
+Candidate H3,
+the all-candidate compact matrix with bounded defect evidence,
+is preferred.
+It preserves one verifier view across candidates,
+keeps the seven-payload graph,
+and makes overflow an explicit losing verdict.
+Its cost is reduced per-defect exhaustiveness after the cap.
+
+Candidate H1 would run one verbose verifier payload per candidate.
+It preserves familiar verbose rows,
+but expands the graph to sixteen payloads and leaves one-candidate worst-case findings near the output ceiling.
+
+Candidate H2 would split each verifier-candidate pair into status and finding payloads.
+Each payload is smaller,
+but the graph reaches twenty-eight payloads and independently generated halves can disagree,
+turning a working verifier into an abstention.
+
+Ranking:
+H3 > H1 > H2.
+H3 ranks above H1 because it keeps closed-world comparison in one bounded ballot without multiplying calls.
+H1 ranks above H2 because one atomic verifier response is more auditable than independently generated status and evidence halves.
+
+Candidate H is an unresolved calibration proposal,
+not yet a viable successor.
+It enters schema-envelope and scripted controls only.
+The author envelope remains unsolved:
+slot-only authors still permit schema-authorized output beyond 32,000 tokens,
+and no arbitrary prose cap may replace contributor authority or publication quality.
+The verifier envelope is also only a hypothesis until one numeric cap `C` is frozen and the actual four-candidate maximum is serialized.
+The active evidence also contains no qualified author roster:
+all five Qwen expansion authors failed complete-page review,
+and MiniMax returned an unusable author response.
+
+Before spend,
+controls must prove complete arrays,
+no absent-as-clean path,
+overflow accounting,
+three disjoint anchors,
+hidden priority,
+author and verifier diversity,
+provider isolation,
+restart,
+indeterminate transmission,
+and exact concurrent abort cleanup.
+Maximum compact schema witnesses and realistic complete Carena author outputs must be tokenized under every planned model tokenizer available;
+unavailable tokenizers remain explicit roster blockers rather than guessed equivalence.
+
 ## Required lifecycle migration
 
 Replacement must remove current terminal-looking outcomes in
