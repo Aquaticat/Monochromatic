@@ -202,6 +202,83 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
 ])
 """
 
+[tasks."format:review-unit"]
+description = "Auto-fix Candidate K prototype files with package-local type-aware Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
+  '--type-aware',
+  '--fix',
+  'src/prototype-review-unit.ts',
+  'src/prototype-review-unit-admission.ts',
+  'src/prototype-review-unit-author.ts',
+  'src/prototype-review-unit-author-node.ts',
+  'src/prototype-review-unit-evidence.ts',
+  'src/prototype-review-unit-guard.ts',
+  'src/prototype-review-unit-hyper.ts',
+  'src/prototype-review-unit-manifest.ts',
+  'src/prototype-review-unit-model.ts',
+  'src/prototype-review-unit-plan.ts',
+  'src/prototype-review-unit-proof.ts',
+  'src/prototype-review-unit-node-execute.ts',
+  'src/prototype-review-unit-node-record.ts',
+  'src/prototype-review-unit-node-restart.ts',
+  'src/prototype-review-unit-prompt.ts',
+  'src/prototype-review-unit-runtime.ts',
+  'src/prototype-review-unit-runtime-plan.ts',
+  'src/prototype-review-unit-runtime-support.ts',
+  'src/prototype-review-unit-schema.ts',
+  'src/prototype-review-unit-selection.ts',
+  'src/prototype-review-unit-settlement.ts',
+  'src/prototype-review-unit-test-support.ts',
+  'src/prototype-review-unit-verifier-node.ts',
+  'src/prototype-review-unit-verifier-state.ts',
+  'src/prototype-review-unit.unit.test.ts',
+  'src/prototype-hyper-expansion-client.ts',
+  'src/prototype-target-boundary.ts',
+  'src/prototype-target-boundary-compile.ts',
+])
+"""
+
+[tasks."lint:review-unit"]
+description = "Lint Candidate K prototype files with package-local type-aware Oxlint"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
+  '--type-aware',
+  'src/prototype-review-unit.ts',
+  'src/prototype-review-unit-admission.ts',
+  'src/prototype-review-unit-author.ts',
+  'src/prototype-review-unit-author-node.ts',
+  'src/prototype-review-unit-evidence.ts',
+  'src/prototype-review-unit-guard.ts',
+  'src/prototype-review-unit-hyper.ts',
+  'src/prototype-review-unit-manifest.ts',
+  'src/prototype-review-unit-model.ts',
+  'src/prototype-review-unit-plan.ts',
+  'src/prototype-review-unit-proof.ts',
+  'src/prototype-review-unit-node-execute.ts',
+  'src/prototype-review-unit-node-record.ts',
+  'src/prototype-review-unit-node-restart.ts',
+  'src/prototype-review-unit-prompt.ts',
+  'src/prototype-review-unit-runtime.ts',
+  'src/prototype-review-unit-runtime-plan.ts',
+  'src/prototype-review-unit-runtime-support.ts',
+  'src/prototype-review-unit-schema.ts',
+  'src/prototype-review-unit-selection.ts',
+  'src/prototype-review-unit-settlement.ts',
+  'src/prototype-review-unit-test-support.ts',
+  'src/prototype-review-unit-verifier-node.ts',
+  'src/prototype-review-unit-verifier-state.ts',
+  'src/prototype-review-unit.unit.test.ts',
+  'src/prototype-hyper-expansion-client.ts',
+  'src/prototype-target-boundary.ts',
+  'src/prototype-target-boundary-compile.ts',
+])
+"""
+
 [tasks."lint:types"]
 extends = "lint:types"
 

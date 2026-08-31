@@ -91,6 +91,7 @@ export async function executeReviewUnitNode<ValueT,>({
   validate,
   validateRawText,
   failureCategory,
+  exchangeTimeoutMs,
   signal,
 }: {
   readonly outputDir: string;
@@ -105,6 +106,7 @@ export async function executeReviewUnitNode<ValueT,>({
   readonly failureCategory?: (
     detailType?: ReviewUnitNodeRecord['failureDetailType'],
   ) => ReviewUnitFailureCategory;
+  readonly exchangeTimeoutMs: number;
   readonly signal: AbortSignal;
 }): Promise<ReviewUnitExecution<ValueT>> {
   /**
@@ -157,6 +159,7 @@ export async function executeReviewUnitNode<ValueT,>({
       messages,
       responseFormat,
       validate,
+      exchangeTimeoutMs,
       signal,
     },);
     if (signal.aborted)

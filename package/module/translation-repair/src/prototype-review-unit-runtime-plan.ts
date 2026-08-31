@@ -6,11 +6,11 @@ import type {
   ReviewUnitCandidate,
   ReviewUnitManifest,
 } from './prototype-review-unit-model.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import { reviewUnitResponseFormat, } from './prototype-review-unit-schema.ts';
-import type { RealizationObligationLedger, } from './prototype-realization-model.ts';
 
 /**
- * One of six statically manifested candidate and verifier nodes.
+ * One of nine statically manifested candidate and verifier nodes.
  */
 export type ReviewUnitVerifierNodePlan = {
   /**
@@ -40,6 +40,10 @@ export type ReviewUnitVerifierNodePlan = {
      */
     readonly candidateDigest: string;
     /**
+     * Candidate deterministic-proof identity.
+     */
+    readonly deterministicProofDigest: string;
+    /**
      * Exact candidate-scoped schema digest.
      */
     readonly verifierSchemaDigest: string;
@@ -65,9 +69,13 @@ export type ReviewUnitVerifierWavePlan = {
    */
   readonly authorSettlementDigest: string;
   /**
-   * Six statically finite node rows.
+   * Nine statically finite node rows.
    */
   readonly nodes: readonly ReviewUnitVerifierNodePlan[];
+  /**
+   * Readable review-plan binding.
+   */
+  readonly reviewPlanDigest: string;
   /**
    * Verifier protocol binding.
    */
@@ -83,7 +91,7 @@ export type ReviewUnitVerifierWavePlan = {
 };
 
 /**
- * Builds six-row verifier plan before dispatching any verifier.
+ * Builds nine-row verifier plan before dispatching any verifier.
  *
  * @returns Immutable static second-wave plan
  *
@@ -93,7 +101,7 @@ export type ReviewUnitVerifierWavePlan = {
  *   manifest,
  *   authorSettlement,
  *   candidates,
- *   ledger,
+ *   reviewPlan,
  * });
  * ```
  */
@@ -101,12 +109,12 @@ export function createReviewUnitVerifierWavePlan({
   manifest,
   authorSettlement,
   candidates,
-  ledger,
+  reviewPlan,
 }: {
   readonly manifest: ReviewUnitManifest;
   readonly authorSettlement: ReviewUnitAuthorSettlement;
   readonly candidates: readonly ReviewUnitCandidate[];
-  readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
 }): ReviewUnitVerifierWavePlan {
   /**
    * Candidate lookup by manifested author ordinal.
@@ -143,10 +151,12 @@ export function createReviewUnitVerifierWavePlan({
         state: 'dispatch' as const,
         candidateId: candidate.candidateId,
         candidateDigest: candidate.candidateDigest,
+        deterministicProofDigest: candidate.deterministicProofDigest,
         verifierSchemaDigest: hashContent({
           content: JSON.stringify(reviewUnitResponseFormat({
-            ledger,
+            reviewPlan,
             candidate,
+            pictureCount: manifest.sourcePictures.length,
           }),),
         },),
       };
@@ -159,6 +169,7 @@ export function createReviewUnitVerifierWavePlan({
     manifestDigest: manifest.manifestDigest,
     authorSettlementDigest: authorSettlement.settlementDigest,
     nodes,
+    reviewPlanDigest: reviewPlan.reviewPlanDigest,
     verifierProtocolDigest: manifest.verifierProtocolDigest,
     findingCap: manifest.findingCap,
   };

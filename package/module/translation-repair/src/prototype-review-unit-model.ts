@@ -8,6 +8,7 @@ import type {
   RealizationProviderSelection,
   RealizationTargetAnchor,
 } from './prototype-realization-model.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import type {
   CandidateTargetBoundary,
   ResolvedCandidateTargetBoundary,
@@ -16,7 +17,7 @@ import type {
 /**
  * Fixed number of whole-document authors.
  */
-export const REVIEW_UNIT_AUTHOR_COUNT = 2;
+export const REVIEW_UNIT_AUTHOR_COUNT = 3;
 
 /**
  * Fixed number of independent verifier families per admitted candidate.
@@ -24,14 +25,34 @@ export const REVIEW_UNIT_AUTHOR_COUNT = 2;
 export const REVIEW_UNIT_VERIFIER_COUNT = 3;
 
 /**
- * Maximum provider payloads in two-author candidate-scoped graph.
+ * Maximum provider payloads in three-author candidate-scoped graph.
  */
-export const MAX_REVIEW_UNIT_PAYLOAD_COUNT = 8;
+export const MAX_REVIEW_UNIT_PAYLOAD_COUNT = 12;
 
 /**
  * Maximum concrete defect certificates retained for one ballot.
  */
-export const REVIEW_UNIT_FINDING_CAP = 8;
+export const REVIEW_UNIT_FINDING_CAP = 64;
+
+/** Closed defect vocabulary shared by Candidate K ballot scopes. */
+export const REVIEW_UNIT_DEFECT_CLASSES = [
+  'wrong-meaning',
+  'omission',
+  'unsupported-addition',
+  'identity-attribution',
+  'actor-reference',
+  'chronology',
+  'technical-legal-term',
+  'grammar-usage',
+  'tense',
+  'register',
+  'source-language-calque',
+  'paragraph-relation',
+  'image-relation',
+] as const;
+
+/** One Candidate K defect classification. */
+export type ReviewUnitDefectClass = typeof REVIEW_UNIT_DEFECT_CLASSES[number];
 
 /**
  * Exact verifier node authorization independent of candidate availability.
@@ -67,6 +88,10 @@ export type ReviewUnitManifest = {
    * Runtime-owned target-language syntax relations.
    */
   readonly targetBoundaries: readonly CandidateTargetBoundary[];
+  /**
+   * Readable candidate-independent review plan identity.
+   */
+  readonly reviewPlanDigest: string;
   /**
    * Hidden whole-document author authority.
    */
@@ -186,82 +211,71 @@ export type ReviewUnitCandidate = {
    * Candidate-specific exact separator decisions.
    */
   readonly resolvedBoundaries: readonly ResolvedCandidateTargetBoundary[];
+  /**
+   * Runtime-owned proof over mechanically decidable admission.
+   */
+  readonly deterministicProofDigest: string;
 };
 
-/**
- * Located bounded defect certificate linked by manifest index.
- */
+/** Candidate K defect subject scope. */
+export type ReviewUnitFindingScope = 'c' | 'fm' | 'g' | 'r' | 'sl';
+
+/** Located bounded defect witness linked by review subject. */
 export type ReviewUnitFinding = {
-  /**
-   * Compact obligation or global scope.
-   */
-  readonly scope: 'o' | 'g';
-  /**
-   * Subject index in relevant manifest sequence.
-   */
-  readonly manifestIndex: number;
-  /**
-   * Canonical defect vocabulary index.
-   */
+  /** Clause, relation, slot-language, or global scope. */
+  readonly scope: ReviewUnitFindingScope;
+  /** Subject index in relevant review-plan sequence. */
+  readonly subjectIndex: number;
+  /** Canonical defect vocabulary index. */
   readonly defectClassIndex: number;
-  /**
-   * Exact target evidence after deterministic boundary insertion.
-   */
+  /** Readable source evidence positions supporting witness. */
+  readonly sourceEvidenceIndexes: readonly number[];
+  /** Manifest page-image positions supporting witness. */
+  readonly imageEvidenceIndexes: readonly number[];
+  /** Exact target evidence after deterministic boundary insertion. */
   readonly targetAnchors: readonly RealizationTargetAnchor[];
 };
 
-/**
- * Complete compact response for exactly one anonymous candidate.
- */
+/** Complete compact response for exactly one anonymous candidate. */
 export type ReviewUnitResponse = {
-  /**
-   * Candidate alias copied from prompt.
-   */
+  /** Candidate alias copied from prompt. */
   readonly candidateId: string;
-  /**
-   * Candidate digest copied from prompt.
-   */
+  /** Candidate digest copied from prompt. */
   readonly candidateDigest: string;
-  /**
-   * One `p` or `d` code per obligation manifest row.
-   */
-  readonly obligationStatuses: string;
-  /**
-   * One `c` or `d` code per global criterion.
-   */
+  /** Readable review plan identity copied from prompt. */
+  readonly reviewPlanDigest: string;
+  /** Deterministic admission proof copied from prompt. */
+  readonly deterministicProofDigest: string;
+  /** One `p` or `d` code per semantic front-matter string. */
+  readonly frontMatterStatuses: string;
+  /** One clause-status string per slot group. */
+  readonly clauseStatusesBySlot: readonly string[];
+  /** One `p` or `d` code per relation subject. */
+  readonly relationStatuses: string;
+  /** One `c` or `d` code per translatable slot. */
+  readonly slotLanguageStatuses: string;
+  /** One `c` or `d` code per page-level global criterion. */
   readonly globalStatuses: string;
-  /**
-   * Whether defects exceed retained finding capacity.
-   */
+  /** Whether defective subjects exceed retained finding capacity. */
   readonly overflow: boolean;
-  /**
-   * Bounded located defect certificates.
-   */
+  /** Bounded located defect witnesses. */
   readonly findings: readonly ReviewUnitFinding[];
 };
 
-/**
- * Runtime-expanded manifest-indexed status row.
- */
+/** Runtime-expanded manifest-indexed status row. */
 export type ReviewUnitStatusRow = {
-  /**
-   * Obligation or global manifest sequence.
-   */
-  readonly scope: 'o' | 'g';
-  /**
-   * Index in relevant manifest sequence.
-   */
-  readonly manifestIndex: number;
-  /**
-   * Compact status copied from provider response.
-   */
+  /** Clause, relation, slot-language, or global scope. */
+  readonly scope: ReviewUnitFindingScope;
+  /** Index in relevant review-plan sequence. */
+  readonly subjectIndex: number;
+  /** Compact status copied from provider response. */
   readonly status: 'p' | 'c' | 'd';
 };
 
 /**
  * Runtime-owned verifier identity around one admitted review unit.
  */
-export type CandidateScopedBallot = {
+export type ReviewUnitBallot = {
   /**
    * Verifier model identity.
    */
@@ -409,4 +423,8 @@ export type ReviewUnitContext = {
    * Closed-world obligation ledger.
    */
   readonly ledger: RealizationObligationLedger;
+  /**
+   * Readable review plan fixed before provider contact.
+   */
+  readonly reviewPlan: ReviewUnitPlan;
 };

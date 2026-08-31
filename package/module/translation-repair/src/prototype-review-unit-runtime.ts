@@ -2,11 +2,11 @@
 
 import { join, } from 'node:path';
 
-import { CONDITIONAL_DEFECT_CLASSES, } from './prototype-conditional-audit-model.ts';
 import { runReviewUnitAuthorNode, } from './prototype-review-unit-author-node.ts';
 import { assertReviewUnitManifest, } from './prototype-review-unit-manifest.ts';
 import {
   MAX_REVIEW_UNIT_PAYLOAD_COUNT,
+  REVIEW_UNIT_DEFECT_CLASSES,
   type ReviewUnitAuthorSettlement,
   type ReviewUnitSelection,
   type ReviewUnitManifest,
@@ -35,10 +35,8 @@ import {
 import { runReviewUnitVerifierNode, } from './prototype-review-unit-verifier-node.ts';
 import type { ReviewUnitVerifierState, } from './prototype-review-unit-verifier-state.ts';
 import type { PrototypeMedia, } from './prototype-brief-editor-input.ts';
-import {
-  REALIZATION_GLOBAL_CRITERIA,
-  type RealizationObligationLedger,
-} from './prototype-realization-model.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
+import type { RealizationObligationLedger, } from './prototype-realization-model.ts';
 import { persistRealizationImmutableJson, } from './prototype-realization-persistence.ts';
 import { acquireRealizationRuntimeLease, } from './prototype-realization-runtime-lease.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
@@ -65,7 +63,7 @@ export type ReviewUnitRuntimeResult = {
    */
   readonly authorSettlement: ReviewUnitAuthorSettlement;
   /**
-   * Six-row static second-wave plan.
+   * Nine-row static second-wave plan.
    */
   readonly verifierPlan: ReviewUnitVerifierWavePlan;
   /**
@@ -123,6 +121,7 @@ export async function runReviewUnitRuntime({
   expectedManifestDigest,
   shell,
   ledger,
+  reviewPlan,
   sourceText,
   archiveText,
   media,
@@ -135,6 +134,7 @@ export async function runReviewUnitRuntime({
   readonly expectedManifestDigest: string;
   readonly shell: ImmutableShell;
   readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly sourceText: string;
   readonly archiveText: string;
   readonly media: readonly PrototypeMedia[];
@@ -145,7 +145,10 @@ export async function runReviewUnitRuntime({
     manifest,
     ledger,
     shell,
+    sourceText,
+    sourceBody: shell.body,
     archiveBody: archiveText,
+    reviewPlan,
     expectedManifestDigest,
   },);
   assertReviewUnitClient({
@@ -159,14 +162,24 @@ export async function runReviewUnitRuntime({
    * Exclusive process-incarnation lease for exact output root.
    */
   await using runtimeLease = await acquireRealizationRuntimeLease({ outputDir, });
-  await persistRealizationImmutableJson({
-    path: join(
-      outputDir,
-      'manifest-review-unit.json',
-    ),
-    value: manifest,
-    label: 'review unit manifest',
-  },);
+  await Promise.all([
+    persistRealizationImmutableJson({
+      path: join(
+        outputDir,
+        'manifest-review-unit.json',
+      ),
+      value: manifest,
+      label: 'review unit manifest',
+    },),
+    persistRealizationImmutableJson({
+      path: join(
+        outputDir,
+        'review-unit-plan.json',
+      ),
+      value: reviewPlan,
+      label: 'review unit plan',
+    },),
+  ],);
   /**
    * Page-reference names consumed by deterministic checks.
    */
@@ -189,13 +202,14 @@ export async function runReviewUnitRuntime({
           plan,
           manifest,
           shell,
-          ledger,
+          reviewPlan,
           sourceText,
           archiveText,
           media,
         },),
         shell,
         ledger,
+        reviewPlan,
         sourceText,
         archiveText,
         sourcePictures,
@@ -230,13 +244,13 @@ export async function runReviewUnitRuntime({
     manifest,
   },);
   /**
-   * Six-row static second-wave plan including deterministic skips.
+   * Nine-row static second-wave plan including deterministic skips.
    */
   const verifierPlan = createReviewUnitVerifierWavePlan({
     manifest,
     authorSettlement,
     candidates,
-    ledger,
+    reviewPlan,
   },);
   await persistRealizationImmutableJson({
     path: join(
@@ -293,12 +307,11 @@ export async function runReviewUnitRuntime({
         messages: reviewUnitVerifierMessages({
           manifest,
           shell,
-          ledger,
+          reviewPlan,
           candidate,
           authorSettlementDigest: authorSettlement.settlementDigest,
           verifierPlanDigest: verifierPlan.verifierPlanDigest,
-          globalCriteria: REALIZATION_GLOBAL_CRITERIA,
-          defectClasses: CONDITIONAL_DEFECT_CLASSES,
+          defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
           sourceText,
           archiveText,
           media,
@@ -306,6 +319,7 @@ export async function runReviewUnitRuntime({
         authorSettlement,
         shell,
         ledger,
+        reviewPlan,
         sourceText,
         archiveText,
         sourcePictures,
@@ -326,6 +340,7 @@ export async function runReviewUnitRuntime({
       manifest,
       expectedManifestDigest,
       ledger,
+      reviewPlan,
       shell,
       sourceText,
       archiveText,

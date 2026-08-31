@@ -1,4 +1,4 @@
-// PROTOTYPE ONLY: Candidate K one-review unit admission.
+// PROTOTYPE ONLY: Candidate K one-review-unit admission.
 
 import { assertReviewUnitBinding, } from './prototype-review-unit-author.ts';
 import {
@@ -9,83 +9,51 @@ import { diagnoseReviewUnitResponse, } from './prototype-review-unit-guard.ts';
 import { assertReviewUnitManifest, } from './prototype-review-unit-manifest.ts';
 import type {
   ReviewUnitAuthorSettlement,
-  ReviewUnitResponse,
+  ReviewUnitBallot,
   ReviewUnitManifest,
+  ReviewUnitResponse,
   ReviewUnitStatusRow,
-  CandidateScopedBallot,
 } from './prototype-review-unit-model.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import { candidatesFromReviewUnitSettlement, } from './prototype-review-unit-settlement.ts';
 import type { RealizationObligationLedger, } from './prototype-realization-model.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 import type { RosterModelId, } from './roster-id.ts';
 
-/**
- * Expands one compact string into durable manifest-indexed rows.
- *
- * @returns Rows in status-string order
- */
+/** Expands one compact string into durable review-subject rows. */
 function expandStatuses({
   statuses,
   scope,
   cleanCode,
+  subjectIndexes,
 }: {
   readonly statuses: string;
   readonly scope: ReviewUnitStatusRow['scope'];
   readonly cleanCode: 'c' | 'p';
+  readonly subjectIndexes: readonly number[];
 }): readonly ReviewUnitStatusRow[] {
-  return (function expand(): readonly ReviewUnitStatusRow[] {
-    /**
-     * Runtime-owned rows.
-     */
-    const rows: ReviewUnitStatusRow[] = [];
-    /**
-     * UTF-16 cursor is exact because status alphabet is ASCII.
-     */
-    let manifestIndex = 0;
-    while (manifestIndex < statuses.length) {
-      /**
-       * Current compact status.
-       */
-      const status = statuses[manifestIndex];
-      if ((status !== cleanCode) && (status !== 'd'))
-        throw new Error('review unit admitted status alphabet differs');
-      rows.push({
-        scope,
-        manifestIndex,
-        status,
-      },);
-      manifestIndex += 1;
-    }
-    return rows;
-  })();
+  return subjectIndexes.map(function row(subjectIndex, position,) {
+    /** Current compact status at canonical position. */
+    const status = statuses[position];
+    if ((status !== cleanCode) && (status !== 'd'))
+      throw new Error('review unit admitted status alphabet differs');
+    return {
+      scope,
+      subjectIndex,
+      status,
+    };
+  },);
 }
 
 /**
  * Admits one complete candidate-scoped verifier response or throws.
  *
  * @returns Runtime-bound ballot after structural and semantic admission
- *
- * @example
- * ```ts
- * const ballot = admitReviewUnitResponse({
- *   response,
- *   ledger,
- *   authorSettlement,
- *   candidateOrdinal,
- *   verifierOrdinal,
- *   verifierModelId,
- *   manifest,
- *   expectedManifestDigest,
- *   shell,
- *   sourceText,
- *   archiveText,
- *   sourcePictures,
- * });
- * ```
  */
 export function admitReviewUnitResponse({
   response,
   ledger,
+  reviewPlan,
   authorSettlement,
   candidateOrdinal,
   verifierOrdinal,
@@ -99,6 +67,7 @@ export function admitReviewUnitResponse({
 }: {
   readonly response: ReviewUnitResponse;
   readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly authorSettlement: ReviewUnitAuthorSettlement;
   readonly candidateOrdinal: number;
   readonly verifierOrdinal: number;
@@ -109,45 +78,38 @@ export function admitReviewUnitResponse({
   readonly sourceText: string;
   readonly archiveText: string;
   readonly sourcePictures: readonly { readonly assetName: string; }[];
-}): CandidateScopedBallot {
+}): ReviewUnitBallot {
   assertReviewUnitManifest({
     manifest,
     ledger,
     shell,
+    sourceText,
+    sourceBody: shell.body,
     archiveBody: archiveText,
+    reviewPlan,
     expectedManifestDigest,
   },);
-  /**
-   * Manifest verifier plan at exact ordinal.
-   */
+  /** Manifest verifier plan at exact ordinal. */
   const verifierPlan = manifest.verifierPlan[verifierOrdinal];
   if ((verifierPlan === undefined) || (verifierPlan.modelId !== verifierModelId))
     throw new ReviewUnitAdmissionError({
       failureCategory: 'candidate-binding',
       message: 'review unit verifier identity differs',
     },);
-  /**
-   * Candidate selected only from total author settlement.
-   */
-  const candidate = candidatesFromReviewUnitSettlement({
-    settlement: authorSettlement,
-    manifest,
-  },)
-    .find(function ordinal(value,) {
-    return value.candidateOrdinal === candidateOrdinal;
-  },);
+  /** Candidate selected only from total author settlement. */
+  const candidate = candidatesFromReviewUnitSettlement({ settlement: authorSettlement, manifest, })
+    .find(function ordinal(value,) { return value.candidateOrdinal === candidateOrdinal; });
   if (candidate === undefined)
     throw new ReviewUnitAdmissionError({
       failureCategory: 'candidate-binding',
       message: 'review unit author ordinal is unavailable',
     },);
-  /**
-   * First privacy-safe structural failure category.
-   */
+  /** First privacy-safe structural failure category. */
   const diagnosis = diagnoseReviewUnitResponse({
     value: response,
-    ledger,
+    reviewPlan,
     candidate,
+    pictureCount: sourcePictures.length,
   },);
   if (diagnosis.kind === 'rejected')
     throw new ReviewUnitAdmissionError({
@@ -157,6 +119,7 @@ export function admitReviewUnitResponse({
   assertReviewUnitBinding({
     candidate,
     manifest,
+    reviewPlan,
     shell,
     sourceText,
     archiveText,
@@ -165,8 +128,18 @@ export function admitReviewUnitResponse({
   assertReviewUnitEvidence({
     response,
     candidate,
-    ledger,
+    reviewPlan,
+    pictureCount: sourcePictures.length,
   });
+  /** Clause rows flattened by plan slot groups. */
+  const clauseRows = reviewPlan.slotGroups.flatMap(function group(value, groupIndex,) {
+    return expandStatuses({
+      statuses: response.clauseStatusesBySlot[groupIndex] ?? '',
+      scope: 'c',
+      cleanCode: 'p',
+      subjectIndexes: value.clauseSubjectIndexes,
+    });
+  },);
   return {
     verifierModelId,
     candidateOrdinal,
@@ -174,15 +147,30 @@ export function admitReviewUnitResponse({
     response,
     statusRows: [
       ...expandStatuses({
-        statuses: response.obligationStatuses,
-        scope: 'o',
+        statuses: response.frontMatterStatuses,
+        scope: 'fm',
         cleanCode: 'p',
-      },),
+        subjectIndexes: reviewPlan.frontMatterSubjects.map(function index(value,) { return value.subjectIndex; }),
+      }),
+      ...clauseRows,
+      ...expandStatuses({
+        statuses: response.relationStatuses,
+        scope: 'r',
+        cleanCode: 'p',
+        subjectIndexes: reviewPlan.relations.map(function index(value,) { return value.subjectIndex; }),
+      }),
+      ...expandStatuses({
+        statuses: response.slotLanguageStatuses,
+        scope: 'sl',
+        cleanCode: 'c',
+        subjectIndexes: reviewPlan.slotGroups.map(function index(value,) { return value.groupIndex; }),
+      }),
       ...expandStatuses({
         statuses: response.globalStatuses,
         scope: 'g',
         cleanCode: 'c',
-      },),
+        subjectIndexes: reviewPlan.globalCriteria.map(function index(_value, position,) { return position; }),
+      }),
     ],
   };
 }

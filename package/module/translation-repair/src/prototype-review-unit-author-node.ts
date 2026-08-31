@@ -9,6 +9,7 @@ import type {
   VisionMessage,
 } from './chat-contract.ts';
 import { admitReviewUnitAuthorResponse, } from './prototype-review-unit-author.ts';
+import { reviewUnitHyperModel, } from './prototype-review-unit-hyper.ts';
 import { assertReviewUnitManifest, } from './prototype-review-unit-manifest.ts';
 import type {
   ReviewUnitCandidate,
@@ -25,6 +26,7 @@ import type {
   RealizationCandidatePlan,
   RealizationObligationLedger,
 } from './prototype-realization-model.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import { persistRealizationImmutableJson, } from './prototype-realization-persistence.ts';
 import { assertRealizationPicturesReachMessages, } from './prototype-realization-vision.ts';
 import type {
@@ -54,6 +56,7 @@ function admitAuthorResponse({
   response,
   shell,
   manifest,
+  reviewPlan,
   plan,
   sourceText,
   archiveText,
@@ -62,6 +65,7 @@ function admitAuthorResponse({
   readonly response: SlotDocumentResponse;
   readonly shell: ImmutableShell;
   readonly manifest: ReviewUnitManifest;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly plan: RealizationCandidatePlan;
   readonly sourceText: string;
   readonly archiveText: string;
@@ -71,6 +75,7 @@ function admitAuthorResponse({
     response,
     shell,
     manifest,
+    reviewPlan,
     plan,
     sourceText,
     archiveText,
@@ -138,6 +143,7 @@ export async function runReviewUnitAuthorNode({
   messages,
   shell,
   ledger,
+  reviewPlan,
   sourceText,
   archiveText,
   sourcePictures,
@@ -152,6 +158,7 @@ export async function runReviewUnitAuthorNode({
   readonly messages: readonly (ChatMessage | VisionMessage)[];
   readonly shell: ImmutableShell;
   readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly sourceText: string;
   readonly archiveText: string;
   readonly sourcePictures: readonly { readonly assetName: string; }[];
@@ -162,7 +169,10 @@ export async function runReviewUnitAuthorNode({
     manifest,
     ledger,
     shell,
+    sourceText,
+    sourceBody: shell.body,
     archiveBody: archiveText,
+    reviewPlan,
     expectedManifestDigest,
   },);
   assertRealizationPicturesReachMessages({
@@ -206,6 +216,7 @@ export async function runReviewUnitAuthorNode({
             response: stored.value,
             shell,
             manifest,
+            reviewPlan,
             plan,
             sourceText,
             archiveText,
@@ -230,6 +241,7 @@ export async function runReviewUnitAuthorNode({
     responseFormat,
     validate,
     validateRawText: validateCandidateAuthorRawText,
+    exchangeTimeoutMs: reviewUnitHyperModel({ modelId: plan.modelId, }).requestTimeoutMs,
     signal,
   },);
   if (execution.kind === 'unusable')
@@ -242,6 +254,7 @@ export async function runReviewUnitAuthorNode({
       response: execution.value,
       shell,
       manifest,
+      reviewPlan,
       plan,
       sourceText,
       archiveText,

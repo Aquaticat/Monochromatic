@@ -7,6 +7,12 @@ import type {
   ReviewUnitManifest,
 } from './prototype-review-unit-model.ts';
 import { realizationCandidateAlias, } from './prototype-realization-author.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
+import {
+  assertReviewUnitProof,
+  reviewUnitProofDigest,
+  type ReviewUnitProofInput,
+} from './prototype-review-unit-proof.ts';
 import { validateSerialCandidate, } from './prototype-serial-producer-plan.ts';
 import type { RealizationCandidatePlan, } from './prototype-realization-model.ts';
 import type {
@@ -14,7 +20,7 @@ import type {
   SlotDocumentResponse,
 } from './prototype-slot-model.ts';
 import { validateSlotCandidate, } from './prototype-slot-wire.ts';
-import { compileReviewUnitCandidate, } from './prototype-target-boundary-compile.ts';
+import { compileCandidateBallotCandidate, } from './prototype-target-boundary-compile.ts';
 
 /**
  * Runtime-owned candidate digest excluding self reference.
@@ -51,6 +57,7 @@ export function admitReviewUnitAuthorResponse({
   response,
   shell,
   manifest,
+  reviewPlan,
   plan,
   sourceText,
   archiveText,
@@ -59,6 +66,7 @@ export function admitReviewUnitAuthorResponse({
   readonly response: SlotDocumentResponse;
   readonly shell: ImmutableShell;
   readonly manifest: ReviewUnitManifest;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly plan: RealizationCandidatePlan;
   readonly sourceText: string;
   readonly archiveText: string;
@@ -87,7 +95,7 @@ export function admitReviewUnitAuthorResponse({
   /**
    * Complete post-boundary candidate compiled before hashing.
    */
-  const compilation = compileReviewUnitCandidate({
+  const compilation = compileCandidateBallotCandidate({
     shell,
     response,
     boundaries: manifest.targetBoundaries,
@@ -100,6 +108,8 @@ export function admitReviewUnitAuthorResponse({
     sourcePictures,
     candidate: compilation.document,
   },);
+  if (reviewPlan.reviewPlanDigest !== manifest.reviewPlanDigest)
+    throw new Error('review unit author review plan differs');
   /**
    * Slot record normalized into immutable shell order.
    */
@@ -117,9 +127,22 @@ export function admitReviewUnitAuthorResponse({
     ];
   },),);
   /**
-   * Runtime-owned candidate members participating in self digest.
+   * Synthetic exact-anchor slots for immutable target front matter.
    */
-  const identity = {
+  const frontMatterSlots = Object.fromEntries(reviewPlan.frontMatterSubjects.map(function entry(subject,) {
+    return [subject.targetSlotKey, subject.targetText,];
+  },),);
+  /**
+   * Body and front-matter target records used by verifier anchors.
+   */
+  const candidateSlots = {
+    ...frontMatterSlots,
+    ...compilation.slots,
+  };
+  /**
+   * Runtime-owned candidate members before deterministic proof attaches.
+   */
+  const admittedIdentity = {
     candidateId: realizationCandidateAlias({
       manifestDigest: manifest.manifestDigest,
       ordinal: plan.ordinal,
@@ -130,11 +153,33 @@ export function admitReviewUnitAuthorResponse({
     priority: plan.priority,
     document: compilation.document,
     documentDigest: hashContent({ content: compilation.document, }),
-    slotDigest: hashContent({ content: JSON.stringify(compilation.slots,), }),
+    slotDigest: hashContent({ content: JSON.stringify(candidateSlots,), }),
     rawSlotDigest: hashContent({ content: JSON.stringify(rawSlots,), }),
-    slots: compilation.slots,
+    slots: candidateSlots,
     rawSlots,
     resolvedBoundaries: compilation.resolvedBoundaries,
+  };
+  /**
+   * Mechanically decidable proof input excluding semantic claims.
+   */
+  const proofInput: ReviewUnitProofInput = {
+    candidateId: admittedIdentity.candidateId,
+    candidateOrdinal: admittedIdentity.candidateOrdinal,
+    documentDigest: admittedIdentity.documentDigest,
+    slotDigest: admittedIdentity.slotDigest,
+    rawSlotDigest: admittedIdentity.rawSlotDigest,
+    resolvedBoundaries: admittedIdentity.resolvedBoundaries,
+    sourcePictureNames: sourcePictures.map(function name(picture,) { return picture.assetName; }),
+  };
+  /**
+   * Candidate identity including runtime-owned admission proof.
+   */
+  const identity = {
+    ...admittedIdentity,
+    deterministicProofDigest: reviewUnitProofDigest({
+      manifest,
+      input: proofInput,
+    },),
   };
   return {
     ...identity,
@@ -160,6 +205,7 @@ export function admitReviewUnitAuthorResponse({
 export function assertReviewUnitBinding({
   candidate,
   manifest,
+  reviewPlan,
   shell,
   sourceText,
   archiveText,
@@ -167,6 +213,7 @@ export function assertReviewUnitBinding({
 }: {
   readonly candidate: ReviewUnitCandidate;
   readonly manifest: ReviewUnitManifest;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly shell: ImmutableShell;
   readonly sourceText: string;
   readonly archiveText: string;
@@ -183,6 +230,7 @@ export function assertReviewUnitBinding({
     response: { slots: candidate.rawSlots, },
     shell,
     manifest,
+    reviewPlan,
     plan: {
       ordinal: candidate.candidateOrdinal,
       modelId: candidate.modelId,
@@ -192,6 +240,19 @@ export function assertReviewUnitBinding({
     archiveText,
     sourcePictures,
   },);
+  assertReviewUnitProof({
+    manifest,
+    input: {
+      candidateId: candidate.candidateId,
+      candidateOrdinal: candidate.candidateOrdinal,
+      documentDigest: candidate.documentDigest,
+      slotDigest: candidate.slotDigest,
+      rawSlotDigest: candidate.rawSlotDigest,
+      resolvedBoundaries: candidate.resolvedBoundaries,
+      sourcePictureNames: sourcePictures.map(function name(picture,) { return picture.assetName; }),
+    },
+    expectedDigest: candidate.deterministicProofDigest,
+  });
   if (JSON.stringify(candidate,) !== JSON.stringify(expected,))
     throw new Error('review unit candidate binding differs');
 }

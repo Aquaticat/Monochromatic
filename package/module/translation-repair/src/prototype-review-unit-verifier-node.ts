@@ -7,8 +7,10 @@ import type {
   VisionMessage,
 } from './chat-contract.ts';
 import { admitReviewUnitResponse, } from './prototype-review-unit-admission.ts';
+import { assertReviewUnitBinding, } from './prototype-review-unit-author.ts';
 import { ReviewUnitAdmissionError, } from './prototype-review-unit-evidence.ts';
 import { diagnoseReviewUnitResponse, } from './prototype-review-unit-guard.ts';
+import { reviewUnitHyperModel, } from './prototype-review-unit-hyper.ts';
 import { assertReviewUnitManifest, } from './prototype-review-unit-manifest.ts';
 import {
   executeReviewUnitNode,
@@ -28,10 +30,11 @@ import type {
 } from './prototype-review-unit-model.ts';
 import { reviewUnitResponseFormat, } from './prototype-review-unit-schema.ts';
 import {
-  persistCandidateScopedBallot,
+  persistReviewUnitBallot,
   type ReviewUnitVerifierState,
 } from './prototype-review-unit-verifier-state.ts';
 import { assertNoDuplicateJsonMembers, } from './prototype-json-member-guard.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import type { RealizationObligationLedger, } from './prototype-realization-model.ts';
 import { assertRealizationPicturesReachMessages, } from './prototype-realization-vision.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
@@ -81,6 +84,7 @@ export async function runReviewUnitVerifierNode({
   authorSettlement,
   shell,
   ledger,
+  reviewPlan,
   sourceText,
   archiveText,
   sourcePictures,
@@ -98,6 +102,7 @@ export async function runReviewUnitVerifierNode({
   readonly authorSettlement: ReviewUnitAuthorSettlement;
   readonly shell: ImmutableShell;
   readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly sourceText: string;
   readonly archiveText: string;
   readonly sourcePictures: readonly { readonly assetName: string; }[];
@@ -108,8 +113,20 @@ export async function runReviewUnitVerifierNode({
     manifest,
     ledger,
     shell,
+    sourceText,
+    sourceBody: shell.body,
     archiveBody: archiveText,
+    reviewPlan,
     expectedManifestDigest,
+  },);
+  assertReviewUnitBinding({
+    candidate,
+    manifest,
+    reviewPlan,
+    shell,
+    sourceText,
+    archiveText,
+    sourcePictures,
   },);
   assertRealizationPicturesReachMessages({
     messages,
@@ -127,8 +144,9 @@ export async function runReviewUnitVerifierNode({
    * Strict response contract bound to one candidate.
    */
   const responseFormat = reviewUnitResponseFormat({
-    ledger,
+    reviewPlan,
     candidate,
+    pictureCount: sourcePictures.length,
   });
   /**
    * Mutable diagnostic state scoped to one provider call.
@@ -153,8 +171,9 @@ export async function runReviewUnitVerifierNode({
      */
     const diagnosis = diagnoseReviewUnitResponse({
       value,
-      ledger,
+      reviewPlan,
       candidate,
+      pictureCount: sourcePictures.length,
     });
     diagnostic.guardFailure = diagnosis.kind === 'rejected'
       ? diagnosis.failure
@@ -218,7 +237,7 @@ export async function runReviewUnitVerifierNode({
       signal,
     },);
     if (stored.kind === 'usable') {
-      return await persistCandidateScopedBallot({
+      return await persistReviewUnitBallot({
         outputDir,
         id,
         state: {
@@ -226,6 +245,7 @@ export async function runReviewUnitVerifierNode({
           ballot: admitReviewUnitResponse({
             response: stored.value,
             ledger,
+            reviewPlan,
             authorSettlement,
             candidateOrdinal: candidate.candidateOrdinal,
             verifierOrdinal,
@@ -257,6 +277,7 @@ export async function runReviewUnitVerifierNode({
     validate,
     validateRawText,
     failureCategory,
+    exchangeTimeoutMs: reviewUnitHyperModel({ modelId: verifierModelId, }).requestTimeoutMs,
     signal,
   },);
   if (execution.kind === 'unusable')
@@ -268,6 +289,7 @@ export async function runReviewUnitVerifierNode({
     const ballot = admitReviewUnitResponse({
       response: execution.value,
       ledger,
+      reviewPlan,
       authorSettlement,
       candidateOrdinal: candidate.candidateOrdinal,
       verifierOrdinal,
@@ -287,7 +309,7 @@ export async function runReviewUnitVerifierNode({
       execution,
       usable: true,
     });
-    return await persistCandidateScopedBallot({
+    return await persistReviewUnitBallot({
       outputDir,
       id,
       state: {

@@ -8,9 +8,6 @@ export {
   admitReviewUnitResponse,
 } from './prototype-review-unit-admission.ts';
 export {
-  CONDITIONAL_DEFECT_CLASSES,
-} from './prototype-conditional-audit-model.ts';
-export {
   reviewUnitResponseGuard,
   diagnoseReviewUnitResponse,
 } from './prototype-review-unit-guard.ts';
@@ -29,20 +26,50 @@ export {
 } from './prototype-review-unit-manifest.ts';
 export {
   REVIEW_UNIT_AUTHOR_COUNT,
+  REVIEW_UNIT_DEFECT_CLASSES,
   REVIEW_UNIT_FINDING_CAP,
   REVIEW_UNIT_VERIFIER_COUNT,
   MAX_REVIEW_UNIT_PAYLOAD_COUNT,
   type ReviewUnitAuthorSettlement,
   type ReviewUnitCandidate,
+  type ReviewUnitDefectClass,
   type ReviewUnitDiagnosis,
+  type ReviewUnitFinding,
+  type ReviewUnitFindingScope,
   type ReviewUnitGuardFailure,
   type ReviewUnitManifest,
   type ReviewUnitResponse,
   type ReviewUnitSelection,
   type ReviewUnitStatusRow,
   type ReviewUnitVerifierPlan,
-  type CandidateScopedBallot,
+  type ReviewUnitBallot,
 } from './prototype-review-unit-model.ts';
+export {
+  assertReviewUnitPlan,
+  createReviewUnitPlan,
+  MAX_REVIEW_UNIT_CLAUSES,
+  MAX_REVIEW_UNIT_RELATIONS,
+  MAX_REVIEW_UNIT_SLOT_GROUPS,
+  REVIEW_UNIT_GLOBAL_CRITERIA,
+  type ReviewUnitClauseSubject,
+  type ReviewUnitGlobalCriterion,
+  type ReviewUnitPlan,
+  type ReviewUnitRelationSubject,
+  type ReviewUnitSlotGroup,
+  type ReviewUnitSourceEvidence,
+} from './prototype-review-unit-plan.ts';
+export {
+  assertReviewUnitProof,
+  reviewUnitProofDigest,
+  type ReviewUnitProofInput,
+} from './prototype-review-unit-proof.ts';
+export {
+  reviewUnitAuthorMessages,
+  reviewUnitVerifierMessages,
+} from './prototype-review-unit-prompt.ts';
+export {
+  runReviewUnitVerifierNode,
+} from './prototype-review-unit-verifier-node.ts';
 export {
   bindReviewUnitClient,
   type ReviewUnitClient,
@@ -75,11 +102,11 @@ export {
   REALIZATION_GLOBAL_CRITERIA,
 } from './prototype-realization-model.ts';
 export {
-  compileReviewUnitCandidate,
-  compileReviewUnitDocument,
+  compileCandidateBallotCandidate,
+  compileCandidateBallotDocument,
 } from './prototype-target-boundary-compile.ts';
 export type {
-  ReviewUnitCompilation,
+  CandidateBallotCompilation,
   CandidateTargetBoundary,
   ResolvedCandidateTargetBoundary,
 } from './prototype-target-boundary.ts';

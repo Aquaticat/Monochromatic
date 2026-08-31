@@ -12,21 +12,19 @@ import type {
   ReviewUnitCandidate,
   ReviewUnitManifest,
 } from './prototype-review-unit-model.ts';
-import type {
-  RealizationCandidatePlan,
-  RealizationObligationLedger,
-} from './prototype-realization-model.ts';
+import type { RealizationCandidatePlan, } from './prototype-realization-model.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 
 /**
  * Canonical complete-candidate author quality contract.
  */
-const REVIEW_UNIT_AUTHOR_SYSTEM = 'Produce one complete publication-ready English candidate under immutable shell. Own full source fidelity, completeness, identities, contributor authority, relations, actor references, chronology, terminology, grammar, tense, register, and source-calque avoidance. Return every slot exactly once. Runtime owns manifested target-language separators adjacent to locked syntax; do not encode or discuss them. Use obligation ledger as closed-world completeness checklist, but return no audit claims. Never invent, omit, summarize, explain, or emit Markdown outside slot text.';
+const REVIEW_UNIT_AUTHOR_SYSTEM = 'Produce one complete publication-ready English candidate under immutable shell. Source is semantic authority; archive is wording evidence only and may contain defects. Read every readable clause and ordered relation in reviewPlan. Own every fact, actor, attribution, identity, chronology, technical or legal term, contributor voice, idiomatic sentence boundary, unambiguous reference, grammar, tense, register, source-calque avoidance, and source-image-target relation. Return every slot exactly once. Runtime owns locked syntax and manifested target-language separators; do not encode or discuss them. Return no audit claims, alternatives, explanations, or Markdown outside slot text. Never invent, omit, summarize, or copy defective archive wording.';
 
 /**
  * Canonical one-candidate verifier quality contract.
  */
-const REVIEW_UNIT_VERIFIER_SYSTEM = 'Independently verify one anonymous whole candidate against complete source, archive authority, obligation ledger, immutable shell, runtime-owned target boundaries, and every image. Return candidate id and digest exactly. obligationStatuses is exactly one character per ledger obligation in manifest order: p preserved or d defect. globalStatuses is exactly one character per supplied criterion in canonical order: c clean or d defect. Let D be total d characters and C be findingCap. overflow must equal D > C. When overflow is false, return exactly one unique indexed finding for every d. When overflow is true, return exactly C unique findings linked to distinct d subjects. Obligation omission needs no target anchor; omission is forbidden for global findings. Every other finding needs exact UTF-16 half-open target anchors with SHA-256 substring digests. Never infer author identity or priority, revise prose, score, summarize, or omit any status.';
+const REVIEW_UNIT_VERIFIER_SYSTEM = 'Independently verify one anonymous whole candidate against complete source, archive wording evidence, readable reviewPlan, immutable shell, deterministic mechanical proof, and every image. Source remains semantic authority. Return every binding exactly. frontMatterStatuses has one p preserved or d defect character per semantic front-matter string. clauseStatusesBySlot has one p or d per readable clause, nested by slot group. relationStatuses has one p or d per ordered relation. slotLanguageStatuses and globalStatuses have one c clean or d defect per supplied subject. Review every subject before returning. Let D be total d characters and C be findingCap. overflow equals D > C. Without overflow return one witness for every d. With overflow return exactly the first C defective subjects in canonical front-matter, clause, relation, language, then global order. Follow scope-specific source, image, and target evidence rules exactly. One witness proves a subject veto and need not enumerate other defects in that subject. Never infer author identity or priority, revise prose, score, summarize, defer overlapping responsibility, or omit a status.';
 
 /**
  * Canonical author packet fields.
@@ -37,7 +35,7 @@ const AUTHOR_PACKET_KEYS = [
   'sourceText',
   'archiveText',
   'shell',
-  'ledger',
+  'reviewPlan',
 ] as const;
 
 /**
@@ -49,12 +47,11 @@ const VERIFIER_PACKET_KEYS = [
   'verifierPlanDigest',
   'candidateOrdinal',
   'findingCap',
-  'globalCriteria',
   'defectClasses',
   'sourceText',
   'archiveText',
   'shell',
-  'ledger',
+  'reviewPlan',
   'candidate',
 ] as const;
 
@@ -66,6 +63,7 @@ const CANDIDATE_KEYS = [
   'candidateDigest',
   'document',
   'slots',
+  'deterministicProofDigest',
 ] as const;
 
 /**
@@ -192,7 +190,7 @@ function promptContent({
  *   plan,
  *   manifest,
  *   shell,
- *   ledger,
+ *   reviewPlan,
  *   sourceText,
  *   archiveText,
  *   media,
@@ -203,7 +201,7 @@ export function reviewUnitAuthorMessages({
   plan,
   manifest,
   shell,
-  ledger,
+  reviewPlan,
   sourceText,
   archiveText,
   media,
@@ -211,7 +209,7 @@ export function reviewUnitAuthorMessages({
   readonly plan: RealizationCandidatePlan;
   readonly manifest: ReviewUnitManifest;
   readonly shell: ImmutableShell;
-  readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly sourceText: string;
   readonly archiveText: string;
   readonly media: readonly PrototypeMedia[];
@@ -233,7 +231,7 @@ export function reviewUnitAuthorMessages({
       slots: shell.slots,
       targetBoundaries: manifest.targetBoundaries,
     },
-    ledger,
+    reviewPlan,
   };
   assertKeys({
     value: packet,
@@ -268,11 +266,10 @@ export function reviewUnitAuthorMessages({
  * const messages = reviewUnitVerifierMessages({
  *   manifest,
  *   shell,
- *   ledger,
+ *   reviewPlan,
  *   candidate,
  *   authorSettlementDigest,
  *   verifierPlanDigest,
- *   globalCriteria,
  *   defectClasses,
  *   sourceText,
  *   archiveText,
@@ -283,11 +280,10 @@ export function reviewUnitAuthorMessages({
 export function reviewUnitVerifierMessages({
   manifest,
   shell,
-  ledger,
+  reviewPlan,
   candidate,
   authorSettlementDigest,
   verifierPlanDigest,
-  globalCriteria,
   defectClasses,
   sourceText,
   archiveText,
@@ -295,11 +291,10 @@ export function reviewUnitVerifierMessages({
 }: {
   readonly manifest: ReviewUnitManifest;
   readonly shell: ImmutableShell;
-  readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly candidate: ReviewUnitCandidate;
   readonly authorSettlementDigest: string;
   readonly verifierPlanDigest: string;
-  readonly globalCriteria: readonly string[];
   readonly defectClasses: readonly string[];
   readonly sourceText: string;
   readonly archiveText: string;
@@ -317,6 +312,7 @@ export function reviewUnitVerifierMessages({
     candidateDigest: candidate.candidateDigest,
     document: candidate.document,
     slots: candidate.slots,
+    deterministicProofDigest: candidate.deterministicProofDigest,
   };
   assertKeys({
     value: evidence,
@@ -331,7 +327,6 @@ export function reviewUnitVerifierMessages({
     verifierPlanDigest,
     candidateOrdinal: candidate.candidateOrdinal,
     findingCap: manifest.findingCap,
-    globalCriteria,
     defectClasses,
     sourceText,
     archiveText,
@@ -340,7 +335,7 @@ export function reviewUnitVerifierMessages({
       slots: shell.slots,
       targetBoundaries: manifest.targetBoundaries,
     },
-    ledger,
+    reviewPlan,
     candidate: evidence,
   };
   assertKeys({

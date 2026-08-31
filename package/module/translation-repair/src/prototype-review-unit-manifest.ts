@@ -22,6 +22,10 @@ import {
   REVIEW_UNIT_VERIFIER_PROTOCOL_DIGEST,
 } from './prototype-review-unit-prompt.ts';
 import { realizationCandidateAlias, } from './prototype-realization-author.ts';
+import {
+  assertReviewUnitPlan,
+  type ReviewUnitPlan,
+} from './prototype-review-unit-plan.ts';
 import { assertRealizationLedgerBindsShell, } from './prototype-realization-ledger-validation.ts';
 import type {
   RealizationCandidatePlan,
@@ -222,7 +226,10 @@ function assertPictures({
 export function createReviewUnitManifest({
   ledger,
   shell,
+  sourceText,
+  sourceBody,
   archiveBody,
+  reviewPlan,
   candidatePlan,
   verifierPlan,
   providerSelection,
@@ -230,7 +237,10 @@ export function createReviewUnitManifest({
 }: {
   readonly ledger: RealizationObligationLedger;
   readonly shell: ImmutableShell;
+  readonly sourceText: string;
+  readonly sourceBody: string;
   readonly archiveBody: string;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly candidatePlan: readonly RealizationCandidatePlan[];
   readonly verifierPlan: readonly ReviewUnitVerifierPlan[];
   readonly providerSelection: ReviewUnitManifest['providerSelection'];
@@ -240,6 +250,19 @@ export function createReviewUnitManifest({
     ledger,
     shell,
     archiveBody,
+  });
+  /**
+   * Closed-world ledger digest shared with readable plan.
+   */
+  const ledgerDigest = reviewUnitLedgerDigest({ ledger, });
+  assertReviewUnitPlan({
+    plan: reviewPlan,
+    ledger,
+    shell,
+    sourceText,
+    sourceBody,
+    archiveBody,
+    ledgerDigest,
   });
   assertRoster({
     candidatePlan,
@@ -261,8 +284,9 @@ export function createReviewUnitManifest({
   const identity = {
     version: 1,
     shellDigest: shell.shellDigest,
-    ledgerDigest: reviewUnitLedgerDigest({ ledger, }),
+    ledgerDigest,
     targetBoundaries,
+    reviewPlanDigest: reviewPlan.reviewPlanDigest,
     candidatePlan: candidatePlan.toSorted(function ordinal(
       left,
       right,
@@ -314,13 +338,19 @@ export function assertReviewUnitManifest({
   manifest,
   ledger,
   shell,
+  sourceText,
+  sourceBody,
   archiveBody,
+  reviewPlan,
   expectedManifestDigest,
 }: {
   readonly manifest: ReviewUnitManifest;
   readonly ledger: RealizationObligationLedger;
   readonly shell: ImmutableShell;
+  readonly sourceText: string;
+  readonly sourceBody: string;
   readonly archiveBody: string;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly expectedManifestDigest: string;
 }): void {
   assertTargetBoundariesBindShell({
@@ -333,7 +363,10 @@ export function assertReviewUnitManifest({
   const expected = createReviewUnitManifest({
     ledger,
     shell,
+    sourceText,
+    sourceBody,
     archiveBody,
+    reviewPlan,
     candidatePlan: manifest.candidatePlan,
     verifierPlan: manifest.verifierPlan,
     providerSelection: manifest.providerSelection,

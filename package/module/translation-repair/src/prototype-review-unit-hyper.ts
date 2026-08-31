@@ -30,6 +30,10 @@ export type ReviewUnitHyperModel = HyperExpansionModel & {
    * Whether current Hyper row accepts page image.
    */
   readonly readsImages: true;
+  /**
+   * Candidate K provisional local call deadline.
+   */
+  readonly requestTimeoutMs: 900_000;
 };
 
 /**
@@ -59,18 +63,21 @@ export const REVIEW_UNIT_HYPER_MODELS: readonly ReviewUnitHyperModel[] = [
     id: 'qwen3.8-27b',
     requestOutputTokens: 32_000,
     readsImages: true,
+    requestTimeoutMs: 900_000,
   },
   {
     requestId: 'hf:zai-org/GLM-5.3-Flash',
     id: 'glm-5.3-flash',
     requestOutputTokens: 32_000,
     readsImages: true,
+    requestTimeoutMs: 900_000,
   },
   {
     requestId: 'minimax-m3',
     id: 'minimax-m3',
     requestOutputTokens: 32_000,
     readsImages: true,
+    requestTimeoutMs: 900_000,
   },
 ];
 

@@ -7,7 +7,6 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -17,33 +16,37 @@ import {
 import {
   admitReviewUnitAuthorResponse,
   admitReviewUnitResponse,
+  assertReviewUnitBinding,
   assertReviewUnitManifest,
+  assertReviewUnitPlan,
   bindReviewUnitClient,
   buildImmutableShell,
   buildRealizationObligationLedger,
-  reviewUnitHyperModel,
-  reviewUnitHyperRouteDigest,
-  reviewUnitModelsIndependent,
-  reviewUnitResponseGuard,
-  REVIEW_UNIT_FINDING_CAP,
-  compileReviewUnitCandidate,
-  compileReviewUnitDocument,
-  CONDITIONAL_DEFECT_CLASSES,
   createReviewUnitHyperClient,
   createReviewUnitManifest,
+  createReviewUnitPlan,
   diagnoseReviewUnitResponse,
   MAX_REVIEW_UNIT_PAYLOAD_COUNT,
-  REALIZATION_GLOBAL_CRITERIA,
+  REVIEW_UNIT_DEFECT_CLASSES,
+  REVIEW_UNIT_FINDING_CAP,
+  REVIEW_UNIT_GLOBAL_CRITERIA,
+  REVIEW_UNIT_HYPER_MODELS,
+  reviewUnitHyperRouteDigest,
+  reviewUnitResponseGuard,
+  reviewUnitResponseFormat,
+  reviewUnitVerifierMessages,
   runReviewUnitRuntime,
+  runReviewUnitVerifierNode,
   selectReviewUnit,
-  targetBoundariesForShell,
+  type RealizationCandidatePlan,
   type ReviewUnitAuthorSettlement,
   type ReviewUnitCandidate,
+  type ReviewUnitFinding,
   type ReviewUnitManifest,
+  type ReviewUnitPlan,
   type ReviewUnitResponse,
   type ReviewUnitRouteClient,
-  type CandidateScopedBallot,
-  type RealizationCandidatePlan,
+  type ReviewUnitBallot,
 } from '../dist/final/node/prototype-review-unit.mjs';
 import {
   bindReviewUnitRouteClient,
@@ -53,7 +56,6 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   isJsonRecord,
-  type ModelTransport,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -76,11 +78,11 @@ function digest({ text, }: { readonly text: string }): string {
   return createHash('sha256',).update(text,).digest('hex',);
 }
 
-/** Source carrying two clauses and one page image. */
-const SOURCE = `---\nname: 猫\n---\n# 猫\n\n猫休息。猫醒来。\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
+/** Source carrying several clauses, adjacent slots, and one page image. */
+const SOURCE = `---\nname: 猫\n---\n# 猫\n\n猫休息。猫醒来。\n\n猫在窗边看雨。\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
 
 /** Archive carrying destination shell authority. */
-const ARCHIVE = `---\nname: Cat\n---\n# Cat\n\nThe cat rests. The cat wakes.\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
+const ARCHIVE = `---\nname: Cat\n---\n# Cat\n\nThe cat rests. The cat wakes.\n\nThe cat watches rain by the window.\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
 
 /** Page image payload attached to every node. */
 const DATA_URI = 'data:image/webp;base64,AA==';
@@ -92,121 +94,70 @@ const MEDIA = [{
   digest: digest({ text: DATA_URI, }),
 },] as const;
 
-/** Sentinel proving expected abort was actually thrown. */
-const ABORT_NOT_CAUGHT: unique symbol = Symbol('review unit abort absent',);
-
-/** Deliberately stale route ceiling proving manifest binding. */
-const ALTERED_ROUTE_OUTPUT_TOKENS = 31_999;
-
-/** Aborted getter read corresponding to immediate pre-verifier dispatch guard. */
-const PRE_VERIFIER_ABORT_READ = 8;
-
-/** Terminated Anthropic text stream for local route mapping control. */
-const HYPER_TEXT_BODY = `${[
-  { type: 'message_start', message: { usage: { input_tokens: 1, output_tokens: 1, }, }, },
-  { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '', }, },
-  { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'ok', }, },
-  { type: 'content_block_stop', index: 0, },
-  { type: 'message_delta', delta: { stop_reason: 'end_turn', }, usage: { output_tokens: 1, }, },
-  { type: 'message_stop', },
-].map(function line(event,) {
-  return `data: ${JSON.stringify(event,)}`;
-},).join('\n\n',)  }\n\n`;
-
-/** Builds transport recording Candidate K wire model. */
-function recordingCandidateHyperTransport({
-  wire,
-}: {
-  readonly wire: { modelId: string };
-}): ModelTransport {
-  return async function record(exchange,) {
-    const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
-    if ((!isJsonRecord(body,)) || ((typeof body.model) !== 'string'))
-      throw new Error('review unit Hyper wire model is absent');
-    wire.modelId = body.model;
-    return { status: 200, bodyText: HYPER_TEXT_BODY, };
-  };
-}
-
-/** Builds signal becoming aborted exactly at selected getter read. */
-function stagedAbortSignal({
-  reason,
-  abortAtRead,
-  reads,
-}: {
-  readonly reason: unknown;
-  readonly abortAtRead: number;
-  readonly reads: { value: number };
-}): AbortSignal {
-  /** Real signal supplying event-target methods and internal brand. */
-  const real = new AbortController().signal;
-  /** Proxy overriding only cancellation observations. */
-  const handler: ProxyHandler<AbortSignal> = {
-    get(target, property, receiver,): unknown {
-      if (property === 'aborted') {
-        reads.value += 1;
-        return reads.value >= abortAtRead;
-      }
-      if (property === 'reason')
-        return reason;
-      const value: unknown = Reflect.get(target, property, receiver,);
-      return (typeof value) === 'function' ? value.bind(target,) : value;
-    },
-  };
-  return new Proxy(real, handler,);
-}
-
-/** Binds scripted client to fixture route digest without provider traffic. */
-function scriptedRouteClient({
-  fixture,
-  client,
-}: {
-  readonly fixture: Fixture;
-  readonly client: SyntheticClient;
-}): ReviewUnitRouteClient {
-  return bindReviewUnitRouteClient({
-    client,
-    providerRouteDigest: fixture.manifest.providerRouteDigest,
-  },);
-}
-
 /** Complete deterministic fixture. */
 type Fixture = {
+  readonly source: string;
+  readonly archive: string;
   readonly shell: ReturnType<typeof buildImmutableShell>;
   readonly ledger: ReturnType<typeof buildRealizationObligationLedger>;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly manifest: ReviewUnitManifest;
 };
 
-/** Creates two-author and three-verifier Hyper-only fixture. */
-function createFixture(): Fixture {
-  const shell = buildImmutableShell({ sourceText: SOURCE, archiveText: ARCHIVE, });
+/** Candidate K three-family author plan. */
+const CANDIDATE_PLAN = [
+  { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', priority: 0, },
+  { ordinal: 1, modelId: 'hf:zai-org/GLM-5.3-Flash', priority: 1, },
+  { ordinal: 2, modelId: 'minimax-m3', priority: 2, },
+] as const satisfies readonly RealizationCandidatePlan[];
+
+/** Candidate K three-family verifier plan. */
+const VERIFIER_PLAN = [
+  { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', },
+  { ordinal: 1, modelId: 'hf:zai-org/GLM-5.3-Flash', },
+  { ordinal: 2, modelId: 'minimax-m3', },
+] as const;
+
+/** Creates exact Candidate K fixture for supplied complete page. */
+function createFixture({
+  source = SOURCE,
+  archive = ARCHIVE,
+}: {
+  readonly source?: string;
+  readonly archive?: string;
+} = {}): Fixture {
+  const shell = buildImmutableShell({ sourceText: source, archiveText: archive, });
   const ledger = buildRealizationObligationLedger({
     sourceBody: shell.body,
-    archiveBody: ARCHIVE,
+    archiveBody: archive,
     slots: shell.slots,
     shellDigest: shell.shellDigest,
   },);
-  const candidatePlan = [
-    { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', priority: 0, },
-    { ordinal: 1, modelId: 'minimax-m3', priority: 1, },
-  ] as const satisfies readonly RealizationCandidatePlan[];
-  const verifierPlan = [
-    { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', },
-    { ordinal: 1, modelId: 'hf:zai-org/GLM-5.3-Flash', },
-    { ordinal: 2, modelId: 'minimax-m3', },
-  ] as const;
+  /** Closed-world ledger identity passed into readable plan. */
+  const ledgerDigest = digest({ text: JSON.stringify(ledger,), });
+  const reviewPlan = createReviewUnitPlan({
+    ledger,
+    shell,
+    sourceText: source,
+    sourceBody: shell.body,
+    archiveBody: archive,
+    ledgerDigest,
+  },);
   const manifest = createReviewUnitManifest({
     ledger,
     shell,
-    archiveBody: ARCHIVE,
-    candidatePlan,
-    verifierPlan,
+    sourceText: source,
+    sourceBody: shell.body,
+    archiveBody: archive,
+    reviewPlan,
+    candidatePlan: CANDIDATE_PLAN,
+    verifierPlan: VERIFIER_PLAN,
     providerSelection: 'hyper-only',
     sourcePictures: MEDIA.map(function picture(item,) {
       return { assetName: item.assetName, digest: item.digest, };
     },),
   },);
-  return { shell, ledger, manifest, };
+  return { source, archive, shell, ledger, reviewPlan, manifest, };
 }
 
 /** Complete deterministic author slot map. */
@@ -219,10 +170,7 @@ function authorResponse({
 }): { readonly slots: Readonly<Record<string, string>> } {
   return {
     slots: Object.fromEntries(fixture.shell.slots.map(function slot(item, index,) {
-      return [
-        item.key,
-        `Author ${String(plan.ordinal,)} complete English slot ${String(index,)}.`,
-      ];
+      return [item.key, `Author ${String(plan.ordinal,)} complete English slot ${String(index,)}.`,];
     },),),
   };
 }
@@ -233,17 +181,16 @@ function settledFixture(): Fixture & {
   readonly settlement: ReviewUnitAuthorSettlement;
 } {
   const fixture = createFixture();
-  const sourcePictures = MEDIA.map(function picture(item,) {
-    return { assetName: item.assetName, };
-  },);
+  const sourcePictures = MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; });
   const candidates = fixture.manifest.candidatePlan.map(function candidate(plan,) {
     return admitReviewUnitAuthorResponse({
       response: authorResponse({ fixture, plan, }),
       shell: fixture.shell,
       manifest: fixture.manifest,
+      reviewPlan: fixture.reviewPlan,
       plan,
-      sourceText: SOURCE,
-      archiveText: ARCHIVE,
+      sourceText: fixture.source,
+      archiveText: fixture.archive,
       sourcePictures,
     },);
   },);
@@ -273,32 +220,39 @@ function cleanResponse({
   fixture,
   candidate,
 }: {
-  readonly fixture: Fixture;
-  readonly candidate: Pick<ReviewUnitCandidate, 'candidateId' | 'candidateDigest'>;
+  readonly fixture: Pick<Fixture, 'reviewPlan'>;
+  readonly candidate: Pick<ReviewUnitCandidate,
+    'candidateId' | 'candidateDigest' | 'deterministicProofDigest'>;
 }): ReviewUnitResponse {
   return {
     candidateId: candidate.candidateId,
     candidateDigest: candidate.candidateDigest,
-    obligationStatuses: 'p'.repeat(fixture.ledger.obligations.length,),
-    globalStatuses: 'c'.repeat(REALIZATION_GLOBAL_CRITERIA.length,),
+    reviewPlanDigest: fixture.reviewPlan.reviewPlanDigest,
+    deterministicProofDigest: candidate.deterministicProofDigest,
+    frontMatterStatuses: 'p'.repeat(fixture.reviewPlan.frontMatterSubjects.length,),
+    clauseStatusesBySlot: fixture.reviewPlan.slotGroups.map(function statuses(group,) {
+      return 'p'.repeat(group.clauseSubjectIndexes.length,);
+    },),
+    relationStatuses: 'p'.repeat(fixture.reviewPlan.relations.length,),
+    slotLanguageStatuses: 'c'.repeat(fixture.reviewPlan.slotGroups.length,),
+    globalStatuses: 'c'.repeat(fixture.reviewPlan.globalCriteria.length,),
     overflow: false,
     findings: [],
   };
 }
 
-/** Builds exact target anchor inside first candidate slot. */
+/** Builds exact target anchor inside named candidate slot. */
 function anchor({
   candidate,
+  slotKey,
   startOffset = 0,
   endOffset = 3,
 }: {
   readonly candidate: ReviewUnitCandidate;
+  readonly slotKey: string;
   readonly startOffset?: number;
   readonly endOffset?: number;
-}): ReviewUnitResponse['findings'][number]['targetAnchors'][number] {
-  const [slotKey,] = Object.keys(candidate.slots,);
-  if (slotKey === undefined)
-    throw new Error('review unit test slot is absent');
+}): ReviewUnitFinding['targetAnchors'][number] {
   const text = candidate.slots[slotKey];
   if (text === undefined)
     throw new Error('review unit test text is absent');
@@ -321,13 +275,14 @@ function ballot({
   readonly candidateOrdinal: number;
   readonly verifierOrdinal: number;
   readonly response: ReviewUnitResponse;
-}): CandidateScopedBallot {
+}): ReviewUnitBallot {
   const verifierModelId = fixture.manifest.verifierPlan[verifierOrdinal]?.modelId;
   if (verifierModelId === undefined)
     throw new Error('review unit test verifier is absent');
   return admitReviewUnitResponse({
     response,
     ledger: fixture.ledger,
+    reviewPlan: fixture.reviewPlan,
     authorSettlement: fixture.settlement,
     candidateOrdinal,
     verifierOrdinal,
@@ -335,11 +290,9 @@ function ballot({
     manifest: fixture.manifest,
     expectedManifestDigest: fixture.manifest.manifestDigest,
     shell: fixture.shell,
-    sourceText: SOURCE,
-    archiveText: ARCHIVE,
-    sourcePictures: MEDIA.map(function picture(item,) {
-      return { assetName: item.assetName, };
-    },),
+    sourceText: fixture.source,
+    archiveText: fixture.archive,
+    sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
   },);
 }
 
@@ -349,43 +302,40 @@ function selection({
   ballots,
 }: {
   readonly fixture: ReturnType<typeof settledFixture>;
-  readonly ballots: readonly CandidateScopedBallot[];
-}) {
+  readonly ballots: readonly ReviewUnitBallot[];
+}): ReturnType<typeof selectReviewUnit> {
   return selectReviewUnit({
     authorSettlement: fixture.settlement,
     ballots,
     manifest: fixture.manifest,
     expectedManifestDigest: fixture.manifest.manifestDigest,
     ledger: fixture.ledger,
+    reviewPlan: fixture.reviewPlan,
     shell: fixture.shell,
-    sourceText: SOURCE,
-    archiveText: ARCHIVE,
-    sourcePictures: MEDIA.map(function picture(item,) {
-      return { assetName: item.assetName, };
-    },),
+    sourceText: fixture.source,
+    archiveText: fixture.archive,
+    sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
   },);
 }
 
 /** Candidate evidence in canonical verifier packet. */
-type CandidateEvidence = Pick<ReviewUnitCandidate, 'candidateId' | 'candidateDigest'>;
+type CandidateEvidence = Pick<ReviewUnitCandidate,
+  'candidateId' | 'candidateDigest' | 'deterministicProofDigest'>;
 
 /** Guards anonymous candidate evidence. */
 function isCandidateEvidence(value: unknown,): value is CandidateEvidence {
   return isJsonRecord(value,)
     && ((typeof value.candidateId) === 'string')
-    && ((typeof value.candidateDigest) === 'string');
+    && ((typeof value.candidateDigest) === 'string')
+    && ((typeof value.deterministicProofDigest) === 'string');
 }
 
 /** Reads canonical candidate verifier packet from request. */
-function verifierPacket(
-  request: ChatJsonRequest<unknown>,
-): Readonly<Record<string, unknown>> {
+function verifierPacket(request: ChatJsonRequest<unknown>,): Readonly<Record<string, unknown>> {
   const [, message,] = request.messages;
   if ((message === undefined) || ((typeof message.content) === 'string'))
     throw new Error('review unit verifier packet is absent');
-  const textPart = message.content.find(function text(part,) {
-    return part.type === 'text';
-  },);
+  const textPart = message.content.find(function text(part,) { return part.type === 'text'; });
   if ((textPart === undefined) || (textPart.type !== 'text'))
     throw new Error('review unit verifier packet text is absent');
   const marker = 'REVIEW_UNIT_VERIFIER_PACKET:\n';
@@ -417,10 +367,7 @@ function responseForRequest({ fixture, }: {
     const packet = verifierPacket(request,);
     if (!isCandidateEvidence(packet.candidate,))
       throw new Error('review unit runtime candidate evidence differs');
-    return cleanResponse({
-      fixture,
-      candidate: packet.candidate,
-    });
+    return cleanResponse({ fixture, candidate: packet.candidate, });
   };
 }
 
@@ -447,7 +394,7 @@ function scriptedClient({
   const responseFor = responseForRequest({ fixture, });
   const authorBarrier = Promise.withResolvers<undefined>();
   const verifierBarrier = Promise.withResolvers<undefined>();
-  const expectedVerifiers = controls.failAuthorOrdinal === undefined ? 6 : 3;
+  const expectedVerifiers = controls.failAuthorOrdinal === undefined ? 9 : 6;
   return {
     chatText: async () => {
       await Promise.resolve();
@@ -460,12 +407,14 @@ function scriptedClient({
       peak.value = Math.max(peak.value, peak.inFlight,);
       const schemaName = request.responseFormat?.json_schema.name ?? '';
       calls.push(`${request.modelId}:${schemaName}`,);
-      prompts.push(JSON.stringify(request.messages,),);
+      prompts.push(`${request.modelId}:${JSON.stringify(request.messages,)}`,);
+      if (request.exchangeTimeoutMs !== 900_000)
+        throw new Error('review unit runtime deadline differs');
       const author = schemaName === 'immutable_shell_slots';
       const arrivals = calls.filter(function same(value,) {
         return value.endsWith(`:${schemaName}`,);
       },).length;
-      if (author && (arrivals === 2))
+      if (author && (arrivals === 3))
         authorBarrier.resolve(undefined,);
       if ((!author) && (arrivals === expectedVerifiers))
         verifierBarrier.resolve(undefined,);
@@ -505,785 +454,802 @@ function scriptedClient({
   };
 }
 
-/** Builds client proving abort propagation waits for all verifier siblings. */
-function delayedVerifierAbortClient({
+/** Binds scripted client to fixture route digest without provider traffic. */
+function scriptedRouteClient({
   fixture,
-  controller,
-  reason,
-  settledSiblingCount,
+  client,
 }: {
   readonly fixture: Fixture;
-  readonly controller: AbortController;
-  readonly reason: unknown;
-  readonly settledSiblingCount: { value: number };
-}): SyntheticClient {
-  const responseFor = responseForRequest({ fixture, });
-  const authorBarrier = Promise.withResolvers<undefined>();
-  const verifierBarrier = Promise.withResolvers<undefined>();
-  const arrivals = { author: 0, verifier: 0, };
-  return {
-    chatText: async () => {
-      await Promise.resolve();
-      throw new Error('review unit abort chatText unused');
-    },
-    chatJson: async <ValueT,>(
-      request: ChatJsonRequest<ValueT>,
-    ): Promise<ChatJsonOutcome<ValueT>> => {
-      const author = request.responseFormat?.json_schema.name === 'immutable_shell_slots';
-      const barrier = author ? authorBarrier : verifierBarrier;
-      if (author) {
-        arrivals.author += 1;
-        if (arrivals.author === 2)
-          authorBarrier.resolve(undefined,);
-      }
-      else {
-        arrivals.verifier += 1;
-        if (arrivals.verifier === 6)
-          verifierBarrier.resolve(undefined,);
-      }
-      await barrier.promise;
-      const designated = (!author)
-        && (request.modelId === 'hf:Qwen/Qwen3.8-27B')
-        && (verifierPacket(request,).candidateOrdinal === 0);
-      if (designated)
-        controller.abort(reason,);
-      else if (!author) {
-        await wait(50,);
-        settledSiblingCount.value += 1;
-      }
-      const value = responseFor(request,);
-      if (!request.validate(value,))
-        throw new Error('review unit abort response failed guard');
-      return { kind: 'ok', value: value as ValueT, rawText: JSON.stringify(value,), };
-    },
-    quotas: async () => {
-      await Promise.resolve();
-      throw new Error('review unit abort quotas unused');
-    },
-  };
+  readonly client: SyntheticClient;
+}): ReviewUnitRouteClient {
+  return bindReviewUnitRouteClient({
+    client,
+    providerRouteDigest: fixture.manifest.providerRouteDigest,
+  },);
 }
 
-/** Client counting forbidden restart calls before refusing them. */
-function countingRefusingClient({
-  calls,
+/** Runs full fixture graph through provider-neutral client. */
+async function runFixture({
+  fixture,
+  outputDir,
+  client,
+  restart,
+  signal = new AbortController().signal,
 }: {
-  readonly calls: { value: number };
-}): SyntheticClient {
-  return {
-    chatText: async () => {
-      calls.value += 1;
-      await Promise.resolve();
-      throw new Error('counted review unit text client called');
-    },
-    chatJson: async () => {
-      calls.value += 1;
-      await Promise.resolve();
-      throw new Error('counted review unit json client called');
-    },
-    quotas: async () => {
-      calls.value += 1;
-      await Promise.resolve();
-      throw new Error('counted review unit quota client called');
-    },
-  };
-}
-
-/** Client proving excluded route or restart made no provider call. */
-function refusingClient(): SyntheticClient {
-  return {
-    chatText: async () => {
-      await Promise.resolve();
-      throw new Error('excluded review unit text client called');
-    },
-    chatJson: async () => {
-      await Promise.resolve();
-      throw new Error('excluded review unit json client called');
-    },
-    quotas: async () => {
-      await Promise.resolve();
-      throw new Error('excluded review unit quota client called');
-    },
-  };
+  readonly fixture: Fixture;
+  readonly outputDir: string;
+  readonly client: SyntheticClient;
+  readonly restart: boolean;
+  readonly signal?: AbortSignal;
+}): Promise<Awaited<ReturnType<typeof runReviewUnitRuntime>>> {
+  return await runReviewUnitRuntime({
+    outputDir,
+    boundClient: bindReviewUnitClient({
+      manifest: fixture.manifest,
+      outputDir,
+      clients: {
+        all: client,
+        synthetic: client,
+        hyper: scriptedRouteClient({ fixture, client, }),
+      },
+    },),
+    manifest: fixture.manifest,
+    expectedManifestDigest: fixture.manifest.manifestDigest,
+    shell: fixture.shell,
+    ledger: fixture.ledger,
+    reviewPlan: fixture.reviewPlan,
+    sourceText: fixture.source,
+    archiveText: fixture.archive,
+    media: MEDIA,
+    restart,
+    signal,
+  },);
 }
 
 await describe({
-  name: 'Candidate K candidate-scoped ballots',
+  name: 'Candidate K review units',
   children: [
     it({
-      name: 'BINDS GLM canonical identity to vetted Hyper image route',
+      name: 'compiles readable clause relation and global ownership plan',
       fn: async () => {
-        expect(reviewUnitHyperModel({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
-        },),).toEqual({
-          requestId: 'hf:zai-org/GLM-5.3-Flash',
-          id: 'glm-5.3-flash',
-          requestOutputTokens: 32_000,
-          readsImages: true,
-        },);
-        expect(reviewUnitHyperModel({
-          modelId: 'hf:Qwen/Qwen3.8-27B',
-        },).id,).toBe('qwen3.8-27b',);
-        expect(reviewUnitHyperModel({
-          modelId: 'minimax-m3',
-        },).id,).toBe('minimax-m3',);
+        await Promise.resolve();
         const fixture = createFixture();
-        expect(fixture.manifest.providerRoutes,).toHaveLength(3,);
-        expect(fixture.manifest.providerRouteDigest,).toHaveLength(64,);
-        const changedRoutes = fixture.manifest.providerRoutes.map(function mutate(route,) {
-          return route.id === 'glm-5.3-flash'
-            ? { ...route, requestOutputTokens: ALTERED_ROUTE_OUTPUT_TOKENS, }
-            : route;
-        },);
-        const changedManifest: ReviewUnitManifest = {
-          ...fixture.manifest,
-          providerRoutes: changedRoutes,
-          providerRouteDigest: reviewUnitHyperRouteDigest({ routes: changedRoutes, }),
-        };
-        expect(() => assertReviewUnitManifest({
-          manifest: changedManifest,
+        expect(fixture.reviewPlan.clauses.length).toBe(fixture.ledger.obligations.filter(function clause(value,) {
+          return value.kind === 'clause';
+        },).length,);
+        expect(fixture.reviewPlan.relations.length).toBe(fixture.ledger.obligations.filter(function relation(value,) {
+          return value.kind === 'relation';
+        },).length,);
+        expect(fixture.reviewPlan.slotGroups.length).toBe(fixture.shell.slots.length,);
+        expect(fixture.reviewPlan.globalCriteria).toEqual(REVIEW_UNIT_GLOBAL_CRITERIA,);
+        expect(fixture.reviewPlan.priorGlobalOwnership.length).toBe(10,);
+        expect(fixture.reviewPlan.sourceEvidence.every(function readable(value,) {
+          return value.text.length > 0;
+        },)).toBe(true,);
+      },
+    }),
+    it({
+      name: 'refuses readable source evidence and relation direction mutation',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = createFixture();
+        const [firstEvidence,] = fixture.reviewPlan.sourceEvidence;
+        if (firstEvidence === undefined)
+          throw new Error('review unit source evidence fixture absent');
+        expect(() => assertReviewUnitPlan({
+          plan: {
+            ...fixture.reviewPlan,
+            sourceEvidence: [{ ...firstEvidence, text: `${firstEvidence.text}x`, }, ...fixture.reviewPlan.sourceEvidence.slice(1,),],
+          },
           ledger: fixture.ledger,
           shell: fixture.shell,
-          archiveBody: ARCHIVE,
-          expectedManifestDigest: fixture.manifest.manifestDigest,
-        },),).toThrow();
-        const routeCalls: string[] = [];
-        const staleRouteClient = scriptedRouteClient({
-          fixture,
-          client: scriptedClient({
-            fixture,
-            calls: routeCalls,
-            prompts: [],
-            peak: { value: 0, inFlight: 0, },
-          }),
-        });
-        expect(() => bindReviewUnitClient({
-          manifest: changedManifest,
-          outputDir: 'review-unit-stale-route',
-          clients: {
-            all: refusingClient(),
-            synthetic: refusingClient(),
-            hyper: staleRouteClient,
-          },
-        },),).toThrow();
-        expect(routeCalls,).toHaveLength(0,);
-        const wire = { modelId: '', };
-        const reply = await createReviewUnitHyperClient({
-          apiKey: 'private-test-key',
-          manifest: fixture.manifest,
-          transport: recordingCandidateHyperTransport({ wire, }),
-        },).client.chatText({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
-          messages: [{ role: 'user', content: 'meow', },],
-          signal: new AbortController().signal,
-        },);
-        expect(wire.modelId,).toBe('glm-5.3-flash',);
-        expect(reply.text,).toBe('ok',);
-      },
-    },),
-
-    it({
-      name: 'OWNS spaces after links, footnotes, code, and HTML while punctuation stays attached',
-      fn: async () => {
-        const source = '# 猫\n\n[猫](https://example.com)醒。猫[^n]醒。`猫`醒。<span>猫</span>醒。**猫**醒。*猫*醒。~~猫~~醒。{cat}醒。\n\n[^n]: 注。\n';
-        const archive = '# Cat\n\n[Cat](https://example.com) wakes. Cat[^n] wakes. `cat` wakes. <span>Cat</span> wakes. **Cat** wakes. *Cat* wakes. ~~Cat~~ wakes. {cat} wakes.\n\n[^n]: Note.\n';
-        const shell = buildImmutableShell({ sourceText: source, archiveText: archive, });
-        const boundaries = targetBoundariesForShell({ shell, });
-        expect(boundaries.some(function link(item,) {
-          return (item.edge === 'before') && (item.syntaxRole === 'link');
-        },),).toBe(true,);
-        expect(boundaries.some(function footnote(item,) {
-          return (item.edge === 'after') && (item.syntaxRole === 'footnote');
-        },),).toBe(true,);
-        const response = {
-          slots: Object.fromEntries(shell.slots.map(function text(slot,) {
-            return [slot.key, slot.source === '。' ? '.' : 'English',];
-          },),),
-        };
-        const compilation = compileReviewUnitCandidate({
-          shell,
-          boundaries,
-          response,
-        },);
-        expect(compilation.document.includes(') English',),).toBe(true,);
-        expect(compilation.document.includes('English[^n]',),).toBe(true,);
-        expect(compilation.document.includes('` English',),).toBe(true,);
-        expect(compilation.document.includes('> English',),).toBe(true,);
-        expect(compilation.document.includes('** English',),).toBe(true,);
-        expect(compilation.document.includes('* English',),).toBe(true,);
-        expect(compilation.document.includes('~~ English',),).toBe(true,);
-        expect(compilation.document.includes('} English',),).toBe(true,);
-        const linkBoundary = boundaries.find(function link(item,) {
-          return (item.edge === 'before') && (item.syntaxRole === 'link');
-        },);
-        if (linkBoundary === undefined)
-          throw new Error('review unit link boundary is absent');
-        expect(compilation.slots[linkBoundary.slotKey]?.startsWith(' ',),).toBe(true,);
-        expect(compilation.resolvedBoundaries.find(function same(item,) {
-          return (item.slotKey === linkBoundary.slotKey) && (item.edge === 'before');
-        },)?.separator,).toBe(' ',);
-        const ledger = buildRealizationObligationLedger({
-          sourceBody: shell.body,
-          archiveBody: archive,
-          slots: shell.slots,
-          shellDigest: shell.shellDigest,
-        },);
-        const manifest = createReviewUnitManifest({
-          ledger,
-          shell,
-          archiveBody: archive,
-          candidatePlan: [
-            { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', priority: 0, },
-            { ordinal: 1, modelId: 'minimax-m3', priority: 1, },
-          ],
-          verifierPlan: [
-            { ordinal: 0, modelId: 'hf:Qwen/Qwen3.8-27B', },
-            { ordinal: 1, modelId: 'hf:zai-org/GLM-5.3-Flash', },
-            { ordinal: 2, modelId: 'minimax-m3', },
-          ],
-          providerSelection: 'hyper-only',
-          sourcePictures: [],
-        },);
-        const [plan,] = manifest.candidatePlan;
-        if (plan === undefined)
-          throw new Error('review unit boundary author plan is absent');
-        const candidate = admitReviewUnitAuthorResponse({
-          response,
-          shell,
-          manifest,
-          plan,
-          sourceText: source,
-          archiveText: archive,
-          sourcePictures: [],
-        },);
-        expect(candidate.slots[linkBoundary.slotKey]?.startsWith(' ',),).toBe(true,);
-        expect(candidate.rawSlots[linkBoundary.slotKey]?.startsWith(' ',),).toBe(false,);
-        const punctuation = compileReviewUnitDocument({
-          shell,
-          boundaries,
-          response: {
-            slots: Object.fromEntries(shell.slots.map(function text(slot,) {
-              return [slot.key, slot.key === linkBoundary.slotKey ? '.' : 'English',];
-            },),),
-          },
-        },);
-        expect(punctuation.includes(').',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'CLASSIFIES exact finite parsed guard failures without reviewer wording',
-      fn: async () => {
-        const fixture = settledFixture();
-        const [candidate,] = fixture.candidates;
-        if (candidate === undefined)
-          throw new Error('review unit guard candidate is absent');
-        const clean = cleanResponse({ fixture, candidate, });
-        expect(reviewUnitResponseGuard({ ledger: fixture.ledger, candidate, })(clean,),).toBe(true,);
-        expect(diagnoseReviewUnitResponse({
-          value: { ...clean, hidden: true, },
-          ledger: fixture.ledger,
-          candidate,
-        },),).toEqual({ kind: 'rejected', failure: 'key-set', },);
-        expect(diagnoseReviewUnitResponse({
-          value: { ...clean, candidateDigest: 'x', },
-          ledger: fixture.ledger,
-          candidate,
-        },),).toEqual({ kind: 'rejected', failure: 'candidate-binding', },);
-        expect(diagnoseReviewUnitResponse({
-          value: { ...clean, obligationStatuses: clean.obligationStatuses.slice(1,), },
-          ledger: fixture.ledger,
-          candidate,
-        },),).toEqual({ kind: 'rejected', failure: 'status-length', },);
-        expect(diagnoseReviewUnitResponse({
-          value: { ...clean, obligationStatuses: `x${clean.obligationStatuses.slice(1,)}`, },
-          ledger: fixture.ledger,
-          candidate,
-        },),).toEqual({ kind: 'rejected', failure: 'status-alphabet', },);
-        expect(diagnoseReviewUnitResponse({
-          value: { ...clean, overflow: 'false', },
-          ledger: fixture.ledger,
-          candidate,
-        },),).toEqual({ kind: 'rejected', failure: 'overflow', },);
-        expect(diagnoseReviewUnitResponse({
-          value: { ...clean, findings: [{ scope: 'o', },], },
-          ledger: fixture.ledger,
-          candidate,
-        },),).toEqual({ kind: 'rejected', failure: 'finding-shape', },);
-        expect(diagnoseReviewUnitResponse({
-          value: {
-            ...clean,
-            findings: [{
-              scope: 'g',
-              manifestIndex: 0,
-              defectClassIndex: 1,
-              targetAnchors: [{ slotKey: 1, startOffset: 0, endOffset: 1, digest: 'x', },],
-            },],
+          sourceText: fixture.source,
+          sourceBody: fixture.shell.body,
+          archiveBody: fixture.archive,
+          ledgerDigest: fixture.manifest.ledgerDigest,
+        },)).toThrow();
+        const [relation,] = fixture.reviewPlan.relations;
+        if (relation === undefined)
+          throw new Error('review unit relation fixture absent');
+        expect(() => assertReviewUnitPlan({
+          plan: {
+            ...fixture.reviewPlan,
+            relations: [{
+              ...relation,
+              endpointClauseSubjectIndexes: relation.endpointClauseSubjectIndexes.toReversed(),
+            }, ...fixture.reviewPlan.relations.slice(1,),],
           },
           ledger: fixture.ledger,
-          candidate,
-        },),).toEqual({ kind: 'rejected', failure: 'anchor', },);
+          shell: fixture.shell,
+          sourceText: fixture.source,
+          sourceBody: fixture.shell.body,
+          archiveBody: fixture.archive,
+          ledgerDigest: fixture.manifest.ledgerDigest,
+        },)).toThrow();
       },
-    },),
-
+    }),
     it({
-      name: 'REQUIRES two nonself clean families and lets valid self defect veto publication',
+      name: 'binds three authors nine verifiers routes caps and deadlines',
       fn: async () => {
-        const fixture = settledFixture();
-        const [candidate,] = fixture.candidates;
-        if (candidate === undefined)
-          throw new Error('review unit selection candidate is absent');
-        const clean = cleanResponse({ fixture, candidate, });
-        expect(reviewUnitModelsIndependent({
-          authorModelId: 'deepseek-v4-pro-0813',
-          verifierModelId: 'deepseek-v4-flash-0731',
-        },),).toBe(false,);
-        expect(reviewUnitModelsIndependent({
-          authorModelId: 'hf:Qwen/Qwen3.8-27B',
-          verifierModelId: 'minimax-m3',
-        },),).toBe(true,);
-        const cleanBallots = [0, 1, 2,].map(function verifier(verifierOrdinal,) {
-          return ballot({ fixture, candidateOrdinal: 0, verifierOrdinal, response: clean, });
-        },);
-        const selected = selection({ fixture, ballots: cleanBallots, });
-        const [firstBallot,] = cleanBallots;
-        if (firstBallot === undefined)
-          throw new Error('review unit expanded row fixture is absent');
-        expect(firstBallot.statusRows,).toHaveLength(
-          fixture.ledger.obligations.length + REALIZATION_GLOBAL_CRITERIA.length,
-        );
-        const [firstStatusRow,] = firstBallot.statusRows;
-        expect(firstStatusRow,).toEqual({
-          scope: 'o',
-          manifestIndex: 0,
-          status: 'p',
-        },);
-        expect(selected.cleanVerifierModelIds,).toEqual([
-          'hf:zai-org/GLM-5.3-Flash',
-          'minimax-m3',
+        await Promise.resolve();
+        const fixture = createFixture();
+        expect(fixture.manifest.candidatePlan.length).toBe(3,);
+        expect(fixture.manifest.verifierPlan.length).toBe(3,);
+        expect(fixture.manifest.payloadCountCeiling).toBe(MAX_REVIEW_UNIT_PAYLOAD_COUNT,);
+        expect(MAX_REVIEW_UNIT_PAYLOAD_COUNT).toBe(12,);
+        expect(REVIEW_UNIT_HYPER_MODELS.map(function cap(route,) { return route.requestOutputTokens; })).toEqual([
+          32_000,
+          32_000,
+          32_000,
         ],);
-        expect(selected.evidenceFloorMet,).toBe(true,);
-        expect(selected.productionEligible,).toBe(true,);
-        const selfDefect: ReviewUnitResponse = {
-          ...clean,
-          globalStatuses: `d${clean.globalStatuses.slice(1,)}`,
-          findings: [{
-            scope: 'g',
-            manifestIndex: 0,
-            defectClassIndex: CONDITIONAL_DEFECT_CLASSES.indexOf('grammar-usage',),
-            targetAnchors: [anchor({ candidate, }),],
-          },],
-        };
-        const vetoed = selection({
-          fixture,
-          ballots: [
-            ballot({ fixture, candidateOrdinal: 0, verifierOrdinal: 0, response: selfDefect, }),
-            ...cleanBallots.slice(1,),
-          ],
-        },);
-        expect(vetoed.evidenceFloorMet,).toBe(true,);
-        expect(vetoed.productionEligible,).toBe(false,);
-        expect(vetoed.dissentingVerifierModelIds,).toEqual(['hf:Qwen/Qwen3.8-27B',],);
+        expect(REVIEW_UNIT_HYPER_MODELS.map(function deadline(route,) { return route.requestTimeoutMs; })).toEqual([
+          900_000,
+          900_000,
+          900_000,
+        ],);
+        expect(reviewUnitHyperRouteDigest({ routes: REVIEW_UNIT_HYPER_MODELS, })).toBe(
+          fixture.manifest.providerRouteDigest,
+        );
       },
-    },),
-
+    }),
     it({
-      name: 'ABSTAINS duplicated identity atomically and retains private fallback below floor',
+      name: 'refuses stale review plan and provider route manifest bindings',
       fn: async () => {
-        const fixture = settledFixture();
-        const [candidate,] = fixture.candidates;
-        if (candidate === undefined)
-          throw new Error('review unit duplicate candidate is absent');
-        const clean = cleanResponse({ fixture, candidate, });
-        const glm = ballot({ fixture, candidateOrdinal: 0, verifierOrdinal: 1, response: clean, });
-        const selected = selection({
-          fixture,
-          ballots: [
-            glm,
-            glm,
-            ballot({ fixture, candidateOrdinal: 0, verifierOrdinal: 2, response: clean, }),
-          ],
-        },);
-        expect(selected.candidate.candidateOrdinal,).toBe(0,);
-        expect(selected.evidenceFloorMet,).toBe(false,);
-        expect(selected.productionEligible,).toBe(false,);
-        expect(selected.abstainingVerifierModelIds,).toContain('hf:zai-org/GLM-5.3-Flash',);
+        await Promise.resolve();
+        const fixture = createFixture();
+        expect(() => assertReviewUnitManifest({
+          manifest: { ...fixture.manifest, reviewPlanDigest: digest({ text: 'stale', }), },
+          ledger: fixture.ledger,
+          shell: fixture.shell,
+          sourceText: fixture.source,
+          sourceBody: fixture.shell.body,
+          archiveBody: fixture.archive,
+          reviewPlan: fixture.reviewPlan,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+        },)).toThrow();
+        const [firstRoute, ...otherRoutes] = fixture.manifest.providerRoutes;
+        if (firstRoute === undefined)
+          throw new Error('review unit route fixture absent');
+        expect(() => assertReviewUnitManifest({
+          manifest: {
+            ...fixture.manifest,
+            providerRoutes: [{ ...firstRoute, requestTimeoutMs: 899_999 as 900_000, }, ...otherRoutes,],
+          },
+          ledger: fixture.ledger,
+          shell: fixture.shell,
+          sourceText: fixture.source,
+          sourceBody: fixture.shell.body,
+          archiveBody: fixture.archive,
+          reviewPlan: fixture.reviewPlan,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+        },)).toThrow();
       },
-    },),
-
+    }),
     it({
-      name: 'ENFORCES overflow algebra and exact located findings',
+      name: 'binds author candidate and deterministic proof to admitted slots',
       fn: async () => {
+        await Promise.resolve();
         const fixture = settledFixture();
-        const [candidate,] = fixture.candidates;
+        const candidate = fixture.candidates[0];
         if (candidate === undefined)
-          throw new Error('review unit overflow candidate is absent');
-        const clean = cleanResponse({ fixture, candidate, });
-        const missingFinding: ReviewUnitResponse = {
-          ...clean,
-          globalStatuses: `d${clean.globalStatuses.slice(1,)}`,
+          throw new Error('review unit candidate fixture absent');
+        expect(candidate.deterministicProofDigest.length).toBe(64,);
+        expect(() => assertReviewUnitBinding({
+          candidate: { ...candidate, documentDigest: digest({ text: 'changed', }), },
+          manifest: fixture.manifest,
+          reviewPlan: fixture.reviewPlan,
+          shell: fixture.shell,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+        },)).toThrow();
+      },
+    }),
+    it({
+      name: 'accepts exact nested statuses and rejects binding length and alphabet drift',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[0];
+        if (candidate === undefined)
+          throw new Error('review unit candidate fixture absent');
+        const response = cleanResponse({ fixture, candidate, });
+        expect(reviewUnitResponseGuard({
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          pictureCount: MEDIA.length,
+        },)(response,)).toBe(true,);
+        expect(diagnoseReviewUnitResponse({
+          value: { ...response, reviewPlanDigest: digest({ text: 'stale', }), },
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          pictureCount: MEDIA.length,
+        },)).toEqual({ kind: 'rejected', failure: 'candidate-binding', },);
+        expect(diagnoseReviewUnitResponse({
+          value: { ...response, clauseStatusesBySlot: response.clauseStatusesBySlot.slice(1,), },
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          pictureCount: MEDIA.length,
+        },)).toEqual({ kind: 'rejected', failure: 'status-length', },);
+        expect(diagnoseReviewUnitResponse({
+          value: { ...response, globalStatuses: `x${response.globalStatuses.slice(1,)}`, },
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          pictureCount: MEDIA.length,
+        },)).toEqual({ kind: 'rejected', failure: 'status-alphabet', },);
+      },
+    }),
+    it({
+      name: 'admits clause omission and ordered relation witnesses',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[0];
+        const clause = fixture.reviewPlan.clauses[0];
+        const relation = fixture.reviewPlan.relations[0];
+        if ((candidate === undefined) || (clause === undefined) || (relation === undefined))
+          throw new Error('review unit evidence fixture absent');
+        const base = cleanResponse({ fixture, candidate, });
+        const clauseGroupIndex = fixture.reviewPlan.slotGroups.findIndex(function group(value,) {
+          return value.clauseSubjectIndexes.includes(clause.subjectIndex,);
+        },);
+        const clausePosition = fixture.reviewPlan.slotGroups[clauseGroupIndex]
+          ?.clauseSubjectIndexes.indexOf(clause.subjectIndex,) ?? -1;
+        const clauseStatuses = [...base.clauseStatusesBySlot,];
+        const clauseGroup = clauseStatuses[clauseGroupIndex] ?? '';
+        clauseStatuses[clauseGroupIndex] = `${clauseGroup.slice(0, clausePosition)}d${clauseGroup.slice(clausePosition + 1,)}`;
+        const omission: ReviewUnitFinding = {
+          scope: 'c',
+          subjectIndex: clause.subjectIndex,
+          defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('omission',),
+          sourceEvidenceIndexes: clause.sourceEvidenceIndexes,
+          imageEvidenceIndexes: [],
+          targetAnchors: [],
         };
         expect(() => ballot({
           fixture,
-          candidateOrdinal: 0,
+          candidateOrdinal: candidate.candidateOrdinal,
           verifierOrdinal: 1,
-          response: missingFinding,
-        },),).toThrow();
-        const obligationCount = fixture.ledger.obligations.length;
-        const defectCount = obligationCount + REALIZATION_GLOBAL_CRITERIA.length;
-        expect(defectCount,).toBeGreaterThan(REVIEW_UNIT_FINDING_CAP,);
-        const omissionIndex = CONDITIONAL_DEFECT_CLASSES.indexOf('omission',);
-        const grammarIndex = CONDITIONAL_DEFECT_CLASSES.indexOf('grammar-usage',);
-        const obligationFindings = fixture.ledger.obligations
-          .map(function omission(obligation, manifestIndex,) {
-            return obligation.sourceSpans.length === 0
-              ? []
-              : [{
-                scope: 'o' as const,
-                manifestIndex,
-                defectClassIndex: omissionIndex,
-                targetAnchors: [],
-              },];
-          },)
-          .flat();
-        const globalFindings = REALIZATION_GLOBAL_CRITERIA.map(function global(
-          criterion,
-          manifestIndex,
-        ) {
-          if (criterion.length === 0)
-            throw new Error('review unit global criterion is absent');
+          response: { ...base, clauseStatusesBySlot: clauseStatuses, findings: [omission,], },
+        })).not.toThrow();
+        const relationSlotKeys = relation.allowedTargetSlotKeys;
+        const relationFinding: ReviewUnitFinding = {
+          scope: 'r',
+          subjectIndex: relation.subjectIndex,
+          defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('paragraph-relation',),
+          sourceEvidenceIndexes: relation.sourceEvidenceIndexes,
+          imageEvidenceIndexes: [],
+          targetAnchors: relationSlotKeys.map(function target(slotKey,) {
+            return anchor({ candidate, slotKey, });
+          },),
+        };
+        const relationStatuses = `d${base.relationStatuses.slice(1,)}`;
+        expect(() => ballot({
+          fixture,
+          candidateOrdinal: candidate.candidateOrdinal,
+          verifierOrdinal: 1,
+          response: { ...base, relationStatuses, findings: [relationFinding,], },
+        })).not.toThrow();
+      },
+    }),
+    it({
+      name: 'requires image evidence for visual global and target evidence for language',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[0];
+        const visualIndex = REVIEW_UNIT_GLOBAL_CRITERIA.indexOf('source-image-target-relation',);
+        const slotKey = fixture.reviewPlan.slotGroups[0]?.slotKey;
+        if ((candidate === undefined) || (slotKey === undefined))
+          throw new Error('review unit visual fixture absent');
+        const base = cleanResponse({ fixture, candidate, });
+        const globals = `${base.globalStatuses.slice(0, visualIndex)}d${base.globalStatuses.slice(visualIndex + 1,)}`;
+        const visual: ReviewUnitFinding = {
+          scope: 'g',
+          subjectIndex: visualIndex,
+          defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('image-relation',),
+          sourceEvidenceIndexes: [],
+          imageEvidenceIndexes: [0,],
+          targetAnchors: [anchor({ candidate, slotKey, }),],
+        };
+        expect(() => ballot({
+          fixture,
+          candidateOrdinal: candidate.candidateOrdinal,
+          verifierOrdinal: 1,
+          response: { ...base, globalStatuses: globals, findings: [visual,], },
+        })).not.toThrow();
+        expect(() => ballot({
+          fixture,
+          candidateOrdinal: candidate.candidateOrdinal,
+          verifierOrdinal: 1,
+          response: {
+            ...base,
+            globalStatuses: globals,
+            findings: [{ ...visual, imageEvidenceIndexes: [], },],
+          },
+        })).toThrow();
+      },
+    }),
+    it({
+      name: 'reviews semantic front matter through exact synthetic target anchors',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[0];
+        const subject = fixture.reviewPlan.frontMatterSubjects[0];
+        if ((candidate === undefined) || (subject === undefined))
+          throw new Error('review unit front matter fixture absent');
+        const base = cleanResponse({ fixture, candidate, });
+        const finding: ReviewUnitFinding = {
+          scope: 'fm',
+          subjectIndex: subject.subjectIndex,
+          defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('wrong-meaning',),
+          sourceEvidenceIndexes: [],
+          imageEvidenceIndexes: [],
+          targetAnchors: [anchor({ candidate, slotKey: subject.targetSlotKey, }),],
+        };
+        expect(() => ballot({
+          fixture,
+          candidateOrdinal: candidate.candidateOrdinal,
+          verifierOrdinal: 1,
+          response: {
+            ...base,
+            frontMatterStatuses: `d${base.frontMatterStatuses.slice(1,)}`,
+            findings: [finding,],
+          },
+        })).not.toThrow();
+      },
+    }),
+    it({
+      name: 'refuses every scope-incompatible defect class',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[0];
+        const frontMatter = fixture.reviewPlan.frontMatterSubjects[0];
+        const clause = fixture.reviewPlan.clauses[0];
+        const relation = fixture.reviewPlan.relations[0];
+        const slot = fixture.reviewPlan.slotGroups[0];
+        if ((candidate === undefined)
+          || (frontMatter === undefined)
+          || (clause === undefined)
+          || (relation === undefined)
+          || (slot === undefined))
+          throw new Error('review unit scope fixture absent');
+        const base = cleanResponse({ fixture, candidate, });
+        /** Invalid front-matter image defect. */
+        const invalidFrontMatter: ReviewUnitResponse = {
+          ...base,
+          frontMatterStatuses: `d${base.frontMatterStatuses.slice(1,)}`,
+          findings: [{
+            scope: 'fm',
+            subjectIndex: 0,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('image-relation',),
+            sourceEvidenceIndexes: [],
+            imageEvidenceIndexes: [],
+            targetAnchors: [anchor({ candidate, slotKey: frontMatter.targetSlotKey, }),],
+          },],
+        };
+        /** Invalid clause image defect. */
+        const clauseStatuses = [...base.clauseStatusesBySlot,];
+        clauseStatuses[0] = `d${(clauseStatuses[0] ?? '').slice(1,)}`;
+        const invalidClause: ReviewUnitResponse = {
+          ...base,
+          clauseStatusesBySlot: clauseStatuses,
+          findings: [{
+            scope: 'c',
+            subjectIndex: clause.subjectIndex,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('image-relation',),
+            sourceEvidenceIndexes: clause.sourceEvidenceIndexes,
+            imageEvidenceIndexes: [],
+            targetAnchors: [anchor({ candidate, slotKey: clause.slotKey, }),],
+          },],
+        };
+        /** Invalid relation omission. */
+        const invalidRelation: ReviewUnitResponse = {
+          ...base,
+          relationStatuses: `d${base.relationStatuses.slice(1,)}`,
+          findings: [{
+            scope: 'r',
+            subjectIndex: relation.subjectIndex,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('omission',),
+            sourceEvidenceIndexes: relation.sourceEvidenceIndexes,
+            imageEvidenceIndexes: [],
+            targetAnchors: relation.allowedTargetSlotKeys.map(function target(slotKey,) {
+              return anchor({ candidate, slotKey, });
+            },),
+          },],
+        };
+        /** Invalid language meaning defect. */
+        const invalidLanguage: ReviewUnitResponse = {
+          ...base,
+          slotLanguageStatuses: `d${base.slotLanguageStatuses.slice(1,)}`,
+          findings: [{
+            scope: 'sl',
+            subjectIndex: slot.groupIndex,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('wrong-meaning',),
+            sourceEvidenceIndexes: [],
+            imageEvidenceIndexes: [],
+            targetAnchors: [anchor({ candidate, slotKey: slot.slotKey, }),],
+          },],
+        };
+        /** Invalid global omission. */
+        const invalidGlobal: ReviewUnitResponse = {
+          ...base,
+          globalStatuses: `d${base.globalStatuses.slice(1,)}`,
+          findings: [{
+            scope: 'g',
+            subjectIndex: 0,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('omission',),
+            sourceEvidenceIndexes: [],
+            imageEvidenceIndexes: [],
+            targetAnchors: [anchor({ candidate, slotKey: slot.slotKey, }),],
+          },],
+        };
+        for (const response of [
+          invalidFrontMatter,
+          invalidClause,
+          invalidRelation,
+          invalidLanguage,
+          invalidGlobal,
+        ]) {
+          expect(() => ballot({
+            fixture,
+            candidateOrdinal: candidate.candidateOrdinal,
+            verifierOrdinal: 1,
+            response,
+          })).toThrow();
+        }
+      },
+    }),
+    it({
+      name: 'requires canonical first sixty-four defect subjects under overflow',
+      fn: async () => {
+        await Promise.resolve();
+        const sentences = Array.from({ length: 70, }, function sentence(_value, index,) {
+          return `猫${String(index,)}。`;
+        }).join('',);
+        const source = `---\nname: 猫\n---\n# 猫\n\n${sentences}\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
+        const archive = `---\nname: Cat\n---\n# Cat\n\n${'The cat rests. '.repeat(70,)}\n\n<PhotoScroll photos={['\${path}/photos/fixture.webp']} />\n`;
+        const fixture = createFixture({ source, archive, });
+        const candidates = fixture.manifest.candidatePlan.map(function admit(plan,) {
+          return admitReviewUnitAuthorResponse({
+            response: authorResponse({ fixture, plan, }),
+            shell: fixture.shell,
+            manifest: fixture.manifest,
+            reviewPlan: fixture.reviewPlan,
+            plan,
+            sourceText: fixture.source,
+            archiveText: fixture.archive,
+            sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+          },);
+        },);
+        const candidate = candidates[0];
+        if (candidate === undefined)
+          throw new Error('review unit overflow author absent');
+        const base = cleanResponse({ fixture, candidate, });
+        const clauses = fixture.reviewPlan.clauses.slice(0, 65,);
+        const statuses = [...base.clauseStatusesBySlot,];
+        for (const clause of clauses) {
+          const groupIndex = fixture.reviewPlan.slotGroups.findIndex(function group(value,) {
+            return value.clauseSubjectIndexes.includes(clause.subjectIndex,);
+          },);
+          const position = fixture.reviewPlan.slotGroups[groupIndex]
+            ?.clauseSubjectIndexes.indexOf(clause.subjectIndex,) ?? -1;
+          const current = statuses[groupIndex] ?? '';
+          statuses[groupIndex] = `${current.slice(0, position)}d${current.slice(position + 1,)}`;
+        }
+        const findings = clauses.slice(0, REVIEW_UNIT_FINDING_CAP,).map(function finding(clause,) {
           return {
-            scope: 'g' as const,
-            manifestIndex,
-            defectClassIndex: grammarIndex,
-            targetAnchors: [anchor({ candidate, }),],
+            scope: 'c' as const,
+            subjectIndex: clause.subjectIndex,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('omission',),
+            sourceEvidenceIndexes: clause.sourceEvidenceIndexes,
+            imageEvidenceIndexes: [],
+            targetAnchors: [],
           };
         },);
-        const findings = [...obligationFindings, ...globalFindings,]
-          .slice(0, REVIEW_UNIT_FINDING_CAP,);
-        expect(findings,).toHaveLength(REVIEW_UNIT_FINDING_CAP,);
-        const overflow: ReviewUnitResponse = {
-          ...clean,
-          obligationStatuses: 'd'.repeat(obligationCount,),
-          globalStatuses: 'd'.repeat(REALIZATION_GLOBAL_CRITERIA.length,),
-          overflow: true,
-          findings,
-        };
-        expect(ballot({
-          fixture,
+        const settlement = createReviewUnitAuthorSettlement({
+          manifest: fixture.manifest,
+          states: candidates.map(function state(value,) {
+            return {
+              record: {
+                id: `review-unit-author-${String(value.candidateOrdinal,)}`,
+                modelId: value.modelId,
+                manifestDigest: fixture.manifest.manifestDigest,
+                basePromptDigest: digest({ text: `overflow-base-${value.candidateId}`, }),
+                promptDigest: digest({ text: `overflow-prompt-${value.candidateId}`, }),
+                startedAt: '2026-08-31T00:00:00.000Z',
+                durationMs: 1,
+                state: 'completed' as const,
+              },
+              candidate: value,
+            };
+          },),
+        },);
+        expect(() => admitReviewUnitResponse({
+          response: { ...base, clauseStatusesBySlot: statuses, overflow: true, findings, },
+          ledger: fixture.ledger,
+          reviewPlan: fixture.reviewPlan,
+          authorSettlement: settlement,
           candidateOrdinal: 0,
           verifierOrdinal: 1,
-          response: overflow,
-        },).response,).toEqual(overflow,);
+          verifierModelId: 'hf:zai-org/GLM-5.3-Flash',
+          manifest: fixture.manifest,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+          shell: fixture.shell,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+        },)).not.toThrow();
+        expect(() => admitReviewUnitResponse({
+          response: { ...base, clauseStatusesBySlot: statuses, overflow: true, findings: findings.toReversed(), },
+          ledger: fixture.ledger,
+          reviewPlan: fixture.reviewPlan,
+          authorSettlement: settlement,
+          candidateOrdinal: 0,
+          verifierOrdinal: 1,
+          verifierModelId: 'hf:zai-org/GLM-5.3-Flash',
+          manifest: fixture.manifest,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+          shell: fixture.shell,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+        },)).toThrow();
       },
-    },),
-
+    }),
     it({
-      name: 'RUNS exactly eight finite payloads in two concurrent waves and restarts without calls',
+      name: 'qualifies GLM candidate from clean Qwen and MiniMax nonself families',
       fn: async () => {
-        await using root = await temporaryDirectory();
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[1];
+        if (candidate === undefined)
+          throw new Error('review unit GLM candidate absent');
+        const response = cleanResponse({ fixture, candidate, });
+        const selected = selection({
+          fixture,
+          ballots: [
+            ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 0, response, }),
+            ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 2, response, }),
+          ],
+        });
+        expect(selected.candidate.candidateOrdinal).toBe(1,);
+        expect(selected.evidenceFloorMet).toBe(true,);
+        expect(selected.productionEligible).toBe(true,);
+      },
+    }),
+    it({
+      name: 'ignores self clean evidence and lets valid self defect veto',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[1];
+        const slotKey = fixture.reviewPlan.slotGroups[0]?.slotKey;
+        if ((candidate === undefined) || (slotKey === undefined))
+          throw new Error('review unit self evidence fixture absent');
+        const clean = cleanResponse({ fixture, candidate, });
+        const onlySelf = selection({
+          fixture,
+          ballots: [ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 1, response: clean, }),],
+        });
+        expect(onlySelf.evidenceFloorMet).toBe(false,);
+        const language = `d${clean.slotLanguageStatuses.slice(1,)}`;
+        const selfDefect = ballot({
+          fixture,
+          candidateOrdinal: 1,
+          verifierOrdinal: 1,
+          response: {
+            ...clean,
+            slotLanguageStatuses: language,
+            findings: [{
+              scope: 'sl',
+              subjectIndex: 0,
+              defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('grammar-usage',),
+              sourceEvidenceIndexes: [],
+              imageEvidenceIndexes: [],
+              targetAnchors: [anchor({ candidate, slotKey, }),],
+            },],
+          },
+        });
+        const selected = selection({
+          fixture,
+          ballots: [
+            ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 0, response: clean, }),
+            ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 2, response: clean, }),
+            selfDefect,
+          ],
+        });
+        expect(selected.productionEligible).toBe(false,);
+        expect(selected.dissentingVerifierModelIds).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
+      },
+    }),
+    it({
+      name: 'refuses stale deterministic proof before verifier transport',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[0];
+        if (candidate === undefined)
+          throw new Error('review unit pre-dispatch candidate absent');
+        const mutated = {
+          ...candidate,
+          deterministicProofDigest: digest({ text: 'stale-proof', }),
+        };
+        let calls = 0;
+        const client: SyntheticClient = {
+          chatText: async () => {
+            calls += 1;
+            throw new Error('review unit stale proof reached text transport');
+          },
+          chatJson: async <ValueT,>(): Promise<ChatJsonOutcome<ValueT>> => {
+            calls += 1;
+            throw new Error('review unit stale proof reached JSON transport');
+          },
+          quotas: async () => {
+            calls += 1;
+            throw new Error('review unit stale proof reached quota transport');
+          },
+        };
+        const messages = reviewUnitVerifierMessages({
+          manifest: fixture.manifest,
+          shell: fixture.shell,
+          reviewPlan: fixture.reviewPlan,
+          candidate: mutated,
+          authorSettlementDigest: fixture.settlement.settlementDigest,
+          verifierPlanDigest: digest({ text: 'fixture-verifier-plan', }),
+          defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          media: MEDIA,
+        },);
+        await expect(runReviewUnitVerifierNode({
+          outputDir: directory.path,
+          client,
+          candidate: mutated,
+          verifierOrdinal: 0,
+          verifierModelId: 'hf:Qwen/Qwen3.8-27B',
+          manifest: fixture.manifest,
+          expectedManifestDigest: fixture.manifest.manifestDigest,
+          messages,
+          authorSettlement: fixture.settlement,
+          shell: fixture.shell,
+          ledger: fixture.ledger,
+          reviewPlan: fixture.reviewPlan,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          sourcePictures: MEDIA.map(function picture(item,) { return { assetName: item.assetName, }; }),
+          restart: false,
+          signal: new AbortController().signal,
+        },)).rejects.toThrow();
+        expect(calls).toBe(0,);
+      },
+    }),
+    it({
+      name: 'runs twelve static nodes in two concurrent waves and restarts without dispatch',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
         const fixture = createFixture();
         const calls: string[] = [];
         const prompts: string[] = [];
         const peak = { value: 0, inFlight: 0, };
         const client = scriptedClient({ fixture, calls, prompts, peak, });
-        const boundClient = bindReviewUnitClient({
-          manifest: fixture.manifest,
-          outputDir: root.path,
-          clients: {
-            all: refusingClient(),
-            synthetic: refusingClient(),
-            hyper: scriptedRouteClient({ fixture, client, }),
-          },
-        },);
-        const first = await runReviewUnitRuntime({
-          outputDir: root.path,
-          boundClient,
-          manifest: fixture.manifest,
-          expectedManifestDigest: fixture.manifest.manifestDigest,
-          shell: fixture.shell,
-          ledger: fixture.ledger,
-          sourceText: SOURCE,
-          archiveText: ARCHIVE,
-          media: MEDIA,
+        const result = await runFixture({
+          fixture,
+          outputDir: directory.path,
+          client,
           restart: false,
-          signal: new AbortController().signal,
-        },);
-        expect(calls,).toHaveLength(MAX_REVIEW_UNIT_PAYLOAD_COUNT,);
-        expect(first.completedNodeCount,).toBe(MAX_REVIEW_UNIT_PAYLOAD_COUNT,);
-        expect(first.spentUnusableNodeCount,).toBe(0,);
-        expect(first.skippedNodeCount,).toBe(0,);
-        expect(first.selection?.productionEligible,).toBe(true,);
-        expect(peak.value,).toBe(6,);
-        expect(prompts.every(function image(prompt,) {
-          return prompt.includes(DATA_URI,);
-        },),).toBe(true,);
-        expect(new Set(prompts.map(function claim(prompt, index,) {
-          return `${calls[index] ?? ''}:${prompt}`;
-        },)).size,).toBe(prompts.length,);
-        const restartCalls = { value: 0, };
-        const restartClient = bindReviewUnitClient({
-          manifest: fixture.manifest,
-          outputDir: root.path,
-          clients: {
-            all: refusingClient(),
-            synthetic: refusingClient(),
-            hyper: scriptedRouteClient({
-              fixture,
-              client: countingRefusingClient({ calls: restartCalls, }),
-            }),
-          },
-        },);
-        const restarted = await runReviewUnitRuntime({
-          outputDir: root.path,
-          boundClient: restartClient,
-          manifest: fixture.manifest,
-          expectedManifestDigest: fixture.manifest.manifestDigest,
-          shell: fixture.shell,
-          ledger: fixture.ledger,
-          sourceText: SOURCE,
-          archiveText: ARCHIVE,
-          media: MEDIA,
-          restart: true,
-          signal: new AbortController().signal,
-        },);
-        expect(restarted.completedNodeCount,).toBe(MAX_REVIEW_UNIT_PAYLOAD_COUNT,);
-        expect(restarted.selection?.candidate.candidateDigest,)
-          .toBe(first.selection?.candidate.candidateDigest,);
-        expect(restartCalls.value,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES wave-two dispatch when cancellation arrives during verifier-plan persistence',
-      fn: async () => {
-        await using root = await temporaryDirectory();
-        const fixture = createFixture();
-        const calls: string[] = [];
-        const reason = { operation: 'review-unit-pre-verifier-abort', };
-        const reads = { value: 0, };
-        const signal = stagedAbortSignal({
-          reason,
-          abortAtRead: PRE_VERIFIER_ABORT_READ,
-          reads,
         });
-        const caught = await (async function captureAbort(): Promise<unknown> {
-          try {
-            await runReviewUnitRuntime({
-              outputDir: root.path,
-              boundClient: bindReviewUnitClient({
-                manifest: fixture.manifest,
-                outputDir: root.path,
-                clients: {
-                  all: refusingClient(),
-                  synthetic: refusingClient(),
-                  hyper: scriptedRouteClient({
-                    fixture,
-                    client: scriptedClient({
-                      fixture,
-                      calls,
-                      prompts: [],
-                      peak: { value: 0, inFlight: 0, },
-                    }),
-                  }),
-                },
-              },),
-              manifest: fixture.manifest,
-              expectedManifestDigest: fixture.manifest.manifestDigest,
-              shell: fixture.shell,
-              ledger: fixture.ledger,
-              sourceText: SOURCE,
-              archiveText: ARCHIVE,
-              media: MEDIA,
-              restart: false,
-              signal,
-            },);
-          }
-          catch (error) {
-            return error;
-          }
-          return ABORT_NOT_CAUGHT;
-        })();
-        expect(caught,).toBe(reason,);
-        expect(calls,).toHaveLength(2,);
-        expect(reads.value,).toBe(PRE_VERIFIER_ABORT_READ,);
+        expect(calls.length).toBe(12,);
+        expect(new Set(prompts,).size).toBe(12,);
+        expect(peak.value).toBe(9,);
+        expect(result.completedNodeCount).toBe(12,);
+        expect(result.spentUnusableNodeCount).toBe(0,);
+        expect(result.skippedNodeCount).toBe(0,);
+        const restartCalls: string[] = [];
+        await runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: scriptedClient({
+            fixture,
+            calls: restartCalls,
+            prompts: [],
+            peak: { value: 0, inFlight: 0, },
+          }),
+          restart: true,
+        });
+        expect(restartCalls.length).toBe(0,);
+        expect(JSON.parse(await readFile(join(directory.path, 'review-unit-plan.json',), 'utf8',))).toEqual(
+          fixture.reviewPlan,
+        );
       },
-    },),
-
+    }),
     it({
-      name: 'WAITS for every verifier sibling before forwarding exact caller abort identity',
+      name: 'skips exactly three verifier nodes after one unusable author',
       fn: async () => {
-        await using root = await temporaryDirectory();
-        const fixture = createFixture();
-        const controller = new AbortController();
-        const reason = { operation: 'review-unit-abort-control', };
-        const settledSiblingCount = { value: 0, };
-        const caught = await (async function captureAbort(): Promise<unknown> {
-          try {
-            await runReviewUnitRuntime({
-              outputDir: root.path,
-              boundClient: bindReviewUnitClient({
-                manifest: fixture.manifest,
-                outputDir: root.path,
-                clients: {
-                  all: refusingClient(),
-                  synthetic: refusingClient(),
-                  hyper: scriptedRouteClient({
-                    fixture,
-                    client: delayedVerifierAbortClient({
-                      fixture,
-                      controller,
-                      reason,
-                      settledSiblingCount,
-                    }),
-                  }),
-                },
-              },),
-              manifest: fixture.manifest,
-              expectedManifestDigest: fixture.manifest.manifestDigest,
-              shell: fixture.shell,
-              ledger: fixture.ledger,
-              sourceText: SOURCE,
-              archiveText: ARCHIVE,
-              media: MEDIA,
-              restart: false,
-              signal: controller.signal,
-            },);
-          }
-          catch (error) {
-            return error;
-          }
-          return ABORT_NOT_CAUGHT;
-        })();
-        expect(caught,).toBe(reason,);
-        expect(settledSiblingCount.value,).toBe(5,);
-      },
-    },),
-
-    it({
-      name: 'SKIPS three verifier nodes after one unusable author without generated replacement work',
-      fn: async () => {
-        await using root = await temporaryDirectory();
+        await using directory = await temporaryDirectory();
         const fixture = createFixture();
         const calls: string[] = [];
         const client = scriptedClient({
           fixture,
-          controls: { failAuthorOrdinal: 0, },
+          controls: { failAuthorOrdinal: 1, },
           calls,
           prompts: [],
           peak: { value: 0, inFlight: 0, },
-        },);
-        const result = await runReviewUnitRuntime({
-          outputDir: root.path,
-          boundClient: bindReviewUnitClient({
-            manifest: fixture.manifest,
-            outputDir: root.path,
-            clients: {
-              all: refusingClient(),
-              synthetic: refusingClient(),
-              hyper: scriptedRouteClient({ fixture, client, }),
-            },
-          },),
-          manifest: fixture.manifest,
-          expectedManifestDigest: fixture.manifest.manifestDigest,
-          shell: fixture.shell,
-          ledger: fixture.ledger,
-          sourceText: SOURCE,
-          archiveText: ARCHIVE,
-          media: MEDIA,
-          restart: false,
-          signal: new AbortController().signal,
-        },);
-        expect(calls,).toHaveLength(5,);
-        expect(result.completedNodeCount,).toBe(4,);
-        expect(result.spentUnusableNodeCount,).toBe(1,);
-        expect(result.skippedNodeCount,).toBe(3,);
-        expect(result.skippedVerifierNodes.every(function skipped(node,) {
-          return node.candidateOrdinal === 0;
-        },),).toBe(true,);
-        expect(result.selection?.candidate.candidateOrdinal,).toBe(1,);
-        expect(result.selection?.productionEligible,).toBe(true,);
+        });
+        const result = await runFixture({ fixture, outputDir: directory.path, client, restart: false, });
+        expect(calls.length).toBe(9,);
+        expect(result.completedNodeCount).toBe(8,);
+        expect(result.spentUnusableNodeCount).toBe(1,);
+        expect(result.skippedNodeCount).toBe(3,);
       },
-    },),
-
+    }),
     it({
-      name: 'PERSISTS raw duplicate category and never retries spent verifier on restart',
+      name: 'atomically spends duplicate raw verifier response',
       fn: async () => {
-        await using root = await temporaryDirectory();
+        await using directory = await temporaryDirectory();
         const fixture = createFixture();
-        const calls: string[] = [];
-        const first = await runReviewUnitRuntime({
-          outputDir: root.path,
-          boundClient: bindReviewUnitClient({
-            manifest: fixture.manifest,
-            outputDir: root.path,
-            clients: {
-              all: refusingClient(),
-              synthetic: refusingClient(),
-              hyper: scriptedRouteClient({
-                fixture,
-                client: scriptedClient({
-                  fixture,
-                  controls: { duplicateRawCandidateOrdinal: 0, },
-                  calls,
-                  prompts: [],
-                  peak: { value: 0, inFlight: 0, },
-                }),
-              }),
-            },
-          },),
-          manifest: fixture.manifest,
-          expectedManifestDigest: fixture.manifest.manifestDigest,
-          shell: fixture.shell,
-          ledger: fixture.ledger,
-          sourceText: SOURCE,
-          archiveText: ARCHIVE,
-          media: MEDIA,
-          restart: false,
-          signal: new AbortController().signal,
-        },);
-        expect(first.spentUnusableNodeCount,).toBe(3,);
-        expect(first.verifierStates.filter(function spent(state,) {
+        const client = scriptedClient({
+          fixture,
+          controls: { duplicateRawCandidateOrdinal: 0, },
+          calls: [],
+          prompts: [],
+          peak: { value: 0, inFlight: 0, },
+        });
+        const result = await runFixture({ fixture, outputDir: directory.path, client, restart: false, });
+        expect(result.verifierStates.filter(function spent(state,) {
+          return state.record.state === 'spent-unusable';
+        },).length).toBe(3,);
+        expect(result.verifierStates.filter(function duplicate(state,) {
           return state.record.failureCategory === 'raw-duplicate';
-        },),).toHaveLength(3,);
-        const nodeText = await readFile(
-          join(root.path, 'node-review-unit-verifier-0-1.json',),
-          'utf8',
-        );
-        expect(nodeText,).toContain('"failureCategory": "raw-duplicate"',);
-        const restartCalls = { value: 0, };
-        const restarted = await runReviewUnitRuntime({
-          outputDir: root.path,
-          boundClient: bindReviewUnitClient({
-            manifest: fixture.manifest,
-            outputDir: root.path,
-            clients: {
-              all: refusingClient(),
-              synthetic: refusingClient(),
-              hyper: scriptedRouteClient({
-                fixture,
-                client: countingRefusingClient({ calls: restartCalls, }),
-              }),
-            },
-          },),
-          manifest: fixture.manifest,
-          expectedManifestDigest: fixture.manifest.manifestDigest,
-          shell: fixture.shell,
-          ledger: fixture.ledger,
-          sourceText: SOURCE,
-          archiveText: ARCHIVE,
-          media: MEDIA,
-          restart: true,
-          signal: new AbortController().signal,
-        },);
-        expect(restarted.spentUnusableNodeCount,).toBe(3,);
-        expect(calls,).toHaveLength(MAX_REVIEW_UNIT_PAYLOAD_COUNT,);
-        expect(restartCalls.value,).toBe(0,);
-        const restartedNodeText = await readFile(
-          join(root.path, 'node-review-unit-verifier-0-1.json',),
-          'utf8',
-        );
-        expect(restartedNodeText,).toBe(nodeText,);
+        },).length).toBe(3,);
       },
-    },),
+    }),
+    it({
+      name: 'uses exact zero-retry canonical Hyper routes',
+      fn: async () => {
+        const fixture = createFixture();
+        let attempts = 0;
+        const routeClient = createReviewUnitHyperClient({
+          apiKey: 'fixture',
+          manifest: fixture.manifest,
+          transport: async () => {
+            attempts += 1;
+            return { status: 500, bodyText: 'fixture', };
+          },
+        });
+        let caught: unknown;
+        try {
+          await routeClient.client.chatText({
+            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            messages: [{ role: 'user', content: 'fixture', },],
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(attempts).toBe(1,);
+        expect(Error.isError(caught,)).toBe(true,);
+      },
+    }),
+    it({
+      name: 'bounds strict response schema serialization below request ceiling numeral',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const candidate = fixture.candidates[0];
+        if (candidate === undefined)
+          throw new Error('review unit envelope candidate absent');
+        const format = reviewUnitResponseFormat({
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          pictureCount: MEDIA.length,
+        },);
+        expect(JSON.stringify(format,).length < 32_000).toBe(true,);
+        expect(REVIEW_UNIT_FINDING_CAP).toBe(64,);
+      },
+    }),
   ],
-},);
+});

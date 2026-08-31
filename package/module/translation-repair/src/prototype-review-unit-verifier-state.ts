@@ -2,7 +2,7 @@
 
 import { join, } from 'node:path';
 
-import type { CandidateScopedBallot, } from './prototype-review-unit-model.ts';
+import type { ReviewUnitBallot, } from './prototype-review-unit-model.ts';
 import type { ReviewUnitNodeRecord, } from './prototype-review-unit-node-record.ts';
 import { persistRealizationImmutableJson, } from './prototype-realization-persistence.ts';
 
@@ -17,7 +17,7 @@ export type ReviewUnitVerifierState = {
   /**
    * Runtime-owned admitted scoped ballot.
    */
-  readonly ballot?: CandidateScopedBallot;
+  readonly ballot?: ReviewUnitBallot;
 };
 
 /**
@@ -27,17 +27,17 @@ export type ReviewUnitVerifierState = {
  *
  * @example
  * ```ts
- * await persistCandidateScopedBallot({ outputDir, id, state, });
+ * await persistReviewUnitBallot({ outputDir, id, state, });
  * ```
  */
-export async function persistCandidateScopedBallot({
+export async function persistReviewUnitBallot({
   outputDir,
   id,
   state,
 }: {
   readonly outputDir: string;
   readonly id: string;
-  readonly state: ReviewUnitVerifierState & { readonly ballot: CandidateScopedBallot };
+  readonly state: ReviewUnitVerifierState & { readonly ballot: ReviewUnitBallot };
 }): Promise<ReviewUnitVerifierState> {
   await persistRealizationImmutableJson({
     path: join(

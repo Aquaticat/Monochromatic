@@ -14,9 +14,10 @@ import {
   type ReviewUnitResponse,
   type ReviewUnitSelection,
   type ReviewUnitManifest,
-  type CandidateScopedBallot,
+  type ReviewUnitBallot,
 } from './prototype-review-unit-model.ts';
 import { candidatesFromReviewUnitSettlement, } from './prototype-review-unit-settlement.ts';
+import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import type { RealizationObligationLedger, } from './prototype-realization-model.ts';
 import type { ImmutableShell, } from './prototype-slot-model.ts';
 
@@ -40,7 +41,7 @@ export function reviewUnitModelsIndependent({
   verifierModelId,
 }: {
   readonly authorModelId: ReviewUnitCandidate['modelId'];
-  readonly verifierModelId: CandidateScopedBallot['verifierModelId'];
+  readonly verifierModelId: ReviewUnitBallot['verifierModelId'];
 }): boolean {
   return boundedModelFamily({ modelId: authorModelId, })
     !== boundedModelFamily({ modelId: verifierModelId, });
@@ -60,10 +61,13 @@ function isClean({
     && (response.findings
       .length
       === 0)
-    && (!response.obligationStatuses
-      .includes('d',))
-    && (!response.globalStatuses
-      .includes('d',));
+    && (!response.frontMatterStatuses.includes('d',))
+    && response.clauseStatusesBySlot.every(function clean(statuses,) {
+      return !statuses.includes('d',);
+    },)
+    && (!response.relationStatuses.includes('d',))
+    && (!response.slotLanguageStatuses.includes('d',))
+    && (!response.globalStatuses.includes('d',));
 }
 
 /**
@@ -75,6 +79,7 @@ function ballotIsAdmitted({
   ballot,
   verifierOrdinal,
   ledger,
+  reviewPlan,
   authorSettlement,
   manifest,
   expectedManifestDigest,
@@ -83,9 +88,10 @@ function ballotIsAdmitted({
   archiveText,
   sourcePictures,
 }: {
-  readonly ballot: CandidateScopedBallot;
+  readonly ballot: ReviewUnitBallot;
   readonly verifierOrdinal: number;
   readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly authorSettlement: ReviewUnitAuthorSettlement;
   readonly manifest: ReviewUnitManifest;
   readonly expectedManifestDigest: string;
@@ -101,6 +107,7 @@ function ballotIsAdmitted({
     const expected = admitReviewUnitResponse({
       response: ballot.response,
       ledger,
+      reviewPlan,
       authorSettlement,
       candidateOrdinal: ballot.candidateOrdinal,
       verifierOrdinal,
@@ -146,16 +153,18 @@ export function selectReviewUnit({
   manifest,
   expectedManifestDigest,
   ledger,
+  reviewPlan,
   shell,
   sourceText,
   archiveText,
   sourcePictures,
 }: {
   readonly authorSettlement: ReviewUnitAuthorSettlement;
-  readonly ballots: readonly CandidateScopedBallot[];
+  readonly ballots: readonly ReviewUnitBallot[];
   readonly manifest: ReviewUnitManifest;
   readonly expectedManifestDigest: string;
   readonly ledger: RealizationObligationLedger;
+  readonly reviewPlan: ReviewUnitPlan;
   readonly shell: ImmutableShell;
   readonly sourceText: string;
   readonly archiveText: string;
@@ -165,7 +174,10 @@ export function selectReviewUnit({
     manifest,
     ledger,
     shell,
+    sourceText,
+    sourceBody: shell.body,
     archiveBody: archiveText,
+    reviewPlan,
     expectedManifestDigest,
   },);
   /**
@@ -181,7 +193,8 @@ export function selectReviewUnit({
     assertReviewUnitBinding({
       candidate,
       manifest,
-      shell,
+      reviewPlan,
+    shell,
       sourceText,
       archiveText,
       sourcePictures,
@@ -253,6 +266,7 @@ export function selectReviewUnit({
         ballot,
         verifierOrdinal,
         ledger,
+        reviewPlan,
         authorSettlement,
         manifest,
         expectedManifestDigest,

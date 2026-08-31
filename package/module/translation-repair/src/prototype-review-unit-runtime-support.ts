@@ -9,7 +9,7 @@ import {
 } from './prototype-review-unit-hyper.ts';
 import type {
   ReviewUnitManifest,
-  CandidateScopedBallot,
+  ReviewUnitBallot,
 } from './prototype-review-unit-model.ts';
 import type { ReviewUnitVerifierState, } from './prototype-review-unit-verifier-state.ts';
 import { realizationPromptUniqueClient, } from './prototype-realization-prompt-client.ts';
@@ -197,7 +197,7 @@ export function candidateScopedBallots({
   states,
 }: {
   readonly states: readonly ReviewUnitVerifierState[];
-}): readonly CandidateScopedBallot[] {
+}): readonly ReviewUnitBallot[] {
   return states.flatMap(function admitted(state,) {
     return state.ballot === undefined ? [] : [state.ballot,];
   },);
