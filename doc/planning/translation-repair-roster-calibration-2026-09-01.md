@@ -141,7 +141,9 @@ so the 40-slice draw is a different sample from the 6-slice draw and the two are
 The two instruments ran under different straggler windows, and that is where the `glm-5.3` numbers come from:
 
 -   Under the 180000 ms production window (producer calibration) `glm-5.3` lost 14 streams to the window
-    after quorum (11 at select, 3 at translate) plus one AbortError: 15 of 78 asks, 19 percent.
+    after quorum (10 at select, 4 at translate) plus one select AbortError: 15 of 78 asks, 19 percent.
+    Read per role: 4 of 40 translate asks (10 percent) as a writer, 11 of 38 select asks (29 percent) as a judge
+    over a slate of up to ten candidates.
     Each cut stream had delivered about 2 M raw SSE characters, zero content characters and tens of thousands
     of reasoning characters: the model reasons past the window and never reaches its answer.
 -   Under the 300000 ms calibration window (editor calibration) it lost 1 of 54, a panel stream cut after 3.45 M
@@ -191,14 +193,54 @@ Hyper rates in credits per million tokens as read 2026-09-01 (`src/corpus-run/hy
 `deepseek-v4-flash-0731` 8.8 and 26.4; `gemma-4-26b-a4b-it` 2.4 and 8.4; `glm-5.3-flash` 3.2664 and 10.888;
 `kimi-k3` 65.328 and 326.64.
 
+## Slice-clustered reading of the 6-slice replicate
+
+A second reviewer (sol, reading the standings file) made two points the first rules had missed:
+the slice, not the ballot, is the independent unit (14 editor rounds came from 4 slices),
+and "the leader clears the null" says nothing about seats two and three or the boundary between three and four.
+The log does not carry the authorship of losing candidates, so per-slice ballot shares cannot be rebuilt from it;
+what it does carry is every round's winner
+(`[decideBestCandidate] candidate N from <author> won weight W across B ballots`, tagged by slice),
+which supports a round-win share per model and a bootstrap over whole slices.
+The reader is `~/temp/agent/round-wins-bootstrap-20260901.mjs`; a composite winner credits each author one share,
+as the standing does.
+Control on the 6-slice log: it found 12 winner-bearing editor rounds of the 14 judged
+(two rounds cast ballots and crowned nobody) and 4 of 4 refiner rounds.
+
+EDITOR round wins over 12 rounds from 4 slices, with top-three inclusion over 4000 slice resamples:
+`GLM-5.3-Flash` 5 wins (92.7 percent inclusion), `glm-5.3` 5 (82.9), `Qwen3.8-27B` 4 (72.8), `Kimi-K3` 3 (50.7),
+`gpt-oss-120b` 1 (0.0), `minimax-m3` 1 (0.0); the rest won nothing.
+Three of the twelve winners were composites credited to several authors.
+REFINER round wins over 4 rounds: `GLM-5.3-Flash` 2 (94.0 percent inclusion), `deepseek-v4-pro-0813` 1 (69.7),
+`minimax-m3` 1 (67.8).
+
+The replicate also shows the editor and refiner standings reversing for four models
+(`glm-5.3` and `Qwen3.8-27B` second and third as editors, near zero as refiners;
+`deepseek-v4-pro-0813` and `minimax-m3` the other way round),
+which four rounds cannot establish but which is enough to say "refiners are the editors" is a transfer assumption,
+not a measurement.
+
 ## Seating rules, written before the 40-slice numbers arrive
 
-1.  Editors and refiners are seated from the 40-slice editor standing alone.
-    The 6-slice run is a same-day replicate that shows the band; it is never pooled in.
-2.  Editors: the top three by availability-adjusted share in the 40-slice EDITOR standing.
-3.  Refiners: the top three by availability-adjusted share in the 40-slice REFINER standing
-    if that standing's leader clears the Bonferroni threshold against its pooled null;
-    otherwise the refiners are the editors, and the record says so.
+Revised at 22:10Z on the reviewer's points, while the 40-slice run stood at slice 6 of 40 with no refiner round
+printed yet, so still before any number they decide on existed.
+
+1.  Editors are seated from the 40-slice EDITOR standing alone.
+    The 6-slice run is a same-day replicate that shows the band; its editor rounds are never pooled in.
+2.  Editors: the top three by availability-adjusted share of disinterested ballots in the 40-slice EDITOR
+    standing (printed share times candidates over rounds; every round seats the same nine judges,
+    so the product weights rounds about equally).
+    Two readings go beside it that the ballot-level z cannot give: the slice-clustered round-win bootstrap
+    (round-win share and top-three inclusion probability), and production-window reliability from the
+    180000 ms instrument (voices lost per ask in the producer calibration, by role).
+    If the third and fourth seats sit within 10 points of top-three inclusion,
+    the seat goes to the one that lost fewer voices under the production window.
+3.  Refiners: the REFINER rounds of the 6-slice and 40-slice runs are pooled as slice clusters
+    (same build, same instrument, same 300000 ms window; slices from two strides are distinct clusters).
+    If at least 12 pooled slices reached a rewriter, the refiners are the top three by availability-adjusted
+    share over the pooled rounds, with the same two beside-readings and the same tie rule.
+    If fewer, the refiners are the editors, recorded as an unvalidated transfer assumption,
+    and a refiner-targeted calibration is filed as follow-up.
 4.  Checkers stay Qwen3.8-27B, Kimi-K3 and gpt-oss-120b.
     No instrument ranks checkers: `checker-sensitivity` asks whether checkers can say no on fixtures,
     and the `run-config.ts` note already says the writer and editor instruments are far from checking.
@@ -206,7 +248,12 @@ Hyper rates in credits per million tokens as read 2026-09-01 (`src/corpus-run/hy
 5.  Wide roles (critics, panel, judges, translators) stay the whole roster.
     Only the owner blocklist removes a model from the roster; writers under the null still judge,
     since neither instrument measures judge accuracy.
-6.  `glm-5.3`'s reliability is read off the 180000 ms instrument, because that is the corpus pass's window.
+    One question goes to the owner rather than being decided here: the producer standing places
+    `gpt-oss-120b` and `deepseek-v4-flash-0731` under the null as writers with full availability
+    (40 of 40 candidates each), which is a quality finding about the translator seat specifically.
+    `RUN_TRANSLATE_MODELS` was measured at full width, so narrowing it is a design change, not a seating.
+6.  `glm-5.3`'s reliability is read off the 180000 ms instrument, because that is the corpus pass's window,
+    and by role: 10 percent of translate asks lost as a writer, 29 percent of select asks lost as a judge.
 
 ## Stale text the seating edit fixes in `run-config.ts`
 
