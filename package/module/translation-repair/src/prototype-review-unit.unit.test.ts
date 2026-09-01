@@ -2154,6 +2154,14 @@ await describe({
         expect(bodies.every(function exact(body,) {
           const tools: unknown = body.tools;
           const tool: unknown = Array.isArray(tools,) ? tools.at(0,) : undefined;
+          const choice: unknown = body.tool_choice;
+          if ((!isJsonRecord(tool,))
+            || ((typeof tool.name) !== 'string')
+            || (!isJsonRecord(choice,)))
+            return false;
+          const expectedSchema = tool.name === 'immutable_shell_slots'
+            ? authorFormat.json_schema.schema
+            : verifierFormat.json_schema.schema;
           return (JSON.stringify(Object.keys(body,).toSorted()) === JSON.stringify([
             'max_tokens',
             'messages',
@@ -2167,11 +2175,13 @@ await describe({
             && (body.stream === true)
             && Array.isArray(tools,)
             && (tools.length === 1)
-            && isJsonRecord(tool,)
-            && ((typeof tool.name) === 'string')
-            && isJsonRecord(body.tool_choice,)
-            && (body.tool_choice.type === 'tool')
-            && (body.tool_choice.name === tool.name);
+            && (JSON.stringify(Object.keys(tool,).toSorted())
+              === JSON.stringify(['description', 'input_schema', 'name',]))
+            && (JSON.stringify(tool.input_schema) === JSON.stringify(expectedSchema))
+            && (JSON.stringify(Object.keys(choice,).toSorted())
+              === JSON.stringify(['name', 'type',]))
+            && (choice.type === 'tool')
+            && (choice.name === tool.name);
         },)).toBe(true,);
         expect(bodies.map(function tool(body,) {
           const tools: unknown = body.tools;
