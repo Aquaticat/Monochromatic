@@ -3495,9 +3495,63 @@ Candidate L cannot enter live calibration until:
   and advisor review pass;
 - a no-network harness proves exact eight static `(nodeId, wireModelId, schemaDigest)` bindings before any live spend.
 
-Candidate L is selected for structural prototyping only.
+### Candidate L prototype result
+
+Candidate L completed structural prototyping at
+`9b8c25089d8d70e1be5c5daab774646cb1373c85`.
+The implementation commits are:
+
+- `97cc07e38`,
+  the initial lean finite-realization graph;
+- `4d5e87eb0`,
+  the canonical front-matter authority contract and source-only verifier projection;
+- `dba9776e0`,
+  independent source-plan and admission-plan digest guards;
+- `0bbaac722`,
+  the extra-alias cardinality guard found by GFP;
+- `9b8c25089`,
+  the no-verifier-plan boundary guard found by GFP.
+
+The final rebuilt artifact digest is
+`3b885ae2f760b72477931ab0183e73b17fc8e2f4187a296e688ce9fb41cbc0bb`.
+Targeted type-aware lint reported zero warnings and zero errors,
+types passed,
+and full `buildAndTest` reported 879 prefix-counted passing suites and zero failing suites.
+
+The final GFP harness is
+`/var/home/user/temp/agent/gfp-candidate-l-20260901.py`,
+with SHA-256
+`55b86b58e681a455a580ef1a3505b0110b696bcb0c94e117d4e72afd0857a3ee`.
+It proved these mutations against the committed baseline,
+restoring and rebuilding after each:
+
+- contract path;
+- contract kind and authority;
+- projected authority;
+- target delimiter grammar;
+- alias member count;
+- protected alias member position;
+- name membership in aliases;
+- archive target-field reintroduction;
+- projected review-plan digest reintroduction;
+- source-plan digest substitution;
+- language-index transposition;
+- overflow scope order;
+- mutable-key schema cardinality;
+- eight-node graph ceiling;
+- author audit-packet exclusion;
+- lean node identity;
+- all-sibling settlement;
+- exact abort identity;
+- between-wave cancellation before verifier-plan creation;
+- spent-node restart abstention.
+
+Candidate L is selected for one pinned-Carena calibration only.
 It is not selected for production,
 and it does not authorize redispatch of any Candidate I or Candidate K author prompt.
+Calibration must assert that projected alias pairs equal admission-canonical serialized pairs,
+pin the live vision-capable `glm-5.3-flash` row,
+and omit reasoning or thinking parameters.
 
 ## Required lifecycle migration
 
