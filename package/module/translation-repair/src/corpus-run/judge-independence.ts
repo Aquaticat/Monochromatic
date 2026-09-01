@@ -4,12 +4,11 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 // Who may re-examine an accepted issue, given who proposed it.
 //
 // WHAT THIS CAN AND CANNOT ESTABLISH, stated here because the number it feeds
-// will be read by someone who did not run it. `RUN_MODELS` seats the WHOLE
-// roster as critics and as adjudication panel, and as judges every panel
-// member the measurements have not removed from that seat: six models from one
-// provider when this was written on 2026-08-13 (`model-catalog` confirmed that
-// provider served no seventh), ten across two providers since 2026-08-24, nine
-// since 2026-09-01 with one judge seat fewer (`RUN_JUDGES`). The count moved;
+// will be read by someone who did not run it. `RUN_MODELS` seats ONE SET as
+// critics, as adjudication panel, and as judges: six models from one provider
+// when this was written on 2026-08-13 (`model-catalog` confirmed that provider
+// served no seventh), ten across two providers since 2026-08-24, and since
+// 2026-09-01 the eight of nine that `RUN_WIDE_SEATS` keeps. The count moved;
 // the shape did not, and the shape is what matters here: every judge sits on
 // the panel, so there is no seat outside the panel to bar an adjudicator with.
 //

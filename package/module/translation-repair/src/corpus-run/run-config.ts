@@ -132,18 +132,22 @@ const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
 ],);
 
 /**
- * Judges measured out of the seat on the same authorization.
+ * Models measured out of every nine-wide seat (critic, panel, judge) on the
+ * same authorization, for wall clock rather than for quality.
  *
- * `glm-5.3` LOST 11 OF 38 SELECT ASKS under the 180000 ms production window
- * in the producer calibration: it reasons past the window over a ten-candidate
- * slate, each loss holds the round for the whole window after quorum, and each
- * delivered about 2 M raw characters that never reached an answer at the
- * roster's highest output rate. Its completed select streams were also the
- * roster's slowest (p50 61 s, p90 166 s). It keeps the critic, panel and
- * translator seats, where no production-window measurement exists yet; the
- * corpus pass logs abandons by role and will supply one.
+ * `glm-5.3` IS THE SLOWEST VOICE ON THE ROSTER in every role measured: its
+ * completed streams run p50 61 to 66 s and p90 166 to 172 s against p90s under
+ * 110 s for everyone but GLM-5.3-Flash. It lost 11 of 38 select asks to the
+ * 180000 ms production window in the producer calibration, one panel stream
+ * to the 360000 ms per-call deadline after 3.4 M raw characters and another
+ * to the 300000 ms calibration window, and each loss holds the round for the
+ * whole window after quorum at the roster's highest output rate. Across both
+ * calibration logs 75 to 83 percent of round time is that wait, and the wide
+ * seats are where a ninth voice adds least: the stage reached quorum without
+ * it every time. It keeps the translator seat and any editor seat the editor
+ * standing gives it, where its text is what is being measured.
  */
-const JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['glm-5.3',],);
+const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['glm-5.3',],);
 
 /**
  * Translators for the translate lane: the roster less
@@ -157,16 +161,17 @@ export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
   },);
 
 /**
- * Judges for both lanes: the roster less {@link JUDGE_DROPPED}. Eight since
- * 2026-09-01, so the selection quorum is 4.
+ * Critics, adjudication panel and judges for both lanes: the roster less
+ * {@link WIDE_SEAT_DROPPED}. Eight since 2026-09-01, so each of those stages
+ * reaches quorum at 4 voices and `minBallotWeight` 3 is 3 of 8.
  */
-export const RUN_JUDGES: readonly RosterModelId[] = RUN_ROSTER
-  .filter(function stillJudges(modelId,): boolean {
-    return !JUDGE_DROPPED.has(modelId,);
+export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
+  .filter(function stillSeated(modelId,): boolean {
+    return !WIDE_SEAT_DROPPED.has(modelId,);
   },);
 
 /**
- * Role roster for a corpus run: all NINE critique and adjudicate, THREE edit
+ * Role roster for a corpus run: EIGHT of the nine critique and adjudicate, THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
  *
@@ -299,8 +304,10 @@ export const RUN_JUDGES: readonly RosterModelId[] = RUN_ROSTER
  * rather than rediscovering it during analysis.
  */
 export const RUN_MODELS: RepairModels = {
-  criticModelIds: RUN_ROSTER,
-  panelModelIds: RUN_ROSTER,
+  // THE ROSTER LESS ITS SLOWEST VOICE since 2026-09-01 in every nine-wide
+  // seat; the reason sits on `WIDE_SEAT_DROPPED`.
+  criticModelIds: RUN_WIDE_SEATS,
+  panelModelIds: RUN_WIDE_SEATS,
   // MEASURED, and no longer provisional. The calibration this seat waited for
   // ran on 2026-08-24: 40 rounds in which all ten roster models wrote a
   // candidate for the same slices and every other model judged them, giving
@@ -347,10 +354,9 @@ export const RUN_MODELS: RepairModels = {
     'hf:Qwen/Qwen3.8-27B',
     'gemma-4-26b-a4b-it',
   ],
-  // THE ROSTER LESS `glm-5.3` since 2026-09-01; the reason sits on
-  // `JUDGE_DROPPED`. An editor still judges a slate holding its own text at
-  // half weight for that candidate alone.
-  judgeModelIds: RUN_JUDGES,
+  // An editor still judges a slate holding its own text at half weight for
+  // that candidate alone.
+  judgeModelIds: RUN_WIDE_SEATS,
   // Same three as the editors, seated on the same 40-round measurement, and
   // one step from that instrument for the same reason the editors are.
   refinerModelIds: [
@@ -425,7 +431,7 @@ assertCheckerQuorumReachable({
  * exclusions {@link RUN_MODELS} spends most of its rationale on have nothing to
  * exclude here. What narrows the seats now is measurement rather than role
  * structure: {@link RUN_TRANSLATORS} drops the two writers the 40-round
- * producer calibration placed under its pooled null, and {@link RUN_JUDGES}
+ * producer calibration placed under its pooled null, and {@link RUN_WIDE_SEATS}
  * drops the judge that lost a third of its select asks to the production
  * window, both on the owner's authorization of that day.
  *
@@ -448,7 +454,7 @@ assertCheckerQuorumReachable({
  */
 export const RUN_TRANSLATE_MODELS: TranslateModels = {
   translatorModelIds: RUN_TRANSLATORS,
-  judgeModelIds: RUN_JUDGES,
+  judgeModelIds: RUN_WIDE_SEATS,
 };
 
 /**
