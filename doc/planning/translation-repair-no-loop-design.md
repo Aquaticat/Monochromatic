@@ -19,13 +19,15 @@ Needs owner approval on the two decision points at the end before code.
 
 ## Why the loops exist, and why they go
 
-The unbounded correction loops are takeover additions:
-continuous correction landed in generation 13 on 2026-08-29
-(`1d16d89c4`),
-and the archive-block,
-preparation,
-and insertion continuations landed in the same generation series.
-The owner's stated rationale for removing them:
+The blocking review and its correction loops are all takeover additions,
+landed 2026-08-27 through 2026-08-29 (`git log --follow` on each module):
+overlapped consolidation on 08-27 (`e8f6e78e9`),
+the blocking absolute-naturalness review on 08-28 (`6fadd3be0`),
+correction first bounded the same day (`4a60a660e`, "allow bounded follow-up correction"),
+then continuous on 08-29 (`1d16d89c4`, `97fda9f95`),
+with the translate and archive-block continuations the same day (`ed756993b`, `ccaad1f53`).
+None of this machinery predates the takeover.
+The owner's stated rationale for removing it:
 they were built "under an assumption that models are bad,
 which isn't really true as of today".
 The loops compensate for weak model output by re-asking until a panel is satisfied;
@@ -62,8 +64,10 @@ declared names),
 then one fixed polish round:
 refiners propose,
 judges select between proposal and standing text,
-the deterministic guard applies,
-and a declined proposal leaves the standing text shipping.
+and the deterministic guard applies to whichever was selected.
+A declined proposal, and equally a selected proposal the guard rejects,
+leaves the standing text shipping with the outcome recorded as a finding;
+this node has no re-ask under any outcome.
 Absolute-naturalness findings are recorded as evidence on the settlement.
 
 Evidence:
@@ -82,29 +86,49 @@ zero produced candidates remain the bounded provider error.
 
 ### Translate follow-up, fixed depth two
 
-Initial production plus at most one statically named follow-up round carrying the judge's rejection evidence,
-mirroring the measured recovery round that brought back three of four re-asked answers.
+Initial production plus at most one statically named follow-up round carrying the judge's located rejection evidence.
 After that the slice settles as unfilled or incumbent-kept,
 never as a thrown entry.
+
+This is the one rejection-driven second round the proposal retains,
+so it is where "discouraged, not a ban" is being exercised.
+Its evidence is adjacent, not direct:
+the measured three-of-four recovery (`#230`) converted schema-mismatch re-asks,
+an infrastructure class, not judge rejections;
+and the redesign showed located-evidence-carrying second rounds are the one safe form
+(E1 double-prime) while evidence-free serial rounds degrade text (D1.3).
+Direct conversion of a quality follow-up round is unmeasured;
+the four-entry pass logs it,
+and if it converts nothing this round drops to depth one.
+Striking it now instead is a coherent stricter choice.
 
 ### Archive-block review, single round
 
 Unresolved blocks are retained with findings;
 reviewer indecision cannot withhold the entry.
 
-### Preparation revision, fixed depth two
+### Preparation revision, linear two-step chain
 
 One preparation,
 selected corrections applied once,
 one re-preparation over the corrected archive.
 Remaining unclaimed blocks become findings.
+This is not a rejection-driven re-ask:
+the second preparation is the structural consequence of having edited the archive,
+a producer chain,
+so it does not exercise the loop allowance.
 
-### Insertion placement, fixed depth two
+### Insertion placement, single round
 
-One coverage round plus one placement repair round.
-Passages still unresolved stay unfilled and flow to `UnfilledPageError`,
+One coverage round;
+passages still unresolved stay unfilled and flow to `UnfilledPageError`,
 which remains the one bounded no-page terminal,
 because no admissible candidate for required content was produced.
+A placement-repair second round was considered and dropped:
+no measurement shows what such a round converts,
+and retaining it on symmetry alone would exercise the loop allowance without evidence.
+If the four-entry pass actually hits unfilled terminals here,
+that run supplies the evidence to propose the round then.
 
 ## Entry terminals after the change
 
@@ -157,13 +181,32 @@ so the advancement is concentrated on the Hyper side.
   run the existing producer-calibrate and editor-calibrate instruments over the refreshed candidate set first,
   seat winners on measurement,
   then pass:
-  matches the repo's seat-on-measurement practice and vets each new route's real ceiling,
-  at one calibration run of extra spend and time.
+  matches the repo's seat-on-measurement practice and vets each new route's real ceiling.
+  Measured instrument cost
+  (`doc/decision/translation-repair-calibration-overlap.md`,
+  `doc/decision/translation-repair-multi-provider.md`):
+  editor-calibrate arms ran 24.18 to 58.95 minutes wall each over four bench slices,
+  and the twelve-round producer pass finished in 3,637 seconds
+  before the forty-round pass that seated the writers;
+  a refreshed calibration is that order of spend,
+  well under a pass-scale run.
+
+Under R3 the order is:
+loop-removal code lands and is suite-, lint-, and GFP-verified;
+calibration runs on that build and seats the roster;
+then the four-entry pass;
+then the reading.
+The calibration doubles as a live smoke of the changed build before the pass spends anything,
+since `producer-calibrate` drives `runTranslateStage`
+(the import is in `src/corpus-run/producer-calibrate.ts`),
+the lane whose follow-up depth this proposal changes.
 
 Ranking:
 R3 over R2,
-because seats decided by 40-round disinterested ballots have repeatedly overturned headline impressions
-(qwen3.8-max's best headline was survivorship on the easy half),
+because disinterested-ballot calibration has already overturned a headline ordering once
+(the twelve-round table read gemma and qwen3.8-max as second and third,
+and both confidence intervals contained the null;
+seating on that ordering "would be reading a ranking as a result"),
 and the calibration also vets routes and ceilings the pass will depend on.
 R2 over R1,
 because R1 spends the whole pass without testing the premise the owner named.
@@ -182,6 +225,7 @@ and the pass-then-reading gate.
 ## Decision points
 
 1.  Approve the loop-free shape above,
-    including the two explicitly retained fixed-depth-two stages
-    (translate follow-up, preparation revision, insertion placement)?
+    including the one retained rejection-driven follow-up round
+    (translate, fixed depth two, the only place the loop allowance is exercised)?
+    Vetoing that round to depth one is a coherent stricter variant.
 2.  Roster: R1, R2, or R3?
