@@ -62,7 +62,9 @@ export function reviewUnitProofDigest({
       version: 1,
       manifestDigest: manifest.manifestDigest,
       reviewPlanDigest: manifest.reviewPlanDigest,
-      frontMatterAuthorityDigest: manifest.frontMatterAuthorityDigest ?? null,
+      ...(manifest.frontMatterAuthorityDigest === undefined
+        ? {}
+        : { frontMatterAuthorityDigest: manifest.frontMatterAuthorityDigest, }),
       shellDigest: manifest.shellDigest,
       ledgerDigest: manifest.ledgerDigest,
       targetBoundaries: manifest.targetBoundaries,

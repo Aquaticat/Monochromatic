@@ -2,122 +2,15 @@
 
 import { stringify as stringifyYaml, } from 'yaml';
 
-import { hashContent, } from './document-node.ts';
 import { splitFrontMatter, } from './front-matter.ts';
+import {
+  LEAN_FRONT_MATTER_CONTRACTS,
+  leanFrontMatterContract,
+  leanFrontMatterContractOfKind,
+  type LeanFrontMatterContract,
+} from './prototype-lean-realization-front-matter-contract.ts';
 import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import type { SlotDocumentResponse, } from './prototype-slot-model.ts';
-
-/**
- * Candidate L front-matter semantic authority.
- */
-export type LeanFrontMatterAuthority = 'description' | 'identity' | 'location';
-
-/**
- * One canonical path-specific authority and grammar contract.
- */
-export type LeanFrontMatterContract = {
-  readonly path: readonly string[];
-  readonly kind: 'alias' | 'description' | 'location' | 'name';
-  readonly authority: LeanFrontMatterAuthority;
-  readonly grammar: string;
-};
-
-/**
- * Canonical Candidate L path order, authority, and grammar policy.
- */
-export const LEAN_FRONT_MATTER_CONTRACTS: readonly LeanFrontMatterContract[] = [
-  {
-    path: ['name',],
-    kind: 'name',
-    authority: 'identity',
-    grammar: 'single-line-nonempty-and-equal-to-candidate-alias-member',
-  },
-  {
-    path: [
-      'info',
-      'alias',
-    ],
-    kind: 'alias',
-    authority: 'identity',
-    grammar: 'source-member-count-and-order-cased-members-exact-canonical-comma-space',
-  },
-  {
-    path: [
-      'info',
-      'location',
-    ],
-    kind: 'location',
-    authority: 'location',
-    grammar: 'single-line-nonempty',
-  },
-  {
-    path: ['desc',],
-    kind: 'description',
-    authority: 'description',
-    grammar: 'single-line-nonempty',
-  },
-];
-
-/**
- * Canonical path-specific authority and serialization policy identity.
- */
-export const LEAN_FRONT_MATTER_AUTHORITY_DIGEST: string = hashContent({
-  content: JSON.stringify({
-    contracts: LEAN_FRONT_MATTER_CONTRACTS,
-    yaml: 'runtime-serialized-source-shape',
-  },),
-});
-
-/**
- * Resolves one canonical path contract.
- *
- * @returns Exact contract or throws
- *
- * @example
- * ```ts
- * const contract = leanFrontMatterContract({ path: ['name'], });
- * ```
- */
-export function leanFrontMatterContract({
-  path,
-}: {
-  readonly path: readonly string[];
-}): LeanFrontMatterContract {
-  /**
-   * Existing contract for exact canonical path.
-   */
-  const contract = LEAN_FRONT_MATTER_CONTRACTS.find(function same(value,) {
-    return JSON.stringify(value.path,) === JSON.stringify(path,);
-  },);
-  if (contract === undefined)
-    throw new Error('lean realization front matter contract is absent');
-  return contract;
-}
-
-/**
- * Resolves one unique contract by semantic kind.
- *
- * @param kind - Closed path role
- *
- * @returns Exact contract or throws
- */
-function contractOfKind(
-  kind: LeanFrontMatterContract['kind'],
-): LeanFrontMatterContract {
-  /**
-   * Every contract carrying requested semantic kind.
-   */
-  const found = LEAN_FRONT_MATTER_CONTRACTS.filter(function same(value,) {
-    return value.kind === kind;
-  },);
-  /**
-   * Unique contract when canonical table is valid.
-   */
-  const [contract,] = found;
-  if ((found.length !== 1) || (contract === undefined))
-    throw new Error('lean realization front matter kind contract differs');
-  return contract;
-}
 
 /**
  * Parsed immutable YAML object.
@@ -240,6 +133,14 @@ function hasCasedIdentityLetter(text: string,): boolean {
 }
 
 /**
+ * One immutable source-to-candidate alias position.
+ */
+type AliasMemberPair = {
+  readonly sourceMember: string;
+  readonly targetMember: string;
+};
+
+/**
  * Canonicalizes and verifies ordered alias grammar.
  *
  * @returns Candidate alias members joined by runtime delimiter
@@ -247,30 +148,56 @@ function hasCasedIdentityLetter(text: string,): boolean {
 function canonicalAlias({
   source,
   target,
+  grammar,
 }: {
   readonly source: string;
   readonly target: string;
+  readonly grammar: Extract<LeanFrontMatterContract, { readonly kind: 'alias' }>['grammar'];
 }): string {
   /**
    * Source members defining count, order, and protected tokens.
    */
-  const sourceMembers = source.split(',')
+  const sourceMembers = source.split(grammar.sourceDelimiter,)
     .map(function trim(value,) { return value.trim(); });
   /**
    * Candidate members normalized without changing order.
    */
-  const targetMembers = target.split(',')
+  const targetMembers = target.split(grammar.sourceDelimiter,)
     .map(function trim(value,) { return value.trim(); });
-  if ((sourceMembers.length !== targetMembers.length)
-    || targetMembers.some(function empty(value,) { return value === ''; })
-    || sourceMembers.some(function protectedMember(
-      value,
+  if (((grammar.memberCount === 'source-exact')
+    && (sourceMembers.length !== targetMembers.length))
+    || targetMembers.some(function empty(value,) { return value === ''; }))
+    throw new Error('lean realization alias member count or value differs');
+  /**
+   * Positional source-to-candidate pairs executing member-order policy.
+   */
+  const positionalMembers = grammar.memberOrder === 'source-exact'
+    ? sourceMembers.map(function pair(
+      sourceMember,
       index,
-    ) {
-      return hasCasedIdentityLetter(value,) && (targetMembers[index] !== value);
+    ): AliasMemberPair {
+      /**
+       * Candidate member proven present by exact cardinality.
+       */
+      const targetMember = targetMembers[index];
+      if (targetMember === undefined)
+        throw new Error('lean realization positional alias member is absent');
+      return {
+        sourceMember,
+        targetMember,
+      };
+    },)
+    : [];
+  if ((grammar.protectedCasedMember === 'exact-at-position')
+    && positionalMembers.some(function protectedMember(pair,) {
+      return hasCasedIdentityLetter(pair.sourceMember,)
+        && (pair.targetMember !== pair.sourceMember);
     },))
-    throw new Error('lean realization alias grammar differs');
-  return targetMembers.join(', ',);
+    throw new Error('lean realization protected alias member differs');
+  return positionalMembers.map(function candidateMember(pair,) {
+    return pair.targetMember;
+  },)
+    .join(grammar.targetDelimiter,);
 }
 
 /**
@@ -323,9 +250,17 @@ export function compileLeanFrontMatter({
      * Raw model value for current path.
      */
     const raw = response.slots[subject.targetSlotKey];
-    if ((raw === undefined) || (raw.trim() === '')
-      || raw.includes('\n')
-      || raw.includes('\r'))
+    /**
+     * Manifest-bound path contract for current scalar.
+     */
+    const contract = leanFrontMatterContract({ path: subject.path, });
+    if ((raw === undefined)
+      || (contract.grammar
+        .nonempty
+        && (raw.trim() === ''))
+      || (contract.grammar
+        .singleLine
+        && (raw.includes('\n') || raw.includes('\r'))))
       throw new Error(`lean realization front matter ${subject.targetSlotKey} differs`);
     /**
      * Source scalar controlling path-specific grammar.
@@ -335,16 +270,13 @@ export function compileLeanFrontMatter({
       path: subject.path,
     });
     /**
-     * Manifest-bound path contract for current scalar.
-     */
-    const contract = leanFrontMatterContract({ path: subject.path, });
-    /**
      * Runtime-normalized candidate scalar.
      */
     const value = contract.kind === 'alias'
       ? canonicalAlias({
         source,
         target: raw,
+        grammar: contract.grammar,
       })
       : raw.trim();
     return [
@@ -376,23 +308,32 @@ export function compileLeanFrontMatter({
     sourceData,
   );
   /**
+   * Canonical name policy.
+   */
+  const nameContract = leanFrontMatterContractOfKind('name',);
+  /**
+   * Canonical alias policy.
+   */
+  const aliasContract = leanFrontMatterContractOfKind('alias',);
+  /**
    * Candidate display identity.
    */
   const name = stringAt({
     root: candidateData,
-    path: contractOfKind('name',)
-      .path,
+    path: nameContract.path,
   });
   /**
    * Ordered normalized candidate aliases.
    */
   const aliases = stringAt({
     root: candidateData,
-    path: contractOfKind('alias',)
-      .path,
+    path: aliasContract.path,
   })
-    .split(', ',);
-  if (!aliases.includes(name,))
+    .split(aliasContract.grammar
+      .targetDelimiter,);
+  if (nameContract.grammar
+    .equalsAliasMember
+    && (!aliases.includes(name,)))
     throw new Error('lean realization name is absent from aliases');
   return {
     frontMatter: `---\n${stringifyYaml(

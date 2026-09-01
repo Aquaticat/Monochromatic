@@ -211,6 +211,7 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
   '--type-aware',
   '--fix',
   'src/prototype-review-unit-roster.ts',
+  'src/prototype-lean-realization-front-matter-contract.ts',
   'src/prototype-lean-realization-author.ts',
   'src/prototype-lean-realization-author-node.ts',
   'src/prototype-lean-realization-front-matter.ts',
@@ -268,6 +269,7 @@ run = """
 runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
   '--type-aware',
   'src/prototype-review-unit-roster.ts',
+  'src/prototype-lean-realization-front-matter-contract.ts',
   'src/prototype-lean-realization-author.ts',
   'src/prototype-lean-realization-author-node.ts',
   'src/prototype-lean-realization-front-matter.ts',

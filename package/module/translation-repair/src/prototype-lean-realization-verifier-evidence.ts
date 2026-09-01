@@ -4,7 +4,8 @@ import { hashContent, } from './document-node.ts';
 import {
   leanFrontMatterContract,
   type LeanFrontMatterAuthority,
-} from './prototype-lean-realization-front-matter.ts';
+  type LeanFrontMatterContract,
+} from './prototype-lean-realization-front-matter-contract.ts';
 import type { ReviewUnitCandidate, } from './prototype-review-unit-model.ts';
 import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 
@@ -18,6 +19,18 @@ type SourceFrontMatterSubject = {
   readonly sourceText: string;
   readonly sourceDigest: string;
   readonly authority: LeanFrontMatterAuthority;
+  readonly kind: LeanFrontMatterContract['kind'];
+  readonly grammar: LeanFrontMatterContract['grammar'];
+};
+
+/**
+ * One immutable model-facing alias position.
+ */
+type AliasMemberPair = {
+  readonly index: number;
+  readonly sourceMember: string;
+  readonly candidateMember: string;
+  readonly protectedCased: boolean;
 };
 
 /**
@@ -27,6 +40,8 @@ type CandidateFrontMatterSubject = SourceFrontMatterSubject & {
   readonly candidateText: string;
   readonly candidateDigest: string;
   readonly sourceAliasMembers: readonly string[];
+  readonly candidateAliasMembers: readonly string[];
+  readonly aliasMemberPairs: readonly AliasMemberPair[];
   readonly protectedCasedMembers: readonly string[];
 };
 
@@ -70,14 +85,19 @@ export function leanVerifierEvidence({
    */
   const sourceSubjects = reviewPlan.frontMatterSubjects
     .map(function source(subject,) {
+    /**
+     * Canonical executable path contract.
+     */
+    const contract = leanFrontMatterContract({ path: subject.path, });
     return {
       subjectIndex: subject.subjectIndex,
       path: subject.path,
       targetSlotKey: subject.targetSlotKey,
       sourceText: subject.sourceText,
       sourceDigest: subject.sourceDigest,
-      authority: leanFrontMatterContract({ path: subject.path, })
-        .authority,
+      authority: contract.authority,
+      kind: contract.kind,
+      grammar: contract.grammar,
     };
   },);
   /**
@@ -108,21 +128,57 @@ export function leanVerifierEvidence({
     if (candidateText === undefined)
       throw new Error('lean verifier candidate front matter is absent');
     /**
+     * Canonical executable path contract.
+     */
+    const contract = leanFrontMatterContract({ path: subject.path, });
+    /**
      * Ordered source alias members only for alias identity subject.
      */
-    const sourceAliasMembers = leanFrontMatterContract({ path: subject.path, })
-      .kind
-      === 'alias'
+    const sourceAliasMembers = contract.kind === 'alias'
       ? subject.sourceText
-        .split(',')
+        .split(contract.grammar
+          .sourceDelimiter,)
         .map(function trim(value,) { return value.trim(); })
+      : [];
+    /**
+     * Candidate alias members under executable target delimiter policy.
+     */
+    const candidateAliasMembers = contract.kind === 'alias'
+      ? candidateText.split(contract.grammar
+        .targetDelimiter,)
+      : [];
+    /**
+     * Positional source-to-candidate evidence executing member-order policy.
+     */
+    const aliasMemberPairs = (contract.kind === 'alias')
+      && (contract.grammar
+        .memberOrder
+        === 'source-exact')
+      ? sourceAliasMembers.map(function pair(
+        sourceMember,
+        index,
+      ): AliasMemberPair {
+        return {
+          index,
+          sourceMember,
+          candidateMember: candidateAliasMembers[index] ?? '',
+          protectedCased: (contract.grammar
+            .protectedCasedMember
+            === 'exact-at-position')
+            && hasCasedLetter(sourceMember,),
+        };
+      },)
       : [];
     return {
       ...subject,
       candidateText,
       candidateDigest: hashContent({ content: candidateText, }),
       sourceAliasMembers,
-      protectedCasedMembers: sourceAliasMembers.filter(hasCasedLetter,),
+      candidateAliasMembers,
+      aliasMemberPairs,
+      protectedCasedMembers: aliasMemberPairs
+        .filter(function protectedMember(pair,) { return pair.protectedCased; })
+        .map(function source(pair,) { return pair.sourceMember; }),
     };
   },);
   return {

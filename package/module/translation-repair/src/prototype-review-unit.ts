@@ -7,10 +7,13 @@ export {
 export {
   LEAN_FRONT_MATTER_AUTHORITY_DIGEST,
   LEAN_FRONT_MATTER_CONTRACTS,
-  compileLeanFrontMatter,
   leanFrontMatterContract,
+  leanFrontMatterContractOfKind,
   type LeanFrontMatterAuthority,
   type LeanFrontMatterContract,
+} from './prototype-lean-realization-front-matter-contract.ts';
+export {
+  compileLeanFrontMatter,
 } from './prototype-lean-realization-front-matter.ts';
 export {
   LEAN_REALIZATION_AUTHOR_PROTOCOL_DIGEST,

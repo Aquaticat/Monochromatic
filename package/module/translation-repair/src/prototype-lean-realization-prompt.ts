@@ -8,7 +8,7 @@ import type {
 import type { VisionMessage, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
 import type { PrototypeMedia, } from './prototype-brief-editor-input.ts';
-import { LEAN_FRONT_MATTER_AUTHORITY_DIGEST, } from './prototype-lean-realization-front-matter.ts';
+import { LEAN_FRONT_MATTER_AUTHORITY_DIGEST, } from './prototype-lean-realization-front-matter-contract.ts';
 import { leanVerifierEvidence, } from './prototype-lean-realization-verifier-evidence.ts';
 import type {
   ReviewUnitCandidate,

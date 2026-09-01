@@ -14,7 +14,7 @@ import {
   type ReviewUnitManifest,
   type ReviewUnitVerifierPlan,
 } from './prototype-review-unit-model.ts';
-import { LEAN_FRONT_MATTER_AUTHORITY_DIGEST, } from './prototype-lean-realization-front-matter.ts';
+import { LEAN_FRONT_MATTER_AUTHORITY_DIGEST, } from './prototype-lean-realization-front-matter-contract.ts';
 import {
   LEAN_REALIZATION_AUTHOR_PROTOCOL_DIGEST,
   LEAN_REALIZATION_VERIFIER_PROTOCOL_DIGEST,

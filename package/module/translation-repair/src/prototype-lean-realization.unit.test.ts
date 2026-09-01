@@ -25,6 +25,8 @@ import {
   buildRealizationObligationLedger,
   createReviewUnitManifest,
   createReviewUnitPlan,
+  LEAN_FRONT_MATTER_AUTHORITY_DIGEST,
+  LEAN_FRONT_MATTER_CONTRACTS,
   leanRealizationAuthorMessages,
   leanRealizationGuard,
   leanRealizationVerifierMessages,
@@ -572,6 +574,58 @@ await describe({
         expect(value.shell.slots.length).toBe(23,);
         expect(value.reviewPlan.frontMatterSubjects.length).toBe(4,);
         expect(value.manifest.version).toBe(2,);
+        expect(value.manifest.frontMatterAuthorityDigest).toBe(LEAN_FRONT_MATTER_AUTHORITY_DIGEST,);
+        expect(LEAN_FRONT_MATTER_CONTRACTS.map(function identity(contract,) {
+          return {
+            path: contract.path,
+            kind: contract.kind,
+            authority: contract.authority,
+            grammar: contract.grammar,
+          };
+        },)).toEqual([
+          {
+            path: ['name',],
+            kind: 'name',
+            authority: 'identity',
+            grammar: {
+              nonempty: true,
+              singleLine: true,
+              equalsAliasMember: true,
+            },
+          },
+          {
+            path: ['info', 'alias',],
+            kind: 'alias',
+            authority: 'identity',
+            grammar: {
+              nonempty: true,
+              singleLine: true,
+              sourceDelimiter: ',',
+              targetDelimiter: ', ',
+              memberCount: 'source-exact',
+              memberOrder: 'source-exact',
+              protectedCasedMember: 'exact-at-position',
+            },
+          },
+          {
+            path: ['info', 'location',],
+            kind: 'location',
+            authority: 'location',
+            grammar: {
+              nonempty: true,
+              singleLine: true,
+            },
+          },
+          {
+            path: ['desc',],
+            kind: 'description',
+            authority: 'description',
+            grammar: {
+              nonempty: true,
+              singleLine: true,
+            },
+          },
+        ],);
         expect(value.manifest.payloadCountCeiling).toBe(MAX_LEAN_REALIZATION_PAYLOAD_COUNT,);
         const keys = leanRealizationSlotKeys({ shell: value.shell, reviewPlan: value.reviewPlan, });
         expect(keys.length).toBe(27,);
@@ -627,9 +681,10 @@ await describe({
           archiveText: ARCHIVE,
           sourcePictures: [{ assetName: 'fixture.webp', },],
         })).not.toThrow();
+        const nameKey = value.reviewPlan.frontMatterSubjects[0]?.targetSlotKey;
         const aliasKey = value.reviewPlan.frontMatterSubjects[1]?.targetSlotKey;
-        if (aliasKey === undefined)
-          throw new Error('lean realization alias fixture is absent');
+        if ((nameKey === undefined) || (aliasKey === undefined))
+          throw new Error('lean realization identity fixture is absent');
         expect(() => admitLeanRealizationResponse({
           response: { slots: { ...response.slots, [aliasKey]: 'Flying Cat, Other', }, },
           shell: value.shell,
@@ -640,6 +695,22 @@ await describe({
           archiveText: ARCHIVE,
           sourcePictures: [{ assetName: 'fixture.webp', },],
         })).toThrow();
+        for (const slots of [
+          { ...response.slots, [aliasKey]: 'Carena', },
+          { ...response.slots, [aliasKey]: 'Carena, Flying Cat', },
+          { ...response.slots, [nameKey]: 'Someone Else', },
+        ]) {
+          expect(() => admitLeanRealizationResponse({
+            response: { slots, },
+            shell: value.shell,
+            manifest: value.manifest,
+            reviewPlan: value.reviewPlan,
+            plan: CANDIDATE_PLAN[0],
+            sourceText: SOURCE,
+            archiveText: ARCHIVE,
+            sourcePictures: [{ assetName: 'fixture.webp', },],
+          })).toThrow();
+        }
       },
     }),
     it({
@@ -676,6 +747,8 @@ await describe({
           throw new Error('lean realization source projection shape differs');
         const expectedKeys = [
           'authority',
+          'grammar',
+          'kind',
           'path',
           'sourceDigest',
           'sourceText',
@@ -699,9 +772,56 @@ await describe({
           reviewPlan: value.reviewPlan,
           candidate,
         });
-        expect(projected.candidateFrontMatterSubjects.some(function name(subject,) {
-          return subject.candidateText === 'Carena';
+        const candidateSubjectKeys = [
+          ...expectedKeys,
+          'aliasMemberPairs',
+          'candidateAliasMembers',
+          'candidateDigest',
+          'candidateText',
+          'protectedCasedMembers',
+          'sourceAliasMembers',
+        ].toSorted();
+        expect(projected.candidateFrontMatterSubjects.every(function exact(subject,) {
+          return JSON.stringify(Object.keys(subject,).toSorted(),)
+            === JSON.stringify(candidateSubjectKeys,);
         },)).toBe(true,);
+        expect(projected.candidateFrontMatterSubjects.some(function name(subject,) {
+          return (subject.candidateText === 'Carena') && (subject.authority === 'identity');
+        },)).toBe(true,);
+        expect(projected.candidateFrontMatterSubjects.some(function location(subject,) {
+          return (subject.candidateText === 'Shanghai') && (subject.authority === 'location');
+        },)).toBe(true,);
+        const aliasSubject = projected.candidateFrontMatterSubjects.find(function alias(subject,) {
+          return subject.kind === 'alias';
+        },);
+        expect(aliasSubject?.sourceAliasMembers).toEqual(['飞猫', 'Carena',],);
+        expect(aliasSubject?.candidateAliasMembers).toEqual(['Flying Cat', 'Carena',],);
+        expect(aliasSubject?.aliasMemberPairs).toEqual([
+          {
+            index: 0,
+            sourceMember: '飞猫',
+            candidateMember: 'Flying Cat',
+            protectedCased: false,
+          },
+          {
+            index: 1,
+            sourceMember: 'Carena',
+            candidateMember: 'Carena',
+            protectedCased: true,
+          },
+        ],);
+        expect(aliasSubject?.protectedCasedMembers).toEqual(['Carena',],);
+        expect(aliasSubject?.grammar).toEqual({
+          nonempty: true,
+          singleLine: true,
+          sourceDelimiter: ',',
+          targetDelimiter: ', ',
+          memberCount: 'source-exact',
+          memberOrder: 'source-exact',
+          protectedCasedMember: 'exact-at-position',
+        },);
+        expect(verifierPacket.sourceReviewPlanDigest).toBe(projected.sourceReviewPlanDigest,);
+        expect(verifierPacket.admissionReviewPlanDigest).toBe(projected.admissionReviewPlanDigest,);
         expect(
           serialized.includes(String(value.manifest.frontMatterAuthorityDigest,),),
         ).toBe(true,);
