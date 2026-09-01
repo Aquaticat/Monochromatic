@@ -1,5 +1,7 @@
 /**
- * Tests archive-only provenance, correction, naturalness, and cycle recovery.
+ * Tests archive-only provenance, correction, and recorded naturalness under
+ * the single-round contract: reviewer indecision retains the block with
+ * findings and never buys a second round.
  *
  * Fixtures are cat-themed invention.
  *
@@ -18,7 +20,6 @@ import {
   type ChatJsonRequest,
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
-  repairArchiveBlock,
   runArchiveBlockReviewStage,
   type SyntheticClient,
   TranslationRepairInterruptedError,
@@ -237,101 +238,92 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES correction slate that drops target-authoritative contributor identity',
+      name: 'RETAINS the block when every proposed correction drops contributor identity',
       fn: async () => {
         const prompts: string[] = [];
-        let thrown: unknown;
-        try {
-          await runArchiveBlockReviewStage({
-            client: scriptedClient({
-              prompts,
-              replyFor: ({ schema, },) => schema === 'archive_block_review'
-                ? {
-                  disposition: 'revise',
-                  sourceQuote: '',
-                  replacementText: '',
-                  finding: 'Remove the attribution block.',
-                }
-                : {
-                  best: 1,
-                  reason: 'Remove the only candidate.',
-                },
-            },),
-            modelIds: ROSTER,
-            sourceText: '',
-            targetText: 'Contributors for this entry: Cat Friend',
-            blockText: 'Contributors for this entry: Cat Friend',
-            priorFindings: [],
-            signal: new AbortController().signal,
-            exchangeTimeoutMs: 5_000,
-            l,
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
-        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
-        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('archive-block-unresolved');
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'revise',
+                sourceQuote: '',
+                replacementText: '',
+                finding: 'Remove the attribution block.',
+              }
+              : {
+                best: 1,
+                reason: 'Remove the only candidate.',
+              },
+          },),
+          modelIds: ROSTER,
+          sourceText: '',
+          targetText: 'Contributors for this entry: Cat Friend',
+          blockText: 'Contributors for this entry: Cat Friend',
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        // Every candidate dropped the authoritative identity, so the slate is
+        // empty, the selection declines without a call, and the original ships.
+        expect(outcome.kind,).toBe('retained');
+        expect(outcome.text,).toBe('Contributors for this entry: Cat Friend');
+        expect(outcome.findings
+          .includes('archive correction slate declined',),).toBe(true,);
       },
     },),
     it({
-      name: 'CONTINUES naturalness rejection into distinct provenance correction strategy',
+      name: 'RECORDS a naturalness rejection as findings on the retained block, never a second round',
       fn: async () => {
         const prompts: string[] = [];
-        const outcome = await repairArchiveBlock({
+        const outcome = await runArchiveBlockReviewStage({
           client: scriptedClient({
             prompts,
-            replyFor: ({ schema, prompt, },) => schema === 'archive_block_review'
-              ? prompt.includes('PRIOR FINDINGS',)
-                ? {
-                  disposition: 'revise',
-                  sourceQuote: '',
-                  replacementText: 'The cat sleeps quietly by the window.',
-                  finding: 'Replace awkward archive wording.',
-                }
-                : {
-                  disposition: 'source-supported',
-                  sourceQuote: '窗边安静地睡觉',
-                  replacementText: '',
-                  finding: 'Expected section supports this sentence.',
-                }
-              : schema === 'absolute_naturalness_review'
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
               ? {
+                disposition: 'source-supported',
+                sourceQuote: '窗边安静地睡觉',
+                replacementText: '',
+                finding: 'Expected section supports this sentence.',
+              }
+              : {
                 acceptable: false,
                 findings: [{
                   paragraph: 1,
                   problem: 'Awkward archive wording.',
                 },],
                 reason: 'Revision is required.',
-              }
-              : {
-                best: 1,
-                reason: 'Correction is faithful and natural.',
               },
           },),
           modelIds: ROSTER,
           sourceText: '猫在窗边安静地睡觉。',
           targetText: 'The cat by the window quietly sleeping is.',
           blockText: 'The cat by the window quietly sleeping is.',
+          priorFindings: [],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 5_000,
           l,
         },);
 
-        expect(outcome.kind,).toBe('revised');
-        expect(outcome.text,).toBe('The cat sleeps quietly by the window.');
+        // The reviewer verdict is evidence, not withholding authority: the
+        // anchored block ships with the located problem on its findings.
+        expect(outcome.kind,).toBe('retained');
+        expect(outcome.text,).toBe('The cat by the window quietly sleeping is.');
+        expect(outcome.findings
+          .includes('archive naturalness paragraph 1: Awkward archive wording.',),).toBe(true,);
         const reviewPrompts = prompts.filter(function isReview(prompt,): boolean {
           return prompt.includes('Review English archive wording',);
         },);
-        expect(new Set(reviewPrompts,).size,).toBe(2);
+        expect(new Set(reviewPrompts,).size,).toBe(1);
       },
     },),
     it({
-      name: 'PAUSES exact repeated declined correction evidence instead of padding prompts forever',
+      name: 'RETAINS the block when judges decline every correction, buying no second round',
       fn: async () => {
         const prompts: string[] = [];
         const payloads: string[] = [];
-        await expect(repairArchiveBlock({
+        const outcome = await runArchiveBlockReviewStage({
           client: scriptedClient({
             prompts,
             payloads,
@@ -351,14 +343,21 @@ await describe({
           sourceText: '猫在睡觉。',
           targetText: 'The cat won an award.',
           blockText: 'The cat won an award.',
+          priorFindings: [],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 5_000,
           l,
-        },),).rejects.toThrow('translation repair interrupted: archive-block-unresolved',);
+        },);
+        // Archive wording is the shipping default; the decline is recorded
+        // evidence and the stage never re-asks.
+        expect(outcome.kind,).toBe('retained');
+        expect(outcome.text,).toBe('The cat won an award.');
+        expect(outcome.findings
+          .includes('archive correction slate declined',),).toBe(true,);
         const reviewPrompts = prompts.filter(function isReview(prompt,): boolean {
           return prompt.includes('Review English archive wording',);
         },);
-        expect(new Set(reviewPrompts,).size,).toBe(2);
+        expect(new Set(reviewPrompts,).size,).toBe(1);
         expect(new Set(payloads,).size,).toBe(payloads.length);
       },
     },),

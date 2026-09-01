@@ -4,7 +4,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { reviewAbsoluteNaturalness, } from './absolute-naturalness-review-stage.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 
 //region Archive block naturalness
 
@@ -27,7 +26,13 @@ function describeNaturalnessFindings(
 }
 
 /**
- * Requires defect discovery and distinct acceptance challenge for retained block.
+ * Records defect discovery and distinct acceptance challenge for a retained block.
+ *
+ * Verdicts are evidence, never withholding authority:
+ * a rejection or an unheard review roster becomes located findings on the
+ * settlement while the block ships,
+ * because reviewer opinion after a completed review round must not pause an
+ * entry that a producing stage already settled.
  *
  * @param client - provider client
  *
@@ -43,16 +48,14 @@ function describeNaturalnessFindings(
  *
  * @param l - stage logger
  *
- * @returns Findings proving both responsibilities accepted exact block
- *
- * @throws {@link TranslationRepairInterruptedError} when review rejects or cannot reach quorum
+ * @returns Findings from both responsibilities, located evidence on rejection
  *
  * @example
  * ```ts
- * const findings = await confirmArchiveBlockNaturalness(input);
+ * const findings = await recordArchiveBlockNaturalness(input);
  * ```
  */
-export async function confirmArchiveBlockNaturalness(
+export async function recordArchiveBlockNaturalness(
   {
     client,
     modelIds,
@@ -95,18 +98,6 @@ export async function confirmArchiveBlockNaturalness(
    * First-round located evidence.
    */
   const discoveryFindings = describeNaturalnessFindings({ findings: discovery.findings, });
-  if (discovery.verdict === 'quorum-not-met') {
-    throw new TranslationRepairInterruptedError({
-      reason: 'provider-unavailable',
-      findings: discoveryFindings,
-    },);
-  }
-  if (discovery.verdict === 'unacceptable') {
-    throw new TranslationRepairInterruptedError({
-      reason: 'archive-block-unresolved',
-      findings: discoveryFindings,
-    },);
-  }
   /**
    * Distinct responsibility challenges prior acceptance.
    */
@@ -123,19 +114,19 @@ export async function confirmArchiveBlockNaturalness(
    * Second-round located evidence.
    */
   const challengeFindings = describeNaturalnessFindings({ findings: challenge.findings, });
-  if (challenge.verdict === 'quorum-not-met') {
-    throw new TranslationRepairInterruptedError({
-      reason: 'provider-unavailable',
-      findings: challengeFindings,
-    },);
-  }
-  if (challenge.verdict === 'unacceptable') {
-    throw new TranslationRepairInterruptedError({
-      reason: 'archive-block-unresolved',
-      findings: challengeFindings,
-    },);
-  }
-  return ['archive block absolute naturalness accepted and challenged',];
+  if ((discovery.verdict === 'acceptable') && (challenge.verdict === 'acceptable'))
+    return ['archive block absolute naturalness accepted and challenged',];
+  return [
+    ...discoveryFindings,
+    ...challengeFindings,
+    ...(discovery.verdict === 'quorum-not-met'
+      ? ['archive naturalness defect-discovery review quorum not met',]
+      : []),
+    ...(challenge.verdict === 'quorum-not-met'
+      ? ['archive naturalness acceptance-challenge review quorum not met',]
+      : []),
+    'archive block retained with naturalness findings recorded',
+  ];
 }
 
 //endregion Archive block naturalness

@@ -24,7 +24,6 @@ export class TranslationRepairInterruptedError extends Error {
    * Named stage state preventing unique continuation.
    */
   public readonly reason:
-    | 'archive-block-unresolved'
     | 'carried-evidence-lost'
     | 'final-selection-unresolved'
     | 'insertion-placement-unresolved'
@@ -57,7 +56,6 @@ export class TranslationRepairInterruptedError extends Error {
       findings,
     }: {
       readonly reason:
-        | 'archive-block-unresolved'
         | 'carried-evidence-lost'
         | 'final-selection-unresolved'
         | 'insertion-placement-unresolved'

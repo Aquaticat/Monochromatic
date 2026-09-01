@@ -5,7 +5,7 @@ import {
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';
-import { confirmArchiveBlockNaturalness, } from './archive-block-naturalness.ts';
+import { recordArchiveBlockNaturalness, } from './archive-block-naturalness.ts';
 import {
   type ArchiveBlockReviewWire,
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
@@ -135,7 +135,12 @@ function replacementCandidates(
 }
 
 /**
- * Reviews one archive-only block and selects a correction when any voice rejects it.
+ * Reviews one archive-only block once and selects a correction when any voice rejects it.
+ *
+ * SINGLE ROUND BY DESIGN: a declined correction slate or an empty one retains
+ * the original block with the decline recorded as a finding, because archive
+ * wording is the shipping default and reviewer indecision must not withhold
+ * the entry (doc/planning/translation-repair-no-loop-design.md).
  *
  * @param client - provider client
  *
@@ -257,7 +262,7 @@ export async function runArchiveBlockReviewStage(
     /**
      * Independent wording review after provenance acceptance.
      */
-    const naturalnessFindings = await confirmArchiveBlockNaturalness({
+    const naturalnessFindings = await recordArchiveBlockNaturalness({
       client,
       modelIds,
       sourceText,
@@ -285,9 +290,7 @@ export async function runArchiveBlockReviewStage(
       blockText,
     },),
     judgeModelIds: modelIds,
-    task: priorFindings.includes(PRIOR_CORRECTION_DECLINE,)
-      ? 'Challenge a prior declined correction slate and choose a publishable archive-only block correction.'
-      : 'Choose a publishable correction for one unsupported archive-only block.',
+    task: 'Choose a publishable correction for one unsupported archive-only block.',
     criteria: [
       'Remove every factual claim not supported by the original document.',
       'Retain source-supported meaning and verifiable editorial apparatus.',
@@ -308,7 +311,7 @@ export async function runArchiveBlockReviewStage(
         text: JSON.stringify(findings,),
       },
     ],
-    declineConsequence: 'The stage will continue with a distinct correction strategy; no block is published.',
+    declineConsequence: 'The original archive block ships unchanged, with this decline recorded as a finding.',
     signal,
     perCallTimeoutMs: exchangeTimeoutMs,
     l,
@@ -326,85 +329,16 @@ export async function runArchiveBlockReviewStage(
       text: selection.value,
       findings: settledFindings,
     };
-  throw new TranslationRepairInterruptedError({
-    reason: 'archive-block-unresolved',
+  // Archive wording is the shipping default; judge indecision is recorded
+  // evidence, never authority to withhold the entry.
+  return {
+    kind: 'retained',
+    text: blockText,
     findings: [...new Set([
       ...settledFindings,
       PRIOR_CORRECTION_DECLINE,
     ],),],
-  },);
-}
-
-/**
- * Continues archive review through declined correction slates.
- *
- * @param input - provider, documents, roster, cancellation, and logging boundary
- *
- * @returns Retained block or selected correction
- *
- * @throws {@link TranslationRepairInterruptedError} on provider loss or exact task cycle
- *
- * @example
- * ```ts
- * const result = await repairArchiveBlock(input);
- * ```
- */
-export async function repairArchiveBlock(
-  input: ForeignBorrowed<{
-    readonly client: SyntheticClient;
-    readonly modelIds: readonly RosterModelId[];
-    readonly sourceText: string;
-    readonly targetText: string;
-    readonly blockText: string;
-    readonly signal: AbortSignal;
-    readonly exchangeTimeoutMs: number;
-    readonly l: Logger;
-  }>,
-): Promise<ArchiveBlockReviewOutcome> {
-  /**
-   * Latest unsuccessful strategy evidence.
-   */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Stateful stage continuation advances findings until acceptance or interruption.
-  let priorFindings: readonly string[] = [];
-  /**
-   * Exact tasks already attempted in this invocation.
-   */
-  const attemptedTasks = new Set<string>();
-  while (!input.signal
-    .aborted) {
-    /**
-     * Exact correction task identity.
-     */
-    const identity = JSON.stringify({
-      blockText: input.blockText,
-      priorFindings,
-    },);
-    if (attemptedTasks.has(identity,)) {
-      throw new TranslationRepairInterruptedError({
-        reason: 'archive-block-unresolved',
-        findings: priorFindings,
-      },);
-    }
-    attemptedTasks.add(identity,);
-    try {
-      // oxlint-disable-next-line no-await-in-loop -- Each correction depends on latest rejected findings.
-      return await runArchiveBlockReviewStage({
-        ...input,
-        priorFindings,
-      },);
-    }
-    catch (error) {
-      if ((!(error instanceof TranslationRepairInterruptedError)) || (error.reason !== 'archive-block-unresolved'))
-        throw error;
-      priorFindings = error.findings;
-    }
-  }
-  input.signal
-    .throwIfAborted();
-  throw new TranslationRepairInterruptedError({
-    reason: 'provider-unavailable',
-    findings: priorFindings,
-  },);
+  };
 }
 
 //endregion Archive block review stage

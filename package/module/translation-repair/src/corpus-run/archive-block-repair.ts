@@ -1,12 +1,11 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { repairArchiveBlock, } from '../archive-block-review-stage.ts';
+import { runArchiveBlockReviewStage, } from '../archive-block-review-stage.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { UnclaimedTargetBlock, } from '../document-preparation.ts';
 import { hashContent, } from '../document-node.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
-import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 
 //region Archive block repair
 
@@ -143,12 +142,13 @@ export async function repairArchiveBlocks(
      * Stage-local retained or revised outcome.
      */
     // oxlint-disable-next-line no-await-in-loop -- Reverse-offset block corrections must settle in document order.
-    const outcome = await repairArchiveBlock({
+    const outcome = await runArchiveBlockReviewStage({
       client,
       modelIds,
       sourceText: sourceContexts.get(identity,) ?? '',
       targetText,
       blockText,
+      priorFindings: [],
       signal,
       exchangeTimeoutMs,
       l,
@@ -158,10 +158,10 @@ export async function repairArchiveBlocks(
       continue;
     }
     if (outcome.text === blockText) {
-      throw new TranslationRepairInterruptedError({
-        reason: 'archive-block-unresolved',
-        findings: outcome.findings,
-      },);
+      // A revision that repeats its original wording is a claimed change with
+      // no change; the original is kept and the defective claim recorded.
+      findings.push(`archive block revision repeated its original wording and was retained: ${identity}`);
+      continue;
     }
     revisedText = `${revisedText.slice(
       0,

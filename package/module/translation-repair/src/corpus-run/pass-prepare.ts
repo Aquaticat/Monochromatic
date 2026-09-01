@@ -7,7 +7,6 @@ import {
   prepareDocumentPairWithRoster,
 } from '../prepare-with-pairing.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
-import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
   openPairingCache,
@@ -19,6 +18,12 @@ import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 //region Pass preparation
 // Corpus-specific shell owns pairing cache namespaces and reviews inherited
 // blocks outside source claims before any later quality-stage purchase.
+//
+// LINEAR TWO-STEP BY DESIGN: one preparation, at most one archive correction
+// round, one re-preparation over the corrected archive. The second
+// preparation is the structural consequence of having edited the archive,
+// not a rejection-driven re-ask; blocks still unclaimed after it become
+// findings (doc/planning/translation-repair-no-loop-design.md).
 
 /**
  * Prepares one pass entry with cached roster pairing and publication safety.
@@ -75,6 +80,7 @@ export async function preparePassEntry(
     readonly l: Logger;
   }>,
 ): Promise<PairedPreparation> {
+  l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
   /**
    * Cache for block-pairing rounds across revised archive preparations.
    */
@@ -90,83 +96,77 @@ export async function preparePassEntry(
     generation: pipelineDigest,
   },);
   /**
-   * Archive carrying every selected preparation-stage correction.
+   * Preparation over the archive as inherited.
    */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Stage-local revision advances archive until every unclaimed block is licensed.
-  let currentTargetText = targetText;
+  const firstPaired = await prepareDocumentPairWithRoster({
+    client,
+    modelIds,
+    pairingCache,
+    sectionCache,
+    sourceText,
+    targetText,
+    signal,
+    exchangeTimeoutMs,
+    l,
+  },);
   /**
-   * Operation-only archive review audit trail.
+   * Unclaimed blocks not already licensed unchanged.
    */
-  const archiveFindings: string[] = [];
+  const pending = firstPaired.prepared
+    .unclaimedTargetBlocks;
+  if (pending.length === 0)
+    return firstPaired;
   /**
-   * Exact archive states already prepared in this invocation.
+   * Selected corrections and retained licenses from the single review round.
    */
-  const attemptedPreparations = new Set<string>();
-  while (!signal.aborted) {
-    if (attemptedPreparations.has(currentTargetText,)) {
-      throw new TranslationRepairInterruptedError({
-        reason: 'archive-block-unresolved',
-        findings: archiveFindings,
-      },);
-    }
-    attemptedPreparations.add(currentTargetText,);
-    /**
-     * Preparation over latest corrected archive.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- Each preparation depends on prior archive correction offsets.
-    const paired = await prepareDocumentPairWithRoster({
-      client,
-      modelIds,
-      pairingCache,
-      sectionCache,
-      sourceText,
-      targetText: currentTargetText,
-      signal,
-      exchangeTimeoutMs,
-      l,
-    },);
-    /**
-     * Unclaimed blocks not already licensed unchanged.
-     */
-    const pending = paired.prepared
-      .unclaimedTargetBlocks;
-    if (pending.length === 0) {
-      return {
-        prepared: paired.prepared,
-        findings: [
-          ...paired.findings,
-          ...archiveFindings,
-        ],
-      };
-    }
-    /**
-     * Selected corrections and retained licenses from this preparation.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- Repair consumes current preparation offsets before next parse.
-    const repaired = await repairArchiveBlocks({
-      client,
-      modelIds,
-      targetText: currentTargetText,
-      sourceContexts: archiveBlockSourceContexts({ prepared: paired.prepared, }),
-      blocks: pending,
-      signal,
-      exchangeTimeoutMs,
-      l,
-    },);
-    archiveFindings.push(...repaired.findings,);
-    if (repaired.targetText === currentTargetText) {
-      return {
-        prepared: paired.prepared,
-        findings: [
-          ...paired.findings,
-          ...archiveFindings,
-        ],
-      };
-    }
-    currentTargetText = repaired.targetText;
+  const repaired = await repairArchiveBlocks({
+    client,
+    modelIds,
+    targetText,
+    sourceContexts: archiveBlockSourceContexts({ prepared: firstPaired.prepared, }),
+    blocks: pending,
+    signal,
+    exchangeTimeoutMs,
+    l,
+  },);
+  if (repaired.targetText === targetText) {
+    return {
+      prepared: firstPaired.prepared,
+      findings: [
+        ...firstPaired.findings,
+        ...repaired.findings,
+      ],
+    };
   }
-  signal.throwIfAborted();
-  throw new Error(`entry ${entryId} preparation stopped without abort reason`,);
+  /**
+   * Re-preparation over the corrected archive, whose offsets the correction moved.
+   */
+  const secondPaired = await prepareDocumentPairWithRoster({
+    client,
+    modelIds,
+    pairingCache,
+    sectionCache,
+    sourceText,
+    targetText: repaired.targetText,
+    signal,
+    exchangeTimeoutMs,
+    l,
+  },);
+  /**
+   * Blocks the single correction round could not claim.
+   */
+  const remaining = secondPaired.prepared
+    .unclaimedTargetBlocks;
+  return {
+    prepared: secondPaired.prepared,
+    findings: [
+      ...secondPaired.findings,
+      ...repaired.findings,
+      ...(remaining.length === 0
+        ? []
+        : [`unclaimed archive blocks remain after the single correction round: ${String(remaining.length,)}`,]),
+    ],
+  };
 }
 
 //endregion Pass preparation

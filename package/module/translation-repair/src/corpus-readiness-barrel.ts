@@ -13,7 +13,6 @@ export {
 } from './archive-block-evidence.ts';
 export {
   type ArchiveBlockReviewOutcome,
-  repairArchiveBlock,
   runArchiveBlockReviewStage,
 } from './archive-block-review-stage.ts';
 export {

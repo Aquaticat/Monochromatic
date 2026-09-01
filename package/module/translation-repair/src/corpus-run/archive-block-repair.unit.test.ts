@@ -1,5 +1,7 @@
 /**
- * Tests archive-block context, reverse splicing, removal, and preparation cycles.
+ * Tests archive-block context, reverse splicing, removal, and the linear
+ * two-step preparation: one correction round, one re-preparation, remaining
+ * unclaimed blocks recorded as findings instead of a cycle pause.
  *
  * Fixtures are cat-themed invention.
  *
@@ -30,7 +32,6 @@ import {
   preparePassEntry,
   repairArchiveBlocks,
   type SyntheticClient,
-  TranslationRepairInterruptedError,
   type UnclaimedTargetBlock,
 } from '../../dist/final/node/index.mjs';
 
@@ -187,35 +188,39 @@ await describe({
       },
     },),
     it({
-      name: 'PAUSES alternating archive preparations on repeated exact page state',
+      name: 'SETTLES after one correction round, recording still-unclaimed blocks as findings',
       fn: async () => {
         const dir = await mkdtemp(join(tmpdir(), 'archive-block-cycle-',),);
-        let thrown: unknown;
-        try {
-          await preparePassEntry({
-            client: correctionClient({
-              replacementFor: function alternate(prompt,): string {
-                return prompt.includes('Aside A',) ? 'Aside B' : 'Aside A';
-              },
-            },),
-            entryId: 'Cat',
-            entryCacheDir: dir,
-            pipelineDigest: GENERATION,
-            modelIds: ROSTER,
-            sourceText: 'Cats nap.',
-            targetText: 'Cats nap.\n\nAside A',
-            signal: new AbortController().signal,
-            exchangeTimeoutMs: 5_000,
-            l,
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
+        // The corrector that once alternated forever now gets exactly one
+        // round: prepare, correct, re-prepare, and whatever stays unclaimed
+        // becomes a finding on the returned preparation.
+        const paired = await preparePassEntry({
+          client: correctionClient({
+            replacementFor: function alternate(prompt,): string {
+              return prompt.includes('Aside A',) ? 'Aside B' : 'Aside A';
+            },
+          },),
+          entryId: 'Cat',
+          entryCacheDir: dir,
+          pipelineDigest: GENERATION,
+          modelIds: ROSTER,
+          sourceText: 'Cats nap.',
+          targetText: 'Cats nap.\n\nAside A',
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
         await rm(dir, { recursive: true, force: true, },);
 
-        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
-        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('archive-block-unresolved');
+        expect(paired.prepared
+          .targetText
+          .includes('Aside B',),).toBe(true,);
+        expect(
+          paired.findings
+            .some(function namesRemaining(finding,): boolean {
+              return finding.includes('unclaimed archive blocks remain after the single correction round',);
+            },),
+        ).toBe(true,);
       },
     },),
   ],
