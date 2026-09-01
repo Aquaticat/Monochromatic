@@ -90,6 +90,10 @@ export {
   type ReviewUnitProofInput,
 } from './prototype-review-unit-proof.ts';
 export {
+  reviewUnitBasePromptDigest,
+  reviewUnitContractDigest,
+} from './prototype-review-unit-node-record.ts';
+export {
   reviewUnitAuthorMessages,
   reviewUnitVerifierMessages,
 } from './prototype-review-unit-prompt.ts';
@@ -139,3 +143,6 @@ export type {
 export {
   buildImmutableShell,
 } from './prototype-slot-shell.ts';
+export {
+  slotResponseFormat,
+} from './prototype-slot-wire.ts';

@@ -322,7 +322,18 @@ export function selectReviewUnit({
     const families = new Set(cleanIds.map(function family(modelId,) {
       return boundedModelFamily({ modelId, });
     },));
-    return (cleanIds.length >= 2) && (families.size >= 2);
+    /**
+     * Every admitted self or nonself ballot for current candidate.
+     */
+    const admitted = validByCandidate.get(candidate.candidateId,) ?? [];
+    /**
+     * Whether no admitted ballot vetoes current candidate.
+     */
+    const dissentFree = admitted.every(function clean(ballot,) {
+      return isClean({ response: ballot.response, });
+    },);
+    return (cleanIds.length >= 2) && (families.size >= 2)
+      && dissentFree;
   },) ?? fallback;
   /**
    * Admitted ballots for selected candidate.

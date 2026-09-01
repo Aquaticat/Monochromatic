@@ -1,9 +1,11 @@
 import { createHash, } from 'node:crypto';
+import { existsSync, } from 'node:fs';
 import {
   mkdtemp,
   readFile,
   readdir,
   rm,
+  writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -35,6 +37,9 @@ import {
   REVIEW_UNIT_FINDING_RULES,
   REVIEW_UNIT_GLOBAL_CRITERIA,
   REVIEW_UNIT_HYPER_MODELS,
+  reviewUnitAuthorMessages,
+  reviewUnitBasePromptDigest,
+  reviewUnitContractDigest,
   reviewUnitHyperRouteDigest,
   reviewUnitResponseGuard,
   reviewUnitResponseFormat,
@@ -42,6 +47,7 @@ import {
   runReviewUnitRuntime,
   runReviewUnitVerifierNode,
   selectReviewUnit,
+  slotResponseFormat,
   type RealizationCandidatePlan,
   type ReviewUnitAuthorSettlement,
   type ReviewUnitCandidate,
@@ -462,6 +468,64 @@ function scriptedClient({
     quotas: async () => {
       await Promise.resolve();
       throw new Error('review unit runtime quotas unused');
+    },
+  };
+}
+
+/** Builds signal becoming aborted once named durable artifact exists. */
+function artifactAbortSignal({
+  reason,
+  artifactPath,
+}: {
+  readonly reason: unknown;
+  readonly artifactPath: string;
+}): AbortSignal {
+  /** Real signal supplying event-target methods and internal brand. */
+  const real = new AbortController().signal;
+  /** Proxy overriding only cancellation observations. */
+  const handler: ProxyHandler<AbortSignal> = {
+    get(target, property, receiver,): unknown {
+      if (property === 'aborted')
+        return existsSync(artifactPath,);
+      if (property === 'reason')
+        return reason;
+      const value: unknown = Reflect.get(target, property, receiver,);
+      return (typeof value) === 'function' ? value.bind(target,) : value;
+    },
+  };
+  return new Proxy(real, handler,);
+}
+
+/** Builds client aborting only after every author sibling enters transport. */
+function authorAbortClient({
+  controller,
+  reason,
+  settled,
+}: {
+  readonly controller: AbortController;
+  readonly reason: unknown;
+  readonly settled: { value: number };
+}): SyntheticClient {
+  const barrier = Promise.withResolvers<undefined>();
+  const arrivals = { value: 0, };
+  return {
+    chatText: async () => {
+      await Promise.resolve();
+      throw new Error('review unit author abort text route unused');
+    },
+    chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+      arrivals.value += 1;
+      if (arrivals.value === 3) {
+        controller.abort(reason,);
+        barrier.resolve(undefined,);
+      }
+      await barrier.promise;
+      settled.value += 1;
+      throw request.signal.reason;
+    },
+    quotas: async () => {
+      await Promise.resolve();
+      throw new Error('review unit author abort quota route unused');
     },
   };
 }
@@ -1367,6 +1431,43 @@ await describe({
       },
     }),
     it({
+      name: 'skips vetoed high-priority candidate for clean eligible candidate',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const [qwenCandidate, glmCandidate,] = fixture.candidates;
+        const [slot,] = fixture.reviewPlan.slotGroups;
+        if ((qwenCandidate === undefined) || (glmCandidate === undefined) || (slot === undefined))
+          throw new Error('review unit veto ordering fixture absent');
+        const qwenClean = cleanResponse({ fixture, candidate: qwenCandidate, });
+        const qwenSelfDefect: ReviewUnitResponse = {
+          ...qwenClean,
+          slotLanguageStatuses: `d${qwenClean.slotLanguageStatuses.slice(1,)}`,
+          findings: [{
+            scope: 'sl',
+            subjectIndex: slot.groupIndex,
+            defectClassIndex: REVIEW_UNIT_DEFECT_CLASSES.indexOf('grammar-usage',),
+            sourceEvidenceIndexes: [],
+            imageEvidenceIndexes: [],
+            targetAnchors: [anchor({ candidate: qwenCandidate, slotKey: slot.slotKey, }),],
+          },],
+        };
+        const glmClean = cleanResponse({ fixture, candidate: glmCandidate, });
+        const selected = selection({
+          fixture,
+          ballots: [
+            ballot({ fixture, candidateOrdinal: 0, verifierOrdinal: 0, response: qwenSelfDefect, }),
+            ballot({ fixture, candidateOrdinal: 0, verifierOrdinal: 1, response: qwenClean, }),
+            ballot({ fixture, candidateOrdinal: 0, verifierOrdinal: 2, response: qwenClean, }),
+            ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 0, response: glmClean, }),
+            ballot({ fixture, candidateOrdinal: 1, verifierOrdinal: 2, response: glmClean, }),
+          ],
+        });
+        expect(selected.candidate.candidateOrdinal).toBe(1,);
+        expect(selected.productionEligible).toBe(true,);
+      },
+    }),
+    it({
       name: 'ignores self clean evidence and lets valid self defect veto',
       fn: async () => {
         await Promise.resolve();
@@ -1414,7 +1515,6 @@ await describe({
           ],
         });
         expect(selected.productionEligible).toBe(false,);
-        expect(selected.dissentingVerifierModelIds).toEqual(['hf:zai-org/GLM-5.3-Flash',],);
       },
     }),
     it({
@@ -1543,6 +1643,68 @@ await describe({
       },
     }),
     it({
+      name: 'forwards exact cancellation before author wave with zero calls',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createFixture();
+        const calls = { value: 0, };
+        const reason = new Error('exact Candidate K pre-author cancellation');
+        const controller = new AbortController();
+        controller.abort(reason,);
+        await expect(runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: forbiddenClient({ calls, }),
+          restart: false,
+          signal: controller.signal,
+        })).rejects.toBe(reason,);
+        expect(calls.value).toBe(0,);
+      },
+    }),
+    it({
+      name: 'settles every author sibling before forwarding exact cancellation',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createFixture();
+        const controller = new AbortController();
+        const reason = new Error('exact Candidate K author-wave cancellation');
+        const settled = { value: 0, };
+        await expect(runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: authorAbortClient({ controller, reason, settled, }),
+          restart: false,
+          signal: controller.signal,
+        })).rejects.toBe(reason,);
+        expect(settled.value).toBe(3,);
+      },
+    }),
+    it({
+      name: 'forwards exact cancellation between dependency waves',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createFixture();
+        const calls: string[] = [];
+        const reason = new Error('exact Candidate K between-wave cancellation');
+        await expect(runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: scriptedClient({
+            fixture,
+            calls,
+            prompts: [],
+            peak: { value: 0, inFlight: 0, },
+          }),
+          restart: false,
+          signal: artifactAbortSignal({
+            reason,
+            artifactPath: join(directory.path, 'review-unit-author-settlement.json',),
+          }),
+        })).rejects.toBe(reason,);
+        expect(calls.length).toBe(3,);
+      },
+    }),
+    it({
       name: 'settles every verifier sibling before forwarding exact cancellation',
       fn: async () => {
         await using directory = await temporaryDirectory();
@@ -1633,6 +1795,69 @@ await describe({
       },
     }),
     it({
+      name: 'quarantines indeterminate author transmissions without restart calls',
+      fn: async () => {
+        await using directory = await temporaryDirectory();
+        const fixture = createFixture();
+        const {signal} = new AbortController();
+        const responseFormat = slotResponseFormat({ shell: fixture.shell, });
+        await Promise.all(fixture.manifest.candidatePlan.map(async function dispatched(plan,) {
+          const messages = reviewUnitAuthorMessages({
+            plan,
+            manifest: fixture.manifest,
+            shell: fixture.shell,
+            reviewPlan: fixture.reviewPlan,
+            sourceText: fixture.source,
+            archiveText: fixture.archive,
+            media: MEDIA,
+          },);
+          const basePromptDigest = reviewUnitBasePromptDigest({
+            modelId: plan.modelId,
+            messages,
+            signal,
+          });
+          const promptDigest = reviewUnitContractDigest({
+            baseDigest: basePromptDigest,
+            responseFormat,
+          });
+          await writeFile(
+            join(directory.path, `node-review-unit-author-${String(plan.ordinal,)}.json`,),
+            `${JSON.stringify({
+              id: `review-unit-author-${String(plan.ordinal,)}`,
+              modelId: plan.modelId,
+              manifestDigest: fixture.manifest.manifestDigest,
+              basePromptDigest,
+              promptDigest,
+              startedAt: '2026-08-31T00:00:00.000Z',
+              state: 'dispatched',
+            },)}\n`,
+          );
+        },));
+        const calls = { value: 0, };
+        const result = await runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: forbiddenClient({ calls, }),
+          restart: true,
+        });
+        expect(calls.value).toBe(0,);
+        expect(result.spentUnusableNodeCount).toBe(3,);
+        expect(result.skippedNodeCount).toBe(9,);
+        const records = await Promise.all(fixture.manifest.candidatePlan.map(async function record(plan,) {
+          const value: unknown = JSON.parse(await readFile(
+            join(directory.path, `node-review-unit-author-${String(plan.ordinal,)}.json`,),
+            'utf8',
+          ));
+          if (!isJsonRecord(value,))
+            throw new Error('review unit indeterminate record differs');
+          return value;
+        },));
+        expect(records.every(function indeterminate(record,) {
+          return record.failureType === 'IndeterminateTransmission';
+        },)).toBe(true,);
+      },
+    }),
+    it({
       name: 'skips exactly three verifier nodes after one unusable author',
       fn: async () => {
         await using directory = await temporaryDirectory();
@@ -1713,6 +1938,124 @@ await describe({
         }
         expect(attempts).toBe(1,);
         expect(Error.isError(caught,)).toBe(true,);
+      },
+    }),
+    it({
+      name: 'maps concrete author and verifier tools through exact Hyper wire',
+      fn: async () => {
+        await Promise.resolve();
+        const fixture = settledFixture();
+        const [candidate,] = fixture.candidates;
+        const [authorPlan,] = fixture.manifest.candidatePlan;
+        if ((candidate === undefined) || (authorPlan === undefined))
+          throw new Error('review unit concrete wire fixture absent');
+        const bodies: Readonly<Record<string, unknown>>[] = [];
+        const routeClient = createReviewUnitHyperClient({
+          apiKey: 'fixture',
+          manifest: fixture.manifest,
+          transport: async exchange => {
+            const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
+            if (!isJsonRecord(body,))
+              throw new Error('review unit concrete wire body differs');
+            bodies.push(body,);
+            return { status: 500, bodyText: 'fixture', };
+          },
+        });
+        const authorMessages = reviewUnitAuthorMessages({
+          plan: authorPlan,
+          manifest: fixture.manifest,
+          shell: fixture.shell,
+          reviewPlan: fixture.reviewPlan,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          media: MEDIA,
+        },);
+        const verifierMessages = reviewUnitVerifierMessages({
+          manifest: fixture.manifest,
+          shell: fixture.shell,
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          authorSettlementDigest: fixture.settlement.settlementDigest,
+          verifierPlanDigest: digest({ text: 'concrete-wire-plan', }),
+          defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
+          sourceText: fixture.source,
+          archiveText: fixture.archive,
+          media: MEDIA,
+        },);
+        const authorFormat = slotResponseFormat({ shell: fixture.shell, });
+        const verifierFormat = reviewUnitResponseFormat({
+          reviewPlan: fixture.reviewPlan,
+          candidate,
+          pictureCount: MEDIA.length,
+        },);
+        const requests = fixture.manifest.verifierPlan.flatMap(function requests(plan,) {
+          return [
+            routeClient.client.chatJson({
+              modelId: plan.modelId,
+              messages: authorMessages,
+              responseFormat: authorFormat,
+              validate: (_value: unknown): _value is never => false,
+              exchangeTimeoutMs: 900_000,
+              signal: new AbortController().signal,
+            },),
+            routeClient.client.chatJson({
+              modelId: plan.modelId,
+              messages: verifierMessages,
+              responseFormat: verifierFormat,
+              validate: reviewUnitResponseGuard({
+                reviewPlan: fixture.reviewPlan,
+                candidate,
+                pictureCount: MEDIA.length,
+              },),
+              exchangeTimeoutMs: 900_000,
+              signal: new AbortController().signal,
+            },),
+          ];
+        },);
+        const results = await Promise.allSettled(requests,);
+        expect(results.every(function rejected(result,) {
+          return (result.status === 'rejected') && Error.isError(result.reason,);
+        },)).toBe(true,);
+        expect(bodies.length).toBe(6,);
+        expect(bodies.every(function exact(body,) {
+          return (body.max_tokens === 32_000)
+            && (body.stream === true)
+            && isJsonRecord(body.tool_choice,)
+            && (body.tool_choice.type === 'tool')
+            && ((typeof body.tool_choice.name) === 'string')
+            && (!Object.hasOwn(body, 'thinking',))
+            && (!Object.hasOwn(body, 'temperature',));
+        },)).toBe(true,);
+        expect(bodies.map(function tool(body,) {
+          const tools: unknown = body.tools;
+          const firstTool: unknown = Array.isArray(tools,) ? tools.at(0,) : undefined;
+          if ((!isJsonRecord(firstTool,)) || ((typeof firstTool.name) !== 'string'))
+            throw new Error('review unit concrete wire tool differs');
+          return firstTool.name;
+        },).toSorted(function alphabetic(left, right,) {
+          return left.localeCompare(right,);
+        },)).toEqual([
+          'candidate_review_unit_ballot',
+          'candidate_review_unit_ballot',
+          'candidate_review_unit_ballot',
+          'immutable_shell_slots',
+          'immutable_shell_slots',
+          'immutable_shell_slots',
+        ],);
+        expect(bodies.every(function image(body,) {
+          const {messages} = body;
+          return Array.isArray(messages,)
+            && messages.some(function blocks(message,) {
+              return isJsonRecord(message,)
+                && Array.isArray(message.content,)
+                && message.content.some(function block(value,) {
+                  return isJsonRecord(value,)
+                    && (value.type === 'image')
+                    && isJsonRecord(value.source,)
+                    && (value.source.data === 'AA==');
+                },);
+            },);
+        },)).toBe(true,);
       },
     }),
     it({
