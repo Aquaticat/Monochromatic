@@ -3546,12 +3546,83 @@ restoring and rebuilding after each:
 - between-wave cancellation before verifier-plan creation;
 - spent-node restart abstention.
 
-Candidate L is selected for one pinned-Carena calibration only.
-It is not selected for production,
-and it does not authorize redispatch of any Candidate I or Candidate K author prompt.
-Calibration must assert that projected alias pairs equal admission-canonical serialized pairs,
-pin the live vision-capable `glm-5.3-flash` row,
-and omit reasoning or thinking parameters.
+### Candidate L calibration result
+
+The one authorized pinned-Carena calibration used harness SHA-256
+`6d050811e82a3156e1da5a0524b0bdb6a595d27fbfb814296ed854168b85a0fc`,
+manifest digest
+`14e5b100a5bddfc4426b7c0d5dbee89255e90d3a787644e5f115f08c6ed39fd3`,
+and output root
+`/var/home/user/temp/agent/prototype-Carena-L-lean-realization-20260901`.
+No reasoning,
+thinking,
+effort,
+temperature,
+or retry parameter was sent.
+Every transmitted node received `photo1.webp`.
+
+The graph reached all eight terminal static nodes:
+
+- Qwen's lean author hit the 900,000-millisecond local deadline after 900,022 milliseconds and was spent-unusable;
+- MiniMax's lean author completed after 107,952 milliseconds and admitted candidate ordinal one;
+- all three verifier nodes for Qwen's absent candidate were skipped without transport;
+- Qwen's verifier returned HTTP 200 after 568,639 milliseconds,
+  but its ballot violated the status alphabet and was spent-unusable;
+- GLM 5.3 Flash returned HTTP 200 after 564,987 milliseconds,
+  reported 32,000 output tokens and `max_tokens`,
+  emitted thinking only,
+  and was spent-unusable;
+- MiniMax's verifier returned HTTP 200 after 141,327 milliseconds,
+  but its ballot violated the status alphabet and was spent-unusable.
+
+The runtime therefore recorded one completed node,
+four spent-unusable nodes,
+and three deterministic skips.
+The private fallback had no clean verifier family,
+`evidenceFloorMet: false`,
+and `productionEligible: false`.
+Restart completed before post-run accounting,
+made zero transport calls,
+and reproduced the persisted result.
+
+The launch harness then rejected its own post-run accounting because its audit layer still derived and persisted the
+stale `review-unit-verifier-` prefix into metadata-only exchange rows,
+while Candidate L runtime node records correctly use
+`lean-realization-verifier-`.
+This happened after the graph and zero-call restart completed.
+It changed no provider dispatch,
+request,
+response,
+candidate,
+selection,
+or runtime record.
+A no-network post-audit mapped that metadata prefix,
+proved five dispatched plus three skipped terminal nodes,
+recursively verified private modes,
+and retained summary SHA-256
+`55deaafeb67a22a11a0e07ed512efe54e37d306e3ecead39cd303e09e1f3c8c0`.
+
+Complete source,
+archive,
+image,
+and candidate reading independently rejected the only admitted candidate.
+Candidate line 25 reverses the actor in the emergency-call cover story:
+the narrator claims that the narrator climbed and became stuck,
+while source authority says the narrator concealed Carena's suicidal intent by saying Carena climbed out of curiosity.
+Candidate line 19 also attaches hanging up and enjoying medication-induced calm to the narrator,
+while source authority assigns both actions to Carena.
+The private complete-page review SHA-256 is
+`384961fe9174ff451b80ba66bed4e77d69377c35afc0e524b9aa3494e4efe7bd`.
+The memorial illustration is coherent with the page and introduced no conflicting evidence.
+
+Candidate L is rejected for production.
+Both author prompts and the three dispatched candidate-one verifier prompts are spent and cannot be retried,
+continued,
+repaired,
+or redispatched.
+The three candidate-zero verifier templates remained undispatched,
+but their bound candidate never existed and the terminal calibration does not authorize later dispatch.
+Candidate L also does not authorize redispatch of any Candidate I or Candidate K prompt.
 
 ## Required lifecycle migration
 

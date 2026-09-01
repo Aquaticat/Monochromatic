@@ -1,4 +1,4 @@
-# Charm Hyper catalog 2026-08-31 GLM 5.3 Flash candidate ballots hit local 360-second stream cuts
+# Charm Hyper full-document requests can hit local stream deadlines
 
 ## Symptom
 
@@ -190,6 +190,37 @@ or a restart transport call.
 
 The synthetic route probe establishes forced-tool transport compatibility.
 It does not predict completion of a full translation-review workload.
+
+### Candidate L Qwen lean-author confirmation
+
+The one zero-retry Candidate L calibration on 2026-09-01 used:
+
+- Qwen route `qwen3.8-27b`;
+- one forced 27-value lean-realization tool;
+- complete source and archive evidence;
+- the sole page-referenced image;
+- a 32,000-token output ceiling;
+- a 900,000-millisecond local deadline;
+- no reasoning,
+  thinking,
+  effort,
+  or temperature override.
+
+The author request reached the local deadline after 900,022 milliseconds and persisted
+`failureType: "CallTimeoutError"`.
+The metadata-only exchange record retained no HTTP status,
+response body,
+block count,
+stop reason,
+or token count because the transport did not complete before the deadline.
+The node was spent-unusable,
+its three dependent verifiers were skipped,
+and restart sent nothing.
+
+Candidate I had previously proved that Qwen can complete a different full-document author request.
+Candidate L therefore establishes workload-specific deadline failure,
+not a stable Qwen incapability.
+The spent Candidate L prompt cannot be repeated with a longer deadline.
 
 ## Verified workarounds
 

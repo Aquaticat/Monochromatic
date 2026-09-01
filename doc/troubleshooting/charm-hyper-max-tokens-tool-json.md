@@ -214,6 +214,26 @@ The result also proves that extending the local request deadline from 360,000 to
 these GLM and MiniMax exchanges from exhausting the fixed output ceiling.
 It does not prove that either route always truncates.
 
+### Candidate L live confirmation
+
+The one zero-retry Candidate L calibration used harness SHA-256
+`6d050811e82a3156e1da5a0524b0bdb6a595d27fbfb814296ed854168b85a0fc`
+and manifest digest
+`14e5b100a5bddfc4426b7c0d5dbee89255e90d3a787644e5f115f08c6ed39fd3`.
+Its GLM 5.3 Flash verifier returned HTTP 200 after 564,987 milliseconds,
+reported 32,000 output tokens and `stop_reason: "max_tokens"`,
+and emitted one thinking block without a tool-use block.
+The consumer classified the node as `truncated-completion` and spent-unusable.
+It had no ballot or selection effect.
+
+This request carried the smaller Candidate L verifier protocol rather than Candidate K's author protocol.
+The result shows that moving GLM to verifier-only duty did not avoid the fixed output ceiling on this complete-page workload.
+It does not establish that GLM always truncates or that default reasoning is the cause.
+The request used Hyper's default reasoning and sent no reasoning,
+thinking,
+effort,
+or temperature override.
+
 ## Verified workarounds
 
 ### Reject truncating finish reasons before JSON admission
