@@ -35,13 +35,20 @@ await describe({
   name: isTruncatedAttempt.name,
   children: [
     it({
-      name: 'marks truncated-thinking and cut-off-JSON mismatch details',
+      name: 'marks truncated-thinking, truncated-completion, and cut-off-JSON mismatch details',
       fn: async () => {
         expect(isTruncatedAttempt({
           record: {
             ...MISMATCH_RECORD,
             detail: 'output was truncated inside its thinking block;'
               + ' raise or omit maxTokens (thinking tokens count against it)',
+          },
+        },),).toBe(true,);
+        expect(isTruncatedAttempt({
+          record: {
+            ...MISMATCH_RECORD,
+            detail: 'provider reported a truncating completion'
+              + ' (model stopped with finish_reason=length)',
           },
         },),).toBe(true,);
         expect(isTruncatedAttempt({

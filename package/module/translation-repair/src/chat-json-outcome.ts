@@ -30,8 +30,11 @@ import { detectRefusalShape, } from './refusal.ts';
 //   deliberation harmlessly contains refusal-like phrasing and would otherwise
 //   be read as a refusal.
 //
-//   Truncation inside thinking is its own outcome, since it sends a reader to
-//   the token ceiling rather than to the prompt.
+//   Provider token-limit markers outrank parsing because a syntactically
+//   complete prefix does not prove that model generation completed.
+//
+//   Truncation inside unmarked thinking is its own outcome, since it sends a
+//   reader to the token ceiling rather than to the prompt.
 //
 //   A channel marker is stripped AND logged, never silently dropped: the
 //   2026-08-13 recurrence was diagnosable only because the raw opening had
@@ -41,8 +44,9 @@ import { detectRefusalShape, } from './refusal.ts';
 //   a marker, and a reply of a marker then a fenced object would otherwise be
 //   lost to the very defect just repaired.
 //
-//   Content that parses and passes the guard WINS even when it quotes
-//   refusal-like phrasing; the refusal scan runs only on parse failure.
+//   Without a token-limit marker, content that parses and passes the guard
+//   WINS even when it quotes refusal-like phrasing; the refusal scan runs
+//   only on parse failure.
 
 /**
  * Logger root for the provider-neutral reply reader.
@@ -75,10 +79,10 @@ function usageSpreadOf(
 /**
  * Names why the model stopped, when the provider said, for a mismatch detail.
  *
- * A REPLY THAT STOPPED EARLY IS NOT A MALFORMED ONE, and the two need opposite
- * remediation: a schema mismatch sends a reader to the prompt and the guard,
- * while `length` sends them to the token ceiling. Both arrive here as content
- * that does not parse.
+ * A REPLY THAT STOPPED EARLY IS NOT A MALFORMED ONE, and the mismatch reason
+ * must preserve that distinction: token-limit markers are refused before
+ * parsing, while other stop reasons are retained here for content that does
+ * not parse.
  *
  * @param reply - reply whose stop reason is named
  *
@@ -100,6 +104,30 @@ function stoppedNote(
   if (finishReason === undefined)
     return '';
   return ` (model stopped with finish_reason=${finishReason})`;
+}
+
+/**
+ * Whether the provider says generation ended at its token ceiling.
+ *
+ * Anthropic Messages reports `max_tokens`;
+ * OpenAI-compatible Chat Completions reports `length`.
+ * Either marker invalidates even parseable content because syntax does not
+ * prove every intended member was generated.
+ *
+ * @param reply - needed because provider protocol chooses the stop-reason spelling
+ *
+ * @returns Whether callers must refuse this answer regardless of parse result
+ *
+ * @example
+ * ```ts
+ * isTruncatingFinishReason({ reply: { text: '{}', finishReason: 'max_tokens', }, },);
+ * ```
+ */
+function isTruncatingFinishReason(
+  { reply, }: { readonly reply: ChatTextReply; },
+): boolean {
+  return (reply.finishReason === 'max_tokens')
+    || (reply.finishReason === 'length');
 }
 
 /**
@@ -157,6 +185,21 @@ export function readJsonOutcome<ValueT,>(
     };
   }
 
+  if (isTruncatingFinishReason({ reply, },)) {
+    /**
+     * Provider marker retained as evidence without inspecting answer content.
+     */
+    const stopped = stoppedNote({ reply, },);
+    rl.debug(`${modelId}: schema-mismatch (truncated completion)${stopped}`,);
+    return {
+      kind: 'schema-mismatch',
+      rawText: reply.text,
+      reason: 'truncated-completion',
+      detail: `provider reported a truncating completion${stopped}`,
+      ...usageSpread,
+    };
+  }
+
   /**
    * Answer channel with any embedded thinking block split off;
    * refusal scanning and parsing judge the answer,
@@ -172,6 +215,7 @@ export function readJsonOutcome<ValueT,>(
     return {
       kind: 'schema-mismatch',
       rawText: reply.text,
+      reason: 'truncated-thinking',
       detail: 'output was truncated inside its thinking block;'
         + ' raise or omit maxTokens (thinking tokens count against it)',
       ...usageSpread,
@@ -222,6 +266,7 @@ export function readJsonOutcome<ValueT,>(
     return {
       kind: 'schema-mismatch',
       rawText: reply.text,
+      reason: 'unparseable-json',
       detail: `content is not valid JSON: ${attempt.detail}${stopped}`,
       ...usageSpread,
     };
@@ -237,6 +282,7 @@ export function readJsonOutcome<ValueT,>(
     return {
       kind: 'schema-mismatch',
       rawText: reply.text,
+      reason: 'caller-guard-rejected',
       detail: 'content parsed as JSON but failed the caller schema guard',
       ...usageSpread,
     };

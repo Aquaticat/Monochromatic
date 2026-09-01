@@ -287,6 +287,23 @@ export type ChatJsonRequest<ValueT,> = ChatTextRequest & {
 };
 
 /**
+ * Machine-readable cause of a schema mismatch, beside the prose detail.
+ * `truncated-completion` marks the provider's own token-ceiling stop,
+ * which invalidates even parseable content because a syntactically complete
+ * prefix does not prove generation completed.
+ *
+ * @example
+ * ```ts
+ * const reason: SchemaMismatchReason = 'truncated-completion';
+ * ```
+ */
+export type SchemaMismatchReason =
+  | 'caller-guard-rejected'
+  | 'unparseable-json'
+  | 'truncated-thinking'
+  | 'truncated-completion';
+
+/**
  * Outcome of one schema-validated chat exchange.
  * Refusals and mismatches are data (reroute and scorecard), never exceptions.
  *
@@ -344,7 +361,7 @@ export type ChatJsonOutcome<ValueT,> =
   | {
     /**
      * Content is not valid JSON, failed the caller's guard,
-     * or was truncated inside its thinking block.
+     * or was truncated by the provider (completion or thinking).
      */
     readonly kind: 'schema-mismatch';
 
@@ -354,7 +371,12 @@ export type ChatJsonOutcome<ValueT,> =
     readonly rawText: string;
 
     /**
-     * What failed: parse step, guard, or thinking truncation.
+     * Machine-readable cause, for callers that branch on truncation.
+     */
+    readonly reason?: SchemaMismatchReason;
+
+    /**
+     * What failed: parse step, guard, or completion truncation.
      */
     readonly detail: string;
 

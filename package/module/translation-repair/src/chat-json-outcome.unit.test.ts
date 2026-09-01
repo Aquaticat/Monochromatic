@@ -91,6 +91,56 @@ await describe({
       },
     },),
 
+    ...(['max_tokens', 'length',] as const).map(function truncatingCase(reason,) {
+      return it({
+        name: `REFUSES parsed content stopped by ${reason}`,
+        fn: async () => {
+          /** Provider text that forms complete JSON despite the ceiling stop. */
+          const text = '{"verdict":"nap"}';
+          /** Usage that must survive the refusal-before-parse admission. */
+          const usage = { prompt_tokens: 13, completion_tokens: 21, };
+          /** Outcome of syntactically complete content cut at the provider limit. */
+          const outcome = readJsonOutcome({
+            modelId: MODEL_ID,
+            reply: { text, finishReason: reason, usage, },
+            validate: isCatVerdict,
+          },);
+
+          expect(outcome.kind,).toBe('schema-mismatch',);
+          expect(outcome.rawText,).toBe(text,);
+          expect(outcome.usage,).toEqual(usage,);
+          expect(
+            outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,
+          ).toBe('truncated-completion',);
+          expect(
+            outcome.kind === 'schema-mismatch' ? outcome.detail : undefined,
+          ).toBe(
+            `provider reported a truncating completion (model stopped with finish_reason=${reason})`,
+          );
+        },
+      },);
+    },),
+
+    it({
+      name: 'FORWARDS api refusal ahead of the token-limit marker',
+      fn: async () => {
+        /** Content ignored because an explicit provider refusal is authoritative. */
+        const text = '{"verdict":"nap"}';
+        /** Outcome carrying both an explicit refusal and a token-limit marker. */
+        const outcome = readJsonOutcome({
+          modelId: MODEL_ID,
+          reply: { text, refusal: 'provider refused this request', finishReason: 'max_tokens', },
+          validate: isCatVerdict,
+        },);
+
+        expect(outcome.kind,).toBe('refusal-shaped',);
+        expect(outcome.rawText,).toBe(text,);
+        expect(
+          outcome.kind === 'refusal-shaped' ? outcome.marker : '',
+        ).toBe('api-refusal-field',);
+      },
+    },),
+
     it({
       name: 'FORWARDS the api refusal field ahead of every content heuristic',
       fn: async () => {
@@ -164,18 +214,22 @@ await describe({
     it({
       name: 'names why the model stopped when content will not parse',
       fn: async () => {
-        /** Outcome of an answer cut off mid-string. */
+        // A non-truncating stop reason stays on the unparseable path; the
+        // token-limit spellings are refused before parsing instead.
         const outcome = read({
           text: '{"verdict":"na',
-          finishReason: 'length',
+          finishReason: 'stop',
         },);
 
         expect(outcome.kind,).toBe('schema-mismatch',);
+        expect(
+          outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,
+        ).toBe('unparseable-json',);
         // A cut-off reply and a malformed one arrive identically and need
         // opposite remediation.
         expect(
           outcome.kind === 'schema-mismatch'
-            ? outcome.detail.includes('finish_reason=length',)
+            ? outcome.detail.includes('finish_reason=stop',)
             : false,
         ).toBe(true,);
       },
@@ -188,6 +242,9 @@ await describe({
         const outcome = read({ text: '{"verdict":7}', },);
 
         expect(outcome.kind,).toBe('schema-mismatch',);
+        expect(
+          outcome.kind === 'schema-mismatch' ? outcome.reason : undefined,
+        ).toBe('caller-guard-rejected',);
       },
     },),
 

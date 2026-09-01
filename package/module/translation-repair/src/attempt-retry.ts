@@ -18,11 +18,15 @@ export const COMPLETION_TOKEN_CEILING = 65_536;
 
 /**
  * Detail fragments marking truncated output:
- * the client's own truncated-thinking diagnosis,
+ * the client's own truncated-thinking and truncated-completion diagnoses,
  * plus the JSON parser messages cut-off answers produce.
+ * The completion marker matters below the global ceiling too,
+ * because model-specific caps stop generation at token counts the
+ * ceiling check never reaches.
  */
 const TRUNCATION_DETAIL_MARKERS: readonly string[] = [
   'truncated inside its thinking block',
+  'provider reported a truncating completion',
   'Unexpected end of JSON input',
   'Unterminated string in JSON',
 ];
