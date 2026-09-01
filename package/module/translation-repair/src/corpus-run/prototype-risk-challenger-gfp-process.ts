@@ -236,6 +236,48 @@ export async function runCandidateMGfpCommand({
 }
 
 /**
+ * Runs successful command and returns exact stdout for deterministic preflight.
+ *
+ * @param command - Executable name
+ *
+ * @param arguments_ - Exact argument vector
+ *
+ * @param cwd - Explicit working directory
+ *
+ * @returns Exact successful stdout text
+ *
+ * @throws Error when command fails or is interrupted
+ *
+ * @example
+ * ```ts
+ * const output = await runCandidateMGfpCommandOutput({ command: 'git', arguments_: ['--version'], cwd });
+ * ```
+ */
+export async function runCandidateMGfpCommandOutput({
+  command,
+  arguments_,
+  cwd,
+}: {
+  readonly command: string;
+  readonly arguments_: readonly string[];
+  readonly cwd: string;
+}): Promise<string> {
+  /**
+   * Successful command stdout retained only for deterministic inventory.
+   */
+  const { stdout, } = await execFileAsync(
+    command,
+    arguments_,
+    {
+      cwd,
+      encoding: 'utf8',
+      maxBuffer: COMMAND_BUFFER_BYTES,
+    },
+  );
+  return stdout;
+}
+
+/**
  * Rebuilds Candidate M then runs its targeted test from disposable worktree.
  *
  * @param fixtureRoot - Detached disposable worktree root

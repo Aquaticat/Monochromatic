@@ -7,7 +7,10 @@ import {
 } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
-import { createCandidateMGfpFixture, } from './prototype-risk-challenger-gfp-worktree.ts';
+import {
+  assertCandidateMGfpFilesystemInventory,
+  createCandidateMGfpFixture,
+} from './prototype-risk-challenger-gfp-worktree.ts';
 import {
   CANDIDATE_M_GFP_MUTATIONS,
   type CandidateMGfpMutation,
@@ -110,6 +113,68 @@ async function harnessDigest(): Promise<string> {
 }
 
 /**
+ * Requires one synthetic unexpected-path inventory to reject.
+ *
+ * @param ordinaryText - NUL-delimited ordinary untracked paths
+ *
+ * @param ignoredText - NUL-delimited ignored paths
+ */
+function expectInventoryRejection({
+  ordinaryText,
+  ignoredText,
+}: {
+  readonly ordinaryText: string;
+  readonly ignoredText: string;
+}): void {
+  try {
+    assertCandidateMGfpFilesystemInventory({
+      ordinaryText,
+      ignoredText,
+    },);
+  }
+  catch (error) {
+    if (Error.isError(error,))
+      return;
+    throw error;
+  }
+  throw new Error('Candidate M GFP filesystem inventory control was accepted');
+}
+
+/**
+ * Proves empty inventory acceptance and exact unexpected-path refusal.
+ */
+function proveInventoryControls(): void {
+  assertCandidateMGfpFilesystemInventory({
+    ordinaryText: '',
+    ignoredText: '',
+  },);
+  expectInventoryRejection({
+    ordinaryText: 'mise.local.toml\0',
+    ignoredText: '',
+  },);
+  expectInventoryRejection({
+    ordinaryText: '',
+    ignoredText: '.mise.toml\0',
+  },);
+  expectInventoryRejection({
+    ordinaryText: '',
+    ignoredText: '.mise/tasks/example\0',
+  },);
+  expectInventoryRejection({
+    ordinaryText: 'mise.lock\0',
+    ignoredText: '',
+  },);
+  expectInventoryRejection({
+    ordinaryText: 'unusual\npath\0',
+    ignoredText: '',
+  },);
+  expectInventoryRejection({
+    ordinaryText: 'unterminated',
+    ignoredText: '',
+  },);
+}
+
+/**
  * Applies one mutation only inside fresh detached disposable worktree.
  *
  * @param mutation - Exact source replacement under test
@@ -180,6 +245,7 @@ async function runBaseline(): Promise<CandidateMGfpGate> {
  */
 async function main(): Promise<void> {
   process.umask(PRIVATE_UMASK,);
+  proveInventoryControls();
   /**
    * Serial mutation evidence avoids concurrent builds sharing dependency links.
    */

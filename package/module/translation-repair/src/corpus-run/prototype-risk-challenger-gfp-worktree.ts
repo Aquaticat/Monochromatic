@@ -13,7 +13,10 @@ import {
   resolve,
 } from 'node:path';
 
-import { runCandidateMGfpCommand, } from './prototype-risk-challenger-gfp-process.ts';
+import {
+  runCandidateMGfpCommand,
+  runCandidateMGfpCommandOutput,
+} from './prototype-risk-challenger-gfp-process.ts';
 
 /**
  * Prototype repository root derived from package-scoped mise working directory.
@@ -50,6 +53,101 @@ async function pathExists(path: string,): Promise<boolean> {
       return false;
     throw error;
   }
+}
+
+/**
+ * Parses exact NUL-delimited Git paths without newline ambiguity.
+ *
+ * @param text - Exact `git ls-files -z` output
+ *
+ * @returns Exact path list
+ *
+ * @throws Error when nonempty output lacks final NUL terminator
+ */
+function nulDelimitedPaths(text: string,): readonly string[] {
+  if (text === '')
+    return [];
+  if (!text.endsWith('\0',))
+    throw new Error('Candidate M GFP path inventory lacks NUL terminator');
+  return text.slice(
+    0,
+    -1,
+  )
+    .split('\0',);
+}
+
+/**
+ * Refuses any filesystem state outside detached committed tree.
+ *
+ * @param ordinaryText - Exact NUL-delimited ordinary untracked paths
+ *
+ * @param ignoredText - Exact NUL-delimited ignored paths
+ *
+ * @throws Error when any unexpected path exists
+ *
+ * @example
+ * ```ts
+ * assertCandidateMGfpFilesystemInventory({ ordinaryText: '', ignoredText: '', });
+ * ```
+ */
+export function assertCandidateMGfpFilesystemInventory({
+  ordinaryText,
+  ignoredText,
+}: {
+  readonly ordinaryText: string;
+  readonly ignoredText: string;
+}): void {
+  /**
+   * Union of exact unexpected paths from both Git inventories.
+   */
+  const paths = [
+    ...nulDelimitedPaths(ordinaryText,),
+    ...nulDelimitedPaths(ignoredText,),
+  ];
+  if (paths.length > 0)
+    throw new Error('Candidate M GFP worktree contains unexpected filesystem state');
+}
+
+/**
+ * Inventories ordinary and ignored paths before adding dependency links or trust.
+ *
+ * @param root - Detached disposable worktree root
+ */
+async function assertCleanFilesystemInventory(root: string,): Promise<void> {
+  /**
+   * Exact ordinary and ignored Git path streams.
+   */
+  const [ordinaryText, ignoredText,] = await Promise.all([
+    runCandidateMGfpCommandOutput({
+      command: 'git',
+      arguments_: [
+        '-C',
+        root,
+        'ls-files',
+        '--others',
+        '--exclude-standard',
+        '-z',
+      ],
+      cwd: root,
+    },),
+    runCandidateMGfpCommandOutput({
+      command: 'git',
+      arguments_: [
+        '-C',
+        root,
+        'ls-files',
+        '--others',
+        '--ignored',
+        '--exclude-standard',
+        '-z',
+      ],
+      cwd: root,
+    },),
+  ]);
+  assertCandidateMGfpFilesystemInventory({
+    ordinaryText,
+    ignoredText,
+  },);
 }
 
 /**
@@ -147,6 +245,7 @@ export async function createCandidateMGfpFixture(): Promise<CandidateMGfpFixture
       REPOSITORY_ROOT,
       'worktree',
       'add',
+      '--no-worktree-copy',
       '--detach',
       root,
       'HEAD',
@@ -164,6 +263,7 @@ export async function createCandidateMGfpFixture(): Promise<CandidateMGfpFixture
     throw new Error('Candidate M GFP worktree creation failed');
   }
   try {
+    await assertCleanFilesystemInventory(root,);
     await Promise.all(DEPENDENCY_DIRECTORIES.map(async function linkDependency(relativePath,) {
       /**
        * Dependency-link destination in disposable worktree.
