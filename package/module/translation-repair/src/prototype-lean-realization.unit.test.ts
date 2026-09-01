@@ -1167,6 +1167,10 @@ await describe({
           }),
         })).rejects.toBe(reason,);
         expect(calls.length).toBe(2,);
+        const verifierPlanExists = existsSync(
+          join(directory.path, 'review-unit-verifier-plan.json',),
+        );
+        expect(verifierPlanExists).toBe(false,);
       },
     }),
     it({
