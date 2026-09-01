@@ -4160,19 +4160,70 @@ an independent advisor's sole blocker was that the newest helper and restart-tes
 Those targeted gates,
 GFP controls,
 and the full package gate subsequently passed.
-Exact complete-Carena envelope measurement remains a calibration prerequisite.
-The no-key harness must pin prototype and corpus commits,
-built artifacts,
+### Candidate M calibration preflight
+
+The public calibration artifact is pinned by byte digest,
+not by mutable gist identity.
+Its revision-specific GitHub location is
+[Candidate M calibration revision `b6c9fb5e`][candidate-m-calibration-gist].
+The exact harness SHA-256 is
+`6f0004e010d1477c3e2eea84287d03d21724495d6c2595d8fceef9131b3bb952`.
+The same revision retains sanitized envelope generators,
+exact tokenizer counts,
+and no-key preflight metadata without corpus wording,
+image bytes,
+credentials,
+or provider payloads.
+
+Pinned official tokenizer artifacts measured these complete textual requests:
+
+- Qwen author:
+  15,120 tokens;
+- MiniMax author:
+  14,355 tokens;
+- Qwen challengers:
+  at most 60,320 tokens;
+- GLM challengers:
+  at most 55,556 tokens;
+- MiniMax challengers:
+  at most 51,974 tokens.
+
+Each request carries the same pinned 2048 by 2048 page image that reached its corresponding Hyper route during Candidate
+L.
+The live harness exact-tokenizes every actual request before transport and rejects any challenger exceeding its same-model,
+same-image retained-candidate ceiling.
+The live catalog pins context windows of 1,000,000 tokens for Qwen,
+1,048,576 for GLM,
+and 512,000 for MiniMax,
+plus complete canonical catalog-row digests.
+
+A fresh download from that revision matched the harness digest.
+Its final no-key run reached absent-key failure digest
+`5e84ae43d4940471c17dded79af1e4c64f031f1099d76d818cf776a793f07ca2`,
+emitted no stack or local path,
+and left the calibration output root absent.
+It pinned the prototype commit,
+complete built MJS tree,
+entry artifact,
 source,
 archive,
 image,
-live catalog rows,
+full catalog rows,
+manifest,
+review plan,
 provider routes,
-and every static node binding.
-It must also set `umask(0o077)`,
+14 exact node bindings,
+and deterministic fixture candidates.
+An independent final review found no remaining launch blocker when the live invocation omits the already-used preflight
+output path.
+
+The live run must set `umask(0o077)`,
 require directory mode `0700` and file mode `0600`,
-verify those modes recursively,
-and then pass final pre-live advisor review before one authorized spend.
+and verify those modes recursively on success or failure.
+It is authorized for one spend only.
+If Candidate M fails,
+all further implementation stops and the redesign moves directly to the timestamped retrospective and complete takeover
+documentation.
 
 Candidate M is selected for structural prototyping only.
 It is not selected for production and does not authorize any spent prompt.
@@ -4223,3 +4274,5 @@ and register mismatch
 producer responsibility,
 or adoption contract;
 it never adds Gate or retry loop
+
+[candidate-m-calibration-gist]: https://gist.github.com/Aquaticat/6ff4fd2f600fc257064aa32eee4c9753/b6c9fb5ebf943a5cd8cfeebbb4c6a2fbbc1e6654
