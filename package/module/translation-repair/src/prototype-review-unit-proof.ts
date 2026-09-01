@@ -39,6 +39,20 @@ export type ReviewUnitProofInput = {
 };
 
 /**
+ * Shared manifest evidence required by deterministic proof.
+ */
+export type ReviewUnitProofManifest = Pick<
+  ReviewUnitManifest,
+  | 'frontMatterAuthorityDigest'
+  | 'ledgerDigest'
+  | 'manifestDigest'
+  | 'reviewPlanDigest'
+  | 'shellDigest'
+  | 'sourcePictures'
+  | 'targetBoundaries'
+>;
+
+/**
  * Digests mechanically admitted candidate and manifest bindings.
  *
  * Semantic fidelity and English quality are intentionally absent.
@@ -54,7 +68,7 @@ export function reviewUnitProofDigest({
   manifest,
   input,
 }: {
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: ReviewUnitProofManifest;
   readonly input: ReviewUnitProofInput;
 }): string {
   return hashContent({
@@ -87,7 +101,7 @@ export function assertReviewUnitProof({
   input,
   expectedDigest,
 }: {
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: ReviewUnitProofManifest;
   readonly input: ReviewUnitProofInput;
   readonly expectedDigest: string;
 }): void {

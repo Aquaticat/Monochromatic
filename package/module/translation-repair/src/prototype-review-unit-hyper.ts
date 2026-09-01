@@ -42,6 +42,14 @@ export type ReviewUnitHyperModel = HyperExpansionModel & {
 };
 
 /**
+ * Shared manifest route identity across finite architectures.
+ */
+export type ReviewUnitRouteManifest = Pick<
+  ReviewUnitManifest,
+  'providerRouteDigest' | 'providerRoutes'
+>;
+
+/**
  * Concrete client branded with route-table identity.
  */
 export type ReviewUnitRouteClient = {
@@ -170,7 +178,7 @@ export function assertReviewUnitRouteClient({
   manifest,
 }: {
   readonly routeClient: ReviewUnitRouteClient;
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: ReviewUnitRouteManifest;
 }): void {
   if ((!routeClient[REVIEW_UNIT_ROUTE_CLIENT])
     || (routeClient.providerRouteDigest !== manifest.providerRouteDigest))
@@ -193,7 +201,7 @@ export function createReviewUnitHyperClient({
   transport = fetchTransport,
 }: {
   readonly apiKey: string;
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: ReviewUnitRouteManifest;
   readonly transport?: ModelTransport;
 }): ReviewUnitRouteClient {
   /**

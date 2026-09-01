@@ -307,6 +307,14 @@ export function assertReviewUnitManifest({
 }
 
 /**
+ * Shared manifest authority required by candidate authorization.
+ */
+export type ReviewUnitCandidateAuthority = Pick<
+  ReviewUnitManifest,
+  'candidatePlan' | 'manifestDigest'
+>;
+
+/**
  * Refuses anonymous candidate set outside manifest authorization.
  *
  * @example
@@ -319,7 +327,7 @@ export function assertReviewUnitsAuthorized({
   manifest,
 }: {
   readonly candidates: readonly ReviewUnitCandidate[];
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: ReviewUnitCandidateAuthority;
 }): void {
   if ((candidates.length === 0)
     || (candidates.length

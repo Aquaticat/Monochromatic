@@ -88,16 +88,33 @@ function assertFrontMatterPlan({
 }
 
 /**
- * Admits one Candidate L 27-value response.
+ * Shared manifest members required by authored front-matter compilation.
+ */
+type FrontMatterRealizationManifest = Pick<
+  ReviewUnitManifest,
+  | 'candidatePlan'
+  | 'frontMatterAuthorityDigest'
+  | 'ledgerDigest'
+  | 'manifestDigest'
+  | 'reviewPlanDigest'
+  | 'shellDigest'
+  | 'sourcePictures'
+  | 'targetBoundaries'
+> & {
+  readonly authorMode: 'lean-realization' | 'risk-challenger';
+};
+
+/**
+ * Admits one authored-front-matter 27-value response.
  *
  * @returns Complete candidate with authored front matter and runtime body syntax
  *
  * @example
  * ```ts
- * const candidate = admitLeanRealizationResponse({ response, shell, manifest, reviewPlan, plan, sourceText, archiveText, sourcePictures, });
+ * const candidate = admitFrontMatterRealizationResponse({ response, shell, manifest, reviewPlan, plan, sourceText, archiveText, sourcePictures, });
  * ```
  */
-export function admitLeanRealizationResponse({
+export function admitFrontMatterRealizationResponse({
   response,
   shell,
   manifest,
@@ -109,15 +126,16 @@ export function admitLeanRealizationResponse({
 }: {
   readonly response: SlotDocumentResponse;
   readonly shell: ImmutableShell;
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: FrontMatterRealizationManifest;
   readonly reviewPlan: ReviewUnitPlan;
   readonly plan: RealizationCandidatePlan;
   readonly sourceText: string;
   readonly archiveText: string;
   readonly sourcePictures: readonly { readonly assetName: string; }[];
 }): ReviewUnitCandidate {
-  if (manifest.authorMode !== 'lean-realization')
-    throw new Error('lean realization manifest mode differs');
+  if ((manifest.authorMode !== 'lean-realization')
+    && (manifest.authorMode !== 'risk-challenger'))
+    throw new Error('front matter realization manifest mode differs');
   /**
    * Exact author plan authorized by manifest ordinal.
    */
@@ -273,6 +291,56 @@ export function admitLeanRealizationResponse({
     ...identity,
     candidateDigest: candidateDigest(identity,),
   };
+}
+
+/**
+ * Admits one Candidate L response under lean-only manifest identity.
+ *
+ * @returns Complete Candidate L candidate
+ *
+ * @example
+ * ```ts
+ * const candidate = admitLeanRealizationResponse({ response, shell, manifest, reviewPlan, plan, sourceText, archiveText, sourcePictures, });
+ * ```
+ */
+export function admitLeanRealizationResponse({
+  response,
+  shell,
+  manifest,
+  reviewPlan,
+  plan,
+  sourceText,
+  archiveText,
+  sourcePictures,
+}: {
+  readonly response: SlotDocumentResponse;
+  readonly shell: ImmutableShell;
+  readonly manifest: ReviewUnitManifest;
+  readonly reviewPlan: ReviewUnitPlan;
+  readonly plan: RealizationCandidatePlan;
+  readonly sourceText: string;
+  readonly archiveText: string;
+  readonly sourcePictures: readonly { readonly assetName: string; }[];
+}): ReviewUnitCandidate {
+  if (manifest.authorMode !== 'lean-realization')
+    throw new Error('lean realization manifest mode differs');
+  /**
+   * Lean-only manifest after explicit mode proof.
+   */
+  const leanManifest: FrontMatterRealizationManifest = {
+    ...manifest,
+    authorMode: 'lean-realization',
+  };
+  return admitFrontMatterRealizationResponse({
+    response,
+    shell,
+    manifest: leanManifest,
+    reviewPlan,
+    plan,
+    sourceText,
+    archiveText,
+    sourcePictures,
+  });
 }
 
 /**

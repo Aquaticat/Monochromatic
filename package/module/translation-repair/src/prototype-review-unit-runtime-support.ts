@@ -33,6 +33,14 @@ type ReviewUnitSettled<ValueT,> =
   };
 
 /**
+ * Shared provider-binding manifest identity across finite architectures.
+ */
+export type ReviewUnitClientManifest = Pick<
+  ReviewUnitManifest,
+  'manifestDigest' | 'providerRouteDigest' | 'providerSelection' | 'providerRoutes'
+>;
+
+/**
  * Clients available before manifest masks excluded routes.
  */
 export type ReviewUnitProviderClients = {
@@ -95,7 +103,7 @@ export function bindReviewUnitClient({
   outputDir,
   clients,
 }: {
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: ReviewUnitClientManifest;
   readonly outputDir: string;
   readonly clients: ReviewUnitProviderClients;
 }): ReviewUnitClient {
@@ -136,7 +144,7 @@ export function assertReviewUnitClient({
   outputDir,
 }: {
   readonly boundClient: ReviewUnitClient;
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: ReviewUnitClientManifest;
   readonly outputDir: string;
 }): void {
   if ((!boundClient[REVIEW_UNIT_CLIENT])
