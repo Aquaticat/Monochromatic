@@ -1759,6 +1759,9 @@ await describe({
           }),
         })).rejects.toBe(reason,);
         expect(calls.length).toBe(3,);
+        expect(
+          existsSync(join(directory.path, 'review-unit-verifier-plan.json',)),
+        ).toBe(false,);
       },
     }),
     it({
