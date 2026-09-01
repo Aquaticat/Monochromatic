@@ -134,8 +134,11 @@ js code leaks into browser bundles:
 
 A symbol exported by two barrels vanishes from the package at runtime:
 
-- `oxlint` and the bundler pass, and the built file contains both function bodies
-- `tsc` DOES catch it, as TS2308, for values as well as types;
+- `oxlint` and the bundler pass,
+  and the built file contains both function bodies
+- `tsc` DOES catch it,
+  as TS2308,
+  for values as well as types;
    an earlier claim to the contrary is corrected in the document with a reduction
 - The only symptom otherwise is `does not provide an export named`
    at an import three steps away
@@ -143,9 +146,12 @@ A symbol exported by two barrels vanishes from the package at runtime:
 
 ### [A finished process that will not exit](finished-process-does-not-exit.md)
 
-A run wrote its results, printed its completion line, and held the process for three more minutes:
+A run wrote its results,
+printed its completion line,
+and held the process for three more minutes:
 
-- `Promise.race` does nothing to the loser, and `wait` is a bare `setTimeout` with no handle,
+- `Promise.race` does nothing to the loser,
+  and `wait` is a bare `setTimeout` with no handle,
    so a won race leaves a live timer holding the event loop
 - The first diagnosis blamed leaked sockets and was wrong;
    the source said otherwise in a minute
@@ -154,10 +160,12 @@ A run wrote its results, printed its completion line, and held the process for t
 ### [NUL bytes land invisibly in source](nul-bytes-land-invisibly-in-source.md)
 
 A control character written where a space was intended,
-committed, and found only when an `Edit` would not apply:
+committed,
+and found only when an `Edit` would not apply:
 
 - `rg` and `grep --perl-regexp` both report nothing on a file full of them
-- `tr --delete --complement`, `od --format=c` and `cat --show-all` do find them
+- `tr --delete --complement`,
+  `od --format=c` and `cat --show-all` do find them
 - Why a working NUL separator is still a defect,
    and the shared escaped constant that fixes it
 
@@ -171,6 +179,18 @@ Why the exec plugin silently does nothing and why certain tools are incompatible
 - Exec reads stdout as formatted content;
    in-place file modifiers (oxlint --fix) are incompatible
 - `cacheKeyFilesHash: null` in resolved config is expected (hash is moved to global `cacheKey`)
+
+### [mise detached-worktree trust](mise-detached-worktree-trust.md)
+
+A detached worktree fails `mise run` before task execution when its copied config requires trust and its new canonical
+path is not trusted:
+
+- trust is bound to canonical config paths,
+  not equal Git content;
+- command-scoped `MISE_TRUSTED_CONFIG_PATHS` trusts one inventoried disposable root without persistent trust-state
+  mutation,
+  but descendants can inherit the variable;
+- dependency availability remains a separate prerequisite after trust succeeds.
 
 ### [mise watch](mise-watch.md)
 

@@ -4110,6 +4110,70 @@ not a claim that Qwen will complete.
 The challenger deadline does not mitigate GLM's output-ceiling behavior.
 Any failure at either boundary remains terminal for that one new prompt.
 
+### Candidate M implementation evidence
+
+Candidate M's contract foundation is commit `88e8bb97b`.
+Its generic architecture-specific node failure records,
+two-author lifecycle,
+12-challenger role wave,
+selection,
+restart,
+cancellation,
+and test surface are commit `562e9948b`.
+The detached-worktree GFP harness and its command-scoped mise trust boundary are commit `717bd8a08`.
+All three commits are present on the GitHub branch
+`prototype/translation-repair-finite-pipelines`.
+
+Targeted type-aware lint completed with zero warnings and zero errors.
+Type checking,
+Candidate M tests,
+Candidate L regression tests,
+and Candidate K regression tests passed after rebuilding `dist/`.
+Full package `buildAndTest` completed with 880 runner-prefixed `PASS` verdicts and zero `FAIL` verdicts.
+
+The reproducible harness is
+`package/module/translation-repair/src/corpus-run/prototype-risk-challenger-gfp.ts` and its three named helper modules.
+Its source-set SHA-256 is
+`903b1bd54ffdb86d99b5f0f4f35890f4122ca1d54c9e5cf041d59ff7991bd002`
+and is recorded by the adjacent sanitized JSON summary.
+The adjacent sanitized JSON summary is commit `d9305094f` and retains only source identity,
+mutation names,
+gate phases,
+exit codes,
+restored-baseline status,
+publication `dist` before and after identity,
+and leftover disposable-worktree count.
+The harness proved targeted-test detection for seven restored mutations:
+
+- clean or defect finding cardinality;
+- source-plan and schema binding helper;
+- runtime schema reconstruction against persisted plan identity;
+- Candidate M restart failure-category whitelist;
+- author admission failure-category persistence;
+- strict per-role nonself family floor;
+- between-wave cancellation before challenger-plan creation.
+
+Every mutation rebuilt successfully and then failed the targeted Candidate M test gate.
+The restored rebuild and targeted test passed.
+After the architecture-specific failure-category refactor,
+an independent advisor's sole blocker was that the newest helper and restart-test edits had not yet passed the required gates.
+Those targeted gates,
+GFP controls,
+and the full package gate subsequently passed.
+Exact complete-Carena envelope measurement remains a calibration prerequisite.
+The no-key harness must pin prototype and corpus commits,
+built artifacts,
+source,
+archive,
+image,
+live catalog rows,
+provider routes,
+and every static node binding.
+It must also set `umask(0o077)`,
+require directory mode `0700` and file mode `0600`,
+verify those modes recursively,
+and then pass final pre-live advisor review before one authorized spend.
+
 Candidate M is selected for structural prototyping only.
 It is not selected for production and does not authorize any spent prompt.
 
