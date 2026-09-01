@@ -61,6 +61,26 @@ so no existing page is readiness evidence for current HEAD.
     then the actual-output reading (session task `#259`),
     and only a passing reading re-opens the readiness signal (session task `#219`).
 
+## Owner refinement, 2026-09-01, later the same day
+
+After instructing a full reading of the failed candidates
+(recorded in
+[`translation-repair-redesign-insights.md`](../planning/translation-repair-redesign-insights.md)),
+the owner refined the direction:
+
+"I would say loops are discouraged altogether.
+The models Hyper and Synthetic provide has become much more advanced than when this project started.
+We shouldn't even need loops if we play it smart."
+
+This supersedes item 2's bound-the-loops shape:
+correction loops are removed rather than budgeted.
+Every stage becomes a fixed-depth graph,
+and the design leans on current-generation models instead of compensating machinery.
+The model-advancement premise is measured against the live provider catalogs before the design is fixed.
+Item 1 (redesign stays closed),
+item 3 (the four-entry completion set),
+and item 4 (one pass, then the reading, then the readiness signal) stand.
+
 ## Why this direction
 
 - It keeps the only architecture that has produced a page a reading accepted.
