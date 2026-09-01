@@ -820,6 +820,9 @@ await describe({
           memberOrder: 'source-exact',
           protectedCasedMember: 'exact-at-position',
         },);
+        const expectedSourceReviewPlanDigest = digest(JSON.stringify(projected.sourceReviewPlan,),);
+        expect(projected.sourceReviewPlanDigest).toBe(expectedSourceReviewPlanDigest,);
+        expect(projected.admissionReviewPlanDigest).toBe(value.reviewPlan.reviewPlanDigest,);
         expect(verifierPacket.sourceReviewPlanDigest).toBe(projected.sourceReviewPlanDigest,);
         expect(verifierPacket.admissionReviewPlanDigest).toBe(projected.admissionReviewPlanDigest,);
         expect(
