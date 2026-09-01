@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * throw new NaturalnessRepairInterruptedError({ reason: 'quorum-not-met', });
+ * throw new NaturalnessRepairInterruptedError({ reason: 'contributor-structure', });
  * ```
  */
 export class NaturalnessRepairInterruptedError extends Error {
@@ -24,17 +24,14 @@ export class NaturalnessRepairInterruptedError extends Error {
    *
    * @example
    * ```ts
-   * new NaturalnessRepairInterruptedError({ reason: 'quorum-not-met', });
+   * new NaturalnessRepairInterruptedError({ reason: 'contributor-structure', });
    * ```
    */
   public constructor(
     {
       reason,
     }: {
-      readonly reason:
-        | 'contributor-structure'
-        | 'correction-cycle'
-        | 'quorum-not-met';
+      readonly reason: 'contributor-structure';
     },
   ) {
     super(`naturalness repair interrupted: ${reason}`,);

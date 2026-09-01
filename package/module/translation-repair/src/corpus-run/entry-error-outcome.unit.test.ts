@@ -31,7 +31,7 @@ await describe({
       new ContributorCompletenessError({ entryId: 'Cat', droppedCount: 1, }),
       new DroppedDestinationError({ entryId: 'Cat', droppedCount: 1, }),
       new FrontMatterCompletenessError({ entryId: 'Cat', reason: 'missing-slice', }),
-      new NaturalnessRepairInterruptedError({ reason: 'quorum-not-met', }),
+      new NaturalnessRepairInterruptedError({ reason: 'contributor-structure', }),
       new NaturalnessCompletenessError({ sliceIndex: 1, }),
       new PromptPayloadStoreError({
         promptDigest: 'fixture-digest',

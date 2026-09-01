@@ -4,7 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { confirmAbsoluteNaturalness, } from './absolute-naturalness-confirmation.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
-import { settleNaturalnessCorrections, } from './consolidation-naturalness-settle.ts';
+import { describeReviewFindings, } from './consolidation-naturalness-state.ts';
 import type {
   ConsolidationPolish,
   ConsolidationPolishConfig,
@@ -13,7 +13,6 @@ import {
   finalPolishParagraphs,
   runConsolidationPolishRound,
 } from './consolidation-polish-round.ts';
-import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
 
 export type {
   ConsolidationNaturalnessAudit,
@@ -23,6 +22,11 @@ export type {
 } from './consolidation-polish-model.ts';
 
 //region Consolidation naturalness polish
+// ONE FIXED POLISH ROUND BY DESIGN: refiners propose, judges select between
+// proposal and standing text, the deterministic gate applies, and the
+// absolute review that follows is recorded evidence, never withholding
+// authority. There is no correction loop and no re-ask under any verdict
+// (doc/planning/translation-repair-no-loop-design.md).
 
 /**
  * Polishes final body text and lets fidelity-first roster approve replacement.
@@ -144,51 +148,43 @@ export async function polishConsolidation(
     l,
   },);
   /**
-   * Decisive initial review after optional acceptance confirmation.
+   * Decisive review after optional acceptance confirmation, recorded whatever
+   * it says: a rejection or an unheard review roster becomes located findings
+   * on the settlement while the gated round-one text ships.
    */
-  const { review: initialReview, } = initialConfirmed;
-  if (initialReview.verdict === 'acceptable') {
-    return {
-      kind: 'settled',
-      baseText,
-      proposedText: initial.proposedText,
-      text: initial.text,
-      changed: initial.text !== baseText,
-      refinersHeard: initial.refinersHeard,
-      contributors: initial.contributors,
-      rounds: initial.rounds,
-      ...((initial.gate === undefined) ? {} : { gate: initial.gate, }),
-      review: {
-        correctionCount: 0,
-        corrections: [],
-        rounds: [initialReview,],
-        confirmations: initialConfirmed.confirmations,
-      },
-      findings: initial.findings,
-    };
-  }
-  if (initialReview.verdict === 'quorum-not-met') {
-    throw new NaturalnessRepairInterruptedError({
-      reason: 'quorum-not-met',
-    },);
-  }
-  return settleNaturalnessCorrections({
-    client,
-    sourceText,
-    archiveText,
+  const { review: finalReview, } = initialConfirmed;
+  /**
+   * Evidence the non-accepting verdicts add to the settlement.
+   */
+  const reviewEvidence = finalReview.verdict === 'acceptable'
+    ? []
+    : [
+      ...describeReviewFindings({ review: finalReview, },),
+      finalReview.verdict === 'quorum-not-met'
+        ? 'absolute naturalness review quorum not met; recorded as evidence'
+        : 'absolute naturalness rejection recorded as evidence; the gated text ships',
+    ];
+  return {
+    kind: 'settled',
     baseText,
-    initial,
-    initialReview,
-    initialConfirmations: initialConfirmed.confirmations,
-    ...((syntax === undefined) ? {} : { syntax, }),
-    lineStructured,
-    ...((identityContext === undefined) ? {} : { identityContext, }),
-    sliceIndex,
-    config,
-    signal,
-    perCallTimeoutMs,
-    l,
-  },);
+    proposedText: initial.proposedText,
+    text: initial.text,
+    changed: initial.text !== baseText,
+    refinersHeard: initial.refinersHeard,
+    contributors: initial.contributors,
+    rounds: initial.rounds,
+    ...((initial.gate === undefined) ? {} : { gate: initial.gate, }),
+    review: {
+      correctionCount: 0,
+      corrections: [],
+      rounds: [finalReview,],
+      confirmations: initialConfirmed.confirmations,
+    },
+    findings: [
+      ...initial.findings,
+      ...reviewEvidence,
+    ],
+  };
 }
 
 //endregion Consolidation naturalness polish

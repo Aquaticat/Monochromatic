@@ -1,15 +1,11 @@
 /**
- * Tests post-consolidation naturalness rewrite through final fidelity gate.
+ * Tests the single fixed polish round: refiners propose, judges select,
+ * the deterministic gate applies, and the absolute review that follows is
+ * recorded evidence on the settlement, never withholding authority and
+ * never buying a correction round.
  *
  * @module
  */
-
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -22,8 +18,6 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   polishConsolidation,
-  promptPayloadStore,
-  promptUniqueClient,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -47,36 +41,6 @@ const BASE = 'She faced life proactively and spent a good time with everyone, wh
 const POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
- * Second correction resolving a defect exposed after first rewrite.
- */
-const FINAL_POLISHED = 'She kept a positive outlook and shared good times with everyone, while doing her best to remain hopeful and connected to the people around her.';
-
-/**
- * Third correction resolving a defect exposed after second rewrite.
- */
-const THIRD_POLISHED = 'She stayed optimistic and enjoyed good times with everyone, doing her best to remain hopeful and connected to the people around her.';
-
-/**
- * Successful transitions in A-B-A-C cycle fixture.
- */
-const CYCLE_CORRECTION_COUNT = 4;
-
-/**
- * Initial plus corrected review rounds in A-B-A-C fixture.
- */
-const CYCLE_REVIEW_COUNT = 5;
-
-/**
- * Refinement call where checkpoint fixture interrupts after prior corrections.
- */
-const CHECKPOINT_INTERRUPT_REFINE_CALL = 4;
-
-/**
- * Successful transitions reconstructed by checkpoint fixture.
- */
-const CHECKPOINT_CORRECTION_COUNT = 3;
-
-/**
  * Short literal prose final polish must still review.
  */
 const SHORT_BASE = 'She had a good time with everyone.';
@@ -90,42 +54,6 @@ const SHORT_POLISHED = 'She spent some happy times with everyone.';
  * Target-authoritative contributor attribution baseline.
  */
 const CONTRIBUTOR_BASE = 'Contributors for this entry: [Snow](https://example.test/snow)';
-
-/**
- * Disposable temporary prompt checkpoint directory.
- */
-type TemporaryDirectory = AsyncDisposable & {
-  /**
-   * Absolute fixture path.
-   */
-  readonly path: string;
-};
-
-/**
- * Creates disposable prompt checkpoint directory.
- *
- * @returns Fixture removed after test
- *
- * @example
- * ```ts
- * await using dir = await temporaryDirectory();
- * ```
- */
-async function temporaryDirectory(): Promise<TemporaryDirectory> {
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'naturalness-checkpoint-',
-  ),);
-  return {
-    path,
-    async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        path,
-        { recursive: true, force: true, },
-      );
-    },
-  };
-}
 
 /**
  * Client serving rewrite, selection and final gate schemas.
@@ -143,9 +71,6 @@ const client: SyntheticClient = {
     const schema = request.responseFormat
       ?.json_schema
       .name;
-    /**
-     * Synthetic reply for requested stage.
-     */
     /**
      * Whether request carries sentence-scale final polish fixture.
      */
@@ -192,83 +117,30 @@ const client: SyntheticClient = {
 };
 
 /**
- * Builds client whose initial no-op fails absolute review and whose sole correction follows script.
+ * Builds a client whose absolute reviews follow a per-round verdict script
+ * and whose refiners may answer exactly once.
  *
- * @param correctionText - corrective replacement, absent to return second no-op
+ * A SECOND REFINE CALL THROWS: the fixed polish round buys one proposal, so
+ * any correction re-ask is a regression this harness turns into a failure.
  *
- * @param correctionTexts - exact correction sequence overriding individual text fields
+ * @param reviewAcceptableByRound - acceptable status per one-based review round; absent rounds throw as lost seats
  *
- * @param rejectCorrection - whether first corrected text still fails review
- *
- * @param secondCorrectionText - replacement for second bounded correction
- *
- * @param acceptSecondCorrection - whether final bounded review accepts second correction
- *
- * @param thirdCorrectionText - replacement for third continuous correction
- *
- * @param noOpCorrectionAttempts - failed no-change corrections before first proposal
- *
- * @param selectionSheets - optional sink receiving candidate-selector prompts
- *
- * @param modelPrompts - optional sink receiving model and exact messages
- *
- * @param retainFirstCorrectionAtGate - whether fidelity gate keeps rejected input
- *
- * @param throwOnThirdCorrection - whether unexpected third generation fails fixture
- *
- * @param onRefineCall - optional observer of one-based refinement call count
- *
- * @param onReviewRound - optional observer of one-based absolute review round
- *
- * @param acceptanceByReviewRound - optional exact acceptable status by round
- *
- * @returns Scripted bounded-correction client
+ * @returns Scripted single-round client
  *
  * @example
  * ```ts
- * const correctionClient = boundedCorrectionClient({ correctionText: POLISHED, });
+ * const rejecting = singleRoundClient({ reviewAcceptableByRound: [false,], },);
  * ```
  */
-function boundedCorrectionClient(
-  {
-    correctionText,
-    correctionTexts,
-    rejectCorrection = false,
-    secondCorrectionText,
-    acceptSecondCorrection = false,
-    thirdCorrectionText,
-    noOpCorrectionAttempts = 0,
-    retainFirstCorrectionAtGate = false,
-    selectionSheets,
-    modelPrompts,
-    throwOnThirdCorrection = false,
-    onRefineCall,
-    onReviewRound,
-    acceptanceByReviewRound,
-  }: {
-    readonly correctionText?: string;
-    readonly correctionTexts?: readonly string[];
-    readonly rejectCorrection?: boolean;
-    readonly secondCorrectionText?: string;
-    readonly acceptSecondCorrection?: boolean;
-    readonly thirdCorrectionText?: string;
-    readonly noOpCorrectionAttempts?: number;
-    readonly retainFirstCorrectionAtGate?: boolean;
-    readonly selectionSheets?: string[];
-    readonly modelPrompts?: string[];
-    readonly throwOnThirdCorrection?: boolean;
-    readonly onRefineCall?: (count: number) => void;
-    readonly onReviewRound?: (round: number) => void;
-    readonly acceptanceByReviewRound?: readonly boolean[];
-  },
+function singleRoundClient(
+  { reviewAcceptableByRound, }: { readonly reviewAcceptableByRound: readonly boolean[]; },
 ): SyntheticClient {
   /**
-   * Stateful call counts separating initial and corrective rounds.
+   * Stateful call counts separating refine and review rounds.
    */
   const calls = {
     refine: 0,
     review: 0,
-    gate: 0,
   };
   return {
     chatText: async () => {
@@ -283,57 +155,30 @@ function boundedCorrectionClient(
       const schema = request.responseFormat
         ?.json_schema
         .name;
-      modelPrompts?.push(JSON.stringify({
-        modelId: request.modelId,
-        messages: request.messages,
-      },),);
       /**
        * Scripted stage reply.
        */
       const value: unknown = (() => {
         if (schema === 'refine_report') {
           calls.refine += 1;
-          onRefineCall?.(calls.refine,);
-          if (throwOnThirdCorrection && (calls.refine > 3))
-            throw new Error('third correction generation exceeded bound',);
-          /**
-           * Sequence-specified correction for this correction attempt.
-           */
-          const scriptedCorrection = correctionTexts
-            ?.at(calls.refine - 2,);
+          if (calls.refine > 1)
+            throw new Error('a second refine round was bought; the polish round must never re-ask',);
           return {
-            rewrites: ((calls.refine === 1)
-              || (calls.refine <= (noOpCorrectionAttempts + 1))
-              || (correctionText === undefined))
-              ? []
-              : [{
-                paragraph: 1,
-                newText: scriptedCorrection
-                  ?? ((calls.refine === 2)
-                    ? correctionText
-                    : ((calls.refine === 3) || (thirdCorrectionText === undefined))
-                      ? secondCorrectionText ?? correctionText
-                      : thirdCorrectionText),
-              },],
+            rewrites: [{
+              paragraph: 1,
+              newText: POLISHED,
+            },],
           };
         }
         if (schema === 'candidate_ballot') {
-          selectionSheets?.push(JSON.stringify(request.messages,),);
           return {
             best: 1,
-            reason: 'correction resolves every supplied finding',
+            reason: 'clear idiomatic improvement with same meaning',
           };
         }
         if (schema === 'consolidation_polish_gate') {
-          calls.gate += 1;
-          /**
-           * One-based fidelity gate round across every roster seat.
-           */
-          const gateRound = Math.ceil(calls.gate / ROSTER.length,);
           return {
-            choice: (retainFirstCorrectionAtGate && (gateRound === 1))
-              ? 'base'
-              : 'polished',
+            choice: 'polished',
             unsupported: [],
             dropped: [],
             reason: 'scripted fidelity comparison',
@@ -345,22 +190,13 @@ function boundedCorrectionClient(
            * One-based absolute review round across every roster seat.
            */
           const reviewRound = Math.ceil(calls.review / ROSTER.length,);
-          onReviewRound?.(reviewRound,);
           /**
-           * Whether final bounded review remains scripted rejection.
+           * Scripted acceptance for this round, absent to lose the seat.
            */
-          const secondCorrectionRejected = rejectCorrection
-            && (reviewRound === 3)
-            && (!acceptSecondCorrection);
-          /**
-           * Optional exact verdict for confirmation-path tests.
-           */
-          const explicitAcceptance = acceptanceByReviewRound
-            ?.at(reviewRound - 1,);
-          if ((explicitAcceptance === false)
-            || ((explicitAcceptance === undefined) && ((reviewRound === 1)
-              || ((reviewRound === 2) && rejectCorrection)
-              || secondCorrectionRejected))) {
+          const acceptable = reviewAcceptableByRound.at(reviewRound - 1,);
+          if (acceptable === undefined)
+            throw new Error('scripted lost review seat',);
+          if (!acceptable) {
             return {
               acceptable: false,
               findings: [{
@@ -393,34 +229,15 @@ function boundedCorrectionClient(
 }
 
 /**
- * Adapts scripted structured client to raw-text surface prompt memoization reads.
- *
- * @param inner - structured fixture client
- *
- * @returns Client whose text call serializes structured fixture outcome
- *
- * @example
- * ```ts
- * const adapted = jsonClientAsText({ inner, });
- * ```
+ * Model roles shared by every case.
  */
-function jsonClientAsText(
-  { inner, }: { readonly inner: SyntheticClient; },
-): SyntheticClient {
-  return {
-    chatText: async function structuredAsText(request,) {
-      const outcome = await inner.chatJson<unknown>({
-        ...request,
-        validate: function acceptUnknown(_value: unknown,): _value is unknown {
-          return true;
-        },
-      },);
-      return { text: outcome.rawText, };
-    },
-    chatJson: inner.chatJson,
-    quotas: inner.quotas,
-  };
-}
+const CONFIG = {
+  refinerModelIds: [ROSTER[0],],
+  judgeModelIds: ROSTER,
+  gateModelIds: ROSTER,
+  declaredNames: [],
+  definitions: '',
+} as const;
 
 await describe({
   name: polishConsolidation.name,
@@ -435,13 +252,7 @@ await describe({
           baseText: BASE,
           lineStructured: false,
           sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
+          config: CONFIG,
           signal: AbortSignal.timeout(5_000,),
           perCallTimeoutMs: 5_000,
           l: tagged({ tag: 'consolidation-polish-test', },),
@@ -469,13 +280,7 @@ await describe({
           baseText: SHORT_BASE,
           lineStructured: false,
           sliceIndex: 2,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
+          config: CONFIG,
           signal: AbortSignal.timeout(5_000,),
           perCallTimeoutMs: 5_000,
           l: tagged({ tag: 'consolidation-polish-test', },),
@@ -495,13 +300,7 @@ await describe({
           baseText: CONTRIBUTOR_BASE,
           lineStructured: false,
           sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
+          config: CONFIG,
           signal: AbortSignal.timeout(5_000,),
           perCallTimeoutMs: 5_000,
           l: tagged({ tag: 'consolidation-polish-contributor-test', },),
@@ -515,407 +314,114 @@ await describe({
     },),
 
     it({
-      name: 'CORRECTS WHEN CONFIRMATION REJECTS FIRST ACCEPTANCE and requires repeated acceptance of correction',
+      name: 'RECORDS AN ABSOLUTE REJECTION AS EVIDENCE and ships the gated text with no correction call',
       fn: async () => {
-        /**
-         * One-based absolute-review calls proving confirmation sequence.
-         */
-        const reviewRounds: number[] = [];
         const polish = await polishConsolidation({
-          client: boundedCorrectionClient({
-            correctionText: POLISHED,
-            acceptanceByReviewRound: [
-              true,
-              false,
-              true,
-              true,
-            ],
-            onReviewRound: function recordReviewRound(round,): void {
-              reviewRounds.push(round,);
-            },
-          },),
+          client: singleRoundClient({ reviewAcceptableByRound: [false,], },),
           sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
           sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-confirmation-test', },),
-        },);
-        expect(polish.kind,).toBe('settled',);
-        if (polish.kind !== 'settled')
-          throw new Error('confirmation rejection fixture remained unsettled',);
-        expect(polish.review.correctionCount,).toBe(1,);
-        expect(polish.review.rounds.map(function verdict(review,): string {
-          return review.verdict;
-        },),).toEqual([
-          'unacceptable',
-          'acceptable',
-        ],);
-        expect(polish.review.confirmations,).toHaveLength(2,);
-        expect([...new Set(reviewRounds,),],).toEqual([
-          1,
-          2,
-          3,
-          4,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'CORRECTS ABSOLUTE REVIEW FINDINGS once and re-reviews exact gated text',
-      fn: async () => {
-        /** Selector prompts across required correction. */
-        const selectionSheets: string[] = [];
-        const polish = await polishConsolidation({
-          client: boundedCorrectionClient({ correctionText: POLISHED, selectionSheets, }),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
-          archiveText: BASE,
-          baseText: BASE,
-          lineStructured: false,
-          sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-correction-test', },),
-        },);
-        expect(polish.kind,).toBe('settled',);
-        if (polish.kind !== 'settled')
-          throw new Error('bounded correction fixture remained unsettled',);
-        expect(polish.text,).toBe(POLISHED,);
-        expect(polish.review.correctionCount,).toBe(1,);
-        expect(polish.review.rounds.map(function verdict(review,): string {
-          return review.verdict;
-        },),).toEqual([
-          'unacceptable',
-          'acceptable',
-        ],);
-        expect(polish.review.confirmations,).toHaveLength(1,);
-        expect(polish.rounds.length,).toBe(1,);
-        expect(selectionSheets.join('\n',),).toContain('CURRENT English translation, which cannot ship unchanged',);
-        expect(selectionSheets.join('\n',),).toContain('REQUIRED FINDINGS',);
-      },
-    },),
-
-    it({
-      name: 'USES SECOND CORRECTION for defects exposed by exact first corrected-text review',
-      fn: async () => {
-        const polish = await polishConsolidation({
-          client: boundedCorrectionClient({
-            correctionText: POLISHED,
-            rejectCorrection: true,
-            secondCorrectionText: FINAL_POLISHED,
-            acceptSecondCorrection: true,
-          },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
-          archiveText: BASE,
-          baseText: BASE,
-          lineStructured: false,
-          sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-second-correction-test', },),
-        },);
-        expect(polish.kind,).toBe('settled',);
-        if (polish.kind !== 'settled')
-          throw new Error('second bounded correction fixture remained unsettled',);
-        expect(polish.text,).toBe(FINAL_POLISHED,);
-        expect(polish.review.correctionCount,).toBe(2,);
-        expect(polish.review.rounds.length,).toBe(3,);
-        expect(polish.review.confirmations,).toHaveLength(1,);
-        expect(polish.review.corrections.length,).toBe(2,);
-      },
-    },),
-
-    it({
-      name: 'TRIES DISTINCT STRATEGY after correction makes no approved text change',
-      fn: async () => {
-        /** Exact model and prompt identities across retry. */
-        const modelPrompts: string[] = [];
-        /** One-based refinement calls across no-op and successful strategy. */
-        const refineCalls: number[] = [];
-        const polish = await polishConsolidation({
-          client: boundedCorrectionClient({
-            correctionText: POLISHED,
-            noOpCorrectionAttempts: 1,
-            modelPrompts,
-            onRefineCall: function recordRefineCall(count,): void {
-              refineCalls.push(count,);
-            },
-          }),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
-          archiveText: BASE,
-          baseText: BASE,
-          lineStructured: false,
-          sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-continuous-test', },),
-        },);
-        expect(polish.kind,).toBe('settled',);
-        if (polish.kind !== 'settled')
-          throw new Error('no-op correction fixture did not recover',);
-        expect(polish.review.correctionCount,).toBe(1,);
-        expect(refineCalls,).toEqual([1, 2, 3,],);
-        expect(new Set(modelPrompts,).size,).toBe(modelPrompts.length,);
-      },
-    },),
-
-    it({
-      name: 'TRIES DISTINCT STRATEGY when fidelity gate retains rejected input',
-      fn: async () => {
-        /** One-based refinement calls observed across fidelity recovery. */
-        const refineCalls: number[] = [];
-        /** One-based absolute review rounds observed across fidelity recovery. */
-        const reviewRounds: number[] = [];
-        const polish = await polishConsolidation({
-          client: boundedCorrectionClient({
-            correctionText: POLISHED,
-            retainFirstCorrectionAtGate: true,
-            onRefineCall: function recordRefineCall(count,): void {
-              refineCalls.push(count,);
-            },
-            onReviewRound: function recordReviewRound(round,): void {
-              reviewRounds.push(round,);
-            },
-          },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
-          archiveText: BASE,
-          baseText: BASE,
-          lineStructured: false,
-          sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-fidelity-recovery-test', },),
-        },);
-        expect(polish.kind,).toBe('settled',);
-        if (polish.kind !== 'settled')
-          throw new Error('fidelity recovery fixture did not settle',);
-        expect(polish.review.correctionCount,).toBe(1,);
-        expect(refineCalls,).toEqual([1, 2, 3,],);
-        expect([...new Set(reviewRounds,),],).toEqual([1, 2, 3,],);
-      },
-    },),
-
-    it({
-      name: 'CONTINUES WITH THIRD CORRECTION when second corrected text still rejects',
-      fn: async () => {
-        /** One-based refinement calls observed across continuous stage. */
-        const refineCalls: number[] = [];
-        const polish = await polishConsolidation({
-          client: boundedCorrectionClient({
-            correctionText: POLISHED,
-            rejectCorrection: true,
-            secondCorrectionText: FINAL_POLISHED,
-            thirdCorrectionText: THIRD_POLISHED,
-            acceptanceByReviewRound: [
-              false,
-              false,
-              false,
-              true,
-              true,
-            ],
-            onRefineCall: function recordRefineCall(count,): void {
-              refineCalls.push(count,);
-            },
-          },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
-          archiveText: BASE,
-          baseText: BASE,
-          lineStructured: false,
-          sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
+          config: CONFIG,
           signal: AbortSignal.timeout(5_000,),
           perCallTimeoutMs: 5_000,
           l: tagged({ tag: 'consolidation-polish-rejection-test', },),
         },);
+        // The reviewer verdict is evidence, not authority: the gated text
+        // ships and the located problem lives on the findings. The scripted
+        // client throws on any second refine call, so returning at all proves
+        // no correction was bought.
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
-          throw new Error('continuous correction fixture remained unsettled',);
-        expect(polish.text,).toBe(THIRD_POLISHED,);
-        expect(polish.review.rounds.length,).toBe(4,);
-        expect(polish.review.correctionCount,).toBe(3,);
-        expect(refineCalls,).toEqual([1, 2, 3, 4,],);
-      },
-    },),
-
-    it({
-      name: 'ESCAPES A-B-A CYCLE using accumulated rejected strategies and payload reuse',
-      fn: async () => {
-        /** Provider calls proving exact duplicates do not reach model twice. */
-        const modelPrompts: string[] = [];
-        const inner = boundedCorrectionClient({
-          correctionText: POLISHED,
-          correctionTexts: [
-            POLISHED,
-            FINAL_POLISHED,
-            POLISHED,
-            THIRD_POLISHED,
-          ],
-          acceptanceByReviewRound: [
-            false,
-            false,
-            false,
-            true,
-            true,
-          ],
-          modelPrompts,
-        },);
-        const polish = await polishConsolidation({
-          client: promptUniqueClient({
-            inner: jsonClientAsText({ inner, },),
-          },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
-          archiveText: BASE,
-          baseText: BASE,
-          lineStructured: false,
-          sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
-          signal: AbortSignal.timeout(5_000,),
-          perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-cycle-test', },),
-        },);
-        expect(polish.kind,).toBe('settled',);
-        if (polish.kind !== 'settled')
-          throw new Error('correction cycle fixture did not settle',);
-        expect(polish.text,).toBe(THIRD_POLISHED,);
-        expect(polish.review.correctionCount,).toBe(CYCLE_CORRECTION_COUNT,);
-        expect(polish.review.rounds,).toHaveLength(CYCLE_REVIEW_COUNT,);
-        expect(polish.review.corrections,).toHaveLength(CYCLE_CORRECTION_COUNT,);
-        expect(new Set(modelPrompts,).size,).toBe(modelPrompts.length,);
-      },
-    },),
-
-    it({
-      name: 'RESUMES INTERRUPTED CORRECTION from durable payloads without resending prompts',
-      fn: async () => {
-        await using dir = await temporaryDirectory();
-        const store = promptPayloadStore({ dir: dir.path, },);
-        const modelPrompts: string[] = [];
-        const interrupted = new AbortController();
-        const inner = boundedCorrectionClient({
-          correctionText: POLISHED,
-          correctionTexts: [
-            POLISHED,
-            FINAL_POLISHED,
-            THIRD_POLISHED,
-          ],
-          acceptanceByReviewRound: [
-            false,
-            false,
-            false,
-            true,
-            true,
-          ],
-          modelPrompts,
-          onRefineCall: function interruptAfterPriorCorrections(count,): void {
-            if (count === CHECKPOINT_INTERRUPT_REFINE_CALL)
-              interrupted.abort(new Error('fixture interruption',),);
-          },
-        },);
-        let firstError: unknown;
-        try {
-          await polishConsolidation({
-            client: promptUniqueClient({
-              inner: jsonClientAsText({ inner, },),
-              store,
+          throw new Error('rejection fixture did not settle',);
+        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.review
+          .correctionCount,).toBe(0,);
+        expect(polish.review
+          .rounds[0]
+          ?.verdict,).toBe('unacceptable',);
+        expect(
+          polish.findings
+            .some(function namesRecording(finding,): boolean {
+              return finding.includes('absolute naturalness rejection recorded as evidence',);
             },),
-            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
-            archiveText: BASE,
-            baseText: BASE,
-            lineStructured: false,
-            sliceIndex: 1,
-            config: {
-              refinerModelIds: [ROSTER[0],],
-              judgeModelIds: ROSTER,
-              gateModelIds: ROSTER,
-              declaredNames: [],
-              definitions: '',
-            },
-            signal: interrupted.signal,
-            perCallTimeoutMs: 5_000,
-            l: tagged({ tag: 'consolidation-polish-checkpoint-first', },),
-          },);
-        }
-        catch (error) {
-          firstError = error;
-        }
-        expect(firstError,).toBeInstanceOf(Error,);
+        ).toBe(true,);
+      },
+    },),
 
-        const resumed = await polishConsolidation({
-          client: promptUniqueClient({
-            inner: jsonClientAsText({ inner, },),
-            store,
+    it({
+      name: 'RECORDS CONFIRMATION REJECTION AS EVIDENCE instead of buying a correction',
+      fn: async () => {
+        const polish = await polishConsolidation({
+          client: singleRoundClient({
+            reviewAcceptableByRound: [
+              true,
+              false,
+            ],
           },),
           sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
           sliceIndex: 1,
-          config: {
-            refinerModelIds: [ROSTER[0],],
-            judgeModelIds: ROSTER,
-            gateModelIds: ROSTER,
-            declaredNames: [],
-            definitions: '',
-          },
+          config: CONFIG,
           signal: AbortSignal.timeout(5_000,),
           perCallTimeoutMs: 5_000,
-          l: tagged({ tag: 'consolidation-polish-checkpoint-resume', },),
+          l: tagged({ tag: 'consolidation-polish-confirmation-test', },),
         },);
-        expect(resumed.kind,).toBe('settled',);
-        if (resumed.kind !== 'settled')
-          throw new Error('checkpoint resume fixture did not settle',);
-        expect(resumed.text,).toBe(THIRD_POLISHED,);
-        expect(resumed.review.correctionCount,).toBe(CHECKPOINT_CORRECTION_COUNT,);
-        expect(new Set(modelPrompts,).size,).toBe(modelPrompts.length,);
+        // Discovery accepted, the acceptance challenge rejected: the decisive
+        // rejection is recorded beside the earlier acceptance and nothing is
+        // withheld or re-asked.
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('confirmation rejection fixture did not settle',);
+        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.review
+          .rounds[0]
+          ?.verdict,).toBe('unacceptable',);
+        expect(polish.review
+          .confirmations,).toHaveLength(1,);
+        expect(
+          polish.findings
+            .some(function namesRecording(finding,): boolean {
+              return finding.includes('absolute naturalness rejection recorded as evidence',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'RECORDS QUORUM-NOT-MET AS EVIDENCE and ships the gated text',
+      fn: async () => {
+        // Every review seat is lost, so the review roster is unheard; the
+        // producing round already settled, and reviewer absence after it must
+        // not withhold the entry.
+        const polish = await polishConsolidation({
+          client: singleRoundClient({ reviewAcceptableByRound: [], },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-quorum-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('quorum fixture did not settle',);
+        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.review
+          .rounds[0]
+          ?.verdict,).toBe('quorum-not-met',);
+        expect(
+          polish.findings
+            .some(function namesRecording(finding,): boolean {
+              return finding.includes('absolute naturalness review quorum not met',);
+            },),
+        ).toBe(true,);
       },
     },),
 
