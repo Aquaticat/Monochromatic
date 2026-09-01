@@ -20,7 +20,8 @@ import {
   buildCandidateSelectMessages,
   CANDIDATE_NONE,
   CANDIDATE_SELECT_RESPONSE_FORMAT,
-  isCandidateBallotWire,
+  isCandidateBallotAsSent,
+  readCandidateBallotWire,
   type SelectEvidence,
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -236,7 +237,7 @@ export async function decideBestCandidate<ValueT,>(
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
     responseFormat: CANDIDATE_SELECT_RESPONSE_FORMAT,
-    validate: isCandidateBallotWire,
+    validate: isCandidateBallotAsSent,
     stage: 'select',
     l,
   },);
@@ -253,9 +254,12 @@ export async function decideBestCandidate<ValueT,>(
   const ballots: readonly SelectionBallot[] = gather.voices
     .map(function toBallot(voice,): SelectionBallot {
       /**
-       * This judge's chosen index.
+       * This judge's chosen index, read as a number whichever way it was sent.
        */
-      const { best, } = voice.value;
+      const {
+        best,
+        reason,
+      } = readCandidateBallotWire({ sent: voice.value, },);
 
       /**
        * Whether this judge named text it has a stake in.
@@ -270,8 +274,7 @@ export async function decideBestCandidate<ValueT,>(
       return {
         modelId: voice.modelId,
         best,
-        reason: voice.value
-          .reason,
+        reason,
         weight: usable
           ? (ownWork ? SELF_VOTE_WEIGHT : FULL_VOTE_WEIGHT)
           : 0,

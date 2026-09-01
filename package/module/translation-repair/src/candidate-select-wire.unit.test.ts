@@ -25,7 +25,9 @@ import {
 
 import {
   CANDIDATE_NONE,
+  isCandidateBallotAsSent,
   isCandidateBallotWire,
+  readCandidateBallotWire,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -139,8 +141,9 @@ await describe({
     },),
 
     it({
-      name: 'refuses a quoted index, the shape a model produces when it '
-        + 'stringifies every field',
+      name: 'refuses a quoted index at the STRICT shape. The as-sent guard is '
+        + 'where a canonical quoted index is admitted and read, so nothing '
+        + 'downstream of this guard ever compares a string with an index',
       fn: async () => {
         expect(
           isCandidateBallotWire({
@@ -187,6 +190,139 @@ await describe({
           ],
         ])
           expect(isCandidateBallotWire(value,),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isCandidateBallotAsSent.name,
+  children: [
+    it({
+      name: 'admits everything the strict guard admits',
+      fn: async () => {
+        for (const best of [
+          CANDIDATE_NONE,
+          1,
+          999,
+        ])
+          expect(
+            isCandidateBallotAsSent({
+              best,
+              reason: 'a fine cat',
+            },),
+          ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'admits a quoted canonical index, the shape deepseek-v4-flash-0731 '
+        + 'sends about one select round in ten, a quoted decline included',
+      fn: async () => {
+        for (const best of [
+          '0',
+          '1',
+          '8',
+          '12',
+        ])
+          expect(
+            isCandidateBallotAsSent({
+              best,
+              reason: 'the cat in the window',
+            },),
+          ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES every quoted shape that is not the canonical decimal text '
+        + 'of a non-negative integer: signs, leading zeros, fractions, exponents, '
+        + 'whitespace, hex, fullwidth digits, words and the empty string, each of '
+        + 'which Number() or a looser scan would read as some index',
+      fn: async () => {
+        for (const best of [
+          '-1',
+          '+1',
+          '08',
+          '00',
+          '1.0',
+          '1e0',
+          ' 1',
+          '1 ',
+          '1\n',
+          '0x1',
+          '１',
+          '',
+          'one',
+        ])
+          expect(
+            isCandidateBallotAsSent({
+              best,
+              reason: 'somewhere around there',
+            },),
+          ).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'still refuses a missing or non-string reason and a non-record, '
+        + 'since widening the index shape widens nothing else',
+      fn: async () => {
+        expect(isCandidateBallotAsSent({ best: '1', },),).toBe(false,);
+        expect(
+          isCandidateBallotAsSent({
+            best: '1',
+            reason: 7,
+          },),
+        ).toBe(false,);
+        expect(isCandidateBallotAsSent(null,),).toBe(false,);
+        expect(isCandidateBallotAsSent('1',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readCandidateBallotWire.name,
+  children: [
+    it({
+      name: 'reads a quoted index as the number it spells, a quoted decline as '
+        + 'the decline value, and leaves a numeric index alone, so selection '
+        + 'compares numbers with numbers',
+      fn: async () => {
+        expect(
+          readCandidateBallotWire({
+            sent: {
+              best: '8',
+              reason: 'the eighth cat',
+            },
+          },),
+        ).toStrictEqual({
+          best: 8,
+          reason: 'the eighth cat',
+        },);
+        expect(
+          readCandidateBallotWire({
+            sent: {
+              best: '0',
+              reason: 'no cat here',
+            },
+          },),
+        ).toStrictEqual({
+          best: CANDIDATE_NONE,
+          reason: 'no cat here',
+        },);
+        expect(
+          readCandidateBallotWire({
+            sent: {
+              best: 3,
+              reason: 'the third cat',
+            },
+          },),
+        ).toStrictEqual({
+          best: 3,
+          reason: 'the third cat',
+        },);
       },
     },),
   ],

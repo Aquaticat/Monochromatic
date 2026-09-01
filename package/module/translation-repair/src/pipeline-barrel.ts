@@ -96,8 +96,11 @@ export {
   buildCandidateSelectMessages,
   CANDIDATE_NONE,
   CANDIDATE_SELECT_RESPONSE_FORMAT,
+  type CandidateBallotAsSent,
   type CandidateBallotWire,
+  isCandidateBallotAsSent,
   isCandidateBallotWire,
+  readCandidateBallotWire,
   type SelectEvidence,
 } from './candidate-select-wire.ts';
 export {

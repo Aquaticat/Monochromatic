@@ -98,6 +98,117 @@ export function isCandidateBallotWire(value: unknown,): value is CandidateBallot
 }
 
 /**
+ * Whether text spells a candidate index the way JSON prints the number:
+ * ASCII digits only, no sign, no leading zero unless the index is exactly
+ * zero.
+ *
+ * A LINEAR SCAN RATHER THAN `Number` OR A REGEX, because `Number` admits
+ * `' 1'`, `'1e0'`, `'0x1'` and `''`, each of which a model could send while
+ * meaning something else, and the point of reading a quoted index at all is
+ * to take only the one shape that cannot be misread.
+ *
+ * @param text - ballot field as the model sent it
+ *
+ * @returns Whether every character is a digit under the leading-zero rule
+ *
+ * @example
+ * ```ts
+ * isCanonicalIndexText('8',);
+ * ```
+ */
+function isCanonicalIndexText(text: string,): boolean {
+  if (text.length === 0)
+    return false;
+  if ((text.length > 1) && text.startsWith('0',))
+    return false;
+  for (const character of text) {
+    if ((character < '0') || (character > '9'))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * A ballot as a model may send it, before its index is read as a number.
+ *
+ * `deepseek-v4-flash-0731` ANSWERS `{"best": "8"}` about one select round in
+ * ten, a quoted index where the schema asked for an integer, and its recovery
+ * round answers the same way, so under the strict guard alone those ballots
+ * were lost (measured 2026-09-01: 8 schema-mismatch lines over 40 producer
+ * rounds and 4 over six editor slices). A quoted canonical integer means
+ * exactly one thing, so the boundary reads it and hands the strict shape on.
+ *
+ * @example
+ * ```ts
+ * const sent: CandidateBallotAsSent = { best: '2', reason: 'keeps the clause order', };
+ * ```
+ */
+export type CandidateBallotAsSent = {
+  /**
+   * One-based index or {@link CANDIDATE_NONE}, as a number or as the
+   * canonical decimal text of one.
+   */
+  readonly best: number | string;
+
+  /**
+   * Why, in one line.
+   */
+  readonly reason: string;
+};
+
+/**
+ * Guards untrusted ballots from model JSON, admitting a canonical quoted
+ * index beside the strict shape.
+ *
+ * @param value - candidate from unvalidated model output
+ *
+ * @returns Whether value is a ballot once its index is read
+ *
+ * @example
+ * ```ts
+ * isCandidateBallotAsSent({ best: '1', reason: 'most natural', },);
+ * ```
+ */
+export function isCandidateBallotAsSent(value: unknown,): value is CandidateBallotAsSent {
+  if (isCandidateBallotWire(value,))
+    return true;
+  if (!isJsonRecord(value,))
+    return false;
+
+  /**
+   * Chosen index as the model sent it.
+   */
+  const {
+    best,
+    reason,
+  } = value;
+  return ((typeof best) === 'string')
+    && isCanonicalIndexText(best,)
+    && ((typeof reason) === 'string');
+}
+
+/**
+ * Reads a ballot as sent into the strict wire shape.
+ *
+ * @param sent - ballot admitted by {@link isCandidateBallotAsSent}
+ *
+ * @returns Same ballot with its index as a number
+ *
+ * @example
+ * ```ts
+ * const ballot = readCandidateBallotWire({ sent: { best: '8', reason: 'the eighth', }, },);
+ * ```
+ */
+export function readCandidateBallotWire(
+  { sent, }: { readonly sent: CandidateBallotAsSent; },
+): CandidateBallotWire {
+  return {
+    best: ((typeof sent.best) === 'string') ? Number(sent.best,) : sent.best,
+    reason: sent.reason,
+  };
+}
+
+/**
  * Structured-output constraint for a selection ballot.
  */
 export const CANDIDATE_SELECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
