@@ -3004,6 +3004,120 @@ Candidate K is selected for structural prototyping only.
 It is not selected for production.
 It carries no permission to reuse Candidate I prompts or outputs as new provider work.
 
+### Candidate K structural prototype status
+
+Candidate K passed structural implementation at prototype commit
+`399d0d686524818cd78e91bdb9417496901f9880`.
+Built `prototype-review-unit.mjs` SHA-256 is
+`bc64696ca4d7e1066e099718f5c83624eafc1be388d635191214f1c6f4678a83`.
+Built test-support SHA-256 is
+`1a5db330fed4bfd94e2907cbc447dcab958eb524821c6461c1e3c479c1016cd2`.
+Built package index SHA-256 remains
+`d67e90eab0b7f1d9c4073f4b33754c6b6fc92b2ec78e2f006217c6c892f0ca75`.
+
+The implementation fixes three Qwen,
+GLM,
+and MiniMax author nodes plus nine candidate-scoped verifier nodes before provider contact.
+It persists readable review plans,
+mechanical proof,
+manifest and route identities,
+model-facing finding rules,
+author settlement,
+verifier plan,
+node records,
+responses,
+ballots,
+selection,
+and prompt claims.
+An unusable author deterministically skips its three verifier nodes.
+A candidate qualifies only with two clean nonself families and no valid self or nonself dissent.
+A vetoed higher-priority candidate cannot mask a lower-priority eligible candidate.
+
+The readable pinned-Carena plan contains four semantic front-matter subjects,
+112 individual clause statuses in 23 slot groups,
+22 ordered relation statuses,
+23 slot-language statuses,
+and six page-level globals.
+Every source excerpt,
+range,
+digest,
+relation endpoint,
+direction,
+front-matter shape,
+supported scalar,
+synthetic target slot,
+and old-to-new global owner remains manifest-bound.
+Scope-specific model-facing rules and caller admission share one digest.
+Canonical overflow retains the first 64 defective subjects.
+
+Type-aware lint returned zero warnings and zero errors across 38 scoped files.
+Types passed.
+The rebuilt targeted suite has 34 cases.
+Full `buildAndTest` exited zero with 878 suite `PASS` lines and no suite `FAIL` line.
+The post-commit GFP script,
+SHA-256 `82ed0f3b8dbaa66e161e1c1d6e3ea4301efcd70fc3d858f73e25511112f9541c`,
+mutated 22 load-bearing controls.
+Each mutation rebuilt,
+made the targeted suite fail,
+was restored immediately,
+rebuilt,
+and passed.
+Mutations covered subject-specific global rules,
+synthetic-slot collision,
+front-matter structure and scalar identity,
+proof and cancellation before dispatch,
+narrow anchors,
+canonical finding prefix,
+route cap and deadline,
+family floor,
+candidate dissent veto,
+sibling all-settlement,
+exact abort identity,
+between-wave cancellation,
+indeterminate conversion,
+spent restart,
+author-dependent skips,
+rule-table and image carriage,
+provider mask,
+and prompt claims.
+
+Offline pinned-Carena request measurement used script SHA-256
+`a7974f497ed539e5ba92eb161705a5b227c339c5b48d446a0c35e148fbf4aa30`.
+Metadata summary SHA-256 is
+`6824feaedd6ea6214e1ad5f19f888c1a7bcc77c3714297344f3dc75ab8656fe5`.
+Verifier request bodies measured 1,145,716 to 1,145,719 bytes,
+with one exact image,
+one forced tool,
+and 32,000 `max_tokens`.
+The largest constructed admitted 64-finding response measured 37,389 characters.
+Prior official-tokenizer artifacts counted it at 20,237 Qwen,
+16,102 GLM,
+and 14,907 MiniMax tokens.
+Token-count metadata SHA-256 is
+`7d7ad7bc6049c4414dad4df8863bb80419470ae629051a4805a11d07511a0577`.
+These counts are screening evidence,
+not hosted-route guarantees.
+A separate 84,411-character conservative static superset intentionally violates dynamic subject enums and per-subject
+admission bounds;
+it is not an admitted maximum.
+Its metadata SHA-256 is
+`af305cb703e6d8813120e9cf3cabae3546a98f02b69525ce20e7d47a9bf3b8a3`.
+
+The local 900,000-millisecond deadline remains a provisional calibration hypothesis.
+Candidate I's GLM rejection applies to its 134-plus-ten candidate-ballot verifier contract;
+it does not prove Candidate K's new author or readable-review contracts complete.
+Only one zero-retry pinned-Carena run can establish consumer behavior.
+
+Front matter remains a shared archive-derived immutable-shell input,
+not independently authored prose.
+Every verifier reviews its semantic string values and exact deterministic shape,
+but a valid front-matter defect vetoes every candidate and no Candidate K author can repair it.
+That common-mode limitation is a calibration hard gate.
+It blocks any broader normal-run completion claim until production front-matter authority or authorship is redesigned.
+
+Candidate K may proceed to an advisor-reviewed zero-retry pinned-Carena harness.
+It remains ineligible for production integration before calibration and complete-page review.
+
 ## Required lifecycle migration
 
 Replacement must remove current terminal-looking outcomes in
