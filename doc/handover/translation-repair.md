@@ -23,7 +23,12 @@ reviewer,
 resolver,
 continuation,
 or fallback stage.
-Architecture work may resume only after explicit owner authorization that supersedes this stop.
+On 2026-09-01 the owner delegated the direction decision,
+and it is recorded in
+[`translation-repair-post-redesign-direction.md`](../decision/translation-repair-post-redesign-direction.md):
+the redesign stays closed,
+but bounding the production consolidation machinery and a four-entry verification pass are authorized.
+The redesign-scope prohibitions in this section remain in force.
 
 ### Repository state
 
@@ -50,9 +55,12 @@ Architecture work may resume only after explicit owner authorization that supers
   These are the pass and supervisor names recorded by the legacy continuity documentation;
   the evidence does not make a claim about arbitrary unrelated command names.
 - Production still uses the pre-redesign slice pipeline.
-- Production replacement,
-  corpus-output measurement,
-  and the three-run objective remain blocked because no replacement architecture is accepted.
+- Production replacement by a finite whole-document architecture remains closed.
+  The completion objective was redefined by the owner on 2026-09-01:
+  it quantifies over one small,
+  one medium,
+  one large entry plus Carena,
+  per the direction decision.
 
 The finite-prototype branch is
 `prototype/translation-repair-finite-pipelines`.
@@ -161,21 +169,20 @@ Do not reconstruct partial JSON or hidden reasoning.
 
 ### What remains authorized
 
-Only documentation and evidence-preservation work remains authorized inside the redesign scope:
-
-1.  keep the timestamped report and this handover synchronized;
-2.  split long handover and candidate-history documents into navigable files;
-3.  preserve durable links,
+Inside the redesign scope,
+only documentation and evidence-preservation work remains authorized:
+keep the timestamped report and this handover synchronized,
+and preserve durable links,
 digests,
 commits,
-and stop conditions;
-4.  leave production replacement and corpus runs blocked.
+and stop conditions.
 
-After documentation splitting,
-there is no automatic implementation action.
-The owner must decide whether to keep the redesign closed,
-change a hard constraint,
-or authorize a new research phase.
+Outside the redesign scope,
+the owner's 2026-09-01 direction decision authorizes legacy-pipeline work:
+bound the consolidation correction machinery so a normal run always terminates with a published page,
+then run one fresh pass over the four-entry completion set and read its actual output.
+See
+[`translation-repair-post-redesign-direction.md`](../decision/translation-repair-post-redesign-direction.md).
 
 ### Reading order
 
