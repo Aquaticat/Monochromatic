@@ -606,21 +606,21 @@ not merely a missing prompt formulation.
 
 ## Evidence boundaries
 
-Public evidence contains only source identities,
-digests,
-node statuses,
-counts,
-routes,
-token measurements,
-and sanitized failure classes.
-Do not publish:
+Documentation wording redaction is deferred while the package remains unfinished and not production-ready.
+The
+[package-local redaction policy](../../package/module/translation-repair/doc/redaction-timing.md)
+makes redaction a required readiness gate before the package may be declared finished or production-ready.
+Until that gate,
+preserve corpus,
+review,
+calibration,
+and takeover evidence needed to continue package work.
 
-- source or archive wording;
-- candidate wording;
-- image bytes or image transcription;
-- reviewer wording;
-- credentials;
-- raw provider requests or responses.
+The deferral does not authorize committing credentials,
+API keys,
+image bytes,
+or raw provider requests or responses.
+Keep those materials private throughout development and after release.
 
 The public Candidate M calibration harness and sanitized envelope evidence are pinned at
 [revision `b6c9fb5e`][candidate-m-calibration-gist].
@@ -643,26 +643,27 @@ Corpus-output measurement and the three-run completion objective remain blocked 
 A new team member should begin with:
 
 1.  this report for the finite-redesign disposition and implementation stop;
-2.  `doc/handover/translation-repair.md` after its post-Candidate-M takeover refresh;
-3.  `doc/planning/translation-repair-interface-comparison.md` for candidate contracts and detailed evidence;
-4.  `doc/planning/translation-repair-pipeline-redesign.md` for original design constraints;
-5.  `doc/troubleshooting/README.md` for provider and tooling behavior.
+2.  `doc/handover/translation-repair.md` for current state and private evidence paths;
+3.  `doc/handover/translation-repair-document-map.md` for split history and interface navigation;
+4.  `doc/planning/translation-repair-interface-comparison.md` for the candidate index;
+5.  `doc/planning/translation-repair-pipeline-redesign.md` for original design constraints;
+6.  `doc/troubleshooting/README.md` for provider and tooling behavior.
 
 Do not begin by reading private payloads.
 Use sanitized metadata to reconstruct terminal behavior,
 then read private complete pages only when authorized quality review requires it.
 
-[candidate-a-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-a-serial-accountable-document-producers
-[candidate-b-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-b-specification-first-translation-compiler
-[candidate-c-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-c-brief-before-prose-editorial-room
-[candidate-d-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-d-proposal-immutable-shell-slot-compiler
-[candidate-e-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-e-proposal-quote-bound-conditional-shell-adoption
-[candidate-f-evidence]: ../planning/translation-repair-interface-comparison.md#rejected-candidate-f-witness-switched-donor-assembly
-[candidate-g-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-g-proposal-verified-realization-ledger
-[candidate-h-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-h-proposal-closed-world-verdict-with-bounded-defect-evidence
-[candidate-i-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-i-plan-candidate-scoped-compact-ballots
-[candidate-j-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-i-posture-after-kimi-route-rejection
-[candidate-k-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-k-plan-three-family-authors-with-conjunctive-review-units
-[candidate-l-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-l-plan-lean-realization-with-readable-verification
-[candidate-m-evidence]: ../planning/translation-repair-interface-comparison.md#candidate-m-plan-risk-attested-authors-and-role-split-challengers
+[candidate-a-evidence]: ../planning/translation-repair-interface-candidates-a-d.md#candidate-a-serial-accountable-document-producers
+[candidate-b-evidence]: ../planning/translation-repair-interface-candidates-a-d.md#candidate-b-specification-first-translation-compiler
+[candidate-c-evidence]: ../planning/translation-repair-interface-candidates-a-d.md#candidate-c-brief-before-prose-editorial-room
+[candidate-d-evidence]: ../planning/translation-repair-interface-candidates-a-d.md#candidate-d-proposal-immutable-shell-slot-compiler
+[candidate-e-evidence]: ../planning/translation-repair-interface-candidates-e-g.md#candidate-e-proposal-quote-bound-conditional-shell-adoption
+[candidate-f-evidence]: ../planning/translation-repair-interface-candidates-e-g.md#rejected-candidate-f-witness-switched-donor-assembly
+[candidate-g-evidence]: ../planning/translation-repair-interface-candidates-e-g.md#candidate-g-proposal-verified-realization-ledger
+[candidate-h-evidence]: ../planning/translation-repair-interface-candidates-h-j.md#candidate-h-proposal-closed-world-verdict-with-bounded-defect-evidence
+[candidate-i-evidence]: ../planning/translation-repair-interface-candidates-h-j.md#candidate-i-plan-candidate-scoped-compact-ballots
+[candidate-j-evidence]: ../planning/translation-repair-interface-candidates-h-j.md#candidate-i-posture-after-kimi-route-rejection
+[candidate-k-evidence]: ../planning/translation-repair-interface-candidates-k-m.md#candidate-k-plan-three-family-authors-with-conjunctive-review-units
+[candidate-l-evidence]: ../planning/translation-repair-interface-candidates-k-m.md#candidate-l-plan-lean-realization-with-readable-verification
+[candidate-m-evidence]: ../planning/translation-repair-interface-candidates-k-m.md#candidate-m-plan-risk-attested-authors-and-role-split-challengers
 [candidate-m-calibration-gist]: https://gist.github.com/Aquaticat/6ff4fd2f600fc257064aa32eee4c9753/b6c9fb5ebf943a5cd8cfeebbb4c6a2fbbc1e6654

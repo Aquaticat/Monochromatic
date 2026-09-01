@@ -2,11 +2,21 @@
 
 ## Status
 
-This is a proposal record,
+This is the original requirement record,
 not an accepted architecture decision.
-It supersedes overlap tuning as active work after stopped `Carena0442` run 1.
-Do not implement a replacement until multiple interfaces have been compared
-and one has been explicitly selected.
+Candidates A through M were compared,
+implemented where warranted,
+and rejected or stopped at design gate.
+Candidate M failed its single pinned-Carena calibration on 2026-09-01,
+so all further implementation has stopped.
+
+The canonical disposition and failure hypotheses are in
+[`translation-repair-redesign-failure-2026-09-01.md`](../audit/translation-repair-redesign-failure-2026-09-01.md).
+The current repository and evidence state is in
+[`translation-repair.md`](../handover/translation-repair.md).
+Do not implement a replacement,
+retry a spent prompt,
+or launch another calibration until the owner explicitly authorizes a new phase.
 
 ## Corrected requirements
 
@@ -255,10 +265,13 @@ Design-it-twice comparison must include alternatives with different seam placeme
 
 Live short structured probes on 2026-08-30 established these planning bounds:
 
-- Synthetic: 5 in-flight calls per active model and 20 across four-model roster
-- Hyper: no provider concurrency ceiling,
+- Synthetic:
+  5 in-flight calls per active model and 20 across four-model roster
+- Hyper:
+  no provider concurrency ceiling,
   with width 64 corroborated on live request shape
-- Hyper request rate: owner-supplied account limit of 1,000 requests per hour,
+- Hyper request rate:
+  owner-supplied account limit of 1,000 requests per hour,
   separate from in-flight concurrency
 
 Synthetic aggregate width 20 completed twice without retry or non-200 status.
