@@ -697,6 +697,7 @@ await describe({
         })).toThrow();
         for (const slots of [
           { ...response.slots, [aliasKey]: 'Carena', },
+          { ...response.slots, [aliasKey]: 'Flying Cat, Carena, Extra', },
           { ...response.slots, [aliasKey]: 'Carena, Flying Cat', },
           { ...response.slots, [nameKey]: 'Someone Else', },
         ]) {
