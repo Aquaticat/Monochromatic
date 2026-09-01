@@ -19,6 +19,7 @@ export {
 } from './corpus-run/tally-error-text.ts';
 export {
   judgedAuthors,
+  sliceStandingLines,
   standingReportLines,
 } from './corpus-run/editor-calibrate-standing.ts';
 export {

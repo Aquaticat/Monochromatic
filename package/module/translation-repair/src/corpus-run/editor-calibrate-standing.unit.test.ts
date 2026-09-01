@@ -21,8 +21,9 @@ import {
 import {
   judgedAuthors,
   type RosterModelId,
-  standingReportLines,
   type SelectionRound,
+  sliceStandingLines,
+  standingReportLines,
 } from '../../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -150,7 +151,7 @@ await describe({
           },
         },);
 
-        expect(lines,).toHaveLength(4,);
+        expect(lines,).toHaveLength(5,);
         expect(lines[0],).toBe('\nREFINER standing over 1 judged rounds, from 1 of 2 slices',);
         expect(lines[1],).toContain(WRITER,);
         expect(lines[2],).toContain('ANSWERED AND WAS NEVER SLATED',);
@@ -159,6 +160,30 @@ await describe({
         expect(lines[3],).toContain('ANSWERED NOTHING USABLE',);
         expect(lines[3],).toContain(IDLE,);
         expect(lines[3],).not.toContain(JUDGE,);
+        expect(lines[4],).toBe(`  slice 1: 1 rounds; ${WRITER} 1/1 over 1`,);
+      },
+    },),
+
+    it({
+      name: 'ends with one counts line per slice that bought a round, in sample order, '
+        + 'crediting every author of a composite and skipping slices that bought nothing',
+      fn: async () => {
+        /**
+         * Per-slice lines for a voted slice, an empty slice, and a composite
+         * slice nobody voted on.
+         */
+        const lines = sliceStandingLines({
+          perSlice: [
+            [VOTED_ROUND,],
+            [],
+            [COMPOSITE_ROUND,],
+          ],
+        },);
+
+        expect(lines,).toStrictEqual([
+          `  slice 1: 1 rounds; ${WRITER} 1/1 over 1`,
+          `  slice 3: 1 rounds; ${WRITER} 0/0 over 1; ${PARTNER} 0/0 over 1; ${JUDGE} 0/0 over 1`,
+        ],);
       },
     },),
 

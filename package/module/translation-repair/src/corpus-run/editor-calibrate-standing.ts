@@ -47,7 +47,59 @@ export function judgedAuthors(
 }
 
 /**
- * Renders one seat's standing over the rounds it produced.
+ * Renders one seat's counts per slice, so a reader can bootstrap over slices.
+ *
+ * SLICES ARE THE INDEPENDENT UNIT, NOT BALLOTS. Every ballot in a round was
+ * cast over one slate and every round on a slice was cut from one passage, so
+ * the pooled share's ballot-level error understates how far a standing moves
+ * between runs: a four-slice standing moved one model from 52.2 to 26.7 to
+ * 10.0 percent across identical runs. A bootstrap over whole slices needs each
+ * slice's counts, and the pooled table throws them away. These lines keep them
+ * in sample order, so each pairs with its slice progress line by position, and
+ * they carry votes, ballots and candidates rather than a share, for the reason
+ * the pooled line carries its denominator.
+ *
+ * @internal
+ *
+ * @param perSlice - that seat's rounds, grouped by the slice that bought them
+ *
+ * @returns One line per slice that bought a round, none for the rest
+ *
+ * @example
+ * ```ts
+ * for (const line of sliceStandingLines({ perSlice, },))
+ *   console.log(line,);
+ * ```
+ */
+export function sliceStandingLines(
+  { perSlice, }: { readonly perSlice: readonly (readonly SelectionRound[])[]; },
+): readonly string[] {
+  return perSlice.flatMap(function sliceLine(
+    rounds,
+    index,
+  ): readonly string[] {
+    if (rounds.length === 0)
+      return [];
+
+    /**
+     * Per-model counts over this slice alone, best first.
+     */
+    const cells = rankStandings({ standings: producerStandings({ rounds, },), },)
+      .map(function cell(standing,): string {
+        return `${standing.modelId} ${String(standing.disinterestedVotes,)}/${
+          String(standing.disinterestedBallots,)
+        } over ${String(standing.candidates,)}`;
+      },);
+
+    return [
+      `  slice ${String(index + 1,)}: ${String(rounds.length,)} rounds; ${cells.join('; ',)}`,
+    ];
+  },);
+}
+
+/**
+ * Renders one seat's standing over the rounds it produced, then the same
+ * counts per slice.
  *
  * @internal
  *
@@ -143,6 +195,7 @@ export function standingReportLines(
       .map(function indented(line,): string {
         return `  ${line}`;
       },),
+    ...sliceStandingLines({ perSlice, },),
   ];
 }
 
