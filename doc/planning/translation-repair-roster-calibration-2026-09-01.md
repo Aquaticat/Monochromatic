@@ -320,6 +320,20 @@ and the overlap of four).
 The overlap decision doc leaves moving the pass to `#261`'s measurement.
 So the pass launches at its defaults, not at "measured calibration values".
 
+Launch form verified on 2026-09-01 with the zero-quota `--plan` mode, both printing `PLAN ok` with
+`client=constructed` at tip `c4f707e3b`:
+
+-   `TRANSLATION_REPAIR_RUNS_DIR=<throwaway> mise run //package/module/translation-repair:corpus-pass -- --only keyword233,Toka_ls,XIEPT2`
+    against the clone at `~/one-among-us/data`, verified at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
+-   The same with `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` at the PR-386 fixture
+    (`~/temp/agent/pr386-mock-home-20260829/one-among-us/data`, HEAD `d343df909b1673d68dd5cd805aeda1dfacd2d3c4`)
+    and `TRANSLATION_REPAIR_CORPUS_COMMIT` set to that sha, `-- --only Carena0442`.
+-   Each hand-picked run goes into its own throwaway runs dir, as the `ONLY` banner demands,
+    and the two run one after the other so the per-model limiter the pass measures stays one process wide.
+-   The pass reports `soft=259200000ms hard=25200000ms` budgets.
+-   The pass log's abandons by role are the production-window evidence the `glm-5.3` judge drop left open
+    for its critic, panel and translator seats.
+
 ## Next action
 
 Wait for the 40-slice run, read its EDITOR and REFINER standings, apply the rules, edit `run-config.ts`,
