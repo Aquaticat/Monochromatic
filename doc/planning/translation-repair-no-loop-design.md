@@ -80,6 +80,15 @@ leaves the standing text shipping with the outcome recorded as a finding;
 this node has no re-ask under any outcome.
 Absolute-naturalness findings are recorded as evidence on the settlement.
 
+As a landed consequence (`4eabf53cf`),
+the persistence completeness guard accepts a rejected or quorumless final
+review as recorded evidence:
+the artifact parser's repeated-acceptance invariant now binds only an
+acceptable final verdict,
+because `confirmAbsoluteNaturalness` legitimately returns zero acceptance
+confirmations when the decisive reading is not acceptable,
+and the unpatched parser refused exactly the record this remediation ships.
+
 Evidence:
 86 percent of the stopped Carena run's consolidation round time was post-quorum grace;
 acceptance demanded near-unanimity of eight seats and passed 5 of 46 times;
@@ -90,9 +99,20 @@ and the judged-contest form is the one that produced the page a reading accepted
 ### Consolidation recovery, single attempt
 
 `buyConsolidationSlice` makes one attempt.
-When standing may not ship and the settlement still needs recovery,
-deterministic selection takes the best produced candidate;
-zero produced candidates remain the bounded provider error.
+As built (`consolidate-slice-buy.ts`, commit `1ba8f713a`),
+this deviates from the proposal's deterministic best-produced selection:
+when standing lacks contest endorsement and the single attempt kept it,
+the standing text ships with a
+`consolidation-standing-unendorsed` finding recorded as evidence,
+and `consolidationWorthResuming` refuses to persist the settlement,
+so a later run buys a fresh attempt instead of resuming the non-endorsement.
+The deterministic pick was rejected during implementation because every
+produced candidate at that point was one the gate or the judges declined,
+so selecting among them would ship text that never passed the fidelity-first
+gate while the standing text is the one wording with a pedigree;
+overriding a deciding stage's recorded verdict with a non-model tiebreak
+inverts the guarantee worth keeping.
+Zero produced candidates remain the bounded provider error.
 
 ### Translate follow-up, fixed depth two
 
@@ -130,10 +150,18 @@ so it does not exercise the loop allowance.
 
 ### Insertion placement, single round
 
-One coverage round;
-passages still unresolved stay unfilled and flow to `UnfilledPageError`,
-which remains the one bounded no-page terminal,
-because no admissible candidate for required content was produced.
+One coverage round.
+As built (`pass-insertion-admission.ts`, commit `7e702e075`),
+a passage still unresolved after that round is not admitted:
+the pass records an
+`insertion-unresolved-after-single-round` finding naming the slice and the
+verdict, and the page ships without the passage,
+because an insertion is recovered supplementary content whose absence is a
+recorded gap, not a missing required page.
+The corroboration guard keeps its admission authority unchanged,
+since it is a deterministic-integrity check rather than a quality review.
+`UnfilledPageError` remains the one bounded no-page terminal,
+reached only when required content produced no admissible candidate.
 A placement-repair second round was considered and dropped:
 no measurement shows what such a round converts,
 and retaining it on symmetry alone would exercise the loop allowance without evidence.

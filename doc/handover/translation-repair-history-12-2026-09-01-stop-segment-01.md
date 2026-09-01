@@ -4,6 +4,18 @@ Part of the [translation repair history index](translation-repair-history.md).
 
 ## Current stop condition
 
+Superseded later on 2026-09-01:
+the owner answered the remediation's decision points
+(recorded in
+[`translation-repair-roster-blocklist.md`](../decision/translation-repair-roster-blocklist.md)),
+choosing R3,
+which authorizes calibration runs,
+seating,
+and the four-entry completion pass on the landed no-loop build.
+The prohibition below remains true of the failed Candidate M line only:
+spent Candidate A through M prompts stay never-redispatched and
+`prototype/translation-repair-finite-pipelines` stays unmerged.
+
 Historical evidence only.
 Candidate M failed on 2026-09-01.
 No historical next-action list authorizes a corpus run,

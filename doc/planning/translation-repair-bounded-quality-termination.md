@@ -2,6 +2,12 @@
 
 ## Status
 
+Superseded 2026-09-01 by the landed no-loop implementation recorded in
+[`translation-repair-no-loop-design.md`](translation-repair-no-loop-design.md),
+which removed the loops this plan proposed to bound.
+Kept for the contract statement and the three-bucket terminal classification,
+which the implementation carried over.
+
 Provisional draft,
 not an accepted design.
 Written 2026-09-01 for the
