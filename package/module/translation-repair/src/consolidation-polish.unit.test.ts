@@ -15,9 +15,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  assertFinalNaturalnessComplete,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   polishConsolidation,
+  type SettledArtifact,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -239,6 +241,50 @@ const CONFIG = {
   definitions: '',
 } as const;
 
+/**
+ * Wraps one settled polish in the minimal artifact the completeness guard reads.
+ *
+ * @param polish - settled polish record as the pipeline would persist it
+ *
+ * @returns Artifact whose only consolidated body slice carries that polish
+ *
+ * @example
+ * ```ts
+ * const artifact = artifactCarrying({ polish, },);
+ * ```
+ */
+function artifactCarrying(
+  { polish, }: { readonly polish: unknown; },
+): SettledArtifact {
+  // Serialization round-trip first, because persistence writes JSON and the
+  // guard must accept what a resumed run would read back.
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- JSON semantics are the point: persistence writes JSON, so undefined-valued keys must drop and a non-serializable field must fail here, both of which structuredClone would hide.
+  return JSON.parse(JSON.stringify({
+    laneSelection: {
+      kind: 'contested',
+      slices: [{
+        sliceIndex: 1,
+        verdict: { kind: 'lane-won', lane: 'translate', },
+        ballots: [],
+        usable: 2,
+      },],
+    },
+    consolidation: {
+      kind: 'settled',
+      slices: [{
+        sliceIndex: 1,
+        terminal: 'gate-kept-standing',
+        shipped: { kind: 'unchanged', },
+        rewrapped: false,
+        demoted: false,
+        verdicts: [],
+        gate: { kind: 'not-asked', },
+        polish,
+      },],
+    },
+  },),) as SettledArtifact;
+}
+
 await describe({
   name: polishConsolidation.name,
   children: [
@@ -422,6 +468,55 @@ await describe({
               return finding.includes('absolute naturalness review quorum not met',);
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'ROUND-TRIPS A REJECTED AND A QUORUMLESS FINAL REVIEW through the persistence completeness guard',
+      fn: async () => {
+        // The exact shape this remediation exists for: verdicts recorded as
+        // findings while the page ships. The completeness guard re-parses
+        // the review with the correction chain required, so any latent
+        // acceptable-final assumption in that parser would refuse this
+        // record at persist time, after a whole entry was paid for.
+        const [
+          rejected,
+          quorumless,
+        ] = await Promise.all([
+          polishConsolidation({
+            client: singleRoundClient({ reviewAcceptableByRound: [false,], },),
+            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            archiveText: BASE,
+            baseText: BASE,
+            lineStructured: false,
+            sliceIndex: 1,
+            config: CONFIG,
+            signal: AbortSignal.timeout(5_000,),
+            perCallTimeoutMs: 5_000,
+            l: tagged({ tag: 'consolidation-polish-roundtrip-rejection-test', },),
+          },),
+          polishConsolidation({
+            client: singleRoundClient({ reviewAcceptableByRound: [], },),
+            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            archiveText: BASE,
+            baseText: BASE,
+            lineStructured: false,
+            sliceIndex: 1,
+            config: CONFIG,
+            signal: AbortSignal.timeout(5_000,),
+            perCallTimeoutMs: 5_000,
+            l: tagged({ tag: 'consolidation-polish-roundtrip-quorum-test', },),
+          },),
+        ],);
+        expect(rejected.kind,).toBe('settled',);
+        expect(quorumless.kind,).toBe('settled',);
+        // A throw here is the failure this test exists to catch.
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({ polish: rejected, },),
+        },);
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({ polish: quorumless, },),
+        },);
       },
     },),
 

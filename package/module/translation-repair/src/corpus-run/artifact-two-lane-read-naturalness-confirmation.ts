@@ -193,7 +193,12 @@ export function parseNaturalnessConfirmations(
       reason: 'decisive final candidate review',
     },);
   }
-  if (!confirmationDigests.includes(final.candidateDigest,)) {
+  // The repeated-acceptance invariant binds only an accepted final: a
+  // rejected or quorumless final round is recorded evidence under the
+  // no-loop design and legitimately carries no earlier acceptable reading.
+  if ((final.verdict === 'acceptable')
+    && (!confirmationDigests.includes(final.candidateDigest,)))
+  {
     throw new ArtifactParseError({
       path: `${path}.confirmations`,
       reason: 'earlier acceptable reading of exact final candidate',
