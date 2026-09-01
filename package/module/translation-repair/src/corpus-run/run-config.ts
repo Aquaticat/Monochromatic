@@ -113,6 +113,57 @@ const HERE = import.meta.dirname;
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
 
+/**
+ * Writers the 40-round producer calibration of 2026-09-01 measured out of the
+ * translator seat, dropped on the owner's authorization of the same day
+ * ("drop any model from any role, as long as you have evidence").
+ *
+ * BOTH SAT UNDER THE POOLED NULL WITH FULL AVAILABILITY: `gpt-oss-120b` took
+ * 5 of 207 disinterested ballots (z -4.53 against a 13.02 percent null) and
+ * `deepseek-v4-flash-0731` 5 of 208 (z -4.55), each having written 40 of 40
+ * candidates, so the finding is about the writing rather than about rounds
+ * missed. Both keep every other seat: nothing here measures judging,
+ * critique or checking. Record and method:
+ * `doc/planning/translation-repair-roster-calibration-2026-09-01.md`.
+ */
+const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'hf:openai/gpt-oss-120b',
+  'deepseek-v4-flash-0731',
+],);
+
+/**
+ * Judges measured out of the seat on the same authorization.
+ *
+ * `glm-5.3` LOST 11 OF 38 SELECT ASKS under the 180000 ms production window
+ * in the producer calibration: it reasons past the window over a ten-candidate
+ * slate, each loss holds the round for the whole window after quorum, and each
+ * delivered about 2 M raw characters that never reached an answer at the
+ * roster's highest output rate. Its completed select streams were also the
+ * roster's slowest (p50 61 s, p90 166 s). It keeps the critic, panel and
+ * translator seats, where no production-window measurement exists yet; the
+ * corpus pass logs abandons by role and will supply one.
+ */
+const JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['glm-5.3',],);
+
+/**
+ * Translators for the translate lane: the roster less
+ * {@link TRANSLATOR_DROPPED}. Seven since 2026-09-01, so the stage quorum is
+ * 4 and every slate keeps at least two disinterested judges under
+ * `assertJudgeableProducerRoster`.
+ */
+export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
+  .filter(function stillWrites(modelId,): boolean {
+    return !TRANSLATOR_DROPPED.has(modelId,);
+  },);
+
+/**
+ * Judges for both lanes: the roster less {@link JUDGE_DROPPED}. Eight since
+ * 2026-09-01, so the selection quorum is 4.
+ */
+export const RUN_JUDGES: readonly RosterModelId[] = RUN_ROSTER
+  .filter(function stillJudges(modelId,): boolean {
+    return !JUDGE_DROPPED.has(modelId,);
+  },);
 
 /**
  * Role roster for a corpus run: all NINE critique and adjudicate, THREE edit
@@ -296,7 +347,10 @@ export const RUN_MODELS: RepairModels = {
     'hf:Qwen/Qwen3.8-27B',
     'gemma-4-26b-a4b-it',
   ],
-  judgeModelIds: RUN_ROSTER,
+  // THE ROSTER LESS `glm-5.3` since 2026-09-01; the reason sits on
+  // `JUDGE_DROPPED`. An editor still judges a slate holding its own text at
+  // half weight for that candidate alone.
+  judgeModelIds: RUN_JUDGES,
   // Same three as the editors, seated on the same 40-round measurement, and
   // one step from that instrument for the same reason the editors are.
   refinerModelIds: [
@@ -364,12 +418,16 @@ assertCheckerQuorumReachable({
 /**
  * Roster the translate lane runs under during a corpus pass.
  *
- * BOTH ROLES TAKE THE WHOLE ROSTER, which is a narrower claim than it looks.
- * The translate lane has two stages and no third: every model writes a
- * candidate, then every model ranks the slate. There is no editor stage to keep
- * a producer out of and no checker stage certifying its own work, so the
+ * BOTH ROLES TOOK THE WHOLE ROSTER until 2026-09-01, which was a narrower
+ * claim than it looked. The translate lane has two stages and no third: models
+ * write a candidate, then models rank the slate. There is no editor stage to
+ * keep a producer out of and no checker stage certifying its own work, so the
  * exclusions {@link RUN_MODELS} spends most of its rationale on have nothing to
- * exclude here.
+ * exclude here. What narrows the seats now is measurement rather than role
+ * structure: {@link RUN_TRANSLATORS} drops the two writers the 40-round
+ * producer calibration placed under its pooled null, and {@link RUN_JUDGES}
+ * drops the judge that lost a third of its select asks to the production
+ * window, both on the owner's authorization of that day.
  *
  * Self-certification is HANDLED RATHER THAN FORBIDDEN: a judge ranking a slate
  * that holds its own translation counts half for that candidate alone, exactly
@@ -377,9 +435,11 @@ assertCheckerQuorumReachable({
  * one is `#91`, and it is the same open question for both lanes rather than a
  * new one this constant introduces.
  *
- * The width is also what was MEASURED. The judge-fidelity probe and the window
- * trial both seat all six in both roles, so a corpus pass run under a narrower
- * roster would be reporting on a lane neither measurement covers.
+ * The width the judge-fidelity probe and the window trial MEASURED was the
+ * whole roster of their day, six models in both roles. A pass under seven
+ * translators and eight judges reports on a lane neither measurement covers
+ * exactly, as every roster change since has, which is one reason the pass's
+ * own output is read before any readiness claim.
  *
  * @example
  * ```ts
@@ -387,8 +447,8 @@ assertCheckerQuorumReachable({
  * ```
  */
 export const RUN_TRANSLATE_MODELS: TranslateModels = {
-  translatorModelIds: RUN_ROSTER,
-  judgeModelIds: RUN_ROSTER,
+  translatorModelIds: RUN_TRANSLATORS,
+  judgeModelIds: RUN_JUDGES,
 };
 
 /**
