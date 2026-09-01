@@ -280,11 +280,20 @@ await describe({
     it({
       name: 'REFUSES an absent verdict with neither deterministic corroborator, preserving duplicate protection',
       fn: async () => {
-        await expect(runAdmission({
+        // Not admitted and not thrown: the round settles once and the refusal
+        // lives on the findings instead of pausing the entry.
+        const admission = await runAdmission({
           sourcePassage: '猫的记录没有译文。',
           targetText: LONG_TARGET,
           replies: unanimous({ coverage: 'none', quote: '', },),
-        },),).rejects.toThrow(TranslationRepairInterruptedError,);
+        },);
+        expect([...admission.positions,],).toEqual([],);
+        expect(
+          admission.findings
+            .some(function namesUnresolved(finding,): boolean {
+              return finding.includes('insertion-unresolved-after-single-round',);
+            },),
+        ).toBe(true,);
       },
     },),
     it({
@@ -311,17 +320,29 @@ await describe({
     it({
       name: 'REFUSES partial coverage because inserting whole passage would duplicate carried content',
       fn: async () => {
-        await expect(runAdmission({
+        // An empty follow-up script doubles as the no-re-ask proof: any second
+        // coverage round would throw inside the scripted client.
+        const admission = await runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps and dreams.',
           targetText: LONG_TARGET,
           replies: unanimous({ coverage: 'partial', quote: 'The cat sleeps in warm sunlight.', },),
-        },),).rejects.toThrow(TranslationRepairInterruptedError,);
+        },);
+        expect([...admission.positions,],).toEqual([],);
+        expect(admission.carried,).toEqual([],);
+        expect(
+          admission.findings
+            .some(function namesUnresolved(finding,): boolean {
+              return finding.includes('insertion-unresolved-after-single-round (slice 0',);
+            },),
+        ).toBe(true,);
       },
     },),
     it({
-      name: 'REFUSES a split roster rather than treating one absence voice as proof',
+      name: 'REFUSES a split roster in one round rather than treating one absence voice as proof',
       fn: async () => {
-        await expect(runAdmission({
+        // The scripted follow-up would prove absence, but no follow-up may be
+        // asked: the single round records the split and moves on.
+        const admission = await runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
           targetText: LONG_TARGET,
           replies: [
@@ -329,60 +350,44 @@ await describe({
             { coverage: 'none', quote: '', },
             COVERAGE_VOICE_LOST,
           ],
-        },),).rejects.toThrow(TranslationRepairInterruptedError,);
-      },
-    },),
-    it({
-      name: 'CONTINUES split placement with distinct follow-up and admits when latest roster proves absence',
-      fn: async () => {
-        const admission = await runAdmission({
-          sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
-          targetText: LONG_TARGET,
-          replies: [
-            { coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },
-            { coverage: 'none', quote: '', },
-            COVERAGE_VOICE_LOST,
-          ],
           followupReplies: unanimous({ coverage: 'none', quote: '', },),
         },);
-        expect([...admission.positions,],).toEqual([0,],);
+        expect([...admission.positions,],).toEqual([],);
+        expect(
+          admission.findings
+            .some(function namesUnresolved(finding,): boolean {
+              return finding.includes('insertion-unresolved-after-single-round',);
+            },),
+        ).toBe(true,);
       },
     },),
     it({
-      name: 'PAUSES exact repeated partial-placement task as deterministic cycle',
+      name: 'THROWS provider-unavailable when every coverage voice is lost, never a quality refusal',
       fn: async () => {
-        await expect(runAdmission({
-          sourcePassage: '[Cat](https://example.test/cat-record) sleeps and dreams.',
-          targetText: LONG_TARGET,
-          replies: unanimous({
-            coverage: 'partial',
-            quote: '## Cats\n\nThe cat sleeps in warm sunlight.',
-          },),
-          followupReplies: unanimous({
-            coverage: 'partial',
-            quote: '## Cats\n\nThe cat sleeps in warm sunlight.',
-          },),
-        },),).rejects.toThrow('translation repair interrupted: insertion-placement-unresolved',);
-      },
-    },),
-    it({
-      name: 'REFUSES an inconclusive roster when every coverage voice is lost',
-      fn: async () => {
-        await expect(runAdmission({
-          sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
-          targetText: LONG_TARGET,
-          replies: [ COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, ],
-        },),).rejects.toThrow(TranslationRepairInterruptedError,);
+        let thrown: unknown;
+        try {
+          await runAdmission({
+            sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
+            targetText: LONG_TARGET,
+            replies: [ COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, ],
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
+        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
+        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
       },
     },),
     it({
       name: 'TREATS trailing-slash destination spellings as same address rather than false local corroboration',
       fn: async () => {
-        await expect(runAdmission({
+        const admission = await runAdmission({
           sourcePassage: '[Cat](https://example.test/cat-record/) sleeps.',
           targetText: `${LONG_TARGET}\nhttps://example.test/cat-record`,
           replies: unanimous({ coverage: 'none', quote: '', },),
-        },),).rejects.toThrow(TranslationRepairInterruptedError,);
+        },);
+        expect([...admission.positions,],).toEqual([],);
       },
     },),
     it({

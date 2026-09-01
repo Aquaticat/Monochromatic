@@ -12,19 +12,24 @@ import type { InsertionAdmission, } from '../insertion-admission.ts';
 import { mapOverlapped, } from '../overlapped-map.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 import { droppedDestinations, } from './dropped-destinations.ts';
 import {
   classifyInsertionCoverage,
   type InsertionCandidate,
   type InsertionCoverageRow,
 } from './insertion-coverage-model.ts';
-import { repairInsertionCoverageRow, } from './insertion-coverage-repair.ts';
 
 //region Pass insertion admission
 // Production proof for writing source-only passages into a memorial page.
 // Coverage is semantic verdict; page shortfall or missing destination is
-// independent corroboration. Unresolved placement pauses before lanes rather
-// than becoming unfilled quality result at publication boundary.
+// independent corroboration. SINGLE ROUND BY DESIGN: a passage the round
+// leaves unresolved is not admitted and not proven carried; it is recorded
+// as findings and the page ships without it, because inserting on
+// uncorroborated evidence duplicates carried content while a recorded gap
+// stays visible to the publisher's destination report and the reading
+// (doc/planning/translation-repair-no-loop-design.md). Only an unheard
+// roster still throws, as infrastructure failure.
 
 /**
  * Decides which source-only slices a corpus pass may ask translators to fill.
@@ -45,9 +50,8 @@ import { repairInsertionCoverageRow, } from './insertion-coverage-repair.ts';
  *
  * @returns Admitted positions and count-only evidence for every candidate
  *
- * @throws {@link import('../translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
- * when source-only prose
- * placement remains unresolved
+ * @throws {@link TranslationRepairInterruptedError}
+ * when no coverage voice was heard for some passage
  *
  * @example
  * ```ts
@@ -207,88 +211,43 @@ export async function decidePassInsertionAdmission(
     },
   },);
 
-  /**
-   * Canonical unresolved placement tasks already attempted per candidate.
-   */
-  const attemptedPlacementTasks = new Set<string>();
-  {
-    /**
-     * Latest row per candidate, replaced only by distinct follow-up evidence.
-     */
-    let rows = initialRows;
-    while (!signal.aborted) {
-      /**
-       * Current inserted, carried, and unresolved classifications.
-       */
-      const classification = classifyInsertionCoverage({
-        candidates,
-        rows,
-        frontMatterPositions,
-        sourceText: prepared.sourceText,
-        targetText: prepared.targetText,
-      },);
-      /**
-       * Current classification fields used in this iteration.
-       */
-      const {
-        positions,
-        carried,
-        unresolvedRows,
-        shortfallAdmitted,
-        findings,
-      } = classification;
-      /**
-       * Unresolved passage count safe for operational log.
-       */
-      const unresolvedCount = unresolvedRows.length;
-      if (unresolvedCount === 0) {
-        return {
-          positions,
-          carried,
-          findings,
-        };
-      }
-      al.info(
-        `continuing insertion placement repair for ${String(unresolvedCount,)} source passages`,
-      );
-      /* oxlint-disable no-await-in-loop -- each placement task depends on latest unresolved verdict */
-      /**
-       * Follow-up coverage rows for currently unresolved candidates.
-       */
-      const repairedRows = await mapOverlapped({
-        items: unresolvedRows,
-        overlap,
-        oneItem: async function repairPlacement({ item: row, },): Promise<InsertionCoverageRow> {
-          return await repairInsertionCoverageRow({
-            client,
-            modelIds,
-            row,
-            target,
-            shortfallAdmitted: shortfallAdmitted.has(row.position,),
-            attemptedTasks: attemptedPlacementTasks,
-            priorFindings: findings,
-            signal,
-            exchangeTimeoutMs: perCallTimeoutMs,
-            l: al,
-          },);
-        },
-      },);
-      /* oxlint-enable no-await-in-loop */
-      /**
-       * Latest repaired row by prepared position.
-       */
-      const repairedByPosition = new Map(repairedRows.map(function repairedEntry(row,) {
-        return [
-          row.position,
-          row,
-        ] as const;
-      },),);
-      rows = rows.map(function replaceRepaired(row,): InsertionCoverageRow {
-        return repairedByPosition.get(row.position,) ?? row;
+  // An unheard roster is infrastructure failure, never a quality refusal;
+  // masking it as an unresolved recording would freeze an outage into the page.
+  for (const row of initialRows) {
+    if (row.heard === 0) {
+      throw new TranslationRepairInterruptedError({
+        reason: 'provider-unavailable',
+        findings: [row.coverageFinding,],
       },);
     }
   }
-  throw signal.reason;
+  /**
+   * Single-round resolution of every candidate.
+   */
+  const classification = classifyInsertionCoverage({
+    candidates,
+    rows: initialRows,
+    frontMatterPositions,
+    sourceText: prepared.sourceText,
+    targetText: prepared.targetText,
+  },);
+  for (const row of classification.unresolvedRows) {
+    al.info(
+      `slice ${String(row.sliceIndex,)}: placement unresolved after the single round `
+        + `(verdict ${row.verdictKind}); not admitted, recorded as findings`,
+    );
+  }
+  return {
+    positions: classification.positions,
+    carried: classification.carried,
+    findings: [
+      ...classification.findings,
+      ...classification.unresolvedRows
+        .map(function unresolvedFinding(row,): string {
+          return `insertion-unresolved-after-single-round (slice ${String(row.sliceIndex,)}, `
+            + `verdict ${row.verdictKind}); passage not admitted`;
+        },),
+    ],
+  };
 }
-
 //endregion Pass insertion admission

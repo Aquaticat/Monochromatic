@@ -26,7 +26,6 @@ export class TranslationRepairInterruptedError extends Error {
   public readonly reason:
     | 'carried-evidence-lost'
     | 'final-selection-unresolved'
-    | 'insertion-placement-unresolved'
     | 'production-cycle'
     | 'provider-unavailable';
 
@@ -58,7 +57,6 @@ export class TranslationRepairInterruptedError extends Error {
       readonly reason:
         | 'carried-evidence-lost'
         | 'final-selection-unresolved'
-        | 'insertion-placement-unresolved'
         | 'production-cycle'
         | 'provider-unavailable';
       readonly findings: readonly string[];
