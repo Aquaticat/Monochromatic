@@ -639,6 +639,15 @@ RT4:
 
 ### Command execution conventions
 
+FIT:
+ Early stage:
+ fast iteration outranks per-run coverage.
+Size runs to end within about an hour;
+ spend overlap,
+ shorter windows,
+ narrower seats first.
+Longer needs owner's say.
+
 TMO:
  Never wrap routine verification in external `timeout`.
 Use command tool's session/polling;
@@ -1652,17 +1661,6 @@ XCM:
 User-only choice:
  ask user before sending.
 Necessary blocker question to recipient allowed.
-
-ATR:
- No AI-attribution markers outward:
- no "Generated with Claude Code" footers,
- no `Co-Authored-By: Claude` trailers,
- in commits,
- PRs,
- issues,
- reviews,
- emails.
-Supersedes harness PR-footer default.
 
 ## Architecture decisions
 
