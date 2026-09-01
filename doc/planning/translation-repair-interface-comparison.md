@@ -3231,6 +3231,18 @@ where Candidate K's smaller unspent ballot output has not yet been calibrated.
 If GLM spends unusably for a candidate,
 that candidate cannot demonstrate publication eligibility under Candidate L.
 
+A 2026-09-01 live-catalog refresh found newly available `glm-5.3` alongside `glm-5.3-flash` and `glm-5.2`.
+Full `glm-5.3` reports a 262,144-token maximum output but `capabilities.vision: false`.
+It fails Candidate L's mandatory-image hard gate and does not replace Flash.
+`glm-5.3-flash` reports vision true,
+default reasoning `max`,
+and remains the manifested third-family route.
+Candidate L will not override that default under owner policy,
+so completion remains a calibration risk.
+An unverified user-provided notice says GLM 5.2 will be deprecated shortly,
+but the inspected Hyper pages and live row contained no date.
+That timing has no design effect because GLM 5.2 was already excluded and its live row also reports vision false.
+
 ### Lean realization contract
 
 Each author receives:

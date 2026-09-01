@@ -76,13 +76,14 @@ Therefore provider catalog expansion does not automatically expand production ro
 That is intentional safety behavior,
 but it makes checked-in inventory stale unless operator explicitly compares it with live endpoint.
 
-Hyper service source is not public.
+The cited searches identified no public Hyper service source.
 No upstream source clone can trace how documentation and catalog are generated.
 The observable API and published docs are primary deciding sources.
 
 ## Verification
 
-Access date: 2026-08-30.
+Access dates:
+2026-08-30 and 2026-09-01.
 
 ### Live endpoint
 
@@ -98,33 +99,85 @@ Observed:
 
 - 29 model rows
 - 11 rows with `capabilities.vision: true`
-- `minimax-m3`: vision true,
+- `minimax-m3`:
+  vision true,
   512,000 context,
   512,000 maximum output
-- `deepseek-v4-flash` and `deepseek-v4-flash-0731`: vision false
-- `glm-5.1`: vision false
+- `deepseek-v4-flash` and `deepseek-v4-flash-0731`:
+  vision false
+- `glm-5.1`:
+  vision false
+
+The 2026-09-01 focused refresh ran at `2026-09-01T03:05:23.716Z`.
+Its private canonical-row artifact is
+`/var/home/user/temp/agent/hyper-glm53-transition-live-20260901.json`,
+SHA-256 `577e3d7e2d668afba04132f86b7815ac1e427ac027037fb4ca2e24f79e996bc4`.
+The file is mode `0600`.
+The refresh command was:
+
+```bash
+curl --silent --show-error --fail https://hyper.charm.land/v1/models \
+  | jq '.data[] | select(.id == "glm-5.2" or .id == "glm-5.3" or .id == "glm-5.3-flash")
+    | {id, capabilities, max_output_tokens, reasoning}'
+```
 
 ### Clean catalog patterns
 
 Models whose checked-in and live capability agree:
 
-- `minimax-m3`: vision true
-- `qwen3.8-27b`: vision true
-- `kimi-k3`: vision true
-- `deepseek-v4-pro-0813`: vision false
-- `deepseek-v4-flash-0731`: vision false
+- `minimax-m3`:
+  vision true
+- `qwen3.8-27b`:
+  vision true
+- `kimi-k3`:
+  vision true
+- `deepseek-v4-pro-0813`:
+  vision false
+- `deepseek-v4-flash-0731`:
+  vision false
 
 ### Failing documentation pattern
 
 Prose attachment examples name DeepSeek V4 Flash and GLM 5.1,
 while live API marks both false.
 
+### GLM 5.3 transition snapshot
+
+A fresh `GET /v1/models` read on 2026-09-01 returned all three rows:
+
+- `glm-5.2`:
+  vision false,
+  32,768 maximum output tokens,
+  default reasoning `high`;
+- `glm-5.3`:
+  vision false,
+  262,144 maximum output tokens,
+  default reasoning `max`;
+- `glm-5.3-flash`:
+  vision true,
+  131,072 maximum output tokens,
+  default reasoning `max`.
+
+The newly available full `glm-5.3` route therefore fails translation repair's mandatory-image hard gate.
+Its larger output limit cannot offset absent image carriage.
+`glm-5.3-flash` remains the only one of these live rows eligible for image-bound Candidate L verifier screening.
+Its live default reasoning is `max`.
+Candidate L will not override that default under owner policy,
+so completion remains a calibration risk rather than a reason to choose image-ineligible full GLM 5.3.
+No provider request was needed to reach that result.
+
+An unverified user-provided notice said Hyper's GLM 5.2 would be deprecated shortly.
+The inspected Hyper pages and live row contained no deprecation date,
+so that notice is retained as unconfirmed timing information.
+GLM 5.2 was already outside the active translation-repair roster and remains ineligible because the live row says vision
+false.
+
 ### Static inventory drift
 
 Checked-in `HYPER_MODELS` has 7 allowlisted rows.
-Live provider endpoint has 29 rows.
-The difference is not itself bug because allowlist is deliberate;
-reading allowlist as provider inventory is bug.
+The 2026-08-30 live provider endpoint had 29 rows.
+The difference is not itself a bug because the allowlist is deliberate;
+reading the allowlist as provider inventory is a bug.
 
 ## Verified workarounds
 
@@ -180,23 +233,36 @@ complete output,
 translation quality,
 or project authorization.
 
+### Choosing full GLM 5.3 from output limit alone
+
+Full `glm-5.3` has a larger listed output limit than Flash,
+but its live row says vision false.
+Every translation-repair node must receive every page-referenced image,
+so the full route fails before output capacity is compared.
+
 ## Upstream filing decision
 
 `.out-of-scope/` contains no Charm Hyper or provider-documentation exemption.
 Web search found no public Hyper documentation issue tracker entry matching this contradiction.
 
-1. Upstream fault: yes for stale prose example;
+1. Upstream fault:
+   yes for stale prose example;
    no for repository allowlist drift,
    which is consumer policy.
-2. Upstream can fix: yes,
+2. Upstream can fix:
+   yes,
    by generating attachment examples from live catalog or removing named examples.
-3. Supported use case: yes,
+3. Supported use case:
+   yes,
    provider docs explicitly instruct checking attachment badge before sending images.
-4. Contribution welcome: unknown.
+4. Contribution welcome:
+   unknown.
    Hyper service documentation source and contribution policy were not found publicly.
-5. Likely fix: unknown;
+5. Likely fix:
+   unknown;
    no public tracker or maintainer signal was found.
-6. Minimal compatible prototype: no.
+6. Minimal compatible prototype:
+   no.
    Documentation source is unavailable,
    so consumer cannot create source-compatible patch.
 
