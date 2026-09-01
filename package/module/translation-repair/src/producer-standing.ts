@@ -10,8 +10,8 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // HOW OFTEN EACH MODEL'S WRITING IS PREFERRED, counted from the rounds the
 // selection already recorded rather than from a fresh contest.
 //
-// WHAT THIS IS FOR. The roster carries eight models and the writers stay at
-// three, chosen by measurement. `roster-bench.ts` answers a question about
+// WHAT THIS IS FOR. The roster carries nine models (eight when this was
+// written) and the writers stay at three, chosen by measurement. `roster-bench.ts` answers a question about
 // WIDTH; this answers the question about WHO, off the same rounds, because a
 // round already names who wrote each candidate and carries every ballot cast
 // over that slate.
