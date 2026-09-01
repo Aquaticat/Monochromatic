@@ -66,7 +66,7 @@ await describe({
         + 'the figures it prints are',
       fn: async () => {
         expect(HYPER_PRICE_READ_ON,)
-          .toBe('2026-08-26',);
+          .toBe('2026-09-01',);
       },
     },),
 
@@ -112,7 +112,9 @@ await describe({
           completionTokens: ONE_MILLION,
         },),)
           .toEqual({
-            inputCredits: 65.33,
+            // Exact provider rate times 20 since the 2026-09-01 regeneration;
+            // the earlier 65.33 was a hand-rounded paste.
+            inputCredits: 65.328,
             outputCredits: 326.64,
           },);
       },
@@ -127,8 +129,8 @@ await describe({
           completionTokens: ONE_MILLION,
         },),)
           .toEqual({
-            inputCredits: 30.49,
-            outputCredits: 95.81,
+            inputCredits: 30.4864,
+            outputCredits: 95.8144,
           },);
       },
     },),

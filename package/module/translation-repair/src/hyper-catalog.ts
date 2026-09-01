@@ -84,7 +84,11 @@ export type HyperServedId =
   | 'gpt-oss-120b'
   | 'gemma-4-26b-a4b-it'
   | 'deepseek-v4-pro-0813'
-  | 'deepseek-v4-flash-0731';
+  | 'deepseek-v4-flash-0731'
+  | 'glm-5.3-flash'
+  | 'glm-5.3'
+  | 'qwen3.8-flash'
+  | 'qwen3.8-2.4t-a95b';
 
 /**
  * Verified per-model facts the router and the request builder read.
@@ -201,6 +205,42 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
     sharedWith: HYPER_ONLY,
     readsImages: false,
     maxOutputLength: 384_000,
+  },
+  // THE FOUR ENTRIES BELOW JOINED 2026-09-01 from the live catalog read for
+  // the owner's post-blocklist candidate refresh
+  // (doc/decision/translation-repair-roster-blocklist.md). Fields are from
+  // the catalog endpoint that day; forced-tool conformance is probed live
+  // before any run can route to them, per the discipline the qwen3.8-27b
+  // entry records.
+  'glm-5.3-flash': {
+    id: 'glm-5.3-flash',
+    // THE SAME SEAT AS Synthetic's GLM-5.3-Flash, giving that seat a second
+    // provider the way qwen3.8-27b's entry did for its Synthetic twin.
+    sharedWith: 'hf:zai-org/GLM-5.3-Flash',
+    readsImages: true,
+    maxOutputLength: 131_072,
+  },
+  'glm-5.3': {
+    id: 'glm-5.3',
+    sharedWith: HYPER_ONLY,
+    readsImages: false,
+    maxOutputLength: 262_144,
+  },
+  'qwen3.8-flash': {
+    id: 'qwen3.8-flash',
+    sharedWith: HYPER_ONLY,
+    readsImages: true,
+    maxOutputLength: 128_000,
+  },
+  'qwen3.8-2.4t-a95b': {
+    id: 'qwen3.8-2.4t-a95b',
+    // PRICED EXACTLY WHERE THE CULLED qwen3.8-max WAS at its 2026-08-28 cull
+    // (input 40, output 120 credits per million): the owner's blocklist names
+    // the Max model rather than a price rule, so this stays a candidate, and
+    // any seating it wins owes the cost note the decision document records.
+    sharedWith: HYPER_ONLY,
+    readsImages: false,
+    maxOutputLength: 128_000,
   },
 };
 

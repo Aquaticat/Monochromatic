@@ -32,7 +32,7 @@
  * SHIPPED WITH THE RATES rather than left to a comment, because every report
  * that prints a credit figure has to be able to say how old it is.
  */
-export const HYPER_PRICE_READ_ON = '2026-08-26';
+export const HYPER_PRICE_READ_ON = '2026-09-01';
 
 /**
  * What one model costs, in credits per million tokens.
@@ -100,10 +100,10 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 4,
   },
   'deepseek-v4-pro-0813': {
-    input: 28.74,
-    output: 86.23,
+    input: 28.74432,
+    output: 86.23296,
     cacheCreate: 0,
-    cacheHit: 0.96,
+    cacheHit: 0.958144,
   },
   'gemma-4-26b-a4b-it': {
     input: 2.4,
@@ -112,76 +112,88 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 0,
   },
   'glm-5': {
-    input: 18.4,
-    output: 59.52,
-    cacheCreate: 9.2,
+    input: 18.2,
+    output: 58.68,
+    cacheCreate: 9.1,
     cacheHit: 0,
   },
   'glm-5.1': {
-    input: 25.8,
-    output: 84.4,
-    cacheCreate: 12.9,
+    input: 26.64,
+    output: 86.24,
+    cacheCreate: 13.32,
     cacheHit: 0,
   },
   'glm-5.2': {
-    input: 30.49,
-    output: 95.81,
+    input: 30.4864,
+    output: 95.8144,
     cacheCreate: 0,
-    cacheHit: 3.05,
+    cacheHit: 3.04864,
+  },
+  'glm-5.3': {
+    input: 30.4864,
+    output: 95.8144,
+    cacheCreate: 0,
+    cacheHit: 5.66176,
+  },
+  'glm-5.3-flash': {
+    input: 3.2664,
+    output: 10.888,
+    cacheCreate: 0,
+    cacheHit: 0.6315040000000001,
   },
   'gpt-oss-120b': {
-    input: 3.56,
-    output: 13.6,
-    cacheCreate: 1.78,
+    input: 3.8,
+    output: 12.6,
+    cacheCreate: 1.9,
     cacheHit: 0,
   },
   'kimi-k2.5': {
-    input: 10.88,
-    output: 55.2,
-    cacheCreate: 5.44,
+    input: 11.008,
+    output: 57.7,
+    cacheCreate: 5.504,
     cacheHit: 0,
   },
   'kimi-k2.6': {
-    input: 20.69,
-    output: 87.1,
+    input: 20.6872,
+    output: 87.104,
     cacheCreate: 0,
-    cacheHit: 3.48,
+    cacheHit: 3.48416,
   },
   'kimi-k2.7-code': {
-    input: 20.69,
-    output: 87.1,
+    input: 20.6872,
+    output: 87.104,
     cacheCreate: 0,
-    cacheHit: 4.14,
+    cacheHit: 4.13744,
   },
   'kimi-k3': {
-    input: 65.33,
+    input: 65.328,
     output: 326.64,
     cacheCreate: 0,
-    cacheHit: 6.53,
+    cacheHit: 6.5328,
   },
   'llama-3.3-70b-instruct': {
-    input: 12.76,
-    output: 15.36,
-    cacheCreate: 6.38,
+    input: 12.132,
+    output: 20.772,
+    cacheCreate: 6.066,
     cacheHit: 0,
   },
   'llama-4-maverick-17b-128e-instruct-fp8': {
     input: 5.48,
-    output: 17.98,
+    output: 17.984,
     cacheCreate: 2.74,
     cacheHit: 0,
   },
   'minimax-m2.7': {
-    input: 8.48,
-    output: 32.24,
-    cacheCreate: 4.24,
+    input: 8.08,
+    output: 29.92,
+    cacheCreate: 4.04,
     cacheHit: 0,
   },
   'minimax-m3': {
-    input: 6.53,
-    output: 26.13,
+    input: 6.5328,
+    output: 26.1312,
     cacheCreate: 0,
-    cacheHit: 1.28,
+    cacheHit: 1.284784,
   },
   'qwen3-coder-480b-a35b-instruct-int4-mixed-ar': {
     input: 8.9,
@@ -192,7 +204,7 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
   'qwen3-next-80b-a3b-instruct': {
     input: 2.35,
     output: 22.72,
-    cacheCreate: 1.17,
+    cacheCreate: 1.175,
     cacheHit: 0,
   },
   'qwen3.6-flash': {
@@ -244,7 +256,7 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheHit: 2,
   },
   'qwen3.8-flash': {
-    input: 3.2,
+    input: 3,
     output: 9.4,
     cacheCreate: 0,
     cacheHit: 0.32,

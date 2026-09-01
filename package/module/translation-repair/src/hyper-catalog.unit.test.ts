@@ -37,16 +37,20 @@ await describe({
           'deepseek-v4-flash-0731',
           'deepseek-v4-pro-0813',
           'gemma-4-26b-a4b-it',
+          'glm-5.3',
+          'glm-5.3-flash',
           'gpt-oss-120b',
           'kimi-k3',
           'minimax-m3',
+          'qwen3.8-2.4t-a95b',
           'qwen3.8-27b',
+          'qwen3.8-flash',
         ],);
       },
     },),
 
     it({
-      name: 'LOWERS the answer ceiling to what a model can actually emit, which two of the seven '
+      name: 'LOWERS the answer ceiling to what a model can actually emit, which two of the eleven '
         + 'cannot reach: asking for more than a model emits buys a truncation and reports it as a '
         + 'schema mismatch, sending a reader to the prompt instead of to the ceiling',
       fn: async () => {
@@ -65,10 +69,13 @@ await describe({
     },),
 
     it({
-      name: 'NAMES the three models both providers serve, which are the only ones a non-conformant '
+      name: 'NAMES the four models both providers serve, which are the only ones a non-conformant '
         + 'answer can be re-asked across',
       fn: async () => {
+        // glm-5.3-flash joined 2026-09-01 as the Hyper route for Synthetic's
+        // GLM-5.3-Flash seat.
         expect(modelsServedByBoth().toSorted(),).toEqual([
+          'glm-5.3-flash',
           'gpt-oss-120b',
           'kimi-k3',
           'qwen3.8-27b',
@@ -77,14 +84,17 @@ await describe({
     },),
 
     it({
-      name: 'NAMES the four models only this provider serves, which have no cross-provider re-ask '
+      name: 'NAMES the seven models only this provider serves, which have no cross-provider re-ask '
         + 'and fall back to the invalid-candidate path from `#88` instead',
       fn: async () => {
         expect(modelsServedOnlyHere().toSorted(),).toEqual([
           'deepseek-v4-flash-0731',
           'deepseek-v4-pro-0813',
           'gemma-4-26b-a4b-it',
+          'glm-5.3',
           'minimax-m3',
+          'qwen3.8-2.4t-a95b',
+          'qwen3.8-flash',
         ],);
       },
     },),
@@ -114,7 +124,7 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS three image readers after the GLM-5.2 route leaves the active allowlist',
+      name: 'REPORTS five image readers after the 2026-09-01 candidate refresh',
       fn: async () => {
         /**
          * Models this provider says can be sent an image.
@@ -129,9 +139,11 @@ await describe({
           },);
 
         expect(readers.toSorted(),).toEqual([
+          'glm-5.3-flash',
           'kimi-k3',
           'minimax-m3',
           'qwen3.8-27b',
+          'qwen3.8-flash',
         ],);
       },
     },),

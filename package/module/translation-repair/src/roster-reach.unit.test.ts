@@ -85,10 +85,12 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'SEATS EIGHT DISTINCT MODELS, four Synthetic serves and four only the second provider does',
+      name: 'SEATS ELEVEN DISTINCT MODELS, four Synthetic serves and seven only the second provider does',
       fn: async () => {
-        expect(ROSTER_MODEL_IDS.length,).toBe(8,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(8,);
+        // Eight until 2026-09-01, when the post-blocklist candidate refresh
+        // admitted glm-5.3, qwen3.8-flash and qwen3.8-2.4t-a95b.
+        expect(ROSTER_MODEL_IDS.length,).toBe(11,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(11,);
       },
     },),
 
@@ -175,10 +177,16 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS Synthetic-only model as unserved rather than inheriting predecessor wire names',
+      name: 'ANSWERS the GLM-5.3-Flash seat with its own Hyper spelling, never a predecessor wire name',
       fn: async () => {
+        // Unserved on Hyper until 2026-09-01, when the provider began listing
+        // glm-5.3-flash; the claim that matters is unchanged: the seat must
+        // never inherit the retired glm-5.2 spelling.
         expect(hyperIdFor({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),)
-          .toEqual({ served: false, },);
+          .toEqual({
+            served: true,
+            id: 'glm-5.3-flash',
+          },);
       },
     },),
   ],
@@ -220,11 +228,14 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS one provider for a model only that provider serves, on both sides',
+      name: 'REPORTS one provider for a Hyper-only model, and both for the seat that gained its second route',
       fn: async () => {
+        // No Synthetic-only seat exists since 2026-09-01: glm-5.3-flash gave
+        // the last single-route Synthetic seat its Hyper twin, so the
+        // one-provider case lives on the Hyper-only side now.
         expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           onSynthetic: true,
-          onHyper: false,
+          onHyper: true,
         },);
 
         expect(reachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
@@ -255,16 +266,18 @@ await describe({
   name: visionReachOf.name,
   children: [
     it({
-      name: 'SENDS GLM-5.3-FLASH PICTURES TO SYNTHETIC without inheriting GLM-5.2 Hyper reach',
+      name: 'SENDS GLM-5.3-FLASH PICTURES TO BOTH PROVIDERS without inheriting GLM-5.2 Hyper reach',
       fn: async () => {
+        // The Hyper side comes from glm-5.3-flash's own 2026-09-01 catalog
+        // entry, never from the retired glm-5.2 spelling this test predates.
         expect(visionReachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           onSynthetic: true,
-          onHyper: false,
+          onHyper: true,
         },);
 
         expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
           onSynthetic: true,
-          onHyper: false,
+          onHyper: true,
         },);
       },
     },),
@@ -297,7 +310,7 @@ await describe({
   name: readsImages.name,
   children: [
     it({
-      name: 'KEEPS READER SUB-ROSTER AT FOUR after replacing one image-capable model with another',
+      name: 'GROWS READER SUB-ROSTER TO FIVE when the candidate refresh adds an image-capable model',
       fn: async () => {
         expect(ROSTER_MODEL_IDS
           .filter(function reads(modelId,): boolean {
@@ -308,6 +321,7 @@ await describe({
           'hf:moonshotai/Kimi-K3',
           'hf:zai-org/GLM-5.3-Flash',
           'minimax-m3',
+          'qwen3.8-flash',
         ],);
       },
     },),

@@ -684,8 +684,8 @@ await describe({
     it({
       name: 'REFUSES to re-ask a model the other provider does not serve',
       fn: async () => {
-        /** Providers, the first answering unparseably. */
-        const { synthetic, hyper, called, } = stubProviders({ syntheticText: 'I will not do that.', },);
+        /** Providers, the only reachable one answering unparseably. */
+        const { synthetic, hyper, called, } = stubProviders({ hyperText: 'I will not do that.', },);
         /** Budget view with money on both sides. */
         const { budgets, } = stubBudgets({},);
         /** Router under test. */
@@ -696,7 +696,9 @@ await describe({
         },);
         /** Outcome with nowhere else to ask. */
         const outcome = await client.chatJson({
-          modelId: 'hf:zai-org/GLM-5.3-Flash',
+          // Hyper-only since 2026-09-01's refresh gave every Synthetic seat a
+          // Hyper twin; a Hyper-only model is now the single-provider case.
+          modelId: 'glm-5.3',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -704,7 +706,7 @@ await describe({
 
         // This model has one provider, so the answer falls to `#88`'s
         // invalid-candidate path rather than to a second stack.
-        expect(called,).toEqual(['synthetic',],);
+        expect(called,).toEqual(['hyper',],);
         expect(outcome.kind,).toBe('schema-mismatch',);
       },
     },),

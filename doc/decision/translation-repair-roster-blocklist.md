@@ -49,10 +49,36 @@ mine:
 bare "Qwen3" names the Qwen3 series,
 not Qwen3.8,
 because the owner blocklists Qwen 3.8 Max separately on cost,
-which presupposes other Qwen3.8 variants remain eligible;
+which presupposes other Qwen3.8 variants remain eligible.
+Names such as `qwen3-coder-480b-a35b-instruct-int4-mixed-ar` and
+`qwen3-next-80b-a3b-instruct` are Qwen3-series spellings and are blocked.
+Bare "GLM5" names the model Hyper serves as `glm-5`,
+not the GLM5 series,
+by the same presupposition:
+the owner lists GLM5.1 and GLM-5.2 separately,
+which a series reading would make redundant,
+and GLM-5.3-Flash was a seated production model when the owner wrote the list,
+so a series reading would have the owner silently blocking their own
+seated model under a reason ("too outdated") that cannot describe the
+newest member.
+`glm-5.3` and `glm-5.3-flash` therefore stay eligible.
 "Llama" blocks the whole family.
-`qwen3.8-max` is currently a seated production model,
-so this unseats it at the next seating.
+`qwen3.8-max` was already culled from the whole roster on 2026-08-28
+at the owner's instruction
+(recorded at `HYPER_ONLY_ROSTER_IDS` in
+`package/module/translation-repair/src/roster-id.ts`),
+so this blocklist entry confirms an existing cull rather than unseating
+a currently seated model;
+an earlier revision of this document said "currently seated",
+which was stale when written.
+Hyper's live catalog on 2026-09-01 serves `qwen3.8-2.4t-a95b` at exactly
+the credit rate `qwen3.8-max` carried at its cull
+(input 40, output 120 credits per million tokens):
+the owner's entry names the Max model,
+not a price rule,
+so the 2.4t model stays an eligible candidate,
+with the parity recorded on its catalog entry and owed a cost note at
+any seating it wins.
 
 ## Advisory attached to the same answer
 

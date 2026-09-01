@@ -108,6 +108,12 @@ export {
   visionReachOf,
 } from './roster-reach.ts';
 export {
+  blocklistVerdictFor,
+  type BlocklistVerdict,
+  ROSTER_BLOCKLIST,
+  type RosterBlocklistEntry,
+} from './roster-blocklist.ts';
+export {
   BothProvidersDryError,
   hyperIsDry,
   hyperMeterLevel,

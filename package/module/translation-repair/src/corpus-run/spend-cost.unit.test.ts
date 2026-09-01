@@ -200,7 +200,7 @@ await describe({
         + 'can say how old the figures are',
       fn: async () => {
         expect(priceTally({ tally: tallyOf({ tails: [], },), },).pricedAsOf,)
-          .toBe('2026-08-26',);
+          .toBe('2026-09-01',);
       },
     },),
 

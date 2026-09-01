@@ -62,6 +62,12 @@ export const HYPER_ONLY_ROSTER_IDS = [
   'gemma-4-26b-a4b-it',
   'deepseek-v4-pro-0813',
   'deepseek-v4-flash-0731',
+  // THE THREE BELOW JOINED 2026-09-01 as post-blocklist candidates from the
+  // live catalog; the owner blocklist decision document records why their
+  // eligible siblings are eligible and everything else that day is not.
+  'glm-5.3',
+  'qwen3.8-flash',
+  'qwen3.8-2.4t-a95b',
 ] as const;
 
 /**

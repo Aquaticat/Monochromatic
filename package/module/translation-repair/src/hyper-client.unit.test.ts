@@ -23,6 +23,7 @@ import {
   MalformedCompletionError,
   ModelNotServedError,
   type ModelTransport,
+  type RosterModelId,
   SyntheticHttpError,
   type TransportExchange,
   type TransportReply,
@@ -464,7 +465,11 @@ await describe({
 
         try {
           await client.chatText({
-            modelId: 'hf:zai-org/GLM-5.3-Flash',
+            // Every current roster model now has a Hyper route (glm-5.3-flash
+            // joined 2026-09-01), so the unserved case is an invented id cast
+            // through the closed union: the guard is against future drift, and
+            // drift arrives exactly as a string the union no longer covers.
+            modelId: 'hf:cats/Uncatalogued-Cat' as RosterModelId,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);

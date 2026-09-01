@@ -3,6 +3,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
+import { blocklistVerdictFor, } from '../roster-blocklist.ts';
 import { SYNTHETIC_MODELS, } from '../synthetic-catalog.ts';
 
 //region Model catalog comparison
@@ -298,7 +299,20 @@ export function formatCatalogReport(
       .length,)}`,
     ...comparison.unlisted
       .map(function toLine(model,): string {
-        return `  ${model.id}  (${model.huggingFaceId})`;
+        /**
+         * Owner's verdict under the served spelling.
+         */
+        const direct = blocklistVerdictFor({ id: model.id, },);
+        /**
+         * Verdict under either spelling, so an alias cannot slip a blocked
+         * model back into the candidate listing.
+         */
+        const verdict = direct.blocked
+          ? direct
+          : blocklistVerdictFor({ id: `hf:${model.huggingFaceId}`, },);
+        return verdict.blocked
+          ? `  ${model.id}  (${model.huggingFaceId})  BLOCKED by owner: ${verdict.reason}`
+          : `  ${model.id}  (${model.huggingFaceId})`;
       },),
     `ALIASES onto models already seated: ${String(comparison.aliases
       .length,)}`,
