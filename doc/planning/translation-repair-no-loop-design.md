@@ -15,7 +15,17 @@ Grounded in
 [`translation-repair-redesign-insights.md`](translation-repair-redesign-insights.md).
 Supersedes the loop-bound shape in
 [`translation-repair-bounded-quality-termination.md`](translation-repair-bounded-quality-termination.md).
-Needs owner approval on the two decision points at the end before code.
+Decision points answered 2026-09-01
+(recorded in
+[`translation-repair-roster-blocklist.md`](../decision/translation-repair-roster-blocklist.md)):
+the shape is neither approved nor disapproved,
+with prototyping and measurement delegated
+("You're free to prototype and measure and do anything"),
+so this document is a working design,
+not a ratified one;
+the roster decision is R3,
+calibrate then seat,
+under the owner's blocklist.
 
 ## Why the loops exist, and why they go
 
