@@ -231,23 +231,26 @@ not a measurement.
 
 Revised at 22:10Z on the reviewer's points, while the 40-slice run stood at slice 6 of 40 with no refiner round
 printed yet, so still before any number they decide on existed.
+Revised again at 22:25Z (slice 12 of 40) to remove the numeric gates on the owner's note that testing against a
+magic number is discouraged: the rules now rank and report, and the numbers beside a rank are evidence a reader
+weighs, not thresholds a rule trips on.
 
 1.  Editors are seated from the 40-slice EDITOR standing alone.
     The 6-slice run is a same-day replicate that shows the band; its editor rounds are never pooled in.
 2.  Editors: the top three by availability-adjusted share of disinterested ballots in the 40-slice EDITOR
-    standing (printed share times candidates over rounds; every round seats the same nine judges,
+    standing (printed share times candidates over rounds; every round seats the same judges,
     so the product weights rounds about equally).
-    Two readings go beside it that the ballot-level z cannot give: the slice-clustered round-win bootstrap
+    Two readings go beside the rank that the ballot-level z cannot give: the slice-clustered round-win bootstrap
     (round-win share and top-three inclusion probability), and production-window reliability from the
     180000 ms instrument (voices lost per ask in the producer calibration, by role).
-    If the third and fourth seats sit within 10 points of top-three inclusion,
-    the seat goes to the one that lost fewer voices under the production window.
+    Where the third and fourth seats are not separated by the bootstrap, the seat goes to the one that lost
+    fewer voices under the production window, and the record says the seat was decided on reliability.
 3.  Refiners: the REFINER rounds of the 6-slice and 40-slice runs are pooled as slice clusters
-    (same build, same instrument, same 300000 ms window; slices from two strides are distinct clusters).
-    If at least 12 pooled slices reached a rewriter, the refiners are the top three by availability-adjusted
-    share over the pooled rounds, with the same two beside-readings and the same tie rule.
-    If fewer, the refiners are the editors, recorded as an unvalidated transfer assumption,
-    and a refiner-targeted calibration is filed as follow-up.
+    (same build, same instrument, same 300000 ms window; slices from two strides are distinct clusters),
+    and the refiners are the top three by availability-adjusted share over the pooled rounds,
+    with the same two beside-readings and the same reliability tie-break.
+    The record states how many slices reached a rewriter; if none did, the refiners are the editors,
+    recorded as an unvalidated transfer assumption, and a refiner-targeted calibration is filed as follow-up.
 4.  Checkers stay Qwen3.8-27B, Kimi-K3 and gpt-oss-120b.
     No instrument ranks checkers: `checker-sensitivity` asks whether checkers can say no on fixtures,
     and the `run-config.ts` note already says the writer and editor instruments are far from checking.
@@ -303,6 +306,42 @@ Drops made before the 40-slice standing:
     string shape, a parser tolerance question filed as follow-up rather than evidence about its judgment;
     `GLM-5.3-Flash` as a judge lost 6 of 83 asks (7 percent) under the production window and none under
     300000 ms, and stays.
+
+## Wall clock, and the owner's fast-iteration principle
+
+The owner, on seeing the pass's `hard=25200000ms` (the 420-minute per-entry cap raised on 2026-08-17 after
+entries were measured clearing at seven hours): "A 7h run is pretty unacceptable, since it goes against the
+principle of fast iteration at this early stage of the project."
+Recorded as the `FIT` rule in `AGENTS.md`.
+
+Where the time goes, measured on the two calibration logs and the first hours of the 40-slice run
+(`<stage> round: N/M heard, T total, Q to quorum, G in grace` lines):
+
+-   Producer calibration, 80 rounds: 83 percent of summed round time is waiting after quorum
+    (select rounds mean 138 s with 25 s to quorum; translate rounds 98 s with 14 s to quorum).
+-   Editor calibration, first 81 rounds of the 40-slice run: 75 percent
+    (panel 213 s with 59 s to quorum; select 91 s with 17 s; critic 68 s with 20 s; editor 69 s with 19 s).
+-   In the rounds where everyone answered, the last voice arrived a median 46 to 66 s after quorum,
+    p90 141 to 158 s. A 60 s window keeps every voice in 43 to 62 percent of such rounds, 90 s in 62 to 72,
+    120 s in 74 to 82; the voices a shorter window drops are the two GLM models, whose completed streams run
+    p50 52 to 66 s and p90 153 to 199 s against p90s under 110 s for every other seat.
+
+Levers applied on that measurement, all within the role-drop authorization or the launch-time overrides the
+drivers already carry:
+
+-   `glm-5.3` leaves every nine-wide seat (critic, panel, judge), landed at the commit that introduced
+    `RUN_WIDE_SEATS`; the eight remaining reach quorum at 4.
+-   The four-entry pass launches with `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=60000` and
+    `TRANSLATION_REPAIR_SLICE_OVERLAP=4`, the owner's original 60 s figure of 2026-08-14 now backed by the
+    last-voice distribution, and the overlap the calibration arms measured at half the wall clock.
+    The built-in constants are untouched; `doc/decision/translation-repair-straggler-grace.md` keeps the 180 s
+    built-in until a decision moves it, and the pass prints both overrides at launch.
+-   The two launches run concurrently rather than one after the other.
+-   The 40-slice calibration in flight is left to finish (about two hours at its 300 s window);
+    its standing is computed in memory at the end, so stopping it would keep only the winner lines.
+
+What a 60 s window costs is measured by the pass itself: it logs every abandon by model and stage,
+and the standing of the pass's own rounds says whether the dropped voices were the ones that mattered.
 
 ## Stale text the seating edit fixes in `run-config.ts`
 
