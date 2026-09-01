@@ -42,7 +42,7 @@ export class TranslationRepairInterruptedError extends Error {
    * @example
    * ```ts
    * new TranslationRepairInterruptedError({
-   *   reason: 'insertion-placement-unresolved',
+   *   reason: 'carried-evidence-lost',
    *   findings: [],
    * },);
    * ```
