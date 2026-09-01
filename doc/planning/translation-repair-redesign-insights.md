@@ -173,6 +173,42 @@ was accepted by strict and independent readings.
 The redesign's premise that per-slice competition fragments voice was asserted,
 never measured against an actual settled page.
 
+## Zero-spend replay over the stopped Carena run
+
+Following the E1 double-prime precedent of validating an admission change offline,
+the 46 retained naturalness-review log lines were re-parsed
+(the first parse silently dropped most seats because model ids contain colons;
+the corrected parse accounts for all 368 seats, eight per review):
+
+- per-seat verdicts: 281 `acceptable`, 71 `unacceptable`, 16 `unusable`;
+- every one of the 71 rejecting seats carried located findings (paragraph plus problem),
+  so the legacy review's rejections are already located,
+  which corrects the verdict-form framing in the section
+  "Verifier verdict form decides everything":
+  the legacy form is located single-seat decisive rejection,
+  not unlocated rejection;
+- the churn engine is the aggregation rule:
+  any single usable rejection among eight seats blocks,
+  so acceptance demands near-unanimity every round,
+  and with seats individually accepting 76 percent of the time only 5 of 46 reviews accepted.
+
+Replaying a two-seat located-agreement floor
+(a rejection blocks only when at least two rejecting seats share a finding paragraph)
+over the 40 blocking reviews:
+
+- 22 were blocked by exactly one rejecting seat and become non-blocking;
+- 18 had two or more rejecting seats,
+  and in all 18 at least two shared a finding paragraph,
+  so every corroborated rejection keeps its authority;
+- acceptance moves from 5 of 46 to 27 of 46 reviews,
+  cutting correction demand by more than half without any provider call.
+
+This overturns the rejected-alternatives reasoning in the provisional bounded-termination plan,
+which had dismissed a rejection quorum as the larger change:
+the floor is offline-measurable,
+surgically effective on the measured wedge,
+and loses no corroborated rejection on this run.
+
 ## Implications I draw (not yet a decision)
 
 1.  The evidence argues for staying at slice scale on this roster:
