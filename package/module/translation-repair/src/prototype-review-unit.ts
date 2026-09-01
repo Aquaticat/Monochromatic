@@ -101,6 +101,7 @@ export {
   runReviewUnitVerifierNode,
 } from './prototype-review-unit-verifier-node.ts';
 export {
+  awaitReviewUnitWave,
   bindReviewUnitClient,
   type ReviewUnitClient,
   type ReviewUnitProviderClients,

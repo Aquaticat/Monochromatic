@@ -10,6 +10,7 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -23,6 +24,7 @@ import {
   assertReviewUnitFrontMatterSlotKeys,
   assertReviewUnitManifest,
   assertReviewUnitPlan,
+  awaitReviewUnitWave,
   bindReviewUnitClient,
   buildImmutableShell,
   buildRealizationObligationLedger,
@@ -96,6 +98,15 @@ const ARCHIVE = `---\nname: Cat\n---\n# Cat\n\nThe cat rests. The cat wakes.\n\n
 
 /** Page image payload attached to every node. */
 const DATA_URI = 'data:image/webp;base64,AA==';
+
+/** Long author-abort sibling delay. */
+const AUTHOR_ABORT_LONG_MS = 30;
+
+/** Middle author-abort sibling delay. */
+const AUTHOR_ABORT_MIDDLE_MS = 15;
+
+/** Short author-abort sibling delay. */
+const AUTHOR_ABORT_SHORT_MS = 5;
 
 /** Page image inventory and exact payload. */
 const MEDIA = [{
@@ -520,7 +531,16 @@ function authorAbortClient({
         barrier.resolve(undefined,);
       }
       await barrier.promise;
+      /** Model-specific stagger proving final author settlement. */
+      const delayMs = request.modelId === 'minimax-m3'
+        ? AUTHOR_ABORT_LONG_MS
+        : request.modelId === 'hf:Qwen/Qwen3.8-27B'
+          ? AUTHOR_ABORT_MIDDLE_MS
+          : AUTHOR_ABORT_SHORT_MS;
+      await wait(delayMs,);
       settled.value += 1;
+      if (request.modelId === 'hf:Qwen/Qwen3.8-27B')
+        throw new Error('unrelated Candidate K author child failure');
       throw request.signal.reason;
     },
     quotas: async () => {
@@ -566,12 +586,17 @@ function verifierAbortClient({
         return { kind: 'ok', value: value as ValueT, rawText: JSON.stringify(value,), };
       }
       arrivals.verifiers += 1;
+      /** Stable stagger position for current verifier sibling. */
+      const arrivalIndex = arrivals.verifiers;
       if (arrivals.verifiers === 9) {
         controller.abort(reason,);
         verifierBarrier.resolve(undefined,);
       }
       await verifierBarrier.promise;
+      await wait(arrivalIndex,);
       settled.value += 1;
+      if (arrivalIndex === 1)
+        throw new Error('unrelated Candidate K verifier child failure');
       throw request.signal.reason;
     },
     quotas: async () => {
@@ -1643,6 +1668,38 @@ await describe({
       },
     }),
     it({
+      name: 'waits for staggered siblings before exact cancellation beats child error',
+      fn: async () => {
+        const controller = new AbortController();
+        const reason = new Error('exact Candidate K direct-wave cancellation');
+        const childError = new Error('unrelated Candidate K child failure');
+        const settled = { value: 0, };
+        const nodes = [
+          (async function childFailure() {
+            await wait(AUTHOR_ABORT_SHORT_MS,);
+            settled.value += 1;
+            throw childError;
+          })(),
+          (async function middleSibling() {
+            await wait(AUTHOR_ABORT_MIDDLE_MS,);
+            settled.value += 1;
+            return 'middle';
+          })(),
+          (async function finalSibling() {
+            await wait(AUTHOR_ABORT_LONG_MS,);
+            settled.value += 1;
+            return 'final';
+          })(),
+        ];
+        controller.abort(reason,);
+        await expect(awaitReviewUnitWave({
+          nodes,
+          signal: controller.signal,
+        })).rejects.toBe(reason,);
+        expect(settled.value).toBe(3,);
+      },
+    }),
+    it({
       name: 'forwards exact cancellation before author wave with zero calls',
       fn: async () => {
         await using directory = await temporaryDirectory();
@@ -1801,7 +1858,7 @@ await describe({
         const fixture = createFixture();
         const {signal} = new AbortController();
         const responseFormat = slotResponseFormat({ shell: fixture.shell, });
-        await Promise.all(fixture.manifest.candidatePlan.map(async function dispatched(plan,) {
+        const initialRecords = await Promise.all(fixture.manifest.candidatePlan.map(async function dispatched(plan,) {
           const messages = reviewUnitAuthorMessages({
             plan,
             manifest: fixture.manifest,
@@ -1820,18 +1877,21 @@ await describe({
             baseDigest: basePromptDigest,
             responseFormat,
           });
+          /** Potentially transmitted dispatch binding. */
+          const record = {
+            id: `review-unit-author-${String(plan.ordinal,)}`,
+            modelId: plan.modelId,
+            manifestDigest: fixture.manifest.manifestDigest,
+            basePromptDigest,
+            promptDigest,
+            startedAt: '2026-08-31T00:00:00.000Z',
+            state: 'dispatched',
+          };
           await writeFile(
             join(directory.path, `node-review-unit-author-${String(plan.ordinal,)}.json`,),
-            `${JSON.stringify({
-              id: `review-unit-author-${String(plan.ordinal,)}`,
-              modelId: plan.modelId,
-              manifestDigest: fixture.manifest.manifestDigest,
-              basePromptDigest,
-              promptDigest,
-              startedAt: '2026-08-31T00:00:00.000Z',
-              state: 'dispatched',
-            },)}\n`,
+            `${JSON.stringify(record,)}\n`,
           );
+          return record;
         },));
         const calls = { value: 0, };
         const result = await runFixture({
@@ -1852,9 +1912,39 @@ await describe({
             throw new Error('review unit indeterminate record differs');
           return value;
         },));
-        expect(records.every(function indeterminate(record,) {
-          return record.failureType === 'IndeterminateTransmission';
+        expect(records.every(function indeterminate(record, index,) {
+          const initial = initialRecords[index];
+          if (initial === undefined)
+            return false;
+          return (record.failureType === 'IndeterminateTransmission')
+            && (record.id === initial.id)
+            && (record.modelId === initial.modelId)
+            && (record.manifestDigest === initial.manifestDigest)
+            && (record.basePromptDigest === initial.basePromptDigest)
+            && (record.promptDigest === initial.promptDigest)
+            && (record.startedAt === initial.startedAt);
         },)).toBe(true,);
+        const firstTerminalTexts = await Promise.all(fixture.manifest.candidatePlan.map(async function text(plan,) {
+          return await readFile(
+            join(directory.path, `node-review-unit-author-${String(plan.ordinal,)}.json`,),
+            'utf8',
+          );
+        },));
+        const secondCalls = { value: 0, };
+        await runFixture({
+          fixture,
+          outputDir: directory.path,
+          client: forbiddenClient({ calls: secondCalls, }),
+          restart: true,
+        });
+        expect(secondCalls.value).toBe(0,);
+        const secondTerminalTexts = await Promise.all(fixture.manifest.candidatePlan.map(async function text(plan,) {
+          return await readFile(
+            join(directory.path, `node-review-unit-author-${String(plan.ordinal,)}.json`,),
+            'utf8',
+          );
+        },));
+        expect(secondTerminalTexts).toEqual(firstTerminalTexts,);
       },
     }),
     it({
@@ -1946,10 +2036,15 @@ await describe({
         await Promise.resolve();
         const fixture = settledFixture();
         const [candidate,] = fixture.candidates;
-        const [authorPlan,] = fixture.manifest.candidatePlan;
-        if ((candidate === undefined) || (authorPlan === undefined))
+        if (candidate === undefined)
           throw new Error('review unit concrete wire fixture absent');
         const bodies: Readonly<Record<string, unknown>>[] = [];
+        const transportRows: {
+          readonly url: string;
+          readonly method: string;
+          readonly wireFormat: string;
+          readonly headers: Readonly<Record<string, string>>;
+        }[] = [];
         const routeClient = createReviewUnitHyperClient({
           apiKey: 'fixture',
           manifest: fixture.manifest,
@@ -1958,18 +2053,15 @@ await describe({
             if (!isJsonRecord(body,))
               throw new Error('review unit concrete wire body differs');
             bodies.push(body,);
+            transportRows.push({
+              url: exchange.url,
+              method: exchange.method,
+              wireFormat: exchange.wireFormat ?? '',
+              headers: exchange.headers,
+            },);
             return { status: 500, bodyText: 'fixture', };
           },
         });
-        const authorMessages = reviewUnitAuthorMessages({
-          plan: authorPlan,
-          manifest: fixture.manifest,
-          shell: fixture.shell,
-          reviewPlan: fixture.reviewPlan,
-          sourceText: fixture.source,
-          archiveText: fixture.archive,
-          media: MEDIA,
-        },);
         const verifierMessages = reviewUnitVerifierMessages({
           manifest: fixture.manifest,
           shell: fixture.shell,
@@ -1989,6 +2081,20 @@ await describe({
           pictureCount: MEDIA.length,
         },);
         const requests = fixture.manifest.verifierPlan.flatMap(function requests(plan,) {
+          const matchingAuthorPlan = fixture.manifest.candidatePlan.find(function same(value,) {
+            return value.modelId === plan.modelId;
+          },);
+          if (matchingAuthorPlan === undefined)
+            throw new Error('review unit concrete author plan differs');
+          const authorMessages = reviewUnitAuthorMessages({
+            plan: matchingAuthorPlan,
+            manifest: fixture.manifest,
+            shell: fixture.shell,
+            reviewPlan: fixture.reviewPlan,
+            sourceText: fixture.source,
+            archiveText: fixture.archive,
+            media: MEDIA,
+          },);
           return [
             routeClient.client.chatJson({
               modelId: plan.modelId,
@@ -2017,14 +2123,52 @@ await describe({
           return (result.status === 'rejected') && Error.isError(result.reason,);
         },)).toBe(true,);
         expect(bodies.length).toBe(6,);
+        expect(transportRows.every(function transport(row,) {
+          return (row.url === 'https://hyper.charm.land/v1/messages')
+            && (row.method === 'POST')
+            && (row.wireFormat === 'anthropic')
+            && (JSON.stringify(Object.keys(row.headers,).toSorted())
+              === JSON.stringify(['Authorization', 'anthropic-version', 'content-type',]))
+            && (row.headers.Authorization === 'Bearer fixture')
+            && (row.headers['anthropic-version'] === '2023-06-01')
+            && (row.headers['content-type'] === 'application/json');
+        },)).toBe(true,);
+        expect(bodies.map(function model(body,) {
+          return body.model;
+        },).toSorted(function alphabetic(
+          left,
+          right,
+        ) {
+          return String(left,).localeCompare(String(right,),);
+        },)).toEqual([
+          'glm-5.3-flash',
+          'glm-5.3-flash',
+          'minimax-m3',
+          'minimax-m3',
+          'qwen3.8-27b',
+          'qwen3.8-27b',
+        ],);
         expect(bodies.every(function exact(body,) {
-          return (body.max_tokens === 32_000)
+          const tools: unknown = body.tools;
+          const tool: unknown = Array.isArray(tools,) ? tools.at(0,) : undefined;
+          return (JSON.stringify(Object.keys(body,).toSorted()) === JSON.stringify([
+            'max_tokens',
+            'messages',
+            'model',
+            'stream',
+            'system',
+            'tool_choice',
+            'tools',
+          ],))
+            && (body.max_tokens === 32_000)
             && (body.stream === true)
+            && Array.isArray(tools,)
+            && (tools.length === 1)
+            && isJsonRecord(tool,)
+            && ((typeof tool.name) === 'string')
             && isJsonRecord(body.tool_choice,)
             && (body.tool_choice.type === 'tool')
-            && ((typeof body.tool_choice.name) === 'string')
-            && (!Object.hasOwn(body, 'thinking',))
-            && (!Object.hasOwn(body, 'temperature',));
+            && (body.tool_choice.name === tool.name);
         },)).toBe(true,);
         expect(bodies.map(function tool(body,) {
           const tools: unknown = body.tools;
@@ -2044,17 +2188,26 @@ await describe({
         ],);
         expect(bodies.every(function image(body,) {
           const {messages} = body;
-          return Array.isArray(messages,)
-            && messages.some(function blocks(message,) {
-              return isJsonRecord(message,)
-                && Array.isArray(message.content,)
-                && message.content.some(function block(value,) {
-                  return isJsonRecord(value,)
-                    && (value.type === 'image')
-                    && isJsonRecord(value.source,)
-                    && (value.source.data === 'AA==');
-                },);
+          if (!Array.isArray(messages,))
+            return false;
+          const imageBlocks = messages.flatMap(function blocks(message,): readonly unknown[] {
+            if (!isJsonRecord(message,))
+              return [];
+            const content: unknown = message.content;
+            if (!Array.isArray(content,))
+              return [];
+            const values: readonly unknown[] = content;
+            return values.filter(function imageBlock(value,) {
+              return isJsonRecord(value,) && (value.type === 'image');
             },);
+          },);
+          const imageBlock: unknown = imageBlocks.at(0,);
+          return (imageBlocks.length === 1)
+            && isJsonRecord(imageBlock,)
+            && isJsonRecord(imageBlock.source,)
+            && (imageBlock.source.type === 'base64')
+            && (imageBlock.source.media_type === 'image/webp')
+            && (imageBlock.source.data === 'AA==');
         },)).toBe(true,);
       },
     }),
