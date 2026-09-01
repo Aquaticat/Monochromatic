@@ -1,0 +1,55 @@
+{
+  "sourceCommit": "717bd8a08cb66d009ec55c55d6e46f69a7289fa8",
+  "harnessSha256": "903b1bd54ffdb86d99b5f0f4f35890f4122ca1d54c9e5cf041d59ff7991bd002",
+  "publicationDistTreeBefore": "5238d5d65ebb408004bed0408a8f1f18ecd77be36c923abcc4fd5e1b6da41341",
+  "publicationDistTreeAfter": "5238d5d65ebb408004bed0408a8f1f18ecd77be36c923abcc4fd5e1b6da41341",
+  "mutations": [
+    {
+      "name": "verdict-finding-cardinality",
+      "detectedBy": "targeted-test",
+      "build": { "kind": "exited", "status": 0 },
+      "test": { "kind": "exited", "status": 1 }
+    },
+    {
+      "name": "candidate-binding-helper",
+      "detectedBy": "targeted-test",
+      "build": { "kind": "exited", "status": 0 },
+      "test": { "kind": "exited", "status": 1 }
+    },
+    {
+      "name": "runtime-schema-rebuild",
+      "detectedBy": "targeted-test",
+      "build": { "kind": "exited", "status": 0 },
+      "test": { "kind": "exited", "status": 1 }
+    },
+    {
+      "name": "architecture-restart-category",
+      "detectedBy": "targeted-test",
+      "build": { "kind": "exited", "status": 0 },
+      "test": { "kind": "exited", "status": 1 }
+    },
+    {
+      "name": "author-admission-category",
+      "detectedBy": "targeted-test",
+      "build": { "kind": "exited", "status": 0 },
+      "test": { "kind": "exited", "status": 1 }
+    },
+    {
+      "name": "strict-role-family-floor",
+      "detectedBy": "targeted-test",
+      "build": { "kind": "exited", "status": 0 },
+      "test": { "kind": "exited", "status": 1 }
+    },
+    {
+      "name": "between-wave-abort-boundary",
+      "detectedBy": "targeted-test",
+      "build": { "kind": "exited", "status": 0 },
+      "test": { "kind": "exited", "status": 1 }
+    }
+  ],
+  "restoredBaseline": {
+    "build": { "kind": "exited", "status": 0 },
+    "test": { "kind": "exited", "status": 0 }
+  },
+  "leftoverDisposableWorktreeCount": 0
+}
