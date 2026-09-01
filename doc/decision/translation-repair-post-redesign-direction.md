@@ -72,10 +72,14 @@ the owner refined the direction:
 The models Hyper and Synthetic provide has become much more advanced than when this project started.
 We shouldn't even need loops if we play it smart."
 
-This supersedes item 2's bound-the-loops shape:
-correction loops are removed rather than budgeted.
-Every stage becomes a fixed-depth graph,
+A follow-up clarification the same day:
+"Discouraged, not a ban.
+You can overrule on this if you provide enough evidence and get an approval."
+
+Together these supersede item 2's bound-the-loops shape:
+stages default to fixed-depth graphs with no correction loops,
 and the design leans on current-generation models instead of compensating machinery.
+A loop may stay only where evidence shows it is needed and the owner approves that specific loop.
 The model-advancement premise is measured against the live provider catalogs before the design is fixed.
 Item 1 (redesign stays closed),
 item 3 (the four-entry completion set),
