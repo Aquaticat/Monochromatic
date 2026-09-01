@@ -97,6 +97,27 @@ avoid figurative instructions,
 spell out edge handling,
 and treat over-literal readings as a known failure shape rather than model noise.
 
+Review pass performed 2026-09-01 over the calibration-facing sheets
+(`translate-wire.ts` system rules and user framing,
+`translate-selection-sheet.ts` criteria,
+`refine-prompt.ts` system and correction policy,
+`house-policy.ts` shared blocks):
+no edits required.
+Every precedence conflict is stated literally
+("THIS RULE OUTRANKS ...",
+"WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS"),
+absent-input and empty-answer edges are named in place
+("(none: this passage has no translation yet)",
+"Returning an empty list is a correct and common answer"),
+and the house policy instructs against character-literal readings outright
+("rendered by its conventional community meaning is correct even when a
+literal reading of the characters says otherwise").
+The residual figurative phrases
+("should not see it churn",
+"carries warmth")
+each sit beside a literal operative sentence that carries the action,
+so the literal and intended readings coincide.
+
 ## Consequences
 
 - The calibration candidate set is the live Hyper and Synthetic catalogs
