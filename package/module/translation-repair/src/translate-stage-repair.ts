@@ -15,14 +15,149 @@ import { TranslationRepairInterruptedError, } from './translation-repair-interru
 import type { TranslateFollowupEvidence, } from './translate-wire.ts';
 
 //region Translate stage repair
+// FIXED DEPTH TWO BY DESIGN: one initial round, then at most one statically
+// named follow-up round carrying the judges' located rejection evidence, the
+// one rejection-driven re-ask the no-loop design retains
+// (doc/planning/translation-repair-no-loop-design.md). A second rejection
+// rethrows the absence, which the slice attempt settles as an unfilled slice
+// rather than a thrown entry.
 
 /**
- * Sentinel identifying initial rendering before any rejected slate exists.
+ * Everything one produce-and-judge round needs, shared by both rounds.
  */
-const INITIAL_TRANSLATION_TASK: unique symbol = Symbol('translation stage has no rejected slate yet',);
+type TranslateRoundInput = ForeignBorrowed<{
+  readonly client: SyntheticClient;
+  readonly translatorModelIds: readonly RosterModelId[];
+  readonly judgeModelIds: readonly RosterModelId[];
+  readonly sourceText: string;
+  readonly incumbentText: string;
+  readonly incumbentKind: IncumbentKind;
+  readonly incumbentEligible: boolean;
+  readonly identityContext?: string;
+  readonly neighbouringIncumbentText?: string;
+  readonly neighbouringSourceText?: string;
+  readonly pictureContext?: string;
+  readonly syntax?: SliceSyntax;
+  readonly lineStructured: boolean;
+  readonly signal: AbortSignal;
+  readonly perCallTimeoutMs: number;
+  readonly l: Logger;
+}>;
 
 /**
- * Produces and judges until absent passage settles or unique evidence cycles.
+ * Produces one slate and judges it, optionally under rejection evidence.
+ *
+ * @param input - round configuration shared by both fixed rounds
+ *
+ * @param followupEvidence - located rejection evidence, absent on the initial round
+ *
+ * @returns Settled text and evidence
+ *
+ * @throws {@link TranslateAbsenceError} when judging leaves an absent passage unwritten
+ *
+ * @example
+ * ```ts
+ * const result = await produceAndJudgeOnce({ input, },);
+ * ```
+ */
+async function produceAndJudgeOnce(
+  {
+    input,
+    followupEvidence,
+  }: {
+    readonly input: TranslateRoundInput;
+    readonly followupEvidence?: TranslateFollowupEvidence;
+  },
+): Promise<{
+  readonly result: TranslateStageResult;
+  readonly candidateTexts: readonly string[];
+} | {
+  readonly rejection: TranslateAbsenceError;
+  readonly candidateTexts: readonly string[];
+}> {
+  /**
+   * Slate produced initially or from the located rejection evidence.
+   */
+  const produced = await produceTranslateSlate({
+    client: input.client,
+    translatorModelIds: input.translatorModelIds,
+    sourceText: input.sourceText,
+    incumbentText: input.incumbentText,
+    incumbentEligible: input.incumbentEligible,
+    ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
+    ...((input.pictureContext === undefined) ? {} : { pictureContext: input.pictureContext, }),
+    ...((input.syntax === undefined) ? {} : { syntax: input.syntax, }),
+    ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
+    lineStructured: input.lineStructured,
+    signal: input.signal,
+    perCallTimeoutMs: input.perCallTimeoutMs,
+    l: input.l,
+  },);
+  /**
+   * Rejected candidate texts in deterministic slate order, for evidence.
+   */
+  const candidateTexts = produced
+    .candidates
+    .map(function candidateText(candidate,): string {
+      return candidate
+        .value
+        .text;
+    },);
+  try {
+    return {
+      result: await judgeSlateWithRetry({
+        judging: {
+          client: input.client,
+          produced,
+          judgeModelIds: input.judgeModelIds,
+          sourceText: input.sourceText,
+          incumbentText: input.incumbentText,
+          incumbentKind: input.incumbentKind,
+          ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
+          ...((input.neighbouringSourceText === undefined)
+            ? {}
+            : { neighbouringSourceText: input.neighbouringSourceText, }),
+          ...((input.neighbouringIncumbentText === undefined)
+            ? {}
+            : { neighbouringIncumbentText: input.neighbouringIncumbentText, }),
+          ...((input.pictureContext === undefined) ? {} : { pictureContext: input.pictureContext, }),
+          ...((input.syntax === undefined) ? {} : { syntax: input.syntax, }),
+          lineStructured: input.lineStructured,
+          signal: input.signal,
+          perCallTimeoutMs: input.perCallTimeoutMs,
+          l: input.l,
+        },
+      },),
+      candidateTexts,
+    };
+  }
+  catch (error) {
+    if (input.signal
+      .aborted)
+      throw input.signal
+        .reason;
+    if (!(error instanceof TranslateAbsenceError))
+      throw error;
+    if (error.reason === 'no-voice-heard') {
+      throw new TranslationRepairInterruptedError({
+        reason: 'provider-unavailable',
+        findings: error.findings,
+      },);
+    }
+    return {
+      rejection: error,
+      candidateTexts,
+    };
+  }
+}
+
+/**
+ * Produces and judges an absent passage at fixed depth two.
+ *
+ * The follow-up round carries the judges' located rejection evidence,
+ * the form the redesign measured as the one safe re-ask shape;
+ * a second rejection rethrows so the slice settles unfilled,
+ * never as a thrown entry.
  *
  * @param client - injected model client
  *
@@ -45,6 +180,10 @@ const INITIAL_TRANSLATION_TASK: unique symbol = Symbol('translation stage has no
  * @param l - pipeline logger
  *
  * @returns Settled text and evidence
+ *
+ * @throws {@link TranslateAbsenceError} when both fixed rounds leave the passage unwritten
+ *
+ * @throws {@link TranslationRepairInterruptedError} when no judging voice was heard
  *
  * @example
  * ```ts
@@ -89,110 +228,56 @@ export async function runTranslateRepairs(
   }>,
 ): Promise<TranslateStageResult> {
   /**
-   * Canonical follow-up tasks already attempted in this stage invocation.
+   * Round configuration shared by the initial and follow-up rounds.
    */
-  const attemptedFollowups = new Set<string>();
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- sequential repair state advances only from latest exact rejection */
+  const input: TranslateRoundInput = {
+    client,
+    translatorModelIds,
+    judgeModelIds,
+    sourceText,
+    incumbentText,
+    incumbentKind,
+    incumbentEligible,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((pictureContext === undefined) ? {} : { pictureContext, }),
+    ...((syntax === undefined) ? {} : { syntax, }),
+    lineStructured,
+    signal,
+    perCallTimeoutMs,
+    l,
+  };
   /**
-   * Initial task sentinel or latest exact rejection evidence.
+   * Initial round with no rejection evidence.
    */
-  let task: typeof INITIAL_TRANSLATION_TASK | TranslateFollowupEvidence = INITIAL_TRANSLATION_TASK;
-  /* oxlint-enable no-restricted-syntax/no-function-root-let */
-  while (!signal.aborted) {
-    if ((typeof task) !== 'symbol') {
-      /**
-       * Canonical task identity excluding transport metadata.
-       */
-      const followupIdentity = JSON.stringify(task,);
-      if (attemptedFollowups.has(followupIdentity,)) {
-        throw new TranslationRepairInterruptedError({
-          reason: 'production-cycle',
-          findings: task.findings,
-        },);
-      }
-      attemptedFollowups.add(followupIdentity,);
-    }
-
-    /* oxlint-disable no-await-in-loop -- each rendering task depends on latest rejected slate */
-    /**
-     * Slate produced initially or from latest exact rejection evidence.
-     */
-    const produced = await produceTranslateSlate({
-      client,
-      translatorModelIds,
-      sourceText,
-      incumbentText,
-      incumbentEligible,
-      ...((identityContext === undefined) ? {} : { identityContext, }),
-      ...((pictureContext === undefined) ? {} : { pictureContext, }),
-      ...((syntax === undefined) ? {} : { syntax, }),
-      ...(((typeof task) === 'symbol') ? {} : { followupEvidence: task, }),
-      lineStructured,
-      signal,
-      perCallTimeoutMs,
-      l,
-    },);
-    /* oxlint-enable no-await-in-loop */
-
-    try {
-      // oxlint-disable-next-line no-await-in-loop -- judging result determines next rendering evidence
-      return await judgeSlateWithRetry({
-        judging: {
-          client,
-          produced,
-          judgeModelIds,
-          sourceText,
-          incumbentText,
-          incumbentKind,
-          ...((identityContext === undefined) ? {} : { identityContext, }),
-          ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
-          ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
-          ...((pictureContext === undefined) ? {} : { pictureContext, }),
-          ...((syntax === undefined) ? {} : { syntax, }),
-          lineStructured,
-          signal,
-          perCallTimeoutMs,
-          l,
-        },
-      },);
-    }
-    catch (error) {
-      if (signal.aborted)
-        throw signal.reason;
-      if (!(error instanceof TranslateAbsenceError))
-        throw error;
-      if (error.reason === 'no-voice-heard') {
-        throw new TranslationRepairInterruptedError({
-          reason: 'provider-unavailable',
-          findings: error.findings,
-        },);
-      }
-      /**
-       * Latest exact rejected candidate texts in deterministic slate order.
-       */
-      const candidateTexts = produced
-        .candidates
-        .map(function candidateText(candidate,): string {
-          return candidate
-            .value
-            .text;
-        },);
-      /**
-       * Rejected candidate count safe for operational log.
-       */
-      const candidateCount = candidateTexts.length;
-      task = {
-        reason: error.reason,
-        candidateTexts,
-        findings: error.findings,
-      };
-      l.info(
-        `translate stage: continuing absent-passage repair after ${error.reason}; `
-          + `${String(candidateCount,)} rejected candidates`,
-      );
-    }
-  }
-  throw signal.reason;
+  const first = await produceAndJudgeOnce({ input, },);
+  if ('result' in first)
+    return first.result;
+  l.info(
+    `translate stage: one follow-up round after ${first.rejection
+      .reason}; `
+      + `${String(first.candidateTexts
+        .length,)} rejected candidates`,
+  );
+  /**
+   * Single follow-up round carrying the located rejection evidence.
+   */
+  const second = await produceAndJudgeOnce({
+    input,
+    followupEvidence: {
+      reason: first.rejection
+        .reason,
+      candidateTexts: first.candidateTexts,
+      findings: first.rejection
+        .findings,
+    },
+  },);
+  if ('result' in second)
+    return second.result;
+  // Depth two is spent: the absence is settled evidence now, and the slice
+  // attempt records the passage as unfilled instead of throwing the entry.
+  throw second.rejection;
 }
 
 //endregion Translate stage repair

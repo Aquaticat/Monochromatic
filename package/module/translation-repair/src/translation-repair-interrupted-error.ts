@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * throw new TranslationRepairInterruptedError({
- *   reason: 'production-cycle',
+ *   reason: 'provider-unavailable',
  *   findings: [],
  * },);
  * ```
@@ -26,7 +26,6 @@ export class TranslationRepairInterruptedError extends Error {
   public readonly reason:
     | 'carried-evidence-lost'
     | 'final-selection-unresolved'
-    | 'production-cycle'
     | 'provider-unavailable';
 
   /**
@@ -57,7 +56,6 @@ export class TranslationRepairInterruptedError extends Error {
       readonly reason:
         | 'carried-evidence-lost'
         | 'final-selection-unresolved'
-        | 'production-cycle'
         | 'provider-unavailable';
       readonly findings: readonly string[];
     },

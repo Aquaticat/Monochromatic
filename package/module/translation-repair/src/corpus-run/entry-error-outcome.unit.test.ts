@@ -38,7 +38,7 @@ await describe({
         operation: 'read',
       },),
       new TranslationRepairInterruptedError({
-        reason: 'production-cycle',
+        reason: 'provider-unavailable',
         findings: [],
       },),
       new UnfilledPageError({

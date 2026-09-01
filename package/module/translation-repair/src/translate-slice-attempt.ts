@@ -17,11 +17,12 @@ import { settleTranslateSlice, } from './translate-slice.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 
 //region Translate slice attempt
-// One slice's round, with settled and defensive legacy-unfilled shapes named.
+// One slice's round, with settled and unfilled shapes named.
 //
-// Production stage continuously repairs absent passages and never returns
-// unfilled quality outcome. Union remains for deterministic direct-library
-// admission and old record readers; leaked stage absence pauses operationally.
+// The stage repairs an absent passage at fixed depth two; when both rounds
+// leave it unwritten the slice settles UNFILLED here, one slice rather than
+// the entry, and publication's no-page terminal accounts for it
+// (doc/planning/translation-repair-no-loop-design.md).
 //
 // SPLIT FROM THE DRIVER so the union has a home and the driver keeps its line
 // budget for the loop it exists to run. What lives here is only the shape of
@@ -180,12 +181,17 @@ export async function attemptTranslateSlice(
       // means the two were handed different slices.
       if (!isInsertionChunk(slice.target,))
         throw error;
-      throw new TranslationRepairInterruptedError({
-        reason: error.reason === 'no-voice-heard'
-          ? 'provider-unavailable'
-          : 'production-cycle',
+      if (error.reason === 'no-voice-heard') {
+        throw new TranslationRepairInterruptedError({
+          reason: 'provider-unavailable',
+          findings: error.findings,
+        },);
+      }
+      return {
+        kind: 'unfilled',
+        reason: error.reason,
         findings: error.findings,
-      },);
+      };
     }
     throw error;
   }

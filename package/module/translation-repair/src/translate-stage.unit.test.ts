@@ -703,8 +703,11 @@ await describe({
     },),
 
     it({
-      name: 'CONTINUES a declined absent passage until exact rejected slate and findings form a cycle',
+      name: 'SETTLES a declined absent passage as absence after the single follow-up round',
       fn: async () => {
+        // Fixed depth two: the initial round, one follow-up carrying the
+        // rejection evidence, then the absence is settled evidence for the
+        // slice attempt to record as unfilled, never a paused entry.
         await expect(runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
@@ -714,7 +717,7 @@ await describe({
           needle: '',
           incumbentText: '',
           incumbentKind: 'absent',
-        },),).rejects.toThrow(TranslationRepairInterruptedError,);
+        },),).rejects.toThrow(TranslateAbsenceError,);
       },
     },),
 
@@ -745,9 +748,12 @@ await describe({
     },),
 
     it({
-      name: 'CONTINUES through two different rejected follow-ups with unique producer prompts',
+      name: 'STOPS at depth two even when a third round would have succeeded',
       fn: async () => {
-        const { result, calls, producerPrompts, } = await runLane({
+        // The needle appears only in the SECOND scripted follow-up, which a
+        // fixed-depth stage never asks for: any regression back to a loop
+        // would find it and turn this throw into a success.
+        await expect(runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The first cat rests.',
             'hf:zai-org/GLM-5.3-Flash': 'The first cat waits.',
@@ -768,21 +774,16 @@ await describe({
           needle: 'final repaired',
           incumbentText: '',
           incumbentKind: 'absent',
-        },);
-
-        expect(result.text,).toContain('final repaired',);
-        expect(calls.translate,).toBe(TRANSLATORS.length * 3,);
-        expect(calls.select,).toBe(JUDGES.length * 5,);
-        expect(new Set(producerPrompts,).size,).toBe(calls.translate,);
+        },),).rejects.toThrow(TranslateAbsenceError,);
       },
     },),
 
     it({
-      name: 'carries the evidence into interruption rather than losing it with the exception, so a run '
-        + 'reporting a passage it could not fill can say which translators were heard and what the '
-        + 'judges counted',
+      name: 'carries the evidence on the settled absence rather than losing it with the exception, so a '
+        + 'run recording a passage it could not fill can say which translators were heard and what '
+        + 'the judges counted',
       fn: async () => {
-        /** Refusal the declined round raised. */
+        /** Refusal the depth-two rounds raised. */
         let raised: unknown;
         try {
           await runLane({
@@ -799,10 +800,9 @@ await describe({
         catch (error) {
           raised = error;
         }
-        expect(raised instanceof TranslationRepairInterruptedError,).toBe(true,);
-        if (!(raised instanceof TranslationRepairInterruptedError))
-          throw new Error('expected absent-passage repair interruption',);
-        expect(raised.message,).toContain('production-cycle',);
+        expect(raised instanceof TranslateAbsenceError,).toBe(true,);
+        if (!(raised instanceof TranslateAbsenceError))
+          throw new Error('expected settled translate absence',);
         expect(raised.findings,).toContain('translate-declined (rejection)',);
         expect(raised.findings,).toContain('translate-declined-retried',);
         expect(raised.findings
