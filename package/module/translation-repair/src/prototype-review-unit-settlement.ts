@@ -64,7 +64,9 @@ export function createReviewUnitAuthorSettlement({
     /**
      * Durable author-node id prefix.
      */
-    const prefix = 'review-unit-author-';
+    const prefix = manifest.authorMode === 'lean-realization'
+      ? 'lean-realization-author-'
+      : 'review-unit-author-';
     if (!value.record
       .id
       .startsWith(prefix,))

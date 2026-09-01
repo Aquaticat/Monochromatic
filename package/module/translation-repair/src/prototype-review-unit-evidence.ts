@@ -54,9 +54,11 @@ function statusDefectKeys({
 function defectKeys({
   response,
   reviewPlan,
+  candidate,
 }: {
   readonly response: ReviewUnitResponse;
   readonly reviewPlan: ReviewUnitPlan;
+  readonly candidate: ReviewUnitCandidate;
 }): readonly string[] {
   /**
    * Front-matter defects in semantic field order.
@@ -93,8 +95,13 @@ function defectKeys({
     ...statusDefectKeys({
       statuses: response.slotLanguageStatuses,
       scope: 'sl',
-      subjectIndexes: reviewPlan.slotGroups
-        .map(function index(value,) { return value.groupIndex; }),
+      subjectIndexes: (candidate.mutableSlotKeys
+        ?? reviewPlan.slotGroups
+        .map(function key(value,) { return value.slotKey; }))
+        .map(function index(
+          _value,
+          position,
+        ) { return position; }),
     }),
     ...statusDefectKeys({
       statuses: response.globalStatuses,
@@ -133,6 +140,7 @@ export function assertReviewUnitEvidence({
   const defects = defectKeys({
     response,
     reviewPlan,
+    candidate,
   });
   /**
    * Canonical retained defect prefix.

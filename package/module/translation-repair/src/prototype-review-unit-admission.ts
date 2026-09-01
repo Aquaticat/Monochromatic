@@ -194,8 +194,13 @@ export function admitReviewUnitResponse({
         statuses: response.slotLanguageStatuses,
         scope: 'sl',
         cleanCode: 'c',
-        subjectIndexes: reviewPlan.slotGroups
-          .map(function index(value,) { return value.groupIndex; }),
+        subjectIndexes: (candidate.mutableSlotKeys
+          ?? reviewPlan.slotGroups
+          .map(function key(value,) { return value.slotKey; }))
+          .map(function index(
+            _value,
+            position,
+          ) { return position; }),
       }),
       ...expandStatuses({
         statuses: response.globalStatuses,

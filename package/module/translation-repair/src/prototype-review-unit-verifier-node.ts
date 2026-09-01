@@ -141,7 +141,13 @@ export async function runReviewUnitVerifierNode({
   /**
    * Durable node identity includes candidate and verifier ordinals.
    */
-  const id = `review-unit-verifier-${String(candidate.candidateOrdinal,)}-${String(verifierOrdinal,)}`;
+  const prefix = manifest.authorMode === 'lean-realization'
+    ? 'lean-realization-verifier'
+    : 'review-unit-verifier';
+  /**
+   * Candidate and verifier ordinal identity.
+   */
+  const id = `${prefix}-${String(candidate.candidateOrdinal,)}-${String(verifierOrdinal,)}`;
   /**
    * Strict response contract bound to one candidate.
    */

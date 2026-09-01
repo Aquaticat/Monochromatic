@@ -1,20 +1,17 @@
-// PROTOTYPE ONLY: Candidate K finite two-wave candidate-scoped runtime.
+// PROTOTYPE ONLY: Candidate K and L finite two-wave candidate-scoped runtime.
 
 import { join, } from 'node:path';
 
-import { runReviewUnitAuthorNode, } from './prototype-review-unit-author-node.ts';
+import { leanRealizationVerifierMessages, } from './prototype-lean-realization-prompt.ts';
+import { runReviewUnitAuthorWave, } from './prototype-review-unit-author-wave.ts';
 import { assertReviewUnitManifest, } from './prototype-review-unit-manifest.ts';
 import {
-  MAX_REVIEW_UNIT_PAYLOAD_COUNT,
   REVIEW_UNIT_DEFECT_CLASSES,
   type ReviewUnitAuthorSettlement,
   type ReviewUnitSelection,
   type ReviewUnitManifest,
 } from './prototype-review-unit-model.ts';
-import {
-  reviewUnitAuthorMessages,
-  reviewUnitVerifierMessages,
-} from './prototype-review-unit-prompt.ts';
+import { reviewUnitVerifierMessages, } from './prototype-review-unit-prompt.ts';
 import {
   assertReviewUnitClient,
   awaitReviewUnitWave,
@@ -43,7 +40,7 @@ import type { ImmutableShell, } from './prototype-slot-model.ts';
 import { writePrototypeJson, } from './prototype-brief-editor-runtime.ts';
 
 /**
- * Persisted Candidate K result before production boundary.
+ * Persisted review-unit result before production boundary.
  */
 export type ReviewUnitRuntimeResult = {
   /**
@@ -63,7 +60,7 @@ export type ReviewUnitRuntimeResult = {
    */
   readonly authorSettlement: ReviewUnitAuthorSettlement;
   /**
-   * Nine-row static second-wave plan.
+   * Complete static candidate and verifier Cartesian plan.
    */
   readonly verifierPlan: ReviewUnitVerifierWavePlan;
   /**
@@ -93,7 +90,7 @@ export type ReviewUnitRuntimeResult = {
 };
 
 /**
- * Executes fixed Candidate K graph in exactly two dependency waves.
+ * Executes fixed Candidate K or L graph in exactly two dependency waves.
  *
  * @returns Persisted private result after every authorized node settles
  *
@@ -189,36 +186,21 @@ export async function runReviewUnitRuntime({
   /**
    * Complete terminal author states after concurrent first wave.
    */
-  const authorStates = await awaitReviewUnitWave({
-    nodes: manifest.candidatePlan
-      .map(async function author(plan,) {
-      return await runReviewUnitAuthorNode({
-        outputDir,
-        client: boundClient.client,
-        plan,
-        manifest,
-        expectedManifestDigest,
-        messages: reviewUnitAuthorMessages({
-          plan,
-          manifest,
-          shell,
-          reviewPlan,
-          sourceText,
-          archiveText,
-          media,
-        },),
-        shell,
-        ledger,
-        reviewPlan,
-        sourceText,
-        archiveText,
-        sourcePictures,
-        restart,
-        signal,
-      },);
-    },),
+  const authorStates = await runReviewUnitAuthorWave({
+    outputDir,
+    client: boundClient.client,
+    manifest,
+    expectedManifestDigest,
+    shell,
+    ledger,
+    reviewPlan,
+    sourceText,
+    archiveText,
+    media,
+    sourcePictures,
+    restart,
     signal,
-  },);
+  });
   /**
    * Runtime-owned total author settlement.
    */
@@ -244,7 +226,7 @@ export async function runReviewUnitRuntime({
     manifest,
   },);
   /**
-   * Nine-row static second-wave plan including deterministic skips.
+   * Static second-wave Cartesian plan including deterministic skips.
    */
   const verifierPlan = createReviewUnitVerifierWavePlan({
     manifest,
@@ -304,18 +286,31 @@ export async function runReviewUnitRuntime({
         verifierModelId: node.verifierModelId,
         manifest,
         expectedManifestDigest,
-        messages: reviewUnitVerifierMessages({
-          manifest,
-          shell,
-          reviewPlan,
-          candidate,
-          authorSettlementDigest: authorSettlement.settlementDigest,
-          verifierPlanDigest: verifierPlan.verifierPlanDigest,
-          defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
-          sourceText,
-          archiveText,
-          media,
-        },),
+        messages: manifest.authorMode === 'lean-realization'
+          ? leanRealizationVerifierMessages({
+            manifest,
+            shell,
+            reviewPlan,
+            candidate,
+            authorSettlementDigest: authorSettlement.settlementDigest,
+            verifierPlanDigest: verifierPlan.verifierPlanDigest,
+            defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
+            sourceText,
+            archiveText,
+            media,
+          })
+          : reviewUnitVerifierMessages({
+            manifest,
+            shell,
+            reviewPlan,
+            candidate,
+            authorSettlementDigest: authorSettlement.settlementDigest,
+            verifierPlanDigest: verifierPlan.verifierPlanDigest,
+            defectClasses: REVIEW_UNIT_DEFECT_CLASSES,
+            sourceText,
+            archiveText,
+            media,
+          }),
         authorSettlement,
         shell,
         ledger,
@@ -381,7 +376,7 @@ export async function runReviewUnitRuntime({
   };
   if ((result.completedNodeCount + result.spentUnusableNodeCount
     + result.skippedNodeCount)
-    !== MAX_REVIEW_UNIT_PAYLOAD_COUNT)
+    !== manifest.payloadCountCeiling)
     throw new Error('review unit runtime node accounting differs');
   await writePrototypeJson({
     path: join(

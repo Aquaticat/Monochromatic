@@ -30,6 +30,16 @@ export const REVIEW_UNIT_VERIFIER_COUNT = 3;
 export const MAX_REVIEW_UNIT_PAYLOAD_COUNT = 12;
 
 /**
+ * Fixed number of lean whole-document authors.
+ */
+export const LEAN_REALIZATION_AUTHOR_COUNT = 2;
+
+/**
+ * Maximum provider payloads in two-author candidate-scoped graph.
+ */
+export const MAX_LEAN_REALIZATION_PAYLOAD_COUNT = 8;
+
+/**
  * Maximum concrete defect certificates retained for one ballot.
  */
 export const REVIEW_UNIT_FINDING_CAP = 64;
@@ -84,7 +94,15 @@ export type ReviewUnitManifest = {
   /**
    * Manifest schema version.
    */
-  readonly version: 1;
+  readonly version: 1 | 2;
+  /**
+   * Candidate L author protocol marker, absent from Candidate K.
+   */
+  readonly authorMode?: 'lean-realization';
+  /**
+   * Candidate L path-specific front-matter authority, absent from Candidate K.
+   */
+  readonly frontMatterAuthorityDigest?: string;
   /**
    * Immutable shell identity.
    */
@@ -157,7 +175,9 @@ export type ReviewUnitManifest = {
   /**
    * Statically finite graph width.
    */
-  readonly payloadCountCeiling: typeof MAX_REVIEW_UNIT_PAYLOAD_COUNT;
+  readonly payloadCountCeiling:
+    | typeof MAX_LEAN_REALIZATION_PAYLOAD_COUNT
+    | typeof MAX_REVIEW_UNIT_PAYLOAD_COUNT;
   /**
    * Author wave followed by candidate-scoped verifier wave.
    */
@@ -220,6 +240,14 @@ export type ReviewUnitCandidate = {
    * Raw model slot values retained for deterministic revalidation only.
    */
   readonly rawSlots: Readonly<Record<string, string>>;
+  /**
+   * Ordered mutable target slots, present for Candidate L.
+   */
+  readonly mutableSlotKeys?: readonly string[];
+  /**
+   * Runtime-authored front-matter serialization digest, present for Candidate L.
+   */
+  readonly frontMatterDigest?: string;
   /**
    * Candidate-specific exact separator decisions.
    */

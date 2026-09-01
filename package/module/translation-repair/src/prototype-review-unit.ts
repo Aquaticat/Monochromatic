@@ -1,6 +1,32 @@
 // PROTOTYPE ONLY: Candidate K candidate-scoped ballot calibration surface.
 
 export {
+  admitLeanRealizationResponse,
+  assertLeanRealizationBinding,
+} from './prototype-lean-realization-author.ts';
+export {
+  LEAN_FRONT_MATTER_AUTHORITY_DIGEST,
+  LEAN_FRONT_MATTER_CONTRACTS,
+  compileLeanFrontMatter,
+  leanFrontMatterContract,
+  type LeanFrontMatterAuthority,
+  type LeanFrontMatterContract,
+} from './prototype-lean-realization-front-matter.ts';
+export {
+  LEAN_REALIZATION_AUTHOR_PROTOCOL_DIGEST,
+  LEAN_REALIZATION_VERIFIER_PROTOCOL_DIGEST,
+  leanRealizationAuthorMessages,
+  leanRealizationVerifierMessages,
+} from './prototype-lean-realization-prompt.ts';
+export {
+  leanVerifierEvidence,
+} from './prototype-lean-realization-verifier-evidence.ts';
+export {
+  leanRealizationGuard,
+  leanRealizationResponseFormat,
+  leanRealizationSlotKeys,
+} from './prototype-lean-realization-wire.ts';
+export {
   admitReviewUnitAuthorResponse,
   assertReviewUnitBinding,
 } from './prototype-review-unit-author.ts';
@@ -29,6 +55,8 @@ export {
   createReviewUnitManifest,
 } from './prototype-review-unit-manifest.ts';
 export {
+  LEAN_REALIZATION_AUTHOR_COUNT,
+  MAX_LEAN_REALIZATION_PAYLOAD_COUNT,
   REVIEW_UNIT_AUTHOR_COUNT,
   REVIEW_UNIT_DEFECT_CLASSES,
   REVIEW_UNIT_FINDING_CAP,

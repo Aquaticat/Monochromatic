@@ -1,6 +1,7 @@
 // PROTOTYPE ONLY: Candidate K complete author admission with runtime boundaries.
 
 import { hashContent, } from './document-node.ts';
+import { assertLeanRealizationBinding, } from './prototype-lean-realization-author.ts';
 import { assertReviewUnitsAuthorized, } from './prototype-review-unit-manifest.ts';
 import type {
   ReviewUnitCandidate,
@@ -223,6 +224,18 @@ export function assertReviewUnitBinding({
   readonly archiveText: string;
   readonly sourcePictures: readonly { readonly assetName: string; }[];
 }): void {
+  if (manifest.authorMode === 'lean-realization') {
+    assertLeanRealizationBinding({
+      candidate,
+      manifest,
+      reviewPlan,
+      shell,
+      sourceText,
+      archiveText,
+      sourcePictures,
+    });
+    return;
+  }
   assertReviewUnitsAuthorized({
     candidates: [candidate,],
     manifest,

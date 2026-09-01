@@ -43,9 +43,10 @@ export function reviewUnitFindingTargetSlots({
       ?? [];
   if (finding.scope === 'sl') {
     /**
-     * Body slot assigned to language subject.
+     * Candidate L mutable slot or Candidate K body slot assigned to language subject.
      */
-    const slotKey = reviewPlan.slotGroups[finding.subjectIndex]
+    const slotKey = candidate.mutableSlotKeys?.[finding.subjectIndex]
+      ?? reviewPlan.slotGroups[finding.subjectIndex]
       ?.slotKey;
     return slotKey === undefined ? [] : [slotKey,];
   }

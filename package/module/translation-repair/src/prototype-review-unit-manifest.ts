@@ -2,26 +2,30 @@
 
 import { hashContent, } from './document-node.ts';
 import { photoReferences, } from './photo-reference.ts';
-import { boundedModelFamily, } from './prototype-bounded-verdict-family.ts';
 import {
   REVIEW_UNIT_HYPER_MODELS,
-  reviewUnitHyperModel,
   reviewUnitHyperRouteDigest,
 } from './prototype-review-unit-hyper.ts';
 import {
-  REVIEW_UNIT_AUTHOR_COUNT,
+  MAX_LEAN_REALIZATION_PAYLOAD_COUNT,
   REVIEW_UNIT_FINDING_CAP,
-  REVIEW_UNIT_VERIFIER_COUNT,
   MAX_REVIEW_UNIT_PAYLOAD_COUNT,
   type ReviewUnitCandidate,
   type ReviewUnitManifest,
   type ReviewUnitVerifierPlan,
 } from './prototype-review-unit-model.ts';
+import { LEAN_FRONT_MATTER_AUTHORITY_DIGEST, } from './prototype-lean-realization-front-matter.ts';
+import {
+  LEAN_REALIZATION_AUTHOR_PROTOCOL_DIGEST,
+  LEAN_REALIZATION_VERIFIER_PROTOCOL_DIGEST,
+} from './prototype-lean-realization-prompt.ts';
+import { leanRealizationResponseFormat, } from './prototype-lean-realization-wire.ts';
 import {
   REVIEW_UNIT_AUTHOR_PROTOCOL_DIGEST,
   REVIEW_UNIT_VERIFIER_PROTOCOL_DIGEST,
 } from './prototype-review-unit-prompt.ts';
 import { realizationCandidateAlias, } from './prototype-realization-author.ts';
+import { assertReviewUnitRoster, } from './prototype-review-unit-roster.ts';
 import { REVIEW_UNIT_FINDING_RULE_DIGEST, } from './prototype-review-unit-rules.ts';
 import {
   assertReviewUnitPlan,
@@ -73,104 +77,6 @@ function manifestDigest(
   value: Omit<ReviewUnitManifest, 'manifestDigest'>,
 ): string {
   return hashContent({ content: JSON.stringify(value,), });
-}
-
-/**
- * Refuses one provider model without current image route.
- *
- * @param modelId - Canonical model identity requiring Hyper vision
- */
-function assertModelReach(modelId: RealizationCandidatePlan['modelId'],): void {
-  reviewUnitHyperModel({ modelId, });
-}
-
-/**
- * Refuses duplicate, noncontiguous, or family-insufficient graph roster.
- */
-function assertRoster({
-  candidatePlan,
-  verifierPlan,
-}: {
-  readonly candidatePlan: readonly RealizationCandidatePlan[];
-  readonly verifierPlan: readonly ReviewUnitVerifierPlan[];
-}): void {
-  if ((candidatePlan.length !== REVIEW_UNIT_AUTHOR_COUNT)
-    || (verifierPlan.length !== REVIEW_UNIT_VERIFIER_COUNT)
-    || ((candidatePlan.length * (verifierPlan.length + 1))
-      !== MAX_REVIEW_UNIT_PAYLOAD_COUNT))
-    throw new Error('review unit roster count differs from fixed graph');
-  /**
-   * Author plans normalized by public ordinal.
-   */
-  const authors = candidatePlan.toSorted(function ordinal(
-    left,
-    right,
-  ) {
-    return left.ordinal - right.ordinal;
-  },);
-  /**
-   * Verifier plans normalized by public ordinal.
-   */
-  const verifiers = verifierPlan.toSorted(function ordinal(
-    left,
-    right,
-  ) {
-    return left.ordinal - right.ordinal;
-  },);
-  /**
-   * Hidden author priorities.
-   */
-  const priorities = authors.map(function priority(plan,) {
-    return plan.priority;
-  },);
-  /**
-   * Author canonical identities.
-   */
-  const authorIds = authors.map(function model(plan,) {
-    return plan.modelId;
-  },);
-  /**
-   * Verifier canonical identities.
-   */
-  const verifierIds = verifiers.map(function model(plan,) {
-    return plan.modelId;
-  },);
-  /**
-   * Conservative author families.
-   */
-  const authorFamilies = new Set(authorIds.map(function family(modelId,) {
-    return boundedModelFamily({ modelId, });
-  },));
-  /**
-   * Conservative verifier families.
-   */
-  const verifierFamilies = new Set(verifierIds.map(function family(modelId,) {
-    return boundedModelFamily({ modelId, });
-  },));
-  [
-    ...authorIds,
-    ...verifierIds,
-  ].forEach(assertModelReach,);
-  if ((new Set(authorIds,).size !== authorIds.length)
-    || (new Set(verifierIds,).size !== verifierIds.length)
-    || (new Set(priorities,).size !== priorities.length)
-    || (authorFamilies.size !== REVIEW_UNIT_AUTHOR_COUNT)
-    || (verifierFamilies.size !== REVIEW_UNIT_VERIFIER_COUNT)
-    || [...authorFamilies,].some(function absent(family,) {
-      return !verifierFamilies.has(family,);
-    },)
-    || authors.some(function noncontiguous(
-      plan,
-      index,
-    ) { return plan.ordinal !== index; })
-    || verifiers.some(function noncontiguous(
-      plan,
-      index,
-    ) { return plan.ordinal !== index; })
-    || priorities.some(function invalid(priority,) {
-      return (!Number.isInteger(priority,)) || (priority < 0);
-    },))
-    throw new Error('review unit roster identity or family differs');
 }
 
 /**
@@ -235,6 +141,7 @@ export function createReviewUnitManifest({
   verifierPlan,
   providerSelection,
   sourcePictures,
+  authorMode,
 }: {
   readonly ledger: RealizationObligationLedger;
   readonly shell: ImmutableShell;
@@ -246,6 +153,7 @@ export function createReviewUnitManifest({
   readonly verifierPlan: readonly ReviewUnitVerifierPlan[];
   readonly providerSelection: ReviewUnitManifest['providerSelection'];
   readonly sourcePictures: ReviewUnitManifest['sourcePictures'];
+  readonly authorMode?: ReviewUnitManifest['authorMode'];
 }): ReviewUnitManifest {
   assertRealizationLedgerBindsShell({
     ledger,
@@ -265,9 +173,10 @@ export function createReviewUnitManifest({
     archiveBody,
     ledgerDigest,
   });
-  assertRoster({
+  assertReviewUnitRoster({
     candidatePlan,
     verifierPlan,
+    authorMode,
   });
   assertPictures({
     shell,
@@ -283,7 +192,13 @@ export function createReviewUnitManifest({
    * Manifest identity before self digest.
    */
   const identity = {
-    version: 1,
+    version: authorMode === 'lean-realization' ? 2 : 1,
+    ...(authorMode === undefined
+      ? {}
+      : {
+        authorMode,
+        frontMatterAuthorityDigest: LEAN_FRONT_MATTER_AUTHORITY_DIGEST,
+      }),
     shellDigest: shell.shellDigest,
     ledgerDigest,
     targetBoundaries,
@@ -305,15 +220,26 @@ export function createReviewUnitManifest({
     providerRouteDigest: reviewUnitHyperRouteDigest({
       routes: REVIEW_UNIT_HYPER_MODELS,
     },),
-    authorProtocolDigest: REVIEW_UNIT_AUTHOR_PROTOCOL_DIGEST,
+    authorProtocolDigest: authorMode === 'lean-realization'
+      ? LEAN_REALIZATION_AUTHOR_PROTOCOL_DIGEST
+      : REVIEW_UNIT_AUTHOR_PROTOCOL_DIGEST,
     authorSchemaDigest: hashContent({
-      content: JSON.stringify(slotResponseFormat({ shell, }),),
+      content: JSON.stringify(authorMode === 'lean-realization'
+        ? leanRealizationResponseFormat({
+          shell,
+          reviewPlan,
+        })
+        : slotResponseFormat({ shell, }),),
     },),
-    verifierProtocolDigest: REVIEW_UNIT_VERIFIER_PROTOCOL_DIGEST,
+    verifierProtocolDigest: authorMode === 'lean-realization'
+      ? LEAN_REALIZATION_VERIFIER_PROTOCOL_DIGEST
+      : REVIEW_UNIT_VERIFIER_PROTOCOL_DIGEST,
     verifierRuleDigest: REVIEW_UNIT_FINDING_RULE_DIGEST,
     findingCap: REVIEW_UNIT_FINDING_CAP,
     sourcePictures,
-    payloadCountCeiling: MAX_REVIEW_UNIT_PAYLOAD_COUNT,
+    payloadCountCeiling: authorMode === 'lean-realization'
+      ? MAX_LEAN_REALIZATION_PAYLOAD_COUNT
+      : MAX_REVIEW_UNIT_PAYLOAD_COUNT,
     dependencyWaves: 2,
   } as const;
   return {
@@ -373,6 +299,7 @@ export function assertReviewUnitManifest({
     verifierPlan: manifest.verifierPlan,
     providerSelection: manifest.providerSelection,
     sourcePictures: manifest.sourcePictures,
+    ...(manifest.authorMode === undefined ? {} : { authorMode: manifest.authorMode, }),
   },);
   if ((manifest.manifestDigest !== expectedManifestDigest)
     || (JSON.stringify(manifest,) !== JSON.stringify(expected,)))

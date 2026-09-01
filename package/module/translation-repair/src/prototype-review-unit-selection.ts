@@ -215,8 +215,7 @@ export function selectReviewUnit({
     right,
   ) {
     return (left.priority - right.priority)
-      || left.candidateId
-      .localeCompare(right.candidateId,);
+      || (left.candidateOrdinal - right.candidateOrdinal);
   },);
   /**
    * Fixed private fallback.

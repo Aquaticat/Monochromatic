@@ -105,6 +105,13 @@ export function reviewUnitResponseFormat({
     pictureCount - 1,
   );
   /**
+   * Candidate L all-slot or Candidate K body-only language cardinality.
+   */
+  const languageSubjectCount = candidate.mutableSlotKeys
+    ?.length
+    ?? reviewPlan.slotGroups
+    .length;
+  /**
    * Highest subject index across review scopes.
    */
   const maxSubjectIndex = Math.max(
@@ -114,8 +121,7 @@ export function reviewUnitResponseFormat({
       .length,
     reviewPlan.relations
       .length,
-    reviewPlan.slotGroups
-      .length,
+    languageSubjectCount,
     reviewPlan.globalCriteria
       .length,
   ) - 1;
@@ -185,10 +191,8 @@ export function reviewUnitResponseFormat({
           },
           slotLanguageStatuses: {
             type: 'string',
-            minLength: reviewPlan.slotGroups
-              .length,
-            maxLength: reviewPlan.slotGroups
-              .length,
+            minLength: languageSubjectCount,
+            maxLength: languageSubjectCount,
           },
           globalStatuses: {
             type: 'string',

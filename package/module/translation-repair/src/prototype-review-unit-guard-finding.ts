@@ -85,9 +85,11 @@ function isIndexArray({
 function subjectCount({
   scope,
   reviewPlan,
+  languageSubjectCount,
 }: {
   readonly scope: ReviewUnitFindingScope;
   readonly reviewPlan: ReviewUnitPlan;
+  readonly languageSubjectCount: number;
 }): number {
   if (scope === 'fm')
     return reviewPlan.frontMatterSubjects
@@ -99,8 +101,7 @@ function subjectCount({
     return reviewPlan.relations
       .length;
   if (scope === 'sl')
-    return reviewPlan.slotGroups
-      .length;
+    return languageSubjectCount;
   return reviewPlan.globalCriteria
     .length;
 }
@@ -114,10 +115,12 @@ function findingFailure({
   value,
   reviewPlan,
   pictureCount,
+  languageSubjectCount,
 }: {
   readonly value: unknown;
   readonly reviewPlan: ReviewUnitPlan;
   readonly pictureCount: number;
+  readonly languageSubjectCount: number;
 }): ReviewUnitGuardFailure | typeof FINDING_VALID {
   if ((!isJsonRecord(value,))
     || (!hasExactKeys({
@@ -157,6 +160,7 @@ function findingFailure({
     || (value.subjectIndex >= subjectCount({
       scope: value.scope,
       reviewPlan,
+      languageSubjectCount,
     }))
     || (value.defectClassIndex < 0)
     || (value.defectClassIndex >= REVIEW_UNIT_DEFECT_CLASSES.length)
@@ -182,10 +186,12 @@ export function diagnoseReviewUnitFindings({
   findings,
   reviewPlan,
   pictureCount,
+  languageSubjectCount,
 }: {
   readonly findings: readonly unknown[];
   readonly reviewPlan: ReviewUnitPlan;
   readonly pictureCount: number;
+  readonly languageSubjectCount: number;
 }): ReviewUnitGuardFailure | typeof FINDING_VALID {
   return findings.reduce<ReviewUnitGuardFailure | typeof FINDING_VALID>(
     function firstFailure(
@@ -197,6 +203,7 @@ export function diagnoseReviewUnitFindings({
           value: finding,
           reviewPlan,
           pictureCount,
+          languageSubjectCount,
         })
         : found;
     },

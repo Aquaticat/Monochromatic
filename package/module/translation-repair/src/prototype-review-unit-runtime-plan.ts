@@ -1,4 +1,4 @@
-// PROTOTYPE ONLY: Candidate K static verifier Cartesian plan settlement.
+// PROTOTYPE ONLY: Candidate K and L static verifier Cartesian settlement.
 
 import { hashContent, } from './document-node.ts';
 import type {
@@ -10,7 +10,7 @@ import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import { reviewUnitResponseFormat, } from './prototype-review-unit-schema.ts';
 
 /**
- * One of nine statically manifested candidate and verifier nodes.
+ * One statically manifested candidate and verifier Cartesian node.
  */
 export type ReviewUnitVerifierNodePlan = {
   /**
@@ -69,7 +69,7 @@ export type ReviewUnitVerifierWavePlan = {
    */
   readonly authorSettlementDigest: string;
   /**
-   * Nine statically finite node rows.
+   * Every statically finite author and verifier Cartesian row.
    */
   readonly nodes: readonly ReviewUnitVerifierNodePlan[];
   /**
@@ -95,7 +95,7 @@ export type ReviewUnitVerifierWavePlan = {
 };
 
 /**
- * Builds nine-row verifier plan before dispatching any verifier.
+ * Builds complete Cartesian verifier plan before dispatching any verifier.
  *
  * @returns Immutable static second-wave plan
  *

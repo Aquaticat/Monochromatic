@@ -142,6 +142,13 @@ export function diagnoseReviewUnitResponse({
       kind: 'rejected',
       failure: 'candidate-binding',
     };
+  /**
+   * Candidate L all-slot or Candidate K body-only language cardinality.
+   */
+  const languageSubjectCount = candidate.mutableSlotKeys
+    ?.length
+    ?? reviewPlan.slotGroups
+    .length;
   if (((typeof value.frontMatterStatuses) !== 'string')
     || (value.frontMatterStatuses
       .length
@@ -160,8 +167,7 @@ export function diagnoseReviewUnitResponse({
       .length)
     || (value.slotLanguageStatuses
       .length
-      !== reviewPlan.slotGroups
-      .length)
+      !== languageSubjectCount)
     || (value.globalStatuses
       .length
       !== reviewPlan.globalCriteria
@@ -210,6 +216,7 @@ export function diagnoseReviewUnitResponse({
     findings: value.findings,
     reviewPlan,
     pictureCount,
+    languageSubjectCount,
   },);
   return (typeof findingResult) === 'symbol'
     ? { kind: 'accepted', }
