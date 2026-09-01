@@ -73,10 +73,12 @@ never the author defect profile.
 ### Whole-page work collides with the output envelope; slice-scale work does not
 
 Complete-page forced-tool responses repeatedly died at completion ceilings with default provider reasoning:
-GLM emitted thinking only to 32,000 tokens four times across I, K, L, and M;
+GLM emitted thinking only to 32,000 tokens four times across K, L, and M,
+and was cut at the 360-second call deadline twice in I;
 MiniMax authors truncated at 32,000 twice;
 Kimi truncated at its 16,000 model cap;
-Qwen completed 59,438-token responses but returned unparseable tool JSON at that scale.
+Qwen completed a 59,438-token author response that was admitted in M,
+while its K author and its 47,553-token M verifier returned unparseable tool JSON.
 Context windows were never the problem;
 completion budgets under mandatory default thinking were.
 The owner forbids reasoning knobs,
