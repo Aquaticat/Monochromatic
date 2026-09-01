@@ -278,6 +278,10 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
   'src/prototype-hyper-expansion-client.ts',
   'src/prototype-target-boundary.ts',
   'src/prototype-target-boundary-compile.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp-worktree.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp-mutations.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp-process.ts',
 ])
 """
 
@@ -356,6 +360,10 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', [
   'src/prototype-hyper-expansion-client.ts',
   'src/prototype-target-boundary.ts',
   'src/prototype-target-boundary-compile.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp-worktree.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp-mutations.ts',
+  'src/corpus-run/prototype-risk-challenger-gfp-process.ts',
 ])
 """
 
@@ -642,3 +650,7 @@ run = "node dist/final/node/verify-published.mjs"
 description = "#107: judge flagged slices and matched controls three times over ONE slate, narrow, narrow again, then with the neighbouring original, and report whether the window moved the replacement rate further than two narrow runs move it; SPENDS QUOTA, resumes from its ledger, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR"
 depends = ["build"]
 run = "node dist/final/node/window-trial-probe.mjs"
+
+[tasks."test:gfp:risk-challenger"]
+description = "Mutate Candidate M safety guards one at a time, rebuild, require targeted test detection, and restore the baseline"
+run = "node src/corpus-run/prototype-risk-challenger-gfp.ts"
