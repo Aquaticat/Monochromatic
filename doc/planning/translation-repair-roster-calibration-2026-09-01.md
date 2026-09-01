@@ -255,6 +255,48 @@ printed yet, so still before any number they decide on existed.
 6.  `glm-5.3`'s reliability is read off the 180000 ms instrument, because that is the corpus pass's window,
     and by role: 10 percent of translate asks lost as a writer, 29 percent of select asks lost as a judge.
 
+## Owner authorization of 2026-09-01 and the drops made on it
+
+The owner wrote mid-run: "I authorize you to drop any model from any role, as long as you have evidence.
+These doesn't count as design decisions."
+That settles the question rule 5 had put to the owner and narrows the owner-blocklist-only clause to roster
+membership: a role drop on measured evidence is part of this seating.
+
+Latency of completed streams per model, from the two logs (`>180 s` counts completed streams that ran past the
+production window's length, an upper bound on further cuts under it, since the window starts at quorum):
+
+-   `glm-5.3`: producer run p50 61 s, p90 166 s, max 221 s, 14 cut and 4 completed past 180 s of 77;
+    editor run p50 66 s, p90 172 s, max 278 s, 2 cut and 4 past 180 s of 55.
+-   `GLM-5.3-Flash`: producer run p50 66 s, p90 153 s, 6 cut and 4 past 180 s of 83;
+    editor run p50 52 s, p90 199 s, none cut and 6 past 180 s of 54.
+-   `Kimi-K3`: producer p50 26 s, p90 104 s, 1 cut and 1 past 180 s; `Qwen3.8-27B`: p50 33 s, p90 77 s, none.
+-   Every other model: p90 under 50 s, nothing past 120 s except two gemma streams in the editor run.
+
+Schema-mismatch lines by model and stage, recovery re-asks included:
+`deepseek-v4-flash-0731` at select 8 (producer) and 4 (editor), every one a numeric string where the guard wants
+a number (`"best": "8"`); `Qwen3.8-27B` at select 2 (editor run, one answer with a bad control character).
+
+Drops made before the 40-slice standing:
+
+-   Translator seat: `hf:openai/gpt-oss-120b` and `deepseek-v4-flash-0731` leave
+    `RUN_TRANSLATE_MODELS.translatorModelIds`.
+    Evidence: the 40-round producer standing, 5 of 207 and 5 of 208 disinterested ballots, z -4.53 and -4.55
+    against the pooled null, at 40 of 40 candidates each, so the finding is about writing, not availability.
+    Both keep every other seat.
+    With seven translators and eight judges every slate keeps at least two disinterested judges
+    (`assertJudgeableProducerRoster`'s floor) and the translator quorum is 4 of 7.
+-   Judge seat, both lanes: `glm-5.3` leaves `judgeModelIds`.
+    Evidence: under the production window it lost 11 of 38 select asks (29 percent), each loss holding the round
+    for the whole window after quorum and delivering about 2 M raw characters of reasoning that never reached an
+    answer, at the roster's highest output rate; its completed select streams are the roster's slowest.
+    It keeps the critic, panel and translator seats, where no production-window measurement exists
+    (the editor calibration ran at 300000 ms and lost 1 of 54 there); the four-entry pass logs abandons by role
+    and supplies that evidence.
+-   Not dropped: `deepseek-v4-flash-0731` as a judge loses about a tenth of its select ballots to the numeric
+    string shape, a parser tolerance question filed as follow-up rather than evidence about its judgment;
+    `GLM-5.3-Flash` as a judge lost 6 of 83 asks (7 percent) under the production window and none under
+    300000 ms, and stays.
+
 ## Stale text the seating edit fixes in `run-config.ts`
 
 -   `RUN_ROSTER` says "EIGHT MODELS NOW"; the roster is nine.
