@@ -25,21 +25,24 @@ import type { RosterModelId, } from './roster-id.ts';
 /**
  * Restart outcome with explicit pending and unusable states.
  */
-export type RestartedReviewUnitNode<ValueT,> =
+export type RestartedReviewUnitNode<
+  ValueT,
+  FailureT extends string = ReviewUnitGuardFailure,
+> =
   | { readonly kind: 'pending' }
   | {
     /**
      * Durable terminal spent record.
      */
     readonly kind: 'unusable';
-    readonly record: ReviewUnitNodeRecord;
+    readonly record: ReviewUnitNodeRecord<FailureT>;
   }
   | {
     /**
      * Reusable completed response.
      */
     readonly kind: 'usable';
-    readonly record: ReviewUnitNodeRecord;
+    readonly record: ReviewUnitNodeRecord<FailureT>;
     readonly value: ValueT;
   };
 
@@ -56,58 +59,41 @@ type ReviewUnitNodeText =
 /**
  * Stored pre-terminal or terminal node record.
  */
-type ReviewUnitStoredNode = ReviewUnitDispatchRecord | ReviewUnitNodeRecord;
+type ReviewUnitStoredNode<FailureT extends string,> =
+  | ReviewUnitDispatchRecord<FailureT>
+  | ReviewUnitNodeRecord<FailureT>;
 
 /**
- * Finite guard category whitelist for generated record validation.
+ * Captures architecture-specific stored-node failure categories.
+ *
+ * @param failureCategories - Exact architecture diagnostic whitelist
+ *
+ * @returns Stored-node guard bound to exact diagnostic whitelist
  */
-const GUARD_FAILURES: readonly ReviewUnitGuardFailure[] = [
-  'anchor',
-  'candidate-binding',
-  'finding-shape',
-  'json-syntax',
-  'key-set',
-  'overflow',
-  'raw-duplicate',
-  'status-alphabet',
-  'status-length',
-];
-
-/**
- * Whether unknown value is finite guard category.
- *
- * @param value - Untrusted stored category
- *
- * @returns Whether value belongs to finite diagnostic union
- */
-function isGuardFailure(value: unknown,): value is ReviewUnitGuardFailure {
-  return ((typeof value) === 'string')
-    && GUARD_FAILURES.some(function same(category,) { return category === value; });
-}
-
-/**
- * Whether generated node record carries required binding primitives.
- *
- * @param value - Untrusted parsed node record
- *
- * @returns Whether generated record has valid terminal shape
- */
-function isStoredNode(value: unknown,): value is ReviewUnitStoredNode {
-  if ((!isJsonRecord(value,))
-    || ((typeof value.id) !== 'string')
-    || ((typeof value.modelId) !== 'string')
-    || ((typeof value.manifestDigest) !== 'string')
-    || ((typeof value.basePromptDigest) !== 'string')
-    || ((typeof value.promptDigest) !== 'string')
-    || ((typeof value.startedAt) !== 'string')
-    || ((value.state !== 'dispatched')
-      && (value.state !== 'completed')
-      && (value.state !== 'spent-unusable')))
-    return false;
-  if (value.state === 'dispatched')
-    return true;
-  return ((typeof value.durationMs) === 'number')
-    && ((value.failureCategory === undefined) || isGuardFailure(value.failureCategory,));
+function storedNodeGuard<FailureT extends string,>(
+  failureCategories: readonly FailureT[],
+): (value: unknown) => value is ReviewUnitStoredNode<FailureT> {
+  return function isStoredNode(value: unknown): value is ReviewUnitStoredNode<FailureT> {
+    if ((!isJsonRecord(value,))
+      || ((typeof value.id) !== 'string')
+      || ((typeof value.modelId) !== 'string')
+      || ((typeof value.manifestDigest) !== 'string')
+      || ((typeof value.basePromptDigest) !== 'string')
+      || ((typeof value.promptDigest) !== 'string')
+      || ((typeof value.startedAt) !== 'string')
+      || ((value.state !== 'dispatched')
+        && (value.state !== 'completed')
+        && (value.state !== 'spent-unusable')))
+      return false;
+    if (value.state === 'dispatched')
+      return true;
+    return ((typeof value.durationMs) === 'number')
+      && ((value.failureCategory === undefined)
+        || (((typeof value.failureCategory) === 'string')
+          && failureCategories.some(function same(category,) {
+            return category === value.failureCategory;
+          },)));
+  };
 }
 
 /**
@@ -157,7 +143,10 @@ async function readNodeText({
  * });
  * ```
  */
-export async function restartReviewUnitNode<ValueT,>({
+export async function restartReviewUnitNode<
+  ValueT,
+  FailureT extends string,
+>({
   outputDir,
   id,
   modelId,
@@ -166,6 +155,7 @@ export async function restartReviewUnitNode<ValueT,>({
   responseFormat,
   validate,
   validateRawText,
+  failureCategories,
   signal,
 }: {
   readonly outputDir: string;
@@ -176,8 +166,9 @@ export async function restartReviewUnitNode<ValueT,>({
   readonly responseFormat: JsonSchemaResponseFormat;
   readonly validate: (value: unknown) => value is ValueT;
   readonly validateRawText?: (rawText: string) => void;
+  readonly failureCategories: readonly FailureT[];
   readonly signal: AbortSignal;
-}): Promise<RestartedReviewUnitNode<ValueT>> {
+}): Promise<RestartedReviewUnitNode<ValueT, FailureT>> {
   /**
    * Stored node file lookup.
    */
@@ -191,6 +182,10 @@ export async function restartReviewUnitNode<ValueT,>({
    * Parsed generated node record.
    */
   const stored: unknown = JSON.parse(nodeText.text,);
+  /**
+   * Architecture-specific generated-record guard.
+   */
+  const isStoredNode = storedNodeGuard(failureCategories,);
   if (!isStoredNode(stored,))
     throw new Error(`review unit restart record differs at ${id}`);
   /**
@@ -218,7 +213,7 @@ export async function restartReviewUnitNode<ValueT,>({
     /**
      * Indeterminate transmission permanently converted to spent state.
      */
-    const record: ReviewUnitNodeRecord = {
+    const record: ReviewUnitNodeRecord<FailureT> = {
       id,
       modelId,
       manifestDigest,

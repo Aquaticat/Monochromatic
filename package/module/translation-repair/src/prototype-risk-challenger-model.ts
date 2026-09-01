@@ -61,6 +61,27 @@ export const CANDIDATE_M_CHALLENGER_TIMEOUT_MS = 900_000;
 
 //endregion Static graph identity
 
+/**
+ * Privacy-safe Candidate M caller-guard categories.
+ */
+export const CANDIDATE_M_GUARD_FAILURES = [
+  'anchor',
+  'attestation-code',
+  'attestation-key-order',
+  'candidate-binding',
+  'finding-shape',
+  'key-set',
+  'raw-duplicate',
+  'role',
+  'source-scope',
+  'verdict-finding-cardinality',
+] as const;
+
+/**
+ * One privacy-safe Candidate M caller-guard category.
+ */
+export type CandidateMGuardFailure = typeof CANDIDATE_M_GUARD_FAILURES[number];
+
 //region Risk-attested authors -- attention evidence remains selection-blind.
 
 /**
@@ -138,6 +159,20 @@ export type CandidateMCandidate = Omit<
    * Risk-bound complete candidate identity.
    */
   readonly candidateDigest: string;
+};
+
+/**
+ * Terminal Candidate M author state.
+ */
+export type CandidateMAuthorState = {
+  /**
+   * Durable static author record.
+   */
+  readonly record: ReviewUnitNodeRecord<CandidateMGuardFailure>;
+  /**
+   * Complete risk-bound candidate after admission.
+   */
+  readonly candidate?: CandidateMCandidate;
 };
 
 //endregion Risk-attested authors
@@ -270,21 +305,6 @@ export type CandidateMChallenge = CandidateMChallengeResponse & {
 };
 
 /**
- * Privacy-safe Candidate M caller-guard category.
- */
-export type CandidateMGuardFailure =
-  | 'anchor'
-  | 'attestation-code'
-  | 'attestation-key-order'
-  | 'candidate-binding'
-  | 'finding-shape'
-  | 'key-set'
-  | 'raw-duplicate'
-  | 'role'
-  | 'source-scope'
-  | 'verdict-finding-cardinality';
-
-/**
  * Candidate M challenge guard result.
  */
 export type CandidateMChallengeDiagnosis =
@@ -301,7 +321,7 @@ export type CandidateMChallengeState = {
   /**
    * Durable static node record.
    */
-  readonly record: ReviewUnitNodeRecord;
+  readonly record: ReviewUnitNodeRecord<CandidateMGuardFailure>;
   /**
    * Atomic admitted challenge, absent after abstention.
    */

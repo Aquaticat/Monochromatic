@@ -1,4 +1,4 @@
-// PROTOTYPE ONLY: Candidate L restartable complete author node.
+// PROTOTYPE ONLY: Candidate M restartable risk-attested author node.
 
 import { join, } from 'node:path';
 
@@ -8,24 +8,30 @@ import type {
   SyntheticClient,
   VisionMessage,
 } from './chat-contract.ts';
-import { admitLeanRealizationResponse, } from './prototype-lean-realization-author.ts';
 import {
-  leanRealizationGuard,
-  leanRealizationResponseFormat,
-} from './prototype-lean-realization-wire.ts';
-import { reviewUnitHyperModel, } from './prototype-review-unit-hyper.ts';
-import { assertReviewUnitManifest, } from './prototype-review-unit-manifest.ts';
+  admitRiskAttestedAuthorResponse,
+} from './prototype-risk-challenger-author.ts';
 import {
-  REVIEW_UNIT_GUARD_FAILURES,
-  type ReviewUnitCandidate,
-  type ReviewUnitManifest,
-} from './prototype-review-unit-model.ts';
+  diagnoseRiskAttestedAuthorResponse,
+  riskAttestedAuthorResponseFormat,
+} from './prototype-risk-challenger-author-wire.ts';
+import {
+  assertCandidateMManifest,
+  candidateMNodeTimeout,
+} from './prototype-risk-challenger-manifest.ts';
+import type { CandidateMManifest, } from './prototype-risk-challenger-manifest-model.ts';
+import {
+  CANDIDATE_M_GUARD_FAILURES,
+  type CandidateMAuthorResponse,
+  type CandidateMAuthorState,
+  type CandidateMCandidate,
+  type CandidateMGuardFailure,
+} from './prototype-risk-challenger-model.ts';
 import {
   executeReviewUnitNode,
   settleReviewUnitNode,
 } from './prototype-review-unit-node-execute.ts';
 import { restartReviewUnitNode, } from './prototype-review-unit-node-restart.ts';
-import type { ReviewUnitAuthorState, } from './prototype-review-unit-settlement.ts';
 import { assertNoDuplicateJsonMembers, } from './prototype-json-member-guard.ts';
 import type { ReviewUnitPlan, } from './prototype-review-unit-plan.ts';
 import type {
@@ -34,24 +40,12 @@ import type {
 } from './prototype-realization-model.ts';
 import { persistRealizationImmutableJson, } from './prototype-realization-persistence.ts';
 import { assertRealizationPicturesReachMessages, } from './prototype-realization-vision.ts';
-import type {
-  ImmutableShell,
-  SlotDocumentResponse,
-} from './prototype-slot-model.ts';
+import type { ImmutableShell, } from './prototype-slot-model.ts';
 
 /**
- * Refuses duplicate response members before parsing erases them.
+ * Persists complete Candidate M candidate.
  *
- * @param rawText - Exact provider response text
- */
-function validateRawText(rawText: string,): void {
-  assertNoDuplicateJsonMembers({ text: rawText, });
-}
-
-/**
- * Persists complete Candidate L candidate.
- *
- * @returns Terminal author state
+ * @returns Completed author state
  */
 async function persistCandidate({
   outputDir,
@@ -61,17 +55,17 @@ async function persistCandidate({
 }: {
   readonly outputDir: string;
   readonly id: string;
-  readonly record: ReviewUnitAuthorState['record'];
-  readonly candidate: ReviewUnitCandidate;
-}): Promise<ReviewUnitAuthorState> {
+  readonly record: CandidateMAuthorState['record'];
+  readonly candidate: CandidateMCandidate;
+}): Promise<CandidateMAuthorState> {
   await persistRealizationImmutableJson({
     path: join(
       outputDir,
       `candidate-${id}.json`,
     ),
     value: candidate,
-    label: 'lean realization candidate',
-  });
+    label: 'risk challenger candidate',
+  },);
   return {
     record,
     candidate,
@@ -79,16 +73,16 @@ async function persistCandidate({
 }
 
 /**
- * Executes or resumes one Candidate L complete author.
+ * Executes or resumes one Candidate M complete author.
  *
- * @returns Complete candidate or durable unusable state
+ * @returns Complete risk-bound candidate or durable unusable state
  *
  * @example
  * ```ts
- * const state = await runLeanRealizationAuthorNode({ outputDir, client, plan, manifest, expectedManifestDigest, messages, shell, ledger, reviewPlan, sourceText, archiveText, sourcePictures, restart, signal, });
+ * const state = await runRiskAttestedAuthorNode({ outputDir, client, plan, manifest, expectedManifestDigest, messages, shell, ledger, reviewPlan, sourceText, archiveText, sourcePictures, restart, signal, });
  * ```
  */
-export async function runLeanRealizationAuthorNode({
+export async function runRiskAttestedAuthorNode({
   outputDir,
   client,
   plan,
@@ -107,7 +101,7 @@ export async function runLeanRealizationAuthorNode({
   readonly outputDir: string;
   readonly client: SyntheticClient;
   readonly plan: RealizationCandidatePlan;
-  readonly manifest: ReviewUnitManifest;
+  readonly manifest: CandidateMManifest;
   readonly expectedManifestDigest: string;
   readonly messages: readonly (ChatMessage | VisionMessage)[];
   readonly shell: ImmutableShell;
@@ -118,8 +112,8 @@ export async function runLeanRealizationAuthorNode({
   readonly sourcePictures: readonly { readonly assetName: string; }[];
   readonly restart: boolean;
   readonly signal: AbortSignal;
-}): Promise<ReviewUnitAuthorState> {
-  assertReviewUnitManifest({
+}): Promise<CandidateMAuthorState> {
+  assertCandidateMManifest({
     manifest,
     ledger,
     shell,
@@ -128,40 +122,71 @@ export async function runLeanRealizationAuthorNode({
     archiveBody: archiveText,
     reviewPlan,
     expectedManifestDigest,
-  });
-  if (manifest.authorMode !== 'lean-realization')
-    throw new Error('lean realization author manifest mode differs');
+  },);
   assertRealizationPicturesReachMessages({
     messages,
     sourcePictures,
-  });
+  },);
   /**
    * Durable static author node identity.
    */
-  const id = `lean-realization-author-${String(plan.ordinal,)}`;
+  const id = `risk-challenger-author-${String(plan.ordinal,)}`;
   /**
-   * Exact 27-value author response schema.
+   * Exact author response format.
    */
-  const responseFormat = leanRealizationResponseFormat({
+  const responseFormat = riskAttestedAuthorResponseFormat({
     shell,
     reviewPlan,
-  });
+  },);
   /**
-   * Parsed response guard bound to mutable keys.
+   * Mutable guard state scoped to one node execution.
    */
-  const validate = leanRealizationGuard({
-    shell,
-    reviewPlan,
-  });
+  const guardState: { failureCategory: CandidateMGuardFailure } = {
+    failureCategory: 'key-set',
+  };
   /**
-   * Admits one parsed complete response under captured runtime authority.
+   * Candidate M parsed guard with exact category capture.
    *
-   * @param response - Complete provider slot response
+   * @param value - Untrusted parsed provider response
    *
-   * @returns Runtime-owned candidate
+   * @returns Whether response obeys exact author contract
    */
-  function admit(response: SlotDocumentResponse,): ReviewUnitCandidate {
-    return admitLeanRealizationResponse({
+  function validate(value: unknown,): value is CandidateMAuthorResponse {
+    /**
+     * Exact caller diagnosis under current shell authority.
+     */
+    const diagnosis = diagnoseRiskAttestedAuthorResponse({
+      value,
+      shell,
+      reviewPlan,
+    },);
+    if (diagnosis.kind === 'rejected')
+      guardState.failureCategory = diagnosis.failure;
+    return diagnosis.kind === 'accepted';
+  }
+  /**
+   * Raw duplicate guard before parse erases member multiplicity.
+   *
+   * @param rawText - Exact provider tool-input text
+   */
+  function validateRawText(rawText: string,): void {
+    try {
+      assertNoDuplicateJsonMembers({ text: rawText, });
+    }
+    catch (error) {
+      guardState.failureCategory = 'raw-duplicate';
+      throw error;
+    }
+  }
+  /**
+   * Admits parsed complete response under runtime authority.
+   *
+   * @param response - Exact risk-attested author response
+   *
+   * @returns Complete risk-bound candidate
+   */
+  function admit(response: CandidateMAuthorResponse,): CandidateMCandidate {
+    return admitRiskAttestedAuthorResponse({
       response,
       shell,
       manifest,
@@ -170,7 +195,7 @@ export async function runLeanRealizationAuthorNode({
       sourceText,
       archiveText,
       sourcePictures,
-    });
+    },);
   }
   if (restart) {
     /**
@@ -185,9 +210,9 @@ export async function runLeanRealizationAuthorNode({
       responseFormat,
       validate,
       validateRawText,
-      failureCategories: REVIEW_UNIT_GUARD_FAILURES,
+      failureCategories: CANDIDATE_M_GUARD_FAILURES,
       signal,
-    });
+    },);
     if (stored.kind === 'usable') {
       return await persistCandidate({
         outputDir,
@@ -212,10 +237,18 @@ export async function runLeanRealizationAuthorNode({
     responseFormat,
     validate,
     validateRawText,
-    exchangeTimeoutMs: reviewUnitHyperModel({ modelId: plan.modelId, })
-      .requestTimeoutMs,
+    failureCategory: function category() {
+      return {
+        kind: 'found',
+        value: guardState.failureCategory,
+      };
+    },
+    exchangeTimeoutMs: candidateMNodeTimeout({
+      manifest,
+      nodeRole: 'author',
+    },),
     signal,
-  });
+  },);
   if (execution.kind === 'unusable')
     return { record: execution.record, };
   try {
@@ -224,13 +257,13 @@ export async function runLeanRealizationAuthorNode({
      */
     const candidate = admit(execution.value,);
     /**
-     * Durable completed node row.
+     * Durable completed author record.
      */
     const record = await settleReviewUnitNode({
       outputDir,
       execution,
       usable: true,
-    });
+    },);
     return await persistCandidate({
       outputDir,
       id,
@@ -240,14 +273,15 @@ export async function runLeanRealizationAuthorNode({
   }
   catch (error) {
     /**
-     * Durable no-effect node row.
+     * Durable spent record after deterministic admission failure.
      */
     const record = await settleReviewUnitNode({
       outputDir,
       execution,
       usable: false,
       failure: error,
-    });
+      failureCategory: 'candidate-binding',
+    },);
     return { record, };
   }
 }

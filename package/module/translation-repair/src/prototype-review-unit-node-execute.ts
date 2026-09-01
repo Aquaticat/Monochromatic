@@ -25,7 +25,10 @@ import type { RosterModelId, } from './roster-id.ts';
 /**
  * Fresh execution before deterministic semantic admission settles.
  */
-export type ReviewUnitExecution<ValueT,> =
+export type ReviewUnitExecution<
+  ValueT,
+  FailureT extends string = ReviewUnitGuardFailure,
+> =
   | {
     /**
      * Provider response passed parsed and raw guards.
@@ -43,7 +46,7 @@ export type ReviewUnitExecution<ValueT,> =
      * Runtime binding before terminal state.
      */
     readonly record: Omit<
-      ReviewUnitNodeRecord,
+      ReviewUnitNodeRecord<FailureT>,
       'durationMs' | 'responseDigest' | 'state'
     > & { readonly durationMs: number };
   }
@@ -55,7 +58,7 @@ export type ReviewUnitExecution<ValueT,> =
     /**
      * Atomic terminal spent record.
      */
-    readonly record: ReviewUnitNodeRecord;
+    readonly record: ReviewUnitNodeRecord<FailureT>;
   };
 
 /**
@@ -80,7 +83,10 @@ export type ReviewUnitExecution<ValueT,> =
  * });
  * ```
  */
-export async function executeReviewUnitNode<ValueT,>({
+export async function executeReviewUnitNode<
+  ValueT,
+  FailureT extends string = ReviewUnitGuardFailure,
+>({
   outputDir,
   client,
   id,
@@ -105,10 +111,10 @@ export async function executeReviewUnitNode<ValueT,>({
   readonly validateRawText?: (rawText: string) => void;
   readonly failureCategory?: (
     detailType?: ReviewUnitNodeRecord['failureDetailType'],
-  ) => ReviewUnitFailureCategory;
+  ) => ReviewUnitFailureCategory<FailureT>;
   readonly exchangeTimeoutMs: number;
   readonly signal: AbortSignal;
-}): Promise<ReviewUnitExecution<ValueT>> {
+}): Promise<ReviewUnitExecution<ValueT, FailureT>> {
   /**
    * Prompt digest before response schema.
    */
@@ -186,7 +192,7 @@ export async function executeReviewUnitNode<ValueT,>({
       /**
        * Atomic terminal spent record.
        */
-      const record: ReviewUnitNodeRecord = {
+      const record: ReviewUnitNodeRecord<FailureT> = {
         ...binding,
         durationMs,
         state: 'spent-unusable',
@@ -220,7 +226,7 @@ export async function executeReviewUnitNode<ValueT,>({
         /**
          * Atomic raw-guard terminal record.
          */
-        const record: ReviewUnitNodeRecord = {
+        const record: ReviewUnitNodeRecord<FailureT> = {
           ...binding,
           durationMs,
           state: 'spent-unusable',
@@ -258,7 +264,7 @@ export async function executeReviewUnitNode<ValueT,>({
       /**
        * Exact caller-abort terminal record.
        */
-      const record: ReviewUnitNodeRecord = {
+      const record: ReviewUnitNodeRecord<FailureT> = {
         ...binding,
         durationMs: Date.now() - startedMs,
         state: 'spent-unusable',
@@ -278,7 +284,7 @@ export async function executeReviewUnitNode<ValueT,>({
     /**
      * Atomic thrown-failure terminal record.
      */
-    const record: ReviewUnitNodeRecord = {
+    const record: ReviewUnitNodeRecord<FailureT> = {
       ...binding,
       durationMs: Date.now() - startedMs,
       state: 'spent-unusable',
@@ -308,7 +314,9 @@ export async function executeReviewUnitNode<ValueT,>({
  * const record = await settleReviewUnitNode({ outputDir, execution, usable, });
  * ```
  */
-export async function settleReviewUnitNode({
+export async function settleReviewUnitNode<
+  FailureT extends string = ReviewUnitGuardFailure,
+>({
   outputDir,
   execution,
   usable,
@@ -316,11 +324,11 @@ export async function settleReviewUnitNode({
   failureCategory,
 }: {
   readonly outputDir: string;
-  readonly execution: Extract<ReviewUnitExecution<unknown>, { readonly kind: 'usable' }>;
+  readonly execution: Extract<ReviewUnitExecution<unknown, FailureT>, { readonly kind: 'usable' }>;
   readonly usable: boolean;
   readonly failure?: unknown;
-  readonly failureCategory?: ReviewUnitGuardFailure;
-}): Promise<ReviewUnitNodeRecord> {
+  readonly failureCategory?: FailureT;
+}): Promise<ReviewUnitNodeRecord<FailureT>> {
   /**
    * Runtime-owned parsed response text.
    */
@@ -332,7 +340,7 @@ export async function settleReviewUnitNode({
   /**
    * Final atomic node record including exact semantic category.
    */
-  const record: ReviewUnitNodeRecord = {
+  const record: ReviewUnitNodeRecord<FailureT> = {
     ...execution.record,
     state: usable ? 'completed' : 'spent-unusable',
     responseDigest: hashContent({ content: responseText, }),

@@ -48,6 +48,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "prototype-candidate-ballot-test-support": "./src/prototype-candidate-ballot-test-support.ts",
     "prototype-review-unit": "./src/prototype-review-unit.ts",
     "prototype-review-unit-test-support": "./src/prototype-review-unit-test-support.ts",
+    "prototype-risk-challenger": "./src/prototype-risk-challenger.ts",
     "prototype-conditional-audit-calibration": "./src/corpus-run/prototype-conditional-audit-calibration.ts",
     "prototype-conditional-audit-controls": "./src/corpus-run/prototype-conditional-audit-controls.ts",
     "prototype-conditional-audit-replay": "./src/corpus-run/prototype-conditional-audit-replay.ts",

@@ -21,12 +21,13 @@ import type {
   ReviewUnitNodeRecord,
 } from './prototype-review-unit-node-record.ts';
 import { restartReviewUnitNode, } from './prototype-review-unit-node-restart.ts';
-import type {
-  ReviewUnitAuthorSettlement,
-  ReviewUnitCandidate,
-  ReviewUnitGuardFailure,
-  ReviewUnitManifest,
-  ReviewUnitResponse,
+import {
+  REVIEW_UNIT_GUARD_FAILURES,
+  type ReviewUnitAuthorSettlement,
+  type ReviewUnitCandidate,
+  type ReviewUnitGuardFailure,
+  type ReviewUnitManifest,
+  type ReviewUnitResponse,
 } from './prototype-review-unit-model.ts';
 import { reviewUnitResponseFormat, } from './prototype-review-unit-schema.ts';
 import {
@@ -242,6 +243,7 @@ export async function runReviewUnitVerifierNode({
       responseFormat,
       validate,
       validateRawText,
+      failureCategories: REVIEW_UNIT_GUARD_FAILURES,
       signal,
     },);
     if (stored.kind === 'usable') {

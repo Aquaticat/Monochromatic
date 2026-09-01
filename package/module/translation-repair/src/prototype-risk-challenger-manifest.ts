@@ -21,6 +21,7 @@ import {
   CANDIDATE_M_ARCHITECTURE,
   CANDIDATE_M_AUTHOR_COUNT,
   CANDIDATE_M_AUTHOR_TIMEOUT_MS,
+  CANDIDATE_M_CHALLENGER_FAMILY_COUNT,
   CANDIDATE_M_CHALLENGER_ROLES,
   CANDIDATE_M_CHALLENGER_TIMEOUT_MS,
   CANDIDATE_M_MANIFEST_VERSION,
@@ -77,8 +78,13 @@ export function createCandidateMManifest({
   readonly providerSelection: CandidateMManifest['providerSelection'];
   readonly sourcePictures: CandidateMManifest['sourcePictures'];
 }): CandidateMManifest {
-  if (candidatePlan.length !== CANDIDATE_M_AUTHOR_COUNT)
-    throw new Error('Candidate M author count differs');
+  if ((candidatePlan.length !== CANDIDATE_M_AUTHOR_COUNT)
+    || (verifierPlan.length !== CANDIDATE_M_CHALLENGER_FAMILY_COUNT)
+    || (CANDIDATE_M_CHALLENGER_ROLES.length !== 2)
+    || ((candidatePlan.length
+      * ((verifierPlan.length * CANDIDATE_M_CHALLENGER_ROLES.length) + 1))
+      !== MAX_CANDIDATE_M_PAYLOAD_COUNT))
+    throw new Error('Candidate M static roster count differs');
   /**
    * Validated two-author shell, plan, image, roster, and route base.
    */

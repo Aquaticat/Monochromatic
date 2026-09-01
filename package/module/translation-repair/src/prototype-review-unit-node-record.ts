@@ -17,7 +17,7 @@ import type { RosterModelId, } from './roster-id.ts';
 /**
  * Complete terminal Candidate K provider node record.
  */
-export type ReviewUnitNodeRecord = {
+export type ReviewUnitNodeRecord<FailureT extends string = ReviewUnitGuardFailure,> = {
   /**
    * Static node id.
    */
@@ -69,7 +69,7 @@ export type ReviewUnitNodeRecord = {
   /**
    * Privacy-safe exact caller-guard category.
    */
-  readonly failureCategory?: ReviewUnitGuardFailure;
+  readonly failureCategory?: FailureT;
   /**
    * Provider response parser classification.
    */
@@ -88,22 +88,22 @@ export type ReviewUnitNodeRecord = {
 /**
  * Pre-terminal dispatch marker persisted before transmission.
  */
-export type ReviewUnitDispatchRecord = Omit<
-  ReviewUnitNodeRecord,
+export type ReviewUnitDispatchRecord<FailureT extends string = ReviewUnitGuardFailure,> = Omit<
+  ReviewUnitNodeRecord<FailureT>,
   'durationMs' | 'state'
 > & { readonly state: 'dispatched' };
 
 /**
  * Privacy-safe caller diagnostic or explicit absence.
  */
-export type ReviewUnitFailureCategory =
+export type ReviewUnitFailureCategory<FailureT extends string = ReviewUnitGuardFailure,> =
   | { readonly kind: 'absent' }
   | {
     /**
      * Exact finite guard category.
      */
     readonly kind: 'found';
-    readonly value: ReviewUnitGuardFailure;
+    readonly value: FailureT;
   };
 
 /**
@@ -187,12 +187,12 @@ export function reviewUnitContractDigest({
  * await writeReviewUnitNode({ outputDir, record, });
  * ```
  */
-export async function writeReviewUnitNode({
+export async function writeReviewUnitNode<FailureT extends string,>({
   outputDir,
   record,
 }: {
   readonly outputDir: string;
-  readonly record: ReviewUnitNodeRecord | ReviewUnitDispatchRecord;
+  readonly record: ReviewUnitNodeRecord<FailureT> | ReviewUnitDispatchRecord<FailureT>;
 }): Promise<void> {
   await writeFileAtomic({
     path: join(

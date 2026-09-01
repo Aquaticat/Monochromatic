@@ -440,18 +440,24 @@ export type ReviewUnitAuthorSettlement = {
 };
 
 /**
- * Privacy-safe caller-guard rejection category.
+ * Privacy-safe caller-guard rejection categories.
  */
-export type ReviewUnitGuardFailure =
-  | 'anchor'
-  | 'candidate-binding'
-  | 'finding-shape'
-  | 'json-syntax'
-  | 'key-set'
-  | 'overflow'
-  | 'raw-duplicate'
-  | 'status-alphabet'
-  | 'status-length';
+export const REVIEW_UNIT_GUARD_FAILURES = [
+  'anchor',
+  'candidate-binding',
+  'finding-shape',
+  'json-syntax',
+  'key-set',
+  'overflow',
+  'raw-duplicate',
+  'status-alphabet',
+  'status-length',
+] as const;
+
+/**
+ * One privacy-safe caller-guard rejection category.
+ */
+export type ReviewUnitGuardFailure = typeof REVIEW_UNIT_GUARD_FAILURES[number];
 
 /**
  * Parsed response diagnosis without nullish absence sentinel.

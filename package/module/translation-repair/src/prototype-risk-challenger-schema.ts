@@ -46,6 +46,26 @@ const TARGET_ANCHOR_SCHEMA = {
 } as const;
 
 /**
+ * Resolves exact Candidate M role-to-tool name mapping.
+ *
+ * @param role - Fixed whole-page responsibility
+ *
+ * @returns Forced-tool schema name
+ *
+ * @example
+ * ```ts
+ * const name = candidateMChallengeToolName('fidelity',);
+ * ```
+ */
+export function candidateMChallengeToolName(
+  role: CandidateMChallengerRole,
+): 'risk_challenge_fidelity' | 'risk_challenge_language' {
+  return role === 'fidelity'
+    ? 'risk_challenge_fidelity'
+    : 'risk_challenge_language';
+}
+
+/**
  * Builds Candidate M clean-or-one-defect schema.
  *
  * Broad evidence arrays remain schema-bounded while executable per-class cardinality travels in prompt rules and caller guard.
@@ -93,7 +113,7 @@ export function riskChallengeResponseFormat({
   return {
     type: 'json_schema',
     json_schema: {
-      name: `risk_challenge_${role === 'fidelity' ? 'fidelity' : 'language'}`,
+      name: candidateMChallengeToolName(role,),
       strict: true,
       schema: {
         type: 'object',

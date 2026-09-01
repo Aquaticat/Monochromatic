@@ -11,9 +11,10 @@ import type {
 import { admitReviewUnitAuthorResponse, } from './prototype-review-unit-author.ts';
 import { reviewUnitHyperModel, } from './prototype-review-unit-hyper.ts';
 import { assertReviewUnitManifest, } from './prototype-review-unit-manifest.ts';
-import type {
-  ReviewUnitCandidate,
-  ReviewUnitManifest,
+import {
+  REVIEW_UNIT_GUARD_FAILURES,
+  type ReviewUnitCandidate,
+  type ReviewUnitManifest,
 } from './prototype-review-unit-model.ts';
 import {
   executeReviewUnitNode,
@@ -204,6 +205,7 @@ export async function runReviewUnitAuthorNode({
       responseFormat,
       validate,
       validateRawText: validateCandidateAuthorRawText,
+      failureCategories: REVIEW_UNIT_GUARD_FAILURES,
       signal,
     },);
     if (stored.kind === 'usable') {
