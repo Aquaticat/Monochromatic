@@ -85,12 +85,13 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'SEATS ELEVEN DISTINCT MODELS, four Synthetic serves and seven only the second provider does',
+      name: 'SEATS NINE DISTINCT MODELS, four Synthetic serves and five only the second provider does',
       fn: async () => {
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
-        // admitted glm-5.3, qwen3.8-flash and qwen3.8-2.4t-a95b.
-        expect(ROSTER_MODEL_IDS.length,).toBe(11,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(11,);
+        // admitted glm-5.3 and the same-day conformance probe culled the
+        // refresh's two automatic-only Qwen3.8 routes before seating.
+        expect(ROSTER_MODEL_IDS.length,).toBe(9,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(9,);
       },
     },),
 
@@ -310,7 +311,7 @@ await describe({
   name: readsImages.name,
   children: [
     it({
-      name: 'GROWS READER SUB-ROSTER TO FIVE when the candidate refresh adds an image-capable model',
+      name: 'KEEPS READER SUB-ROSTER AT FOUR after the refresh, since its one image-capable arrival was culled',
       fn: async () => {
         expect(ROSTER_MODEL_IDS
           .filter(function reads(modelId,): boolean {
@@ -321,7 +322,6 @@ await describe({
           'hf:moonshotai/Kimi-K3',
           'hf:zai-org/GLM-5.3-Flash',
           'minimax-m3',
-          'qwen3.8-flash',
         ],);
       },
     },),

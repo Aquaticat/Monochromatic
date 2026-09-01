@@ -42,15 +42,13 @@ await describe({
           'gpt-oss-120b',
           'kimi-k3',
           'minimax-m3',
-          'qwen3.8-2.4t-a95b',
           'qwen3.8-27b',
-          'qwen3.8-flash',
         ],);
       },
     },),
 
     it({
-      name: 'LOWERS the answer ceiling to what a model can actually emit, which two of the eleven '
+      name: 'LOWERS the answer ceiling to what a model can actually emit, which two of the nine '
         + 'cannot reach: asking for more than a model emits buys a truncation and reports it as a '
         + 'schema mismatch, sending a reader to the prompt instead of to the ceiling',
       fn: async () => {
@@ -84,7 +82,7 @@ await describe({
     },),
 
     it({
-      name: 'NAMES the seven models only this provider serves, which have no cross-provider re-ask '
+      name: 'NAMES the five models only this provider serves, which have no cross-provider re-ask '
         + 'and fall back to the invalid-candidate path from `#88` instead',
       fn: async () => {
         expect(modelsServedOnlyHere().toSorted(),).toEqual([
@@ -93,8 +91,6 @@ await describe({
           'gemma-4-26b-a4b-it',
           'glm-5.3',
           'minimax-m3',
-          'qwen3.8-2.4t-a95b',
-          'qwen3.8-flash',
         ],);
       },
     },),
@@ -124,7 +120,7 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS five image readers after the 2026-09-01 candidate refresh',
+      name: 'REPORTS four image readers after the 2026-09-01 candidate refresh and its same-day cull',
       fn: async () => {
         /**
          * Models this provider says can be sent an image.
@@ -143,7 +139,6 @@ await describe({
           'kimi-k3',
           'minimax-m3',
           'qwen3.8-27b',
-          'qwen3.8-flash',
         ],);
       },
     },),

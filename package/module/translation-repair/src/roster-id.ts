@@ -62,12 +62,13 @@ export const HYPER_ONLY_ROSTER_IDS = [
   'gemma-4-26b-a4b-it',
   'deepseek-v4-pro-0813',
   'deepseek-v4-flash-0731',
-  // THE THREE BELOW JOINED 2026-09-01 as post-blocklist candidates from the
-  // live catalog; the owner blocklist decision document records why their
-  // eligible siblings are eligible and everything else that day is not.
+  // glm-5.3 JOINED 2026-09-01 as a post-blocklist candidate from the live
+  // catalog and passed the forced-tool probe. The refresh's other two
+  // Hyper-only candidates, qwen3.8-flash and qwen3.8-2.4t-a95b, were culled
+  // the same day before seating: both reject forced tool choice with HTTP
+  // 400 (automatic-only, the culled qwen3.8-max's constraint), which the
+  // hyper-catalog entry comment records with the probe.
   'glm-5.3',
-  'qwen3.8-flash',
-  'qwen3.8-2.4t-a95b',
 ] as const;
 
 /**

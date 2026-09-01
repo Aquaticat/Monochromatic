@@ -76,9 +76,18 @@ the credit rate `qwen3.8-max` carried at its cull
 (input 40, output 120 credits per million tokens):
 the owner's entry names the Max model,
 not a price rule,
-so the 2.4t model stays an eligible candidate,
-with the parity recorded on its catalog entry and owed a cost note at
-any seating it wins.
+so the 2.4t model stayed an eligible candidate.
+The same-day conformance probe then culled it and `qwen3.8-flash` before
+seating on a separate, non-blocklist ground:
+both answer plain text and tools under automatic choice with HTTP 200
+but reject `tool_choice: {type: 'tool'}` with HTTP 400,
+the automatic-only constraint recorded for the culled `qwen3.8-max`,
+and every structured stage forces its tool.
+Non-conformance is a catalog fact,
+never an owner instruction,
+so neither joins the blocklist;
+the probe is recorded on the `HYPER_MODELS` entry comment in
+`package/module/translation-repair/src/hyper-catalog.ts`.
 
 ## Advisory attached to the same answer
 

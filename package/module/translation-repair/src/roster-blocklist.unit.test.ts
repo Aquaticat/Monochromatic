@@ -103,7 +103,10 @@ await describe({
       name: 'LEAVES ELIGIBLE NEIGHBOURS ALONE: dated DeepSeek, the Qwen3.8 line short of Max, the GLM-5.3 pair, Kimi K3',
       fn: async () => {
         // The dot after qwen3 is the family boundary, and the owner's single
-        // exact entries must not leak onto their newer siblings.
+        // exact entries must not leak onto their newer siblings. qwen3.8-flash
+        // and qwen3.8-2.4t-a95b stay blocklist-eligible even though the
+        // 2026-09-01 conformance probe culled them: non-conformance is a
+        // catalog fact, never an owner instruction.
         expect(blocklistVerdictFor({ id: 'deepseek-v4-pro-0813', },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'deepseek-v4-flash-0731', },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'qwen3.8-flash', },),).toEqual({ blocked: false, },);
