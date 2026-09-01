@@ -1,4 +1,4 @@
-# Charm Hyper Anthropic Messages `max_tokens` can end on parseable but truncated tool JSON
+# Charm Hyper Anthropic Messages on 2026-09-01 can end forced tool work at `max_tokens`
 
 ## Symptom
 
@@ -187,7 +187,32 @@ node --experimental-strip-types --input-type=module -e '
 ### Failing pattern
 
 - `finishReason: "max_tokens"` plus parseable guard-valid JSON:
-  currently returns `ok`.
+  the unhardened consumer returns `ok`.
+
+### Candidate K live confirmation
+
+The zero-retry pinned-Carena Candidate K calibration used harness SHA-256
+`41094dded81174b49bec30b5b7c14966362470524180c6fe44daadb77897886a`
+and manifest digest
+`5d7b817948a1927128dd828dfcccaa5b0a6cc684e6c621db54b0b4f6ca92c09d`.
+Its metadata-only evidence is retained under
+`/var/home/user/temp/agent/prototype-Carena-K-review-unit-20260901`.
+
+Two author exchanges independently confirmed truncating completion behavior:
+
+- `glm-5.3-flash` returned HTTP 200 after 648,545 milliseconds,
+  reported 32,000 output tokens and `stop_reason: "max_tokens"`,
+  and emitted only a thinking block;
+- `minimax-m3` returned HTTP 200 after 184,139 milliseconds,
+  reported 32,000 output tokens and `stop_reason: "max_tokens"`,
+  and emitted thinking plus a tool-use block.
+
+The hardened prototype consumer classified both terminal nodes as
+`schema-mismatch` with detail type `truncated-completion`.
+Neither output produced a candidate or caused verifier dispatch.
+The result also proves that extending the local request deadline from 360,000 to 900,000 milliseconds did not prevent
+these GLM and MiniMax exchanges from exhausting the fixed output ceiling.
+It does not prove that either route always truncates.
 
 ## Verified workarounds
 
@@ -223,6 +248,8 @@ A working-model calibration still needs measured complete responses with explici
   it is only a transport generation limit.
 - Raising `max_tokens` above 32,000 without owner decision:
   current package policy deliberately applies that measured answer bound to every Hyper model.
+- Extending only the local deadline:
+  Candidate K's GLM and MiniMax author calls reached `max_tokens` before the 900,000-millisecond deadline.
 
 ## Upstream filing decision
 
