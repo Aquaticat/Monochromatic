@@ -19,6 +19,13 @@ this document carries the numbers that decision cites and the seating rules writ
     Editors and refiners are seated from this run alone.
 -   Logs of the two finished runs: `~/temp/agent/producer-calibrate-40-20260901.log`
     and `~/temp/agent/editor-calibrate-6-20260901.log`.
+-   Landed at `03a58d2ca` on the owner's role-drop authorization: `RUN_TRANSLATORS` (seven, without
+    `gpt-oss-120b` and `deepseek-v4-flash-0731`) and `RUN_JUDGES` (eight, without `glm-5.3`) in
+    `src/corpus-run/run-config.ts`; read back from the built chunk `pass-entry` imports: roster 9,
+    translators 7, judges 8 in both lanes, critics and panel 9.
+-   The standing report now ends with one counts line per slice (`sliceStandingLines`),
+    so the next calibration's log supports a bootstrap over slices without a log parser;
+    the 40-slice run in flight predates it and is read through the winner lines instead.
 
 ## The roster measured
 
