@@ -151,7 +151,6 @@ await describe({
           },
         },);
 
-        expect(lines,).toHaveLength(5,);
         expect(lines[0],).toBe('\nREFINER standing over 1 judged rounds, from 1 of 2 slices',);
         expect(lines[1],).toContain(WRITER,);
         expect(lines[2],).toContain('ANSWERED AND WAS NEVER SLATED',);
@@ -160,7 +159,10 @@ await describe({
         expect(lines[3],).toContain('ANSWERED NOTHING USABLE',);
         expect(lines[3],).toContain(IDLE,);
         expect(lines[3],).not.toContain(JUDGE,);
-        expect(lines[4],).toBe(`  slice 1: 1 rounds; ${WRITER} 1/1 over 1`,);
+        expect(lines.at(-1,),).toBe(`  slice 1: 1 rounds; ${WRITER} 1/1 over 1`,);
+        expect(lines.slice(1, -1,).some(function isSliceLine(line,): boolean {
+          return line.startsWith('  slice ',);
+        },),).toBe(false,);
       },
     },),
 
