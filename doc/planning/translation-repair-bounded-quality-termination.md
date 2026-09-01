@@ -2,10 +2,15 @@
 
 ## Status
 
-Implementation plan for the
-[post-redesign direction decision](../decision/translation-repair-post-redesign-direction.md),
-written 2026-09-01 before code changes.
-The owner delegated the direction and chose the completion set.
+Provisional draft,
+not an accepted design.
+Written 2026-09-01 for the
+[post-redesign direction decision](../decision/translation-repair-post-redesign-direction.md)
+before the owner instructed a full reading of the failed redesign candidates.
+The reading's conclusions are in
+[`translation-repair-redesign-insights.md`](translation-repair-redesign-insights.md):
+this plan covers the loop-bound half of the remediation,
+and the owner decides whether the review verdict-form change joins it before implementation.
 
 ## Contract this implements
 
