@@ -25,7 +25,6 @@ export class TranslationRepairInterruptedError extends Error {
    */
   public readonly reason:
     | 'carried-evidence-lost'
-    | 'final-selection-unresolved'
     | 'provider-unavailable';
 
   /**
@@ -55,7 +54,6 @@ export class TranslationRepairInterruptedError extends Error {
     }: {
       readonly reason:
         | 'carried-evidence-lost'
-        | 'final-selection-unresolved'
         | 'provider-unavailable';
       readonly findings: readonly string[];
     },

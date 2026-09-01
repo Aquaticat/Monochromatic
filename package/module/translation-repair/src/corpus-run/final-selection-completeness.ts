@@ -5,53 +5,9 @@ import {
 } from './would-ship-text.ts';
 
 //region Final selection completeness
-// An archive can stand after contest only when contest endorsed it. A declined,
-// unjudged or under-attended archive is provenance, not final semantic approval.
-
-/**
- * Failure raised when final assembly would revive archive without endorsement.
- *
- * @example
- * ```ts
- * throw new UnsettledFinalSelectionError({ entryId: 'Cat', sliceIndices: [2,], });
- * ```
- */
-export class UnsettledFinalSelectionError extends Error {
-  /**
-   * Declares message safe to forward because it names only entry and slice indices.
-   */
-  readonly messageNamesOnly: true = true;
-
-  /**
-   * Entry refused.
-   */
-  readonly entryId: string;
-
-  /**
-   * Slices whose archive lacks final endorsement.
-   */
-  readonly sliceIndices: readonly number[];
-
-  /**
-   * @param entryId - entry refused
-   *
-   * @param sliceIndices - slices without endorsed final wording
-   */
-  public constructor(
-    {
-      entryId,
-      sliceIndices,
-    }: {
-      readonly entryId: string;
-      readonly sliceIndices: readonly number[];
-    },
-  ) {
-    super(`entry ${entryId} would revive unendorsed archive wording at slices ${sliceIndices.join(', ',)}`,);
-    this.name = 'UnsettledFinalSelectionError';
-    this.entryId = entryId;
-    this.sliceIndices = sliceIndices;
-  }
-}
+// An archive standing after contest without endorsement is provenance, not
+// final semantic approval; the publisher records that as a finding beside the
+// tally rather than refusing the page.
 
 /**
  * Reports whether contest explicitly endorsed archive fallback.
@@ -72,28 +28,25 @@ function archiveWasEndorsed(
 }
 
 /**
- * Refuses artifact whose final selection revives archive without contest endorsement.
+ * Reports slices whose final selection keeps archive wording without contest
+ * endorsement, as findings rather than a refusal.
  *
- * @param entryId - corpus entry being settled
+ * The contest verdict is recorded evidence, never withholding authority:
+ * the page ships and the reading judges the recorded non-endorsements
+ * (doc/planning/translation-repair-no-loop-design.md).
  *
  * @param artifact - comparison and deciding stages used by final assembly
  *
- * @throws {@link UnsettledFinalSelectionError} when archive would stand after no endorsement
+ * @returns One finding per slice standing without endorsement, empty when none
  *
  * @example
  * ```ts
- * assertFinalSelectionSettled({ entryId: 'Cat', artifact, });
+ * const findings = finalSelectionFindings({ artifact, });
  * ```
  */
-export function assertFinalSelectionSettled(
-  {
-    entryId,
-    artifact,
-  }: {
-    readonly entryId: string;
-    readonly artifact: WouldShipSource;
-  },
-): void {
+export function finalSelectionFindings(
+  { artifact, }: { readonly artifact: WouldShipSource; },
+): readonly string[] {
   /**
    * Final reading by slice index.
    */
@@ -161,11 +114,9 @@ export function assertFinalSelectionSettled(
     return [contest.sliceIndex,];
   },);
 
-  if (unresolved.length === 0)
-    return;
-  throw new UnsettledFinalSelectionError({
-    entryId,
-    sliceIndices: unresolved,
+  return unresolved.map(function toFinding(sliceIndex,): string {
+    return `final-selection-unendorsed (slice ${String(sliceIndex,)}):`
+      + ' archive wording stands without contest endorsement, recorded as evidence';
   },);
 }
 

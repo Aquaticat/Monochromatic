@@ -14,8 +14,7 @@ import {
 
 import {
   type ArtifactContestVerdict,
-  assertFinalSelectionSettled,
-  UnsettledFinalSelectionError,
+  finalSelectionFindings,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 
@@ -124,83 +123,72 @@ function sourceWith(
 }
 
 await describe({
-  name: assertFinalSelectionSettled.name,
+  name: finalSelectionFindings.name,
   children: [
     it({
-      name: 'ACCEPTS lane winner because archive does not become fallback',
+      name: 'REPORTS NOTHING for a lane winner because archive does not become fallback',
       fn: async () => {
-        expect(assertFinalSelectionSettled({
-          entryId: 'Cat',
+        expect(finalSelectionFindings({
           artifact: sourceWith({ verdict: { kind: 'lane-won', lane: 'repair', }, }),
-        },),).toBeUndefined();
+        },),).toEqual([],);
       },
     },),
     it({
-      name: 'ACCEPTS archive fallback explicitly endorsed by contest',
+      name: 'REPORTS NOTHING for archive fallback explicitly endorsed by contest',
       fn: async () => {
-        expect(assertFinalSelectionSettled({
-          entryId: 'Cat',
+        expect(finalSelectionFindings({
           artifact: sourceWith({
             verdict: { kind: 'settled-neither', archive: 'endorsed', },
           }),
-        },),).toBeUndefined();
+        },),).toEqual([],);
       },
     },),
     it({
-      name: 'REFUSES archive contest explicitly declined',
+      name: 'RECORDS a declined archive contest as a finding rather than a refusal',
       fn: async () => {
-        let thrown: unknown;
-        try {
-          assertFinalSelectionSettled({
-            entryId: 'Cat',
-            artifact: sourceWith({
-              verdict: { kind: 'settled-neither', archive: 'declined', },
-            }),
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
-
-        expect(thrown,).toBeInstanceOf(UnsettledFinalSelectionError,);
-        expect((thrown as UnsettledFinalSelectionError).sliceIndices,).toEqual([0,]);
+        /**
+         * Findings for an archive standing without endorsement.
+         */
+        const findings = finalSelectionFindings({
+          artifact: sourceWith({
+            verdict: { kind: 'settled-neither', archive: 'declined', },
+          }),
+        },);
+        expect(findings,).toHaveLength(1,);
+        expect(
+          findings[0]
+            ?.includes('final-selection-unendorsed (slice 0)',),
+        ).toBe(true,);
       },
     },),
     it({
-      name: 'REFUSES archive fallback after contest misses quorum',
+      name: 'RECORDS archive fallback after contest misses quorum',
       fn: async () => {
-        expect(function refuseThinContest(): void {
-          assertFinalSelectionSettled({
-            entryId: 'Cat',
-            artifact: sourceWith({ verdict: { kind: 'quorum-not-met', }, }),
-          },);
-        },).toThrow(UnsettledFinalSelectionError,);
+        expect(finalSelectionFindings({
+          artifact: sourceWith({ verdict: { kind: 'quorum-not-met', }, }),
+        },),).toHaveLength(1,);
       },
     },),
     it({
-      name: 'REFUSES POLISH BYPASS over unendorsed archive baseline',
+      name: 'RECORDS a polish over an unendorsed archive baseline',
       fn: async () => {
-        expect(function refusePolishedFallback(): void {
-          assertFinalSelectionSettled({
-            entryId: 'Cat',
-            artifact: sourceWith({
-              verdict: { kind: 'settled-neither', archive: 'declined', },
-              polished: true,
-            }),
-          },);
-        },).toThrow(UnsettledFinalSelectionError,);
+        expect(finalSelectionFindings({
+          artifact: sourceWith({
+            verdict: { kind: 'settled-neither', archive: 'declined', },
+            polished: true,
+          }),
+        },),).toHaveLength(1,);
       },
     },),
     it({
-      name: 'ACCEPTS fresh consolidation after contest declined archive',
+      name: 'REPORTS NOTHING for fresh consolidation after contest declined archive',
       fn: async () => {
-        expect(assertFinalSelectionSettled({
-          entryId: 'Cat',
+        expect(finalSelectionFindings({
           artifact: sourceWith({
             verdict: { kind: 'settled-neither', archive: 'declined', },
             consolidated: true,
           }),
-        },),).toBeUndefined();
+        },),).toEqual([],);
       },
     },),
   ],

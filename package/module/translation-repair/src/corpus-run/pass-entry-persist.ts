@@ -8,7 +8,7 @@ import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { DestinationCheck, } from './dropped-destinations.ts';
 import { assertFinalNaturalnessComplete, } from './final-naturalness-completeness.ts';
-import { assertFinalSelectionSettled, } from './final-selection-completeness.ts';
+import { finalSelectionFindings, } from './final-selection-completeness.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 
 //region Pass entry persistence
@@ -62,12 +62,10 @@ export async function persistSettledEntry(
     readonly l: Logger;
   }>,
 ): Promise<DestinationCheck> {
-  // FIRST MUTATION SITS BELOW THIS LINE. A contest decline cannot become
-  // approval merely because final assembly still has archive bytes available.
-  assertFinalSelectionSettled({
-    entryId,
-    artifact,
-  },);
+  // FIRST MUTATION SITS BELOW THIS LINE. A contest decline is not approval;
+  // it ships as recorded evidence the reading judges, never as a refusal.
+  for (const finding of finalSelectionFindings({ artifact, },))
+    l.warn(`entry ${entryId}: ${finding}`,);
   assertFinalNaturalnessComplete({ artifact, },);
 
   /**

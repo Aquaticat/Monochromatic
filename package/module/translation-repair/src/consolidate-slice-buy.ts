@@ -2,10 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
-import {
-  consolidationFailureEvidence,
-  consolidationNeedsRecovery,
-} from './consolidation-stage-repair.ts';
+import { consolidationNeedsRecovery, } from './consolidation-stage-repair.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import { produceConsolidations, } from './consolidate-produce.ts';
 import {
@@ -164,13 +161,22 @@ async function buyConsolidationAttempt(
 }
 
 /**
- * Continues consolidation until unendorsed standing wording is replaced or work is interrupted.
+ * Buys one consolidation and settles it in a single attempt.
+ *
+ * SINGLE ATTEMPT BY DESIGN: when the standing baseline lacks contest
+ * endorsement and the judged round still keeps it, the settlement returns
+ * as it is with the non-endorsement recorded as a finding, because the
+ * standing text is the only wording the deterministic gate has passed and
+ * quality machinery may not withhold the entry over it
+ * (doc/planning/translation-repair-no-loop-design.md). Zero produced voices
+ * under a barred standing remain the bounded provider error inside the
+ * attempt.
  *
  * @param input - stage clients, candidates, standing policy, and operation bounds
  *
- * @returns Complete settlement safe against prior contest standing
+ * @returns Complete settlement for this question
  *
- * @throws {@link TranslationRepairInterruptedError} on exact recovery cycle
+ * @throws {@link TranslationRepairInterruptedError} when a barred standing hears no producer voice
  *
  * @example
  * ```ts
@@ -184,54 +190,28 @@ export async function buyConsolidationSlice(
    * Whether archive or lane standing may already ship.
    */
   const standingMayShip = input.standingMayShip ?? true;
-  if (standingMayShip)
-    return await buyConsolidationAttempt(input,);
   /**
-   * Latest failed strategy shown to next producers.
+   * Settlement from the single attempt.
    */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Stage-local recovery advances exact failed evidence until replacement or cycle.
-  let priorFailure: ConsolidateSubject['priorFailure'] = undefined;
-  /**
-   * Exact recovery questions already attempted.
-   */
-  const attemptedTasks = new Set<string>();
-  while (!input.signal
-    .aborted) {
-    /**
-     * Exact prior evidence defining current recovery responsibility.
-     */
-    const identity = JSON.stringify(priorFailure ?? null,);
-    if (attemptedTasks.has(identity,)) {
-      throw new TranslationRepairInterruptedError({
-        reason: 'final-selection-unresolved',
-        findings: priorFailure?.findings ?? [],
-      },);
-    }
-    attemptedTasks.add(identity,);
-    /**
-     * Settlement from initial or latest failed-strategy-aware attempt.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- Every consolidation attempt depends on exact prior rejected settlement.
-    const settlement = await buyConsolidationAttempt({
-      ...input,
-      subject: {
-        ...input.subject,
-        ...((priorFailure === undefined) ? {} : { priorFailure, }),
-      },
-    },);
-    if (!consolidationNeedsRecovery({
-      settlement,
-      standingMayShip,
-    }))
-      return settlement;
-    priorFailure = consolidationFailureEvidence({ settlement, });
-  }
-  input.signal
-    .throwIfAborted();
-  throw new TranslationRepairInterruptedError({
-    reason: 'provider-unavailable',
-    findings: priorFailure?.findings ?? [],
-  },);
+  const settlement = await buyConsolidationAttempt(input,);
+  if (!consolidationNeedsRecovery({
+    settlement,
+    standingMayShip,
+  }))
+    return settlement;
+  input.l
+    .warn(
+      `slice ${String(input.sliceIndex,)}: standing lacks contest endorsement and the single `
+        + `consolidation attempt kept it (${settlement.terminal}); shipping with the finding recorded`,
+    );
+  return {
+    ...settlement,
+    findings: [
+      ...settlement.findings,
+      `consolidation-standing-unendorsed (terminal ${settlement.terminal}):`
+        + ' the standing text ships with contest non-endorsement recorded as evidence',
+    ],
+  };
 }
 
 //endregion Consolidate slice buy

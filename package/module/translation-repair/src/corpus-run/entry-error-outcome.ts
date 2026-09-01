@@ -4,7 +4,6 @@ import { DroppedDestinationError, } from './destination-completeness.ts';
 import { FrontMatterCompletenessError, } from './front-matter-completeness.ts';
 import { NaturalnessRepairInterruptedError, } from '../naturalness-repair-interrupted-error.ts';
 import { PromptPayloadStoreError, } from '../prompt-payload-store.ts';
-import { UnsettledFinalSelectionError, } from './final-selection-completeness.ts';
 import { UnfilledPageError, } from './publish-completeness.ts';
 import { TranslationRepairInterruptedError, } from '../translation-repair-interrupted-error.ts';
 import { VisualEvidenceInterruptedError, } from './visual-evidence-completeness.ts';
@@ -58,7 +57,6 @@ export function entryErrorOutcome(
     || (error instanceof PromptPayloadStoreError)
     || (error instanceof TranslationRepairInterruptedError)
     || (error instanceof UnfilledPageError)
-    || (error instanceof UnsettledFinalSelectionError)
     || (error instanceof VisualEvidenceInterruptedError);
   return stopped
     ? {

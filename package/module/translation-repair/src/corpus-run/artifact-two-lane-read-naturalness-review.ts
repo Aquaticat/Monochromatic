@@ -199,12 +199,9 @@ export function parseNaturalnessReview(
     rounds,
     path,
   },);
-  if (final.verdict !== 'acceptable') {
-    throw new ArtifactParseError({
-      path: `${path}.rounds[${String(rounds.length - 1,)}].verdict`,
-      reason: 'acceptable final absolute review',
-    },);
-  }
+  // The final verdict is recorded evidence, whatever it says: the no-loop
+  // design demoted review authority, so a rejected or quorumless final round
+  // is a valid record rather than a malformed one.
   /**
    * Earlier acceptable readings bound to decisive reviewed candidates.
    */

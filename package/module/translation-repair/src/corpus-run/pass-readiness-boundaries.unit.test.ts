@@ -31,7 +31,6 @@ import {
   persistSettledEntry,
   type SettledArtifact,
   type SyntheticClient,
-  UnsettledFinalSelectionError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -286,7 +285,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES unendorsed archive before persistence writes page or artifact',
+      name: 'RECORDS unendorsed archive as a finding instead of refusing final selection',
       fn: async () => {
         const root = await mkdtemp(join(tmpdir(), 'pass-persist-readiness-',),);
         const publishDir = join(root, 'published',);
@@ -336,7 +335,10 @@ await describe({
         ],);
         await rm(root, { recursive: true, force: true, },);
 
-        expect(thrown,).toBeInstanceOf(UnsettledFinalSelectionError,);
+        // The contest non-endorsement no longer refuses the page: the next
+        // boundary this minimal fixture trips is the structural naturalness
+        // completeness, proving final selection recorded instead of throwing.
+        expect(thrown,).toBeInstanceOf(NaturalnessCompletenessError,);
         expect(written,).toEqual([
           [],
           [],

@@ -26,8 +26,7 @@ export {
 } from './corpus-run/publish-completeness.ts';
 export { assertFinalNaturalnessComplete, } from './corpus-run/final-naturalness-completeness.ts';
 export {
-  assertFinalSelectionSettled,
-  UnsettledFinalSelectionError,
+  finalSelectionFindings,
 } from './corpus-run/final-selection-completeness.ts';
 export {
   assertContributorNamesComplete,

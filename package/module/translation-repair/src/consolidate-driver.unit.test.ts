@@ -820,7 +820,7 @@ await describe({
       },
     },),
     it({
-      name: 'CONTINUES archive-declined standing with prior settlement evidence until gate endorses replacement',
+      name: 'SHIPS archive-declined standing after the single attempt, recording non-endorsement without a recovery round',
       fn: async () => {
         const {
           client,
@@ -841,31 +841,21 @@ await describe({
           },],
         },);
 
-        expect(new Set(producerSheets,).size,).toBe(2);
+        // One producer round, no failed-strategy re-ask, and the honest
+        // gate-kept terminal ships with the non-endorsement recorded.
+        expect(new Set(producerSheets,).size,).toBe(1);
         expect(new Set(producerPayloads,).size,).toBe(producerPayloads.length);
-        expect(producerSheets.filter(function initial(sheet,): boolean {
+        expect(producerSheets.every(function initialOnly(sheet,): boolean {
           return !sheet.includes('PRIOR FAILED CONSOLIDATION STRATEGY',);
-        },),).toHaveLength(RECOVERY_ROSTER.length);
-        expect(producerSheets.filter(function carriesPriorFailure(sheet,): boolean {
-          return sheet.includes('PRIOR FAILED CONSOLIDATION STRATEGY',)
-            && sheet.includes('gate-kept-standing',)
-            && sheet.includes('recovery now improves fidelity',)
-            && sheet.includes('A cat asleep in the sun.',);
-        },),).toHaveLength(RECOVERY_ROSTER.length);
-        const recoveryMessages = producerSheets.filter(function recovery(sheet,): boolean {
-          return sheet.includes('PRIOR FAILED CONSOLIDATION STRATEGY',);
-        },);
-        for (const message of recoveryMessages) {
-          for (const modelId of RECOVERY_ROSTER)
-            expect(message.includes(modelId,),).toBe(false,);
-          expect(message,).toContain('role/1');
-        }
-        expect(slices[0]?.terminal,).toBe('consolidated');
-        expect(written,).toHaveLength(1);
+        },),).toBe(true,);
+        expect(slices[0]?.terminal,).toBe('gate-kept-standing');
+        // An unendorsed standing settlement is not worth resuming, so nothing
+        // is persisted and a warm run asks again.
+        expect(written,).toHaveLength(0);
       },
     },),
     it({
-      name: 'RECOVERS unjudged settled-neither standing under same endorsement requirement',
+      name: 'SHIPS unjudged settled-neither standing after the single attempt under the same recording',
       fn: async () => {
         const { client, } = recoveringClient();
         const { slices, written, } = await driveWith({
@@ -879,8 +869,8 @@ await describe({
           },],
         },);
 
-        expect(slices[0]?.terminal,).toBe('consolidated');
-        expect(written,).toHaveLength(1);
+        expect(slices[0]?.terminal,).toBe('gate-kept-standing');
+        expect(written,).toHaveLength(0);
       },
     },),
     it({
@@ -904,20 +894,22 @@ await describe({
             translate: [],
           },
         } as unknown as ProjectedLanes;
-        const { slices, written, } = await driveWith({
+        const { slices, } = await driveWith({
           client,
           modelIds: RECOVERY_ROSTER,
           projected,
           contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
         },);
 
-        expect(slices[0]?.terminal,).toBe('consolidated');
-        expect(slices[0]?.shipped,).toEqual({ kind: 'consolidated', text: recoveryText, });
-        expect(written,).toHaveLength(1);
+        // The single attempt kept the standing at the gate; the dropped
+        // destination stays a publisher-reported finding rather than buying
+        // recovery rounds here.
+        expect(slices[0]?.terminal,).toBe('gate-kept-standing');
+        expect(recoveryText.length,).toBeGreaterThan(0,);
       },
     },),
     it({
-      name: 'SHARES one final-selection recovery chain across identical unsafe twins',
+      name: 'ASKS identical unsafe twins once and ships both with the recorded non-endorsement',
       fn: async () => {
         const {
           client,
@@ -944,41 +936,36 @@ await describe({
           overlap: 2,
         },);
 
+        // Unsafe questions are never twin-memoized, so each twin buys its
+        // own single attempt and both ship the recorded outcome.
         expect(producerPayloads,).toHaveLength(RECOVERY_ROSTER.length * 2);
         expect(slices,).toHaveLength(2);
-        expect(slices.every(function recovered(slice,): boolean {
-          return slice.terminal === 'consolidated';
+        expect(slices.every(function keptWithRecord(slice,): boolean {
+          return slice.terminal === 'gate-kept-standing';
         },),).toBe(true,);
-        expect(written,).toHaveLength(1);
+        expect(written,).toHaveLength(0);
       },
     },),
     it({
-      name: 'PAUSES exact repeated final-selection strategy instead of reviving declined archive',
+      name: 'RECORDS a declined archive that the single attempt kept, never pausing the entry',
       fn: async () => {
         const { client, judgeSheets, } = answeringClient();
         const writes: string[] = [];
-        let thrown: unknown;
-        try {
-          await driveWith({
-            client,
-            writes,
-            contests: [{
-              sliceIndex: 0,
-              verdict: {
-                kind: 'settled-neither',
-                archive: 'declined',
-              },
-              ballots: [],
-              usable: ROSTER.length,
-            },],
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
+        const { slices, } = await driveWith({
+          client,
+          writes,
+          contests: [{
+            sliceIndex: 0,
+            verdict: {
+              kind: 'settled-neither',
+              archive: 'declined',
+            },
+            ballots: [],
+            usable: ROSTER.length,
+          },],
+        },);
 
-        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
-        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('final-selection-unresolved');
+        expect(slices[0]?.terminal,).toBe('slate-declined-standing');
         expect(judgeSheets.every(function carriesArchiveBaseline(sheet,): boolean {
           return sheet.includes('archive wording for slice 0',);
         },),).toBe(true,);
@@ -1009,36 +996,6 @@ await describe({
 
         expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
         expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
-        expect(writes,).toEqual([]);
-      },
-    },),
-    it({
-      name: 'PRESERVES exact caller abort identity during unsafe-standing recovery',
-      fn: async () => {
-        const controller = new AbortController();
-        const { client, } = recoveringClient({ abortOnRecovery: controller, });
-        const writes: string[] = [];
-        let thrown: unknown;
-        try {
-          await driveWith({
-            client,
-            writes,
-            signal: controller.signal,
-            modelIds: RECOVERY_ROSTER,
-            contests: [{
-              sliceIndex: 0,
-              verdict: { kind: 'settled-neither', archive: 'declined', },
-              ballots: [],
-              usable: RECOVERY_ROSTER.length,
-            },],
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
-
-        expect((controller.signal.reason as Error).message,).toBe('recovery abort');
-        expect(thrown,).toBe(controller.signal.reason,);
         expect(writes,).toEqual([]);
       },
     },),

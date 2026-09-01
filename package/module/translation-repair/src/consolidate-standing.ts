@@ -13,7 +13,7 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
  * A DECLINED CONTEST LEAVES NO LANE STANDING. Archive remains comparison
  * baseline rather than invented lane choice, allowing third rendering to be
  * judged against current page. Keeping baseline is not approval:
- * `assertFinalSelectionSettled` refuses it unless contest endorsed archive.
+ * `finalSelectionFindings` records it as evidence unless contest endorsed archive.
  *
  * @param choice - what the lane contest settled
  *
