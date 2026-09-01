@@ -42,7 +42,7 @@ import {
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Editor calibrate
-// WHICH OF THE EIGHT SHOULD EDIT, measured on the editor's own job.
+// WHICH OF THE ROSTER SHOULD EDIT, measured on the editor's own job.
 //
 // `producer-calibrate.ts` seated the three writers, and its instrument drives
 // `runTranslateStage`: a model writing English from Chinese, with nothing in
@@ -65,7 +65,8 @@ import { reportingRefusals, } from './cli-refusal.ts';
 //
 // CHECKERS SELF-CERTIFY HERE, AND ONLY HERE. Production forbids a checker from
 // proving its own repair, so a full editor roster leaves nobody independent to
-// check, and the roster is eight. The alternative is rotating editors out, which
+// check, whatever the roster's width (eight when this was written, nine since
+// 2026-09-01). The alternative is rotating editors out, which
 // re-introduces the survivorship the shape exists to avoid. The trade is safe
 // for THIS measurement because checking runs after selection: a standing reads
 // the envelope and chunk-patch ballots, which are cast before any checker is

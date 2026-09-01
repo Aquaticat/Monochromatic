@@ -28,16 +28,17 @@ import { readAskedCount, } from './asked-count.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Producer calibrate
-// WHICH OF THE EIGHT SHOULD WRITE, measured rather than assumed.
+// WHICH OF THE ROSTER SHOULD WRITE, measured rather than assumed.
 //
-// The roster carries eight models and the writers stay at three. `roster-bench.ts`
+// The roster carries nine models (eight when this was written) and the writers
+// stay at three. `roster-bench.ts`
 // answered the question about WIDTH and found it changes nothing; this answers
 // the question about WHO, which that bench was never shaped to ask.
 //
 // EVERY MODEL WRITES ON EVERY SLICE. A narrow slate would only ever compare the
 // models that happened to be seated, and the head-of-roster seating the width
-// bench uses would compare the first three against nothing. Running all eight
-// against the same passage is the only shape where a standing means the same
+// bench uses would compare the first three against nothing. Running the whole
+// roster against the same passage is the only shape where a standing means the same
 // thing for each of them.
 //
 // EVERY MODEL ALSO JUDGES, matching production, and the standing then throws

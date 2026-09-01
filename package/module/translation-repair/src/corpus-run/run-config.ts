@@ -103,15 +103,19 @@ const HERE = import.meta.dirname;
  * stale the first time either catalog moves, and it goes stale silently: a
  * missing model is a seat nobody notices is empty.
  *
- * EIGHT MODELS NOW. `qwen3.8-max` was culled on 2026-08-28 for disproportionate
+ * NINE MODELS NOW. `qwen3.8-max` was culled on 2026-08-28 for disproportionate
  * metered cost, then Nemotron left every stage on 2026-08-29 after contradictory
- * adjacent required-correction reviews. Remaining seats retain full weight.
+ * adjacent required-correction reviews, leaving eight. The owner's blocklist
+ * decision of 2026-09-01 (`doc/decision/translation-repair-roster-blocklist.md`)
+ * refreshed the catalog under it: `glm-5.3` was admitted on the forced-tool
+ * probe, GLM-5.3-Flash gained a second route, and two Qwen3.8 routes were
+ * culled as automatic-only. Remaining seats retain full weight.
  */
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
 
 
 /**
- * Role roster for a corpus run: all EIGHT critique and adjudicate, THREE edit
+ * Role roster for a corpus run: all NINE critique and adjudicate, THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
  *
@@ -139,7 +143,7 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
  *
  * WHAT FOLLOWS IS THE HISTORY OF THESE SEATS, kept because each rule below was
  * argued from it. The seats themselves are the measured ones in the constant:
- * the roster is ten across two providers since 2026-08-24, the three editors
+ * the roster spans two providers since 2026-08-24 (ten then, nine now), the three editors
  * and three refiners were chosen by the 40-round calibration of that day, and
  * the checkers are the three the width measurement settled.
  *
@@ -170,16 +174,19 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
  *
  * The panel was six rather than seven from 2026-08-05, when the provider
  * withdrew two models and only one replacement (Kimi-K3) appeared, and has
- * been ten since 2026-08-24, when Charm Hyper's five seats joined.
- * `gatherStageVoices` computes the stage quorum as
+ * been ten since 2026-08-24, when Charm Hyper's five seats joined, eight after
+ * the removals of 2026-08-28 and 2026-08-29, and nine since the 2026-09-01
+ * catalog refresh. `gatherStageVoices` computes the stage quorum as
  * `voices >= ceil(modelIds.length / 2)`, so seven models need 4 voices, six
- * need 3, and ten need 5.
+ * need 3, ten need 5, eight need 4, and nine need 5.
  *
  * The ISSUE-acceptance gate does move, and the user accepted the move rather
  * than it happening unnoticed: `DEFAULT_ADJUDICATION_CONFIG.minBallotWeight` is
  * the absolute value 3, so the share of the panel that must cast a non-abstain
  * ballot before any decision rises from 3-of-7 (43 percent) to 3-of-6 (50).
- * User decision, 2026-08-05: "50% is okay here."
+ * User decision, 2026-08-05: "50% is okay here." At nine the same absolute 3
+ * is 3-of-9 (33 percent), inside the range already lived at ten (30 percent)
+ * and at eight (37.5 percent).
  *
  * MORE THAN ONE editor, on the user's rule that no single model should control
  * any part of the pipeline. Kimi-K3 is one of them because the user reports it
@@ -399,10 +406,10 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  * ballot for its own work counts half, so if those two also translated then no
  * disinterested judge would remain on any slice carrying a picture. Asking them
  * only to READ turns the picture into text, and the whole roster translates
- * and judges from that text with its weights untouched. Four of the eight read
- * images after the 2026-08-29 Nemotron removal; the stage
- * stays separate because the reasoning above is about weights, not about how
- * many readers there happen to be.
+ * and judges from that text with its weights untouched. Four of the nine read
+ * images since the 2026-09-01 catalog refresh (`glm-5.3` reads none); the stage
+ * stays separate because the reasoning in this note is about weights, not about
+ * how many readers there happen to be.
  *
  * @example
  * ```ts
