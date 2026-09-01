@@ -13,6 +13,10 @@ import {
   type CorpusPin,
 } from '../corpus-source.ts';
 import {
+  type CorpusPinSetting,
+  readCorpusPinSetting,
+} from './corpus-pin-override.ts';
+import {
   assertCheckerIndependence,
   assertCheckerQuorumReachable,
   type RepairModels,
@@ -517,17 +521,28 @@ export const RUN_CALL_CONFIG: RunCallConfig = {
 };
 
 /**
- * Pinned corpus read location: the user's local clone at the benchmark commit.
+ * Corpus read location and commit with any environment override applied,
+ * beside where each half came from, for launch logs.
+ */
+export const RUN_CORPUS_PIN_SETTING: CorpusPinSetting = readCorpusPinSetting({
+  fallback: {
+    cloneDir: join(
+      homedir(),
+      'one-among-us',
+      'data',
+    ),
+    commitSha: CORPUS_COMMIT_SHA,
+  },
+},);
+
+/**
+ * Pinned corpus read location: the user's local clone at the benchmark commit
+ * unless the environment overrides either half
+ * (`TRANSLATION_REPAIR_CORPUS_CLONE_DIR`, `TRANSLATION_REPAIR_CORPUS_COMMIT`),
+ * which fixture runs against an unmerged corpus pull request need.
  * Content is read at runtime and never committed here (the clone is UNLICENSED).
  */
-export const RUN_CORPUS_PIN: CorpusPin = {
-  cloneDir: join(
-    homedir(),
-    'one-among-us',
-    'data',
-  ),
-  commitSha: CORPUS_COMMIT_SHA,
-};
+export const RUN_CORPUS_PIN: CorpusPin = RUN_CORPUS_PIN_SETTING.pin;
 
 /**
  * Worktree root of this checkout, resolved through git from this file's dir.
