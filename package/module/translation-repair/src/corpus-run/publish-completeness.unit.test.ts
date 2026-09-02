@@ -18,7 +18,40 @@ import {
 import {
   assertPublishableTranslation,
   UnfilledPageError,
+  unfilledPageFindings,
 } from '../../dist/final/node/index.mjs';
+
+await describe({
+  name: unfilledPageFindings.name,
+  children: [
+    it({
+      name: 'RECORDS each unfilled passage as a gap the page ships without, naming the slice and the '
+        + 'reason (the no-loop design of 2026-09-01; XIEPT2 was dropped after 35 minutes on 2026-09-02 '
+        + 'by the refusal below over one passage two judge rounds could not back), and records nothing '
+        + 'for a complete page',
+      fn: async () => {
+        expect(unfilledPageFindings({
+          unfilled: [
+            {
+              sliceIndex: 15,
+              reason: 'no-candidate-backed',
+              findings: [],
+            },
+            {
+              sliceIndex: 13,
+              reason: 'not-corroborated',
+              findings: ['a stage finding',],
+            },
+          ],
+        },),).toEqual([
+          'source-passage-unfilled (slice 15, no-candidate-backed): the page ships without this passage, recorded as a gap',
+          'source-passage-unfilled (slice 13, not-corroborated): the page ships without this passage, recorded as a gap',
+        ],);
+        expect(unfilledPageFindings({ unfilled: [], },),).toEqual([],);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: assertPublishableTranslation.name,

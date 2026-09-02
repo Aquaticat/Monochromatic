@@ -23,6 +23,7 @@ export { archiveBlockSourceContexts, } from './corpus-run/archive-block-source-c
 export {
   assertPublishableTranslation,
   UnfilledPageError,
+  unfilledPageFindings,
 } from './corpus-run/publish-completeness.ts';
 export { assertFinalNaturalnessComplete, } from './corpus-run/final-naturalness-completeness.ts';
 export {

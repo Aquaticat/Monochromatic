@@ -24,7 +24,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
 import { entryErrorOutcome, } from './entry-error-outcome.ts';
 import { persistSettledEntry, } from './pass-entry-persist.ts';
-import { assertPublishableTranslation, } from './publish-completeness.ts';
+import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
@@ -311,17 +311,22 @@ async function runEntryPipeline(
     deadline.callSignal
       .throwIfAborted();
 
-    // DEFENSIVE BOUNDARY. Production admission and translation repair must
-    // settle or pause before returning a known gap. Any unfilled row reaching
-    // here is pipeline invariant failure and never publication authorization.
+    // A RECORDED GAP, NOT A REFUSAL. Under the no-loop design of 2026-09-01 a
+    // source passage still unfilled after the single round and its one
+    // follow-up ships as a gap the artifact records (`lanes.translate.unfilled`
+    // and the lane's findings), because an insertion is recovered supplementary
+    // content whose absence is a recorded gap, not a missing required page. The
+    // refusal that stood here (2026-08-27) dropped XIEPT2 after 35 minutes on
+    // 2026-09-02 over one passage two judge rounds tied on, and an earlier
+    // XIEPT2 attempt after four hours forty-eight minutes.
     /**
-     * Source passages translation could not fill.
+     * Source passages translation could not fill, each named in the log.
      */
     const { unfilled, } = lanes.translate;
-    assertPublishableTranslation({
-      entryId: entry.id,
-      unfilled,
-    },);
+    for (const finding of unfilledPageFindings({ unfilled, },)) {
+      tagged({ tag: entry.id, },)
+        .warn(`entry ${entry.id}: ${finding}`,);
+    }
 
     /**
      * Both ledgers as version 2 rows, beside the comparison they derive.

@@ -906,6 +906,28 @@ finding, as the no-loop design says ("reviewer indecision cannot withhold the en
 at 23:11 into `~/temp/agent/xiept2-rerun2-20260902` on the tree carrying that fix and the euthanasia
 sentence.
 
+## XIEPT2 ran 35 minutes at overlap 4 and was refused whole over one unfilled passage
+
+`TALLY XIEPT2 status=INCOMPLETE ms=2106786 error=entry XIEPT2 retains 1 unfilled source passage(s) at
+slices 15` on `ae39bf22e`, 23:10 to 23:45 UTC, 0 refusals, 0 holds, the archive-block review retained
+its block, no page, no artifact. Slice 15 (409 source characters, no archive text) went through the
+translate lane's judged round and its one follow-up; both tied at weight 1 and 1.5 with three of eight
+judges cut at the 60-second window each time, so no candidate reached the minimum weight
+(`no-candidate-backed`) and the passage stayed unfilled. Then `assertPublishableTranslation`
+(2026-08-27, "refuse incomplete published pages") refused the entry. The no-loop design of 2026-09-01
+(`7e702e075`, "Insertion placement, single round") says the page ships without such a passage with the
+gap recorded, and the artifact already records it (`lanes.translate.unfilled`); the publish test's own
+comment records an earlier XIEPT2 attempt lost the same way after four hours forty-eight minutes. Fixed
+under `QDF` (the later stated policy winning over the earlier guard, as with the naturalness floor):
+the pass logs each unfilled passage as `source-passage-unfilled` and publishes; the refusal stays
+exported for callers that want to fail closed. Recorded for veto.
+
+The window cuts are runaway streams, measured across today's runs: 398 replies abandoned at the
+60-second window had delivered a median 177,741 characters (p90 1,429,821, max 2,367,634) where a
+ballot is a few thousand; minimax-m3 exceeded 200,000 raw characters on 345 of its 539 completed
+replies, gpt-oss-120b on 77 of 353, Kimi-K3 on 28 of 285, Qwen3.8-27B on 23 of 232. Task 31: cut a
+stream early once it passes a size the stage's reply cannot legitimately reach.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
