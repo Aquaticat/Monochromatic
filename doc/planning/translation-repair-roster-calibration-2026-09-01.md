@@ -469,9 +469,63 @@ The remedy is a launch-time dial rather than a built-in and rather than a restar
     editor round); pairing needs the per-call stream lines joined by time, which is instrument work for the
     reading step if the counts warrant it.
 
+## The pin pass died of a refusal cooldown, not of budget
+
+At 01:40:19 UTC the pin pass ended with `DONE processed=0 of pending=3; artifacts=0/92 elapsed=1786317ms`:
+`TALLY Toka_ls status=INCOMPLETE ms=1786206 ... error=translation repair interrupted: provider-unavailable`,
+then XIEPT2 in 44 ms with the same error, then keyword233 in 66 ms with
+`front matter is not publishable (incumbent-fallback)`.
+No page and no artifact were written; the real clone stayed clean.
+
+What happened, read off the log and the source:
+
+-   Two processes, each with four slices in flight over eight-wide reader rounds, produced HTTP 429 bursts
+    (68 in the pin log, 11 in the first ten minutes of Carena's), eight calls at once hitting the retry
+    ladder together (`exchangeWithRetry`, five attempts, about 15 s in total).
+-   A 429 that outlives the ladder reaches the router as a `SyntheticHttpError`, and `isBudgetRefusal`
+    (`provider-budget-refusal.ts`) counts 429 and 402 alike as "out of budget": `markRefused` then holds that
+    provider dry for `REFUSAL_COOLDOWN_MS` (300000 ms) whatever its meter says, by design
+    (`provider-budget.ts`: "A refusal is stickier than a meter reading";
+    `doc/decision/translation-repair-multi-provider.md`).
+-   Synthetic was so held at 01:21:44, 01:32:56 and 01:39:28 (each time on `GLM-5.3-Flash`), which routed
+    its traffic to Hyper; at 01:39:54 to 01:39:59 Hyper refused eight models in five seconds and was held
+    too; with both held, `BothProvidersDryError` fired for every voice of every stage (518 lines in
+    twenty-five seconds), Toka_ls's translate lane ended, and the two remaining entries were attempted and
+    failed inside the same second because the hold is process-wide state.
+-   Thirteen seconds before the verdict the meter read
+    `METERS synthetic=wet hyper=wet syntheticWeekly=7.24% syntheticFiveHour=2729/2750 hyperBalance=6447`.
+    Neither provider was out of anything.
+    The error text, "Synthetic has no five-hour or weekly credit left and Charm Hyper has no balance left.
+    Nothing further can be bought, so this run ends", asserts a state that was never measured.
+-   keyword233's refusal is the same outage through another guard: every stage lost every voice, the
+    front-matter slice kept the archive's text, and `assertFrontMatterComplete`
+    (`corpus-run/front-matter-completeness.ts`) refuses a page whose metadata is the incumbent while the
+    source's differs. It is not a defect of that entry.
+-   The Carena pass, in its own process, was held out of Hyper at 01:40:32 to 01:40:35 (four refusals) with
+    Synthetic wet, so for five minutes its Hyper-only seats (`glm-5.3`, `deepseek-v4-pro-0813`, `minimax-m3`,
+    `gemma-4-26b-a4b-it`) answered `NoProviderForModelError`: editor rounds with one voice of three, refiner
+    rounds with one of three. It kept running and its artifact will carry those degraded stages as findings.
+
+The launch decision that produced the burst was mine (two concurrent processes, against the runbook's
+one-process note and the advisor's warning on per-model load), and the pass's own SEAT lines carry the cost
+as `threw`: `deepseek-v4-pro-0813 asked=168 threw=74`, `GLM-5.3-Flash asked=173 threw=97`,
+`Qwen3.8-27B asked=177 threw=83`, most of them the dry-verdict lines rather than provider faults.
+
+What is the pipeline's, not the launch's, and is filed for the owner as a design conflict (`#474`):
+
+-   A 429 is read as allowance exhaustion without consulting the meter that was read thirteen seconds
+    earlier and says otherwise; a rate limit and an empty allowance get the same five-minute hold.
+-   When both providers are held, the pass fails every remaining entry at once instead of waiting out the
+    shorter hold, which is at most five minutes against a 72 hour soft budget.
+-   The `BothProvidersDryError` text states what was assumed, not what was measured.
+
+Relaunch plan: after the Carena pass exits, the three pin entries run again in ONE process, under
+`TRANSLATION_REPAIR_WRITER_GRACE_MS=180000`, the 60 s round window and overlap 4, into a fresh throwaway runs
+dir on the current build (the pipeline digest moved with the dial, so the old slice cache would be discarded
+anyway).
+
 ## Next action
 
-Wait for both passes to finish (task notifications), then per task 2: read the TALLY and SEAT lines, the
-abandons by role, the refiner-round heard counts (the second place the writer window matters), the translate
-follow-up conversion rate, wall clock per entry and the meters; then task 3, reading the artifacts and pages
-under the two runs dirs against source before any readiness claim.
+Wait for the Carena pass to finish, read its TALLY, SEAT and DESTINATIONS lines and run `verify-published`
+on its runs dir; relaunch the pin entries as above and read them the same way; then task 3, reading the
+artifacts and pages against source before any readiness claim.
