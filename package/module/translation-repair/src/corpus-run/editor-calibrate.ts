@@ -6,6 +6,10 @@ import {
   adoptCalibrationGrace,
   STRAGGLER_GRACE_VAR,
 } from '../grace-override.ts';
+import {
+  writerGraceOverrideNote,
+  writerRoundGraceMs,
+} from '../writer-grace-override.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { repairChunk, } from '../repair-chunk.ts';
 import { settleRefinedSlice, } from '../refine-slice-settle.ts';
@@ -392,6 +396,20 @@ async function main(): Promise<void> {
       (grace.source === 'override') ? `${STRAGGLER_GRACE_VAR} override` : 'calibration default'
     })`,
   );
+
+  /**
+   * Note naming the writer rounds' window when a launch gave them their own.
+   *
+   * PRINTED because this run's editor and refiner rounds ARE writer rounds: a
+   * launch that set the dial changed what the standing measures, and a reader
+   * must be able to tell that from the log alone.
+   */
+  const writerNote = writerGraceOverrideNote({
+    writerMs: writerRoundGraceMs(),
+    roundMs: grace.effectiveMs,
+  },);
+  if (writerNote !== '')
+    console.log(writerNote,);
 
   /**
    * Client every slice shares, built once for the run.

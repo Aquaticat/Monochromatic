@@ -15,6 +15,7 @@ import {
 } from './translate-candidates.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
+import { writerRoundGraceMs, } from './writer-grace-override.ts';
 import {
   buildTranslateMessages,
   isTranslateReportWire,
@@ -176,6 +177,10 @@ export async function produceTranslateSlate(
     responseFormat: TRANSLATE_RESPONSE_FORMAT,
     validate: isTranslateReportWire,
     stage: 'translate',
+    // A WRITER ROUND: every voice the window cuts is one fewer rendering on
+    // the slate, so it waits under the writer window when a launch set one
+    // (`writer-grace-override.ts`).
+    graceMs: writerRoundGraceMs(),
     l: tl,
   },);
 

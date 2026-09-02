@@ -14,6 +14,10 @@ import {
 } from '../grace-override.ts';
 import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
 import {
+  writerGraceOverrideNote,
+  writerRoundGraceMs,
+} from '../writer-grace-override.ts';
+import {
   type AttemptMap,
   readAttemptMap,
 } from './attempt-store.ts';
@@ -211,6 +215,15 @@ async function runCorpusPass(): Promise<void> {
   const graceNote = graceOverrideNote({
     effectiveMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
     builtInMs: STRAGGLER_GRACE_MS,
+  },);
+
+  /**
+   * Note naming the writer rounds' window when a launch gave them their own,
+   * resolved here for the same reason as `graceNote` and printed beside it.
+   */
+  const writerNote = writerGraceOverrideNote({
+    writerMs: writerRoundGraceMs(),
+    roundMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
   },);
 
   /**
@@ -486,6 +499,8 @@ async function runCorpusPass(): Promise<void> {
   // comparable with ones settled under it.
   if (graceNote !== '')
     console.log(graceNote,);
+  if (writerNote !== '')
+    console.log(writerNote,);
 
   if (!capOutlastsOneCall({
     capMs: HARD_CAP_MS,

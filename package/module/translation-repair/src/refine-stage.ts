@@ -40,6 +40,7 @@ import {
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { restoreTypography, } from './restore-typography.ts';
+import { writerRoundGraceMs, } from './writer-grace-override.ts';
 
 //region Refinement stage
 // One slice's naturalness pass over already-repaired text.
@@ -254,6 +255,10 @@ export async function runRefineStage(
     // See the same note in `repair-editor-stage.ts`: waiting for every voice
     // let one degraded model stall every gather that seated it, and the user
     // removed the option on 2026-08-14.
+    //
+    // A WRITER ROUND, so the third voice is a whole candidate and waits under
+    // the writer window when a launch set one (`writer-grace-override.ts`).
+    graceMs: writerRoundGraceMs(),
     l,
   },);
 

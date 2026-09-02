@@ -39,6 +39,13 @@ export {
   STRAGGLER_GRACE_VAR,
 } from './grace-override.ts';
 export {
+  resolveWriterGraceMs,
+  WRITER_GRACE_VAR,
+  WRITER_STAGE_LABELS,
+  writerGraceOverrideNote,
+  writerRoundGraceMs,
+} from './writer-grace-override.ts';
+export {
   type RoundOutcome,
   runGatherRound,
   STRAGGLER_GRACE_MS,

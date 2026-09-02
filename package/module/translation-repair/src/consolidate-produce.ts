@@ -17,6 +17,7 @@ import {
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
+import { writerRoundGraceMs, } from './writer-grace-override.ts';
 import {
   isTranslateReportWire,
   TRANSLATE_RESPONSE_FORMAT,
@@ -146,6 +147,10 @@ export async function produceConsolidations(
     responseFormat: TRANSLATE_RESPONSE_FORMAT,
     validate: isTranslateReportWire,
     stage: produceConsolidations.name,
+    // A WRITER ROUND: every voice the window cuts is one fewer proposal, so it
+    // waits under the writer window when a launch set one
+    // (`writer-grace-override.ts`).
+    graceMs: writerRoundGraceMs(),
     l: pl,
   },);
 

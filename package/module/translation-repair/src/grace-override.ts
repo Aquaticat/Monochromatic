@@ -81,6 +81,54 @@ export function resolveStragglerGraceMs(
     readonly raw?: string;
   },
 ): number {
+  return readWindowDial({
+    variable: STRAGGLER_GRACE_VAR,
+    fallback,
+    raw,
+    unsetMeans: 'run under the built-in window',
+  },);
+}
+
+/**
+ * Reads one window dial's text the way every window dial must read it.
+ *
+ * ONE READER FOR EVERY DIAL, because the refusal rule is the dial's whole
+ * value: `writer-grace-override.ts` reads a second variable by the same rule,
+ * and two hand-copied readers would be two places for `300s` to start meaning
+ * 300 in one and a refusal in the other.
+ *
+ * @param variable - environment variable the text came from, named in the
+ * refusal so the operator corrects the right one
+ *
+ * @param fallback - window used when the text is blank
+ *
+ * @param raw - override text; blank means unset
+ *
+ * @param unsetMeans - what leaving the variable unset does, for the refusal
+ *
+ * @returns Milliseconds the dial names, or the fallback when it names nothing
+ *
+ * @throws {@link StatedRefusalError} when the text is present and is not a
+ * positive finite number of milliseconds
+ *
+ * @example
+ * ```ts
+ * const ms = readWindowDial({ variable, fallback, raw, unsetMeans: 'run under the built-in window', },);
+ * ```
+ */
+export function readWindowDial(
+  {
+    variable,
+    fallback,
+    raw,
+    unsetMeans,
+  }: {
+    readonly variable: string;
+    readonly fallback: number;
+    readonly raw: string;
+    readonly unsetMeans: string;
+  },
+): number {
   if (raw.trim() === '')
     return fallback;
 
@@ -93,8 +141,8 @@ export function resolveStragglerGraceMs(
 
   if ((!Number.isFinite(ms,)) || (ms <= 0))
     throw new StatedRefusalError({
-      says: `${STRAGGLER_GRACE_VAR} must be a positive number of milliseconds, and `
-        + `${JSON.stringify(raw,)} is not; leave it unset to run under the built-in window`,
+      says: `${variable} must be a positive number of milliseconds, and `
+        + `${JSON.stringify(raw,)} is not; leave it unset to ${unsetMeans}`,
     },);
 
   return ms;

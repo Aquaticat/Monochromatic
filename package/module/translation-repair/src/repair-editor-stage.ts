@@ -30,6 +30,7 @@ import { assertJudgeableEditorRoster, } from './repair-contract.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import { writerRoundGraceMs, } from './writer-grace-override.ts';
 
 //region Editor stage
 // Several editors rewrite one chunk's envelopes independently, every proposal
@@ -188,6 +189,10 @@ export async function runEditorStage(
     // that option on 2026-08-14: one model degrading for a day made every
     // editor gather spend four deadlines chasing it, and the ensemble property
     // the wait protected is already held by a quorum of two.
+    //
+    // A WRITER ROUND, so the third voice is a whole candidate and waits under
+    // the writer window when a launch set one (`writer-grace-override.ts`).
+    graceMs: writerRoundGraceMs(),
     l,
   },);
 
