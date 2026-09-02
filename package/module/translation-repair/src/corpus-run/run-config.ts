@@ -200,8 +200,9 @@ export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
  * WHAT FOLLOWS IS THE HISTORY OF THESE SEATS, kept because each rule below was
  * argued from it. The seats themselves are the measured ones in the constant:
  * the roster spans two providers since 2026-08-24 (ten then, nine now), the three editors
- * and three refiners were chosen by the 40-round calibration of that day, and
- * the checkers are the three the width measurement settled.
+ * and three refiners were chosen by the 40-round writer calibration of that day
+ * and reseated by the 40-slice editor calibration of 2026-09-01, and the
+ * checkers are the three the width measurement settled.
  *
  * GLM-4.7-Flash took the third editor seat on 2026-08-12 because it was the
  * only model not already checking or editing, and the constraints left no
@@ -280,8 +281,9 @@ export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
  * 2026-08-24 one model both edits and checks, bounded by the half-weight
  * discount described at `checkerModelIds`.
  *
- * The naturalness lane runs on the same three models that edit, Kimi-K3 among
- * them. Nothing forbids a refiner also editing: a judge's ballot for its own
+ * The naturalness lane shares two of its three seats with the editors since
+ * 2026-09-01 (GLM-5.3-Flash and deepseek-v4-pro-0813), with minimax-m3 as its
+ * third. Nothing forbids a refiner also editing: a judge's ballot for its own
  * candidate has counted half since 2026-08-14 and a checker's verdict on text
  * it helped write has counted half since 2026-08-24, so neither stage is
  * decided by the model whose text it is. The tradeoff is real and is accepted
@@ -308,10 +310,27 @@ export const RUN_MODELS: RepairModels = {
   // seat; the reason sits on `WIDE_SEAT_DROPPED`.
   criticModelIds: RUN_WIDE_SEATS,
   panelModelIds: RUN_WIDE_SEATS,
-  // MEASURED, and no longer provisional. The calibration this seat waited for
-  // ran on 2026-08-24: 40 rounds in which all ten roster models wrote a
-  // candidate for the same slices and every other model judged them, giving
-  // 2492 disinterested ballots against a pooled null of 13.48 percent.
+  // MEASURED ON THE EDITOR'S OWN JOB since 2026-09-01. `editor-calibrate`
+  // over 40 bench slices at build `48799e6d1` drove the whole repair lane
+  // with every roster model editing and judging: 111 judged editor rounds
+  // from the 30 slices that carried an accepted issue, 6131 disinterested
+  // ballots against a pooled null of 15.8 percent. Availability-adjusted
+  // share (raw share times candidates over the fullest model's 126):
+  // GLM-5.3-Flash 32.2 percent (221 of 669, z +12.25), `glm-5.3` 21.4 (143
+  // of 657, z +4.21), `deepseek-v4-pro-0813` 18.8 (130 of 657, z +2.82),
+  // then Qwen3.8-27B 17.3 (121 of 688, z +1.31), Kimi-K3 14.2, gpt-oss-120b
+  // 12.6, minimax-m3 8.4, gemma-4-26b-a4b-it 7.0 (56 of 767, z -6.44),
+  // deepseek-v4-flash-0731 5.6. The two incumbents it unseats sat fourth and
+  // eighth; gemma, second-best WRITER in the producer calibration of the same
+  // day, wrote the worst edits, which is the divergence the editor instrument
+  // exists to catch. Record, method and the slice-clustered reading:
+  // `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
+  //
+  // THE SEAT BEFORE THAT was the writer calibration of 2026-08-24, kept here
+  // because its reading of availability still governs how a standing is read:
+  // 40 rounds in which all ten roster models wrote a candidate for the same
+  // slices and every other model judged them, giving 2492 disinterested
+  // ballots against a pooled null of 13.48 percent.
   //
   // AVAILABILITY IS PART OF THE SCORE, and reading it that way is what moved
   // the ranking. A model absent from a round produced nothing to be judged, so
@@ -333,36 +352,55 @@ export const RUN_MODELS: RepairModels = {
   // whole roster on 2026-08-28 because metered cost was disproportionate and
   // exceptionally expensive.
   //
-  // THIS SEAT NOW CROSSES PROVIDERS, which no writer seat did before. Charm
-  // Hyper serves `gemma-4-26b-a4b-it` and Synthetic serves the other two, so a
-  // Synthetic outage leaves the stage a writer instead of emptying it. That it
-  // reads no images costs nothing here: pictures are read in their own stage
-  // over a catalog-derived roster, and `document-lanes.ts` records that no
+  // THE SEAT STILL CROSSES PROVIDERS: Charm Hyper serves `glm-5.3` and
+  // `deepseek-v4-pro-0813`, Synthetic serves GLM-5.3-Flash (Hyper carries it
+  // too), so an outage on either side leaves the stage a writer instead of
+  // emptying it. TWO OF THE THREE ARE ONE MODEL FAMILY, which the provider
+  // argument alone would hide: a GLM blind spot is now shared by two seats,
+  // and the third seat is the only one outside it. That is accepted on the
+  // measurement rather than designed around, and it is the reason the
+  // standing is re-read rather than the seat assumed. Neither reads images,
+  // which costs nothing here: pictures are read in their own stage over a
+  // catalog-derived roster, and `document-lanes.ts` records that no
   // repair-lane stage ever asks what one says.
   //
-  // THE INSTRUMENT SITS ONE STEP FROM THIS SEAT, and saying so is the same
-  // discipline that keeps this table away from the checker seats.
-  // `producer-calibrate.ts` drives `runTranslateStage`, so what it measures is a
-  // model writing a slice from the SOURCE while other models vote on the result.
-  // An editor writes a slice and is judged the same way, but from the archive
-  // text and a set of critic claims. That is far nearer than checking, which is
-  // not writing at all, and it is the nearest instrument that exists; the seat
-  // it replaced rested on no measurement whatsoever. An editor-role calibration
-  // would settle it outright and has not been built.
+  // WALL CLOCK IS THE PRICE OF THIS SEAT. The two GLM models are the roster's
+  // slowest voices (completed streams p50 52 to 66 s, p90 153 to 199 s), so
+  // an editor round now waits on them where it once waited on nobody; the
+  // corpus pass bounds that with its straggler window rather than by seating
+  // a faster, worse editor.
   editorModelIds: [
-    'hf:moonshotai/Kimi-K3',
-    'hf:Qwen/Qwen3.8-27B',
-    'gemma-4-26b-a4b-it',
+    'hf:zai-org/GLM-5.3-Flash',
+    'glm-5.3',
+    'deepseek-v4-pro-0813',
   ],
   // An editor still judges a slate holding its own text at half weight for
   // that candidate alone.
   judgeModelIds: RUN_WIDE_SEATS,
-  // Same three as the editors, seated on the same 40-round measurement, and
-  // one step from that instrument for the same reason the editors are.
+  // MEASURED ON THE REFINER'S OWN JOB, NOT TRANSFERRED FROM THE EDITORS.
+  // `editor-calibrate` runs the naturalness lane after the accuracy lane and
+  // reports the refiner standing off the same spend: 25 judged refiner rounds
+  // from the 25 of 40 slices that carried a paragraph over the eligibility
+  // floor, pooled with the 4 rounds of the 6-slice replicate run the same
+  // day, 1393 disinterested ballots against a pooled null of 14.0 percent.
+  // Availability-adjusted: GLM-5.3-Flash 32.5 percent (66 of 172, z +9.21),
+  // `deepseek-v4-pro-0813` 17.1 (35 of 205), `glm-5.3` 12.1 (25 of 190),
+  // `minimax-m3` 9.7 (20 of 103, having proposed a rewrite in 13 of 26
+  // opportunities), then Kimi-K3 7.8, Qwen3.8-27B 7.7, gpt-oss-120b 4.3,
+  // gemma 3.4, deepseek-v4-flash-0731 0.5.
+  //
+  // THE THIRD SEAT WENT ON RELIABILITY, by the rule written before the
+  // numbers arrived. Bootstrapping whole slices (26 winner-bearing rounds,
+  // 4000 resamples) puts GLM-5.3-Flash in the top three 99.9 percent of the
+  // time and deepseek-v4-pro-0813 97.5, but leaves `glm-5.3` (24.3) and
+  // `minimax-m3` (42.8) unseparated; where the third and fourth seats are
+  // not separated, the seat goes to the model that lost fewer voices under
+  // the production window, and minimax-m3 lost none (p90 48 s) where
+  // `glm-5.3` is the roster's slowest voice and lost 15 of 78 asks.
   refinerModelIds: [
-    'hf:moonshotai/Kimi-K3',
-    'hf:Qwen/Qwen3.8-27B',
-    'gemma-4-26b-a4b-it',
+    'hf:zai-org/GLM-5.3-Flash',
+    'deepseek-v4-pro-0813',
+    'minimax-m3',
   ],
   // THREE, MEASURED RATHER THAN PREFERRED, and the wide arm is gone. The
   // owner ruled on 2026-08-23 that checker width is settled by measurement:
