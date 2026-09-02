@@ -244,15 +244,42 @@ export async function runArchiveBlockReviewStage(
       === gather.voices
       .length ? [] : ['archive review discarded uncorroborated retention claim',]),
   ],),];
-  /**
-   * Participation required after unsupported anchors are removed.
-   */
-  const requiredParticipation = rosterQuorumSize({ rosterSize: modelIds.length, });
-  if ((!gather.quorumMet) || (anchoredVoices.length < requiredParticipation)) {
+  // AN UNHEARD ROSTER IS AN OUTAGE; AN UNANCHORED ONE IS A VERDICT. Only the
+  // first interrupts. The second used to be thrown as `provider-unavailable`
+  // too, and on 2026-09-02 it ended XIEPT2 in 114 seconds with every seat
+  // answering every call: the archive is a placeholder page ("(To-Do)" and
+  // translation hints), nine reviewers were heard about its one block, and
+  // fewer than the exact half anchored their support in the original. The
+  // no-loop design says an unresolved block is retained with its findings and
+  // reviewer indecision cannot withhold the entry.
+  if (!gather.quorumMet) {
     throw new TranslationRepairInterruptedError({
       reason: 'provider-unavailable',
       findings,
     },);
+  }
+  /**
+   * Participation required after unsupported anchors are removed.
+   */
+  const requiredParticipation = rosterQuorumSize({ rosterSize: modelIds.length, });
+  /**
+   * Replies heard at all, anchored or not.
+   */
+  const heardCount = gather.voices
+    .length;
+  if (anchoredVoices.length < requiredParticipation) {
+    return {
+      kind: 'retained',
+      text: blockText,
+      findings: [
+        ...findings,
+        `archive review left the block unresolved: ${String(anchoredVoices.length,)} of ${
+          String(heardCount,)
+        } replies anchored their support in the original, below the ${
+          String(requiredParticipation,)
+        } required; the block stands as the archive wrote it`,
+      ],
+    };
   }
   if (anchoredVoices.every(function retains(voice,): boolean {
     return voice.value

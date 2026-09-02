@@ -22,7 +22,6 @@ import {
   isVerifiableEditorialArchiveBlock,
   runArchiveBlockReviewStage,
   type SyntheticClient,
-  TranslationRepairInterruptedError,
 } from '../dist/final/node/index.mjs';
 
 /** Four seats let two producers receive disinterested selection ballots. */
@@ -163,38 +162,42 @@ await describe({
       },
     },),
     it({
-      name: 'PAUSES retention when post-anchor voices fall below exact-half participation',
+      name: 'RETAINS the block with an unresolved finding when post-anchor voices fall below exact-half '
+        + 'participation, buying no naturalness review: a heard roster whose support does not anchor is '
+        + 'a verdict, not an outage (it ended XIEPT2 in 114 seconds on 2026-09-02 as '
+        + '"provider-unavailable" with every seat answering), and the no-loop design retains an '
+        + 'unresolved block with its findings',
       fn: async () => {
         const prompts: string[] = [];
-        let thrown: unknown;
-        try {
-          await runArchiveBlockReviewStage({
-            client: scriptedClient({
-              prompts,
-              replyFor: ({ schema, modelId, },) => schema === 'archive_block_review'
-                ? {
-                  disposition: 'source-supported',
-                  sourceQuote: modelId === ROSTER[0] ? '窗边安静地睡觉' : '不存在的来源句子',
-                  replacementText: '',
-                  finding: 'Source support claim.',
-                }
-                : ACCEPTABLE_NATURALNESS,
-            },),
-            modelIds: ROSTER,
-            sourceText: '猫在窗边安静地睡觉。',
-            targetText: 'The cat sleeps quietly by the window.',
-            blockText: 'The cat sleeps quietly by the window.',
-            priorFindings: [],
-            signal: new AbortController().signal,
-            exchangeTimeoutMs: 5_000,
-            l,
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
-        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
-        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, modelId, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'source-supported',
+                sourceQuote: modelId === ROSTER[0] ? '窗边安静地睡觉' : '不存在的来源句子',
+                replacementText: '',
+                finding: 'Source support claim.',
+              }
+              : ACCEPTABLE_NATURALNESS,
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: 'The cat sleeps quietly by the window.',
+          blockText: 'The cat sleeps quietly by the window.',
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(outcome.kind,).toBe('retained',);
+        expect(outcome.text,).toBe('The cat sleeps quietly by the window.',);
+        expect(outcome.findings.join('\n',),).toContain('archive review left the block unresolved: 1 of',);
+        expect(outcome.findings.join('\n',),).toContain('archive review discarded uncorroborated retention claim',);
+        // No naturalness review is bought for a block nobody could anchor.
+        expect(prompts.some(function isNaturalness(prompt,): boolean {
+          return prompt.includes('publication-ready English',);
+        },),).toBe(false,);
       },
     },),
     it({
