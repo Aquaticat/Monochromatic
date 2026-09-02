@@ -672,9 +672,14 @@ In order:
     eight ballots, on purpose, because the Chinese sentence has no subject), a re-rendered work title
     at slice 10, an unidiomatic heading at slice 12, and `> ` trailing-space churn copied from the source,
     including a whitespace-only "replacement" judged five to two at slice 1.
-3.  Toka_ls again when Synthetic is wet and the guard would accept its result; no rerun before both hold,
-    because a rerun on any built tree that exists today ends refused at publish with no artifact. Timing is
-    the owner's say. Carena0442 after it, gated the same way. Each landed artifact goes through
+3.  Toka_ls is running again since 08:40 UTC on `8e3171b34` (writer 180 s, round 60 s, overlap 2), launched
+    on the owner's word that one dry provider is normal operation (rule `QPW`); it predates the guard
+    reduction, the judge unseating and the #473, #474 and pronoun fixes, so its metadata is guarded by the
+    reshaped rule and its judges include GLM-5.3-Flash. When it exits, a chain launches Carena0442 (fixture
+    clone), then XIEPT2, then keyword233, one per launch on the current tree, each followed by
+    `verify-published`; logs `~/temp/agent/carena-rerun-20260902.log`, `~/temp/agent/pin-rerun-<id>-20260902.log`.
+    Each landed page and artifact gets the task 3 reading (`~/temp/agent/read-artifact-20260902.mjs`),
+    with slice 9's pronoun and the metadata slice's outcome checked first. Each landed artifact goes through
 `verify-published` (which reads `artifacts/` and `fixed/` and never touches `pass.lock`) and the reader
 script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3, in this order: `git status --short` on the
 real clone, `verify-published`, the reader script, then the translate-round heard counts under the writer
