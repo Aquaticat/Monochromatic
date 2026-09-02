@@ -400,8 +400,29 @@ at 19 minutes in:
     Carena's mode is 6 of 8.
     Panel rounds: pin 3 of 13 full, mode 7 of 8; Carena 1 of 14 full, mode 7 of 8.
     The cut readers are the same slow voices as in calibration (`GLM-5.3-Flash`, `Qwen3.8-27B`, `Kimi-K3`,
-    `minimax-m3`, `gemma-4-26b-a4b-it`), and `0/1 heard` rounds are the retry of a single lost voice failing
-    again.
+    `minimax-m3`, `gemma-4-26b-a4b-it`).
+-   The `0/1 heard` rounds are not retries. Each follows a `<stage>: recovery round for 1 unreadable answers`
+    line (`stage-quorum.ts`, the one recovery round for an answer that parsed but failed the schema guard),
+    and each is answered in 0 to 1 ms by `PROMPT-REUSE source=memory` for the same model and digest, then
+    fails the same guard on the same bytes.
+    `prompt-uniqueness-client.ts` states it: "Any returned outcome claims identity permanently for client
+    lifetime, including schema mismatch or refusal."
+    So the recovery round costs no wall clock and can never recover anything: the same prompt to the same
+    model is served the same unreadable reply.
+    Five such rounds so far (Carena 3: gemma twice, deepseek-v4-flash once; pin 2).
+    This is the path the unsettled gemma malformed-JSON item was leaning on, and it is dead by construction;
+    filed as `#473` for the owner (a design conflict between two deliberate rules, not a fix to make
+    unasked).
+-   Wall clock, projected from the slice cache (`slice-cache/<entry>/<hash>.json`, one per settled repair
+    slice): Toka_ls 14 of 16 repair slices at 25 minutes, Carena 18 of 22 at 22 minutes, and each entry then
+    runs its translate lane over the same slices.
+    An entry is about an hour; the pin pass carries three in sequence, so it projects to about three hours
+    against the `FIT` hour.
+    It is left running rather than stopped, because the reading step starts on the first two artifacts
+    (Toka_ls and Carena) as they land and does not wait on the pass, and because a relaunch on the current
+    build would discard the slice cache (the pipeline digest moved from `ab964c96…` to `d0a82037…` with the
+    writer dial), re-spending what is already settled.
+    The owner's veto stops it at any time; the artifacts already written survive a stop.
 -   The "delivered chars" in a cut line is the raw streamed body (`partialText` in `stream-drain.ts` joins
     the decoded chunks, framing and reasoning deltas included), which is why a critic cut at 60 s shows
     0.2 to 1.7 million characters: it is not answer text, and the figure says only that the model was still
@@ -433,8 +454,20 @@ The remedy is a launch-time dial rather than a built-in and rather than a restar
     (153 to 199 s completed streams) at the cost of up to two more minutes on the minority of writer rounds
     the third voice runs long in; 300000 ms is the calibration's own window and what the seat was measured
     under.
-    The owner's fast-iteration principle sizes it at the built-in unless the next pass shows the p90 tail
-    is where the winning candidates come from.
+    Rule, written before the refiner and translate rounds of this pass are read: the next launch sets
+    `TRANSLATION_REPAIR_WRITER_GRACE_MS=180000` (the built-in, no new number), unless this pass's refiner or
+    translate rounds show the seated slow voice (`GLM-5.3-Flash` as refiner, `glm-5.3` as translator) losing
+    a majority of its rounds to the window AND winning the judged round when it is heard, in which case the
+    tail is the seat and the dial goes to the calibration's 300000 ms.
+    Editor rounds are the writer seat's best case (the slow `glm-5.3` forms quorum, so the window runs
+    against one slow voice with a head start); refiner rounds (quorum on `deepseek-v4-pro-0813` and
+    `minimax-m3`, both fast) and translate rounds (quorum 4 of 7 in seconds against `glm-5.3` at p50 61 to
+    66 s) are where a 60 s window bites hardest, and the first refiner round of the pin pass heard all three
+    in 23.8 s.
+    Whether the late editor voice wins its rounds cannot be read from the round lines alone (the `in grace`
+    figure does not name the late voice; the judged-round winner lines are per issue envelope, several per
+    editor round); pairing needs the per-call stream lines joined by time, which is instrument work for the
+    reading step if the counts warrant it.
 
 ## Next action
 
