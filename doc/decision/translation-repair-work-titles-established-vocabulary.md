@@ -95,6 +95,19 @@ run keeps its preparation identity. My readings, veto invited:
   `x-api-key` header, the request shape read off the current reference on 2026-09-02. No key set: no
   lookups, one log line, nothing else changes.
 
+Positive control, run by hand at 10:05 UTC with the drafted request (`type: auto`, five results,
+highlights of at most 300 characters asked with the same query), results only ever printed:
+
+- 《活着》: "To Live" in every result, the fifth quoting that the title is Yu Hua's authorised official
+  translation. 1.6 s, $0.007.
+- 《魔法少女小圆》: "Puella Magi Madoka Magica" from Wikipedia, Anime News Network, MyAnimeList,
+  aniSearch, and the Taiwanese licensee's naming notice. 1.3 s, $0.007.
+- 《奇妙漂流》（或称「Aiden 的奇幻漂流」）: no page about the group's own work; the results are
+  奇幻漂流 neighbours, 少年 Pi 的奇幻漂流 among them, which is the allusion a judge needs to see.
+  1.7 s, $0.007.
+
+So the corpus's 118 spans cost about a dollar once, and the cache makes it once.
+
 ## What it does not decide
 
 - Titles with no official English rendering and no note: translated, consistent, not protected.
