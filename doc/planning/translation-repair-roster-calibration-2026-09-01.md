@@ -836,6 +836,25 @@ task (`setsid nohup`) so a task kill cannot take the pass, and a detached script
 (`~/temp/agent/toka-after-keyword233.sh`, output `.out`) launches Toka_ls at overlap 3 after keyword233's
 TALLY. Both run on the tree with `321b12673` and `8384166e9`.
 
+## keyword233 landed at 14:13 UTC in 22 minutes, on the fixed tree
+
+`TALLY keyword233 status=SETTLED slices=3 ms=1340649` on `a5c69a305`: the first artifact of generation
+ten, page and artifact under `~/temp/agent/pin-rerun-20260902`, `verify-published` clean (826
+characters as implied), 0 refusals, 0 holds, no unendorsed standing, no escaped quote. Seats: Kimi-K3
+threw 8 of 37 and Qwen3.8-27B 12 of 37 at the window; every other seat 1 or fewer.
+
+The reading, all three slices against the source: the metadata slice stands (its name is the
+directory, as the source's is, which the narrowed guard of `6d85b619a` accepts); both body slices went
+to the repair lane at 7 and 6 ballots. Every change recovers something the archive had paraphrased away:
+"She started her own channel on Telegram, where she shared little moments from her daily life and her
+heartfelt reflections with everyone" for 开设了自己的频道，与大家分享她的生活点滴和心灵感悟 (the archive
+had "shared laughters and tears"); "which I thought was wonderful" for 这在我看来很棒, which the archive
+had dropped; "Her wisdom and passion added a touch of brightness to this world" for
+用她的智慧和热情，为这个世界增添了一抹亮色; "It is heartbreaking that she passed away" for 令人悲痛的是; "we
+will always remember her" for 我们会永远铭记她的 (the archive: "She will always be in our heart"). No
+defect, no regression. The detached Toka_ls script launched Toka_ls at 14:13:20 on `aeb4181b9` at
+overlap 3 (`~/temp/agent/toka-rerun2-20260902.log`).
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
