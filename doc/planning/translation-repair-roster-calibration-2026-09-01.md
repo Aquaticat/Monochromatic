@@ -769,11 +769,15 @@ section or issue it names.
   shorter hold, or at least state measured facts in the message. The fixed minimum vote weight of 2
   (`MIN_SELECTION_WEIGHT`), which a 4-of-8 ballot round reaches only when two full-weight ballots agree,
   belongs to the same decision.
-- The front-matter guard reshape of commit daaf0ffa0 (superseding 503ec902c) and its extension 6f70a2085,
-  recorded for veto in the sections "The Carena pass finished and was refused at publish time" and "The
-  Toka_ls relaunch was killed at 77 minutes, in consolidation": a byte-equal keep that the translate
-  judges chose, every heard translator reproduced, the lane contest chose or endorsed, the consolidation
-  slate endorsed, or the consolidation gate kept with a quorum, now publishes; every fallback refuses by
-  the decision's name. The 2026-08-28 rule refused all of them.
+- DECIDED 2026-09-02 09:0x UTC: the front-matter guard keeps structural checks only (commit `34e5c7ecd`,
+  `doc/decision/translation-repair-front-matter-guard.md`). The owner's answer to the veto question was to
+  its premise ("why are we caring about metadata being different vs Chinese source at all?"): the
+  2026-08-28 trigger was a proxy for nothing, so the incumbent-fallback refusal and the night's standing
+  machinery (daaf0ffa0, 6f70a2085, 1160ebb4c) are gone; the directory-id refusal now fires on the
+  assembled page whether or not it equals the archive.
+- DECIDED at the same time: unseat GLM-5.3-Flash from every judge role, keep its editor seat (task 14);
+  #473 is fixed by varying the recovery prompt with the guard's complaint (task 11); the slice 9 pronoun
+  is a judge defect, not a policy (the source uses 她 sixteen times; task 12 carries the established
+  referent into the prompts); #474 options 1 and 2 are both implemented (task 10).
 - XIEPT2 and keyword233: not in the chain. Running them needs either a fresh Synthetic week or the
   owner's say on a run longer than an hour at overlap 2.
