@@ -13,10 +13,13 @@ this document carries the numbers that decision cites and the seating rules writ
 -   `producer-calibrate` over 40 rounds: complete, standings recorded here.
 -   `editor-calibrate` at its 6-slice default: complete, recorded here as a same-day replicate,
     not as seating evidence (the repo's own record calls a standing this small noise).
--   `editor-calibrate` over 40 slices: launched at 21:44Z on the same build,
-    four slices in flight, 300000 ms straggler window.
+-   `editor-calibrate` over 40 slices: complete, 21:44Z to 01:02Z (11908 s), four slices in flight,
+    300000 ms straggler window; 111 editor rounds from 30 slices, 25 refiner rounds from 25 slices.
     Log at `~/temp/agent/editor-calibrate-40-20260901.log`.
-    Editors and refiners are seated from this run alone.
+    Seated on it: `doc/decision/translation-repair-roster-seating-2026-09-01.md`
+    (editors GLM-5.3-Flash, glm-5.3, deepseek-v4-pro-0813; refiners GLM-5.3-Flash, deepseek-v4-pro-0813,
+    minimax-m3; checkers unchanged).
+    Its Synthetic weekly cost: 15.5 to 10.4 percent remaining; Hyper 6967 to 6636 credits.
 -   Logs of the two finished runs: `~/temp/agent/producer-calibrate-40-20260901.log`
     and `~/temp/agent/editor-calibrate-6-20260901.log`.
 -   Landed at `03a58d2ca` on the owner's role-drop authorization: `RUN_TRANSLATORS` (seven, without
