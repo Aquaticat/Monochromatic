@@ -13,6 +13,7 @@ import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
+  RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
@@ -89,13 +90,17 @@ export async function runPassConsolidation(
   const polish = consolidationPolishConfiguration({
     prepared,
     models: RUN_MODELS,
-    gateModelIds: RUN_ROSTER,
+    gateModelIds: RUN_LATE_JUDGES,
   },);
   return await consolidateDocument({
     client,
     projected,
     contests,
+    // THE WHOLE ROSTER WRITES, the late judges judge and gate: GLM-5.3-Flash
+    // keeps its writing seats and left every judge seat on 2026-09-02, the
+    // reason on `WIDE_SEAT_DROPPED` in `run-config.ts`.
     modelIds: RUN_ROSTER,
+    judgeModelIds: RUN_LATE_JUDGES,
     ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
     frontMatterSlices,
     lineStructuredSlices: prepared.lineStructuredSliceIndices,

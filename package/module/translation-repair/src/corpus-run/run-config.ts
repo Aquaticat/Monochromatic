@@ -146,8 +146,35 @@ const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
  * seats are where a ninth voice adds least: the stage reached quorum without
  * it every time. It keeps the translator seat and any editor seat the editor
  * standing gives it, where its text is what is being measured.
+ *
+ * `hf:zai-org/GLM-5.3-Flash` LEFT EVERY JUDGE SEAT ON 2026-09-02 by the owner's
+ * decision ("Unseat GLM-5.3-Flash as a judge, keep it as editor"). Its
+ * reasoning streams run to a million raw characters, and under the 60 s round
+ * window of the Toka_ls relaunch it was cut in 12 of 13 panel rounds, 12 of 21
+ * translate-select rounds, 11 of 29 repair-select rounds, 11 of 15 critic
+ * rounds and 5 of 15 contest rounds: 51 of the run's 78 cuts. No round lost its
+ * decision without it and two needed a challenge round, so the seat cost a
+ * window's wait far more often than it cast a ballot. It keeps the first editor
+ * seat (top three in every one of 4000 resamples), its refiner seat and its
+ * translator seat, where its text is what is being measured. Record:
+ * `doc/planning/translation-repair-roster-calibration-2026-09-01.md`, "The
+ * Toka_ls relaunch was killed at 77 minutes, in consolidation".
  */
-const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['glm-5.3',],);
+const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'glm-5.3',
+  'hf:zai-org/GLM-5.3-Flash',
+],);
+
+/**
+ * Models unseated from the roster-wide judge rounds that run after the lanes:
+ * the lane contest, the consolidation slate's judges and the consolidation
+ * gate. Those rounds seat the whole roster, `glm-5.3` included, since they were
+ * built after the wide-seat drop; only the owner's 2026-09-02 decision on
+ * GLM-5.3-Flash reaches them, for the reason on {@link WIDE_SEAT_DROPPED}.
+ * Pairing and insertion-admission rounds are not judgments of text and lost no
+ * voice to the window (27 of 27 and 9 of 9 heard), so they keep the roster.
+ */
+const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['hf:zai-org/GLM-5.3-Flash',],);
 
 /**
  * Translators for the translate lane: the roster less
@@ -162,8 +189,9 @@ export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
 
 /**
  * Critics, adjudication panel and judges for both lanes: the roster less
- * {@link WIDE_SEAT_DROPPED}. Eight since 2026-09-01, so each of those stages
- * reaches quorum at 4 voices and `minBallotWeight` 3 is 3 of 8.
+ * {@link WIDE_SEAT_DROPPED}. Seven since 2026-09-02 (eight from 2026-09-01),
+ * so each of those stages reaches quorum at 4 voices and `minBallotWeight` 3
+ * is 3 of 7.
  */
 export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillSeated(modelId,): boolean {
@@ -171,7 +199,16 @@ export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
   },);
 
 /**
- * Role roster for a corpus run: EIGHT of the nine critique and adjudicate, THREE edit
+ * Judges for the lane contest, the consolidation slate and the consolidation
+ * gate: the roster less {@link LATE_JUDGE_DROPPED}. Eight since 2026-09-02.
+ */
+export const RUN_LATE_JUDGES: readonly RosterModelId[] = RUN_ROSTER
+  .filter(function stillJudges(modelId,): boolean {
+    return !LATE_JUDGE_DROPPED.has(modelId,);
+  },);
+
+/**
+ * Role roster for a corpus run: SEVEN of the nine critique and adjudicate, THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
  *

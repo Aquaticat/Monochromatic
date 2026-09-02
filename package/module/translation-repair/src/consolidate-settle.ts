@@ -285,7 +285,12 @@ export type ConsolidationSettlement = {
  *
  * @param client - provider client the rounds borrow
  *
- * @param roster - voices seated for both rounds
+ * @param roster - voices that produced the slate, which the candidates are
+ * attributed to
+ *
+ * @param judgeModelIds - voices seated for the slate's judging round and the
+ * gate; the producers' roster when not given, and narrower since 2026-09-02
+ * when the owner unseated GLM-5.3-Flash from every judge seat
  *
  * @param subject - slice in the archive's terms
  *
@@ -324,6 +329,7 @@ export async function settleConsolidation(
   {
     client,
     roster,
+    judgeModelIds = roster,
     subject,
     voices,
     validity,
@@ -339,6 +345,7 @@ export async function settleConsolidation(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly roster: readonly RosterModelId[];
+    readonly judgeModelIds?: readonly RosterModelId[];
     readonly subject: ConsolidationSubject;
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly validity: readonly ProposalValidity[];
@@ -532,7 +539,7 @@ export async function settleConsolidation(
         ...built.findings,
       ],
     },
-    judgeModelIds: roster,
+    judgeModelIds,
     sourceText: subject.sourceText,
     incumbentText: standingText,
 
@@ -595,7 +602,7 @@ export async function settleConsolidation(
    */
   const gate = await gateConsolidatedSlice({
     client,
-    modelIds: roster,
+    modelIds: judgeModelIds,
     subject: {
       sourceText: subject.sourceText,
       incumbentText: subject.incumbentText,

@@ -135,7 +135,10 @@ function laneChoiceOf(
  * @param contests - one record per contested slice, as the contest wrote them
  * for the artifact
  *
- * @param modelIds - roster to ask
+ * @param modelIds - roster to ask for consolidations
+ *
+ * @param judgeModelIds - roster that judges each slate and gates its winner;
+ * `modelIds` when not given
  *
  * @param identityContext - names and handles both documents declare
  *
@@ -180,6 +183,7 @@ export async function consolidateDocument(
     projected,
     contests,
     modelIds,
+    judgeModelIds = modelIds,
     identityContext,
     polishConfig,
     frontMatterSlices,
@@ -196,6 +200,7 @@ export async function consolidateDocument(
     readonly projected: ProjectedLanes;
     readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
+    readonly judgeModelIds?: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly frontMatterSlices: ReadonlySet<number>;
@@ -463,6 +468,7 @@ export async function consolidateDocument(
           const bought = await buyConsolidationSlice({
             client,
             roster: modelIds,
+            judgeModelIds,
             subject,
             standingText,
             lineStructured,

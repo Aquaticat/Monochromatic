@@ -22,6 +22,7 @@ import { TranslationRepairInterruptedError, } from './translation-repair-interru
 type ConsolidationBuyInput = {
   readonly client: SyntheticClient;
   readonly roster: readonly RosterModelId[];
+  readonly judgeModelIds?: readonly RosterModelId[];
   readonly subject: ConsolidateSubject & ConsolidationSubject;
   readonly standingText: string;
   readonly lineStructured: boolean;
@@ -41,7 +42,11 @@ type ConsolidationBuyInput = {
  *
  * @param client - provider client borrowed by every round
  *
- * @param roster - voices producing, judging and gating
+ * @param roster - voices producing, and judging and gating when no narrower
+ * judge roster is given
+ *
+ * @param judgeModelIds - voices judging the slate and gating the winner; the
+ * producers' roster by default
  *
  * @param subject - slice and both lane candidates as every round sees them
  *
@@ -86,6 +91,7 @@ async function buyConsolidationAttempt(
   {
     client,
     roster,
+    judgeModelIds = roster,
     subject,
     standingText,
     lineStructured,
@@ -106,6 +112,7 @@ async function buyConsolidationAttempt(
     return await settleConsolidation({
       client,
       roster,
+      judgeModelIds,
       subject,
       voices: [],
       validity: [],
@@ -145,6 +152,7 @@ async function buyConsolidationAttempt(
   return await settleConsolidation({
     client,
     roster,
+    judgeModelIds,
     subject,
     voices: produced.voices,
     validity: produced.validity,

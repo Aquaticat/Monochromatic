@@ -41,6 +41,7 @@ import {
 import {
   RUN_CALL_CONFIG,
   RUN_CORPUS_PIN,
+  RUN_LATE_JUDGES,
   RUN_READER_MODELS,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
@@ -344,7 +345,9 @@ async function runEntryPipeline(
     const contestSlices = await contestDocumentLanes({
       client,
       projected,
-      modelIds: RUN_ROSTER,
+      // JUDGES ONLY: the roster less GLM-5.3-Flash since 2026-09-02, the
+      // reason on `WIDE_SEAT_DROPPED` in `run-config.ts`.
+      modelIds: RUN_LATE_JUDGES,
       frontMatterSlices,
       ...((prepared.identityContext === undefined)
         ? {}
