@@ -563,7 +563,14 @@ What happened, read off the log, the fixture and the source:
     423 s.
 -   The incumbent is correct. The fixture's `page.en.md` carries `name: Carena`, `alias: Carena`,
     `location: Shanghai` and a translated `desc`, against the source's `飞猫`, `飞猫, Carena`, `上海`.
-    A judged keep of that metadata is a review that found nothing to change.
+    CORRECTION 2026-09-02 03:20: the keep was NOT a judged keep. Both rounds ended `declined-indecision`:
+    the four heard judges split (GLM-5.3-Flash and Qwen3.8-27B for candidate 1 at weight 1.5 together,
+    gpt-oss-120b for candidate 2 at weight 1, Kimi-K3 for candidate 3 at weight 0.5) and the leader fell
+    short of the minimum weight of 3, so the stage shipped the incumbent by fallback. `translate-stage-result.ts`
+    says it in its own words: "the incumbent shipped" and "the judges chose the incumbent" are different
+    facts, and only the second is evidence about the incumbent. The sentence this replaces called it a
+    review that found nothing to change; the sol review of the guard files (`~/temp/agent/sol-front-matter-guard-review-20260902.txt`)
+    caught the misreading.
 -   `assertFrontMatterComplete` (`corpus-run/front-matter-completeness.ts`, landed 2026-08-28 as "review
     visible front matter", "keep invalid metadata retryable", "support one-sided front matter") refused
     because the page's front matter equals the archive's while the source's differs, which it read as an
