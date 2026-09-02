@@ -4,7 +4,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { refusalText, } from '../refusal-text.ts';
-import { ARTIFACT_SCHEMA_VERSION_V7, } from './artifact-two-lane-contract.ts';
+import { ARTIFACT_SCHEMA_VERSION_V10, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import {
   censusBySchema,
@@ -403,7 +403,11 @@ async function assertBodyMatchesLabel(
  * @param artifactsDir - directory holding one JSON per settled entry
  *
  * @param writes - generation this pass writes, defaulting to the one it writes
- * today; a parameter so a caller can exercise this without rebuilding
+ * today; a parameter so a caller can exercise this without rebuilding. THE
+ * DEFAULT MUST MOVE WITH THE WRITER: it sat at seven through generations
+ * eight, nine and ten, unnoticed because every launch of those days went into
+ * an empty directory, and on 2026-09-02 it refused XIEPT2 a directory holding
+ * keyword233's generation-ten artifact, the generation this same build writes.
  *
  * @throws {@link SchemaGenerationError} when any settled artifact belongs to
  * another generation, naming every one of them
@@ -419,7 +423,7 @@ async function assertBodyMatchesLabel(
 export async function assertResumableSchemaGeneration(
   {
     artifactsDir,
-    writes = ARTIFACT_SCHEMA_VERSION_V7,
+    writes = ARTIFACT_SCHEMA_VERSION_V10,
   }: {
     readonly artifactsDir: string;
     readonly writes?: number;
