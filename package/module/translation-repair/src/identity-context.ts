@@ -226,7 +226,41 @@ const SOURCE_PRONOUNS = [
 ] as const;
 
 /**
- * Counts how often one pronoun occurs in a text.
+ * Compounds that contain a pronoun character without being that pronoun:
+ * plurals and the "other" words. Removed before counting, longest first so
+ * 其他人 is not left as 人 after 其他 goes.
+ */
+const COMPOUNDS_HIDING_A_PRONOUN = [
+  '其他人',
+  '其他',
+  '他们',
+  '他人',
+  '她们',
+] as const;
+
+/**
+ * Whether one character is a Latin letter, which is what would make `TA` part
+ * of a longer word (DATA, STATION, a romanised handle) rather than a pronoun.
+ *
+ * @param character - one character, empty at either end of the text
+ *
+ * @returns Whether it is A to Z or a to z
+ *
+ * @example
+ * ```ts
+ * isLatinLetter({ character: 'D', },);
+ * // => true
+ * ```
+ */
+function isLatinLetter(
+  { character, }: { readonly character: string; },
+): boolean {
+  return ((character >= 'A') && (character <= 'Z'))
+    || ((character >= 'a') && (character <= 'z'));
+}
+
+/**
+ * Counts how often one han pronoun occurs in a text, compounds removed first.
  *
  * AN INDEX SCAN RATHER THAN A PATTERN, since the needle is a fixed string and
  * the count is all that is wanted.
@@ -235,15 +269,15 @@ const SOURCE_PRONOUNS = [
  *
  * @param pronoun - fixed form to count
  *
- * @returns Occurrences
+ * @returns Occurrences outside the compounds
  *
  * @example
  * ```ts
- * countOf({ text: '她走了。她笑了。', pronoun: '她', },);
- * // => 2
+ * countHanPronoun({ text: '她走了。她们笑了。', pronoun: '她', },);
+ * // => 1
  * ```
  */
-function countOf(
+function countHanPronoun(
   {
     text,
     pronoun,
@@ -252,9 +286,83 @@ function countOf(
     readonly pronoun: string;
   },
 ): number {
-  return text.split(pronoun,)
+  /**
+   * Text with every compound cut out, so what remains of the character is the
+   * pronoun itself.
+   */
+  const bare = COMPOUNDS_HIDING_A_PRONOUN.reduce(
+    function without(
+      remaining,
+      compound,
+    ): string {
+      return remaining.replaceAll(
+        compound,
+        '',
+      );
+    },
+    text,
+  );
+  return bare.split(pronoun,)
     .length
     - 1;
+}
+
+/**
+ * What `indexOf` answers when the form is not found.
+ */
+const NOT_FOUND = -1;
+
+/**
+ * Counts how often `TA` stands as a word of its own, not inside a Latin word.
+ *
+ * ONE LINEAR PASS over the text with the string API: each occurrence is found
+ * from the previous one and its neighbours are read once.
+ *
+ * @param text - original document
+ *
+ * @returns Occurrences bounded by non-letters
+ *
+ * @example
+ * ```ts
+ * countNeutralPronoun({ text: 'TA来了。DATA', },);
+ * // => 1
+ * ```
+ */
+function countNeutralPronoun(
+  { text, }: { readonly text: string; },
+): number {
+  /**
+   * The form counted.
+   */
+  const form = 'TA';
+  /**
+   * Occurrences and the position to search from, advanced together.
+   */
+  const scan = {
+    count: 0,
+    from: 0,
+  };
+  for (
+    let at = text.indexOf(
+      form,
+      scan.from,
+    );
+    at !== NOT_FOUND;
+    at = text.indexOf(
+      form,
+      scan.from,
+    )
+  ) {
+    /**
+     * Whether letters sit either side, which makes this a longer word.
+     */
+    const insideWord = isLatinLetter({ character: text.charAt(at - 1,), },)
+      || isLatinLetter({ character: text.charAt(at + form.length,), },);
+    if (!insideWord)
+      scan.count += 1;
+    scan.from = at + form.length;
+  }
+  return scan.count;
 }
 
 /**
@@ -295,10 +403,12 @@ export function sourcePronounLines(
   } {
     return {
       pronoun,
-      count: countOf({
-        text,
-        pronoun,
-      },),
+      count: (pronoun === 'TA')
+        ? countNeutralPronoun({ text, },)
+        : countHanPronoun({
+          text,
+          pronoun,
+        },),
     };
   },);
 

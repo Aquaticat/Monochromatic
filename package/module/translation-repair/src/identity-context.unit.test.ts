@@ -258,6 +258,29 @@ await describe({
         },),
 
         it({
+          name: 'LEAVES COMPOUNDS OUT OF THE COUNT: 他们, 她们, 其他, 其他人 and 他人 contain the '
+            + 'character without being the pronoun, so a page about a woman with a few "others" '
+            + 'in it still reads 她; the pinned corpus\'s XIEPT2 carries 77 她 against 17 他, of '
+            + 'which 9 are 他们, 5 其他 and 3 他人',
+          fn: async () => {
+            expect(sourcePronounLines({ text: '她来了。他们走了。其他人笑了。他人说。她们唱歌。其他', },),)
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
+            expect(sourcePronounLines({ text: '他们走了。其他人笑了。', },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS TA ONLY AS A WORD OF ITS OWN, not inside DATA, STATION or a romanised '
+            + 'handle, so an uppercase Latin word on a pronoun-free page does not declare a '
+            + 'neutral pronoun the original never used',
+          fn: async () => {
+            expect(sourcePronounLines({ text: 'DATA STATION TAG metaTA', },),).toEqual([],);
+            expect(sourcePronounLines({ text: 'TA的DATA。TA。', },),)
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "TA" (2 times)',],);
+          },
+        },),
+
+        it({
           name: 'EMITS NOTHING for an original that uses no third-person singular pronoun, leaving '
             + 'the house rule on neutral pronouns to speak for itself',
           fn: async () => {
