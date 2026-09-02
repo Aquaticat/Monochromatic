@@ -547,8 +547,55 @@ Tooling note from the day: twice, the package `lint` task's `build` dependency l
 without the new exports until an explicit `mise run //package/module/translation-repair:build`, so
 `lint:types` read stale declarations. Reproduced, not diagnosed.
 
+## The Carena pass finished and was refused at publish time
+
+`TALLY Carena0442 status=INCOMPLETE ms=5668128 ... error=entry Carena0442 front matter is not publishable
+(incumbent-fallback)`, after 94.5 minutes, a finished consolidation and polish, and no `[error]` line.
+No page and no artifact: publication precedes persistence by design (`pass-entry-persist.ts`), so a refusal
+at the page leaves nothing but the slice cache.
+
+What happened, read off the log, the fixture and the source:
+
+-   The translate lane's metadata slice (chunk 0, 92 source characters) was judged at 01:57:15 with four of
+    eight ballots heard (the Hyper hold of 01:54:06 had taken the four Hyper-only judges): "winner drew only
+    weight 1.5 across 4 ballots; keeping the fallback", then "declined-indecision; challenging same panel
+    under distinct responsibility", then at 02:00:03 the same again. The incumbent stood; the slice cost
+    423 s.
+-   The incumbent is correct. The fixture's `page.en.md` carries `name: Carena`, `alias: Carena`,
+    `location: Shanghai` and a translated `desc`, against the source's `飞猫`, `飞猫, Carena`, `上海`.
+    A judged keep of that metadata is a review that found nothing to change.
+-   `assertFrontMatterComplete` (`corpus-run/front-matter-completeness.ts`, landed 2026-08-28 as "review
+    visible front matter", "keep invalid metadata retryable", "support one-sided front matter") refused
+    because the page's front matter equals the archive's while the source's differs, which it read as an
+    incumbent standing by default. Its own test for that rule used an archive whose name is the directory
+    id (`name: EntryId`), and that fixture was being refused by the identity rule in
+    `validateFrontMatterTranslation` before the completeness rule ever ran, so the rule had never been
+    exercised by its test.
+-   The translate lane already tells a decision from a default (`translate-lane-wordings.ts`: a record
+    whose stage heard at least one translator is `decided`, one that heard nobody is `incumbent-fallback`,
+    the distinction `lane-slice-text.ts` draws since 2026-08-16). The guard inferred the default from bytes
+    instead.
+
+The fix (commit after `656b71e7b`, "publish a judged keep of correct front matter"): the guard takes the
+metadata slice's standing off the translate lane's outcome (`metadataStandingOf`), refuses a default keep as
+`incumbent-fallback`, refuses a kept directory id as `directory-id-name` whether or not a lane decided it,
+and publishes a decided keep of translated metadata. The refusal reasons are now distinct in the TALLY line.
+This changes what a deliberate 2026-08-28 rule publishes; recorded here for the owner's veto rather than
+put as a question, because the rule as written discarded a correct entry on a byte comparison its own test
+never reached, and the fix keeps every case the rule's tests name.
+
+What it does not fix: the minimum vote weight is 3 whatever the ballot count, so a judge round that hears
+four of eight voices during a provider hold cannot reach it with a split vote, and every kept incumbent in
+that window was a hold, not a judgment. That is `#474`'s territory.
+
+The Carena entry has to run again: its slice cache was written under the previous pipeline digest and the
+dial and the guard both moved it. keyword233's identical refusal in the first pin pass was the outage
+(every stage lost every voice, the metadata slice kept the archive by default) and reads correctly as
+`incumbent-fallback` under the new guard too.
+
 ## Next action
 
-Wait for the Carena pass to finish, read its TALLY, SEAT and DESTINATIONS lines and run `verify-published`
-on its runs dir; relaunch the pin entries as above and read them the same way; then task 3, reading the
-artifacts and pages against source before any readiness claim.
+Toka_ls is running alone under the writer dial at overlap 2 on the build before the guard fix; if its
+metadata slice is a judged keep it will be refused the old way and rerun on the fixed build. Then XIEPT2,
+keyword233 and Carena0442 one per launch on the fixed build; each landed artifact goes through
+`verify-published` and the reader script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3.
