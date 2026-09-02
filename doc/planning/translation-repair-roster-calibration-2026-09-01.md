@@ -519,10 +519,33 @@ What is the pipeline's, not the launch's, and is filed for the owner as a design
     shorter hold, which is at most five minutes against a 72 hour soft budget.
 -   The `BothProvidersDryError` text states what was assumed, not what was measured.
 
-Relaunch plan: after the Carena pass exits, the three pin entries run again in ONE process, under
-`TRANSLATION_REPAIR_WRITER_GRACE_MS=180000`, the 60 s round window and overlap 4, into a fresh throwaway runs
-dir on the current build (the pipeline digest moved with the dial, so the old slice cache would be discarded
-anyway).
+Whether one process trips the hold, measured rather than assumed:
+
+-   The single-process calibration logs at overlap 4 carry no hold at all: `editor-calibrate-40` (three
+    hours, the repair lane) 0 `markRefused`, 0 HTTP 429, 268 HTTP 503; `producer-calibrate-40` 0, 0, 1;
+    `editor-calibrate-6` 0, 0, 1. A 503 is not a budget refusal and never held anyone.
+-   The Carena pass, alone from 01:40 and at overlap 4, was held out of Hyper again at 01:54:06 and
+    01:54:08, four minutes into its TRANSLATE lane (seven translators and eight judges per slice, four
+    slices in flight, five of the nine models Hyper-only). So one process at overlap 4 is safe in the repair
+    lane and trips Hyper's rate limit in the translate lane; the hold is not only a two-process artifact,
+    which is added to `#474`.
+-   The Synthetic weekly allowance is the other fuse: once it reads zero the meter legitimately says dry,
+    every Synthetic seat routes to Hyper, and that is the 01:39:54 load shape. The quota reading carries
+    no reset time (`synthetic-client.ts` reports five-hour remaining/max and weekly percent only). At 01:54
+    it read 6.66 percent, falling about 2.3 points per hour with one process, so roughly three hours remain.
+
+Relaunch plan, revised on that: one entry per launch (Toka_ls first, then XIEPT2, then keyword233), one
+process, after the Carena pass exits, under `TRANSLATION_REPAIR_WRITER_GRACE_MS=180000`, the 60 s round
+window and `TRANSLATION_REPAIR_SLICE_OVERLAP=2`, into one fresh throwaway runs dir
+(`~/temp/agent/pin-relaunch-20260902`) on the current build. Overlap 2 rather than 4 because 4 tripped Hyper
+in the translate lane in one process; rather than 1 because 1 is the built-in the fast-iteration rule spends
+first, and a single Hyper hold with Synthetic wet degrades five minutes of rounds rather than ending the run.
+If the relaunch logs a `markRefused`, the next entry launches at overlap 1. One entry per launch ends inside
+the hour, inside the weekly fuse, and puts an artifact in front of the reading step while the next runs.
+
+Tooling note from the day: twice, the package `lint` task's `build` dependency left `dist/final/node/index.d.mts`
+without the new exports until an explicit `mise run //package/module/translation-repair:build`, so
+`lint:types` read stale declarations. Reproduced, not diagnosed.
 
 ## Next action
 
