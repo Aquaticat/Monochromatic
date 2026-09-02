@@ -890,9 +890,16 @@ launched at 23:01 into its own directory, `~/temp/agent/xiept2-rerun-20260902`, 
 
 DECIDED 2026-09-02 23:0x UTC: 「安乐死」 stays as the original states it ("it implies it's done legally
 ... it's very inaccessible"); the reader rule's addendum is in the decision doc and the house policy.
-The 23:01 XIEPT2 run, whose build predates the sentence, was stopped ten minutes in and relaunched on
-the tree carrying it, into `~/temp/agent/xiept2-rerun2-20260902` (the digest guard refuses the first
-directory, by design).
+The 23:01 XIEPT2 run had already ended by itself at 23:03: `TALLY XIEPT2 status=INCOMPLETE ms=114473
+error=translation repair interrupted: provider-unavailable`, with every seat asked 10 and answering
+10. The thrower was `runArchiveBlockReviewStage`: XIEPT2's archive is a placeholder page ("(To-Do)" and
+translation hints under empty headings), the block pairing left its blocks unclaimed, nine reviewers
+were heard about the block and fewer than the exact half anchored their support in the original, and
+the stage threw that as a provider outage. Fixed by `ae39bf22e` (test shown to fail without it): an
+unheard roster still interrupts; a heard roster that cannot anchor retains the block with an unresolved
+finding, as the no-loop design says ("reviewer indecision cannot withhold the entry"). XIEPT2 relaunched
+at 23:11 into `~/temp/agent/xiept2-rerun2-20260902` on the tree carrying that fix and the euthanasia
+sentence.
 
 ## Decisions waiting on the owner
 
