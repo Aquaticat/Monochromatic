@@ -583,28 +583,41 @@ What happened, read off the log, the fixture and the source:
     the distinction `lane-slice-text.ts` draws since 2026-08-16). The guard inferred the default from bytes
     instead.
 
-The fix (commit after `656b71e7b`, "publish a judged keep of correct front matter"): the guard takes the
-metadata slice's standing off the translate lane's outcome (`metadataStandingOf`), refuses a default keep as
-`incumbent-fallback`, refuses a kept directory id as `directory-id-name` whether or not a lane decided it,
-and publishes a decided keep of translated metadata. The refusal reasons are now distinct in the TALLY line.
-This changes what a deliberate 2026-08-28 rule publishes; recorded here for the owner's veto rather than
-put as a question, because the rule as written discarded a correct entry on a byte comparison its own test
-never reached, and the fix keeps every case the rule's tests name.
-The narrowing, stated rather than left to inference: in the translate lane `decided` means at least one
-translator was heard, not that the judges endorsed the incumbent, so a WRONG incumbent kept by a split vote
-now publishes unchanged where the 2026-08-28 rule made the entry retryable. The directory-id case is still
-refused, and the correct-incumbent case (Carena) now publishes; a wrong incumbent that is not the directory
-id is the case the owner may want retryable, at the price of every entry whose judges split over a correct
-one.
+The first fix (commit `503ec902c`, "publish a judged keep of correct front matter") took the metadata
+slice's standing off the translate lane's wording, which says only whether a translator was heard, and
+published every keep whose stage had heard one. Under it the Carena keep, an indecision, would have
+published; so would any wrong incumbent kept by a split vote. SUPERSEDED the same night by commit
+`daaf0ffa0` after the sol review named the gap: `metadataStandingOf` now reads the metadata slice's
+selection off the persisted translate lane (`sliceSelections`: decision, origin, producer), and the guard
+publishes a byte-equal keep only when the judges chose the incumbent (`judged-keep`, weight carried) or
+every heard translator reproduced it (`matched-keep`, matched models carried, which the incumbent producer's
+`matched` list records). Every fallback refuses with the decision after the reason, so a TALLY line reads
+`incumbent-fallback: declined-indecision` rather than one word for a hold, a split and a lost voice alike;
+a withdrawn replacement and an unrecorded slice refuse by those names; a kept directory id refuses as
+`directory-id-name` whatever the decision. The departure from the 2026-08-28 rule is now small and stated:
+that rule refused every byte-equal keep, this one publishes the two kinds that are a review of the
+incumbent. Recorded for veto rather than put as a question because the 2026-08-28 rule discarded a correct
+judged keep on a byte comparison its own test never reached, and the reshape keeps every refusal that rule's
+tests name.
 
 What it does not fix: the minimum vote weight is 3 whatever the ballot count, so a judge round that hears
 four of eight voices during a provider hold cannot reach it with a split vote, and every kept incumbent in
-that window was a hold, not a judgment. That is `#474`'s territory.
+that window was a hold, not a judgment. That is `#474`'s territory; under the reshaped guard such an entry
+is refused by name (`incumbent-fallback: declined-indecision`) and stays retryable, which is what the
+2026-08-28 rule intended. A Carena rerun with all eight judges heard either reaches weight 3 or is a
+genuine split over which name form is right (gpt-oss-120b argued in both rounds that candidates 1 and 3
+"replace the original name with an alias"), and a genuine split is not something publication should paper
+over.
+
+Left for task 8, per the review: the directory-id check fires only on a byte-equal block, so a page that
+kept `name: <directory id>` while changing another field passes it; and the standing does not carry the
+accepted text, so the guard never checks that the page's metadata is the wording the selection supports.
+Neither is the misreading; both are behavior changes for the owner's say.
 
 The Carena entry has to run again: its slice cache was written under the previous pipeline digest and the
 dial and the guard both moved it. keyword233's identical refusal in the first pin pass was the outage
-(every stage lost every voice, the metadata slice kept the archive by default) and reads correctly as
-`incumbent-fallback` under the new guard too.
+(every stage lost every voice, the metadata slice kept the archive by default) and reads as
+`incumbent-fallback: no-voice-heard` under the reshaped guard.
 
 ## The chain was cut to two entries on a rate measurement
 
@@ -633,9 +646,13 @@ which the standing readers refuse to pool, and a broken build launches a broken 
 
 ## Next action
 
-Toka_ls is running alone under the writer dial at overlap 2 on the build before the guard fix; if its
-metadata slice is a judged keep it will be refused the old way and rerun on the fixed build. Then the
-meter gate and Carena0442 as the section before this one says. Each landed artifact goes through
+Toka_ls is running alone under the writer dial at overlap 2 on the build before either guard change. If
+its page is refused at publish time, its metadata judge round gets read the way Carena's was (weight, split,
+decision) and the rerun is decided by hand: the slice cache is digest-keyed, so a rerun is a full two hours,
+and an indecision keep is refused again by the reshaped guard. No automatic rerun. Then the meter gate and
+Carena0442 as the section before this one says, on the `daaf0ffa0` build. The gate reads the meter once at
+launch; Synthetic's weekly at about 4% and falling two points an hour reaches zero around 05:00 UTC, likely
+mid-Carena, so a Hyper-only tail in that pass is expected, not a regression. Each landed artifact goes through
 `verify-published` (which reads `artifacts/` and `fixed/` and never touches `pass.lock`) and the reader
 script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3, in this order: `git status --short` on the
 real clone, `verify-published`, the reader script, then the translate-round heard counts under the writer
@@ -653,8 +670,9 @@ section or issue it names.
   remaining entry in under a second. Re-read the meter on 429 and back off briefly, or wait out the
   shorter hold, or at least state measured facts in the message. The fixed minimum vote weight of 3,
   which a 4-of-8 ballot round cannot reach while a provider is held, belongs to the same decision.
-- The front-matter guard change of commit 503ec902c, recorded for veto in the section "The Carena pass
-  finished and was refused at publish time": a decided keep now publishes, so a wrong incumbent kept by
-  a split vote publishes unchanged where the 2026-08-28 rule made the entry retryable.
+- The front-matter guard reshape of commit daaf0ffa0 (superseding 503ec902c), recorded for veto in the
+  section "The Carena pass finished and was refused at publish time": a byte-equal keep the judges chose,
+  or every heard translator reproduced, now publishes; every fallback refuses by the decision's name.
+  The 2026-08-28 rule refused all of them.
 - XIEPT2 and keyword233: not in the chain. Running them needs either a fresh Synthetic week or the
   owner's say on a run longer than an hour at overlap 2.
