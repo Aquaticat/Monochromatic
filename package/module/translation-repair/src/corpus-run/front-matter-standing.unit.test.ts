@@ -10,8 +10,14 @@
  * `Nonamev`. Read off the translate lane alone the page is a withdrawn
  * replacement and the guard refused it (`incumbent-fallback:
  * replacement-not-carried`, on the record before this reading landed). Read off
- * the gate it is a review of the incumbent by a full panel, which is what it
- * was.
+ * the contest and the gate it is a review of the incumbent by two panels.
+ *
+ * THE CONTEST IS THE BASELINE. `consolidate-standing.ts` lets the standing
+ * text ship unchanged only when the contest chose a lane or endorsed the
+ * archive, so an unendorsed baseline stays unreviewed whatever the
+ * consolidation did with it, and a contest's review survives a consolidation
+ * that merely left the standing text alone. The sol review of the first
+ * extension named both, and this suite holds them.
  *
  * @module
  */
@@ -100,6 +106,13 @@ if (paired.kind !== 'paired')
  * Preparation every case shares.
  */
 const SLICES: readonly ChunkPair[] = [paired.slice,];
+/**
+ * Archive metadata bytes as the preparation's target slice carries them, which
+ * is what a consolidated candidate is compared against.
+ */
+const ARCHIVE_SLICE_TEXT: string = paired.slice
+  .target
+  .text;
 
 /**
  * Consolidation that never ran.
@@ -233,26 +246,39 @@ const TOKA_GATE_BALLOTS: readonly GateBallot[] = [
 ];
 
 /**
+ * A gate asked over the Toka_ls ballots.
+ */
+const TOKA_GATE: ConsolidateSlice['gate'] = {
+  kind: 'asked',
+  ballots: TOKA_GATE_BALLOTS,
+  usable: 8,
+};
+
+/**
  * One settled consolidation slice at the metadata slice.
  *
  * @param terminal - how the slice left the stage
  *
  * @param gate - the gate's record, asked or not
  *
+ * @param shipped - what the stage shipped, the standing text by default
+ *
  * @returns Consolidation settled at slice zero alone
  *
  * @example
  * ```ts
- * const consolidation = settledAt({ terminal: 'gate-kept-standing', gate: { kind: 'asked', ballots, usable: 8, }, },);
+ * const consolidation = settledAt({ terminal: 'gate-kept-standing', gate: TOKA_GATE, },);
  * ```
  */
 function settledAt(
   {
     terminal,
     gate = { kind: 'not-asked', },
+    shipped = { kind: 'unchanged', },
   }: {
     readonly terminal: ConsolidateSlice['terminal'];
     readonly gate?: ConsolidateSlice['gate'];
+    readonly shipped?: ConsolidateSlice['shipped'];
   },
 ): Consolidation {
   return {
@@ -260,7 +286,7 @@ function settledAt(
     slices: [{
       sliceIndex: 0,
       terminal,
-      shipped: { kind: 'unchanged', },
+      shipped,
       rewrapped: false,
       demoted: false,
       verdicts: [],
@@ -304,9 +330,34 @@ function contestedAt(
 }
 
 /**
+ * The Toka_ls contest: the repair lane, carrying the archive's bytes, won.
+ */
+const REPAIR_WON: LaneSelection = contestedAt({
+  verdict: {
+    kind: 'lane-won',
+    lane: 'repair',
+  },
+},);
+
+/**
+ * A contest the translate lane won with text that is not the archive's.
+ */
+const TRANSLATE_WON: LaneSelection = contestedAt({
+  verdict: {
+    kind: 'lane-won',
+    lane: 'translate',
+  },
+},);
+
+/**
+ * A contest that settled neither lane without endorsing the archive.
+ */
+const NEITHER_UNENDORSED: LaneSelection = contestedAt({ verdict: { kind: 'settled-neither', }, },);
+
+/**
  * Reads the standing over the Toka_ls preparation and row.
  *
- * @param translateSelections - translate lane's selections
+ * @param translateSelections - translate lane's selections, Toka_ls's by default
  *
  * @param laneSelection - contest record
  *
@@ -318,17 +369,17 @@ function contestedAt(
  *
  * @example
  * ```ts
- * standingWith({ translateSelections: [TOKA_TRANSLATE,], laneSelection: PENDING, consolidation: NOT_RUN, },);
+ * standingWith({ laneSelection: PENDING, consolidation: NOT_RUN, },);
  * ```
  */
 function standingWith(
   {
-    translateSelections,
+    translateSelections = [TOKA_TRANSLATE,],
     laneSelection,
     consolidation,
     comparison = [ROW,],
   }: {
-    readonly translateSelections: readonly SliceSelection[];
+    readonly translateSelections?: readonly SliceSelection[];
     readonly laneSelection: LaneSelection;
     readonly consolidation: Consolidation;
     readonly comparison?: MetadataEvidence['comparison'];
@@ -345,28 +396,115 @@ function standingWith(
   },);
 }
 
+/**
+ * Every consolidation terminal that leaves the standing text as it was
+ * without a panel choosing it.
+ */
+const TRANSPARENT_TERMINALS = [
+  'slate-unjudged-standing',
+  'slate-declined-standing',
+  'incumbent-only',
+  'no-standing-text',
+  'wrap-erased-difference',
+] as const;
+
 await describe({
   name: metadataStandingOf.name,
   children: [
     it({
       name: 'READS THE TOKA_LS CASE AS A GATE KEEP: the translate judges replaced the alias, the '
         + 'contest chose the repair lane, and the consolidation gate kept the standing text six '
-        + 'ballots to two, which is a review of the incumbent by a full panel',
+        + 'ballots to two, which is a review of the incumbent by two panels',
       fn: async () => {
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: contestedAt({
-            verdict: {
-              kind: 'lane-won',
-              lane: 'repair',
-            },
+          laneSelection: REPAIR_WON,
+          consolidation: settledAt({
+            terminal: 'gate-kept-standing',
+            gate: TOKA_GATE,
           },),
+        },),).toEqual({
+          kind: 'gate-keep',
+          usable: 8,
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE CONTEST\'S REVIEW through a consolidation that only left the standing text '
+        + 'alone: every transparent terminal, a gate that settled neither, and a gate short of '
+        + 'its quorum, since none of them undid what the contest chose',
+      fn: async () => {
+        for (const terminal of TRANSPARENT_TERMINALS) {
+          expect(standingWith({
+            laneSelection: REPAIR_WON,
+            consolidation: settledAt({ terminal, },),
+          },),).toEqual({
+            kind: 'contest-keep',
+            usable: 9,
+          },);
+        }
+        expect(standingWith({
+          laneSelection: REPAIR_WON,
           consolidation: settledAt({
             terminal: 'gate-kept-standing',
             gate: {
               kind: 'asked',
-              ballots: TOKA_GATE_BALLOTS,
-              usable: 8,
+              ballots: [gateBallot({ choice: 'standing', },), gateBallot({ choice: 'consolidated', },),],
+              usable: 2,
+            },
+          },),
+        },),).toEqual({
+          kind: 'contest-keep',
+          usable: 9,
+        },);
+        expect(standingWith({
+          laneSelection: REPAIR_WON,
+          consolidation: settledAt({
+            terminal: 'gate-kept-standing',
+            gate: {
+              kind: 'asked',
+              ballots: [gateBallot({ choice: 'standing', },),],
+              usable: 1,
+            },
+          },),
+        },),).toEqual({
+          kind: 'contest-keep',
+          usable: 9,
+        },);
+      },
+    },),
+
+    it({
+      name: 'ADDS A REVIEW where the consolidation chose the archive: a slate that endorsed the '
+        + 'standing text, a gate that kept it with two ballots (the stage\'s quorum), and a gate '
+        + 'that accepted a consolidated candidate carrying the archive\'s bytes over fresh standing',
+      fn: async () => {
+        expect(standingWith({
+          laneSelection: REPAIR_WON,
+          consolidation: settledAt({ terminal: 'slate-endorsed-standing', },),
+        },),).toEqual({ kind: 'slate-keep', },);
+        expect(standingWith({
+          laneSelection: REPAIR_WON,
+          consolidation: settledAt({
+            terminal: 'gate-kept-standing',
+            gate: {
+              kind: 'asked',
+              ballots: [gateBallot({ choice: 'standing', },), gateBallot({ choice: 'standing', },),],
+              usable: 2,
+            },
+          },),
+        },),).toEqual({
+          kind: 'gate-keep',
+          usable: 2,
+        },);
+        expect(standingWith({
+          laneSelection: TRANSLATE_WON,
+          consolidation: settledAt({
+            terminal: 'consolidated',
+            gate: TOKA_GATE,
+            shipped: {
+              kind: 'consolidated',
+              text: ARCHIVE_SLICE_TEXT,
             },
           },),
         },),).toEqual({
@@ -377,32 +515,73 @@ await describe({
     },),
 
     it({
-      name: 'READS A GATE THAT SETTLED NEITHER as a fallback under the same terminal, re-settling '
-        + 'its ballots with the stage\'s own rule, and a gate never asked as its own fallback',
+      name: 'REFUSES TO LET THE CONSOLIDATION CURE AN UNREVIEWED BASELINE: after a contest that '
+        + 'settled neither without endorsing the archive, or whose quorum was not met, a slate '
+        + 'endorsement or a quorum-backed gate keep leaves the standing a fallback, which is the '
+        + 'rule contestStandingMayShip states',
+      fn: async () => {
+        for (const consolidation of [
+          settledAt({ terminal: 'slate-endorsed-standing', },),
+          settledAt({
+            terminal: 'gate-kept-standing',
+            gate: TOKA_GATE,
+          },),
+        ]) {
+          expect(standingWith({
+            laneSelection: NEITHER_UNENDORSED,
+            consolidation,
+          },),).toEqual({
+            kind: 'fallback',
+            decision: 'contest-neither',
+          },);
+          expect(standingWith({
+            laneSelection: contestedAt({
+              verdict: { kind: 'quorum-not-met', },
+              usable: 3,
+            },),
+            consolidation,
+          },),).toEqual({
+            kind: 'fallback',
+            decision: 'contest-quorum-not-met',
+          },);
+        }
+      },
+    },),
+
+    it({
+      name: 'READS A CONSOLIDATED REPLACEMENT as replaced whatever the baseline, and a record '
+        + 'whose gate ballots re-settle against its terminal as its own fallback',
       fn: async () => {
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: contestedAt({
-            verdict: {
-              kind: 'lane-won',
-              lane: 'repair',
+          laneSelection: REPAIR_WON,
+          consolidation: settledAt({
+            terminal: 'consolidated',
+            gate: TOKA_GATE,
+            shipped: {
+              kind: 'consolidated',
+              text: TRANSLATE_RAW,
             },
           },),
+        },),).toEqual({
+          kind: 'replaced',
+          shipped: true,
+        },);
+        expect(standingWith({
+          laneSelection: REPAIR_WON,
           consolidation: settledAt({
             terminal: 'gate-kept-standing',
             gate: {
               kind: 'asked',
-              ballots: [gateBallot({ choice: 'standing', },), gateBallot({ choice: 'consolidated', },),],
+              ballots: [gateBallot({ choice: 'consolidated', },), gateBallot({ choice: 'consolidated', },),],
               usable: 2,
             },
           },),
         },),).toEqual({
           kind: 'fallback',
-          decision: 'gate-neither',
+          decision: 'gate-ballots-contradict-terminal',
         },);
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: PENDING,
+          laneSelection: REPAIR_WON,
           consolidation: settledAt({ terminal: 'gate-kept-standing', },),
         },),).toEqual({
           kind: 'fallback',
@@ -412,36 +591,26 @@ await describe({
     },),
 
     it({
-      name: 'READS THE OTHER CONSOLIDATION TERMINALS: a consolidated slice as a replacement, an '
-        + 'endorsed slate as a slate keep, and a declined or unjudged slate, an incumbent-only '
-        + 'floor or an erased difference as fallbacks named by the terminal',
+      name: 'LEAVES A FRESH CONTEST WINNER replaced through every standing-keeping consolidation '
+        + 'terminal, since the standing it kept is not the archive\'s',
       fn: async () => {
-        expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: PENDING,
-          consolidation: settledAt({ terminal: 'consolidated', },),
-        },),).toEqual({
-          kind: 'replaced',
-          shipped: true,
-        },);
-        expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: PENDING,
-          consolidation: settledAt({ terminal: 'slate-endorsed-standing', },),
-        },),).toEqual({ kind: 'slate-keep', },);
-        for (const terminal of [
-          'slate-declined-standing',
-          'slate-unjudged-standing',
-          'incumbent-only',
-          'wrap-erased-difference',
-        ] as const) {
+        for (const consolidation of [
+          NOT_RUN,
+          settledAt({ terminal: 'slate-endorsed-standing', },),
+          settledAt({
+            terminal: 'gate-kept-standing',
+            gate: TOKA_GATE,
+          },),
+          ...TRANSPARENT_TERMINALS.map(function settled(terminal,): Consolidation {
+            return settledAt({ terminal, },);
+          },),
+        ]) {
           expect(standingWith({
-            translateSelections: [TOKA_TRANSLATE,],
-            laneSelection: PENDING,
-            consolidation: settledAt({ terminal, },),
+            laneSelection: TRANSLATE_WON,
+            consolidation,
           },),).toEqual({
-            kind: 'fallback',
-            decision: terminal,
+            kind: 'replaced',
+            shipped: true,
           },);
         }
       },
@@ -449,44 +618,18 @@ await describe({
 
     it({
       name: 'READS THE CONTEST where consolidation never ran: a lane won carrying the archive\'s '
-        + 'text is a contest keep, a lane won carrying other text is a replacement, neither with '
-        + 'the archive endorsed is a contest keep, neither without it and an unmet quorum are '
-        + 'fallbacks, and a contested slice with no comparison row is its own fallback',
+        + 'text is a contest keep whichever lane it was, neither with the archive endorsed is a '
+        + 'contest keep, and a contested slice with no comparison row is its own fallback',
       fn: async () => {
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: contestedAt({
-            verdict: {
-              kind: 'lane-won',
-              lane: 'repair',
-            },
-          },),
+          laneSelection: REPAIR_WON,
           consolidation: NOT_RUN,
         },),).toEqual({
           kind: 'contest-keep',
           usable: 9,
         },);
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: contestedAt({
-            verdict: {
-              kind: 'lane-won',
-              lane: 'translate',
-            },
-          },),
-          consolidation: NOT_RUN,
-        },),).toEqual({
-          kind: 'replaced',
-          shipped: true,
-        },);
-        expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: contestedAt({
-            verdict: {
-              kind: 'lane-won',
-              lane: 'translate',
-            },
-          },),
+          laneSelection: TRANSLATE_WON,
           consolidation: NOT_RUN,
           comparison: [{
             ...ROW,
@@ -497,7 +640,6 @@ await describe({
           usable: 9,
         },);
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
           laneSelection: contestedAt({
             verdict: {
               kind: 'settled-neither',
@@ -511,33 +653,24 @@ await describe({
           usable: 7,
         },);
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: contestedAt({ verdict: { kind: 'settled-neither', }, },),
-          consolidation: NOT_RUN,
-        },),).toEqual({
-          kind: 'fallback',
-          decision: 'contest-neither',
-        },);
-        expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
-          laneSelection: contestedAt({
-            verdict: { kind: 'quorum-not-met', },
-            usable: 3,
-          },),
-          consolidation: NOT_RUN,
-        },),).toEqual({
-          kind: 'fallback',
-          decision: 'contest-quorum-not-met',
-        },);
-        expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
           laneSelection: contestedAt({
             verdict: {
-              kind: 'lane-won',
-              lane: 'repair',
+              kind: 'settled-neither',
+              archive: 'endorsed',
             },
+            usable: 7,
           },),
-          consolidation: NOT_RUN,
+          consolidation: settledAt({ terminal: 'incumbent-only', },),
+        },),).toEqual({
+          kind: 'contest-keep',
+          usable: 7,
+        },);
+        expect(standingWith({
+          laneSelection: REPAIR_WON,
+          consolidation: settledAt({
+            terminal: 'gate-kept-standing',
+            gate: TOKA_GATE,
+          },),
           comparison: [],
         },),).toEqual({
           kind: 'fallback',
@@ -602,48 +735,11 @@ await describe({
           },);
         }
         expect(standingWith({
-          translateSelections: [TOKA_TRANSLATE,],
           laneSelection: PENDING,
           consolidation: NOT_RUN,
         },),).toEqual({
           kind: 'replaced',
           shipped: true,
-        },);
-      },
-    },),
-
-    it({
-      name: 'WALKS CONSOLIDATION BEFORE THE CONTEST BEFORE THE LANE, since each later stage was '
-        + 'free to replace what the earlier one left',
-      fn: async () => {
-        expect(standingWith({
-          translateSelections: [translateSelection({
-            decision: 'judged',
-            voteWeight: 3,
-          },),],
-          laneSelection: contestedAt({
-            verdict: {
-              kind: 'lane-won',
-              lane: 'repair',
-            },
-          },),
-          consolidation: settledAt({ terminal: 'slate-declined-standing', },),
-        },),).toEqual({
-          kind: 'fallback',
-          decision: 'slate-declined-standing',
-        },);
-        expect(standingWith({
-          translateSelections: [translateSelection({ decision: 'declined-indecision', },),],
-          laneSelection: contestedAt({
-            verdict: {
-              kind: 'lane-won',
-              lane: 'repair',
-            },
-          },),
-          consolidation: NOT_RUN,
-        },),).toEqual({
-          kind: 'contest-keep',
-          usable: 9,
         },);
       },
     },),
@@ -701,7 +797,7 @@ await describe({
           expect(() => fallbackDetailOf({ standing, },),).toThrow(RangeError,);
         }
         for (const [standing, detail,] of [
-          [{ kind: 'fallback', decision: 'gate-neither', }, 'gate-neither',],
+          [{ kind: 'fallback', decision: 'gate-ballots-contradict-terminal', }, 'gate-ballots-contradict-terminal',],
           [{ kind: 'replaced', shipped: true, }, 'replacement-not-carried',],
           [{ kind: 'replaced', shipped: false, }, 'replacement-withdrawn',],
           [{ kind: 'unrecorded', }, 'unrecorded',],
