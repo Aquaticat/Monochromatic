@@ -675,9 +675,15 @@ In order:
 3.  Toka_ls is running again since 08:40 UTC on `8e3171b34` (writer 180 s, round 60 s, overlap 2), launched
     on the owner's word that one dry provider is normal operation (rule `QPW`); it predates the guard
     reduction, the judge unseating and the #473, #474 and pronoun fixes, so its metadata is guarded by the
-    reshaped rule and its judges include GLM-5.3-Flash. When it exits, a chain launches Carena0442 (fixture
-    clone), then XIEPT2, then keyword233, one per launch on the current tree, each followed by
-    `verify-published`; logs `~/temp/agent/carena-rerun-20260902.log`, `~/temp/agent/pin-rerun-<id>-20260902.log`.
+    reshaped rule and its judges include GLM-5.3-Flash. Its slice 9 will still read "they": it is the
+    baseline for Carena's slice-level pronouns, not a regression. When it exits, a chain (requeued at 09:45
+    UTC after the advisor review's fixes, see "Advisor review at 09:30 UTC") launches Carena0442 (fixture
+    clone, the clone variables passed to its `verify-published` too), then keyword233, one per launch on the
+    tree at that moment, each followed by `verify-published`; logs `~/temp/agent/carena-rerun-20260902.log`,
+    `~/temp/agent/pin-rerun-keyword233-20260902.log`. XIEPT2 is held back under `FIT` (measured below).
+    Carena is the first live run of the unseated roster, the structural guard, the 429 backoff, the
+    recovery nudge and the pronoun line at once, so its first two minutes are read for the roster banner
+    and any assertion before anything else.
     Each landed page and artifact gets the task 3 reading (`~/temp/agent/read-artifact-20260902.mjs`),
     with slice 9's pronoun and the metadata slice's outcome checked first. Each landed artifact goes through
 `verify-published` (which reads `artifacts/` and `fixed/` and never touches `pass.lock`) and the reader
@@ -779,7 +785,8 @@ section or issue it names.
   its premise ("why are we caring about metadata being different vs Chinese source at all?"): the
   2026-08-28 trigger was a proxy for nothing, so the incumbent-fallback refusal and the night's standing
   machinery (daaf0ffa0, 6f70a2085, 1160ebb4c) are gone; the directory-id refusal now fires on the
-  assembled page whether or not it equals the archive.
+  assembled page whether or not it equals the archive, narrowed by `6d85b619a` to pages whose source
+  names the person differently (the census under "Advisor review at 09:30 UTC").
 - DECIDED at the same time: unseat GLM-5.3-Flash from every judge role, keep its editor seat (commit
   `9a7d48354`, addendum in the seating decision doc); #473 is fixed by varying the recovery prompt with
   the complaint (commit `6323f05d8`, `RECOVERY_NUDGE` appended to the recovery round's messages); the
@@ -788,5 +795,60 @@ section or issue it names.
   #474 options 1 and 2 are both implemented (commit `83e8dfa90`: a refusal
   re-reads the meter and holds a wet provider for 30 s rather than 300 s; a both-dry reading with a hold
   behind it waits out the shorter hold before ending the run).
-- XIEPT2 and keyword233: not in the chain. Running them needs either a fresh Synthetic week or the
-  owner's say on a run longer than an hour at overlap 2.
+- keyword233 is in the chain again (378 source characters in 9 blocks, the smallest of the four). XIEPT2
+  is not: 7365 source characters in 191 blocks against Toka_ls's 1532 in 62, about five times the
+  source, and the publish test records its earlier attempt at four hours forty-eight minutes with no page
+  kept. Under `FIT` (size runs to end within about an hour) that is the owner's call: a run of several
+  hours, a different overlap, or a fresh week. Not a design decision, so no question is pending; the
+  measurement is here for the veto.
+
+## Advisor review at 09:30 UTC: six proofs and five fixes before the chain
+
+The reviewer read the transcript up to commit `c29003671` and named two defects, three measurements
+to make before Carena launched unattended, and a list of smaller items. The chain was stopped, the
+fixes landed as five commits with the whole suite green after each (`~/temp/agent/test-unit-fixes-20260902.log`,
+exit 0, oxlint 0 warnings, types clean), and the chain was requeued on the fixed tree.
+
+- `b547e80ed`: the reading after a waited-out hold folded the routing refusal in a second time. With
+  Hyper dry by meter and Synthetic refusing on a wet meter, the call waited out Synthetic's hold and then
+  ended the run as both-dry, the mirror image of today's regime. The refusal is what the hold became; an
+  expired hold is the provider coming back. Mirror tests in the hold-wait and router suites.
+- `8fa961d2e`: `sourcePronounLines` counted 他们, 其他, 其他人, 他人 and 她们 as pronouns and TA inside
+  DATA or STATION. Positive control over the four pages after the fix: Toka_ls 她 20 (raw 20 她, 1 他 all
+  inside 其他 and 他人), XIEPT2 她 76 (raw 77 她 against 17 他, of which 9 他们, 5 其他, 3 他人),
+  keyword233 她 9, Carena0442 她 110 (raw 111, 6 他 of which 3 他们, 1 其他, 2 他人). No page emits TA.
+- `6d85b619a`: the directory-id refusal fired on any assembled page whose visible name is the entry id.
+  Census at the pinned commit: 23 of 92 archives name the directory, and 8 of them (Anilovr, Arita,
+  ArtsEpiphany, Hangmster, keyword233, Mio, mone, s5ehfr9) do so in the source too, because the handle is
+  the person's name. The rule now refuses only where the source names the person differently; the other
+  15 (Acheron, DarlinChit, dogesir_, donotexist_A, homoyamakaze, Huasheng, interrgned, Kotori, lintong,
+  lxyddice, MioCardMeow, MocaKawai, noname, Weideriche_, XingZ60) are the #269 shape and stay refused
+  until a lane renders the name. Without this, keyword233 would have been refused tonight.
+- `b68bae845`: every refusal started its own meter reading; the pin pass saw eight 429s inside one
+  second. A reading still in flight is now shared by refusals arriving during it. The 30 s backoff did
+  not outlast the 31 s burst its own comment cited, so the backoff is now `BUDGET_FRESH_MS` (60 s): the
+  hold expires with the reading that excused it.
+- `4d7c47159`: rule `QDF` measured 211 characters after whitespace normalisation against `RLM`'s 200;
+  trimmed to 175 by dropping a clause its first sentence already says. `QPW` measures 161.
+
+GFP for all six behaviours, each neutralised in source, rebuilt, its test run alone, restored and rebuilt
+(`~/temp/agent/gfp-20260902/`): the router hold-wait test (3 FAIL lines with the wait skipped), the
+recovery-nudge test (2 with `RECOVERY_NUDGE` dropped), the fold tests (2 and 2 with the refusal folded
+back in), the pronoun tests (4 with compounds and word bounds off), the directory-id test (2 with the
+source check dropped), the coalescing test (2 with the in-flight check off). All six pass on the restored
+tree.
+
+Measurements the reviewer asked for, with what they change:
+
+- The unseated rosters pass the judgeable-roster assertions (`assertJudgeableProducerRoster` for the
+  translators against the wide seats and the roster against the late judges; the editor assertion
+  against the wide seats), run through `node --input-type=module-typescript` against the source. Carena
+  will not die at launch on a roster shape.
+- `verify-published` reads only the runs directory (`resolveRunsDir`, `artifacts/`, `fixed/`) and never
+  the corpus clone, so the earlier chain's Carena verify was not wrong; the clone variables are passed
+  to it anyway so the shape is the same as the pass.
+- Task 8 (bind the guard to an adjudicated incumbent win) is closed as superseded by the structural
+  reduction; nothing in it is open.
+
+Left as recorded, not acted on: the house-policy pronoun rule reaches Carena and keyword233 only; the
+Toka_ls rerun predates it.
