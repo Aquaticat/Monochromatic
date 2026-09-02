@@ -22,7 +22,8 @@ import { validateFrontMatterTranslation, } from '../front-matter-translation.ts'
 // every other slice by the lanes, the contest and the gate, and the artifact
 // keeps their records. What stays here is what is structural: the metadata
 // slice sits where the preparation put it, the page parses, the identity and
-// attribution rules hold, and the visible name is not the directory id.
+// attribution rules hold, and the visible name is not the directory id where
+// the source names the person differently.
 
 /**
  * Refusal when published front matter fails a structural check.
@@ -47,6 +48,7 @@ export class FrontMatterCompletenessError extends Error {
    * preparation carries no metadata slice where it must, `invalid-page` when
    * the page's metadata does not parse or breaks the identity or attribution
    * rules, `directory-id-name` when the page's visible name is the directory id
+   * while the source's is not
    */
   public constructor(
     {
@@ -111,7 +113,8 @@ function namesDirectoryId(
  *
  * @throws FrontMatterCompletenessError when metadata role or syntax differs,
  * when the page's metadata does not parse or breaks the identity or
- * attribution rules, or when its visible name is still the directory id
+ * attribution rules, or when its visible name is still the directory id while
+ * the source names the person differently
  *
  * @example
  * ```ts
@@ -266,10 +269,28 @@ export function assertFrontMatterComplete(
   // THE PAGE'S OWN VISIBLE NAME, whatever the archive carried and whether or
   // not any lane changed the slice: a person published under the folder name is
   // the one metadata defect bytes alone ever caught, and it stays refused.
-  if (namesDirectoryId({
+  //
+  // ONLY WHERE THE SOURCE NAMES THE PERSON DIFFERENTLY. A census of the pinned
+  // corpus on 2026-09-02 found 23 of 92 archives naming the directory; 8 of
+  // those (Anilovr, Arita, ArtsEpiphany, Hangmster, keyword233, Mio, mone,
+  // s5ehfr9) do so because the handle IS the person's name in the source too,
+  // and the other 15 show the directory id where the source has a name of its
+  // own. Refusing on the page alone would have refused the 8 forever.
+  /**
+   * Whether the assembled page shows the directory id as the person's name.
+   */
+  const pageNamesDirectory = namesDirectoryId({
     metadata: pageMetadata,
     entryId,
-  },)) {
+  },);
+  /**
+   * Whether the source does too, which makes the handle the person's name.
+   */
+  const sourceNamesDirectory = namesDirectoryId({
+    metadata: source.frontMatter,
+    entryId,
+  },);
+  if (pageNamesDirectory && (!sourceNamesDirectory)) {
     throw new FrontMatterCompletenessError({
       entryId,
       reason: 'directory-id-name',

@@ -3,10 +3,11 @@
  *
  * STRUCTURAL CHECKS ONLY, by the owner's decision of 2026-09-02: the metadata
  * slice sits where the preparation put it, the page parses, the identity and
- * attribution rules hold, and the visible name is not the directory id. A page
- * whose metadata equals the archive's is not a question this guard asks any
- * more; the lanes, the contest and the gate judge metadata like every other
- * slice, and the artifact keeps their records.
+ * attribution rules hold, and the visible name is not the directory id where
+ * the source names the person differently. A page whose metadata equals the
+ * archive's is not a question this guard asks any more; the lanes, the contest
+ * and the gate judge metadata like every other slice, and the artifact keeps
+ * their records.
  *
  * @module
  */
@@ -249,6 +250,45 @@ await describe({
         },);
         expect(changedRefusal,).toBeInstanceOf(FrontMatterCompletenessError,);
         expect((changedRefusal as Error).message,).toContain('directory-id-name',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A VISIBLE NAME THAT IS THE DIRECTORY ID when the source names the person so '
+        + 'too, since the handle is then the name: eight of the pinned corpus\'s 92 entries '
+        + '(keyword233, Mio, mone among them) are named after their directory in both languages',
+      fn: async () => {
+        /**
+         * Source page whose name is the directory id, as a handle-named entry's is.
+         */
+        const handleSourceText = '---\nname: EntryId\ninfo:\n  alias: EntryId\n---\n\n正文。\n';
+        /**
+         * Archive and page carrying the same handle.
+         */
+        const handlePageText = '---\nname: EntryId\ninfo:\n  alias: EntryId\n---\n\nBody.\n';
+        /**
+         * Parsed handle source metadata.
+         */
+        const source = splitFrontMatter({ text: handleSourceText, },).frontMatter;
+        /**
+         * Parsed handle page metadata.
+         */
+        const target = splitFrontMatter({ text: handlePageText, },).frontMatter;
+        if ((source === undefined) || (target === undefined))
+          throw new Error('handle fixture did not parse',);
+        /**
+         * Explicit metadata slice over the handle pages.
+         */
+        const result = frontMatterSlice({ source, target, },);
+        if (result.kind !== 'paired')
+          throw new Error('handle fixture did not pair',);
+        expect(() => assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: handleSourceText,
+          archiveText: handlePageText,
+          pageText: handlePageText,
+          slices: [result.slice,],
+        },),).not.toThrow();
       },
     },),
 
