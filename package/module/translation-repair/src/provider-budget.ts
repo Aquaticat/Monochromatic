@@ -71,11 +71,14 @@ const REFUSAL_COOLDOWN_MS = 300_000;
  * pass of 2026-09-02 (`#474`) held Synthetic out for the whole cooldown on a
  * burst of 429s while its meter read 2729 of 2750, and two such holds ended the
  * pass for every remaining entry. The bursts measured there lasted 31 s
- * (01:39:20 to 01:39:51) and 3 s (01:40:32 to 01:40:35, 01:54:06 to 01:54:08),
- * so a hold in the tens of seconds outlasts every burst seen and clears while
- * the meter is still the same reading it was.
+ * (01:39:20 to 01:39:51), 3 s (01:40:32 to 01:40:35) and 2 s (01:54:06 to
+ * 01:54:08).
+ *
+ * TIED TO THE FRESHNESS WINDOW rather than picked: the reading that excused
+ * the refusal is trusted for this long, so the hold expires with it, and the
+ * window is longer than every burst measured.
  */
-const RATE_LIMIT_BACKOFF_MS = 30_000;
+const RATE_LIMIT_BACKOFF_MS = BUDGET_FRESH_MS;
 
 /**
  * Logger root for the budget layer.
@@ -351,9 +354,11 @@ export function createProviderBudgets(
    */
   const cache: {
     startedAt: number;
+    inFlight: boolean;
     reading: Promise<MeterReading>;
   } = {
     startedAt: 0,
+    inFlight: false,
     reading: Promise.resolve({
       view: {
         syntheticDry: false,
@@ -524,9 +529,37 @@ export function createProviderBudgets(
   async function readNow(
     { signal, }: { readonly signal: AbortSignal; },
   ): Promise<MeterReading> {
+    // A reading still in flight is younger than any refusal arriving now, so a
+    // burst of refusals shares it rather than starting one meter call each.
+    if (cache.inFlight)
+      return await cache.reading;
+    /**
+     * The in-flight mark, cleared when this read's scope ends however it ends.
+     */
+    using flight = markInFlight();
     cache.startedAt = now();
     cache.reading = takeReading({ signal, },);
     return await cache.reading;
+  }
+
+  /**
+   * Marks a reading as in flight until the scope that took it ends, however
+   * that scope ends.
+   *
+   * @returns Disposable that clears the mark
+   *
+   * @example
+   * ```ts
+   * using flight = markInFlight();
+   * ```
+   */
+  function markInFlight(): Disposable {
+    cache.inFlight = true;
+    return {
+      [Symbol.dispose]() {
+        cache.inFlight = false;
+      },
+    };
   }
 
   return {

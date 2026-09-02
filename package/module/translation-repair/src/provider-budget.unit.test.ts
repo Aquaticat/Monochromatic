@@ -397,5 +397,71 @@ await describe({
         }
       },
     },),
+
+    it({
+      name: 'SHARES ONE FORCED READING among refusals arriving while it is in flight: the pin pass '
+        + 'of 2026-09-02 saw eight 429s inside one second, and each forcing its own meter call '
+        + 'would spend the reading budget the freshness window exists to protect',
+      fn: async () => {
+        /** How many times each meter was read. */
+        const reads = {
+          quota: 0,
+          credits: 0,
+        };
+
+        /** Meters slow enough that concurrent refusals genuinely overlap. */
+        const slow = {
+          synthetic: {
+            quotas: async function quotas() {
+              reads.quota += 1;
+              await wait(20,);
+              return WET_QUOTA;
+            },
+          },
+          hyper: {
+            credits: async function credits() {
+              reads.credits += 1;
+              await wait(20,);
+              return { balance: 243, };
+            },
+          },
+        };
+
+        /** Budget layer over the slow meters, on a clock that does not move. */
+        const budgets = createProviderBudgets({
+          synthetic: slow.synthetic,
+          hyper: slow.hyper,
+          rateLimitBackoffMs: 50,
+          now: () => 1_000,
+        },);
+
+        await budgets.read({ signal: SIGNAL, },);
+        /** Three refusals landing before the reading the first one forced can finish. */
+        await Promise.all([
+          budgets.markRefused({
+            provider: 'hyper',
+            signal: SIGNAL,
+          },),
+          budgets.markRefused({
+            provider: 'hyper',
+            signal: SIGNAL,
+          },),
+          budgets.markRefused({
+            provider: 'synthetic',
+            signal: SIGNAL,
+          },),
+        ],);
+
+        // The first read plus ONE forced by the burst, not one per refusal.
+        expect(reads,).toEqual({
+          quota: 2,
+          credits: 2,
+        },);
+        expect(budgets.holds(),).toEqual({
+          synthetic: 50,
+          hyper: 50,
+        },);
+      },
+    },),
   ],
 },);
