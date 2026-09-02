@@ -204,6 +204,7 @@ const NAMED_PARTS: Record<string, string> = {
   'channel': 'stream channel name, content or reasoning',
   'checkerModelIds.join(\', \',)': 'model ids from the catalog',
   'detail': 'authored phrase naming which rule was broken, at every throw site',
+  'measured': 'meter states and hold durations, composed by the caller from two booleans and two numbers',
   'dir': 'directory path',
   'distinctRatio.toFixed(RATIO_DIGITS,)': 'ratio this process computed',
   'duplicated.join(\', \',)': 'model ids from the catalog',

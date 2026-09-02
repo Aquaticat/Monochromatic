@@ -59,8 +59,11 @@ import {
 // each is `Pick<..., 'chatText'>` and nothing more.
 //
 // RE-ROUTED EXACTLY ONCE. A second failure is the answer, not an invitation to
-// keep going: with two providers the only remaining destination is the one that
-// just refused us, and `routeProviderFor` raises rather than return it.
+// keep going: with two providers the only other destination is the refuser
+// itself. The re-route reads the budgets through `readBudgetsPastHolds`, which
+// waits out a refusal hold before calling both providers dry, so the refuser
+// can come back for the re-route once its hold has ended (the #474 shape); a
+// both-dry reading no hold explains raises, and the call ends there.
 
 /**
  * Logger root for the routing layer.

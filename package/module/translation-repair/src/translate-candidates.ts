@@ -117,12 +117,42 @@ function proposesText({ text, }: { readonly text: string; },): boolean {
 }
 
 /**
- * Key two candidates share when their texts differ only in trailing whitespace.
+ * Whether a line carries nothing but blockquote marks and spaces, so that its
+ * trailing whitespace is formatting churn rather than a Markdown hard break.
+ *
+ * @param line - one line, whitespace included
+ *
+ * @returns Whether every character is `>` or a space
+ *
+ * @example
+ * ```ts
+ * isBlankQuoteLine({ line: '> ', },);
+ * // => true
+ * ```
+ */
+function isBlankQuoteLine({ line, }: { readonly line: string; },): boolean {
+  for (const character of line) {
+    if ((character !== '>') && (character !== ' '))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Key two candidates share when their texts differ only in trailing whitespace
+ * at the end of the text or on blank lines and blank quote lines.
  *
  * Trailing newlines vary between models for reasons no judge should be asked to
  * rank, and a fresh candidate differing from the incumbent by one of them would
- * otherwise be counted as replacing it. Leading whitespace is NOT stripped,
- * since Markdown list indentation is content.
+ * otherwise be counted as replacing it. BLANK QUOTE LINES TOO, since
+ * 2026-09-02: the Toka_ls reading found a candidate judged a replacement five
+ * ballots to two that differed from the archive in exactly two bytes, a
+ * trailing space after `>` on two blank quote lines copied from the source's
+ * formatting. Lines carrying content keep their trailing spaces: 65 of the
+ * pinned corpus's pages use Markdown hard breaks (two trailing spaces before a
+ * newline; saurikissa's archive has 35 such lines), and those are content.
+ * Leading whitespace is NOT stripped, since Markdown list indentation is
+ * content.
  *
  * @param text - candidate text
  *
@@ -134,7 +164,17 @@ function proposesText({ text, }: { readonly text: string; },): boolean {
  * ```
  */
 export function collapseKey({ text, }: { readonly text: string; },): string {
-  return text.trimEnd();
+  /**
+   * Each line, blank and blank-quote lines without their trailing spaces.
+   */
+  const lines = text
+    .split('\n',)
+    .map(function foldedBlank(line,): string {
+      return isBlankQuoteLine({ line, },) ? line.trimEnd() : line;
+    },);
+  return lines
+    .join('\n',)
+    .trimEnd();
 }
 
 /**

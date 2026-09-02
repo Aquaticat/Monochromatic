@@ -111,6 +111,46 @@ export async function waitOutHold(
 }
 
 /**
+ * States what the budgets read and what held them, for the error that ends
+ * the run.
+ *
+ * @param view - meter reading with holds folded in
+ *
+ * @param syntheticDown - whether the first provider had just refused this call
+ *
+ * @param holds - hold left per provider
+ *
+ * @returns One clause a reader can tell exhaustion from holds by
+ *
+ * @example
+ * ```ts
+ * measuredAt({ view, syntheticDown: false, holds: budgets.holds(), },);
+ * // => 'meters read synthetic dry, hyper dry; holds synthetic 0ms, hyper 0ms'
+ * ```
+ */
+function measuredAt(
+  {
+    view,
+    syntheticDown,
+    holds,
+  }: {
+    readonly view: BudgetView;
+    readonly syntheticDown: boolean;
+    readonly holds: Readonly<Record<ProviderName, number>>;
+  },
+): string {
+  /**
+   * Whether the first provider reads dry once the refusal is folded in.
+   */
+  const syntheticDry = view.syntheticDry || syntheticDown;
+  return `meters read synthetic ${syntheticDry ? 'dry' : 'wet'}${
+    syntheticDown ? ' (just refused this call)' : ''
+  }, hyper ${view.hyperDry ? 'dry' : 'wet'}; holds synthetic ${String(holds.synthetic,)}ms, hyper ${
+    String(holds.hyper,)
+  }ms`;
+}
+
+/**
  * Reads the budgets, waiting out the shorter hold once when both providers
  * read dry and a refusal hold explains it.
  *
@@ -182,8 +222,15 @@ export async function readBudgetsPastHolds(
    * The first hold to end, zero when neither provider is held.
    */
   const shortest = shortestHold({ holds, },);
-  if (shortest === 0)
-    throw new BothProvidersDryError();
+  if (shortest === 0) {
+    throw new BothProvidersDryError({
+      measured: measuredAt({
+        view: first,
+        syntheticDown,
+        holds,
+      },),
+    },);
+  }
 
   rl.warn(
     `${modelId}: both providers held out by refusals `
@@ -206,8 +253,17 @@ export async function readBudgetsPastHolds(
    * waiting for exactly the hold that would have cleared it.
    */
   const second = await budgets.read({ signal, },);
-  if (second.syntheticDry && second.hyperDry)
-    throw new BothProvidersDryError();
+  if (second.syntheticDry && second.hyperDry) {
+    throw new BothProvidersDryError({
+      measured: `after waiting ${String(shortest,)}ms, ${
+        measuredAt({
+          view: second,
+          syntheticDown: false,
+          holds: budgets.holds(),
+        },)
+      }`,
+    },);
+  }
   return second;
 }
 

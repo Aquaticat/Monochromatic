@@ -236,7 +236,7 @@ await describe({
           name: 'NAMES THE PRONOUN THE ORIGINAL USES FOR ITS SUBJECT with its count, read off the '
             + 'whole document, since a subjectless Chinese sentence is about the person the page is '
             + 'about (the Toka_ls "they" of 2026-09-02, all eight judges reasoning that the '
-            + 'sentence had no pronoun while the page used 她 sixteen times)',
+            + 'sentence had no pronoun while the page used 她 twenty times on sixteen lines)',
           fn: async () => {
             expect(sourcePronounLines({
               text: '毛毛睁开双眼。她笑了。\n\n偶尔灵感迸发，左右推敲。\n\n她走了。',

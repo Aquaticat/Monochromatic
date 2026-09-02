@@ -324,7 +324,17 @@ await describe({
         for (const outcome of outcomes) {
           expect(outcome.thrown instanceof BothProvidersDryError,).toBe(true,);
           expect(outcome.reads,).toBe(outcome.expectedReads,);
+          // The message states what was measured, so a reader can tell
+          // exhaustion from two refusal holds (#474, option 3).
+          expect((outcome.thrown as Error).message,).toContain('meters read synthetic dry, hyper dry; holds synthetic',);
         }
+        /**
+         * The waited case names the wait it made.
+         */
+        const [, waited,] = outcomes;
+        if (waited === undefined)
+          throw new Error('the waited case did not run',);
+        expect((waited.thrown as Error).message,).toContain('after waiting 5ms',);
       },
     },),
   ],

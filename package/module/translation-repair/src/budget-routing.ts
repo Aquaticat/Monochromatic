@@ -40,23 +40,29 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
  */
 export class BothProvidersDryError extends Error {
   /**
-   * Declares this message safe to forward: it is one fixed sentence with nothing interpolated into it.
+   * Declares this message safe to forward: fixed sentences plus, at most, the
+   * meter states and hold lengths the decision was made on, never content.
    */
   readonly messageNamesOnly: true = true;
 
   /**
    * Builds failure stating that no provider can serve any call.
    *
+   * @param measured - meter states and holds at the decision, stated so a
+   * reader can tell exhaustion from two refusal holds (#474, option 3);
+   * composed by the caller from two booleans and two durations, and "no
+   * reading cited" where the caller has none
+   *
    * @example
    * ```ts
-   * new BothProvidersDryError();
+   * new BothProvidersDryError({ measured: 'meters read synthetic dry, hyper dry; holds synthetic 0ms, hyper 0ms', },);
    * ```
    */
-  public constructor() {
+  public constructor(
+    { measured = 'no reading cited', }: { readonly measured?: string; } = {},
+  ) {
     super(
-      'Both providers are out of budget at once: Synthetic has no five-hour or weekly credit left '
-        + 'and Charm Hyper has no balance left. Nothing further can be bought, so this run ends. '
-        + 'Synthetic regenerates on its own schedule and Hyper refills roughly every 24 hours.',
+      `Both providers are out of budget at once: Synthetic has no five-hour or weekly credit left and Charm Hyper has no balance left. Nothing further can be bought, so this run ends. Synthetic regenerates on its own schedule and Hyper refills roughly every 24 hours. Measured at the decision: ${measured}.`,
     );
     this.name = 'BothProvidersDryError';
   }

@@ -371,8 +371,8 @@ function countNeutralPronoun(
  * WHY THIS LINE EXISTS. The Toka_ls relaunch of 2026-09-02 rendered a
  * subjectless sentence (偶尔灵感迸发，左右推敲，留下工整的格律) with "they" for a
  * person the page calls "she" throughout, and all eight judges passed it
- * reasoning that "the Chinese gives no pronoun". The original uses 她 sixteen
- * times. Chinese leaves subjects unstated freely, so the pronoun is a fact
+ * reasoning that "the Chinese gives no pronoun". The original uses 她 twenty
+ * times on sixteen lines. Chinese leaves subjects unstated freely, so the pronoun is a fact
  * about the document, not about the sentence, and this states it once where
  * every sheet already reads the declared identity.
  *
