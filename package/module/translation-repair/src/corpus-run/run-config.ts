@@ -427,18 +427,21 @@ export const RUN_MODELS: RepairModels = {
   // checker-seat calibration remains required before calling the new narrow
   // roster independently optimal.
   //
-  // NO LONGER DISJOINT, and that is the owner's decision of 2026-08-24: enable
-  // the discount and let every model do both. `#187` found the checker-side
-  // discount unreachable in production for exactly the reason the old note
-  // here gave, so the arithmetic above was code nothing could run.
+  // DISJOINT AGAIN SINCE 2026-09-01, BY MEASUREMENT RATHER THAN BY RULE: the
+  // editor calibration seated no checker as editor or refiner. Overlap stays
+  // PERMITTED, the owner's decision of 2026-08-24 (enable the discount and let
+  // every model do both; `#187` found the checker-side discount unreachable in
+  // production for exactly the reason the old note here gave), so a future
+  // seating that overlaps needs no rule change.
   //
-  // WHAT MAKES THAT SAFE is measured rather than assumed, and it is the
+  // WHAT MAKES OVERLAP SAFE is measured rather than assumed, and it is the
   // paragraph above: a checker judging text it helped write counts half, so
   // three writers bring 1.5 against 3.0 and cannot overturn a unanimous three.
-  // The replacement makes two checker ids also producer ids, but only actual
-  // authorship of text under review receives half weight. If both helped write
-  // one refined result, their combined weight is 1.0, equal to disinterested
-  // GPT-OSS alone; they cannot resolve an issue against that independent vote.
+  // Between 2026-08-24 and 2026-09-01 two checker ids were also producer ids,
+  // and only actual authorship of text under review received half weight: had
+  // both helped write one refined result, their combined weight would have
+  // been 1.0, equal to disinterested GPT-OSS alone, unable to resolve an issue
+  // against that independent vote.
   checkerSelfCertificationPermitted: true,
   checkerModelIds: [
     'hf:Qwen/Qwen3.8-27B',

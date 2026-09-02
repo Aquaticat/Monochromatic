@@ -48,8 +48,10 @@ top-three inclusion over 4000 resamples of whole slices): `GLM-5.3-Flash` 100 pe
 The first seat is settled; seats two to four are a ranking the slices do not separate.
 By the rule written before the numbers, the top three by adjusted share are seated, and where the third and
 fourth seats are not separated the seat goes to the model that lost fewer voices under the 180000 ms production
-window: `deepseek-v4-pro-0813` lost none (completed streams p90 4 s) and `Qwen3.8-27B` lost none either
-(p90 77 s), so the adjusted-share order stands.
+window, read off the 180000 ms producer instrument: `deepseek-v4-pro-0813` lost none of 79 asks (completed
+streams p90 4 s) and `Qwen3.8-27B` none of 77 (p90 77 s), so the adjusted-share order stands.
+(In the 300000 ms editor run Qwen threw 11 of 367 asks to a Synthetic 503 storm that hit every Synthetic seat,
+provider weather rather than the model, and not the instrument the rule names.)
 
 The 6-slice replicate run the same day (14 rounds, 4 slices) put the same three models in its top three with
 `Qwen3.8-27B` third and `deepseek-v4-pro-0813` fifth; it is reported as the band, not pooled in.
