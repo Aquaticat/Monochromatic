@@ -14,8 +14,8 @@ import {
 } from '../grace-override.ts';
 import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
 import {
+  readWriterGrace,
   writerGraceOverrideNote,
-  writerRoundGraceMs,
 } from '../writer-grace-override.ts';
 import {
   type AttemptMap,
@@ -221,10 +221,7 @@ async function runCorpusPass(): Promise<void> {
    * Note naming the writer rounds' window when a launch gave them their own,
    * resolved here for the same reason as `graceNote` and printed beside it.
    */
-  const writerNote = writerGraceOverrideNote({
-    writerMs: writerRoundGraceMs(),
-    roundMs: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
-  },);
+  const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
 
   /**
    * Durable, gitignored output root for this run.

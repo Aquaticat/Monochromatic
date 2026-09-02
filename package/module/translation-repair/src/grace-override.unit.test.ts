@@ -26,6 +26,9 @@ import {
   adoptCalibrationGrace,
   CALIBRATION_STRAGGLER_GRACE_MS,
   graceOverrideNote,
+  isTimerWindow,
+  MAX_TIMER_DELAY_MS,
+  readWindowDial,
   resolveStragglerGraceMs,
   STRAGGLER_GRACE_VAR,
   StatedRefusalError,
@@ -141,6 +144,99 @@ await describe({
             },);
           },),
         ).toBeInstanceOf(StatedRefusalError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a fraction and a value past the longest timer, because a timer rounds the one '
+        + 'and clamps the other to a millisecond, so the window that ran would not be the window '
+        + 'that was set',
+      fn: async () => {
+        expect(
+          caught(function readFraction(): number {
+            return resolveStragglerGraceMs({
+              fallback: FALLBACK,
+              raw: '0.5',
+            },);
+          },),
+        ).toBeInstanceOf(StatedRefusalError,);
+        expect(
+          caught(function readOverflow(): number {
+            return resolveStragglerGraceMs({
+              fallback: FALLBACK,
+              raw: String(MAX_TIMER_DELAY_MS + 1,),
+            },);
+          },),
+        ).toBeInstanceOf(StatedRefusalError,);
+        expect(resolveStragglerGraceMs({
+          fallback: FALLBACK,
+          raw: String(MAX_TIMER_DELAY_MS,),
+        },),).toBe(MAX_TIMER_DELAY_MS,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isTimerWindow.name,
+  children: [
+    it({
+      name: 'HOLDS exactly the whole numbers from one to the longest timer delay, the range a '
+        + 'JavaScript timer runs as written',
+      fn: async () => {
+        expect(isTimerWindow({ ms: 1, },),).toBe(true,);
+        expect(isTimerWindow({ ms: FALLBACK, },),).toBe(true,);
+        expect(isTimerWindow({ ms: MAX_TIMER_DELAY_MS, },),).toBe(true,);
+        expect(isTimerWindow({ ms: 0, },),).toBe(false,);
+        expect(isTimerWindow({ ms: -1, },),).toBe(false,);
+        expect(isTimerWindow({ ms: 1.5, },),).toBe(false,);
+        expect(isTimerWindow({ ms: MAX_TIMER_DELAY_MS + 1, },),).toBe(false,);
+        expect(isTimerWindow({ ms: Number.NaN, },),).toBe(false,);
+        expect(isTimerWindow({ ms: Number.POSITIVE_INFINITY, },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readWindowDial.name,
+  children: [
+    it({
+      name: 'THROWS on a fallback no timer holds rather than returning it on a blank dial, since '
+        + 'a caller passing such a window is a defect and not an operator\'s input',
+      fn: async () => {
+        expect(
+          caught(function readBadFallback(): number {
+            return readWindowDial({
+              variable: STRAGGLER_GRACE_VAR,
+              fallback: 0,
+              raw: '',
+              unsetMeans: 'run under the built-in window',
+            },);
+          },),
+        ).toBeInstanceOf(RangeError,);
+      },
+    },),
+
+    it({
+      name: 'NAMES the variable it was asked to read in the refusal, which is what lets two dials '
+        + 'share one reader without the operator correcting the wrong one',
+      fn: async () => {
+        /**
+         * What the reader threw for a made-up variable.
+         */
+        const refusal = caught(function readOther(): number {
+          return readWindowDial({
+            variable: 'SOME_OTHER_WINDOW_MS',
+            fallback: FALLBACK,
+            raw: 'soon',
+            unsetMeans: 'do nothing',
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toContain('SOME_OTHER_WINDOW_MS',);
+        expect((refusal as Error).message,).toContain('do nothing',);
       },
     },),
   ],

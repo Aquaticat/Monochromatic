@@ -90,6 +90,36 @@ export function resolveStragglerGraceMs(
 }
 
 /**
+ * Longest delay a JavaScript timer holds, 2^31 - 1 ms, about 24.8 days.
+ *
+ * `setTimeout` clamps anything above it to 1 ms with a TimeoutOverflowWarning,
+ * so a window past it would cut every straggler the instant quorum stood, the
+ * opposite of what an operator who typed a large number asked for. A fraction
+ * is refused for the same reason from the other side: timers round it, so the
+ * window that ran is not the window that was set.
+ */
+export const MAX_TIMER_DELAY_MS = 2_147_483_647;
+
+/**
+ * Whether a number is a window a timer can hold as written.
+ *
+ * @param ms - candidate window
+ *
+ * @returns Whether it is a whole number of milliseconds a timer holds exactly
+ *
+ * @example
+ * ```ts
+ * isTimerWindow({ ms: 180_000, },);
+ * // => true
+ * ```
+ */
+export function isTimerWindow({ ms, }: { readonly ms: number; },): boolean {
+  return Number.isInteger(ms,)
+    && (ms > 0)
+    && (ms <= MAX_TIMER_DELAY_MS);
+}
+
+/**
  * Reads one window dial's text the way every window dial must read it.
  *
  * ONE READER FOR EVERY DIAL, because the refusal rule is the dial's whole
@@ -100,7 +130,9 @@ export function resolveStragglerGraceMs(
  * @param variable - environment variable the text came from, named in the
  * refusal so the operator corrects the right one
  *
- * @param fallback - window used when the text is blank
+ * @param fallback - window used when the text is blank; checked too, since a
+ * caller passing a window no timer holds is a defect this reader must not
+ * launder into a run
  *
  * @param raw - override text; blank means unset
  *
@@ -109,7 +141,9 @@ export function resolveStragglerGraceMs(
  * @returns Milliseconds the dial names, or the fallback when it names nothing
  *
  * @throws {@link StatedRefusalError} when the text is present and is not a
- * positive finite number of milliseconds
+ * whole number of milliseconds a timer can hold
+ *
+ * @throws {@link RangeError} when the fallback itself is not such a number
  *
  * @example
  * ```ts
@@ -129,6 +163,12 @@ export function readWindowDial(
     readonly unsetMeans: string;
   },
 ): number {
+  if (!isTimerWindow({ ms: fallback, },))
+    throw new RangeError(
+      `fallback window for ${variable} must be a whole number of milliseconds from 1 to `
+        + `${String(MAX_TIMER_DELAY_MS,)}, and ${String(fallback,)} is not`,
+    );
+
   if (raw.trim() === '')
     return fallback;
 
@@ -139,10 +179,11 @@ export function readWindowDial(
    */
   const ms = Number(raw,);
 
-  if ((!Number.isFinite(ms,)) || (ms <= 0))
+  if (!isTimerWindow({ ms, },))
     throw new StatedRefusalError({
-      says: `${variable} must be a positive number of milliseconds, and `
-        + `${JSON.stringify(raw,)} is not; leave it unset to ${unsetMeans}`,
+      says: `${variable} must be a whole number of milliseconds from 1 to ${
+        String(MAX_TIMER_DELAY_MS,)
+      }, and ${JSON.stringify(raw,)} is not; leave it unset to ${unsetMeans}`,
     },);
 
   return ms;

@@ -21,6 +21,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  readWriterGrace,
   resolveWriterGraceMs,
   STRAGGLER_GRACE_MS,
   STRAGGLER_GRACE_VAR,
@@ -49,6 +50,19 @@ await describe({
         + 'name nothing reads gets the round window and no complaint',
       fn: async () => {
         expect(WRITER_GRACE_VAR,).toBe('TRANSLATION_REPAIR_WRITER_GRACE_MS',);
+      },
+    },),
+
+    it({
+      name: 'NAMES exactly the four gathers that pass the writer window, in the words their log '
+        + 'lines use, written out here separately so the launch note cannot certify itself',
+      fn: async () => {
+        expect(WRITER_STAGE_LABELS,).toStrictEqual([
+          'editor',
+          'refiner',
+          'translate',
+          'produceConsolidations',
+        ],);
       },
     },),
 
@@ -105,26 +119,48 @@ await describe({
   name: writerGraceOverrideNote.name,
   children: [
     it({
-      name: 'SAYS NOTHING when the writers share the round window, so an ordinary run carries no '
+      name: 'SAYS NOTHING when the writers follow the round window, so an ordinary run carries no '
         + 'note claiming an override it did not make',
       fn: async () => {
         expect(writerGraceOverrideNote({
-          writerMs: ROUND,
-          roundMs: ROUND,
+          grace: {
+            writerMs: ROUND,
+            roundMs: ROUND,
+            source: 'round-window',
+          },
         },),).toBe('',);
       },
     },),
 
     it({
-      name: 'NAMES BOTH WINDOWS, THE VARIABLE AND THE STAGES when they differ, so a reader of the '
-        + 'log knows which rounds ran long without reading the shell that launched it',
+      name: 'SAYS NOTHING on the source alone, even when the two numbers differ, because the two '
+        + 'are read from mutable environment and a note inferred from their difference could blame '
+        + 'a dial nobody set',
+      fn: async () => {
+        expect(writerGraceOverrideNote({
+          grace: {
+            writerMs: WRITER,
+            roundMs: ROUND,
+            source: 'round-window',
+          },
+        },),).toBe('',);
+      },
+    },),
+
+    it({
+      name: 'NAMES BOTH WINDOWS, THE VARIABLE AND THE STAGES when the writer dial set the window, '
+        + 'so a reader of the log knows which rounds ran long without reading the shell that '
+        + 'launched it',
       fn: async () => {
         /**
          * Note for a launch that gave its writers the longer window.
          */
         const note = writerGraceOverrideNote({
-          writerMs: WRITER,
-          roundMs: ROUND,
+          grace: {
+            writerMs: WRITER,
+            roundMs: ROUND,
+            source: 'writer-dial',
+          },
         },);
 
         expect(note,).toContain(WRITER_GRACE_VAR,);
@@ -218,7 +254,7 @@ function dialSaying(
 }
 
 await describe({
-  name: writerRoundGraceMs.name,
+  name: readWriterGrace.name,
   // ONE AT A TIME: every case writes the same process-wide variables.
   concurrency: 1,
   children: [
@@ -229,6 +265,11 @@ await describe({
         using round = dialSaying({ variable: STRAGGLER_GRACE_VAR, },);
         using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
 
+        expect(readWriterGrace(),).toStrictEqual({
+          writerMs: STRAGGLER_GRACE_MS,
+          roundMs: STRAGGLER_GRACE_MS,
+          source: 'round-window',
+        },);
         expect(writerRoundGraceMs(),).toBe(STRAGGLER_GRACE_MS,);
         expect(round,).not.toBe(undefined,);
         expect(writer,).not.toBe(undefined,);
@@ -245,7 +286,34 @@ await describe({
         },);
         using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
 
-        expect(writerRoundGraceMs(),).toBe(ROUND,);
+        expect(readWriterGrace(),).toStrictEqual({
+          writerMs: ROUND,
+          roundMs: ROUND,
+          source: 'round-window',
+        },);
+        expect(round,).not.toBe(undefined,);
+        expect(writer,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'TREATS a blank writer dial as unset while the round dial is set, since an '
+        + 'exported-but-empty variable is a shell accident rather than an intention',
+      fn: async () => {
+        using round = dialSaying({
+          variable: STRAGGLER_GRACE_VAR,
+          says: String(ROUND,),
+        },);
+        using writer = dialSaying({
+          variable: WRITER_GRACE_VAR,
+          says: '  ',
+        },);
+
+        expect(readWriterGrace(),).toStrictEqual({
+          writerMs: ROUND,
+          roundMs: ROUND,
+          source: 'round-window',
+        },);
         expect(round,).not.toBe(undefined,);
         expect(writer,).not.toBe(undefined,);
       },
@@ -253,7 +321,7 @@ await describe({
 
     it({
       name: 'PREFERS the writer dial over the round dial when both are set, which is the launch '
-        + 'this dial was made for',
+        + 'this dial was made for, and says so in the source',
       fn: async () => {
         using round = dialSaying({
           variable: STRAGGLER_GRACE_VAR,
@@ -264,7 +332,47 @@ await describe({
           says: String(WRITER,),
         },);
 
+        expect(readWriterGrace(),).toStrictEqual({
+          writerMs: WRITER,
+          roundMs: ROUND,
+          source: 'writer-dial',
+        },);
         expect(writerRoundGraceMs(),).toBe(WRITER,);
+        expect(round,).not.toBe(undefined,);
+        expect(writer,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'GIVES writers their own window against the built-in round window when only the '
+        + 'writer dial is set',
+      fn: async () => {
+        using round = dialSaying({ variable: STRAGGLER_GRACE_VAR, },);
+        using writer = dialSaying({
+          variable: WRITER_GRACE_VAR,
+          says: String(WRITER,),
+        },);
+
+        expect(readWriterGrace(),).toStrictEqual({
+          writerMs: WRITER,
+          roundMs: STRAGGLER_GRACE_MS,
+          source: 'writer-dial',
+        },);
+        expect(round,).not.toBe(undefined,);
+        expect(writer,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'FOLLOWS the environment as it stands at each read, since the calibration writes the '
+        + 'round variable after launch and a value captured at import would miss it',
+      fn: async () => {
+        using round = dialSaying({ variable: STRAGGLER_GRACE_VAR, },);
+        using writer = dialSaying({ variable: WRITER_GRACE_VAR, },);
+
+        expect(readWriterGrace().roundMs,).toBe(STRAGGLER_GRACE_MS,);
+        process.env[STRAGGLER_GRACE_VAR] = String(ROUND,);
+        expect(readWriterGrace().roundMs,).toBe(ROUND,);
         expect(round,).not.toBe(undefined,);
         expect(writer,).not.toBe(undefined,);
       },
@@ -280,11 +388,42 @@ await describe({
           says: '180s',
         },);
 
-        expect(
-          caught(function readUnit(): number {
-            return writerRoundGraceMs();
-          },),
-        ).toBeInstanceOf(StatedRefusalError,);
+        /**
+         * What the gather's read threw.
+         */
+        const refusal = caught(function readUnit(): number {
+          return writerRoundGraceMs();
+        },);
+
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toContain(WRITER_GRACE_VAR,);
+        expect(round,).not.toBe(undefined,);
+        expect(writer,).not.toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'NAMES the round dial first when both are unreadable, since the writer window falls '
+        + 'back to the round window and the round dial is read first',
+      fn: async () => {
+        using round = dialSaying({
+          variable: STRAGGLER_GRACE_VAR,
+          says: 'one minute',
+        },);
+        using writer = dialSaying({
+          variable: WRITER_GRACE_VAR,
+          says: 'three minutes',
+        },);
+
+        /**
+         * What the read threw with both dials wrong.
+         */
+        const refusal = caught(function readBoth(): number {
+          return writerRoundGraceMs();
+        },);
+
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
         expect(round,).not.toBe(undefined,);
         expect(writer,).not.toBe(undefined,);
       },

@@ -35,13 +35,18 @@ export {
   CALIBRATION_STRAGGLER_GRACE_MS,
   type CalibrationGrace,
   graceOverrideNote,
+  isTimerWindow,
+  MAX_TIMER_DELAY_MS,
+  readWindowDial,
   resolveStragglerGraceMs,
   STRAGGLER_GRACE_VAR,
 } from './grace-override.ts';
 export {
+  readWriterGrace,
   resolveWriterGraceMs,
   WRITER_GRACE_VAR,
   WRITER_STAGE_LABELS,
+  type WriterGrace,
   writerGraceOverrideNote,
   writerRoundGraceMs,
 } from './writer-grace-override.ts';

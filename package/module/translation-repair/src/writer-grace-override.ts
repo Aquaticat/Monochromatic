@@ -89,18 +89,91 @@ export function resolveWriterGraceMs(
 }
 
 /**
- * Window a writer round runs under in this invocation: the writer dial when
- * set, otherwise whatever every other round runs under.
+ * Both windows of one invocation and where the writers' came from.
+ *
+ * @example
+ * ```ts
+ * const grace: WriterGrace = { writerMs: 180_000, roundMs: 60_000, source: 'writer-dial', };
+ * ```
+ */
+export type WriterGrace = {
+  /**
+   * Milliseconds a writer round keeps waiting on stragglers after quorum.
+   */
+  readonly writerMs: number;
+
+  /**
+   * Milliseconds every other round keeps waiting, the writers' fallback.
+   */
+  readonly roundMs: number;
+
+  /**
+   * `writer-dial` when a launch set the writer variable; `round-window` when
+   * the writers follow every other round.
+   *
+   * CARRIED RATHER THAN INFERRED from the two numbers differing: the two are
+   * read from mutable environment, and a note that blamed the writer dial
+   * because two readings taken at different moments disagreed would name an
+   * override nobody made.
+   */
+  readonly source: 'writer-dial' | 'round-window';
+};
+
+/**
+ * Reads both windows of this invocation, the round window first because the
+ * writer window falls back to it.
  *
  * READ AT EACH GATHER rather than once at launch, by the path every other
  * round already takes through `runGatherRound`: the calibration adopts its own
  * window by writing the round variable after launch, and a writer round that
  * had read the environment at import time would miss it.
  *
- * @returns Milliseconds a writer round keeps waiting on stragglers after quorum
+ * @returns Both windows and the writers' source
  *
  * @throws {@link StatedRefusalError} when either dial is set to something that
- * is not a positive finite number of milliseconds
+ * is not a whole number of milliseconds a timer can hold; the round dial is
+ * read first, so a run with both wrong hears about the round dial first
+ *
+ * @example
+ * ```ts
+ * const { writerMs, roundMs, source, } = readWriterGrace();
+ * ```
+ */
+export function readWriterGrace(): WriterGrace {
+  /**
+   * Window every other round runs under.
+   */
+  const roundMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },);
+
+  /**
+   * What the launch set for the writers, blank when it set nothing.
+   */
+  const written = process.env[WRITER_GRACE_VAR] ?? '';
+
+  if (written.trim() === '') {
+    return {
+      writerMs: roundMs,
+      roundMs,
+      source: 'round-window',
+    };
+  }
+  return {
+    writerMs: resolveWriterGraceMs({
+      fallback: roundMs,
+      raw: written,
+    },),
+    roundMs,
+    source: 'writer-dial',
+  };
+}
+
+/**
+ * Window a writer round runs under in this invocation: the writer dial when
+ * set, otherwise whatever every other round runs under.
+ *
+ * @returns Milliseconds a writer round keeps waiting on stragglers after quorum
+ *
+ * @throws {@link StatedRefusalError} as {@link readWriterGrace} does
  *
  * @example
  * ```ts
@@ -108,46 +181,41 @@ export function resolveWriterGraceMs(
  * ```
  */
 export function writerRoundGraceMs(): number {
-  return resolveWriterGraceMs({
-    fallback: resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
-  },);
+  /**
+   * Both windows, of which the gather wants the writers'.
+   */
+  const { writerMs, } = readWriterGrace();
+  return writerMs;
 }
 
 /**
- * Explains which window the writer rounds are under when it is not the one
- * every other round has.
+ * Explains which window the writer rounds are under when a launch gave them
+ * their own.
  *
  * PRINTED BY THE DRIVERS, beside the round window's own note, for the reason
  * `graceOverrideNote` gives: a run must never hide which window it ran under,
  * and a writer round that lost nobody under a longer window is exactly the
  * round the seating wants to hear about.
  *
- * @param writerMs - window the writer rounds run under
+ * @param grace - both windows and the writers' source
  *
- * @param roundMs - window every other round runs under
- *
- * @returns Note naming both windows and the stages, or nothing when they agree
+ * @returns Note naming both windows and the stages, or nothing when the
+ * writers follow every other round
  *
  * @example
  * ```ts
- * const note = writerGraceOverrideNote({ writerMs: writerRoundGraceMs(), roundMs, },);
+ * const note = writerGraceOverrideNote({ grace: readWriterGrace(), },);
  * ```
  */
 export function writerGraceOverrideNote(
-  {
-    writerMs,
-    roundMs,
-  }: {
-    readonly writerMs: number;
-    readonly roundMs: number;
-  },
+  { grace, }: { readonly grace: WriterGrace; },
 ): string {
-  if (writerMs === roundMs)
+  if (grace.source === 'round-window')
     return '';
 
   return `WRITER GRACE OVERRIDDEN by ${WRITER_GRACE_VAR}: writer rounds `
-    + `(${WRITER_STAGE_LABELS.join(', ',)}) abandon stragglers ${String(writerMs,)}ms after quorum `
-    + `rather than the ${String(roundMs,)}ms every other round waits`;
+    + `(${WRITER_STAGE_LABELS.join(', ',)}) abandon stragglers ${String(grace.writerMs,)}ms after `
+    + `quorum rather than the ${String(grace.roundMs,)}ms every other round waits`;
 }
 
 //endregion Writer grace override

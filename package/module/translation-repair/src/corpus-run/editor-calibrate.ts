@@ -7,8 +7,8 @@ import {
   STRAGGLER_GRACE_VAR,
 } from '../grace-override.ts';
 import {
+  readWriterGrace,
   writerGraceOverrideNote,
-  writerRoundGraceMs,
 } from '../writer-grace-override.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { repairChunk, } from '../repair-chunk.ts';
@@ -404,10 +404,7 @@ async function main(): Promise<void> {
    * launch that set the dial changed what the standing measures, and a reader
    * must be able to tell that from the log alone.
    */
-  const writerNote = writerGraceOverrideNote({
-    writerMs: writerRoundGraceMs(),
-    roundMs: grace.effectiveMs,
-  },);
+  const writerNote = writerGraceOverrideNote({ grace: readWriterGrace(), },);
   if (writerNote !== '')
     console.log(writerNote,);
 
