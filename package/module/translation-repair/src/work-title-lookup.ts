@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  type LookupHit,
   type LookupRecord,
   readCachedLookup,
   writeCachedLookup,
@@ -144,7 +145,28 @@ export function lookupLinesOf(
   const { hits, } = record;
   if (hits.length === 0)
     return [`- web lookup for ${title}: nothing found`,];
-  return hits.map(function toLine(hit,): string {
+  /**
+   * The title as the text writes it, marks removed, which a result naming
+   * this work would carry somewhere.
+   */
+  const bare = bareTitleOf({ title, },);
+  /**
+   * Hits naming this work first, so the sheet reads the relevant ones before
+   * the neighbours.
+   */
+  const ordered = [...hits,].toSorted(function namingFirst(
+    left,
+    right,
+  ): number {
+    return Number(namesWork({
+      hit: right,
+      bare,
+    },),) - Number(namesWork({
+      hit: left,
+      bare,
+    },),);
+  },);
+  return ordered.map(function toLine(hit,): string {
     /**
      * Highlight on one line, or nothing.
      */
@@ -156,8 +178,82 @@ export function lookupLinesOf(
      * Highlight part of the line, absent when there is none.
      */
     const tail = (highlight === '') ? '' : `: ${highlight}`;
-    return `- web lookup for ${title}: "${hit.title}" ${hit.url}${tail}`;
+    /**
+     * Warning where the result never names the work asked about.
+     *
+     * THE TOKA_LS RERUN OF 2026-09-02: the five results for 《奇妙漂流》 were
+     * 奇幻漂流 neighbours (喵的奇幻漂流, the film released in English as "Flow"),
+     * none naming the work, and the judges renamed the person's own work "Flow".
+     */
+    const warning = namesWork({
+      hit,
+      bare,
+    },)
+      ? ''
+      : ' (this result does NOT name the work asked about; it is a neighbour, not its title)';
+    return `- web lookup for ${title}${warning}: "${hit.title}" ${hit.url}${tail}`;
   },);
+}
+
+/**
+ * The title without its 《…》 marks.
+ *
+ * @param title - title with its marks
+ *
+ * @returns Title as a plain string
+ *
+ * @example
+ * ```ts
+ * bareTitleOf({ title: '《活着》', },);
+ * // => '活着'
+ * ```
+ */
+export function bareTitleOf(
+  { title, }: { readonly title: string; },
+): string {
+  return title
+    .replaceAll(
+      '《',
+      '',
+    )
+    .replaceAll(
+      '》',
+      '',
+    );
+}
+
+/**
+ * Whether a result names the work asked about, in its title or its
+ * highlight.
+ *
+ * @param hit - one result
+ *
+ * @param bare - title without its marks
+ *
+ * @returns Whether the bare title occurs in the result
+ *
+ * @example
+ * ```ts
+ * namesWork({ hit, bare: '活着', },);
+ * ```
+ */
+export function namesWork(
+  {
+    hit,
+    bare,
+  }: {
+    readonly hit: LookupHit;
+    readonly bare: string;
+  },
+): boolean {
+  /**
+   * Result fields the work's title could occur in.
+   */
+  const {
+    title,
+    highlight,
+  } = hit;
+  return title.includes(bare,) || highlight.includes(bare,);
 }
 
 /**

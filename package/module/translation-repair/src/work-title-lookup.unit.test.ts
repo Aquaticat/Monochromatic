@@ -149,7 +149,7 @@ async function freshCacheDir(): Promise<string> {
 const TO_LIVE_RESULT = {
   title: 'To Live (novel) - Wikipedia',
   url: 'https://en.wikipedia.org/wiki/To_Live_(novel)',
-  highlights: ['To Live is a novel\nby Yu Hua.',],
+  highlights: ['To Live (活着) is a novel\nby Yu Hua.',],
   highlightScores: [0.9,],
 };
 
@@ -231,7 +231,7 @@ await describe({
           hits: [{
             title: TO_LIVE_RESULT.title,
             url: TO_LIVE_RESULT.url,
-            highlight: 'To Live is a novel\nby Yu Hua.',
+            highlight: 'To Live (活着) is a novel\nby Yu Hua.',
           },],
         },);
         expect(second,).toEqual(first,);
@@ -336,8 +336,10 @@ await describe({
   name: workTitleLookupLines.name,
   children: [
     it({
-      name: 'RENDERS one line per hit with the highlight folded, says so when nothing was found, and '
-        + 'contributes NO LINE for a failed lookup while still rendering the others',
+      name: 'RENDERS one line per hit with the highlight folded, WARNS on a result that never names the '
+        + 'work and lists it after the ones that do (the Toka_ls rerun of 2026-09-02 renamed 《奇妙漂流》 '
+        + '"Flow" off five neighbour results), says so when nothing was found, and contributes NO LINE '
+        + 'for a failed lookup while still rendering the others',
       fn: async () => {
         /**
          * Empty cache.
@@ -360,7 +362,17 @@ await describe({
          */
         const { fetchFn, calls, } = stubFetch({
           status: 200,
-          body: { results: [TO_LIVE_RESULT, { url: 'https://example.invalid/none', },], },
+          body: {
+            results: [
+              {
+                title: '喵的奇幻漂流',
+                url: 'https://example.invalid/neighbour',
+                highlights: ['A 2024 Latvian animated film.',],
+              },
+              TO_LIVE_RESULT,
+              { url: 'https://example.invalid/none', },
+            ],
+          },
         },);
         expect(await workTitleLookupLines({
           sourceText: '读《活着》和《不安》。',
@@ -371,8 +383,9 @@ await describe({
           now: () => NOW,
           logger: l,
         },),).toEqual([
-          '- web lookup for 《活着》: "To Live (novel) - Wikipedia" https://en.wikipedia.org/wiki/To_Live_(novel): To Live is a novel by Yu Hua.',
-          '- web lookup for 《活着》: "" https://example.invalid/none',
+          '- web lookup for 《活着》: "To Live (novel) - Wikipedia" https://en.wikipedia.org/wiki/To_Live_(novel): To Live (活着) is a novel by Yu Hua.',
+          '- web lookup for 《活着》 (this result does NOT name the work asked about; it is a neighbour, not its title): "喵的奇幻漂流" https://example.invalid/neighbour: A 2024 Latvian animated film.',
+          '- web lookup for 《活着》 (this result does NOT name the work asked about; it is a neighbour, not its title): "" https://example.invalid/none',
           '- web lookup for 《不安》: nothing found',
         ],);
         expect(calls.length,).toBe(1,);
