@@ -27,7 +27,6 @@ import {
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
 import { assertFrontMatterComplete, } from './front-matter-completeness.ts';
-import type { MetadataStanding, } from './front-matter-standing.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
 import { assertContributorNamesComplete, } from './contributor-completeness.ts';
 import { assertDestinationsComplete, } from './destination-completeness.ts';
@@ -203,10 +202,6 @@ export function shippableReplacements(
  *
  * @param publishDir - root of the mirrored tree
  *
- * @param metadataStanding - how the metadata slice came to stand (judged keep,
- * matched keep, replacement, fallback), read off the settled translate lane's
- * selections by `metadataStandingOf`
- *
  * @param l - logger, tagged by the caller with this entry
  *
  * @returns Path written, and what the page carries of the source's destinations
@@ -227,7 +222,6 @@ export async function publishFixedPage(
     sourceText,
     entryId,
     publishDir,
-    metadataStanding,
     l,
   }: {
     readonly artifact: WouldShipSource;
@@ -236,7 +230,6 @@ export async function publishFixedPage(
     readonly sourceText: string;
     readonly entryId: string;
     readonly publishDir: string;
-    readonly metadataStanding: MetadataStanding;
     readonly l: Logger;
   },
 ): Promise<{
@@ -263,7 +256,6 @@ export async function publishFixedPage(
     archiveText,
     pageText,
     slices,
-    metadataStanding,
   },);
   assertContributorNamesComplete({
     entryId,

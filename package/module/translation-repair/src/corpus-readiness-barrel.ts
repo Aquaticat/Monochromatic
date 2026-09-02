@@ -36,14 +36,6 @@ export {
   assertFrontMatterComplete,
   FrontMatterCompletenessError,
 } from './corpus-run/front-matter-completeness.ts';
-export {
-  fallbackDetailOf,
-  isReviewedKeep,
-  type MetadataComparisonRow,
-  type MetadataEvidence,
-  type MetadataStanding,
-  metadataStandingOf,
-} from './corpus-run/front-matter-standing.ts';
 export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
 export {
   assertVisualEvidenceComplete,

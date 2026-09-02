@@ -9,7 +9,6 @@ import { writeFileAtomic, } from './atomic-write.ts';
 import type { DestinationCheck, } from './dropped-destinations.ts';
 import { assertFinalNaturalnessComplete, } from './final-naturalness-completeness.ts';
 import { finalSelectionFindings, } from './final-selection-completeness.ts';
-import { metadataStandingOf, } from './front-matter-standing.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 
 //region Pass entry persistence
@@ -79,22 +78,6 @@ export async function persistSettledEntry(
     sourceText,
     entryId,
     publishDir,
-    // Off the stage that shipped the metadata, so a keep a panel chose
-    // publishes and a keep left standing by an indecision, a lost voice or an
-    // undecided gate does not; the translate lane's record alone reads a gate's
-    // keep as a withdrawn replacement.
-    metadataStanding: metadataStandingOf({
-      slices,
-      evidence: {
-        translateSelections: artifact.lanes
-          .translate
-          .result
-          .sliceSelections,
-        laneSelection: artifact.laneSelection,
-        consolidation: artifact.consolidation,
-        comparison: artifact.comparison,
-      },
-    },),
     l,
   },);
   await writeFileAtomic({

@@ -478,7 +478,6 @@ async function publishAndRead(
     sourceText,
     entryId: 'BookshopCat',
     publishDir,
-    metadataStanding: { kind: 'judged-keep', voteWeight: 3, },
     l: tagged({ tag: 'publish-test', },),
   },);
 
@@ -740,7 +739,6 @@ await describe({
           sourceText: '条目贡献：小雪\n',
           entryId: 'BookshopContributors',
           publishDir: tree.publishDir,
-          metadataStanding: { kind: 'judged-keep', voteWeight: 3, },
           l: tagged({ tag: 'publish-test', },),
         },);
         await expect(refused,).rejects.toBeInstanceOf(ContributorCompletenessError,);
@@ -811,7 +809,6 @@ await describe({
               sourceText: SOURCE_PAGE,
               entryId: 'BookshopCat',
               publishDir,
-              metadataStanding: { kind: 'judged-keep', voteWeight: 3, },
               l: tagged({ tag: 'publish-test', },),
             },);
             return undefined;
@@ -859,7 +856,6 @@ await describe({
             sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
             entryId: 'BookshopCat',
             publishDir: tree.publishDir,
-            metadataStanding: { kind: 'judged-keep', voteWeight: 3, },
             l: tagged({ tag: 'publish-test', },),
           },);
         }

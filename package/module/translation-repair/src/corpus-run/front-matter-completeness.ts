@@ -5,35 +5,27 @@ import {
   splitFrontMatter,
 } from '../front-matter.ts';
 import { validateFrontMatterTranslation, } from '../front-matter-translation.ts';
-import {
-  fallbackDetailOf,
-  isReviewedKeep,
-  type MetadataStanding,
-} from './front-matter-standing.ts';
 
 //region Front matter publication completeness
 // Final page must retain parseable metadata under explicit reviewed slice.
 //
-// A KEPT INCUMBENT IS EVIDENCE ONLY WHEN A PANEL CHOSE IT. Until 2026-09-02
-// this guard read "page metadata equals archive metadata while the source's
-// differs" as nobody having reviewed the slice, and refused the page. The
-// Carena0442 pass of that day ran 94 minutes to a finished consolidation and
-// was refused on that reading, and the first fix (commit 503ec902c) published
-// any keep whose stage had heard a translator. That was a misreading of the
-// same log: both of Carena's metadata rounds ended `declined-indecision`, four
-// judges of eight split 1.5 to 1 to 0.5 and the leader fell short of the
-// minimum weight, so the incumbent shipped by fallback, not by judgment. The
-// same night the Toka_ls relaunch showed the other half: its translate lane
-// replaced the metadata by a judged vote and the consolidation gate restored
-// the archive's six ballots to two, which the translate lane's record alone
-// reads as a withdrawn replacement. `front-matter-standing.ts` now reads the
-// stage that shipped the text, in the order the assembly walks them: a keep
-// publishes when a panel chose it or every heard translator reproduced it,
-// every fallback refuses by the name of its decision, and an archive whose
-// visible name is still the directory id refuses whatever the decision was.
+// STRUCTURAL CHECKS ONLY, by the owner's decision of 2026-09-02. The rule of
+// 2026-08-28 ("review visible front matter", written for #269, archives whose
+// metadata was never translated) refused a page whose metadata equalled the
+// archive's while the source's differed, reading that as nobody having
+// reviewed the slice. Chinese and English metadata always differ, so the
+// trigger was a proxy for nothing: it discarded the Carena0442 pass, whose
+// judges had split, and would have discarded Toka_ls, whose gate kept the
+// archive six ballots to two, and one night of machinery reading which panel
+// had chosen the keep (commits daaf0ffa0, 6f70a2085, 1160ebb4c) answered a
+// question that only existed because of the proxy. Metadata is judged like
+// every other slice by the lanes, the contest and the gate, and the artifact
+// keeps their records. What stays here is what is structural: the metadata
+// slice sits where the preparation put it, the page parses, the identity and
+// attribution rules hold, and the visible name is not the directory id.
 
 /**
- * Refusal when published front matter lacks structural review evidence.
+ * Refusal when published front matter fails a structural check.
  *
  * @example
  * ```ts
@@ -51,29 +43,21 @@ export class FrontMatterCompletenessError extends Error {
    *
    * @param entryId - entry refused
    *
-   * @param reason - structural evidence absent or invalid: `incumbent-fallback`
-   * when the archive's metadata stands without a panel having chosen it,
-   * `directory-id-name` when it stands with the directory id as its visible name
-   *
-   * @param detail - which decision left the incumbent standing, named after the
-   * reason so the TALLY line tells an indecision from a lost voice
+   * @param reason - structural check that failed: `missing-slice` when the
+   * preparation carries no metadata slice where it must, `invalid-page` when
+   * the page's metadata does not parse or breaks the identity or attribution
+   * rules, `directory-id-name` when the page's visible name is the directory id
    */
   public constructor(
     {
       entryId,
       reason,
-      detail,
     }: {
       readonly entryId: string;
-      readonly reason: 'missing-slice' | 'invalid-page' | 'incumbent-fallback' | 'directory-id-name';
-      readonly detail?: string;
+      readonly reason: 'missing-slice' | 'invalid-page' | 'directory-id-name';
     },
   ) {
-    super(
-      `entry ${entryId} front matter is not publishable (${reason}${
-        (detail === undefined) ? '' : `: ${detail}`
-      })`,
-    );
+    super(`entry ${entryId} front matter is not publishable (${reason})`,);
     this.name = 'FrontMatterCompletenessError';
   }
 }
@@ -113,7 +97,7 @@ function namesDirectoryId(
 }
 
 /**
- * Refuses page whose metadata was not structurally reviewed.
+ * Refuses page whose metadata fails a structural check.
  *
  * @param entryId - entry being published
  *
@@ -125,17 +109,13 @@ function namesDirectoryId(
  *
  * @param slices - preparation carrying explicit syntax role
  *
- * @param metadataStanding - how the metadata slice came to stand, read by
- * `metadataStandingOf` off the stage that shipped it
- *
  * @throws FrontMatterCompletenessError when metadata role or syntax differs,
- * when the archive's metadata stands where the source's differs without a
- * panel or every heard translator having chosen it, or when it stands with
- * the directory id as the visible name
+ * when the page's metadata does not parse or breaks the identity or
+ * attribution rules, or when its visible name is still the directory id
  *
  * @example
  * ```ts
- * assertFrontMatterComplete({ entryId, sourceText, archiveText, pageText, slices, metadataStanding, });
+ * assertFrontMatterComplete({ entryId, sourceText, archiveText, pageText, slices, });
  * ```
  */
 export function assertFrontMatterComplete(
@@ -145,14 +125,12 @@ export function assertFrontMatterComplete(
     archiveText,
     pageText,
     slices,
-    metadataStanding,
   }: {
     readonly entryId: string;
     readonly sourceText: string;
     readonly archiveText: string;
     readonly pageText: string;
     readonly slices: readonly ChunkPair[];
-    readonly metadataStanding: MetadataStanding;
   },
 ): void {
   /**
@@ -285,23 +263,11 @@ export function assertFrontMatterComplete(
       reason: 'invalid-page',
     },);
   }
-  // THE ARCHIVE'S OWN METADATA STANDING is refused unless a panel chose it or
-  // every heard translator reproduced it, and refused whatever the decision
-  // where what stands still names the directory id. Bytes equal to the
-  // archive's cannot tell a judged keep from an indecision; the standing can.
-  if ((archiveMetadata === undefined)
-    || (sourceFrontMatter === archiveFrontMatter)
-    || (pageFrontMatter !== archiveFrontMatter))
-    return;
-  if (!isReviewedKeep({ standing: metadataStanding, },)) {
-    throw new FrontMatterCompletenessError({
-      entryId,
-      reason: 'incumbent-fallback',
-      detail: fallbackDetailOf({ standing: metadataStanding, },),
-    },);
-  }
+  // THE PAGE'S OWN VISIBLE NAME, whatever the archive carried and whether or
+  // not any lane changed the slice: a person published under the folder name is
+  // the one metadata defect bytes alone ever caught, and it stays refused.
   if (namesDirectoryId({
-    metadata: archiveMetadata,
+    metadata: pageMetadata,
     entryId,
   },)) {
     throw new FrontMatterCompletenessError({
