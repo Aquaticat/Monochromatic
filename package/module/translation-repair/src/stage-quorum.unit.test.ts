@@ -441,6 +441,86 @@ await describe({
     },),
 
     it({
+      name: 'RE-ASKS AN UNREADABLE ANSWER WITH A DIFFERENT PROMPT, the original plus a complaint '
+        + 'naming what happened, so the prompt-uniqueness cache cannot serve the same unreadable '
+        + 'bytes back: five recovery rounds over two passes on 2026-09-02 recovered nothing in 0 '
+        + 'to 1 ms each (#473)',
+      fn: async () => {
+        /** Text of every message each call to the flaky model carried, in call order. */
+        const seen: (readonly string[])[] = [];
+        /** Client whose named model reads badly until the prompt tells it what went wrong. */
+        const client: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused',);
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            /**
+             * Scripted payload for an answering call.
+             */
+            const scripted: unknown = { meow: request.modelId, };
+            if (request.modelId === 'hf:moonshotai/Kimi-K3') {
+              /**
+               * This call's prompt as plain text, a vision part reading as
+               * nothing since none is sent here.
+               */
+              const texts = request.messages
+                .map(function textOf(message,): string {
+                  return ((typeof message.content) === 'string') ? message.content : '';
+                },);
+              seen.push(texts,);
+              /**
+               * Whether this prompt carries the recovery complaint.
+               */
+              const nudged = texts.at(-1,)
+                ?.includes('could not be read',) ?? false;
+              if (!nudged) {
+                return {
+                  kind: 'schema-mismatch',
+                  rawText: '',
+                  detail: 'scripted unreadable answer',
+                };
+              }
+            }
+            if (!request.validate(scripted,))
+              throw new Error('scripted payload failed the guard',);
+            return {
+              kind: 'ok',
+              value: scripted,
+              rawText: JSON.stringify(scripted,),
+            };
+          },
+          quotas: async () => {
+            throw new Error('quotas unused',);
+          },
+        };
+
+        const gather = await gatherStageVoices({
+          client,
+          modelIds: ['hf:zai-org/GLM-5.3-Flash', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'panel',
+          l,
+        },);
+        // The recovery round heard the voice the first round could not read.
+        expect(gather.voices,).toHaveLength(3,);
+        expect(gather.findings,).toHaveLength(0,);
+        // Two calls: the first with the stage's prompt, the second with the
+        // same prompt plus the complaint, and nothing else about it changed.
+        expect(seen,).toHaveLength(2,);
+        expect(seen[0],).toEqual(['meow',],);
+        expect(seen[1]?.length,).toBe(2,);
+        expect(seen[1]?.[0],).toBe('meow',);
+        expect(seen[1]?.[1],).toContain('could not be read',);
+      },
+    },),
+
+    it({
       name: 'counts exactly half of an even roster as quorum',
       fn: async () => {
         /** Call log shared with the scripted client. */

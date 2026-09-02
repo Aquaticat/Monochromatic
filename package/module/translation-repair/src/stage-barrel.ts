@@ -20,6 +20,7 @@ export {
 export {
   gatherStageVoices,
   type HeardVoice,
+  RECOVERY_NUDGE,
   STAGE_RETRY_ROUNDS,
   type StageGather,
 } from './stage-quorum.ts';

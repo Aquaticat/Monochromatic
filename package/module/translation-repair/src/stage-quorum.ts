@@ -42,6 +42,27 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 export const STAGE_RETRY_ROUNDS = 3;
 
 /**
+ * What the recovery round adds to the prompt of a model whose answer nothing
+ * could read.
+ *
+ * THE COMPLAINT IS THE ROUND'S WHOLE VALUE. `promptUniqueClient` answers a
+ * second call for the same model and prompt from its cache, schema mismatch
+ * included, so a recovery round that re-sent the same bytes was answered with
+ * the same unreadable bytes in 0 to 1 ms on every one of the five occasions
+ * measured across two passes on 2026-09-02 (`#473`). The guard here is a type
+ * predicate and carries no message of its own, so the complaint names the
+ * failure in general terms: the answer arrived and its shape was not the one
+ * asked for. That is enough to make the digest new and to tell the model what
+ * to do differently.
+ */
+export const RECOVERY_NUDGE: ChatMessage = {
+  role: 'user',
+  content: 'Your previous reply arrived but could not be read: it did not match the required '
+    + 'response shape. Answer the same question again, replying with ONLY the JSON object of '
+    + 'the shape described, nothing before or after it.',
+};
+
+/**
  * One heard voice with its speaker.
  *
  * @example
@@ -305,6 +326,16 @@ export async function gatherStageVoices<ValueT,>(
        */
       const recovered = await runGatherRound<ValueT>({
         ...fanOut,
+        // A DIFFERENT PROMPT, OR THE ROUND BUYS NOTHING. `promptUniqueClient`
+        // serves a second call for the same model and prompt from its cache,
+        // schema mismatch included, so re-sending the same bytes came back with
+        // the same unreadable answer in 0 to 1 ms every time it was measured
+        // (`#473`, five recovery rounds over two passes on 2026-09-02). The
+        // nudge tells the model what happened and makes the digest new.
+        messages: [
+          ...messages,
+          RECOVERY_NUDGE,
+        ],
         modelIds: unreadable,
         heardNeeded: 0,
       },);
