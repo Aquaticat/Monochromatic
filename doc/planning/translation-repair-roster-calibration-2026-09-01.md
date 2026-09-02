@@ -823,8 +823,10 @@ choice, veto invited) into `~/temp/agent/toka-rerun2-20260902`.
 written under `~/temp/agent/carena-rerun-20260902`, `verify-published` clean (1 of 1 pages carry every
 wording, 20,751 characters as implied), 0 refusals and 0 holds. The reading is
 `doc/planning/translation-repair-carena-reading-2026-09-02.md`: one defect (JSON-escaped quotes leaked
-into the text, task 26), one regression ("She should have known"), many recoveries of what the archive
-had dropped, and the semantic-wrap reshaping a reader must know about first.
+into the text; the slice validator now refuses the sequence, `e29dbce4f`, test shown to fail without
+it), one regression ("She should have known"), many recoveries of what the archive had dropped, and the
+semantic-wrap reshaping a reader must know about first. The leak entered at consolidation slice 6: the
+producer's text carried it, all eight structural verdicts were `valid`, and the polish kept it.
 
 At 13:48:31 the chain waiter launched keyword233 on `a5c69a305` and, within seconds, both background
 waiters (the chain and the Toka_ls follow-up) were reported killed, exactly as at 04:02; the keyword233
