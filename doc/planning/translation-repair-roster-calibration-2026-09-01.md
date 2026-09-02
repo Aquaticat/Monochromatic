@@ -863,13 +863,23 @@ Measurements the reviewer asked for, with what they change:
 Left as recorded, not acted on: the house-policy pronoun rule reaches Carena and keyword233 only; the
 Toka_ls rerun predates it.
 
-Source edits held until Carena's launch line appears in the chain's output, because the chain builds the
-tree at Toka_ls exit and a half-landed edit would be what it compiles. Each is a defect under `QDF`, done
-unasked once the line is there:
+The hold on source edits was lifted at 10:08 UTC after the owner asked why the named work had stopped:
+the chain was stopped, the work landed as whole commits with the suite green after each, and the chain
+was re-armed at 10:28 on `4cdc85f69` with Toka_ls still running (in consolidation since 10:07).
 
-- The comment in `provider-router.ts` at the re-route ("the only remaining destination is the one that
-  just refused us") predates holds; `b547e80ed` did not touch that file.
-- The `> ` trailing-space fold before judging: the Toka_ls reading found whitespace-only churn copied
-  from the source and a whitespace-only "replacement" judged five to two at slice 1.
-- The both-dry error's message text (#474 option 3): state the measured facts, meters and holds.
-- "sixteen times" in `identity-context.ts` and its test name: 20 occurrences on 16 lines.
+- `12ed82cee`: the owner's title rule as a house-policy bullet (official English title when one exists,
+  the Life of Pi play, notes as established vocabulary, a web lookup as evidence); the notes both pages
+  carry folded into the identity context, labelled by side and kind; every 《…》 work in the source
+  looked up through Exa once and cached under the user's cache directory; the critic sheet told what the
+  new line kinds license; the prepared-pair types moved to their own file at the line budget. Positive
+  control over eight real entries: XIEPT2 18 lines (its archive's 17 comments, translation hint and
+  glossary included), hulicaijia 17 lines and 2410 bytes (the largest block, riding every call of that
+  entry), yulianNyanner 26 lines and 1914 bytes, Toka_ls and keyword233 two contributor-credit lines
+  each, Carena0442 its two footnotes. GFP: the notes test fails with the collector emptied (2 FAIL
+  lines), the lookup test fails with the cache read made a miss (2).
+- `4cdc85f69`: the collapse key folds trailing spaces on blank and blank-quote lines before judging
+  (65 pinned pages use Markdown hard breaks on content lines, saurikissa's archive 35 of them, so
+  content lines keep theirs); the both-dry error states the meter states and holds it was decided on;
+  the router's re-route comment reads holds; the pronoun record says twenty on sixteen lines. GFP: the
+  collapse test fails with the fold removed (2), the hold-wait test with the measurement clause dropped
+  (2).

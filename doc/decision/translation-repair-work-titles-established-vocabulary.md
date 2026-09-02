@@ -54,6 +54,11 @@ Carena0442 fixture:
 
 ## Mechanism
 
+Landed as commit `12ed82cee` (house-policy bullet, `entry-notes.ts`, `work-title-scan.ts`,
+`work-title-search.ts`, `lookup-cache.ts`, `work-title-lookup.ts`, the preparation and corpus-run
+plumbing, the critic sheet's bullet), with the suite green and each new test shown to fail without its
+code. Carena0442 is the first live run of it.
+
 - The house policy (`src/house-policy.ts`, shared by every sheet) gains a bullet stating the rule with
   the Life of Pi example, so translators, judges, editors and the consolidation gate all read it.
 - Preparation collects the source's footnote definitions and HTML comments and the archive's footnote
