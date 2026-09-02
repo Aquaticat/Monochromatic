@@ -20,6 +20,7 @@ import {
   type ChatJsonRequest,
   NaturalnessCompletenessError,
   polishConsolidation,
+  reviewParagraphsOf,
   type SettledArtifact,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -546,6 +547,47 @@ await describe({
         expect(() => assertFinalNaturalnessComplete({
           artifact: artifactCarrying({ polish: undefined, },),
         },),).toThrow(NaturalnessCompletenessError,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS THE REVIEWER EVERY BODY BLOCK and records that count, so a blockquote candidate with '
+        + 'no refinable paragraph still gives a reviewer one paragraph to cite (Toka_ls slice 10, '
+        + '2026-09-02: zero refinable paragraphs, six of nine ballots refused as out of range), and the '
+        + 'completeness guard recomputes the same set',
+      fn: async () => {
+        /**
+         * A letter in blockquote, which the polish may not edit but a reviewer
+         * must still be able to cite.
+         */
+        const poem = '> By the time you read this letter,\n> I should already be living on in everyone’s memories.\n>\n> From the moment we met,\n> time really flew by.';
+        expect(reviewParagraphsOf({ text: poem, },),).toEqual([poem,],);
+        expect(reviewParagraphsOf({ text: `${poem}\n\nA closing paragraph.`, },),)
+          .toEqual([poem, 'A closing paragraph.',],);
+        expect(reviewParagraphsOf({ text: '', },),).toEqual([],);
+
+        const polish = await polishConsolidation({
+          client: singleRoundClient({ reviewAcceptableByRound: [true,], },),
+          sourceText: '> 当你读到这封信的时候，\n> 我应该已经活在大家的回忆里了。\n>\n> 从我们相遇开始，\n> 时间过得真快。',
+          archiveText: poem,
+          baseText: poem,
+          lineStructured: true,
+          sliceIndex: 1,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-blockquote-test', },),
+        },);
+        expect(polish.kind,).toBe('settled',);
+        if (polish.kind !== 'settled')
+          throw new Error('the polish did not settle',);
+        expect(polish.review.rounds[0]?.paragraphCount,).toBe(1,);
+        // The guard recomputes the paragraph digests from the final text with
+        // the same set the writer used; a mismatch here is the generation-ten
+        // reader disagreeing with its writer.
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({ polish, },),
+        },);
       },
     },),
 

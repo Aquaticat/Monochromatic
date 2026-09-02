@@ -20,37 +20,7 @@ import { parseNaturalnessReviewRound, } from './artifact-two-lane-read-naturalne
 //region Artifact absolute naturalness review read
 
 /**
- * Reads one schema-nine confirmation round.
- *
- * @param value - unknown confirmation round
- *
- * @param path - confirmation path
- *
- * @returns Exact candidate and paragraph-bound round
- *
- * @example
- * ```ts
- * const round = parseConfirmationRound({ value, path, });
- * ```
- */
-function parseConfirmationRound(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): ArtifactNaturalnessReviewRound {
-  return parseNaturalnessReviewRound({
-    value,
-    path,
-    paragraphDigestsRequired: true,
-  },);
-}
-
-/**
- * Reads schema-eight or schema-nine absolute review and binds final round to final text.
+ * Reads schema-eight or later absolute review and binds final round to final text.
  *
  * @param value - unknown review field
  *
@@ -59,6 +29,9 @@ function parseConfirmationRound(
  * @param finalText - exact polish text artifact says ships
  *
  * @param correctionChainRequired - whether generation requires transition digests
+ *
+ * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ * block (generation ten) rather than the refinable paragraphs alone
  *
  * @returns Cross-validated review audit
  *
@@ -73,13 +46,41 @@ export function parseNaturalnessReview(
     path,
     finalText,
     correctionChainRequired = false,
+    everyBodyBlockReviewed = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly finalText: string;
     readonly correctionChainRequired?: boolean;
+    readonly everyBodyBlockReviewed?: boolean;
   },
 ): ArtifactNaturalnessReview {
+  /**
+   * Reads one schema-nine-or-later confirmation round under this review's
+   * paragraph set.
+   *
+   * @param round - unknown confirmation round and its path
+   *
+   * @returns Exact candidate and paragraph-bound round
+   *
+   * @example
+   * ```ts
+   * const parsed = parseConfirmationRound({ value, path, },);
+   * ```
+   */
+  function parseConfirmationRound(
+    round: {
+      readonly value: unknown;
+      readonly path: string;
+    },
+  ): ArtifactNaturalnessReviewRound {
+    return parseNaturalnessReviewRound({
+      value: round.value,
+      path: round.path,
+      paragraphDigestsRequired: true,
+      everyBodyBlockReviewed,
+    },);
+  }
   /**
    * Review under exact schema-eight shape.
    */
@@ -129,6 +130,7 @@ export function parseNaturalnessReview(
         value: entry,
         path: `${path}.rounds[${String(at,)}]`,
         paragraphDigestsRequired: correctionChainRequired,
+        everyBodyBlockReviewed,
       },);
     },);
   if (rounds.length !== (correctionCount + 1)) {
@@ -221,6 +223,7 @@ export function parseNaturalnessReview(
     finalText,
     path: finalPath,
     paragraphDigestsRequired: correctionChainRequired,
+    everyBodyBlockReviewed,
   },);
   return {
     correctionCount,

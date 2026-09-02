@@ -98,6 +98,7 @@ export function assertFinalNaturalnessComplete(
       path: `consolidation.slices[${String(slice.sliceIndex,)}].polish.review`,
       finalText: polish.text,
       correctionChainRequired: true,
+      everyBodyBlockReviewed: true,
     },);
   }
 }

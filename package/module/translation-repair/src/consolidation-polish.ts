@@ -10,7 +10,7 @@ import type {
   ConsolidationPolishConfig,
 } from './consolidation-polish-model.ts';
 import {
-  finalPolishParagraphs,
+  reviewParagraphsOf,
   runConsolidationPolishRound,
 } from './consolidation-polish-round.ts';
 
@@ -140,12 +140,10 @@ export async function polishConsolidation(
     subject: {
       sourceText,
       candidateText: initial.text,
-      // THE REFINABLE PARAGRAPHS, which the artifact reader recomputes to verify
-      // the recorded digests; a blockquote candidate therefore shows the
-      // reviewer nothing to cite (Toka_ls slice 10, 2026-09-02), and moving to
-      // every body block (`reviewParagraphsOf`) needs an artifact generation
-      // the reader can tell apart. Tracked as its own change.
-      paragraphs: finalPolishParagraphs({ text: initial.text, }),
+      // EVERY BODY BLOCK (artifact generation ten), so a reviewer can locate a
+      // finding in a blockquote or a list as well as in a paragraph the polish
+      // could have edited; the artifact reader recomputes the same set.
+      paragraphs: reviewParagraphsOf({ text: initial.text, }),
       ...((identityContext === undefined) ? {} : { identityContext, }),
     },
     signal,

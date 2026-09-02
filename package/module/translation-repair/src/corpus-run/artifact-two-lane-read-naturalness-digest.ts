@@ -5,7 +5,10 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
-import { finalPolishParagraphs, } from '../consolidation-polish-round.ts';
+import {
+  finalPolishParagraphs,
+  reviewParagraphsOf,
+} from '../consolidation-polish-round.ts';
 import { hashContent, } from '../document-node.ts';
 import type {
   ArtifactNaturalnessCorrection,
@@ -13,6 +16,35 @@ import type {
 } from './artifact-two-lane-consolidate.ts';
 
 //region Artifact naturalness digest chain
+
+/**
+ * Paragraphs a generation showed its reviewers, re-derived from the text.
+ *
+ * @param text - reviewed candidate text
+ *
+ * @param everyBodyBlockReviewed - whether the writing generation showed every
+ * body block (generation ten) rather than the refinable paragraphs alone
+ *
+ * @returns Paragraph texts in display order
+ *
+ * @example
+ * ```ts
+ * const paragraphs = reviewedParagraphsOf({ text, everyBodyBlockReviewed: true, },);
+ * ```
+ */
+function reviewedParagraphsOf(
+  {
+    text,
+    everyBodyBlockReviewed,
+  }: {
+    readonly text: string;
+    readonly everyBodyBlockReviewed: boolean;
+  },
+): readonly string[] {
+  return everyBodyBlockReviewed
+    ? reviewParagraphsOf({ text, },)
+    : finalPolishParagraphs({ text, },);
+}
 
 /**
  * Character length of lowercase hexadecimal SHA-256 digest.
@@ -274,18 +306,24 @@ export function assertReviewedCandidateDigests(
     paragraphCount,
     paragraphDigests,
     path,
+    everyBodyBlockReviewed = false,
   }: {
     readonly candidateText: string;
     readonly candidateDigest: string;
     readonly paragraphCount: number;
     readonly paragraphDigests: readonly string[];
     readonly path: string;
+    readonly everyBodyBlockReviewed?: boolean;
   },
 ): void {
   /**
-   * Exact structurally correctable paragraphs from candidate text.
+   * Exact reviewed paragraphs re-derived from candidate text, under the set
+   * the writing generation showed its reviewers.
    */
-  const paragraphs = finalPolishParagraphs({ text: candidateText, });
+  const paragraphs = reviewedParagraphsOf({
+    text: candidateText,
+    everyBodyBlockReviewed,
+  },);
   /**
    * Digests independently re-derived from candidate paragraph text.
    */
@@ -335,11 +373,13 @@ export function assertFinalNaturalnessDigests(
     finalText,
     path,
     paragraphDigestsRequired,
+    everyBodyBlockReviewed = false,
   }: {
     readonly final: ArtifactNaturalnessReviewRound;
     readonly finalText: string;
     readonly path: string;
     readonly paragraphDigestsRequired: boolean;
+    readonly everyBodyBlockReviewed?: boolean;
   },
 ): void {
   if (paragraphDigestsRequired) {
@@ -361,13 +401,17 @@ export function assertFinalNaturalnessDigests(
       paragraphCount: final.paragraphCount,
       paragraphDigests: final.paragraphDigests,
       path,
+      everyBodyBlockReviewed,
     },);
     return;
   }
   /**
-   * Exact structurally correctable paragraphs from legacy final text.
+   * Exact reviewed paragraphs from legacy final text.
    */
-  const paragraphs = finalPolishParagraphs({ text: finalText, });
+  const paragraphs = reviewedParagraphsOf({
+    text: finalText,
+    everyBodyBlockReviewed,
+  },);
   if (final.paragraphCount !== paragraphs.length) {
     throw new ArtifactParseError({
       path: `${path}.paragraphCount`,

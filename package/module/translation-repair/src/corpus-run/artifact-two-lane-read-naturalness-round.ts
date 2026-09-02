@@ -34,6 +34,9 @@ import {
  *
  * @param paragraphDigestsRequired - whether generation binds reviewed paragraph identities
  *
+ * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ * block (generation ten) rather than the refinable paragraphs alone
+ *
  * @returns Cross-validated review round
  *
  * @example
@@ -46,10 +49,12 @@ export function parseNaturalnessReviewRound(
     value,
     path,
     paragraphDigestsRequired,
+    everyBodyBlockReviewed = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly paragraphDigestsRequired: boolean;
+    readonly everyBodyBlockReviewed?: boolean;
   },
 ): ArtifactNaturalnessReviewRound {
   /**
@@ -211,6 +216,7 @@ export function parseNaturalnessReviewRound(
       paragraphCount,
       paragraphDigests,
       path,
+      everyBodyBlockReviewed,
     },);
   }
   return {

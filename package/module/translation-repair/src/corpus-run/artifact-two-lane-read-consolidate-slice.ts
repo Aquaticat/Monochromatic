@@ -142,6 +142,9 @@ function parseGate(
  *
  * @param correctionChainRequired - whether review carries digest-bound corrections
  *
+ * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ * block rather than the refinable paragraphs alone
+ *
  * @returns Parsed consolidation slice
  *
  * @example
@@ -157,6 +160,7 @@ export function parseConsolidateSlice(
     polishRequired,
     reviewRequired = false,
     correctionChainRequired = false,
+    everyBodyBlockReviewed = false,
   }: {
     readonly value: unknown;
     readonly path: string;
@@ -164,6 +168,7 @@ export function parseConsolidateSlice(
     readonly polishRequired: boolean;
     readonly reviewRequired?: boolean;
     readonly correctionChainRequired?: boolean;
+    readonly everyBodyBlockReviewed?: boolean;
   },
 ): ArtifactConsolidateSlice {
   /**
@@ -249,6 +254,7 @@ export function parseConsolidateSlice(
           path: `${path}.polish`,
           reviewRequired,
           correctionChainRequired,
+          everyBodyBlockReviewed,
         },),
       }
       : {}),

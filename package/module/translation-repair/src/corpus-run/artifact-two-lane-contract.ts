@@ -35,6 +35,19 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  *
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
+ *
+ * WHAT MOVED FROM NINE: the absolute naturalness reviewer is shown, and its
+ * findings are located in, EVERY body block of the candidate rather than the
+ * refinable paragraphs alone, and the recorded paragraph count and digests
+ * are of those blocks. A reader recomputes them, so it must know which set a
+ * record was made from (the Toka_ls rerun of 2026-09-02: a blockquote
+ * candidate had zero refinable paragraphs, and six of nine reviewers who
+ * located findings by stanza were refused as out of range).
+ */
+export const ARTIFACT_SCHEMA_VERSION_V10 = 10;
+
+/**
+ * Generation before reviewers were shown every body block.
  */
 export const ARTIFACT_SCHEMA_VERSION_V9 = 9;
 
@@ -115,6 +128,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V7,
   ARTIFACT_SCHEMA_VERSION_V8,
   ARTIFACT_SCHEMA_VERSION_V9,
+  ARTIFACT_SCHEMA_VERSION_V10,
 ];
 
 /**
@@ -133,7 +147,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V6
   | typeof ARTIFACT_SCHEMA_VERSION_V7
   | typeof ARTIFACT_SCHEMA_VERSION_V8
-  | typeof ARTIFACT_SCHEMA_VERSION_V9;
+  | typeof ARTIFACT_SCHEMA_VERSION_V9
+  | typeof ARTIFACT_SCHEMA_VERSION_V10;
 
 /**
  * Narrows numeric artifact version to known two-lane generation.
@@ -171,7 +186,8 @@ export function artifactGenerationRequiresPolish(
   return (generation === ARTIFACT_SCHEMA_VERSION_V6)
     || (generation === ARTIFACT_SCHEMA_VERSION_V7)
     || (generation === ARTIFACT_SCHEMA_VERSION_V8)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V9);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V9)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V10);
 }
 
 /**
@@ -190,7 +206,8 @@ export function artifactGenerationRequiresNaturalnessReview(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return (generation === ARTIFACT_SCHEMA_VERSION_V8)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V9);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V9)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V10);
 }
 
 /**
@@ -208,7 +225,28 @@ export function artifactGenerationRequiresNaturalnessReview(
 export function artifactGenerationRequiresNaturalnessCorrectionChain(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
-  return generation === ARTIFACT_SCHEMA_VERSION_V9;
+  return (generation === ARTIFACT_SCHEMA_VERSION_V9)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V10);
+}
+
+/**
+ * Reports whether generation showed the absolute reviewer every body block
+ * of the candidate, so that recorded paragraph counts and digests are of
+ * those blocks rather than of the refinable paragraphs alone.
+ *
+ * @param generation - known two-lane artifact generation
+ *
+ * @returns Whether reviewed paragraphs are every body block
+ *
+ * @example
+ * ```ts
+ * artifactGenerationReviewsEveryBodyBlock({ generation: 10, });
+ * ```
+ */
+export function artifactGenerationReviewsEveryBodyBlock(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation === ARTIFACT_SCHEMA_VERSION_V10;
 }
 
 /**
@@ -229,11 +267,13 @@ export function artifactGenerationReadingRequirements(
   readonly polishRequired: boolean;
   readonly reviewRequired: boolean;
   readonly correctionChainRequired: boolean;
+  readonly everyBodyBlockReviewed: boolean;
 } {
   return {
     polishRequired: artifactGenerationRequiresPolish({ generation, }),
     reviewRequired: artifactGenerationRequiresNaturalnessReview({ generation, }),
     correctionChainRequired: artifactGenerationRequiresNaturalnessCorrectionChain({ generation, }),
+    everyBodyBlockReviewed: artifactGenerationReviewsEveryBodyBlock({ generation, }),
   };
 }
 
@@ -501,7 +541,7 @@ export type SettledArtifact = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V9;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V10;
 
   /**
    * Corpus entry this covers.

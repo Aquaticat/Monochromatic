@@ -65,6 +65,9 @@ function parseStringList(
  *
  * @param correctionChainRequired - whether review requires digest-bound corrections
  *
+ * @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
+ * block rather than the refinable paragraphs alone
+ *
  * @returns Parsed polish record
  *
  * @example
@@ -78,11 +81,13 @@ export function parseConsolidationPolish(
     path,
     reviewRequired = false,
     correctionChainRequired = false,
+    everyBodyBlockReviewed = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly reviewRequired?: boolean;
     readonly correctionChainRequired?: boolean;
+    readonly everyBodyBlockReviewed?: boolean;
   },
 ): ArtifactConsolidationPolish {
   /**
@@ -245,6 +250,7 @@ export function parseConsolidationPolish(
           path: `${path}.review`,
           finalText: text,
           correctionChainRequired,
+          everyBodyBlockReviewed,
         },),
       }
       : {}),

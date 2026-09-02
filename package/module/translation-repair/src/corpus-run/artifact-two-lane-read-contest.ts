@@ -29,6 +29,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V7,
   ARTIFACT_SCHEMA_VERSION_V8,
   ARTIFACT_SCHEMA_VERSION_V9,
+  ARTIFACT_SCHEMA_VERSION_V10,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
 
@@ -98,7 +99,8 @@ function parseContestSlice(
       'usable',
       ...(((generation === ARTIFACT_SCHEMA_VERSION_V7)
         || (generation === ARTIFACT_SCHEMA_VERSION_V8)
-        || (generation === ARTIFACT_SCHEMA_VERSION_V9)) ? ['eligibility',] : []),
+        || (generation === ARTIFACT_SCHEMA_VERSION_V9)
+        || (generation === ARTIFACT_SCHEMA_VERSION_V10)) ? ['eligibility',] : []),
     ],
     path,
   },);
@@ -137,7 +139,8 @@ function parseContestSlice(
    */
   const eligibilityRequired = (generation === ARTIFACT_SCHEMA_VERSION_V7)
     || (generation === ARTIFACT_SCHEMA_VERSION_V8)
-    || (generation === ARTIFACT_SCHEMA_VERSION_V9);
+    || (generation === ARTIFACT_SCHEMA_VERSION_V9)
+    || (generation === ARTIFACT_SCHEMA_VERSION_V10);
   if (eligibilityRequired
     && (eligibility === undefined)
     && contestEligibilityRequired({ row, })) {

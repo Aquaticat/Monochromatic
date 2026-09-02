@@ -56,6 +56,7 @@ export {
   type ConsolidationPolishConfig,
   polishConsolidation,
 } from './consolidation-polish.ts';
+export { reviewParagraphsOf, } from './consolidation-polish-round.ts';
 export {
   CONSOLIDATION_POLISH_GATE_QUORUM,
   type ConsolidationPolishGateOutcome,
