@@ -120,8 +120,9 @@ export async function waitOutHold(
  *
  * @param signal - the call's abort
  *
- * @param syntheticDown - whether the first provider has just refused us, which
- * counts as dry for this reading
+ * @param syntheticDown - whether the first provider has just refused this
+ * call, which counts as dry for the first reading and not after its hold has
+ * been waited out
  *
  * @param pollMs - how often the wait checks for abort
  *
@@ -197,18 +198,17 @@ export async function readBudgetsPastHolds(
 
   /**
    * What the budgets look like once the shorter hold has ended.
+   *
+   * THE ROUTING REFUSAL IS NOT FOLDED IN AGAIN. `syntheticDown` says the first
+   * provider refused THIS call a moment ago; its hold is what that refusal
+   * became, and a hold that has just expired is the provider coming back. Folding
+   * the refusal in a second time would send the call to a both-dry error after
+   * waiting for exactly the hold that would have cleared it.
    */
   const second = await budgets.read({ signal, },);
-  /**
-   * The first provider's dryness again, the routing refusal still folded in.
-   */
-  const secondSyntheticDry = second.syntheticDry || syntheticDown;
-  if (secondSyntheticDry && second.hyperDry)
+  if (second.syntheticDry && second.hyperDry)
     throw new BothProvidersDryError();
-  return {
-    syntheticDry: secondSyntheticDry,
-    hyperDry: second.hyperDry,
-  };
+  return second;
 }
 
 //endregion Budget hold wait

@@ -245,6 +245,40 @@ await describe({
     },),
 
     it({
+      name: 'DOES NOT FOLD THE ROUTING REFUSAL INTO THE SECOND READING: the refuser held out is '
+        + 'the one whose hold was waited out, so with the other provider dry by meter the call '
+        + 'goes back to the refuser rather than ending the run after the wait',
+      fn: async () => {
+        /**
+         * The refuser wet by meter, the other provider dry by meter, on both
+         * reads; the first read folds the refusal in and sees both dry.
+         */
+        const { budgets, reads, holdAsks, } = scriptedBudgets({
+          views: [{
+            syntheticDry: false,
+            hyperDry: true,
+          },],
+          holds: {
+            synthetic: 5,
+            hyper: 0,
+          },
+        },);
+        expect(await readBudgetsPastHolds({
+          budgets,
+          modelId: MODEL_ID,
+          signal: SIGNAL,
+          syntheticDown: true,
+          pollMs: 1,
+        },),).toEqual({
+          syntheticDry: false,
+          hyperDry: true,
+        },);
+        expect(reads.count,).toBe(2,);
+        expect(holdAsks.count,).toBe(1,);
+      },
+    },),
+
+    it({
       name: 'ENDS THE RUN when both read dry with no hold to wait out, and when they still read dry '
         + 'after the shorter hold ended, waiting at most once',
       fn: async () => {

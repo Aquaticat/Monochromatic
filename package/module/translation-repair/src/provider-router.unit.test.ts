@@ -81,11 +81,13 @@ const EXPECTED_SYNTHETIC_SLOTS = 5;
 function stubProviders(
   {
     syntheticStatus = 0,
+    syntheticRefusals = (syntheticStatus === 0) ? 0 : Number.POSITIVE_INFINITY,
     hyperStatus = 0,
     syntheticText = '{"spot":"windowsill"}',
     hyperText = '{"spot":"radiator"}',
   }: {
     readonly syntheticStatus?: number;
+    readonly syntheticRefusals?: number;
     readonly hyperStatus?: number;
     readonly syntheticText?: string;
     readonly hyperText?: string;
@@ -96,16 +98,24 @@ function stubProviders(
    */
   const called: string[] = [];
 
+  /**
+   * How many more calls the first provider refuses before answering, every
+   * call by default when it has a refusing status.
+   */
+  const syntheticRefusalsLeft = { count: syntheticRefusals, };
+
   return {
     called,
     synthetic: {
       chatText: async function chatText() {
         called.push('synthetic',);
-        if (syntheticStatus !== 0)
+        if (syntheticRefusalsLeft.count > 0) {
+          syntheticRefusalsLeft.count -= 1;
           throw new SyntheticHttpError({
             status: syntheticStatus,
             bodyText: 'refused',
           },);
+        }
         return { text: syntheticText, };
       },
     },
@@ -382,6 +392,46 @@ await describe({
           signal: SIGNAL,
         },)).text,).toBe('{"spot":"windowsill"}',);
         expect(called,).toEqual(['synthetic',],);
+        expect(stub.holdReads.count,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'GOES BACK TO THE REFUSER once its hold has been waited out when the other provider is '
+        + 'dry by meter: the refusal that routed the call is what the hold became, and a hold that '
+        + 'expired is the provider coming back, not a second reason to call it dry',
+      fn: async () => {
+        /** Stub providers whose first one refuses exactly once, then answers. */
+        const { synthetic, hyper, called, } = stubProviders({
+          syntheticStatus: 429,
+          syntheticRefusals: 1,
+        },);
+        /** Budget view with the second provider dry by meter and the first held 5 ms on its refusal. */
+        const stub = stubBudgets({
+          hyperDry: true,
+          holdsMs: {
+            synthetic: 5,
+            hyper: 0,
+          },
+          onHoldEnd: function syntheticComesBack(): void {
+            stub.view.syntheticDry = false;
+          },
+        },);
+        /** Router under test, polling for abort every millisecond. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets: stub.budgets,
+          holdPollMs: 1,
+        },);
+
+        expect((await client.chatText({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          messages: MESSAGES,
+          signal: SIGNAL,
+        },)).text,).toBe('{"spot":"windowsill"}',);
+        expect(called,).toEqual(['synthetic', 'synthetic',],);
+        expect(stub.refused,).toEqual(['synthetic',],);
         expect(stub.holdReads.count,).toBe(1,);
       },
     },),
