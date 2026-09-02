@@ -599,9 +599,37 @@ dial and the guard both moved it. keyword233's identical refusal in the first pi
 (every stage lost every voice, the metadata slice kept the archive by default) and reads correctly as
 `incumbent-fallback` under the new guard too.
 
+## The chain was cut to two entries on a rate measurement
+
+"One entry per launch" sized each launch to the hour, and four launches queued back to back unattended
+are the same multi-hour run with pauses. Measured at 03:07 UTC: the Toka_ls relaunch at overlap 2 had
+settled 7 repair slices of 16 in 21 minutes, against 14 in 17 minutes for the same entry at overlap 4 in
+the first pin pass, so overlap 2 runs at about half the rate and an entry is on the order of two hours
+before its refine and translate lanes. Four entries at that rate is six to eight hours, past the hour the
+owner named and past the Synthetic weekly meter, which read 4.24% at 03:07 and has been falling about two
+points an hour. That is the run the owner called unacceptable, so the chain was stopped at 03:10 and
+requeued as:
+
+- Toka_ls to completion (running since 02:45:50 on the pre-fix build), rerun on the fixed build only if
+  the old guard refuses its metadata slice.
+- A meter gate: `budget-sample` runs once, and Carena0442 launches only if the sample says routing would
+  use both providers. A Synthetic weekly at zero legitimately holds it dry, every seat routes to Hyper,
+  and that is the load shape of 01:39:54 that ended the pin pass; reordering without the gate only picks
+  which entry dies.
+- Carena0442 (the owner's hand-picked fixture entry, the longest document, the most evidence per entry),
+  under the same dials, into `~/temp/agent/carena-relaunch-20260902`.
+
+XIEPT2 and keyword233 are deferred to the owner alongside the guard veto: they need either a fresh
+Synthetic week or the owner's say on a run longer than an hour. `src/` is frozen until the chain's last
+TALLY: every launch rebuilds, so a mid-chain edit lands the entries under different pipeline digests,
+which the standing readers refuse to pool, and a broken build launches a broken pass unwatched.
+
 ## Next action
 
 Toka_ls is running alone under the writer dial at overlap 2 on the build before the guard fix; if its
-metadata slice is a judged keep it will be refused the old way and rerun on the fixed build. Then XIEPT2,
-keyword233 and Carena0442 one per launch on the fixed build; each landed artifact goes through
-`verify-published` and the reader script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3.
+metadata slice is a judged keep it will be refused the old way and rerun on the fixed build. Then the
+meter gate and Carena0442 as the section before this one says. Each landed artifact goes through
+`verify-published` (which reads `artifacts/` and `fixed/` and never touches `pass.lock`) and the reader
+script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3, in this order: `git status --short` on the
+real clone, `verify-published`, the reader script, then the translate-round heard counts under the writer
+dial against the first run's two Qwen cuts at 60 s, which is the dial's first live measurement.
