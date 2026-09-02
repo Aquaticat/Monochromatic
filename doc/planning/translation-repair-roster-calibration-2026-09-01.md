@@ -370,14 +370,75 @@ Launch form verified on 2026-09-01 with the zero-quota `--plan` mode, both print
 -   The same with `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` at the PR-386 fixture
     (`~/temp/agent/pr386-mock-home-20260829/one-among-us/data`, HEAD `d343df909b1673d68dd5cd805aeda1dfacd2d3c4`)
     and `TRANSLATION_REPAIR_CORPUS_COMMIT` set to that sha, `-- --only Carena0442`.
--   Each hand-picked run goes into its own throwaway runs dir, as the `ONLY` banner demands,
-    and the two run one after the other so the per-model limiter the pass measures stays one process wide.
+-   Each hand-picked run goes into its own throwaway runs dir, as the `ONLY` banner demands.
+    The plan had the two run one after the other so the per-model limiter stays one process wide;
+    the fast-iteration principle (the "Wall clock" section) launched them concurrently instead,
+    so each process holds its own limiter and a Synthetic model can see both at once.
 -   The pass reports `soft=259200000ms hard=25200000ms` budgets.
 -   The pass log's abandons by role are the production-window evidence the `glm-5.3` judge drop left open
     for its critic, panel and translator seats.
 
+## The four-entry pass, first twenty minutes
+
+Launched 2026-09-02 01:10 UTC at tip `23814e8bf`, both passes printing `STRAGGLER GRACE OVERRIDDEN ... 60000ms`
+and `OVERLAP <entry> value=4 source=TRANSLATION_REPAIR_SLICE_OVERLAP`; the real clone and the PR-386 fixture
+stayed clean (`git status --short` empty on both after the first rounds).
+Logs: `~/temp/agent/four-entry-pin-20260901.log` (keyword233, Toka_ls, XIEPT2) and
+`~/temp/agent/four-entry-carena-20260901.log` (Carena0442).
+
+What the 60 s window did to the seats, read off `<stage> round: N/M heard` lines and the abandon lines
+at 19 minutes in:
+
+-   Editor rounds: pin pass 12 of 13 heard all three, Carena 7 of 9; every one of the 3 cuts was
+    `hf:zai-org/GLM-5.3-Flash`, the top editor by both readings, cut mid-reply exactly 60000 ms after quorum
+    (quorum formed at 13 to 23 s; the round then ran 73 to 83 s).
+    The other GLM editor, `glm-5.3`, was never cut: it is the quorum-forming voice, and the window does not
+    run against whoever forms quorum.
+-   Refiner rounds: none reached yet in either pass.
+-   Checker rounds: 18 of 19 heard all three.
+-   Critic rounds (8 seats, quorum 4): pin 8 of 15 heard all eight, Carena 1 of 14;
+    Carena's mode is 6 of 8.
+    Panel rounds: pin 3 of 13 full, mode 7 of 8; Carena 1 of 14 full, mode 7 of 8.
+    The cut readers are the same slow voices as in calibration (`GLM-5.3-Flash`, `Qwen3.8-27B`, `Kimi-K3`,
+    `minimax-m3`, `gemma-4-26b-a4b-it`), and `0/1 heard` rounds are the retry of a single lost voice failing
+    again.
+-   The "delivered chars" in a cut line is the raw streamed body (`partialText` in `stream-drain.ts` joins
+    the decoded chunks, framing and reasoning deltas included), which is why a critic cut at 60 s shows
+    0.2 to 1.7 million characters: it is not answer text, and the figure says only that the model was still
+    streaming.
+-   Spend: Synthetic weekly allowance 10.39 to 8.18 percent over the 19 minutes with both passes running
+    (about 7 points per hour, so the remaining allowance carries roughly another hour before every Synthetic
+    seat falls to its Hyper route); Hyper balance 6636 to 6492 credits.
+    No retry exhausted; 429s were retried within the budget (pin 4, Carena 11 in the first ten minutes).
+
+The advisor's reading of the launch, taken before these numbers: a window sized for the eight-wide reader
+rounds can unseat the writers the three-wide rounds were seated on, since the last reader voice adds one
+ballot to seven while the last writer voice is a whole candidate.
+The numbers bear it out in one place, the top editor on the long Carena document, and nowhere else so far.
+
+The remedy is a launch-time dial rather than a built-in and rather than a restart:
+
+-   `TRANSLATION_REPAIR_WRITER_GRACE_MS` (commit `a3da317df`, `writer-grace-override.ts`) gives the editor,
+    refiner, translate and consolidate gathers a window of their own; unset, they follow the round window as
+    before, so nothing built-in and nothing in `doc/decision/translation-repair-straggler-grace.md` moves.
+    Both dials read through one parser (`readWindowDial`), the pass and the editor calibration print a
+    `WRITER GRACE OVERRIDDEN` note beside the round note, and the zero-quota `--plan` run at tip `f7abd69b5`
+    printed the note under `60000`/`180000` and refused `180s` by name.
+-   The running passes were NOT restarted under it. Three cut editor rounds in 22 is the measured cost;
+    a restart re-spends twenty minutes of both passes and about 2 points of the Synthetic allowance to
+    recover a voice that 19 of 22 rounds already heard, against the owner's fast-iteration principle.
+    The next launch sets the writer dial; the reading step (task 3) reads these artifacts knowing which
+    editor rounds ran short, since each artifact carries `stage-voice-lost (editor hf:zai-org/GLM-5.3-Flash)`.
+-   What the dial should say is measured, not chosen: the built-in 180000 ms covers the GLM editors' p90
+    (153 to 199 s completed streams) at the cost of up to two more minutes on the minority of writer rounds
+    the third voice runs long in; 300000 ms is the calibration's own window and what the seat was measured
+    under.
+    The owner's fast-iteration principle sizes it at the built-in unless the next pass shows the p90 tail
+    is where the winning candidates come from.
+
 ## Next action
 
-Wait for the 40-slice run, read its EDITOR and REFINER standings, apply the rules, edit `run-config.ts`,
-build, run the package suite, lint and types, commit, and record the seating decision in
-`doc/decision/` beside the blocklist decision.
+Wait for both passes to finish (task notifications), then per task 2: read the TALLY and SEAT lines, the
+abandons by role, the refiner-round heard counts (the second place the writer window matters), the translate
+follow-up conversion rate, wall clock per entry and the meters; then task 3, reading the artifacts and pages
+under the two runs dirs against source before any readiness claim.
