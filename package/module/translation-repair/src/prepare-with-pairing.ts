@@ -95,6 +95,9 @@ export type PairedPreparation = {
  * questions and a key space holding both would let one kind of record be read
  * as the other
  *
+ * @param contextLines - evidence lines bought outside preparation, passed
+ * through to the identity context untouched
+ *
  * @returns Preparation built on the roster's pairing, and its findings
  *
  * @example
@@ -114,6 +117,7 @@ export async function prepareDocumentPairWithRoster(
     sliceCharBudget,
     pairingCache,
     sectionCache,
+    contextLines,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -125,6 +129,7 @@ export async function prepareDocumentPairWithRoster(
     readonly sliceCharBudget?: number;
     readonly pairingCache?: SliceCache<PairedSectionRecord>;
     readonly sectionCache?: SliceCache<PairedDocumentRecord>;
+    readonly contextLines?: readonly string[];
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -489,6 +494,7 @@ export async function prepareDocumentPairWithRoster(
     targetText,
     ...((sliceCharBudget === undefined) ? {} : { sliceCharBudget, }),
     ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
+    ...((contextLines === undefined) ? {} : { contextLines, }),
     blockPairings,
   },);
 

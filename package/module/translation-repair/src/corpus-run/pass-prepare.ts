@@ -7,6 +7,9 @@ import {
   prepareDocumentPairWithRoster,
 } from '../prepare-with-pairing.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { lookupCacheDir, } from '../lookup-cache.ts';
+import { workTitleLookupLines, } from '../work-title-lookup.ts';
+import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
   openPairingCache,
@@ -24,6 +27,20 @@ import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 // preparation is the structural consequence of having edited the archive,
 // not a rejection-driven re-ask; blocks still unclaimed after it become
 // findings (doc/planning/translation-repair-no-loop-design.md).
+
+/**
+ * The clock a lookup record is stamped with.
+ *
+ * @returns Now
+ *
+ * @example
+ * ```ts
+ * const stamped = wallClock().toISOString();
+ * ```
+ */
+function wallClock(): Date {
+  return new Date();
+}
 
 /**
  * Prepares one pass entry with cached roster pairing and publication safety.
@@ -96,6 +113,21 @@ export async function preparePassEntry(
     generation: pipelineDigest,
   },);
   /**
+   * Web-lookup evidence for the works the original names, bought once per
+   * title and cached durably (the owner's rule of 2026-09-02), the same lines
+   * for both preparations so a corrected archive does not change what the
+   * sheets are told about a title.
+   */
+  const contextLines = await workTitleLookupLines({
+    sourceText,
+    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
+    dir: lookupCacheDir({ env: process.env, },),
+    signal,
+    fetchFn: fetch,
+    now: wallClock,
+    logger: l,
+  },);
+  /**
    * Preparation over the archive as inherited.
    */
   const firstPaired = await prepareDocumentPairWithRoster({
@@ -108,6 +140,7 @@ export async function preparePassEntry(
     signal,
     exchangeTimeoutMs,
     l,
+    contextLines,
   },);
   /**
    * Unclaimed blocks not already licensed unchanged.
@@ -151,6 +184,7 @@ export async function preparePassEntry(
     signal,
     exchangeTimeoutMs,
     l,
+    contextLines,
   },);
   /**
    * Blocks the single correction round could not claim.
