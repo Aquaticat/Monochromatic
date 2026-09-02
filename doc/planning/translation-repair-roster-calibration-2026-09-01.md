@@ -671,6 +671,50 @@ script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3, in this order: `g
 real clone, `verify-published`, the reader script, then the translate-round heard counts under the writer
 dial against the first run's two Qwen cuts at 60 s, which is the dial's first live measurement.
 
+## The Toka_ls relaunch was killed at 77 minutes, in consolidation
+
+At 04:02:54 UTC both background tasks of this session, the Toka_ls launcher and the queued chain, were
+reported killed at the same moment. I did not stop them; the pass process died with the launcher's process
+group (`sh exited with non-zero status: no exit status`, `Finished in 4623.56s`). No TALLY, no artifact, no
+page. The chain never reached the meter gate, so Carena0442 did not launch. The cause is outside this
+session's tool calls and I cannot name it from here.
+
+Where it was: repair, refine and translate lanes settled (14, 15 and 16 cache records), lane contest 15 of
+16 slices (15 differ), consolidation 2 of 16, killed inside `settleConsolidation` with 0 holds and 0 429s.
+The cache is keyed by a digest over `dist/final/node` (`corpus-run/pipeline-digest.ts`), and the guard
+commits changed those bytes, so a rerun on the current build starts from zero: about 77 minutes at
+overlap 2 to the same point, longer to a page. Synthetic's weekly read 2.0% at 04:02, draining at 2.7
+points an hour, so a rerun launched now runs Hyper-only inside the hour, the #474 shape. Not relaunched.
+
+What the run measured before it died, all off `~/temp/agent/pin-relaunch-Toka_ls-20260902.log`:
+
+- Writer rounds under the 180 s writer dial were full: editor 36/36 over 12 rounds, refiner 15/15 over 5,
+  translate 110/112 over 16, consolidation refiner 6/6. One writer cut in the whole run (GLM-5.3-Flash at
+  180 s). The dial did what it was added for.
+- The 60 s round window cut GLM-5.3-Flash in 12 of 13 panel rounds, 12 of 21 translate select rounds, 11 of
+  29 repair select rounds, 11 of 15 critic rounds and 5 of 15 contest rounds: 51 of the run's 78 cuts, every
+  one at 60 s. Qwen3.8-27B took 15, Kimi-K3 6, minimax-m3 4. Every round still reached quorum and every
+  judged weight was at or above 3.5, so the cuts cost GLM's ballot, not the decision. Whether that ballot is
+  worth two extra minutes per judge round (about 100 such rounds an entry) is the owner's speed-versus-
+  completeness call, listed under decisions.
+- The metadata slice (slice 0) is a live instance of the contest-keep case the reshaped guard leaves open.
+  Source `name: 左橋瞳華 / alias: 瞳華 / location: 上海`; archive `name: Toka Sakyo / alias: Nonamev /
+  location: Shanghai`. The translate lane's seven translators agreed on `alias: Toka` and the judges chose it
+  6 of 8 ballots at weight 3.5 (`decision=judged origin=fresh changed=true`), the lane contest then ran, and
+  the consolidation gate settled 9 of 9 on the standing text, which is the archive's `alias: Nonamev`
+  (`terminal: gate-kept-standing`). Consolidation itself had chosen `alias: Toka` at weight 4.5; the
+  fidelity gate reversed it 6 ballots to 2, every standing ballot reasoning that the declared names attest
+  the alias as `Nonamev` and `Toka` is an unattested rendering, the two consolidated ballots reasoning that
+  the source's alias is the given-name part of the name and `Toka` is that part of `Toka Sakyo`. That is a
+  review of the incumbent by a full panel, with the house rule on both sides. The final page would carry the archive's metadata byte for byte with a
+  translate selection reading judged, fresh, shipped: the reshaped guard refuses that as
+  `incumbent-fallback: replacement-not-carried`, the 2026-08-28 rule refused it too, and 503ec902c would
+  have published it. A nine-judge gate keeping the archive is a review of it, so the standing should read the
+  stage that shipped the text, the way `wouldShipTextFor` already walks polish, consolidation, contest and
+  lanes; that is a design change on top of the reshape and goes to the owner with this evidence.
+- Slice 15 is the first live matched-keep: `decision=sole-candidate origin=incumbent`, incumbent producer
+  matched by all seven translators. The `matched` list is filled in practice.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
