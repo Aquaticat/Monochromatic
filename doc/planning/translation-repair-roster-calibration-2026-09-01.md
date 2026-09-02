@@ -583,6 +583,12 @@ and publishes a decided keep of translated metadata. The refusal reasons are now
 This changes what a deliberate 2026-08-28 rule publishes; recorded here for the owner's veto rather than
 put as a question, because the rule as written discarded a correct entry on a byte comparison its own test
 never reached, and the fix keeps every case the rule's tests name.
+The narrowing, stated rather than left to inference: in the translate lane `decided` means at least one
+translator was heard, not that the judges endorsed the incumbent, so a WRONG incumbent kept by a split vote
+now publishes unchanged where the 2026-08-28 rule made the entry retryable. The directory-id case is still
+refused, and the correct-incumbent case (Carena) now publishes; a wrong incumbent that is not the directory
+id is the case the owner may want retryable, at the price of every entry whose judges split over a correct
+one.
 
 What it does not fix: the minimum vote weight is 3 whatever the ballot count, so a judge round that hears
 four of eight voices during a provider hold cannot reach it with a split vote, and every kept incumbent in
