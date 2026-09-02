@@ -1459,6 +1459,16 @@ Candidate validation now preserves source `name` and `info.alias` identity equal
 contest winners that fail publication invariants remain retryable,
 and consolidation standing text must pass same syntax guard before unchanged result becomes resumable.
 Final-page validation applies same source identity relation even when page differs bytewise from archive.
+Since `daaf0ffa0` (2026-09-02) the final guard reads the metadata slice's translate selection rather than bytes:
+a page whose metadata equals the archive's publishes only when the judges chose the incumbent (`judged-keep`)
+or every heard translator reproduced it (`matched-keep`),
+and every other keep is refused as `incumbent-fallback: <decision>`,
+naming the indecision,
+rejection,
+lost voice,
+unmatched sole incumbent or withdrawn replacement that left it standing,
+so a hold-starved judge round stays retryable and a real keep no longer discards the entry.
+An archive whose visible name is still the directory id is refused as `directory-id-name` whatever the decision.
 
 Fresh `1974ad999` validation then settled all four slices under preparation identity generation 2.
 Artifact generation 5 and its 897-character page matched exactly under `verify-published`;
