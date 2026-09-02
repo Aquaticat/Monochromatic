@@ -888,6 +888,12 @@ build's pipeline digest, and a pool of several builds would corrupt every rate c
 launched at 23:01 into its own directory, `~/temp/agent/xiept2-rerun-20260902`, which is what the
 `ONLY` banner asks for anyway.
 
+DECIDED 2026-09-02 23:0x UTC: 「安乐死」 stays as the original states it ("it implies it's done legally
+... it's very inaccessible"); the reader rule's addendum is in the decision doc and the house policy.
+The 23:01 XIEPT2 run, whose build predates the sentence, was stopped ten minutes in and relaunched on
+the tree carrying it, into `~/temp/agent/xiept2-rerun2-20260902` (the digest guard refuses the first
+directory, by design).
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the

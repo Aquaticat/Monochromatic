@@ -71,6 +71,14 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge that euthanasia stays as the original states it, because it names a legal, '
+        + 'medically administered path a reader cannot take (the owner, 2026-09-02, on XIEPT2\'s 「安乐死」)',
+      fn: async () => {
+        expect(system.includes('Euthanasia or medically assisted dying',),).toBe(true,);
+        expect(system.includes('inaccessibility is the whole reason the vagueness exists',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'RANKS a house rule above a numbered criterion',
       fn: async () => {
         // Judges apply the numbered list literally: three whole-slate refusals

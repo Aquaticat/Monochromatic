@@ -19,6 +19,15 @@ medical cause of death that implies the method (blood loss, a fall, a substance,
 the same way as the method itself; "after resuscitation failed" or "passed away" says all a reader
 needs, while the date, the place and the age stay.
 
+## Addendum, the same day: euthanasia stays as the original states it
+
+Asked about XIEPT2's death line (本推主已于 2024 年 3 月 30 日自杀去世以「安乐死」结束了生命), the owner
+wrote: "安乐死 is actually kinda okay because 1 it implies it's done legally 2 it's very inaccessible."
+The rule's vagueness exists so that a reader cannot copy a method; a legal, medically administered
+path is not one a reader can take, so naming it protects nobody by omission. The house policy now says
+so: euthanasia or medically assisted dying, where the original states it, stays as the original states
+it. XIEPT2 was restarted on the tree carrying the sentence, its first live test.
+
 ## Consequences
 
 - The Toka_ls page published at 15:52 UTC under `~/temp/agent/toka-rerun2-20260902` predates the rule
