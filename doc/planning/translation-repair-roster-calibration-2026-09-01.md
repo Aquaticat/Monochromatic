@@ -800,14 +800,15 @@ the reading catches it. The test fails with the acceptance removed (2 FAIL lines
 Recorded for veto as the later stated policy winning over the earlier guard; the alternative, refusing
 the entry, is what fast iteration cannot afford at two hours an attempt.
 
-A second defect, found on the way and tracked as task 25: the absolute reviewer is shown only the
-"refinable" paragraphs (`paragraph` blocks), and a finding naming any other paragraph number is
-refused with the whole ballot. Slice 10's candidate has zero refinable paragraphs (it is one blockquote),
-so in its 10:35 review six of nine reviewers who located findings by stanza were refused as
-schema-mismatch and only the three "acceptable" ballots survived. Across the run, 38 of 1,582 recorded
-replies are unacceptable verdicts with located findings. `reviewParagraphsOf` (every body block) is
-written but not yet used: the artifact reader recomputes paragraph digests with the refinable set, so
-switching needs an artifact generation the reader can tell apart.
+A second defect, found on the way: the absolute reviewer was shown only the "refinable" paragraphs
+(`paragraph` blocks), and a finding naming any other paragraph number was refused with the whole
+ballot. Slice 10's candidate has zero refinable paragraphs (it is one blockquote), so in its 10:35 review
+six of nine reviewers who located findings by stanza were refused as schema-mismatch and only the three
+"acceptable" ballots survived. Across the run, 38 of 1,582 recorded replies are unacceptable verdicts
+with located findings. Fixed by `8384166e9` as artifact generation ten: the reviewer is shown every body
+block and the recorded paragraph count and digests are of those blocks; the reader recomputes them by
+generation, so generations eight and nine keep the refinable set. The blockquote test fails with the
+writer's paragraphs emptied and passes restored.
 
 The chain that was to follow Toka_ls never fired on its own: its wait loop matched its own command line
 (`pgrep -f 'corpus-pass.mjs --only Toka_ls'` sees the bash that carries that text). Carena0442 was

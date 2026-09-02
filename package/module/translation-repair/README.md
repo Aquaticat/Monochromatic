@@ -1678,6 +1678,10 @@ artifact,
 or consolidation cache;
 `verify-published` correctly refused to call the empty run clean.
 Artifact schema 9 and consolidation cache generation 9 permit one further correction only after exact first corrected text receives a new material rejection.
+Artifact schema 10 (2026-09-02) shows the absolute reviewer every body block of the candidate and records the paragraph count and digests of those blocks;
+schemas 8 and 9 recorded the refinable paragraphs alone,
+which left a blockquote candidate with nothing a reviewer could cite,
+and the reader recomputes the set the writing generation used.
 Each transition records rejected-text digest,
 canonical structured-findings digest,
 gated-text digest,
