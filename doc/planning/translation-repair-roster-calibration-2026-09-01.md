@@ -566,7 +566,10 @@ What happened, read off the log, the fixture and the source:
     CORRECTION 2026-09-02 03:20: the keep was NOT a judged keep. Both rounds ended `declined-indecision`:
     the four heard judges split (GLM-5.3-Flash and Qwen3.8-27B for candidate 1 at weight 1.5 together,
     gpt-oss-120b for candidate 2 at weight 1, Kimi-K3 for candidate 3 at weight 0.5) and the leader fell
-    short of the minimum weight of 3, so the stage shipped the incumbent by fallback. `translate-stage-result.ts`
+    short of the minimum weight, so the stage shipped the incumbent by fallback. That minimum is 2
+    (`MIN_SELECTION_WEIGHT` in `candidate-select-model.ts`), not the 3 this doc and the message of commit
+    `daaf0ffa0` stated until 04:20; the message cannot be amended under auto-push, so this sentence is its
+    correction. `translate-stage-result.ts`
     says it in its own words: "the incumbent shipped" and "the judges chose the incumbent" are different
     facts, and only the second is evidence about the incumbent. The sentence this replaces called it a
     review that found nothing to change; the sol review of the guard files (`~/temp/agent/sol-front-matter-guard-review-20260902.txt`)
@@ -600,9 +603,10 @@ incumbent. Recorded for veto rather than put as a question because the 2026-08-2
 judged keep on a byte comparison its own test never reached, and the reshape keeps every refusal that rule's
 tests name.
 
-What it does not fix: the minimum vote weight is 3 whatever the ballot count, so a judge round that hears
-four of eight voices during a provider hold cannot reach it with a split vote, and every kept incumbent in
-that window was a hold, not a judgment. That is `#474`'s territory; under the reshaped guard such an entry
+What it does not fix: the minimum vote weight is 2 whatever the ballot count (`MIN_SELECTION_WEIGHT`), so
+a judge round that hears four of eight voices during a provider hold reaches it only when two full-weight
+ballots agree, Carena's 1.5, 1, 0.5 split did not, and every kept incumbent in that window was a hold, not
+a judgment. That is `#474`'s territory; under the reshaped guard such an entry
 is refused by name (`incumbent-fallback: declined-indecision`) and stays retryable, which is what the
 2026-08-28 rule intended. A Carena rerun with all eight judges heard either reaches weight 3 or is a
 genuine split over which name form is right (gpt-oss-120b argued in both rounds that candidates 1 and 3
@@ -702,10 +706,15 @@ What the run measured before it died, all off `~/temp/agent/pin-relaunch-Toka_ls
   180 s). The dial did what it was added for.
 - The 60 s round window cut GLM-5.3-Flash in 12 of 13 panel rounds, 12 of 21 translate select rounds, 11 of
   29 repair select rounds, 11 of 15 critic rounds and 5 of 15 contest rounds: 51 of the run's 78 cuts, every
-  one at 60 s. Qwen3.8-27B took 15, Kimi-K3 6, minimax-m3 4. Every round still reached quorum and every
-  judged weight was at or above 3.5, so the cuts cost GLM's ballot, not the decision. Whether that ballot is
-  worth two extra minutes per judge round (about 100 such rounds an entry) is the owner's speed-versus-
-  completeness call, listed under decisions.
+  one at 60 s. Qwen3.8-27B took 15, Kimi-K3 6, minimax-m3 4. Every round reached quorum (0 quorum-unmet
+  lines). Four rounds declined in the whole run: a repair select tie at weight 4 with all 8 heard and a
+  contest "neither" with 9 of 9 usable, neither caused by a cut; and two translate select rounds that were
+  cut-starved, a 6-of-8 tie at weight 2 and a 5-of-8 leader at 1.5 with one abstention, each decided in the
+  challenge round that followed (8 of 8 heard, Kimi-K3 at 5.5; 5 of 8 heard with three cuts, gemma at 4).
+  One more round decided at weight 2.5 with GLM-5.3-Flash and minimax-m3 cut. So the cuts cost two
+  challenge rounds and thinner margins, never a final decision. Whether GLM's ballot is worth two extra
+  minutes per judge round (about 100 such rounds an entry) is the owner's speed-versus-completeness call,
+  listed under decisions.
 - The metadata slice (slice 0) is a live instance of the contest-keep case the reshaped guard leaves open.
   Source `name: 左橋瞳華 / alias: 瞳華 / location: 上海`; archive `name: Toka Sakyo / alias: Nonamev /
   location: Shanghai`. The translate lane's seven translators agreed on `alias: Toka` and the judges chose it
@@ -734,8 +743,9 @@ section or issue it names.
 - Issue #474: an HTTP 429 (a concurrency limit on Synthetic) is read as a budget refusal and holds the
   provider dry for five minutes whatever its meter says; two holds at once end the pass and fail every
   remaining entry in under a second. Re-read the meter on 429 and back off briefly, or wait out the
-  shorter hold, or at least state measured facts in the message. The fixed minimum vote weight of 3,
-  which a 4-of-8 ballot round cannot reach while a provider is held, belongs to the same decision.
+  shorter hold, or at least state measured facts in the message. The fixed minimum vote weight of 2
+  (`MIN_SELECTION_WEIGHT`), which a 4-of-8 ballot round reaches only when two full-weight ballots agree,
+  belongs to the same decision.
 - The front-matter guard reshape of commit daaf0ffa0 (superseding 503ec902c), recorded for veto in the
   section "The Carena pass finished and was refused at publish time": a byte-equal keep the judges chose,
   or every heard translator reproduced, now publishes; every fallback refuses by the decision's name.
