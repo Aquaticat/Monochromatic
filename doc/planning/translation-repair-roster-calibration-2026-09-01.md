@@ -875,7 +875,18 @@ DECIDED 2026-09-02 (after the Toka_ls reading): the reader-protection rule cover
 death that implies the method; the paragraph stays, the cause goes
 (`doc/decision/translation-repair-reader-protection-cause-of-death.md`). DECIDED at the same time: XIEPT2
 runs now at overlap 4, the owner's choice over the measured overlap 3; it is the first run at that
-overlap and the first entry with the cause-of-death rule.
+overlap and the first entry with the cause-of-death rule (`f5e172067`).
+
+The first XIEPT2 launch at 22:55 UTC was refused in two seconds by the runs-directory schema guard:
+`assertResumableSchemaGeneration` defaulted to generation seven, unchanged through generations eight,
+nine and ten because every launch of those days went into an empty directory, and
+`~/temp/agent/pin-rerun-20260902` now holds keyword233's generation-ten artifact. Fixed by the commit
+`6e5e909d9` (the default is the writer's generation; the guard's fixtures carry it; its tests fail with
+the old default). The relaunch into the same directory at 23:00 was refused by the next guard,
+`assertBuildGenerationResumable`, which is by design: the directory's artifact was stamped by another
+build's pipeline digest, and a pool of several builds would corrupt every rate computed over it. XIEPT2
+launched at 23:01 into its own directory, `~/temp/agent/xiept2-rerun-20260902`, which is what the
+`ONLY` banner asks for anyway.
 
 ## Decisions waiting on the owner
 
