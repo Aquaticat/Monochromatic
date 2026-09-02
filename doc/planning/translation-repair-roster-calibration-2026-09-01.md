@@ -612,7 +612,16 @@ over.
 Left for task 8, per the review: the directory-id check fires only on a byte-equal block, so a page that
 kept `name: <directory id>` while changing another field passes it; and the standing does not carry the
 accepted text, so the guard never checks that the page's metadata is the wording the selection supports.
-Neither is the misreading; both are behavior changes for the owner's say.
+Neither is the misreading; both are behavior changes for the owner's say. A third case the standing does
+not see: it reads the translate lane only, so when lane contest or consolidation restores the archive's
+metadata over a translate replacement (the `#269` path the package README recounts), the selection reads
+judged, fresh, shipped, and the guard refuses as `incumbent-fallback: replacement-not-carried`. That matches
+the 2026-08-28 rule, and a second panel choosing the incumbent is arguably a review; the detail name reads
+like an assembly defect when it is a contest decision, so a reader of that TALLY line should know this is
+the sentence that explains it. The matched-keep path also has no live evidence yet: no artifact has shown a
+sole-candidate metadata slice with a non-empty `matched` list, and an empty one refuses as
+`sole-candidate-unmatched`, which fails closed. When the first artifact lands, its `sliceSelections` entry
+for slice zero (decision, origin, matched) goes next to the TALLY here.
 
 The Carena entry has to run again: its slice cache was written under the previous pipeline digest and the
 dial and the guard both moved it. keyword233's identical refusal in the first pin pass was the outage
