@@ -54,11 +54,15 @@ no slice index, so they are read in aggregate). Consolidation reached slices 0 a
   renders 文气轻靡，文风华丽 as two properties, and fixes the archive's wrong referent ("wishing her a
   bright future" became "wishing a bright future", which is what she wishes the graduates). Better.
   Weight 2.5 with six judges heard.
-- **Slice 9.** DEFECT. 偶尔灵感迸发，左右推敲，留下工整的格律 is about her; the archive wrote "I leave a neat
-  rhythm" (wrong person) and the winner (Kimi-K3, weight 7.5, near-unanimous) wrote "they leave behind
-  verse in neat, well-ordered meter": a plural or indefinite pronoun for a person the page calls "she"
-  throughout. The rendering of 格律 as "verse in neat, well-ordered meter" is good. Seven judges passed the
-  pronoun.
+- **Slice 9.** INCONSISTENT PRONOUN, CHOSEN ON PURPOSE. 偶尔灵感迸发，左右推敲，留下工整的格律 has no subject in
+  the Chinese; the section is about her; the archive wrote "I leave a neat rhythm" (wrong person) and the
+  winner (Kimi-K3, weight 7.5) wrote "they leave behind verse in neat, well-ordered meter", a neutral
+  pronoun for a person the page calls "she" throughout. All eight ballots chose it, and the ballots say
+  why: "the English sentence is subjectless in the original, so a pronoun must" be supplied, and one
+  preferred "a third-person memorial voice"; the lane contest then chose the translate lane eight of
+  eight with "repair invents a gendered pronoun". So the judges applied a rule (no pronoun in the source,
+  supply a neutral one) that the rest of the page does not follow. The rendering of 格律 as "verse in
+  neat, well-ordered meter" is good.
 - **Slice 10.** POLICY GAP. The archive's 《奇妙漂流》（或称「Aiden 的奇幻漂流」） stood as “Life of
   Aiden” (or “Aiden’s Life of Fantasy”), which reads like an established English title; the winner (Qwen,
   3.5) re-rendered it as “Wondrous Voyage” (or “Aiden’s Fantasy Voyage”). The declared-names rule protects

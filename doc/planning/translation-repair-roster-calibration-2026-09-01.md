@@ -663,11 +663,13 @@ Toka_ls run's 37 meter readings: Synthetic's weekly fell from 5.24% at launch (0
 
 In order:
 
-1.  DONE at 04:43 UTC as commit `6f70a2085`: the guard reads the stage that shipped the metadata (see
-    the Toka_ls section); whole-suite run and sol review of the extension pending when this was written.
+1.  DONE at 04:43 UTC as commit `6f70a2085`, restructured contest-first as `1160ebb4c` at 05:20 after
+    the sol review: the guard reads the stage that shipped the metadata (see the Toka_ls section). Any
+    rerun must be on `1160ebb4c` or later.
 2.  DONE at 05:05 UTC: `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md` reads every
     Toka_ls slice against its source off the cache (preparation rebuilt from the cached pairings). Findings
-    a reader would not pass: a wrong pronoun at slice 9 (seven of seven judges), a re-rendered work title
+    a reader would not pass: a neutral pronoun at slice 9 for a person the page calls "she" (eight of
+    eight ballots, on purpose, because the Chinese sentence has no subject), a re-rendered work title
     at slice 10, an unidiomatic heading at slice 12, and `> ` trailing-space churn copied from the source,
     including a whitespace-only "replacement" judged five to two at slice 1.
 3.  Toka_ls again when Synthetic is wet and the guard would accept its result; no rerun before both hold,
@@ -718,7 +720,11 @@ What the run measured before it died, all off `~/temp/agent/pin-relaunch-Toka_ls
   fidelity gate reversed it 6 ballots to 2, every standing ballot reasoning that the declared names attest
   the alias as `Nonamev` and `Toka` is an unattested rendering, the two consolidated ballots reasoning that
   the source's alias is the given-name part of the name and `Toka` is that part of `Toka Sakyo`. That is a
-  review of the incumbent by a full panel, with the house rule on both sides. The final page would carry the archive's metadata byte for byte with a
+  review of the incumbent by a full panel, with the house rule on both sides. The contest verdict for the
+  slice, read off the record whose ballots argue about the alias (`contest.513b69ae`): the repair lane won
+  with 9 of 9 usable ballots, "'translate' gives the alias as 'Toka' where the declared facts attest
+  'Nonamev', so 'repair' matching all attested renderings is the faithful choice", which is the
+  `lane-won repair` the contest-first walk needs and not an unendorsed `neither`. The final page would carry the archive's metadata byte for byte with a
   translate selection reading judged, fresh, shipped: the reshaped guard refuses that as
   `incumbent-fallback: replacement-not-carried`, the 2026-08-28 rule refused it too, and 503ec902c would
   have published it. An eight-ballot gate keeping the archive six to two is a review of it, so the
