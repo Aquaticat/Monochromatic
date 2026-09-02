@@ -140,6 +140,11 @@ export async function polishConsolidation(
     subject: {
       sourceText,
       candidateText: initial.text,
+      // THE REFINABLE PARAGRAPHS, which the artifact reader recomputes to verify
+      // the recorded digests; a blockquote candidate therefore shows the
+      // reviewer nothing to cite (Toka_ls slice 10, 2026-09-02), and moving to
+      // every body block (`reviewParagraphsOf`) needs an artifact generation
+      // the reader can tell apart. Tracked as its own change.
       paragraphs: finalPolishParagraphs({ text: initial.text, }),
       ...((identityContext === undefined) ? {} : { identityContext, }),
     },

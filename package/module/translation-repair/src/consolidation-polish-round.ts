@@ -107,6 +107,43 @@ export function finalPolishParagraphs(
 }
 
 /**
+ * Reads every body block of a would-ship slice in display order, which is
+ * what the absolute reviewer is shown and may cite.
+ *
+ * EVERY BODY BLOCK, NOT ONLY THE REFINABLE ONES. The reviewer judges the whole
+ * candidate and locates each finding by paragraph number, and the stage
+ * refuses a finding that names a paragraph it did not show. Numbering only
+ * the refinable paragraphs left a blockquote poem with nothing to cite: on the
+ * Toka_ls rerun of 2026-09-02, slice 10 (a 29-line letter in blockquote) had
+ * zero refinable paragraphs, so six of nine reviewers who located their
+ * findings by stanza were refused as out of range and only the three
+ * "acceptable" ballots survived. A block the polish may not edit can still be
+ * judged and cited.
+ *
+ * @param text - would-ship Markdown slice
+ *
+ * @returns Block texts reviewer numbers, empty for a slice with no body block
+ *
+ * @example
+ * ```ts
+ * const paragraphs = reviewParagraphsOf({ text: '> A poem.\n\nA paragraph.' });
+ * // => ['> A poem.', 'A paragraph.']
+ * ```
+ */
+export function reviewParagraphsOf(
+  { text, }: { readonly text: string; },
+): readonly string[] {
+  return parseDocument({ text, },)
+    .nodes
+    .filter(function inBody(node,): boolean {
+      return node.zone === 'body';
+    },)
+    .map(function textOf(node,): string {
+      return node.text;
+    },);
+}
+
+/**
  * Runs exactly one final-polish generation and its existing deterministic gates.
  *
  * @param client - provider client

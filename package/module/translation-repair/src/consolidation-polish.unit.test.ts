@@ -18,6 +18,7 @@ import {
   assertFinalNaturalnessComplete,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  NaturalnessCompletenessError,
   polishConsolidation,
   type SettledArtifact,
   type SyntheticClient,
@@ -517,6 +518,34 @@ await describe({
         assertFinalNaturalnessComplete({
           artifact: artifactCarrying({ polish: quorumless, },),
         },);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS AN UNENDORSED STANDING THAT SHIPPED WITH ITS FINDING, whose polish never ran over the '
+        + 'unsafe baseline (the no-loop single attempt), and still REFUSES every other body slice without a '
+        + 'settled polish: the Toka_ls rerun of 2026-09-02 ended INCOMPLETE after 117 minutes on exactly '
+        + 'this record',
+      fn: async () => {
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: {
+              kind: 'not-run',
+              reason: 'unsafe-baseline',
+            },
+          },),
+        },);
+        expect(() => assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: {
+              kind: 'not-run',
+              reason: 'not-configured',
+            },
+          },),
+        },),).toThrow(NaturalnessCompletenessError,);
+        expect(() => assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({ polish: undefined, },),
+        },),).toThrow(NaturalnessCompletenessError,);
       },
     },),
 

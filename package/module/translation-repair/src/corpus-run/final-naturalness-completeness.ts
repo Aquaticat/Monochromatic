@@ -9,7 +9,9 @@ import { parseNaturalnessReview, } from './artifact-two-lane-read-naturalness-re
  *
  * Parser recomputes final review verdict and exact-text digest rather than
  * trusting writer aggregate. Syntax-bearing front matter remains explicitly
- * exempt and every other absent review fails closed.
+ * exempt, an unendorsed standing that shipped with its finding under the
+ * no-loop design is accepted as recorded, and every other absent review fails
+ * closed.
  *
  * @param artifact - in-memory artifact before page or artifact persistence
  *
@@ -75,6 +77,18 @@ export function assertFinalNaturalnessComplete(
     }
     if (polish === undefined)
       throw new NaturalnessCompletenessError({ sliceIndex: slice.sliceIndex, },);
+    // AN UNENDORSED STANDING SHIPS WITH ITS FINDING, per the no-loop design of
+    // 2026-09-01 (doc/planning/translation-repair-no-loop-design.md, "Consolidation
+    // recovery, single attempt"): when the standing text lacks contest endorsement
+    // and the single consolidation attempt kept it, the text ships with
+    // `consolidation-standing-unendorsed` recorded as evidence, and polish is not
+    // run over a baseline the fidelity gates never admitted (`unsafe-baseline`).
+    // This guard, written 2026-08-28 to require an approved polish on every body
+    // slice, refused exactly that record: the Toka_ls rerun of 2026-09-02 ended
+    // INCOMPLETE after 117 minutes on slice 10 with no page and no artifact. The
+    // artifact carries the reason; the reading catches it.
+    if ((polish.kind === 'not-run') && (polish.reason === 'unsafe-baseline'))
+      continue;
     if (polish.kind !== 'settled')
       throw new NaturalnessCompletenessError({ sliceIndex: slice.sliceIndex, },);
     if (polish.review === undefined)
