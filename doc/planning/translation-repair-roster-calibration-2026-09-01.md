@@ -890,6 +890,11 @@ launched at 23:01 into its own directory, `~/temp/agent/xiept2-rerun-20260902`, 
 
 DECIDED 2026-09-02 23:0x UTC: 「安乐死」 stays as the original states it ("it implies it's done legally
 ... it's very inaccessible"); the reader rule's addendum is in the decision doc and the house policy.
+CORRECTED 23:2x UTC: "the immediate cause of death 'shock' is actually fine, because it doesn't give
+enough information for replication". The rule now states the test as replicability: method, substance,
+dose and where to obtain them stay vague; an immediate medical cause, the date, the place and the age
+stay as the original states them. The Toka_ls page of 15:52 is right as published; no rerun needed for
+it.
 The 23:01 XIEPT2 run had already ended by itself at 23:03: `TALLY XIEPT2 status=INCOMPLETE ms=114473
 error=translation repair interrupted: provider-unavailable`, with every seat asked 10 and answering
 10. The thrower was `runArchiveBlockReviewStage`: XIEPT2's archive is a placeholder page ("(To-Do)" and

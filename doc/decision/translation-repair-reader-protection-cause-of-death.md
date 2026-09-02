@@ -1,4 +1,16 @@
-# Reader protection covers a medical cause of death that implies the method
+# Reader protection is about replicability: an immediate cause of death stays
+
+SUPERSEDED IN PART, the same day. The owner corrected the first decision below: "the immediate cause of
+death 'shock' is actually fine, because it doesn't give enough information for replication." The rule
+as it now stands in `src/house-policy.ts`: the test is replicability; what is kept vague is whatever
+would tell a reader how to do it (a method, a substance, a dose, where to obtain them); an immediate
+medical cause of death (shock, cardiac arrest, respiratory failure) gives a reader nothing to copy and
+stays as the original states it, as do the date, the place and the age; euthanasia stays too (the
+addendum below). The Toka_ls page published at 15:52 UTC, which carries "hemorrhagic shock", is
+therefore right as it stands. The first decision is kept below as the record of how the rule was
+reached.
+
+# First decision: reader protection covers a medical cause of death that implies the method
 
 Decided by the owner on 2026-09-02, in answer to a question the second Toka_ls rerun raised: the page
 carried the source's closing paragraph, which the archive had omitted, "At 4 p.m., after resuscitation

@@ -62,12 +62,13 @@ await describe({
       },
     },),
     it({
-      name: 'TELLS a judge that a medical cause of death implying the method is kept out too, while '
-        + 'the date, place and age stay (the owner\'s decision of 2026-09-02 after the Toka_ls page '
-        + 'carried "hemorrhagic shock" from a paragraph the archive had omitted)',
+      name: 'TELLS a judge that the test is replicability: an immediate medical cause such as shock gives '
+        + 'a reader nothing to copy and stays, as do the date, place and age (the owner, 2026-09-02, '
+        + 'correcting the first reading of the Toka_ls page\'s "hemorrhagic shock")',
       fn: async () => {
-        expect(system.includes('A medical cause of death that implies the method',),).toBe(true,);
-        expect(system.includes('the date, the place and the age stay',),).toBe(true,);
+        expect(system.includes('The test is replicability',),).toBe(true,);
+        expect(system.includes('An immediate medical cause of death (shock, cardiac arrest, respiratory failure) gives a reader nothing to copy',),).toBe(true,);
+        expect(system.includes('as do the date, the place and the age',),).toBe(true,);
       },
     },),
     it({
