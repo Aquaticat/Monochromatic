@@ -721,9 +721,9 @@ What the run measured before it died, all off `~/temp/agent/pin-relaunch-Toka_ls
   review of the incumbent by a full panel, with the house rule on both sides. The final page would carry the archive's metadata byte for byte with a
   translate selection reading judged, fresh, shipped: the reshaped guard refuses that as
   `incumbent-fallback: replacement-not-carried`, the 2026-08-28 rule refused it too, and 503ec902c would
-  have published it. A nine-judge gate keeping the archive is a review of it, so the standing now reads the
-  stage that shipped the text, the way `wouldShipTextFor` walks consolidation, contest and lanes (commit
-  `6f70a2085`, `corpus-run/front-matter-standing.ts`). On the record, both runs against the real Toka_ls
+  have published it. An eight-ballot gate keeping the archive six to two is a review of it, so the
+  standing now reads the stage that shipped the text, the way `wouldShipTextFor` walks consolidation,
+  contest and lanes (commit `6f70a2085`, `corpus-run/front-matter-standing.ts`). On the record, both runs against the real Toka_ls
   cache records (translate selection, gate ballots `csscssss`, terminal `gate-kept-standing`): before,
   standing `replaced` and the guard refused `incumbent-fallback: replacement-not-carried`; after, standing
   `gate-keep` with 8 usable ballots and the guard accepted. The gate's ballots are re-settled with the
@@ -732,6 +732,21 @@ What the run measured before it died, all off `~/temp/agent/pin-relaunch-Toka_ls
   archive when it chose neither, is `contest-keep`; a consolidation slate that endorsed the standing text is
   `slate-keep`; every other terminal or verdict is a fallback named after it. Recorded for veto as
   restoring the 2026-08-28 intent: reviewed metadata publishes, unreviewed refuses.
+  The sol review of that commit (`~/temp/agent/sol-front-matter-standing-review-20260902.txt`) named two
+  real gaps, fixed by commit `1160ebb4c`: the walk read consolidation first, so a contest that settled
+  neither without endorsing the archive could be promoted to a reviewed keep by a slate endorsement or a
+  quorum-backed gate, which contradicts `contestStandingMayShip` (the standing baseline may ship unchanged
+  only when the contest chose a lane or endorsed the archive); and a contest's review of the archive was
+  erased by consolidation terminals that merely left the standing text alone (`incumbent-only`,
+  `slate-unjudged-standing`, `slate-declined-standing`, `wrap-erased-difference`, a gate that settled
+  neither). The walk now reads the contest first, passes an unreviewed baseline through untouched, keeps a
+  reviewed one through every transparent terminal, and adds a review only where the slate endorsed the
+  standing text, the gate kept it with its quorum (two ballots, the stage's own), or the gate accepted a
+  consolidated candidate carrying the archive's bytes; gate ballots that re-settle against their terminal
+  are named `gate-ballots-contradict-terminal`. The Toka_ls records still read `gate-keep` with 8 usable
+  ballots and the guard still accepts. Two review points stand as recorded rather than acted on: the
+  classifier tests hand-assemble records (a lane-won verdict with no ballots) rather than driving the real
+  settlers, and the equality relation is raw bytes at every step, which is also what the guard compares.
 - Slice 15 is the first live matched-keep: `decision=sole-candidate origin=incumbent`, incumbent producer
   matched by all seven translators. The `matched` list is filled in practice.
 
