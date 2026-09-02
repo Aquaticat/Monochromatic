@@ -7,10 +7,10 @@
  * that reading. The first fix published any keep whose stage had heard a
  * translator, which was a misreading of the same pass: both of Carena's
  * metadata rounds ended in a judge indecision, and the incumbent shipped by
- * fallback. The guard now reads the translate lane's selection record, so this
- * suite proves a keep the judges chose publishes, a keep every heard translator
- * reproduced publishes, every fallback refuses by the name of its decision, and
- * a kept directory id refuses either way.
+ * fallback. The guard now takes a standing read off the stage that shipped the
+ * metadata (`front-matter-standing.unit.test.ts` proves the reading), so this
+ * suite proves a reviewed keep publishes, every fallback refuses by the name of
+ * its decision, and a kept directory id refuses either way.
  *
  * @module
  */
@@ -27,8 +27,6 @@ import {
   FrontMatterCompletenessError,
   frontMatterSlice,
   type MetadataStanding,
-  metadataStandingOf,
-  type SliceSelection,
   splitFrontMatter,
 } from '../../dist/final/node/index.mjs';
 
@@ -126,7 +124,8 @@ const BODY_SLICE: ChunkPair = {
 };
 
 /**
- * Standing of a keep the judges chose, which the accepting cases share.
+ * Standing of a keep the translate judges chose, which the accepting cases
+ * share.
  */
 const JUDGED_KEEP: MetadataStanding = {
   kind: 'judged-keep',
@@ -140,63 +139,6 @@ const NO_VOICE_KEEP: MetadataStanding = {
   kind: 'fallback',
   decision: 'no-voice-heard',
 };
-
-/**
- * Incumbent producer nobody reproduced.
- */
-const INCUMBENT_ALONE: SliceSelection['producer'] = {
-  kind: 'incumbent',
-  matched: [],
-};
-
-/**
- * Translate lane selection for the metadata slice under one decision.
- *
- * @param decision - how the round ended
- *
- * @param origin - whether the winning text was the archive's or fresh
- *
- * @param producer - who wrote the winning text
- *
- * @param voteWeight - weight the winner drew
- *
- * @param shipped - whether the document carries the decision
- *
- * @returns One selection at slice zero
- *
- * @example
- * ```ts
- * const selections = [metadataSelection({ decision: 'judged', },),];
- * ```
- */
-function metadataSelection(
-  {
-    decision,
-    origin = 'incumbent',
-    producer = INCUMBENT_ALONE,
-    voteWeight = 0,
-    shipped = false,
-  }: {
-    readonly decision: string;
-    readonly origin?: string;
-    readonly producer?: SliceSelection['producer'];
-    readonly voteWeight?: number;
-    readonly shipped?: boolean;
-  },
-): SliceSelection {
-  return {
-    sliceIndex: 0,
-    origin,
-    producer,
-    decision,
-    voteWeight,
-    shipped,
-    round: {
-      producers: [producer,],
-      ballots: [],
-    },
-  };
-}
 
 /**
  * What the guard threw, or `undefined` when it accepted.
@@ -219,115 +161,6 @@ function thrownBy({ run, }: { readonly run: () => void; },): unknown {
     return error;
   }
 }
-
-await describe({
-  name: metadataStandingOf.name,
-  children: [
-    it({
-      name: 'READS a judged incumbent win as a judged keep carrying its weight, since that is the '
-        + 'one keep the judges are evidence for',
-      fn: async () => {
-        expect(metadataStandingOf({
-          slices: [translatedSliceResult.slice,],
-          sliceSelections: [metadataSelection({
-            decision: 'judged',
-            voteWeight: 3,
-          },),],
-        },),).toEqual({
-          kind: 'judged-keep',
-          voteWeight: 3,
-        },);
-      },
-    },),
-
-    it({
-      name: 'READS a sole incumbent every heard translator reproduced as a matched keep naming '
-        + 'them, and a sole incumbent nobody matched as a fallback, since the incumbent is on '
-        + 'the slate whenever it has text and a slate of one is either case',
-      fn: async () => {
-        expect(metadataStandingOf({
-          slices: [translatedSliceResult.slice,],
-          sliceSelections: [metadataSelection({
-            decision: 'sole-candidate',
-            producer: {
-              kind: 'incumbent',
-              matched: ['hf:zai-org/GLM-5.3-Flash', 'minimax-m3',],
-            },
-          },),],
-        },),).toEqual({
-          kind: 'matched-keep',
-          matchedBy: ['hf:zai-org/GLM-5.3-Flash', 'minimax-m3',],
-        },);
-        expect(metadataStandingOf({
-          slices: [translatedSliceResult.slice,],
-          sliceSelections: [metadataSelection({ decision: 'sole-candidate', },),],
-        },),).toEqual({
-          kind: 'fallback',
-          decision: 'sole-candidate-unmatched',
-        },);
-      },
-    },),
-
-    it({
-      name: 'READS every decline and empty-slate decision as a fallback named by the decision, '
-        + 'which is the Carena0442 case: four judges split and the incumbent shipped unchosen',
-      fn: async () => {
-        for (const decision of [
-          'declined-indecision',
-          'declined-rejection',
-          'no-candidate-backed',
-          'no-candidate',
-          'no-voice-heard',
-        ]) {
-          expect(metadataStandingOf({
-            slices: [translatedSliceResult.slice,],
-            sliceSelections: [metadataSelection({ decision, },),],
-          },),).toEqual({
-            kind: 'fallback',
-            decision,
-          },);
-        }
-      },
-    },),
-
-    it({
-      name: 'READS a judged fresh win as a replacement carrying whether the document shipped it',
-      fn: async () => {
-        expect(metadataStandingOf({
-          slices: [translatedSliceResult.slice,],
-          sliceSelections: [metadataSelection({
-            decision: 'judged',
-            origin: 'fresh',
-            producer: {
-              kind: 'model',
-              modelId: 'minimax-m3',
-            },
-            voteWeight: 3.5,
-            shipped: true,
-          },),],
-        },),).toEqual({
-          kind: 'replaced',
-          shipped: true,
-        },);
-      },
-    },),
-
-    it({
-      name: 'READS a preparation without a metadata slice, or a lane that never recorded it, as '
-        + 'unrecorded, leaving the structural check to say why',
-      fn: async () => {
-        expect(metadataStandingOf({
-          slices: [BODY_SLICE,],
-          sliceSelections: [],
-        },),).toEqual({ kind: 'unrecorded', },);
-        expect(metadataStandingOf({
-          slices: [translatedSliceResult.slice,],
-          sliceSelections: [],
-        },),).toEqual({ kind: 'unrecorded', },);
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: assertFrontMatterComplete.name,
@@ -393,14 +226,16 @@ await describe({
 
     it({
       name: 'REFUSES A FALLBACK KEEP of translated archive metadata naming the decision after '
-        + 'incumbent-fallback, for a lost voice, an indecision, an unmatched sole incumbent, '
-        + 'a withdrawn replacement and an unrecorded slice alike, since none of them is a '
-        + 'review of the incumbent',
+        + 'incumbent-fallback, for a lost voice, an indecision, an unmatched sole incumbent, an '
+        + 'undecided gate, a contest that settled neither, a withdrawn replacement and an '
+        + 'unrecorded slice alike, since none of them is a review of the incumbent',
       fn: async () => {
         for (const [standing, detail,] of [
           [NO_VOICE_KEEP, 'no-voice-heard',],
           [{ kind: 'fallback', decision: 'declined-indecision', }, 'declined-indecision',],
           [{ kind: 'fallback', decision: 'sole-candidate-unmatched', }, 'sole-candidate-unmatched',],
+          [{ kind: 'fallback', decision: 'gate-neither', }, 'gate-neither',],
+          [{ kind: 'fallback', decision: 'contest-neither', }, 'contest-neither',],
           [{ kind: 'replaced', shipped: false, }, 'replacement-withdrawn',],
           [{ kind: 'replaced', shipped: true, }, 'replacement-not-carried',],
           [{ kind: 'unrecorded', }, 'unrecorded',],
@@ -425,16 +260,25 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS A JUDGED KEEP and A MATCHED KEEP of translated archive metadata, since the '
-        + 'judges choosing the archive or every heard translator reproducing it is a review '
-        + 'that found nothing to change, and bytes equal to the archive\'s are not evidence '
-        + 'that nobody looked',
+      name: 'ACCEPTS EVERY REVIEWED KEEP of translated archive metadata: the translate judges, a '
+        + 'matched slate, the lane contest, the consolidation slate and the consolidation gate '
+        + 'choosing the archive are each a review that found nothing to change, and bytes '
+        + 'equal to the archive\'s are not evidence that nobody looked',
       fn: async () => {
         for (const standing of [
           JUDGED_KEEP,
           {
             kind: 'matched-keep',
             matchedBy: ['minimax-m3',],
+          },
+          {
+            kind: 'contest-keep',
+            usable: 9,
+          },
+          { kind: 'slate-keep', },
+          {
+            kind: 'gate-keep',
+            usable: 8,
           },
         ] as const) {
           expect(() => assertFrontMatterComplete({
@@ -450,7 +294,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A KEPT DIRECTORY ID as the visible name whether or not the judges chose to '
+      name: 'REFUSES A KEPT DIRECTORY ID as the visible name whether or not a panel chose to '
         + 'keep it, naming directory-id-name, since that is the one kept incumbent bytes alone '
         + 'did catch and the page would ship the person under the folder',
       fn: async () => {

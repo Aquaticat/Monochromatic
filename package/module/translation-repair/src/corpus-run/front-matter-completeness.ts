@@ -5,12 +5,16 @@ import {
   splitFrontMatter,
 } from '../front-matter.ts';
 import { validateFrontMatterTranslation, } from '../front-matter-translation.ts';
-import type { SliceSelection, } from '../slice-selection.ts';
+import {
+  fallbackDetailOf,
+  isReviewedKeep,
+  type MetadataStanding,
+} from './front-matter-standing.ts';
 
 //region Front matter publication completeness
 // Final page must retain parseable metadata under explicit reviewed slice.
 //
-// A KEPT INCUMBENT IS EVIDENCE ONLY WHEN THE JUDGES CHOSE IT. Until 2026-09-02
+// A KEPT INCUMBENT IS EVIDENCE ONLY WHEN A PANEL CHOSE IT. Until 2026-09-02
 // this guard read "page metadata equals archive metadata while the source's
 // differs" as nobody having reviewed the slice, and refused the page. The
 // Carena0442 pass of that day ran 94 minutes to a finished consolidation and
@@ -18,13 +22,15 @@ import type { SliceSelection, } from '../slice-selection.ts';
 // any keep whose stage had heard a translator. That was a misreading of the
 // same log: both of Carena's metadata rounds ended `declined-indecision`, four
 // judges of eight split 1.5 to 1 to 0.5 and the leader fell short of the
-// minimum weight, so the incumbent shipped by fallback, not by judgment.
-// `translate-stage-result.ts` draws the line this guard now reads: "the
-// incumbent shipped" and "the judges chose the incumbent" are different facts,
-// and only the second is evidence about the incumbent. A keep publishes when
-// the judges chose it or every heard translator reproduced it; every fallback
-// refuses by the name of its decision, and an archive whose visible name is
-// still the directory id refuses whatever the decision was.
+// minimum weight, so the incumbent shipped by fallback, not by judgment. The
+// same night the Toka_ls relaunch showed the other half: its translate lane
+// replaced the metadata by a judged vote and the consolidation gate restored
+// the archive's six ballots to two, which the translate lane's record alone
+// reads as a withdrawn replacement. `front-matter-standing.ts` now reads the
+// stage that shipped the text, in the order the assembly walks them: a keep
+// publishes when a panel chose it or every heard translator reproduced it,
+// every fallback refuses by the name of its decision, and an archive whose
+// visible name is still the directory id refuses whatever the decision was.
 
 /**
  * Refusal when published front matter lacks structural review evidence.
@@ -46,7 +52,7 @@ export class FrontMatterCompletenessError extends Error {
    * @param entryId - entry refused
    *
    * @param reason - structural evidence absent or invalid: `incumbent-fallback`
-   * when the archive's metadata stands without the judges having chosen it,
+   * when the archive's metadata stands without a panel having chosen it,
    * `directory-id-name` when it stands with the directory id as its visible name
    *
    * @param detail - which decision left the incumbent standing, named after the
@@ -70,204 +76,6 @@ export class FrontMatterCompletenessError extends Error {
     );
     this.name = 'FrontMatterCompletenessError';
   }
-}
-
-/**
- * How the page's metadata came to carry what it carries, read off the
- * translate lane's own record of the slice.
- *
- * @example
- * ```ts
- * const standing: MetadataStanding = { kind: 'judged-keep', voteWeight: 3, };
- * ```
- */
-export type MetadataStanding =
-  /**
-   * The judges chose the archive's wording over fresh renderings.
-   */
-  | {
-    readonly kind: 'judged-keep';
-    readonly voteWeight: number;
-  }
-  /**
-   * Every heard translator reproduced the archive's wording, so the slate
-   * collapsed to the incumbent and shipped unjudged; named by who matched it.
-   */
-  | {
-    readonly kind: 'matched-keep';
-    readonly matchedBy: readonly string[];
-  }
-  /**
-   * The judges chose a fresh rendering; whether the document carries it is the
-   * assembly's business, and a page still carrying the archive's bytes under
-   * this standing had its replacement withdrawn.
-   */
-  | {
-    readonly kind: 'replaced';
-    readonly shipped: boolean;
-  }
-  /**
-   * The incumbent shipped because nothing decided otherwise: an indecision, a
-   * rejection, an empty slate, a lost voice, or a sole incumbent nobody matched.
-   */
-  | {
-    readonly kind: 'fallback';
-    readonly decision: string;
-  }
-  /**
-   * No metadata slice, or no record of it: the structural check refuses such a
-   * page on its own.
-   */
-  | { readonly kind: 'unrecorded'; };
-
-/**
- * Reads how the metadata slice's wording came to stand, off the lane that
- * renders every slice afresh.
- *
- * THE TRANSLATE LANE, because it is the lane that renders metadata: the repair
- * lane mends body English and records nothing it chose about the front matter.
- * READ OFF THE SELECTION rather than the lane's wording, because the wording
- * says only whether somebody was heard, and a heard translator whose judges
- * split is not a review of the incumbent.
- *
- * @param slices - preparation carrying explicit syntax role
- *
- * @param sliceSelections - translate lane's per-slice selections, decision and
- * origin named
- *
- * @returns How the metadata slice's wording came to stand
- *
- * @example
- * ```ts
- * const standing = metadataStandingOf({ slices, sliceSelections: artifact.lanes.translate.result.sliceSelections, },);
- * ```
- */
-export function metadataStandingOf(
-  {
-    slices,
-    sliceSelections,
-  }: {
-    readonly slices: readonly ChunkPair[];
-    readonly sliceSelections: readonly SliceSelection[];
-  },
-): MetadataStanding {
-  /**
-   * Metadata slice, when the preparation produced one.
-   */
-  const metadataSlice = slices.find(function isFrontMatter(slice,): boolean {
-    return slice.syntax === 'front-matter';
-  },);
-  if (metadataSlice === undefined)
-    return { kind: 'unrecorded', };
-
-  /**
-   * Global index of the metadata slice, which the lane names its record by.
-   */
-  const metadataIndex = metadataSlice.source
-    .sliceIndex;
-
-  /**
-   * What the translate lane decided about that slice.
-   */
-  const selection = sliceSelections.find(function namesIt(candidate,): boolean {
-    return candidate.sliceIndex === metadataIndex;
-  },);
-  if (selection === undefined)
-    return { kind: 'unrecorded', };
-
-  /**
-   * The decision, who produced the winner and whether it was the archive's.
-   */
-  const {
-    decision,
-    origin,
-    producer,
-    voteWeight,
-    shipped,
-  } = selection;
-  if (origin === 'fresh') {
-    return {
-      kind: 'replaced',
-      shipped,
-    };
-  }
-  if (decision === 'judged') {
-    return {
-      kind: 'judged-keep',
-      voteWeight,
-    };
-  }
-  if (decision === 'sole-candidate') {
-    // The incumbent is offered whenever it has text, so a slate of one is
-    // either every heard translator reproducing it or nobody proposing at all;
-    // the producer's matched list is what tells those apart.
-    if (producer.kind === 'incumbent') {
-      /**
-       * Translators whose proposal was the incumbent's text.
-       */
-      const { matched, } = producer;
-      if (matched.length > 0) {
-        return {
-          kind: 'matched-keep',
-          matchedBy: matched,
-        };
-      }
-    }
-    return {
-      kind: 'fallback',
-      decision: 'sole-candidate-unmatched',
-    };
-  }
-  return {
-    kind: 'fallback',
-    decision,
-  };
-}
-
-/**
- * Whether a kept incumbent was chosen by the judges or reproduced by every
- * heard translator, the two standings that are a review of it.
- *
- * @param standing - how the metadata slice came to stand
- *
- * @returns Whether the keep is a review
- *
- * @example
- * ```ts
- * isReviewedKeep({ standing: { kind: 'judged-keep', voteWeight: 3, }, },);
- * ```
- */
-function isReviewedKeep(
-  { standing, }: { readonly standing: MetadataStanding; },
-): boolean {
-  return (standing.kind === 'judged-keep')
-    || (standing.kind === 'matched-keep');
-}
-
-/**
- * Names why a kept incumbent is not a review.
- *
- * @param standing - how the metadata slice came to stand, not a reviewed keep
- *
- * @returns Decision that left the incumbent standing
- *
- * @throws {@link RangeError} on a reviewed keep, which has no fallback to name
- *
- * @example
- * ```ts
- * fallbackDetailOf({ standing: { kind: 'fallback', decision: 'declined-indecision', }, },);
- * ```
- */
-function fallbackDetailOf(
-  { standing, }: { readonly standing: MetadataStanding; },
-): string {
-  if (standing.kind === 'fallback')
-    return standing.decision;
-  if (standing.kind === 'replaced')
-    return standing.shipped ? 'replacement-not-carried' : 'replacement-withdrawn';
-  if (standing.kind === 'unrecorded')
-    return 'unrecorded';
-  throw new RangeError(`a ${standing.kind} is a review of the incumbent and names no fallback`,);
 }
 
 /**
@@ -318,11 +126,11 @@ function namesDirectoryId(
  * @param slices - preparation carrying explicit syntax role
  *
  * @param metadataStanding - how the metadata slice came to stand, read by
- * {@link metadataStandingOf}
+ * `metadataStandingOf` off the stage that shipped it
  *
  * @throws FrontMatterCompletenessError when metadata role or syntax differs,
- * when the archive's metadata stands where the source's differs without the
- * judges or every heard translator having chosen it, or when it stands with
+ * when the archive's metadata stands where the source's differs without a
+ * panel or every heard translator having chosen it, or when it stands with
  * the directory id as the visible name
  *
  * @example
@@ -477,8 +285,8 @@ export function assertFrontMatterComplete(
       reason: 'invalid-page',
     },);
   }
-  // THE ARCHIVE'S OWN METADATA STANDING is refused unless the judges chose it
-  // or every heard translator reproduced it, and refused whatever the decision
+  // THE ARCHIVE'S OWN METADATA STANDING is refused unless a panel chose it or
+  // every heard translator reproduced it, and refused whatever the decision
   // where what stands still names the directory id. Bytes equal to the
   // archive's cannot tell a judged keep from an indecision; the standing can.
   if ((archiveMetadata === undefined)

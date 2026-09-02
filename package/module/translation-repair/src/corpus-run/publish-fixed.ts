@@ -26,10 +26,8 @@ import {
   type WouldShipSource,
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
-import {
-  assertFrontMatterComplete,
-  type MetadataStanding,
-} from './front-matter-completeness.ts';
+import { assertFrontMatterComplete, } from './front-matter-completeness.ts';
+import type { MetadataStanding, } from './front-matter-standing.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
 import { assertContributorNamesComplete, } from './contributor-completeness.ts';
 import { assertDestinationsComplete, } from './destination-completeness.ts';
