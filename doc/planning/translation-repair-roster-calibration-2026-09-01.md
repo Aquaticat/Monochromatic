@@ -660,8 +660,12 @@ its page is refused at publish time, its metadata judge round gets read the way 
 decision) and the rerun is decided by hand: the slice cache is digest-keyed, so a rerun is a full two hours,
 and an indecision keep is refused again by the reshaped guard. No automatic rerun. Then the meter gate and
 Carena0442 as the section before this one says, on the `daaf0ffa0` build. The gate reads the meter once at
-launch; Synthetic's weekly at about 4% and falling two points an hour reaches zero around 05:00 UTC, likely
-mid-Carena, so a Hyper-only tail in that pass is expected, not a regression. Each landed artifact goes through
+launch. Measured across the Toka_ls run's 37 meter readings: Synthetic's weekly fell from 5.24% at launch
+(02:46) to 3.16% at 03:32, 2.7 points an hour under one entry at overlap 2, which puts zero at about 04:40
+UTC; Toka_ls's translate lane was at 3 of 16 slices at 03:32, so Carena either fails the gate or launches
+with under a point of Synthetic left and runs on Hyper alone, which is the load shape of the pin pass death
+(#474). Either outcome is expected and recorded here, not a regression; if the gate refuses, Toka_ls's
+artifact is still the first real artifact for the task 3 reading. Each landed artifact goes through
 `verify-published` (which reads `artifacts/` and `fixed/` and never touches `pass.lock`) and the reader
 script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3, in this order: `git status --short` on the
 real clone, `verify-published`, the reader script, then the translate-round heard counts under the writer
