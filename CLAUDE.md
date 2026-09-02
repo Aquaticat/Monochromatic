@@ -396,6 +396,25 @@ Settled decisions determine one answer:
  adopt + record it unasked.
 Ask only while two paths hinge on non-measurable preference or authority.
 
+QDF:
+ Diagnosed defect with a fix keeping stated policy = authorized work,
+ never a design decision:
+ fix,
+ record,
+ invite veto.
+Issues record what was fixed;
+ options menus only for choices between published behaviors.
+
+QPW:
+ One provider dry,
+ one seat slow,
+ one meter low:
+ normal operation,
+ never a launch blocker or a question.
+Launch;
+ record the shape;
+ read the outcome as evidence.
+
 ### Present options with pros, cons, and a personal ranking
 
 OPT:

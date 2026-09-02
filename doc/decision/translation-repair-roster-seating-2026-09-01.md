@@ -122,3 +122,24 @@ authorization:
 -   `~/temp/agent/round-wins-bootstrap-20260901.mjs`: the slice-clustered reader.
 -   `doc/planning/translation-repair-roster-calibration-2026-09-01.md`: standings verbatim, z tables, meters,
     spend, latency distributions, and the rules as pre-registered and revised.
+
+## Addendum 2026-09-02: GLM-5.3-Flash leaves every judge seat
+
+Decided by the owner ("Unseat GLM-5.3-Flash as a judge, keep it as editor") on the Toka_ls relaunch's
+measurement, landed as commit `9a7d48354` in `corpus-run/run-config.ts`.
+
+-   Evidence: under the 60 s round window the model's reasoning streams (up to a million raw characters)
+    were cut in 12 of 13 panel rounds, 12 of 21 translate-select rounds, 11 of 29 repair-select rounds,
+    11 of 15 critic rounds and 5 of 15 contest rounds, 51 of the run's 78 cuts. No round lost its decision
+    without it; two translate-select rounds declined and were decided in a challenge round. Record:
+    `doc/planning/translation-repair-roster-calibration-2026-09-01.md`, "The Toka_ls relaunch was killed at
+    77 minutes, in consolidation".
+-   Seats it leaves: critic, adjudication panel and both lanes' select judges (`WIDE_SEAT_DROPPED`, now
+    seven seats, quorum 4), and the lane contest, the consolidation slate's judges and the consolidation
+    gate (`LATE_JUDGE_DROPPED` behind `RUN_LATE_JUDGES`, eight seats; those rounds seat the whole roster
+    including `glm-5.3`, which this addendum does not touch).
+-   Seats it keeps: first editor (top three in every one of 4000 resamples), refiner, translator, and
+    consolidation writer; pairing and insertion-admission rounds, which are not judgments of text and lost
+    no voice to the window (27 of 27 and 9 of 9 heard), keep the roster.
+-   The 60 s round window stays; the choice was between the window, the seat and the wall clock, and the
+    owner chose the seat.
