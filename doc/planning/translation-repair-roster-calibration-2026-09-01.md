@@ -855,6 +855,22 @@ will always remember her" for 我们会永远铭记她的 (the archive: "She wil
 defect, no regression. The detached Toka_ls script launched Toka_ls at 14:13:20 on `aeb4181b9` at
 overlap 3 (`~/temp/agent/toka-rerun2-20260902.log`).
 
+## Toka_ls landed at 15:52 UTC in 100 minutes at overlap 3
+
+`TALLY Toka_ls status=SETTLED slices=16 ms=5972259` on `aeb4181b9`, generation ten, page and artifact
+under `~/temp/agent/toka-rerun2-20260902`, `verify-published` clean, 0 refusals, 0 holds, no unendorsed
+standing. The reading is `doc/planning/translation-repair-toka-ls-rerun-reading-2026-09-02.md`: slice
+9's pronoun is fixed ("she leaves behind verse in a neat meter"), the whitespace churn is gone, the
+heading is right, and slice 10's title moved the wrong way: "Life of Aiden" survives as the alternate
+but the work is now called "Flow", the English title of 喵的奇幻漂流, one of the five neighbour results
+the web lookup returned. Fixed unasked: a result that never names the work now says so on its line and
+sorts last. One item for the owner: the page now carries the source's death paragraph, "after
+resuscitation failed to reverse hemorrhagic shock", which the archive had omitted; the
+reader-protection rule names suicide method and medication, and this sits at its edge.
+
+Three of the four entries are now published from this build: Carena0442 (190 min), keyword233 (22 min),
+Toka_ls (100 min). XIEPT2 stays held back under `FIT`.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
