@@ -402,8 +402,7 @@ QDF:
  fix,
  record,
  invite veto.
-Issues record what was fixed;
- options menus only for choices between published behaviors.
+Options menus only for choices between published behaviors.
 
 QPW:
  One provider dry,
