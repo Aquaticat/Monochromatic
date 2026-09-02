@@ -62,6 +62,15 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge that a medical cause of death implying the method is kept out too, while '
+        + 'the date, place and age stay (the owner\'s decision of 2026-09-02 after the Toka_ls page '
+        + 'carried "hemorrhagic shock" from a paragraph the archive had omitted)',
+      fn: async () => {
+        expect(system.includes('A medical cause of death that implies the method',),).toBe(true,);
+        expect(system.includes('the date, the place and the age stay',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'RANKS a house rule above a numbered criterion',
       fn: async () => {
         // Judges apply the numbered list literally: three whole-slate refusals

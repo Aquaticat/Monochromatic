@@ -869,7 +869,13 @@ resuscitation failed to reverse hemorrhagic shock", which the archive had omitte
 reader-protection rule names suicide method and medication, and this sits at its edge.
 
 Three of the four entries are now published from this build: Carena0442 (190 min), keyword233 (22 min),
-Toka_ls (100 min). XIEPT2 stays held back under `FIT`.
+Toka_ls (100 min).
+
+DECIDED 2026-09-02 (after the Toka_ls reading): the reader-protection rule covers a medical cause of
+death that implies the method; the paragraph stays, the cause goes
+(`doc/decision/translation-repair-reader-protection-cause-of-death.md`). DECIDED at the same time: XIEPT2
+runs now at overlap 4, the owner's choice over the measured overlap 3; it is the first run at that
+overlap and the first entry with the cause-of-death rule.
 
 ## Decisions waiting on the owner
 
