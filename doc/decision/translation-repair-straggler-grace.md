@@ -297,6 +297,24 @@ D (29.31 min, 318 of 320 voices, 2 cut, normalized 0.23 against arm B's 0.23). `
 pass's until `#261` gives the pass overlap; the two move together or not at all. Record:
 `doc/decision/translation-repair-calibration-overlap.md`.
 
+## Addendum 2026-09-02: writer rounds have a dial of their own
+
+`TRANSLATION_REPAIR_WRITER_GRACE_MS` (`writer-grace-override.ts`, landed `a3da317df`) gives the editor,
+refiner, translate and consolidate gathers a window of their own for one launch; unset or blank, they follow
+the round window exactly as before, and the built-in value is unchanged. A launch that sets it prints
+`WRITER GRACE OVERRIDDEN by ...` beside the round note.
+
+WHY A SECOND DIAL: the four-entry pass of 2026-09-02 ran the round window at 60000 ms for the eight-wide
+reader rounds' sake (75 to 83 percent of round time was waiting after quorum, and the last reader voice adds
+one ballot to seven), and that window cut the top editor, `hf:zai-org/GLM-5.3-Flash`, mid-reply in 3 of the
+first 22 three-wide editor rounds, every cut exactly 60000 ms after quorum. A writer round loses a whole
+candidate when the window closes; a reader round loses a ballot. One window cannot be sized for both, and
+sizing it for the readers unseats the writers the calibration seated. Record and the pre-registered rule
+for the dial's value: `doc/planning/translation-repair-roster-calibration-2026-09-01.md`.
+
+This addendum records a launch-time dial; it moves no decision. Whether per-role windows become the built-in
+design is the owner's call.
+
 ## Addendum 2026-08-27: one same-digest hard-page pair
 
 Fixed-build `Toka_ls` ran at overlap 4 under both windows.

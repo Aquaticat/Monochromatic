@@ -192,6 +192,15 @@ TODO | DONE
 
     Expected: the shell prints a job number and a pid, and returns immediately.
 
+    Launch-time dials, each printed above the work so the log says which run this was:
+    `TRANSLATION_REPAIR_SLICE_OVERLAP=<n>` (prints `OVERLAP <entry> value=<n> source=...` per entry),
+    `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=<ms>` (prints `STRAGGLER GRACE OVERRIDDEN by ...`),
+    `TRANSLATION_REPAIR_WRITER_GRACE_MS=<ms>` (prints `WRITER GRACE OVERRIDDEN by ...`;
+    the editor, refiner, translate and consolidate rounds alone wait this long on a straggler after quorum,
+    the other rounds keep the round window).
+    A value the dial cannot read refuses the launch in one line naming the variable, at zero quota,
+    which `-- --plan` shows without spending anything.
+
     For measured both-provider arm,
     insert `-- --require-providers synthetic,hyper` after `corpus-pass`.
     Log must contain `REQUIRED-PROVIDERS synthetic,hyper status=wet` before model traffic.

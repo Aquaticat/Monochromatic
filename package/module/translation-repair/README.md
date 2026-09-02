@@ -999,6 +999,11 @@ both the owner's decisions of 2026-08-26 on the five calibration arms
 (`doc/decision/translation-repair-calibration-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP` and `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` override either for one launch,
 and `1` and `180000` reproduce the pass's own settings, which stay where they were until `#261`.
+`TRANSLATION_REPAIR_WRITER_GRACE_MS` (`writer-grace-override.ts`) gives the WRITER rounds alone, editor,
+refiner, translate and consolidate, a window of their own for one launch, since a cut writer voice is a
+whole candidate lost while a cut reader voice is one ballot of eight;
+unset, writers follow the round window, and a launch that sets it prints `WRITER GRACE OVERRIDDEN`
+beside the round note in both the pass and this calibration.
 It drives the whole repair lane,
 so the claims an editor works from
 are claims models really raised about that passage rather than fixtures.
