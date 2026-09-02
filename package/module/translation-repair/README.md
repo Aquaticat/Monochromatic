@@ -604,6 +604,21 @@ and reading one as an instruction has cost this package a defect before.
     Bearer token for the first provider.
     A run that reaches a model call without it throws.
 
+-   `TRANSLATION_REPAIR_EXA_API_KEY`.
+    Key for the Exa search endpoint,
+    which the pass asks once per work the original names in 《…》 marks for its official English title
+    (the owner's rule of 2026-09-02, `doc/decision/translation-repair-work-titles-established-vocabulary.md`).
+    The top results reach every sheet as `web lookup` lines in the identity context,
+    beside the `note` and `editor comment` lines carrying both pages' footnotes and editors' comments,
+    and the house policy says what each kind licenses.
+    OPTIONAL: unset means one warning per entry naming how many titles went unlooked-up, and nothing else changes.
+    Every lookup is cached durably under `TRANSLATION_REPAIR_LOOKUP_CACHE_DIR`,
+    else `$XDG_CACHE_HOME/translation-repair/lookup`,
+    else `~/.cache/translation-repair/lookup`,
+    keyed by the query's digest,
+    so a title is bought once across runs and a resumed run keeps its preparation identity.
+    Measured 2026-09-02: about 1.5 s and $0.007 a query; the pinned corpus's 118 spans cost about a dollar once.
+
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider, Charm Hyper.
     REQUIRED, exactly like the first:
