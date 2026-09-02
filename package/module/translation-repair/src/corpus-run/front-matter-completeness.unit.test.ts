@@ -4,10 +4,13 @@
  * THE CASE THAT MATTERS IS THE KEPT INCUMBENT. Until 2026-09-02 this guard read
  * a page whose metadata equals the archive's as one nobody reviewed, and refused
  * it; the Carena0442 pass of that day lost 94 minutes of settled body work to
- * that reading after its translate lane had judged the metadata slice twice and
- * kept a correct translation. The guard now reads the lane's own standing, so
- * this suite proves a judged keep of translated metadata publishes, a default
- * keep does not, and a kept directory id does not either way.
+ * that reading. The first fix published any keep whose stage had heard a
+ * translator, which was a misreading of the same pass: both of Carena's
+ * metadata rounds ended in a judge indecision, and the incumbent shipped by
+ * fallback. The guard now reads the translate lane's selection record, so this
+ * suite proves a keep the judges chose publishes, a keep every heard translator
+ * reproduced publishes, every fallback refuses by the name of its decision, and
+ * a kept directory id refuses either way.
  *
  * @module
  */
@@ -23,8 +26,9 @@ import {
   type ChunkPair,
   FrontMatterCompletenessError,
   frontMatterSlice,
-  type LaneSliceText,
+  type MetadataStanding,
   metadataStandingOf,
+  type SliceSelection,
   splitFrontMatter,
 } from '../../dist/final/node/index.mjs';
 
@@ -57,11 +61,6 @@ const targetFrontMatter = splitFrontMatter({ text: TARGET_TEXT, }).frontMatter;
 const translatedFrontMatter = splitFrontMatter({ text: TRANSLATED_TEXT, }).frontMatter;
 if ((sourceFrontMatter === undefined) || (targetFrontMatter === undefined) || (translatedFrontMatter === undefined))
   throw new Error('front matter fixture did not parse',);
-/**
- * Raw translated metadata, held as a plain string because the narrowing above
- * does not reach into function declarations.
- */
-const TRANSLATED_RAW: string = translatedFrontMatter.raw;
 /**
  * Explicit metadata slice shared by guarded cases.
  */
@@ -127,74 +126,204 @@ const BODY_SLICE: ChunkPair = {
 };
 
 /**
- * Translate lane wording for the metadata slice under one outcome.
+ * Standing of a keep the judges chose, which the accepting cases share.
+ */
+const JUDGED_KEEP: MetadataStanding = {
+  kind: 'judged-keep',
+  voteWeight: 3,
+};
+
+/**
+ * Standing of a keep left by a lost voice, which the refusing cases share.
+ */
+const NO_VOICE_KEEP: MetadataStanding = {
+  kind: 'fallback',
+  decision: 'no-voice-heard',
+};
+
+/**
+ * Incumbent producer nobody reproduced.
+ */
+const INCUMBENT_ALONE: SliceSelection['producer'] = {
+  kind: 'incumbent',
+  matched: [],
+};
+
+/**
+ * Translate lane selection for the metadata slice under one decision.
  *
- * @param outcome - what the lane did about the slice
+ * @param decision - how the round ended
  *
- * @returns One wording at slice zero
+ * @param origin - whether the winning text was the archive's or fresh
+ *
+ * @param producer - who wrote the winning text
+ *
+ * @param voteWeight - weight the winner drew
+ *
+ * @param shipped - whether the document carries the decision
+ *
+ * @returns One selection at slice zero
  *
  * @example
  * ```ts
- * const wordings = [metadataWording({ outcome: { kind: 'decided', acceptedText: '...', }, },),];
+ * const selections = [metadataSelection({ decision: 'judged', },),];
  * ```
  */
-function metadataWording(
-  { outcome, }: { readonly outcome: LaneSliceText['outcome']; },
-): LaneSliceText {
+function metadataSelection(
+  {
+    decision,
+    origin = 'incumbent',
+    producer = INCUMBENT_ALONE,
+    voteWeight = 0,
+    shipped = false,
+  }: {
+    readonly decision: string;
+    readonly origin?: string;
+    readonly producer?: SliceSelection['producer'];
+    readonly voteWeight?: number;
+    readonly shipped?: boolean;
+  },
+): SliceSelection {
   return {
     sliceIndex: 0,
-    incumbentKind: 'present',
-    incumbentText: TRANSLATED_RAW,
-    outcome,
+    origin,
+    producer,
+    decision,
+    voteWeight,
+    shipped,
+    round: {
+      producers: [producer,],
+      ballots: [],
+    },
   };
+}
+
+/**
+ * What the guard threw, or `undefined` when it accepted.
+ *
+ * @param run - guarded call
+ *
+ * @returns Thrown value
+ *
+ * @example
+ * ```ts
+ * const refusal = thrownBy({ run: () => assertFrontMatterComplete({ ... },), },);
+ * ```
+ */
+function thrownBy({ run, }: { readonly run: () => void; },): unknown {
+  try {
+    run();
+    return undefined;
+  }
+  catch (error) {
+    return error;
+  }
 }
 
 await describe({
   name: metadataStandingOf.name,
   children: [
     it({
-      name: 'READS a decided metadata slice as decided, the archive\'s own wording included, since a '
-        + 'lane that judged the slice and kept the archive has reviewed it',
+      name: 'READS a judged incumbent win as a judged keep carrying its weight, since that is the '
+        + 'one keep the judges are evidence for',
       fn: async () => {
         expect(metadataStandingOf({
           slices: [translatedSliceResult.slice,],
-          sliceTexts: [metadataWording({
-            outcome: {
-              kind: 'decided',
-              acceptedText: TRANSLATED_RAW,
+          sliceSelections: [metadataSelection({
+            decision: 'judged',
+            voteWeight: 3,
+          },),],
+        },),).toEqual({
+          kind: 'judged-keep',
+          voteWeight: 3,
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS a sole incumbent every heard translator reproduced as a matched keep naming '
+        + 'them, and a sole incumbent nobody matched as a fallback, since the incumbent is on '
+        + 'the slate whenever it has text and a slate of one is either case',
+      fn: async () => {
+        expect(metadataStandingOf({
+          slices: [translatedSliceResult.slice,],
+          sliceSelections: [metadataSelection({
+            decision: 'sole-candidate',
+            producer: {
+              kind: 'incumbent',
+              matched: ['hf:zai-org/GLM-5.3-Flash', 'minimax-m3',],
             },
           },),],
-        },),).toBe('decided',);
+        },),).toEqual({
+          kind: 'matched-keep',
+          matchedBy: ['hf:zai-org/GLM-5.3-Flash', 'minimax-m3',],
+        },);
+        expect(metadataStandingOf({
+          slices: [translatedSliceResult.slice,],
+          sliceSelections: [metadataSelection({ decision: 'sole-candidate', },),],
+        },),).toEqual({
+          kind: 'fallback',
+          decision: 'sole-candidate-unmatched',
+        },);
       },
     },),
 
     it({
-      name: 'READS an unheard metadata slice as standing by default, which is what a lost voice '
-        + 'looks like and what the guard exists to refuse',
+      name: 'READS every decline and empty-slate decision as a fallback named by the decision, '
+        + 'which is the Carena0442 case: four judges split and the incumbent shipped unchosen',
+      fn: async () => {
+        for (const decision of [
+          'declined-indecision',
+          'declined-rejection',
+          'no-candidate-backed',
+          'no-candidate',
+          'no-voice-heard',
+        ]) {
+          expect(metadataStandingOf({
+            slices: [translatedSliceResult.slice,],
+            sliceSelections: [metadataSelection({ decision, },),],
+          },),).toEqual({
+            kind: 'fallback',
+            decision,
+          },);
+        }
+      },
+    },),
+
+    it({
+      name: 'READS a judged fresh win as a replacement carrying whether the document shipped it',
       fn: async () => {
         expect(metadataStandingOf({
           slices: [translatedSliceResult.slice,],
-          sliceTexts: [metadataWording({ outcome: { kind: 'incumbent-fallback', }, },),],
-        },),).toBe('by-default',);
-        expect(metadataStandingOf({
-          slices: [translatedSliceResult.slice,],
-          sliceTexts: [metadataWording({ outcome: { kind: 'not-evaluated', }, },),],
-        },),).toBe('by-default',);
+          sliceSelections: [metadataSelection({
+            decision: 'judged',
+            origin: 'fresh',
+            producer: {
+              kind: 'model',
+              modelId: 'minimax-m3',
+            },
+            voteWeight: 3.5,
+            shipped: true,
+          },),],
+        },),).toEqual({
+          kind: 'replaced',
+          shipped: true,
+        },);
       },
     },),
 
     it({
-      name: 'READS a preparation without a metadata slice, or a lane that never named it, as '
-        + 'standing by default, leaving the structural check to say why',
+      name: 'READS a preparation without a metadata slice, or a lane that never recorded it, as '
+        + 'unrecorded, leaving the structural check to say why',
       fn: async () => {
         expect(metadataStandingOf({
           slices: [BODY_SLICE,],
-          sliceTexts: [],
-        },),).toBe('by-default',);
+          sliceSelections: [],
+        },),).toEqual({ kind: 'unrecorded', },);
         expect(metadataStandingOf({
           slices: [translatedSliceResult.slice,],
-          sliceTexts: [],
-        },),).toBe('by-default',);
+          sliceSelections: [],
+        },),).toEqual({ kind: 'unrecorded', },);
       },
     },),
   ],
@@ -212,7 +341,7 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: TRANSLATED_TEXT,
           slices: [sliceResult.slice,],
-          metadataStanding: 'decided',
+          metadataStanding: JUDGED_KEEP,
         },),).not.toThrow();
       },
     },),
@@ -226,7 +355,7 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: TARGET_TEXT,
           slices: [],
-          metadataStanding: 'decided',
+          metadataStanding: JUDGED_KEEP,
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -243,7 +372,7 @@ await describe({
           archiveText: 'Body.\n',
           pageText: TRANSLATED_TEXT,
           slices: [sourceOnly.slice,],
-          metadataStanding: 'decided',
+          metadataStanding: JUDGED_KEEP,
         },),).not.toThrow();
       },
     },),
@@ -257,121 +386,129 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: TARGET_TEXT,
           slices: [],
-          metadataStanding: 'by-default',
+          metadataStanding: NO_VOICE_KEEP,
         },),).not.toThrow();
       },
     },),
 
     it({
-      name: 'REFUSES A DEFAULT KEEP of the archive metadata when the source\'s differs, naming '
-        + 'incumbent-fallback, since nobody produced anything and the archive stands unreviewed',
+      name: 'REFUSES A FALLBACK KEEP of translated archive metadata naming the decision after '
+        + 'incumbent-fallback, for a lost voice, an indecision, an unmatched sole incumbent, '
+        + 'a withdrawn replacement and an unrecorded slice alike, since none of them is a '
+        + 'review of the incumbent',
       fn: async () => {
-        /**
-         * What the guard threw for translated metadata nobody decided.
-         */
-        const refusal = (() => {
-          try {
-            assertFrontMatterComplete({
+        for (const [standing, detail,] of [
+          [NO_VOICE_KEEP, 'no-voice-heard',],
+          [{ kind: 'fallback', decision: 'declined-indecision', }, 'declined-indecision',],
+          [{ kind: 'fallback', decision: 'sole-candidate-unmatched', }, 'sole-candidate-unmatched',],
+          [{ kind: 'replaced', shipped: false, }, 'replacement-withdrawn',],
+          [{ kind: 'replaced', shipped: true, }, 'replacement-not-carried',],
+          [{ kind: 'unrecorded', }, 'unrecorded',],
+        ] as const) {
+          /**
+           * What the guard threw for translated metadata standing by fallback.
+           */
+          const refusal = thrownBy({
+            run: () => assertFrontMatterComplete({
               entryId: 'EntryId',
               sourceText: SOURCE_TEXT,
               archiveText: TRANSLATED_TEXT,
               pageText: TRANSLATED_TEXT,
               slices: [translatedSliceResult.slice,],
-              metadataStanding: 'by-default',
-            },);
-            return undefined;
-          }
-          catch (error) {
-            return error;
-          }
-        })();
-
-        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
-        expect((refusal as Error).message,).toContain('incumbent-fallback',);
+              metadataStanding: standing,
+            },),
+          },);
+          expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+          expect((refusal as Error).message,).toContain(`incumbent-fallback: ${detail}`,);
+        }
       },
     },),
 
     it({
-      name: 'ACCEPTS A DECIDED KEEP of translated archive metadata, which is the Carena0442 case: '
-        + 'the lane judged the slice and kept a correct translation, and bytes equal to the '
-        + 'archive\'s are not evidence that nobody looked',
+      name: 'ACCEPTS A JUDGED KEEP and A MATCHED KEEP of translated archive metadata, since the '
+        + 'judges choosing the archive or every heard translator reproducing it is a review '
+        + 'that found nothing to change, and bytes equal to the archive\'s are not evidence '
+        + 'that nobody looked',
       fn: async () => {
-        expect(() => assertFrontMatterComplete({
-          entryId: 'EntryId',
-          sourceText: SOURCE_TEXT,
-          archiveText: TRANSLATED_TEXT,
-          pageText: TRANSLATED_TEXT,
-          slices: [translatedSliceResult.slice,],
-          metadataStanding: 'decided',
-        },),).not.toThrow();
+        for (const standing of [
+          JUDGED_KEEP,
+          {
+            kind: 'matched-keep',
+            matchedBy: ['minimax-m3',],
+          },
+        ] as const) {
+          expect(() => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: SOURCE_TEXT,
+            archiveText: TRANSLATED_TEXT,
+            pageText: TRANSLATED_TEXT,
+            slices: [translatedSliceResult.slice,],
+            metadataStanding: standing,
+          },),).not.toThrow();
+        }
       },
     },),
 
     it({
-      name: 'REFUSES A KEPT DIRECTORY ID as the visible name whether or not a lane decided to keep '
-        + 'it, naming directory-id-name, since that is the one kept incumbent bytes alone did '
-        + 'catch and the page would ship the person under the folder',
+      name: 'REFUSES A KEPT DIRECTORY ID as the visible name whether or not the judges chose to '
+        + 'keep it, naming directory-id-name, since that is the one kept incumbent bytes alone '
+        + 'did catch and the page would ship the person under the folder',
       fn: async () => {
         /**
-         * What the guard threw for a decided keep of the directory id.
+         * What the guard threw for a judged keep of the directory id.
          */
-        const refusal = (() => {
-          try {
-            assertFrontMatterComplete({
-              entryId: 'EntryId',
-              sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
-              archiveText: TARGET_TEXT,
-              pageText: TARGET_TEXT,
-              slices: [placeholderSliceResult.slice,],
-              metadataStanding: 'decided',
-            },);
-            return undefined;
-          }
-          catch (error) {
-            return error;
-          }
-        })();
-
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
+            archiveText: TARGET_TEXT,
+            pageText: TARGET_TEXT,
+            slices: [placeholderSliceResult.slice,],
+            metadataStanding: JUDGED_KEEP,
+          },),
+        },);
         expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
         expect((refusal as Error).message,).toContain('directory-id-name',);
 
         /**
-         * What the guard threw for a default keep of the same directory id,
-         * which names the default first since nobody decided anything.
+         * What the guard threw for a fallback keep of the same directory id,
+         * which names the fallback first since nobody chose anything.
          */
-        const defaultRefusal = (() => {
-          try {
-            assertFrontMatterComplete({
-              entryId: 'EntryId',
-              sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
-              archiveText: TARGET_TEXT,
-              pageText: TARGET_TEXT,
-              slices: [placeholderSliceResult.slice,],
-              metadataStanding: 'by-default',
-            },);
-            return undefined;
-          }
-          catch (error) {
-            return error;
-          }
-        })();
-
-        expect(defaultRefusal,).toBeInstanceOf(FrontMatterCompletenessError,);
-        expect((defaultRefusal as Error).message,).toContain('incumbent-fallback',);
+        const fallbackRefusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
+            archiveText: TARGET_TEXT,
+            pageText: TARGET_TEXT,
+            slices: [placeholderSliceResult.slice,],
+            metadataStanding: NO_VOICE_KEEP,
+          },),
+        },);
+        expect(fallbackRefusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((fallbackRefusal as Error).message,).toContain('incumbent-fallback: no-voice-heard',);
       },
     },),
 
     it({
-      name: 'REFUSES CHANGED PAGE retaining directory id as visible name',
+      name: 'REFUSES A CHANGED PAGE whose name and alias diverge where the source\'s agree, as '
+        + 'invalid-page, which is the identity rule and not the directory-id rule: a page that '
+        + 'changed is never a kept incumbent',
       fn: async () => {
-        expect(() => assertFrontMatterComplete({
-          entryId: 'EntryId',
-          sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
-          pageText: '---\nname: EntryId2\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
-          slices: [sliceResult.slice,],
-          metadataStanding: 'decided',
-        },),).toThrow(FrontMatterCompletenessError,);
+        /**
+         * What the guard threw for a changed page breaking the identity rule.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: SOURCE_TEXT,
+            archiveText: TARGET_TEXT,
+            pageText: '---\nname: EntryId2\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
+            slices: [sliceResult.slice,],
+            metadataStanding: JUDGED_KEEP,
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('invalid-page',);
       },
     },),
 
@@ -412,7 +549,7 @@ await describe({
           archiveText,
           pageText,
           slices: [result.slice,],
-          metadataStanding: 'decided',
+          metadataStanding: JUDGED_KEEP,
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -426,7 +563,7 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: '---\nname: Maomao\n---\n\nBody.\n',
           slices: [sliceResult.slice,],
-          metadataStanding: 'decided',
+          metadataStanding: JUDGED_KEEP,
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -446,7 +583,7 @@ await describe({
               sliceIndex: 1,
             },
           },],
-          metadataStanding: 'decided',
+          metadataStanding: JUDGED_KEEP,
         },),).toThrow(FrontMatterCompletenessError,);
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
@@ -454,7 +591,7 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: TRANSLATED_TEXT,
           slices: [BODY_SLICE, sliceResult.slice,],
-          metadataStanding: 'decided',
+          metadataStanding: JUDGED_KEEP,
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -468,7 +605,7 @@ await describe({
           archiveText: 'Body.\n',
           pageText: 'Body.\n',
           slices: [],
-          metadataStanding: 'by-default',
+          metadataStanding: NO_VOICE_KEEP,
         },),).not.toThrow();
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
@@ -476,7 +613,7 @@ await describe({
           archiveText: 'Body.\n',
           pageText: '---\nname: Added\n---\n\nBody.\n',
           slices: [],
-          metadataStanding: 'by-default',
+          metadataStanding: NO_VOICE_KEEP,
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),

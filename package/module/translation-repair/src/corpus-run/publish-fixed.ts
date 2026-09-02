@@ -205,9 +205,9 @@ export function shippableReplacements(
  *
  * @param publishDir - root of the mirrored tree
  *
- * @param metadataStanding - whether a lane decided the metadata slice or the
- * archive's metadata stands by default, read off the settled translate lane by
- * `metadataStandingOf`
+ * @param metadataStanding - how the metadata slice came to stand (judged keep,
+ * matched keep, replacement, fallback), read off the settled translate lane's
+ * selections by `metadataStandingOf`
  *
  * @param l - logger, tagged by the caller with this entry
  *

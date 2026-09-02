@@ -79,14 +79,15 @@ export async function persistSettledEntry(
     sourceText,
     entryId,
     publishDir,
-    // Off the translate lane's own record, so a judged keep of the archive's
-    // metadata publishes and a slice nobody settled does not.
+    // Off the translate lane's own selection record, so a keep the judges chose
+    // publishes and a keep left standing by an indecision or a lost voice does
+    // not; the lane's wording alone cannot tell those apart.
     metadataStanding: metadataStandingOf({
       slices,
-      sliceTexts: artifact.lanes
+      sliceSelections: artifact.lanes
         .translate
         .result
-        .sliceTexts,
+        .sliceSelections,
     },),
     l,
   },);
