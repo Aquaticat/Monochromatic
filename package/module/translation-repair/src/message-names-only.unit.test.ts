@@ -57,6 +57,14 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
   + '{String(at,)}`';
 
 /**
+ * Key naming the decision a front-matter refusal appends to its reason, or
+ * nothing when the reason stands alone; split for the same reason as
+ * {@link BYTE_OFFSET_OR_NOTHING}.
+ */
+const DETAIL_OR_NOTHING = "(detail === undefined) ? '' : `: $"
+  + '{detail}`';
+
+/**
  * Every class permitted to declare the marker, with nothing else allowed to.
  *
  * ADDING A NAME HERE IS THE DECISION. The list exists so that marking a class
@@ -153,6 +161,7 @@ const MARKED_CLASSES: readonly string[] = [
  */
 const NAMED_PARTS: Record<string, string> = {
   [BYTE_OFFSET_OR_NOTHING]: 'byte offset, or nothing',
+  [DETAIL_OR_NOTHING]: 'decision name from the translate stage\'s closed vocabulary, or nothing',
   'ALLOW_DRIFT_VALUE': 'value this package expects in the override variable',
   'ALLOW_DRIFT_VAR': 'environment variable name',
   'HARD_CAP_VAR': 'environment variable name',
