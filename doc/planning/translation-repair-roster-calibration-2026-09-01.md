@@ -775,10 +775,12 @@ section or issue it names.
   2026-08-28 trigger was a proxy for nothing, so the incumbent-fallback refusal and the night's standing
   machinery (daaf0ffa0, 6f70a2085, 1160ebb4c) are gone; the directory-id refusal now fires on the
   assembled page whether or not it equals the archive.
-- DECIDED at the same time: unseat GLM-5.3-Flash from every judge role, keep its editor seat (task 14);
-  #473 is fixed by varying the recovery prompt with the guard's complaint (task 11); the slice 9 pronoun
-  is a judge defect, not a policy (the source uses 她 sixteen times; task 12 carries the established
-  referent into the prompts); #474 options 1 and 2 are both implemented (commit `83e8dfa90`: a refusal
+- DECIDED at the same time: unseat GLM-5.3-Flash from every judge role, keep its editor seat (commit
+  `9a7d48354`, addendum in the seating decision doc); #473 is fixed by varying the recovery prompt with
+  the complaint (commit `6323f05d8`, `RECOVERY_NUDGE` appended to the recovery round's messages); the
+  slice 9 pronoun is a judge defect, not a policy (the source uses 她 sixteen times; commit `21757b86c`
+  adds a `pronoun` line to the identity context and reads the house rule off the whole original);
+  #474 options 1 and 2 are both implemented (commit `83e8dfa90`: a refusal
   re-reads the meter and holds a wet provider for 30 s rather than 300 s; a both-dry reading with a hold
   behind it waits out the shorter hold before ending the run).
 - XIEPT2 and keyword233: not in the chain. Running them needs either a fresh Synthetic week or the
