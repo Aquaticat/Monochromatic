@@ -1469,6 +1469,15 @@ lost voice,
 unmatched sole incumbent or withdrawn replacement that left it standing,
 so a hold-starved judge round stays retryable and a real keep no longer discards the entry.
 An archive whose visible name is still the directory id is refused as `directory-id-name` whatever the decision.
+Since `6f70a2085` the standing is read off the stage that shipped the metadata (`corpus-run/front-matter-standing.ts`),
+walking consolidation,
+then the lane contest,
+then the translate lane:
+a consolidation gate that kept the standing text with a quorum of its ballots (`gate-keep`),
+a consolidation slate that endorsed it (`slate-keep`),
+and a lane contest that chose the lane carrying the archive's bytes or endorsed the archive (`contest-keep`) are reviews too,
+which is what the Toka_ls relaunch of that day needed:
+its translate lane replaced the alias by a judged vote and the gate restored the archive's six ballots to two.
 
 Fresh `1974ad999` validation then settled all four slices under preparation identity generation 2.
 Artifact generation 5 and its 897-character page matched exactly under `verify-published`;

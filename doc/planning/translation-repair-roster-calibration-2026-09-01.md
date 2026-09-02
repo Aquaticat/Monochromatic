@@ -616,16 +616,13 @@ over.
 Left for task 8, per the review: the directory-id check fires only on a byte-equal block, so a page that
 kept `name: <directory id>` while changing another field passes it; and the standing does not carry the
 accepted text, so the guard never checks that the page's metadata is the wording the selection supports.
-Neither is the misreading; both are behavior changes for the owner's say. A third case the standing does
-not see: it reads the translate lane only, so when lane contest or consolidation restores the archive's
-metadata over a translate replacement (the `#269` path the package README recounts), the selection reads
-judged, fresh, shipped, and the guard refuses as `incumbent-fallback: replacement-not-carried`. That matches
-the 2026-08-28 rule, and a second panel choosing the incumbent is arguably a review; the detail name reads
-like an assembly defect when it is a contest decision, so a reader of that TALLY line should know this is
-the sentence that explains it. The matched-keep path also has no live evidence yet: no artifact has shown a
-sole-candidate metadata slice with a non-empty `matched` list, and an empty one refuses as
-`sole-candidate-unmatched`, which fails closed. When the first artifact lands, its `sliceSelections` entry
-for slice zero (decision, origin, matched) goes next to the TALLY here.
+Neither is the misreading; both are behavior changes for the owner's say. A third case, the standing
+reading the translate lane only so that a contest or consolidation keep of the archive over a translate
+replacement read as `replacement-not-carried`, was the live Toka_ls case an hour later and is handled by
+commit `6f70a2085`; the section "The Toka_ls relaunch was killed at 77 minutes, in consolidation" records
+it. The matched-keep path has live evidence from the same run: Toka_ls slice 15 settled `sole-candidate`
+with the incumbent producer matched by all seven translators, so the `matched` list is filled in practice
+and an empty one (`sole-candidate-unmatched`) is what nobody proposing looks like.
 
 The Carena entry has to run again: its slice cache was written under the previous pipeline digest and the
 dial and the guard both moved it. keyword233's identical refusal in the first pin pass was the outage
@@ -666,14 +663,8 @@ Toka_ls run's 37 meter readings: Synthetic's weekly fell from 5.24% at launch (0
 
 In order:
 
-1.  Extend the front-matter guard to read the stage that shipped the metadata, in the order
-    `wouldShipTextFor` walks (polish, consolidation, contest, lanes): a consolidation gate that shipped the
-    standing text with quorum-backed ballots, or a lane contest that chose the lane carrying the archive's
-    text with quorum-backed usable ballots, is a review of the incumbent and publishes as a keep named by
-    that stage. Everything else stays a fallback named by its decision. Tests built from the real Toka_ls
-    records in the slice cache, run before the change so the refusal is on the record; recorded for veto as
-    restoring the 2026-08-28 intent (reviewed metadata publishes, unreviewed refuses), since a nine-judge
-    gate keeping the archive over a candidate is the review that rule was asking for.
+1.  DONE at 04:43 UTC as commit `6f70a2085`: the guard reads the stage that shipped the metadata (see
+    the Toka_ls section); whole-suite run and sol review of the extension pending when this was written.
 2.  Read the pipeline's actual output from the Toka_ls slice cache (task 3): every slice as source,
     archive, translate output and contest choice, read against the source. No provider budget needed.
 3.  Toka_ls again when Synthetic is wet and the guard would accept its result; no rerun before both hold,
@@ -727,9 +718,17 @@ What the run measured before it died, all off `~/temp/agent/pin-relaunch-Toka_ls
   review of the incumbent by a full panel, with the house rule on both sides. The final page would carry the archive's metadata byte for byte with a
   translate selection reading judged, fresh, shipped: the reshaped guard refuses that as
   `incumbent-fallback: replacement-not-carried`, the 2026-08-28 rule refused it too, and 503ec902c would
-  have published it. A nine-judge gate keeping the archive is a review of it, so the standing should read the
-  stage that shipped the text, the way `wouldShipTextFor` already walks polish, consolidation, contest and
-  lanes; that is a design change on top of the reshape and goes to the owner with this evidence.
+  have published it. A nine-judge gate keeping the archive is a review of it, so the standing now reads the
+  stage that shipped the text, the way `wouldShipTextFor` walks consolidation, contest and lanes (commit
+  `6f70a2085`, `corpus-run/front-matter-standing.ts`). On the record, both runs against the real Toka_ls
+  cache records (translate selection, gate ballots `csscssss`, terminal `gate-kept-standing`): before,
+  standing `replaced` and the guard refused `incumbent-fallback: replacement-not-carried`; after, standing
+  `gate-keep` with 8 usable ballots and the guard accepted. The gate's ballots are re-settled with the
+  stage's own `settleGateBallots`, so a gate that settled `neither` under the same terminal stays a
+  fallback (`gate-neither`); a contest that chose the lane carrying the archive's bytes, or endorsed the
+  archive when it chose neither, is `contest-keep`; a consolidation slate that endorsed the standing text is
+  `slate-keep`; every other terminal or verdict is a fallback named after it. Recorded for veto as
+  restoring the 2026-08-28 intent: reviewed metadata publishes, unreviewed refuses.
 - Slice 15 is the first live matched-keep: `decision=sole-candidate origin=incumbent`, incumbent producer
   matched by all seven translators. The `matched` list is filled in practice.
 
@@ -746,9 +745,11 @@ section or issue it names.
   shorter hold, or at least state measured facts in the message. The fixed minimum vote weight of 2
   (`MIN_SELECTION_WEIGHT`), which a 4-of-8 ballot round reaches only when two full-weight ballots agree,
   belongs to the same decision.
-- The front-matter guard reshape of commit daaf0ffa0 (superseding 503ec902c), recorded for veto in the
-  section "The Carena pass finished and was refused at publish time": a byte-equal keep the judges chose,
-  or every heard translator reproduced, now publishes; every fallback refuses by the decision's name.
-  The 2026-08-28 rule refused all of them.
+- The front-matter guard reshape of commit daaf0ffa0 (superseding 503ec902c) and its extension 6f70a2085,
+  recorded for veto in the sections "The Carena pass finished and was refused at publish time" and "The
+  Toka_ls relaunch was killed at 77 minutes, in consolidation": a byte-equal keep that the translate
+  judges chose, every heard translator reproduced, the lane contest chose or endorsed, the consolidation
+  slate endorsed, or the consolidation gate kept with a quorum, now publishes; every fallback refuses by
+  the decision's name. The 2026-08-28 rule refused all of them.
 - XIEPT2 and keyword233: not in the chain. Running them needs either a fresh Synthetic week or the
   owner's say on a run longer than an hour at overlap 2.
