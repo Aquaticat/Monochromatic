@@ -665,8 +665,11 @@ In order:
 
 1.  DONE at 04:43 UTC as commit `6f70a2085`: the guard reads the stage that shipped the metadata (see
     the Toka_ls section); whole-suite run and sol review of the extension pending when this was written.
-2.  Read the pipeline's actual output from the Toka_ls slice cache (task 3): every slice as source,
-    archive, translate output and contest choice, read against the source. No provider budget needed.
+2.  DONE at 05:05 UTC: `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md` reads every
+    Toka_ls slice against its source off the cache (preparation rebuilt from the cached pairings). Findings
+    a reader would not pass: a wrong pronoun at slice 9 (seven of seven judges), a re-rendered work title
+    at slice 10, an unidiomatic heading at slice 12, and `> ` trailing-space churn copied from the source,
+    including a whitespace-only "replacement" judged five to two at slice 1.
 3.  Toka_ls again when Synthetic is wet and the guard would accept its result; no rerun before both hold,
     because a rerun on any built tree that exists today ends refused at publish with no artifact. Timing is
     the owner's say. Carena0442 after it, gated the same way. Each landed artifact goes through
