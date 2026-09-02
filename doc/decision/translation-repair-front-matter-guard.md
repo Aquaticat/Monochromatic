@@ -14,8 +14,12 @@ Landed as commit `34e5c7ecd` in `package/module/translation-repair/src/corpus-ru
 - `invalid-page`: the page's metadata does not parse, or breaks the identity rule (source name equal to
   alias requires the same on the page) or the contributor-attribution rule in
   `validateFrontMatterTranslation`.
-- `directory-id-name`: the page's visible `name` is the entry's directory id, checked on the assembled
-  page whether or not it equals the archive byte for byte.
+- `directory-id-name`: the page's visible `name` is the entry's directory id while the source's is not,
+  checked on the assembled page whether or not it equals the archive byte for byte. Narrowed by
+  `6d85b619a` on a census of the pinned corpus: 23 of 92 archives name the directory, and 8 of them
+  (Anilovr, Arita, ArtsEpiphany, Hangmster, keyword233, Mio, mone, s5ehfr9) do so in the source too,
+  because the handle is the person's name; the page-only form of `34e5c7ecd` would have refused those
+  eight forever.
 
 Whether the lanes kept the archive's metadata or replaced it is not a question the guard asks. The lanes,
 the lane contest and the consolidation gate judge the metadata slice like every other slice, and the
@@ -41,7 +45,9 @@ is in `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md`; the night
 
 - A hold-starved judge indecision on the metadata slice publishes the archive's metadata as it stands, as
   it does for any other slice. The artifact records the indecision; the reading catches it.
-- The directory-id refusal is wider than before: it fires on any assembled page whose visible name is the
-  directory id, not only on a byte-equal keep.
+- The directory-id refusal is wider than before in one direction and narrower in another: it fires on any
+  assembled page whose visible name is the directory id, not only on a byte-equal keep, and it does not
+  fire where the source names the person by that same handle. The 15 archives that show the directory id
+  where the source has a name of its own (the #269 shape) stay refused until a lane renders the name.
 - `FrontMatterCompletenessError` carries no decision detail any more; its message names the entry and the
   structural reason only.

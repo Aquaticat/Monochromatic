@@ -1463,7 +1463,7 @@ Since `34e5c7ecd` (2026-09-02, owner's decision in `doc/decision/translation-rep
 the metadata slice sits at slice zero over both sides' front-matter bytes,
 the page parses,
 the identity and attribution rules hold,
-and the page's visible name is not the directory id (`directory-id-name`, checked on the assembled page whether or not it equals the archive).
+and the page's visible name is not the directory id where the source names the person differently (`directory-id-name`, checked on the assembled page whether or not it equals the archive; since `6d85b619a` a handle that is the name in both languages, as for 8 of the pinned corpus's 92 entries, passes).
 Whether the lanes kept the archive's metadata is not the guard's question:
 Chinese and English metadata always differ,
 so the 2026-08-28 byte comparison fired on every kept incumbent and discarded the Carena0442 pass,

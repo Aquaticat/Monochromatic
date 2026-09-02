@@ -829,7 +829,13 @@ exit 0, oxlint 0 warnings, types clean), and the chain was requeued on the fixed
   not outlast the 31 s burst its own comment cited, so the backoff is now `BUDGET_FRESH_MS` (60 s): the
   hold expires with the reading that excused it.
 - `4d7c47159`: rule `QDF` measured 211 characters after whitespace normalisation against `RLM`'s 200;
-  trimmed to 175 by dropping a clause its first sentence already says. `QPW` measures 161.
+  trimmed to 181 (measured after the edit) by dropping a clause its first sentence already says. `QPW`
+  measures 161.
+
+One count to reconcile: the house-rule commit, the identity-context comment and its test say the Toka_ls
+page uses 她 "sixteen times". That figure was a line count (`rg -c`, 16 lines carry the character); the
+occurrence count is 20, on the whole page and on the body alike, and 20 is what the identity line now
+states. The two source wordings get corrected in the post-launch batch below.
 
 GFP for all six behaviours, each neutralised in source, rebuilt, its test run alone, restored and rebuilt
 (`~/temp/agent/gfp-20260902/`): the router hold-wait test (3 FAIL lines with the wait skipped), the
@@ -852,3 +858,14 @@ Measurements the reviewer asked for, with what they change:
 
 Left as recorded, not acted on: the house-policy pronoun rule reaches Carena and keyword233 only; the
 Toka_ls rerun predates it.
+
+Source edits held until Carena's launch line appears in the chain's output, because the chain builds the
+tree at Toka_ls exit and a half-landed edit would be what it compiles. Each is a defect under `QDF`, done
+unasked once the line is there:
+
+- The comment in `provider-router.ts` at the re-route ("the only remaining destination is the one that
+  just refused us") predates holds; `b547e80ed` did not touch that file.
+- The `> ` trailing-space fold before judging: the Toka_ls reading found whitespace-only churn copied
+  from the source and a whitespace-only "replacement" judged five to two at slice 1.
+- The both-dry error's message text (#474 option 3): state the measured facts, meters and holds.
+- "sixteen times" in `identity-context.ts` and its test name: 20 occurrences on 16 lines.
