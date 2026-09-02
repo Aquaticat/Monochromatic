@@ -683,7 +683,9 @@ In order:
     `~/temp/agent/pin-rerun-keyword233-20260902.log`. XIEPT2 is held back under `FIT` (measured below).
     Carena is the first live run of the unseated roster, the structural guard, the 429 backoff, the
     recovery nudge and the pronoun line at once, so its first two minutes are read for the roster banner
-    and any assertion before anything else. The chain builds at each launch (the corpus-pass task
+    and any assertion before anything else. As it stands at 10:55 UTC: Toka_ls ended INCOMPLETE (see
+    "The Toka_ls rerun ended INCOMPLETE at 117 minutes"), Carena0442 runs since 10:38:50 on
+    `3852e4d86`, keyword233 follows it, and Toka_ls is queued after both on the tree with `321b12673`. The chain builds at each launch (the corpus-pass task
     depends on build), so Carena and keyword233 will run on different commits by design: the
     work-title rule (task 21) and the post-launch batch (task 22) land as whole commits inside Carena's
     run, the tree clean between them and before Carena's TALLY line; the chain echoes each launch's
@@ -770,6 +772,49 @@ What the run measured before it died, all off `~/temp/agent/pin-relaunch-Toka_ls
   settlers, and the equality relation is raw bytes at every step, which is also what the guard compares.
 - Slice 15 is the first live matched-keep: `decision=sole-candidate origin=incumbent`, incumbent producer
   matched by all seven translators. The `matched` list is filled in practice.
+
+## The Toka_ls rerun ended INCOMPLETE at 117 minutes, on a guard the no-loop design had superseded
+
+The rerun of 08:39 to 10:37 UTC on `8e3171b34` exited 0 with `TALLY Toka_ls status=INCOMPLETE ms=7063121
+error=slice 10 did not meet absolute naturalness floor`: no page, no artifact, the real clone clean, 0
+refusals and 0 holds in 7,063 seconds. Seats: GLM-5.3-Flash threw 78 of 211 (the 60 s window, as
+before), Qwen3.8-27B 24 of 212, every other seat 3 or fewer.
+
+What happened to slice 10 (the 29-line letter in blockquote that follows the 《奇妙漂流》 sentence), read
+off the log and the source:
+
+- The lane contest settled on neither lane without endorsing the archive, so the standing text lacked
+  contest endorsement (`standingMayShip` false).
+- Consolidation's single attempt kept the standing text (`slate-declined-standing`, judges tied at
+  weight 3), and the no-loop rule shipped it "with the finding recorded"
+  (`consolidation-standing-unendorsed`, `consolidate-slice-buy.ts`, design of 2026-09-01).
+- Polish is not run over a baseline the fidelity gates never admitted (`not-run`, `unsafe-baseline`).
+- At artifact time `assertFinalNaturalnessComplete` (commit `6fadd3be0`, 2026-08-28, "require absolute
+  naturalness") refused any body slice whose polish is not settled, and the whole entry was dropped.
+  The same guard refused the `Weideriche_` first attempt after 4,840,305 ms on 2026-08-29 (recorded in
+  the multi-provider decision doc).
+
+Fixed by `321b12673`: the guard accepts the no-loop record (`not-run` with reason `unsafe-baseline`)
+and still refuses every other body slice without a settled polish; the artifact carries the reason and
+the reading catches it. The test fails with the acceptance removed (2 FAIL lines) and passes restored.
+Recorded for veto as the later stated policy winning over the earlier guard; the alternative, refusing
+the entry, is what fast iteration cannot afford at two hours an attempt.
+
+A second defect, found on the way and tracked as task 25: the absolute reviewer is shown only the
+"refinable" paragraphs (`paragraph` blocks), and a finding naming any other paragraph number is
+refused with the whole ballot. Slice 10's candidate has zero refinable paragraphs (it is one blockquote),
+so in its 10:35 review six of nine reviewers who located findings by stanza were refused as
+schema-mismatch and only the three "acceptable" ballots survived. Across the run, 38 of 1,582 recorded
+replies are unacceptable verdicts with located findings. `reviewParagraphsOf` (every body block) is
+written but not yet used: the artifact reader recomputes paragraph digests with the refinable set, so
+switching needs an artifact generation the reader can tell apart.
+
+The chain that was to follow Toka_ls never fired on its own: its wait loop matched its own command line
+(`pgrep -f 'corpus-pass.mjs --only Toka_ls'` sees the bash that carries that text). Carena0442 was
+launched by hand at 10:38:50 on `3852e4d86`, before `321b12673`, so it can still die on the same guard
+if any of its body slices ends unendorsed; keyword233 follows on the fixed tree, and Toka_ls is queued
+after the chain at overlap 3 (about 117 minutes at overlap 2 is the measurement; overlap 3 is the
+choice, veto invited) into `~/temp/agent/toka-rerun2-20260902`.
 
 ## Decisions waiting on the owner
 
