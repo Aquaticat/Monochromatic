@@ -633,3 +633,21 @@ meter gate and Carena0442 as the section before this one says. Each landed artif
 script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3, in this order: `git status --short` on the
 real clone, `verify-published`, the reader script, then the translate-round heard counts under the writer
 dial against the first run's two Qwen cuts at 60 s, which is the dial's first live measurement.
+
+## Decisions waiting on the owner
+
+Collected here so a reader of the last section has the whole list; each item's evidence lives in the
+section or issue it names.
+
+- Issue #473: recovery rounds for unreadable answers are served from the prompt-uniqueness cache in
+  0 to 1 ms and never recover anything. Vary the prompt with the guard's complaint, or delete the round.
+- Issue #474: an HTTP 429 (a concurrency limit on Synthetic) is read as a budget refusal and holds the
+  provider dry for five minutes whatever its meter says; two holds at once end the pass and fail every
+  remaining entry in under a second. Re-read the meter on 429 and back off briefly, or wait out the
+  shorter hold, or at least state measured facts in the message. The fixed minimum vote weight of 3,
+  which a 4-of-8 ballot round cannot reach while a provider is held, belongs to the same decision.
+- The front-matter guard change of commit 503ec902c, recorded for veto in the section "The Carena pass
+  finished and was refused at publish time": a decided keep now publishes, so a wrong incumbent kept by
+  a split vote publishes unchanged where the 2026-08-28 rule made the entry retryable.
+- XIEPT2 and keyword233: not in the chain. Running them needs either a fresh Synthetic week or the
+  owner's say on a run longer than an hour at overlap 2.
