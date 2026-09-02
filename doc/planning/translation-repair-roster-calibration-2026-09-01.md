@@ -655,17 +655,26 @@ which the standing readers refuse to pool, and a broken build launches a broken 
 
 ## Next action
 
-Toka_ls is running alone under the writer dial at overlap 2 on the build before either guard change. If
-its page is refused at publish time, its metadata judge round gets read the way Carena's was (weight, split,
-decision) and the rerun is decided by hand: the slice cache is digest-keyed, so a rerun is a full two hours,
-and an indecision keep is refused again by the reshaped guard. No automatic rerun. Then the meter gate and
-Carena0442 as the section before this one says, on the `daaf0ffa0` build. The gate reads the meter once at
-launch. Measured across the Toka_ls run's 37 meter readings: Synthetic's weekly fell from 5.24% at launch
-(02:46) to 3.16% at 03:32, 2.7 points an hour under one entry at overlap 2, which puts zero at about 04:40
-UTC; Toka_ls's translate lane was at 3 of 16 slices at 03:32, so Carena either fails the gate or launches
-with under a point of Synthetic left and runs on Hyper alone, which is the load shape of the pin pass death
-(#474). Either outcome is expected and recorded here, not a regression; if the gate refuses, Toka_ls's
-artifact is still the first real artifact for the task 3 reading. Each landed artifact goes through
+Nothing is running. The Toka_ls relaunch was killed at 04:02:54 UTC (00:02:54 local, three minutes past
+midnight, recorded as a correlation and not a cause) and Carena0442 never launched. Measured across the
+Toka_ls run's 37 meter readings: Synthetic's weekly fell from 5.24% at launch (02:46) to 3.16% at 03:32 and
+2.0% at 04:02, 2.7 points an hour under one entry at overlap 2, so it is gone within the half hour.
+
+In order:
+
+1.  Extend the front-matter guard to read the stage that shipped the metadata, in the order
+    `wouldShipTextFor` walks (polish, consolidation, contest, lanes): a consolidation gate that shipped the
+    standing text with quorum-backed ballots, or a lane contest that chose the lane carrying the archive's
+    text with quorum-backed usable ballots, is a review of the incumbent and publishes as a keep named by
+    that stage. Everything else stays a fallback named by its decision. Tests built from the real Toka_ls
+    records in the slice cache, run before the change so the refusal is on the record; recorded for veto as
+    restoring the 2026-08-28 intent (reviewed metadata publishes, unreviewed refuses), since a nine-judge
+    gate keeping the archive over a candidate is the review that rule was asking for.
+2.  Read the pipeline's actual output from the Toka_ls slice cache (task 3): every slice as source,
+    archive, translate output and contest choice, read against the source. No provider budget needed.
+3.  Toka_ls again when Synthetic is wet and the guard would accept its result; no rerun before both hold,
+    because a rerun on any built tree that exists today ends refused at publish with no artifact. Timing is
+    the owner's say. Carena0442 after it, gated the same way. Each landed artifact goes through
 `verify-published` (which reads `artifacts/` and `fixed/` and never touches `pass.lock`) and the reader
 script (`~/temp/agent/read-artifact-20260902.mjs`) for task 3, in this order: `git status --short` on the
 real clone, `verify-published`, the reader script, then the translate-round heard counts under the writer
