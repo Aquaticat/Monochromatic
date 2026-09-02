@@ -59,6 +59,37 @@ In the morning it dozes on the windowsill[^1].
     },),
 
     it({
+      name: 'REPORTS a backslash before a quotation mark as a JSON escape leaked into the text, and stays '
+        + 'quiet where the original or the page carries the sequence itself: the Carena0442 page of '
+        + '2026-09-02 shipped `so-called \\"common sense.\\"` through every guard',
+      fn: async () => {
+        /**
+         * Verdict over a candidate carrying the leaked escape.
+         */
+        const leaked = validateTranslatedSlice({
+          sourceText: '早上它在所谓的“窗台”上打盹。',
+          pageText: 'In the morning it dozes on the so-called “windowsill.”',
+          candidateText: 'In the morning it dozes on the so-called \\"windowsill.\\"',
+        },);
+        expect(leaked.kind,).toBe('invalid',);
+        expect(
+          (leaked.kind === 'invalid') ? leaked.findings.join('\n',) : '',
+        ).toContain('backslash before a quotation mark',);
+
+        /**
+         * Verdict over the same candidate where the original carries the
+         * sequence, so it is a rendering rather than a leak.
+         */
+        const carried = validateTranslatedSlice({
+          sourceText: '早上它在所谓的 \\"窗台\\" 上打盹。',
+          pageText: 'In the morning it dozes on the so-called “windowsill.”',
+          candidateText: 'In the morning it dozes on the so-called \\"windowsill.\\"',
+        },);
+        expect(carried.kind,).toBe('valid',);
+      },
+    },),
+
+    it({
       name: 'REPORTS a translation that merged the original heading into its '
         + 'prose, naming both shapes. The translator sheet asks for one block '
         + 'per original block, so a merge is the model not doing what it was '
