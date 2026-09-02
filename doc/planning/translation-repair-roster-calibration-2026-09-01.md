@@ -683,7 +683,11 @@ In order:
     `~/temp/agent/pin-rerun-keyword233-20260902.log`. XIEPT2 is held back under `FIT` (measured below).
     Carena is the first live run of the unseated roster, the structural guard, the 429 backoff, the
     recovery nudge and the pronoun line at once, so its first two minutes are read for the roster banner
-    and any assertion before anything else.
+    and any assertion before anything else. The chain builds at each launch (the corpus-pass task
+    depends on build), so Carena and keyword233 will run on different commits by design: the
+    work-title rule (task 21) and the post-launch batch (task 22) land as whole commits inside Carena's
+    run, the tree clean between them and before Carena's TALLY line; the chain echoes each launch's
+    short hash.
     Each landed page and artifact gets the task 3 reading (`~/temp/agent/read-artifact-20260902.mjs`),
     with slice 9's pronoun and the metadata slice's outcome checked first. Each landed artifact goes through
 `verify-published` (which reads `artifacts/` and `fixed/` and never touches `pass.lock`) and the reader
