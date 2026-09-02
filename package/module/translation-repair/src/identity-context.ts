@@ -212,6 +212,114 @@ function renderField(
 }
 
 /**
+ * Third-person singular pronouns a Chinese original can use for its subject,
+ * in the order a tie is broken.
+ *
+ * `TA` IS THE NEUTRAL FORM this corpus writes for a person who did not specify;
+ * it is counted case-sensitively because `ta` inside a romanised handle is not
+ * a pronoun.
+ */
+const SOURCE_PRONOUNS = [
+  '她',
+  '他',
+  'TA',
+] as const;
+
+/**
+ * Counts how often one pronoun occurs in a text.
+ *
+ * AN INDEX SCAN RATHER THAN A PATTERN, since the needle is a fixed string and
+ * the count is all that is wanted.
+ *
+ * @param text - original document
+ *
+ * @param pronoun - fixed form to count
+ *
+ * @returns Occurrences
+ *
+ * @example
+ * ```ts
+ * countOf({ text: '她走了。她笑了。', pronoun: '她', },);
+ * // => 2
+ * ```
+ */
+function countOf(
+  {
+    text,
+    pronoun,
+  }: {
+    readonly text: string;
+    readonly pronoun: string;
+  },
+): number {
+  return text.split(pronoun,)
+    .length
+    - 1;
+}
+
+/**
+ * Names the pronoun the original uses for its subject, as one identity line.
+ *
+ * WHY THIS LINE EXISTS. The Toka_ls relaunch of 2026-09-02 rendered a
+ * subjectless sentence (偶尔灵感迸发，左右推敲，留下工整的格律) with "they" for a
+ * person the page calls "she" throughout, and all eight judges passed it
+ * reasoning that "the Chinese gives no pronoun". The original uses 她 sixteen
+ * times. Chinese leaves subjects unstated freely, so the pronoun is a fact
+ * about the document, not about the sentence, and this states it once where
+ * every sheet already reads the declared identity.
+ *
+ * ONE LINE OR NONE. The dominant form is named with its count; a document that
+ * uses no third-person singular pronoun at all yields nothing, which leaves
+ * the house rule on neutral pronouns to speak for itself.
+ *
+ * @param text - whole original document
+ *
+ * @returns Single-line list naming the dominant pronoun and its count, empty
+ * when the original uses none
+ *
+ * @example
+ * ```ts
+ * sourcePronounLines({ text: '她睁开双眼。她笑了。', },);
+ * // => ['- pronoun: ORIGINAL refers to this person as "她" (2 times)']
+ * ```
+ */
+export function sourcePronounLines(
+  { text, }: { readonly text: string; },
+): readonly string[] {
+  /**
+   * Each form with its count, in tie-break order.
+   */
+  const counts = SOURCE_PRONOUNS.map(function counted(pronoun,): {
+    readonly pronoun: string;
+    readonly count: number;
+  } {
+    return {
+      pronoun,
+      count: countOf({
+        text,
+        pronoun,
+      },),
+    };
+  },);
+
+  /**
+   * The form used most, the earlier form winning a tie.
+   */
+  const dominant = counts.reduce(function moreUsed(
+    best,
+    candidate,
+  ) {
+    return (candidate.count > best.count) ? candidate : best;
+  },);
+  if (dominant.count === 0)
+    return [];
+
+  return [
+    `- pronoun: ORIGINAL refers to this person as "${dominant.pronoun}" (${String(dominant.count,)} times)`,
+  ];
+}
+
+/**
  * Collects the identity lines both sides' front matter declares, ready to
  * embed in a critic prompt. An empty result means neither side declared
  * anything, so callers omit the block rather than emit an empty heading;

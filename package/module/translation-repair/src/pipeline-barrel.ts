@@ -218,6 +218,7 @@ export {
   collectIdentityLines,
   type DeclaredIdentity,
   extractDeclaredIdentity,
+  sourcePronounLines,
 } from './identity-context.ts';
 export {
   SLICE_CHAR_BUDGET,

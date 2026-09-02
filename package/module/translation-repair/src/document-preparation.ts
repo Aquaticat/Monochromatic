@@ -9,6 +9,7 @@ import { declaredNameForms, } from './declared-name-survival.ts';
 import {
   collectIdentityLines,
   extractDeclaredIdentity,
+  sourcePronounLines,
 } from './identity-context.ts';
 import {
   type ChunkGovernance,
@@ -310,6 +311,10 @@ export function prepareDocumentPair(
    */
   const identityContextLines = [
     ...identityLines,
+    // THE PRONOUN THE ORIGINAL USES FOR ITS SUBJECT, read off the whole
+    // document, so a sheet judging one subjectless sentence knows who it is
+    // about (the Toka_ls "they" of 2026-09-02).
+    ...sourcePronounLines({ text: sourceText, },),
     ...contributorNames.map(function contributorLine(name,): string {
       return `target contributor: ${name}`;
     },),
