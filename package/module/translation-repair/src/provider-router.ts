@@ -2,6 +2,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  HOLD_POLL_MS,
+  readBudgetsPastHolds,
+} from './budget-hold-wait.ts';
+import {
   type ModelReach,
   routeProviderFor,
 } from './budget-routing.ts';
@@ -21,6 +25,10 @@ import type {
   ProviderBudgets,
   ProviderName,
 } from './provider-budget.ts';
+import type {
+  ReAskReply,
+  RoutedReply,
+} from './provider-router-reply.ts';
 import type { RosterModelId, } from './roster-id.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
 import {
@@ -121,58 +129,6 @@ function reachFor(
 }
 
 /**
- * One answer plus the provider that produced it.
- *
- * THE PROVIDER TRAVELS WITH THE REPLY because the schema re-ask needs to know
- * where NOT to ask again, and nothing in the reply itself records it.
- *
- * @example
- * ```ts
- * const answered: RoutedReply = { provider: 'hyper', reply, };
- * ```
- */
-type RoutedReply = {
-  /**
-   * Provider that served this call.
-   */
-  readonly provider: ProviderName;
-
-  /**
-   * What it answered.
-   */
-  readonly reply: ChatTextReply;
-};
-
-/**
- * What a re-ask came back with.
- *
- * A NAMED REFUSAL RATHER THAN AN ABSENT REPLY, because the two are different
- * facts: the provider was asked and said no on budget, which the caller keeps
- * the first answer over, as opposed to never having been asked.
- *
- * @example
- * ```ts
- * const asked: ReAskReply = { kind: 'budget-refused', };
- * ```
- */
-type ReAskReply = {
-  /**
-   * Provider answered.
-   */
-  readonly kind: 'replied';
-
-  /**
-   * What it said.
-   */
-  readonly reply: ChatTextReply;
-} | {
-  /**
-   * Provider refused on budget, and its cooldown has started.
-   */
-  readonly kind: 'budget-refused';
-};
-
-/**
  * Builds the client that routes each call to whichever provider can serve it.
  *
  * @param synthetic - first provider's text call, which is all this delegates
@@ -184,6 +140,9 @@ type ReAskReply = {
  * @param syntheticSlotsPerModel - concurrent calls the first provider's client
  * grants one model, which decides when it counts as saturated; must match the
  * `perModelConcurrency` that client was built with
+ *
+ * @param holdPollMs - how often a call waiting out a hold checks for abort;
+ * injectable so a test waits milliseconds rather than a second
  *
  * @returns Client surface a stage calls without naming a provider
  *
@@ -198,11 +157,13 @@ export function createRoutingClient(
     hyper,
     budgets,
     syntheticSlotsPerModel = SYNTHETIC_PER_MODEL_CONCURRENCY,
+    holdPollMs = HOLD_POLL_MS,
   }: {
     readonly synthetic: Pick<SyntheticClient, 'chatText'>;
     readonly hyper: Pick<HyperClient, 'chatText'>;
     readonly budgets: ProviderBudgets;
     readonly syntheticSlotsPerModel?: number;
+    readonly holdPollMs?: number;
   },
 ): ModelCaller {
   /**
@@ -253,7 +214,8 @@ export function createRoutingClient(
    *
    * @throws {@link NoProviderForModelError} when nowhere can take it
    *
-   * @throws {@link import('./budget-routing.ts').BothProvidersDryError} when both are out of budget
+   * @throws {@link import('./budget-routing.ts').BothProvidersDryError} when
+   * both are out of budget with no refusal hold left to wait out
    *
    * @example
    * ```ts
@@ -275,19 +237,26 @@ export function createRoutingClient(
     const reach = reachFor({ request, },);
 
     /**
-     * What each provider's budget looks like right now.
+     * What each provider's budget looks like right now, the refusal that routed
+     * here folded in and any hold both providers were under waited out.
      */
     const {
       syntheticDry,
       hyperDry,
-    } = await budgets.read({ signal: request.signal, },);
+    } = await readBudgetsPastHolds({
+      budgets,
+      modelId: request.modelId,
+      signal: request.signal,
+      syntheticDown,
+      pollMs: holdPollMs,
+    },);
 
     /**
      * Where the owner's policy sends this call.
      */
     const choice = routeProviderFor({
       reach,
-      syntheticDry: syntheticDry || syntheticDown,
+      syntheticDry,
       hyperDry,
       syntheticSaturated: (inFlightOnSynthetic.get(request.modelId,) ?? 0) >= syntheticSlotsPerModel,
     },);
@@ -431,8 +400,11 @@ export function createRoutingClient(
       if (!isBudgetRefusal({ error, },))
         throw error;
 
-      budgets.markRefused({ provider, },);
-      rl.warn(`${request.modelId}: ${provider} is out of budget on the re-ask; keeping the first answer`,);
+      await budgets.markRefused({
+        provider,
+        signal: request.signal,
+      },);
+      rl.warn(`${request.modelId}: ${provider} refused the re-ask; keeping the first answer`,);
       return { kind: 'budget-refused', };
     }
   }
@@ -484,8 +456,11 @@ export function createRoutingClient(
       if (!isBudgetRefusal({ error, },))
         throw error;
 
-      budgets.markRefused({ provider: first, },);
-      rl.warn(`${request.modelId}: ${first} is out of budget, asking the other provider`,);
+      await budgets.markRefused({
+        provider: first,
+        signal: request.signal,
+      },);
+      rl.warn(`${request.modelId}: ${first} refused us, asking the other provider`,);
 
       /**
        * Provider left once the refusing one is held out, which raises rather

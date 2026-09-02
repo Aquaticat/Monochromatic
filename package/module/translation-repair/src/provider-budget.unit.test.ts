@@ -225,35 +225,84 @@ await describe({
     },),
 
     it({
-      name: 'holds a provider that refused us out past its own meter',
+      name: 'HOLDS A PROVIDER THAT REFUSED US WHILE ITS METER READS WET for the rate-limit backoff, '
+        + 'not the exhaustion cooldown, re-reading the meter at once: a 429 from a wet provider is '
+        + 'its concurrency limit, and the five-minute hold on it is what ended the pin pass of '
+        + '2026-09-02 (#474)',
       fn: async () => {
         /** Stub providers whose meters both report budget left. */
-        const { synthetic, hyper, } = stubProviders({},);
-        /** Clock the cooldown is judged against. */
+        const { synthetic, hyper, reads, } = stubProviders({},);
+        /** Clock the holds are judged against. */
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
-          cooldownMs: 300,
+          cooldownMs: 10_000,
+          rateLimitBackoffMs: 300,
           now: () => clock,
         },);
 
-        budgets.markRefused({ provider: 'hyper', },);
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.markRefused({
+          provider: 'hyper',
+          signal: SIGNAL,
+        },);
+        // The refusal forced a second read inside the freshness window.
+        expect(reads.credits,).toBe(2,);
+        expect(budgets.holds(),).toEqual({
+          synthetic: 0,
+          hyper: 300,
+        },);
 
-        // The meter says spendable and the refusal outranks it, because a
-        // meter can lag a 429 by its own refresh interval and clearing on it
-        // walks straight back into the same wall.
+        // Held out for the backoff even though the meter says spendable.
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
           syntheticDry: false,
           hyperDry: true,
         },);
 
         clock += 300;
+        expect(budgets.holds(),).toEqual({
+          synthetic: 0,
+          hyper: 0,
+        },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
           syntheticDry: false,
           hyperDry: false,
         },);
+      },
+    },),
+
+    it({
+      name: 'HOLDS A PROVIDER OUT FOR THE WHOLE COOLDOWN when its meter cannot be read on the refusal, '
+        + 'since a refusal is stickier than a reading that never came',
+      fn: async () => {
+        /** Stub providers whose first meter is unreachable. */
+        const { synthetic, hyper, } = stubProviders({ quotaThrows: true, },);
+        /** Clock the holds are judged against. */
+        let clock = 1_000;
+        /** Budget view under test, on an injected clock. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          cooldownMs: 300,
+          rateLimitBackoffMs: 50,
+          now: () => clock,
+        },);
+
+        await budgets.markRefused({
+          provider: 'synthetic',
+          signal: SIGNAL,
+        },);
+        expect(budgets.holds().synthetic,).toBe(300,);
+
+        clock += 50;
+        // Past the backoff, still inside the cooldown.
+        expect((await budgets.read({ signal: SIGNAL, },)).syntheticDry,).toBe(true,);
+
+        clock += 250;
+        // The cooldown ended and an unreadable meter counts as spendable.
+        expect((await budgets.read({ signal: SIGNAL, },)).syntheticDry,).toBe(false,);
       },
     },),
 
@@ -272,7 +321,12 @@ await describe({
           now: () => clock,
         },);
 
-        budgets.markRefused({ provider: 'hyper', },);
+        await budgets.markRefused({
+          provider: 'hyper',
+          signal: SIGNAL,
+        },);
+        // A dry meter agrees with the refusal, so the hold is the cooldown.
+        expect(budgets.holds().hyper,).toBe(300,);
         clock += 1_000;
 
         // The cooldown is one-directional: it can only hold a provider out.

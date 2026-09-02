@@ -124,6 +124,12 @@ export {
   syntheticMeterLevel,
 } from './budget-routing.ts';
 export {
+  HOLD_POLL_MS,
+  readBudgetsPastHolds,
+  shortestHold,
+  waitOutHold,
+} from './budget-hold-wait.ts';
+export {
   CreditsShapeError,
   type HyperCredits,
   parseHyperCredits,

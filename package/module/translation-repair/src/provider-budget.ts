@@ -65,6 +65,19 @@ const BUDGET_FRESH_MS = 60_000;
 const REFUSAL_COOLDOWN_MS = 300_000;
 
 /**
+ * How long a provider stays out after refusing us while its meter reads wet.
+ *
+ * A 429 FROM A WET PROVIDER IS A CONCURRENCY LIMIT, NOT EXHAUSTION. The pin
+ * pass of 2026-09-02 (`#474`) held Synthetic out for the whole cooldown on a
+ * burst of 429s while its meter read 2729 of 2750, and two such holds ended the
+ * pass for every remaining entry. The bursts measured there lasted 31 s
+ * (01:39:20 to 01:39:51) and 3 s (01:40:32 to 01:40:35, 01:54:06 to 01:54:08),
+ * so a hold in the tens of seconds outlasts every burst seen and clears while
+ * the meter is still the same reading it was.
+ */
+const RATE_LIMIT_BACKOFF_MS = 30_000;
+
+/**
  * Logger root for the budget layer.
  */
 const l = tagged({ tag: 'translation-repair', },);
@@ -95,6 +108,27 @@ export type BudgetView = {
 export type ProviderName = 'synthetic' | 'hyper';
 
 /**
+ * One reading of both meters: the routed bits and the states they came from.
+ *
+ * BOTH KEPT, because a refusal needs the state (a wet meter makes the refusal
+ * a rate limit; an unreadable one keeps it sticky) while routing needs only
+ * the bit.
+ *
+ * @internal
+ */
+type MeterReading = {
+  /**
+   * Routed dryness of each provider.
+   */
+  readonly view: BudgetView;
+
+  /**
+   * What each meter said, or that it said nothing.
+   */
+  readonly states: Record<ProviderName, MeterState>;
+};
+
+/**
  * Cached budget state, correctable by what a refused call reported.
  *
  * @example
@@ -109,9 +143,21 @@ export type ProviderBudgets = {
   readonly read: (args: { readonly signal: AbortSignal; },) => Promise<BudgetView>;
 
   /**
-   * Records that a provider refused us, holding it out for the cooldown.
+   * Records that a provider refused us, re-reading its meter at once and
+   * holding it out for the cooldown when the meter agrees or cannot be read,
+   * for the rate-limit backoff when the meter still reads wet.
    */
-  readonly markRefused: (args: { readonly provider: ProviderName; },) => void;
+  readonly markRefused: (args: {
+    readonly provider: ProviderName;
+    readonly signal: AbortSignal;
+  },) => Promise<void>;
+
+  /**
+   * How much longer each provider is held out by a refusal, zero when it is
+   * not, so a caller facing two held providers can wait out the shorter hold
+   * rather than declare the run over.
+   */
+  readonly holds: () => Record<ProviderName, number>;
 };
 
 /**
@@ -283,12 +329,14 @@ export function createProviderBudgets(
     hyper,
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
+    rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
     now = Date.now,
   }: {
     readonly synthetic?: Pick<SyntheticClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
+    readonly rateLimitBackoffMs?: number;
     readonly now?: () => number;
   },
 ): ProviderBudgets {
@@ -298,17 +346,23 @@ export function createProviderBudgets(
    * THE PRE-READ VIEW IS NOT A PLACEHOLDER LIE. Before any meter has answered,
    * nothing is known about either budget, and this file's policy for an
    * unknown budget is already that it counts as spendable. The zero stamp
-   * forces a read on the first call regardless, exactly as `refusedAt` uses
+   * forces a read on the first call regardless, exactly as `heldUntil` uses
    * zero for a provider that has never refused us.
    */
   const cache: {
     startedAt: number;
-    reading: Promise<BudgetView>;
+    reading: Promise<MeterReading>;
   } = {
     startedAt: 0,
     reading: Promise.resolve({
-      syntheticDry: false,
-      hyperDry: false,
+      view: {
+        syntheticDry: false,
+        hyperDry: false,
+      },
+      states: {
+        synthetic: 'unreadable',
+        hyper: 'unreadable',
+      },
     },),
   };
 
@@ -332,7 +386,7 @@ export function createProviderBudgets(
    */
   async function takeReading(
     { signal, }: { readonly signal: AbortSignal; },
-  ): Promise<BudgetView> {
+  ): Promise<MeterReading> {
     /**
      * Logger pre-tagged with this function's name.
      */
@@ -407,42 +461,72 @@ export function createProviderBudgets(
       ...hyperMeter.fields,
     ].join(' ',)}`,);
     return {
-      syntheticDry: routesAsDry({ state: syntheticMeter.state, },),
-      hyperDry: routesAsDry({ state: hyperMeter.state, },),
+      view: {
+        syntheticDry: routesAsDry({ state: syntheticMeter.state, },),
+        hyperDry: routesAsDry({ state: hyperMeter.state, },),
+      },
+      states: {
+        synthetic: syntheticMeter.state,
+        hyper: hyperMeter.state,
+      },
     };
   }
 
   /**
-   * When each provider last refused us, zero for never.
+   * Until when each provider is held out by a refusal, zero for never.
    */
-  const refusedAt: Record<ProviderName, number> = {
+  const heldUntil: Record<ProviderName, number> = {
     synthetic: 0,
     hyper: 0,
   };
 
   /**
-   * Whether a provider is inside its post-refusal cooldown.
+   * How much longer a provider's refusal holds it out, zero when it does not.
    *
    * @param provider - provider to check
    *
-   * @returns Whether its refusal still holds
+   * @returns Milliseconds of hold left
    *
    * @example
    * ```ts
-   * const held = inCooldown({ provider: 'hyper', },);
+   * const left = holdLeft({ provider: 'hyper', },);
    * ```
    */
-  function inCooldown(
+  function holdLeft(
     { provider, }: { readonly provider: ProviderName; },
-  ): boolean {
+  ): number {
     /**
-     * When it last refused us.
+     * When its hold ends.
      */
-    const at = refusedAt[provider];
+    const until = heldUntil[provider];
 
-    if (at === 0)
-      return false;
-    return (now() - at) < cooldownMs;
+    if (until === 0)
+      return 0;
+    return Math.max(
+      0,
+      until - now(),
+    );
+  }
+
+  /**
+   * Starts a reading now, whatever the cache's age, for everyone who reads
+   * after it.
+   *
+   * @param signal - abort signal of the call forcing the read
+   *
+   * @returns The fresh reading
+   *
+   * @example
+   * ```ts
+   * const reading = await readNow({ signal, },);
+   * ```
+   */
+  async function readNow(
+    { signal, }: { readonly signal: AbortSignal; },
+  ): Promise<MeterReading> {
+    cache.startedAt = now();
+    cache.reading = takeReading({ signal, },);
+    return await cache.reading;
   }
 
   return {
@@ -451,25 +535,26 @@ export function createProviderBudgets(
       // says when this reading BEGAN, so a call arriving while it is still in
       // flight sees a fresh stamp and waits on the same promise instead of
       // starting a second read of both meters.
-      if ((cache.startedAt === 0) || ((now() - cache.startedAt) >= freshForMs)) {
-        cache.startedAt = now();
-        cache.reading = takeReading({ signal, },);
-      }
+      if ((cache.startedAt === 0) || ((now() - cache.startedAt) >= freshForMs))
+        await readNow({ signal, },);
 
       /**
        * Meter reading this call is decided on, shared with every other call
        * that arrived inside the same window.
        */
-      const view = await cache.reading;
+      const { view, } = await cache.reading;
 
-      // The cooldown can only hold a provider OUT, never bring one back in.
+      // A hold can only keep a provider OUT, never bring one back in.
       return {
-        syntheticDry: view.syntheticDry || inCooldown({ provider: 'synthetic', },),
-        hyperDry: view.hyperDry || inCooldown({ provider: 'hyper', },),
+        syntheticDry: view.syntheticDry || (holdLeft({ provider: 'synthetic', },) > 0),
+        hyperDry: view.hyperDry || (holdLeft({ provider: 'hyper', },) > 0),
       };
     },
 
-    markRefused: function markRefused({ provider, },): void {
+    markRefused: async function markRefused({
+      provider,
+      signal,
+    },): Promise<void> {
       /**
        * Logger pre-tagged with this function's name.
        */
@@ -478,8 +563,34 @@ export function createProviderBudgets(
         l,
       },);
 
-      refusedAt[provider] = now();
-      rl.info(`${provider}: refused us, held out for ${String(cooldownMs,)}ms`,);
+      // THE METER IS ASKED AT ONCE, freshness window or not. A refusal from a
+      // provider whose meter still reads wet is its concurrency limit, which
+      // clears in seconds, and holding it out for the exhaustion cooldown is
+      // what ended the pin pass of 2026-09-02 (`#474`). A meter that agrees, or
+      // one that cannot be read, keeps the refusal stickier than the reading.
+      /**
+       * What both meters said just now.
+       */
+      const { states, } = await readNow({ signal, },);
+      /**
+       * What that provider's meter said just now.
+       */
+      const state = states[provider];
+      /**
+       * How long this refusal holds the provider out.
+       */
+      const holdMs = (state === 'wet') ? rateLimitBackoffMs : cooldownMs;
+      heldUntil[provider] = now() + holdMs;
+      rl.info(
+        `${provider}: refused us while its meter reads ${state}; held out for ${String(holdMs,)}ms`,
+      );
+    },
+
+    holds: function holds(): Record<ProviderName, number> {
+      return {
+        synthetic: holdLeft({ provider: 'synthetic', },),
+        hyper: holdLeft({ provider: 'hyper', },),
+      };
     },
   };
 }

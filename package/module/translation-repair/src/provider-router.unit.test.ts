@@ -141,9 +141,16 @@ function stubBudgets(
   {
     syntheticDry = false,
     hyperDry = false,
+    holdsMs = {
+      synthetic: 0,
+      hyper: 0,
+    },
+    onHoldEnd,
   }: {
     readonly syntheticDry?: boolean;
     readonly hyperDry?: boolean;
+    readonly holdsMs?: Record<ProviderName, number>;
+    readonly onHoldEnd?: () => void;
   },
 ) {
   /**
@@ -159,18 +166,34 @@ function stubBudgets(
     hyperDry,
   };
 
+  /**
+   * How many times the holds were asked for.
+   */
+  const holdReads = { count: 0, };
+
   return {
     refused,
+    holdReads,
+    view,
     budgets: {
       read: async function read(): Promise<BudgetView> {
+        // A read after the holds were asked for is a read after the router
+        // waited, so the stub lets the test flip the view the way an expired
+        // hold would.
+        if (holdReads.count > 0)
+          onHoldEnd?.();
         return { ...view, };
       },
-      markRefused: function markRefused({ provider, }: { readonly provider: ProviderName; },): void {
+      markRefused: async function markRefused({ provider, }: { readonly provider: ProviderName; },): Promise<void> {
         refused.push(provider,);
         if (provider === 'synthetic')
           view.syntheticDry = true;
         else
           view.hyperDry = true;
+      },
+      holds: function holds(): Record<ProviderName, number> {
+        holdReads.count += 1;
+        return { ...holdsMs, };
       },
     },
   };
@@ -323,6 +346,80 @@ await describe({
         expect(refused,).toEqual(['hyper',],);
         expect(called,).toEqual(['hyper',],);
         expect(caught instanceof BothProvidersDryError,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'WAITS OUT THE SHORTER HOLD when both providers are held out by refusals, then routes '
+        + 'to the one that came back, instead of ending the run: the pin pass of 2026-09-02 (#474) '
+        + 'failed every remaining entry inside one second on two holds while both meters read wet',
+      fn: async () => {
+        /** Stub providers with budget on both sides. */
+        const { synthetic, hyper, called, } = stubProviders({},);
+        /** Budget view with both providers held, the first for 5 ms and the second for 20 ms. */
+        const stub = stubBudgets({
+          syntheticDry: true,
+          hyperDry: true,
+          holdsMs: {
+            synthetic: 5,
+            hyper: 20,
+          },
+          onHoldEnd: function syntheticComesBack(): void {
+            stub.view.syntheticDry = false;
+          },
+        },);
+        /** Router under test, polling for abort every millisecond. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets: stub.budgets,
+          holdPollMs: 1,
+        },);
+
+        expect((await client.chatText({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          messages: MESSAGES,
+          signal: SIGNAL,
+        },)).text,).toBe('{"spot":"windowsill"}',);
+        expect(called,).toEqual(['synthetic',],);
+        expect(stub.holdReads.count,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'ENDS THE RUN when both providers read dry with no hold to wait out, since nothing a '
+        + 'wait could change is left',
+      fn: async () => {
+        /** Stub providers with budget on both sides. */
+        const { synthetic, hyper, called, } = stubProviders({},);
+        /** Budget view with both meters dry and no refusal holding either. */
+        const { budgets, holdReads, } = stubBudgets({
+          syntheticDry: true,
+          hyperDry: true,
+        },);
+        /** Router under test. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets,
+          holdPollMs: 1,
+        },);
+        /** Failure both-dry produced. */
+        let caught: unknown;
+
+        try {
+          await client.chatText({
+            modelId: 'hf:moonshotai/Kimi-K3',
+            messages: MESSAGES,
+            signal: SIGNAL,
+          },);
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught instanceof BothProvidersDryError,).toBe(true,);
+        expect(called,).toEqual([],);
+        expect(holdReads.count,).toBe(1,);
       },
     },),
 
