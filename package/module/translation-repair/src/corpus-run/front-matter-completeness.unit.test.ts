@@ -1,6 +1,14 @@
 /**
  * Tests fail-closed front matter publication boundary.
  *
+ * THE CASE THAT MATTERS IS THE KEPT INCUMBENT. Until 2026-09-02 this guard read
+ * a page whose metadata equals the archive's as one nobody reviewed, and refused
+ * it; the Carena0442 pass of that day lost 94 minutes of settled body work to
+ * that reading after its translate lane had judged the metadata slice twice and
+ * kept a correct translation. The guard now reads the lane's own standing, so
+ * this suite proves a judged keep of translated metadata publishes, a default
+ * keep does not, and a kept directory id does not either way.
+ *
  * @module
  */
 
@@ -15,6 +23,8 @@ import {
   type ChunkPair,
   FrontMatterCompletenessError,
   frontMatterSlice,
+  type LaneSliceText,
+  metadataStandingOf,
   splitFrontMatter,
 } from '../../dist/final/node/index.mjs';
 
@@ -24,9 +34,14 @@ import {
 const SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n\nBody.\n';
 
 /**
- * Complete target page fixture.
+ * Complete target page fixture whose visible name is still the directory id.
  */
 const TARGET_TEXT = '---\nname: EntryId\ninfo:\n  alias: Maomao\n---\n\nBody.\n';
+
+/**
+ * Complete target page fixture whose metadata is already translated.
+ */
+const TRANSLATED_TEXT = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n';
 
 /**
  * Parsed source metadata fixture.
@@ -36,8 +51,17 @@ const sourceFrontMatter = splitFrontMatter({ text: SOURCE_TEXT, }).frontMatter;
  * Parsed target metadata fixture.
  */
 const targetFrontMatter = splitFrontMatter({ text: TARGET_TEXT, }).frontMatter;
-if ((sourceFrontMatter === undefined) || (targetFrontMatter === undefined))
+/**
+ * Parsed translated target metadata fixture.
+ */
+const translatedFrontMatter = splitFrontMatter({ text: TRANSLATED_TEXT, }).frontMatter;
+if ((sourceFrontMatter === undefined) || (targetFrontMatter === undefined) || (translatedFrontMatter === undefined))
   throw new Error('front matter fixture did not parse',);
+/**
+ * Raw translated metadata, held as a plain string because the narrowing above
+ * does not reach into function declarations.
+ */
+const TRANSLATED_RAW: string = translatedFrontMatter.raw;
 /**
  * Explicit metadata slice shared by guarded cases.
  */
@@ -47,6 +71,38 @@ const sliceResult = frontMatterSlice({
 },);
 if (sliceResult.kind !== 'paired')
   throw new Error('front matter fixture did not pair',);
+/**
+ * Explicit metadata slice over the translated archive.
+ */
+const translatedSliceResult = frontMatterSlice({
+  source: sourceFrontMatter,
+  target: translatedFrontMatter,
+},);
+if (translatedSliceResult.kind !== 'paired')
+  throw new Error('translated front matter fixture did not pair',);
+
+/**
+ * Source page whose name and alias differ, so the identity rule in
+ * `validateFrontMatterTranslation` stays quiet and a kept directory id reaches
+ * the completeness rule rather than being refused as an invalid page first.
+ */
+const DISTINCT_ALIAS_SOURCE_TEXT = '---\nname: 猫猫\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
+
+/**
+ * Parsed distinct-alias source metadata fixture.
+ */
+const distinctAliasFrontMatter = splitFrontMatter({ text: DISTINCT_ALIAS_SOURCE_TEXT, }).frontMatter;
+if (distinctAliasFrontMatter === undefined)
+  throw new Error('distinct-alias front matter fixture did not parse',);
+/**
+ * Explicit metadata slice pairing that source with the directory-id archive.
+ */
+const placeholderSliceResult = frontMatterSlice({
+  source: distinctAliasFrontMatter,
+  target: targetFrontMatter,
+},);
+if (placeholderSliceResult.kind !== 'paired')
+  throw new Error('placeholder front matter fixture did not pair',);
 
 /**
  * Ordinary body slice preceding metadata in invalid-order fixture.
@@ -70,6 +126,80 @@ const BODY_SLICE: ChunkPair = {
   },
 };
 
+/**
+ * Translate lane wording for the metadata slice under one outcome.
+ *
+ * @param outcome - what the lane did about the slice
+ *
+ * @returns One wording at slice zero
+ *
+ * @example
+ * ```ts
+ * const wordings = [metadataWording({ outcome: { kind: 'decided', acceptedText: '...', }, },),];
+ * ```
+ */
+function metadataWording(
+  { outcome, }: { readonly outcome: LaneSliceText['outcome']; },
+): LaneSliceText {
+  return {
+    sliceIndex: 0,
+    incumbentKind: 'present',
+    incumbentText: TRANSLATED_RAW,
+    outcome,
+  };
+}
+
+await describe({
+  name: metadataStandingOf.name,
+  children: [
+    it({
+      name: 'READS a decided metadata slice as decided, the archive\'s own wording included, since a '
+        + 'lane that judged the slice and kept the archive has reviewed it',
+      fn: async () => {
+        expect(metadataStandingOf({
+          slices: [translatedSliceResult.slice,],
+          sliceTexts: [metadataWording({
+            outcome: {
+              kind: 'decided',
+              acceptedText: TRANSLATED_RAW,
+            },
+          },),],
+        },),).toBe('decided',);
+      },
+    },),
+
+    it({
+      name: 'READS an unheard metadata slice as standing by default, which is what a lost voice '
+        + 'looks like and what the guard exists to refuse',
+      fn: async () => {
+        expect(metadataStandingOf({
+          slices: [translatedSliceResult.slice,],
+          sliceTexts: [metadataWording({ outcome: { kind: 'incumbent-fallback', }, },),],
+        },),).toBe('by-default',);
+        expect(metadataStandingOf({
+          slices: [translatedSliceResult.slice,],
+          sliceTexts: [metadataWording({ outcome: { kind: 'not-evaluated', }, },),],
+        },),).toBe('by-default',);
+      },
+    },),
+
+    it({
+      name: 'READS a preparation without a metadata slice, or a lane that never named it, as '
+        + 'standing by default, leaving the structural check to say why',
+      fn: async () => {
+        expect(metadataStandingOf({
+          slices: [BODY_SLICE,],
+          sliceTexts: [],
+        },),).toBe('by-default',);
+        expect(metadataStandingOf({
+          slices: [translatedSliceResult.slice,],
+          sliceTexts: [],
+        },),).toBe('by-default',);
+      },
+    },),
+  ],
+},);
+
 await describe({
   name: assertFrontMatterComplete.name,
   children: [
@@ -80,8 +210,9 @@ await describe({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: TARGET_TEXT,
-          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
+          pageText: TRANSLATED_TEXT,
           slices: [sliceResult.slice,],
+          metadataStanding: 'decided',
         },),).not.toThrow();
       },
     },),
@@ -95,6 +226,7 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: TARGET_TEXT,
           slices: [],
+          metadataStanding: 'decided',
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -109,8 +241,9 @@ await describe({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: 'Body.\n',
-          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
+          pageText: TRANSLATED_TEXT,
           slices: [sourceOnly.slice,],
+          metadataStanding: 'decided',
         },),).not.toThrow();
       },
     },),
@@ -124,20 +257,107 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: TARGET_TEXT,
           slices: [],
+          metadataStanding: 'by-default',
         },),).not.toThrow();
       },
     },),
 
     it({
-      name: 'REFUSES EXACT INCUMBENT FALLBACK when source and target metadata differ',
+      name: 'REFUSES A DEFAULT KEEP of the archive metadata when the source\'s differs, naming '
+        + 'incumbent-fallback, since nobody produced anything and the archive stands unreviewed',
+      fn: async () => {
+        /**
+         * What the guard threw for translated metadata nobody decided.
+         */
+        const refusal = (() => {
+          try {
+            assertFrontMatterComplete({
+              entryId: 'EntryId',
+              sourceText: SOURCE_TEXT,
+              archiveText: TRANSLATED_TEXT,
+              pageText: TRANSLATED_TEXT,
+              slices: [translatedSliceResult.slice,],
+              metadataStanding: 'by-default',
+            },);
+            return undefined;
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('incumbent-fallback',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A DECIDED KEEP of translated archive metadata, which is the Carena0442 case: '
+        + 'the lane judged the slice and kept a correct translation, and bytes equal to the '
+        + 'archive\'s are not evidence that nobody looked',
       fn: async () => {
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
-          archiveText: TARGET_TEXT,
-          pageText: TARGET_TEXT,
-          slices: [sliceResult.slice,],
-        },),).toThrow(FrontMatterCompletenessError,);
+          archiveText: TRANSLATED_TEXT,
+          pageText: TRANSLATED_TEXT,
+          slices: [translatedSliceResult.slice,],
+          metadataStanding: 'decided',
+        },),).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'REFUSES A KEPT DIRECTORY ID as the visible name whether or not a lane decided to keep '
+        + 'it, naming directory-id-name, since that is the one kept incumbent bytes alone did '
+        + 'catch and the page would ship the person under the folder',
+      fn: async () => {
+        /**
+         * What the guard threw for a decided keep of the directory id.
+         */
+        const refusal = (() => {
+          try {
+            assertFrontMatterComplete({
+              entryId: 'EntryId',
+              sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
+              archiveText: TARGET_TEXT,
+              pageText: TARGET_TEXT,
+              slices: [placeholderSliceResult.slice,],
+              metadataStanding: 'decided',
+            },);
+            return undefined;
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('directory-id-name',);
+
+        /**
+         * What the guard threw for a default keep of the same directory id,
+         * which names the default first since nobody decided anything.
+         */
+        const defaultRefusal = (() => {
+          try {
+            assertFrontMatterComplete({
+              entryId: 'EntryId',
+              sourceText: DISTINCT_ALIAS_SOURCE_TEXT,
+              archiveText: TARGET_TEXT,
+              pageText: TARGET_TEXT,
+              slices: [placeholderSliceResult.slice,],
+              metadataStanding: 'by-default',
+            },);
+            return undefined;
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+
+        expect(defaultRefusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((defaultRefusal as Error).message,).toContain('incumbent-fallback',);
       },
     },),
 
@@ -150,6 +370,7 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: '---\nname: EntryId2\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
           slices: [sliceResult.slice,],
+          metadataStanding: 'decided',
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -191,6 +412,7 @@ await describe({
           archiveText,
           pageText,
           slices: [result.slice,],
+          metadataStanding: 'decided',
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -204,6 +426,7 @@ await describe({
           archiveText: TARGET_TEXT,
           pageText: '---\nname: Maomao\n---\n\nBody.\n',
           slices: [sliceResult.slice,],
+          metadataStanding: 'decided',
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -215,7 +438,7 @@ await describe({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: TARGET_TEXT,
-          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
+          pageText: TRANSLATED_TEXT,
           slices: [{
             ...sliceResult.slice,
             source: {
@@ -223,13 +446,15 @@ await describe({
               sliceIndex: 1,
             },
           },],
+          metadataStanding: 'decided',
         },),).toThrow(FrontMatterCompletenessError,);
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
           sourceText: SOURCE_TEXT,
           archiveText: TARGET_TEXT,
-          pageText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n\nBody.\n',
+          pageText: TRANSLATED_TEXT,
           slices: [BODY_SLICE, sliceResult.slice,],
+          metadataStanding: 'decided',
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
@@ -243,6 +468,7 @@ await describe({
           archiveText: 'Body.\n',
           pageText: 'Body.\n',
           slices: [],
+          metadataStanding: 'by-default',
         },),).not.toThrow();
         expect(() => assertFrontMatterComplete({
           entryId: 'EntryId',
@@ -250,6 +476,7 @@ await describe({
           archiveText: 'Body.\n',
           pageText: '---\nname: Added\n---\n\nBody.\n',
           slices: [],
+          metadataStanding: 'by-default',
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),

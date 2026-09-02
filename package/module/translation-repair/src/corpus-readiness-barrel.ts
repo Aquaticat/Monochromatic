@@ -35,6 +35,8 @@ export {
 export {
   assertFrontMatterComplete,
   FrontMatterCompletenessError,
+  type MetadataStanding,
+  metadataStandingOf,
 } from './corpus-run/front-matter-completeness.ts';
 export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
 export {

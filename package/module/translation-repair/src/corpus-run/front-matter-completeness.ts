@@ -1,10 +1,26 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
-import { splitFrontMatter, } from '../front-matter.ts';
+import {
+  type FrontMatterBlock,
+  splitFrontMatter,
+} from '../front-matter.ts';
 import { validateFrontMatterTranslation, } from '../front-matter-translation.ts';
+import type { LaneSliceText, } from '../lane-slice-text.ts';
 
 //region Front matter publication completeness
 // Final page must retain parseable metadata under explicit reviewed slice.
+//
+// A KEPT INCUMBENT IS NOT A FALLBACK WHEN A LANE DECIDED TO KEEP IT. Until
+// 2026-09-02 this guard read "page metadata equals archive metadata while the
+// source's differs" as nobody having reviewed the slice, and refused the page.
+// The Carena0442 pass of that day ran 94 minutes to a finished consolidation,
+// the translate lane judged its metadata slice twice and kept the archive's
+// already-correct English (`name: Carena` against the source's `飞猫`), and the
+// page was refused with every slice of body work behind it. The lane vocabulary
+// in `lane-slice-text.ts` already tells a decision from a default since
+// 2026-08-16; this guard now reads it rather than inferring the default from
+// bytes, and keeps the one case bytes alone did catch: an archive whose visible
+// name is still the directory id, which a kept incumbent leaves untranslated.
 
 /**
  * Refusal when published front matter lacks structural review evidence.
@@ -25,7 +41,9 @@ export class FrontMatterCompletenessError extends Error {
    *
    * @param entryId - entry refused
    *
-   * @param reason - structural evidence absent or invalid
+   * @param reason - structural evidence absent or invalid: `incumbent-fallback`
+   * when the archive's metadata stands because no lane settled the slice,
+   * `directory-id-name` when it stands with the directory id as its visible name
    */
   public constructor(
     {
@@ -33,12 +51,127 @@ export class FrontMatterCompletenessError extends Error {
       reason,
     }: {
       readonly entryId: string;
-      readonly reason: 'missing-slice' | 'invalid-page' | 'incumbent-fallback';
+      readonly reason: 'missing-slice' | 'invalid-page' | 'incumbent-fallback' | 'directory-id-name';
     },
   ) {
     super(`entry ${entryId} front matter is not publishable (${reason})`,);
     this.name = 'FrontMatterCompletenessError';
   }
+}
+
+/**
+ * How the page's metadata came to carry what it carries.
+ *
+ * @example
+ * ```ts
+ * const standing: MetadataStanding = 'decided';
+ * ```
+ */
+export type MetadataStanding =
+  /**
+   * A lane examined the metadata slice and settled its wording, the archive's
+   * own wording included when the judges kept it.
+   */
+  | 'decided'
+  /**
+   * No lane settled it: the archive's metadata stands because nobody produced
+   * anything, which is what a lost voice looks like.
+   */
+  | 'by-default';
+
+/**
+ * Reads how the metadata slice's wording came to stand, off the lane that
+ * renders every slice afresh.
+ *
+ * THE TRANSLATE LANE, because it is the lane that renders metadata: the repair
+ * lane mends body English and records nothing it chose about the front matter.
+ * A metadata slice the preparation never produced reads as `by-default`, and
+ * the structural check refuses such a page on its own.
+ *
+ * @param slices - preparation carrying explicit syntax role
+ *
+ * @param sliceTexts - translate lane's per-slice wordings, outcomes named
+ *
+ * @returns Whether a lane decided the metadata slice or the archive stands by
+ * default
+ *
+ * @example
+ * ```ts
+ * const standing = metadataStandingOf({ slices, sliceTexts: artifact.lanes.translate.result.sliceTexts, },);
+ * ```
+ */
+export function metadataStandingOf(
+  {
+    slices,
+    sliceTexts,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly sliceTexts: readonly LaneSliceText[];
+  },
+): MetadataStanding {
+  /**
+   * Metadata slice, when the preparation produced one.
+   */
+  const metadataSlice = slices.find(function isFrontMatter(slice,): boolean {
+    return slice.syntax === 'front-matter';
+  },);
+  if (metadataSlice === undefined)
+    return 'by-default';
+
+  /**
+   * Global index of the metadata slice, which the lane names its wording by.
+   */
+  const metadataIndex = metadataSlice.source
+    .sliceIndex;
+
+  /**
+   * What the translate lane did about that slice.
+   */
+  const wording = sliceTexts.find(function namesIt(candidate,): boolean {
+    return candidate.sliceIndex === metadataIndex;
+  },);
+  if (wording === undefined)
+    return 'by-default';
+
+  /**
+   * The lane's outcome there.
+   */
+  const { outcome, } = wording;
+  return (outcome.kind === 'decided') ? 'decided' : 'by-default';
+}
+
+/**
+ * Whether metadata still shows the directory id where a person's name goes.
+ *
+ * @param metadata - parsed front matter block
+ *
+ * @param entryId - directory id of the entry
+ *
+ * @returns Whether the visible name is the directory id
+ *
+ * @example
+ * ```ts
+ * namesDirectoryId({ metadata, entryId: 'Cat', },);
+ * ```
+ */
+function namesDirectoryId(
+  {
+    metadata,
+    entryId,
+  }: {
+    readonly metadata: FrontMatterBlock;
+    readonly entryId: string;
+  },
+): boolean {
+  /**
+   * Parsed YAML, unknown until proven a record with a name.
+   */
+  const { data, } = metadata;
+  if (((typeof data) !== 'object') || (data === null))
+    return false;
+  if (!('name' in data))
+    return false;
+  return (data as { readonly name: unknown; }).name === entryId;
 }
 
 /**
@@ -54,11 +187,16 @@ export class FrontMatterCompletenessError extends Error {
  *
  * @param slices - preparation carrying explicit syntax role
  *
- * @throws FrontMatterCompletenessError when metadata role or syntax differs
+ * @param metadataStanding - whether a lane decided the metadata slice or the
+ * archive's metadata stands by default, read by {@link metadataStandingOf}
+ *
+ * @throws FrontMatterCompletenessError when metadata role or syntax differs,
+ * when the archive's metadata stands by default where the source's differs, or
+ * when it stands with the directory id as the visible name
  *
  * @example
  * ```ts
- * assertFrontMatterComplete({ entryId, sourceText, archiveText, pageText, slices, });
+ * assertFrontMatterComplete({ entryId, sourceText, archiveText, pageText, slices, metadataStanding: 'decided', });
  * ```
  */
 export function assertFrontMatterComplete(
@@ -68,12 +206,14 @@ export function assertFrontMatterComplete(
     archiveText,
     pageText,
     slices,
+    metadataStanding,
   }: {
     readonly entryId: string;
     readonly sourceText: string;
     readonly archiveText: string;
     readonly pageText: string;
     readonly slices: readonly ChunkPair[];
+    readonly metadataStanding: MetadataStanding;
   },
 ): void {
   /**
@@ -206,12 +346,27 @@ export function assertFrontMatterComplete(
       reason: 'invalid-page',
     },);
   }
-  if (archivePresent
-    && (sourceFrontMatter !== archiveFrontMatter)
-    && (pageFrontMatter === archiveFrontMatter)) {
+  // THE ARCHIVE'S OWN METADATA STANDING is refused only where nobody decided
+  // it, or where what stands still names the directory id. A lane that judged
+  // the slice and kept a correct translation has reviewed it, and bytes equal to
+  // the archive's cannot tell that apart from a lost voice; the standing can.
+  if ((archiveMetadata === undefined)
+    || (sourceFrontMatter === archiveFrontMatter)
+    || (pageFrontMatter !== archiveFrontMatter))
+    return;
+  if (metadataStanding === 'by-default') {
     throw new FrontMatterCompletenessError({
       entryId,
       reason: 'incumbent-fallback',
+    },);
+  }
+  if (namesDirectoryId({
+    metadata: archiveMetadata,
+    entryId,
+  },)) {
+    throw new FrontMatterCompletenessError({
+      entryId,
+      reason: 'directory-id-name',
     },);
   }
 }

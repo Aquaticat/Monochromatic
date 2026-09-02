@@ -9,6 +9,7 @@ import { writeFileAtomic, } from './atomic-write.ts';
 import type { DestinationCheck, } from './dropped-destinations.ts';
 import { assertFinalNaturalnessComplete, } from './final-naturalness-completeness.ts';
 import { finalSelectionFindings, } from './final-selection-completeness.ts';
+import { metadataStandingOf, } from './front-matter-completeness.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 
 //region Pass entry persistence
@@ -78,6 +79,15 @@ export async function persistSettledEntry(
     sourceText,
     entryId,
     publishDir,
+    // Off the translate lane's own record, so a judged keep of the archive's
+    // metadata publishes and a slice nobody settled does not.
+    metadataStanding: metadataStandingOf({
+      slices,
+      sliceTexts: artifact.lanes
+        .translate
+        .result
+        .sliceTexts,
+    },),
     l,
   },);
   await writeFileAtomic({
