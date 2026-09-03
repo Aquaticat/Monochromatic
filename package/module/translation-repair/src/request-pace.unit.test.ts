@@ -145,23 +145,42 @@ await describe({
         }
         expect((thrown as Error).message,).toBe('caller gave up',);
 
-        // A caller queued behind a sleeping take, already aborted by the time
-        // its turn comes, gets no place: the window still holds one start.
-        const queued = scriptedPace({ perWindow: 1, },);
+        // A caller that aborts while queued behind a sleeping take gets no
+        // place when its turn comes: the sleeping take's own wait is where the
+        // queued caller gives up, so the abort lands after take() accepted it.
         const gaveUp = new AbortController();
-        await queued.pace.take({ signal: SIGNAL, },);
         /**
-         * Outcomes of a live take and an abandoned one queued together.
+         * Scripted clock for the queued pacer.
+         */
+        const clock = { now: 1_000_000, };
+        /**
+         * Sleeps the queued pacer asked for.
+         */
+        const sleeps: number[] = [];
+        const queued = createRequestPace({
+          perWindow: 1,
+          windowMs: WINDOW_MS,
+          now: () => clock.now,
+          wait: async function wait(ms,): Promise<void> {
+            sleeps.push(ms,);
+            gaveUp.abort(new Error('abandoned in the queue',),);
+            clock.now += ms;
+          },
+        },);
+        await queued.take({ signal: SIGNAL, },);
+        /**
+         * Outcomes of a live take, which sleeps, and one queued behind it
+         * that is abandoned during that sleep.
          */
         const outcomes = await Promise.allSettled([
-          queued.pace.take({ signal: SIGNAL, },),
-          (async function abandoned(): Promise<void> {
-            gaveUp.abort(new Error('abandoned in the queue',),);
-            await queued.pace.take({ signal: gaveUp.signal, },);
-          })(),
+          queued.take({ signal: SIGNAL, },),
+          queued.take({ signal: gaveUp.signal, },),
         ],);
         expect(outcomes.map((outcome,) => outcome.status,),).toEqual(['fulfilled', 'rejected',],);
-        expect(queued.pace.inWindow(),).toBe(1,);
+        // Without the check the abandoned caller would sleep a second window
+        // and take a place of its own.
+        expect(sleeps,).toEqual([WINDOW_MS,],);
+        expect(queued.inWindow(),).toBe(1,);
 
         const unpaced = scriptedPace({ perWindow: 0, },);
         await unpaced.pace.take({ signal: SIGNAL, },);
