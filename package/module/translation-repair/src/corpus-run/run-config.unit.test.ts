@@ -270,6 +270,49 @@ function withHyperKey({ value, }: { readonly value: string; },): Disposable {
 }
 
 /**
+ * Environment variable carrying the third provider's API key.
+ *
+ * Only its NAME appears in this file, for the same reason as
+ * `API_KEY_VAR`. THE REFUSAL CASES MUST CLEAR IT TOO: a worktree whose
+ * secrets file carries the third key injects it into every `mise run`, and
+ * the day that key landed (2026-09-03) four refusal cases that cleared only
+ * the first two keys built a client instead of refusing.
+ */
+const OPENROUTER_KEY_VAR = 'TRANSLATION_REPAIR_OPENROUTER_API_KEY';
+
+/**
+ * Sets the third provider's key for the life of a scope, or removes it.
+ *
+ * @param value - stand-in key; the empty string removes the variable
+ *
+ * @returns Disposable restoring the previous value, including its absence
+ *
+ * @example
+ * ```ts
+ * using _third = withOpenRouterKey({ value: '', },);
+ * ```
+ */
+function withOpenRouterKey({ value, }: { readonly value: string; },): Disposable {
+  /**
+   * Value before this scope; absent means the variable was unset.
+   */
+  const original = process.env[OPENROUTER_KEY_VAR];
+
+  if (value === '')
+    Reflect.deleteProperty(process.env, OPENROUTER_KEY_VAR,);
+  else
+    process.env[OPENROUTER_KEY_VAR] = value;
+  return {
+    [Symbol.dispose](): void {
+      if (original === undefined)
+        Reflect.deleteProperty(process.env, OPENROUTER_KEY_VAR,);
+      else
+        process.env[OPENROUTER_KEY_VAR] = original;
+    },
+  };
+}
+
+/**
  * Removes the API key for the life of a scope and restores it on exit.
  *
  * @returns Disposable restoring the previous value
@@ -360,6 +403,7 @@ await describe({
       fn: async () => {
         using _unset = withoutApiKey();
         using _second = withHyperKey({ value: '', },);
+        using _third = withOpenRouterKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for the marker the boundary checks.
@@ -374,10 +418,11 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES to build client when neither provider is configured',
+      name: 'REFUSES to build client when no provider is configured',
       fn: async () => {
         using _unset = withoutApiKey();
         using _second = withHyperKey({ value: '', },);
+        using _third = withOpenRouterKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for its class as well as its wording.
@@ -392,10 +437,11 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES when both keys are empty',
+      name: 'REFUSES when every provider key is empty',
       fn: async () => {
         using _empty = withApiKey({ value: '', },);
         using _second = withHyperKey({ value: '', },);
+        using _third = withOpenRouterKey({ value: '', },);
 
         /**
          * What buildWithEmptyKey raised, read for its class as well as its wording.
@@ -414,6 +460,7 @@ await describe({
       fn: async () => {
         using _unset = withoutApiKey();
         using _second = withHyperKey({ value: '', },);
+        using _third = withOpenRouterKey({ value: '', },);
 
         /**
          * What buildWithoutKey raised, read for its class as well as its wording.
