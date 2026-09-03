@@ -171,6 +171,7 @@ export {
 export { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 export {
   ENDPOINT_UNREPORTED,
+  type EndpointReading,
   openRouterEndpointOf,
 } from './openrouter-endpoint.ts';
 export {

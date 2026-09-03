@@ -32,20 +32,23 @@ await describe({
             'data: [DONE]',
             '',
           ].join('\n\n',),
-        },),).toBe('ModelRun',);
+        },),).toEqual({
+          reported: true,
+          name: 'ModelRun',
+        },);
       },
     },),
 
     it({
       name: 'REPORTS the named absence when no chunk names one, names it empty, or names it with '
-        + 'something other than a string',
+        + 'something other than a string, as a record no upstream name can collide with',
       fn: async () => {
         expect(openRouterEndpointOf({
           bodyText: 'data: {"choices":[{"delta":{"content":"x"}}]}\n\ndata: [DONE]\n',
-        },),).toBe(ENDPOINT_UNREPORTED,);
-        expect(openRouterEndpointOf({ bodyText: 'data: {"provider":""}\n', },),).toBe(ENDPOINT_UNREPORTED,);
-        expect(openRouterEndpointOf({ bodyText: 'data: {"provider":7}\n', },),).toBe(ENDPOINT_UNREPORTED,);
-        expect(openRouterEndpointOf({ bodyText: '', },),).toBe(ENDPOINT_UNREPORTED,);
+        },),).toEqual(ENDPOINT_UNREPORTED,);
+        expect(openRouterEndpointOf({ bodyText: 'data: {"provider":""}\n', },),).toEqual({ reported: false, },);
+        expect(openRouterEndpointOf({ bodyText: 'data: {"provider":7}\n', },),).toEqual({ reported: false, },);
+        expect(openRouterEndpointOf({ bodyText: '', },),).toEqual({ reported: false, },);
       },
     },),
 
@@ -55,7 +58,10 @@ await describe({
       fn: async () => {
         expect(openRouterEndpointOf({
           bodyText: 'data: {"provider":"Parasail"}\n\ndata: {"provider":"ModelRun"}\n\ndata: [DONE]\n',
-        },),).toBe('Parasail',);
+        },),).toEqual({
+          reported: true,
+          name: 'Parasail',
+        },);
       },
     },),
   ],

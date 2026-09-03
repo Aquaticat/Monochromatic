@@ -21,10 +21,7 @@ import {
   type OpenRouterServedId,
   openRouterProviderPreferencesFor,
 } from './openrouter-catalog.ts';
-import {
-  ENDPOINT_UNREPORTED,
-  openRouterEndpointOf,
-} from './openrouter-endpoint.ts';
+import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
 import {
   COST_UNREPORTED,
   openRouterCostOf,
@@ -439,9 +436,9 @@ export function createOpenRouterClient(
         ...((cost === COST_UNREPORTED)
           ? {}
           : { costUsd: cost, }),
-        ...((endpoint === ENDPOINT_UNREPORTED)
-          ? {}
-          : { endpoint, }),
+        ...(endpoint.reported
+          ? { endpoint: endpoint.name, }
+          : {}),
       },);
       return extracted;
     },);

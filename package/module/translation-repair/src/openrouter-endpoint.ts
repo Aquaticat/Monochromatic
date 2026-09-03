@@ -20,9 +20,32 @@ import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 const ENDPOINT_KEY = 'provider';
 
 /**
+ * What the stream said about its upstream.
+ *
+ * A DISCRIMINATED RECORD RATHER THAN A STRING SENTINEL, unlike the cost
+ * reader's `number | 'unreported'`: the name is the gateway's free text, so
+ * any string chosen to mean "none" could one day be an upstream's real name.
+ *
+ * @example
+ * ```ts
+ * const reading: EndpointReading = { reported: true, name: 'ModelRun', };
+ * ```
+ */
+export type EndpointReading =
+  | {
+    readonly reported: true;
+
+    /**
+     * Display name as the gateway spelled it.
+     */
+    readonly name: string;
+  }
+  | { readonly reported: false; };
+
+/**
  * Reading given when no chunk named an upstream.
  */
-export const ENDPOINT_UNREPORTED = 'unreported';
+export const ENDPOINT_UNREPORTED: EndpointReading = { reported: false, };
 
 /**
  * Upstream endpoint one completed stream says served it.
@@ -43,7 +66,7 @@ export const ENDPOINT_UNREPORTED = 'unreported';
  */
 export function openRouterEndpointOf(
   { bodyText, }: { readonly bodyText: string; },
-): string | typeof ENDPOINT_UNREPORTED {
+): EndpointReading {
   /**
    * Names each chunk carried, in arrival order, empty strings dropped.
    */
@@ -60,7 +83,16 @@ export function openRouterEndpointOf(
       return [name,];
     },);
 
-  return names[0] ?? ENDPOINT_UNREPORTED;
+  /**
+   * First name, when any chunk carried one.
+   */
+  const [first,] = names;
+  if (first === undefined)
+    return ENDPOINT_UNREPORTED;
+  return {
+    reported: true,
+    name: first,
+  };
 }
 
 //endregion OpenRouter endpoint
