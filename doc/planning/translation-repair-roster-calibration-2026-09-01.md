@@ -1023,6 +1023,20 @@ At 25 minutes rerun5 had 438 successes, 12 retried refusals and 3 lost calls: re
 still inside Hyper's window (they leave by 02:39) while the pacer's own count stood well under 1,000,
 which is the launch-timing cost named at launch.
 
+## XIEPT2 landed at 04:14 UTC in 129 minutes on the paced client
+
+`TALLY XIEPT2 status=SETTLED slices=35 ... translateChanged=27 pageChanged=27 pageSilent=0
+alignmentFindings=13 selection=contested ms=7761380`; `verify-published` 1 of 1 pages, every wording, at
+the promised length. 1,852 successful Hyper calls, 196 cuts, 40 credit reads; the pacer queued 135
+times and nothing was refused while it held the count at 1,000; the 12 retried and 3 lost calls all fell
+before 02:39. Burst then hold: the first thousand in 48 minutes, then holds 02:52 to 03:04 and 03:52 to
+04:04 while the bursts left the window. The four-entry pass is complete: keyword233, Toka_ls,
+Carena0442 (fixture) and XIEPT2 each landed on the tree of their launch. Reading:
+`doc/planning/translation-repair-xiept2-reading-2026-09-03.md` (death line and euthanasia as decided,
+"To Live" and italic "Unease" from the editor comments over the lookup's "Disquiet", four findings for
+the owner: the postscript's "took medication and breathed in gas", the archive's `(To-Do)` placeholder
+kept as the first paragraph, inline glosses, per-slice wrap).
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
