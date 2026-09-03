@@ -34,11 +34,14 @@ The following messages are separate from this failure:
 
 The persistent `meilisearch-data` volume retained a 1.12.3 database while a
 container recreation resolved `getmeili/meilisearch:latest` to engine 1.53.1.
-A plain Docker restart does not pull an image, but a Coolify redeploy or image
+A plain Docker restart does not pull an image,
+ but a Coolify redeploy or image
 pull can recreate a container from a newer image behind a mutable tag.
 
 Meilisearch reads the database version and rejects any mismatch unless the
-upgrade option is enabled. In Meilisearch tag `v1.53.1`, commit
+upgrade option is enabled.
+ In Meilisearch tag `v1.53.1`,
+ commit
 `577f7af28942b71782eab1e59f44ad8296ce0a92`,
 `crates/meilisearch/src/lib.rs:476-489` contains the gate:
 
@@ -76,9 +79,11 @@ The environment variable is a Boolean command-line option.
 pub upgrade_db: bool,
 ```
 
-A direct upgrade from this database version is supported. The lower bound in
+A direct upgrade from this database version is supported.
+ The lower bound in
 `crates/index-scheduler/src/upgrade/mod.rs:64-70` rejects versions before
-1.12.0, not 1.12.3:
+1.12.0,
+ not 1.12.3:
 
 ```rust
 if initial_version < (1, 12, 0) {
@@ -98,15 +103,19 @@ upgrade path at
 
 Verified on 2026-09-03 with the published container images:
 
-- `getmeili/meilisearch:v1.12.3`, image configuration
+- `getmeili/meilisearch:v1.12.3`,
+   image configuration
   `9547aac4aabca4f08693680112e794ec8bad21b7c9020b87f206c86f421dbb13`
-- `getmeili/meilisearch:v1.53.1`, image configuration
+- `getmeili/meilisearch:v1.53.1`,
+   image configuration
   `357e14dd8105e8ce58cbd8dee32a3cbf56409110dea7abf92ca01d725e1e83f9`
-- Meilisearch source tag `v1.53.1`, commit
+- Meilisearch source tag `v1.53.1`,
+   commit
   `577f7af28942b71782eab1e59f44ad8296ce0a92`
 
 The disposable harness created a 1.12.3 index containing one document,
-stopped that engine, and mounted the same directory into 1.53.1:
+stopped that engine,
+ and mounted the same directory into 1.53.1:
 
 ```bash
 mkdir --parents /tmp/meili-upgrade-test
@@ -138,7 +147,8 @@ podman run --rm \
 - Engine 1.53.1 starts again without the upgrade variable after the migration
   and still serves the document.
 - Engine 1.35.1 with a fresh volume matches the version pinned by LibreChat's
-  current `deploy-compose.yml`; LibreChat can rebuild its search indexes from
+  current `deploy-compose.yml`;
+   LibreChat can rebuild its search indexes from
   MongoDB using its documented reset synchronization command.
 
 ### Configurations that fail
@@ -146,11 +156,13 @@ podman run --rm \
 - Engine 1.53.1 with database 1.12.3 and no upgrade option exits with code 1
   and the quoted version-mismatch diagnostic.
 - Engine 1.12.3 cannot open a volume after it has been upgraded to 1.53.1.
-  Meilisearch rejects database downgrades, so rollback then requires restoring
+  Meilisearch rejects database downgrades,
+   so rollback then requires restoring
   the pre-upgrade volume backup.
 
 The disposable one-document migration verifies the specific format transition
-and option spelling. It does not substitute for restoring and testing a backup
+and option spelling.
+ It does not substitute for restoring and testing a backup
 of a production volume or for exercising LibreChat's search interface.
 
 ## Verified workarounds
@@ -158,35 +170,52 @@ of a production volume or for exercising LibreChat's search interface.
 ### Restore availability with 1.12.3
 
 Pin the Meilisearch image to `getmeili/meilisearch:v1.12.3` and retain the
-original volume. This is the least invasive recovery before any migration has
+original volume.
+ This is the least invasive recovery before any migration has
 changed the volume.
 
-Tradeoff: 1.12.3 is not the version in LibreChat's current deployment Compose,
+Tradeoff:
+ 1.12.3 is not the version in LibreChat's current deployment Compose,
 and Meilisearch only maintains its latest engine release.
 
 ### Align LibreChat with 1.35.1 and rebuild search
 
-Pin `getmeili/meilisearch:v1.35.1` to a new named volume, retain the old volume,
-and run LibreChat's documented `reset-meili-sync` command. This follows
+Pin `getmeili/meilisearch:v1.35.1` to a new named volume,
+ retain the old volume,
+and run LibreChat's documented `reset-meili-sync` command.
+ This follows
 LibreChat's current `deploy-compose.yml` pairing and treats Meilisearch as the
 rebuildable conversation-search index while MongoDB remains authoritative.
 
-Tradeoff: reindexing consumes storage, processor time, and OpenSearch downtime
-in proportion to the stored conversation and message data. Any custom data
+Tradeoff:
+ reindexing consumes storage,
+ processor time,
+ and OpenSearch downtime
+in proportion to the stored conversation and message data.
+ Any custom data
 stored directly in Meilisearch would not be recreated by LibreChat and must be
 migrated instead.
 
 ### Upgrade the existing volume to 1.53.1
 
-After a cold, restore-tested backup, pin
-`getmeili/meilisearch:v1.53.1`, set `MEILI_UPGRADE_DB=true`, and keep LibreChat
+After a cold,
+ restore-tested backup,
+ pin
+`getmeili/meilisearch:v1.53.1`,
+ set `MEILI_UPGRADE_DB=true`,
+ and keep LibreChat
 stopped until `GET /tasks?types=upgradeDatabase` reports `status: succeeded`.
 Remove the variable after the first successful migration.
 
-Tradeoff: Meilisearch documents that this upgrade is not atomic, downgrade is
-not supported after it starts, and 1.53.1 is newer than LibreChat's published
-1.35.1 Compose pairing. The disposable verification covered one index and one
-document, not a production LibreChat dataset.
+Tradeoff:
+ Meilisearch documents that this upgrade is not atomic,
+ downgrade is
+not supported after it starts,
+ and 1.53.1 is newer than LibreChat's published
+1.35.1 Compose pairing.
+ The disposable verification covered one index and one
+document,
+ not a production LibreChat dataset.
 
 ## What does not work
 
@@ -194,11 +223,14 @@ document, not a production LibreChat dataset.
   compatibility check.
 - Increasing the health-check retries only delays the dependency failure.
 - Deleting or reinitializing MongoDB is unrelated and risks losing LibreChat's
-  authoritative users, conversations, and messages.
+  authoritative users,
+   conversations,
+   and messages.
 - Deleting the vector database does not repair Meilisearch and risks losing RAG
   embeddings.
 - Pinning 1.12.3 after an in-place 1.53.1 migration does not roll the database
-  back. Restore the matching pre-upgrade backup instead.
+  back.
+   Restore the matching pre-upgrade backup instead.
 - Treating a successful archive job as a verified backup is insufficient.
   Restore it into a disposable volume and start the matching Meilisearch image.
 
@@ -206,32 +238,47 @@ document, not a production LibreChat dataset.
 
 ### Upstream filing decision
 
-No `.out-of-scope/` entry covers this incident. Searches of open and closed
+No `.out-of-scope/` entry covers this incident.
+ Searches of open and closed
 Meilisearch issues found issue
 [meilisearch/meilisearch#5534](https://github.com/meilisearch/meilisearch/issues/5534),
 where a mutable container image produced the same mismatch and enabling the
-then-current upgrade variable resolved it. LibreChat discussion
+then-current upgrade variable resolved it.
+ LibreChat discussion
 [danny-avila/LibreChat#9812](https://github.com/danny-avila/LibreChat/discussions/9812)
 points operators to LibreChat's reset synchronization procedure.
 
-1. **Is it really upstream's fault?** No. Meilisearch intentionally prevents a
+1. **Is it really upstream's fault?**
+    No. Meilisearch intentionally prevents a
    different engine version from opening a versioned database without an
    explicit migration request.
-2. **Can upstream fix it?** The supported upgrade path already exists through
+2. **Can upstream fix it?**
+    The supported upgrade path already exists through
    `MEILI_UPGRADE_DB` or a dump.
-3. **Are they supporting this use case?** Yes. Meilisearch documents both
-   upgrade methods, and LibreChat documents rebuilding search from MongoDB.
-4. **Would the repo welcome our contribution?** Meilisearch has contribution
-   guidance and issue templates, with no discovered prohibition on an external
-   report. There is no defect to report here.
-5. **Will they likely fix it?** Not applicable. Removing the explicit migration
+3. **Are they supporting this use case?**
+    Yes.
+    Meilisearch documents both
+   upgrade methods,
+    and LibreChat documents rebuilding search from MongoDB.
+4. **Would the repo welcome our contribution?**
+    Meilisearch has contribution
+   guidance and issue templates,
+    with no discovered prohibition on an external
+   report.
+    There is no defect to report here.
+5. **Will they likely fix it?**
+    Not applicable.
+    Removing the explicit migration
    gate would conflict with the documented database compatibility policy.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No
-   source fix is warranted. The verified fix is deployment configuration at
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    No
+   source fix is warranted.
+    The verified fix is deployment configuration at
    the consumer boundary.
 
 The behavior is documented and the existing issue already records the same
-resolution. There is nothing additive to file or comment upstream.
+resolution.
+ There is nothing additive to file or comment upstream.
 
 ## References
 
