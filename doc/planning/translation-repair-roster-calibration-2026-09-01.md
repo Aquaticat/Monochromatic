@@ -1041,6 +1041,30 @@ Carena0442 (fixture) and XIEPT2 each landed on the tree of their launch. Reading
 the owner: the postscript's "took medication and breathed in gas", the archive's `(To-Do)` placeholder
 kept as the first paragraph, inline glosses, per-slice wrap).
 
+## keyword233 smoke-tested the six-seat bench on HEAD at 04:44 UTC in 19 minutes
+
+XIEPT2 landed on `4b5c8b438`; `4ad08d5dc` then unseated Qwen3.8-27B from every judge round, which no
+entry had exercised (wide seats seven to six, quorum four to three; late judges eight to seven). The
+advisor asked for an end-to-end run on HEAD before any claim about it, so keyword233 ran on `4ba479df0`
+at overlap 4 into `~/temp/agent/keyword233-smoke-20260903`, Hyper alone, launched at 04:25 into a window
+still holding about half of XIEPT2's last hour: `TALLY keyword233 status=SETTLED slices=3 ...
+repairIssues=5 repairAccepted=4 repairResolved=4 translateChanged=2 pageChanged=2 pageSilent=0
+alignmentFindings=1 selection=contested ms=1164461`; `verify-published` 1 of 1 pages, every wording, at
+the promised length. 240 successful calls, no refusal, no pacer wait, 7 cuts against 22 on the
+2026-09-02 landing (241 calls, 22 minutes). Six-seat rounds heard 6 of 6 ten times, 5 of 6 three times
+and 4 of 6 once, every one above the quorum of three; no round declined for want of voices; one lane
+contest settled on neither with all seven usable, which is a tie, not a loss. The page is three
+paragraphs of fresh wording, faithful to the source, the same facts and the same links as the
+2026-09-02 page. Repair raised 5 issues against 25 on 2026-09-02: fewer critics and a different
+draw; one run cannot separate the two.
+
+One difference is a defect, not the bench: the 2026-09-02 page came out one clause per line and the
+smoke page came out as single-line paragraphs, though both logs say the lanes rewrapped 2 of 3 slices.
+The wrap runs inside the lanes, so a page whose final text comes from the contest or the consolidation
+slate (the smoke's contest settled on neither) ships whatever shape that stage produced. XIEPT2's
+alternating shape is the same defect. The fix that keeps the stated `MD1` policy is one wrap over the
+final page text at publish, and it is filed as tracked work rather than built inside this record.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
