@@ -122,7 +122,9 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
     reads its own seats. The next pass then bought the model's first call from the block-pairing round, which
     took the static roster as insertion admission and the consolidation writers did, so `68ad11530` adds
     `roster` to `JudgeSeats` and every roster-wide stage takes it from its own reading. The Kimi-K3 rule in
-    the standing rules above means every call, not every judge call.
+    the standing rules above means every call, not every judge call. Verified live on the fifth pass
+    (keyword233, 19:58 to 20:21 UTC, OpenRouter alone): no Kimi-K3 call from preparation to consolidation,
+    page verified, 0.50 USD.
 - **The straggler grace is 120 seconds**, the owner's decision of 2026-09-03 on a measured pair: every cut on
     the 60 s pass was a reasoning-only stream still working (Qwen 7 of 38, DeepSeek Flash 6 of 27), and the
     120 s pass halved the cuts (14 to 7) and the voices never heard (19 to 8) for a wall-clock difference

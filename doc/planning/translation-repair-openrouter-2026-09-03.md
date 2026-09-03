@@ -437,6 +437,25 @@ one) with `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=120000`, everything else as the
     (`doc/decision/translation-repair-recovery-reask.md`) and per-slice semantic wrap stays
     (`doc/decision/translation-repair-page-shape-per-slice-wrap.md`).
 
+## The fifth live pass, keyword233, 19:58 to 20:21 UTC: the withhold holds through every stage
+
+Launched from the worktree at tip `47a292e2a` (the roster-wide withhold) at the 120 s dial, OpenRouter
+alone (`~/temp/agent/openrouter-live5-20260903.log`):
+
+- **No Kimi-K3 call at all**: no `SPEND` line and no stream for `moonshotai/kimi-k3` from preparation to
+    consolidation; `JUDGE SEATS` read `roster=8 translators=6 readers=3 withheld=hf:moonshotai/Kimi-K3` at
+    all five readings, `phase=preparation` first. The owner's withhold is now verified at the user boundary.
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1358549`; `verify-published` 1 of 1
+    (`chars=796=expected missing=0`); no refusal, one 5xx retried and recovered, two schema-mismatches.
+- 10 cut streams (DeepSeek Flash 5, Qwen 3, GLM-5.3-Flash 2), 12 voices never heard, 40 rounds with 92.5
+    percent of round time waiting after quorum; 0.4999 USD; meter 54.45 before, 53.89 after.
+    Against the fourth pass's 7 cuts and 8 never heard at the same window: single runs on this entry spread
+    that wide, and neither pair is a window effect on its own.
+    DeepSeek Flash this time went mostly to Phala (16 of 18 completed) with Parasail 2 of 5; the routing
+    moves between passes, which is one more reason single-pass endpoint counts do not earn an ignore.
+- The sixth pass launched at 20:21 UTC on `e0509047b` with no straggler dial, to run the built-in 120 s window
+    and carry the first `recovery round heard N of M` count (`~/temp/agent/openrouter-live6-20260903.log`).
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
