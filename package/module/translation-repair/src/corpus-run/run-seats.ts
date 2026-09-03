@@ -26,13 +26,21 @@ import {
 // provider's serving speed, not to the model, so dropping it outright (the
 // 2026-09-03 morning's `4ad08d5dc`) threw away a judge Synthetic serves well.
 //
-// READ ONCE PER ENTRY, off Synthetic's own meter, because the router's choice
-// is per call: it sends to Synthetic until the model's per-model concurrency is
-// taken, then overflows to Hyper, and to Hyper alone once Synthetic is dry.
-// The seat cannot follow every call; it follows the state that decides most
-// of them. With Synthetic wet a burst still overflows some of this seat's
-// calls to Hyper, and those may be cut; with Synthetic dry every call would
-// go to Hyper, and the seat is not asked.
+// READ AT EACH PHASE BOUNDARY (lanes, lane contest, consolidation), off
+// Synthetic's own meter, because the router's choice is per call: it sends to
+// Synthetic until the model's per-model concurrency is taken, then overflows
+// to Hyper, and to Hyper alone once Synthetic is dry. The seat cannot follow
+// every call; it follows the state that decides most of them. With Synthetic
+// wet a burst could overflow some of this seat's calls to Hyper, and those may
+// be cut; with Synthetic dry every call would go to Hyper, and the seat is not
+// asked.
+//
+// NOT ONCE PER ENTRY, which is what this read until 2026-09-03: XIEPT2 read
+// wet at 08:16, Synthetic ran dry at 08:19, and the seat sat on Hyper for the
+// remaining three and a half hours, abandoned in 102 judge calls with 75
+// rounds waiting the full 60 s grace; consolidation took 134 minutes for 28
+// slices. A reading before each phase withdraws the seat from the first phase
+// that starts dry.
 //
 // AN UNREADABLE METER SEATS THE FULL BENCH. A quota read that fails is not
 // evidence of dryness; the router will still route each call by what it
@@ -132,28 +140,43 @@ export function judgeSeatsFor(
 }
 
 /**
- * Reads Synthetic's meter once and derives the benches for one entry.
+ * Phase of one entry a bench is read for, named in the log line so a run's
+ * log says which reading seated whom.
+ *
+ * @example
+ * ```ts
+ * const phase: JudgeSeatPhase = 'lane contest';
+ * ```
+ */
+export type JudgeSeatPhase = 'lanes' | 'lane contest' | 'consolidation';
+
+/**
+ * Reads Synthetic's meter and derives the benches for one phase of one entry.
  *
  * @param client - routed client whose quota surface is Synthetic's meter
+ *
+ * @param phase - phase about to start, which the reading seats
  *
  * @param signal - entry abort
  *
  * @param l - entry logger, which records the reading and the bench
  *
- * @returns Benches for this entry
+ * @returns Benches for this phase
  *
  * @example
  * ```ts
- * const seats = await readJudgeSeats({ client, signal, l, },);
+ * const seats = await readJudgeSeats({ client, phase: 'lanes', signal, l, },);
  * ```
  */
 export async function readJudgeSeats(
   {
     client,
+    phase,
     signal,
     l,
   }: {
     readonly client: SyntheticClient;
+    readonly phase: JudgeSeatPhase;
     readonly signal: AbortSignal;
     readonly l: Logger;
   },
@@ -188,8 +211,8 @@ export async function readJudgeSeats(
   const late = seats.lateJudges
     .length;
   l.info(
-    `JUDGE SEATS synthetic=${syntheticDry ? 'dry' : 'wet'} wide=${String(wide,)} late=${String(late,)} `
-      + `hyper-slow seated=${syntheticDry ? 'no' : 'yes'}`,
+    `JUDGE SEATS phase=${phase} synthetic=${syntheticDry ? 'dry' : 'wet'} wide=${String(wide,)} `
+      + `late=${String(late,)} hyper-slow seated=${syntheticDry ? 'no' : 'yes'}`,
   );
   return seats;
 }

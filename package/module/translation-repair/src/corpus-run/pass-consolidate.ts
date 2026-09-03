@@ -16,7 +16,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
-import type { JudgeSeats, } from './run-seats.ts';
+import { readJudgeSeats, } from './run-seats.ts';
 
 //region Corpus pass consolidation
 
@@ -26,6 +26,10 @@ import type { JudgeSeats, } from './run-seats.ts';
  * MODEL ROLES, WINDOWS, CACHE AND DOCUMENT FACTS ARE ASSEMBLED HERE so pass
  * orchestration makes one call rather than duplicating stage interface details.
  * This is same seam at which all four positional maps are simultaneously known.
+ *
+ * READS ITS OWN BENCH off Synthetic's meter as it stands when consolidation
+ * starts, for the reason `runPassContest` gives: a reading taken at the lanes
+ * is hours old by now on a long entry (`run-seats.ts`).
  *
  * @param client - shared provider client
  *
@@ -47,16 +51,13 @@ import type { JudgeSeats, } from './run-seats.ts';
  *
  * @param overlap - most slices in flight
  *
- * @param seats - this entry's judge benches, read once off Synthetic's meter
- * (`run-seats.ts`)
- *
  * @param l - entry logger
  *
  * @returns Consolidation records in comparison order
  *
  * @example
  * ```ts
- * const slices = await runPassConsolidation({ client, prepared, projected, contests, frontMatterSlices, pictureReadings, entryCacheDir, pipelineDigest, signal, overlap, seats, l, });
+ * const slices = await runPassConsolidation({ client, prepared, projected, contests, frontMatterSlices, pictureReadings, entryCacheDir, pipelineDigest, signal, overlap, l, });
  * ```
  */
 export async function runPassConsolidation(
@@ -71,7 +72,6 @@ export async function runPassConsolidation(
     pipelineDigest,
     signal,
     overlap,
-    seats,
     l,
   }: {
     readonly client: SyntheticClient;
@@ -84,10 +84,18 @@ export async function runPassConsolidation(
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
     readonly overlap: number;
-    readonly seats: JudgeSeats;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
+  /**
+   * This phase's judge benches, read now.
+   */
+  const seats = await readJudgeSeats({
+    client,
+    phase: 'consolidation',
+    signal,
+    l,
+  },);
   /**
    * Production naturalness roles and document guard facts.
    */

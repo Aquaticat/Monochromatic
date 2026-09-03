@@ -9,7 +9,7 @@ import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
-import type { JudgeSeats, } from './run-seats.ts';
+import { readJudgeSeats, } from './run-seats.ts';
 
 //region Corpus pass lane contest
 
@@ -20,6 +20,11 @@ import type { JudgeSeats, } from './run-seats.ts';
  * THE SEAM BESIDE `runPassConsolidation`, for the same reason: the judges, the
  * cache, the evidence and the window are assembled here so the entry driver
  * makes one call.
+ *
+ * READS ITS OWN BENCH off Synthetic's meter as it stands when the contest
+ * starts, not the lanes' reading: XIEPT2 on 2026-09-03 read wet at the lanes,
+ * ran Synthetic dry seven minutes later, and sat the Hyper-slow judge through
+ * the contest and the consolidation on Hyper (`run-seats.ts`).
  *
  * @param client - shared provider client
  *
@@ -36,8 +41,6 @@ import type { JudgeSeats, } from './run-seats.ts';
  *
  * @param pipelineDigest - generation stamp for the cache
  *
- * @param seats - this entry's judge benches (`run-seats.ts`)
- *
  * @param signal - entry cancellation
  *
  * @param overlap - most slices in flight
@@ -48,7 +51,7 @@ import type { JudgeSeats, } from './run-seats.ts';
  *
  * @example
  * ```ts
- * const contests = await runPassContest({ client, lanes, projected, frontMatterSlices, entryCacheDir, pipelineDigest, seats, signal, overlap, l, },);
+ * const contests = await runPassContest({ client, lanes, projected, frontMatterSlices, entryCacheDir, pipelineDigest, signal, overlap, l, },);
  * ```
  */
 export async function runPassContest(
@@ -60,7 +63,6 @@ export async function runPassContest(
     identityContext,
     entryCacheDir,
     pipelineDigest,
-    seats,
     signal,
     overlap,
     l,
@@ -72,12 +74,20 @@ export async function runPassContest(
     readonly identityContext?: string;
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
-    readonly seats: JudgeSeats;
     readonly signal: AbortSignal;
     readonly overlap: number;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
+  /**
+   * This phase's judge benches, read now.
+   */
+  const seats = await readJudgeSeats({
+    client,
+    phase: 'lane contest',
+    signal,
+    l,
+  },);
   return await contestDocumentLanes({
     client,
     projected,

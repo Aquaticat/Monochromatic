@@ -141,6 +141,7 @@ await describe({
           client: meterClient({
             quotas: async () => snapshotOf({ percentRemaining: 0, remaining: 0, },),
           },),
+          phase: 'lanes',
           signal: new AbortController().signal,
           l,
         },);
@@ -151,6 +152,7 @@ await describe({
           client: meterClient({
             quotas: async () => snapshotOf({ percentRemaining: 40, remaining: 2_000, },),
           },),
+          phase: 'lanes',
           signal: new AbortController().signal,
           l,
         },);
@@ -163,6 +165,7 @@ await describe({
               throw new Error('meter offline',);
             },
           },),
+          phase: 'lanes',
           signal: new AbortController().signal,
           l,
         },);

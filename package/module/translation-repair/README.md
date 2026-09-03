@@ -577,7 +577,9 @@ but a formula is unprotected structure until the strict grammar knows it.
   accuracy probe was read.
   The contest driver logs how many claims a slice's judges were shown.
 - **Judge seats follow the provider that would serve them.**
-  `readJudgeSeats` reads Synthetic's meter once per entry and withholds the
+  `readJudgeSeats` reads Synthetic's meter before each phase of an entry
+  (lanes, lane contest, consolidation; once per entry until 2026-09-03, when
+  XIEPT2 ran Synthetic dry seven minutes into 219) and withholds the
   judges Hyper serves too slowly for the round window (`HYPER_SLOW_JUDGES`,
   Qwen3.8-27B: cut in 30 of 34 translate-lane select rounds with Hyper alone,
   answering 25 of 28 when Synthetic served it) while Synthetic is dry, seating

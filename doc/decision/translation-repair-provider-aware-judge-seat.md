@@ -17,7 +17,8 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
 ## The rule
 
 - `HYPER_SLOW_JUDGES` names the judges Hyper serves too slowly for the window: Qwen3.8-27B today.
-- Once per entry, `readJudgeSeats` reads Synthetic's meter through the routed client's quota surface
+- Before each phase of an entry (lanes, lane contest, consolidation; once per entry until 2026-09-03),
+  `readJudgeSeats` reads Synthetic's meter through the routed client's quota surface
   and derives the benches: with Synthetic dry the Hyper-slow judges are withheld from the wide seats
   (critics, panel, both lanes' select judges) and the late seats (lane contest, consolidation slate,
   consolidation gate); with Synthetic wet they sit. The static benches in `run-config.ts` are the
@@ -37,6 +38,11 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
 - Synthetic serves the seat slowly too, only less often: on that run it was cut from 5 of 21 judge
   rounds on Synthetic (67 to 85 seconds of reasoning), against 30 of 34 and 21 of 24 on Hyper. The
   seat buys 16 answers in 21 there; the rule does not make it a fast judge.
+- One reading per entry is too coarse for a long entry. XIEPT2 the same day read wet at 08:16, Synthetic
+  ran dry at 08:19, and the seat sat on Hyper for three and a half hours: abandoned in 102 judge calls,
+  75 rounds at the full 60 s grace, consolidation 134 minutes for 28 slices
+  (`~/temp/agent/xiept2-postscript-20260903`). The meter is now read again before the lane contest and
+  before consolidation, so a seat given at the lanes is withdrawn once Synthetic is dry.
 - The Synthetic-wet path ran live the same day, at 1.5% of the weekly meter: `JUDGE SEATS
   synthetic=wet wide=7 late=8 hyper-slow seated=yes`, the rounds heard 7 of 7 thirteen times and 8 of
   8 six times.

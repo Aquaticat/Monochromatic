@@ -583,6 +583,9 @@ function replyFor(
  *
  * @param contestChoice - lane scripted contest endorses
  *
+ * @param quotaReads - counter of meter readings, for the case that proves the
+ * judge seats are read before each phase and not once per entry
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -598,6 +601,7 @@ function entryClient(
     coverageScript = 'lost',
     polishScript = false,
     contestChoice = 'translate',
+    quotaReads = { count: 0, },
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
@@ -605,6 +609,7 @@ function entryClient(
     readonly coverageScript?: CoverageScript;
     readonly polishScript?: boolean;
     readonly contestChoice?: 'repair' | 'translate';
+    readonly quotaReads?: { count: number; };
   },
 ): SyntheticClient {
   return {
@@ -684,6 +689,9 @@ function entryClient(
       };
     },
     quotas: async () => {
+      // Counted, then refused: an unreadable meter seats the full bench, so
+      // the entry runs as before while the count says how often it was asked.
+      quotaReads.count += 1;
       throw new Error('quotas unused by either lane',);
     },
   };
@@ -1256,14 +1264,21 @@ await describe({
       },
     },),
     it({
-      name: 'RECOVERS repair-lane source destination loss through consolidation before page write',
+      name: 'RECOVERS repair-lane source destination loss through consolidation before page write, and '
+        + 'READS the judge seats before each of the three phases rather than once (XIEPT2, 2026-09-03: '
+        + 'Synthetic ran dry seven minutes into a 219-minute entry)',
       fn: async () => {
         await using dirs = await throwawayDirs();
         const served: string[] = [];
+        /**
+         * How often the meter was read across the entry.
+         */
+        const quotaReads = { count: 0, };
         const outcome = await settleEntry({
           client: entryClient({
             served,
             contestChoice: 'repair',
+            quotaReads,
           },),
           entry: LINK_RECOVERY_ENTRY,
           artifactsDir: dirs.artifactsDir,
@@ -1283,6 +1298,8 @@ await describe({
         expect(served,).toContain('lane_contest');
         expect(served,).toContain('consolidate_gate');
         expect(page,).toContain('https://example.test/cat-record');
+        // Lanes, lane contest, consolidation: one reading each.
+        expect(quotaReads.count,).toBe(3,);
       },
     },),
     it({

@@ -264,10 +264,13 @@ async function runEntryPipeline(
     },);
 
     /**
-     * This entry's judge benches, read once off Synthetic's meter (`run-seats.ts`).
+     * The lanes' judge benches, read off Synthetic's meter (`run-seats.ts`).
+     * The contest and the consolidation seams read their own: XIEPT2 on
+     * 2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
      */
     const seats = await readJudgeSeats({
       client,
+      phase: 'lanes',
       signal: deadline.callSignal,
       l: tagged({ tag: entry.id, },),
     },);
@@ -363,7 +366,6 @@ async function runEntryPipeline(
         : { identityContext: prepared.identityContext, }),
       entryCacheDir,
       pipelineDigest,
-      seats,
       signal: deadline.callSignal,
       overlap,
       l: tagged({ tag: entry.id, },),
@@ -383,7 +385,6 @@ async function runEntryPipeline(
       pipelineDigest,
       signal: deadline.callSignal,
       overlap,
-      seats,
       l: tagged({ tag: entry.id, },),
     },);
 
