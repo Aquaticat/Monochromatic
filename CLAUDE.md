@@ -414,6 +414,15 @@ Launch;
  record the shape;
  read the outcome as evidence.
 
+QNX:
+ Options that aren't mutually exclusive aren't a decision:
+ do every compatible one.
+Mechanism choices with data to measure:
+ measure,
+ decide,
+ record.
+Ask only for values or authority.
+
 ### Present options with pros, cons, and a personal ranking
 
 OPT:
