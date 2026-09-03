@@ -1088,10 +1088,17 @@ It did: `~/temp/agent/keyword233-wrap-20260903`, `TALLY keyword233 status=SETTLE
 minutes, 220 calls, no refusal, 5 cuts), `verify-published` 1 of 1 at the promised length. The log
 carries the new line, "semantic wrap: rewrapped the polish before its gate, 3 lines as emitted against 8
 as written", the gate then settled on polished with 7 of 7 usable, and the page's three paragraphs
-ship one clause per line (13 body lines against the smoke page's 5). Reading finding, unrelated to the
-wrap and left standing under the single-attempt design: this draw's first paragraph is in the present
-tense ("is a transgender woman from China. She runs her own Telegram channel, where she shares ...")
-while the third reports her death; the 2026-09-02 and smoke pages had "was" and "started".
+ship one clause per line (13 body lines against the smoke page's 5). Reading finding, left standing
+under the single-attempt design: this draw's first paragraph is in the present tense ("is a
+transgender woman from China. She runs her own Telegram channel, where she shares ...") while the
+third reports her death; the 2026-09-02 and smoke pages had "was" and "started". Traced through the
+artifact rather than guessed: the translate lane's text has "was" at every record; the repair lane's
+editor wrote "is" (`repairRegions[].before` "was", `editorAfter` "is"), the introduced-defect probe on
+that chunk reported "3 regions, 1 added-damage corroborated" and the repair shipped regardless, the lane
+contest chose the repair lane 7 of 7, the consolidation slate declined so the standing text stayed, and
+the polish round never touched slice 1 (`changed: false`, no gate). So the wrap and the polish gate are
+clear of it; the question it raises is what a corroborated added-damage claim is for if the repair
+still ships, and that is filed as tracked work.
 
 ## Decisions waiting on the owner
 
