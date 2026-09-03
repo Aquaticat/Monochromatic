@@ -570,6 +570,12 @@ but a formula is unprotected structure until the strict grammar knows it.
   claims against the repair candidate as evidence lines after both candidates,
   with the four-in-ten error rate stated, and its cache key folds them in;
   nothing acts on a claim (`repair-damage-evidence.ts`).
+  The claims come from both probes the lane runs, the accuracy repair's and
+  the naturalness rewrite's, each line naming its edit: a keyword233 draw the
+  same day had the rewrite move a paragraph into the present tense, three
+  probers corroborated it, and the contest was shown nothing while only the
+  accuracy probe was read.
+  The contest driver logs how many claims a slice's judges were shown.
 - **Judge seats follow the provider that would serve them.**
   `readJudgeSeats` reads Synthetic's meter once per entry and withholds the
   judges Hyper serves too slowly for the round window (`HYPER_SLOW_JUDGES`,

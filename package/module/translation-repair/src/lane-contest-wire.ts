@@ -449,9 +449,11 @@ export function buildLaneContestMessages(
     : [
       'CORROBORATED ADDED-DAMAGE CLAIMS against CANDIDATE "repair", evidence to weigh, not a verdict:',
       ...damageClaims,
-      'Each claim came from one prober auditing the repair edit; its quoted wording is in the repair',
-      'candidate and absent from the archive rendering. Probers are wrong about four claims in ten,',
-      'so check each against the ORIGINAL yourself before it counts as unsupported wording.',
+      'Each claim came from one prober auditing one of the two edits behind the repair candidate,',
+      'named on its line: the accuracy repair, which started from the archive rendering, or the',
+      'naturalness rewrite, which started from the repaired text. The quoted wording is in the repair',
+      'candidate and absent from the text that edit started from. Probers are wrong about four claims',
+      'in ten, so check each against the ORIGINAL yourself before it counts as unsupported wording.',
       '',
     ];
 

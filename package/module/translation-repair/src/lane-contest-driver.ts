@@ -352,6 +352,14 @@ export async function contestDocumentLanes(
        * Probe claims against this slice's repair text, empty for most slices.
        */
       const repairDamageClaims = damageClaimsBySlice.get(row.sliceIndex,) ?? [];
+      // Logged so a run's log witnesses whether the judges were shown any claim,
+      // which the ballots alone do not say.
+      if (repairDamageClaims.length > 0) {
+        dl.info(
+          `slice ${String(row.sliceIndex,)}: ${String(repairDamageClaims.length,)} corroborated damage claims `
+            + 'shown to the judges',
+        );
+      }
       /**
        * Those claims as the optional subject and key field, absent when none.
        */

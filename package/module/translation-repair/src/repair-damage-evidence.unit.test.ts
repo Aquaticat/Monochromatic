@@ -5,8 +5,12 @@
  * THE CASE IS keyword233, 2026-09-03: two probers corroborated that the repair
  * editor had moved a deceased person's paragraph into the present tense, the
  * repair shipped as the design says, and the lane contest chose it 7 of 7
- * without ever seeing the claim. Here only corroborated claims become lines,
- * keyed by the slice they concern, and a chunk with none contributes nothing.
+ * without ever seeing the claim. Later that day the naturalness rewrite did
+ * the same on another draw, three probers corroborated it under
+ * `refinementDefects`, and the contest was shown nothing because only the
+ * accuracy probe was read. Here only corroborated claims become lines, from
+ * both probes with the edit named, keyed by the slice they concern, and a chunk
+ * with none contributes nothing.
  *
  * @module
  */
@@ -130,10 +134,60 @@ await describe({
         },);
         expect([...bySlice.keys(),],).toEqual([1,],);
         expect(bySlice.get(1,),).toEqual([
-          '- hf:moonshotai/Kimi-K3 [tense] quotes "is a transgender woman": the page holds past tense',
-          '- hf:moonshotai/Kimi-K3 [unspecified] quotes "where she shares": the page holds past tense',
+          '- hf:moonshotai/Kimi-K3 [tense] on the accuracy repair quotes "is a transgender woman": '
+          + 'the page holds past tense',
+          '- hf:moonshotai/Kimi-K3 [unspecified] on the accuracy repair quotes "where she shares": '
+          + 'the page holds past tense',
         ],);
         expect(damageClaimLinesBySlice({ lane: { chunks: [], }, },).size,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'RENDERS the naturalness rewrite\'s corroborated claims too, after the accuracy repair\'s and '
+        + 'naming their edit, and READS a chunk that carries only the rewrite\'s probe',
+      fn: async () => {
+        const bySlice = damageClaimLinesBySlice({
+          lane: { chunks: [
+            {
+              sliceIndex: 1,
+              introducedDefects: {
+                regions: [
+                  regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'she runs', },),], },),
+                ],
+              },
+              refinementDefects: {
+                regions: [
+                  regionOf({
+                    claims: [
+                      claimOf({ admissibility: 'corroborated', evidence: 'is a transgender woman', },),
+                      claimOf({ admissibility: 'unanchored', evidence: 'nowhere', },),
+                    ],
+                  },),
+                ],
+              },
+            },
+            {
+              sliceIndex: 2,
+              refinementDefects: {
+                regions: [
+                  regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'she shares', },),], },),
+                ],
+              },
+            },
+          ], },
+        },);
+        expect([...bySlice.keys(),],).toEqual([
+          1,
+          2,
+        ],);
+        expect(bySlice.get(1,),).toEqual([
+          '- hf:moonshotai/Kimi-K3 [tense] on the accuracy repair quotes "she runs": the page holds past tense',
+          '- hf:moonshotai/Kimi-K3 [tense] on the naturalness rewrite quotes "is a transgender woman": '
+          + 'the page holds past tense',
+        ],);
+        expect(bySlice.get(2,),).toEqual([
+          '- hf:moonshotai/Kimi-K3 [tense] on the naturalness rewrite quotes "she shares": the page holds past tense',
+        ],);
       },
     },),
   ],
