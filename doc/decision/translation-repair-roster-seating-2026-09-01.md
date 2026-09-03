@@ -150,12 +150,15 @@ Dropped under the owner's standing authorisation ("I authorize you to drop any m
 you have evidence"), landed in `corpus-run/run-config.ts` (`WIDE_SEAT_DROPPED` and `LATE_JUDGE_DROPPED`)
 on 2026-09-03 while XIEPT2's fifth run was in flight; it reaches the next launch.
 
--   Evidence, Hyper the only provider (XIEPT2 rerun5, first 25 minutes): cut in 16 of 17 translate-select
-    rounds and the only late seat in 7 of them, so those rounds waited the whole 60 s window for a ballot
-    that never came; the cut streams carried 700,000 to 1,200,000 raw characters of reasoning and no answer.
--   Evidence, mostly Hyper (Carena0442's landed pass, 1,648 of 1,938 calls on Hyper): 25 of 38
-    translate-select, 21 of 59 repair-select, 13 of 25 critic, 15 of 19 panel, 17 of 19 lane-contest and
-    7 of 14 consolidation-gate rounds; 113 abandoned rounds against 106 successful calls.
+-   Evidence, Hyper the only provider (XIEPT2 rerun5, whole run): cut in 30 of 34 translate-lane select
+    rounds and 21 of 24 consolidation-slate select rounds (both rounds log as `judgeTranslateSlate`; the
+    lane tag tells them apart); in the first 25 minutes it was the only late seat in 7 of 16 select
+    rounds, so those rounds waited the whole 60 s window for a ballot that never came; the cut streams
+    carried 700,000 to 1,200,000 raw characters of reasoning and no answer.
+-   Evidence, mostly Hyper (Carena0442's landed pass, 1,648 of 1,938 calls on Hyper): 14 of 19
+    translate-lane select, 11 of 19 consolidation-slate select, 21 of 59 repair-select, 13 of 25 critic,
+    15 of 19 panel, 17 of 19 lane-contest and 7 of 14 consolidation-gate rounds; 113 abandoned rounds
+    against 106 successful calls.
 -   Counter-evidence, served by Synthetic (Toka_ls, 2026-09-02): answered 25 of 28 select rounds. The seat is
     lost to Hyper's serving speed for this model, not to the model; a provider-aware seat that keeps Qwen
     as a judge while Synthetic serves it is the open design question, not decided here.
@@ -164,6 +167,9 @@ on 2026-09-03 while XIEPT2's fifth run was in flight; it reaches the next launch
     the consolidation gate (`LATE_JUDGE_DROPPED`, seven seats).
 -   Seats it keeps: translator (2 cuts in 22 rounds), checker, introduced-defect probe, pairing and
     insertion admission (1 cut each in 8 to 26 rounds).
--   Kimi-K3 is recorded, not dropped: 21 of 38 translate-select and 10 of 19 contest rounds on Carena0442,
-    6 of 17 select rounds on rerun5, under the precedent's rate in every other kind.
+-   Kimi-K3 is recorded as the next candidate, not dropped: on rerun5 17 of 34 translate-lane select and
+    18 of 24 consolidation-slate select rounds; on Carena0442 11 of 19 and 10 of 19 select, 10 of 19
+    contest, 9 of 25 critic, 5 of 19 panel. Above the precedent in the select and contest seats, under
+    half in critic and panel; the seat sets are coarser than that profile, which is part of the
+    provider-aware seat question.
 -   The 60 s round window stays, as on 2026-09-02.

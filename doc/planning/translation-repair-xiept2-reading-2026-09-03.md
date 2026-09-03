@@ -55,6 +55,31 @@ the source: `people/XIEPT2/page.md` at the pinned corpus commit.
 - Seats. 196 cut streams, 16 of 17 translate-select rounds losing Qwen3.8-27B: the seat drop of
   `4ad08d5dc` reaches the next launch, not this page.
 
+## What the pipeline itself recorded
+
+The artifact (`artifacts/XIEPT2.json`) carries 2,023 finding strings; under the no-loop design they
+are the record of what shipped as it stood, not a queue.
+
+- Preparation: 13 alignment findings, all structural. The archive stub has one placeholder body and
+  section headings only, so every section pairs 1 of N original blocks to its 1 translation block
+  ("structure-mismatch ... passes through unrepaired", eight "block-pairing section k paired 1 of N"
+  lines, three "block-pairing unusable" voices). Expected for a page with no prior translation.
+- Repair lane: 140 strings, 50 of them `repair-not-applicable chunk N; no translation to repair` (the
+  same stub), 34 `refine-skipped`, 9 `refine-skip block/N`, 8 block-pairing counts, 6 each of editor
+  candidates, envelope select, chunk select and duplicate-issue merges, 2 voices lost, 2 rosters
+  incomplete. The 10 issues raised, 4 accepted and 4 resolved in the tally are the repair of the three
+  chunks that had text.
+- Translate lane: 183 `translate-matched-incumbent`, 172 `stage-voice-lost` (the cut judge seats),
+  120 `translate-candidates`, 100 `stage-roster-incomplete`, 87 incumbents excluded by the source floor,
+  48 `translate-invalid`, 36 `select-self-vote`, 36 `translate-repair-revised`, 25 each of insertion
+  coverage and corroboration, 15 declined and 15 declined-retried.
+- Consolidation: per-slice polish reviews as `{paragraph, problem}` records, the largest on slices 7
+  (74), 19 (62), 4 and 16 (42 each). Two touch passages read by hand and stand unresolved on the page,
+  as the single-attempt design ships them: "who had asked Grape to live on, and live well, in her place"
+  (clumsy commas) and "On August 25 her stash got busted" (register). One `translate-repair-as-intended`
+  record defends the To Live link as the archive's editor comment, which is the title rule working.
+- No finding names the death lines, the euthanasia line, or the pronoun of any passage.
+
 ## Regression checks
 
 - Names: Xiaoqing (小青), Shenyang (屾洋, the archive notes the reading), Xiaoshe (小舍), Gu Yi (古一),

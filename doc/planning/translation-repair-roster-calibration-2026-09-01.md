@@ -969,7 +969,8 @@ the rest of the hour's thousand in the run before it, whose calls from 00:00 wer
 successes per ten minutes after that of 141, 134, 104 and 11, the trickle at which requests from an hour
 earlier left the window; 6,441 retry attempts and 1,487 calls refused five times over, spread across the
 nine seats in proportion to their traffic (218 minimax-m3 down to 73 glm-5.3), which is one shared
-window, not a per-model one. The owner's 1,000 requests per rolling hour stands exactly. Every seat lost
+window, not a per-model one. The owner's 1,000 requests per rolling hour holds (a full run at that rate
+drew no refusal; whether the ceiling sits higher is unmeasured). Every seat lost
 about half its calls because the transport ladder (four retries at 1, 2, 4, 8 s equal-jitter, honouring
 the body's 1 to 4 s) cannot outwait a window that frees a place every five seconds, and a call whose
 five attempts were all refused reached the router as a provider outage.
@@ -1006,17 +1007,20 @@ already has its own ending (`overrun`, `maxAnswerChars` on the exchange). A cap 
 the same lost calls seconds earlier and save no requests, and under a window of 1,000 an hour the
 request is the scarce unit, not the second.
 
-What the cuts are, read per seat and round kind: rerun5's first 25 minutes cut Qwen3.8-27B in 16 of 17
-translate-select rounds (the only late seat in 7, so those rounds waited the whole 60 s window for
-nothing), Kimi-K3 in 6 and minimax-m3 in 4; Carena0442's landed pass (1,648 of 1,938 calls on Hyper)
-cut Qwen in 25 of 38 translate-select, 21 of 59 repair-select, 13 of 25 critic, 15 of 19 panel, 17 of 19
-lane-contest and 7 of 14 consolidation-gate rounds, 113 abandoned rounds against 106 successful calls;
-Toka_ls on Synthetic cut it in 3 of 28 select rounds. Under the owner's standing authorisation to drop
+What the cuts are, read per seat and round kind (both lanes' select rounds log as `judgeTranslateSlate`;
+the lane tag splits them): rerun5 cut Qwen3.8-27B in 30 of 34 translate-lane select rounds and 21 of
+24 consolidation-slate select rounds (in the first 25 minutes the only late seat in 7 of 16, so those
+rounds waited the whole 60 s window for nothing), Kimi-K3 in 17 of 34 and 18 of 24, minimax-m3 in 7
+and 6; Carena0442's landed pass (1,648 of 1,938 calls on Hyper) cut Qwen in 14 of 19 translate-lane
+select, 11 of 19 consolidation-slate select, 21 of 59 repair-select, 13 of 25 critic, 15 of 19 panel,
+17 of 19 lane-contest and 7 of 14 consolidation-gate rounds, 113 abandoned rounds against 106
+successful calls; Toka_ls on Synthetic cut it in 3 of 28 select rounds. Under the owner's standing authorisation to drop
 a model from a role on evidence, and on the GLM-5.3-Flash precedent (12 of 21 translate-select rounds),
 Qwen3.8-27B leaves every judge seat (`WIDE_SEAT_DROPPED`, six seats, quorum 3; `LATE_JUDGE_DROPPED`,
 seven) and keeps its writer seats; the seating decision carries the 2026-09-03 addendum. The seat is
 lost to Hyper's serving speed for this model rather than to the model, so a provider-aware seat is the
-open design question. Kimi-K3 (21 of 38 and 10 of 19 on Carena, 6 of 17 on rerun5) is recorded, not
+open design question. Kimi-K3 (17 of 34 and 18 of 24 select on rerun5; 11 of 19, 10 of 19 select and
+10 of 19 contest on Carena, under half in critic and panel) is recorded as the next candidate, not
 dropped. Rerun5 keeps the old seats; the change reaches the next launch.
 
 At 25 minutes rerun5 had 438 successes, 12 retried refusals and 3 lost calls: rerun4's calls were
@@ -1071,6 +1075,18 @@ section or issue it names.
   kept. Under `FIT` (size runs to end within about an hour) that is the owner's call: a run of several
   hours, a different overlap, or a fresh week. Not a design decision, so no question is pending; the
   measurement is here for the veto.
+- LANDED 2026-09-03 04:14 UTC: XIEPT2 at overlap 4 on Hyper alone in 129 minutes, paced at 1,000
+  requests an hour, outside `FIT`; the pacer is the cost of one provider, and a run within the hour on
+  Hyper alone needs either Synthetic's week back or a smaller shape (owner's call, veto invited).
+- Reading findings on XIEPT2 (`doc/planning/translation-repair-xiept2-reading-2026-09-03.md`), each a
+  policy or placement reading for the owner: the postscript's "took medication and breathed in gas"
+  where the obituary block dropped both; the archive stub's `(To-Do)` placeholder kept as the page's
+  first paragraph (fix the pass to drop placeholder-only archive paragraphs, or edit the stub); glosses
+  from the archive's comments inserted inline (大证, WER) rather than as footnotes; semantic wrap applied
+  per slice so the page alternates shapes.
+- Provider-aware judge seat (task #33): Qwen3.8-27B is unseated from every judge round on Hyper's cut
+  record but answered 25 of 28 select rounds on Synthetic; Kimi-K3 is the next candidate under the same
+  rule (majority of select and contest rounds cut on Hyper, under half in critic and panel).
 
 ## Advisor review at 09:30 UTC: six proofs and five fixes before the chain
 

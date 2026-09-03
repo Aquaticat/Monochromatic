@@ -164,11 +164,13 @@ const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
  * `hf:Qwen/Qwen3.8-27B` LEFT EVERY JUDGE SEAT ON 2026-09-03 under the owner's
  * standing authorisation to drop a model from a role on evidence. Served by
  * Hyper it reasons past the 60 s round window in the judge roles: on XIEPT2
- * with Hyper the only provider it was cut in 16 of 17 translate-select rounds
- * and was the only late seat in 7 of them, so those rounds waited the whole
+ * with Hyper the only provider it was cut in 30 of 34 translate-lane select
+ * rounds and 21 of 24 consolidation-slate select rounds, and in the first 25
+ * minutes was the only late seat in 7 of 16, so those rounds waited the whole
  * window for a ballot that never came; on Carena0442 (1,648 of 1,938 calls on
- * Hyper) 25 of 38 translate-select, 21 of 59 repair-select, 13 of 25 critic,
- * 15 of 19 panel, 17 of 19 lane-contest and 7 of 14 consolidation-gate rounds.
+ * Hyper) 14 of 19 translate-lane select, 11 of 19 consolidation-slate select,
+ * 21 of 59 repair-select, 13 of 25 critic, 15 of 19 panel, 17 of 19
+ * lane-contest and 7 of 14 consolidation-gate rounds.
  * Served by Synthetic (Toka_ls, 2026-09-02) it answered 25 of 28 select
  * rounds, so the seat is lost to Hyper's serving speed rather than to the
  * model; a provider-aware seat could restore it when Synthetic is wet. Its
