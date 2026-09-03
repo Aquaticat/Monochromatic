@@ -2,7 +2,8 @@
 
 ## Symptom
 
-On Fedora 44 with `podman-5.8.4-1.fc44.x86_64`, pulling the unqualified
+On Fedora 44 with `podman-5.8.4-1.fc44.x86_64`,
+ pulling the unqualified
 `capsulecode/singlefile` image from a process without a TTY fails before Podman contacts a registry:
 
 ```console
@@ -19,7 +20,9 @@ Error: short-name resolution enforced but cannot prompt without a TTY
 ```
 
 Interactive terminals may instead show a registry-selection prompt.
-Automation, redirected input or output, and agent command runners expose the non-TTY failure.
+Automation,
+ redirected input or output,
+ and agent command runners expose the non-TTY failure.
 
 ## Root cause
 
@@ -98,7 +101,8 @@ if !isShort { // no short name
 }
 ```
 
-For a short name, the resolver first looks for a configured alias and returns it without consulting search registries at
+For a short name,
+ the resolver first looks for a configured alias and returns it without consulting search registries at
 [`vendor/go.podman.io/image/v5/pkg/shortnames/shortnames.go:279-307`][resolver-alias]:
 
 ```go
@@ -167,8 +171,10 @@ if !term.IsTerminal(int(os.Stdout.Fd())) || !term.IsTerminal(int(os.Stdin.Fd()))
         return nil, errors.New("short-name resolution enforced but cannot prompt without a TTY")
 ```
 
-This is an ambiguity guard, not a registry outage and not a SingleFile failure.
-The image exists at `docker.io/capsulecode/singlefile:latest`, as the fully qualified manifest probe confirms.
+This is an ambiguity guard,
+ not a registry outage and not a SingleFile failure.
+The image exists at `docker.io/capsulecode/singlefile:latest`,
+ as the fully qualified manifest probe confirms.
 
 ## Verification
 
@@ -205,10 +211,10 @@ Error: short-name resolution enforced but cannot prompt without a TTY
 The probes used a private throwaway directory:
 
 ```console
-$ mkdir --parents "$HOME/temp/agent"
-$ chmod 700 "$HOME/temp/agent"
-$ fixture="$(mktemp --directory "$HOME/temp/agent/podman-short-name.XXXXXXXX")"
-$ chmod 700 "$fixture"
+mkdir --parents "$HOME/temp/agent"
+chmod 700 "$HOME/temp/agent"
+fixture="$(mktemp --directory "$HOME/temp/agent/podman-short-name.XXXXXXXX")"
+chmod 700 "$fixture"
 ```
 
 A fully qualified target bypasses short-name expansion.
@@ -266,7 +272,9 @@ $ podman unshare find "$fixture" -depth -delete
 
 ### Use a fully qualified image reference
 
-This is the preferred workaround for commands, automation, and container files:
+This is the preferred workaround for commands,
+ automation,
+ and container files:
 
 ```console
 podman pull docker.io/capsulecode/singlefile:latest
@@ -274,11 +282,13 @@ podman pull docker.io/capsulecode/singlefile:latest
 
 It preserves enforcing mode and states which registry is trusted.
 Its tradeoff is that the registry is now part of every image reference.
-The mutable `latest` tag can still move, so reproducible automation should use an approved digest.
+The mutable `latest` tag can still move,
+ so reproducible automation should use an approved digest.
 
 ### Add a narrow per-user alias
 
-For existing callers that cannot change the short name, create
+For existing callers that cannot change the short name,
+ create
 `$HOME/.config/containers/registries.conf.d/999-singlefile.conf`:
 
 ```toml
@@ -293,8 +303,10 @@ podman pull capsulecode/singlefile:latest
 ```
 
 The tested per-user drop-in returned the target's OCI image index under the system's enforcing mode.
-Its tradeoff is hidden machine-local policy: another machine without the alias still fails or may resolve differently.
-Alias values cannot pin a tag or digest, so callers must retain those in the image argument.
+Its tradeoff is hidden machine-local policy:
+ another machine without the alias still fails or may resolve differently.
+Alias values cannot pin a tag or digest,
+ so callers must retain those in the image argument.
 
 ### Configure one trusted search registry
 
@@ -306,12 +318,14 @@ short-name-mode = "enforcing"
 ```
 
 The tested configuration resolved the target without a TTY.
-Its tradeoff is broad scope: every otherwise unaliased short name resolves through Docker Hub.
+Its tradeoff is broad scope:
+ every otherwise unaliased short name resolves through Docker Hub.
 Use this only where Docker Hub is the intended source for that whole environment.
 
 ### Bypass Podman for SingleFile
 
-For this capture task, the native package was installed and exercised directly:
+For this capture task,
+ the native package was installed and exercised directly:
 
 ```console
 npm install --global single-file-cli@2.7.2
@@ -333,7 +347,9 @@ $ docker pull --quiet capsulecode/singlefile
 Error: short-name resolution enforced but cannot prompt without a TTY
 ```
 
-`/usr/bin/docker:2-4` shows why: the marker gates `echo`, while `exec /usr/bin/podman "$@"` is unconditional.
+`/usr/bin/docker:2-4` shows why:
+ the marker gates `echo`,
+ while `exec /usr/bin/podman "$@"` is unconditional.
 
 ### Changing the command spelling from `docker` to `podman`
 
@@ -344,7 +360,8 @@ Both spellings therefore reach the same resolver and produce the same diagnostic
 
 `--quiet` only changes output setup in
 [`pkg/domain/infra/abi/images.go:307-311`][abi-pull].
-Short-name resolution still runs later in libimage, so the TTY requirement remains.
+Short-name resolution still runs later in libimage,
+ so the TTY requirement remains.
 
 ### Globally weakening short-name enforcement
 
@@ -359,33 +376,46 @@ A fully qualified name or narrow alias fixes the ambiguity without weakening pol
 No `.out-of-scope/` entry covers Podman or container short-name resolution.
 
 Searches across open and closed issues and pull requests used
-`short name resolution`, `cannot prompt`, and the exact diagnostic.
-They found the exact duplicate, [Podman issue 11530][issue-11530].
+`short name resolution`,
+ `cannot prompt`,
+ and the exact diagnostic.
+They found the exact duplicate,
+ [Podman issue 11530][issue-11530].
 A maintainer states that enforcing mode deliberately hard-fails when a script cannot be prompted,
 and recommends that the calling tool use a fully qualified name.
 The issue was closed as intended behavior.
 
 The six constraints are:
 
-1. **Is it really upstream's fault?** No defect was established.
-   Podman emits the documented, source-confirmed result of enforcing mode with ambiguous registries and no TTY.
-2. **Can upstream fix it?** Mechanically yes, but silently choosing a registry would alter the security policy.
+1. **Is it really upstream's fault?**
+    No defect was established.
+   Podman emits the documented,
+    source-confirmed result of enforcing mode with ambiguous registries and no TTY.
+2. **Can upstream fix it?**
+    Mechanically yes,
+    but silently choosing a registry would alter the security policy.
    Existing configuration and qualified-name paths already represent the intended solutions.
-3. **Are they supporting this use case?** Yes for non-interactive pulls with unambiguous references.
+3. **Are they supporting this use case?**
+    Yes for non-interactive pulls with unambiguous references.
    Podman's pull documentation recommends fully qualified references and explains aliases.
-4. **Would the repo welcome our contribution?** Generally yes.
+4. **Would the repo welcome our contribution?**
+    Generally yes.
    [`CONTRIBUTING.md`][contributing] asks for reproducible bug reports,
    and the bug template requests version and environment data.
    No prohibition on AI-assisted reports was found in the checked contribution files.
-5. **Will they likely fix it?** No for the behavior reported here.
+5. **Will they likely fix it?**
+    No for the behavior reported here.
    [Issue 11530][issue-11530] records the maintainer's intended-behavior decision.
-6. **Have we prototyped a minimal fix compatible with their architecture?** Not applicable.
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    Not applicable.
    Constraints 1 and 5 fail.
    The verified configuration paths solve the caller's ambiguity without an upstream patch.
 
 There is nothing additive to post on issue 11530.
-The existing thread already records the non-TTY failure, intended enforcing behavior,
-security rationale, and fully qualified name workaround.
+The existing thread already records the non-TTY failure,
+ intended enforcing behavior,
+security rationale,
+ and fully qualified name workaround.
 A version-only comment that the same policy remains in 5.8.4 would amount to a non-additive “still happens” report,
 so no upstream comment or new issue should be filed.
 
