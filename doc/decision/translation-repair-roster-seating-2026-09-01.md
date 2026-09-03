@@ -143,3 +143,27 @@ measurement, landed as commit `9a7d48354` in `corpus-run/run-config.ts`.
     no voice to the window (27 of 27 and 9 of 9 heard), keep the roster.
 -   The 60 s round window stays; the choice was between the window, the seat and the wall clock, and the
     owner chose the seat.
+
+## Addendum 2026-09-03: Qwen3.8-27B leaves every judge seat
+
+Dropped under the owner's standing authorisation ("I authorize you to drop any model from any role, as long as
+you have evidence"), landed in `corpus-run/run-config.ts` (`WIDE_SEAT_DROPPED` and `LATE_JUDGE_DROPPED`)
+on 2026-09-03 while XIEPT2's fifth run was in flight; it reaches the next launch.
+
+-   Evidence, Hyper the only provider (XIEPT2 rerun5, first 25 minutes): cut in 16 of 17 translate-select
+    rounds and the only late seat in 7 of them, so those rounds waited the whole 60 s window for a ballot
+    that never came; the cut streams carried 700,000 to 1,200,000 raw characters of reasoning and no answer.
+-   Evidence, mostly Hyper (Carena0442's landed pass, 1,648 of 1,938 calls on Hyper): 25 of 38
+    translate-select, 21 of 59 repair-select, 13 of 25 critic, 15 of 19 panel, 17 of 19 lane-contest and
+    7 of 14 consolidation-gate rounds; 113 abandoned rounds against 106 successful calls.
+-   Counter-evidence, served by Synthetic (Toka_ls, 2026-09-02): answered 25 of 28 select rounds. The seat is
+    lost to Hyper's serving speed for this model, not to the model; a provider-aware seat that keeps Qwen
+    as a judge while Synthetic serves it is the open design question, not decided here.
+-   Seats it leaves: critic, adjudication panel, both lanes' select judges (`WIDE_SEAT_DROPPED`, now six
+    seats, quorum 3, `minBallotWeight` 3 of 6), the lane contest, the consolidation slate's judges and
+    the consolidation gate (`LATE_JUDGE_DROPPED`, seven seats).
+-   Seats it keeps: translator (2 cuts in 22 rounds), checker, introduced-defect probe, pairing and
+    insertion admission (1 cut each in 8 to 26 rounds).
+-   Kimi-K3 is recorded, not dropped: 21 of 38 translate-select and 10 of 19 contest rounds on Carena0442,
+    6 of 17 select rounds on rerun5, under the precedent's rate in every other kind.
+-   The 60 s round window stays, as on 2026-09-02.

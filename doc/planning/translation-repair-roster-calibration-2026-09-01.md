@@ -1006,6 +1006,23 @@ already has its own ending (`overrun`, `maxAnswerChars` on the exchange). A cap 
 the same lost calls seconds earlier and save no requests, and under a window of 1,000 an hour the
 request is the scarce unit, not the second.
 
+What the cuts are, read per seat and round kind: rerun5's first 25 minutes cut Qwen3.8-27B in 16 of 17
+translate-select rounds (the only late seat in 7, so those rounds waited the whole 60 s window for
+nothing), Kimi-K3 in 6 and minimax-m3 in 4; Carena0442's landed pass (1,648 of 1,938 calls on Hyper)
+cut Qwen in 25 of 38 translate-select, 21 of 59 repair-select, 13 of 25 critic, 15 of 19 panel, 17 of 19
+lane-contest and 7 of 14 consolidation-gate rounds, 113 abandoned rounds against 106 successful calls;
+Toka_ls on Synthetic cut it in 3 of 28 select rounds. Under the owner's standing authorisation to drop
+a model from a role on evidence, and on the GLM-5.3-Flash precedent (12 of 21 translate-select rounds),
+Qwen3.8-27B leaves every judge seat (`WIDE_SEAT_DROPPED`, six seats, quorum 3; `LATE_JUDGE_DROPPED`,
+seven) and keeps its writer seats; the seating decision carries the 2026-09-03 addendum. The seat is
+lost to Hyper's serving speed for this model rather than to the model, so a provider-aware seat is the
+open design question. Kimi-K3 (21 of 38 and 10 of 19 on Carena, 6 of 17 on rerun5) is recorded, not
+dropped. Rerun5 keeps the old seats; the change reaches the next launch.
+
+At 25 minutes rerun5 had 438 successes, 12 retried refusals and 3 lost calls: rerun4's calls were
+still inside Hyper's window (they leave by 02:39) while the pacer's own count stood well under 1,000,
+which is the launch-timing cost named at launch.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
