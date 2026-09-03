@@ -217,7 +217,74 @@ every request carrying `provider: { zdr: true, require_parameters: true }`,
 four calls in flight per model and transport, and writes one raw stream per model and transport plus a summary to
 `~/temp/agent/openrouter-probe-v2-20260903/`.
 GPT-5.6 Luna rides along as a candidate, not a roster model.
-The results section follows when it finishes.
+
+### Probe v2 results, 15:49 to 16:05 UTC
+
+Conformant attempts of twenty, median milliseconds, and the endpoints that served, per model and transport
+(chat = chat completions, msg = Messages, resp = Responses):
+
+- `moonshotai/kimi-k3`: chat 20, 3819 ms (Fireworks, DeepInfra); resp 20, 4554 ms; msg 20, 30660 ms (DeepInfra).
+- `minimax/minimax-m3`: chat 20, 1367 ms (ModelRun); resp 20, 1584 ms; msg 20, 3461 ms (Venice).
+- `deepseek/deepseek-v4-flash-0731`: chat 20, 7252 ms (Inceptron, Parasail, Makora); resp 20, 5803 ms;
+    msg 9 of 20, 7425 ms (DigitalOcean, Inceptron): eleven answers were not JSON.
+- `deepseek/deepseek-v4-pro-0813`: chat 20, 6332 ms (Parasail); resp 20, 6755 ms; msg 20, 1566 ms (BaseTen).
+- `qwen/qwen3.8-27b`: chat 20, 4856 ms (Parasail); resp 20, 5208 ms; msg 20, 10123 ms (Reka, AkashML).
+- `z-ai/glm-5.3`: chat 20, 1068 ms (Together); resp 20, 1058 ms; msg 20, 1126 ms (Together).
+- `z-ai/glm-5.3-flash`: chat 20, 7117 ms (Together, Modal); resp 20, 7639 ms; msg 20, 6890 ms (Together).
+- `google/gemma-4-26b-a4b-it`: chat 20, 1325 ms (Google, Parasail); resp 20, 1813 ms; msg 20, 1780 ms (Google, NextBit).
+- `openai/gpt-oss-120b`: chat 20, 664 ms (Cerebras); resp 20, 717 ms; msg 20, 721 ms (Cerebras).
+- `openai/gpt-5.6-luna` (candidate): chat 9 of 20 (Azure), resp 11 of 20, msg 0 of 20 with HTTP 404
+    "No endpoints found matching your data policy (Zero data retention)"; the failed chat and Responses
+    attempts answered empty text (`response.failed`). Not viable under zero data retention as measured.
+
+Every request cost is on the wire: 20 of 20 priced on every conformant row.
+Whole probe: about 0.55 USD.
+
+THE TRANSPORT IS CHAT COMPLETIONS, as the owner suggested mid-session: it conformed on every roster attempt and
+answered fastest or within noise of fastest on every model, where Messages answered Kimi-K3 eight times slower and
+conformed on 9 of 20 DeepSeek Flash attempts.
+The Responses endpoint conformed too and is not used; one OpenAI-shaped path is one reader to maintain.
+
+Qwen3.8-27B's chat median (4856 ms on a short prompt) sits in the band of the other models, unlike its Hyper
+serving, so its withholding rule stays "served by Hyper" and it is seated when OpenRouter would serve it;
+the live pass below is where that is checked on corpus-sized prompts.
+
+Width: 32 concurrent chat completions per model on `deepseek/deepseek-v4-flash-0731` (32 of 32 conformant,
+median 2852 ms, max 7776 ms; Together, Makora, OpenInference) and `z-ai/glm-5.3-flash` (32 of 32, median 7955 ms,
+max 49581 ms; Together, Modal, Makora), no refusal.
+The client therefore carries no per-model ceiling by default, like Hyper's.
+
+## What landed, 2026-09-03
+
+Commits `0aa800ab4` (source) and `433279f3c` (tests and lint), on top of `90dcb8745` (the `[DONE]` skip):
+
+- `provider-name.ts`: `ProviderName` with `openrouter`, `PROVIDER_ORDER`, `ProviderRecord`, `providerRecord`,
+    `otherProviders`, `isProviderName`.
+- `openrouter-catalog.ts`, `openrouter-client.ts`, `openrouter-credits.ts`, `openrouter-cost.ts`: the chat
+    completions client with `provider: { zdr: true, require_parameters: true, ignore: [] }` on every body, the
+    credits meter, and the per-call USD cost read off the final chunk onto the `SPEND` line as `cost=`.
+    gemma's OpenRouter row reports no pictures until a transcription is measured, so the reader roster is unchanged.
+- `budget-routing.ts`: `routeProviderFor` walks `PROVIDER_ORDER` over dryness and saturation records;
+    `providerServing` answers the seat reader's question; `EveryProviderDryError` replaces the two-provider name
+    (old name in the local forbidden-strings appendix).
+- `provider-budget.ts`, `budget-hold-wait.ts`: three meters, `METERS` gains `openrouter=` and `openrouterUsd=`,
+    a wet refuser is held only while some other provider is wet, the all-dry wait is provider-generic.
+- `provider-router.ts` with `provider-router-slots.ts` and `provider-router-reask.ts`: callers keyed by provider,
+    one attempt per provider on refusals, the re-ask on the next wet provider serving the model, slots counted only
+    where a provider states a ceiling.
+- `run-seats.ts`: benches derive from `providerServing`; Hyper-slow rules apply where Hyper would serve;
+    `OPENROUTER_WITHHELD` (Kimi-K3) applies where OpenRouter would; `OPENROUTER_CHECKER_SUBSTITUTE`
+    (gemma) keeps the checker floor, and both checker assertions run per phase; the `JUDGE SEATS` line names every
+    provider's state and every withheld model.
+- `run-config.ts`, `run-client-contract.ts`, `required-providers.ts`, `budget-sample.ts`: the third key, optional and
+    loud; the run client exposes `providerDryness`; `--require-providers` accepts `openrouter`.
+- `spend-read.ts`, `spend-cost.ts`, `meter-sample-read.ts`, `meter-dry-span.ts`, `meter-report.ts`: the cost field
+    and an OpenRouter USD bucket kept apart from hypercredits; older `METERS` lines read with the third state absent.
+- `roster-blocklist.ts`: `google/gemini-3.8-flash` and its `:batch` spelling.
+
+Guards shown to fail: the OpenRouter fallthrough (routing and router tests) with `openrouter` excluded from the
+usable providers, and the Kimi withholding (seat test) with the check replaced by `true`; both restored and passing.
+915 unit tests pass; oxlint and the type check are clean.
 
 ## Build plan, transport-independent layers first
 
