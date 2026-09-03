@@ -107,10 +107,22 @@ repeat,
  shuffle the selected page,
  or shuffle the complete library.
 
-A Storage Access Framework tree accepts FLAC, WAV and PCM, MP3, Vorbis in Ogg, Opus, AAC-LC and ALAC in
-MP4, and AIFF filename extensions. The MediaStore source relies on Android's music classification instead.
-Desktop decodes those formats, plus ADPCM, and opens each track at its native sample rate. Desktop leaves
-device resampling to PipeWire, CoreAudio, or WASAPI.
+A Storage Access Framework tree accepts FLAC,
+ WAV and PCM,
+ MP3,
+ Vorbis in Ogg,
+ Opus,
+ AAC-LC and ALAC in
+MP4,
+ and AIFF filename extensions.
+ The MediaStore source relies on Android's music classification instead.
+Desktop decodes those formats,
+ plus ADPCM,
+ and opens each track at its native sample rate.
+ Desktop leaves
+device resampling to PipeWire,
+ CoreAudio,
+ or WASAPI.
 
 ### Audio safety
 
@@ -140,8 +152,14 @@ Windows.
  These shell integrations are best-effort and were not verified in the isolated gallery environment,
 so the gallery does not demonstrate them.
 
-Android supports API 26 and later and targets API 36. Its Kotlin layer owns permissions, MediaStore and
-Storage Access Framework access, persistence, a MediaSession, audio focus, and foreground-service lifecycle.
+Android supports API 26 and later and targets API 36.
+ Its Kotlin layer owns permissions,
+ MediaStore and
+Storage Access Framework access,
+ persistence,
+ a MediaSession,
+ audio focus,
+ and foreground-service lifecycle.
  Its Rust engine decodes,
 measures true peak,
  and drives AAudio.
