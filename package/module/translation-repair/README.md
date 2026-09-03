@@ -561,7 +561,24 @@ but a formula is unprotected structure until the strict grammar knows it.
   misses, which is the first version of this instrument that discriminated at
   all.
   That reading is one agent's and one draw's, so it sizes nothing.
+  A second reading on 2026-09-03, every region with a corroborated claim across
+  the four probed landings, found six of ten true (three of them the house
+  tense rule), three false (two misparse 我方才知道 as "our side") and one
+  borderline.
   Shadow mode stands until a human grades a sample: `#66`.
+  What changed on that reading: the lane contest is shown the corroborated
+  claims against the repair candidate as evidence lines after both candidates,
+  with the four-in-ten error rate stated, and its cache key folds them in;
+  nothing acts on a claim (`repair-damage-evidence.ts`).
+- **Judge seats follow the provider that would serve them.**
+  `readJudgeSeats` reads Synthetic's meter once per entry and withholds the
+  judges Hyper serves too slowly for the round window (`HYPER_SLOW_JUDGES`,
+  Qwen3.8-27B: cut in 30 of 34 translate-lane select rounds with Hyper alone,
+  answering 25 of 28 when Synthetic served it) while Synthetic is dry, seating
+  them when it is wet; an unreadable meter seats the full bench.
+  The static benches in `run-config.ts` are the Synthetic-wet ones, seven wide
+  seats and eight late judges; six and seven when dry.
+  Decision: `doc/decision/translation-repair-provider-aware-judge-seat.md`.
   Shadow mode is a recorded decision rather than an unfinished edge, with the
   rejected gating designs and the condition that reopens it in
   `doc/decision/introduced-defect-probe-gating.md`.
