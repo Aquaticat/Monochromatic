@@ -695,11 +695,16 @@ and reading one as an instruction has cost this package a defect before.
     Bearer token for the third provider, OpenRouter, the paid per-token fallback the owner chose on
     2026-09-03 (`doc/decision/translation-repair-openrouter-fallback.md`).
     OPTIONAL AND LOUD like the second.
-    Every request carries `provider: { zdr: true, require_parameters: true }`,
-    so only zero-data-retention endpoints that support `response_format` may serve a passage.
+    Every request carries `provider: { zdr: true, require_parameters: true, ignore: [...] }`,
+    so only zero-data-retention endpoints that support `response_format` may serve a passage,
+    and the catalog row's `ignoredEndpoints` keeps a measured-broken upstream off the wire
+    (Parasail for MiniMax M3 since 2026-09-03: it answered into the reasoning channel and left content empty).
     Credits are read from `GET /api/v1/credits` (purchased less used, in USD) and printed on the `METERS`
     line as `openrouterUsd=`; every call's cost is read off the final stream chunk onto its `SPEND` line as
     `cost=`, so a run's OpenRouter bill is summed from the wire rather than from a price table.
+    The upstream that served each call is read off the same chunks:
+    `endpoint=` on the `SPEND` line (percent-encoded) and `served by "..."` on the stream progress line,
+    cut streams included, so a slow or broken upstream is named by a grep of the run log.
 
 Every key lives in the sops-encrypted, gitignored `.env.local.json` at the repository root,
 which `mise run` decrypts into the task's environment.
