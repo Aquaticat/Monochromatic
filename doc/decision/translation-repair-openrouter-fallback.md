@@ -119,7 +119,10 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
 - **The withhold reached only the judge benches** until `8848f070e`: that pass bought six Kimi-K3 translations
     on OpenRouter, a quarter of its bill, because the translator roster and the picture readers were the static
     lists. `JudgeSeats` now carries `translators` and `readers` filtered by the same rule, and the picture stage
-    reads its own seats. The Kimi-K3 rule in the standing rules above means every call, not every judge call.
+    reads its own seats. The next pass then bought the model's first call from the block-pairing round, which
+    took the static roster as insertion admission and the consolidation writers did, so `68ad11530` adds
+    `roster` to `JudgeSeats` and every roster-wide stage takes it from its own reading. The Kimi-K3 rule in
+    the standing rules above means every call, not every judge call.
 - **Open, put to the owner: the straggler grace on the all-OpenRouter bench.** Every cut on that pass was a
     reasoning-only stream ending at the 60 second grace (Qwen 7 of 38, DeepSeek Flash 6 of 27), with the rounds
     spending 82.7 percent of their time waiting after quorum against 62.3 with Synthetic wet. No ignore fits:

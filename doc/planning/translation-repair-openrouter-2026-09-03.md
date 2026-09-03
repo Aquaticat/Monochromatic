@@ -387,7 +387,12 @@ which the run reads as both dry (`~/temp/agent/openrouter-live3-20260903.log`, a
     (`JUDGE SEATS phase=pictures`, `pass-seated-pictures.ts`);
     the seat guards shown failing with the filters removed, restored and passing,
     and the entry driver test now counts four meter readings per entry.
-    Not yet exercised live;
+    The fourth pass (19:33 UTC, launched on that fix) then bought Kimi-K3's first call from the block-pairing
+    round six seconds before any bench was read: preparation, insertion admission and the consolidation
+    writers all took the static `RUN_ROSTER`. `68ad11530` adds `roster` to `JudgeSeats`, the whole roster
+    less any withheld model, read for `phase=preparation` before the pairing round, and the other two
+    stages take their own reading's roster; guard shown failing with the filter removed, restored and passing.
+    Not yet exercised live past the pairing round;
     the next OpenRouter-only pass must show no `SPEND provider=openrouter model=moonshotai/kimi-k3` line.
 - **The Parasail ignore and the OpenInference ignore both held**: 36 of 36 MiniMax calls to ModelRun, all completed,
     three schema-mismatches (two consolidation gates, one translate vote); no DeepSeek Flash stream on OpenInference.
