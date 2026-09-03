@@ -1154,6 +1154,30 @@ promised length, the first paragraph in the past tense. The probes corroborated 
 of 4 regions, both edits), so no `corroborated damage claims shown` line appeared and the unit test
 remains the block's only witness; the contests settled on neither (8 of 8) and on repair (8 of 8).
 
+## XIEPT2 on the postscript rule: the page says it one way, and the seat rule's blind spot cost two hours
+
+The reader-protection sentence of `c7a00eea8` (method words with no substance stay vague; one page,
+one way) had no live witness, so XIEPT2 ran on `2530537a2` (08:12 UTC,
+`~/temp/agent/xiept2-postscript-20260903`): `TALLY XIEPT2 status=SETTLED ... repairIssues=9
+repairAccepted=5 ... translateChanged=27 ... ms=13136520` (219 minutes, 261 calls on Synthetic and
+1,936 on Hyper, no refusal, 184 cuts), `verify-published` 1 of 1 at the promised length. The rule
+applied: the scheduled-message obituary now reads "Xiafeng Grape took her own life in an unmonitored
+room…" where the ORIGINAL names a lethal drug and a toxic gas, the narrative postscript reads "She put
+on her last light-colored dress and ended her life in the night" where rerun5 had "took medication and
+breathed in gas", and the second obituary keeps `ending her life by "euthanasia"` as the owner decided.
+The probes corroborated nothing (0 of 3 regions), so the contest block again had no live draw.
+
+Where the time went, measured off the log. `JUDGE SEATS synthetic=wet` at 08:16:53; the first
+`METERS synthetic=dry` at 08:19:00, seven minutes in, with the weekly meter at 0%. The seat rule reads
+once per entry, so Qwen3.8-27B stayed seated on Hyper for the remaining three and a half hours: 107 of
+the 184 cuts were its, it was abandoned in 102 judge calls (59 select, 18 naturalness review, 9 polish
+gate, 7 lane contest, 5 consolidation gate, 4 other), and 75 rounds waited the full 60 s grace (43
+select, 14 naturalness review, 9 polish gate, 5 lane contest, 3 consolidation gate, 1 panel).
+Consolidation of the 28 contested slices took 134 minutes (09:37 to 11:51) against 78 for both lanes.
+That is the decision record's "the seat follows the state that decides most calls" limitation with a
+price on it, and a diagnosed defect with a fix that keeps the policy: read the meter again at each phase
+boundary (lane contest, consolidation), which would have withheld the seat from 08:19 on.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
