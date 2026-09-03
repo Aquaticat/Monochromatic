@@ -598,6 +598,19 @@ and a run made from that checkout recorded none of what they read either.
     and again the tool names the absence rather than reporting a free run,
     exiting `0` as it does so.
 
+    On OpenRouter calls the `SPEND` line also names the upstream that served the call (`endpoint=`),
+    and every stream progress line, cut ones included, ends with `served by "..."`.
+    A model that keeps coming back empty or slow on that provider is attributed by two greps:
+
+    ```sh
+    rg 'SPEND provider=openrouter model=minimax/minimax-m3' "${RUNDIR}.log" \
+      | rg --only-matching 'endpoint=\S+' | sort | uniq --count
+    rg ': cut, .*served by' "${RUNDIR}.log" | rg --only-matching 'stream \S+:.*served by "[^"]+"'
+    ```
+
+    An upstream measured broken goes into that model's `ignoredEndpoints` in `openrouter-catalog.ts`
+    with the measurement beside it, as Parasail did for MiniMax M3 on 2026-09-03.
+
 6.  Read who produced what, and what the judges said about it.
 
     ```sh
