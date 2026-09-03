@@ -989,6 +989,23 @@ Synthetic's week resets or a smaller shape is chosen. Not a design decision: the
 overlap 4" and `QPW` cover a one-provider launch, so rerun5 launches paced and the duration is reported
 for the veto.
 
+Rerun5 launched 02:04 UTC on `4b5c8b438` (the pacer at 1,000 per rolling hour, its test rewritten so the
+queued-abort guard is the one under test) at overlap 4 into `~/temp/agent/xiept2-rerun5-20260903`, Hyper
+alone; 17 successful calls and no refusal in the first 45 seconds. Launched before rerun4's last calls
+had left Hyper's window (they do by 02:39), on the reasoning that the pacer's own thousand is spent
+only after some ten minutes of the preparation stage, by which time most of rerun4's calls have left,
+and that a refusal in between costs one call's five short retries, not the run. A watcher reports
+Hyper successes, refusals, cuts and slice costs every five minutes and ends on the tally.
+
+The cut-stream cap (the runaway-reply item) is closed on measurement rather than built. Rerun4's 41
+cuts (qwen3.8-27b 20, kimi-k3 17, minimax-m3 3, glm-5.3-flash 1) all had zero content characters,
+15,000 to 45,000 reasoning characters and about 70 seconds elapsed: the round's 60-second post-quorum
+grace cutting slow reasoners, not runaway output. Raw stream bytes run seventeen times the text
+(one SSE frame per few characters), so the day's "1.43 MB at p90" measured framing. Answer overrun
+already has its own ending (`overrun`, `maxAnswerChars` on the exchange). A cap on reasoning would end
+the same lost calls seconds earlier and save no requests, and under a window of 1,000 an hour the
+request is the scarce unit, not the second.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
