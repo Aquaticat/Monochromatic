@@ -13,6 +13,7 @@ import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { RefineStageMode, } from './refine-selection-context.ts';
 import { runRefineStage, } from './refine-stage.ts';
+import { wrapReplacementText, } from './semantic-wrap.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 
@@ -263,11 +264,72 @@ export async function runConsolidationPolishRound(
     };
   }
   /**
+   * Refinement as it would ship: wrapped at its semantic boundaries unless the
+   * line-structure rule governs the slice, in which case as the refiner wrote
+   * it, on the evidence `wrapConsolidation` cites.
+   *
+   * BEFORE THE GATE, on the rule `wrapConsolidationProposals` states: the
+   * deciders judge the bytes that ship. Measured on keyword233, 2026-09-03: the
+   * consolidation slate shipped wrapped, this round then handed the refiner's
+   * single-line rewrite to the gate beside that wrapped base, a gate judge
+   * chose it because it "removes the stilted line breaks", and the page
+   * shipped single-line where the 2026-09-02 landing had one clause per line.
+   * Wrapped here, the comparison is between two texts written to the same
+   * rule, and what the gate approves is what the page carries.
+   */
+  const polished = lineStructured
+    ? refined.refinedText
+    : wrapReplacementText({ text: refined.refinedText, },);
+  /**
+   * Whether the wrap altered what the refiner emitted.
+   */
+  const rewrapped = polished !== refined.refinedText;
+  /**
+   * Whether the wrap left nothing between the refinement and the base, which
+   * may itself stand unwrapped where it is the archive's own wording.
+   */
+  const demoted = (polished === baseText)
+    || ((!lineStructured) && (polished === wrapReplacementText({ text: baseText, },)));
+  if (demoted) {
+    l.info('semantic wrap: the polish matched the base once wrapped, so the slice keeps what it had',);
+    return {
+      disposition: (mode.kind === 'comparative') ? 'fallback' : 'no-correction',
+      text: baseText,
+      proposedText: polished,
+      changed: false,
+      refinersHeard: refined.heard,
+      contributors: refined.contributors,
+      rounds: refined.rounds,
+      findings: [
+        ...refined.findings,
+        'consolidation-polish matched the base once wrapped',
+      ],
+    };
+  }
+  if (rewrapped) {
+    /**
+     * Lines the refiner wrote.
+     */
+    const emittedLines = refined.refinedText
+      .split('\n',)
+      .length;
+    /**
+     * Lines the rule would have it written on.
+     */
+    const writtenLines = polished
+      .split('\n',)
+      .length;
+    l.info(
+      `semantic wrap: rewrapped the polish before its gate, ${String(emittedLines,)} lines as emitted `
+        + `against ${String(writtenLines,)} as written`,
+    );
+  }
+  /**
    * Structural validity before semantic comparative gate.
    */
   const validation = validateTranslatedSlice({
     sourceText,
-    candidateText: refined.refinedText,
+    candidateText: polished,
     pageText: baseText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
@@ -276,7 +338,7 @@ export async function runConsolidationPolishRound(
     return {
       disposition: (mode.kind === 'comparative') ? 'fallback' : 'no-correction',
       text: baseText,
-      proposedText: refined.refinedText,
+      proposedText: polished,
       changed: false,
       refinersHeard: refined.heard,
       contributors: refined.contributors,
@@ -298,7 +360,7 @@ export async function runConsolidationPolishRound(
       sourceText,
       archiveText,
       baseText,
-      polishedText: refined.refinedText,
+      polishedText: polished,
       mode,
       ...((identityContext === undefined) ? {} : { identityContext, }),
     },
@@ -310,14 +372,14 @@ export async function runConsolidationPolishRound(
    * Exact text selected by comparative gate.
    */
   const text = (gate.ships === 'polished')
-    ? refined.refinedText
+    ? polished
     : baseText;
   return {
     disposition: (text === baseText)
       ? ((mode.kind === 'comparative') ? 'fallback' : 'no-correction')
       : 'selected',
     text,
-    proposedText: refined.refinedText,
+    proposedText: polished,
     changed: text !== baseText,
     refinersHeard: refined.heard,
     contributors: refined.contributors,

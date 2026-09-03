@@ -40,9 +40,25 @@ const ROSTER = [
 const BASE = 'She faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
 
 /**
- * Faithful idiomatic rewrite.
+ * Faithful idiomatic rewrite, as a refiner emits it: one line.
  */
 const POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
+
+/**
+ * The same rewrite as the page carries it: wrapped at its semantic boundary
+ * before the gate sees it (keyword233, 2026-09-03: a gate judge preferred the
+ * unwrapped rewrite for "removing the stilted line breaks" and the page
+ * shipped single-line).
+ */
+const WRAPPED_POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone,\n'
+  + 'doing her best to stay hopeful and connected to those around her.';
+
+/**
+ * The base wording as the wrap would write it: a refinement that is exactly
+ * this changes nothing and must not ship as a change.
+ */
+const WRAPPED_BASE = 'She faced life proactively and spent a good time with everyone,\n'
+  + 'while doing her best to stay hopeful and connected to the people around her.';
 
 /**
  * Short literal prose final polish must still review.
@@ -309,12 +325,134 @@ await describe({
         if (polish.kind !== 'settled')
           throw new Error('body polish fixture did not run',);
         expect(polish.changed,).toBe(true,);
-        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.text,).toBe(WRAPPED_POLISHED,);
         expect(polish.gate?.ships,).toBe('polished',);
         expect(polish.rounds.length,).toBe(1,);
         expect(polish.review.correctionCount,).toBe(0,);
         expect(polish.review.rounds[0]?.verdict,).toBe('acceptable',);
         expect(polish.review.confirmations,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'WRAPS THE REFINEMENT BEFORE ITS GATE so the gate judges the bytes the page carries, '
+        + 'LEAVES a line-structured slice as the refiner wrote it, and DEMOTES a refinement that is '
+        + 'only the base re-wrapped',
+      fn: async () => {
+        /**
+         * Gate subjects the scripted gate was shown, so the test can prove
+         * the wrapped bytes reached the deciders rather than only the page.
+         */
+        const gateSubjects: string[] = [];
+        /**
+         * Client answering the refine schema with a given rewrite and
+         * recording what the polish gate is asked about.
+         *
+         * @param newText - rewrite the refiner returns for paragraph 1
+         *
+         * @returns Scripted client
+         */
+        function rewritingClient({ newText, }: { readonly newText: string; },): SyntheticClient {
+          return {
+            ...client,
+            chatJson: async <ValueT,>(
+              request: ChatJsonRequest<ValueT>,
+            ): Promise<ChatJsonOutcome<ValueT>> => {
+              /**
+               * Schema identifying stage role.
+               */
+              const schema = request.responseFormat
+                ?.json_schema
+                .name;
+              if (schema === 'consolidation_polish_gate')
+                gateSubjects.push(JSON.stringify(request.messages,),);
+              if (schema !== 'refine_report')
+                return await client.chatJson(request,);
+              /**
+               * Scripted rewrite.
+               */
+              const value: unknown = {
+                rewrites: [{
+                  paragraph: 1,
+                  newText,
+                },],
+              };
+              if (!request.validate(value,))
+                throw new Error('scripted refine reply failed validation',);
+              return {
+                kind: 'ok',
+                value,
+                rawText: JSON.stringify(value,),
+              };
+            },
+          };
+        }
+
+        const wrapped = await polishConsolidation({
+          client: rewritingClient({ newText: POLISHED, },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-wrap-test', },),
+        },);
+        expect(wrapped.kind,).toBe('settled',);
+        if (wrapped.kind !== 'settled')
+          throw new Error('wrap fixture did not settle',);
+        expect(wrapped.text,).toBe(WRAPPED_POLISHED,);
+        expect(wrapped.proposedText,).toBe(WRAPPED_POLISHED,);
+        // The gate was asked about the wrapped bytes, not the refiner's line.
+        expect(gateSubjects.length,).toBeGreaterThan(0,);
+        expect(gateSubjects.every((subject,) => subject.includes(JSON.stringify(WRAPPED_POLISHED,).slice(1, -1),),),).toBe(true,);
+
+        // Line-structured: the one-line source keeps a one-line rewrite as
+        // written; a wrap here would break the line count the rule protects.
+        const governed = await polishConsolidation({
+          client: rewritingClient({ newText: POLISHED, },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: true,
+          sliceIndex: 1,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-governed-test', },),
+        },);
+        expect(governed.kind,).toBe('settled',);
+        if (governed.kind !== 'settled')
+          throw new Error('governed fixture did not settle',);
+        expect(governed.text,).toBe(POLISHED,);
+
+        // A refinement that is the base with its line break put back is not a
+        // change: the slice keeps the base byte for byte and says why.
+        const rewrapOnly = await polishConsolidation({
+          client: rewritingClient({ newText: WRAPPED_BASE, },),
+          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-rewrap-test', },),
+        },);
+        expect(rewrapOnly.kind,).toBe('settled',);
+        if (rewrapOnly.kind !== 'settled')
+          throw new Error('rewrap fixture did not settle',);
+        expect(rewrapOnly.changed,).toBe(false,);
+        expect(rewrapOnly.text,).toBe(BASE,);
+        expect(
+          rewrapOnly.findings
+            .some(function namesDemotion(finding,): boolean {
+              return finding.includes('matched the base once wrapped',);
+            },),
+        ).toBe(true,);
       },
     },),
 
@@ -383,7 +521,7 @@ await describe({
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
           throw new Error('rejection fixture did not settle',);
-        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.text,).toBe(WRAPPED_POLISHED,);
         expect(polish.review
           .correctionCount,).toBe(0,);
         expect(polish.review
@@ -424,7 +562,7 @@ await describe({
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
           throw new Error('confirmation rejection fixture did not settle',);
-        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.text,).toBe(WRAPPED_POLISHED,);
         expect(polish.review
           .rounds[0]
           ?.verdict,).toBe('unacceptable',);
@@ -460,7 +598,7 @@ await describe({
         expect(polish.kind,).toBe('settled',);
         if (polish.kind !== 'settled')
           throw new Error('quorum fixture did not settle',);
-        expect(polish.text,).toBe(POLISHED,);
+        expect(polish.text,).toBe(WRAPPED_POLISHED,);
         expect(polish.review
           .rounds[0]
           ?.verdict,).toBe('quorum-not-met',);
