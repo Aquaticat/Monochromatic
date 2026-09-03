@@ -1071,6 +1071,19 @@ slate (the smoke's contest settled on neither) ships whatever shape that stage p
 alternating shape is the same defect. The fix that keeps the stated `MD1` policy is one wrap over the
 final page text at publish, and it is filed as tracked work rather than built inside this record.
 
+Read closer, the site is narrower than "the lanes": the lanes and the consolidation slate already wrap
+(`consolidate-wrap.ts`, the #162 rule that deciders judge the bytes that ship), and the smoke's polish
+gate lines say what happened: "consolidation polish gate: 7/7 usable, settled on polished, ships
+polished" on both slices, with a gate judge choosing the polish because it "removes the stilted line
+breaks". The polish round handed the refiner's single-line rewrite to the gate beside the wrapped base
+and shipped it as written. `e539f80cc` wraps the refinement before validation and the gate
+(line-structured slices excepted), demotes a refinement that is only the base re-wrapped, and ships the
+wrapped text as `proposedText` so the digest reader's equality holds; the polish test proves the gate
+was asked about the wrapped bytes, the governed slice stays as written, and the pure re-wrap demotes (6
+FAIL lines with the wrap removed, none with it). `1ffbfad9b` moves the settle and publish fixtures to
+the wrapped bytes. Publishing itself stays byte-faithful, as `publish-fixed.ts` argues. keyword233
+relaunched on that tree at 04:57 UTC to show the page keeps its line breaks.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
