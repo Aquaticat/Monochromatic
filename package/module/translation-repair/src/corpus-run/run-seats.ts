@@ -23,6 +23,7 @@ import {
   RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_READER_MODELS,
+  RUN_ROSTER,
   RUN_TRANSLATE_MODELS,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
@@ -192,6 +193,16 @@ export type JudgeSeats = {
   readonly readers: readonly RosterModelId[];
 
   /**
+   * The whole roster less any withheld model, for every stage that asks the
+   * roster rather than a named bench: block pairing and archive review in
+   * preparation, insertion admission, and the consolidation writers. The
+   * second OpenRouter-only pass (2026-09-03 19:33 UTC) bought the withheld
+   * model's first call from the pairing round, six seconds before any bench
+   * was read.
+   */
+  readonly roster: readonly RosterModelId[];
+
+  /**
    * Repair lane roles with the wide, select and checker seats applied.
    */
   readonly repairModels: RepairModels;
@@ -317,6 +328,10 @@ export function judgeSeatsFor(
    */
   const readers = RUN_READER_MODELS.filter(seated,);
   /**
+   * The roster for this reading.
+   */
+  const roster = RUN_ROSTER.filter(seated,);
+  /**
    * Every static seat holder, repeated where a model holds several seats.
    */
   const seatHolders = [
@@ -325,6 +340,7 @@ export function judgeSeatsFor(
     ...staticCheckers,
     ...RUN_TRANSLATORS,
     ...RUN_READER_MODELS,
+    ...RUN_ROSTER,
   ];
   /**
    * Every model some bench lost to this reading, named once.
@@ -354,6 +370,7 @@ export function judgeSeatsFor(
     checkers,
     translators,
     readers,
+    roster,
     repairModels: {
       ...RUN_MODELS,
       criticModelIds: wideSeats,
@@ -378,7 +395,7 @@ export function judgeSeatsFor(
  * const phase: JudgeSeatPhase = 'lane contest';
  * ```
  */
-export type JudgeSeatPhase = 'pictures' | 'lanes' | 'lane contest' | 'consolidation';
+export type JudgeSeatPhase = 'preparation' | 'pictures' | 'lanes' | 'lane contest' | 'consolidation';
 
 /**
  * Reads every provider's dryness and derives the benches for one phase of
@@ -438,6 +455,7 @@ export async function readJudgeSeats(
     checkers,
     translators,
     readers,
+    roster,
     withheld,
   } = seats;
   /**
@@ -451,6 +469,7 @@ export async function readJudgeSeats(
       + `select=${String(selectJudges.length,)} late=${String(lateJudges.length,)} `
       + `slate=${String(slateJudges.length,)} checkers=${String(checkers.length,)} `
       + `translators=${String(translators.length,)} readers=${String(readers.length,)} `
+      + `roster=${String(roster.length,)} `
       + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)}`,
   );
   return seats;

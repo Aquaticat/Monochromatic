@@ -38,7 +38,6 @@ import {
   RUN_CALL_CONFIG,
   RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
-  RUN_ROSTER,
 } from './run-config.ts';
 import { readJudgeSeats, } from './run-seats.ts';
 
@@ -196,6 +195,18 @@ async function runEntryPipeline(
     },);
 
     /**
+     * The roster preparation asks, read off the meters first of all
+     * (`run-seats.ts`): a withheld model pairs no blocks and reviews no
+     * archive either, and the pairing round is the entry's first purchase.
+     */
+    const preparationSeats = await readJudgeSeats({
+      client,
+      phase: 'preparation',
+      signal: deadline.callSignal,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    /**
      * Slicing BOTH lanes run over, prepared once here rather than inside
      * either.
      *
@@ -225,7 +236,7 @@ async function runEntryPipeline(
       entryId: entry.id,
       entryCacheDir,
       pipelineDigest,
-      modelIds: RUN_ROSTER,
+      modelIds: preparationSeats.roster,
       sourceText: entry.sourceText,
       // Normalized inside (`pass-prepare.ts`): the archive both deciders judge
       // is the archive as prepared, never these bytes.
@@ -277,7 +288,7 @@ async function runEntryPipeline(
     const translateInsertionAdmission = await decidePassInsertionAdmission({
       client,
       prepared,
-      modelIds: RUN_ROSTER,
+      modelIds: seats.roster,
       overlap,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,

@@ -12,10 +12,7 @@ import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
-import {
-  RUN_PER_CALL_TIMEOUT_MS,
-  RUN_ROSTER,
-} from './run-config.ts';
+import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { readJudgeSeats, } from './run-seats.ts';
 
 //region Corpus pass consolidation
@@ -108,12 +105,13 @@ export async function runPassConsolidation(
     client,
     projected,
     contests,
-    // THE WHOLE ROSTER WRITES, the slate judges judge and the late judges
-    // gate: GLM-5.3-Flash keeps its writing seats and left every judge seat on
-    // 2026-09-02, the reason on `WIDE_SEAT_DROPPED` in `run-config.ts`; the
-    // Hyper-slow judge sits only while Synthetic serves it, and the
-    // select-slow judge judges slates only then (`run-seats.ts`).
-    modelIds: RUN_ROSTER,
+    // THE WHOLE SEATED ROSTER WRITES, the slate judges judge and the late
+    // judges gate: GLM-5.3-Flash keeps its writing seats and left every judge
+    // seat on 2026-09-02, the reason on `WIDE_SEAT_DROPPED` in
+    // `run-config.ts`; the Hyper-slow judge sits only while Synthetic serves
+    // it, the select-slow judge judges slates only then, and a model withheld
+    // on the provider that would serve it writes nothing (`run-seats.ts`).
+    modelIds: seats.roster,
     judgeModelIds: seats.slateJudges,
     ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
     frontMatterSlices,

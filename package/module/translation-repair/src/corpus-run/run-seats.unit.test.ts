@@ -30,6 +30,7 @@ import {
   RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_READER_MODELS,
+  RUN_ROSTER,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
 } from '../../dist/final/node/index.mjs';
@@ -121,6 +122,7 @@ await describe({
         expect(wet.checkers,).toEqual(RUN_MODELS.checkerModelIds,);
         expect(wet.translators,).toEqual(RUN_TRANSLATORS,);
         expect(wet.readers,).toEqual(RUN_READER_MODELS,);
+        expect(wet.roster,).toEqual(RUN_ROSTER,);
         expect(wet.translateModels.translatorModelIds,).toEqual(RUN_TRANSLATORS,);
         expect(wet.withheld,).toEqual([],);
         expect(wet.wideSeats.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
@@ -193,6 +195,9 @@ await describe({
         expect(seats.translateModels.translatorModelIds,).toEqual(seats.translators,);
         expect(seats.readers.includes(KIMI,),).toBe(false,);
         expect(seats.readers.length,).toBe(RUN_READER_MODELS.length - 1,);
+        expect(RUN_ROSTER.includes(KIMI,),).toBe(true,);
+        expect(seats.roster.includes(KIMI,),).toBe(false,);
+        expect(seats.roster.length,).toBe(RUN_ROSTER.length - 1,);
         expect(seats.withheld,).toEqual([KIMI,],);
       },
     },),
