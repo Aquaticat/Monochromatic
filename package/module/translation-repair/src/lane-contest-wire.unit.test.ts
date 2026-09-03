@@ -373,11 +373,16 @@ await describe({
         const withClaims = buildLaneContestMessages({
           subject: {
             ...subject,
-            repairDamageClaims: ['- minimax-m3 [tense] quotes "sleeps": the page holds past tense',],
+            repairDamageClaims: [
+              '- minimax-m3 [tense] on the accuracy repair quotes "sleeps": the page holds past tense',
+            ],
           },
         },).at(1,)?.content ?? '';
         expect(withClaims.includes('CORROBORATED ADDED-DAMAGE CLAIMS against CANDIDATE "repair"',),).toBe(true,);
-        expect(withClaims.includes('- minimax-m3 [tense] quotes "sleeps": the page holds past tense',),).toBe(true,);
+        expect(
+          withClaims.includes('- minimax-m3 [tense] on the accuracy repair quotes "sleeps": the page holds past tense',),
+        ).toBe(true,);
+        expect(withClaims.includes('the naturalness rewrite, which started from the repaired text',),).toBe(true,);
         // After the translate candidate, before the closing questions.
         expect(withClaims.indexOf('CORROBORATED ADDED-DAMAGE',),).toBeGreaterThan(withClaims.indexOf('CANDIDATE "translate":',),);
         expect(withClaims.indexOf('CORROBORATED ADDED-DAMAGE',),).toBeLessThan(withClaims.indexOf('Return JSON',),);
