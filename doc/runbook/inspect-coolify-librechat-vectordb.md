@@ -39,7 +39,11 @@ select the project and environment containing LibreChat,
 select the LibreChat Service,
 and open its **Configuration** page.
 The required starting state is the LibreChat **Configuration** page with both **Vectordb** cards visible.
+Record the displayed Coolify project,
+environment,
+and Service names.
 Copy the Service UUID from the URL segment immediately after `/service/`.
+
 In the command examples,
 replace uppercase placeholders such as `SERVICE_UUID`,
 `COMPOSE_PROJECT`,
@@ -103,22 +107,44 @@ TODO
 
     The expected outcome includes known destination containers.
     If it prints only the header,
-    first resolve the wrong-host,
+    resolve the wrong-host,
     wrong-context,
     or Docker-daemon problem before trusting any filtered result.
 
-11. Discover all Compose containers whose service key is `vectordb`:
+11. Run an unfiltered volume inventory as a positive control:
+
+    ```bash
+    docker volume ls --format 'table {{.Name}}\t{{.Driver}}'
+    ```
+
+    The expected outcome includes named volumes on this destination daemon.
+
+12. List Coolify-managed Compose Service containers with non-secret identity labels:
+
+    ```bash
+    docker ps --all --no-trunc \
+      --filter 'label=coolify.managed=true' \
+      --filter 'label=coolify.type=service' \
+      --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Label "com.docker.compose.project"}}\t{{.Label "com.docker.compose.service"}}\t{{.Label "coolify.projectName"}}\t{{.Label "coolify.environmentName"}}\t{{.Label "coolify.resourceName"}}'
+    ```
+
+    The expected outcome lets the reader match the recorded Coolify project,
+    environment,
+    and Service names to a Compose project without relying on the Service UUID.
+    Record the matching Compose project as `COMPOSE_PROJECT`.
+
+13. Discover all Compose containers whose service key is `vectordb`:
 
     ```bash
     docker ps --all --no-trunc \
       --filter 'label=com.docker.compose.service=vectordb' \
-      --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Label "com.docker.compose.project"}}'
+      --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Label "com.docker.compose.project"}}\t{{.Label "coolify.projectName"}}\t{{.Label "coolify.environmentName"}}\t{{.Label "coolify.resourceName"}}'
     ```
 
     The expected outcome is one row per real `vectordb` container across all Compose projects.
-    Record the project label for the LibreChat row as `COMPOSE_PROJECT`.
+    Select a row only when its Compose project and Coolify identity labels match step 12.
 
-12. If the preceding command prints no `vectordb` row,
+14. If the preceding command prints no matching `vectordb` row,
     search container names as a compatibility fallback:
 
     ```bash
@@ -129,7 +155,41 @@ TODO
 
     The expected outcome is either a concrete `vectordb` container row or only the header.
 
-13. For each `vectordb` container ID found,
+15. List detached Compose volume candidates for the `vectordb-data` key:
+
+    ```bash
+    docker volume ls \
+      --filter 'label=com.docker.compose.volume=vectordb-data' \
+      --format 'table {{.Name}}\t{{.Driver}}'
+    ```
+
+    The expected outcome includes the PostgreSQL volume even when its container is absent.
+    A header-only result triggers the name fallback in step 17.
+
+16. For each candidate from step 15,
+    run this command once:
+
+    ```bash
+    docker volume inspect VECTORDB_VOLUME_NAME \
+      --format 'Name={{.Name}} Project={{index .Labels "com.docker.compose.project"}} ComposeVolume={{index .Labels "com.docker.compose.volume"}} Mountpoint={{.Mountpoint}}'
+    ```
+
+    Each run should identify its Compose project.
+    Match it to `COMPOSE_PROJECT` from step 12 when that project still has containers.
+
+17. If step 15 found no candidate,
+    search volume names as a compatibility fallback:
+
+    ```bash
+    docker volume ls \
+      --filter 'name=vectordb' \
+      --format 'table {{.Name}}\t{{.Driver}}'
+    ```
+
+    The expected outcome is a volume candidate or only the header.
+    Do not choose between multiple candidates by recency or name similarity alone.
+
+18. For each `vectordb` container ID found,
     run this command once:
 
     ```bash
@@ -145,7 +205,7 @@ TODO
     Empty Coolify labels are evidence to record,
     not values to guess.
 
-14. List every container in the discovered LibreChat Compose project:
+19. List every container in the identified LibreChat Compose project:
 
     ```bash
     docker ps --all --no-trunc \
@@ -153,16 +213,13 @@ TODO
       --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Label "com.docker.compose.service"}}'
     ```
 
-    The expected outcome includes the actual LibreChat,
-    MongoDB,
-    Meilisearch,
-    vector database,
-    and RAG API containers that currently exist.
+    The expected outcome includes each actual LibreChat stack container that currently exists.
+    A header-only result is valid when only a detached volume identified the project.
 
-15. For each MongoDB,
+20. For each MongoDB,
     Meilisearch,
     vector database,
-    and LibreChat container ID from step 14,
+    and LibreChat container ID from step 19,
     run this command once:
 
     ```bash
@@ -172,7 +229,7 @@ TODO
 
     Each run should record the current named-volume identity and destination without printing environment variables.
 
-16. For each `vectordb` container ID,
+21. For each `vectordb` container ID,
     read its latest PostgreSQL output:
 
     ```bash
@@ -181,7 +238,7 @@ TODO
 
     Each run should return up to 200 timestamped log lines or a concrete Docker error.
 
-17. Discover the installed LibreChat container:
+22. Discover the installed LibreChat container in the identified project:
 
     ```bash
     docker ps --all --no-trunc \
@@ -190,9 +247,10 @@ TODO
       --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}'
     ```
 
-    The expected outcome is the installed LibreChat container row.
+    The expected outcome is the installed LibreChat container row or only the header.
 
-18. Inspect its configured health check:
+23. If a LibreChat container exists,
+    inspect its configured health check:
 
     ```bash
     docker inspect LIBRECHAT_CONTAINER_ID \
@@ -201,7 +259,7 @@ TODO
 
     The expected outcome records both the configured command and Docker's latest health-check evidence.
 
-19. If the LibreChat container is running,
+24. If the LibreChat container is running,
     probe its current `/health` endpoint:
 
     ```bash
@@ -215,7 +273,7 @@ TODO
     connection error,
     or missing-command error instead of substituting another tool.
 
-20. If the LibreChat container is running,
+25. If the LibreChat container is running,
     probe its configured legacy `/api/health` endpoint:
 
     ```bash
@@ -226,12 +284,12 @@ TODO
     The expected obsolete-route result is `404 Not Found`.
     Different output proves that the installed artifact differs from the reviewed current source.
 
-21. On self-hosted Coolify,
+26. On self-hosted Coolify,
     connect with `ssh` to the Coolify control-plane host.
     The expected outcome is a shell prompt on the host running the Coolify application and `coolify-db` containers.
-    Skip steps 22 through 24 for Coolify Cloud.
+    Skip steps 27 through 29 for Coolify Cloud.
 
-22. Identify the Coolify database container without assuming it shares the destination host:
+27. Identify the Coolify database container without assuming it shares the destination host:
 
     ```bash
     docker ps --all --no-trunc \
@@ -241,7 +299,7 @@ TODO
 
     The expected outcome contains the PostgreSQL container that stores Coolify's control-plane metadata.
 
-23. Read the application and database records for this Service:
+28. Read the application and database records for this Service:
 
     ```bash
     docker exec COOLIFY_DB_CONTAINER_ID \
@@ -252,9 +310,9 @@ TODO
 
     The expected outcome is one row per Coolify card.
     Match card URL UUIDs from steps 4 and 6 to the `uuid` column,
-    then match the live container's `CoolifySubType` and `CoolifySubId` from step 13 to `kind` and `id`.
+    then match the live container's `CoolifySubType` and `CoolifySubId` from step 18 to `kind` and `id`.
 
-24. Read persistent-storage metadata for the PostgreSQL mount:
+29. Read persistent-storage metadata for the PostgreSQL mount:
 
     ```bash
     docker exec COOLIFY_DB_CONTAINER_ID \
@@ -262,10 +320,10 @@ TODO
       --command="SELECT id, name, mount_path, resource_type, resource_id FROM local_persistent_volumes WHERE mount_path = '/var/lib/postgresql/data' ORDER BY resource_type, resource_id, id;"
     ```
 
-    The expected outcome includes metadata for the volume reported by step 13.
+    The expected outcome includes metadata for the volume reported by steps 16 or 18.
     Use `resource_type` and `resource_id` to determine which Coolify record owns that metadata.
 
-25. Return to each **Vectordb** browser tab and leave it open without pressing **Delete**,
+30. Return to each **Vectordb** browser tab and leave it open without pressing **Delete**,
     **Convert to Application**,
     or **Convert to Database**.
     The expected outcome is unchanged resource configuration and preserved storage.
@@ -280,39 +338,45 @@ Record and compare these exact values:
 - Rendered Coolify version from step 1.
   A version older than `v4.0.0-beta.466` is susceptible to the upstream empty-query false-exit bug.
   Version alone does not prove that this incident was caused by that bug.
-- Unfiltered destination inventory from step 10.
-  It validates that later empty filtered results are meaningful.
-- Number of real `vectordb` rows from steps 11 and 12.
+- Unfiltered destination inventories from steps 10 and 11.
+  They validate that later empty filtered results are meaningful.
+- Coolify identity labels and Compose project from step 12.
+  These prevent selecting another LibreChat stack that also has a `vectordb` service.
+- Number of real matching `vectordb` rows from steps 13 and 14.
   Two cards with one Docker row prove that the cards do not represent two current containers.
+- Detached volume identity and Compose project from steps 15 through 17 when no container exists.
+  Do not mutate an ambiguous candidate.
 - `State.Status`,
   `State.ExitCode`,
   `State.OOMKilled`,
   `State.Error`,
   `State.StartedAt`,
-  and `State.FinishedAt` from step 13.
-- Exact final PostgreSQL line from step 16.
+  and `State.FinishedAt` from step 18.
+- Exact final PostgreSQL line from step 21.
   Healthy startup includes `database system is ready to accept connections`.
-- `CoolifySubType` and `CoolifySubId` from step 13,
-  matched to `kind` and `id` from step 23.
+- `CoolifySubType` and `CoolifySubId` from step 18,
+  matched to `kind` and `id` from step 28.
   This match identifies the record represented by the live container.
 - Card UUIDs and descriptions from steps 4 and 6,
-  matched to the control-plane rows from step 23.
+  matched to the control-plane rows from step 28.
   Do not choose a card to delete from its description alone.
-- Named-volume identities from steps 13 and 15,
-  matched to storage metadata from step 24.
+- Named-volume identities from steps 16,
+  18,
+  and 20,
+  matched to storage metadata from step 29.
   Preserve all MongoDB,
   Meilisearch,
   and PostgreSQL volume identities across later recovery.
-- LibreChat health configuration and both endpoint probes from steps 18 through 20.
+- LibreChat health configuration and both endpoint probes from steps 23 through 25.
   These test the installed artifact rather than inferring from current upstream source.
 
 A false-exit attribution requires a live or logged Coolify `Exited` transition while destination Docker still reports the same container as running.
 Static version inspection proves susceptibility only.
 
 Share the rendered Coolify version,
-steps 10 through 20 output,
+steps 10 through 25 output,
 the two card URL UUIDs and descriptions,
-and steps 23 through 24 output when self-hosted.
+and steps 28 through 29 output when self-hosted.
 Do not share passwords,
 tokens,
 container environment variables,
