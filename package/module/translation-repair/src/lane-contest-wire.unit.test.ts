@@ -382,7 +382,9 @@ await describe({
         expect(
           withClaims.includes('- minimax-m3 [tense] on the accuracy repair quotes "sleeps": the page holds past tense',),
         ).toBe(true,);
-        expect(withClaims.includes('the naturalness rewrite, which started from the repaired text',),).toBe(true,);
+        // The block is written one line per sentence fragment, so the assertion
+        // stays inside one line of it.
+        expect(withClaims.includes('naturalness rewrite, which started from the repaired text',),).toBe(true,);
         // After the translate candidate, before the closing questions.
         expect(withClaims.indexOf('CORROBORATED ADDED-DAMAGE',),).toBeGreaterThan(withClaims.indexOf('CANDIDATE "translate":',),);
         expect(withClaims.indexOf('CORROBORATED ADDED-DAMAGE',),).toBeLessThan(withClaims.indexOf('Return JSON',),);
