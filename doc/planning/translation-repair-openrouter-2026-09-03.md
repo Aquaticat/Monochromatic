@@ -419,6 +419,24 @@ which the run reads as both dry (`~/temp/agent/openrouter-live3-20260903.log`, a
     GLM-5.3-Flash on Together 8 at 65.8 s and Makora 1 at 70 s against Venice 2 at 5.2 s and Reka 1 at 1.8 s.
     GLM-5.3-Flash's slow endpoints cut nothing (14 of 14 usable), so nothing is ignored on one pass's counts.
 
+## The fourth live pass, keyword233, 19:33 to 19:55 UTC, OpenRouter alone at a 120 s grace
+
+Launched from the worktree at tip `f4d59bf65` (the translator and reader withhold, before the roster-wide
+one) with `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=120000`, everything else as the third pass
+(`~/temp/agent/openrouter-live4-20260903.log`):
+
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1321136`; `verify-published` 1 of 1
+    (`chars=773=expected missing=0`); no refusal, no 5xx retry, one schema-mismatch.
+- Cut streams 7 (Qwen3.8-27B 6, gemma 1) against 14 at 60 s; `run-timing-report` 37 rounds,
+    34.6 of 37.7 round-minutes waiting after quorum (91.7 percent), 8 voices never heard against 19.
+- 0.4502 USD; Kimi-K3 bought 3 calls (0.07 USD): one from the block-pairing round and two as consolidation
+    writers, the roster-wide gap `68ad11530` closes. `JUDGE SEATS` read `translators=6 readers=3` at every phase.
+- Put to the owner with the third pass's figures; **decided: 120 s**, now the built-in
+    (`doc/decision/translation-repair-straggler-grace.md`, "Decision 2026-09-03").
+- Decided at the same asking: the recovery round keeps its complaint-appended re-ask
+    (`doc/decision/translation-repair-recovery-reask.md`) and per-slice semantic wrap stays
+    (`doc/decision/translation-repair-page-shape-per-slice-wrap.md`).
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:

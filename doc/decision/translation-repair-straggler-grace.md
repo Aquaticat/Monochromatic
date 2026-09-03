@@ -315,6 +315,27 @@ for the dial's value: `doc/planning/translation-repair-roster-calibration-2026-0
 This addendum records a launch-time dial; it moves no decision. Whether per-role windows become the built-in
 design is the owner's call.
 
+## Decision 2026-09-03: the built-in window is 120 seconds
+
+Decided by the owner, asked with four options after two keyword233 passes on the all-OpenRouter bench
+(Synthetic and Hyper keys unset, everything else identical) put the 60 s launch dial of 2026-09-02 against 120 s:
+
+- 60 s (`~/temp/agent/openrouter-live3-20260903.log`): tally 1,247 s, 14 cut streams, every one a reasoning
+    stream still working (Qwen3.8-27B 7 of 38 asks, DeepSeek Flash 6 of 27, DeepSeek Pro 1 of 37),
+    19 voices never heard, rounds waiting after quorum 82.7 percent of round time, 0.76 USD.
+- 120 s (`~/temp/agent/openrouter-live4-20260903.log`): tally 1,321 s, 7 cut streams (Qwen 6, gemma 1),
+    8 voices never heard, waiting after quorum 91.7 percent, 0.45 USD.
+- The tally difference sits inside the day's run-to-run band on the same entry (957 to 1,321 s over four
+    runs), so the wall-clock price of the longer window is unresolved at this scale; the voices are not.
+
+Options offered, ranked 120 s over 180 s over 60 s over withholding the slow seats from OpenRouter-served
+judge benches: 120 is measured where 180 is not on this bench; 60 loses fourteen voices for a saving inside
+the noise; the withheld seats' finished answers were all usable. The owner chose 120 s.
+
+`STRAGGLER_GRACE_MS` in `stage-round.ts` is now 120_000; the launch dial is no longer needed for the pass.
+Writer rounds follow it unless `TRANSLATION_REPAIR_WRITER_GRACE_MS` is set; today's passes set 180000 there,
+and that per-role figure stays a launch dial, as the 2026-09-02 addendum records.
+
 ## Addendum 2026-08-27: one same-digest hard-page pair
 
 Fixed-build `Toka_ls` ran at overlap 4 under both windows.

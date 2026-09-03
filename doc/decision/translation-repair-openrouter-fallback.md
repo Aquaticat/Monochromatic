@@ -123,11 +123,11 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
     took the static roster as insertion admission and the consolidation writers did, so `68ad11530` adds
     `roster` to `JudgeSeats` and every roster-wide stage takes it from its own reading. The Kimi-K3 rule in
     the standing rules above means every call, not every judge call.
-- **Open, put to the owner: the straggler grace on the all-OpenRouter bench.** Every cut on that pass was a
-    reasoning-only stream ending at the 60 second grace (Qwen 7 of 38, DeepSeek Flash 6 of 27), with the rounds
-    spending 82.7 percent of their time waiting after quorum against 62.3 with Synthetic wet. No ignore fits:
-    Parasail's completed latencies match Synthetic's for the same model. The grace is a speed-against-width
-    tradeoff and stays the owner's call; the planning record carries the figures.
+- **The straggler grace is 120 seconds**, the owner's decision of 2026-09-03 on a measured pair: every cut on
+    the 60 s pass was a reasoning-only stream still working (Qwen 7 of 38, DeepSeek Flash 6 of 27), and the
+    120 s pass halved the cuts (14 to 7) and the voices never heard (19 to 8) for a wall-clock difference
+    inside the day's band. No ignore fits, since Parasail's completed latencies match Synthetic's for the same
+    model. Record: `doc/decision/translation-repair-straggler-grace.md`, "Decision 2026-09-03".
 
 ## Rollback
 
