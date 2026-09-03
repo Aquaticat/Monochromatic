@@ -63,18 +63,29 @@ await describe({
     },),
 
     it({
-      name: 'IGNORES Parasail for MiniMax M3 alone: the endpoint that answered a corpus-sized schema '
-        + 'call with the JSON in the reasoning channel and nothing in content (2026-09-03), while every '
-        + 'other row ignores no endpoint',
+      name: 'IGNORES one measured endpoint on two rows: Parasail for MiniMax M3, which answered a '
+        + 'corpus-sized schema call with the JSON in the reasoning channel and nothing in content, and '
+        + 'OpenInference for DeepSeek V4 Flash, which finished 2 of 6 streams inside the straggler grace '
+        + '(both 2026-09-03), while every other row ignores no endpoint',
       fn: async () => {
         expect(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,).toEqual(['parasail',],);
+        expect(OPENROUTER_MODELS['deepseek/deepseek-v4-flash-0731'].ignoredEndpoints,).toEqual([
+          'openinference',
+        ],);
         /**
-         * Rows other than MiniMax's.
+         * Rows with a measured endpoint on them.
+         */
+        const measured: ReadonlySet<string> = new Set([
+          'minimax/minimax-m3',
+          'deepseek/deepseek-v4-flash-0731',
+        ],);
+        /**
+         * Rows other than the two with a measured endpoint.
          */
         const others = Object
           .values(OPENROUTER_MODELS,)
-          .filter(function notMinimax(info,): boolean {
-            return info.id !== 'minimax/minimax-m3';
+          .filter(function unmeasured(info,): boolean {
+            return !measured.has(info.id,);
           },);
         for (const info of others)
           expect(info.ignoredEndpoints,).toEqual([],);

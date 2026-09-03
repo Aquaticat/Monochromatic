@@ -189,7 +189,7 @@ await describe({
           provider: {
             zdr: true,
             require_parameters: true,
-            ignore: [],
+            ignore: ['openinference',],
           },
           response_format: {
             type: 'json_schema',

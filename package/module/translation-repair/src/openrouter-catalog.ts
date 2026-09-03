@@ -191,12 +191,20 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     maxOutputLength: 512_000,
     ignoredEndpoints: ['parasail',],
   },
+  // OPENINFERENCE LOSES THE VOICE TO THE STRAGGLER GRACE. Every cut this
+  // model took on the second all-OpenRouter keyword233 pass of 2026-09-03
+  // (`~/temp/agent/openrouter-live2-20260903.log`) was the 60 s grace after
+  // quorum ending a stream still in its reasoning channel, and OpenInference
+  // finished 2 of its 6 streams (mean 58.8 s finished, cut at 67 s to 117 s
+  // with at most 1 content char over 6.7k to 14.9k reasoning chars) against
+  // Parasail's 12 of 13 (mean 42.8 s) and Inceptron's 4 of 5 (mean 29.9 s).
+  // The model reasons long on every endpoint; this one is the slowest at it.
   'deepseek/deepseek-v4-flash-0731': {
     id: 'deepseek/deepseek-v4-flash-0731',
     sharedWith: 'deepseek-v4-flash-0731',
     readsImages: false,
     maxOutputLength: 943_718,
-    ignoredEndpoints: [],
+    ignoredEndpoints: ['openinference',],
   },
   'deepseek/deepseek-v4-pro-0813': {
     id: 'deepseek/deepseek-v4-pro-0813',
