@@ -1,4 +1,5 @@
 import { isJsonRecord, } from './json-guard.ts';
+import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 
 //region OpenRouter cost
 // WHAT ONE CALL COST IN USD, read off the wire rather than priced from a table.
@@ -14,12 +15,8 @@ import { isJsonRecord, } from './json-guard.ts';
 // SCANNED SEPARATELY FROM THE COMPLETION READER, which is shared with
 // Synthetic and reports only token counts. Adding a provider-specific field
 // to `ExtractedCompletion` would make every other reader carry a value it
-// cannot fill.
-
-/**
- * Prefix marking a line that carries an event payload.
- */
-const DATA_PREFIX = 'data:';
+// cannot fill. The chunk walk itself lives in `openrouter-chunk-scan.ts`,
+// shared with the endpoint reader.
 
 /**
  * Reading given when no chunk carried a cost.
@@ -48,38 +45,8 @@ export function openRouterCostOf(
   /**
    * Costs each chunk reported, in arrival order.
    */
-  const costs = bodyText
-    .split('\n',)
-    .flatMap(function costOf(rawLine,): readonly number[] {
-      /**
-       * Line without surrounding whitespace and carriage returns.
-       */
-      const line = rawLine.trim();
-      if (!line.startsWith(DATA_PREFIX,))
-        return [];
-      /**
-       * Payload after the prefix; the sentinel and blanks carry no JSON.
-       */
-      const payload = line
-        .slice(DATA_PREFIX.length,)
-        .trim();
-      if (!payload.startsWith('{',))
-        return [];
-      /**
-       * Parsed chunk, or nothing when the payload does not parse.
-       */
-      const chunk: unknown = (function parseChunk(): unknown {
-        try {
-          return JSON.parse(payload,);
-        } catch (error) {
-          // A chunk the completion reader already refused or accepted; this
-          // scan only wants the cost and reports nothing about the rest.
-          void error;
-          return undefined;
-        }
-      })();
-      if (!isJsonRecord(chunk,))
-        return [];
+  const costs = openRouterChunksOf({ bodyText, },)
+    .flatMap(function costOf(chunk,): readonly number[] {
       /**
        * Usage block, absent on every chunk but the last.
        */

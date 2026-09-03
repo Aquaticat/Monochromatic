@@ -73,6 +73,37 @@ await describe({
     },),
 
     it({
+      name: 'READS a line carrying the trailing endpoint field the OpenRouter writer adds, which this '
+        + 'reader does not tally, so the attribution field costs the accounting nothing',
+      fn: async () => {
+        expect(
+          readSpendLine({
+            line: reportSpend({
+              provider: 'openrouter',
+              label: 'minimax/minimax-m3',
+              extracted: {
+                text: 'The cat approved this rendering.',
+                usage: {
+                  prompt_tokens: 2_263,
+                  completion_tokens: 117,
+                },
+              },
+              costUsd: 0.00032778,
+              endpoint: 'Google AI Studio',
+            },),
+          },),
+        )
+          .toEqual({
+            provider: 'openrouter',
+            model: 'minimax/minimax-m3',
+            prompt: 2_263,
+            completion: 117,
+            costUsd: 0.00032778,
+          },);
+      },
+    },),
+
+    it({
       name: 'READS the cost field an OpenRouter line carries, in USD as the wire reported it, and '
         + 'round-trips it through the writer',
       fn: async () => {

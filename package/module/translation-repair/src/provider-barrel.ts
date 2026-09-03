@@ -168,6 +168,11 @@ export {
   COST_UNREPORTED,
   openRouterCostOf,
 } from './openrouter-cost.ts';
+export { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
+export {
+  ENDPOINT_UNREPORTED,
+  openRouterEndpointOf,
+} from './openrouter-endpoint.ts';
 export {
   OPENROUTER_AUTH_HEADER,
   OPENROUTER_CHAT_URL,

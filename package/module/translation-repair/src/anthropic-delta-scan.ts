@@ -536,6 +536,15 @@ export function scanAnthropicDeltas(): DeltaScanner {
     unreadableFrames(): number {
       return state.unreadable;
     },
+
+    // CHARM HYPER FRONTS ONE UPSTREAM AND NAMES NONE. OpenRouter's Messages
+    // endpoint does name one, on `message_start`, but that endpoint is used
+    // for measurement only (`doc/planning/translation-repair-openrouter-2026-09-03.md`),
+    // so this scanner reports the absence rather than reading a field no
+    // production stream carries.
+    servedBy(): string {
+      return '';
+    },
   };
 }
 

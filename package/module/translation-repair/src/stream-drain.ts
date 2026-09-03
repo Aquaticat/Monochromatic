@@ -336,6 +336,7 @@ export async function drainBody(
       outcome: endedOutcome({ error, },),
       openingText: watch.openingText(),
       generatedChars: watch.generatedChars(),
+      servedBy: watch.servedBy(),
     },);
 
     // OUR OWN DELIBERATE TERMINATION PASSES THROUGH UNCHANGED. Both guard
@@ -373,6 +374,7 @@ export async function drainBody(
     outcome: 'completed',
     openingText: watch.openingText(),
     generatedChars: watch.generatedChars(),
+    servedBy: watch.servedBy(),
   },);
 
   return bodyText;

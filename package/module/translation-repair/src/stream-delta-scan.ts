@@ -109,6 +109,21 @@ const REASONING_KEYS = [
 ] as const;
 
 /**
+ * Top-level field a gateway that fronts many upstreams uses to name the one
+ * that served this stream.
+ *
+ * OPENROUTER PUTS `"provider":"ModelRun"` ON EVERY CHUNK (captured
+ * 2026-09-03); Synthetic and Charm Hyper front one upstream each and send no
+ * such field, so their streams read as naming none and their progress lines
+ * are unchanged. READ HERE, IN THE SCANNER THE DRAIN ALREADY RUNS ON EVERY
+ * CHUNK, because the streams worth attributing are the cut ones, and a cut
+ * stream never reaches the client's post-drain readers: the first live
+ * OpenRouter pass cut five streams across three models and nothing could
+ * say which endpoint had served any of them.
+ */
+const SERVED_BY_KEY = 'provider';
+
+/**
  * Which channel a piece of generated text arrived on.
  *
  * KEPT APART rather than merged into one string, so a degeneration verdict can
@@ -157,6 +172,12 @@ export type DeltaScanner = {
    * Payload lines that could not be read, which should stay at zero.
    */
   readonly unreadableFrames: () => number;
+
+  /**
+   * Upstream the gateway named on the first frame that named one, or empty
+   * for a wire whose frames name none.
+   */
+  readonly servedBy: () => string;
 };
 
 /**
@@ -278,6 +299,28 @@ function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
 }
 
 /**
+ * Reads the upstream's name off a parsed frame.
+ *
+ * @param frame - parsed payload of one `data:` line
+ *
+ * @returns Name as the gateway spelled it, or empty when the frame names none
+ *
+ * @example
+ * ```ts
+ * const name = servedByOf({ frame, },);
+ * ```
+ */
+function servedByOf({ frame, }: { readonly frame: unknown; },): string {
+  if (!isJsonRecord(frame,))
+    return '';
+  /**
+   * Whatever sits at the field, of unknown type until checked.
+   */
+  const name = frame[SERVED_BY_KEY];
+  return ((typeof name) === 'string') ? name : '';
+}
+
+/**
  * What one payload line turned out to be.
  *
  * @example
@@ -363,6 +406,7 @@ export function scanStreamDeltas(): DeltaScanner {
   const state = {
     carry: '',
     unreadable: 0,
+    servedBy: '',
   };
 
   /**
@@ -418,6 +462,10 @@ export function scanStreamDeltas(): DeltaScanner {
       state.unreadable += 1;
       return [];
     }
+
+    // The first frame that names an upstream settles it for the stream.
+    if (state.servedBy === '')
+      state.servedBy = servedByOf({ frame: parsed.frame, },);
 
     /**
      * Delta object this frame carried.
@@ -479,6 +527,10 @@ export function scanStreamDeltas(): DeltaScanner {
 
     unreadableFrames(): number {
       return state.unreadable;
+    },
+
+    servedBy(): string {
+      return state.servedBy;
     },
   };
 }

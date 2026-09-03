@@ -166,6 +166,10 @@ export class StreamCutShortError extends Error {
  * @param generatedChars - decoded characters produced on each channel, from
  * the same detectors the degeneration guard already keeps running totals in
  *
+ * @param servedBy - upstream the gateway named for this stream, so a cut or a
+ * slow finish can be pinned on one endpoint of a many-endpoint provider;
+ * empty, and left off the line, where the wire names none
+ *
  * @returns The line that was logged
  *
  * @example
@@ -188,6 +192,7 @@ export function reportStreamProgress(
     outcome,
     openingText,
     generatedChars,
+    servedBy = '',
   }: {
     readonly label: string;
     readonly progress: StreamProgress;
@@ -198,6 +203,7 @@ export function reportStreamProgress(
       readonly content: number;
       readonly reasoning: number;
     };
+    readonly servedBy?: string;
   },
 ): string {
   /**
@@ -221,6 +227,14 @@ export function reportStreamProgress(
   const excerpt = (outcome === 'completed') ? '' : `, opening ${JSON.stringify(opening,)}`;
 
   /**
+   * Upstream attribution, quoted the way the excerpt is because the name is
+   * the gateway's text and this line's grammar is comma-separated; absent
+   * where the wire named none, so single-upstream providers' lines keep
+   * their shape.
+   */
+  const attribution = (servedBy === '') ? '' : `, served by ${JSON.stringify(servedBy,)}`;
+
+  /**
    * Sample line, assembled before the call so the logger chain stays one step
    * per line.
    */
@@ -229,7 +243,7 @@ export function reportStreamProgress(
     + `maxGap ${String(progress.maxGapMs,)}ms, ${String(progress.chars,)} raw chars, `
     + `${String(unreadableFrames,)} unreadable frames, `
     + `${String(generatedChars.content,)} content chars, `
-    + `${String(generatedChars.reasoning,)} reasoning chars${excerpt}`;
+    + `${String(generatedChars.reasoning,)} reasoning chars${attribution}${excerpt}`;
 
   /**
    * Logger tagged with this report.

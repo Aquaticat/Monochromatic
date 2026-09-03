@@ -73,6 +73,13 @@ const UNREPORTED = 'unreported';
  * @param extracted - completion whose `usage` block the provider filled in,
  * or did not
  *
+ * @param costUsd - USD the wire reported for this call, on the provider that
+ * bills in USD and said so
+ *
+ * @param endpoint - upstream the gateway named as serving this call, on the
+ * provider that fronts many; percent-encoded on the line because a display
+ * name may hold a space and this line's grammar splits on spaces
+ *
  * @returns Line that was logged, so a test can assert what a reader will parse
  * rather than a paraphrase of it
  *
@@ -87,11 +94,13 @@ export function reportSpend(
     label,
     extracted,
     costUsd,
+    endpoint,
   }: {
     readonly provider: ProviderName;
     readonly label: string;
     readonly extracted: ExtractedCompletion;
     readonly costUsd?: number;
+    readonly endpoint?: string;
   },
 ): string {
   /**
@@ -116,9 +125,17 @@ export function reportSpend(
     : ` cost=${String(costUsd,)}`;
 
   /**
+   * Upstream that served the call, as a trailing field only where a gateway
+   * named one; encoded so a name with a space stays one field.
+   */
+  const servedBy = (endpoint === undefined)
+    ? ''
+    : ` endpoint=${encodeURIComponent(endpoint,)}`;
+
+  /**
    * Line assembled before the call so the logger chain stays one step per line.
    */
-  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}`;
+  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}${servedBy}`;
 
   /**
    * Logger tagged with this report.

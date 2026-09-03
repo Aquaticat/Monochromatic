@@ -85,6 +85,49 @@ await describe({
     },),
 
     it({
+      name: 'NAMES THE UPSTREAM THAT SERVED THE STREAM when the wire named one, quoted like the '
+        + 'excerpt, and leaves the line unchanged when it named none, so a cut on a many-endpoint '
+        + 'provider is attributable and a single-upstream provider\'s lines keep their shape',
+      fn: async () => {
+        /**
+         * The line a cut served by a named upstream logs.
+         */
+        const attributed = reportStreamProgress({
+          label: 'minimax/minimax-m3',
+          progress: SOME_PROGRESS,
+          unreadableFrames: 0,
+          outcome: 'cut',
+          openingText: '{"translation":',
+          generatedChars: SOME_GENERATED_CHARS,
+          servedBy: 'Parasail',
+        },);
+        expect(attributed.includes(', served by "Parasail", opening ',),).toBe(true,);
+
+        /**
+         * The same line with the wire naming nobody.
+         */
+        const unattributed = reportStreamProgress({
+          label: 'minimax/minimax-m3',
+          progress: SOME_PROGRESS,
+          unreadableFrames: 0,
+          outcome: 'cut',
+          openingText: '{"translation":',
+          generatedChars: SOME_GENERATED_CHARS,
+          servedBy: '',
+        },);
+        expect(unattributed.includes('served by',),).toBe(false,);
+        expect(unattributed,).toBe(reportStreamProgress({
+          label: 'minimax/minimax-m3',
+          progress: SOME_PROGRESS,
+          unreadableFrames: 0,
+          outcome: 'cut',
+          openingText: '{"translation":',
+          generatedChars: SOME_GENERATED_CHARS,
+        },),);
+      },
+    },),
+
+    it({
       name: 'SHOWS THE OPENING EXCERPT ON A DEGENERATE ENDING, not only on a cut, because seeing '
         + 'what the model was saying when it started repeating is exactly as diagnostic as seeing '
         + 'what it was saying when the connection dropped',

@@ -22,6 +22,10 @@ import {
   openRouterProviderPreferencesFor,
 } from './openrouter-catalog.ts';
 import {
+  ENDPOINT_UNREPORTED,
+  openRouterEndpointOf,
+} from './openrouter-endpoint.ts';
+import {
   COST_UNREPORTED,
   openRouterCostOf,
 } from './openrouter-cost.ts';
@@ -413,6 +417,11 @@ export function createOpenRouterClient(
       const cost = openRouterCostOf({ bodyText: reply.bodyText, },);
 
       /**
+       * Upstream the gateway named as serving this call.
+       */
+      const endpoint = openRouterEndpointOf({ bodyText: reply.bodyText, },);
+
+      /**
        * Content length for the completion log line.
        */
       const textLength = extracted
@@ -426,10 +435,13 @@ export function createOpenRouterClient(
         provider: 'openrouter',
         label: servedId,
         extracted,
-        // Conditional spread keeps the field absent where the wire sent none.
+        // Conditional spreads keep each field absent where the wire sent none.
         ...((cost === COST_UNREPORTED)
           ? {}
           : { costUsd: cost, }),
+        ...((endpoint === ENDPOINT_UNREPORTED)
+          ? {}
+          : { endpoint, }),
       },);
       return extracted;
     },);

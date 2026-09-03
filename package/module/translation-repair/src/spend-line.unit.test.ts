@@ -183,6 +183,39 @@ await describe({
     },),
 
     it({
+      name: 'APPENDS the serving upstream as a trailing field only when the caller names one, '
+        + 'percent-encoded so a display name with a space stays one field of a line that splits '
+        + 'on spaces',
+      fn: async () => {
+        expect(
+          reportSpend({
+            provider: 'openrouter',
+            label: 'minimax/minimax-m3',
+            extracted: reported({
+              promptTokens: 2_263,
+              completionTokens: 117,
+            },),
+            costUsd: 0.00032778,
+            endpoint: 'Parasail',
+          },),
+        )
+          .toBe('SPEND provider=openrouter model=minimax/minimax-m3 prompt=2263 completion=117 cost=0.00032778 endpoint=Parasail',);
+        expect(
+          reportSpend({
+            provider: 'openrouter',
+            label: 'google/gemma-4-26b-a4b-it',
+            extracted: reported({
+              promptTokens: 1,
+              completionTokens: 2,
+            },),
+            endpoint: 'Google AI Studio',
+          },),
+        )
+          .toBe('SPEND provider=openrouter model=google/gemma-4-26b-a4b-it prompt=1 completion=2 endpoint=Google%20AI%20Studio',);
+      },
+    },),
+
+    it({
       name: 'OPENS the returned line with the marker the reader finds it by, so '
         + 'a line this module wrote round-trips through `readSpendLine` rather '
         + 'than reading as prose that happens to mention it',

@@ -175,6 +175,47 @@ await describe({
     },),
 
     it({
+      name: 'NAMES THE UPSTREAM a many-endpoint gateway puts on its frames, settled by the first '
+        + 'frame that names one and readable mid-stream, so a cut call is attributed from what had '
+        + 'already arrived; a wire whose frames name none reads as empty',
+      fn: async () => {
+        /**
+         * Scanner fed a gateway stream, frame by frame.
+         */
+        const scanner = scanStreamDeltas();
+        expect(scanner.servedBy(),).toBe('',);
+        scanner.feed({
+          chunk: `data: ${JSON.stringify({
+            id: 'gen-tabby',
+            provider: 'ModelRun',
+            choices: [{ index: 0, delta: { reasoning: 'The cat', }, finish_reason: null, },],
+          },)}\n\n`,
+        },);
+        expect(scanner.servedBy(),).toBe('ModelRun',);
+        scanner.feed({
+          chunk: `data: ${JSON.stringify({
+            id: 'gen-tabby',
+            provider: 'Parasail',
+            choices: [{ index: 0, delta: { content: ' naps.', }, finish_reason: null, },],
+          },)}\n\n`,
+        },);
+        expect(scanner.servedBy(),).toBe('ModelRun',);
+
+        /**
+         * Scanner fed a single-upstream provider's stream, which names none.
+         */
+        const unnamed = scanStreamDeltas();
+        unnamed.feed({
+          chunk: frameOf({
+            channel: 'content',
+            text: 'A grey cat naps. ',
+          },),
+        },);
+        expect(unnamed.servedBy(),).toBe('',);
+      },
+    },),
+
+    it({
       name: 'REASSEMBLES frames split across chunks, since a chunk boundary lands wherever the '
         + 'network puts it and routinely falls inside a frame',
       fn: async () => {

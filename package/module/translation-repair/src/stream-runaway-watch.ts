@@ -187,6 +187,13 @@ export type RunawayWatch = {
    * or answering, which is the question an opening excerpt exists to answer.
    */
   readonly openingText: () => string;
+
+  /**
+   * Reads the upstream the gateway named for this stream, empty where the
+   * wire names none; read off the scanner so a cut stream is attributed
+   * from what had already arrived.
+   */
+  readonly servedBy: () => string;
 };
 
 /**
@@ -391,6 +398,10 @@ export function watchRunaway(
 
     openingText(): string {
       return opening.text;
+    },
+
+    servedBy(): string {
+      return scanner.servedBy();
     },
   };
 }
