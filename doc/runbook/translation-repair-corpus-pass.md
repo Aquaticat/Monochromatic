@@ -617,7 +617,10 @@ and a run made from that checkout recorded none of what they read either.
     ```
 
     An upstream measured broken goes into that model's `ignoredEndpoints` in `openrouter-catalog.ts`
-    with the measurement beside it, as Parasail did for MiniMax M3 on 2026-09-03.
+    with the measurement beside it, as Parasail did for MiniMax M3 and OpenInference for DeepSeek V4 Flash
+    on 2026-09-03. Before ignoring, count what would be left:
+    an ignore that leaves one endpoint serving turns that endpoint's rate limit into a lost voice,
+    since OpenRouter is the last provider in the order.
 
 6.  Read who produced what, and what the judges said about it.
 

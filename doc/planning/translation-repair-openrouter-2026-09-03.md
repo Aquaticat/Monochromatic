@@ -318,6 +318,48 @@ Launched from the main repo with the Hyper key unset so the walk went Synthetic,
 - Nothing on this pass exercised the all-dry benches (Kimi-K3 withheld, gemma as substitute checker) or
     Qwen3.8-27B served by OpenRouter; both wait for a Synthetic-dry hour.
 
+## The second live pass, keyword233, 17:06 to 17:28 UTC, with Parasail ignored and endpoints named
+
+Launched as the first was (`~/temp/agent/openrouter-live2-20260903.log`, artifacts beside it), after
+`7d680d7fa` (Parasail ignored for MiniMax M3) and `c21437745` (endpoint on every `SPEND` and stream line):
+
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1293410`, above the day's band (653 to 1,164 seconds).
+    The lanes phase took 860 seconds against the first pass's 582;
+    lane contest and consolidation each came within a minute of the first pass.
+    Two things differed in that phase and this log does not separate their shares:
+    a Synthetic 502/500 burst at 17:13 to 17:14 UTC (15 retry lines, none reaching the fifth attempt,
+    none on the first pass), and 11 abandonments at the 60 second straggler grace against the first pass's 8.
+    `verify-published` answered 1 of 1 (`wordings=3 silent=0 chars=787=expected missing=0`);
+    the page reads as before.
+- **The Parasail ignore held**: 36 of 36 MiniMax calls went to ModelRun and every one completed, mean 2.9 seconds,
+    with one schema-mismatch (an answer whose every string field was `", "`),
+    against 16 empty and 6 mismatched on the first pass.
+- 0.4454 USD over 135 OpenRouter calls by the wire's `cost=` (DeepSeek V4 Pro 0.29 USD and two thirds of it,
+    glm-5.3 0.08, MiniMax 0.05, DeepSeek Flash 0.01, gemma 0.01), 117 Synthetic calls, no Hyper call, no refusal,
+    no exhausted retry ladder; the meter read 56.37 before and 55.91 after.
+- **Per-endpoint attribution**, read off `served by` on the stream lines:
+    - DeepSeek V4 Flash: OpenInference finished 2 of 6 (mean 58.8 s when it finished; cut at 67 to 117 s
+        with at most one content character over 6.7k to 14.9k reasoning characters), Parasail 12 of 13 (mean 42.8 s),
+        Inceptron 4 of 5 (mean 29.9 s), Makora 1 of 1, Together 1 of 1 (11.5 s).
+        Every cut was the straggler grace ending a stream still in its reasoning channel.
+        OpenInference is now in the row's `ignoredEndpoints` (`08dffd481`),
+        the catalog and client guards shown failing with the entry removed, restored and passing.
+    - gemma 4 26B: DeepInfra 9 of 10 (mean 20.3 s, the cut at 83 s), SiliconFlow 19 of 19 (mean 4.2 s).
+        Not ignored: one cut in ten, the seat is a checker off the critical path,
+        and with DeepInfra gone SiliconFlow would serve alone,
+        so a rate limit there would lose the voice outright,
+        since OpenRouter is the last provider in the order.
+        Revisit if a later pass shows DeepInfra cutting again.
+    - DeepSeek V4 Pro: Parasail 34 of 35 (mean 21.8 s), one cut at 68 s in the consolidation gate.
+    - glm-5.3: Together 16 of 16 (mean 1.9 s); Modal 1 of 1 at 74 s with 27k reasoning characters and a 10 s
+        first byte. One sample; watch it before acting.
+- **Rejected: re-routing a voice whose transient-retry ladder is exhausted.**
+    The idea was to treat five failed attempts on 5xx as a refusal and walk to the next provider.
+    Measured before building: the four-entry Carena run of 2026-09-01 had no exhausted ladder,
+    the whole archive holds one voice lost that way (`xiept2-postscript-20260903.log`, HTTP 503),
+    and both OpenRouter passes had none. Not worth a code path.
+- Still not exercised: the all-dry benches and Qwen3.8-27B served by OpenRouter; Synthetic stayed wet.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:

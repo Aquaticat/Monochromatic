@@ -101,6 +101,17 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
     keyword233 runs, with 146 OpenRouter calls at 0.38 USD, 111 Synthetic calls, no refusal, and
     `verify-published` at 1 of 1. The all-dry benches and Qwen3.8-27B served by OpenRouter were not exercised,
     since Synthetic stayed wet.
+- **OpenInference is ignored for DeepSeek V4 Flash** (`08dffd481`): on the second live pass (keyword233, 17:06 to
+    17:28 UTC), with the serving endpoint now on every stream line, OpenInference finished 2 of its 6 streams
+    against Parasail's 12 of 13 and Inceptron's 4 of 5, every cut being the straggler grace ending a stream still
+    in its reasoning channel. The same reading left DeepInfra in place for gemma 4 26B (9 of 10 finished, and
+    SiliconFlow would otherwise serve alone at the end of the provider order) and left Modal alone for glm-5.3
+    on one slow sample; the planning record carries the figures.
+- **The second live pass settled** in 1,293 seconds, above the day's band, with the lanes phase carrying the
+    difference during a Synthetic 502/500 burst; the Parasail ignore held (36 of 36 MiniMax calls to ModelRun,
+    all completed), 135 OpenRouter calls cost 0.45 USD, and `verify-published` answered 1 of 1.
+- **Rejected: re-routing on an exhausted transient-retry ladder.** Measured before building: no exhausted ladder
+    on the four-entry Carena run, one voice lost that way in the whole archive, none on either OpenRouter pass.
 
 ## Rollback
 

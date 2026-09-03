@@ -698,7 +698,8 @@ and reading one as an instruction has cost this package a defect before.
     Every request carries `provider: { zdr: true, require_parameters: true, ignore: [...] }`,
     so only zero-data-retention endpoints that support `response_format` may serve a passage,
     and the catalog row's `ignoredEndpoints` keeps a measured-broken upstream off the wire
-    (Parasail for MiniMax M3 since 2026-09-03: it answered into the reasoning channel and left content empty).
+    (Parasail for MiniMax M3 since 2026-09-03: it answered into the reasoning channel and left content empty;
+    OpenInference for DeepSeek V4 Flash since the same day: it finished 2 of 6 streams inside the straggler grace).
     Credits are read from `GET /api/v1/credits` (purchased less used, in USD) and printed on the `METERS`
     line as `openrouterUsd=`; every call's cost is read off the final stream chunk onto its `SPEND` line as
     `cost=`, so a run's OpenRouter bill is summed from the wire rather than from a price table.
