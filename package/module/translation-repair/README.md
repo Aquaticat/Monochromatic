@@ -1096,7 +1096,9 @@ It keeps four slices in flight and waits 300000 ms on stragglers after quorum,
 both the owner's decisions of 2026-08-26 on the five calibration arms
 (`doc/decision/translation-repair-calibration-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP` and `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` override either for one launch,
-and `1` and `180000` reproduce the pass's own settings, which stay where they were until `#261`.
+and `1` and `120000` reproduce the pass's own settings: the pass's window moved from 180000 to 120000 on
+2026-09-03 by the owner's decision on a measured pair (`doc/decision/translation-repair-straggler-grace.md`),
+and its overlap default stays `1` until measured on the pass (`#261`).
 `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` (`request-pace.ts`) sets how many Hyper requests may start
 in any rolling hour, retries and credit reads included; the rest queue in arrival order instead of
 being refused with HTTP 429. The default, 1,000, is the account's limit as the owner stated it and as
