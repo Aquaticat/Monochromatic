@@ -66,6 +66,20 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
 - A longer window for Hyper-served seats: reverses the owner's 2026-09-02 choice of the seat over the
   window, and under a 1,000-an-hour window the request, not the second, is scarce.
 
+## Three providers, 2026-09-03
+
+OpenRouter joined as the third provider (`doc/decision/translation-repair-openrouter-fallback.md`),
+so "Synthetic dry" stopped being the whole question: with Hyper dry too, a shared seat's calls go to
+OpenRouter, where Hyper's serving speed is not the reason to withhold anything.
+`readJudgeSeats` therefore reads the router's own dryness view over every provider and asks, per seat,
+which provider would take its calls (`providerServing`, the first in `PROVIDER_ORDER` that serves the
+model and reads wet).
+The Hyper-slow rules above apply where that provider is Hyper; the owner's cost decision on Kimi-K3
+applies where it is OpenRouter, with gemma seated as the substitute checker.
+Qwen3.8-27B is seated when OpenRouter would serve it: its chat-completions median there sat in the band
+of the other models on the probe, unlike its Hyper serving, and the first all-OpenRouter pass is where
+that is checked on corpus-sized prompts.
+
 ## Where the evidence lives
 
 - `doc/planning/translation-repair-roster-calibration-2026-09-01.md`: the cut counts per seat and
