@@ -944,7 +944,7 @@ when the provider is the only one left: it converts a per-call retry into a sync
 
 By 00:53 the count was 579 429 lines and 137 both-dry losses, still 72 slice costs, consolidation
 slices settling at about 512 seconds each; the pass was stopped at 00:54 rather than left to limp for
-hours. Fixed by the commit after `c1db6f729`: a refusal on a wet meter holds the provider only when the
+hours. Fixed by `57745afcf` (test shown to fail without it): a refusal on a wet meter holds the provider only when the
 other provider is wet (the hold then moves traffic, which is what it is for); with the other provider
 dry there is no hold, and each call keeps its own jittered retry ladder in the transport layer. The
 refuser stays routable at once; the test shows the hold at zero with the other provider dry and at the
