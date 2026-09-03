@@ -1100,6 +1100,20 @@ the polish round never touched slice 1 (`changed: false`, no gate). So the wrap 
 clear of it; the question it raises is what a corroborated added-damage claim is for if the repair
 still ships, and that is filed as tracked work.
 
+## The Hyper-slow judge is seated per provider, superseding the morning's drop
+
+Asked with four options, the owner chose "seat per provider reach". `corpus-run/run-seats.ts` reads
+Synthetic's meter once per entry through the routed client's quota surface and derives the benches:
+with Synthetic dry the Hyper-slow judges (`HYPER_SLOW_JUDGES`, Qwen3.8-27B today) are withheld from
+the wide and the late seats; with Synthetic wet they sit; an unreadable meter seats the full bench,
+since it is not evidence of dryness. The static benches in `run-config.ts` are the Synthetic-wet ones
+again (seven wide, eight late), and the two drop sets hold GLM-5.3-Flash alone as on 2026-09-02. The
+lane contest call moved beside the consolidation seam (`pass-contest.ts`) to keep the entry driver
+inside its line budget. Decision record: `doc/decision/translation-repair-provider-aware-judge-seat.md`.
+The unit test proves the withheld seat with the meter dry, the seated one with it wet, and the full
+bench with the meter unreadable (fails with the rule removed); the live dry path is the six-seat bench
+keyword233 already landed on twice today, and the live wet path waits for Synthetic's week.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
