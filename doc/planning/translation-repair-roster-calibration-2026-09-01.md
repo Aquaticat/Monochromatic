@@ -1212,6 +1212,14 @@ panel, contest judge and gate; `JudgeSeats` carries `selectJudges` and `slateJud
 late benches, and the `JUDGE SEATS` line reports all four. Dry benches: six wide, five select, seven
 late, six slate.
 
+Landed at `493b2f259` (unit test shown to fail with the select filter neutralised). keyword233 ran on
+it (12:23 UTC, `~/temp/agent/keyword233-select-seats-20260903`) with Synthetic wet at every phase
+(1.8% weekly, `wide=7 select=7 late=8 slate=8` three times), so the full benches sat and the plumbing
+is what the run witnessed; the withholding branch has the unit test as its witness until a dry
+reading. `TALLY keyword233 status=SETTLED ... repairIssues=22 repairAccepted=19 ... ms=775753` (12.9
+minutes, 108 calls on Synthetic and 135 on Hyper, no refusal, 4 cuts), select rounds 7 of 7 nine times
+and 8 of 8 twice, `verify-published` 1 of 1, first paragraph in the past tense, no corroborated claim.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
