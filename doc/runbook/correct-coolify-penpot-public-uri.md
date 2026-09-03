@@ -1,4 +1,4 @@
-# Correct a Coolify Penpot public URI that exposes internal port 8080
+# Override a Coolify v4 shared Penpot public URI in the frontend
 
 ## What this proves
 
@@ -16,13 +16,10 @@ The resulting browser request fails with:
 
 The diagnosed call chain is documented in
 [`doc/troubleshooting/coolify-penpot-public-uri-internal-port.md`][public-uri-diagnosis].
-The repair keeps frontend port `8080` as Coolify's internal proxy target,
-but gives Penpot the browser-facing origin `https://penpot.c.aquati.cat`.
-It does not change Caddy,
-application versions,
-healthchecks,
-databases,
-or volumes.
+The Source Compose can omit frontend `PENPOT_PUBLIC_URI` while Coolify v4 still injects a service-wide value through
+`env_file: .env`.
+The narrow repair adds an explicit frontend value,
+which takes precedence over that shared file.
 
 The public application and configuration endpoint were reachable for read-only probes,
 but this repository has no Coolify endpoint or authorization for deployment mutation.
@@ -83,43 +80,37 @@ TODO
    ```
 
    All persistent data sources remain represented before the edit.
-5. Find every `PENPOT_PUBLIC_URI` entry in **Source Compose**.
-   The editor shows the frontend,
-   backend,
-   and exporter values that will be replaced.
-6. Remove duplicate `PENPOT_PUBLIC_URI` entries within each component's environment.
-   Frontend,
-   backend,
-   and exporter each have at most one such entry.
-7. Keep this standalone frontend declaration unchanged:
+5. Find `services.frontend.environment` in **Source Compose**.
+   The list contains `SERVICE_URL_FRONTEND_8080` and `PENPOT_FLAGS`.
+6. Keep this frontend routing declaration unchanged:
 
    ```yaml
    - SERVICE_URL_FRONTEND_8080
    ```
 
    Coolify retains port `8080` as the frontend container's internal target.
-8. Set the frontend public URI to this list-style environment entry:
+7. Add this entry to the same frontend environment list:
 
    ```yaml
-   - PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat
+   - 'PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat'
    ```
 
-   The frontend environment contains the literal public origin without `:8080`.
-9. Set the backend public URI to the same list-style environment entry:
+   Frontend now explicitly overrides Coolify's shared service environment.
+8. Leave the existing backend and exporter public URI entries unchanged:
 
    ```yaml
-   - PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat
+   - 'PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat'
    ```
 
-   The backend environment contains the literal public origin without `:8080`.
-10. Set the exporter public URI to the same list-style environment entry:
+   Backend and exporter retain their already-correct values.
+9. Leave the custom Caddy configuration and frontend port mapping unchanged:
 
-    ```yaml
-    - PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat
-    ```
+   ```yaml
+   - '127.0.0.1:1009:8080'
+   ```
 
-    The exporter environment contains the literal public origin without `:8080`.
-11. Confirm the editable Compose text still contains these mounts exactly:
+   This repair changes only frontend application configuration.
+10. Confirm the editable Compose text still contains these mounts exactly:
 
     ```yaml
     - 'penpot-assets:/opt/data/assets'
@@ -128,47 +119,45 @@ TODO
     ```
 
     No persistent mount was renamed or removed.
-12. Click **Save changes**.
+11. Click **Save changes**.
     Coolify confirms the Compose update and reparses the service.
-13. Open **Deployable Compose**.
+12. Open **Deployable Compose**.
     The generated definition appears.
-14. Find every generated `PENPOT_PUBLIC_URI` entry.
-    Frontend,
-    backend,
-    and exporter each show `https://penpot.c.aquati.cat` without `:8080`.
-15. If any generated value is absent or includes `:8080`,
+13. Find the frontend `environment:` block.
+    It contains explicit `PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat` without `:8080`.
+14. If the explicit frontend value is absent or includes `:8080`,
     copy the complete **Deployable Compose** text to a local file and stop this runbook.
-    The file preserves evidence of a separate Coolify parsing or override problem.
-16. If the recorded service status was **Stopped**,
+    The file preserves evidence of a separate Coolify parsing problem.
+15. If the recorded service status was **Stopped**,
     click **Actions** and then **Force Deploy**.
     The **Service Startup** deployment log opens and Coolify recreates the containers.
-17. If the recorded service status was not **Stopped**,
+16. If the recorded service status was not **Stopped**,
     click **Actions** and then **Force Restart**.
     The **Service Startup** deployment log opens and Coolify recreates the containers.
-18. Leave the deployment log open until it finishes.
+17. Leave the deployment log open until it finishes.
     The final deployment line reports success rather than an unhealthy dependency.
-19. Open `https://penpot.c.aquati.cat/js/config.js?public-uri-check=20260903` in a new browser tab.
+18. Open `https://penpot.c.aquati.cat/js/config.js?public-uri-check=20260903` in a new browser tab.
     The cache-busting URL returns
     `var penpotPublicURI = "https://penpot.c.aquati.cat";` without `:8080`.
-20. Open a new private browser window with **Ctrl+Shift+N** in Chromium-based browsers.
+19. Open a new private browser window with **Ctrl+Shift+N** in Chromium-based browsers.
     A private window appears with a separate browser cache.
-21. Open `https://penpot.c.aquati.cat` in the private window.
+20. Open `https://penpot.c.aquati.cat` in the private window.
     The Penpot login page appears through normal HTTPS without a timeout.
-22. Open browser developer tools with **F12**.
+21. Open browser developer tools with **F12**.
     Developer tools appear.
-23. Select **Console**.
+22. Select **Console**.
     Penpot's startup messages appear.
-24. Find the startup message containing `public-uri=`.
+23. Find the startup message containing `public-uri=`.
     It contains `public-uri="https://penpot.c.aquati.cat/"` without `:8080`.
-25. Select **Network**.
+24. Select **Network**.
     The network request list appears.
-26. Reload the page with **Ctrl+R**.
+25. Reload the page with **Ctrl+R**.
     New Penpot requests populate the list.
-27. Filter for `get-enabled-flags`.
+26. Filter for `get-enabled-flags`.
     Its request URL starts with
     `https://penpot.c.aquati.cat/api/main/methods/get-enabled-flags` and has no `:8080`.
 
-Only one recreation branch in steps 16 and 17 applies.
+Only one recreation branch in steps 15 and 16 applies.
 Do not run both.
 A Compose save does not change an existing container's environment,
 so container recreation is required for the frontend entrypoint to regenerate `js/config.js`.
@@ -196,9 +185,18 @@ Confirm all of the following before closing the incident:
 - Exporting one disposable test shape completes and downloads an output file.
 - The three original volume names and mount destinations remain unchanged in **Deployable Compose**.
 
-If the cache-busting `config.js` response is correct but the private browser still uses `:8080`,
-preserve the private window's complete request URL and response headers.
-That result would indicate a second configuration source rather than the repaired generated file.
+The verified unauthenticated browser boundary produced:
+
+```text
+public-uri="https://penpot.c.aquati.cat/"
+GET https://penpot.c.aquati.cat/api/main/methods/get-enabled-flags 401
+```
+
+The immediate `401` is the expected unauthenticated boundary response.
+It replaces the previous connection timeout and proves that the browser now uses standard HTTPS.
+Authenticated project,
+asset,
+and export checks remain required.
 
 ## Restore
 
@@ -213,7 +211,7 @@ Do not restore PostgreSQL or asset backups merely because the public URI deploym
 2. Click **Edit Compose File**.
    The **Source Compose** editor opens.
 3. Replace the editor contents with the complete pre-repair Compose text saved during setup.
-   The original environment entries reappear.
+   The explicit frontend public URI entry disappears.
 4. Confirm the restored text still names `penpot-assets`,
    `penpot-postgresql-data`,
    and `penpot-redis-data`.
@@ -227,7 +225,7 @@ Do not restore PostgreSQL or asset backups merely because the public URI deploym
    click **Actions** and then **Force Restart**.
    Coolify recreates the containers from the restored definition.
 8. Leave the deployment log open until it finishes.
-   The final deployment line reports success or reproduces the original public URI symptom.
+   The final deployment line reports success or reproduces the inherited public URI symptom.
 
 Never delete or rename the service,
 run Compose with `--volumes`,

@@ -1,10 +1,8 @@
-# Coolify Penpot 2.17.2 port-suffixed public URI sends browser API requests to unreachable port 8080
+# Coolify v4 shared environment gives Penpot 2.17.2 frontend an unreachable public port
 
-A Penpot frontend behind an HTTPS reverse proxy can load its initial page but time out on API requests
-when `PENPOT_PUBLIC_URI` contains Penpot's internal container port.
-The internal listener and browser-facing origin are different values:
-Coolify's port-specific frontend declaration identifies container port `8080`,
-but the browser must use `https://penpot.c.aquati.cat` on standard HTTPS port `443`.
+A Penpot frontend behind HTTPS can load its initial page but time out on API requests
+when Coolify v4 injects a service-wide `PENPOT_PUBLIC_URI` containing frontend container port `8080`.
+The Source Compose can omit that frontend variable entirely.
 
 Investigated on 2026-09-03.
 
@@ -23,84 +21,134 @@ Penpot's startup log identifies the unexpected origin:
 public-uri="https://penpot.c.aquati.cat:8080/"
 ```
 
-The deployed frontend configuration confirms this is not only a stale browser value:
+The public and container-local frontend responses both contained:
 
 ```javascript
 var penpotPublicURI = "https://penpot.c.aquati.cat:8080";
 ```
 
-The initial page still loads through standard HTTPS,
-and its response contains `Via: 1.1 Caddy`.
-API requests fail after Penpot JavaScript constructs their URLs from the injected public URI.
-This evidence makes Caddy an unlikely cause of the observed `:8080` request,
-but it does not rule out an independent Caddy configuration or caching issue.
-
-## Root cause
-
-### Coolify distinguishes the external base URL from its port-suffixed value
-
-Current Coolify source creates a base `SERVICE_URL_<SERVICE>` without a port at
-[`bootstrap/helpers/services.php:350-381`][coolify-base-url]:
-
-```php
-$urlValue = getFqdnWithoutPort($firstFqdn);
-$fqdnValue = getHostWithoutPort($firstFqdn);
-
-$resource->service->environment_variables()->updateOrCreate([
-    'key' => "SERVICE_URL_{$serviceName}",
-], [
-    'value' => $urlValue,
-]);
-```
-
-It separately appends each internal-port suffix to the generated value at
-[`bootstrap/helpers/services.php:383-409`][coolify-port-url]:
-
-```php
-foreach ($allPorts as $portNum) {
-    $urlWithPort = $urlValue.':'.$portNum;
-
-    $resource->service->environment_variables()->updateOrCreate([
-        'key' => "SERVICE_URL_{$serviceName}_{$portNum}",
-    ], [
-        'value' => $urlWithPort,
-    ]);
-}
-```
-
-For this service,
-`SERVICE_URL_FRONTEND` represents `https://penpot.c.aquati.cat`,
-while `SERVICE_URL_FRONTEND_8080` represents `https://penpot.c.aquati.cat:8080`.
-The standalone `SERVICE_URL_FRONTEND_8080` declaration is still needed
-to tell Coolify which container port to route to.
-It is not the correct value for Penpot's browser-facing public URI.
-
-Coolify's current Penpot template keeps that routing declaration at
-[`templates/compose/penpot.yaml:18-20`][coolify-template-frontend],
-but also assigns the port-suffixed URL to backend and exporter `PENPOT_PUBLIC_URI` at
-[`templates/compose/penpot.yaml:37-41`][coolify-template-backend] and
-[`templates/compose/penpot.yaml:64-68`][coolify-template-exporter]:
+The Source Compose did not set frontend `PENPOT_PUBLIC_URI`.
+It set only:
 
 ```yaml
 frontend:
   environment:
     - SERVICE_URL_FRONTEND_8080
-
-penpot-backend:
-  environment:
-    - PENPOT_PUBLIC_URI=$SERVICE_URL_FRONTEND_8080
-
-penpot-exporter:
-  environment:
-    - PENPOT_PUBLIC_URI=$SERVICE_URL_FRONTEND_8080
+    - 'PENPOT_FLAGS=${PENPOT_FRONTEND_FLAGS:-enable-login-with-password}'
 ```
 
-The current template does not assign `PENPOT_PUBLIC_URI` to the frontend.
-The live source or deployable Compose must therefore be inspected to locate the frontend assignment that produced the
-observed `config.js`.
-Do not infer its exact stored expression from the public response alone.
+Backend and exporter already had the correct explicit external value:
 
-### Penpot writes the environment value into browser configuration
+```yaml
+- 'PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat'
+```
+
+## Root cause
+
+### The runtime frontend has a variable absent from Source Compose
+
+A terminal inside the live frontend proved the runtime value and generated file agree:
+
+```text
+PENPOT_PUBLIC_URI=<https://penpot.c.aquati.cat:8080>
+SERVICE_URL_FRONTEND_8080=<https://penpot.c.aquati.cat:8080>
+4:var penpotPublicURI = "https://penpot.c.aquati.cat:8080";
+```
+
+Fetching `http://127.0.0.1:8080/js/config.js` inside that container returned the same JavaScript.
+This rules out Caddy response rewriting or caching as the source of the bad value.
+
+The published `penpotapp/frontend:latest` image resolved to Penpot `2.17.2`,
+manifest `sha256:94fa2864d8fc0cd62245af95c03cca89306a7fd23c206a98a3e9dc9a376ea27e`.
+A disposable container received the exact two frontend variables shown in Source Compose.
+Its generated file contained flags but no public URI:
+
+```javascript
+// Frontend configuration
+var penpotFlags = "enable-login-with-password";
+//var penpotOIDCName = "";
+```
+
+Its runtime environment contained only:
+
+```text
+SERVICE_URL_FRONTEND_8080=https://penpot.c.aquati.cat:8080
+```
+
+This rules out the official image translating `SERVICE_URL_FRONTEND_8080` into `PENPOT_PUBLIC_URI`.
+
+### Coolify v4 injects one service-wide environment file into every container
+
+Current Coolify's service parser adds `.env` to every Compose component at
+[`bootstrap/helpers/parsers.php:2758-2766`][coolify-env-file-injection]:
+
+```php
+// Auto-inject .env file so Coolify environment variables are available inside containers
+// This makes Services behave consistently with Applications
+$existingEnvFiles = data_get($service, 'env_file');
+$envFiles = collect(is_null($existingEnvFiles) ? [] :
+    (is_array($existingEnvFiles) ? $existingEnvFiles : [$existingEnvFiles]))
+    ->push('.env')
+    ->unique()
+    ->values();
+
+$payload['env_file'] = $envFiles;
+```
+
+Coolify writes every service-level environment record into that one file at
+[`app/Models/Service.php:1613-1649`][coolify-shared-env-write]:
+
+```php
+$commands[] = 'rm -f .env || true';
+$envs_from_coolify = $this->environment_variables()->get();
+
+foreach ($sorted as $env) {
+    $envs->push("{$env->key}={$env->real_value}");
+}
+
+$envs_base64 = base64_encode($envs->implode("\n"));
+$commands[] = "echo '$envs_base64' | base64 -d | tee .env > /dev/null";
+```
+
+Commit [`712d60c75b5d`][coolify-env-injection-commit] introduced the service injection on 2025-11-07.
+Its commit message is `feat: ensure .env file exists for docker compose and auto-inject in payloads`.
+
+Coolify issue [#7655][coolify-issue-7655] independently documents that all variables reach every Compose container.
+A Coolify maintainer confirms this behavior will not be properly changed in v4
+and says v5 will use separate files per container.
+
+The live frontend therefore receives the stale port-suffixed `PENPOT_PUBLIC_URI` through Coolify's shared `.env`,
+even though its own Source Compose environment omits the key.
+The Coolify UI shows backend and exporter values as Compose-managed and correct,
+but it does not expose the inherited stale frontend value as an editable frontend entry.
+
+The exact database history that created the stale record was not read.
+Its value equals the generated `SERVICE_URL_FRONTEND_8080`,
+and Coolify's Penpot template assigns that generated value to `PENPOT_PUBLIC_URI` at
+[`templates/compose/penpot.yaml:37-41`][coolify-template-backend] and
+[`templates/compose/penpot.yaml:64-68`][coolify-template-exporter].
+This is the likely origin,
+not proof of the record's historical write path.
+
+### Explicit Compose environment wins over the shared file
+
+Docker's documented precedence places an `environment` attribute above an `env_file` attribute in
+[Environment variables precedence][docker-env-precedence].
+Its example concludes:
+
+```text
+The environment variable defined with the environment attribute takes precedence.
+```
+
+That explains both sides of the incident:
+
+- Backend and exporter use their explicit correct values instead of the shared stale value.
+- Frontend lacks an explicit value,
+  so it inherits the stale value from Coolify's injected file.
+
+Adding the same correct explicit value only to frontend overrides the injected value without touching Caddy or data.
+
+### Penpot turns the injected value into browser request URLs
 
 Penpot `2.17.2` frontend startup appends a non-empty `PENPOT_PUBLIC_URI` directly to `config.js` at
 [`docker/images/files/nginx-entrypoint.sh:27-48`][penpot-entrypoint]:
@@ -113,7 +161,7 @@ fi
 update_flags /var/www/app/js/config.js
 ```
 
-The frontend then prefers that global over the browser's actual origin at
+The frontend prefers that global over the browser's actual origin at
 [`frontend/src/app/config.cljs:175-183`][penpot-public-uri]:
 
 ```clojure
@@ -122,17 +170,12 @@ The frontend then prefers that global over the browser's actual origin at
                      (obj/get location "origin"))))
 ```
 
-A configured value therefore overrides the otherwise-correct `https://penpot.c.aquati.cat` browser origin.
 The API repository joins requests onto that value at
 [`frontend/src/app/main/repo.cljs:173-195`][penpot-api-uri]:
 
 ```clojure
 (let [id     (or rename-to id)
       nid    (name id)
-      method (cond
-               (= query-params :all)  :get
-               (str/starts-with? nid "get-") :get
-               :else :post)
       request
       {:method method
        :uri (u/join cf/public-uri "api/main/methods/" nid)
@@ -140,15 +183,20 @@ The API repository joins requests onto that value at
 ```
 
 This call chain produces the observed request to external port `8080`.
-The effective Caddy upstream was not captured.
-Regardless of that upstream,
-a browser request to external port `8080` does not use the working standard HTTPS origin.
 
-The statement that this worked before does not identify which configuration changed.
-Two source-supported possibilities are that the prior frontend omitted `PENPOT_PUBLIC_URI` and fell back to
-`location.origin`,
-or that it received the unsuffixed base URL.
-The previous source and deployable Compose are needed to distinguish them.
+### Earlier diagnosis was wrong
+
+The first diagnosis inferred that the user had added a frontend
+`PENPOT_PUBLIC_URI=$SERVICE_URL_FRONTEND_8080` assignment and recommended changing all three components.
+The pasted Source Compose disproved that inference.
+The exact-image fixture then proved that the shown frontend environment cannot generate `penpotPublicURI` by itself.
+The running-container probe and Coolify source trace identified the shared `env_file` boundary instead.
+
+The healthcheck edit did not alter the public URI.
+The subsequent forced recreation most likely exposed the existing shared value by starting frontend again and
+regenerating `config.js`.
+The old container's environment and file were not captured,
+so this timing explanation remains an evidence-backed hypothesis rather than a measured before-state.
 
 ## Verification
 
@@ -156,160 +204,128 @@ The previous source and deployable Compose are needed to distinguish them.
 
 - Live endpoint `https://penpot.c.aquati.cat`,
    probed on 2026-09-03.
-- Published image `penpotapp/frontend:2.17.2`.
+- Published `penpotapp/frontend:latest` and `penpotapp/frontend:2.17.2` image.
 - Penpot tag `2.17.2`,
    commit `1d2c37e52c733f74017d90b0fd1ae2d074a5c33d`.
 - Coolify commit `b8866b87e8e855e041c21330352ca615521afed3`.
+- Coolify injection commit `712d60c75b5db2cad57906c9a71fb3c6538fa29c`.
 
-### Live failure probe
+### Failing live probe
 
 ```bash
-for attempt in 1 2 3; do
-  curl --fail --silent --show-error https://penpot.c.aquati.cat/js/config.js \
-    | grep --fixed-strings 'var penpotPublicURI'
-done
-
-curl --silent --show-error --output /dev/null \
-  --write-out 'status=%{http_code} remote_port=%{remote_port}\n' \
-  https://penpot.c.aquati.cat/api/main/methods/get-enabled-flags
-
-curl --silent --show-error --connect-timeout 5 --max-time 8 --output /dev/null \
-  --write-out 'status=%{http_code} remote_port=%{remote_port} error=%{errormsg}\n' \
-  https://penpot.c.aquati.cat:8080/api/main/methods/get-enabled-flags
+printf 'PENPOT_PUBLIC_URI=<%s>\n' "${PENPOT_PUBLIC_URI-<unset>}"
+printf 'SERVICE_URL_FRONTEND_8080=<%s>\n' "${SERVICE_URL_FRONTEND_8080-<unset>}"
+grep -n 'penpotPublicURI' /var/www/app/js/config.js || true
+curl --fail --silent --show-error http://127.0.0.1:8080/js/config.js
 ```
 
-Observed output:
+Observed inside frontend before correction:
 
 ```text
+PENPOT_PUBLIC_URI=<https://penpot.c.aquati.cat:8080>
+SERVICE_URL_FRONTEND_8080=<https://penpot.c.aquati.cat:8080>
 var penpotPublicURI = "https://penpot.c.aquati.cat:8080";
-var penpotPublicURI = "https://penpot.c.aquati.cat:8080";
-var penpotPublicURI = "https://penpot.c.aquati.cat:8080";
-status=401 remote_port=443
-status=000 remote_port=-1 error=Connection timed out after 5000 milliseconds
 ```
 
-Status `401` proves that the standard HTTPS route returns an immediate HTTP response through Caddy.
-The response body was not captured,
-so status alone does not prove which component emitted it.
-The timeout on external port `8080` reproduces the browser's network failure.
+External port `8080` reproduced the browser failure:
 
-### Corrected frontend probe
+```text
+status=000 error=Connection timed out after 5002 milliseconds
+```
 
-A disposable `penpotapp/frontend:2.17.2` container was limited to one CPU and `512` MiB memory.
-It received `PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat`,
-and its generated endpoint returned:
+### Passing live probe
+
+The frontend Source Compose received one explicit entry:
+
+```yaml
+- 'PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat'
+```
+
+After **Force Restart**,
+the cache-busting public response contained:
 
 ```javascript
-// Frontend configuration
-//var penpotFlags = "";
-//var penpotOIDCName = "";
 var penpotPublicURI = "https://penpot.c.aquati.cat";
 ```
 
-Penpot normalizes this to the expected startup value:
+An unauthenticated `agent-browser` session loaded the application and observed:
 
 ```text
-public-uri="https://penpot.c.aquati.cat/"
+version="2.17.2", public-uri="https://penpot.c.aquati.cat/"
+GET https://penpot.c.aquati.cat/api/main/methods/get-enabled-flags 401
 ```
+
+The page reported no browser errors.
+The request used standard HTTPS rather than external port `8080`.
+Status `401` is the expected unauthenticated application boundary response.
 
 ### Configurations that work
 
-- `PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat` generated the correct frontend `config.js` in the disposable image.
-- Omitting frontend `PENPOT_PUBLIC_URI` lets the cited Penpot source use the browser's `location.origin`.
-- Keeping `SERVICE_URL_FRONTEND_8080` separate preserves Coolify's port-specific frontend declaration.
-
-Current Coolify source supports `$SERVICE_URL_FRONTEND` as an unsuffixed alternative,
-but that expansion has not been observed in this live service and is not in the verified catalog.
+- Explicit frontend `PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat` overrides Coolify's injected file.
+- Existing explicit backend and exporter values remain correct.
+- `SERVICE_URL_FRONTEND_8080` remains available for Coolify's internal-port routing.
+- Custom Caddy continues serving the normal HTTPS origin without a configuration change.
 
 ### Configurations that fail
 
-- `PENPOT_PUBLIC_URI=$SERVICE_URL_FRONTEND_8080` produces external browser requests to port `8080`.
-- `PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat:8080` produces the same failure.
-- Exposing only standard HTTPS while injecting either failed value leaves API requests to time out.
+- Omitting frontend `PENPOT_PUBLIC_URI` lets the shared stale file supply the `:8080` value.
+- Setting only `SERVICE_URL_FRONTEND_8080` does not make the official Penpot image derive a safe public URI.
+- A public URI ending in `:8080` directs browser API requests to the unreachable external port.
 
 ## Verified workarounds
 
-### Use the literal external origin
+### Explicitly override only the frontend value
 
-Keep the port-specific Coolify declaration,
-and set the same literal on all Penpot application components:
+Keep the port-specific Coolify declaration and add one frontend entry:
 
 ```yaml
 services:
   frontend:
     environment:
       - SERVICE_URL_FRONTEND_8080
-      - PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat
-
-  penpot-backend:
-    environment:
-      - PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat
-
-  penpot-exporter:
-    environment:
-      - PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat
+      - 'PENPOT_PUBLIC_URI=https://penpot.c.aquati.cat'
+      - 'PENPOT_FLAGS=${PENPOT_FRONTEND_FLAGS:-enable-login-with-password}'
 ```
 
-The published frontend image generated the expected browser configuration from this literal.
-Penpot's release guide lists the same public value for all three components at
-[`docs/technical-guide/configuration.md:313-327`][penpot-uri-guide]:
-
-```yaml
-# Backend
-PENPOT_PUBLIC_URI: https://penpot.mycompany.com
-
-# Frontend
-PENPOT_PUBLIC_URI: https://penpot.mycompany.com
-
-# Exporter
-PENPOT_PUBLIC_URI: https://penpot.mycompany.com
-```
+Keep existing backend and exporter values unchanged.
+Recreate frontend so its entrypoint regenerates `config.js`.
 
 Tradeoff:
-this does not depend on Coolify's magic-variable behavior,
-but a future domain change requires another Compose edit.
-The complete live deployment remains to be verified after recreation.
+this is a component-local and verified correction,
+but Coolify v4 still injects every service variable into every container.
+The broader cross-container environment exposure remains until Coolify v5 changes the architecture.
 
-### Conditionally use Coolify's unsuffixed base URL
+### Remove or correct the stale service-level record only with direct evidence
 
-Current Coolify source creates `SERVICE_URL_FRONTEND` without the port.
-A domain-tracking alternative is:
-
-```yaml
-- PENPOT_PUBLIC_URI=$SERVICE_URL_FRONTEND
-```
+Correcting the underlying shared record would remove the need for a frontend override.
+The current Coolify UI displayed only correct Compose-managed backend and exporter entries,
+and those dialogs instructed the operator to update Compose.
+It did not expose the stale inherited frontend record for safe editing.
 
 Tradeoff:
-this tracks future domain changes,
-but the user's live Coolify version and generated deployment have not yet shown that expansion.
-Do not use it for immediate recovery unless **Deployable Compose** resolves it to
-`https://penpot.c.aquati.cat` without `:8080` in all three components.
-
-Both forms require container recreation so the frontend startup entrypoint regenerates `config.js`.
-Neither form requires a volume mutation.
-Leave Caddy unchanged for this narrow test,
-then investigate it separately only if requests still fail with the corrected browser origin.
+direct database or generated `.env` edits bypass Coolify ownership and can be regenerated.
+Do not use them for this incident when the explicit frontend override is sufficient.
 
 ## What does not work
 
-- **Changing Caddy's internal upstream away from port `8080`.**
-  Penpot frontend listens on `8080` inside its container;
-  the defect is the browser-facing origin rather than Caddy's upstream target.
+- **Blaming or changing Caddy for the injected value.**
+  Container-local HTTP returned the same bad file before Caddy handled it.
+- **Changing backend or exporter public URI again.**
+  Their Source Compose values were already correct and explicit.
+- **Changing only the healthcheck.**
+  The healthcheck repair starts the service but does not control frontend runtime configuration.
 - **Exposing external port `8080`.**
-  This makes a noncanonical second origin reachable instead of correcting Penpot's configured public origin.
-- **Removing the standalone `SERVICE_URL_FRONTEND_8080` declaration.**
-  It identifies Coolify's internal target port and serves a different purpose from `PENPOT_PUBLIC_URI`.
-- **Refreshing or clearing browser storage without correcting Compose.**
-  Repeated command-line requests to `js/config.js` returned the wrong value.
-  After correction,
-  use a cache-busting query or private browser window because the response advertises a seven-day cache lifetime.
-- **Editing Compose without recreating the frontend container.**
-  The startup entrypoint generates `config.js` inside the container;
-  an existing container does not gain a new environment from a file edit.
+  This creates a noncanonical second origin instead of correcting Penpot's browser-facing URI.
+- **Removing `SERVICE_URL_FRONTEND_8080`.**
+  It identifies Coolify's intended frontend container port and is separate from Penpot's public URI.
+- **Editing Coolify's generated `.env` on the host.**
+  Coolify rewrites the file from its environment records during deployment.
+- **Refreshing browser storage without correcting frontend environment.**
+  The container-local generated file itself contained the wrong value.
 - **Changing PostgreSQL,
    Redis,
    or asset volumes.**
-  The failure occurs before the request reaches Caddy or Penpot's backend and does not involve persistent data.
+  The issue is environment propagation and does not involve persistent Penpot data.
 
 ## Upstream filing artifact
 
@@ -317,90 +333,49 @@ then investigate it separately only if requests still fail with the corrected br
 
 No `.out-of-scope/` entry covers Coolify,
 Penpot,
-Compose public URIs,
+Compose environment sharing,
 or reverse-proxy port handling.
 
-Tracker searches covered open and closed Coolify issues and pull requests for
-`penpot public uri 8080` and `SERVICE_URL port suffix`.
-Coolify issue [#4957][coolify-issue-4957] is related:
-its comments discuss Penpot's frontend port change and recommend adding `:8080` to URLs,
-but they do not distinguish the internal proxy target from the browser-facing public origin.
-All comments were reviewed.
-The measured browser failure and base-versus-suffixed source trace are additive to that thread.
+Coolify issue [#7655][coolify-issue-7655] is an exact upstream match for the shared-environment mechanism.
+Its issue body and all comments were reviewed.
+The Penpot incident is a concrete application-level consequence and adds a verified consumer workaround,
+but the maintainer has already accepted the mechanism and stated the version policy.
+No duplicate issue should be filed.
 
 The filing constraints resolve as follows:
 
 1. **Is it really upstream's fault?**
-   Not proven for the exact frontend failure.
-   Current Coolify source assigns the suffixed URL to backend and exporter,
-   but its template does not assign `PENPOT_PUBLIC_URI` to frontend.
-   The live source or deployable Compose that injected the frontend value has not been captured.
-2. **Can upstream fix it?**
    Yes.
-   Coolify could use the base generated URL for Penpot public URI values
-   while retaining the suffixed routing declaration.
+   Coolify v4 deliberately adds one service-wide environment file to every Compose component.
+2. **Can upstream fix it?**
+   Yes in a new architecture.
+   The maintainer plans per-container files in Coolify v5.
 3. **Are they supporting this use case?**
    Yes.
-   Coolify ships the Penpot service template,
-   and Penpot documents reverse-proxy deployment with an external public URI.
+   Coolify ships a Penpot service template and supports multi-component Compose services.
 4. **Would the repo welcome our contribution?**
-   Yes with disclosure.
-   `CONTRIBUTING.md:221` permits verified AI-assisted contributions,
-   and `.github/pull_request_template.md:25-34` requires disclosure.
+   Not for a v4 implementation from this investigation.
+   The maintainer explicitly rejected a proper v4 fix as incompatible with the maintenance and migration plan,
+   and characterized issue-thread AI patch attempts as unwanted.
 5. **Will they likely fix it?**
-   No refusal was found.
-   Issue `#4957` and prior Penpot template changes show maintainer and contributor activity on this integration.
+   Not in v4.
+   The maintainer explicitly deferred the architectural correction to v5.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
-   No upstream patch was retained because constraint 1 fails for the exact incident.
-   The consumer-side Compose correction was verified against the published frontend image instead.
+   No upstream patch was created because constraints 4 and 5 fail for v4,
+   while the v5 architecture referenced by the maintainer is not the current source under investigation.
+   The consumer-side Penpot override was implemented and verified instead.
 
-Do not post the following draft until the live source and deployable Compose confirm which frontend expression injected
-`SERVICE_URL_FRONTEND_8080`.
+The existing issue already establishes the mechanism and intended upstream direction.
+The additional Penpot example does not justify posting after the maintainer's explicit guidance,
+so there is no comment draft.
 
-### Additive comment draft (do not file as-is)
-
-~~~md
-The internal frontend port and Penpot's browser-facing public URI need separate values.
-
-On a Penpot 2.17.2 service behind standard HTTPS,
-`js/config.js` contained:
-
-```js
-var penpotPublicURI = "https://penpot.example.com:8080";
-```
-
-The page loaded through the reverse proxy,
-but the browser's `get-enabled-flags` request timed out because it was sent to external port 8080.
-Current Coolify source creates both `SERVICE_URL_FRONTEND` without a port and
-`SERVICE_URL_FRONTEND_8080` with `:8080`.
-Penpot uses `PENPOT_PUBLIC_URI` to construct browser API URLs.
-
-The consumer-side correction is to retain `SERVICE_URL_FRONTEND_8080` as the port-specific declaration,
-but pass the literal external origin as `PENPOT_PUBLIC_URI` to frontend,
-backend,
-and exporter.
-Current Coolify source also creates an unsuffixed `SERVICE_URL_FRONTEND`,
-but that expansion should be confirmed in Deployable Compose before use.
-
-Before treating this as a current-template defect,
-the affected service's source and deployable Compose should be captured:
-the current template assigns the suffixed value to backend and exporter but does not set frontend
-`PENPOT_PUBLIC_URI`.
-
-AI assistance disclosure:
-an AI-assisted investigation traced current Coolify and Penpot source,
-repeated the live HTTP failure probe,
-and verified the corrected environment against a disposable published frontend container.
-A human should verify the affected live Compose before posting this comment.
-~~~
-
-[coolify-base-url]: https://github.com/coollabsio/coolify/blob/b8866b87e8e855e041c21330352ca615521afed3/bootstrap/helpers/services.php#L350-L381
-[coolify-issue-4957]: https://github.com/coollabsio/coolify/issues/4957
-[coolify-port-url]: https://github.com/coollabsio/coolify/blob/b8866b87e8e855e041c21330352ca615521afed3/bootstrap/helpers/services.php#L383-L409
+[coolify-env-file-injection]: https://github.com/coollabsio/coolify/blob/b8866b87e8e855e041c21330352ca615521afed3/bootstrap/helpers/parsers.php#L2758-L2766
+[coolify-env-injection-commit]: https://github.com/coollabsio/coolify/commit/712d60c75b5db2cad57906c9a71fb3c6538fa29c
+[coolify-issue-7655]: https://github.com/coollabsio/coolify/issues/7655
+[coolify-shared-env-write]: https://github.com/coollabsio/coolify/blob/b8866b87e8e855e041c21330352ca615521afed3/app/Models/Service.php#L1613-L1649
 [coolify-template-backend]: https://github.com/coollabsio/coolify/blob/b8866b87e8e855e041c21330352ca615521afed3/templates/compose/penpot.yaml#L37-L41
 [coolify-template-exporter]: https://github.com/coollabsio/coolify/blob/b8866b87e8e855e041c21330352ca615521afed3/templates/compose/penpot.yaml#L64-L68
-[coolify-template-frontend]: https://github.com/coollabsio/coolify/blob/b8866b87e8e855e041c21330352ca615521afed3/templates/compose/penpot.yaml#L18-L20
+[docker-env-precedence]: https://docs.docker.com/compose/how-tos/environment-variables/envvars-precedence/
 [penpot-api-uri]: https://github.com/penpot/penpot/blob/1d2c37e52c733f74017d90b0fd1ae2d074a5c33d/frontend/src/app/main/repo.cljs#L173-L195
 [penpot-entrypoint]: https://github.com/penpot/penpot/blob/1d2c37e52c733f74017d90b0fd1ae2d074a5c33d/docker/images/files/nginx-entrypoint.sh#L27-L48
 [penpot-public-uri]: https://github.com/penpot/penpot/blob/1d2c37e52c733f74017d90b0fd1ae2d074a5c33d/frontend/src/app/config.cljs#L175-L183
-[penpot-uri-guide]: https://github.com/penpot/penpot/blob/1d2c37e52c733f74017d90b0fd1ae2d074a5c33d/docs/technical-guide/configuration.md#L313-L327
