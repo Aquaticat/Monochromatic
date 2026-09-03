@@ -3,7 +3,7 @@
 Music Player is a native,
  local-first player for people whose music library is already organised in folders.
 It treats the directory tree and filenames as the library,
- so a large collection stays navigable without
+ so an existing collection stays navigable without
 requiring tags,
  albums,
  artwork,
@@ -71,8 +71,7 @@ filename has an otherwise accepted extension.
  Choosing a Storage Access Framework tree instead filters by the
 player's extension allowlist.
 
-The current UI has no metadata browser,
- tag parsing,
+The current UI has no tag-derived browser,
  facets,
  artist view,
  album view,
@@ -107,29 +106,43 @@ repeat,
  shuffle the selected page,
  or shuffle the complete library.
 
-A Storage Access Framework tree accepts FLAC,
+The Storage Access Framework source accepts these filename suffixes:
+ `flac`,
+ `wav`,
+ `wave`,
+ `mp3`,
+ `ogg`,
+`oga`,
+ `opus`,
+ `m4a`,
+ `m4b`,
+ `mp4`,
+ `aac`,
+ `aiff`,
+ `aif`,
+ and `aifc`.
+This extension recognition filters a library source.
+ It is not a decoder-support claim.
+The MediaStore source relies on Android's music classification instead.
+
+Desktop decodes FLAC,
  WAV and PCM,
  MP3,
  Vorbis in Ogg,
  Opus,
- AAC-LC and ALAC in
-MP4,
- and AIFF filename extensions.
- The MediaStore source relies on Android's music classification instead.
-Desktop decodes those formats,
- plus ADPCM,
- and opens each track at its native sample rate.
- Desktop leaves
-device resampling to PipeWire,
+ AAC-LC,
+ ALAC,
+ ADPCM,
+ and AIFF.
+It opens each track at its native sample rate and leaves device resampling to PipeWire,
  CoreAudio,
  or WASAPI.
 
 ### Audio safety
 
-Playback uses attenuate-only true-peak normalisation with a `-1 dBTP` ceiling.
+Playback targets attenuate-only true-peak normalisation to a `-1 dBTP` ceiling.
 A track that already fits under that ceiling is not boosted.
- The shared [`truepeak-core`](truepeak-core)
-crate owns the meter and gain math used by both applications.
+The shared [`truepeak-core`](truepeak-core) crate owns meter and gain calculations used by both applications.
 
 Desktop stores opaque peak-cache fingerprints rather than filenames,
  paths,
@@ -152,10 +165,11 @@ Windows.
  These shell integrations are best-effort and were not verified in the isolated gallery environment,
 so the gallery does not demonstrate them.
 
-Android supports API 26 and later and targets API 36.
+The Android build declares API 26 as its minimum SDK and API 36 as its target SDK.
+The gallery uses an API 36 emulator.
  Its Kotlin layer owns permissions,
- MediaStore and
-Storage Access Framework access,
+ MediaStore and Storage Access Framework
+access,
  persistence,
  a MediaSession,
  audio focus,
@@ -168,11 +182,15 @@ including the notification and lock screen.
 
 ## Gallery
 
-Every image in this gallery is a capture of the current application using synthetic music folders and filenames.
-The source PNGs were stripped of capture metadata.
- Android application captures exclude system bars,
- and
-notification and lock-screen captures are cropped to the Music Player media card.
+Every gallery panel derives from captures of the current application using synthetic music folders and
+filenames.
+ Contact sheets combine those captures.
+ Notification and lock-screen panels are system-rendered media
+cards produced by the application's active MediaSession.
+
+The committed PNGs were stripped of capture metadata.
+ Application-surface captures exclude system bars.
+Notification and lock-screen captures are cropped to the Music Player media card.
 
 ### Desktop
 
@@ -276,8 +294,8 @@ All six Android page-control rendering paths are covered below,
 
 ### Android foldable postures
 
-The capture device is a Pixel 9 Pro Fold.
- Cover,
+The capture environment uses a Pixel 9 Pro Fold emulator profile.
+Cover,
  unfolded,
  and tabletop postures are represented below.
 The current application is responsive to available orientation and size rather than posture-aware,
@@ -476,8 +494,8 @@ MediaStore,
  source contract,
 window-placement math,
  and versioned policy identity.
- The shared core avoids divergent measurements while
-leaving platform source access and higher-level playback policy at their appropriate boundaries.
+The shared core keeps meter and gain calculations aligned while leaving platform source access and higher-level
+playback policy at their appropriate boundaries.
 
 ## Contributing
 
