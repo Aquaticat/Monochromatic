@@ -122,6 +122,29 @@ if namedAlias != nil {
 }
 ```
 
+Alias configuration itself cannot include a tag or digest.
+The alias parser rejects both at
+[`vendor/go.podman.io/image/v5/pkg/sysregistriesv2/shortnames.go:213-230`][alias-value]:
+
+```go
+// parseShortNameValue parses the specified alias into a reference.Named.  The alias is
+// expected to not be tagged or carry a digest and *must* include a
+// domain/registry.
+func parseShortNameValue(alias string) (reference.Named, error) {
+    ref, err := reference.Parse(alias)
+    if err != nil {
+        return nil, fmt.Errorf("parsing alias %q: %w", alias, err)
+    }
+
+    if _, ok := ref.(reference.Digested); ok {
+        return nil, fmt.Errorf("invalid alias %q: must not contain digest", alias)
+    }
+
+    if _, ok := ref.(reference.Tagged); ok {
+        return nil, fmt.Errorf("invalid alias %q: must not contain tag", alias)
+    }
+```
+
 This machine's `/etc/containers/registries.conf.d/000-shortnames.conf` has no
 `capsulecode/singlefile` alias.
 Its `/etc/containers/registries.conf:22,79` instead defines three search registries and enforcing mode:
@@ -188,7 +211,15 @@ Configuration: three unqualified registries, short-name-mode="enforcing"
 Invocation: non-TTY command runner
 ```
 
-The source trace used Podman's `v5.8.4` source at the reported commit.
+### Source checkout and boundary
+
+The source trace used the read-only third-party checkout at
+`~/temp/agent/podman-v5.8.4-20260903`.
+Its origin was `https://github.com/podman-container-tools/podman.git`,
+its exact tag was `v5.8.4`,
+and `git rev-parse HEAD` returned the reported commit.
+`git status --short` was empty after investigation.
+No source workaround or prototype was applied to the repository that we do not own.
 
 ### Patterns that fail
 
@@ -228,7 +259,8 @@ $ podman manifest inspect docker.io/capsulecode/singlefile:latest
     "manifests": [
 ```
 
-A fully qualified pull also succeeded in an isolated temporary image store:
+A generic fully qualified pull also succeeded in an isolated temporary image store.
+This checks the pull path without downloading the larger SingleFile image:
 
 ```console
 $ podman --root "$fixture/root" --runroot "$fixture/runroot" \
@@ -305,8 +337,8 @@ podman pull capsulecode/singlefile:latest
 The tested per-user drop-in returned the target's OCI image index under the system's enforcing mode.
 Its tradeoff is hidden machine-local policy:
  another machine without the alias still fails or may resolve differently.
-Alias values cannot pin a tag or digest,
- so callers must retain those in the image argument.
+Because the alias parser rejects a tag or digest in an alias value,
+ callers must retain those in the image argument.
 
 ### Configure one trusted search registry
 
@@ -381,9 +413,10 @@ Searches across open and closed issues and pull requests used
  and the exact diagnostic.
 They found the exact duplicate,
  [Podman issue 11530][issue-11530].
-A maintainer states that enforcing mode deliberately hard-fails when a script cannot be prompted,
-and recommends that the calling tool use a fully qualified name.
-The issue was closed as intended behavior.
+In the [closing maintainer comment][issue-11530-closing],
+ the maintainer says enforcing mode “hard-fail[s]” when a script cannot be prompted and calls this intended behavior.
+An earlier [issue comment][issue-11530-qualified] recommends that the caller use `docker.io/kindest/node`.
+The same remedy applies to the SingleFile image's fully qualified name.
 
 The six constraints are:
 
@@ -400,9 +433,15 @@ The six constraints are:
    Podman's pull documentation recommends fully qualified references and explains aliases.
 4. **Would the repo welcome our contribution?**
     Generally yes.
-   [`CONTRIBUTING.md`][contributing] asks for reproducible bug reports,
-   and the bug template requests version and environment data.
-   No prohibition on AI-assisted reports was found in the checked contribution files.
+   The checked `README.md`,
+   `CONTRIBUTING.md`,
+   `ISSUE.md`,
+   `SUPPORT.md`,
+   `.github/ISSUE_TEMPLATE.md`,
+   and `.github/PULL_REQUEST_TEMPLATE.md` describe external reports and changes.
+   [`CONTRIBUTING.md`][contributing] asks for reproducible bug reports.
+   A recent external-contributor change was merged as [pull request 29682][pr-29682].
+   No prohibition on AI-assisted reports was found in those files.
 5. **Will they likely fix it?**
     No for the behavior reported here.
    [Issue 11530][issue-11530] records the maintainer's intended-behavior decision.
@@ -424,7 +463,11 @@ so no upstream comment or new issue should be filed.
 [libimage-resolve]: https://github.com/podman-container-tools/podman/blob/5431df23c742e5edea35bef34eed696f4db0106b/vendor/go.podman.io/common/libimage/pull.go#L558-L565
 [resolver-entry]: https://github.com/podman-container-tools/podman/blob/5431df23c742e5edea35bef34eed696f4db0106b/vendor/go.podman.io/image/v5/pkg/shortnames/shortnames.go#L243-L264
 [resolver-alias]: https://github.com/podman-container-tools/podman/blob/5431df23c742e5edea35bef34eed696f4db0106b/vendor/go.podman.io/image/v5/pkg/shortnames/shortnames.go#L279-L307
+[alias-value]: https://github.com/podman-container-tools/podman/blob/5431df23c742e5edea35bef34eed696f4db0106b/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/shortnames.go#L213-L230
 [resolver-candidates]: https://github.com/podman-container-tools/podman/blob/5431df23c742e5edea35bef34eed696f4db0106b/vendor/go.podman.io/image/v5/pkg/shortnames/shortnames.go#L312-L332
 [resolver-tty]: https://github.com/podman-container-tools/podman/blob/5431df23c742e5edea35bef34eed696f4db0106b/vendor/go.podman.io/image/v5/pkg/shortnames/shortnames.go#L340-L353
 [issue-11530]: https://github.com/podman-container-tools/podman/issues/11530
+[issue-11530-closing]: https://github.com/podman-container-tools/podman/issues/11530#issuecomment-917564959
+[issue-11530-qualified]: https://github.com/podman-container-tools/podman/issues/11530#issuecomment-917369275
+[pr-29682]: https://github.com/podman-container-tools/podman/pull/29682
 [contributing]: https://github.com/podman-container-tools/podman/blob/5431df23c742e5edea35bef34eed696f4db0106b/CONTRIBUTING.md#reporting-issues
