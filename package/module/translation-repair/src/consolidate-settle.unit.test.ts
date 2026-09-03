@@ -107,9 +107,16 @@ const FRESH = 'The cat fell asleep beside the window. She woke at four in the af
 const POLISHABLE_STANDING = 'She faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
 
 /**
- * Faithful idiomatic rewrite of polishable standing text.
+ * Faithful idiomatic rewrite of polishable standing text, as the refiner emits it.
  */
 const POLISHED_STANDING = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
+
+/**
+ * That rewrite as it ships: wrapped at its semantic boundary before the polish
+ * gate judged it (keyword233, 2026-09-03).
+ */
+const WRAPPED_POLISHED_STANDING = 'She maintained a positive outlook on life and spent some good times with everyone,\n'
+  + 'doing her best to stay hopeful and connected to those around her.';
 
 /**
  * Builds one voice as the producing half hands them over.
@@ -690,7 +697,7 @@ await describe({
           l,
         },);
         expect(settled.terminal,).toBe('slate-declined-standing',);
-        expect(settled.text,).toBe(POLISHED_STANDING,);
+        expect(settled.text,).toBe(WRAPPED_POLISHED_STANDING,);
         expect(settled.polish?.kind,).toBe('settled',);
         expect(settled.polish?.kind === 'settled' ? settled.polish.changed : false,).toBe(true,);
         expect(servedSchemas,).toContain('refine_report',);

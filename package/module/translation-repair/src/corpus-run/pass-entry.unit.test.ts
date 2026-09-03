@@ -161,6 +161,13 @@ const POLISH_BASE_PARAGRAPH = 'The cat faced life proactively and spent a good t
 const POLISH_FINAL_PARAGRAPH = 'The cat maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
 
 /**
+ * That paragraph as the page carries it: wrapped at its semantic boundary
+ * before the polish gate judged it, so the gate approved the bytes that ship.
+ */
+const POLISH_FINAL_WRAPPED = 'The cat maintained a positive outlook on life and spent some good times with everyone,\n'
+  + 'doing her best to stay hopeful and connected to those around her.';
+
+/**
  * Stable phrase identifying literal consolidation after semantic wrapping.
  */
 const POLISH_BASE_NEEDLE = 'faced life proactively';
@@ -1197,7 +1204,7 @@ await describe({
           ?.polish;
         expect(polish?.kind,).toBe('settled',);
         expect(polish?.kind === 'settled' ? polish.changed : false,).toBe(true,);
-        expect(polish?.kind === 'settled' ? polish.text : '',).toContain(POLISH_FINAL_PARAGRAPH,);
+        expect(polish?.kind === 'settled' ? polish.text : '',).toContain(POLISH_FINAL_WRAPPED,);
         expect(polish?.kind === 'settled' ? polish.review?.rounds.at(-1,)?.verdict : '',).toBe('acceptable',);
         /**
          * Page persisted from parsed decision stack.
@@ -1206,7 +1213,7 @@ await describe({
           publishDir: dirs.publishDir,
           entryId: ENTRY.id,
         },), 'utf8',);
-        expect(page,).toContain(POLISH_FINAL_PARAGRAPH,);
+        expect(page,).toContain(POLISH_FINAL_WRAPPED,);
         expect(page,).not.toContain(POLISH_BASE_PARAGRAPH,);
         expect(served,).toContain('consolidation_polish_gate',);
         expect(served,).toContain('absolute_naturalness_review',);
