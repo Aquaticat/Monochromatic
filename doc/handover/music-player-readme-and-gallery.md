@@ -424,18 +424,57 @@ Use these defaults unless repository evidence proves one cannot be captured accu
   stopped every nested compositor and embedded MCP instance after the desktop captures.
   `ss` found no listener on ports 9315 through 9321;
   the separately installed user music-player process was left untouched.
+- 2026-09-03,
+  Android gallery capture:
+  rebuilt and installed the debug app on a read-only,
+  no-snapshot,
+  host-GPU Pixel 9 Pro Fold run.
+  A 120-track FLAC library in ten synthetic folders appeared in MediaStore with non-null durations.
+  Captures cover permission gating,
+  empty and populated libraries,
+  selected paused and playing tracks,
+  light and dark themes,
+  settings,
+  collapsed and expanded page controls,
+  selected-page reveal,
+  folded cover,
+  unfolded,
+  and `HALF_OPENED` tabletop posture.
+  `cmd device_state` confirmed the posture before each Fold capture.
+  The current application is orientation-responsive rather than posture-aware,
+  so unfolded and tabletop have the same application layout.
+- 2026-09-03,
+  Android system integration:
+  a synthetic selected FLAC track created an active MediaSession and system media controls.
+  After granting `POST_NOTIFICATIONS` in disposable emulator state,
+  the notification shade and secure lock screen each rendered prev,
+  pause,
+  next,
+  seek,
+  and device controls.
+  The committed crops retain only the application-owned media cards.
+- 2026-09-03,
+  gallery curation:
+  generated `package/music-player/asset/readme/` from reviewed raw captures.
+  Android app captures exclude status and navigation bars.
+  System-integration captures are cropped to their media cards.
+  ImageMagick `-strip` removed metadata,
+  and a PNG chunk walk found only structural,
+  color,
+  background,
+  and image-data chunks in final assets.
+  Contact sheets cover desktop page-control treatments,
+  Android library states,
+  folded navigation states,
+  and Fold postures.
+  Starting and zero-item loading indicators did not hold long enough for a stable capture on this hardware;
+  they remain implemented branches but are excluded as intermediate frames.
 
 ## Next actions
 
-1.  Capture and sanitize approved Android states,
-    including cover,
-    unfolded,
-    tabletop,
-    system integration,
-    and every page-control style.
-2.  Place final media in `package/music-player/asset/readme/` and commit it.
-3.  Write the layered package README and embed the gallery.
-4.  Verify links,
+1.  Commit reviewed gallery media and this handover update.
+2.  Write the layered package README and embed the gallery.
+3.  Verify links,
     commands,
     capability claims,
     image privacy,
