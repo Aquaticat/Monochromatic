@@ -489,7 +489,7 @@ What happened, read off the log and the source:
     `doc/decision/translation-repair-multi-provider.md`).
 -   Synthetic was so held at 01:21:44, 01:32:56 and 01:39:28 (each time on `GLM-5.3-Flash`), which routed
     its traffic to Hyper; at 01:39:54 to 01:39:59 Hyper refused eight models in five seconds and was held
-    too; with both held, `BothProvidersDryError` fired for every voice of every stage (518 lines in
+    too; with both held, `EveryProviderDryError` (then under its two-provider name) fired for every voice of every stage (518 lines in
     twenty-five seconds), Toka_ls's translate lane ended, and the two remaining entries were attempted and
     failed inside the same second because the hold is process-wide state.
 -   Thirteen seconds before the verdict the meter read
@@ -517,7 +517,7 @@ What is the pipeline's, not the launch's, and is filed for the owner as a design
     earlier and says otherwise; a rate limit and an empty allowance get the same five-minute hold.
 -   When both providers are held, the pass fails every remaining entry at once instead of waiting out the
     shorter hold, which is at most five minutes against a 72 hour soft budget.
--   The `BothProvidersDryError` text states what was assumed, not what was measured.
+-   The `EveryProviderDryError` (then under its two-provider name) text states what was assumed, not what was measured.
 
 Whether one process trips the hold, measured rather than assumed:
 
@@ -938,7 +938,7 @@ costs at 00:49 and at 00:51, in consolidation. The mechanism, read off the log: 
 holds the whole provider for the 60-second backoff (`RATE_LIMIT_BACKOFF_MS = BUDGET_FRESH_MS`), 95 calls
 waited out a 60-second hold, and when it ended every pending call fired at once into Hyper's
 concurrency limit, which produced the next burst; 44 calls hit a second both-dry reading inside a new
-hold and were lost as `BothProvidersDryError` (the consolidation polish gate lost Kimi-K3 and
+hold and were lost as `EveryProviderDryError` (then under its two-provider name) (the consolidation polish gate lost Kimi-K3 and
 gpt-oss-120b that way at 00:47:33). A provider-wide hold is the wrong answer to a concurrency limit
 when the provider is the only one left: it converts a per-call retry into a synchronised herd.
 

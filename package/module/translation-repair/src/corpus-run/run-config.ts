@@ -34,8 +34,11 @@ import {
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
 import { createHyperClient, } from '../hyper-client.ts';
+import { createOpenRouterClient, } from '../openrouter-client.ts';
 import { hyperRequestsPerHour, } from '../request-pace.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
+import type { ProviderName, } from '../provider-name.ts';
+import type { RunClient, } from './run-client-contract.ts';
 import { promptPayloadStore, } from '../prompt-payload-store.ts';
 import { promptUniqueClient, } from '../prompt-uniqueness-client.ts';
 import {
@@ -811,7 +814,7 @@ const l = tagged({ tag: 'translation-repair', },);
  * ```
  */
 function unconfiguredProviderCaller(
-  { provider, }: { readonly provider: 'synthetic' | 'hyper'; },
+  { provider, }: { readonly provider: ProviderName; },
 ): Pick<ModelCaller, 'chatText'> {
   return {
     // oxlint-disable-next-line require-await, typescript/require-await -- caller contract is asynchronous; refusal must occur without provider call
@@ -869,9 +872,16 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  * ONE KEY IS ENOUGH.
  * Missing provider is marked dry before routing,
  * so its seats become unavailable without unauthorized calls.
- * Exact-half participation lets other provider operate normally;
+ * Exact-half participation lets the other providers operate normally;
  * no provider family or cross-provider response is mandatory.
- * Both missing remains launch refusal because no call can run.
+ * Every key missing remains a launch refusal because no call can run.
+ *
+ * THE THIRD KEY IS OPTIONAL AND ITS ABSENCE IS LOUD, as the second one's is:
+ * OpenRouter is the paid fallback the owner chose on 2026-09-03, and a run
+ * without its key still starts on the other two.
+ *
+ * THE DRYNESS VIEW IS EXPOSED for the seat reader, so the benches are
+ * derived from the same reading the router routes by.
  *
  * EVERY CALL IS COUNTED on `RUN_SEATS`, the process-wide tally the refusal
  * boundary prints when the command ends, so a seat that produced nothing
@@ -885,7 +895,7 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  *
  * @returns Ready client, routed across configured providers and counted per seat
  *
- * @throws {@link RunConfigError} when both provider key variables are unset or empty
+ * @throws {@link RunConfigError} when every provider key variable is unset or empty
  *
  * @example
  * ```ts
@@ -900,7 +910,7 @@ export function createRunClient(
     readonly transport?: ModelTransport;
     readonly promptPayloadDir?: string;
   } = {},
-): SyntheticClient {
+): RunClient {
   /**
    * Logger pre-tagged with this function's name.
    */
@@ -922,9 +932,16 @@ export function createRunClient(
   const hyperKey = process.env
     .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
     ?? '';
-  if ((apiKey === '') && (hyperKey === '')) {
+  /**
+   * Third provider key, the paid fallback, optional for the same reason.
+   */
+  const openRouterKey = process.env
+    .TRANSLATION_REPAIR_OPENROUTER_API_KEY
+    ?? '';
+  if ((apiKey === '') && (hyperKey === '') && (openRouterKey === '')) {
     throw new RunConfigError({
-      variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY or TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
+      variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY '
+        + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
     },);
   }
 
@@ -958,11 +975,22 @@ export function createRunClient(
     },);
 
   /**
-   * Shared budget view both providers are routed by.
+   * Third provider client when configured.
+   */
+  const openrouter = (openRouterKey === '')
+    ? undefined
+    : createOpenRouterClient({
+      apiKey: openRouterKey,
+      ...seam,
+    },);
+
+  /**
+   * Shared budget view every provider is routed by.
    */
   const budgets = createProviderBudgets({
     ...((synthetic === undefined) ? {} : { synthetic, }),
     ...((hyper === undefined) ? {} : { hyper, }),
+    ...((openrouter === undefined) ? {} : { openrouter, }),
   },);
 
   /**
@@ -970,26 +998,34 @@ export function createRunClient(
    */
   const routed: SyntheticClient = {
     ...createRoutingClient({
-      synthetic: synthetic ?? unconfiguredProviderCaller({ provider: 'synthetic', },),
-      hyper: hyper ?? unconfiguredProviderCaller({ provider: 'hyper', },),
+      callers: {
+        synthetic: synthetic ?? unconfiguredProviderCaller({ provider: 'synthetic', },),
+        hyper: hyper ?? unconfiguredProviderCaller({ provider: 'hyper', },),
+        openrouter: openrouter ?? unconfiguredProviderCaller({ provider: 'openrouter', },),
+      },
       budgets,
     },),
     quotas: synthetic?.quotas ?? unconfiguredSyntheticQuota,
   };
 
   rl.debug(
-    `provider configuration synthetic=${String(synthetic !== undefined,)} hyper=${String(hyper !== undefined,)}`,
+    `provider configuration synthetic=${String(synthetic !== undefined,)} hyper=${
+      String(hyper !== undefined,)
+    } openrouter=${String(openrouter !== undefined,)}`,
   );
 
-  return promptUniqueClient({
-    inner: seatTallyClient({
-      inner: routed,
-      tally: RUN_SEATS,
+  return {
+    ...promptUniqueClient({
+      inner: seatTallyClient({
+        inner: routed,
+        tally: RUN_SEATS,
+      },),
+      ...((promptPayloadDir === undefined)
+        ? {}
+        : { store: promptPayloadStore({ dir: promptPayloadDir, },), }),
     },),
-    ...((promptPayloadDir === undefined)
-      ? {}
-      : { store: promptPayloadStore({ dir: promptPayloadDir, },), }),
-  },);
+    providerDryness: budgets.read,
+  };
 }
 
 //endregion Corpus-run configuration

@@ -1,4 +1,10 @@
 import type { HyperCredits, } from './hyper-credits.ts';
+import type { OpenRouterCredits, } from './openrouter-credits.ts';
+import {
+  PROVIDER_ORDER,
+  type ProviderName,
+  type ProviderRecord,
+} from './provider-name.ts';
 import type { QuotaSnapshot, } from './synthetic-quota.ts';
 
 //region Budget routing
@@ -7,8 +13,15 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
 //
 // The owner's policy, in the owner's order: send everything to Synthetic until
 // its per-model concurrency limit is reached, then overflow to Hyper, which has
-// no such limit; if Synthetic has run out of quota, use Hyper; if both are out
-// at once, throw an error saying so and end the run.
+// no such limit; if Synthetic has run out of quota, use Hyper; when Hyper is
+// dry too, buy on OpenRouter (2026-09-03); if every provider is out at once,
+// throw an error saying so and end the run.
+//
+// THE POLICY IS A WALK DOWN `PROVIDER_ORDER`. The first provider that serves
+// the model and has budget takes the call, unless its per-model slots are all
+// taken and a later provider with budget can take it now; a saturated provider
+// with nobody behind it still gets the call, since a queue behind its limit is
+// slower than the split and still buys the answer.
 //
 // SYNTHETIC HAS TWO LIMITS, not one. A five-hour rolling window and a weekly
 // credit budget, and either being empty is a reason to fail over. `#199` was
@@ -16,29 +29,33 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
 // single HTTP 429, while the reader that would have seen it coming had been
 // parsing `weekly.percentRemaining` and discarding it since 2026-07-16.
 //
-// DRYNESS ARRIVES AS A BOOLEAN rather than being read off the snapshots here,
-// so a caller can OR in what it just learned at the wire. A budget reading is
-// minutes old and a 429 is now; a router that could only see the reading would
-// keep sending to a provider that has already started refusing.
+// DRYNESS ARRIVES AS A RECORD OF BOOLEANS rather than being read off the
+// snapshots here, so a caller can OR in what it just learned at the wire. A
+// budget reading is minutes old and a 429 is now; a router that could only see
+// the reading would keep sending to a provider that has already started
+// refusing.
 //
-// A MODEL THAT NO LIVE PROVIDER SERVES IS AN OUTCOME, NOT A THROW. Half the
-// roster is served by one provider only, and one of those providers being dry
-// costs that panelist its voice, which the pipeline already records and
-// proceeds without. Only both budgets being empty ends a run, because at that
-// point nothing can be bought at all.
+// A MODEL THAT NO LIVE PROVIDER SERVES IS AN OUTCOME, NOT A THROW. Part of the
+// roster is served by fewer than all providers, and one of those providers
+// being dry costs that panelist its voice, which the pipeline already records
+// and proceeds without. Only every budget being empty ends a run, because at
+// that point nothing can be bought at all.
 
 /**
- * Refusal raised when neither provider has budget left.
+ * Refusal raised when no provider has budget left.
  *
  * ENDS THE RUN, at the owner's instruction. Every other budget state leaves
  * something buyable, and this one leaves nothing.
  *
+ * RENAMED 2026-09-03 from the two-provider name when OpenRouter joined; the
+ * old name is in the local forbidden-strings appendix so it cannot come back.
+ *
  * @example
  * ```ts
- * throw new BothProvidersDryError();
+ * throw new EveryProviderDryError();
  * ```
  */
-export class BothProvidersDryError extends Error {
+export class EveryProviderDryError extends Error {
   /**
    * Declares this message safe to forward: fixed sentences plus, at most, the
    * meter states and hold lengths the decision was made on, never content.
@@ -49,22 +66,22 @@ export class BothProvidersDryError extends Error {
    * Builds failure stating that no provider can serve any call.
    *
    * @param measured - meter states and holds at the decision, stated so a
-   * reader can tell exhaustion from two refusal holds (#474, option 3);
-   * composed by the caller from two booleans and two durations, and "no
+   * reader can tell exhaustion from refusal holds (#474, option 3);
+   * composed by the caller from the dryness record and the holds, and "no
    * reading cited" where the caller has none
    *
    * @example
    * ```ts
-   * new BothProvidersDryError({ measured: 'meters read synthetic dry, hyper dry; holds synthetic 0ms, hyper 0ms', },);
+   * new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
    * ```
    */
   public constructor(
     { measured = 'no reading cited', }: { readonly measured?: string; } = {},
   ) {
     super(
-      `Both providers are out of budget at once: Synthetic has no five-hour or weekly credit left and Charm Hyper has no balance left. Nothing further can be bought, so this run ends. Synthetic regenerates on its own schedule and Hyper refills roughly every 24 hours. Measured at the decision: ${measured}.`,
+      `Every provider is out of budget at once: Synthetic has no five-hour or weekly credit left, Charm Hyper has no balance left, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. Synthetic regenerates on its own schedule; Hyper and OpenRouter refill on purchase. Measured at the decision: ${measured}.`,
     );
-    this.name = 'BothProvidersDryError';
+    this.name = 'EveryProviderDryError';
   }
 }
 
@@ -76,20 +93,15 @@ export class BothProvidersDryError extends Error {
  *
  * @example
  * ```ts
- * const reach: ModelReach = { onSynthetic: true, onHyper: true, };
+ * const reach: ModelReach = { synthetic: true, hyper: true, openrouter: true, };
  * ```
  */
-export type ModelReach = {
-  /**
-   * Whether the first provider serves this model.
-   */
-  readonly onSynthetic: boolean;
+export type ModelReach = ProviderRecord<boolean>;
 
-  /**
-   * Whether the second provider serves this model.
-   */
-  readonly onHyper: boolean;
-};
+/**
+ * Reading given when no provider in order both serves a model and has budget.
+ */
+export const NO_PROVIDER = 'none';
 
 /**
  * Where one call goes, or why it can go nowhere.
@@ -102,15 +114,9 @@ export type ModelReach = {
 export type ProviderChoice =
   | {
     /**
-     * Discriminator marking the first provider.
+     * Provider that takes the call.
      */
-    readonly kind: 'synthetic';
-  }
-  | {
-    /**
-     * Discriminator marking the second provider.
-     */
-    readonly kind: 'hyper';
+    readonly kind: ProviderName;
   }
   | {
     /**
@@ -189,74 +195,130 @@ export function hyperIsDry(
 }
 
 /**
+ * Whether OpenRouter's credits say nothing more can be bought there.
+ *
+ * THE SAME RULE AS HYPER'S, for the same reason: a balance too small for the
+ * next call answers `402` at the wire, and that refusal holds the provider
+ * out through the budget layer.
+ *
+ * @param credits - most recent credits reading
+ *
+ * @returns Whether that reading leaves nothing buyable
+ *
+ * @example
+ * ```ts
+ * const dry = openRouterIsDry({ credits, },);
+ * ```
+ */
+export function openRouterIsDry(
+  { credits, }: { readonly credits: OpenRouterCredits; },
+): boolean {
+  return credits.remainingUsd <= 0;
+}
+
+/**
+ * First provider in spending order that serves a model and has budget.
+ *
+ * THE SEAT READER'S QUESTION AS WELL AS THE ROUTER'S: `run-seats.ts` asks
+ * where each judge would be served before a phase starts, because a seat that
+ * one provider serves too slowly for the round window is withheld only while
+ * that provider is the one that would take its calls.
+ *
+ * @param reach - providers that serve this model at all
+ *
+ * @param dry - which providers have nothing buyable right now
+ *
+ * @returns Provider that would take a call with a free slot, or none
+ *
+ * @example
+ * ```ts
+ * const provider = providerServing({ reach, dry, },);
+ * ```
+ */
+export function providerServing(
+  {
+    reach,
+    dry,
+  }: {
+    readonly reach: ModelReach;
+    readonly dry: ProviderRecord<boolean>;
+  },
+): ProviderName | typeof NO_PROVIDER {
+  return PROVIDER_ORDER.find(function usable(provider,): boolean {
+    return reach[provider] && (!dry[provider]);
+  },) ?? NO_PROVIDER;
+}
+
+/**
  * Decides which provider serves one call.
  *
  * @param reach - providers that serve this model at all
  *
- * @param syntheticDry - whether Synthetic has nothing buyable, budget reading
- * and anything just learned at the wire taken together
+ * @param dry - which providers have nothing buyable, budget reading and
+ * anything just learned at the wire taken together
  *
- * @param hyperDry - same, for Hyper
- *
- * @param syntheticSaturated - whether this model's per-model concurrency limit
- * on Synthetic is already taken, which is the overflow trigger
+ * @param saturated - which providers have this model's per-model concurrency
+ * limit already taken, which is the overflow trigger; a provider with no such
+ * limit is never saturated
  *
  * @returns Provider to call, or why none can be
  *
- * @throws {@link BothProvidersDryError} when neither provider has budget left,
+ * @throws {@link EveryProviderDryError} when no provider has budget left,
  * which ends the run
  *
  * @example
  * ```ts
- * const choice = routeProviderFor({ reach, syntheticDry, hyperDry, syntheticSaturated, },);
+ * const choice = routeProviderFor({ reach, dry, saturated, },);
  * ```
  */
 export function routeProviderFor(
   {
     reach,
-    syntheticDry,
-    hyperDry,
-    syntheticSaturated,
+    dry,
+    saturated,
   }: {
     readonly reach: ModelReach;
-    readonly syntheticDry: boolean;
-    readonly hyperDry: boolean;
-    readonly syntheticSaturated: boolean;
+    readonly dry: ProviderRecord<boolean>;
+    readonly saturated: ProviderRecord<boolean>;
   },
 ): ProviderChoice {
-  if (syntheticDry && hyperDry)
-    throw new BothProvidersDryError();
+  if (PROVIDER_ORDER.every(function isDry(provider,): boolean {
+    return dry[provider];
+  },))
+    throw new EveryProviderDryError();
 
   /**
-   * Whether the first provider both serves this model and has budget.
+   * Providers that both serve this model and have budget, in spending order.
    */
-  const syntheticUsable = reach.onSynthetic && (!syntheticDry);
+  const usable = PROVIDER_ORDER.filter(function serves(provider,): boolean {
+    return reach[provider] && (!dry[provider]);
+  },);
 
   /**
-   * Whether the second provider both serves this model and has budget.
+   * First usable provider, or nothing when every serving provider is dry.
    */
-  const hyperUsable = reach.onHyper && (!hyperDry);
+  const [preferred,] = usable;
 
-  if ((!syntheticUsable) && (!hyperUsable))
+  if (preferred === undefined)
     return {
       kind: 'unreachable',
-      reason: (reach.onSynthetic || reach.onHyper)
+      reason: PROVIDER_ORDER.some(function serves(provider,): boolean {
+        return reach[provider];
+      },)
         ? 'every provider serving this model is out of budget'
         : 'no provider serves this model',
     };
 
-  // Only one side is usable, so saturation cannot divert the call anywhere.
-  if (!hyperUsable)
-    return { kind: 'synthetic', };
+  /**
+   * First usable provider with a free slot, which overflow prefers.
+   */
+  const unsaturated = usable.find(function hasRoom(provider,): boolean {
+    return !saturated[provider];
+  },);
 
-  if (!syntheticUsable)
-    return { kind: 'hyper', };
-
-  // Both usable: fill Synthetic to its per-model limit first, overflow to the
-  // provider that has no such limit.
-  return syntheticSaturated
-    ? { kind: 'hyper', }
-    : { kind: 'synthetic', };
+  // A saturated provider with nobody usable behind it still takes the call:
+  // a queue behind its limit is slower than the split and still buys the answer.
+  return { kind: unsaturated ?? preferred, };
 }
 
 /**
@@ -322,6 +384,29 @@ export function hyperMeterLevel(
   { credits, }: { readonly credits: HyperCredits; },
 ): readonly string[] {
   return [`hyperBalance=${String(credits.balance,)}`,];
+}
+
+/**
+ * Renders what the third provider's meter actually said, as record fields.
+ *
+ * WHAT IS LEFT, IN USD, TO TWO PLACES. The provider reports purchased and used
+ * to nine decimals; a record field is for watching a balance approach zero
+ * across readings, and cents are the unit the owner tops up in.
+ *
+ * @param credits - credits the dryness verdict was read from
+ *
+ * @returns `key=value` tokens, no value carrying a space
+ *
+ * @example
+ * ```ts
+ * openRouterMeterLevel({ credits, },);
+ * // => ['openrouterUsd=57.62',]
+ * ```
+ */
+export function openRouterMeterLevel(
+  { credits, }: { readonly credits: OpenRouterCredits; },
+): readonly string[] {
+  return [`openrouterUsd=${credits.remainingUsd.toFixed(2,)}`,];
 }
 
 //endregion Budget routing

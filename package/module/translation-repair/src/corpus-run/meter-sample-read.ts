@@ -68,7 +68,17 @@ export type MeterSample = {
   readonly hyper: MeterState;
 
   /**
-   * Every field beyond the two states, in the order written.
+   * What the third provider's meter said, or that the record predates it.
+   *
+   * `'absent'` IS A READING OF THE LOG, NOT OF THE METER. Every line written
+   * before 2026-09-03 carries two states, and those samples still say what
+   * they said about the first two providers; refusing them would lose every
+   * historical reading to a column that did not exist yet.
+   */
+  readonly openrouter: MeterState | 'absent';
+
+  /**
+   * Every field beyond the states, in the order written.
    *
    * NOT AN ABSENCE SENTINEL WHEN EMPTY. A record written before the levels
    * were added carries none, and so does one whose meters both failed to
@@ -375,10 +385,19 @@ export function readMeterLine(
   if ((synthetic === 'absent') || (hyper === 'absent'))
     return 'skipped';
 
+  /**
+   * What the third provider's meter said, absent on lines older than it.
+   */
+  const openrouter = fieldValue({
+    tail,
+    name: 'openrouter',
+  },);
+
   return {
     at,
     synthetic,
     hyper,
+    openrouter,
     levels: levelFields({ tail, },),
   };
 }

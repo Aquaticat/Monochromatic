@@ -4,6 +4,10 @@ import {
   type HyperServedId,
 } from './hyper-catalog.ts';
 import {
+  OPENROUTER_MODELS,
+  type OpenRouterServedId,
+} from './openrouter-catalog.ts';
+import {
   HYPER_ONLY_ROSTER_IDS,
   type RosterModelId,
 } from './roster-id.ts';
@@ -11,10 +15,11 @@ import {
   SYNTHETIC_MODELS,
   type SyntheticModelInfo,
 } from './synthetic-catalog.ts';
+import { providerRecord, } from './provider-name.ts';
 
 //region Roster reach
 // WHICH PROVIDERS CAN SERVE ONE ROSTER MODEL, and under what spelling, read off
-// both catalogs rather than listed by hand.
+// every catalog rather than listed by hand.
 //
 // DERIVED, because a hand-written list goes stale silently. `#136`'s roster
 // note makes the same argument about aliases: a roster fact that no build
@@ -25,6 +30,10 @@ import {
 // both serve the roster identity and report image input for it. Asking one
 // question for text and images would either send a picture where it cannot be
 // read or refuse one that another serving path can accept.
+//
+// THREE SPELLINGS SINCE 2026-09-03. `hf:moonshotai/Kimi-K3`, `kimi-k3` and
+// `moonshotai/kimi-k3` are one seat; the roster keeps the Synthetic spelling
+// and each provider's translation lives beside that provider's catalog.
 
 /**
  * Where one roster model can be reached on Charm Hyper.
@@ -54,10 +63,38 @@ export type HyperSpelling =
   };
 
 /**
- * Every model the roster seats, both providers' contributions unioned.
+ * Where one roster model can be reached on OpenRouter.
+ *
+ * @example
+ * ```ts
+ * const served = openRouterIdFor({ modelId: 'hf:moonshotai/Kimi-K3', },);
+ * ```
+ */
+export type OpenRouterSpelling =
+  | {
+    /**
+     * Discriminator marking a model this provider serves.
+     */
+    readonly served: true;
+
+    /**
+     * Identifier to send, always different from the roster's.
+     */
+    readonly id: OpenRouterServedId;
+  }
+  | {
+    /**
+     * Discriminator marking a model this provider does not serve.
+     */
+    readonly served: false;
+  };
+
+/**
+ * Every model the roster seats, both catalogs' contributions unioned.
  *
  * ORDERED SYNTHETIC FIRST, then the models only the second provider serves, so
- * a roster printed in this order reads the way the pipeline grew.
+ * a roster printed in this order reads the way the pipeline grew. OpenRouter
+ * adds no name: every seat it serves is one of these.
  *
  * @example
  * ```ts
@@ -96,6 +133,39 @@ export function hyperIdFor(
     .values(HYPER_MODELS,)
     .find(function serves(info,): boolean {
       return (info.id === modelId) || (info.sharedWith === modelId);
+    },);
+
+  if (entry === undefined)
+    return { served: false, };
+
+  return {
+    served: true,
+    id: entry.id,
+  };
+}
+
+/**
+ * How OpenRouter spells one roster model, where it serves it at all.
+ *
+ * @param modelId - roster model to look up
+ *
+ * @returns Wire identifier, or that this provider does not serve it
+ *
+ * @example
+ * ```ts
+ * const spelling = openRouterIdFor({ modelId, },);
+ * ```
+ */
+export function openRouterIdFor(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): OpenRouterSpelling {
+  /**
+   * Entry standing in for this roster seat, if this provider has one.
+   */
+  const entry = Object
+    .values(OPENROUTER_MODELS,)
+    .find(function serves(info,): boolean {
+      return info.sharedWith === modelId;
     },);
 
   if (entry === undefined)
@@ -186,19 +256,10 @@ export function syntheticEntryFor(
 export function reachOf(
   { modelId, }: { readonly modelId: RosterModelId; },
 ): ModelReach {
-  /**
-   * Synthetic's entry, which is also whether it serves this model at all.
-   */
-  const entry = syntheticEntryFor({ modelId, },);
-
-  /**
-   * Hyper's spelling, which is also whether it serves this model at all.
-   */
-  const spelling = hyperIdFor({ modelId, },);
-
   return {
-    onSynthetic: entry.served,
-    onHyper: spelling.served,
+    synthetic: syntheticEntryFor({ modelId, },).served,
+    hyper: hyperIdFor({ modelId, },).served,
+    openrouter: openRouterIdFor({ modelId, },).served,
   };
 }
 
@@ -265,6 +326,37 @@ function hyperShowsPictures(
 }
 
 /**
+ * Whether OpenRouter will show one roster model a picture.
+ *
+ * @param modelId - roster model to look up
+ *
+ * @returns Whether this provider serves it AND the listing reports vision for it
+ *
+ * @example
+ * ```ts
+ * const shows = openRouterShowsPictures({ modelId, },);
+ * ```
+ */
+function openRouterShowsPictures(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): boolean {
+  /**
+   * OpenRouter's spelling, which is also whether it serves this model at all.
+   */
+  const spelling = openRouterIdFor({ modelId, },);
+
+  if (!spelling.served)
+    return false;
+
+  /**
+   * What the listing reports about this model's modalities.
+   */
+  const { readsImages: shows, } = OPENROUTER_MODELS[spelling.id];
+
+  return shows;
+}
+
+/**
  * Which providers can take a call carrying a picture for one roster model.
  *
  * NARROWER THAN {@link reachOf} AND DERIVED PER PROVIDER. A later catalog
@@ -283,8 +375,9 @@ export function visionReachOf(
   { modelId, }: { readonly modelId: RosterModelId; },
 ): ModelReach {
   return {
-    onSynthetic: syntheticShowsPictures({ modelId, },),
-    onHyper: hyperShowsPictures({ modelId, },),
+    synthetic: syntheticShowsPictures({ modelId, },),
+    hyper: hyperShowsPictures({ modelId, },),
+    openrouter: openRouterShowsPictures({ modelId, },),
   };
 }
 
@@ -308,7 +401,13 @@ export function readsImages(
    */
   const reach = visionReachOf({ modelId, },);
 
-  return reach.onSynthetic || reach.onHyper;
+  return Object
+    .values(providerRecord({
+      of: function shows(provider,): boolean {
+        return reach[provider];
+      },
+    },),)
+    .some(Boolean,);
 }
 
 //endregion Roster reach

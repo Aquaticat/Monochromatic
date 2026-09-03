@@ -1,8 +1,15 @@
 import {
   hyperIsDry,
+  openRouterIsDry,
   syntheticIsDry,
 } from '../budget-routing.ts';
 import { createHyperClient, } from '../hyper-client.ts';
+import { createOpenRouterClient, } from '../openrouter-client.ts';
+import {
+  isProviderName,
+  PROVIDER_ORDER,
+  type ProviderName,
+} from '../provider-name.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
@@ -10,9 +17,9 @@ import type { ModelTransport, } from '../synthetic-transport.ts';
 //region Required providers for measured arms
 
 /**
- * Provider identities validation arm may require before calls.
+ * Provider identities a validation arm may require before calls.
  */
-export type RequiredProvider = 'synthetic' | 'hyper';
+export type RequiredProvider = ProviderName;
 
 /**
  * CLI token selecting required provider set.
@@ -23,6 +30,15 @@ const REQUIRED_PROVIDERS_FLAG = '--require-providers';
  * Array index result when flag is absent.
  */
 const FLAG_NOT_FOUND = -1;
+
+/**
+ * Environment variable carrying each provider's key.
+ */
+const KEY_VARIABLES: Readonly<Record<ProviderName, string>> = {
+  synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
+  hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
+  openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
+};
 
 /**
  * Raised before model calls when measured arm provider requirement is not wet.
@@ -65,22 +81,6 @@ export class RequiredProviderError extends StatedRefusalError {
 }
 
 /**
- * Whether CLI value names supported provider.
- *
- * @param value - untrusted comma-split value
- *
- * @returns Whether value is required provider identity
- *
- * @example
- * ```ts
- * if (isRequiredProvider(value)) use(value);
- * ```
- */
-function isRequiredProvider(value: string,): value is RequiredProvider {
-  return (value === 'synthetic') || (value === 'hyper');
-}
-
-/**
  * Parses measured-arm provider requirement from CLI.
  *
  * @param argv - process arguments after executable and entrypoint included
@@ -109,7 +109,7 @@ export function readRequiredProviders(
   const value = argv.at(at + 1,);
   if ((value === undefined) || (value === ''))
     throw new StatedRefusalError({
-      says: `${REQUIRED_PROVIDERS_FLAG} needs synthetic, hyper, or both`,
+      says: `${REQUIRED_PROVIDERS_FLAG} needs one or more of ${PROVIDER_ORDER.join(', ',)}`,
     },);
   /**
    * Parsed provider names before stable deduplication.
@@ -117,10 +117,10 @@ export function readRequiredProviders(
   const parsedProviders = value
     .split(',',)
     .map(function parseProvider(provider,): RequiredProvider {
-      if (isRequiredProvider(provider,))
+      if (isProviderName(provider,))
         return provider;
       throw new StatedRefusalError({
-        says: `${REQUIRED_PROVIDERS_FLAG} accepts only synthetic and hyper`,
+        says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${PROVIDER_ORDER.join(', ',)}`,
       },);
     },);
   return parsedProviders.filter(function unique(
@@ -132,10 +132,57 @@ export function readRequiredProviders(
 }
 
 /**
+ * Reads one provider's meter and refuses when it is dry or unreadable.
+ *
+ * @param provider - provider being gated
+ *
+ * @param readDry - live meter read answering whether the provider is dry
+ *
+ * @throws {@link RequiredProviderError} when the meter reads dry or cannot be read
+ *
+ * @example
+ * ```ts
+ * await gateProvider({ provider: 'hyper', readDry, },);
+ * ```
+ */
+async function gateProvider(
+  {
+    provider,
+    readDry,
+  }: {
+    readonly provider: ProviderName;
+    readonly readDry: () => Promise<boolean>;
+  },
+): Promise<void> {
+  /**
+   * Whether the live meter reads dry, or that it could not be read.
+   */
+  const dry = await (async function read(): Promise<boolean | 'unreadable'> {
+    try {
+      return await readDry();
+    } catch (error) {
+      if (error instanceof RequiredProviderError)
+        throw error;
+      return 'unreadable';
+    }
+  })();
+  if (dry === 'unreadable')
+    throw new RequiredProviderError({
+      provider,
+      reason: 'meter unavailable',
+    },);
+  if (dry)
+    throw new RequiredProviderError({
+      provider,
+      reason: 'budget dry',
+    },);
+}
+
+/**
  * Requires selected provider keys and live non-dry meters before model calls.
  *
- * Ordinary runs pass empty requirement and retain one-provider behavior.
- * Validation and performance arms pass both providers explicitly.
+ * Ordinary runs pass empty requirement and retain any-provider behavior.
+ * Validation and performance arms name the providers they require explicitly.
  *
  * @param required - providers measured arm requires wet
  *
@@ -168,87 +215,77 @@ export async function assertRequiredProvidersReady(
    */
   const environment = process.env;
   /**
-   * Synthetic key read without exposing value.
+   * Each required provider's key, read without exposing its value.
    */
-  const syntheticKey = environment.TRANSLATION_REPAIR_SYNTHETIC_API_KEY ?? '';
-  /**
-   * Hyper key read without exposing value.
-   */
-  const hyperKey = environment.TRANSLATION_REPAIR_CHARM_HYPER_API_KEY ?? '';
-  if (required.includes('synthetic',) && (syntheticKey === '')) {
-    throw new RequiredProviderError({
-      provider: 'synthetic',
-      reason: 'key missing',
-    },);
-  }
-  if (required.includes('hyper',) && (hyperKey === '')) {
-    throw new RequiredProviderError({
-      provider: 'hyper',
-      reason: 'key missing',
-    },);
+  const keys = required.map(function keyOf(provider,): {
+    readonly provider: ProviderName;
+    readonly key: string;
+  } {
+    return {
+      provider,
+      key: environment[KEY_VARIABLES[provider]] ?? '',
+    };
+  },);
+  for (const { provider, key, } of keys) {
+    if (key === '')
+      throw new RequiredProviderError({
+        provider,
+        reason: 'key missing',
+      },);
   }
   /**
    * Optional transport forwarded only in tests.
    */
   const seam = (transport === undefined) ? {} : { transport, };
-  await Promise.all(required.map(async function checkProvider(provider,): Promise<void> {
+  await Promise.all(keys.map(async function checkProvider({
+    provider,
+    key,
+  },): Promise<void> {
     if (provider === 'synthetic') {
-      try {
-        /**
-         * Required Synthetic meter client.
-         */
-        const client = createSyntheticClient({
-          apiKey: syntheticKey,
-          ...seam,
-        },);
-        /**
-         * Live quota used for wetness gate.
-         */
-        const quota = await client.quotas({ signal, },);
-        if (syntheticIsDry({ quota, })) {
-          throw new RequiredProviderError({
-            provider,
-            reason: 'budget dry',
-          },);
-        }
-        return;
-      }
-      catch (error) {
-        if (error instanceof RequiredProviderError)
-          throw error;
-        throw new RequiredProviderError({
-          provider,
-          reason: 'meter unavailable',
-        },);
-      }
+      /**
+       * Required Synthetic meter client.
+       */
+      const client = createSyntheticClient({
+        apiKey: key,
+        ...seam,
+      },);
+      await gateProvider({
+        provider,
+        readDry: async function readQuota(): Promise<boolean> {
+          return syntheticIsDry({ quota: await client.quotas({ signal, },), },);
+        },
+      },);
+      return;
     }
-    try {
+    if (provider === 'hyper') {
       /**
        * Required Hyper meter client.
        */
       const client = createHyperClient({
-        apiKey: hyperKey,
+        apiKey: key,
         ...seam,
       },);
-      /**
-       * Live credits used for wetness gate.
-       */
-      const credits = await client.credits({ signal, },);
-      if (hyperIsDry({ credits, })) {
-        throw new RequiredProviderError({
-          provider,
-          reason: 'budget dry',
-        },);
-      }
-    }
-    catch (error) {
-      if (error instanceof RequiredProviderError)
-        throw error;
-      throw new RequiredProviderError({
+      await gateProvider({
         provider,
-        reason: 'meter unavailable',
+        readDry: async function readCredits(): Promise<boolean> {
+          return hyperIsDry({ credits: await client.credits({ signal, },), },);
+        },
       },);
+      return;
     }
+    /**
+     * Required OpenRouter meter client.
+     */
+    const client = createOpenRouterClient({
+      apiKey: key,
+      ...seam,
+    },);
+    await gateProvider({
+      provider,
+      readDry: async function readOpenRouterCredits(): Promise<boolean> {
+        return openRouterIsDry({ credits: await client.credits({ signal, },), },);
+      },
+    },);
   },),);
 }
 

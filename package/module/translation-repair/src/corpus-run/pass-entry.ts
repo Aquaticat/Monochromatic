@@ -3,8 +3,8 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { armCallDeadline, } from '../call-deadline.ts';
-import type { SyntheticClient, } from '../chat-contract.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
+import type { RunClient, } from './run-client-contract.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
 import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
@@ -112,7 +112,7 @@ async function runEntryPipeline(
     overlap,
     visualEvidenceReader,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: RunClient;
     readonly entry: CorpusPair;
     readonly artifactsDir: string;
     readonly publishDir: string;
@@ -561,7 +561,7 @@ export async function settleEntry(
     baseSignal,
     visualEvidenceReader,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: RunClient;
     readonly entry: CorpusPair;
     readonly artifactsDir: string;
     readonly publishDir: string;

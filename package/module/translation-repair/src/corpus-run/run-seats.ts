@@ -1,10 +1,24 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import { syntheticIsDry, } from '../budget-routing.ts';
-import type { SyntheticClient, } from '../chat-contract.ts';
-import type { RepairModels, } from '../repair-contract.ts';
+import {
+  NO_PROVIDER,
+  providerServing,
+} from '../budget-routing.ts';
+import type { BudgetView, } from '../provider-budget.ts';
+import {
+  PROVIDER_ORDER,
+  type ProviderName,
+  providerRecord,
+} from '../provider-name.ts';
+import {
+  assertCheckerIndependence,
+  assertCheckerQuorumReachable,
+  type RepairModels,
+} from '../repair-contract.ts';
+import { reachOf, } from '../roster-reach.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TranslateModels, } from '../translate-document-contract.ts';
+import type { RunClient, } from './run-client-contract.ts';
 import {
   RUN_LATE_JUDGES,
   RUN_MODELS,
@@ -14,50 +28,55 @@ import {
 
 //region Provider-aware judge seats
 // WHICH JUDGES SIT, DECIDED FROM WHO WOULD SERVE THEM. The owner's decision of
-// 2026-09-03 ("seat per provider reach"): a judge seat is skipped when the
-// router would send that model to Hyper, and seated when Synthetic serves it.
+// 2026-09-03 ("seat per provider reach"): a seat is withheld while the
+// provider that would take its calls is one that serves it too slowly for the
+// round window, or one the owner declined to pay that model's rate on, and
+// seated otherwise.
 //
-// THE CASE. `hf:Qwen/Qwen3.8-27B` served by Hyper reasons past the 60 s round
-// window in every judge role: cut in 30 of 34 translate-lane and 21 of 24
-// consolidation-slate select rounds on XIEPT2 with Hyper the only provider, and
-// in 14 of 19, 11 of 19, 15 of 19 panel and 17 of 19 lane-contest rounds on
-// Carena0442 (1,648 of 1,938 calls on Hyper). Served by Synthetic (Toka_ls,
+// THE FIRST CASE. `hf:Qwen/Qwen3.8-27B` served by Hyper reasons past the 60 s
+// round window in every judge role: cut in 30 of 34 translate-lane and 21 of
+// 24 consolidation-slate select rounds on XIEPT2 with Hyper the only provider,
+// and in 14 of 19, 11 of 19, 15 of 19 panel and 17 of 19 lane-contest rounds
+// on Carena0442 (1,648 of 1,938 calls on Hyper). Served by Synthetic (Toka_ls,
 // 2026-09-02) it answered 25 of 28 select rounds. The seat is lost to one
 // provider's serving speed, not to the model, so dropping it outright (the
 // 2026-09-03 morning's `4ad08d5dc`) threw away a judge Synthetic serves well.
 //
-// READ AT EACH PHASE BOUNDARY (lanes, lane contest, consolidation), off
-// Synthetic's own meter, because the router's choice is per call: it sends to
-// Synthetic until the model's per-model concurrency is taken, then overflows
-// to Hyper, and to Hyper alone once Synthetic is dry. The seat cannot follow
-// every call; it follows the state that decides most of them. With Synthetic
-// wet a burst could overflow some of this seat's calls to Hyper, and those may
-// be cut; with Synthetic dry every call would go to Hyper, and the seat is not
-// asked.
+// THE SECOND CASE. `hf:moonshotai/Kimi-K3` on OpenRouter costs 3 and 15 USD
+// per million tokens, 52 to 61 percent of an entry's all-OpenRouter cost, and
+// the owner decided on 2026-09-03 to withhold it wherever only OpenRouter
+// would buy it (`doc/decision/translation-repair-openrouter-fallback.md`).
+// That reaches its checker seat too, and a checker roster of two is below the
+// hard floor `assertCheckerQuorumReachable` holds, so a disinterested
+// substitute takes the seat on those phases.
 //
-// NOT ONCE PER ENTRY, which is what this read until 2026-09-03: XIEPT2 read
-// wet at 08:16, Synthetic ran dry at 08:19, and the seat sat on Hyper for the
-// remaining three and a half hours, abandoned in 102 judge calls with 75
-// rounds waiting the full 60 s grace; consolidation took 134 minutes for 28
-// slices. A reading before each phase withdraws the seat from the first phase
-// that starts dry.
+// WHERE A MODEL WOULD BE SERVED is the router's own answer: the first provider
+// in `PROVIDER_ORDER` that serves the model and reads wet, holds folded in
+// (`providerServing`). The seat cannot follow every call, since a burst can
+// overflow some of a wet Synthetic's calls to Hyper; it follows the state that
+// decides most of them.
 //
-// AN UNREADABLE METER SEATS THE FULL BENCH. A quota read that fails is not
+// READ AT EACH PHASE BOUNDARY (lanes, lane contest, consolidation), because a
+// provider can run dry inside an entry: XIEPT2 read wet at 08:16, Synthetic
+// ran dry at 08:19, and a once-per-entry reading left the Hyper-slow seat
+// asked for three and a half hours, abandoned in 102 judge calls.
+//
+// AN UNREADABLE VIEW SEATS THE FULL BENCH. A budget read that fails is not
 // evidence of dryness; the router will still route each call by what it
 // learns at the wire, and a seat asked in vain costs one cut, while a seat
 // withheld on a guess costs a voice.
 
 /**
  * Judges that Hyper serves too slowly for the round window in every judge
- * role: seated only while Synthetic is wet.
+ * role: withheld while Hyper is the provider that would serve them.
  */
 export const HYPER_SLOW_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['hf:Qwen/Qwen3.8-27B',],);
 
 /**
  * Judges that Hyper serves too slowly in the SELECT role alone (both lanes'
  * slate select and the consolidation slate), and fast enough everywhere else:
- * withheld from the select seats while Synthetic is dry, kept as critics,
- * panel, contest judges and gate.
+ * withheld from the select seats while Hyper would serve them, kept as
+ * critics, panel, contest judges and gate.
  *
  * THE CASE IS `hf:moonshotai/Kimi-K3`, 2026-09-03: cut in 0 of 69 select
  * rounds when Synthetic served it (Toka_ls, 2026-09-02) and in 43 of 83 and 38
@@ -73,18 +92,44 @@ export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = new Set<Rost
 ],);
 
 /**
- * Every judge bench one entry runs with, derived from one reading.
+ * Models withheld from every seat while OpenRouter is the provider that would
+ * serve them, by the owner's decision of 2026-09-03 on cost.
+ */
+export const OPENROUTER_WITHHELD: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'hf:moonshotai/Kimi-K3',
+],);
+
+/**
+ * Checker seated in place of a withheld one, so the roster keeps its floor.
+ *
+ * `gemma-4-26b-a4b-it`, chosen because it holds no editor or refiner seat
+ * (a checker judging text it helped write counts half), answered 40 of 40
+ * writer rounds with zero cuts and threw 5 of 289 asks on the stub-fix XIEPT2
+ * run, and sat above the pooled null as a writer where
+ * `deepseek-v4-flash-0731`, the other disinterested candidate, sat below it in
+ * both writing measurements. PROVISIONAL: no checker-side measurement exists
+ * for any model, and the owner may veto it.
+ */
+export const OPENROUTER_CHECKER_SUBSTITUTE: RosterModelId = 'gemma-4-26b-a4b-it';
+
+/**
+ * Every bench one entry runs with, derived from one reading.
  *
  * @example
  * ```ts
- * const seats: JudgeSeats = judgeSeatsFor({ syntheticDry: true, },);
+ * const seats: JudgeSeats = judgeSeatsFor({ dry, },);
  * ```
  */
 export type JudgeSeats = {
   /**
-   * Whether Synthetic was dry when the seats were derived.
+   * Which providers were dry when the seats were derived.
    */
-  readonly syntheticDry: boolean;
+  readonly dry: BudgetView;
+
+  /**
+   * Models withheld from at least one seat by this reading, for the log line.
+   */
+  readonly withheld: readonly RosterModelId[];
 
   /**
    * Critics and adjudication panel.
@@ -93,7 +138,7 @@ export type JudgeSeats = {
 
   /**
    * Both lanes' slate select judges: the wide seats less the select-slow
-   * judges while Synthetic is dry.
+   * judges Hyper would serve.
    */
   readonly selectJudges: readonly RosterModelId[];
 
@@ -104,12 +149,17 @@ export type JudgeSeats = {
 
   /**
    * Consolidation slate judges: the late judges less the select-slow judges
-   * while Synthetic is dry.
+   * Hyper would serve.
    */
   readonly slateJudges: readonly RosterModelId[];
 
   /**
-   * Repair lane roles with the wide and select seats applied.
+   * Checkers, the static roster with any withheld seat substituted.
+   */
+  readonly checkers: readonly RosterModelId[];
+
+  /**
+   * Repair lane roles with the wide, select and checker seats applied.
    */
   readonly repairModels: RepairModels;
 
@@ -120,41 +170,61 @@ export type JudgeSeats = {
 };
 
 /**
- * Derives the benches for one reading of Synthetic's meter.
+ * Derives the benches for one reading of every provider's meter.
  *
- * @param syntheticDry - whether Synthetic has nothing buyable, so every call
- * of every seat would go to Hyper
+ * @param dry - which providers have nothing buyable, holds folded in
  *
- * @returns Benches, the Hyper-slow judges withheld when Synthetic is dry
+ * @returns Benches, with each withholding applied where its provider would
+ * serve the seat, and the checker floor kept
  *
  * @example
  * ```ts
- * const seats = judgeSeatsFor({ syntheticDry: false, },);
+ * const seats = judgeSeatsFor({ dry: { synthetic: true, hyper: true, openrouter: false, }, },);
  * ```
  */
 export function judgeSeatsFor(
-  { syntheticDry, }: { readonly syntheticDry: boolean; },
+  { dry, }: { readonly dry: BudgetView; },
 ): JudgeSeats {
   /**
-   * Keeps a seat unless Synthetic is dry and Hyper serves it too slowly.
+   * Provider the router would send one model's calls to, or none.
+   *
+   * @param modelId - seat under question
+   *
+   * @returns First provider in order that serves it and reads wet
+   */
+  function servedBy(modelId: RosterModelId,): ProviderName | typeof NO_PROVIDER {
+    return providerServing({
+      reach: reachOf({ modelId, },),
+      dry,
+    },);
+  }
+  /**
+   * Keeps a seat unless the provider that would serve it is one the seat is
+   * withheld on.
    *
    * @param modelId - seat under question
    *
    * @returns Whether the seat is asked this phase
    */
   function seated(modelId: RosterModelId,): boolean {
-    return (!syntheticDry) || (!HYPER_SLOW_JUDGES.has(modelId,));
+    /**
+     * Where this model's calls would go.
+     */
+    const provider = servedBy(modelId,);
+    if ((provider === 'hyper') && HYPER_SLOW_JUDGES.has(modelId,))
+      return false;
+    return !((provider === 'openrouter') && OPENROUTER_WITHHELD.has(modelId,));
   }
   /**
-   * Keeps a select seat unless Synthetic is dry and Hyper serves its slate
-   * answers too slowly.
+   * Keeps a select seat unless Hyper would serve it and serves its slate
+   * answers too slowly, on top of {@link seated}.
    *
    * @param modelId - select seat under question
    *
    * @returns Whether the seat judges slates this phase
    */
   function seatedForSelect(modelId: RosterModelId,): boolean {
-    return (!syntheticDry) || (!HYPER_SLOW_SELECT_JUDGES.has(modelId,));
+    return (servedBy(modelId,) !== 'hyper') || (!HYPER_SLOW_SELECT_JUDGES.has(modelId,));
   }
   /**
    * Wide bench for this reading.
@@ -172,17 +242,60 @@ export function judgeSeatsFor(
    * Consolidation slate judges for this reading.
    */
   const slateJudges = lateJudges.filter(seatedForSelect,);
+  /**
+   * Static checkers still seated by this reading.
+   */
+  const keptCheckers = RUN_MODELS.checkerModelIds
+    .filter(seated,);
+  /**
+   * Checkers with the substitute seated where one was withheld, unless the
+   * substitute already sits or is itself withheld.
+   */
+  const checkers = ((keptCheckers.length < RUN_MODELS.checkerModelIds.length)
+      && (!keptCheckers.includes(OPENROUTER_CHECKER_SUBSTITUTE,))
+      && seated(OPENROUTER_CHECKER_SUBSTITUTE,))
+    ? [
+      ...keptCheckers,
+      OPENROUTER_CHECKER_SUBSTITUTE,
+    ]
+    : keptCheckers;
+  // THE DERIVED ROSTER MUST PASS WHAT THE STATIC ONE PASSES AT LOAD, or a
+  // phase would start with a checker stage the contract refuses.
+  assertCheckerIndependence({
+    editorModelIds: RUN_MODELS.editorModelIds,
+    refinerModelIds: RUN_MODELS.refinerModelIds ?? [],
+    checkerModelIds: checkers,
+    selfCertificationPermitted: RUN_MODELS.checkerSelfCertificationPermitted ?? false,
+  },);
+  assertCheckerQuorumReachable({ checkerModelIds: checkers, },);
+  /**
+   * Every model some bench lost to this reading.
+   */
+  const withheld = [
+    ...RUN_WIDE_SEATS,
+    ...RUN_LATE_JUDGES,
+    ...RUN_MODELS.checkerModelIds,
+  ].filter(function lostASeat(
+    modelId,
+    index,
+    all,
+  ): boolean {
+    return (all.indexOf(modelId,) === index) && (!(seated(modelId,) && seatedForSelect(modelId,)));
+  },);
   return {
-    syntheticDry,
+    dry,
+    withheld,
     wideSeats,
     selectJudges,
     lateJudges,
     slateJudges,
+    checkers,
     repairModels: {
       ...RUN_MODELS,
       criticModelIds: wideSeats,
       panelModelIds: wideSeats,
       judgeModelIds: selectJudges,
+      checkerModelIds: checkers,
     },
     translateModels: {
       ...RUN_TRANSLATE_MODELS,
@@ -203,9 +316,10 @@ export function judgeSeatsFor(
 export type JudgeSeatPhase = 'lanes' | 'lane contest' | 'consolidation';
 
 /**
- * Reads Synthetic's meter and derives the benches for one phase of one entry.
+ * Reads every provider's dryness and derives the benches for one phase of
+ * one entry.
  *
- * @param client - routed client whose quota surface is Synthetic's meter
+ * @param client - run client whose dryness view is the router's own
  *
  * @param phase - phase about to start, which the reading seats
  *
@@ -227,55 +341,42 @@ export async function readJudgeSeats(
     signal,
     l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: Pick<RunClient, 'providerDryness'>;
     readonly phase: JudgeSeatPhase;
     readonly signal: AbortSignal;
     readonly l: Logger;
   },
 ): Promise<JudgeSeats> {
   /**
-   * Whether Synthetic is dry, or wet when the meter could not be read.
+   * Which providers are dry, or none when the view could not be read.
    */
-  const syntheticDry = await (async function readDryness(): Promise<boolean> {
+  const dry = await (async function readDryness(): Promise<BudgetView> {
     try {
-      /**
-       * Synthetic's meter as it stands.
-       */
-      const quota = await client.quotas({ signal, },);
-      return syntheticIsDry({ quota, },);
+      return await client.providerDryness({ signal, },);
     } catch (error) {
-      l.warn(`judge seats: Synthetic's meter could not be read (${String(error,)}); seating the full bench`,);
-      return false;
+      l.warn(`judge seats: the budget view could not be read (${String(error,)}); seating the full bench`,);
+      return providerRecord({
+        of: function wet(): boolean {
+          return false;
+        },
+      },);
     }
   })();
   /**
    * Benches for this reading.
    */
-  const seats = judgeSeatsFor({ syntheticDry, },);
+  const seats = judgeSeatsFor({ dry, },);
   /**
-   * Wide seats this phase asks.
+   * Each provider's state, for the line.
    */
-  const wide = seats.wideSeats
-    .length;
-  /**
-   * Select judges this phase asks.
-   */
-  const select = seats.selectJudges
-    .length;
-  /**
-   * Late judges this phase asks.
-   */
-  const late = seats.lateJudges
-    .length;
-  /**
-   * Consolidation slate judges this phase asks.
-   */
-  const slate = seats.slateJudges
-    .length;
+  const states = PROVIDER_ORDER.map(function stateOf(provider,): string {
+    return `${provider}=${dry[provider] ? 'dry' : 'wet'}`;
+  },);
   l.info(
-    `JUDGE SEATS phase=${phase} synthetic=${syntheticDry ? 'dry' : 'wet'} wide=${String(wide,)} `
-      + `select=${String(select,)} late=${String(late,)} slate=${String(slate,)} `
-      + `hyper-slow seated=${syntheticDry ? 'no' : 'yes'}`,
+    `JUDGE SEATS phase=${phase} ${states.join(' ',)} wide=${String(seats.wideSeats.length,)} `
+      + `select=${String(seats.selectJudges.length,)} late=${String(seats.lateJudges.length,)} `
+      + `slate=${String(seats.slateJudges.length,)} checkers=${String(seats.checkers.length,)} `
+      + `withheld=${(seats.withheld.length === 0) ? 'none' : seats.withheld.join(',',)}`,
   );
   return seats;
 }

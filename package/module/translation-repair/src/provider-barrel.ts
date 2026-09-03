@@ -74,6 +74,7 @@ export {
   type SpendLineReading,
   type SpendRecord,
   type SpendTally,
+  type SpendUsd,
   tallySpend,
 } from './corpus-run/spend-read.ts';
 export {
@@ -84,9 +85,26 @@ export {
   meterRecordOf,
   type MeterState,
   type ProviderBudgets,
-  type ProviderName,
   routesAsDry,
 } from './provider-budget.ts';
+export {
+  isProviderName,
+  otherProviders,
+  PROVIDER_ORDER,
+  type ProviderName,
+  type ProviderRecord,
+  providerRecord,
+} from './provider-name.ts';
+export {
+  createSlotLedger,
+  type SlotLedger,
+  type SlotLimits,
+} from './provider-router-slots.ts';
+export {
+  type RoutedCore,
+  routedJson,
+  secondOpinionsFrom,
+} from './provider-router-reask.ts';
 export {
   DEFAULT_WIRE_FORMAT,
   scannerFor,
@@ -100,6 +118,8 @@ export { HYPER_ONLY_ROSTER_IDS, } from './roster-id.ts';
 export {
   hyperIdFor,
   type HyperSpelling,
+  openRouterIdFor,
+  type OpenRouterSpelling,
   readsImages,
   reachOf,
   ROSTER_MODEL_IDS,
@@ -114,17 +134,22 @@ export {
   type RosterBlocklistEntry,
 } from './roster-blocklist.ts';
 export {
-  BothProvidersDryError,
+  EveryProviderDryError,
   hyperIsDry,
   hyperMeterLevel,
   type ModelReach,
+  NO_PROVIDER,
+  openRouterIsDry,
+  openRouterMeterLevel,
   type ProviderChoice,
+  providerServing,
   routeProviderFor,
   syntheticIsDry,
   syntheticMeterLevel,
 } from './budget-routing.ts';
 export {
   HOLD_POLL_MS,
+  NOBODY_REFUSED,
   readBudgetsPastHolds,
   shortestHold,
   waitOutHold,
@@ -134,6 +159,31 @@ export {
   type HyperCredits,
   parseHyperCredits,
 } from './hyper-credits.ts';
+export {
+  type OpenRouterCredits,
+  OpenRouterCreditsShapeError,
+  parseOpenRouterCredits,
+} from './openrouter-credits.ts';
+export {
+  COST_UNREPORTED,
+  openRouterCostOf,
+} from './openrouter-cost.ts';
+export {
+  OPENROUTER_AUTH_HEADER,
+  OPENROUTER_CHAT_URL,
+  OPENROUTER_CREDITS_URL,
+  OPENROUTER_MODELS,
+  OPENROUTER_PROVIDER_PREFERENCES,
+  type OpenRouterModelInfo,
+  type OpenRouterServedId,
+  openRouterServesLabel,
+} from './openrouter-catalog.ts';
+export {
+  createOpenRouterClient,
+  OPENROUTER_PER_MODEL_CONCURRENCY,
+  type OpenRouterClient,
+  OpenRouterModelNotServedError,
+} from './openrouter-client.ts';
 export {
   reportSpend,
   SPEND_MARKER,

@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import {
   HOLD_POLL_MS,
+  NOBODY_REFUSED,
   readBudgetsPastHolds,
 } from './budget-hold-wait.ts';
 import {
@@ -16,20 +17,23 @@ import {
   type ChatTextReply,
   type ChatTextRequest,
   type ModelCaller,
-  type SyntheticClient,
 } from './chat-contract.ts';
-import { readJsonOutcome, } from './chat-json-outcome.ts';
 import { isBudgetRefusal, } from './provider-budget-refusal.ts';
-import type { HyperClient, } from './hyper-client.ts';
-import type {
-  ProviderBudgets,
-  ProviderName,
-} from './provider-budget.ts';
-import type {
-  ReAskReply,
-  RoutedReply,
-} from './provider-router-reply.ts';
-import type { RosterModelId, } from './roster-id.ts';
+import type { ProviderBudgets, } from './provider-budget.ts';
+import {
+  PROVIDER_ORDER,
+  type ProviderName,
+  type ProviderRecord,
+} from './provider-name.ts';
+import {
+  type RoutedCore,
+  routedJson,
+} from './provider-router-reask.ts';
+import type { RoutedReply, } from './provider-router-reply.ts';
+import {
+  createSlotLedger,
+  type SlotLimits,
+} from './provider-router-slots.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
 import {
   reachOf,
@@ -37,33 +41,34 @@ import {
 } from './roster-reach.ts';
 
 //region Provider router
-// ONE CLIENT OVER TWO PROVIDERS. A stage names a panelist; this decides where
+// ONE CLIENT OVER EVERY PROVIDER. A stage names a panelist; this decides where
 // to buy the call, and a stage never learns which provider served it.
 //
 // THE POLICY IS THE OWNER'S, and `budget-routing.ts` holds the arithmetic: the
-// first provider is preferred while it has budget and a free slot, the second
-// absorbs the overflow, and either one being dry moves everything to the other.
-// Nothing here re-decides that; this file supplies the three facts the policy
-// reads and performs whatever it returns.
+// providers are walked in `PROVIDER_ORDER`, the first with budget and a free
+// slot takes the call, and a dry provider passes the call down the order.
+// Nothing here re-decides that; this file supplies the facts the policy reads
+// and performs whatever it returns.
 //
 // A REFUSED CALL IS RE-ROUTED, NOT LOST. That is the whole reason `#199` was
 // opened: a pass exhausted one provider's weekly credit and 866 of 875 lost
 // voices carried a single HTTP 429. Retrying an exhausted provider never
 // succeeds and refusing to settle turns a budget problem into holes in the
-// deliverable, so a budget refusal marks that provider and asks the other.
+// deliverable, so a budget refusal marks that provider and asks the next.
 //
 // IT DELEGATES ONLY `chatText`. The schema ladder is provider-neutral and
 // already lives in `chat-json-outcome.ts`, so a routed `chatJson` reads the
 // text this file fetched rather than calling a provider's own. That keeps one
-// ladder for both providers and makes the parameters narrow enough to state:
-// each is `Pick<..., 'chatText'>` and nothing more.
+// ladder for every provider and makes the parameters narrow enough to state:
+// each caller is `Pick<..., 'chatText'>` and nothing more.
 //
-// RE-ROUTED EXACTLY ONCE. A second failure is the answer, not an invitation to
-// keep going: with two providers the only other destination is the refuser
-// itself. The re-route reads the budgets through `readBudgetsPastHolds`, which
-// waits out a refusal hold before calling both providers dry, so the refuser
-// can come back for the re-route once its hold has ended (the #474 shape); a
-// both-dry reading no hold explains raises, and the call ends there.
+// RE-ROUTED AT MOST ONCE PER PROVIDER. Each refusal marks its provider and
+// asks the budgets again through `readBudgetsPastHolds`, which waits out a
+// refusal hold before calling every provider dry, so a refuser can come back
+// for a later re-route once its hold has ended (the #474 shape); an all-dry
+// reading no hold explains raises, and the call ends there. The loop is
+// bounded by the number of providers, so a wall of refusals is an answer
+// rather than an invitation to keep going.
 
 /**
  * Logger root for the routing layer.
@@ -80,7 +85,7 @@ const l = tagged({ tag: 'translation-repair', },);
  */
 export class NoProviderForModelError extends Error {
   /**
-   * Declares this message safe to forward: it names a model and which of two routing outcomes it hit.
+   * Declares this message safe to forward: it names a model and which of the routing outcomes it hit.
    */
   readonly messageNamesOnly: true = true;
 
@@ -111,6 +116,12 @@ export class NoProviderForModelError extends Error {
 }
 
 /**
+ * Per-model slots the providers grant by default: Synthetic's measured five,
+ * nothing on the providers that state no ceiling.
+ */
+const DEFAULT_SLOT_LIMITS: SlotLimits = { synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY, };
+
+/**
  * Providers that can serve one call, narrowed to vision where it carries a
  * picture.
  *
@@ -134,14 +145,12 @@ function reachFor(
 /**
  * Builds the client that routes each call to whichever provider can serve it.
  *
- * @param synthetic - first provider's text call, which is all this delegates
+ * @param callers - each provider's text call, which is all this delegates
  *
- * @param hyper - second provider's text call, which is all this delegates
+ * @param budgets - shared budget view every call is routed by
  *
- * @param budgets - shared budget view both are routed by
- *
- * @param syntheticSlotsPerModel - concurrent calls the first provider's client
- * grants one model, which decides when it counts as saturated; must match the
+ * @param slotLimits - concurrent calls each limiting provider's client grants
+ * one model, which decides when it counts as saturated; must match the
  * `perModelConcurrency` that client was built with
  *
  * @param holdPollMs - how often a call waiting out a hold checks for abort;
@@ -151,87 +160,53 @@ function reachFor(
  *
  * @example
  * ```ts
- * const client = createRoutingClient({ synthetic, hyper, budgets, },);
+ * const client = createRoutingClient({ callers: { synthetic, hyper, openrouter, }, budgets, },);
  * ```
  */
 export function createRoutingClient(
   {
-    synthetic,
-    hyper,
+    callers,
     budgets,
-    syntheticSlotsPerModel = SYNTHETIC_PER_MODEL_CONCURRENCY,
+    slotLimits = DEFAULT_SLOT_LIMITS,
     holdPollMs = HOLD_POLL_MS,
   }: {
-    readonly synthetic: Pick<SyntheticClient, 'chatText'>;
-    readonly hyper: Pick<HyperClient, 'chatText'>;
+    readonly callers: ProviderRecord<Pick<ModelCaller, 'chatText'>>;
     readonly budgets: ProviderBudgets;
-    readonly syntheticSlotsPerModel?: number;
+    readonly slotLimits?: SlotLimits;
     readonly holdPollMs?: number;
   },
 ): ModelCaller {
   /**
-   * Calls in flight on the first provider, per model.
-   *
-   * COUNTED HERE RATHER THAN ASKED OF THE CLIENT, because saturation is what
-   * the routing policy calls the state of every slot being busy, and the client
-   * that owns those slots does not expose their occupancy. This layer is the
-   * one that dispatches, so it is the one that knows.
+   * In-flight slots on the providers that limit them.
    */
-  const inFlightOnSynthetic = new Map<RosterModelId, number>();
-
-  /**
-   * Adjusts the in-flight count for one model.
-   *
-   * @param modelId - model whose count moves
-   *
-   * @param by - change to apply
-   *
-   * @example
-   * ```ts
-   * countInFlight({ modelId, by: 1, },);
-   * ```
-   */
-  function countInFlight(
-    {
-      modelId,
-      by,
-    }: {
-      readonly modelId: RosterModelId;
-      readonly by: number;
-    },
-  ): void {
-    inFlightOnSynthetic.set(
-      modelId,
-      (inFlightOnSynthetic.get(modelId,) ?? 0) + by,
-    );
-  }
+  const ledger = createSlotLedger({ limits: slotLimits, },);
 
   /**
    * Decides which provider takes one call, given what is known right now.
    *
    * @param request - call being routed, read for its model and its pictures
    *
-   * @param syntheticDown - whether the first provider has just refused us
+   * @param refused - provider that has just refused us, or nobody
    *
    * @returns Provider to ask
    *
    * @throws {@link NoProviderForModelError} when nowhere can take it
    *
-   * @throws {@link import('./budget-routing.ts').BothProvidersDryError} when
-   * both are out of budget with no refusal hold left to wait out
+   * @throws {@link import('./budget-routing.ts').EveryProviderDryError} when
+   * every provider is out of budget with no refusal hold left to wait out
    *
    * @example
    * ```ts
-   * const provider = await chooseProvider({ request, syntheticDown: false, },);
+   * const provider = await chooseProvider({ request, refused: NOBODY_REFUSED, },);
    * ```
    */
   async function chooseProvider(
     {
       request,
-      syntheticDown,
+      refused,
     }: {
       readonly request: ForeignBorrowed<ChatTextRequest>;
-      readonly syntheticDown: boolean;
+      readonly refused: ProviderName | typeof NOBODY_REFUSED;
     },
   ): Promise<ProviderName> {
     /**
@@ -240,17 +215,14 @@ export function createRoutingClient(
     const reach = reachFor({ request, },);
 
     /**
-     * What each provider's budget looks like right now, the refusal that routed
-     * here folded in and any hold both providers were under waited out.
+     * What each provider's budget looks like right now, the refusal that
+     * routed here folded in and any hold every provider was under waited out.
      */
-    const {
-      syntheticDry,
-      hyperDry,
-    } = await readBudgetsPastHolds({
+    const dry = await readBudgetsPastHolds({
       budgets,
       modelId: request.modelId,
       signal: request.signal,
-      syntheticDown,
+      refused,
       pollMs: holdPollMs,
     },);
 
@@ -259,9 +231,8 @@ export function createRoutingClient(
      */
     const choice = routeProviderFor({
       reach,
-      syntheticDry,
-      hyperDry,
-      syntheticSaturated: (inFlightOnSynthetic.get(request.modelId,) ?? 0) >= syntheticSlotsPerModel,
+      dry,
+      saturated: ledger.saturated({ modelId: request.modelId, },),
     },);
 
     if (choice.kind === 'unreachable')
@@ -271,49 +242,23 @@ export function createRoutingClient(
       },);
 
     // THE SLOT IS TAKEN HERE, NOT AT DISPATCH, and there must be no `await`
-    // between reading the count above and this line. Two calls choosing at
+    // between reading the ledger above and this line. Two calls choosing at
     // once both resume from the budget read before either has been sent, so a
     // count that only rose at dispatch showed both of them a free slot and put
     // both on the same provider. Counting at the decision closes that, because
     // nothing else runs between the read and the increment.
-    if (choice.kind === 'synthetic')
-      countInFlight({
-        modelId: request.modelId,
-        by: 1,
-      },);
+    ledger.take({
+      provider: choice.kind,
+      modelId: request.modelId,
+    },);
     return choice.kind;
   }
 
   /**
-   * Hands back the slot {@link chooseProvider} took, whatever the call did.
-   *
-   * A DISPOSABLE RATHER THAN A `finally`, so the release cannot be skipped by
-   * an early return added later and does not need the caller to remember it.
-   *
-   * @param modelId - model whose slot is released on scope exit
-   *
-   * @returns Handle to bind with `using`
-   *
-   * @example
-   * ```ts
-   * using slot = heldSlot({ modelId, },);
-   * ```
-   */
-  function heldSlot(
-    { modelId, }: { readonly modelId: RosterModelId; },
-  ): Disposable {
-    return {
-      [Symbol.dispose]: function release(): void {
-        countInFlight({
-          modelId,
-          by: -1,
-        },);
-      },
-    };
-  }
-
-  /**
    * Performs one call on the named provider, releasing its slot afterwards.
+   *
+   * PAIRED WITH THE TAKE IN `chooseProvider` AND IN THE RE-ASK: every decision
+   * takes one slot on a limiting provider and reaches exactly one call here.
    *
    * @param provider - provider to ask, as {@link chooseProvider} decided
    *
@@ -337,95 +282,36 @@ export function createRoutingClient(
       readonly request: ForeignBorrowed<ChatTextRequest>;
     },
   ): Promise<ChatTextReply> {
-    if (provider === 'hyper')
-      return await hyper.chatText(request,);
-
-    // PAIRED WITH THE INCREMENT IN `chooseProvider` AND IN THE RE-ASK: every
-    // decision of `synthetic` takes one slot and reaches exactly one call here.
     /**
-     * Slot this call holds until it returns or raises.
+     * Slot this call holds until it returns or raises; a no-op on a provider
+     * that grants no limit.
      */
-    using slot = heldSlot({ modelId: request.modelId, },);
+    using slot = ledger.held({
+      provider,
+      modelId: request.modelId,
+    },);
 
     // Named so the handle is bound rather than discarded; `using` is what
     // makes it do its work, and reading it here keeps that legible.
     void slot;
-    return await synthetic.chatText(request,);
+    return await callers[provider].chatText(request,);
   }
 
   /**
-   * Calls one provider, and reads a budget refusal as no reply rather than as
-   * a fault.
-   *
-   * THE RE-ASK IS OPPORTUNISTIC, so a 429 or a 402 on it is the re-ask not
-   * happening, not the exchange failing: the first answer is what the caller
-   * gets, the way it does when there is nowhere else to ask. The refusal still
-   * starts that provider's cooldown on the call it arrived on, rather than one
-   * call later when the next routing decision meets it.
-   *
-   * @param provider - stack to ask
-   *
-   * @param request - exchange to perform
-   *
-   * @returns Reply, or the named refusal when the provider was out of budget
-   *
-   * @example
-   * ```ts
-   * const asked = await replyOrBudgetRefusal({ provider: 'synthetic', request, },);
-   * ```
-   */
-  async function replyOrBudgetRefusal(
-    {
-      provider,
-      request,
-    }: {
-      readonly provider: ProviderName;
-      readonly request: ForeignBorrowed<ChatTextRequest>;
-    },
-  ): Promise<ReAskReply> {
-    /**
-     * Logger pre-tagged with this function's name.
-     */
-    const rl = tagged({
-      tag: replyOrBudgetRefusal.name,
-      l,
-    },);
-
-    try {
-      return {
-        kind: 'replied',
-        reply: await callOn({
-          provider,
-          request,
-        },),
-      };
-    } catch (error) {
-      if (!isBudgetRefusal({ error, },))
-        throw error;
-
-      await budgets.markRefused({
-        provider,
-        signal: request.signal,
-      },);
-      rl.warn(`${request.modelId}: ${provider} refused the re-ask; keeping the first answer`,);
-      return { kind: 'budget-refused', };
-    }
-  }
-
-  /**
-   * Free-text chat exchange, routed and re-routed once on a budget refusal.
+   * Free-text chat exchange, routed and re-routed on budget refusals, at most
+   * once per provider.
    *
    * @param request - exchange to perform
    *
    * @mutates request - the delegated client serializes messages and response format; see its contract
    *
-   * @returns Content text and usage when reported
+   * @returns Content text and usage when reported, and who answered
    *
    * @throws {@link NoProviderForModelError} when nowhere can take it
    *
    * @example
    * ```ts
-   * const reply = await client.chatText({ modelId, messages, signal, },);
+   * const { provider, reply, } = await routedText({ modelId, messages, signal, },);
    * ```
    */
   async function routedText(
@@ -440,52 +326,58 @@ export function createRoutingClient(
     },);
 
     /**
-     * Provider the policy picked on what was known before the call.
+     * Provider that refused the previous attempt, folded into the next
+     * decision; nobody before the first.
      */
-    const first = await chooseProvider({
-      request,
-      syntheticDown: false,
-    },);
+    let refused: ProviderName | typeof NOBODY_REFUSED = NOBODY_REFUSED;
 
-    try {
-      return {
-        provider: first,
-        reply: await callOn({
-          provider: first,
-          request,
-        },),
-      };
-    } catch (error) {
-      if (!isBudgetRefusal({ error, },))
-        throw error;
-
-      await budgets.markRefused({
-        provider: first,
-        signal: request.signal,
-      },);
-      rl.warn(`${request.modelId}: ${first} refused us, asking the other provider`,);
-
+    // ONE ATTEMPT PER PROVIDER AT MOST. The loop cannot be a `map`: each
+    // decision depends on the refusal before it, and the last refusal is the
+    // answer.
+    for (const attempt of PROVIDER_ORDER.keys()) {
       /**
-       * Provider left once the refusing one is held out, which raises rather
-       * than hand back the one that just refused us.
+       * Provider the policy picked on what is known before this attempt.
        */
-      const second = await chooseProvider({
+      // eslint-disable-next-line no-await-in-loop -- each choice depends on the refusal before it
+      const provider = await chooseProvider({
         request,
-        syntheticDown: first === 'synthetic',
+        refused,
       },);
 
-      return {
-        provider: second,
-        reply: await callOn({
-          provider: second,
-          request,
-        },),
-      };
+      try {
+        return {
+          provider,
+          // eslint-disable-next-line no-await-in-loop -- the call IS the attempt
+          reply: await callOn({
+            provider,
+            request,
+          },),
+        };
+      } catch (error) {
+        if (!isBudgetRefusal({ error, },))
+          throw error;
+
+        // eslint-disable-next-line no-await-in-loop -- the hold must start before the next decision reads the budgets
+        await budgets.markRefused({
+          provider,
+          signal: request.signal,
+        },);
+        if (attempt === (PROVIDER_ORDER.length - 1))
+          throw error;
+        rl.warn(`${request.modelId}: ${provider} refused us, asking the next provider`,);
+        refused = provider;
+      }
     }
+
+    // Unreachable: the loop returns a reply or rethrows the last refusal.
+    throw new NoProviderForModelError({
+      modelId: request.modelId,
+      reason: 'every provider refused this call',
+    },);
   }
 
   /**
-   * Free-text chat exchange, routed and re-routed once on a budget refusal.
+   * Free-text chat exchange, routed and re-routed on budget refusals.
    *
    * @param request - exchange to perform
    *
@@ -505,50 +397,15 @@ export function createRoutingClient(
   }
 
   /**
-   * The other provider, where it can also serve this call and has budget.
-   *
-   * @param request - call that was answered badly
-   *
-   * @param served - provider that answered it
-   *
-   * @returns Provider to re-ask, absent where there is nowhere else to ask
-   *
-   * @example
-   * ```ts
-   * const elsewhere = await secondOpinionFrom({ request, served: 'synthetic', },);
-   * ```
+   * What the re-ask borrows from this router.
    */
-  async function secondOpinionFrom(
-    {
-      request,
-      served,
-    }: {
-      readonly request: ForeignBorrowed<ChatTextRequest>;
-      readonly served: ProviderName;
-    },
-  ): Promise<readonly ProviderName[]> {
-    /**
-     * Provider that did not answer this call.
-     */
-    const other: ProviderName = (served === 'synthetic') ? 'hyper' : 'synthetic';
-
-    /**
-     * Whether it serves this model at all, pictures included.
-     */
-    const reach = reachFor({ request, },);
-
-    if (!((other === 'hyper') ? reach.onHyper : reach.onSynthetic))
-      return [];
-
-    /**
-     * What each provider's budget looks like right now.
-     */
-    const budget = await budgets.read({ signal: request.signal, },);
-
-    if ((other === 'hyper') ? budget.hyperDry : budget.syntheticDry)
-      return [];
-    return [other,];
-  }
+  const core: RoutedCore = {
+    reachFor,
+    budgets,
+    ledger,
+    callOn,
+    routedText,
+  };
 
   /**
    * Schema-validated chat exchange over whichever provider served the text.
@@ -567,91 +424,10 @@ export function createRoutingClient(
   async function chatJson<ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ): Promise<ChatJsonOutcome<ValueT>> {
-    /**
-     * Logger pre-tagged with this function's name.
-     */
-    const rl = tagged({
-      tag: chatJson.name,
-      l,
-    },);
-
-    /**
-     * Raw text reply of the routed exchange, and who answered it.
-     */
-    const {
-      provider,
-      reply,
-    } = await routedText(request,);
-
-    /**
-     * What that answer turned out to be.
-     */
-    const outcome = readJsonOutcome({
-      modelId: request.modelId,
-      reply,
-      validate: request.validate,
-    },);
-
-    if (outcome.kind === 'ok')
-      return outcome;
-
-    /**
-     * Somewhere else to ask, where this model is served and has budget.
-     */
-    const [elsewhere,] = await secondOpinionFrom({
-      request,
-      served: provider,
-    },);
-
-    if (elsewhere === undefined)
-      return outcome;
-
-    rl.info(
-      `${request.modelId}: ${outcome.kind} on ${provider}, asking ${elsewhere} for the same model`,
-    );
-
-    // THE SLOT IS TAKEN HERE FOR THE SAME REASON `chooseProvider` takes it at
-    // the decision: `callOn` releases one slot on every Synthetic call, and a
-    // re-ask that reached Synthetic without a take released a slot nothing
-    // held, so the count drifted negative and overflow to Hyper needed that
-    // many extra concurrent calls before it resumed (`#240`). No `await` sits
-    // between the budget read in `secondOpinionFrom` and this line.
-    if (elsewhere === 'synthetic')
-      countInFlight({
-        modelId: request.modelId,
-        by: 1,
-      },);
-
-    /**
-     * Same model, same question, the other serving stack; or nothing, when that
-     * stack refused on budget.
-     */
-    const asked = await replyOrBudgetRefusal({
-      provider: elsewhere,
+    return await routedJson({
+      core,
       request,
     },);
-
-    if (asked.kind === 'budget-refused')
-      return outcome;
-
-    /**
-     * What the other stack's answer turned out to be.
-     */
-    const second = readJsonOutcome({
-      modelId: request.modelId,
-      reply: asked.reply,
-      validate: request.validate,
-    },);
-
-    if (second.kind === 'ok')
-      return second;
-
-    // THE FIRST ANSWER IS RETURNED WHEN BOTH FAIL, because it came from the
-    // provider the policy preferred and the caller's own handling is written
-    // against that. Both are logged, so a reader can see the re-ask happened
-    // and did not help.
-    rl.info(`${request.modelId}: ${elsewhere} answered ${second.kind} too`,);
-    return outcome;
   }
 
   return {

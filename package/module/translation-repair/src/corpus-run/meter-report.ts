@@ -1,6 +1,9 @@
 import { readFile, } from 'node:fs/promises';
 
-import type { ProviderName, } from '../provider-budget.ts';
+import {
+  PROVIDER_ORDER,
+  type ProviderName,
+} from '../provider-name.ts';
 import {
   countStates,
   drySpans,
@@ -480,15 +483,9 @@ async function reportMeters(): Promise<void> {
       + 'empty otherwise. Every figure below is availability WHEN WE WERE ASKING.',
   );
 
-  /**
-   * Both providers, reported in the order the record names them.
-   */
-  const providers = [
-    'synthetic',
-    'hyper',
-  ] as const;
-
-  for (const provider of providers) {
+  // EVERY PROVIDER, in the order the record names them; one absent from a
+  // sample contributes no reading to its series.
+  for (const provider of PROVIDER_ORDER) {
     reportProvider({
       samples,
       provider,

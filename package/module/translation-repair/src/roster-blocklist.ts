@@ -110,6 +110,18 @@ export const ROSTER_BLOCKLIST: readonly RosterBlocklistEntry[] = [
     id: 'qwen3.8-max',
     reason: 'absurd cost in money',
   },
+  // ADDED 2026-09-03 with the OpenRouter provider, on the owner's words about
+  // this model in the same message that named the OpenRouter allowlist. The
+  // `:batch` variant is a second spelling of the same model, so it is listed
+  // rather than left to a family rule (doc/decision/translation-repair-openrouter-fallback.md).
+  {
+    id: 'google/gemini-3.8-flash',
+    reason: 'a wildly misaligned model',
+  },
+  {
+    id: 'google/gemini-3.8-flash:batch',
+    reason: 'a wildly misaligned model',
+  },
 ];
 
 /**

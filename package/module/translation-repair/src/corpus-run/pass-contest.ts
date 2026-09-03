@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '../chat-contract.ts';
 import type { DocumentLanesResult, } from '../document-lanes.ts';
+import type { RunClient, } from './run-client-contract.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
 import { damageClaimLinesBySlice, } from '../repair-damage-evidence.ts';
 import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
@@ -21,7 +21,7 @@ import { readJudgeSeats, } from './run-seats.ts';
  * cache, the evidence and the window are assembled here so the entry driver
  * makes one call.
  *
- * READS ITS OWN BENCH off Synthetic's meter as it stands when the contest
+ * READS ITS OWN BENCH off every provider's meter as it stands when the contest
  * starts, not the lanes' reading: XIEPT2 on 2026-09-03 read wet at the lanes,
  * ran Synthetic dry seven minutes later, and sat the Hyper-slow judge through
  * the contest and the consolidation on Hyper (`run-seats.ts`).
@@ -67,7 +67,7 @@ export async function runPassContest(
     overlap,
     l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: RunClient;
     readonly lanes: DocumentLanesResult;
     readonly projected: ProjectedLanes;
     readonly frontMatterSlices: ReadonlySet<number>;

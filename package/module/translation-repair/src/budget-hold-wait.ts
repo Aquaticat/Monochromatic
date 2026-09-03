@@ -1,24 +1,29 @@
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { BothProvidersDryError, } from './budget-routing.ts';
+import { EveryProviderDryError, } from './budget-routing.ts';
 import type {
   BudgetView,
   ProviderBudgets,
-  ProviderName,
 } from './provider-budget.ts';
+import {
+  PROVIDER_ORDER,
+  type ProviderName,
+  type ProviderRecord,
+  providerRecord,
+} from './provider-name.ts';
 import type { RosterModelId, } from './roster-id.ts';
 
 //region Budget hold wait
-// A budget reading that waits out a refusal hold before it calls both
-// providers dry.
+// A budget reading that waits out a refusal hold before it calls every
+// provider dry.
 //
-// BOTH HELD IS NOT BOTH DRY. A hold is process state set by a refusal, and the
+// ALL HELD IS NOT ALL DRY. A hold is process state set by a refusal, and the
 // pin pass of 2026-09-02 (`#474`) ended for every remaining entry inside one
 // second because two holds were read as two empty meters while both meters
-// read wet. When both providers read dry and at least one is held, the shorter
-// hold is waited out and the budgets are read again; only a second both-dry
-// reading, which no hold can explain, ends the run.
+// read wet. When every provider reads dry and at least one is held, the
+// shortest hold is waited out and the budgets are read again; only a second
+// all-dry reading, which no hold can explain, ends the run.
 //
 // SPLIT FROM `provider-router.ts` at its line budget, and along a real seam:
 // this is about WHEN to read the budgets, and the router's slot arithmetic must
@@ -40,6 +45,11 @@ const l = tagged({ tag: 'translation-repair', },);
 export const HOLD_POLL_MS = 1_000;
 
 /**
+ * Reading given when no provider has just refused the call being routed.
+ */
+export const NOBODY_REFUSED = 'nobody';
+
+/**
  * Shortest hold still running across the providers, zero when none is.
  *
  * @param holds - milliseconds of hold left per provider
@@ -48,12 +58,12 @@ export const HOLD_POLL_MS = 1_000;
  *
  * @example
  * ```ts
- * shortestHold({ holds: { synthetic: 0, hyper: 4_000, }, },);
+ * shortestHold({ holds: { synthetic: 0, hyper: 4_000, openrouter: 0, }, },);
  * // => 4000
  * ```
  */
 export function shortestHold(
-  { holds, }: { readonly holds: Readonly<Record<ProviderName, number>>; },
+  { holds, }: { readonly holds: ProviderRecord<number>; },
 ): number {
   /**
    * Holds that are actually running.
@@ -111,12 +121,32 @@ export async function waitOutHold(
 }
 
 /**
+ * Whether every provider reads dry in one view.
+ *
+ * @param view - dryness per provider
+ *
+ * @returns Whether nothing is buyable anywhere
+ *
+ * @example
+ * ```ts
+ * const over = everyProviderDry({ view, },);
+ * ```
+ */
+function everyProviderDry(
+  { view, }: { readonly view: BudgetView; },
+): boolean {
+  return PROVIDER_ORDER.every(function isDry(provider,): boolean {
+    return view[provider];
+  },);
+}
+
+/**
  * States what the budgets read and what held them, for the error that ends
  * the run.
  *
  * @param view - meter reading with holds folded in
  *
- * @param syntheticDown - whether the first provider had just refused this call
+ * @param refused - provider that had just refused this call, or nobody
  *
  * @param holds - hold left per provider
  *
@@ -124,35 +154,46 @@ export async function waitOutHold(
  *
  * @example
  * ```ts
- * measuredAt({ view, syntheticDown: false, holds: budgets.holds(), },);
- * // => 'meters read synthetic dry, hyper dry; holds synthetic 0ms, hyper 0ms'
+ * measuredAt({ view, refused: NOBODY_REFUSED, holds: budgets.holds(), },);
+ * // => 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms'
  * ```
  */
 function measuredAt(
   {
     view,
-    syntheticDown,
+    refused,
     holds,
   }: {
     readonly view: BudgetView;
-    readonly syntheticDown: boolean;
-    readonly holds: Readonly<Record<ProviderName, number>>;
+    readonly refused: ProviderName | typeof NOBODY_REFUSED;
+    readonly holds: ProviderRecord<number>;
   },
 ): string {
   /**
-   * Whether the first provider reads dry once the refusal is folded in.
+   * Each meter's reading, the refusal that routed here folded into its
+   * provider's clause.
    */
-  const syntheticDry = view.syntheticDry || syntheticDown;
-  return `meters read synthetic ${syntheticDry ? 'dry' : 'wet'}${
-    syntheticDown ? ' (just refused this call)' : ''
-  }, hyper ${view.hyperDry ? 'dry' : 'wet'}; holds synthetic ${String(holds.synthetic,)}ms, hyper ${
-    String(holds.hyper,)
-  }ms`;
+  const meters = PROVIDER_ORDER.map(function clauseOf(provider,): string {
+    /**
+     * Whether this provider reads dry once the refusal is folded in.
+     */
+    const dry = view[provider] || (refused === provider);
+    return `${provider} ${dry ? 'dry' : 'wet'}${
+      (refused === provider) ? ' (just refused this call)' : ''
+    }`;
+  },);
+  /**
+   * Each provider's hold.
+   */
+  const held = PROVIDER_ORDER.map(function holdOf(provider,): string {
+    return `${provider} ${String(holds[provider],)}ms`;
+  },);
+  return `meters read ${meters.join(', ',)}; holds ${held.join(', ',)}`;
 }
 
 /**
- * Reads the budgets, waiting out the shorter hold once when both providers
- * read dry and a refusal hold explains it.
+ * Reads the budgets, waiting out the shortest hold once when every provider
+ * reads dry and a refusal hold explains it.
  *
  * @param budgets - shared budget view
  *
@@ -160,20 +201,20 @@ function measuredAt(
  *
  * @param signal - the call's abort
  *
- * @param syntheticDown - whether the first provider has just refused this
- * call, which counts as dry for the first reading and not after its hold has
- * been waited out
+ * @param refused - provider that has just refused this call, which counts as
+ * dry for the first reading and not after its hold has been waited out; or
+ * nobody
  *
  * @param pollMs - how often the wait checks for abort
  *
- * @returns Both providers' dryness, holds waited out
+ * @returns Every provider's dryness, holds waited out
  *
- * @throws {@link BothProvidersDryError} when both providers read dry with no
- * hold left to wait out, or still read dry after the shorter hold ended
+ * @throws {@link EveryProviderDryError} when every provider reads dry with no
+ * hold left to wait out, or still reads dry after the shortest hold ended
  *
  * @example
  * ```ts
- * const view = await readBudgetsPastHolds({ budgets, modelId, signal, syntheticDown: false, pollMs: HOLD_POLL_MS, },);
+ * const view = await readBudgetsPastHolds({ budgets, modelId, signal, refused: NOBODY_REFUSED, pollMs: HOLD_POLL_MS, },);
  * ```
  */
 export async function readBudgetsPastHolds(
@@ -181,13 +222,13 @@ export async function readBudgetsPastHolds(
     budgets,
     modelId,
     signal,
-    syntheticDown,
+    refused,
     pollMs,
   }: {
     readonly budgets: ProviderBudgets;
     readonly modelId: RosterModelId;
     readonly signal: AbortSignal;
-    readonly syntheticDown: boolean;
+    readonly refused: ProviderName | typeof NOBODY_REFUSED;
     readonly pollMs: number;
   },
 ): Promise<BudgetView> {
@@ -204,38 +245,43 @@ export async function readBudgetsPastHolds(
    */
   const first = await budgets.read({ signal, },);
   /**
-   * The first provider's dryness with the refusal that routed here folded in.
+   * The same view with the refusal that routed here folded in.
    */
-  const firstSyntheticDry = first.syntheticDry || syntheticDown;
-  if (!(firstSyntheticDry && first.hyperDry)) {
-    return {
-      syntheticDry: firstSyntheticDry,
-      hyperDry: first.hyperDry,
-    };
-  }
+  const folded = providerRecord({
+    of: function dryOf(provider,): boolean {
+      return first[provider] || (refused === provider);
+    },
+  },);
+  if (!everyProviderDry({ view: folded, },))
+    return folded;
 
   /**
    * How long each provider's refusal still holds it out.
    */
   const holds = budgets.holds();
   /**
-   * The first hold to end, zero when neither provider is held.
+   * The first hold to end, zero when no provider is held.
    */
   const shortest = shortestHold({ holds, },);
   if (shortest === 0) {
-    throw new BothProvidersDryError({
+    throw new EveryProviderDryError({
       measured: measuredAt({
         view: first,
-        syntheticDown,
+        refused,
         holds,
       },),
     },);
   }
 
+  /**
+   * Each provider's hold, for the line.
+   */
+  const held = PROVIDER_ORDER.map(function holdOf(provider,): string {
+    return `${provider} ${String(holds[provider],)}ms`;
+  },);
   rl.warn(
-    `${modelId}: both providers held out by refusals `
-      + `(synthetic ${String(holds.synthetic,)}ms, hyper ${String(holds.hyper,)}ms); `
-      + `waiting ${String(shortest,)}ms for the shorter hold to end rather than ending the run`,
+    `${modelId}: every provider held out by refusals (${held.join(', ',)}); `
+      + `waiting ${String(shortest,)}ms for the shortest hold to end rather than ending the run`,
   );
   await waitOutHold({
     ms: shortest,
@@ -244,21 +290,21 @@ export async function readBudgetsPastHolds(
   },);
 
   /**
-   * What the budgets look like once the shorter hold has ended.
+   * What the budgets look like once the shortest hold has ended.
    *
-   * THE ROUTING REFUSAL IS NOT FOLDED IN AGAIN. `syntheticDown` says the first
-   * provider refused THIS call a moment ago; its hold is what that refusal
-   * became, and a hold that has just expired is the provider coming back. Folding
-   * the refusal in a second time would send the call to a both-dry error after
+   * THE ROUTING REFUSAL IS NOT FOLDED IN AGAIN. `refused` says a provider
+   * refused THIS call a moment ago; its hold is what that refusal became, and
+   * a hold that has just expired is the provider coming back. Folding the
+   * refusal in a second time would send the call to an all-dry error after
    * waiting for exactly the hold that would have cleared it.
    */
   const second = await budgets.read({ signal, },);
-  if (second.syntheticDry && second.hyperDry) {
-    throw new BothProvidersDryError({
+  if (everyProviderDry({ view: second, },)) {
+    throw new EveryProviderDryError({
       measured: `after waiting ${String(shortest,)}ms, ${
         measuredAt({
           view: second,
-          syntheticDown: false,
+          refused: NOBODY_REFUSED,
           holds: budgets.holds(),
         },)
       }`,

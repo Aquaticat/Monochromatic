@@ -99,8 +99,11 @@ export {
   type JudgeSeatPhase,
   type JudgeSeats,
   judgeSeatsFor,
+  OPENROUTER_CHECKER_SUBSTITUTE,
+  OPENROUTER_WITHHELD,
   readJudgeSeats,
 } from './corpus-run/run-seats.ts';
+export type { RunClient, } from './corpus-run/run-client-contract.ts';
 export {
   assertRequiredProvidersReady,
   readRequiredProviders,

@@ -1,7 +1,5 @@
-import type {
-  MeterState,
-  ProviderName,
-} from '../provider-budget.ts';
+import type { MeterState, } from '../provider-budget.ts';
+import type { ProviderName, } from '../provider-name.ts';
 import type { MeterSample, } from './meter-sample-read.ts';
 
 //region Meter dry span
@@ -158,11 +156,21 @@ export function seriesFor(
   },
 ): StateSeries {
   return samples
-    .map(function toReading(sample,): StateReading {
-      return {
-        at: sample.at,
-        state: sample[provider],
-      };
+    // FLAT-MAPPED so a sample recorded before a provider existed contributes
+    // no reading for it, rather than a reading in a state that never was.
+    .flatMap(function toReading(sample,): readonly StateReading[] {
+      /**
+       * What this sample said about the provider, or that it said nothing.
+       */
+      const state = sample[provider];
+      if (state === 'absent')
+        return [];
+      return [
+        {
+          at: sample.at,
+          state,
+        },
+      ];
     },)
     .toSorted(function byTime(
       left,

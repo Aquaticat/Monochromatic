@@ -1,8 +1,8 @@
 import type { ChatTextReply, } from './chat-contract.ts';
-import type { ProviderName, } from './provider-budget.ts';
+import type { ProviderName, } from './provider-name.ts';
 
 //region Provider router reply
-// What a routed call and a re-ask on the other provider come back with, apart
+// What a routed call and a re-ask on another provider come back with, apart
 // from the router that performs them. Split from `provider-router.ts` at its
 // line budget.
 

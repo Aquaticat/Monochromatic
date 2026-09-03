@@ -10,11 +10,13 @@ import type {
 //region Spend cost
 // WHAT A RUN COST, from what its log recorded and what the provider charges.
 //
-// THREE BUCKETS, AND MIXING THEM WOULD BE THE WHOLE BUG. A seat is either
-// metered and priced, metered and missing from the price table, or on a flat
-// subscription that bills no credits at all. Only the first has a credit
-// figure. A total that folded the other two in would read as a cheaper run for
-// the second and as an invented currency for the third.
+// FOUR BUCKETS, AND MIXING THEM WOULD BE THE WHOLE BUG. A seat is metered in
+// hypercredits and priced, metered in hypercredits and missing from the price
+// table, on a flat subscription that bills no credits at all, or billed in USD
+// on OpenRouter with the cost read off the wire. Only the first has a credit
+// figure and only the fourth a USD figure. A total that folded the others in
+// would read as a cheaper run for the second and as an invented currency for
+// the third and fourth.
 //
 // SORTED BY WHAT IT COST, not by name and not by call count, because the
 // question this answers is which seat is worth reconsidering. On this roster
@@ -81,9 +83,25 @@ export type SpendCost = {
   readonly subscription: readonly SeatSpend[];
 
   /**
+   * Seats billed in USD per token on OpenRouter, costliest first, each
+   * carrying the USD its lines reported.
+   *
+   * A FOURTH BUCKET AND A SECOND CURRENCY. Hypercredits and USD are never
+   * summed: the credit figure below stays a credit figure, and this bucket's
+   * total is `totalUsd`.
+   */
+  readonly openRouter: readonly SeatSpend[];
+
+  /**
    * Credits every priced seat came to.
    */
   readonly totalCredits: number;
+
+  /**
+   * USD every OpenRouter seat's lines reported, a floor over the calls whose
+   * line carried a cost.
+   */
+  readonly totalUsd: number;
 
   /**
    * Calls across every seat whose provider reported no usage at all, so a
@@ -163,8 +181,36 @@ export function priceTally(
   const subscription = tally
     .seats
     .filter(function isSubscription(seat,): boolean {
-      return seat.provider !== 'hyper';
+      return seat.provider === 'synthetic';
     },);
+
+  /**
+   * Seats billed in USD, costliest first by what their lines reported.
+   */
+  const openRouter = tally
+    .seats
+    .filter(function isOpenRouter(seat,): boolean {
+      return seat.provider === 'openrouter';
+    },)
+    .toSorted(function costliestFirst(
+      left,
+      right,
+    ): number {
+      return right.costUsd - left.costUsd;
+    },);
+
+  /**
+   * What every OpenRouter seat's lines reported together.
+   */
+  const totalUsd = openRouter.reduce(
+    function addUsd(
+      running,
+      seat,
+    ): number {
+      return running + seat.costUsd;
+    },
+    0,
+  );
 
   /**
    * Metered seats paired with what they came to, priced or not.
@@ -241,7 +287,9 @@ export function priceTally(
     priced,
     unpriced,
     subscription,
+    openRouter,
     totalCredits,
+    totalUsd,
     unreportedCalls,
     pricedAsOf: HYPER_PRICE_READ_ON,
   };

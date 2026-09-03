@@ -169,7 +169,7 @@ A threshold of 20 USD (one XIEPT2-scale entry plus margin) and a top-up of one d
 
 - Generalize the router to an ordered provider list rather than a third boolean;
     `ProviderName`, `BudgetView`, `ModelReach`, `readBudgetsPastHolds`, `secondOpinionFrom`
-    and `BothProvidersDryError` all encode two providers.
+    and the all-dry error all encode two providers.
 - Seat withholding in `run-seats.ts` is keyed to `syntheticDry` alone;
     with OpenRouter serving Qwen3.8-27B and Kimi-K3, re-derive withholding from where each model would be served.
 - Check `anthropic-delta-scan.ts` against OpenRouter's stream: a `[DONE]` sentinel and comment keep-alives
@@ -228,7 +228,7 @@ In commit order, each unit tested and committed before the next:
 2. `openrouter-catalog.ts` and `roster-reach.ts`: slugs, `sharedWith` for all nine, vision flags and output ceilings from
     the listing; `ModelReach` becomes a record keyed by provider; Gemini 3.8 Flash joins the blocklist.
 3. `budget-routing.ts`: `routeProviderFor` walks `PROVIDER_ORDER` over a dryness record and a saturation record;
-    `BothProvidersDryError` is renamed for three providers (misleading name, CRN) and the old name goes to the local
+    the two-provider dry error is renamed `EveryProviderDryError` (misleading name, CRN) and the old name goes to the local
     forbidden-strings appendix; `openRouterIsDry` and its meter fields.
 4. `provider-budget.ts` and `budget-hold-wait.ts`: a third meter, `METERS` gains `openrouter=` and `openrouterUsd=`,
     a refusal hold moves traffic only while some other provider reads wet, the all-dry wait generalizes.

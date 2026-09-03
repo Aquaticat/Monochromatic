@@ -47,6 +47,7 @@ const FIRST_FIELD = 'provider=';
 const PROVIDERS = [
   'synthetic',
   'hyper',
+  'openrouter',
 ] as const;
 
 /**
@@ -54,6 +55,13 @@ const PROVIDERS = [
  * reported none.
  */
 export type SpendCount = number | typeof UNREPORTED;
+
+/**
+ * One call's cost in USD, or the named absence for a line that carried no
+ * `cost=` field: every line before 2026-09-03 and every line from a provider
+ * that does not bill in USD.
+ */
+export type SpendUsd = number | typeof UNREPORTED;
 
 /**
  * What one `SPEND` line said.
@@ -88,6 +96,12 @@ export type SpendRecord = {
    * Tokens the answer produced, thinking included.
    */
   readonly completion: SpendCount;
+
+  /**
+   * USD the wire reported for this call, where the provider bills in USD and
+   * the line carried the field.
+   */
+  readonly costUsd: SpendUsd;
 };
 
 /**
@@ -173,6 +187,41 @@ function countOf(
 
   // WHOLE AND NOT NEGATIVE, because a token count is a count.
   if (!Number.isSafeInteger(parsed,))
+    return 'unreadable';
+
+  if (parsed < 0)
+    return 'unreadable';
+
+  return parsed;
+}
+
+/**
+ * Reads the cost field, keeping its absence as a named value.
+ *
+ * FRACTIONAL AND NOT NEGATIVE, unlike a token count: a call costs a fraction
+ * of a cent, and the wire writes it with nine decimals.
+ *
+ * @param value - what the field carried, empty where the line had none
+ *
+ * @returns USD, the named absence, or that the field will not read
+ *
+ * @example
+ * ```ts
+ * const cost = usdOf({ value: '0.000126255304', },);
+ * ```
+ */
+function usdOf(
+  { value, }: { readonly value: string; },
+): SpendUsd | 'unreadable' {
+  if ((value === '') || (value === UNREPORTED))
+    return UNREPORTED;
+
+  /**
+   * Field read as a number, which is NaN for anything that is not one.
+   */
+  const parsed = Number(value,);
+
+  if (!Number.isFinite(parsed,))
     return 'unreadable';
 
   if (parsed < 0)
@@ -325,11 +374,20 @@ export function readSpendLine(
   if (completion === 'unreadable')
     return 'unreadable';
 
+  /**
+   * USD the wire reported, or the named absence for a line without the field.
+   */
+  const costUsd = usdOf({ value: named.get('cost',) ?? '', },);
+
+  if (costUsd === 'unreadable')
+    return 'unreadable';
+
   return {
     provider,
     model,
     prompt,
     completion,
+    costUsd,
   };
 }
 
@@ -383,6 +441,17 @@ export type SeatSpend = {
    * much of the run it is a floor over.
    */
   readonly unreportedCalls: number;
+
+  /**
+   * USD summed over the calls whose line carried a cost.
+   */
+  readonly costUsd: number;
+
+  /**
+   * Calls whose line carried a cost, so a USD total can be read as a floor
+   * over the rest.
+   */
+  readonly costedCalls: number;
 };
 
 /**
@@ -472,12 +541,19 @@ export function tallySpend(
       promptTokens: 0,
       completionTokens: 0,
       unreportedCalls: 0,
+      costUsd: 0,
+      costedCalls: 0,
     };
 
     /**
      * Whether this call reported anything at all.
      */
     const reported = (record.prompt !== UNREPORTED) || (record.completion !== UNREPORTED);
+
+    /**
+     * Whether this call's line carried a cost.
+     */
+    const costed = record.costUsd !== UNREPORTED;
 
     seats.set(
       key,
@@ -490,6 +566,8 @@ export function tallySpend(
         completionTokens: running.completionTokens
           + ((record.completion === UNREPORTED) ? 0 : record.completion),
         unreportedCalls: running.unreportedCalls + (reported ? 0 : 1),
+        costUsd: running.costUsd + ((record.costUsd === UNREPORTED) ? 0 : record.costUsd),
+        costedCalls: running.costedCalls + (costed ? 1 : 0),
       },
     );
   }

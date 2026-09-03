@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ExtractedCompletion, } from './completion-shape.ts';
-import type { ProviderName, } from './provider-budget.ts';
+import type { ProviderName, } from './provider-name.ts';
 
 //region Spend line
 // WHAT ONE CALL COST, on the one line a reader can total.
@@ -86,10 +86,12 @@ export function reportSpend(
     provider,
     label,
     extracted,
+    costUsd,
   }: {
     readonly provider: ProviderName;
     readonly label: string;
     readonly extracted: ExtractedCompletion;
+    readonly costUsd?: number;
   },
 ): string {
   /**
@@ -105,9 +107,18 @@ export function reportSpend(
     : `prompt=${String(usage.prompt_tokens,)} completion=${String(usage.completion_tokens,)}`;
 
   /**
+   * USD the wire reported for this call, as a trailing field only where a
+   * provider bills in USD and said so; older lines and the other providers
+   * carry no such field, and the reader treats its absence as unreported.
+   */
+  const cost = (costUsd === undefined)
+    ? ''
+    : ` cost=${String(costUsd,)}`;
+
+  /**
    * Line assembled before the call so the logger chain stays one step per line.
    */
-  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}`;
+  const line = `${SPEND_MARKER}provider=${provider} model=${label} ${counts}${cost}`;
 
   /**
    * Logger tagged with this report.

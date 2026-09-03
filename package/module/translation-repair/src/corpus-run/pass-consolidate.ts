@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '../chat-contract.ts';
 import { consolidateDocument, } from '../consolidate-driver.ts';
+import type { RunClient, } from './run-client-contract.ts';
 import { consolidationPolishConfiguration, } from '../consolidation-polish-config.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { sliceNeighbourContexts, } from '../fidelity-window.ts';
@@ -27,9 +27,9 @@ import { readJudgeSeats, } from './run-seats.ts';
  * orchestration makes one call rather than duplicating stage interface details.
  * This is same seam at which all four positional maps are simultaneously known.
  *
- * READS ITS OWN BENCH off Synthetic's meter as it stands when consolidation
- * starts, for the reason `runPassContest` gives: a reading taken at the lanes
- * is hours old by now on a long entry (`run-seats.ts`).
+ * READS ITS OWN BENCH off every provider's meter as it stands when
+ * consolidation starts, for the reason `runPassContest` gives: a reading taken
+ * at the lanes is hours old by now on a long entry (`run-seats.ts`).
  *
  * @param client - shared provider client
  *
@@ -74,7 +74,7 @@ export async function runPassConsolidation(
     overlap,
     l,
   }: {
-    readonly client: SyntheticClient;
+    readonly client: RunClient;
     readonly prepared: PreparedDocumentPair;
     readonly projected: ProjectedLanes;
     readonly contests: readonly ArtifactContestSlice[];

@@ -1,7 +1,9 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { createHyperClient, } from '../hyper-client.ts';
+import { createOpenRouterClient, } from '../openrouter-client.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
+import { PROVIDER_ORDER, } from '../provider-name.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
@@ -79,19 +81,27 @@ async function sampleBudgets(): Promise<void> {
     .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
     ?? '';
 
-  if ((syntheticKey === '') || (hyperKey === '')) {
+  /**
+   * Third provider's key, from the same place.
+   */
+  const openRouterKey = process.env
+    .TRANSLATION_REPAIR_OPENROUTER_API_KEY
+    ?? '';
+
+  if ((syntheticKey === '') || (hyperKey === '') || (openRouterKey === '')) {
     throw new StatedRefusalError({
-      says: 'both provider keys must be set to sample availability, and at least one is not: '
+      says: 'every provider key must be set to sample availability, and at least one is not: '
         + `TRANSLATION_REPAIR_SYNTHETIC_API_KEY is ${syntheticKey === '' ? 'absent' : 'present'}, `
-        + `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is ${hyperKey === '' ? 'absent' : 'present'}. `
-        + 'Run under mise so sops injects them. A sample of one provider is not recorded, '
-        + 'because the record is read as a statement about both and a missing column would '
+        + `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is ${hyperKey === '' ? 'absent' : 'present'}, `
+        + `TRANSLATION_REPAIR_OPENROUTER_API_KEY is ${openRouterKey === '' ? 'absent' : 'present'}. `
+        + 'Run under mise so sops injects them. A sample of some providers is not recorded, '
+        + 'because the record is read as a statement about all of them and a missing column would '
         + 'be indistinguishable from a provider that answered.',
     },);
   }
 
   /**
-   * Budget view over both meters, which logs what it reads.
+   * Budget view over every meter, which logs what it reads.
    *
    * ITS CACHE CANNOT INTERFERE. A fresh view has never read anything, so the
    * first call always reaches the wire, and this process makes exactly one.
@@ -99,6 +109,7 @@ async function sampleBudgets(): Promise<void> {
   const budgets = createProviderBudgets({
     synthetic: createSyntheticClient({ apiKey: syntheticKey, },),
     hyper: createHyperClient({ apiKey: hyperKey, },),
+    openrouter: createOpenRouterClient({ apiKey: openRouterKey, },),
   },);
 
   /**
@@ -106,9 +117,14 @@ async function sampleBudgets(): Promise<void> {
    */
   const view = await budgets.read({ signal: AbortSignal.timeout(SAMPLE_TIMEOUT_MS,), },);
 
+  /**
+   * What routing would do with each provider, for the summary.
+   */
+  const verdicts = PROVIDER_ORDER.map(function verdictOf(provider,): string {
+    return `${view[provider] ? 'avoid' : 'use'} ${provider}`;
+  },);
   rl.info(
-    `SAMPLED: routing would ${view.syntheticDry ? 'avoid' : 'use'} synthetic and `
-      + `${view.hyperDry ? 'avoid' : 'use'} hyper. The reading logged above is the record; `
+    `SAMPLED: routing would ${verdicts.join(', ',)}. The reading logged above is the record; `
       + 'read a collection of them with `mise run //package/module/translation-repair:meter-report`',
   );
 }
