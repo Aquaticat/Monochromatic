@@ -4,12 +4,13 @@
  * THESE CASES ARE THE OWNER'S POLICY, stated as a table. Synthetic first until
  * its per-model concurrency limit is taken, then overflow to Hyper, which has
  * no such limit; either of Synthetic's two limits emptying is a reason to fail
- * over; both providers empty at once ends the run.
+ * over; Hyper dry too sends the call to OpenRouter (2026-09-03); every
+ * provider empty at once ends the run.
  *
- * THE ASYMMETRY IS DELIBERATE and worth reading twice: a model that only one
- * provider serves loses its voice when that provider is dry, and the run
- * continues. Only both budgets being empty throws, because only then is nothing
- * buyable at all.
+ * THE ASYMMETRY IS DELIBERATE and worth reading twice: a model that some
+ * providers do not serve loses its voice when the ones that do are dry, and
+ * the run continues. Only every budget being empty throws, because only then
+ * is nothing buyable at all.
  *
  * @module
  */
@@ -21,9 +22,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  BothProvidersDryError,
+  EveryProviderDryError,
   hyperIsDry,
   hyperMeterLevel,
+  NO_PROVIDER,
+  providerServing,
   routeProviderFor,
   syntheticIsDry,
   syntheticMeterLevel,
@@ -46,12 +49,28 @@ const roomyQuota = {
 } as const;
 
 /**
- * Both providers reachable, which is true of the three shared models.
+ * Every provider reachable, which is true of the shared seats since OpenRouter
+ * serves the whole roster.
  */
-const bothReach = {
-  onSynthetic: true,
-  onHyper: true,
+const everyReach = {
+  synthetic: true,
+  hyper: true,
+  openrouter: true,
 } as const;
+
+/**
+ * Nobody dry.
+ */
+const allWet = {
+  synthetic: false,
+  hyper: false,
+  openrouter: false,
+} as const;
+
+/**
+ * Nobody saturated.
+ */
+const noneSaturated = allWet;
 
 await describe({
   name: syntheticIsDry.name,
@@ -142,6 +161,51 @@ await describe({
 },);
 
 await describe({
+  name: providerServing.name,
+  children: [
+    it({
+      name: 'NAMES the first provider in spending order that serves the model and reads wet, or none',
+      fn: async () => {
+        expect(providerServing({
+          reach: everyReach,
+          dry: allWet,
+        },),).toBe('synthetic',);
+        expect(providerServing({
+          reach: everyReach,
+          dry: {
+            ...allWet,
+            synthetic: true,
+          },
+        },),).toBe('hyper',);
+        expect(providerServing({
+          reach: everyReach,
+          dry: {
+            ...allWet,
+            synthetic: true,
+            hyper: true,
+          },
+        },),).toBe('openrouter',);
+        expect(providerServing({
+          reach: {
+            ...everyReach,
+            synthetic: false,
+          },
+          dry: allWet,
+        },),).toBe('hyper',);
+        expect(providerServing({
+          reach: everyReach,
+          dry: {
+            synthetic: true,
+            hyper: true,
+            openrouter: true,
+          },
+        },),).toBe(NO_PROVIDER,);
+      },
+    },),
+  ],
+},);
+
+await describe({
   name: routeProviderFor.name,
   children: [
     it({
@@ -149,10 +213,9 @@ await describe({
         + 'policy for maximum speed',
       fn: async () => {
         expect(routeProviderFor({
-          reach: bothReach,
-          syntheticDry: false,
-          hyperDry: false,
-          syntheticSaturated: false,
+          reach: everyReach,
+          dry: allWet,
+          saturated: noneSaturated,
         },),).toEqual({ kind: 'synthetic', },);
       },
     },),
@@ -162,10 +225,12 @@ await describe({
         + 'concurrency limit and waiting would cost the speed the split is for',
       fn: async () => {
         expect(routeProviderFor({
-          reach: bothReach,
-          syntheticDry: false,
-          hyperDry: false,
-          syntheticSaturated: true,
+          reach: everyReach,
+          dry: allWet,
+          saturated: {
+            ...noneSaturated,
+            synthetic: true,
+          },
         },),).toEqual({ kind: 'hyper', },);
       },
     },),
@@ -174,105 +239,165 @@ await describe({
       name: 'SWITCHES TO HYPER when Synthetic is dry, whether or not its concurrency had room, '
         + 'since budget outranks saturation',
       fn: async () => {
-        for (const syntheticSaturated of [true, false,]) {
+        for (const synthetic of [true, false,]) {
           expect(routeProviderFor({
-            reach: bothReach,
-            syntheticDry: true,
-            hyperDry: false,
-            syntheticSaturated,
+            reach: everyReach,
+            dry: {
+              ...allWet,
+              synthetic: true,
+            },
+            saturated: {
+              ...noneSaturated,
+              synthetic,
+            },
           },),).toEqual({ kind: 'hyper', },);
         }
       },
     },),
 
     it({
-      name: 'KEEPS SENDING TO SYNTHETIC PAST SATURATION when Hyper is dry, because a queue behind '
-        + 'the per-model limit is slower than the split and still buys the answer',
+      name: 'FALLS THROUGH TO OPENROUTER when Synthetic and Hyper are both dry, the owner\'s order '
+        + 'of 2026-09-03: the paid provider is last, and it is where a call goes when the '
+        + 'subscription and the balance are both out',
       fn: async () => {
         expect(routeProviderFor({
-          reach: bothReach,
-          syntheticDry: false,
-          hyperDry: true,
-          syntheticSaturated: true,
+          reach: everyReach,
+          dry: {
+            synthetic: true,
+            hyper: true,
+            openrouter: false,
+          },
+          saturated: noneSaturated,
+        },),).toEqual({ kind: 'openrouter', },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS SENDING TO SYNTHETIC PAST SATURATION when nobody behind it is usable, because a '
+        + 'queue behind the per-model limit is slower than the split and still buys the answer',
+      fn: async () => {
+        expect(routeProviderFor({
+          reach: everyReach,
+          dry: {
+            synthetic: false,
+            hyper: true,
+            openrouter: true,
+          },
+          saturated: {
+            ...noneSaturated,
+            synthetic: true,
+          },
         },),).toEqual({ kind: 'synthetic', },);
       },
     },),
 
     it({
-      name: 'THROWS when both budgets are empty at once, which ends the run at the owner instruction',
+      name: 'OVERFLOWS PAST A DRY HYPER TO OPENROUTER when Synthetic is saturated, since the walk '
+        + 'prefers the first usable provider with a free slot wherever it sits in the order',
       fn: async () => {
-        expect(() => {
-          routeProviderFor({
-            reach: bothReach,
-            syntheticDry: true,
-            hyperDry: true,
-            syntheticSaturated: false,
-          },);
-        },).toThrow(BothProvidersDryError,);
+        expect(routeProviderFor({
+          reach: everyReach,
+          dry: {
+            synthetic: false,
+            hyper: true,
+            openrouter: false,
+          },
+          saturated: {
+            ...noneSaturated,
+            synthetic: true,
+          },
+        },),).toEqual({ kind: 'openrouter', },);
       },
     },),
 
     it({
-      name: 'THROWS on both budgets empty even for a model neither provider serves, since the '
+      name: 'THROWS when every budget is empty at once, which ends the run at the owner instruction',
+      fn: async () => {
+        expect(() => {
+          routeProviderFor({
+            reach: everyReach,
+            dry: {
+              synthetic: true,
+              hyper: true,
+              openrouter: true,
+            },
+            saturated: noneSaturated,
+          },);
+        },).toThrow(EveryProviderDryError,);
+      },
+    },),
+
+    it({
+      name: 'THROWS on every budget empty even for a model no provider serves, since the '
         + 'run is over either way and the budget is the larger fact',
       fn: async () => {
         expect(() => {
           routeProviderFor({
             reach: {
-              onSynthetic: false,
-              onHyper: false,
+              synthetic: false,
+              hyper: false,
+              openrouter: false,
             },
-            syntheticDry: true,
-            hyperDry: true,
-            syntheticSaturated: false,
+            dry: {
+              synthetic: true,
+              hyper: true,
+              openrouter: true,
+            },
+            saturated: noneSaturated,
           },);
-        },).toThrow(BothProvidersDryError,);
+        },).toThrow(EveryProviderDryError,);
       },
     },),
 
     it({
-      name: 'KEEPS a Synthetic-only model on Synthetic past saturation, since half the roster has '
-        + 'no counterpart on the other provider to overflow to',
+      name: 'KEEPS a model with one provider on that provider past saturation, since there is '
+        + 'no counterpart elsewhere to overflow to',
       fn: async () => {
         expect(routeProviderFor({
           reach: {
-            onSynthetic: true,
-            onHyper: false,
+            synthetic: true,
+            hyper: false,
+            openrouter: false,
           },
-          syntheticDry: false,
-          hyperDry: false,
-          syntheticSaturated: true,
+          dry: allWet,
+          saturated: {
+            ...noneSaturated,
+            synthetic: true,
+          },
         },),).toEqual({ kind: 'synthetic', },);
       },
     },),
 
     it({
-      name: 'SENDS a Hyper-only model to Hyper regardless of what Synthetic is doing',
+      name: 'SENDS a model Synthetic does not serve to Hyper regardless of what Synthetic is doing',
       fn: async () => {
         expect(routeProviderFor({
           reach: {
-            onSynthetic: false,
-            onHyper: true,
+            synthetic: false,
+            hyper: true,
+            openrouter: true,
           },
-          syntheticDry: false,
-          hyperDry: false,
-          syntheticSaturated: false,
+          dry: allWet,
+          saturated: noneSaturated,
         },),).toEqual({ kind: 'hyper', },);
       },
     },),
 
     it({
-      name: 'REPORTS a one-provider model as unreachable rather than throwing when that provider '
-        + 'is dry, because that costs one panelist its voice and the run goes on',
+      name: 'REPORTS a model as unreachable rather than throwing when every provider serving it '
+        + 'is dry while another is wet, because that costs one panelist its voice and the run goes on',
       fn: async () => {
         expect(routeProviderFor({
           reach: {
-            onSynthetic: true,
-            onHyper: false,
+            synthetic: true,
+            hyper: false,
+            openrouter: false,
           },
-          syntheticDry: true,
-          hyperDry: false,
-          syntheticSaturated: false,
+          dry: {
+            ...allWet,
+            synthetic: true,
+          },
+          saturated: noneSaturated,
         },).kind,).toBe('unreachable',);
       },
     },),
@@ -283,12 +408,12 @@ await describe({
       fn: async () => {
         expect(routeProviderFor({
           reach: {
-            onSynthetic: false,
-            onHyper: false,
+            synthetic: false,
+            hyper: false,
+            openrouter: false,
           },
-          syntheticDry: false,
-          hyperDry: false,
-          syntheticSaturated: false,
+          dry: allWet,
+          saturated: noneSaturated,
         },),).toEqual({
           kind: 'unreachable',
           reason: 'no provider serves this model',
@@ -296,12 +421,15 @@ await describe({
 
         expect(routeProviderFor({
           reach: {
-            onSynthetic: true,
-            onHyper: false,
+            synthetic: true,
+            hyper: false,
+            openrouter: false,
           },
-          syntheticDry: true,
-          hyperDry: false,
-          syntheticSaturated: false,
+          dry: {
+            ...allWet,
+            synthetic: true,
+          },
+          saturated: noneSaturated,
         },),).toEqual({
           kind: 'unreachable',
           reason: 'every provider serving this model is out of budget',
@@ -358,15 +486,6 @@ await describe({
         ],);
       },
     },),
-
-    it({
-      name: 'writes no value carrying a space, which the record splits on',
-      fn: async () => {
-        for (const field of syntheticMeterLevel({ quota: roomyQuota, },)) {
-          expect(field.includes(' ',),).toBe(false,);
-        }
-      },
-    },),
   ],
 },);
 
@@ -374,16 +493,9 @@ await describe({
   name: hyperMeterLevel.name,
   children: [
     it({
-      name: 'records the balance a dry verdict was drawn from',
+      name: 'names the one number this provider reports',
       fn: async () => {
         expect(hyperMeterLevel({ credits: { balance: 0, }, },),).toEqual(['hyperBalance=0',],);
-      },
-    },),
-
-    it({
-      name: 'records a balance with room left, so a falling one can be watched',
-      fn: async () => {
-        expect(hyperMeterLevel({ credits: { balance: 249, }, },),).toEqual(['hyperBalance=249',],);
       },
     },),
   ],

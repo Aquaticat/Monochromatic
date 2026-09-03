@@ -117,9 +117,13 @@ export class NoProviderForModelError extends Error {
 
 /**
  * Per-model slots the providers grant by default: Synthetic's measured five,
- * nothing on the providers that state no ceiling.
+ * no ceiling on the providers that state none.
  */
-const DEFAULT_SLOT_LIMITS: SlotLimits = { synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY, };
+const DEFAULT_SLOT_LIMITS: SlotLimits = {
+  synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,
+  hyper: Number.POSITIVE_INFINITY,
+  openrouter: Number.POSITIVE_INFINITY,
+};
 
 /**
  * Providers that can serve one call, narrowed to vision where it carries a
@@ -294,7 +298,12 @@ export function createRoutingClient(
     // Named so the handle is bound rather than discarded; `using` is what
     // makes it do its work, and reading it here keeps that legible.
     void slot;
-    return await callers[provider].chatText(request,);
+
+    /**
+     * The provider's own client, which is all this delegates to.
+     */
+    const caller = callers[provider];
+    return await caller.chatText(request,);
   }
 
   /**
@@ -328,8 +337,11 @@ export function createRoutingClient(
     /**
      * Provider that refused the previous attempt, folded into the next
      * decision; nobody before the first.
+     *
+     * A RECORD RATHER THAN A ROOT `let`, so the one thing that changes
+     * between attempts is named and scoped to the loop that changes it.
      */
-    let refused: ProviderName | typeof NOBODY_REFUSED = NOBODY_REFUSED;
+    const last: { refused: ProviderName | typeof NOBODY_REFUSED; } = { refused: NOBODY_REFUSED, };
 
     // ONE ATTEMPT PER PROVIDER AT MOST. The loop cannot be a `map`: each
     // decision depends on the refusal before it, and the last refusal is the
@@ -341,7 +353,7 @@ export function createRoutingClient(
       // eslint-disable-next-line no-await-in-loop -- each choice depends on the refusal before it
       const provider = await chooseProvider({
         request,
-        refused,
+        refused: last.refused,
       },);
 
       try {
@@ -365,7 +377,7 @@ export function createRoutingClient(
         if (attempt === (PROVIDER_ORDER.length - 1))
           throw error;
         rl.warn(`${request.modelId}: ${provider} refused us, asking the next provider`,);
-        refused = provider;
+        last.refused = provider;
       }
     }
 

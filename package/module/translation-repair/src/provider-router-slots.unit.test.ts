@@ -1,0 +1,92 @@
+/**
+ * Tests for the router's slot ledger: only a provider with a per-model limit
+ * is ever saturated, and a take is paired with a release on scope exit.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { createSlotLedger, } from '../dist/final/node/index.mjs';
+
+/**
+ * Model the cases count slots for.
+ */
+const KIMI = 'hf:moonshotai/Kimi-K3';
+
+/**
+ * One Synthetic slot per model, no ceiling elsewhere.
+ */
+const ONE_SYNTHETIC_SLOT = {
+  synthetic: 1,
+  hyper: Number.POSITIVE_INFINITY,
+  openrouter: Number.POSITIVE_INFINITY,
+};
+
+await describe({
+  name: createSlotLedger.name,
+  children: [
+    it({
+      name: 'SATURATES a limiting provider at its limit and never a provider without one',
+      fn: async () => {
+        /**
+         * Ledger granting Synthetic one slot per model and the others none.
+         */
+        const ledger = createSlotLedger({ limits: ONE_SYNTHETIC_SLOT, },);
+        expect(ledger.saturated({ modelId: KIMI, },),).toEqual({
+          synthetic: false,
+          hyper: false,
+          openrouter: false,
+        },);
+        ledger.take({
+          provider: 'synthetic',
+          modelId: KIMI,
+        },);
+        ledger.take({
+          provider: 'hyper',
+          modelId: KIMI,
+        },);
+        ledger.take({
+          provider: 'openrouter',
+          modelId: KIMI,
+        },);
+        expect(ledger.saturated({ modelId: KIMI, },),).toEqual({
+          synthetic: true,
+          hyper: false,
+          openrouter: false,
+        },);
+        expect(ledger.limits({ provider: 'synthetic', },),).toBe(true,);
+        expect(ledger.limits({ provider: 'openrouter', },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'RELEASES a held slot on scope exit and counts per model, so one model\'s saturation '
+        + 'does not spill onto another',
+      fn: async () => {
+        /**
+         * Ledger granting Synthetic one slot per model.
+         */
+        const ledger = createSlotLedger({ limits: ONE_SYNTHETIC_SLOT, },);
+        ledger.take({
+          provider: 'synthetic',
+          modelId: KIMI,
+        },);
+        expect(ledger.saturated({ modelId: 'hf:Qwen/Qwen3.8-27B', },).synthetic,).toBe(false,);
+        {
+          using held = ledger.held({
+            provider: 'synthetic',
+            modelId: KIMI,
+          },);
+          void held;
+          expect(ledger.saturated({ modelId: KIMI, },).synthetic,).toBe(true,);
+        }
+        expect(ledger.saturated({ modelId: KIMI, },).synthetic,).toBe(false,);
+      },
+    },),
+  ],
+},);

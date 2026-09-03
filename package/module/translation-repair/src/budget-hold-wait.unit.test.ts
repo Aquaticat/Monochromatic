@@ -1,10 +1,10 @@
 /**
- * Tests the budget reading that waits out a refusal hold before calling both
- * providers dry.
+ * Tests the budget reading that waits out a refusal hold before calling every
+ * provider dry.
  *
  * THE CASE IS THE PIN PASS OF 2026-09-02 (#474): two 429 holds, both meters
  * wet, and every remaining entry failed inside one second because the holds
- * were read as empty meters. Here the reading waits out the shorter hold and
+ * were read as empty meters. Here the reading waits out the shortest hold and
  * reads again, and ends the run only when nothing a wait could change is left.
  *
  * @module
@@ -17,11 +17,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  BothProvidersDryError,
   type BudgetView,
+  EveryProviderDryError,
   HOLD_POLL_MS,
+  NOBODY_REFUSED,
   type ProviderBudgets,
-  type ProviderName,
+  type ProviderRecord,
   readBudgetsPastHolds,
   shortestHold,
   waitOutHold,
@@ -49,7 +50,7 @@ const MODEL_ID = 'hf:moonshotai/Kimi-K3';
  *
  * @example
  * ```ts
- * const { budgets, reads, } = scriptedBudgets({ views: [BOTH_DRY, SYNTHETIC_BACK,], holds: { synthetic: 5, hyper: 20, }, },);
+ * const { budgets, reads, } = scriptedBudgets({ views: [ALL_DRY, SYNTHETIC_BACK,], holds: { synthetic: 5, hyper: 20, openrouter: 0, }, },);
  * ```
  */
 function scriptedBudgets(
@@ -58,7 +59,7 @@ function scriptedBudgets(
     holds,
   }: {
     readonly views: readonly BudgetView[];
-    readonly holds: Record<ProviderName, number>;
+    readonly holds: ProviderRecord<number>;
   },
 ): {
   readonly budgets: ProviderBudgets;
@@ -93,7 +94,7 @@ function scriptedBudgets(
       markRefused: async function markRefused(): Promise<void> {
         throw new Error('not asked here',);
       },
-      holds: function holdsNow(): Record<ProviderName, number> {
+      holds: function holdsNow(): ProviderRecord<number> {
         holdAsks.count += 1;
         return { ...holds, };
       },
@@ -102,27 +103,30 @@ function scriptedBudgets(
 }
 
 /**
- * Both providers reading dry.
+ * Every provider reading dry.
  */
-const BOTH_DRY: BudgetView = {
-  syntheticDry: true,
-  hyperDry: true,
+const ALL_DRY: BudgetView = {
+  synthetic: true,
+  hyper: true,
+  openrouter: true,
 };
 
 /**
- * The first provider back, the second still dry.
+ * The first provider back, the others still dry.
  */
 const SYNTHETIC_BACK: BudgetView = {
-  syntheticDry: false,
-  hyperDry: true,
+  synthetic: false,
+  hyper: true,
+  openrouter: true,
 };
 
 /**
  * Nobody held.
  */
-const NO_HOLDS: Record<ProviderName, number> = {
+const NO_HOLDS: ProviderRecord<number> = {
   synthetic: 0,
   hyper: 0,
+  openrouter: 0,
 };
 
 await describe({
@@ -135,12 +139,14 @@ await describe({
           holds: {
             synthetic: 0,
             hyper: 4_000,
+            openrouter: 0,
           },
         },),).toBe(4_000,);
         expect(shortestHold({
           holds: {
             synthetic: 300,
             hyper: 4_000,
+            openrouter: 900,
           },
         },),).toBe(300,);
         expect(shortestHold({ holds: NO_HOLDS, },),).toBe(0,);
@@ -201,8 +207,9 @@ await describe({
       fn: async () => {
         const { budgets, reads, holdAsks, } = scriptedBudgets({
           views: [{
-            syntheticDry: false,
-            hyperDry: false,
+            synthetic: false,
+            hyper: false,
+            openrouter: false,
           },],
           holds: NO_HOLDS,
         },);
@@ -210,11 +217,12 @@ await describe({
           budgets,
           modelId: MODEL_ID,
           signal: SIGNAL,
-          syntheticDown: true,
+          refused: 'synthetic',
           pollMs: 1,
         },),).toEqual({
-          syntheticDry: true,
-          hyperDry: false,
+          synthetic: true,
+          hyper: false,
+          openrouter: false,
         },);
         expect(reads.count,).toBe(1,);
         expect(holdAsks.count,).toBe(0,);
@@ -222,21 +230,22 @@ await describe({
     },),
 
     it({
-      name: 'WAITS OUT THE SHORTER HOLD when both providers read dry and a refusal holds one, then '
+      name: 'WAITS OUT THE SHORTEST HOLD when every provider reads dry and a refusal holds one, then '
         + 'returns the second reading',
       fn: async () => {
         const { budgets, reads, holdAsks, } = scriptedBudgets({
-          views: [BOTH_DRY, SYNTHETIC_BACK,],
+          views: [ALL_DRY, SYNTHETIC_BACK,],
           holds: {
             synthetic: 5,
             hyper: 20,
+            openrouter: 0,
           },
         },);
         expect(await readBudgetsPastHolds({
           budgets,
           modelId: MODEL_ID,
           signal: SIGNAL,
-          syntheticDown: false,
+          refused: NOBODY_REFUSED,
           pollMs: 1,
         },),).toEqual(SYNTHETIC_BACK,);
         expect(reads.count,).toBe(2,);
@@ -246,32 +255,35 @@ await describe({
 
     it({
       name: 'DOES NOT FOLD THE ROUTING REFUSAL INTO THE SECOND READING: the refuser held out is '
-        + 'the one whose hold was waited out, so with the other provider dry by meter the call '
+        + 'the one whose hold was waited out, so with the other providers dry by meter the call '
         + 'goes back to the refuser rather than ending the run after the wait',
       fn: async () => {
         /**
-         * The refuser wet by meter, the other provider dry by meter, on both
-         * reads; the first read folds the refusal in and sees both dry.
+         * The refuser wet by meter, the others dry by meter, on both reads;
+         * the first read folds the refusal in and sees every provider dry.
          */
         const { budgets, reads, holdAsks, } = scriptedBudgets({
           views: [{
-            syntheticDry: false,
-            hyperDry: true,
+            synthetic: false,
+            hyper: true,
+            openrouter: true,
           },],
           holds: {
             synthetic: 5,
             hyper: 0,
+            openrouter: 0,
           },
         },);
         expect(await readBudgetsPastHolds({
           budgets,
           modelId: MODEL_ID,
           signal: SIGNAL,
-          syntheticDown: true,
+          refused: 'synthetic',
           pollMs: 1,
         },),).toEqual({
-          syntheticDry: false,
-          hyperDry: true,
+          synthetic: false,
+          hyper: true,
+          openrouter: true,
         },);
         expect(reads.count,).toBe(2,);
         expect(holdAsks.count,).toBe(1,);
@@ -279,8 +291,8 @@ await describe({
     },),
 
     it({
-      name: 'ENDS THE RUN when both read dry with no hold to wait out, and when they still read dry '
-        + 'after the shorter hold ended, waiting at most once',
+      name: 'ENDS THE RUN when every provider reads dry with no hold to wait out, and when they still '
+        + 'read dry after the shortest hold ended, waiting at most once',
       fn: async () => {
         /**
          * Both cases, run side by side since neither touches the other.
@@ -290,6 +302,7 @@ await describe({
           [{
             synthetic: 5,
             hyper: 20,
+            openrouter: 0,
           }, 2,],
         ] as const).map(async function endsTheRun([holds, expectedReads,],): Promise<{
           readonly thrown: unknown;
@@ -297,7 +310,7 @@ await describe({
           readonly expectedReads: number;
         }> {
           const { budgets, reads, } = scriptedBudgets({
-            views: [BOTH_DRY,],
+            views: [ALL_DRY,],
             holds,
           },);
           try {
@@ -305,7 +318,7 @@ await describe({
               budgets,
               modelId: MODEL_ID,
               signal: SIGNAL,
-              syntheticDown: false,
+              refused: NOBODY_REFUSED,
               pollMs: 1,
             },);
           } catch (error) {
@@ -322,11 +335,12 @@ await describe({
           };
         },),);
         for (const outcome of outcomes) {
-          expect(outcome.thrown instanceof BothProvidersDryError,).toBe(true,);
+          expect(outcome.thrown instanceof EveryProviderDryError,).toBe(true,);
           expect(outcome.reads,).toBe(outcome.expectedReads,);
           // The message states what was measured, so a reader can tell
-          // exhaustion from two refusal holds (#474, option 3).
-          expect((outcome.thrown as Error).message,).toContain('meters read synthetic dry, hyper dry; holds synthetic',);
+          // exhaustion from refusal holds (#474, option 3).
+          expect((outcome.thrown as Error).message,)
+            .toContain('meters read synthetic dry, hyper dry, openrouter dry; holds synthetic',);
         }
         /**
          * The waited case names the wait it made.

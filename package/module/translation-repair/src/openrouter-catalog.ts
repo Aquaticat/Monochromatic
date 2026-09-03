@@ -190,13 +190,17 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     readsImages: true,
     maxOutputLength: 131_072,
   },
-  // READS PICTURES HERE AND NOT ON CHARM HYPER, the same weights on a
-  // different serving stack, which is the case `roster-reach.ts` answers
-  // per provider rather than per model.
+  // THE LISTING REPORTS IMAGE INPUT HERE AND CHARM HYPER'S CATALOG DOES NOT,
+  // the same weights on different serving stacks. NOT SEATED AS A READER on
+  // that claim alone: a picture reader is a seat in `image-reading-stage.ts`,
+  // the four current readers were each measured, and this one would be added
+  // by a listing field nobody has probed with a picture. It stays false until
+  // a measured transcription says otherwise, so the reader roster is unchanged
+  // by this provider's arrival.
   'google/gemma-4-26b-a4b-it': {
     id: 'google/gemma-4-26b-a4b-it',
     sharedWith: 'gemma-4-26b-a4b-it',
-    readsImages: true,
+    readsImages: false,
     maxOutputLength: 16_384,
   },
   'openai/gpt-oss-120b': {

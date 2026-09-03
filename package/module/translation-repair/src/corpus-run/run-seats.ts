@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  NO_PROVIDER,
+  type NO_PROVIDER,
   providerServing,
 } from '../budget-routing.ts';
 import type { BudgetView, } from '../provider-budget.ts';
@@ -111,6 +111,20 @@ export const OPENROUTER_WITHHELD: ReadonlySet<RosterModelId> = new Set<RosterMod
  * for any model, and the owner may veto it.
  */
 export const OPENROUTER_CHECKER_SUBSTITUTE: RosterModelId = 'gemma-4-26b-a4b-it';
+
+/**
+ * The view when the budgets could not be read: nothing is dry.
+ *
+ * @returns Wet
+ *
+ * @example
+ * ```ts
+ * const dry = providerRecord({ of: wetWhenUnread, },);
+ * ```
+ */
+function wetWhenUnread(): boolean {
+  return false;
+}
 
 /**
  * Every bench one entry runs with, derived from one reading.
@@ -243,17 +257,24 @@ export function judgeSeatsFor(
    */
   const slateJudges = lateJudges.filter(seatedForSelect,);
   /**
+   * The static checker roster, whose size is the floor to keep.
+   */
+  const staticCheckers = RUN_MODELS.checkerModelIds;
+  /**
    * Static checkers still seated by this reading.
    */
-  const keptCheckers = RUN_MODELS.checkerModelIds
-    .filter(seated,);
+  const keptCheckers = staticCheckers.filter(seated,);
+  /**
+   * Whether a checker seat was withheld and the substitute can take it.
+   */
+  const substituteSits = (keptCheckers.length < staticCheckers.length)
+    && (!keptCheckers.includes(OPENROUTER_CHECKER_SUBSTITUTE,))
+    && seated(OPENROUTER_CHECKER_SUBSTITUTE,);
   /**
    * Checkers with the substitute seated where one was withheld, unless the
    * substitute already sits or is itself withheld.
    */
-  const checkers = ((keptCheckers.length < RUN_MODELS.checkerModelIds.length)
-      && (!keptCheckers.includes(OPENROUTER_CHECKER_SUBSTITUTE,))
-      && seated(OPENROUTER_CHECKER_SUBSTITUTE,))
+  const checkers = substituteSits
     ? [
       ...keptCheckers,
       OPENROUTER_CHECKER_SUBSTITUTE,
@@ -269,18 +290,30 @@ export function judgeSeatsFor(
   },);
   assertCheckerQuorumReachable({ checkerModelIds: checkers, },);
   /**
-   * Every model some bench lost to this reading.
+   * Every static seat holder, repeated where a model holds several seats.
    */
-  const withheld = [
+  const seatHolders = [
     ...RUN_WIDE_SEATS,
     ...RUN_LATE_JUDGES,
-    ...RUN_MODELS.checkerModelIds,
-  ].filter(function lostASeat(
-    modelId,
-    index,
-    all,
+    ...staticCheckers,
+  ];
+  /**
+   * Every model some bench lost to this reading, named once.
+   */
+  const withheld = seatHolders.filter(function lostASeat(
+    modelId: RosterModelId,
+    index: number,
+    all: readonly RosterModelId[],
   ): boolean {
-    return (all.indexOf(modelId,) === index) && (!(seated(modelId,) && seatedForSelect(modelId,)));
+    /**
+     * Whether this is the first mention of the model.
+     */
+    const first = all.indexOf(modelId,) === index;
+    /**
+     * Whether the model keeps every seat it holds.
+     */
+    const keepsAll = seated(modelId,) && seatedForSelect(modelId,);
+    return first && (!keepsAll);
   },);
   return {
     dry,
@@ -355,11 +388,7 @@ export async function readJudgeSeats(
       return await client.providerDryness({ signal, },);
     } catch (error) {
       l.warn(`judge seats: the budget view could not be read (${String(error,)}); seating the full bench`,);
-      return providerRecord({
-        of: function wet(): boolean {
-          return false;
-        },
-      },);
+      return providerRecord({ of: wetWhenUnread, },);
     }
   })();
   /**
@@ -367,16 +396,27 @@ export async function readJudgeSeats(
    */
   const seats = judgeSeatsFor({ dry, },);
   /**
+   * Each bench, named once for the line.
+   */
+  const {
+    wideSeats,
+    selectJudges,
+    lateJudges,
+    slateJudges,
+    checkers,
+    withheld,
+  } = seats;
+  /**
    * Each provider's state, for the line.
    */
   const states = PROVIDER_ORDER.map(function stateOf(provider,): string {
     return `${provider}=${dry[provider] ? 'dry' : 'wet'}`;
   },);
   l.info(
-    `JUDGE SEATS phase=${phase} ${states.join(' ',)} wide=${String(seats.wideSeats.length,)} `
-      + `select=${String(seats.selectJudges.length,)} late=${String(seats.lateJudges.length,)} `
-      + `slate=${String(seats.slateJudges.length,)} checkers=${String(seats.checkers.length,)} `
-      + `withheld=${(seats.withheld.length === 0) ? 'none' : seats.withheld.join(',',)}`,
+    `JUDGE SEATS phase=${phase} ${states.join(' ',)} wide=${String(wideSeats.length,)} `
+      + `select=${String(selectJudges.length,)} late=${String(lateJudges.length,)} `
+      + `slate=${String(slateJudges.length,)} checkers=${String(checkers.length,)} `
+      + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)}`,
   );
   return seats;
 }

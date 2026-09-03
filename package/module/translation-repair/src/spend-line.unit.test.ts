@@ -164,6 +164,25 @@ await describe({
     },),
 
     it({
+      name: 'APPENDS the USD cost as a trailing field only when the caller has one, so the provider '
+        + 'billing in USD says what a call cost and every other line keeps its shape',
+      fn: async () => {
+        expect(
+          reportSpend({
+            provider: 'openrouter',
+            label: 'deepseek/deepseek-v4-flash-0731',
+            extracted: reported({
+              promptTokens: 342,
+              completionTokens: 400,
+            },),
+            costUsd: 0.00015646,
+          },),
+        )
+          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4-flash-0731 prompt=342 completion=400 cost=0.00015646',);
+      },
+    },),
+
+    it({
       name: 'OPENS the returned line with the marker the reader finds it by, so '
         + 'a line this module wrote round-trips through `readSpendLine` rather '
         + 'than reading as prose that happens to mention it',

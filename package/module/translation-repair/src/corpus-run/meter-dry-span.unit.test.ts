@@ -48,6 +48,7 @@ function minuteByMinute(
   at: number;
   synthetic: 'wet' | 'dry' | 'unreadable';
   hyper: 'wet';
+  openrouter: 'absent';
   levels: readonly string[];
 }[] {
   return states.map(function toSample(state, index,) {
@@ -55,6 +56,9 @@ function minuteByMinute(
       at: index * MINUTE,
       synthetic: state,
       hyper: 'wet' as const,
+      // A record from before the third provider, which contributes no
+      // reading to its series.
+      openrouter: 'absent' as const,
       // Spans are arithmetic over states; what the meters read does not enter.
       levels: [],
     };

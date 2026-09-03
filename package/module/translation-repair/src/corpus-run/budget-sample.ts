@@ -88,7 +88,13 @@ async function sampleBudgets(): Promise<void> {
     .TRANSLATION_REPAIR_OPENROUTER_API_KEY
     ?? '';
 
-  if ((syntheticKey === '') || (hyperKey === '') || (openRouterKey === '')) {
+  /**
+   * Whether any provider's key is missing, which makes the sample partial.
+   */
+  const someKeyMissing = (syntheticKey === '')
+    || (hyperKey === '')
+    || (openRouterKey === '');
+  if (someKeyMissing) {
     throw new StatedRefusalError({
       says: 'every provider key must be set to sample availability, and at least one is not: '
         + `TRANSLATION_REPAIR_SYNTHETIC_API_KEY is ${syntheticKey === '' ? 'absent' : 'present'}, `

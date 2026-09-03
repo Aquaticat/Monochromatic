@@ -406,7 +406,12 @@ export function hyperMeterLevel(
 export function openRouterMeterLevel(
   { credits, }: { readonly credits: OpenRouterCredits; },
 ): readonly string[] {
-  return [`openrouterUsd=${credits.remainingUsd.toFixed(2,)}`,];
+  /**
+   * What is left, which is the one number the record watches.
+   */
+  const { remainingUsd, } = credits;
+
+  return [`openrouterUsd=${remainingUsd.toFixed(2,)}`,];
 }
 
 //endregion Budget routing

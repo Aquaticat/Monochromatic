@@ -15,7 +15,7 @@ import {
   SYNTHETIC_MODELS,
   type SyntheticModelInfo,
 } from './synthetic-catalog.ts';
-import { providerRecord, } from './provider-name.ts';
+import { PROVIDER_ORDER, } from './provider-name.ts';
 
 //region Roster reach
 // WHICH PROVIDERS CAN SERVE ONE ROSTER MODEL, and under what spelling, read off
@@ -256,10 +256,25 @@ export function syntheticEntryFor(
 export function reachOf(
   { modelId, }: { readonly modelId: RosterModelId; },
 ): ModelReach {
+  /**
+   * Synthetic's entry, which is also whether it serves this model at all.
+   */
+  const synthetic = syntheticEntryFor({ modelId, },);
+
+  /**
+   * Hyper's spelling, which is also whether it serves this model at all.
+   */
+  const hyper = hyperIdFor({ modelId, },);
+
+  /**
+   * OpenRouter's spelling, which is also whether it serves this model at all.
+   */
+  const openrouter = openRouterIdFor({ modelId, },);
+
   return {
-    synthetic: syntheticEntryFor({ modelId, },).served,
-    hyper: hyperIdFor({ modelId, },).served,
-    openrouter: openRouterIdFor({ modelId, },).served,
+    synthetic: synthetic.served,
+    hyper: hyper.served,
+    openrouter: openrouter.served,
   };
 }
 
@@ -401,13 +416,9 @@ export function readsImages(
    */
   const reach = visionReachOf({ modelId, },);
 
-  return Object
-    .values(providerRecord({
-      of: function shows(provider,): boolean {
-        return reach[provider];
-      },
-    },),)
-    .some(Boolean,);
+  return PROVIDER_ORDER.some(function shows(provider,): boolean {
+    return reach[provider];
+  },);
 }
 
 //endregion Roster reach

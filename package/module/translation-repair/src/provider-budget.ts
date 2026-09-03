@@ -314,6 +314,34 @@ const UNCONFIGURED_METER: MeterRecord = {
 };
 
 /**
+ * The reading before any meter has answered: nothing is dry.
+ *
+ * @returns Spendable
+ *
+ * @example
+ * ```ts
+ * const view = providerRecord({ of: spendableBeforeReading, },);
+ * ```
+ */
+function spendableBeforeReading(): boolean {
+  return false;
+}
+
+/**
+ * The state before any meter has answered: nothing was read.
+ *
+ * @returns Unreadable
+ *
+ * @example
+ * ```ts
+ * const states = providerRecord({ of: unreadBeforeReading, },);
+ * ```
+ */
+function unreadBeforeReading(): MeterState {
+  return 'unreadable';
+}
+
+/**
  * Builds the cached budget view every provider is routed by.
  *
  * @param synthetic - first provider's quota meter, which is all this reads
@@ -374,16 +402,8 @@ export function createProviderBudgets(
     startedAt: 0,
     inFlight: false,
     reading: Promise.resolve({
-      view: providerRecord({
-        of: function spendable(): boolean {
-          return false;
-        },
-      },),
-      states: providerRecord({
-        of: function unread(): MeterState {
-          return 'unreadable';
-        },
-      },),
+      view: providerRecord({ of: spendableBeforeReading, },),
+      states: providerRecord({ of: unreadBeforeReading, },),
     },),
   };
 
@@ -498,23 +518,47 @@ export function createProviderBudgets(
     // STATES FIRST, IN PROVIDER ORDER, THEN EVERY NUMBER, so the reader in
     // `meter-sample-read.ts` finds each provider's state by name and older
     // lines without the third state still read.
+    /**
+     * Each provider's state, as `name=state`.
+     */
+    const stateFields = PROVIDER_ORDER.map(function stateOf(provider,): string {
+      /**
+       * This provider's meter record.
+       */
+      const meter = meters[provider];
+      return `${provider}=${meter.state}`;
+    },);
+    /**
+     * Every number every meter reported, in provider order.
+     */
+    const levelFields = PROVIDER_ORDER.flatMap(function fieldsOf(provider,): readonly string[] {
+      /**
+       * This provider's meter record.
+       */
+      const meter = meters[provider];
+      return meter.fields;
+    },);
     rl.info(`METERS ${[
-      ...PROVIDER_ORDER.map(function stateOf(provider,): string {
-        return `${provider}=${meters[provider].state}`;
-      },),
-      ...PROVIDER_ORDER.flatMap(function fieldsOf(provider,): readonly string[] {
-        return meters[provider].fields;
-      },),
+      ...stateFields,
+      ...levelFields,
     ].join(' ',)}`,);
     return {
       view: providerRecord({
         of: function dryOf(provider,): boolean {
-          return routesAsDry({ state: meters[provider].state, },);
+          /**
+           * This provider's meter record.
+           */
+          const meter = meters[provider];
+          return routesAsDry({ state: meter.state, },);
         },
       },),
       states: providerRecord({
         of: function stateOf(provider,): MeterState {
-          return meters[provider].state;
+          /**
+           * This provider's meter record.
+           */
+          const meter = meters[provider];
+          return meter.state;
         },
       },),
     };
@@ -655,13 +699,16 @@ export function createProviderBudgets(
        */
       const state = states[provider];
       /**
+       * The other providers, in spending order.
+       */
+      const others = otherProviders({ provider, },);
+      /**
        * Whether some other provider reads wet, which decides whether a hold
        * moves traffic anywhere.
        */
-      const anotherIsWet = otherProviders({ provider, },)
-        .some(function isWet(other,): boolean {
-          return states[other] === 'wet';
-        },);
+      const anotherIsWet = others.some(function isWet(other,): boolean {
+        return states[other] === 'wet';
+      },);
       // A HOLD MOVES TRAFFIC; WITH NOWHERE TO MOVE IT, IT ONLY HERDS. A refusal
       // on a wet meter is a concurrency limit, and holding the provider out for
       // the backoff sends the next calls to another provider, which is what
@@ -683,13 +730,11 @@ export function createProviderBudgets(
       /**
        * The other meters' states, for the line.
        */
-      const others = otherProviders({ provider, },)
-        .map(function stateOf(other,): string {
-          return `${other} ${states[other]}`;
-        },)
-        .join(', ',);
+      const otherStates = others.map(function stateOf(other,): string {
+        return `${other} ${states[other]}`;
+      },);
       rl.info(
-        `${provider}: refused us while its meter reads ${state} and ${others}; `
+        `${provider}: refused us while its meter reads ${state} and ${otherStates.join(', ',)}; `
           + `held out for ${String(holdMs,)}ms`,
       );
     },

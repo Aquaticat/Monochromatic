@@ -235,11 +235,55 @@ await describe({
               promptTokens: 1_000_000,
               completionTokens: 1_000_000,
               unreportedCalls: 0,
+              costUsd: 0,
+              costedCalls: 0,
               inputCredits: 40,
               outputCredits: 120,
               totalCredits: 160,
             },
           ],);
+      },
+    },),
+
+    it({
+      name: 'KEEPS OPENROUTER SEATS IN THEIR OWN USD BUCKET, summed from what the wire reported and '
+        + 'never added to the credit total, since the two are different currencies',
+      fn: async () => {
+        /**
+         * Tally holding one seat per currency.
+         */
+        const cost = priceTally({
+          tally: tallyOf({
+            tails: [
+              'SPEND provider=hyper model=kimi-k3 prompt=0 completion=100000',
+              'SPEND provider=openrouter model=moonshotai/kimi-k3 prompt=1000 completion=500 cost=0.0105',
+              'SPEND provider=openrouter model=moonshotai/kimi-k3 prompt=1000 completion=500 cost=0.0095',
+              'SPEND provider=openrouter model=z-ai/glm-5.3-flash prompt=1000 completion=500',
+            ],
+          },),
+        },);
+
+        expect({
+          credits: cost.totalCredits,
+          usd: cost.totalUsd,
+          openRouter: cost
+            .openRouter
+            .map(function named(seat,): string {
+              return `${seat.model} ${String(seat.costUsd,)} over ${String(seat.costedCalls,)} of ${String(seat.calls,)}`;
+            },),
+          subscription: cost
+            .subscription
+            .length,
+        },)
+          .toEqual({
+            credits: 32.664,
+            usd: 0.02,
+            openRouter: [
+              'moonshotai/kimi-k3 0.02 over 2 of 2',
+              'z-ai/glm-5.3-flash 0 over 0 of 1',
+            ],
+            subscription: 0,
+          },);
       },
     },),
   ],

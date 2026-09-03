@@ -938,7 +938,13 @@ export function createRunClient(
   const openRouterKey = process.env
     .TRANSLATION_REPAIR_OPENROUTER_API_KEY
     ?? '';
-  if ((apiKey === '') && (hyperKey === '') && (openRouterKey === '')) {
+  /**
+   * Whether no provider at all is configured, which nothing can run on.
+   */
+  const noKeyAtAll = (apiKey === '')
+    && (hyperKey === '')
+    && (openRouterKey === '');
+  if (noKeyAtAll) {
     throw new RunConfigError({
       variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY '
         + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY',

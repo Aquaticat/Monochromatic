@@ -25,14 +25,50 @@ import type { RosterModelId, } from './roster-id.ts';
 // object the router reads and writes with nothing awaited in between.
 
 /**
- * Concurrent calls each provider grants one model, where it grants a limit.
+ * Concurrent calls each provider grants one model.
+ *
+ * POSITIVE INFINITY MEANS NO LIMIT, the same reading `HYPER_PER_MODEL_CONCURRENCY`
+ * and `OPENROUTER_PER_MODEL_CONCURRENCY` give it: a provider that states no
+ * ceiling takes no slot and is never saturated.
  *
  * @example
  * ```ts
- * const limits: SlotLimits = { synthetic: 5, };
+ * const limits: SlotLimits = { synthetic: 5, hyper: Number.POSITIVE_INFINITY, openrouter: Number.POSITIVE_INFINITY, };
  * ```
  */
-export type SlotLimits = Partial<ProviderRecord<number>>;
+export type SlotLimits = ProviderRecord<number>;
+
+/**
+ * Whether a limit is a real ceiling rather than the no-limit reading.
+ *
+ * @param limit - slots a provider grants one model
+ *
+ * @returns Whether calls on it should be counted
+ *
+ * @example
+ * ```ts
+ * const counted = isCeiling({ limit: 5, },);
+ * ```
+ */
+function isCeiling(
+  { limit, }: { readonly limit: number; },
+): boolean {
+  return Number.isFinite(limit,);
+}
+
+/**
+ * Fresh per-model count for one provider.
+ *
+ * @returns Empty count map
+ *
+ * @example
+ * ```ts
+ * const counts = freshCounts();
+ * ```
+ */
+function freshCounts(): Map<RosterModelId, number> {
+  return new Map<RosterModelId, number>();
+}
 
 /**
  * In-flight accounting for the providers that limit per-model concurrency.
@@ -92,11 +128,7 @@ export function createSlotLedger(
   /**
    * Calls in flight per provider, per model.
    */
-  const inFlight = providerRecord({
-    of: function fresh(): Map<RosterModelId, number> {
-      return new Map<RosterModelId, number>();
-    },
-  },);
+  const inFlight = providerRecord({ of: freshCounts, },);
 
   /**
    * Adjusts the in-flight count for one model on one provider.
@@ -138,25 +170,33 @@ export function createSlotLedger(
       return providerRecord({
         of: function full(provider,): boolean {
           /**
-           * This provider's limit, absent where it has none.
+           * This provider's limit, infinite where it has none.
            */
           const limit = limits[provider];
-          if (limit === undefined)
+          if (!isCeiling({ limit, },))
             return false;
-          return (inFlight[provider].get(modelId,) ?? 0) >= limit;
+          /**
+           * This provider's per-model counts.
+           */
+          const counts = inFlight[provider];
+          /**
+           * Calls in flight on this model here.
+           */
+          const busy = counts.get(modelId,) ?? 0;
+          return busy >= limit;
         },
       },);
     },
 
     limits: function limitsProvider({ provider, },): boolean {
-      return limits[provider] !== undefined;
+      return isCeiling({ limit: limits[provider], },);
     },
 
     take: function take({
       provider,
       modelId,
     },): void {
-      if (limits[provider] === undefined)
+      if (!isCeiling({ limit: limits[provider], },))
         return;
       count({
         provider,
@@ -171,7 +211,7 @@ export function createSlotLedger(
     },): Disposable {
       return {
         [Symbol.dispose]: function release(): void {
-          if (limits[provider] === undefined)
+          if (!isCeiling({ limit: limits[provider], },))
             return;
           count({
             provider,

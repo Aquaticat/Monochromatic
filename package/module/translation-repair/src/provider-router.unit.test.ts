@@ -1,5 +1,5 @@
 /**
- * Tests for the two-provider router: which provider takes a call, what happens
+ * Tests for the provider router: which provider takes a call, what happens
  * when one refuses, and what a picture narrows.
  *
  * @module
@@ -12,12 +12,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
-  BothProvidersDryError,
   type BudgetView,
-  type ProviderName,
   createRoutingClient,
+  EveryProviderDryError,
   isJsonRecord,
   NoProviderForModelError,
+  type ProviderName,
+  type ProviderRecord,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 
@@ -61,74 +62,104 @@ const SLOT_HOLD_MS = 50;
 const EXPECTED_SYNTHETIC_SLOTS = 5;
 
 /**
- * Builds a pair of stub providers recording which took each call.
+ * One Synthetic slot per model, no ceiling elsewhere.
+ */
+const ONE_SYNTHETIC_SLOT = {
+  synthetic: 1,
+  hyper: Number.POSITIVE_INFINITY,
+  openrouter: Number.POSITIVE_INFINITY,
+};
+
+/**
+ * A value per provider, each one optional because a case names only the
+ * providers it scripts.
+ */
+type PerProvider<ValueT,> = {
+  readonly synthetic?: ValueT;
+  readonly hyper?: ValueT;
+  readonly openrouter?: ValueT;
+};
+
+/**
+ * Builds stub providers recording which took each call.
  *
- * @param syntheticStatus - status the first provider refuses with, zero to answer
+ * @param status - status each provider refuses with, zero to answer
  *
- * @param hyperStatus - status the second provider refuses with, zero to answer
+ * @param refusals - how many calls each provider refuses before answering,
+ * every call by default when it has a refusing status
  *
- * @param syntheticText - what the first provider answers when it answers
+ * @param text - what each provider answers when it answers
  *
- * @param hyperText - what the second provider answers when it answers
- *
- * @returns Both providers plus the log of who was called
+ * @returns Every provider's caller plus the log of who was called
  *
  * @example
  * ```ts
- * const { synthetic, hyper, called, } = stubProviders({},);
+ * const { callers, called, } = stubProviders({},);
  * ```
  */
 function stubProviders(
   {
-    syntheticStatus = 0,
-    syntheticRefusals = (syntheticStatus === 0) ? 0 : Number.POSITIVE_INFINITY,
-    hyperStatus = 0,
-    syntheticText = '{"spot":"windowsill"}',
-    hyperText = '{"spot":"radiator"}',
+    status = {},
+    refusals = {},
+    text = {},
   }: {
-    readonly syntheticStatus?: number;
-    readonly syntheticRefusals?: number;
-    readonly hyperStatus?: number;
-    readonly syntheticText?: string;
-    readonly hyperText?: string;
+    readonly status?: PerProvider<number>;
+    readonly refusals?: PerProvider<number>;
+    readonly text?: PerProvider<string>;
   },
 ) {
   /**
    * Providers asked, in call order.
    */
-  const called: string[] = [];
+  const called: ProviderName[] = [];
 
   /**
-   * How many more calls the first provider refuses before answering, every
-   * call by default when it has a refusing status.
+   * Answers each provider gives, distinguishable by default.
    */
-  const syntheticRefusalsLeft = { count: syntheticRefusals, };
+  const answers: ProviderRecord<string> = {
+    synthetic: text.synthetic ?? '{"spot":"windowsill"}',
+    hyper: text.hyper ?? '{"spot":"radiator"}',
+    openrouter: text.openrouter ?? '{"spot":"laundry basket"}',
+  };
 
-  return {
-    called,
-    synthetic: {
+  /**
+   * How many more calls each provider refuses before answering.
+   */
+  const refusalsLeft: Record<ProviderName, number> = {
+    synthetic: refusals.synthetic ?? (((status.synthetic ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    hyper: refusals.hyper ?? (((status.hyper ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    openrouter: refusals.openrouter ?? (((status.openrouter ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+  };
+
+  /**
+   * Builds one provider's caller.
+   *
+   * @param provider - provider this caller stands for
+   *
+   * @returns Caller that records itself, refuses as told, then answers
+   */
+  function callerFor(provider: ProviderName,) {
+    return {
       chatText: async function chatText() {
-        called.push('synthetic',);
-        if (syntheticRefusalsLeft.count > 0) {
-          syntheticRefusalsLeft.count -= 1;
+        called.push(provider,);
+        if (refusalsLeft[provider] > 0) {
+          refusalsLeft[provider] -= 1;
           throw new SyntheticHttpError({
-            status: syntheticStatus,
+            status: status[provider] ?? 0,
             bodyText: 'refused',
           },);
         }
-        return { text: syntheticText, };
+        return { text: answers[provider], };
       },
-    },
-    hyper: {
-      chatText: async function chatText() {
-        called.push('hyper',);
-        if (hyperStatus !== 0)
-          throw new SyntheticHttpError({
-            status: hyperStatus,
-            bodyText: 'refused',
-          },);
-        return { text: hyperText, };
-      },
+    };
+  }
+
+  return {
+    called,
+    callers: {
+      synthetic: callerFor('synthetic',),
+      hyper: callerFor('hyper',),
+      openrouter: callerFor('openrouter',),
     },
   };
 }
@@ -136,9 +167,11 @@ function stubProviders(
 /**
  * Builds a budget view that answers as told and records refusals.
  *
- * @param syntheticDry - whether the first provider reads as out of budget
+ * @param dry - which providers read as out of budget
  *
- * @param hyperDry - whether the second provider reads as out of budget
+ * @param holdsMs - what the holds report
+ *
+ * @param onHoldEnd - what a read after the holds were asked for does first
  *
  * @returns Budget view plus the providers marked as having refused us
  *
@@ -149,31 +182,31 @@ function stubProviders(
  */
 function stubBudgets(
   {
-    syntheticDry = false,
-    hyperDry = false,
+    dry = {},
     holdsMs = {
       synthetic: 0,
       hyper: 0,
+      openrouter: 0,
     },
     onHoldEnd,
   }: {
-    readonly syntheticDry?: boolean;
-    readonly hyperDry?: boolean;
-    readonly holdsMs?: Record<ProviderName, number>;
+    readonly dry?: PerProvider<boolean>;
+    readonly holdsMs?: ProviderRecord<number>;
     readonly onHoldEnd?: () => void;
   },
 ) {
   /**
    * Providers that reported themselves out of budget, in order.
    */
-  const refused: string[] = [];
+  const refused: ProviderName[] = [];
 
   /**
    * View as the meters read it, which a refusal then overrides.
    */
-  const view: { syntheticDry: boolean; hyperDry: boolean; } = {
-    syntheticDry,
-    hyperDry,
+  const view: Record<ProviderName, boolean> = {
+    synthetic: dry.synthetic ?? false,
+    hyper: dry.hyper ?? false,
+    openrouter: dry.openrouter ?? false,
   };
 
   /**
@@ -196,12 +229,9 @@ function stubBudgets(
       },
       markRefused: async function markRefused({ provider, }: { readonly provider: ProviderName; },): Promise<void> {
         refused.push(provider,);
-        if (provider === 'synthetic')
-          view.syntheticDry = true;
-        else
-          view.hyperDry = true;
+        view[provider] = true;
       },
-      holds: function holds(): Record<ProviderName, number> {
+      holds: function holds(): ProviderRecord<number> {
         holdReads.count += 1;
         return { ...holdsMs, };
       },
@@ -225,50 +255,71 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
   return isJsonRecord(value,) && ((typeof value.spot) === 'string');
 }
 
+/**
+ * Routes one text call for Kimi-K3 and reports what happened.
+ *
+ * @param client - router under test
+ *
+ * @param modelId - model to ask
+ *
+ * @returns Reply text, or the error thrown
+ *
+ * @example
+ * ```ts
+ * const outcome = await ask({ client, },);
+ * ```
+ */
+async function ask(
+  {
+    client,
+    modelId = 'hf:moonshotai/Kimi-K3',
+  }: {
+    readonly client: ReturnType<typeof createRoutingClient>;
+    readonly modelId?: Parameters<ReturnType<typeof createRoutingClient>['chatText']>[0]['modelId'];
+  },
+): Promise<{ readonly text: string; } | { readonly thrown: unknown; }> {
+  try {
+    return { text: (await client.chatText({
+      modelId,
+      messages: MESSAGES,
+      signal: SIGNAL,
+    },)).text, };
+  } catch (error) {
+    return { thrown: error, };
+  }
+}
+
 await describe({
   name: createRoutingClient.name,
   children: [
     it({
       name: 'prefers the first provider while it has budget and a free slot',
       fn: async () => {
-        /** Stub providers, both answering. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with money on both sides. */
+        const { callers, called, } = stubProviders({},);
         const { budgets, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
 
-        expect((await client.chatText({
-          modelId: 'hf:moonshotai/Kimi-K3',
-          messages: MESSAGES,
-          signal: SIGNAL,
-        },)).text,).toBe('{"spot":"windowsill"}',);
+        expect(await ask({ client, },),).toEqual({ text: '{"spot":"windowsill"}', },);
         expect(called,).toEqual(['synthetic',],);
       },
     },),
 
     it({
-      name: 'sends a model only the second provider serves straight there',
+      name: 'sends a model Synthetic does not serve to Hyper, the next provider that does',
       fn: async () => {
-        /** Stub providers, both answering. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with money on both sides. */
+        const { callers, called, } = stubProviders({},);
         const { budgets, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
 
-        await client.chatText({
+        await ask({
+          client,
           modelId: 'deepseek-v4-flash-0731',
-          messages: MESSAGES,
-          signal: SIGNAL,
         },);
         expect(called,).toEqual(['hyper',],);
       },
@@ -277,37 +328,50 @@ await describe({
     it({
       name: 'moves every call to the second provider when the first is dry',
       fn: async () => {
-        /** Stub providers, both answering. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with the first provider spent. */
-        const { budgets, } = stubBudgets({ syntheticDry: true, },);
-        /** Router under test. */
+        const { callers, called, } = stubProviders({},);
+        const { budgets, } = stubBudgets({ dry: { synthetic: true, }, },);
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
 
-        await client.chatText({
-          modelId: 'hf:moonshotai/Kimi-K3',
-          messages: MESSAGES,
-          signal: SIGNAL,
-        },);
+        await ask({ client, },);
         expect(called,).toEqual(['hyper',],);
       },
     },),
 
     it({
-      name: 'FORWARDS a refused call to the other provider instead of losing it',
+      name: 'MOVES EVERY CALL TO OPENROUTER when Synthetic and Hyper are both dry, the owner\'s '
+        + 'fallback of 2026-09-03, including a model Synthetic never served',
       fn: async () => {
-        /** Stub providers with the first one out of credit. */
-        const { synthetic, hyper, called, } = stubProviders({ syntheticStatus: 429, },);
-        /** Budget view whose meters both still report money. */
-        const { budgets, refused, } = stubBudgets({},);
-        /** Router under test. */
+        const { callers, called, } = stubProviders({},);
+        const { budgets, } = stubBudgets({
+          dry: {
+            synthetic: true,
+            hyper: true,
+          },
+        },);
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
+          budgets,
+        },);
+
+        expect(await ask({ client, },),).toEqual({ text: '{"spot":"laundry basket"}', },);
+        await ask({
+          client,
+          modelId: 'deepseek-v4-flash-0731',
+        },);
+        expect(called,).toEqual(['openrouter', 'openrouter',],);
+      },
+    },),
+
+    it({
+      name: 'FORWARDS a refused call to the next provider instead of losing it',
+      fn: async () => {
+        const { callers, called, } = stubProviders({ status: { synthetic: 429, }, },);
+        const { budgets, refused, } = stubBudgets({},);
+        const client = createRoutingClient({
+          callers,
           budgets,
         },);
 
@@ -315,121 +379,137 @@ await describe({
         // weekly credit and 866 of 875 lost voices carried this one status.
         // Retrying the exhausted provider never succeeds, and refusing to
         // settle turns a budget problem into holes in the deliverable.
-        expect((await client.chatText({
-          modelId: 'hf:moonshotai/Kimi-K3',
-          messages: MESSAGES,
-          signal: SIGNAL,
-        },)).text,).toBe('{"spot":"radiator"}',);
+        expect(await ask({ client, },),).toEqual({ text: '{"spot":"radiator"}', },);
         expect(called,).toEqual(['synthetic', 'hyper',],);
         expect(refused,).toEqual(['synthetic',],);
       },
     },),
 
     it({
-      name: 'FORWARDS a payment refusal, which is how the other provider says it',
+      name: 'FORWARDS TWICE when the first two providers refuse in turn, reaching the third, and '
+        + 'ends on the third refusal rather than looping',
       fn: async () => {
-        /** Stub providers with the second one out of balance. */
-        const { synthetic, hyper, called, } = stubProviders({ hyperStatus: 402, },);
-        /** Budget view with the first provider spent, so routing starts there. */
-        const { budgets, refused, } = stubBudgets({ syntheticDry: true, },);
-        /** Router under test. */
+        const { callers, called, } = stubProviders({
+          status: {
+            synthetic: 429,
+            hyper: 402,
+          },
+        },);
+        const { budgets, refused, } = stubBudgets({},);
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
-        /** Failure both-dry produced. */
-        let caught: unknown;
 
-        try {
-          await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          caught = error;
-        }
+        expect(await ask({ client, },),).toEqual({ text: '{"spot":"laundry basket"}', },);
+        expect(called,).toEqual(['synthetic', 'hyper', 'openrouter',],);
+        expect(refused,).toEqual(['synthetic', 'hyper',],);
 
-        // A subscription reports exhaustion as a rate limit and a balance
-        // reports it as payment due; both mark the provider.
-        expect(refused,).toEqual(['hyper',],);
-        expect(called,).toEqual(['hyper',],);
-        expect(caught instanceof BothProvidersDryError,).toBe(true,);
+        const everyone = stubProviders({
+          status: {
+            synthetic: 429,
+            hyper: 429,
+            openrouter: 402,
+          },
+        },);
+        const all = createRoutingClient({
+          callers: everyone.callers,
+          budgets: stubBudgets({},).budgets,
+        },);
+        const outcome = await ask({ client: all, },);
+        expect(('thrown' in outcome) && (outcome.thrown instanceof SyntheticHttpError),).toBe(true,);
+        expect(everyone.called,).toEqual(['synthetic', 'hyper', 'openrouter',],);
       },
     },),
 
     it({
-      name: 'WAITS OUT THE SHORTER HOLD when both providers are held out by refusals, then routes '
+      name: 'FORWARDS a payment refusal, which is how a balance provider says it, and ends the run '
+        + 'when it was the last provider with budget',
+      fn: async () => {
+        const { callers, called, } = stubProviders({ status: { openrouter: 402, }, },);
+        const { budgets, refused, } = stubBudgets({
+          dry: {
+            synthetic: true,
+            hyper: true,
+          },
+        },);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+
+        const outcome = await ask({ client, },);
+        // A subscription reports exhaustion as a rate limit and a balance
+        // reports it as payment due; both mark the provider.
+        expect(refused,).toEqual(['openrouter',],);
+        expect(called,).toEqual(['openrouter',],);
+        expect(('thrown' in outcome) && (outcome.thrown instanceof EveryProviderDryError),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'WAITS OUT THE SHORTEST HOLD when every provider is held out by refusals, then routes '
         + 'to the one that came back, instead of ending the run: the pin pass of 2026-09-02 (#474) '
         + 'failed every remaining entry inside one second on two holds while both meters read wet',
       fn: async () => {
-        /** Stub providers with budget on both sides. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with both providers held, the first for 5 ms and the second for 20 ms. */
+        const { callers, called, } = stubProviders({},);
         const stub = stubBudgets({
-          syntheticDry: true,
-          hyperDry: true,
+          dry: {
+            synthetic: true,
+            hyper: true,
+            openrouter: true,
+          },
           holdsMs: {
             synthetic: 5,
             hyper: 20,
+            openrouter: 20,
           },
           onHoldEnd: function syntheticComesBack(): void {
-            stub.view.syntheticDry = false;
+            stub.view.synthetic = false;
           },
         },);
-        /** Router under test, polling for abort every millisecond. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets: stub.budgets,
           holdPollMs: 1,
         },);
 
-        expect((await client.chatText({
-          modelId: 'hf:moonshotai/Kimi-K3',
-          messages: MESSAGES,
-          signal: SIGNAL,
-        },)).text,).toBe('{"spot":"windowsill"}',);
+        expect(await ask({ client, },),).toEqual({ text: '{"spot":"windowsill"}', },);
         expect(called,).toEqual(['synthetic',],);
         expect(stub.holdReads.count,).toBe(1,);
       },
     },),
 
     it({
-      name: 'GOES BACK TO THE REFUSER once its hold has been waited out when the other provider is '
+      name: 'GOES BACK TO THE REFUSER once its hold has been waited out when the other providers are '
         + 'dry by meter: the refusal that routed the call is what the hold became, and a hold that '
         + 'expired is the provider coming back, not a second reason to call it dry',
       fn: async () => {
-        /** Stub providers whose first one refuses exactly once, then answers. */
-        const { synthetic, hyper, called, } = stubProviders({
-          syntheticStatus: 429,
-          syntheticRefusals: 1,
+        const { callers, called, } = stubProviders({
+          status: { synthetic: 429, },
+          refusals: { synthetic: 1, },
         },);
-        /** Budget view with the second provider dry by meter and the first held 5 ms on its refusal. */
         const stub = stubBudgets({
-          hyperDry: true,
+          dry: {
+            hyper: true,
+            openrouter: true,
+          },
           holdsMs: {
             synthetic: 5,
             hyper: 0,
+            openrouter: 0,
           },
           onHoldEnd: function syntheticComesBack(): void {
-            stub.view.syntheticDry = false;
+            stub.view.synthetic = false;
           },
         },);
-        /** Router under test, polling for abort every millisecond. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets: stub.budgets,
           holdPollMs: 1,
         },);
 
-        expect((await client.chatText({
-          modelId: 'hf:moonshotai/Kimi-K3',
-          messages: MESSAGES,
-          signal: SIGNAL,
-        },)).text,).toBe('{"spot":"windowsill"}',);
+        expect(await ask({ client, },),).toEqual({ text: '{"spot":"windowsill"}', },);
         expect(called,).toEqual(['synthetic', 'synthetic',],);
         expect(stub.refused,).toEqual(['synthetic',],);
         expect(stub.holdReads.count,).toBe(1,);
@@ -437,37 +517,25 @@ await describe({
     },),
 
     it({
-      name: 'ENDS THE RUN when both providers read dry with no hold to wait out, since nothing a '
+      name: 'ENDS THE RUN when every provider reads dry with no hold to wait out, since nothing a '
         + 'wait could change is left',
       fn: async () => {
-        /** Stub providers with budget on both sides. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with both meters dry and no refusal holding either. */
+        const { callers, called, } = stubProviders({},);
         const { budgets, holdReads, } = stubBudgets({
-          syntheticDry: true,
-          hyperDry: true,
+          dry: {
+            synthetic: true,
+            hyper: true,
+            openrouter: true,
+          },
         },);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
           holdPollMs: 1,
         },);
-        /** Failure both-dry produced. */
-        let caught: unknown;
 
-        try {
-          await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          caught = error;
-        }
-
-        expect(caught instanceof BothProvidersDryError,).toBe(true,);
+        const outcome = await ask({ client, },);
+        expect(('thrown' in outcome) && (outcome.thrown instanceof EveryProviderDryError),).toBe(true,);
         expect(called,).toEqual([],);
         expect(holdReads.count,).toBe(1,);
       },
@@ -476,153 +544,58 @@ await describe({
     it({
       name: 'REFUSES to re-route a failure that is not about budget',
       fn: async () => {
-        /** Stub providers with the first one unwell rather than broke. */
-        const { synthetic, hyper, called, } = stubProviders({ syntheticStatus: 500, },);
-        /** Budget view with money on both sides. */
+        const { callers, called, } = stubProviders({ status: { synthetic: 500, }, },);
         const { budgets, refused, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
-        /** Failure the unwell provider produced. */
-        let caught: unknown;
 
-        try {
-          await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          caught = error;
-        }
-
-        // Spending a second provider's budget on a fault that is not about
+        const outcome = await ask({ client, },);
+        // Spending another provider's budget on a fault that is not about
         // budget would hide the fault and pay for it twice.
-        expect(caught instanceof SyntheticHttpError,).toBe(true,);
+        expect(('thrown' in outcome) && (outcome.thrown instanceof SyntheticHttpError),).toBe(true,);
         expect(called,).toEqual(['synthetic',],);
         expect(refused,).toEqual([],);
       },
     },),
 
     it({
-      name: 're-routes exactly once, so a second refusal is the answer',
+      name: 'REFUSES a model whose only providers are out of budget while another is wet',
       fn: async () => {
-        /** Stub providers, both out of credit. */
-        const { synthetic, hyper, called, } = stubProviders({
-          syntheticStatus: 429,
-          hyperStatus: 429,
-        },);
-        /** Budget view whose meters both still report money. */
-        const { budgets, } = stubBudgets({},);
-        /** Router under test. */
-        const client = createRoutingClient({
-          synthetic,
-          hyper,
-          budgets,
-        },);
-        /** Failure the second refusal produced. */
-        let caught: unknown;
-
-        try {
-          await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          caught = error;
-        }
-
-        expect(called,).toEqual(['synthetic', 'hyper',],);
-        expect(caught instanceof SyntheticHttpError,).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a call when both providers are out of budget',
-      fn: async () => {
-        /** Stub providers, both answering. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with nothing left anywhere. */
+        const { callers, called, } = stubProviders({},);
         const { budgets, } = stubBudgets({
-          syntheticDry: true,
-          hyperDry: true,
+          dry: {
+            hyper: true,
+            openrouter: true,
+          },
         },);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
-        /** Failure the dry pair produced. */
-        let caught: unknown;
 
-        try {
-          await client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          caught = error;
-        }
-
-        expect(caught instanceof BothProvidersDryError,).toBe(true,);
+        const outcome = await ask({
+          client,
+          modelId: 'deepseek-v4-flash-0731',
+        },);
+        // Synthetic does not serve this model, so the budgets of the two that
+        // do ARE the model's.
+        expect(('thrown' in outcome) && (outcome.thrown instanceof NoProviderForModelError),).toBe(true,);
         expect(called,).toEqual([],);
       },
     },),
 
     it({
-      name: 'REFUSES a model whose only provider is out of budget',
+      name: 'sends GLM-5.3-Flash pictures and text through the first provider that reads them',
       fn: async () => {
-        /** Stub providers, both answering. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with the second provider spent. */
-        const { budgets, } = stubBudgets({ hyperDry: true, },);
-        /** Router under test. */
-        const client = createRoutingClient({
-          synthetic,
-          hyper,
-          budgets,
-        },);
-        /** Failure the unreachable model produced. */
-        let caught: unknown;
-
-        try {
-          await client.chatText({
-            modelId: 'deepseek-v4-flash-0731',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          caught = error;
-        }
-
-        // Only one provider serves this model, so its budget IS the model's.
-        expect(caught instanceof NoProviderForModelError,).toBe(true,);
-        expect(called,).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'sends GLM-5.3-Flash pictures and text through its sole verified provider',
-      fn: async () => {
-        /** Stub providers, both answering. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with money on both sides. */
+        const { callers, called, } = stubProviders({},);
         const { budgets, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
 
-        // THE REPLACEMENT HAS NO INHERITED HYPER ROUTE. Synthetic reports image
-        // input for GLM-5.3-Flash, so both call shapes use its sole verified path.
         await client.chatText({
           modelId: 'hf:zai-org/GLM-5.3-Flash',
           messages: PICTURE_MESSAGES,
@@ -640,31 +613,48 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS a picture off a provider that does not read it for this model, which is why '
+        + 'vision reach is asked per provider: gpt-oss reads nowhere and gemma reads nowhere yet',
+      fn: async () => {
+        const { callers, called, } = stubProviders({},);
+        const { budgets, } = stubBudgets({},);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+
+        /**
+         * What a picture to a model no provider shows pictures to produces.
+         */
+        let thrown: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:openai/gpt-oss-120b',
+            messages: PICTURE_MESSAGES,
+            signal: SIGNAL,
+          },);
+        } catch (error) {
+          thrown = error;
+        }
+        expect(thrown instanceof NoProviderForModelError,).toBe(true,);
+        expect(called,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'overflows to the second provider while the first one is saturated',
       fn: async () => {
-        /** Stub providers, both answering. */
-        const { synthetic, hyper, called, } = stubProviders({},);
-        /** Budget view with money on both sides. */
+        const { callers, called, } = stubProviders({},);
         const { budgets, } = stubBudgets({},);
-        /** Router under test, told the first provider grants one slot. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
-          syntheticSlotsPerModel: 1,
+          slotLimits: ONE_SYNTHETIC_SLOT,
         },);
 
         await Promise.all([
-          client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },),
-          client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },),
+          ask({ client, },),
+          ask({ client, },),
         ],);
 
         // The second call finds the one slot busy and goes elsewhere rather
@@ -693,19 +683,28 @@ await describe({
             return { text: '{"spot":"windowsill"}', };
           },
         };
-        /** Budget view with money on both sides. */
+        /** Third provider, never reached while Hyper is wet. */
+        const openrouter = {
+          chatText: async function chatText() {
+            called.push('openrouter',);
+            return { text: '{"spot":"windowsill"}', };
+          },
+        };
         const { budgets, } = stubBudgets({},);
         /** Router using production default slot count. */
-        const client = createRoutingClient({ synthetic, hyper, budgets, },);
+        const client = createRoutingClient({
+          callers: {
+            synthetic,
+            hyper,
+            openrouter,
+          },
+          budgets,
+        },);
         /** One more concurrent call than Synthetic has measured slots. */
         const calls = Array.from(
           { length: EXPECTED_SYNTHETIC_SLOTS + 1, },
           function callModel() {
-            return client.chatText({
-              modelId: 'hf:moonshotai/Kimi-K3',
-              messages: MESSAGES,
-              signal: SIGNAL,
-            },);
+            return ask({ client, },);
           },
         );
 
@@ -721,19 +720,14 @@ await describe({
     },),
 
     it({
-      name: 'FORWARDS a non-conformant answer to the same model on the other stack',
+      name: 'FORWARDS a non-conformant answer to the same model on the next stack',
       fn: async () => {
-        /** Providers, both answering, the first one unparseably. */
-        const { synthetic, hyper, called, } = stubProviders({ syntheticText: 'I will not do that.', },);
-        /** Budget view with money on both sides. */
+        const { callers, called, } = stubProviders({ text: { synthetic: 'I will not do that.', }, },);
         const { budgets, refused, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
-        /** Outcome after the re-ask. */
         const outcome = await client.chatJson({
           modelId: 'hf:moonshotai/Kimi-K3',
           messages: MESSAGES,
@@ -741,13 +735,35 @@ await describe({
           validate: isNapSpot,
         },);
 
-        // The two providers extract structure by different mechanisms, a
-        // forced tool on one and a response format on the other, so the same
-        // weights can conform on one stack and not the other.
+        // The providers extract structure by different mechanisms, a forced
+        // tool on one and a response format on the others, so the same
+        // weights can conform on one stack and not another.
         expect(called,).toEqual(['synthetic', 'hyper',],);
         expect(outcome.kind,).toBe('ok',);
         // A bad ANSWER is not a budget refusal; nothing is marked.
         expect(refused,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'RE-ASKS ON OPENROUTER when Hyper is dry, since the next wet provider serving the model '
+        + 'is the second opinion, wherever it sits in the order',
+      fn: async () => {
+        const { callers, called, } = stubProviders({ text: { synthetic: 'I will not do that.', }, },);
+        const { budgets, } = stubBudgets({ dry: { hyper: true, }, },);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+        const outcome = await client.chatJson({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          messages: MESSAGES,
+          signal: SIGNAL,
+          validate: isNapSpot,
+        },);
+
+        expect(called,).toEqual(['synthetic', 'openrouter',],);
+        expect(outcome.kind,).toBe('ok',);
       },
     },),
 
@@ -758,7 +774,7 @@ await describe({
         /**
          * Providers asked, in call order.
          */
-        const called: string[] = [];
+        const called: ProviderName[] = [];
         /**
          * First provider, holding its one slot long enough for a concurrent
          * caller to find it busy.
@@ -780,14 +796,23 @@ await describe({
             return { text: 'I will not do that.', };
           },
         };
-        /** Budget view with money on both sides. */
-        const { budgets, } = stubBudgets({},);
+        /** Third provider, dry throughout. */
+        const openrouter = {
+          chatText: async function chatText() {
+            called.push('openrouter',);
+            return { text: '{"spot":"windowsill"}', };
+          },
+        };
+        const { budgets, } = stubBudgets({ dry: { openrouter: true, }, },);
         /** Router under test, one Synthetic slot per model. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers: {
+            synthetic,
+            hyper,
+            openrouter,
+          },
           budgets,
-          syntheticSlotsPerModel: 1,
+          slotLimits: ONE_SYNTHETIC_SLOT,
         },);
 
         // Phase one: the first call holds the slot, the second finds it busy,
@@ -814,100 +839,50 @@ await describe({
         // the slot and the other overflows. A count that had drifted to minus
         // one would show both a free slot and put both on Synthetic.
         await Promise.all([
-          client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },),
-          client.chatText({
-            modelId: 'hf:moonshotai/Kimi-K3',
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },),
+          ask({ client, },),
+          ask({ client, },),
         ],);
         expect(called.toSorted(),).toEqual(['hyper', 'synthetic',],);
       },
     },),
+
     it({
-      name: 'REFUSES to re-ask a model the other provider does not serve',
+      name: 'REFUSES to re-ask when no other provider serving the model has budget',
       fn: async () => {
-        /** Providers, the only reachable one answering unparseably. */
-        const { synthetic, hyper, called, } = stubProviders({ hyperText: 'I will not do that.', },);
-        /** Budget view with money on both sides. */
-        const { budgets, } = stubBudgets({},);
-        /** Router under test. */
+        const { callers, called, } = stubProviders({ text: { hyper: 'I will not do that.', }, },);
+        const { budgets, } = stubBudgets({ dry: { openrouter: true, }, },);
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
-        /** Outcome with nowhere else to ask. */
         const outcome = await client.chatJson({
-          // Hyper-only since 2026-09-01's refresh gave every Synthetic seat a
-          // Hyper twin; a Hyper-only model is now the single-provider case.
+          // Synthetic never served this model and OpenRouter is dry, so the
+          // answer falls to `#88`'s invalid-candidate path.
           modelId: 'glm-5.3',
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
         },);
 
-        // This model has one provider, so the answer falls to `#88`'s
-        // invalid-candidate path rather than to a second stack.
         expect(called,).toEqual(['hyper',],);
         expect(outcome.kind,).toBe('schema-mismatch',);
       },
     },),
 
     it({
-      name: 'REFUSES to re-ask when the other provider has no budget left',
-      fn: async () => {
-        /** Providers, the first answering unparseably. */
-        const { synthetic, hyper, called, } = stubProviders({ syntheticText: 'I will not do that.', },);
-        /** Budget view with the second provider spent. */
-        const { budgets, } = stubBudgets({ hyperDry: true, },);
-        /** Router under test. */
-        const client = createRoutingClient({
-          synthetic,
-          hyper,
-          budgets,
-        },);
-        /** Outcome with nowhere affordable to ask. */
-        const outcome = await client.chatJson({
-          modelId: 'hf:moonshotai/Kimi-K3',
-          messages: MESSAGES,
-          signal: SIGNAL,
-          validate: isNapSpot,
-        },);
-
-        expect(called,).toEqual(['synthetic',],);
-        expect(outcome.kind,).toBe('schema-mismatch',);
-      },
-    },),
-
-    it({
-      name: 'KEEPS the first answer and starts the other provider\'s cooldown when the re-ask is refused on '
+      name: 'KEEPS the first answer and starts the next provider\'s cooldown when the re-ask is refused on '
         + 'budget, instead of raising out of an exchange that already has an answer',
       fn: async () => {
-        /**
-         * Providers: the first answers unparseably, the second refuses on
-         * budget when re-asked.
-         */
-        const { synthetic, hyper, called, } = stubProviders({
-          syntheticText: 'I will not do that.',
-          hyperStatus: 429,
+        const { callers, called, } = stubProviders({
+          text: { synthetic: 'I will not do that.', },
+          status: { hyper: 429, },
         },);
-        /** Budget view with money on both sides, recording refusals. */
         const { budgets, refused, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
 
-        /**
-         * Outcome the caller gets, which is the first answer read as unusable.
-         */
         const outcome = await client.chatJson({
           modelId: 'hf:moonshotai/Kimi-K3',
           messages: MESSAGES,
@@ -920,23 +895,21 @@ await describe({
         expect(refused,).toEqual(['hyper',],);
       },
     },),
+
     it({
       name: 'keeps the preferred provider\'s answer when the re-ask fails too',
       fn: async () => {
-        /** Providers, both answering unparseably and distinguishably. */
-        const { synthetic, hyper, called, } = stubProviders({
-          syntheticText: 'first refusal',
-          hyperText: 'second refusal',
+        const { callers, called, } = stubProviders({
+          text: {
+            synthetic: 'first refusal',
+            hyper: 'second refusal',
+          },
         },);
-        /** Budget view with money on both sides. */
         const { budgets, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
-        /** Outcome after both stacks disagreed with the schema. */
         const outcome = await client.chatJson({
           modelId: 'hf:moonshotai/Kimi-K3',
           messages: MESSAGES,
@@ -952,19 +925,14 @@ await describe({
     },),
 
     it({
-      name: 'reads a routed answer through the same ladder either provider uses',
+      name: 'reads a routed answer through the same ladder every provider uses',
       fn: async () => {
-        /** Stub providers with the first one out of credit. */
-        const { synthetic, hyper, } = stubProviders({ syntheticStatus: 429, },);
-        /** Budget view whose meters both still report money. */
+        const { callers, } = stubProviders({ status: { synthetic: 429, }, },);
         const { budgets, } = stubBudgets({},);
-        /** Router under test. */
         const client = createRoutingClient({
-          synthetic,
-          hyper,
+          callers,
           budgets,
         },);
-        /** Outcome of one routed schema-validated call. */
         const outcome = await client.chatJson({
           modelId: 'hf:moonshotai/Kimi-K3',
           messages: MESSAGES,

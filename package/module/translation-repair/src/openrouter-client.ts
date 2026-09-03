@@ -540,7 +540,12 @@ export function createOpenRouterClient(
      */
     const parsed = parseOpenRouterCredits({ bodyText: reply.bodyText, },);
 
-    rl.debug(`remaining ${parsed.remainingUsd.toFixed(2,)} USD`,);
+    /**
+     * What is left, for the log line.
+     */
+    const { remainingUsd, } = parsed;
+
+    rl.debug(`remaining ${remainingUsd.toFixed(2,)} USD`,);
     return parsed;
   }
 

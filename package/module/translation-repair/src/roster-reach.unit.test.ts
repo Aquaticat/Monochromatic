@@ -218,30 +218,34 @@ await describe({
   name: reachOf.name,
   children: [
     it({
-      name: 'REPORTS both providers for a shared model, which is what makes an overflow and a '
+      name: 'REPORTS every provider for a shared model, which is what makes an overflow and a '
         + 'cross-provider re-ask possible at all',
       fn: async () => {
         expect(reachOf({ modelId: 'hf:openai/gpt-oss-120b', },),).toEqual({
-          onSynthetic: true,
-          onHyper: true,
+          synthetic: true,
+          hyper: true,
+          openrouter: true,
         },);
       },
     },),
 
     it({
-      name: 'REPORTS one provider for a Hyper-only model, and both for the seat that gained its second route',
+      name: 'REPORTS Hyper and OpenRouter for a model Synthetic never served, and every provider for the '
+        + 'seat that gained its second route',
       fn: async () => {
         // No Synthetic-only seat exists since 2026-09-01: glm-5.3-flash gave
-        // the last single-route Synthetic seat its Hyper twin, so the
-        // one-provider case lives on the Hyper-only side now.
+        // the last single-route Synthetic seat its Hyper twin, and OpenRouter
+        // serves the whole roster since 2026-09-03.
         expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
-          onSynthetic: true,
-          onHyper: true,
+          synthetic: true,
+          hyper: true,
+          openrouter: true,
         },);
 
         expect(reachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
-          onSynthetic: false,
-          onHyper: true,
+          synthetic: false,
+          hyper: true,
+          openrouter: true,
         },);
       },
     },),
@@ -256,7 +260,7 @@ await describe({
            */
           const reach = reachOf({ modelId, },);
 
-          expect(reach.onSynthetic || reach.onHyper,).toBe(true,);
+          expect(reach.synthetic || reach.hyper || reach.openrouter,).toBe(true,);
         }
       },
     },),
@@ -272,35 +276,51 @@ await describe({
         // The Hyper side comes from glm-5.3-flash's own 2026-09-01 catalog
         // entry, never from the retired glm-5.2 spelling this test predates.
         expect(visionReachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
-          onSynthetic: true,
-          onHyper: true,
+          synthetic: true,
+          hyper: true,
+          openrouter: true,
         },);
 
         expect(reachOf({ modelId: 'hf:zai-org/GLM-5.3-Flash', },),).toEqual({
-          onSynthetic: true,
-          onHyper: true,
+          synthetic: true,
+          hyper: true,
+          openrouter: true,
         },);
       },
     },),
 
     it({
-      name: 'KEEPS both providers for a model that reads on both, so a picture is not needlessly '
+      name: 'KEEPS every provider for a model that reads on all of them, so a picture is not needlessly '
         + 'pinned to one of them',
       fn: async () => {
         expect(visionReachOf({ modelId: 'hf:moonshotai/Kimi-K3', },),).toEqual({
-          onSynthetic: true,
-          onHyper: true,
+          synthetic: true,
+          hyper: true,
+          openrouter: true,
         },);
       },
     },),
 
     it({
-      name: 'REPORTS NEITHER for a model both providers serve and neither gives vision to, which '
+      name: 'REPORTS NOBODY for a model every provider serves and none gives vision to, which '
         + 'is the case a wrongly computed union would turn into a wasted call',
       fn: async () => {
         expect(visionReachOf({ modelId: 'hf:openai/gpt-oss-120b', },),).toEqual({
-          onSynthetic: false,
-          onHyper: false,
+          synthetic: false,
+          hyper: false,
+          openrouter: false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS gemma off the picture readers on OpenRouter until a transcription is measured, so '
+        + 'a listing field alone cannot widen the reader roster',
+      fn: async () => {
+        expect(visionReachOf({ modelId: 'gemma-4-26b-a4b-it', },),).toEqual({
+          synthetic: false,
+          hyper: false,
+          openrouter: false,
         },);
       },
     },),

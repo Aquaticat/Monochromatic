@@ -67,6 +67,51 @@ await describe({
             model: 'qwen3.8-max',
             prompt: 5_120,
             completion: 3_072,
+            costUsd: 'unreported',
+          },);
+      },
+    },),
+
+    it({
+      name: 'READS the cost field an OpenRouter line carries, in USD as the wire reported it, and '
+        + 'round-trips it through the writer',
+      fn: async () => {
+        expect(
+          readSpendLine({
+            line: logged({
+              tail: 'SPEND provider=openrouter model=deepseek/deepseek-v4-flash-0731 prompt=342 completion=400 cost=0.00015646',
+            },),
+          },),
+        )
+          .toEqual({
+            provider: 'openrouter',
+            model: 'deepseek/deepseek-v4-flash-0731',
+            prompt: 342,
+            completion: 400,
+            costUsd: 0.00015646,
+          },);
+        expect(
+          readSpendLine({
+            line: reportSpend({
+              provider: 'openrouter',
+              label: 'moonshotai/kimi-k3',
+              extracted: {
+                text: 'The cat approved this rendering.',
+                usage: {
+                  prompt_tokens: 12,
+                  completion_tokens: 34,
+                },
+              },
+              costUsd: 0.000546,
+            },),
+          },),
+        )
+          .toEqual({
+            provider: 'openrouter',
+            model: 'moonshotai/kimi-k3',
+            prompt: 12,
+            completion: 34,
+            costUsd: 0.000546,
           },);
       },
     },),
@@ -96,6 +141,7 @@ await describe({
             model: 'minimax-m3',
             prompt: 12,
             completion: 34,
+            costUsd: 'unreported',
           },);
       },
     },),
@@ -117,6 +163,7 @@ await describe({
             model: 'qwen3.8-max',
             prompt: 'unreported',
             completion: 'unreported',
+            costUsd: 'unreported',
           },);
       },
     },),
@@ -137,6 +184,7 @@ await describe({
             model: 'hf:zai-org/GLM-5.3-Flash',
             prompt: 1,
             completion: 2,
+            costUsd: 'unreported',
           },);
       },
     },),
@@ -261,6 +309,8 @@ await describe({
               promptTokens: 10_240,
               completionTokens: 6_144,
               unreportedCalls: 0,
+              costUsd: 0,
+              costedCalls: 0,
             },
           ],);
       },
@@ -306,6 +356,8 @@ await describe({
               promptTokens: 5_120,
               completionTokens: 3_072,
               unreportedCalls: 1,
+              costUsd: 0,
+              costedCalls: 0,
             },
           ],);
       },

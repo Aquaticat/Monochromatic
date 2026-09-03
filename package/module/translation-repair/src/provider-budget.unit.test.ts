@@ -42,29 +42,42 @@ const DRY_QUOTA = {
 };
 
 /**
- * Builds a pair of stub meters that answer as told.
+ * OpenRouter credits with money left, the live reading of 2026-09-03.
+ */
+const WET_CREDITS = {
+  purchasedUsd: 1_913,
+  usedUsd: 1_855.38,
+  remainingUsd: 57.62,
+};
+
+/**
+ * Builds stub meters that answer as told.
  *
  * @param quota - what the first provider's quota endpoint returns
  *
  * @param balance - what the second provider's balance endpoint returns
  *
+ * @param remainingUsd - what the third provider's credits endpoint leaves
+ *
  * @param quotaThrows - whether the first provider's meter is unreachable
  *
- * @returns Both meters plus the count of reads each took
+ * @returns Every meter plus the count of reads each took
  *
  * @example
  * ```ts
- * const { synthetic, hyper, reads, } = stubProviders({ quota: WET_QUOTA, balance: 243, },);
+ * const { synthetic, hyper, openrouter, reads, } = stubProviders({ quota: WET_QUOTA, balance: 243, },);
  * ```
  */
 function stubProviders(
   {
     quota = WET_QUOTA,
     balance = 243,
+    remainingUsd = WET_CREDITS.remainingUsd,
     quotaThrows = false,
   }: {
     readonly quota?: typeof WET_QUOTA;
     readonly balance?: number;
+    readonly remainingUsd?: number;
     readonly quotaThrows?: boolean;
   },
 ) {
@@ -74,6 +87,7 @@ function stubProviders(
   const reads = {
     quota: 0,
     credits: 0,
+    openrouter: 0,
   };
 
   return {
@@ -92,6 +106,15 @@ function stubProviders(
         return { balance, };
       },
     },
+    openrouter: {
+      credits: async function credits() {
+        reads.openrouter += 1;
+        return {
+          ...WET_CREDITS,
+          remainingUsd,
+        };
+      },
+    },
   };
 }
 
@@ -100,43 +123,58 @@ function stubProviders(
  */
 const SIGNAL = new AbortController().signal;
 
+/**
+ * Nobody dry.
+ */
+const ALL_WET = {
+  synthetic: false,
+  hyper: false,
+  openrouter: false,
+} as const;
+
 await describe({
   name: createProviderBudgets.name,
   children: [
     it({
-      name: 'reads both meters and reports a spendable pair',
+      name: 'reads every meter and reports a spendable roster',
       fn: async () => {
-        /** Stub providers with budget on both sides. */
-        const { synthetic, hyper, reads, } = stubProviders({},);
+        /** Stub providers with budget everywhere. */
+        const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
         },);
 
-        expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: false,
-        },);
-        expect(reads,).toEqual({ quota: 1, credits: 1, },);
+        expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
+        expect(reads,).toEqual({ quota: 1, credits: 1, openrouter: 1, },);
       },
     },),
 
     it({
-      name: 'TREATS EACH UNCONFIGURED PROVIDER AS DRY while other remains wet',
+      name: 'TREATS EACH UNCONFIGURED PROVIDER AS DRY while the others remain wet',
       fn: async () => {
-        /** Stub providers with budget on both sides. */
-        const { synthetic, hyper, } = stubProviders({},);
+        /** Stub providers with budget everywhere. */
+        const { synthetic, hyper, openrouter, } = stubProviders({},);
         const syntheticOnly = createProviderBudgets({ synthetic, },);
         const hyperOnly = createProviderBudgets({ hyper, },);
+        const openRouterOnly = createProviderBudgets({ openrouter, },);
 
         expect(await syntheticOnly.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: true,
+          synthetic: false,
+          hyper: true,
+          openrouter: true,
         },);
         expect(await hyperOnly.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: true,
-          hyperDry: false,
+          synthetic: true,
+          hyper: false,
+          openrouter: true,
+        },);
+        expect(await openRouterOnly.read({ signal: SIGNAL, },),).toEqual({
+          synthetic: true,
+          hyper: true,
+          openrouter: false,
         },);
       },
     },),
@@ -145,34 +183,40 @@ await describe({
       name: 'reads an exhausted weekly credit as dry',
       fn: async () => {
         /** Stub providers with the first one's weekly credit spent. */
-        const { synthetic, hyper, } = stubProviders({ quota: DRY_QUOTA, },);
+        const { synthetic, hyper, openrouter, } = stubProviders({ quota: DRY_QUOTA, },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
         },);
 
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: true,
-          hyperDry: false,
+          ...ALL_WET,
+          synthetic: true,
         },);
       },
     },),
 
     it({
-      name: 'reads a spent balance as dry',
+      name: 'reads a spent balance and spent credits as dry',
       fn: async () => {
-        /** Stub providers with the second one's balance at nothing. */
-        const { synthetic, hyper, } = stubProviders({ balance: 0, },);
+        /** Stub providers with the second and third out of money. */
+        const { synthetic, hyper, openrouter, } = stubProviders({
+          balance: 0,
+          remainingUsd: 0,
+        },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
         },);
 
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: true,
+          synthetic: false,
+          hyper: true,
+          openrouter: true,
         },);
       },
     },),
@@ -181,35 +225,34 @@ await describe({
       name: 'ACCEPTS an unreadable meter as spendable rather than exhausted',
       fn: async () => {
         /** Stub providers with the first one's meter unreachable. */
-        const { synthetic, hyper, } = stubProviders({ quotaThrows: true, },);
+        const { synthetic, hyper, openrouter, } = stubProviders({ quotaThrows: true, },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
         },);
 
         // THE DECISION THIS FILE TURNS ON. A meter that times out is a
         // monitoring failure; reading it as exhaustion converts it into an
         // outage, stopping calls that would have succeeded. Being wrong this
         // way costs one refused call, which the router recovers from.
-        expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: false,
-        },);
+        expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
       },
     },),
 
     it({
       name: 'spends one meter read per window rather than one per call',
       fn: async () => {
-        /** Stub providers with budget on both sides. */
-        const { synthetic, hyper, reads, } = stubProviders({},);
+        /** Stub providers with budget everywhere. */
+        const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
         /** Clock the cache is judged against. */
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
           freshForMs: 500,
           now: () => clock,
         },);
@@ -217,10 +260,12 @@ await describe({
         await budgets.read({ signal: SIGNAL, },);
         await budgets.read({ signal: SIGNAL, },);
         expect(reads.quota,).toBe(1,);
+        expect(reads.openrouter,).toBe(1,);
 
         clock += 500;
         await budgets.read({ signal: SIGNAL, },);
         expect(reads.quota,).toBe(2,);
+        expect(reads.openrouter,).toBe(2,);
       },
     },),
 
@@ -230,14 +275,15 @@ await describe({
         + 'its concurrency limit, and the five-minute hold on it is what ended the pin pass of '
         + '2026-09-02 (#474)',
       fn: async () => {
-        /** Stub providers whose meters both report budget left. */
-        const { synthetic, hyper, reads, } = stubProviders({},);
+        /** Stub providers whose meters all report budget left. */
+        const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
         /** Clock the holds are judged against. */
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
           cooldownMs: 10_000,
           rateLimitBackoffMs: 300,
           now: () => clock,
@@ -253,40 +299,43 @@ await describe({
         expect(budgets.holds(),).toEqual({
           synthetic: 0,
           hyper: 300,
+          openrouter: 0,
         },);
 
         // Held out for the backoff even though the meter says spendable.
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: true,
+          ...ALL_WET,
+          hyper: true,
         },);
 
         clock += 300;
         expect(budgets.holds(),).toEqual({
           synthetic: 0,
           hyper: 0,
+          openrouter: 0,
         },);
-        expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: false,
-        },);
+        expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
       },
     },),
 
     it({
-      name: 'HOLDS NOTHING when a wet provider refuses us and the other provider is dry, since a hold '
+      name: 'HOLDS NOTHING when a wet provider refuses us and every other provider is dry, since a hold '
         + 'with nowhere to move traffic only herds every call into the same limit when it ends '
         + '(XIEPT2 on Hyper alone, 2026-09-03: 429 bursts every 80 seconds and no slice settled in five '
         + 'minutes); the transport ladder paces each call instead',
       fn: async () => {
-        /** Stub providers with the second one's balance at nothing. */
-        const { synthetic, hyper, reads, } = stubProviders({ balance: 0, },);
+        /** Stub providers with the second and third out of money. */
+        const { synthetic, hyper, openrouter, reads, } = stubProviders({
+          balance: 0,
+          remainingUsd: 0,
+        },);
         /** Clock the holds are judged against. */
         const clock = 1_000;
         /** Budget view under test. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
           cooldownMs: 10_000,
           rateLimitBackoffMs: 300,
           now: () => clock,
@@ -301,11 +350,41 @@ await describe({
         expect(budgets.holds(),).toEqual({
           synthetic: 0,
           hyper: 0,
+          openrouter: 0,
         },);
-        // The refuser is still spendable at once; only the dry provider is out.
+        // The refuser is still spendable at once; only the dry providers are out.
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: true,
+          synthetic: false,
+          hyper: true,
+          openrouter: true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'HOLDS a wet refuser for the backoff when ANY other provider is wet, so with Hyper dry '
+        + 'the traffic moves to OpenRouter rather than herding',
+      fn: async () => {
+        /** Stub providers with only the second out of money. */
+        const { synthetic, hyper, openrouter, } = stubProviders({ balance: 0, },);
+        /** Budget view under test. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter,
+          cooldownMs: 10_000,
+          rateLimitBackoffMs: 300,
+          now: () => 1_000,
+        },);
+
+        await budgets.markRefused({
+          provider: 'synthetic',
+          signal: SIGNAL,
+        },);
+        expect(budgets.holds(),).toEqual({
+          synthetic: 300,
+          hyper: 0,
+          openrouter: 0,
         },);
       },
     },),
@@ -315,13 +394,14 @@ await describe({
         + 'since a refusal is stickier than a reading that never came',
       fn: async () => {
         /** Stub providers whose first meter is unreachable. */
-        const { synthetic, hyper, } = stubProviders({ quotaThrows: true, },);
+        const { synthetic, hyper, openrouter, } = stubProviders({ quotaThrows: true, },);
         /** Clock the holds are judged against. */
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
           cooldownMs: 300,
           rateLimitBackoffMs: 50,
           now: () => clock,
@@ -335,11 +415,11 @@ await describe({
 
         clock += 50;
         // Past the backoff, still inside the cooldown.
-        expect((await budgets.read({ signal: SIGNAL, },)).syntheticDry,).toBe(true,);
+        expect((await budgets.read({ signal: SIGNAL, },)).synthetic,).toBe(true,);
 
         clock += 250;
         // The cooldown ended and an unreadable meter counts as spendable.
-        expect((await budgets.read({ signal: SIGNAL, },)).syntheticDry,).toBe(false,);
+        expect((await budgets.read({ signal: SIGNAL, },)).synthetic,).toBe(false,);
       },
     },),
 
@@ -347,13 +427,14 @@ await describe({
       name: 'never lets a cooldown expiring bring a spent provider back',
       fn: async () => {
         /** Stub providers with the second one's balance at nothing. */
-        const { synthetic, hyper, } = stubProviders({ balance: 0, },);
+        const { synthetic, hyper, openrouter, } = stubProviders({ balance: 0, },);
         /** Clock the cooldown is judged against. */
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
           synthetic,
           hyper,
+          openrouter,
           cooldownMs: 300,
           now: () => clock,
         },);
@@ -368,8 +449,8 @@ await describe({
 
         // The cooldown is one-directional: it can only hold a provider out.
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
-          syntheticDry: false,
-          hyperDry: true,
+          ...ALL_WET,
+          hyper: true,
         },);
       },
     },),
@@ -385,6 +466,7 @@ await describe({
         const reads = {
           quota: 0,
           credits: 0,
+          openrouter: 0,
         };
 
         /** Meters slow enough that concurrent callers genuinely overlap. */
@@ -403,13 +485,17 @@ await describe({
               return { balance: 243, };
             },
           },
+          openrouter: {
+            credits: async function credits() {
+              reads.openrouter += 1;
+              await wait(20,);
+              return WET_CREDITS;
+            },
+          },
         };
 
         /** Budget layer over the slow meters. */
-        const budgets = createProviderBudgets({
-          synthetic: slow.synthetic,
-          hyper: slow.hyper,
-        },);
+        const budgets = createProviderBudgets(slow,);
 
         /** Five calls launched before any of them can finish. */
         const views = await Promise.all([
@@ -423,15 +509,12 @@ await describe({
         expect(reads,).toEqual({
           quota: 1,
           credits: 1,
+          openrouter: 1,
         },);
 
         // Every sharer must get the reading, not just the caller that started it.
-        for (const view of views) {
-          expect(view,).toEqual({
-            syntheticDry: false,
-            hyperDry: false,
-          },);
-        }
+        for (const view of views)
+          expect(view,).toEqual(ALL_WET,);
       },
     },),
 
@@ -444,6 +527,7 @@ await describe({
         const reads = {
           quota: 0,
           credits: 0,
+          openrouter: 0,
         };
 
         /** Meters slow enough that concurrent refusals genuinely overlap. */
@@ -462,12 +546,18 @@ await describe({
               return { balance: 243, };
             },
           },
+          openrouter: {
+            credits: async function credits() {
+              reads.openrouter += 1;
+              await wait(20,);
+              return WET_CREDITS;
+            },
+          },
         };
 
         /** Budget layer over the slow meters, on a clock that does not move. */
         const budgets = createProviderBudgets({
-          synthetic: slow.synthetic,
-          hyper: slow.hyper,
+          ...slow,
           rateLimitBackoffMs: 50,
           now: () => 1_000,
         },);
@@ -493,10 +583,12 @@ await describe({
         expect(reads,).toEqual({
           quota: 2,
           credits: 2,
+          openrouter: 2,
         },);
         expect(budgets.holds(),).toEqual({
           synthetic: 50,
           hyper: 50,
+          openrouter: 0,
         },);
       },
     },),

@@ -226,7 +226,12 @@ export async function assertRequiredProvidersReady(
       key: environment[KEY_VARIABLES[provider]] ?? '',
     };
   },);
-  for (const { provider, key, } of keys) {
+  for (
+    const {
+      provider,
+      key,
+    } of keys
+  ) {
     if (key === '')
       throw new RequiredProviderError({
         provider,
@@ -237,10 +242,12 @@ export async function assertRequiredProvidersReady(
    * Optional transport forwarded only in tests.
    */
   const seam = (transport === undefined) ? {} : { transport, };
-  await Promise.all(keys.map(async function checkProvider({
-    provider,
-    key,
-  },): Promise<void> {
+  await Promise.all(keys.map(async function checkProvider(
+    {
+      provider,
+      key,
+    },
+  ): Promise<void> {
     if (provider === 'synthetic') {
       /**
        * Required Synthetic meter client.

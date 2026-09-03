@@ -45,7 +45,35 @@ await describe({
           at: Date.parse('2026-08-24T18:17:35.383Z',),
           synthetic: 'wet',
           hyper: 'dry',
+          openrouter: 'absent',
           levels: [],
+        },);
+      },
+    },),
+
+    it({
+      name: 'reads the third state a record carries since 2026-09-03, and keeps older two-state records '
+        + 'readable with that column named absent rather than skipping every historical reading',
+      fn: async () => {
+        /**
+         * A record as `takeReading` writes one with every provider configured.
+         */
+        const line = '[info] [2026-09-03T17:00:00.000Z] [t] [takeReading] METERS '
+          + 'synthetic=dry hyper=wet openrouter=wet syntheticWeekly=0% syntheticFiveHour=0/2750 '
+          + 'syntheticThrottled=no hyperBalance=2497 openrouterUsd=57.62';
+
+        expect(readMeterLine({ line, },),).toEqual({
+          at: Date.parse('2026-09-03T17:00:00.000Z',),
+          synthetic: 'dry',
+          hyper: 'wet',
+          openrouter: 'wet',
+          levels: [
+            'syntheticWeekly=0%',
+            'syntheticFiveHour=0/2750',
+            'syntheticThrottled=no',
+            'hyperBalance=2497',
+            'openrouterUsd=57.62',
+          ],
         },);
       },
     },),
@@ -63,6 +91,7 @@ await describe({
           at: Date.parse('2026-08-24T10:00:00.000Z',),
           synthetic: 'unreadable',
           hyper: 'wet',
+          openrouter: 'absent',
           levels: [],
         },);
       },
@@ -82,6 +111,7 @@ await describe({
           at: Date.parse('2026-08-24T19:00:00.000Z',),
           synthetic: 'wet',
           hyper: 'dry',
+          openrouter: 'absent',
           levels: [
             'syntheticWeekly=97%',
             'syntheticFiveHour=48/50',
@@ -106,6 +136,7 @@ await describe({
           at: Date.parse('2026-08-24T19:00:00.000Z',),
           synthetic: 'wet',
           hyper: 'wet',
+          openrouter: 'absent',
           levels: ['hyperResetsAt=03:00',],
         },);
       },

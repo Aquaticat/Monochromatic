@@ -43,7 +43,7 @@ import {
   parseSettledTwoLaneArtifact,
   type PipelineDigest,
   settleEntry,
-  type SyntheticClient,
+  type RunClient,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -611,7 +611,7 @@ function entryClient(
     readonly contestChoice?: 'repair' | 'translate';
     readonly quotaReads?: { count: number; };
   },
-): SyntheticClient {
+): RunClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by either lane',);
@@ -689,10 +689,13 @@ function entryClient(
       };
     },
     quotas: async () => {
-      // Counted, then refused: an unreadable meter seats the full bench, so
+      throw new Error('quotas unused by either lane',);
+    },
+    providerDryness: async () => {
+      // Counted, then refused: an unreadable view seats the full bench, so
       // the entry runs as before while the count says how often it was asked.
       quotaReads.count += 1;
-      throw new Error('quotas unused by either lane',);
+      throw new Error('the budget view is unused by either lane',);
     },
   };
 }

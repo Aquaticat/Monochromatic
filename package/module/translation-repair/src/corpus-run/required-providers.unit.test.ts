@@ -13,28 +13,26 @@ import {
 import {
   assertRequiredProvidersReady,
   HYPER_CREDITS_URL,
+  OPENROUTER_CREDITS_URL,
   readRequiredProviders,
   RequiredProviderError,
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Synthetic key environment name.
+ * Each provider's key environment name.
  */
-const SYNTHETIC_KEY = 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY';
-
-/**
- * Hyper key environment name.
- */
-const HYPER_KEY = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
+const KEY_NAMES = {
+  synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
+  hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
+  openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
+} as const;
 
 /**
  * Installs provider keys for scope and restores prior environment.
  *
- * @param synthetic - synthetic key value
+ * @param keys - key value per provider, absent to unset
  *
- * @param hyper - hyper key value
- *
- * @returns Disposable restoring both variables
+ * @returns Disposable restoring every variable
  *
  * @example
  * ```ts
@@ -42,34 +40,60 @@ const HYPER_KEY = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
  * ```
  */
 function withProviderKeys(
-  {
-    synthetic,
-    hyper,
-  }: {
+  keys: {
     readonly synthetic?: string;
     readonly hyper?: string;
+    readonly openrouter?: string;
   },
 ): Disposable {
-  const priorSynthetic = process.env[SYNTHETIC_KEY];
-  const priorHyper = process.env[HYPER_KEY];
-  if (synthetic === undefined)
-    Reflect.deleteProperty(process.env, SYNTHETIC_KEY,);
-  else
-    process.env[SYNTHETIC_KEY] = synthetic;
-  if (hyper === undefined)
-    Reflect.deleteProperty(process.env, HYPER_KEY,);
-  else
-    process.env[HYPER_KEY] = hyper;
+  /**
+   * What each variable held before, absent from the map where it was unset.
+   */
+  const prior = new Map<string, string>();
+  for (const name of Object.values(KEY_NAMES,)) {
+    /**
+     * Value the variable holds now, if any.
+     */
+    const held = process.env[name];
+    if (held !== undefined)
+      prior.set(
+        name,
+        held,
+      );
+  }
+  /**
+   * Values to install, keyed by variable name.
+   */
+  const wanted = new Map<string, string>();
+  if (keys.synthetic !== undefined)
+    wanted.set(
+      KEY_NAMES.synthetic,
+      keys.synthetic,
+    );
+  if (keys.hyper !== undefined)
+    wanted.set(
+      KEY_NAMES.hyper,
+      keys.hyper,
+    );
+  if (keys.openrouter !== undefined)
+    wanted.set(
+      KEY_NAMES.openrouter,
+      keys.openrouter,
+    );
+  for (const name of Object.values(KEY_NAMES,)) {
+    if (wanted.has(name,))
+      process.env[name] = wanted.get(name,);
+    else
+      Reflect.deleteProperty(process.env, name,);
+  }
   return {
     [Symbol.dispose](): void {
-      if (priorSynthetic === undefined)
-        Reflect.deleteProperty(process.env, SYNTHETIC_KEY,);
-      else
-        process.env[SYNTHETIC_KEY] = priorSynthetic;
-      if (priorHyper === undefined)
-        Reflect.deleteProperty(process.env, HYPER_KEY,);
-      else
-        process.env[HYPER_KEY] = priorHyper;
+      for (const name of Object.values(KEY_NAMES,)) {
+        if (prior.has(name,))
+          process.env[name] = prior.get(name,);
+        else
+          Reflect.deleteProperty(process.env, name,);
+      }
     },
   };
 }
@@ -95,17 +119,18 @@ await describe({
   name: readRequiredProviders.name,
   children: [
     it({
-      name: 'READS ORDERED DISTINCT PROVIDER REQUIREMENT',
+      name: 'READS ORDERED DISTINCT PROVIDER REQUIREMENT, the third provider included',
       fn: async () => {
         expect(readRequiredProviders({
           argv: [
             'node',
             'corpus-pass',
             '--require-providers',
-            'synthetic,hyper,synthetic',
+            'synthetic,openrouter,hyper,synthetic',
           ],
         },),).toEqual([
           'synthetic',
+          'openrouter',
           'hyper',
         ],);
       },
@@ -142,28 +167,55 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS BOTH WET METERS without model endpoint call',
+      name: 'ACCEPTS EVERY WET METER without model endpoint call, OpenRouter\'s credits included',
       fn: async () => {
         using _keys = withProviderKeys({
           synthetic: 'test-synthetic',
           hyper: 'test-hyper',
+          openrouter: 'test-openrouter',
         },);
         const urls: string[] = [];
         await assertRequiredProvidersReady({
-          required: ['synthetic', 'hyper',],
+          required: ['synthetic', 'hyper', 'openrouter',],
           transport: async function transport(exchange,) {
             urls.push(exchange.url,);
-            return exchange.url === HYPER_CREDITS_URL
-              ? { status: 200, bodyText: '{"balance":243}', }
-              : { status: 200, bodyText: WET_SYNTHETIC_BODY, };
+            if (exchange.url === HYPER_CREDITS_URL)
+              return { status: 200, bodyText: '{"balance":243}', };
+            if (exchange.url === OPENROUTER_CREDITS_URL)
+              return { status: 200, bodyText: '{"data":{"total_credits":1913,"total_usage":1855.38}}', };
+            return { status: 200, bodyText: WET_SYNTHETIC_BODY, };
           },
           signal: AbortSignal.timeout(5_000,),
         },);
-        expect(urls,).toHaveLength(2,);
+        expect(urls,).toHaveLength(3,);
         expect(urls,).toContain(HYPER_CREDITS_URL,);
+        expect(urls,).toContain(OPENROUTER_CREDITS_URL,);
         expect(urls.some(function modelEndpoint(url,): boolean {
           return url.includes('/chat/',);
         },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A DRY REQUIRED METER, naming the provider, so a measured arm never starts on a '
+        + 'provider that cannot serve it',
+      fn: async () => {
+        using _keys = withProviderKeys({ openrouter: 'test-openrouter', },);
+        let caught: unknown;
+        try {
+          await assertRequiredProvidersReady({
+            required: ['openrouter',],
+            transport: async function transport() {
+              return { status: 200, bodyText: '{"data":{"total_credits":10,"total_usage":10}}', };
+            },
+            signal: AbortSignal.timeout(5_000,),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(RequiredProviderError,);
+        expect((caught as Error).message,).toContain('openrouter is not ready: budget dry',);
       },
     },),
   ],

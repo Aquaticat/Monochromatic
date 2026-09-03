@@ -113,17 +113,29 @@ export async function secondOpinionsFrom(
   },
 ): Promise<readonly ProviderName[]> {
   /**
+   * What the router lent, named once.
+   */
+  const {
+    reachFor,
+    budgets,
+  } = core;
+
+  /**
    * Whether each provider serves this model at all, pictures included.
    */
-  const reach = core.reachFor({ request, },);
+  const reach = reachFor({ request, },);
+
+  /**
+   * The other providers, in spending order.
+   */
+  const others = otherProviders({ provider: served, },);
 
   /**
    * The other providers that serve it.
    */
-  const serving = otherProviders({ provider: served, },)
-    .filter(function serves(provider,): boolean {
-      return reach[provider];
-    },);
+  const serving = others.filter(function serves(provider,): boolean {
+    return reach[provider];
+  },);
 
   if (serving.length === 0)
     return [];
@@ -131,7 +143,7 @@ export async function secondOpinionsFrom(
   /**
    * What each provider's budget looks like right now.
    */
-  const budget = await core.budgets.read({ signal: request.signal, },);
+  const budget = await budgets.read({ signal: request.signal, },);
 
   return serving.filter(function isWet(provider,): boolean {
     return !budget[provider];
@@ -180,10 +192,18 @@ async function replyOrBudgetRefusal(
     l,
   },);
 
+  /**
+   * What the router lent, named once.
+   */
+  const {
+    callOn,
+    budgets,
+  } = core;
+
   try {
     return {
       kind: 'replied',
-      reply: await core.callOn({
+      reply: await callOn({
         provider,
         request,
       },),
@@ -192,7 +212,7 @@ async function replyOrBudgetRefusal(
     if (!isBudgetRefusal({ error, },))
       throw error;
 
-    await core.budgets.markRefused({
+    await budgets.markRefused({
       provider,
       signal: request.signal,
     },);
@@ -234,12 +254,20 @@ export async function routedJson<ValueT,>(
   },);
 
   /**
+   * What the router lent, named once.
+   */
+  const {
+    routedText,
+    ledger,
+  } = core;
+
+  /**
    * Raw text reply of the routed exchange, and who answered it.
    */
   const {
     provider,
     reply,
-  } = await core.routedText(request,);
+  } = await routedText(request,);
 
   /**
    * What that answer turned out to be.
@@ -275,7 +303,7 @@ export async function routedJson<ValueT,>(
   // held, so the count drifted negative and overflow needed that many extra
   // concurrent calls before it resumed (`#240`). No `await` sits between the
   // budget read in `secondOpinionsFrom` and this line.
-  core.ledger.take({
+  ledger.take({
     provider: elsewhere,
     modelId: request.modelId,
   },);
