@@ -47,3 +47,17 @@ it. XIEPT2 was restarted on the tree carrying the sentence, its first live test.
   artifact, not the corpus, so nothing public carries it.
 - A translator or judge that keeps the cause is now reporting against the rule, and a critic that
   reports its absence as an omission is wrong by the rule's own words.
+
+## Addendum 2026-09-03: method words without a substance stay vague, and a page says it one way
+
+Raised by the XIEPT2 reading (`doc/planning/translation-repair-xiept2-reading-2026-09-03.md`): the obituary
+block dropped the substance and the gas, and the postscript kept "took medication and breathed in gas",
+two method words with no substance and no dose. The owner chose to vague it to match the obituary block.
+The house policy now says: method words with no substance and no dose are still a method and stay
+vague; the page says that she ended her life and keeps the night, the room and the dress, not the means;
+and one page must say it the same way everywhere.
+
+- The XIEPT2 page published at 04:14 UTC under `~/temp/agent/xiept2-rerun5-20260903` predates the
+  sentence and carries the postscript as the ORIGINAL states it; the next XIEPT2 run applies it (about
+  two hours on Hyper alone at 1,000 requests an hour, the owner's call on timing).
+- A critic that reports the vaguer postscript as an omission is wrong by the rule's own words, as before.
