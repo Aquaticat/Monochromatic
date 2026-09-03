@@ -11,9 +11,7 @@ import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
 import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
 import { assertCarriedInsertionsRemain, } from './carried-insertion-completeness.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
-import { contestDocumentLanes, } from '../lane-contest-driver.ts';
-import { damageClaimLinesBySlice, } from '../repair-damage-evidence.ts';
-import { openLaneContestCache, } from './lane-contest-cache-store.ts';
+import { runPassContest, } from './pass-contest.ts';
 import type {
   CorpusPair,
   EntryOutcome,
@@ -42,13 +40,11 @@ import {
 import {
   RUN_CALL_CONFIG,
   RUN_CORPUS_PIN,
-  RUN_LATE_JUDGES,
   RUN_READER_MODELS,
-  RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
-  RUN_TRANSLATE_MODELS,
 } from './run-config.ts';
+import { readJudgeSeats, } from './run-seats.ts';
 
 //region Pass entry
 
@@ -268,6 +264,15 @@ async function runEntryPipeline(
     },);
 
     /**
+     * This entry's judge benches, read once off Synthetic's meter (`run-seats.ts`).
+     */
+    const seats = await readJudgeSeats({
+      client,
+      signal: deadline.callSignal,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    /**
      * Semantic and deterministic proof for every source-only slice.
      *
      * BOUGHT BEFORE THE LANES so known omission is licensed for translation or
@@ -291,8 +296,8 @@ async function runEntryPipeline(
     const lanes = await runDocumentLanes({
       client,
       prepared,
-      repairModels: RUN_MODELS,
-      translateModels: RUN_TRANSLATE_MODELS,
+      repairModels: seats.repairModels,
+      translateModels: seats.translateModels,
       pictureReadings,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
@@ -348,24 +353,18 @@ async function runEntryPipeline(
     /**
      * What the roster said at every slice the two lanes worded differently.
      */
-    const contestSlices = await contestDocumentLanes({
+    const contestSlices = await runPassContest({
       client,
+      lanes,
       projected,
-      // JUDGES ONLY: the roster less GLM-5.3-Flash since 2026-09-02, the
-      // reason on `WIDE_SEAT_DROPPED` in `run-config.ts`.
-      modelIds: RUN_LATE_JUDGES,
       frontMatterSlices,
-      // The probe's corroborated claims, shown to the judges and acted on by nobody (`repair-damage-evidence.ts`).
-      damageClaimsBySlice: damageClaimLinesBySlice({ lane: lanes.repair, },),
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),
-      cache: await openLaneContestCache({
-        dir: entryCacheDir,
-        generation: pipelineDigest,
-      },),
+      entryCacheDir,
+      pipelineDigest,
+      seats,
       signal: deadline.callSignal,
-      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       overlap,
       l: tagged({ tag: entry.id, },),
     },);
@@ -384,6 +383,7 @@ async function runEntryPipeline(
       pipelineDigest,
       signal: deadline.callSignal,
       overlap,
+      seats,
       l: tagged({ tag: entry.id, },),
     },);
 

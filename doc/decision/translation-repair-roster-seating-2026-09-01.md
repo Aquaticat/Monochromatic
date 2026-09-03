@@ -146,6 +146,11 @@ measurement, landed as commit `9a7d48354` in `corpus-run/run-config.ts`.
 
 ## Addendum 2026-09-03: Qwen3.8-27B leaves every judge seat
 
+SUPERSEDED THE SAME DAY: the owner chose to seat the judge per provider rather than drop it
+(`doc/decision/translation-repair-provider-aware-judge-seat.md`, `corpus-run/run-seats.ts`). The seat is
+withheld while Synthetic is dry and sits while Synthetic serves it; the evidence below stands as the
+record of why.
+
 Dropped under the owner's standing authorisation ("I authorize you to drop any model from any role, as long as
 you have evidence"), landed in `corpus-run/run-config.ts` (`WIDE_SEAT_DROPPED` and `LATE_JUDGE_DROPPED`)
 on 2026-09-03 while XIEPT2's fifth run was in flight; it reaches the next launch.

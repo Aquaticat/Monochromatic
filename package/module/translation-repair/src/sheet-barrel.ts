@@ -89,8 +89,16 @@ export {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
+  RUN_LATE_JUDGES,
+  RUN_WIDE_SEATS,
   RunConfigError,
 } from './corpus-run/run-config.ts';
+export {
+  HYPER_SLOW_JUDGES,
+  type JudgeSeats,
+  judgeSeatsFor,
+  readJudgeSeats,
+} from './corpus-run/run-seats.ts';
 export {
   assertRequiredProvidersReady,
   readRequiredProviders,

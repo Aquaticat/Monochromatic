@@ -13,11 +13,10 @@ import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
-  RUN_LATE_JUDGES,
-  RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
+import type { JudgeSeats, } from './run-seats.ts';
 
 //region Corpus pass consolidation
 
@@ -48,13 +47,16 @@ import {
  *
  * @param overlap - most slices in flight
  *
+ * @param seats - this entry's judge benches, read once off Synthetic's meter
+ * (`run-seats.ts`)
+ *
  * @param l - entry logger
  *
  * @returns Consolidation records in comparison order
  *
  * @example
  * ```ts
- * const slices = await runPassConsolidation({ client, prepared, projected, contests, frontMatterSlices, pictureReadings, entryCacheDir, pipelineDigest, signal, overlap, l, });
+ * const slices = await runPassConsolidation({ client, prepared, projected, contests, frontMatterSlices, pictureReadings, entryCacheDir, pipelineDigest, signal, overlap, seats, l, });
  * ```
  */
 export async function runPassConsolidation(
@@ -69,6 +71,7 @@ export async function runPassConsolidation(
     pipelineDigest,
     signal,
     overlap,
+    seats,
     l,
   }: {
     readonly client: SyntheticClient;
@@ -81,6 +84,7 @@ export async function runPassConsolidation(
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
     readonly overlap: number;
+    readonly seats: JudgeSeats;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
@@ -89,8 +93,8 @@ export async function runPassConsolidation(
    */
   const polish = consolidationPolishConfiguration({
     prepared,
-    models: RUN_MODELS,
-    gateModelIds: RUN_LATE_JUDGES,
+    models: seats.repairModels,
+    gateModelIds: seats.lateJudges,
   },);
   return await consolidateDocument({
     client,
@@ -98,9 +102,10 @@ export async function runPassConsolidation(
     contests,
     // THE WHOLE ROSTER WRITES, the late judges judge and gate: GLM-5.3-Flash
     // keeps its writing seats and left every judge seat on 2026-09-02, the
-    // reason on `WIDE_SEAT_DROPPED` in `run-config.ts`.
+    // reason on `WIDE_SEAT_DROPPED` in `run-config.ts`; the Hyper-slow judge
+    // sits only while Synthetic serves it (`run-seats.ts`).
     modelIds: RUN_ROSTER,
-    judgeModelIds: RUN_LATE_JUDGES,
+    judgeModelIds: seats.lateJudges,
     ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
     frontMatterSlices,
     lineStructuredSlices: prepared.lineStructuredSliceIndices,

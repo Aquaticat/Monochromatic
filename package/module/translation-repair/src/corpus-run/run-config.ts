@@ -161,27 +161,17 @@ const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
  * `doc/planning/translation-repair-roster-calibration-2026-09-01.md`, "The
  * Toka_ls relaunch was killed at 77 minutes, in consolidation".
  *
- * `hf:Qwen/Qwen3.8-27B` LEFT EVERY JUDGE SEAT ON 2026-09-03 under the owner's
- * standing authorisation to drop a model from a role on evidence. Served by
- * Hyper it reasons past the 60 s round window in the judge roles: on XIEPT2
- * with Hyper the only provider it was cut in 30 of 34 translate-lane select
- * rounds and 21 of 24 consolidation-slate select rounds, and in the first 25
- * minutes was the only late seat in 7 of 16, so those rounds waited the whole
- * window for a ballot that never came; on Carena0442 (1,648 of 1,938 calls on
- * Hyper) 14 of 19 translate-lane select, 11 of 19 consolidation-slate select,
- * 21 of 59 repair-select, 13 of 25 critic, 15 of 19 panel, 17 of 19
- * lane-contest and 7 of 14 consolidation-gate rounds.
- * Served by Synthetic (Toka_ls, 2026-09-02) it answered 25 of 28 select
- * rounds, so the seat is lost to Hyper's serving speed rather than to the
- * model; a provider-aware seat could restore it when Synthetic is wet. Its
- * writer seats (translator, checker, probe: 1 to 4 cuts in 22 to 26 rounds)
- * stay. Record: the same planning doc, "XIEPT2's fifth attempt hit Hyper's
- * request-rate limit", and the seating decision's 2026-09-03 addendum.
+ * `hf:Qwen/Qwen3.8-27B` IS NOT DROPPED HERE BUT SEATED PER PROVIDER, the
+ * owner's decision of 2026-09-03 after a morning in which it left every judge
+ * seat outright: served by Hyper it reasons past the round window (30 of 34
+ * translate-lane select rounds cut on XIEPT2), served by Synthetic it answers
+ * (25 of 28 on Toka_ls). `run-seats.ts` reads Synthetic's meter once per
+ * entry and withholds the seat while Synthetic is dry; these static benches
+ * are the Synthetic-wet ones.
  */
 const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   'glm-5.3',
   'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
 ],);
 
 /**
@@ -189,16 +179,14 @@ const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
  * the lane contest, the consolidation slate's judges and the consolidation
  * gate. Those rounds seat the whole roster, `glm-5.3` included, since they were
  * built after the wide-seat drop; only the owner's 2026-09-02 decision on
- * GLM-5.3-Flash and the 2026-09-03 drop of Qwen3.8-27B reach them, for the
- * reasons on {@link WIDE_SEAT_DROPPED} (Qwen: 17 of 19 lane-contest and 7 of
- * 14 consolidation-gate rounds cut on Carena0442).
+ * GLM-5.3-Flash reaches them, for the reason on {@link WIDE_SEAT_DROPPED};
+ * Qwen3.8-27B (17 of 19 lane-contest and 7 of 14 consolidation-gate rounds
+ * cut on Carena0442 when Hyper served it) is seated per provider by
+ * `run-seats.ts`, not dropped here.
  * Pairing and insertion-admission rounds are not judgments of text and lost no
  * voice to the window (27 of 27 and 9 of 9 heard), so they keep the roster.
  */
-const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
-  'hf:zai-org/GLM-5.3-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-],);
+const LATE_JUDGE_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['hf:zai-org/GLM-5.3-Flash',],);
 
 /**
  * Translators for the translate lane: the roster less
@@ -213,9 +201,10 @@ export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
 
 /**
  * Critics, adjudication panel and judges for both lanes: the roster less
- * {@link WIDE_SEAT_DROPPED}. Six since 2026-09-03 (seven from 2026-09-02,
- * eight from 2026-09-01), so each of those stages reaches quorum at 3 voices
- * (`ceil(6 / 2)`) and `minBallotWeight` 3 is 3 of 6.
+ * {@link WIDE_SEAT_DROPPED}. Seven since 2026-09-02 (eight from 2026-09-01)
+ * with Synthetic wet, so each of those stages reaches quorum at 4 voices and
+ * `minBallotWeight` 3 is 3 of 7; six with Synthetic dry (`run-seats.ts`
+ * withholds the Hyper-slow judge), quorum 3 (`ceil(6 / 2)`).
  */
 export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillSeated(modelId,): boolean {
@@ -224,8 +213,8 @@ export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
 
 /**
  * Judges for the lane contest, the consolidation slate and the consolidation
- * gate: the roster less {@link LATE_JUDGE_DROPPED}. Seven since 2026-09-03
- * (eight from 2026-09-02).
+ * gate: the roster less {@link LATE_JUDGE_DROPPED}. Eight since 2026-09-02
+ * with Synthetic wet, seven with it dry (`run-seats.ts`).
  */
 export const RUN_LATE_JUDGES: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillJudges(modelId,): boolean {
@@ -233,7 +222,7 @@ export const RUN_LATE_JUDGES: readonly RosterModelId[] = RUN_ROSTER
   },);
 
 /**
- * Role roster for a corpus run: SIX of the nine critique and adjudicate, THREE edit
+ * Role roster for a corpus run: SEVEN of the nine critique and adjudicate (six while Synthetic is dry), THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
  *
