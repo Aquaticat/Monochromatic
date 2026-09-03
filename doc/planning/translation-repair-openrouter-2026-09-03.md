@@ -286,6 +286,38 @@ Guards shown to fail: the OpenRouter fallthrough (routing and router tests) with
 usable providers, and the Kimi withholding (seat test) with the check replaced by `true`; both restored and passing.
 915 unit tests pass; oxlint and the type check are clean.
 
+## The first live pass with OpenRouter in the order, keyword233, 16:38 to 16:54 UTC
+
+Launched from the main repo with the Hyper key unset so the walk went Synthetic, then OpenRouter
+(`~/temp/agent/openrouter-live-20260903.log`, artifacts beside it):
+
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=957655`, inside the band of the day's earlier keyword233 runs
+    (653 to 1,164 seconds). `verify-published` answered 1 of 1 pages with every promised wording at the implied length.
+    The page reads as the earlier runs' pages did.
+- `METERS synthetic=wet hyper=dry openrouter=wet` throughout; `JUDGE SEATS` at every phase seated the full benches
+    with `withheld=none`, since Synthetic served Kimi-K3 and Qwen3.8-27B.
+- 146 OpenRouter calls at 0.38 USD by the wire's `cost=`, 111 Synthetic calls, no Hyper call, no refusal from either;
+    the meter read 56.94 before and 56.46 after, the probes of the same hour included.
+- **MiniMax M3 came back empty on 16 of 31 OpenRouter calls**: `finish_reason=stop`, no content, some reasoning
+    characters. The per-endpoint probe (`~/temp/agent/openrouter-minimax-endpoints-20260903`, corpus-sized
+    json_schema request, `provider.only` per zero-data-retention endpoint) showed Parasail putting the whole JSON
+    answer in the reasoning channel and closing content empty (0 of 2 conformant, 2 rate-limited), ModelRun
+    answering 4 of 4, and the five other zero-data-retention endpoints refusing `response_format` with `404 No
+    endpoints found that can handle the requested parameters`. Default routing without a preference went to
+    ModelRun on 3 of 4 and Parasail on 1; with `ignore: ['parasail']` it went to ModelRun on 8 of 8, every one
+    conformant. The catalog row now carries `ignoredEndpoints: ['parasail']` and the client sends it as
+    `provider.ignore` (`7d680d7fa`, `3991637a2`); both guards shown to fail with the entry removed, restored and
+    passing. The cost fit on the run's own `SPEND` lines agrees: the answered calls priced as ModelRun, the empty
+    ones lower.
+- Cut streams on OpenRouter, provider of the endpoint unknown because nothing logged it: `deepseek-v4-pro-0813`
+    twice at 76 and 90 seconds with reasoning only, `gemma-4-26b-a4b-it` twice at 66 and 77 seconds with content
+    arriving at under twenty characters a second, `deepseek-v4-flash-0731` once at 209 seconds in consolidation.
+    Medians on OpenRouter: glm-5.3 1.6 s, MiniMax 2.0 s, DeepSeek Flash 3.8 s, gemma 5.3 s, DeepSeek Pro 17.5 s;
+    ninetieth percentiles 2.2, 4.3, 42, 66 and 39 seconds. The endpoint name goes on the `SPEND` line next so the
+    slow tail can be attributed without another probe.
+- Nothing on this pass exercised the all-dry benches (Kimi-K3 withheld, gemma as substitute checker) or
+    Qwen3.8-27B served by OpenRouter; both wait for a Synthetic-dry hour.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:

@@ -77,8 +77,9 @@ model and reads wet).
 The Hyper-slow rules above apply where that provider is Hyper; the owner's cost decision on Kimi-K3
 applies where it is OpenRouter, with gemma seated as the substitute checker.
 Qwen3.8-27B is seated when OpenRouter would serve it: its chat-completions median there sat in the band
-of the other models on the probe, unlike its Hyper serving, and the first all-OpenRouter pass is where
-that is checked on corpus-sized prompts.
+of the other models on the probe, unlike its Hyper serving, and a pass with Synthetic dry is where
+that is checked on corpus-sized prompts. The first pass with OpenRouter in the order (keyword233,
+2026-09-03 16:38 UTC) did not check it: Synthetic stayed wet and served every Qwen call.
 
 ## Where the evidence lives
 

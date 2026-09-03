@@ -50,10 +50,11 @@ and Synthetic and Hyper are expected to run dry often.
 ## Standing rules that follow
 
 - Routing order: Synthetic while wet, then Charm Hyper while its balance lasts, then OpenRouter.
-- Transport: the Anthropic Messages endpoint with forced tool use,
-    the same protocol Hyper speaks, so the request builder and stream reader are shared.
-    `provider.require_parameters: true` restricts routing to endpoints that support tools and tool choice;
-    `provider.ignore` names any endpoint that measures badly.
+- Transport: OpenAI chat completions with `response_format` json_schema,
+    the same body the Synthetic client sends, read by the same stream reader
+    (chosen by measurement; the "What landed" section has the numbers).
+    `provider.require_parameters: true` restricts routing to endpoints that accept `response_format`;
+    each catalog row's `ignoredEndpoints` goes out as `provider.ignore` and names any endpoint that measures badly.
     A model is seated on this provider only after a measured conformance probe, as on Hyper.
 - Meter: `GET /api/v1/credits`, balance as purchased minus used;
     dry at or below zero, unreadable counts as spendable, `402` and `429` are refusal holds.
@@ -90,6 +91,16 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
 - **GPT-5.6 Luna**, named by the owner as Responses-only, is not viable under zero data retention as
     measured (Messages 404 on data policy; chat and Responses 9 and 11 of 20 with empty answers on the rest)
     and is not seated.
+- **Parasail is ignored for MiniMax M3** (`7d680d7fa`): on the first live pass with OpenRouter in the order
+    (keyword233, 16:38 to 16:54 UTC) 16 of 31 MiniMax calls came back with an empty content channel, and the
+    per-endpoint probe showed Parasail writing the whole JSON answer into the reasoning channel while ModelRun
+    answered every attempt. This is the owner's "some providers might serve some models in a horribly broken way",
+    met on the first day, and the ignore list is the standing remedy: an endpoint measured broken for a model is
+    named in that model's catalog row, with the measurement beside it.
+- **The first live pass settled** in 958 seconds for three slices, inside the band of the day's earlier
+    keyword233 runs, with 146 OpenRouter calls at 0.38 USD, 111 Synthetic calls, no refusal, and
+    `verify-published` at 1 of 1. The all-dry benches and Qwen3.8-27B served by OpenRouter were not exercised,
+    since Synthetic stayed wet.
 
 ## Rollback
 
