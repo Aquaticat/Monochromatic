@@ -610,12 +610,31 @@ export function createProviderBudgets(
        */
       const state = states[provider];
       /**
+       * The other provider, whose state decides whether a hold moves traffic
+       * anywhere.
+       */
+      const other: ProviderName = (provider === 'synthetic') ? 'hyper' : 'synthetic';
+      // A HOLD MOVES TRAFFIC; WITH NOWHERE TO MOVE IT, IT ONLY HERDS. A refusal
+      // on a wet meter is a concurrency limit, and holding the provider out for
+      // the backoff sends the next calls to the other provider, which is what
+      // the hold is for. When the other provider is dry there is nothing to
+      // send them to: every call waits the same hold and fires together when it
+      // ends, into the same limit. Measured on XIEPT2, 2026-09-03 00:46 to
+      // 00:51 UTC, Synthetic at 0% weekly and Hyper alone: 429 bursts of 80 to
+      // 131 hits every 80 seconds, 95 calls waiting 60-second holds, 44 lost as
+      // both-dry inside the next hold, and no slice settled in five minutes.
+      // With no hold, each call keeps its own jittered retry ladder in the
+      // transport layer, which is the pacing a concurrency limit wants.
+      /**
        * How long this refusal holds the provider out.
        */
-      const holdMs = (state === 'wet') ? rateLimitBackoffMs : cooldownMs;
+      const holdMs = (state === 'wet')
+        ? ((states[other] === 'wet') ? rateLimitBackoffMs : 0)
+        : cooldownMs;
       heldUntil[provider] = now() + holdMs;
       rl.info(
-        `${provider}: refused us while its meter reads ${state}; held out for ${String(holdMs,)}ms`,
+        `${provider}: refused us while its meter reads ${state} and ${other} reads ${states[other]}; `
+          + `held out for ${String(holdMs,)}ms`,
       );
     },
 

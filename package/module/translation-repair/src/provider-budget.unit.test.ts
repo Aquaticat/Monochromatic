@@ -274,6 +274,43 @@ await describe({
     },),
 
     it({
+      name: 'HOLDS NOTHING when a wet provider refuses us and the other provider is dry, since a hold '
+        + 'with nowhere to move traffic only herds every call into the same limit when it ends '
+        + '(XIEPT2 on Hyper alone, 2026-09-03: 429 bursts every 80 seconds and no slice settled in five '
+        + 'minutes); the transport ladder paces each call instead',
+      fn: async () => {
+        /** Stub providers with the second one's balance at nothing. */
+        const { synthetic, hyper, reads, } = stubProviders({ balance: 0, },);
+        /** Clock the holds are judged against. */
+        const clock = 1_000;
+        /** Budget view under test. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          cooldownMs: 10_000,
+          rateLimitBackoffMs: 300,
+          now: () => clock,
+        },);
+
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.markRefused({
+          provider: 'synthetic',
+          signal: SIGNAL,
+        },);
+        expect(reads.quota,).toBe(2,);
+        expect(budgets.holds(),).toEqual({
+          synthetic: 0,
+          hyper: 0,
+        },);
+        // The refuser is still spendable at once; only the dry provider is out.
+        expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
+          syntheticDry: false,
+          hyperDry: true,
+        },);
+      },
+    },),
+
+    it({
       name: 'HOLDS A PROVIDER OUT FOR THE WHOLE COOLDOWN when its meter cannot be read on the refusal, '
         + 'since a refusal is stickier than a reading that never came',
       fn: async () => {

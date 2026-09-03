@@ -928,6 +928,29 @@ ballot is a few thousand; minimax-m3 exceeded 200,000 raw characters on 345 of i
 replies, gpt-oss-120b on 77 of 353, Kimi-K3 on 28 of 285, Qwen3.8-27B on 23 of 232. Task 31: cut a
 stream early once it passes a size the stage's reply cannot legitimately reach.
 
+## XIEPT2's fourth launch ran Synthetic's week dry, and the 429 hold then stalled Hyper
+
+Launched 23:52 UTC on `c1db6f729` at overlap 4 into `~/temp/agent/xiept2-rerun3-20260902`. Synthetic's
+weekly meter read 2.34% at launch and 0% by 00:49; from then on every seat routed to Hyper (balance
+4,847). Hyper answered with 429 bursts of 80 to 131 hits lasting 14 to 21 seconds, one burst about
+every 80 seconds (00:46:22, 00:47:46, 00:49:08, 00:50:24), and the pass stopped advancing: 72 slice
+costs at 00:49 and at 00:51, in consolidation. The mechanism, read off the log: a 429 on a wet meter
+holds the whole provider for the 60-second backoff (`RATE_LIMIT_BACKOFF_MS = BUDGET_FRESH_MS`), 95 calls
+waited out a 60-second hold, and when it ended every pending call fired at once into Hyper's
+concurrency limit, which produced the next burst; 44 calls hit a second both-dry reading inside a new
+hold and were lost as `BothProvidersDryError` (the consolidation polish gate lost Kimi-K3 and
+gpt-oss-120b that way at 00:47:33). A provider-wide hold is the wrong answer to a concurrency limit
+when the provider is the only one left: it converts a per-call retry into a synchronised herd.
+
+By 00:53 the count was 579 429 lines and 137 both-dry losses, still 72 slice costs, consolidation
+slices settling at about 512 seconds each; the pass was stopped at 00:54 rather than left to limp for
+hours. Fixed by the commit after `c1db6f729`: a refusal on a wet meter holds the provider only when the
+other provider is wet (the hold then moves traffic, which is what it is for); with the other provider
+dry there is no hold, and each call keeps its own jittered retry ladder in the transport layer. The
+refuser stays routable at once; the test shows the hold at zero with the other provider dry and at the
+backoff with both wet. XIEPT2 relaunched on that tree, Hyper alone from the start (Synthetic's week is
+spent), which is the shape `QPW` calls normal.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
