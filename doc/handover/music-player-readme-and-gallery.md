@@ -1,7 +1,7 @@
 # Music player README and current-state gallery
 
 Status:
-grilling and capture inventory in progress.
+capture collection in progress.
 
 Last updated:
 2026-09-03.
@@ -223,10 +223,11 @@ Android reports the `OPENED` device state on the 2,076 by 2,152 inner display at
 The inactive cover display is 1,080 by 2,424.
 The process retains watches for `SIGSEGV` and emulator panic output.
 
-## Current visible-state inventory seed
+## Approved visible-state inventory
 
-The final matrix is not yet approved.
-Code and existing verification reveal these independent dimensions:
+The gallery covers every discrete application-owned branch at least once,
+not every combination of dimensions.
+Code and existing verification identify these independent dimensions:
 
 - platform and form factor:
   desktop narrow,
@@ -380,21 +381,31 @@ Use these defaults unless repository evidence proves one cannot be captured accu
   state-covering rather than Cartesian screenshots,
   Fold cover display as ordinary Android,
   and explicit source-build development status.
+- 2026-09-03,
+  during capture preparation:
+  a synthetic FLAC Source Root containing 120 tracks across ten folders was accepted by MediaStore and SAF.
+  The Android app renders the populated library after the stale AAC copies were removed.
+  Desktop's embedded Slint MCP server is listening on port 9315 with the fixture loaded paused.
+  Its screenshot API produced a valid 480 by 600 narrow light capture.
+  The direct JSON-RPC client does not receive an `mcp-session-id` header,
+  but `tools/call` succeeds after `initialize` because the server accepts stateless loopback requests.
+  For timer-driven page-control reveal,
+  take a non-retained screenshot before reading geometry,
+  as documented in `doc/troubleshooting/slint-embedded-mcp-server.md`.
 
 ## Next actions
 
-1.  Complete source-driven state inventory for both UI implementations.
-2.  Grill the open search,
-    scale,
-    screenshot-matrix,
-    and release-framing decisions.
-3.  Start Pixel 9 Pro Fold through the documented host-GPU workaround in disposable state.
-4.  Prove folded,
+1.  Capture and sanitize approved desktop states,
+    including a live nested-Wayland wide layout.
+2.  Capture and sanitize approved Android states,
+    including cover,
     unfolded,
-    and tabletop posture control before building the full capture matrix.
-5.  Capture and sanitize the approved Android and desktop states.
-6.  Write the layered package README and embed the gallery.
-7.  Verify links,
+    tabletop,
+    system integration,
+    and every page-control style.
+3.  Place final media in `package/music-player/asset/readme/` and commit it.
+4.  Write the layered package README and embed the gallery.
+5.  Verify links,
     commands,
     capability claims,
     image privacy,
