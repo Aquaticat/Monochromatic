@@ -356,5 +356,80 @@ await describe({
       },
     },),
 
+    it({
+      name: 'SKIPS THE [DONE] SENTINEL OPENROUTER APPENDS AFTER message_stop, taken off the wire '
+        + 'on 2026-09-03 (deepseek/deepseek-v4-flash-0731 via DigitalOcean): the answer arrives '
+        + 'in several input_json_delta pieces, usage and cost ride on message_delta, and the '
+        + 'stop reason is end_turn rather than tool_use, none of which may cost the answer',
+      fn: async () => {
+        expect(extractAnthropicCompletion({
+          bodyText: [
+            'event: message_start',
+            'data: {"type":"message_start","message":{"id":"gen-1788450198-boHX6M5376fQSYqjwNP4",'
+              + '"type":"message","role":"assistant","container":null,"content":[],'
+              + '"model":"deepseek/deepseek-v4-flash-0731","stop_reason":null,"stop_details":null,'
+              + '"stop_sequence":null,"usage":{"input_tokens":0,"output_tokens":0,'
+              + '"output_tokens_details":null,"cache_creation_input_tokens":null,'
+              + '"cache_read_input_tokens":null,"cache_creation":null,"inference_geo":null,'
+              + '"server_tool_use":null,"service_tier":null,"speed":"standard"},'
+              + '"provider":"DigitalOcean"}}',
+            'event: content_block_start',
+            'data: {"type":"content_block_start","index":0,"content_block":{"type":"thinking",'
+              + '"thinking":"","signature":""}}',
+            'event: content_block_delta',
+            'data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta",'
+              + '"thinking":"The user wants"}}',
+            'event: content_block_stop',
+            'data: {"type":"content_block_stop","index":0}',
+            'event: content_block_start',
+            'data: {"type":"content_block_start","index":1,"content_block":{"type":"tool_use",'
+              + '"id":"chatcmpl-tool-ad5286db98ea77ad","caller":{"type":"direct"},"name":"verdict",'
+              + '"input":{}}}',
+            // BUILT RATHER THAN QUOTED, as the 2026-08-24 case explains: JSON
+            // inside a JSON string. Three pieces, as the gateway split them.
+            ...[
+              '{"translation": "She',
+              ' left.", "ambiguous": true, ',
+              '"reason": "Context decides."}',
+            ].map(function pieceOf(partial: string,): string {
+              return `event: content_block_delta\ndata: ${JSON.stringify({
+                type: 'content_block_delta',
+                index: 1,
+                delta: {
+                  type: 'input_json_delta',
+                  partial_json: partial,
+                },
+              },)}`;
+            },),
+            'event: content_block_stop',
+            'data: {"type":"content_block_stop","index":1}',
+            'event: message_delta',
+            'data: {"type":"message_delta","delta":{"container":null,"stop_details":null,'
+              + '"stop_reason":"end_turn","stop_sequence":null},"usage":{"input_tokens":574,'
+              + '"output_tokens":306,"output_tokens_details":{"thinking_tokens":191},'
+              + '"cache_creation_input_tokens":null,"cache_read_input_tokens":128,'
+              + '"cache_creation":null,"server_tool_use":null,"service_tier":null,'
+              + '"speed":"standard","cost":0.000126255304,"is_byok":false,'
+              + '"cost_details":{"upstream_inference_cost":0.000126255304,'
+              + '"upstream_inference_prompt_cost":0.000049143304,'
+              + '"upstream_inference_completions_cost":0.000077112}},"context_management":null}',
+            'event: message_stop',
+            'data: {"type":"message_stop"}',
+            'event: data',
+            'data: [DONE]',
+            '',
+          ].join('\n\n',),
+        },),).toEqual({
+          text: '{"translation": "She left.", "ambiguous": true, "reason": "Context decides."}',
+          finishReason: 'end_turn',
+          usage: {
+            prompt_tokens: 574,
+            completion_tokens: 306,
+            total_tokens: 880,
+          },
+        },);
+      },
+    },),
+
   ],
 },);

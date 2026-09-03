@@ -28,6 +28,13 @@ const l = tagged({ tag: 'translation-repair', },);
 // validator a half-written JSON object and get it reported as a schema mismatch
 // rather than as the transport failure it is.
 //
+// `[DONE]` IS SKIPPED, NOT REFUSED. OpenRouter's Messages endpoint appends an
+// `event: data` frame carrying the OpenAI-style `data: [DONE]` sentinel after
+// `message_stop` (captured 2026-09-03, `deepseek/deepseek-v4-flash-0731` via
+// DigitalOcean), and Charm Hyper sends no such frame. The sentinel is not an
+// event and carries nothing, so it is the one non-JSON payload this reader
+// lets through; every other unreadable payload still refuses the body.
+//
 // THINKING IS DISCARDED HERE ON PURPOSE. `thinking_delta` is the model's
 // private channel; `anthropic-delta-scan.ts` routes it to the guards that watch
 // for a runaway, and this file reads only the answer.
@@ -41,6 +48,15 @@ const DATA_PREFIX = 'data:';
  * Event ending a well-formed message.
  */
 const TERMINATOR = 'message_stop';
+
+/**
+ * Sentinel some gateways append after the terminator, carrying no event.
+ *
+ * SPELLED HERE RATHER THAN IMPORTED from `stream-completion.ts`: that file's
+ * constant is private to the OpenAI-shaped reader, and the two readers are
+ * kept independent so a change to one wire format cannot reach the other.
+ */
+const DONE_SENTINEL = '[DONE]';
 
 /**
  * Everything one pass over the body accumulates.
@@ -496,6 +512,8 @@ export function extractAnthropicCompletion(
      */
     const payload = dataPayloadOf(rawLine,);
     if (payload === '')
+      continue;
+    if (payload === DONE_SENTINEL)
       continue;
 
     /**

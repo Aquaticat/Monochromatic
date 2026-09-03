@@ -523,5 +523,36 @@ await describe({
       },
     },),
 
+    it({
+      name: 'COUNTS THE [DONE] SENTINEL AS NOTHING, not as an unreadable frame, which OpenRouter\'s '
+        + 'Messages endpoint appends after message_stop under an `event: data` line (captured '
+        + '2026-09-03): one such frame on every call would read as a wire format nobody follows',
+      fn: async () => {
+        /**
+         * Scanner under test, fed the closing frames as that gateway sends them.
+         */
+        const scanner = scanAnthropicDeltas();
+
+        /**
+         * Deltas the closing frames carried, which must be none.
+         */
+        const deltas = scanner.feed({
+          chunk: [
+            'event: message_delta',
+            'data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},'
+              + '"usage":{"input_tokens":574,"output_tokens":306}}',
+            'event: message_stop',
+            'data: {"type":"message_stop"}',
+            'event: data',
+            'data: [DONE]',
+            '',
+          ].join('\n\n',),
+        },);
+
+        expect(deltas.length,).toBe(0,);
+        expect(scanner.unreadableFrames(),).toBe(0,);
+      },
+    },),
+
   ],
 },);

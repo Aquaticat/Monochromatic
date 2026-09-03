@@ -49,6 +49,13 @@ const l = tagged({ tag: 'translation-repair', },);
 const OPTIONAL_SPACE = ' ';
 
 /**
+ * Sentinel OpenRouter's Messages endpoint appends after `message_stop`,
+ * captured 2026-09-03; it is not a frame and must not count as an unreadable
+ * one, for the same reason an empty keep-alive payload does not.
+ */
+const DONE_SENTINEL = '[DONE]';
+
+/**
  * Block type carrying the model's reasoning rather than its answer.
  */
 const THINKING_BLOCK = 'thinking';
@@ -477,6 +484,8 @@ export function scanAnthropicDeltas(): DeltaScanner {
       : afterColon;
 
     if (payload === '')
+      return [];
+    if (payload === DONE_SENTINEL)
       return [];
 
     /**
