@@ -1223,6 +1223,35 @@ reading. `TALLY keyword233 status=SETTLED ... repairIssues=22 repairAccepted=19 
 minutes, 108 calls on Synthetic and 135 on Hyper, no refusal, 4 cuts), select rounds 7 of 7 nine times
 and 8 of 8 twice, `verify-published` 1 of 1, first paragraph in the past tense, no corroborated claim.
 
+## The owner's three answers, and the stub marker traced and stripped
+
+Asked three separable questions, the owner answered: the `(To-Do)` question was the wrong question ("The
+pipeline's job is to give a good result even when the originals are bad"), inline gloss on first use for
+terms with no English equivalent, and about two hours accepted for XIEPT2-scale entries on Hyper alone.
+Records: `doc/decision/translation-repair-good-result-over-bad-original.md`,
+`doc/decision/translation-repair-inline-gloss.md` (house policy vocabulary bullet), rule `FT2` in
+`AGENTS.md` (`e04882b47`).
+
+Traced in the postscript run's artifact: slice 0 is the front matter and slice 2 an insertion anchor
+whose incumbent is empty, so `(To-Do)` and the hint comment sat in archive text no slice covered and
+`spliceSlices` passed them through byte for byte, as it should for archive text. Measured against the
+pinned corpus (92 English pages): one stub marker, XIEPT2's; HTML comments in 22 pages, all vocabulary
+and voice notes (起床战争：Bed Wars, WER: World Educational Robot Contest, "This section is first-person
+narration"), which `entry-notes.ts` already turns into "ARCHIVE editor comment" lines of the identity
+block. So the comments are evidence the pipeline reads and a reader never sees; only the marker goes.
+
+Fixed at `3d27f9b35`: `corpus-run/archive-stub.ts` strips a paragraph that is nothing but a stub token
+(to-do, todo, tbd, wip; one layer of brackets; any case) with one adjacent blank line, outside front
+matter, comments and fences, in one linear pass with comments masked first; `passArchiveText` composes
+the invisible-variant fold and the strip, logs each removal, and now runs inside `preparePassEntry` so
+preparation, both lanes, the stored archive and the page describe one text (and the entry driver stays
+under its line budget). `verify-published` weighs against the artifact's stored archive, so the chain is
+consistent. Unit tests cover the XIEPT2 shape byte for byte and the negatives (inside a comment, a
+fence, front matter, a sentence; a marker at the document's end; a marker as the whole body), and the
+positive case was shown to fail with the membership check neutralised. XIEPT2 launched on that tree at
+13:01 UTC (`~/temp/agent/xiept2-stub-20260903`) and logged `archive: stripped stub marker "(To-Do)" at
+line 8` at once; the landing is recorded when it settles.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every

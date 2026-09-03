@@ -576,6 +576,18 @@ but a formula is unprotected structure until the strict grammar knows it.
   probers corroborated it, and the contest was shown nothing while only the
   accuracy probe was read.
   The contest driver logs how many claims a slice's judges were shown.
+- **A placeholder in the archive is not content the pipeline preserves.**
+  `passArchiveText` (`corpus-run/pass-archive.ts`, run inside
+  `preparePassEntry`) folds invisible variants and then strips any paragraph
+  that is nothing but a stub token (`(To-Do)`, `TODO`, `TBD`, `WIP`, one
+  layer of brackets, any case) outside front matter, HTML comments and code
+  fences, logging `archive: stripped stub marker ... at line N`.
+  Measured against the 92 English pages of the pinned corpus: one such
+  marker, XIEPT2's, which the pipeline had published over a finished
+  translation.
+  HTML comments stay: `entry-notes.ts` reads them as editor comments and a
+  reader never sees them.
+  Decision: `doc/decision/translation-repair-good-result-over-bad-original.md`.
 - **Judge seats follow the provider that would serve them.**
   `readJudgeSeats` reads Synthetic's meter before each phase of an entry
   (lanes, lane contest, consolidation; once per entry until 2026-09-03, when
