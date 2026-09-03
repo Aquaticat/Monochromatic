@@ -469,6 +469,17 @@ Use these defaults unless repository evidence proves one cannot be captured accu
   and Fold postures.
   Starting and zero-item loading indicators did not hold long enough for a stable capture on this hardware;
   they remain implemented branches but are excluded as intermediate frames.
+- 2026-09-03,
+  gallery coverage correction:
+  captured Android's six rendered page-control variants from Settings on the Fold cover display,
+  then cropped only application content into `android-page-controls.png`.
+  Added desktop evidence for collapsed narrow page controls,
+  every completion mode,
+  muted playback,
+  and a 128-folder page-grid fixture.
+  The grid's first folder contains 200 hard-linked synthetic FLAC rows;
+  it is state-coverage evidence only,
+  not a scale benchmark.
 
 ## Next actions
 
