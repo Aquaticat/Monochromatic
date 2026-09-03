@@ -675,6 +675,11 @@ Size runs to end within about an hour;
  narrower seats first.
 Longer needs owner's say.
 
+FT2:
+ Owner's say of 2026-09-03:
+ XIEPT2-scale entries on Hyper alone (about 1,900 calls under 1,000 per hour) may take about two hours.
+Don't thin benches or probe the ceiling for that alone.
+
 TMO:
  Never wrap routine verification in external `timeout`.
 Use command tool's session/polling;
