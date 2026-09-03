@@ -120,7 +120,12 @@ TODO
 Coolify's storage backups are file-level archives.
 Use the database-aware backup for PostgreSQL.
 Use a storage backup for `penpot-assets` with container stopping enabled,
-which prevents asset writes during the archive.
+which prevents asset writes during that archive.
+These independently valid backups are not a coordinated cross-store recovery point:
+the backend can write between the database dump and asset archive.
+Treat them as protection from operator mistakes during this same-version configuration repair,
+not as proof that an arbitrary version rollback can restore an exact instant.
+A coordinated rollback backup must keep all write-producing Penpot containers stopped across both captures.
 A local backup protects against this Compose change but not loss of the deployment server;
 configure S3 separately when off-server protection is required.
 
@@ -348,7 +353,9 @@ or remove any of the three named volumes as part of this recovery.
 
 Do not downgrade Penpot to `2.11.1` against the current database.
 If a version rollback becomes necessary,
-restore PostgreSQL and asset data from backups taken before the first newer-version start,
-then deploy the Penpot version matching those backups.
+use a pre-upgrade recovery set captured while Penpot writes were quiesced,
+restore its PostgreSQL and asset data,
+then deploy the Penpot version matching that set.
+Do not treat the two independently created recovery backups in this runbook as a coordinated rollback set.
 Coolify does not restore storage archives from its storage-backup page,
 so test and document that restore path separately before relying on it for rollback.

@@ -296,7 +296,8 @@ Diagnose its actual healthcheck and application logs,
 then plan a backed-up upgrade separately.
 Do not downgrade a database that may already have run newer Penpot migrations.
 If recovery requires an older release,
-restore the matching pre-upgrade PostgreSQL and asset-volume backups first.
+restore a matching pre-upgrade PostgreSQL and asset recovery set captured while Penpot writes were quiesced.
+Separately timed database and asset backups are not guaranteed to represent one cross-store instant.
 
 ### Replace deprecated storage variable names after recovery
 
