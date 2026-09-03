@@ -29,6 +29,12 @@ The replacement healthcheck was verified against a disposable Penpot `2.17.2` st
 Docker reported `healthy`,
 and the original Node.js command failed with status `127` against the same ready backend.
 
+If Penpot starts but browser requests time out at external port `8080`,
+use
+[`doc/runbook/correct-coolify-penpot-public-uri.md`](correct-coolify-penpot-public-uri.md)
+as a separate configuration repair.
+Do not repeat this healthcheck recovery for that follow-up symptom.
+
 ## Setup
 
 Status:
