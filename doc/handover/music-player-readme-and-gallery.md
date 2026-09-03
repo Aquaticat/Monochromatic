@@ -201,7 +201,8 @@ Its state is stored on the encrypted archive volume.
 There is sufficient measured free space on that volume for disposable capture state.
 
 Known emulator behavior is documented in
-[`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`](../troubleshooting/android-emulator-37-software-renderer-sigsegv.md).
+[`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`](
+../troubleshooting/android-emulator-37-software-renderer-sigsegv.md).
 Software rendering with Emulator 37.1.11 crashes in packaged SwiftShader during API 37 boot on this host.
 A host-GPU,
 read-only,
