@@ -201,6 +201,16 @@ The AVD's generated `hardware-qemu.ini` currently records a prior Lavapipe runti
 Do not trust that stale generated file as the next launch configuration.
 Pass the verified host-GPU arguments explicitly.
 
+A read-only,
+no-snapshot,
+headless host-GPU launch is running under Pi process `music-player-pixel9-fold-readonly`
+(`proc_c7c1`).
+Its retained-AVD files are not writable through this launch.
+The emulator reached boot completion in 34,368 ms and is attached as `emulator-5554`.
+Android reports the `OPENED` device state on the 2,076 by 2,152 inner display at density 390.
+The inactive cover display is 1,080 by 2,424.
+The process retains watches for `SIGSEGV` and emulator panic output.
+
 ## Current visible-state inventory seed
 
 The final matrix is not yet approved.
@@ -306,6 +316,31 @@ or every combination of selected dimensions.
 - Should notification and lock-screen states be part of the README gallery or only component documentation?
 - Where should committed gallery assets live under `package/music-player/`?
 - How should the README phrase source-build availability and unsupported distribution status?
+
+## Progress log
+
+- 2026-09-03,
+  10:20 EDT:
+  created this handover after the first README grilling decisions and environment inventory.
+  Committed it as `9274d9823`.
+- 2026-09-03,
+  after 10:20 EDT:
+  corrected the available target name to Pixel 9 Pro Fold,
+  read the existing emulator failure diagnosis,
+  inspected the AVD configuration,
+  and started a read-only host-GPU boot through process `proc_c7c1`.
+  Source inventory confirmed that current Android fold behavior is orientation-based page-control folding;
+  no posture-aware app layout API is present.
+- 2026-09-03,
+  after the emulator start:
+  the verified host-GPU workaround succeeded again.
+  Emulator 37.1.11 reached boot completion in 34,368 ms without the known SwiftShader crash.
+  `cmd device_state` reported supported `CLOSED`,
+  `HALF_OPENED`,
+  `OPENED`,
+  and `REAR_DISPLAY_MODE` states,
+  with `OPENED` active.
+  Display inspection confirmed separate inner and cover displays.
 
 ## Next actions
 
