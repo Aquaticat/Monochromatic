@@ -89,6 +89,22 @@ function pricedLine(
 const USD_PLACES = 4;
 
 /**
+ * Renders a USD figure at the precision a corpus call costs in.
+ *
+ * @param usd - what something came to
+ *
+ * @returns Text for a report column
+ *
+ * @example
+ * ```ts
+ * console.log(asUsd({ usd: 0.0842, },),);
+ * ```
+ */
+function asUsd({ usd, }: { readonly usd: number; },): string {
+  return usd.toFixed(USD_PLACES,);
+}
+
+/**
  * Renders one OpenRouter seat with the USD its lines reported, and what share
  * of the run's USD it was.
  *
@@ -132,7 +148,7 @@ function usdLine(
     ? ''
     : `, a floor: ${String(uncosted,)} calls carried no cost`;
 
-  return `  ${seat.model}: ${seat.costUsd.toFixed(USD_PLACES,)} USD (${share}) `
+  return `  ${seat.model}: ${asUsd({ usd: seat.costUsd, },)} USD (${share}) `
     + `over ${String(seat.calls,)} calls, `
     + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}${floor}`;
 }
@@ -223,7 +239,7 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
         totalUsd: cost.totalUsd,
       },),);
     }
-    console.log(`OpenRouter run total: ${cost.totalUsd.toFixed(USD_PLACES,)} USD, never summed with the credits above`,);
+    console.log(`OpenRouter run total: ${asUsd({ usd: cost.totalUsd, },)} USD, never summed with the credits above`,);
   }
 
   if (subscriptionCount > 0) {
