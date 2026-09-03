@@ -392,20 +392,49 @@ Use these defaults unless repository evidence proves one cannot be captured accu
   For timer-driven page-control reveal,
   take a non-retained screenshot before reading geometry,
   as documented in `doc/troubleshooting/slint-embedded-mcp-server.md`.
+- 2026-09-03,
+  desktop capture:
+  captured the empty,
+  populated,
+  selected paused,
+  muted playing,
+  settings,
+  narrow collapsed and expanded,
+  selected-page reveal,
+  all six page-control styles,
+  all four playback modes,
+  dark theme,
+  and independently scrolled wide panes.
+  The stress-only desktop fixture used 128 synthetic folders and 200 hard-linked FLAC rows in its first folder.
+  It remains outside the repository and will not be committed.
+- 2026-09-03,
+  live-GPU capture:
+  Slint MCP returned an opaque-black 1280 by 800 image from the winit FemtoVG OpenGL session,
+  while its element tree and the nested compositor's framebuffer capture were populated.
+  `doc/troubleshooting/slint-mcp-winit-femtovg-screenshot.md` records the source trace,
+  upstream duplicate issue and pull request,
+  verified headless and compositor workarounds,
+  and the decision not to add an empty upstream comment.
+  Use nested-compositor captures for live-GPU gallery media.
+  The isolated compositor cannot render KDE taskbar progress or a desktop title bar,
+  so those shell-owned states remain unavailable in the disposable capture environment.
+- 2026-09-03,
+  capture cleanup:
+  stopped every nested compositor and embedded MCP instance after the desktop captures.
+  `ss` found no listener on ports 9315 through 9321;
+  the separately installed user music-player process was left untouched.
 
 ## Next actions
 
-1.  Capture and sanitize approved desktop states,
-    including a live nested-Wayland wide layout.
-2.  Capture and sanitize approved Android states,
+1.  Capture and sanitize approved Android states,
     including cover,
     unfolded,
     tabletop,
     system integration,
     and every page-control style.
-3.  Place final media in `package/music-player/asset/readme/` and commit it.
-4.  Write the layered package README and embed the gallery.
-5.  Verify links,
+2.  Place final media in `package/music-player/asset/readme/` and commit it.
+3.  Write the layered package README and embed the gallery.
+4.  Verify links,
     commands,
     capability claims,
     image privacy,
