@@ -1146,6 +1146,14 @@ claims become lines, each naming its edit, the contest block's prose names the t
 starting texts, and the driver logs `slice N: M corroborated damage claims shown to the judges` so a
 run's log witnesses the block. Guard test shown to fail with the rewrite read removed.
 
+keyword233 ran on that tree (`2530537a2`, 07:52 UTC, `~/temp/agent/keyword233-rewrite-claims-20260903`),
+Synthetic still wet (`JUDGE SEATS synthetic=wet wide=7 late=8 hyper-slow seated=yes`): `TALLY keyword233
+status=SETTLED ... repairIssues=31 repairAccepted=23 ... ms=845916` (14.1 minutes, 107 calls on
+Synthetic and 120 on Hyper, no refusal, 3 cuts, one of them Qwen), `verify-published` 1 of 1 at the
+promised length, the first paragraph in the past tense. The probes corroborated nothing on this draw (0
+of 4 regions, both edits), so no `corroborated damage claims shown` line appeared and the unit test
+remains the block's only witness; the contests settled on neither (8 of 8) and on repair (8 of 8).
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
