@@ -113,9 +113,12 @@ TODO | DONE
     Routing spends in the order Synthetic, Charm Hyper, OpenRouter
     (`doc/decision/translation-repair-openrouter-fallback.md`);
     a worktree whose store predates the OpenRouter name can still exercise it by launching the worktree's
-    bundle with the main repository as the mise config root:
-    `cd /var/home/user/Monochromatic && mise exec -- node <worktree>/package/module/translation-repair/dist/final/node/corpus-pass.mjs --only <id>`,
+    bundle with the main repository as the mise config root
+    (`cd /var/home/user/Monochromatic && mise exec -- node <worktree>/<bundle> --only <id>`,
+    where the bundle is `package/module/translation-repair/dist/final/node/corpus-pass.mjs`),
     with `env -u TRANSLATION_REPAIR_CHARM_HYPER_API_KEY` between `--` and `node` to leave Hyper out of that run.
+    Check which names a root injects before choosing, printing presence and never a value:
+    `mise exec -- node -e "console.log(process.env.TRANSLATION_REPAIR_OPENROUTER_API_KEY === undefined ? 'absent' : 'present')"`.
 
 3.  Prepare the scratch root that will hold the log, the pid file and the run directory.
 

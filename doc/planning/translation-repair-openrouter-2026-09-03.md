@@ -11,10 +11,13 @@ so there is no reason to recharge Hyper from the usual subscription;
 OpenRouter is preferred for paid per-token work,
 and Synthetic and Hyper are expected to run dry often.
 `TRANSLATION_REPAIR_OPENROUTER_API_KEY` was added to the main worktree's `.env.local.json`.
-The feature worktree's copy predates it;
+The feature worktree's copy predated it;
 copying the encrypted file across was refused by the session's permission classifier,
-so until the owner copies it, OpenRouter probes run with the main repo as the mise config root
+so the day's OpenRouter probes and both live passes ran with the main repo as the mise config root
 (the bridge `doc/decision/translation-repair-multi-provider.md` records under "The worktree's secrets file is stale").
+The owner copied the file at 17:40 UTC;
+`mise exec` from the worktree root now injects all four names,
+and later passes launch from the worktree as the runbook's ordinary path says.
 
 State of the other two providers at the time of writing:
 
