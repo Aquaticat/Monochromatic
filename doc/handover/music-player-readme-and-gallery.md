@@ -47,8 +47,9 @@ or blocker.
 - Keep the library filesystem-first.
   Folders and filenames remain canonical;
   metadata browsing and album art stay out of scope.
-- The design direction includes instant global search opened by pressing Control twice.
-  Exact search behavior is still open.
+- The design direction includes track-only global search opened by pressing Control twice.
+  It searches the complete loaded tree even when another page is visible.
+  Folder results and app-command providers are not part of this requirement.
 - Target scale is:
   - up to 1,000 immediate subdirectories in one opened directory;
   - up to 1,000 tracks in one subdirectory;
@@ -61,6 +62,15 @@ or blocker.
   Pixel 9 Pro Fold tabletop,
   desktop narrow,
   and desktop wide.
+  The Pixel 9 Pro Fold cover display in `CLOSED` state is the ordinary Android capture.
+- Use a state-covering gallery matrix.
+  Every discrete user-visible branch must appear in at least one image,
+  but equivalent dimensions do not require every Cartesian combination.
+- State the current availability as `Under active development; build from source`.
+- The scale values are independent maxima under the 100,000-track total cap.
+  A root may have 1,000 immediate subdirectories,
+  and any one subdirectory may contain 1,000 tracks,
+  without requiring every subdirectory to hit that maximum simultaneously.
 - Use the existing `Music Player` name and a concise,
   plain-spoken voice unless later grilling establishes a conflict.
 - The available foldable emulator is Pixel 9 Pro Fold,
@@ -132,10 +142,12 @@ JetBrains IntelliJ IDEA 2026.2 documentation distinguishes two interactions:
 - pressing Shift twice opens `Search Everywhere`.
 
 The requested music-player shortcut combines the Control-twice invocation with global track search.
-Grilling must still settle whether the overlay is track-only search or a broader command palette,
-which fields it matches,
-how it ranks results,
-and what selection does.
+The overlay is track-only,
+not a Run Anything-style command palette and not a mixed folder-and-track provider.
+Detailed matching,
+ranking,
+and selection behavior are delegated design choices for implementation work;
+the README must not invent them before code or an accepted design specifies them.
 
 Primary references:
 
@@ -284,38 +296,55 @@ or every combination of selected dimensions.
 - Do not capture audio.
 - End desktop browser or MCP sessions and Android emulator processes after capture.
 
-## Open decisions
+## Delegated implementation choices
 
-- Does Control twice open track-only search,
-  or a command palette whose first provider is tracks?
-- Which fields does search match in a filesystem-first product:
-  filename,
-  relative path,
-  folder segments,
-  or all of them?
-- What ranking and tie-breaking rules should search use?
-- Does choosing a result select paused,
-  start playback,
-  or follow a modifier-dependent action?
-- Are the three scale limits independent maxima that need not occur simultaneously?
-  A directory with 1,000 subdirectories each containing 1,000 tracks would contain 1,000,000 tracks,
-  which exceeds the selected 100,000-track total.
-- Does “all states” mean each independent user-visible state appears in at least one image,
-  or that selected dimensions require a Cartesian capture matrix?
-- Must every page-control style appear in the README,
-  or may one settings capture enumerate styles while representative player captures use the current default?
-- Must both light and dark themes be shown for every form factor,
-  or across the gallery as a whole?
-- Are transient permission,
+The user ended grilling after accepting every recommendation and authorized autonomous completion.
+Use these defaults unless repository evidence proves one cannot be captured accurately:
+
+- Show each page-control style at least once,
+  with the Settings screen also naming every included style.
+- Show dark and light themes on both app platforms.
+  Do not multiply every style by every form factor and theme.
+- Include every app-owned discrete screen branch:
+  Android starting,
+  permission gate,
   loading,
   empty,
-  and system-dialog states part of the public gallery?
-- Should the Android slab capture use the Fold cover display,
-  a disposable phone AVD,
-  or a connected physical device if one appears?
-- Should notification and lock-screen states be part of the README gallery or only component documentation?
-- Where should committed gallery assets live under `package/music-player/`?
-- How should the README phrase source-build availability and unsupported distribution status?
+  populated unselected,
+  selected paused,
+  playing,
+  settings,
+  playback modes,
+  collapsed page overflow,
+  expanded page overflow,
+  selected-page reveal,
+  and a scrolled library;
+  desktop empty,
+  populated unselected,
+  selected paused,
+  playing,
+  settings,
+  narrow collapse and expansion,
+  wide split panes,
+  and independently scrolled panes.
+- Include Android notification and lock-screen playback states,
+  plus desktop title and taskbar progress where the isolated environment renders them.
+- Exclude operating-system permission prompts,
+  folder pickers,
+  hover animation samples,
+  arbitrary slider values,
+  and intermediate animation frames.
+  They are OS-owned or continuous states rather than discrete app branches.
+- Use synthetic filesystem names and audio fixtures that demonstrate deep paths,
+  many pages,
+  long labels,
+  A to Z ordering,
+  the `#` catch-all,
+  and current-track highlighting without exposing personal data.
+- Store committed gallery media under `package/music-player/asset/readme/`,
+  retaining singular directory segments.
+- Prefer one contact sheet per coherent state family plus selected full-size hero captures.
+  This keeps every state inspectable without forcing readers through a long run of near-duplicate full-size images.
 
 ## Progress log
 
@@ -341,6 +370,16 @@ or every combination of selected dimensions.
   and `REAR_DISPLAY_MODE` states,
   with `OPENED` active.
   Display inspection confirmed separate inner and cover displays.
+- 2026-09-03,
+  after the final grilling round:
+  the user accepted all recommendations,
+  ended grilling,
+  and authorized autonomous completion.
+  Settled track-only Control-twice search,
+  independent scale maxima,
+  state-covering rather than Cartesian screenshots,
+  Fold cover display as ordinary Android,
+  and explicit source-build development status.
 
 ## Next actions
 
