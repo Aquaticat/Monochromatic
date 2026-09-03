@@ -1204,8 +1204,11 @@ benches would have cost its critic and panel seats. Counted per role instead (ab
   18 of 55 consolidation slate, none in the repair lane), lane contest 1 of 28, critic 0 of 9, panel
   1 of 5, gate 0 of 14. Its cut streams averaged 71 s, its answered ones 14 s.
 
-So the slowness is the slate prompt on Hyper, not the model or the provider alone, and the rerun5
-contest figure the record carried (18 of 24) does not hold on the two later runs. Under the owner's
+So the slowness is the slate prompt on Hyper, not the model or the provider alone. The "18 of 24" the
+seating record carried for rerun5 was consolidation-slate select, not lane contest (the provider-aware
+record's rejected-alternative bullet mislabeled it), and it holds: 26 of 47 slate rounds on rerun5, 18
+of 55 today. Rerun5 was mixed-provider for Kimi-K3 (93 calls on Synthetic, 135 on Hyper) and 55 of its
+61 cut streams were Hyper-served. Under the owner's
 authorisation to drop a model from a role on evidence: `HYPER_SLOW_SELECT_JUDGES` withholds Kimi-K3
 from both lanes' select seats and the consolidation slate while Synthetic is dry and keeps it as critic,
 panel, contest judge and gate; `JudgeSeats` carries `selectJudges` and `slateJudges` beside the wide and

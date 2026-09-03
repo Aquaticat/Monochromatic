@@ -61,11 +61,12 @@ export const HYPER_SLOW_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModel
  *
  * THE CASE IS `hf:moonshotai/Kimi-K3`, 2026-09-03: cut in 0 of 69 select
  * rounds when Synthetic served it (Toka_ls, 2026-09-02) and in 43 of 83 and 38
- * of 101 when Hyper did (XIEPT2 rerun5 and the postscript run), against 0 and
- * 1 of 28 lane-contest rounds, 0 of 9 critic, 0 to 1 of 5 panel and 0 of 14
- * gate rounds on Hyper. Its cut streams ran 71 s on average, its answers 14 s:
- * the slate prompt is where its reasoning runs long. Same evidence bar as the
- * owner's authorisation to drop a model from a role.
+ * of 101 when Hyper mostly or wholly did (XIEPT2 rerun5, 55 of its 61 cut
+ * streams Hyper-served, and the postscript run), against 0 and 1 of 28
+ * lane-contest rounds, 0 of 9 critic, 0 to 1 of 5 panel and 0 of 14 gate
+ * rounds. Its cut streams ran 71 s on average, its answers 14 s: the slate
+ * prompt is where its reasoning runs long. Same evidence bar as the owner's
+ * authorisation to drop a model from a role.
  */
 export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   'hf:moonshotai/Kimi-K3',

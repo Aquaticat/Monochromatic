@@ -28,9 +28,10 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
 - `HYPER_SLOW_SELECT_JUDGES` names the judges Hyper serves too slowly in the select role alone
   (Kimi-K3 since 2026-09-03): withheld from both lanes' slate select seats and the consolidation slate
   while Synthetic is dry, kept as critic, panel, lane-contest judge and gate. Evidence: cut in 0 of 69
-  select rounds served by Synthetic (Toka_ls, 2026-09-02) and in 43 of 83 and 38 of 101 on Hyper
-  (XIEPT2 rerun5 and the postscript run), against 0 and 1 of 28 lane-contest rounds, 0 of 9 critic, 0
-  to 1 of 5 panel and 0 of 14 gate rounds on Hyper; its cut streams averaged 71 s, its answers 14 s.
+  select rounds served by Synthetic (Toka_ls, 2026-09-02) and in 43 of 83 and 38 of 101 with Hyper
+  serving most or all of them (XIEPT2 rerun5, where 55 of its 61 cut streams were Hyper-served, and
+  the postscript run), against 0 and 1 of 28 lane-contest rounds, 0 of 9 critic, 0 to 1 of 5 panel and
+  0 of 14 gate rounds; its cut streams averaged 71 s, its answers 14 s.
   Same evidence bar as the owner's standing authorisation to drop a model from a role. The dry benches
   are then five select judges (quorum 3) beside six wide seats, and six slate judges beside seven late.
 - Writer seats are untouched: translator, checker, introduced-defect probe, pairing and insertion

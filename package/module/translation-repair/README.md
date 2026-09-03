@@ -587,8 +587,9 @@ but a formula is unprotected structure until the strict grammar knows it.
   The static benches in `run-config.ts` are the Synthetic-wet ones, seven wide
   seats and eight late judges; six and seven when dry.
   A second set, `HYPER_SLOW_SELECT_JUDGES` (Kimi-K3: cut in 0 of 69 select
-  rounds on Synthetic, 43 of 83 and 38 of 101 on Hyper, almost never in any
-  other judge role), is withheld from both lanes' slate select seats and the
+  rounds on Synthetic, 43 of 83 and 38 of 101 with Hyper serving most or all
+  of them, almost never in any other judge role), is withheld from both
+  lanes' slate select seats and the
   consolidation slate while Synthetic is dry and kept everywhere else, so the
   dry select bench is five and the dry slate bench six.
   Decision: `doc/decision/translation-repair-provider-aware-judge-seat.md`.
