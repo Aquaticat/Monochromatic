@@ -17,7 +17,6 @@ import type {
   EntryOutcome,
 } from './pass-entry-contract.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
-import { passArchiveText, } from './pass-archive.ts';
 import { runPassConsolidation, } from './pass-consolidate.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { destinationsLine, } from './destinations-line.ts';
@@ -132,12 +131,6 @@ async function runEntryPipeline(
   const t0 = Date.now();
 
   /**
-   * Archive bytes both deciders judge, normalized before preparation so spans,
-   * candidates, artifact and published page all describe same visible text.
-   */
-  const archiveText = passArchiveText({ text: entry.targetText, });
-
-  /**
    * Per-entry hard-cap deadline. Disposal at return defuses the timer and
    * detaches its listener; the repo bans try/finally, so cleanup rides on
    * `using` instead.
@@ -237,7 +230,9 @@ async function runEntryPipeline(
       pipelineDigest,
       modelIds: RUN_ROSTER,
       sourceText: entry.sourceText,
-      targetText: archiveText,
+      // Normalized inside (`pass-prepare.ts`): the archive both deciders judge
+      // is the archive as prepared, never these bytes.
+      targetText: entry.targetText,
       signal: deadline.callSignal,
       exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       l: tagged({ tag: entry.id, },),

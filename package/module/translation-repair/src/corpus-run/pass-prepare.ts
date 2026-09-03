@@ -17,6 +17,7 @@ import {
 } from './slice-cache-store.ts';
 import { repairArchiveBlocks, } from './archive-block-repair.ts';
 import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
+import { passArchiveText, } from './pass-archive.ts';
 
 //region Pass preparation
 // Corpus-specific shell owns pairing cache namespaces and reviews inherited
@@ -99,6 +100,15 @@ export async function preparePassEntry(
 ): Promise<PairedPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
   /**
+   * Archive bytes both deciders judge, normalized before preparation so
+   * spans, candidates, artifact and published page all describe the same
+   * visible text (`pass-archive.ts`).
+   */
+  const archiveText = passArchiveText({
+    text: targetText,
+    l,
+  },);
+  /**
    * Cache for block-pairing rounds across revised archive preparations.
    */
   const pairingCache = await openPairingCache({
@@ -136,7 +146,7 @@ export async function preparePassEntry(
     pairingCache,
     sectionCache,
     sourceText,
-    targetText,
+    targetText: archiveText,
     signal,
     exchangeTimeoutMs,
     l,
@@ -155,14 +165,14 @@ export async function preparePassEntry(
   const repaired = await repairArchiveBlocks({
     client,
     modelIds,
-    targetText,
+    targetText: archiveText,
     sourceContexts: archiveBlockSourceContexts({ prepared: firstPaired.prepared, }),
     blocks: pending,
     signal,
     exchangeTimeoutMs,
     l,
   },);
-  if (repaired.targetText === targetText) {
+  if (repaired.targetText === archiveText) {
     return {
       prepared: firstPaired.prepared,
       findings: [
