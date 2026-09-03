@@ -30,6 +30,10 @@ import {
   parseHyperCredits,
 } from './hyper-credits.ts';
 import { formatUsageNote, } from './model-content.ts';
+import {
+  createRequestPace,
+  HYPER_REQUESTS_PER_MINUTE,
+} from './request-pace.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
 import type { RosterModelId, } from './roster-id.ts';
@@ -185,6 +189,11 @@ function wholeMessage(attemptReply: TransportReply,): void {
  *
  * @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
  *
+ * @param requestsPerMinute - request starts allowed in any sixty seconds,
+ * retries included; the provider limits requests by rate and refuses the rest
+ * with HTTP 429, so calls queue here instead (`request-pace.ts` has the
+ * measurement); not positive means unpaced
+ *
  * @returns Client surface with chatText, chatJson, and credits
  *
  * @example
@@ -200,6 +209,7 @@ export function createHyperClient(
     creditsUrl = HYPER_CREDITS_URL,
     perModelConcurrency = HYPER_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
+    requestsPerMinute = HYPER_REQUESTS_PER_MINUTE,
   }: {
     readonly apiKey: string;
     readonly transport?: ModelTransport;
@@ -207,12 +217,38 @@ export function createHyperClient(
     readonly creditsUrl?: string;
     readonly perModelConcurrency?: number;
     readonly retryPolicy?: RetryPolicy;
+    readonly requestsPerMinute?: number;
   },
 ): HyperClient {
   /**
    * Per-model limiters keyed by roster model, created lazily.
    */
   const limiters = new Map<RosterModelId, LimitFunction>();
+
+  /**
+   * Request-rate pacer every attempt on this client takes a turn from.
+   */
+  const pace = createRequestPace({ perMinute: requestsPerMinute, },);
+
+  /**
+   * The transport behind the pacer: every attempt, retries included, waits
+   * for a place in the window before it goes out.
+   *
+   * @param exchange - request the retry ladder is sending
+   *
+   * @returns The transport's reply
+   *
+   * @example
+   * ```ts
+   * const reply = await pacedTransport(exchange,);
+   * ```
+   */
+  async function pacedTransport(
+    exchange: Parameters<ModelTransport>[0],
+  ): Promise<Awaited<ReturnType<ModelTransport>>> {
+    await pace.take({ signal: exchange.signal, },);
+    return await transport(exchange,);
+  }
 
   /**
    * Headers shared by every exchange, auth included.
@@ -375,7 +411,7 @@ export function createHyperClient(
        * Raw reply from the transport seam, retried on transient statuses.
        */
       const reply = await exchangeWithRetry({
-        transport,
+        transport: pacedTransport,
         exchange: {
           url: messagesUrl,
           label: servedId,
@@ -517,7 +553,7 @@ export function createHyperClient(
      * Raw reply from the balance endpoint, retried on transient statuses.
      */
     const reply = await exchangeWithRetry({
-      transport,
+      transport: pacedTransport,
       exchange: {
         url: creditsUrl,
         label: 'credits',

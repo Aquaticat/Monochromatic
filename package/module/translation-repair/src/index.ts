@@ -213,8 +213,17 @@ export {
 export {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
+  retryAfterMsOf,
   type RetryPolicy,
 } from './transient-retry.ts';
+export {
+  createRequestPace,
+  HYPER_REQUESTS_PER_MINUTE,
+  HYPER_REQUESTS_PER_MINUTE_VAR,
+  hyperRequestsPerMinute,
+  PACE_WINDOW_MS,
+  type RequestPace,
+} from './request-pace.ts';
 export {
   type BenchmarkScorecard,
   computeScorecard,

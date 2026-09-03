@@ -34,6 +34,7 @@ import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
   type ModelTransport,
+  retryAfterMsOf,
   StreamDegenerateError,
   StreamOverrunError,
   SyntheticHttpError,
@@ -222,6 +223,47 @@ await describe({
           ).toStrictEqual(OK_REPLY,);
           expect(calls.count,).toBe(2,);
         },),);
+      },
+    },),
+
+    it({
+      name: 'WAITS as long as a refusal asks before retrying, since Hyper\'s 429 body names its own '
+        + 'wait ("try again in 1s") and a retry sent sooner is refused again',
+      fn: async () => {
+        expect(retryAfterMsOf({ bodyText: 'Please try again in 3s.', },),).toBe(3_000,);
+        expect(retryAfterMsOf({ bodyText: 'try again in s', },),).toBe(0,);
+        expect(retryAfterMsOf({ bodyText: 'try again in 12 minutes', },),).toBe(0,);
+        expect(retryAfterMsOf({ bodyText: 'busy', },),).toBe(0,);
+
+        /**
+         * Attempt counter.
+         */
+        const calls = { count: 0, };
+        /**
+         * When the exchange started.
+         */
+        const startedAt = Date.now();
+        expect(
+          await exchangeWithRetry({
+            transport: scriptedTransport({
+              script: [
+                {
+                  status: 429,
+                  bodyText: '{"type":"error","error":{"type":"rate_limit_error","message":'
+                    + '"You\'ve hit your hourly rate limit. Please try again in 1s."}}',
+                },
+                OK_REPLY,
+              ],
+              calls,
+            },),
+            exchange: exchangeWith({ signal: new AbortController().signal, },),
+            policy: FAST_POLICY,
+          },),
+        ).toStrictEqual(OK_REPLY,);
+        expect(calls.count,).toBe(2,);
+        // FAST_POLICY backs off in milliseconds; only the body's wait can
+        // hold the retry for a second.
+        expect(Date.now() - startedAt,).toBeGreaterThanOrEqual(1_000,);
       },
     },),
 

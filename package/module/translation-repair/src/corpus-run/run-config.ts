@@ -34,6 +34,7 @@ import {
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
 import { createHyperClient, } from '../hyper-client.ts';
+import { hyperRequestsPerMinute, } from '../request-pace.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
 import { promptPayloadStore, } from '../prompt-payload-store.ts';
 import { promptUniqueClient, } from '../prompt-uniqueness-client.ts';
@@ -936,6 +937,7 @@ export function createRunClient(
     ? undefined
     : createHyperClient({
       apiKey: hyperKey,
+      requestsPerMinute: hyperRequestsPerMinute({ env: process.env, },),
       ...seam,
     },);
 

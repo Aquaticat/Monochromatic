@@ -107,6 +107,112 @@ export const DEFAULT_RETRY_POLICY: RetryPolicy = {
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
+ * Phrase a rate-limit refusal uses to name its wait:
+ * Hyper's 429 body reads "You've hit your hourly rate limit. Please try again
+ * in 1s" (also 2s, 3s, 4s; measured on XIEPT2, 2026-09-03).
+ */
+const RETRY_AFTER_PHRASE = 'try again in ';
+
+/**
+ * Milliseconds in one second.
+ */
+const SECOND_MS = 1_000;
+
+/**
+ * What `indexOf` returns for an absent phrase.
+ */
+const NOT_FOUND = -1;
+
+/**
+ * Whether one character is an ASCII digit.
+ *
+ * @param character - one character, or empty past the end of the text
+ *
+ * @returns Whether it is `0` to `9`
+ *
+ * @example
+ * ```ts
+ * const digit = isDigit('7',);
+ * ```
+ */
+function isDigit(character: string,): boolean {
+  return (character.length === 1)
+    && (character >= '0')
+    && (character <= '9');
+}
+
+/**
+ * Index just past the run of digits starting at `from`.
+ *
+ * @param text - text to scan
+ *
+ * @param from - where the run may start
+ *
+ * @returns `from` itself when no digit sits there
+ *
+ * @example
+ * ```ts
+ * const end = digitRunEnd({ text: '12s', from: 0, },);
+ * ```
+ */
+function digitRunEnd(
+  {
+    text,
+    from,
+  }: {
+    readonly text: string;
+    readonly from: number;
+  },
+): number {
+  for (let cursor = from; cursor < text.length; cursor += 1) {
+    if (!isDigit(text[cursor] ?? '',))
+      return cursor;
+  }
+  return text.length;
+}
+
+/**
+ * Wait the refusal itself asks for, when its body names one.
+ *
+ * A single forward scan: the phrase, then the digits that follow it, then an
+ * `s`; anything else means the body names no wait.
+ *
+ * @param bodyText - reply body of the refused attempt
+ *
+ * @returns Milliseconds the body asks the caller to wait, or zero
+ *
+ * @example
+ * ```ts
+ * const ms = retryAfterMsOf({ bodyText: 'Please try again in 2s', },);
+ * ```
+ */
+export function retryAfterMsOf({ bodyText, }: { readonly bodyText: string; },): number {
+  /**
+   * Where the phrase sits in the body.
+   */
+  const at = bodyText.indexOf(RETRY_AFTER_PHRASE,);
+  if (at === NOT_FOUND)
+    return 0;
+  /**
+   * First character after the phrase.
+   */
+  const from = at + RETRY_AFTER_PHRASE.length;
+  /**
+   * Index past the digits.
+   */
+  const end = digitRunEnd({
+    text: bodyText,
+    from,
+  },);
+  if ((end === from) || (bodyText[end] !== 's'))
+    return 0;
+  return Number(bodyText.slice(
+    from,
+    end,
+  ),) * SECOND_MS;
+}
+
+/**
  * Computes one equal-jitter backoff:
  * half the exponential window fixed, half random,
  * so a burst of failing calls decorrelates instead of retrying in
@@ -362,12 +468,16 @@ export async function exchangeWithRetry(
       : `HTTP ${String(reply.status,)}`;
 
     /**
-     * Equal-jitter backoff for the coming retry.
+     * Equal-jitter backoff for the coming retry, stretched to whatever wait
+     * the provider's refusal asked for.
      */
-    const backoffMs = backoffDelayMs({
-      baseMs: policy.baseMs,
-      attempt,
-    },);
+    const backoffMs = Math.max(
+      backoffDelayMs({
+        baseMs: policy.baseMs,
+        attempt,
+      },),
+      (reply === undefined) ? 0 : retryAfterMsOf({ bodyText: reply.bodyText, },),
+    );
     rl.warn(
       `${failureLabel}; retrying in ${String(backoffMs,)}ms (attempt ${
         String(attempt + 1,)
