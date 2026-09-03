@@ -26,10 +26,8 @@ import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
-import {
-  type PassVisualEvidenceReader,
-  readPassVisualEvidence,
-} from './pass-visual-evidence.ts';
+import { readSeatedPictures, } from './pass-seated-pictures.ts';
+import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 import {
   discardSliceCache,
   openRefineSliceCache,
@@ -39,7 +37,6 @@ import {
 import {
   RUN_CALL_CONFIG,
   RUN_CORPUS_PIN,
-  RUN_READER_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
@@ -243,17 +240,16 @@ async function runEntryPipeline(
     const settledArchiveText = prepared.targetText;
 
     /**
-     * Complete reviewed visual evidence required before insertion and lanes.
+     * Complete reviewed visual evidence required before insertion and lanes,
+     * read by the readers the meters seat (`pass-seated-pictures.ts`): a model
+     * withheld on the provider that would serve it reads no picture either.
      */
-    const pictureReadings = await readPassVisualEvidence({
+    const pictureReadings = await readSeatedPictures({
       client,
       slices: prepared.slices,
-      pin: RUN_CORPUS_PIN,
       entryId: entry.id,
-      readerModelIds: RUN_READER_MODELS,
       cache: readingCache,
       signal: deadline.callSignal,
-      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       l: tagged({ tag: entry.id, },),
       ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
     },);

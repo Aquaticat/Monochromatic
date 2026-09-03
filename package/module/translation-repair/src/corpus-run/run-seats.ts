@@ -22,7 +22,9 @@ import type { RunClient, } from './run-client-contract.ts';
 import {
   RUN_LATE_JUDGES,
   RUN_MODELS,
+  RUN_READER_MODELS,
   RUN_TRANSLATE_MODELS,
+  RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
 } from './run-config.ts';
 
@@ -173,12 +175,29 @@ export type JudgeSeats = {
   readonly checkers: readonly RosterModelId[];
 
   /**
+   * Translate lane writers: the static translators less any model withheld
+   * on the provider that would serve it. A WITHHELD MODEL WRITES NOTHING
+   * EITHER: the owner's withholding is on what a call costs, whatever the
+   * role, and the first OpenRouter-only pass (keyword233, 2026-09-03 18:15
+   * UTC) bought six translations from the withheld model, a quarter of that
+   * pass's bill, while every judge bench had it out.
+   */
+  readonly translators: readonly RosterModelId[];
+
+  /**
+   * Picture readers: the catalog-derived readers less any withheld model,
+   * for the same reason as the translators, with an image the dearest call
+   * of all.
+   */
+  readonly readers: readonly RosterModelId[];
+
+  /**
    * Repair lane roles with the wide, select and checker seats applied.
    */
   readonly repairModels: RepairModels;
 
   /**
-   * Translate lane roles with the select seats applied.
+   * Translate lane roles with the translator and select seats applied.
    */
   readonly translateModels: TranslateModels;
 };
@@ -290,12 +309,22 @@ export function judgeSeatsFor(
   },);
   assertCheckerQuorumReachable({ checkerModelIds: checkers, },);
   /**
+   * Translate lane writers for this reading.
+   */
+  const translators = RUN_TRANSLATORS.filter(seated,);
+  /**
+   * Picture readers for this reading.
+   */
+  const readers = RUN_READER_MODELS.filter(seated,);
+  /**
    * Every static seat holder, repeated where a model holds several seats.
    */
   const seatHolders = [
     ...RUN_WIDE_SEATS,
     ...RUN_LATE_JUDGES,
     ...staticCheckers,
+    ...RUN_TRANSLATORS,
+    ...RUN_READER_MODELS,
   ];
   /**
    * Every model some bench lost to this reading, named once.
@@ -323,6 +352,8 @@ export function judgeSeatsFor(
     lateJudges,
     slateJudges,
     checkers,
+    translators,
+    readers,
     repairModels: {
       ...RUN_MODELS,
       criticModelIds: wideSeats,
@@ -332,6 +363,7 @@ export function judgeSeatsFor(
     },
     translateModels: {
       ...RUN_TRANSLATE_MODELS,
+      translatorModelIds: translators,
       judgeModelIds: selectJudges,
     },
   };
@@ -346,7 +378,7 @@ export function judgeSeatsFor(
  * const phase: JudgeSeatPhase = 'lane contest';
  * ```
  */
-export type JudgeSeatPhase = 'lanes' | 'lane contest' | 'consolidation';
+export type JudgeSeatPhase = 'pictures' | 'lanes' | 'lane contest' | 'consolidation';
 
 /**
  * Reads every provider's dryness and derives the benches for one phase of
@@ -404,6 +436,8 @@ export async function readJudgeSeats(
     lateJudges,
     slateJudges,
     checkers,
+    translators,
+    readers,
     withheld,
   } = seats;
   /**
@@ -416,6 +450,7 @@ export async function readJudgeSeats(
     `JUDGE SEATS phase=${phase} ${states.join(' ',)} wide=${String(wideSeats.length,)} `
       + `select=${String(selectJudges.length,)} late=${String(lateJudges.length,)} `
       + `slate=${String(slateJudges.length,)} checkers=${String(checkers.length,)} `
+      + `translators=${String(translators.length,)} readers=${String(readers.length,)} `
       + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)}`,
   );
   return seats;

@@ -612,7 +612,10 @@ but a formula is unprotected structure until the strict grammar knows it.
   other seat.
   Where that is OpenRouter, `OPENROUTER_WITHHELD` (Kimi-K3, by the owner's
   cost decision of 2026-09-03: 3 and 15 USD per million tokens, 52 to 61
-  percent of an entry's all-OpenRouter cost) leaves every seat, and
+  percent of an entry's all-OpenRouter cost) leaves every seat, the translator
+  and picture-reader seats included (the first OpenRouter-only pass, keyword233
+  on 2026-09-03 at 18:15 UTC, bought six translations from it while every judge
+  bench had it out, a quarter of that pass's bill), and
   `OPENROUTER_CHECKER_SUBSTITUTE` (gemma-4-26b-a4b-it, disinterested and
   provisional) takes the vacated checker seat so the roster keeps the floor
   the checker contract holds; both checker assertions run on the derived
@@ -620,7 +623,8 @@ but a formula is unprotected structure until the strict grammar knows it.
   An unreadable view seats the full bench.
   The static benches in `run-config.ts` are the Synthetic-wet ones, seven wide
   seats and eight late judges; the `JUDGE SEATS` line names every provider's
-  state, every bench size, and every withheld model.
+  state, every bench size, the translator and reader counts, and every
+  withheld model, and the picture stage reads its own line before the lanes do.
   Decisions: `doc/decision/translation-repair-provider-aware-judge-seat.md`,
   `doc/decision/translation-repair-openrouter-fallback.md`.
   Shadow mode is a recorded decision rather than an unfinished edge, with the

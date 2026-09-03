@@ -29,6 +29,8 @@ import {
   readJudgeSeats,
   RUN_LATE_JUDGES,
   RUN_MODELS,
+  RUN_READER_MODELS,
+  RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
 } from '../../dist/final/node/index.mjs';
 
@@ -117,6 +119,9 @@ await describe({
         expect(wet.selectJudges,).toEqual(RUN_WIDE_SEATS,);
         expect(wet.slateJudges,).toEqual(RUN_LATE_JUDGES,);
         expect(wet.checkers,).toEqual(RUN_MODELS.checkerModelIds,);
+        expect(wet.translators,).toEqual(RUN_TRANSLATORS,);
+        expect(wet.readers,).toEqual(RUN_READER_MODELS,);
+        expect(wet.translateModels.translatorModelIds,).toEqual(RUN_TRANSLATORS,);
         expect(wet.withheld,).toEqual([],);
         expect(wet.wideSeats.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
       },
@@ -162,11 +167,14 @@ await describe({
 
     it({
       name: 'WITHHOLDS THE OPENROUTER-WITHHELD MODEL FROM EVERY SEAT when only OpenRouter would serve it, '
-        + 'the owner\'s decision of 2026-09-03 on cost, and SEATS THE SUBSTITUTE CHECKER so the roster '
-        + 'keeps the floor the contract holds',
+        + 'the owner\'s decision of 2026-09-03 on cost, THE WRITING AND READING SEATS INCLUDED, since the '
+        + 'first OpenRouter-only pass bought six translations from it while every bench had it out, and '
+        + 'SEATS THE SUBSTITUTE CHECKER so the roster keeps the floor the contract holds',
       fn: async () => {
         expect(OPENROUTER_WITHHELD.has(KIMI,),).toBe(true,);
         expect(RUN_MODELS.checkerModelIds.includes(KIMI,),).toBe(true,);
+        expect(RUN_TRANSLATORS.includes(KIMI,),).toBe(true,);
+        expect(RUN_READER_MODELS.includes(KIMI,),).toBe(true,);
         expect(RUN_MODELS.checkerModelIds.includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(false,);
         expect(RUN_MODELS.editorModelIds.includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(false,);
         expect((RUN_MODELS.refinerModelIds ?? []).includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(false,);
@@ -180,6 +188,11 @@ await describe({
         expect(seats.checkers.includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(true,);
         expect(seats.checkers.length,).toBe(RUN_MODELS.checkerModelIds.length,);
         expect(seats.repairModels.checkerModelIds,).toEqual(seats.checkers,);
+        expect(seats.translators.includes(KIMI,),).toBe(false,);
+        expect(seats.translators.length,).toBe(RUN_TRANSLATORS.length - 1,);
+        expect(seats.translateModels.translatorModelIds,).toEqual(seats.translators,);
+        expect(seats.readers.includes(KIMI,),).toBe(false,);
+        expect(seats.readers.length,).toBe(RUN_READER_MODELS.length - 1,);
         expect(seats.withheld,).toEqual([KIMI,],);
       },
     },),

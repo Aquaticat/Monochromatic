@@ -91,6 +91,8 @@ export {
   resolveRunsDir,
   RUN_LATE_JUDGES,
   RUN_MODELS,
+  RUN_READER_MODELS,
+  RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RunConfigError,
 } from './corpus-run/run-config.ts';

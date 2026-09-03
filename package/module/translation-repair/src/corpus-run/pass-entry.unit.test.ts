@@ -1268,8 +1268,9 @@ await describe({
     },),
     it({
       name: 'RECOVERS repair-lane source destination loss through consolidation before page write, and '
-        + 'READS the judge seats before each of the three phases rather than once (XIEPT2, 2026-09-03: '
-        + 'Synthetic ran dry seven minutes into a 219-minute entry)',
+        + 'READS the judge seats before each of the four stages rather than once, the picture reading '
+        + 'included (XIEPT2, 2026-09-03: Synthetic ran dry seven minutes into a 219-minute entry; the '
+        + 'first OpenRouter-only pass bought a withheld model\'s calls from a stage that read no seats)',
       fn: async () => {
         await using dirs = await throwawayDirs();
         const served: string[] = [];
@@ -1301,8 +1302,8 @@ await describe({
         expect(served,).toContain('lane_contest');
         expect(served,).toContain('consolidate_gate');
         expect(page,).toContain('https://example.test/cat-record');
-        // Lanes, lane contest, consolidation: one reading each.
-        expect(quotaReads.count,).toBe(3,);
+        // Pictures, lanes, lane contest, consolidation: one reading each.
+        expect(quotaReads.count,).toBe(4,);
       },
     },),
     it({
