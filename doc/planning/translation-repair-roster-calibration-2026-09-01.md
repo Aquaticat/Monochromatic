@@ -1252,6 +1252,28 @@ positive case was shown to fail with the membership check neutralised. XIEPT2 la
 13:01 UTC (`~/temp/agent/xiept2-stub-20260903`) and logged `archive: stripped stub marker "(To-Do)" at
 line 8` at once; the landing is recorded when it settles.
 
+### The stub-fix XIEPT2 landed, 2026-09-03 15:28 UTC
+
+Settled in 146 minutes (13:01:02 to 15:28, `ms=8782669`), against 219 for the postscript run: 35 slices,
+repair issues 6 with 3 accepted and 3 resolved, 98 repair findings, 3 repair changes, 27 translate
+changes, 28 documents differ, 27 pages changed, 0 silent, 10 alignment findings, selection contested.
+`verify-published` reads 1 of 1 pages carrying every promised wording at the implied length. The page
+opens with the front matter, a blank line, and the translator-hint comment, then the translated body;
+`To-Do` occurs 0 times. The death lines stay vague ("having ended her life", the quoted 安乐死 rendered as
+"euthanasia" in quotation marks as the original quotes it) and the consolidation slate rejected the one
+candidate that carried the method, six judges naming the reader-protection rule.
+
+FIRST LIVE WITNESS OF BOTH DRY WITHHOLDINGS. Synthetic read wet at the lanes reading (13:02:26,
+`wide=7 select=7 late=8 slate=8 hyper-slow seated=yes`), went dry at 13:15:51 (`syntheticWeekly=0%`),
+and both later readings withheld as designed: lane contest 14:09:45 and consolidation 14:12:38, each
+`synthetic=dry wide=6 select=5 late=7 slate=6 hyper-slow seated=no`. Qwen3.8-27B was abandoned 38 times
+against 110 on the postscript run, Kimi-K3 32 against 51, minimax-m3 20 against 15; HTTP 429 lines
+570 against 1468. Hyper served 1770 calls and Synthetic 254; the Hyper balance moved 3154 to 2500, so
+the run cost 654 hypercredits against 724 for the postscript run.
+
+WHAT THIS DOES NOT SHOW: the contest evidence block still has no live draw with a corroborated damage
+claim on a contested slice; the unit tests remain its only witness.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
