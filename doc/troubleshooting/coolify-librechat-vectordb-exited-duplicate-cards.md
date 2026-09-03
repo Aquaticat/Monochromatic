@@ -133,8 +133,19 @@ Issue
 reported both old and new PostgreSQL image entries after editing one tag.
 PR
 [coollabsio/coolify#5579](https://github.com/coollabsio/coolify/pull/5579)
-removed `image` from the `firstOrCreate()` identity and updates it after lookup.
-Current `serviceParser()` uses that corrected name-and-Service identity.
+removed `image` from the `firstOrCreate()` identity and moved image changes after
+lookup.
+Current `serviceParser()` uses name and Service as identity,
+then updates the image at `bootstrap/helpers/parsers.php:1658-1662`:
+
+```php
+// Update image if it changed
+if ($savedService->image !== $image) {
+    $savedService->image = $image;
+    $savedService->save();
+}
+```
+
 The fix prevents a new image edit from creating another row;
 it does not prove which historical path created this deployment's existing duplicate
 or prune an already-stale row.
@@ -342,6 +353,41 @@ Its output was:
 
 Docker Compose documents `$$` as the escape that preserves a literal dollar
 sign for container-side expansion.
+
+### Inspection command harness
+
+The destination-inspection commands were exercised against a disposable Podman
+fixture carrying these labels:
+
+```text
+com.docker.compose.project=agent-librechat-fixture
+com.docker.compose.service=vectordb
+com.docker.compose.volume=vectordb-data
+coolify.managed=true
+coolify.type=service
+coolify.serviceId=42
+coolify.service.subType=database
+coolify.service.subId=84
+```
+
+The Docker-compatible `ps` filters found the fixture.
+The `inspect` templates returned its Compose project,
+Coolify Service ID,
+resource subtype and ID,
+and the volume mounted at `/var/lib/postgresql/data`.
+The labeled-volume filter and inspection returned the same Compose project and
+volume key.
+
+The Coolify metadata queries were exercised against a disposable PostgreSQL 15
+schema with one Service,
+one application card,
+one database card,
+and one persistent-volume record.
+The resource query returned both cards with repeated `service_id=42`.
+The storage query returned the database record ID as owner of the PostgreSQL
+mount.
+This validates query syntax and the intended join,
+not the live deployment's schema contents.
 
 ### Configurations that work cleanly
 

@@ -119,30 +119,37 @@ TODO
 
     The expected outcome includes named volumes on this destination daemon.
 
-12. List Coolify-managed Compose Service containers with non-secret identity labels:
+12. Inspect Coolify-managed Compose Service containers with non-secret identity labels:
 
     ```bash
-    docker ps --all --no-trunc \
+    docker inspect $(docker ps --all --quiet \
       --filter 'label=coolify.managed=true' \
-      --filter 'label=coolify.type=service' \
-      --format 'table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Label "com.docker.compose.project"}}\t{{.Label "com.docker.compose.service"}}\t{{.Label "coolify.projectName"}}\t{{.Label "coolify.environmentName"}}\t{{.Label "coolify.resourceName"}}'
+      --filter 'label=coolify.type=service') \
+      --format 'ID={{.Id}} Name={{.Name}} Status={{.State.Status}} ComposeProject={{index .Config.Labels "com.docker.compose.project"}} ComposeService={{index .Config.Labels "com.docker.compose.service"}} CoolifyServiceId={{index .Config.Labels "coolify.serviceId"}} CoolifyProject={{index .Config.Labels "coolify.projectName"}} CoolifyEnvironment={{index .Config.Labels "coolify.environmentName"}} CoolifyResource={{index .Config.Labels "coolify.resourceName"}}'
     ```
 
     The expected outcome lets the reader match the recorded Coolify project,
     environment,
     and Service names to a Compose project without relying on the Service UUID.
-    Record the matching Compose project as `COMPOSE_PROJECT`.
+    Accept only one matching `CoolifyServiceId` and `ComposeProject` pair.
+    If no pair or multiple pairs match,
+    do not select one by name.
+    On self-hosted Coolify,
+    complete steps 26 through 28 to obtain `TARGET_SERVICE_ID`,
+    then rerun this step with
+    `--filter 'label=coolify.serviceId=TARGET_SERVICE_ID'` in place of both filters.
+    Coolify Cloud requires an unambiguous label match or a supported API result.
 
-13. Discover all Compose containers whose service key is `vectordb`:
+13. Inspect all Compose containers whose service key is `vectordb`:
 
     ```bash
-    docker ps --all --no-trunc \
-      --filter 'label=com.docker.compose.service=vectordb' \
-      --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Label "com.docker.compose.project"}}\t{{.Label "coolify.projectName"}}\t{{.Label "coolify.environmentName"}}\t{{.Label "coolify.resourceName"}}'
+    docker inspect $(docker ps --all --quiet \
+      --filter 'label=com.docker.compose.service=vectordb') \
+      --format 'ID={{.Id}} Name={{.Name}} Image={{.Config.Image}} Status={{.State.Status}} ComposeProject={{index .Config.Labels "com.docker.compose.project"}} CoolifyServiceId={{index .Config.Labels "coolify.serviceId"}} CoolifyProject={{index .Config.Labels "coolify.projectName"}} CoolifyEnvironment={{index .Config.Labels "coolify.environmentName"}} CoolifyResource={{index .Config.Labels "coolify.resourceName"}}'
     ```
 
     The expected outcome is one row per real `vectordb` container across all Compose projects.
-    Select a row only when its Compose project and Coolify identity labels match step 12.
+    Select a row only when its Compose project and `CoolifyServiceId` match the unique pair from step 12.
 
 14. If the preceding command prints no matching `vectordb` row,
     search container names as a compatibility fallback:
@@ -187,6 +194,7 @@ TODO
     ```
 
     The expected outcome is a volume candidate or only the header.
+    Run step 16 for every candidate found by this fallback.
     Do not choose between multiple candidates by recency or name similarity alone.
 
 18. For each `vectordb` container ID found,
@@ -205,16 +213,16 @@ TODO
     Empty Coolify labels are evidence to record,
     not values to guess.
 
-19. List every container in the identified LibreChat Compose project:
+19. Inspect every container in the identified LibreChat Compose project:
 
     ```bash
-    docker ps --all --no-trunc \
-      --filter 'label=com.docker.compose.project=COMPOSE_PROJECT' \
-      --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Label "com.docker.compose.service"}}'
+    docker inspect $(docker ps --all --quiet \
+      --filter 'label=com.docker.compose.project=COMPOSE_PROJECT') \
+      --format 'ID={{.Id}} Name={{.Name}} Image={{.Config.Image}} Status={{.State.Status}} ComposeService={{index .Config.Labels "com.docker.compose.service"}} CoolifyServiceId={{index .Config.Labels "coolify.serviceId"}}'
     ```
 
     The expected outcome includes each actual LibreChat stack container that currently exists.
-    A header-only result is valid when only a detached volume identified the project.
+    `docker inspect` reports that it needs an argument when only a detached volume identifies the project.
 
 20. For each MongoDB,
     Meilisearch,
@@ -304,11 +312,11 @@ TODO
     ```bash
     docker exec COOLIFY_DB_CONTAINER_ID \
       psql --username=coolify --dbname=coolify --csv \
-      --set=service_uuid=SERVICE_UUID \
-      --command="SELECT 'application' AS kind, sa.id, sa.uuid, sa.name, sa.image, sa.status FROM service_applications AS sa JOIN services AS s ON s.id = sa.service_id WHERE s.uuid = :'service_uuid' UNION ALL SELECT 'database' AS kind, sd.id, sd.uuid, sd.name, sd.image, sd.status FROM service_databases AS sd JOIN services AS s ON s.id = sd.service_id WHERE s.uuid = :'service_uuid' ORDER BY name, kind, id;"
+      --command="SELECT s.id AS service_id, 'application' AS kind, sa.id, sa.uuid, sa.name, sa.image, sa.status FROM service_applications AS sa JOIN services AS s ON s.id = sa.service_id WHERE s.uuid = 'SERVICE_UUID' UNION ALL SELECT s.id AS service_id, 'database' AS kind, sd.id, sd.uuid, sd.name, sd.image, sd.status FROM service_databases AS sd JOIN services AS s ON s.id = sd.service_id WHERE s.uuid = 'SERVICE_UUID' ORDER BY name, kind, id;"
     ```
 
     The expected outcome is one row per Coolify card.
+    Record the single repeated `service_id` as `TARGET_SERVICE_ID`.
     Match card URL UUIDs from steps 4 and 6 to the `uuid` column,
     then match the live container's `CoolifySubType` and `CoolifySubId` from step 18 to `kind` and `id`.
 
@@ -373,14 +381,23 @@ Record and compare these exact values:
 A false-exit attribution requires a live or logged Coolify `Exited` transition while destination Docker still reports the same container as running.
 Static version inspection proves susceptibility only.
 
-Share the rendered Coolify version,
-steps 10 through 25 output,
-the two card URL UUIDs and descriptions,
-and steps 28 through 29 output when self-hosted.
-Do not share passwords,
+Report only that the positive controls in steps 10 and 11 were nonempty.
+Share the unique target rows from steps 12,
+13,
+18,
+19,
+22,
+and 23 through 25.
+Share only the last PostgreSQL error or ready line from step 21 unless more context is requested.
+For self-hosted Coolify,
+share the target Service rows from step 28 and matching storage rows from step 29.
+Redact unrelated container and volume names,
+private project and environment names,
+domains,
+IP addresses,
+credentials,
 tokens,
-container environment variables,
-or private domain names.
+and secret-bearing health-check arguments.
 
 ## Restore
 
