@@ -1055,8 +1055,14 @@ the promised length. 240 successful calls, no refusal, no pacer wait, 7 cuts aga
 and 4 of 6 once, every one above the quorum of three; no round declined for want of voices; one lane
 contest settled on neither with all seven usable, which is a tie, not a loss. The page is three
 paragraphs of fresh wording, faithful to the source, the same facts and the same links as the
-2026-09-02 page. Repair raised 5 issues against 25 on 2026-09-02: fewer critics and a different
-draw; one run cannot separate the two.
+2026-09-02 page. Repair raised 5 issues against 25 on 2026-09-02, and the logs say where: not in the
+critic seat. Qwen3.8-27B was abandoned in both critic rounds and both panel rounds on 2026-09-02 as
+well, so it proposed nothing then either; the critics heard were the same six seats both days, with 28
+claims (19 and 9) on 2026-09-02 and 23 (9 and 14) on the smoke. The difference is panel acceptance:
+panels of 4 of 7 and 5 of 7 heard passed 28 of 28 claims on 2026-09-02; panels of 6 of 6 and 5 of 6
+heard passed 5 of 23 on the smoke. Whether a fuller panel corroborates less, or this draw's claims
+were weaker, needs the same claims put to both benches; the drop of Qwen cost no critic recall on this
+entry.
 
 One difference is a defect, not the bench: the 2026-09-02 page came out one clause per line and the
 smoke page came out as single-line paragraphs, though both logs say the lanes rewrapped 2 of 3 slices.
