@@ -1178,6 +1178,19 @@ That is the decision record's "the seat follows the state that decides most call
 price on it, and a diagnosed defect with a fix that keeps the policy: read the meter again at each phase
 boundary (lane contest, consolidation), which would have withheld the seat from 08:19 on.
 
+Done at `4797b06a7`: the lanes keep their reading in the entry driver, the contest and consolidation
+seams read their own as their phase starts, and the `JUDGE SEATS` line names the phase. The entry test
+counts meter readings across a settled entry and expects three (shown to fail, "expected 1 to equal
+3", with the later reads removed). keyword233 ran on that tree (12:00 UTC,
+`~/temp/agent/keyword233-phase-seats-20260903`) and witnessed the mechanism live in the other
+direction: `phase=lanes synthetic=dry wide=6 late=7` at 12:00:08 and `phase=lane contest synthetic=dry`
+at 12:07:42, then Synthetic's weekly meter regenerated from 0% to 2% and `phase=consolidation
+synthetic=wet wide=7 late=8 hyper-slow seated=yes` at 12:08:51; Qwen3.8-27B answered 11 calls on
+Synthetic in that phase, the consolidation gates heard 8 of 8 twice, and the earlier select rounds
+heard 6 of 6 seven times. `TALLY keyword233 status=SETTLED ... repairIssues=12 repairAccepted=8 ...
+ms=881936` (14.7 minutes, 35 calls on Synthetic and 206 on Hyper, no refusal, 6 cuts),
+`verify-published` 1 of 1, first paragraph in the past tense, no corroborated claim this draw.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
