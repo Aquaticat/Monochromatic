@@ -1,12 +1,11 @@
 /**
  * Tests the sliding-window request pacer.
  *
- * THE CASE IS XIEPT2 ON HYPER ALONE, 2026-09-03: 1,300 to 1,500 request
- * attempts a minute against a limit that let about 700 through, every
- * refusal retried four more times, the run lost. Here the pacer lets a
- * window's worth start at once, makes the next wait for the oldest start to
- * leave the window, keeps takes in arrival order, and lets an abort end a
- * wait.
+ * THE CASE IS XIEPT2 ON HYPER ALONE, 2026-09-03: 1,000 requests in a rolling
+ * hour is the account's limit, the pass spent them in minutes, every refusal
+ * retried four more times, the run lost. Here the pacer lets a window's worth
+ * start at once, makes the next wait for the oldest start to leave the window,
+ * keeps takes in arrival order, and lets an abort end a wait.
  *
  * @module
  */
@@ -19,9 +18,9 @@ import {
 
 import {
   createRequestPace,
-  HYPER_REQUESTS_PER_MINUTE,
-  hyperRequestsPerMinute,
-  PACE_WINDOW_MS,
+  HYPER_PACE_WINDOW_MS,
+  HYPER_REQUESTS_PER_HOUR,
+  hyperRequestsPerHour,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -30,20 +29,25 @@ import {
 const SIGNAL = new AbortController().signal;
 
 /**
+ * Window length the scripted pacers use.
+ */
+const WINDOW_MS = 60_000;
+
+/**
  * Builds a pacer on a scripted clock whose sleeps advance the clock instead of
  * waiting.
  *
- * @param perMinute - starts allowed per window
+ * @param perWindow - starts allowed per window
  *
  * @returns Pacer plus the clock and the sleeps it asked for
  *
  * @example
  * ```ts
- * const { pace, clock, sleeps, } = scriptedPace({ perMinute: 3, },);
+ * const { pace, clock, sleeps, } = scriptedPace({ perWindow: 3, },);
  * ```
  */
 function scriptedPace(
-  { perMinute, }: { readonly perMinute: number; },
+  { perWindow, }: { readonly perWindow: number; },
 ): {
   readonly pace: ReturnType<typeof createRequestPace>;
   readonly clock: { now: number; };
@@ -61,7 +65,8 @@ function scriptedPace(
     clock,
     sleeps,
     pace: createRequestPace({
-      perMinute,
+      perWindow,
+      windowMs: WINDOW_MS,
       now: () => clock.now,
       wait: async function wait(ms,): Promise<void> {
         sleeps.push(ms,);
@@ -78,7 +83,7 @@ await describe({
       name: 'LETS a window\'s worth of requests start at once and MAKES the next wait until the oldest '
         + 'start leaves the window',
       fn: async () => {
-        const { pace, clock, sleeps, } = scriptedPace({ perMinute: 3, },);
+        const { pace, clock, sleeps, } = scriptedPace({ perWindow: 3, },);
         await pace.take({ signal: SIGNAL, },);
         clock.now += 10_000;
         await pace.take({ signal: SIGNAL, },);
@@ -87,7 +92,7 @@ await describe({
         expect(pace.inWindow(),).toBe(3,);
         // The fourth waits for the first start (at 1,000,000) to leave the window.
         await pace.take({ signal: SIGNAL, },);
-        expect(sleeps,).toEqual([PACE_WINDOW_MS - 10_000,],);
+        expect(sleeps,).toEqual([WINDOW_MS - 10_000,],);
         expect(pace.inWindow(),).toBe(3,);
       },
     },),
@@ -95,7 +100,7 @@ await describe({
     it({
       name: 'KEEPS concurrent takes in arrival order and counts each start once',
       fn: async () => {
-        const { pace, sleeps, } = scriptedPace({ perMinute: 2, },);
+        const { pace, sleeps, } = scriptedPace({ perWindow: 2, },);
         /**
          * Order in which takes resolved.
          */
@@ -107,21 +112,22 @@ await describe({
         expect(order,).toEqual([1, 2, 3, 4,],);
         // The third waits a whole window, which empties it; the fourth then
         // finds a free place beside the third and does not wait.
-        expect(sleeps,).toEqual([PACE_WINDOW_MS,],);
+        expect(sleeps,).toEqual([WINDOW_MS,],);
         expect(pace.inWindow(),).toBe(2,);
       },
     },),
 
     it({
-      name: 'ENDS a wait with the abort reason when the caller gives up, and paces nothing when the '
-        + 'rate is not positive',
+      name: 'ENDS a wait with the abort reason when the caller gives up, REFUSES a place to a caller '
+        + 'that gave up while queued, and paces nothing when the rate is not positive',
       fn: async () => {
         /**
-         * Scripted clock whose sleep aborts the caller.
+         * Aborts the caller from inside its own sleep.
          */
         const aborter = new AbortController();
         const pace = createRequestPace({
-          perMinute: 1,
+          perWindow: 1,
+          windowMs: WINDOW_MS,
           now: () => 5,
           wait: async function wait(): Promise<void> {
             aborter.abort(new Error('caller gave up',),);
@@ -139,7 +145,25 @@ await describe({
         }
         expect((thrown as Error).message,).toBe('caller gave up',);
 
-        const unpaced = scriptedPace({ perMinute: 0, },);
+        // A caller queued behind a sleeping take, already aborted by the time
+        // its turn comes, gets no place: the window still holds one start.
+        const queued = scriptedPace({ perWindow: 1, },);
+        const gaveUp = new AbortController();
+        await queued.pace.take({ signal: SIGNAL, },);
+        /**
+         * Outcomes of a live take and an abandoned one queued together.
+         */
+        const outcomes = await Promise.allSettled([
+          queued.pace.take({ signal: SIGNAL, },),
+          (async function abandoned(): Promise<void> {
+            gaveUp.abort(new Error('abandoned in the queue',),);
+            await queued.pace.take({ signal: gaveUp.signal, },);
+          })(),
+        ],);
+        expect(outcomes.map((outcome,) => outcome.status,),).toEqual(['fulfilled', 'rejected',],);
+        expect(queued.pace.inWindow(),).toBe(1,);
+
+        const unpaced = scriptedPace({ perWindow: 0, },);
         await unpaced.pace.take({ signal: SIGNAL, },);
         await unpaced.pace.take({ signal: SIGNAL, },);
         expect(unpaced.sleeps,).toEqual([],);
@@ -149,15 +173,16 @@ await describe({
 },);
 
 await describe({
-  name: hyperRequestsPerMinute.name,
+  name: hyperRequestsPerHour.name,
   children: [
     it({
-      name: 'READS a positive number from the variable and falls back to the measured default otherwise',
+      name: 'READS a positive number from the variable and falls back to the account limit otherwise',
       fn: async () => {
-        expect(hyperRequestsPerMinute({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_MINUTE: '300', }, },),).toBe(300,);
-        expect(hyperRequestsPerMinute({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_MINUTE: 'lots', }, },),).toBe(HYPER_REQUESTS_PER_MINUTE,);
-        expect(hyperRequestsPerMinute({ env: {}, },),).toBe(HYPER_REQUESTS_PER_MINUTE,);
-        expect(HYPER_REQUESTS_PER_MINUTE,).toBe(600,);
+        expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: '300', }, },),).toBe(300,);
+        expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: 'lots', }, },),).toBe(HYPER_REQUESTS_PER_HOUR,);
+        expect(hyperRequestsPerHour({ env: {}, },),).toBe(HYPER_REQUESTS_PER_HOUR,);
+        expect(HYPER_REQUESTS_PER_HOUR,).toBe(1_000,);
+        expect(HYPER_PACE_WINDOW_MS,).toBe(3_600_000,);
       },
     },),
   ],

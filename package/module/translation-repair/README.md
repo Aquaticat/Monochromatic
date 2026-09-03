@@ -1014,11 +1014,14 @@ both the owner's decisions of 2026-08-26 on the five calibration arms
 (`doc/decision/translation-repair-calibration-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP` and `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` override either for one launch,
 and `1` and `180000` reproduce the pass's own settings, which stay where they were until `#261`.
-`TRANSLATION_REPAIR_HYPER_REQUESTS_PER_MINUTE` (`request-pace.ts`) sets how many Hyper requests may start
-in any sixty seconds, retries included; the rest queue in arrival order instead of being refused with
-HTTP 429. The default, 600, is measured (XIEPT2 on 2026-09-03: about 700 a minute got through while
-Hyper refused the rest), not documented; a value that is not a positive number leaves the default,
-and the retry ladder separately waits as long as a refusal's "try again in Ns" asks.
+`TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` (`request-pace.ts`) sets how many Hyper requests may start
+in any rolling hour, retries and credit reads included; the rest queue in arrival order instead of
+being refused with HTTP 429. The default, 1,000, is the account's limit as the owner stated it and as
+XIEPT2's refusals on 2026-09-03 bear out (612 successes in 43 minutes once the hour's thousand was
+spent, a trickle of about 12 a minute under refusal); a value that is not a positive number leaves the
+default, and the retry ladder separately waits as long as a refusal's "try again in Ns" asks. The
+window starts empty at launch, so a launch within an hour of a heavy run is refused until that run's
+requests leave the window.
 `TRANSLATION_REPAIR_WRITER_GRACE_MS` (`writer-grace-override.ts`) gives the WRITER rounds alone, editor,
 refiner, translate and consolidate, a window of their own for one launch, since a cut writer voice is a
 whole candidate lost while a cut reader voice is one ballot of eight;

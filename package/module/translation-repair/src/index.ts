@@ -218,10 +218,10 @@ export {
 } from './transient-retry.ts';
 export {
   createRequestPace,
-  HYPER_REQUESTS_PER_MINUTE,
-  HYPER_REQUESTS_PER_MINUTE_VAR,
-  hyperRequestsPerMinute,
-  PACE_WINDOW_MS,
+  HYPER_PACE_WINDOW_MS,
+  HYPER_REQUESTS_PER_HOUR,
+  HYPER_REQUESTS_PER_HOUR_VAR,
+  hyperRequestsPerHour,
   type RequestPace,
 } from './request-pace.ts';
 export {

@@ -957,26 +957,37 @@ Launched 00:55 UTC on `57745afcf` at overlap 4 into `~/temp/agent/xiept2-rerun4-
 from the start. It ended at 01:39 (43 minutes) `INCOMPLETE ... provider-unavailable` with 8,632 HTTP
 429 lines and no hold anywhere: with the hold gone, nothing stood between the seats and the limit.
 The 429 bodies all read `You've hit your hourly rate limit. Please try again in 1s` (also 2s, 3s, 4s).
-Measured off the log: 9,628 completed streams and 8,632 refusals in the 43 minutes; request attempts
-peaked at about 1,300 to 1,500 a minute of which about 700 succeeded; calls in flight at the moment of a
-refusal had a median of 4 (max 28), so it is not the concurrency limit the earlier section named;
-across rerun3 and rerun4 the first refusal (00:46:22) came after 1,024 request starts in the preceding
-rolling hour, and rolling-hour success counts at later refusals ran from 1,024 to 10,619, peaking at
-10,650. The client's own record (`hyper-client.ts`, "the owner confirmed Hyper ... limits this account
-to 1,000 requests per hour") cannot be the whole story when 9,628 requests completed in 43 minutes; the
-window is shorter than the message's "hourly", and the sustained rate it let through was about 700 a
-minute. Every seat lost about half its calls because the transport ladder (four retries at 1, 2, 4,
-8 s equal-jitter) sat below the limit and multiplied the pressure, and a call whose five attempts were
-all refused reached the router as a provider outage.
+Calls in flight at the moment of a refusal had a median of 4 (max 28), so it is not the concurrency
+limit the earlier section named. A first reading of the log counted "completed streams" and reached
+9,628 successes in 43 minutes, which made the owner's figure in `hyper-client.ts` ("limits this account
+to 1,000 requests per hour") look wrong and led to a per-minute pacer at 600 (`50da3787a`); the advisor
+asked for a per-model clustering, and the recount off the SPEND lines, which record only successful
+calls, overturned it: a refused exchange completes its stream too, so the first count was successes
+plus refusals. The real numbers: 612 successful Hyper calls in the whole run; every seat's first
+five-times-refused call between 01:00:33 and 01:00:37 (27 successes each before it, 257 in this run,
+the rest of the hour's thousand in the run before it, whose calls from 00:00 were still in the window);
+successes per ten minutes after that of 141, 134, 104 and 11, the trickle at which requests from an hour
+earlier left the window; 6,441 retry attempts and 1,487 calls refused five times over, spread across the
+nine seats in proportion to their traffic (218 minimax-m3 down to 73 glm-5.3), which is one shared
+window, not a per-model one. The owner's 1,000 requests per rolling hour stands exactly. Every seat lost
+about half its calls because the transport ladder (four retries at 1, 2, 4, 8 s equal-jitter, honouring
+the body's 1 to 4 s) cannot outwait a window that frees a place every five seconds, and a call whose
+five attempts were all refused reached the router as a provider outage.
 
-Fixed by `50da3787a` (both tests shown to fail without it): `request-pace.ts`, a sliding-window pacer in
-front of the Hyper transport that lets 600 request starts into any sixty seconds, retries included, and
-queues the rest in arrival order, with `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_MINUTE` as the dial for the
-next measurement; and the retry ladder now reads the refusal's own "try again in Ns" and waits at least
-that long. 600 is the measurement, not a documented figure: under the roughly 700 a minute Hyper let
-through while refusing the rest. If the true window is a rolling hour with a cap near 10,000, 600 a
-minute (36,000 an hour) would still overrun it, and the next run's 429 count says which; the dial then
-moves without a rebuild. Relaunched as rerun5 on that tree.
+Fixed by `50da3787a` and its rework (tests shown to fail without each): `request-pace.ts`, a sliding-window
+pacer in front of the Hyper transport that lets 1,000 request starts into any rolling hour, retries and
+credit reads included, and queues the rest in arrival order, with `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR`
+as the dial; and the retry ladder now reads the refusal's own "try again in Ns" and waits at least that
+long. The pacer's window starts empty, so a launch within an hour of a heavy run is refused until that
+run's calls leave the window; rerun4's last calls (01:10 to 01:39) leave it by 02:39.
+
+What 1,000 an hour means for XIEPT2 on Hyper alone: Carena0442's landed pass made 1,938 requests
+(1,648 Hyper) and keyword233's 241; XIEPT2 is about five times Toka_ls's source, and rerun4 had made
+612 successful calls plus 1,487 lost ones without leaving the translate stage. A full XIEPT2 pass is
+some thousands of requests, so at the cap it runs several hours, outside `FIT` (about an hour), until
+Synthetic's week resets or a smaller shape is chosen. Not a design decision: the owner's "Run it now at
+overlap 4" and `QPW` cover a one-provider launch, so rerun5 launches paced and the duration is reported
+for the veto.
 
 ## Decisions waiting on the owner
 

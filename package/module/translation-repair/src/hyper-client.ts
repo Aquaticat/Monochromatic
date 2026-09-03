@@ -32,7 +32,8 @@ import {
 import { formatUsageNote, } from './model-content.ts';
 import {
   createRequestPace,
-  HYPER_REQUESTS_PER_MINUTE,
+  HYPER_PACE_WINDOW_MS,
+  HYPER_REQUESTS_PER_HOUR,
 } from './request-pace.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -189,10 +190,10 @@ function wholeMessage(attemptReply: TransportReply,): void {
  *
  * @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
  *
- * @param requestsPerMinute - request starts allowed in any sixty seconds,
- * retries included; the provider limits requests by rate and refuses the rest
- * with HTTP 429, so calls queue here instead (`request-pace.ts` has the
- * measurement); not positive means unpaced
+ * @param requestsPerHour - request starts allowed in any rolling hour,
+ * retries and credit reads included; the provider limits this account to
+ * 1,000 and refuses the rest with HTTP 429, so calls queue here instead
+ * (`request-pace.ts` has the measurement); not positive means unpaced
  *
  * @returns Client surface with chatText, chatJson, and credits
  *
@@ -209,7 +210,7 @@ export function createHyperClient(
     creditsUrl = HYPER_CREDITS_URL,
     perModelConcurrency = HYPER_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
-    requestsPerMinute = HYPER_REQUESTS_PER_MINUTE,
+    requestsPerHour = HYPER_REQUESTS_PER_HOUR,
   }: {
     readonly apiKey: string;
     readonly transport?: ModelTransport;
@@ -217,7 +218,7 @@ export function createHyperClient(
     readonly creditsUrl?: string;
     readonly perModelConcurrency?: number;
     readonly retryPolicy?: RetryPolicy;
-    readonly requestsPerMinute?: number;
+    readonly requestsPerHour?: number;
   },
 ): HyperClient {
   /**
@@ -228,7 +229,10 @@ export function createHyperClient(
   /**
    * Request-rate pacer every attempt on this client takes a turn from.
    */
-  const pace = createRequestPace({ perMinute: requestsPerMinute, },);
+  const pace = createRequestPace({
+    perWindow: requestsPerHour,
+    windowMs: HYPER_PACE_WINDOW_MS,
+  },);
 
   /**
    * The transport behind the pacer: every attempt, retries included, waits

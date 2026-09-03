@@ -2,26 +2,32 @@ import { wait as sleep, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 //region Request pace
-// A sliding-window pacer that lets at most `perMinute` requests START in any
-// sixty seconds, queueing the rest, so a provider's request-rate limit is met
-// by waiting rather than by being refused.
+// A sliding-window pacer that lets at most `perWindow` requests START in any
+// `windowMs`, queueing the rest, so a provider's request-rate limit is met by
+// waiting rather than by being refused.
 //
-// WHY. Hyper limits requests by rate and refuses the excess with HTTP 429
-// ("You've hit your hourly rate limit. Please try again in 1s"). Measured on
-// XIEPT2 on 2026-09-03 00:55 to 01:39 UTC with Hyper the only provider left:
-// the pass drove 1,300 to 1,500 request attempts a minute at peak, about 700
-// of which succeeded; every refusal retried four more times on the transport
-// ladder, so refusals multiplied the attempts, every seat lost about half its
-// calls and the run ended provider-unavailable. A provider-wide hold on the
-// refusal (the morning's answer) herded every call into the next burst; no hold
-// at all saturated the limit outright. Neither is pacing. This is.
+// WHY. Hyper limits this account to 1,000 requests in a rolling hour (the
+// owner's figure, recorded in `hyper-client.ts`) and refuses the excess with
+// HTTP 429 ("You've hit your hourly rate limit. Please try again in 1s").
+// Measured on XIEPT2, 2026-09-03 00:55 to 01:39 UTC, Hyper the only provider
+// left: 612 successful requests in the whole run (SPEND lines), refusals from
+// 01:00:33 once the hour's thousand was spent (257 of them in this run, the
+// rest in the run before it), then a trickle of 100 to 140 successes per ten
+// minutes, which is the rate at which requests from an hour earlier left the
+// window; 6,441 retry attempts and 1,487 calls refused five times over, every
+// seat losing about half its calls, and the run ended provider-unavailable. A
+// provider-wide hold on the refusal herded every call into one burst; no hold
+// at all saturated the window outright. Neither is pacing. This is.
 //
-// THE WINDOW IS MEASURED, NOT DOCUMENTED. The client's record says the account
-// is limited to 1,000 requests an hour; the same run completed 9,628 requests
-// in 43 minutes, so the window is shorter than the message says. Refusals began
-// at about 1,000 request starts in the preceding hour and the sustained
-// success rate under refusal was about 700 a minute; the default sits under
-// that and the dial is there for the next measurement.
+// A FIRST READING OF THE SAME LOG counted "completed streams" and reached
+// 9,628 successes in 43 minutes; a refused exchange completes its stream too,
+// so that count was successes plus refusals. The SPEND lines are the count.
+//
+// LIMITS. The injected `wait` is not abort-aware: a caller that aborts while
+// sleeping is refused when the sleep ends, not sooner. The window starts
+// empty: requests an earlier process made in the last hour are not in it, so a
+// launch right after a heavy run can be refused until they leave the window;
+// the retry ladder honours the refusal's own wait for that.
 
 /**
  * Logger root for the pacer.
@@ -29,20 +35,21 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Length of the sliding window, in milliseconds.
+ * Length of Hyper's window: a rolling hour, in milliseconds.
  */
-export const PACE_WINDOW_MS = 60_000;
+export const HYPER_PACE_WINDOW_MS = 3_600_000;
 
 /**
- * Environment variable overriding how many Hyper requests may start a minute.
+ * Environment variable overriding how many Hyper requests may start in any
+ * rolling hour.
  */
-export const HYPER_REQUESTS_PER_MINUTE_VAR = 'TRANSLATION_REPAIR_HYPER_REQUESTS_PER_MINUTE';
+export const HYPER_REQUESTS_PER_HOUR_VAR = 'TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR';
 
 /**
- * Requests a minute the pacer allows Hyper by default: under the roughly 700 a
- * minute that succeeded while Hyper was refusing the rest on 2026-09-03.
+ * Requests in any rolling hour the pacer allows Hyper by default: the account's
+ * limit as the owner stated it and as the 2026-09-03 refusals bear out.
  */
-export const HYPER_REQUESTS_PER_MINUTE = 600;
+export const HYPER_REQUESTS_PER_HOUR = 1_000;
 
 /**
  * What a pacer offers: a turn to start one request, granted when the window
@@ -50,7 +57,7 @@ export const HYPER_REQUESTS_PER_MINUTE = 600;
  *
  * @example
  * ```ts
- * const pace: RequestPace = createRequestPace({ perMinute: 600, },);
+ * const pace: RequestPace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
  * await pace.take({ signal, },);
  * ```
  */
@@ -75,8 +82,10 @@ export type RequestPace = {
  * TAKES ARE SERIALISED through one promise chain, so two calls arriving
  * together cannot both read a window with one free place and both start.
  *
- * @param perMinute - starts allowed in any sixty seconds; not positive means
- * no pacing, which is what tests and a provider without a rate limit want
+ * @param perWindow - starts allowed in any window; not positive means no
+ * pacing, which is what tests and a provider without a rate limit want
+ *
+ * @param windowMs - window length
  *
  * @param now - clock, injectable for tests
  *
@@ -86,16 +95,18 @@ export type RequestPace = {
  *
  * @example
  * ```ts
- * const pace = createRequestPace({ perMinute: 600, },);
+ * const pace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
  * ```
  */
 export function createRequestPace(
   {
-    perMinute,
+    perWindow,
+    windowMs,
     now = Date.now,
     wait = sleep,
   }: {
-    readonly perMinute: number;
+    readonly perWindow: number;
+    readonly windowMs: number;
     readonly now?: () => number;
     readonly wait?: (ms: number,) => Promise<void>;
   },
@@ -123,7 +134,7 @@ export function createRequestPace(
     /**
      * Oldest moment still inside the window.
      */
-    const edge = now() - PACE_WINDOW_MS;
+    const edge = now() - windowMs;
     while ((starts.length > 0) && ((starts[0] ?? edge) <= edge))
       starts.shift();
   }
@@ -134,12 +145,15 @@ export function createRequestPace(
    * @param signal - the caller's abort
    */
   async function admit({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
+    // A caller that gave up while queued behind the chain must not take a
+    // place its transport call will never use.
+    signal.throwIfAborted();
     prune();
-    if ((perMinute > 0) && (starts.length >= perMinute)) {
+    if ((perWindow > 0) && (starts.length >= perWindow)) {
       /**
        * When the oldest start leaves the window.
        */
-      const until = (starts[0] ?? now()) + PACE_WINDOW_MS;
+      const until = (starts[0] ?? now()) + windowMs;
       /**
        * How long until then.
        */
@@ -147,7 +161,7 @@ export function createRequestPace(
         0,
         until - now(),
       );
-      rl.info(`window full (${String(starts.length,)} starts in ${String(PACE_WINDOW_MS,)}ms); waiting ${String(ms,)}ms`,);
+      rl.info(`window full (${String(starts.length,)} starts in ${String(windowMs,)}ms); waiting ${String(ms,)}ms`,);
       await wait(ms,);
       signal.throwIfAborted();
       prune();
@@ -186,7 +200,7 @@ export function createRequestPace(
 }
 
 /**
- * Requests a minute the environment asks for, or the default.
+ * Requests per rolling hour the environment asks for, or the default.
  *
  * @param env - environment to read
  *
@@ -194,23 +208,23 @@ export function createRequestPace(
  *
  * @example
  * ```ts
- * const perMinute = hyperRequestsPerMinute({ env: process.env, },);
+ * const perHour = hyperRequestsPerHour({ env: process.env, },);
  * ```
  */
-export function hyperRequestsPerMinute(
+export function hyperRequestsPerHour(
   { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
 ): number {
   /**
    * Raw value when set.
    */
-  const raw = env[HYPER_REQUESTS_PER_MINUTE_VAR] ?? '';
+  const raw = env[HYPER_REQUESTS_PER_HOUR_VAR] ?? '';
   if (raw === '')
-    return HYPER_REQUESTS_PER_MINUTE;
+    return HYPER_REQUESTS_PER_HOUR;
   /**
    * Parsed value.
    */
   const parsed = Number(raw,);
-  return (Number.isFinite(parsed,) && (parsed > 0)) ? parsed : HYPER_REQUESTS_PER_MINUTE;
+  return (Number.isFinite(parsed,) && (parsed > 0)) ? parsed : HYPER_REQUESTS_PER_HOUR;
 }
 
 //endregion Request pace
