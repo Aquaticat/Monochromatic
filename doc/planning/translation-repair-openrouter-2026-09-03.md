@@ -363,6 +363,57 @@ Launched as the first was (`~/temp/agent/openrouter-live2-20260903.log`, artifac
     and both OpenRouter passes had none. Not worth a code path.
 - Still not exercised: the all-dry benches and Qwen3.8-27B served by OpenRouter; Synthetic stayed wet.
 
+## The third live pass, keyword233, 18:15 to 18:36 UTC, OpenRouter alone
+
+Launched from the worktree at tip `f26c5fb60` with the Synthetic and Hyper keys unset,
+which the run reads as both dry (`~/temp/agent/openrouter-live3-20260903.log`, artifacts beside it):
+
+- `METERS synthetic=dry hyper=dry openrouter=wet` throughout;
+    `JUDGE SEATS` at every phase read `wide=6 select=6 late=7 slate=7 checkers=3 withheld=hf:moonshotai/Kimi-K3`,
+    the all-dry bench with gemma as the substitute checker.
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1247533`; lanes 621 seconds, lane contest 68, consolidation 548.
+    `verify-published` answered 1 of 1 (`chars=805=expected missing=0`); the page reads as before.
+- 0.7590 USD floor over 235 costed OpenRouter calls (two carried no cost), meter 55.89 before and 55.05 after.
+    DeepSeek V4 Pro 0.19 USD, Qwen3.8-27B 0.18, Kimi-K3 0.17 from six calls, glm-5.3 0.10, gpt-oss-120b 0.04,
+    MiniMax 0.04, GLM-5.3-Flash 0.02, DeepSeek Flash 0.01, gemma 0.01.
+    No refusal, no 5xx retry line, no exhausted ladder.
+- **The withhold reached only the judge benches.** Kimi-K3 wrote six translations on OpenRouter
+    (Fireworks 3, Modal 3), a quarter of the pass's bill, while every bench had it out:
+    `judgeSeatsFor` filtered the wide, late, select and checker seats by `seated` and left
+    `translatorModelIds` as the static `RUN_TRANSLATORS`, and `pass-entry.ts` passed the catalog's
+    `RUN_READER_MODELS` to the picture stage unfiltered.
+    Fixed in `8848f070e`: `JudgeSeats` carries `translators` and `readers` filtered the same way,
+    the translate lane takes its writers from there, and the picture stage reads its own seats
+    (`JUDGE SEATS phase=pictures`, `pass-seated-pictures.ts`);
+    the seat guards shown failing with the filters removed, restored and passing,
+    and the entry driver test now counts four meter readings per entry.
+    Not yet exercised live;
+    the next OpenRouter-only pass must show no `SPEND provider=openrouter model=moonshotai/kimi-k3` line.
+- **The Parasail ignore and the OpenInference ignore both held**: 36 of 36 MiniMax calls to ModelRun, all completed,
+    three schema-mismatches (two consolidation gates, one translate vote); no DeepSeek Flash stream on OpenInference.
+- **Qwen3.8-27B served by OpenRouter conformed**: 31 of 31 completed answers usable, all on Parasail,
+    completed p50 18.3 s, p90 52.8 s, max 147 s,
+    against p50 16.5 s, p90 48.8 s, max 228 s on Synthetic on the second pass.
+    The endpoint is not the slow part; the model reasons long on either provider.
+- **Every cut was a reasoning-only stream on Parasail ending at the 60 second straggler grace**, 14 of them:
+    Qwen 7 of 38 asks,
+    DeepSeek Flash 6 of 27 (Parasail 17 of 23 completed, p50 16.4 s, p90 49.5 s; Makora 4 of 4 at 6.9 s),
+    DeepSeek Pro 1 of 37 (Parasail 20 of 21 at 21.3 s; Sail Research 16 of 16 at 1.5 s).
+    Cut at 67 to 188 seconds with no content character and 15k to 43k reasoning characters each,
+    across critic, panel, select, lane-contest and consolidation-gate rounds.
+    `run-timing-report`: 47 rounds, 28.7 of 34.7 round-minutes waiting after quorum (82.7 percent),
+    19 voices never heard, against 43 rounds, 62.3 percent and 12 on the second pass.
+    The all-OpenRouter bench reaches quorum sooner (gpt-oss on Cerebras and Groq at 1 to 2 seconds,
+    MiniMax at 2.6, gemma at 4 to 8) and the reasoning seats then have less absolute time before the grace ends.
+    No ignore fits this: Parasail's completed latencies match Synthetic's for the same model,
+    and Qwen has no other endpoint on this run.
+    The lever is the grace, `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (default 180 s in `stage-round.ts`,
+    set to 60 s on every keyword233 pass of this day), and that is a speed-against-width tradeoff put to the owner.
+- Other endpoints seen, for the record: gemma on DeepInfra 30 of 30 at 8.4 s (the ignore stays rejected),
+    gpt-oss on Nebius 14 at 6.6 s, glm-5.3 on Modal 3 at 40.5 s against Together 15 at 5.2 s,
+    GLM-5.3-Flash on Together 8 at 65.8 s and Makora 1 at 70 s against Venice 2 at 5.2 s and Reka 1 at 1.8 s.
+    GLM-5.3-Flash's slow endpoints cut nothing (14 of 14 usable), so nothing is ignored on one pass's counts.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:

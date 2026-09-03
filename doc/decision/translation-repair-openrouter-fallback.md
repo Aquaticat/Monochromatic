@@ -112,6 +112,19 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
     all completed), 135 OpenRouter calls cost 0.45 USD, and `verify-published` answered 1 of 1.
 - **Rejected: re-routing on an exhausted transient-retry ladder.** Measured before building: no exhausted ladder
     on the four-entry Carena run, one voice lost that way in the whole archive, none on either OpenRouter pass.
+- **The OpenRouter-only bench ran live** (keyword233, 18:15 to 18:36 UTC, Synthetic and Hyper keys unset):
+    settled in 1,248 seconds with `withheld=hf:moonshotai/Kimi-K3` and gemma as the substitute checker at every
+    phase, 0.76 USD over 235 costed calls, `verify-published` 1 of 1, Qwen3.8-27B served by OpenRouter usable on
+    31 of 31 completed answers.
+- **The withhold reached only the judge benches** until `8848f070e`: that pass bought six Kimi-K3 translations
+    on OpenRouter, a quarter of its bill, because the translator roster and the picture readers were the static
+    lists. `JudgeSeats` now carries `translators` and `readers` filtered by the same rule, and the picture stage
+    reads its own seats. The Kimi-K3 rule in the standing rules above means every call, not every judge call.
+- **Open, put to the owner: the straggler grace on the all-OpenRouter bench.** Every cut on that pass was a
+    reasoning-only stream ending at the 60 second grace (Qwen 7 of 38, DeepSeek Flash 6 of 27), with the rounds
+    spending 82.7 percent of their time waiting after quorum against 62.3 with Synthetic wet. No ignore fits:
+    Parasail's completed latencies match Synthetic's for the same model. The grace is a speed-against-width
+    tradeoff and stays the owner's call; the planning record carries the figures.
 
 ## Rollback
 

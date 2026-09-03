@@ -76,10 +76,19 @@ which provider would take its calls (`providerServing`, the first in `PROVIDER_O
 model and reads wet).
 The Hyper-slow rules above apply where that provider is Hyper; the owner's cost decision on Kimi-K3
 applies where it is OpenRouter, with gemma seated as the substitute checker.
+That cost decision reaches the translator and picture-reader seats too (`8848f070e`):
+the first OpenRouter-only pass (keyword233, 2026-09-03 18:15 UTC) had every bench without Kimi-K3
+and still bought six of its translations, because the writer roster and the reader roster were the static
+lists, so `JudgeSeats` now carries `translators` and `readers` filtered by the same rule
+and the picture stage reads its own seats before the lanes read theirs.
 Qwen3.8-27B is seated when OpenRouter would serve it: its chat-completions median there sat in the band
 of the other models on the probe, unlike its Hyper serving, and a pass with Synthetic dry is where
 that is checked on corpus-sized prompts. The first pass with OpenRouter in the order (keyword233,
 2026-09-03 16:38 UTC) did not check it: Synthetic stayed wet and served every Qwen call.
+The OpenRouter-only pass did: 31 of 31 completed answers usable, completed latencies matching its
+Synthetic ones (p50 18.3 s against 16.5 s, p90 52.8 s against 48.8 s), and 7 of 38 asks cut at the
+60 second straggler grace while still reasoning, which is the grace's doing rather than the endpoint's
+and is put to the owner in `translation-repair-openrouter-fallback.md`.
 
 ## Where the evidence lives
 
