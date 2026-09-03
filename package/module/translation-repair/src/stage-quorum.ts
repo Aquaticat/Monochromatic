@@ -350,6 +350,21 @@ export async function gatherStageVoices<ValueT,>(
           },);
         }
       }
+
+      /**
+       * Re-asked voices that came back readable, counted on their own line so
+       * the round's value can be read off a run log without pairing gather
+       * lines by hand (`#473`: the owner kept the round on 2026-09-03, and
+       * this is what says whether it earns its call).
+       */
+      const recoveredHeard = recovered.filter(function heard(outcome,): boolean {
+        return outcome.voice
+          .heard;
+      },);
+      l.info(
+        `${stage}: recovery round heard ${String(recoveredHeard.length,)} of `
+          + `${String(unreadable.length,)} re-asked voices`,
+      );
     }
     return collected;
   })();

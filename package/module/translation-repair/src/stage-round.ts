@@ -55,21 +55,31 @@ import { resolveStragglerGraceMs, } from './grace-override.ts';
  * timeout of any other kind. Not one hung call was recorded, so every voice the
  * window has taken was a slow-but-working one.
  *
- * THREE MINUTES rather than the observed maximum, deliberately. A maximum over a
- * few hundred samples is not a bound, which `STREAM_IDLE_MS` in
- * `stream-idle-guard.ts` records this codebase learning the hard way, so this
- * sits above the 88.6 s maximum by more than a factor of two. It remains well
- * under `RUN_PER_CALL_TIMEOUT_MS` of 360_000, so the window still cuts a
- * genuinely hung voice long before its own deadline would, which is the whole
- * purpose the user's rule of 2026-08-14 gave it.
+ * THREE MINUTES FROM 2026-08-17, rather than the observed maximum, deliberately.
+ * A maximum over a few hundred samples is not a bound, which `STREAM_IDLE_MS`
+ * in `stream-idle-guard.ts` records this codebase learning the hard way, so
+ * that figure sat above the 88.6 s maximum by more than a factor of two.
+ *
+ * TWO MINUTES SINCE 2026-09-03, THE OWNER'S DECISION ON A MEASURED PAIR. The
+ * four-entry pass of 2026-09-02 had been launched at the original 60 s by
+ * dial, and two keyword233 passes on the all-OpenRouter bench, identical but
+ * for the dial, put 60 s against 120 s: cut streams 14 against 7, voices never
+ * heard 19 against 8, tally 1,247 against 1,321 seconds (inside the day's
+ * 957 to 1,321 s run-to-run band), 0.76 against 0.45 USD. Every cut at 60 s
+ * was a reasoning stream still working. Offered 60, 120, 180 and withholding
+ * the slow seats, the owner chose 120; record in
+ * `doc/decision/translation-repair-straggler-grace.md`. It remains well under
+ * `RUN_PER_CALL_TIMEOUT_MS` of 360_000, so the window still cuts a genuinely
+ * hung voice long before its own deadline would, which is the whole purpose
+ * the user's rule of 2026-08-14 gave it.
  *
  * THE EDITOR CALIBRATION RUNS UNDER 300000 MS INSTEAD (`adoptCalibrationGrace`
  * in `grace-override.ts`, the owner's decision of 2026-08-26 on arm D), because
  * under four slices in flight the longer window costs nothing measurable and
- * cuts the fewest voices. This value stays the pass's until `#261` gives the
- * pass overlap too; the two move together.
+ * cuts the fewest voices. Writer rounds follow this value unless
+ * `TRANSLATION_REPAIR_WRITER_GRACE_MS` says otherwise (`writer-grace-override.ts`).
  */
-export const STRAGGLER_GRACE_MS = 180_000;
+export const STRAGGLER_GRACE_MS = 120_000;
 
 /**
  * One model's answer, or its silence, from one round.
