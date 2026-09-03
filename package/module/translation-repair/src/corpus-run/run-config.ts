@@ -165,9 +165,10 @@ const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
  * owner's decision of 2026-09-03 after a morning in which it left every judge
  * seat outright: served by Hyper it reasons past the round window (30 of 34
  * translate-lane select rounds cut on XIEPT2), served by Synthetic it answers
- * (25 of 28 on Toka_ls). `run-seats.ts` reads Synthetic's meter once per
- * entry and withholds the seat while Synthetic is dry; these static benches
- * are the Synthetic-wet ones.
+ * (25 of 28 on Toka_ls). `run-seats.ts` reads Synthetic's meter before each
+ * phase and withholds the seat while Synthetic is dry; these static benches
+ * are the Synthetic-wet ones. `hf:moonshotai/Kimi-K3` is likewise withheld
+ * from the select seats alone while Synthetic is dry (`HYPER_SLOW_SELECT_JUDGES`).
  */
 const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
   'glm-5.3',
@@ -204,7 +205,8 @@ export const RUN_TRANSLATORS: readonly RosterModelId[] = RUN_ROSTER
  * {@link WIDE_SEAT_DROPPED}. Seven since 2026-09-02 (eight from 2026-09-01)
  * with Synthetic wet, so each of those stages reaches quorum at 4 voices and
  * `minBallotWeight` 3 is 3 of 7; six with Synthetic dry (`run-seats.ts`
- * withholds the Hyper-slow judge), quorum 3 (`ceil(6 / 2)`).
+ * withholds the Hyper-slow judge), quorum 3 (`ceil(6 / 2)`), and five of
+ * those judge the slates (the select-slow judge withheld too), quorum 3.
  */
 export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillSeated(modelId,): boolean {
@@ -214,7 +216,8 @@ export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
 /**
  * Judges for the lane contest, the consolidation slate and the consolidation
  * gate: the roster less {@link LATE_JUDGE_DROPPED}. Eight since 2026-09-02
- * with Synthetic wet, seven with it dry (`run-seats.ts`).
+ * with Synthetic wet, seven with it dry, of which six judge the consolidation
+ * slate (`run-seats.ts`).
  */
 export const RUN_LATE_JUDGES: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillJudges(modelId,): boolean {

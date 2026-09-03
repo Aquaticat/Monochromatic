@@ -19,6 +19,7 @@ import {
 
 import {
   HYPER_SLOW_JUDGES,
+  HYPER_SLOW_SELECT_JUDGES,
   judgeSeatsFor,
   type QuotaSnapshot,
   readJudgeSeats,
@@ -31,6 +32,11 @@ import {
  * The Hyper-slow judge every case is about.
  */
 const QWEN = 'hf:Qwen/Qwen3.8-27B';
+
+/**
+ * The judge Hyper serves too slowly in the select role alone.
+ */
+const KIMI = 'hf:moonshotai/Kimi-K3';
 
 /**
  * Builds a client whose quota surface answers as scripted.
@@ -113,14 +119,40 @@ await describe({
         expect(dry.lateJudges.length,).toBe(RUN_LATE_JUDGES.length - 1,);
         expect(dry.repairModels.criticModelIds,).toEqual(dry.wideSeats,);
         expect(dry.repairModels.panelModelIds,).toEqual(dry.wideSeats,);
-        expect(dry.repairModels.judgeModelIds,).toEqual(dry.wideSeats,);
-        expect(dry.translateModels.judgeModelIds,).toEqual(dry.wideSeats,);
+        expect(dry.repairModels.judgeModelIds,).toEqual(dry.selectJudges,);
+        expect(dry.translateModels.judgeModelIds,).toEqual(dry.selectJudges,);
         expect(dry.wideSeats.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
 
         const wet = judgeSeatsFor({ syntheticDry: false, },);
         expect(wet.wideSeats,).toEqual(RUN_WIDE_SEATS,);
         expect(wet.lateJudges,).toEqual(RUN_LATE_JUDGES,);
+        expect(wet.selectJudges,).toEqual(RUN_WIDE_SEATS,);
+        expect(wet.slateJudges,).toEqual(RUN_LATE_JUDGES,);
         expect(wet.wideSeats.includes('hf:zai-org/GLM-5.3-Flash',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'WITHHOLDS the select-slow judge from both lanes\' select seats and the consolidation slate when '
+        + 'Synthetic is dry, KEEPS it as critic, panel, contest judge and gate, and SEATS it everywhere when wet',
+      fn: async () => {
+        expect(HYPER_SLOW_SELECT_JUDGES.has(KIMI,),).toBe(true,);
+        expect(HYPER_SLOW_JUDGES.has(KIMI,),).toBe(false,);
+
+        const dry = judgeSeatsFor({ syntheticDry: true, },);
+        expect(dry.selectJudges.includes(KIMI,),).toBe(false,);
+        expect(dry.slateJudges.includes(KIMI,),).toBe(false,);
+        expect(dry.wideSeats.includes(KIMI,),).toBe(true,);
+        expect(dry.lateJudges.includes(KIMI,),).toBe(true,);
+        expect(dry.selectJudges.length,).toBe(dry.wideSeats.length - 1,);
+        expect(dry.slateJudges.length,).toBe(dry.lateJudges.length - 1,);
+        expect(dry.repairModels.criticModelIds.includes(KIMI,),).toBe(true,);
+        expect(dry.repairModels.panelModelIds.includes(KIMI,),).toBe(true,);
+        expect(dry.repairModels.judgeModelIds.includes(KIMI,),).toBe(false,);
+        expect(dry.translateModels.judgeModelIds.includes(KIMI,),).toBe(false,);
+
+        const wet = judgeSeatsFor({ syntheticDry: false, },);
+        expect(wet.selectJudges.includes(KIMI,),).toBe(true,);
+        expect(wet.slateJudges.includes(KIMI,),).toBe(true,);
       },
     },),
   ],

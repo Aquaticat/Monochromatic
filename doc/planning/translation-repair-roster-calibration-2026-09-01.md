@@ -1191,6 +1191,27 @@ heard 6 of 6 seven times. `TALLY keyword233 status=SETTLED ... repairIssues=12 r
 ms=881936` (14.7 minutes, 35 calls on Synthetic and 206 on Hyper, no refusal, 6 cuts),
 `verify-published` 1 of 1, first paragraph in the past tense, no corroborated claim this draw.
 
+## Kimi-K3 measured per role: select-slow on Hyper, fine elsewhere, fine on Synthetic
+
+The decision record named Kimi-K3 the next per-provider candidate and left it, because the coarse
+benches would have cost its critic and panel seats. Counted per role instead (abandoned in / rounds):
+
+- Toka_ls 2026-09-02, 731 calls on Synthetic: select 0 of 69, lane contest 0 of 14, critic 0 of 14,
+  panel 0 of 13, gate 0 of 12.
+- XIEPT2 rerun5 2026-09-03, 1,852 calls on Hyper: select 43 of 83, lane contest 0 of 28, critic 0 of
+  10, panel 0 of 5, gate 0 of 17.
+- XIEPT2 postscript run 2026-09-03, 1,936 calls on Hyper: select 38 of 101 (20 of 42 translate-lane,
+  18 of 55 consolidation slate, none in the repair lane), lane contest 1 of 28, critic 0 of 9, panel
+  1 of 5, gate 0 of 14. Its cut streams averaged 71 s, its answered ones 14 s.
+
+So the slowness is the slate prompt on Hyper, not the model or the provider alone, and the rerun5
+contest figure the record carried (18 of 24) does not hold on the two later runs. Under the owner's
+authorisation to drop a model from a role on evidence: `HYPER_SLOW_SELECT_JUDGES` withholds Kimi-K3
+from both lanes' select seats and the consolidation slate while Synthetic is dry and keeps it as critic,
+panel, contest judge and gate; `JudgeSeats` carries `selectJudges` and `slateJudges` beside the wide and
+late benches, and the `JUDGE SEATS` line reports all four. Dry benches: six wide, five select, seven
+late, six slate.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every

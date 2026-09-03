@@ -48,10 +48,28 @@ import {
 // withheld on a guess costs a voice.
 
 /**
- * Judges that Hyper serves too slowly for the round window: seated only while
- * Synthetic is wet.
+ * Judges that Hyper serves too slowly for the round window in every judge
+ * role: seated only while Synthetic is wet.
  */
 export const HYPER_SLOW_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>(['hf:Qwen/Qwen3.8-27B',],);
+
+/**
+ * Judges that Hyper serves too slowly in the SELECT role alone (both lanes'
+ * slate select and the consolidation slate), and fast enough everywhere else:
+ * withheld from the select seats while Synthetic is dry, kept as critics,
+ * panel, contest judges and gate.
+ *
+ * THE CASE IS `hf:moonshotai/Kimi-K3`, 2026-09-03: cut in 0 of 69 select
+ * rounds when Synthetic served it (Toka_ls, 2026-09-02) and in 43 of 83 and 38
+ * of 101 when Hyper did (XIEPT2 rerun5 and the postscript run), against 0 and
+ * 1 of 28 lane-contest rounds, 0 of 9 critic, 0 to 1 of 5 panel and 0 of 14
+ * gate rounds on Hyper. Its cut streams ran 71 s on average, its answers 14 s:
+ * the slate prompt is where its reasoning runs long. Same evidence bar as the
+ * owner's authorisation to drop a model from a role.
+ */
+export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModelId>([
+  'hf:moonshotai/Kimi-K3',
+],);
 
 /**
  * Every judge bench one entry runs with, derived from one reading.
@@ -68,22 +86,34 @@ export type JudgeSeats = {
   readonly syntheticDry: boolean;
 
   /**
-   * Critics, adjudication panel and both lanes' select judges.
+   * Critics and adjudication panel.
    */
   readonly wideSeats: readonly RosterModelId[];
 
   /**
-   * Lane contest, consolidation slate judges and consolidation gate.
+   * Both lanes' slate select judges: the wide seats less the select-slow
+   * judges while Synthetic is dry.
+   */
+  readonly selectJudges: readonly RosterModelId[];
+
+  /**
+   * Lane contest and consolidation gate.
    */
   readonly lateJudges: readonly RosterModelId[];
 
   /**
-   * Repair lane roles with the wide seats applied.
+   * Consolidation slate judges: the late judges less the select-slow judges
+   * while Synthetic is dry.
+   */
+  readonly slateJudges: readonly RosterModelId[];
+
+  /**
+   * Repair lane roles with the wide and select seats applied.
    */
   readonly repairModels: RepairModels;
 
   /**
-   * Translate lane roles with the wide seats applied.
+   * Translate lane roles with the select seats applied.
    */
   readonly translateModels: TranslateModels;
 };
@@ -109,32 +139,53 @@ export function judgeSeatsFor(
    *
    * @param modelId - seat under question
    *
-   * @returns Whether the seat is asked this entry
+   * @returns Whether the seat is asked this phase
    */
   function seated(modelId: RosterModelId,): boolean {
     return (!syntheticDry) || (!HYPER_SLOW_JUDGES.has(modelId,));
+  }
+  /**
+   * Keeps a select seat unless Synthetic is dry and Hyper serves its slate
+   * answers too slowly.
+   *
+   * @param modelId - select seat under question
+   *
+   * @returns Whether the seat judges slates this phase
+   */
+  function seatedForSelect(modelId: RosterModelId,): boolean {
+    return (!syntheticDry) || (!HYPER_SLOW_SELECT_JUDGES.has(modelId,));
   }
   /**
    * Wide bench for this reading.
    */
   const wideSeats = RUN_WIDE_SEATS.filter(seated,);
   /**
+   * Both lanes' select judges for this reading.
+   */
+  const selectJudges = wideSeats.filter(seatedForSelect,);
+  /**
    * Late bench for this reading.
    */
   const lateJudges = RUN_LATE_JUDGES.filter(seated,);
+  /**
+   * Consolidation slate judges for this reading.
+   */
+  const slateJudges = lateJudges.filter(seatedForSelect,);
   return {
     syntheticDry,
     wideSeats,
+    selectJudges,
     lateJudges,
+    slateJudges,
     repairModels: {
       ...RUN_MODELS,
       criticModelIds: wideSeats,
       panelModelIds: wideSeats,
-      judgeModelIds: wideSeats,
+      judgeModelIds: selectJudges,
     },
     translateModels: {
       ...RUN_TRANSLATE_MODELS,
-      judgeModelIds: wideSeats,
+      judgeModelIds: selectJudges,
     },
   };
 }
@@ -201,18 +252,29 @@ export async function readJudgeSeats(
    */
   const seats = judgeSeatsFor({ syntheticDry, },);
   /**
-   * Wide seats this entry asks.
+   * Wide seats this phase asks.
    */
   const wide = seats.wideSeats
     .length;
   /**
-   * Late judges this entry asks.
+   * Select judges this phase asks.
+   */
+  const select = seats.selectJudges
+    .length;
+  /**
+   * Late judges this phase asks.
    */
   const late = seats.lateJudges
     .length;
+  /**
+   * Consolidation slate judges this phase asks.
+   */
+  const slate = seats.slateJudges
+    .length;
   l.info(
     `JUDGE SEATS phase=${phase} synthetic=${syntheticDry ? 'dry' : 'wet'} wide=${String(wide,)} `
-      + `late=${String(late,)} hyper-slow seated=${syntheticDry ? 'no' : 'yes'}`,
+      + `select=${String(select,)} late=${String(late,)} slate=${String(slate,)} `
+      + `hyper-slow seated=${syntheticDry ? 'no' : 'yes'}`,
   );
   return seats;
 }

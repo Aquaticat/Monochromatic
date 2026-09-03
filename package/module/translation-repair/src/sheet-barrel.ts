@@ -95,6 +95,8 @@ export {
 } from './corpus-run/run-config.ts';
 export {
   HYPER_SLOW_JUDGES,
+  HYPER_SLOW_SELECT_JUDGES,
+  type JudgeSeatPhase,
   type JudgeSeats,
   judgeSeatsFor,
   readJudgeSeats,

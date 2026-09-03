@@ -25,6 +25,14 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
   Synthetic-wet ones: seven wide seats (quorum 4) and eight late judges; six (quorum 3) and seven when dry.
 - An unreadable meter seats the full bench: it is not evidence of dryness, and a seat asked in vain
   costs one cut where a seat withheld on a guess costs a voice.
+- `HYPER_SLOW_SELECT_JUDGES` names the judges Hyper serves too slowly in the select role alone
+  (Kimi-K3 since 2026-09-03): withheld from both lanes' slate select seats and the consolidation slate
+  while Synthetic is dry, kept as critic, panel, lane-contest judge and gate. Evidence: cut in 0 of 69
+  select rounds served by Synthetic (Toka_ls, 2026-09-02) and in 43 of 83 and 38 of 101 on Hyper
+  (XIEPT2 rerun5 and the postscript run), against 0 and 1 of 28 lane-contest rounds, 0 of 9 critic, 0
+  to 1 of 5 panel and 0 of 14 gate rounds on Hyper; its cut streams averaged 71 s, its answers 14 s.
+  Same evidence bar as the owner's standing authorisation to drop a model from a role. The dry benches
+  are then five select judges (quorum 3) beside six wide seats, and six slate judges beside seven late.
 - Writer seats are untouched: translator, checker, introduced-defect probe, pairing and insertion
   admission keep the roster.
 
@@ -50,9 +58,10 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
 ## Rejected alternatives
 
 - Leave the seat dropped: simplest, loses the judge in Synthetic weeks.
-- Also drop Kimi-K3 under the same rule: it is cut in a majority of select and contest rounds on
-  Hyper (17 of 34 and 18 of 24 on XIEPT2) but under half of critic and panel rounds, and the seat
-  sets are coarser than that profile. Recorded as the next candidate; not seated per provider yet.
+- Also drop Kimi-K3 under the same rule for every judge role: it is cut in a majority of select rounds
+  on Hyper but in 0 or 1 of 28 lane-contest rounds and almost never as critic, panel or gate, so the
+  whole-bench rule would throw away seats Hyper serves well. Superseded on 2026-09-03 by the select-only
+  rule (`HYPER_SLOW_SELECT_JUDGES`), once the per-role counts were measured.
 - A longer window for Hyper-served seats: reverses the owner's 2026-09-02 choice of the seat over the
   window, and under a 1,000-an-hour window the request, not the second, is scarce.
 
