@@ -32,7 +32,11 @@ on issue 473.
 - `6323f05d8` (2026-09-02) built the re-ask with the complaint appended, ahead of the decision, and the
     decision ratifies it.
 - 2026-09-03: the round logs `<stage>: recovery round heard N of M re-asked voices`, so a run log says
-    whether the round earns its call; the first pass on that build measures it.
+    whether the round earns its call.
+- Measured the same day on the keyword233 passes that ran recovery rounds (pairing each round's line with
+    its stage's next `round: x/N heard`): 5 of 11 re-asked voices came back readable, none served from the
+    cache. The misses were one endpoint answering unreadably twice (MiniMax on Parasail, since ignored).
+    The round earns its call; issue 473 closed on this.
 
 ## Where the evidence lives
 

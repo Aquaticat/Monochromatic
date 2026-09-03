@@ -456,6 +456,24 @@ alone (`~/temp/agent/openrouter-live5-20260903.log`):
 - The sixth pass launched at 20:21 UTC on `e0509047b` with no straggler dial, to run the built-in 120 s window
     and carry the first `recovery round heard N of M` count (`~/temp/agent/openrouter-live6-20260903.log`).
 
+## The sixth live pass, keyword233, 20:21 to 20:43 UTC: the built-in window, no dial
+
+- No `STRAGGLER GRACE OVERRIDDEN` line; every reader-round abandonment reads `abandoned 120000ms after quorum`
+    (six of them) and the one writer-round abandonment `180000ms`, the writer dial still set at launch.
+    The built-in 120 s is what the pass runs.
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1312386`; `verify-published` 1 of 1
+    (`chars=806=expected missing=0`); no Kimi-K3 call, no refusal, no schema-mismatch, 7 cut streams,
+    7 voices never heard, 37 rounds with 94.3 percent of round time waiting after quorum; 0.4281 USD;
+    meter 53.89 before, 53.41 after.
+- No recovery round ran, since no answer came back unreadable, so the `recovery round heard N of M` line
+    has no first count yet; the re-ask's yield is read off the earlier passes instead (next bullet).
+- **The complaint-appended re-ask recovers about half**, read off today's first, third and fourth passes by
+    pairing each `recovery round for N unreadable` line with its stage's next `round: x/N heard` line:
+    first pass 2 of 8 parsed rounds heard (the misses were MiniMax on Parasail answering unreadably again,
+    before the ignore), third pass 3 of 3, one round on each of the first and fourth passes with an
+    unparsed stage label. 5 of 11 in all, and no `PROMPT-REUSE source=memory` after any of them: the
+    nudge makes the digest new every time. Issue 473 closed on this measurement.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
