@@ -253,12 +253,14 @@ CKA:
  genuine handoff -> invoke `runbook` skill.
 
 CKB:
- User corrected a claim?
- Prior verification was insufficient:
- re-read primary sources,
- run commands,
- or use separate reviewer.
-Never same-session self-review (`doc/agent/self-review.md`).
+ Correction?
+ Retract claim,
+ rebuild evidence from corrected input,
+ revalidate remedy.
+Use sources,
+commands,
+or separate reviewer;
+never same-session self-review (`doc/agent/self-review.md`).
 
 XIC:
  Similar or concurrent symptoms stay separate incidents until user-visible boundaries match.
