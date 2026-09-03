@@ -18,8 +18,8 @@ import {
   OPENROUTER_AUTH_HEADER,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,
-  OPENROUTER_PROVIDER_PREFERENCES,
   type OpenRouterServedId,
+  openRouterProviderPreferencesFor,
 } from './openrouter-catalog.ts';
 import {
   COST_UNREPORTED,
@@ -357,7 +357,7 @@ export function createOpenRouterClient(
         messages: asked,
         stream: true,
         stream_options: { include_usage: true, },
-        provider: OPENROUTER_PROVIDER_PREFERENCES,
+        provider: openRouterProviderPreferencesFor({ servedId, },),
         // Conditional spreads keep optional knobs absent instead of undefined.
         ...(request.maxTokens === undefined
           ? {}

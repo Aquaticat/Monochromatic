@@ -55,7 +55,8 @@ export const OPENROUTER_CREDITS_URL = 'https://openrouter.ai/api/v1/credits';
 export const OPENROUTER_AUTH_HEADER = 'Authorization';
 
 /**
- * Routing preferences every request carries in its `provider` field.
+ * Routing preferences every request carries in its `provider` field, before
+ * the per-model `ignore` list is added by `openRouterProviderPreferencesFor`.
  *
  * `zdr: true` IS THE OWNER'S DECISION of 2026-09-03: only endpoints with a
  * zero-data-retention policy may serve a corpus passage, matching the stance
@@ -67,20 +68,31 @@ export const OPENROUTER_AUTH_HEADER = 'Authorization';
  * `response_format`; an endpoint that ignored it would answer prose to a
  * schema and cost a lost voice.
  *
- * `ignore` names endpoints the probe measured as serving a model badly; empty
- * as of 2026-09-03, when every roster model conformed on every chat
- * completions attempt.
- *
  * @example
  * ```ts
- * const body = { model, messages, provider: OPENROUTER_PROVIDER_PREFERENCES, };
+ * const body = { model, messages, provider: openRouterProviderPreferencesFor({ servedId, },), };
  * ```
  */
 export const OPENROUTER_PROVIDER_PREFERENCES = {
   zdr: true,
   require_parameters: true,
-  ignore: [] as readonly string[],
 } as const;
+
+/**
+ * The `provider` field as it goes on the wire for one model: the shared
+ * preferences plus that model's ignored endpoints.
+ *
+ * @example
+ * ```ts
+ * const preferences: OpenRouterProviderPreferences = openRouterProviderPreferencesFor({ servedId, },);
+ * ```
+ */
+export type OpenRouterProviderPreferences = typeof OPENROUTER_PROVIDER_PREFERENCES & {
+  /**
+   * Provider slugs OpenRouter must not route this model to.
+   */
+  readonly ignore: readonly string[];
+};
 
 /**
  * Models this provider serves for this pipeline, under its own spellings.
@@ -132,6 +144,15 @@ export type OpenRouterModelInfo = {
    * Ceiling the listing's top provider reports for completion tokens.
    */
   readonly maxOutputLength: number;
+
+  /**
+   * Provider slugs measured as serving this model badly, sent as
+   * `provider.ignore`; the owner warned on 2026-09-03 that "some providers
+   * might serve some models in a horribly broken way", and this is where a
+   * measured one is kept off the wire. Slugs are the lower-case names
+   * OpenRouter's `provider.only` and `provider.ignore` accept.
+   */
+  readonly ignoredEndpoints: readonly string[];
 };
 
 /**
@@ -153,42 +174,57 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'hf:moonshotai/Kimi-K3',
     readsImages: true,
     maxOutputLength: 943_718,
+    ignoredEndpoints: [],
   },
+  // PARASAIL PUTS THE WHOLE JSON ANSWER IN THE REASONING CHANNEL and closes
+  // the content channel empty with `finish_reason=stop`, measured on
+  // 2026-09-03 with a corpus-sized json_schema request under zero data
+  // retention (`~/temp/agent/openrouter-minimax-endpoints-20260903`): 0 of 2
+  // conformant there against 4 of 4 on ModelRun, and on the first
+  // all-OpenRouter keyword233 pass 16 of 31 MiniMax calls came back empty.
+  // Of the seven zero-data-retention endpoints only ModelRun and Parasail
+  // accept `response_format`, so with Parasail ignored ModelRun serves alone.
   'minimax/minimax-m3': {
     id: 'minimax/minimax-m3',
     sharedWith: 'minimax-m3',
     readsImages: true,
     maxOutputLength: 512_000,
+    ignoredEndpoints: ['parasail',],
   },
   'deepseek/deepseek-v4-flash-0731': {
     id: 'deepseek/deepseek-v4-flash-0731',
     sharedWith: 'deepseek-v4-flash-0731',
     readsImages: false,
     maxOutputLength: 943_718,
+    ignoredEndpoints: [],
   },
   'deepseek/deepseek-v4-pro-0813': {
     id: 'deepseek/deepseek-v4-pro-0813',
     sharedWith: 'deepseek-v4-pro-0813',
     readsImages: false,
     maxOutputLength: 384_000,
+    ignoredEndpoints: [],
   },
   'qwen/qwen3.8-27b': {
     id: 'qwen/qwen3.8-27b',
     sharedWith: 'hf:Qwen/Qwen3.8-27B',
     readsImages: true,
     maxOutputLength: 131_072,
+    ignoredEndpoints: [],
   },
   'z-ai/glm-5.3': {
     id: 'z-ai/glm-5.3',
     sharedWith: 'glm-5.3',
     readsImages: false,
     maxOutputLength: 262_144,
+    ignoredEndpoints: [],
   },
   'z-ai/glm-5.3-flash': {
     id: 'z-ai/glm-5.3-flash',
     sharedWith: 'hf:zai-org/GLM-5.3-Flash',
     readsImages: true,
     maxOutputLength: 131_072,
+    ignoredEndpoints: [],
   },
   // THE LISTING REPORTS IMAGE INPUT HERE AND CHARM HYPER'S CATALOG DOES NOT,
   // the same weights on different serving stacks. NOT SEATED AS A READER on
@@ -202,14 +238,41 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     sharedWith: 'gemma-4-26b-a4b-it',
     readsImages: false,
     maxOutputLength: 16_384,
+    ignoredEndpoints: [],
   },
   'openai/gpt-oss-120b': {
     id: 'openai/gpt-oss-120b',
     sharedWith: 'hf:openai/gpt-oss-120b',
     readsImages: false,
     maxOutputLength: 117_964,
+    ignoredEndpoints: [],
   },
 };
+
+/**
+ * The `provider` field for one served model.
+ *
+ * COPIES THE IGNORE LIST rather than aliasing the catalog's array, so the body
+ * builder can never hand the catalog's own row to `JSON.stringify` callers
+ * that might be tempted to push onto it.
+ *
+ * @param servedId - OpenRouter slug the request will name
+ *
+ * @returns Shared preferences plus that model's ignored endpoints
+ *
+ * @example
+ * ```ts
+ * const provider = openRouterProviderPreferencesFor({ servedId: 'minimax/minimax-m3', },);
+ * ```
+ */
+export function openRouterProviderPreferencesFor(
+  { servedId, }: { readonly servedId: OpenRouterServedId; },
+): OpenRouterProviderPreferences {
+  return {
+    ...OPENROUTER_PROVIDER_PREFERENCES,
+    ignore: [...OPENROUTER_MODELS[servedId].ignoredEndpoints,],
+  };
+}
 
 /**
  * Whether OpenRouter's catalog carries a label under that exact spelling.

@@ -211,6 +211,37 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS MiniMax M3 off Parasail on the wire: the body\'s provider.ignore carries the '
+        + 'catalog row\'s slug, so the endpoint that answers into the reasoning channel is never routed to',
+      fn: async () => {
+        const { client, exchanges, } = recordedClient({},);
+        await client.chatText({
+          modelId: 'minimax-m3',
+          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+          signal: SIGNAL,
+        },);
+        /**
+         * What went on the wire.
+         */
+        const [exchange,] = exchanges;
+        if (exchange === undefined)
+          throw new Error('nothing was sent',);
+        /**
+         * Body as the gateway would parse it.
+         */
+        const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
+        expect(body,).toMatchObject({
+          model: 'minimax/minimax-m3',
+          provider: {
+            zdr: true,
+            require_parameters: true,
+            ignore: ['parasail',],
+          },
+        },);
+      },
+    },),
+
+    it({
       name: 'READS credits purchased, used and remaining off the credits endpoint',
       fn: async () => {
         const { client, } = recordedClient({},);

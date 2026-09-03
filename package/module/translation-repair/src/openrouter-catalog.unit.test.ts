@@ -16,6 +16,7 @@ import {
   OPENROUTER_MODELS,
   OPENROUTER_PROVIDER_PREFERENCES,
   openRouterIdFor,
+  openRouterProviderPreferencesFor,
   openRouterServesLabel,
   reachOf,
   ROSTER_MODEL_IDS,
@@ -52,9 +53,54 @@ await describe({
 
     it({
       name: 'CARRIES zero data retention and require_parameters on every request, the owner\'s decision '
-        + 'of 2026-09-03, with no endpoint ignored on the day of the probe',
+        + 'of 2026-09-03',
       fn: async () => {
         expect(OPENROUTER_PROVIDER_PREFERENCES,).toEqual({
+          zdr: true,
+          require_parameters: true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'IGNORES Parasail for MiniMax M3 alone: the endpoint that answered a corpus-sized schema '
+        + 'call with the JSON in the reasoning channel and nothing in content (2026-09-03), while every '
+        + 'other row ignores no endpoint',
+      fn: async () => {
+        expect(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,).toEqual(['parasail',],);
+        /**
+         * Rows other than MiniMax's.
+         */
+        const others = Object
+          .values(OPENROUTER_MODELS,)
+          .filter(function notMinimax(info,): boolean {
+            return info.id !== 'minimax/minimax-m3';
+          },);
+        for (const info of others)
+          expect(info.ignoredEndpoints,).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: openRouterProviderPreferencesFor.name,
+  children: [
+    it({
+      name: 'ADDS the row\'s ignore list to the shared preferences, as a copy the caller may not '
+        + 'write back into the catalog',
+      fn: async () => {
+        /**
+         * Preferences for the one row with an ignored endpoint.
+         */
+        const minimax = openRouterProviderPreferencesFor({ servedId: 'minimax/minimax-m3', },);
+        expect(minimax,).toEqual({
+          zdr: true,
+          require_parameters: true,
+          ignore: ['parasail',],
+        },);
+        expect(minimax.ignore,).not.toBe(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,);
+        expect(openRouterProviderPreferencesFor({ servedId: 'z-ai/glm-5.3', },),).toEqual({
           zdr: true,
           require_parameters: true,
           ignore: [],

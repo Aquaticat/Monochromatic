@@ -175,7 +175,9 @@ export {
   OPENROUTER_MODELS,
   OPENROUTER_PROVIDER_PREFERENCES,
   type OpenRouterModelInfo,
+  type OpenRouterProviderPreferences,
   type OpenRouterServedId,
+  openRouterProviderPreferencesFor,
   openRouterServesLabel,
 } from './openrouter-catalog.ts';
 export {
