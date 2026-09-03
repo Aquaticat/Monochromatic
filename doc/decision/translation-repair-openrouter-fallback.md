@@ -23,9 +23,26 @@ and Synthetic and Hyper are expected to run dry often.
     At 3 and 15 USD per million tokens it was 52 to 61 percent of an entry's all-OpenRouter cost.
     It keeps every seat while Synthetic or Hyper serves it.
     This is the shape of the existing slow-judge withholding (`run-seats.ts`), keyed to reach rather than to dryness alone.
+
+    CORRECTION, same day: the question told the owner Kimi-K3 "holds editor, refiner and checker seats".
+    That was wrong. `run-config.ts` seats the editors as GLM-5.3-Flash, `glm-5.3` and `deepseek-v4-pro-0813`
+    and the refiners as GLM-5.3-Flash, `deepseek-v4-pro-0813` and `minimax-m3`;
+    Kimi-K3 holds the critic, panel, select-judge, late-judge and checker seats.
+    The cost figure the answer rests on is unchanged.
+    What thins on an all-OpenRouter day is each wide bench by one voice and the checker roster from three to two,
+    which `assertCheckerQuorumReachable` refuses,
+    so a disinterested substitute checker is seated there: `gemma-4-26b-a4b-it`,
+    chosen because it holds no editor or refiner seat,
+    answered 40 of 40 writer rounds with zero cuts and threw 5 of 289 asks on the stub-fix XIEPT2 run,
+    and sat above the pooled null as a writer where `deepseek-v4-flash-0731`, the other disinterested candidate,
+    sat below it in both writing measurements.
+    That seat is provisional and open to the owner's veto; no checker-side measurement exists for any model.
 - **The allowlist carries the whole roster.**
     The owner added `openai/gpt-oss-120b`, `google/gemma-4-26b-a4b-it` and `deepseek/deepseek-v4-pro-0813`
     to the account's model allowlist, so every roster model is buyable on OpenRouter.
+    The question described gemma as a writer seat and the "add none" option as leaving "the editor stage on Qwen alone";
+    gemma is a translator and Qwen3.8-27B a checker, and the editor stage was never at stake.
+    The answer stands on its own terms: every roster model is now buyable there.
 - **Zero data retention on every request.**
     `provider.zdr: true` goes on every call;
     every roster model kept at least seven ZDR endpoints on the day of measurement.
