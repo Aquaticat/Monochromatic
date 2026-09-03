@@ -83,6 +83,61 @@ function pricedLine(
 }
 
 /**
+ * Decimal places USD figures are rendered at: a corpus call costs tenths of
+ * a cent, and two places would print most of a run's seats as 0.00.
+ */
+const USD_PLACES = 4;
+
+/**
+ * Renders one OpenRouter seat with the USD its lines reported, and what share
+ * of the run's USD it was.
+ *
+ * @param seat - seat with the USD summed off its `cost=` fields
+ *
+ * @param totalUsd - what every OpenRouter seat came to together
+ *
+ * @returns Line for the report
+ *
+ * @example
+ * ```ts
+ * console.log(usdLine({ seat, totalUsd, },),);
+ * ```
+ */
+function usdLine(
+  {
+    seat,
+    totalUsd,
+  }: {
+    readonly seat: SeatSpend;
+    readonly totalUsd: number;
+  },
+): string {
+  /**
+   * Share of the USD bill this seat was, blank where nothing was billed.
+   */
+  const share = (totalUsd === 0)
+    ? 'n/a'
+    : `${((seat.costUsd / totalUsd) * PERCENT).toFixed(1,)}%`;
+
+  /**
+   * Calls whose line carried no cost, named so the seat's figure reads as a
+   * floor when any did.
+   */
+  const uncosted = seat.calls - seat.costedCalls;
+
+  /**
+   * Floor note, absent when every call was costed.
+   */
+  const floor = (uncosted === 0)
+    ? ''
+    : `, a floor: ${String(uncosted,)} calls carried no cost`;
+
+  return `  ${seat.model}: ${seat.costUsd.toFixed(USD_PLACES,)} USD (${share}) `
+    + `over ${String(seat.calls,)} calls, `
+    + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}${floor}`;
+}
+
+/**
  * Renders a seat carrying tokens but no credit figure.
  *
  * @param seat - subscription or unpriced seat
@@ -151,6 +206,24 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
     for (const seat of cost.unpriced) {
       console.log(tokensOnlyLine({ seat, },),);
     }
+  }
+
+  /**
+   * Seats billed in USD on OpenRouter.
+   */
+  const openRouterCount = cost
+    .openRouter
+    .length;
+
+  if (openRouterCount > 0) {
+    console.log('OpenRouter seats, billed in USD per token, each priced from the cost= its own lines carried:',);
+    for (const seat of cost.openRouter) {
+      console.log(usdLine({
+        seat,
+        totalUsd: cost.totalUsd,
+      },),);
+    }
+    console.log(`OpenRouter run total: ${cost.totalUsd.toFixed(USD_PLACES,)} USD, never summed with the credits above`,);
   }
 
   if (subscriptionCount > 0) {
