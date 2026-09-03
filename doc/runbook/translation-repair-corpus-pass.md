@@ -566,14 +566,18 @@ and a run made from that checkout recorded none of what they read either.
     ```
 
     This spends no quota and calls no model.
-    Expected, on a run that touched both providers:
+    Expected, on a run that touched all three providers:
 
     ```text
-    spend-report: 1 logs, 4 lines, 3 seats
+    spend-report: 1 logs, 6 lines, 5 seats
     metered seats, priced at rates read 2026-08-26:
       gemma-4-26b-a4b-it: 0.05 credits (72.5%) over 1 calls, in 7168=0.02 out 4096=0.03
       minimax-m3: 0.02 credits (27.5%) over 1 calls, in 1000=0.01 out 500=0.01
     metered run total: 0.07 credits
+    OpenRouter seats, billed in USD per token, each priced from the cost= its own lines carried:
+      deepseek/deepseek-v4-pro-0813: 0.0701 USD (94.1%) over 8 calls, in 22643 out 13706
+      minimax/minimax-m3: 0.0044 USD (5.9%) over 2 calls, in 3514 out 91
+    OpenRouter run total: 0.0745 USD, never summed with the credits above
     subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on the METERS line:
       hf:zai-org/GLM-5.3-Flash: 1 calls, in 4096 out 2048
     ```
@@ -581,6 +585,10 @@ and a run made from that checkout recorded none of what they read either.
     Subscription seats are counted and never priced,
     because a weekly allowance is not a per-call rate and pricing it would invent a number.
     Their consumption shows up on the `METERS` line instead.
+    OpenRouter seats are priced from the wire, the `cost=` field each `SPEND` line carries,
+    and never from a table;
+    a seat whose lines lacked the field is marked `a floor: N calls carried no cost`.
+    Hypercredits and USD are two currencies and the report never adds them.
 
     `FLOOR, NOT A TOTAL` appears when any call reported no usage block:
 
