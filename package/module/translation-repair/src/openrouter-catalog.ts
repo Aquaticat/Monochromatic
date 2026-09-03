@@ -268,9 +268,13 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
 export function openRouterProviderPreferencesFor(
   { servedId, }: { readonly servedId: OpenRouterServedId; },
 ): OpenRouterProviderPreferences {
+  /**
+   * Catalog row for this slug.
+   */
+  const row = OPENROUTER_MODELS[servedId];
   return {
     ...OPENROUTER_PROVIDER_PREFERENCES,
-    ignore: [...OPENROUTER_MODELS[servedId].ignoredEndpoints,],
+    ignore: [...row.ignoredEndpoints,],
   };
 }
 
