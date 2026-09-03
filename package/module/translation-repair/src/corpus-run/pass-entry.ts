@@ -12,6 +12,7 @@ import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
 import { assertCarriedInsertionsRemain, } from './carried-insertion-completeness.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
+import { damageClaimLinesBySlice, } from '../repair-damage-evidence.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import type {
   CorpusPair,
@@ -354,6 +355,8 @@ async function runEntryPipeline(
       // reason on `WIDE_SEAT_DROPPED` in `run-config.ts`.
       modelIds: RUN_LATE_JUDGES,
       frontMatterSlices,
+      // The probe's corroborated claims, shown to the judges and acted on by nobody (`repair-damage-evidence.ts`).
+      damageClaimsBySlice: damageClaimLinesBySlice({ lane: lanes.repair, },),
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),

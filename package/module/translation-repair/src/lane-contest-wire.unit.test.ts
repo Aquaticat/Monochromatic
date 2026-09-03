@@ -349,3 +349,45 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: `${buildLaneContestMessages.name} with probe claims`,
+  children: [
+    it({
+      name: 'SHOWS corroborated added-damage claims against the repair candidate as evidence after both '
+        + 'candidates, and SHOWS NOTHING of the kind when there are none (keyword233, 2026-09-03: the '
+        + 'contest chose a tense-damaged repair lane 7 of 7 without ever seeing the claim)',
+      fn: async () => {
+        /**
+         * Subject every case shares.
+         */
+        const subject = {
+          sourceText: '猫猫在书店的阁楼里睡觉。',
+          incumbentText: 'The cat slept in the bookshop attic.',
+          repairText: 'The cat sleeps in the bookshop attic.',
+          translateText: 'The cat dozed in the attic of the bookshop.',
+        };
+        /**
+         * User message with one claim shown.
+         */
+        const withClaims = buildLaneContestMessages({
+          subject: {
+            ...subject,
+            repairDamageClaims: ['- minimax-m3 [tense] quotes "sleeps": the page holds past tense',],
+          },
+        },).at(1,)?.content ?? '';
+        expect(withClaims.includes('CORROBORATED ADDED-DAMAGE CLAIMS against CANDIDATE "repair"',),).toBe(true,);
+        expect(withClaims.includes('- minimax-m3 [tense] quotes "sleeps": the page holds past tense',),).toBe(true,);
+        // After the translate candidate, before the closing questions.
+        expect(withClaims.indexOf('CORROBORATED ADDED-DAMAGE',),).toBeGreaterThan(withClaims.indexOf('CANDIDATE "translate":',),);
+        expect(withClaims.indexOf('CORROBORATED ADDED-DAMAGE',),).toBeLessThan(withClaims.indexOf('Return JSON',),);
+
+        /**
+         * User message with no claim.
+         */
+        const without = buildLaneContestMessages({ subject, },).at(1,)?.content ?? '';
+        expect(without.includes('CORROBORATED ADDED-DAMAGE',),).toBe(false,);
+      },
+    },),
+  ],
+},);

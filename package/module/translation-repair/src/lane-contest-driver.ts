@@ -227,6 +227,7 @@ export async function contestDocumentLanes(
     identityContext,
     frontMatterSlices,
     cache,
+    damageClaimsBySlice = new Map<number, readonly string[]>(),
     signal,
     perCallTimeoutMs,
     overlap = 1,
@@ -238,6 +239,11 @@ export async function contestDocumentLanes(
     readonly identityContext?: string;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly cache: SliceCache<LaneContestOutcome>;
+    /**
+     * Corroborated added-damage claims against the repair lane, per slice,
+     * shown to the judges as evidence (`repair-damage-evidence.ts`).
+     */
+    readonly damageClaimsBySlice?: ReadonlyMap<number, readonly string[]>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly overlap?: number;
@@ -343,6 +349,16 @@ export async function contestDocumentLanes(
             return eligibility[candidate] === 'ineligible';
           },);
       /**
+       * Probe claims against this slice's repair text, empty for most slices.
+       */
+      const repairDamageClaims = damageClaimsBySlice.get(row.sliceIndex,) ?? [];
+      /**
+       * Those claims as the optional subject and key field, absent when none.
+       */
+      const damageFragment = (repairDamageClaims.length === 0)
+        ? {}
+        : { repairDamageClaims, };
+      /**
        * Key these ballots resume under.
        */
       const key = laneContestSliceKey({
@@ -353,6 +369,7 @@ export async function contestDocumentLanes(
         ...((syntax === undefined) ? {} : { syntax, }),
         repairText: row.repairText,
         translateText: row.translateText,
+        ...damageFragment,
       },);
 
       /**
@@ -389,6 +406,7 @@ export async function contestDocumentLanes(
                 ...((syntax === undefined) ? {} : { syntax, }),
                 ...((ineligibleCandidates.length === 0) ? {} : { ineligibleCandidates, }),
                 ...((identityContext === undefined) ? {} : { identityContext, }),
+                ...damageFragment,
               },
               signal,
               exchangeTimeoutMs: perCallTimeoutMs,

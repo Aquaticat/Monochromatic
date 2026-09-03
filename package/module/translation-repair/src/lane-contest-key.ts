@@ -116,6 +116,7 @@ export function laneContestSliceKey(
     syntax,
     repairText,
     translateText,
+    repairDamageClaims = [],
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -124,6 +125,7 @@ export function laneContestSliceKey(
     readonly syntax?: SliceSyntax;
     readonly repairText: string;
     readonly translateText: string;
+    readonly repairDamageClaims?: readonly string[];
   },
 ): string {
   return hashContent({
@@ -142,6 +144,15 @@ export function laneContestSliceKey(
         ]),
       repairText,
       translateText,
+      // Claims change what the judges were shown, so ballots bought without
+      // them must not answer for a question asked with them; a slice with no
+      // claim keys exactly as before.
+      ...((repairDamageClaims.length === 0)
+        ? []
+        : [
+          'damage',
+          ...repairDamageClaims,
+        ]),
     ],),
   },);
 }

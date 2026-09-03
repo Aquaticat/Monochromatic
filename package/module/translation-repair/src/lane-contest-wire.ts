@@ -320,6 +320,18 @@ export type LaneContestSubject = {
    * This stage was the only one that was not.
    */
   readonly identityContext?: string;
+
+  /**
+   * Corroborated added-damage claims the introduced-defect probe raised
+   * against the repair candidate, one line each, absent when none.
+   *
+   * EVIDENCE, NOT A VERDICT. The probe runs in shadow mode because its
+   * precision is measured at six of ten (2026-09-03), so nothing acts on a
+   * claim; the judges that choose between the lanes are shown it and check it
+   * against the ORIGINAL, which the contest that chose a tense-damaged repair
+   * lane 7 of 7 on keyword233 could not do without it.
+   */
+  readonly repairDamageClaims?: readonly string[];
 };
 
 /**
@@ -421,6 +433,29 @@ export function buildLaneContestMessages(
     ];
 
   /**
+   * Probe claims against the repair candidate, or nothing when none were
+   * corroborated.
+   */
+  const damageClaims = subject.repairDamageClaims ?? [];
+  /**
+   * Those claims as a block the judge reads after both candidates and before
+   * the sizes, or nothing at all.
+   *
+   * PLACED AFTER THE PASSAGES, like the size note, so a judge reads the texts
+   * before being handed a complaint about one of them.
+   */
+  const damageBlock = (damageClaims.length === 0)
+    ? []
+    : [
+      'CORROBORATED ADDED-DAMAGE CLAIMS against CANDIDATE "repair", evidence to weigh, not a verdict:',
+      ...damageClaims,
+      'Each claim came from one prober auditing the repair edit; its quoted wording is in the repair',
+      'candidate and absent from the archive rendering. Probers are wrong about four claims in ten,',
+      'so check each against the ORIGINAL yourself before it counts as unsupported wording.',
+      '',
+    ];
+
+  /**
    * Policy extended for syntax-bearing visible metadata.
    */
   const policy = (subject.syntax === 'front-matter')
@@ -449,6 +484,7 @@ export function buildLaneContestMessages(
         'CANDIDATE "translate":',
         `${fence}\n${subject.translateText}\n${fence}`,
         '',
+        ...damageBlock,
         ...sizeBlock,
         'SEPARATELY from that choice, judge the ARCHIVE RENDERING shown above.',
         'It is the text already published. Ask of it the same two questions you',

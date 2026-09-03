@@ -160,5 +160,20 @@ await describe({
         },),).not.toBe(laneContestSliceKey(catInputs(),),);
       },
     },),
+    it({
+      name: 'SEPARATES a question asked with probe claims against the repair candidate from one asked '
+        + 'without, and KEYS an empty claim list exactly as no claims, so ballots bought before the '
+        + 'claims existed still resume',
+      fn: async () => {
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          repairDamageClaims: ['- minimax-m3 [tense] quotes "naps": the page holds past tense',],
+        },),).not.toBe(laneContestSliceKey(catInputs(),),);
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          repairDamageClaims: [],
+        },),).toBe(laneContestSliceKey(catInputs(),),);
+      },
+    },),
   ],
 },);

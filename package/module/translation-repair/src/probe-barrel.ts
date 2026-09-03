@@ -31,6 +31,10 @@ export {
   runIntroducedDefectProbe,
 } from './introduced-defect-probe.ts';
 export {
+  damageClaimLinesBySlice,
+  type ProbedChunk,
+} from './repair-damage-evidence.ts';
+export {
   CANDIDATE_ONLY_CATEGORIES,
   FINDING_FIELDS,
   isRenderingAuditReportWire,

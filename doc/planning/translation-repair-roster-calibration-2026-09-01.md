@@ -1100,6 +1100,38 @@ the polish round never touched slice 1 (`changed: false`, no gate). So the wrap 
 clear of it; the question it raises is what a corroborated added-damage claim is for if the repair
 still ships, and that is filed as tracked work.
 
+## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
+
+Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
+candidate), the owner answered that the options are not mutually exclusive, that this is not a design
+decision, and to decide and measure. Recorded as rule `QNX`. Both compatible things were done.
+
+Measured: every region with a corroborated added-damage claim across the artifacts that carried the
+probe (XIEPT2 rerun5: 3 probed regions, none corroborated; Carena0442 landed: 41 probed, 6
+corroborated; keyword233 wrap landing: 4 probed, 2; keyword233 smoke: 4 probed, 2), each claim read
+against the BEFORE and AFTER text and the ORIGINAL it quotes:
+
+- True (6): Carena "at last" added to 我来重新补上; Carena "world-weary" added to 藐视地; Carena "only"
+  added to 会引来厌倦; keyword233 wrap "is a transgender woman ... she runs ... she shares" (tense);
+  keyword233 smoke "is a transgender woman" (tense, two probers); keyword233 smoke "where she shares"
+  (tense, two probers).
+- False (3): Carena 十几二十分钟 rendered "ten or twenty minutes" is closer than the BEFORE's "fifteen";
+  Carena 我方才知道 read by two probers as 我方 "our side" when it is 我 方才 "I only then learned", so
+  the edit to "I learned" was right; Carena 担意外 "bearing the unexpected" is a defensible reading of
+  担.
+- Borderline (1): keyword233 wrap "which I think is great", a narrator's aside in the present tense
+  beside a past-tense passage.
+
+Six of ten, and the two-prober claims two of three, is the precision of an audit, not of a gate: the
+probe stays in shadow mode as `introduced-defect-probe.ts` argues, and the claims cited the tense rule
+in every true tense case. What changed: the lane contest is now shown the corroborated claims against
+the repair candidate as evidence lines after both candidates ("evidence to weigh, not a verdict", with
+the four-in-ten error rate stated), the cache key folds them in so ballots bought without them never
+answer for a question asked with them, and nothing acts on a claim. `repair-damage-evidence.ts`
+builds the lines from the repair lane's probe reports; the wire test proves the block appears with
+claims and not without, the key test that claims separate the question and an empty list keys as
+before, the evidence test that only corroborated claims become lines.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
