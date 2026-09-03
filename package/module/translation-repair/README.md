@@ -113,10 +113,17 @@ so model size does not justify a larger setting.
 Hyper has no local concurrency ceiling;
 a live width-64 arm completed 64 of 64 structured calls.
 Its 1,000 requests-per-hour account limit remains a separate rate budget.
+OpenRouter, the third provider since 2026-09-03, has no local ceiling either:
+a width-32 chat-completions arm completed 32 of 32 on two models with no refusal,
+and the provider states no request-rate limit for paid models.
+Routing walks `PROVIDER_ORDER` (Synthetic, Hyper, OpenRouter):
+the first provider that serves the model and has budget takes the call,
+a saturated provider overflows to the next usable one,
+and a dry provider passes the call down the order.
 See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
 A2's 432-second intentionally serial run measures its implementation,
 not provider concurrency capacity.
-Measured arms may explicitly require both providers.
+Measured arms may explicitly require any subset of the providers.
 Each node prompt digest binds exact source,
 archive,
 brief,
@@ -589,22 +596,33 @@ but a formula is unprotected structure until the strict grammar knows it.
   reader never sees them.
   Decision: `doc/decision/translation-repair-good-result-over-bad-original.md`.
 - **Judge seats follow the provider that would serve them.**
-  `readJudgeSeats` reads Synthetic's meter before each phase of an entry
-  (lanes, lane contest, consolidation; once per entry until 2026-09-03, when
-  XIEPT2 ran Synthetic dry seven minutes into 219) and withholds the
-  judges Hyper serves too slowly for the round window (`HYPER_SLOW_JUDGES`,
-  Qwen3.8-27B: cut in 30 of 34 translate-lane select rounds with Hyper alone,
-  answering 25 of 28 when Synthetic served it) while Synthetic is dry, seating
-  them when it is wet; an unreadable meter seats the full bench.
+  `readJudgeSeats` reads the router's own dryness view (every provider's
+  meter, holds folded in) before each phase of an entry (lanes, lane contest,
+  consolidation; once per entry until 2026-09-03, when XIEPT2 ran Synthetic
+  dry seven minutes into 219) and asks, per seat, which provider would take
+  its calls: the first in `PROVIDER_ORDER` that serves the model and reads wet
+  (`providerServing`).
+  Where that is Hyper, the judges Hyper serves too slowly for the round window
+  are withheld (`HYPER_SLOW_JUDGES`, Qwen3.8-27B: cut in 30 of 34
+  translate-lane select rounds with Hyper alone, answering 25 of 28 when
+  Synthetic served it), and `HYPER_SLOW_SELECT_JUDGES` (Kimi-K3: cut in 0 of
+  69 select rounds on Synthetic, 43 of 83 and 38 of 101 with Hyper serving
+  most or all of them, almost never in any other judge role) leaves both
+  lanes' slate select seats and the consolidation slate while keeping every
+  other seat.
+  Where that is OpenRouter, `OPENROUTER_WITHHELD` (Kimi-K3, by the owner's
+  cost decision of 2026-09-03: 3 and 15 USD per million tokens, 52 to 61
+  percent of an entry's all-OpenRouter cost) leaves every seat, and
+  `OPENROUTER_CHECKER_SUBSTITUTE` (gemma-4-26b-a4b-it, disinterested and
+  provisional) takes the vacated checker seat so the roster keeps the floor
+  the checker contract holds; both checker assertions run on the derived
+  roster before each phase.
+  An unreadable view seats the full bench.
   The static benches in `run-config.ts` are the Synthetic-wet ones, seven wide
-  seats and eight late judges; six and seven when dry.
-  A second set, `HYPER_SLOW_SELECT_JUDGES` (Kimi-K3: cut in 0 of 69 select
-  rounds on Synthetic, 43 of 83 and 38 of 101 with Hyper serving most or all
-  of them, almost never in any other judge role), is withheld from both
-  lanes' slate select seats and the
-  consolidation slate while Synthetic is dry and kept everywhere else, so the
-  dry select bench is five and the dry slate bench six.
-  Decision: `doc/decision/translation-repair-provider-aware-judge-seat.md`.
+  seats and eight late judges; the `JUDGE SEATS` line names every provider's
+  state, every bench size, and every withheld model.
+  Decisions: `doc/decision/translation-repair-provider-aware-judge-seat.md`,
+  `doc/decision/translation-repair-openrouter-fallback.md`.
   Shadow mode is a recorded decision rather than an unfinished edge, with the
   rejected gating designs and the condition that reopens it in
   `doc/decision/introduced-defect-probe-gating.md`.
@@ -664,24 +682,31 @@ and reading one as an instruction has cost this package a defect before.
 
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider, Charm Hyper.
-    REQUIRED, exactly like the first:
-    `createRunClient` refuses to build a client without it,
-    as a stated refusal that names the variable and exits 6.
-    It used to warn and return a client that spoke to the first provider alone;
-    that client offered Charm-Hyper-only seats to a provider that cannot serve them,
-    and a calibration settled clean with half its roster dark (`#235`).
-    Current eight-model roster has four Hyper-only seats and can settle at quorum on four Synthetic voices,
-    so early refusal prevents degraded run from looking complete.
-    There is no one-provider run to fall back to.
+    OPTIONAL AND LOUD: a run starts on whichever provider keys are present,
+    an absent provider is marked dry before routing so its seats are unavailable,
+    and every key absent is a stated refusal naming the variables (exit 6).
+    A calibration once settled clean with half its roster dark (`#235`) because a missing key was silent;
+    it is not silent now, and the seat lines at the end of every command name what was dark.
     Note the `CHARM` in the middle;
     a name missing it is read by nothing and reported by nothing.
+    The owner will not top this balance up again (2026-09-03), so it serves until it runs dry.
 
-Both keys live in the sops-encrypted, gitignored `.env.local.json` at the repository root,
+-   `TRANSLATION_REPAIR_OPENROUTER_API_KEY`.
+    Bearer token for the third provider, OpenRouter, the paid per-token fallback the owner chose on
+    2026-09-03 (`doc/decision/translation-repair-openrouter-fallback.md`).
+    OPTIONAL AND LOUD like the second.
+    Every request carries `provider: { zdr: true, require_parameters: true }`,
+    so only zero-data-retention endpoints that support `response_format` may serve a passage.
+    Credits are read from `GET /api/v1/credits` (purchased less used, in USD) and printed on the `METERS`
+    line as `openrouterUsd=`; every call's cost is read off the final stream chunk onto its `SPEND` line as
+    `cost=`, so a run's OpenRouter bill is summed from the wire rather than from a price table.
+
+Every key lives in the sops-encrypted, gitignored `.env.local.json` at the repository root,
 which `mise run` decrypts into the task's environment.
 A worktree created with `git worktree add` starts without that file;
 copy the encrypted file into the worktree root (it stays encrypted at rest) or launch from the main worktree.
 Either way, launch under `mise run`:
-a bare `node dist/...` launch has neither key,
+a bare `node dist/...` launch has no key,
 and since `#235` it fails at once with the refusal instead of running half-dark.
 
 Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N` line per seat to stderr,

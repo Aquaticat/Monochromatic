@@ -91,10 +91,11 @@ TODO | DONE
     grep --only-matching '"TRANSLATION_REPAIR_[A-Z_]*"' .env.local.json | sort --unique
     ```
 
-    Fully configured store prints these two lines:
+    Fully configured store prints these three lines (the Exa lookup key may appear beside them):
 
     ```text
     "TRANSLATION_REPAIR_CHARM_HYPER_API_KEY"
+    "TRANSLATION_REPAIR_OPENROUTER_API_KEY"
     "TRANSLATION_REPAIR_SYNTHETIC_API_KEY"
     ```
 
@@ -105,10 +106,16 @@ TODO | DONE
 
     At least one name must exist.
     One configured provider is valid normal operation;
-    absent provider is marked dry and its seats are unavailable.
-    Both absent is launch refusal.
+    an absent provider is marked dry and its seats are unavailable.
+    Every name absent is launch refusal.
     The Charm Hyper name carries `CHARM` in the middle.
-    A variable missing it configures Synthetic-only mode rather than silently failing.
+    A variable missing it configures a run without Hyper rather than silently failing.
+    Routing spends in the order Synthetic, Charm Hyper, OpenRouter
+    (`doc/decision/translation-repair-openrouter-fallback.md`);
+    a worktree whose store predates the OpenRouter name can still exercise it by launching the worktree's
+    bundle with the main repository as the mise config root:
+    `cd /var/home/user/Monochromatic && mise exec -- node <worktree>/package/module/translation-repair/dist/final/node/corpus-pass.mjs --only <id>`,
+    with `env -u TRANSLATION_REPAIR_CHARM_HYPER_API_KEY` between `--` and `node` to leave Hyper out of that run.
 
 3.  Prepare the scratch root that will hold the log, the pid file and the run directory.
 
@@ -152,9 +159,9 @@ TODO | DONE
     and a meter that could not be reached warns at `warn`.
 
     A provider reading `dry` does not block ordinary launch.
-    Validation or performance arm requiring both must add
-    `-- --require-providers synthetic,hyper`;
-    that mode refuses before model calls unless both keys and meters are wet.
+    Validation or performance arm requiring particular providers must add
+    `-- --require-providers synthetic,hyper` (any subset of `synthetic`, `hyper`, `openrouter`);
+    that mode refuses before model calls unless every named key and meter is wet.
     The budget layer refuses each model no reachable provider can take,
     the stage records a lost voice, and the run continues on whoever answered.
     It does change what the run's output means:
@@ -201,8 +208,9 @@ TODO | DONE
     A value the dial cannot read refuses the launch in one line naming the variable, at zero quota,
     which `-- --plan` shows without spending anything.
 
-    For measured both-provider arm,
-    insert `-- --require-providers synthetic,hyper` after `corpus-pass`.
+    For a measured arm that needs named providers,
+    insert `-- --require-providers synthetic,hyper` (or any subset of `synthetic`, `hyper`, `openrouter`)
+    after `corpus-pass`.
     Log must contain `REQUIRED-PROVIDERS synthetic,hyper status=wet` before model traffic.
     This flag is wired only to `corpus-pass`;
     probes and calibrations do not support it and cannot serve as required-provider timing arms.

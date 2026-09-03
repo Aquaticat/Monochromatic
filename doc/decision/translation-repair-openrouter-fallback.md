@@ -63,6 +63,34 @@ and Synthetic and Hyper are expected to run dry often.
 - `:free` variants are never used.
 - Auto top-up recommended to the owner: threshold 20 USD, amount 20 USD a day's spend without Kimi on OpenRouter.
 
+## What landed, 2026-09-03
+
+Measurements and the build record are in `doc/planning/translation-repair-openrouter-2026-09-03.md`.
+
+- **Transport: chat completions**, by the owner's mid-session suggestion and by measurement.
+    The three-transport probe (twenty attempts per roster model on chat completions, the Anthropic
+    Messages endpoint and the Responses endpoint, every request under zero data retention and
+    `require_parameters`) conformed on every chat completions attempt and answered fastest there;
+    Messages answered Kimi-K3 eight times slower and conformed on 9 of 20 DeepSeek Flash attempts.
+    The client (`openrouter-client.ts`) is the Synthetic body plus the `provider` field, read by the same
+    stream reader; the Anthropic readers also learned to skip the `[DONE]` sentinel OpenRouter appends,
+    since the Messages endpoint stays available for measurement.
+- **Roster on this provider**: all nine seats, as third spellings of existing roster identities
+    (`openrouter-catalog.ts`); no new roster name.
+    gemma's row reports no pictures until a transcription is measured, so the reader roster stays four.
+- **Routing**: `PROVIDER_ORDER` (Synthetic, Hyper, OpenRouter) walked by `routeProviderFor`;
+    a refusal re-routes at most once per provider; the non-conformant re-ask goes to the next wet provider
+    serving the model; the all-dry error is `EveryProviderDryError`.
+- **Seats**: derived from where each model would be served (`providerServing`);
+    Kimi-K3 withheld everywhere OpenRouter would serve it, gemma seated as the substitute checker there.
+- **Accounting**: `METERS` carries `openrouter=` and `openrouterUsd=`; `SPEND` lines carry `cost=` in
+    USD from the wire; `spend-cost` keeps an OpenRouter USD bucket apart from hypercredits.
+- **Width**: 32 concurrent chat completions per model completed 32 of 32 on two models, no refusal;
+    the client carries no per-model ceiling by default.
+- **GPT-5.6 Luna**, named by the owner as Responses-only, is not viable under zero data retention as
+    measured (Messages 404 on data policy; chat and Responses 9 and 11 of 20 with empty answers on the rest)
+    and is not seated.
+
 ## Rollback
 
 Seating Kimi-K3 on OpenRouter, or turning ZDR off, needs an explicit owner decision and fresh cost evidence.
