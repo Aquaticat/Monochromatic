@@ -1,4 +1,4 @@
-# Coolify beta.463 to 4.3.14: LibreChat vectordb cards can show false exits or persistent duplicates
+# Coolify 4.3.14 and pre-beta.466: LibreChat vectordb appears duplicated or falsely exited
 
 A Coolify-managed LibreChat Service can display two `Vectordb` cards as
 `Exited` even though its Docker Compose file defines one `vectordb` service.
@@ -126,6 +126,19 @@ A Coolify member states in the issue that removed entries are not cleaned up
 automatically and must be deleted in Service settings.
 The issue remains open as of 2026-09-03.
 
+A related historical path created duplicate records when only a Compose image
+tag changed.
+Issue
+[coollabsio/coolify#5353](https://github.com/coollabsio/coolify/issues/5353)
+reported both old and new PostgreSQL image entries after editing one tag.
+PR
+[coollabsio/coolify#5579](https://github.com/coollabsio/coolify/pull/5579)
+removed `image` from the `firstOrCreate()` identity and updates it after lookup.
+Current `serviceParser()` uses that corrected name-and-Service identity.
+The fix prevents a new image edit from creating another row;
+it does not prove which historical path created this deployment's existing duplicate
+or prune an already-stale row.
+
 A Compose file cannot define two simultaneously addressable services with the
 same YAML key.
 If the active Compose has one `vectordb:` key while the Coolify page has two
@@ -202,6 +215,8 @@ The installed Coolify version is not yet known.
 The contradiction between cards and Terminal is compatible with this fixed
 upstream bug,
 but compatibility is not proof that this deployment is affected.
+Attribution requires a logged or live Coolify `Exited` transition while the
+destination Docker daemon still reports the same container as running.
 
 ### LibreChat moved its health route
 
@@ -254,33 +269,39 @@ The published images resolved to:
 - `pgvector/pgvector:0.8.0-pg15-trixie`:
   digest `sha256:7ed468f55926b0284a51848dcb2d7a4cc645581a508f6293956f1fca51bdeceb`.
 
-The incumbent image initialized PostgreSQL 15.4 and pgvector 0.5.1.
-The harness created a vector table and inserted one row:
+The bookworm and trixie paths used independent fresh directories.
+For the bookworm path,
+the incumbent image initialized PostgreSQL 15.4 and pgvector 0.5.1.
+The harness created a vector table,
+inserted three rows,
+and built an HNSW index:
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-CREATE TABLE items (id integer PRIMARY KEY, embedding vector(3));
-INSERT INTO items VALUES (1, '[1,2,3]');
+CREATE EXTENSION vector;
+CREATE TABLE items (id integer PRIMARY KEY, label text, embedding vector(3));
+INSERT INTO items VALUES
+  (1, 'alpha', '[1,2,3]'),
+  (2, 'beta', '[2,3,4]'),
+  (3, 'gamma', '[8,8,8]');
+CREATE INDEX items_embedding_hnsw
+  ON items USING hnsw (embedding vector_l2_ops);
+ANALYZE items;
 ```
 
-It stopped the incumbent container and mounted the same directory into each
-official PostgreSQL 15 image.
-Both official images reached:
+The incumbent container was stopped before the same directory was mounted into
+`pgvector/pgvector:0.8.0-pg15-bookworm`.
+The bookworm image reached:
 
 ```text
 database system is ready to accept connections
 ```
 
 Before updating the extension,
-the bookworm image preserved pgvector 0.5.1 and returned the stored row with the
-expected distance:
-
-```text
-vector_version | 0.5.1
-id             | 1
-embedding      | [1,2,3]
-distance       | 1
-```
+the bookworm image reported pgvector 0.5.1.
+With sequential scans disabled,
+`EXPLAIN` selected `Index Scan using items_embedding_hnsw`.
+The nearest-neighbor query returned `alpha` with distance `1`,
+and PostgreSQL reported the index as valid and ready.
 
 After:
 
@@ -288,7 +309,20 @@ After:
 ALTER EXTENSION vector UPDATE;
 ```
 
-it reported pgvector 0.8.0 and returned the same row and distance.
+bookworm reported pgvector 0.8.0,
+selected the same HNSW index,
+returned the same row and distance,
+and still reported the index as valid and ready.
+
+The trixie positive control used another PostgreSQL 15.4 directory initialized
+by `ankane/pgvector:v0.5.1`.
+After a cold stop,
+`pgvector/pgvector:0.8.0-pg15-trixie` mounted that directory and reached the
+same ready message.
+A query then reported recorded collation version `2.36` and actual version
+`2.41` for `postgres`,
+`rag`,
+and `template1`.
 
 The health-check command was Compose-rendered with doubled dollar signs and run
 inside the bookworm container:
@@ -316,7 +350,9 @@ sign for container-side expansion.
   volume as PostgreSQL 15.14 without a collation warning.
 - The bookworm image reads vectors while the installed extension remains 0.5.1.
 - `ALTER EXTENSION vector UPDATE` moves the installed extension to 0.8.0 and
-  preserves the test row and distance query.
+  preserves the HNSW index plan,
+  nearest-neighbor result,
+  and index validity flags.
 - The container-variable health check returns `accepting connections`.
 - LibreChat source responds with `OK` at `/health`.
 
@@ -341,11 +377,13 @@ sign for container-side expansion.
 - Deleting a stale card is a metadata mutation and must wait until its resource
   class and the real volume attachment are identified.
 
-The disposable migration proves image and extension compatibility for a small
-synthetic PostgreSQL 15 cluster.
+The direct disposable migration proves image and extension compatibility for a
+small synthetic PostgreSQL 15 cluster with an indexed vector query.
 It does not prove that the production volume is uncorrupted,
-that its indexes require no extension-specific rebuild,
-or that its backup is restorable.
+that every production extension or index is compatible,
+that the production architecture has a matching immutable digest,
+that the installed RAG API can retrieve through it,
+or that a production backup is restorable.
 
 ## Verified workarounds
 
@@ -370,18 +408,27 @@ the update fixes false exits from failed Docker queries but does not remove
 already-stored phantom resource records.
 A control-plane update also requires its own backup and release review.
 
-### Remove only the proven stale resource record
+### Delete no card until resource and volume ownership are mapped
 
-When Docker shows one real `vectordb` service and the two cards identify one
-`compose application` plus one `compose database`,
-retain the database card and remove the stale application card through its
-Service settings.
-Back up the vector volume first and stop the full LibreChat Service during the
-cleanup.
+Use the inspection runbook to match:
 
-Current Coolify's `deleteApplication()` only deletes the selected model at
-`app/Livewire/Project/Service/Index.php:419-429`,
-but the model deletion hook also removes its Coolify persistent-storage metadata
+- each card URL UUID to its Coolify application or database row;
+- the real container's `coolify.service.subType` and `coolify.service.subId`
+  labels to that row;
+- `/var/lib/postgresql/data` to its Docker volume and Coolify storage record.
+
+A card description identifies only its model class.
+It does not identify which record owns the live container or active storage.
+Delete only a row proven absent from the current Compose identity,
+absent from the live container labels,
+and unrelated to active storage metadata.
+Before deletion,
+stop the complete Service and restore-test a cold copy of the exact vector
+volume.
+
+Current Coolify's `deleteApplication()` deletes the selected model at
+`app/Livewire/Project/Service/Index.php:419-429`.
+The application deletion hook also removes that model's Coolify storage metadata
 at `app/Models/ServiceApplication.php:61-67`:
 
 ```php
@@ -392,9 +439,15 @@ static::deleting(function ($service) {
 });
 ```
 
+`deleteDatabase()` similarly deletes the selected model at
+`app/Livewire/Project/Service/Index.php:203-213`,
+and the database hook removes persistent-storage,
+file-storage,
+and scheduled-backup metadata at
+`app/Models/ServiceDatabase.php:46-52`.
+
 Tradeoff:
-removing the wrong card can discard Coolify's storage metadata for the active
-resource.
+removing the wrong card can discard Coolify's active storage or backup metadata.
 A future Coolify release may also change deletion behavior.
 Do not use a direct SQL `DELETE` against Coolify's database when the supported
 Service settings action is available.
@@ -435,10 +488,12 @@ this cannot fix the present exit because the two tags currently resolve to the
 same image.
 The repository and image are archived and receive no future maintenance.
 
-### Use the official bookworm image after a restore-tested backup
+### Validate the official bookworm candidate on a restored backup
 
-For a later image migration,
-keep PostgreSQL major 15 and the Debian 12 collation provider:
+The direct synthetic test makes
+`pgvector/pgvector:0.8.0-pg15-bookworm` a compatibility candidate,
+not an approved production migration.
+It keeps PostgreSQL major 15 and the Debian 12 collation provider:
 
 ```yaml
 services:
@@ -454,17 +509,39 @@ services:
       start_period: 10s
 ```
 
-Start it first with the existing extension version,
-verify representative RAG reads,
-then run `ALTER EXTENSION vector UPDATE` in a separate maintenance step.
-Verify the installed extension version and repeat the reads.
+Before a production change:
+
+- measure free space for a second copy plus archive;
+- stop the complete LibreChat Service;
+- create a cold archive of the exact PostgreSQL volume and record its checksum;
+- restore the archive into a disposable volume;
+- start that restored volume with the incumbent image;
+- verify database names,
+  extension versions,
+  schema,
+  index validity,
+  table counts,
+  and representative row fingerprints;
+- start another restored copy with the candidate image;
+- verify the same evidence plus indexed vector queries and RAG retrieval;
+- select an immutable digest for the destination architecture;
+- inventory MongoDB,
+  Meilisearch,
+  and PostgreSQL volume identities before and after the eventual Coolify deploy.
+
+Only after those checks should the restored candidate receive
+`ALTER EXTENSION vector UPDATE` as a separate maintenance step.
+Repeat the SQL and RAG checks afterward.
 
 Tradeoff:
-the image moves from archived packaging to the pgvector project's maintained
-image and preserves the incumbent OS collation version,
+the candidate moves from archived packaging to the pgvector project's image and
+preserves the incumbent OS collation version,
 but it still changes PostgreSQL from 15.4 to 15.14 and pgvector from 0.5.1 to
 0.8.0.
-Rollback after the extension update requires the cold pre-migration backup.
+The tested digest covers Linux amd64 only,
+and the tag can be rebuilt with PostgreSQL base-image updates.
+Rollback after the extension update requires the cold,
+restore-tested pre-migration backup.
 This migration is not the first response to an unmeasured container exit.
 
 ## What does not work
@@ -503,6 +580,7 @@ PostgreSQL,
 or pgvector.
 Open and closed Coolify issues and pull requests were searched for duplicate
 resource cards,
+image-change duplicates,
 empty container queries,
 false exits,
 and PostgreSQL restart loops.
@@ -511,6 +589,7 @@ and PostgreSQL restart loops.
     Partly.
     Coolify's persisted phantom-card behavior is upstream and reproduced in
     issue #9591.
+    Historical image-change duplication was fixed by PR #5579 for issue #5353.
     The false-exit bug was upstream and is fixed by PR #8860.
     The live PostgreSQL state is still unknown,
     so no new database-exit defect is established.
@@ -549,6 +628,8 @@ until destination-host Docker output establishes a distinct defect.
 ## References
 
 - [Coolify issue #9591: removed services persist as phantom cards](https://github.com/coollabsio/coolify/issues/9591)
+- [Coolify issue #5353: image edits add phantom containers](https://github.com/coollabsio/coolify/issues/5353)
+- [Coolify PR #5579: do not duplicate a Service entry when its image changes](https://github.com/coollabsio/coolify/pull/5579)
 - [Coolify issue #8826: PostgreSQL database keeps restarting](https://github.com/coollabsio/coolify/issues/8826)
 - [Coolify PR #8860: prevent false exits on failed Docker queries](https://github.com/coollabsio/coolify/pull/8860)
 - [Coolify beta.466 release](https://github.com/coollabsio/coolify/releases/tag/v4.0.0-beta.466)
