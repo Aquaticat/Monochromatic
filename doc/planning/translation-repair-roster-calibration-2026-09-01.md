@@ -951,6 +951,33 @@ refuser stays routable at once; the test shows the hold at zero with the other p
 backoff with both wet. XIEPT2 relaunched on that tree, Hyper alone from the start (Synthetic's week is
 spent), which is the shape `QPW` calls normal.
 
+## XIEPT2's fifth attempt hit Hyper's request-rate limit with no hold at all, so calls are paced now
+
+Launched 00:55 UTC on `57745afcf` at overlap 4 into `~/temp/agent/xiept2-rerun4-20260903`, Hyper alone
+from the start. It ended at 01:39 (43 minutes) `INCOMPLETE ... provider-unavailable` with 8,632 HTTP
+429 lines and no hold anywhere: with the hold gone, nothing stood between the seats and the limit.
+The 429 bodies all read `You've hit your hourly rate limit. Please try again in 1s` (also 2s, 3s, 4s).
+Measured off the log: 9,628 completed streams and 8,632 refusals in the 43 minutes; request attempts
+peaked at about 1,300 to 1,500 a minute of which about 700 succeeded; calls in flight at the moment of a
+refusal had a median of 4 (max 28), so it is not the concurrency limit the earlier section named;
+across rerun3 and rerun4 the first refusal (00:46:22) came after 1,024 request starts in the preceding
+rolling hour, and rolling-hour success counts at later refusals ran from 1,024 to 10,619, peaking at
+10,650. The client's own record (`hyper-client.ts`, "the owner confirmed Hyper ... limits this account
+to 1,000 requests per hour") cannot be the whole story when 9,628 requests completed in 43 minutes; the
+window is shorter than the message's "hourly", and the sustained rate it let through was about 700 a
+minute. Every seat lost about half its calls because the transport ladder (four retries at 1, 2, 4,
+8 s equal-jitter) sat below the limit and multiplied the pressure, and a call whose five attempts were
+all refused reached the router as a provider outage.
+
+Fixed by `50da3787a` (both tests shown to fail without it): `request-pace.ts`, a sliding-window pacer in
+front of the Hyper transport that lets 600 request starts into any sixty seconds, retries included, and
+queues the rest in arrival order, with `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_MINUTE` as the dial for the
+next measurement; and the retry ladder now reads the refusal's own "try again in Ns" and waits at least
+that long. 600 is the measurement, not a documented figure: under the roughly 700 a minute Hyper let
+through while refusing the rest. If the true window is a rolling hour with a cap near 10,000, 600 a
+minute (36,000 an hour) would still overrun it, and the next run's 429 count says which; the dial then
+moves without a rebuild. Relaunched as rerun5 on that tree.
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
