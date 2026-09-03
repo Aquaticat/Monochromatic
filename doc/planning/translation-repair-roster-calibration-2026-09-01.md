@@ -1100,6 +1100,14 @@ the polish round never touched slice 1 (`changed: false`, no gate). So the wrap 
 clear of it; the question it raises is what a corroborated added-damage claim is for if the repair
 still ships, and that is filed as tracked work.
 
+keyword233 ran on that tree (`b2a39c09a`, 07:05 UTC, `~/temp/agent/keyword233-claims-20260903`):
+`TALLY keyword233 status=SETTLED ... repairIssues=18 repairAccepted=17 ... ms=653347` (10.9 minutes,
+213 calls of which 90 went to Synthetic, whose weekly meter read 2% at launch, and 123 to Hyper; no
+refusal; 2 cuts), `verify-published` 1 of 1 at the promised length, and the first paragraph in the past
+tense this draw. The probe corroborated nothing on this draw (0 of 5 regions), so the evidence block
+was not shown live; the wire test is its witness until a draw carries a claim. Lane contests: one
+settled on repair with 7 of 7 usable, one on neither.
+
 ## The Hyper-slow judge is seated per provider, superseding the morning's drop
 
 Asked with four options, the owner chose "seat per provider reach". `corpus-run/run-seats.ts` reads
