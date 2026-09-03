@@ -1084,6 +1084,15 @@ FAIL lines with the wrap removed, none with it). `1ffbfad9b` moves the settle an
 the wrapped bytes. Publishing itself stays byte-faithful, as `publish-fixed.ts` argues. keyword233
 relaunched on that tree at 04:57 UTC to show the page keeps its line breaks.
 
+It did: `~/temp/agent/keyword233-wrap-20260903`, `TALLY keyword233 status=SETTLED ... ms=936060` (15.6
+minutes, 220 calls, no refusal, 5 cuts), `verify-published` 1 of 1 at the promised length. The log
+carries the new line, "semantic wrap: rewrapped the polish before its gate, 3 lines as emitted against 8
+as written", the gate then settled on polished with 7 of 7 usable, and the page's three paragraphs
+ship one clause per line (13 body lines against the smoke page's 5). Reading finding, unrelated to the
+wrap and left standing under the single-attempt design: this draw's first paragraph is in the present
+tense ("is a transgender woman from China. She runs her own Telegram channel, where she shares ...")
+while the third reports her death; the 2026-09-02 and smoke pages had "was" and "started".
+
 ## Decisions waiting on the owner
 
 Collected here so a reader of the last section has the whole list; each item's evidence lives in the
