@@ -30,10 +30,16 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
 ## What this cannot do
 
 - The router chooses per call: Synthetic first until the model's per-model concurrency is taken, then
-  Hyper. With Synthetic wet a burst still overflows some of this seat's calls to Hyper, and those may
-  be cut; the seat follows the state that decides most calls, not each call.
-- The Synthetic-wet path has one witness today, the unit test: Synthetic's week was dry when this
-  landed, so the first live entry with Qwen seated as a judge again comes with the week's reset.
+  Hyper. With Synthetic wet a burst could overflow some of this seat's calls to Hyper, and those may
+  be cut; the seat follows the state that decides most calls, not each call. Measured on keyword233
+  at overlap 4 (2026-09-03, `~/temp/agent/keyword233-seats-20260903`): none did, every Qwen call went
+  to Synthetic.
+- Synthetic serves the seat slowly too, only less often: on that run it was cut from 5 of 21 judge
+  rounds on Synthetic (67 to 85 seconds of reasoning), against 30 of 34 and 21 of 24 on Hyper. The
+  seat buys 16 answers in 21 there; the rule does not make it a fast judge.
+- The Synthetic-wet path ran live the same day, at 1.5% of the weekly meter: `JUDGE SEATS
+  synthetic=wet wide=7 late=8 hyper-slow seated=yes`, the rounds heard 7 of 7 thirteen times and 8 of
+  8 six times.
 
 ## Rejected alternatives
 

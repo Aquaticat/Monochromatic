@@ -1126,10 +1126,25 @@ It did not have to wait: Synthetic's weekly meter read 1.5% at 07:18 UTC, wet by
 threshold, so keyword233 on `383ece933` (`~/temp/agent/keyword233-seats-20260903`) logged `JUDGE SEATS
 synthetic=wet wide=7 late=8 hyper-slow seated=yes` and ran the wet path live: `TALLY keyword233
 status=SETTLED ... repairIssues=33 repairAccepted=25 ... ms=960731` (16 minutes, 110 calls on Synthetic
-and 139 on Hyper, no refusal, 11 cuts), `verify-published` 1 of 1. Qwen3.8-27B judged from Synthetic:
-32 answered calls, none on Hyper, 5 abandoned (2 panel, 2 select, 1 lane contest, the overflow the
-decision record names), and the rounds heard 7 of 7 thirteen times and 8 of 8 six times. The weekly
-meter fell from 1.5% to 0.87% over the run, so the next entry may well read dry and seat six.
+and 139 on Hyper, no refusal, 11 cuts), `verify-published` 1 of 1. Every Qwen3.8-27B call went to
+Synthetic (32 `SPEND provider=synthetic` lines, no Hyper-spelled `qwen3.8-27b` line at all), so the
+overflow the decision record allows for did not happen at overlap 4. It sat in 21 judge rounds (2
+critic, 2 panel, 6 repair-lane select, 5 translate-lane select, 2 lane contest, 2 consolidation gate,
+1 polish gate, 1 consolidation select) and answered 16; the 5 it was cut from (2 panel, 2
+translate-lane select, 1 lane contest) were cut on Synthetic, at 67 to 85 seconds of reasoning, so
+Synthetic serves it slowly too, only far less often than Hyper (5 of 21 against 30 of 34 and 21 of 24
+on XIEPT2). The rounds heard 7 of 7 thirteen times and 8 of 8 six times. The weekly meter fell from
+1.5% to 0.87% over the run, so the next entry may well read dry and seat six.
+
+Read for the probe, the same run corrected an assumption: its log line `introduced-defect probe: 3/3
+heard over 1 regions, 3 added-damage corroborated` at 07:23:10 came from the naturalness rewrite's
+probe on slice 1 (`refinementDefects`, three probers quoting "is a transgender woman from China. She
+opened", the tense rule), not the accuracy probe, whose regions found nothing. The lane contest at
+07:27:43 chose translate for that slice 5 of 7 on the same tense shift and was shown nothing, because
+`damageClaimLinesBySlice` read only `introducedDefects`. Fixed at `2530537a2`: both probes' corroborated
+claims become lines, each naming its edit, the contest block's prose names the two edits and their
+starting texts, and the driver logs `slice N: M corroborated damage claims shown to the judges` so a
+run's log witnesses the block. Guard test shown to fail with the rewrite read removed.
 
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
