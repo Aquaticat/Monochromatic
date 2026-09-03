@@ -1122,6 +1122,15 @@ The unit test proves the withheld seat with the meter dry, the seated one with i
 bench with the meter unreadable (fails with the rule removed); the live dry path is the six-seat bench
 keyword233 already landed on twice today, and the live wet path waits for Synthetic's week.
 
+It did not have to wait: Synthetic's weekly meter read 1.5% at 07:18 UTC, wet by the router's
+threshold, so keyword233 on `383ece933` (`~/temp/agent/keyword233-seats-20260903`) logged `JUDGE SEATS
+synthetic=wet wide=7 late=8 hyper-slow seated=yes` and ran the wet path live: `TALLY keyword233
+status=SETTLED ... repairIssues=33 repairAccepted=25 ... ms=960731` (16 minutes, 110 calls on Synthetic
+and 139 on Hyper, no refusal, 11 cuts), `verify-published` 1 of 1. Qwen3.8-27B judged from Synthetic:
+32 answered calls, none on Hyper, 5 abandoned (2 panel, 2 select, 1 lane contest, the overflow the
+decision record names), and the rounds heard 7 of 7 thirteen times and 8 of 8 six times. The weekly
+meter fell from 1.5% to 0.87% over the run, so the next entry may well read dry and seat six.
+
 ## The probe measured: six true claims in ten, so the contest is shown them and nothing obeys them
 
 Asked with four options (contest sees the claims; measure first; rule-cited revert; probe every
