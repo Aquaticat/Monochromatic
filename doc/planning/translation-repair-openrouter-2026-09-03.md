@@ -821,6 +821,14 @@ carried across; 72 sources use them and 3 archives keep any, all in quoted Chine
 Recorded, not fixed here: a declared site-name line for the judges is the cheap remedy, and the brackets
 fall under the house rule on punctuation that means nothing in English.
 
+WHAT LANDED FOR THE PRONOUN: `d98e656cb` (counter, house rule, `translate-neutral-pronoun.ts` wired into
+`validateTranslatedSlice`, tests; each guard shown to fail with its rule neutralised), `cd5288fa9` (lint
+shapes), `dd132bc76` (README). Measured over the pinned corpus with the built finding: one archive flagged
+(XingZ60, `TA` 3 times) and 15 sources. The next pass launched at 15:03:34 UTC on `cd5288fa9` (pipeline
+`sha256-tree-v1:946ab54f`), OpenRouter alone: Uekawakuyuurei, whose subject is `ta` throughout (12 `ta`
+and 1 `Ta`, archive 22 "they" to 0 "she"), into `~/temp/agent/Uekawakuyuurei-pronoun-20260904`. Balance
+5.32 USD at launch, which is about one pass.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
