@@ -118,6 +118,23 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge that 那些秋叶 is the site\'s own name and reads One Among Us (SS3B_0016 slice 5, read '
+        + '2026-09-04: the gate kept the name 4 to 3 over a literal rendering, arguing from the archive alone; '
+        + 'the archives of all five entries naming it agree)',
+      fn: async () => {
+        expect(system.includes('那些秋叶 is this site\'s own name in Chinese',),).toBe(true,);
+        expect(system.includes('rendered "One Among Us" wherever it appears',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'TELLS a judge what corner brackets become (SS3B_0016 slice 5 shipped 「One Among Us」 with the '
+        + 'source\'s brackets around the English name)',
+      fn: async () => {
+        expect(system.includes('Corner brackets 「」 are Chinese quotation marks',),).toBe(true,);
+        expect(system.includes('around a name or a term they are dropped',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'KEEPS the criteria ahead of the policy in the sheet',
       fn: async () => {
         // The criteria decide; the policy qualifies them. A block arriving
