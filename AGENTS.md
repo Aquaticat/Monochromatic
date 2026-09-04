@@ -431,6 +431,13 @@ HUP:
  and verification;
 never wait for session end.
 
+VPH:
+ Visual delivery completes when requested artifact state,
+ not merely its window,
+ is visible.
+Open exact candidate or modal;
+verify its active non-minimized window on current output.
+
 OCG:
  Output cardinality never determines option occurrence grammar.
 Sketch token encoding before asserting repeated,
