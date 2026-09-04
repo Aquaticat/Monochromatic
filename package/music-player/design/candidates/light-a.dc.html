@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/palette.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/color.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/typography.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/shape.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/state.css">
+<style>html,body{height:100%;margin:0;overflow:hidden;background:#DED8E0}</style>
+</helmet>
+<div style="--md-sys-color-surface-dim:#DED8E0;--md-sys-color-surface-bright:#FEF7FF;--md-sys-color-surface:#FEF7FF;--md-sys-color-surface-container-lowest:#FFFFFF;--md-sys-color-surface-container-low:#F7F2FA;--md-sys-color-surface-container:#F3EDF7;--md-sys-color-surface-container-high:#ECE6F0;--md-sys-color-surface-container-highest:#E6E0E9;--md-sys-color-surface-variant:#E7E0EC;--md-sys-color-on-surface:#1D1B20;--md-sys-color-on-surface-variant:#49454F;--md-sys-color-outline:#79747E;--md-sys-color-outline-variant:#CAC4D0;--md-sys-color-primary:#6750A4;--md-sys-color-on-primary:#FFFFFF;--md-sys-color-secondary-container:#E8DEF8;--md-sys-color-on-secondary-container:#4A4459;width:100vw;height:100vh;overflow:hidden;box-sizing:border-box;padding:12px 12px 132px;display:flex;align-items:flex-start;justify-content:center;gap:16px;font-family:Roboto,system-ui,sans-serif;background:var(--md-sys-color-surface-dim, #DED8E0)">
+
+  <div style="display:flex;flex-direction:column;gap:6px;flex:0 0 auto">
+    <div style="display:flex;align-items:baseline;gap:8px;color:var(--md-sys-color-on-surface, #1D1B20)"><span style="font-size:15px;font-weight:500">1a</span><span style="font-size:11px;font-family:ui-monospace,monospace;opacity:.75">tonal ramp, no outlines</span></div>
+    <div style="width:{{ boxW }};height:{{ boxH }};overflow:hidden">
+      <div style="width:852px;height:{{ frameH }};transform:scale({{ scale }});transform-origin:top left;display:flex;gap:16px;padding:16px;box-sizing:border-box;background:var(--md-sys-color-surface-container-lowest, #FFFFFF);color:var(--md-sys-color-on-surface, #1D1B20)">
+        <div style="flex:0 0 402px;display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:var(--md-sys-color-surface-container-low, #F7F2FA)">
+            <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;justify-content:flex-end;padding:0 12px">
+              <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:20px;background:var(--md-sys-color-secondary-container, #E8DEF8);color:var(--md-sys-color-on-secondary-container, #4A4459);font-size:14px;font-weight:500"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Open</div>
+            </div>
+            <div style="flex:1 1 auto;min-height:0;display:flex">
+              <div style="flex:0 0 48px;min-height:0;overflow:auto;display:flex;flex-direction:column;background:var(--md-sys-color-surface-container-high, #ECE6F0);scrollbar-width:none">
+                <sc-for list="{{ rail }}" as="c" hint-placeholder-count="27">
+                  <div onClick="{{ c.pick }}" style="width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;font-size:14px;font-weight:500;cursor:pointer;color:{{ c.fgL }}"><span style="width:32px;height:32px;border-radius:16px;display:grid;place-items:center;background:{{ c.bgL }}">{{ c.label }}</span></div>
+                </sc-for>
+              </div>
+              <div style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column">
+                <div style="flex:0 0 auto;padding:8px 16px 2px;font-size:22px;line-height:28px;color:var(--md-sys-color-primary, #6750A4)">{{ letter }}</div>
+                <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:0 16px 16px">
+                  <div style="display:flex;flex-wrap:wrap;column-gap:24px;row-gap:0">
+                    <sc-for list="{{ shown }}" as="r" hint-placeholder-count="18">
+                      <div onClick="{{ r.pick }}" style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;cursor:pointer;font-size:16px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ r.fgL }};font-weight:{{ r.weight }};border-bottom:{{ r.ruleL }}">{{ r.name }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:0 0 auto;padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;border-radius:12px;background:var(--md-sys-color-surface-container, #F3EDF7)">
+            <div style="text-align:center"><div style="font-size:16px;font-weight:500">Another Xronixle</div><div style="font-size:12px;color:var(--md-sys-color-on-surface-variant, #49454F);margin-top:2px;font-variant-numeric:tabular-nums">1 of 16 · −1.2 dBTP</div></div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:12px;color:var(--md-sys-color-on-surface-variant, #49454F);font-variant-numeric:tabular-nums;min-width:26px">0:42</span>
+              <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:4px"><div style="flex:0 0 16%;height:16px;border-radius:8px 2px 2px 8px;background:var(--md-sys-color-primary, #6750A4)"></div><div style="width:4px;height:44px;border-radius:2px;background:var(--md-sys-color-primary, #6750A4)"></div><div style="flex:1 1 auto;height:16px;border-radius:2px 8px 8px 2px;background:var(--md-sys-color-surface-container-highest, #E6E0E9)"></div></div>
+              <span style="font-size:12px;color:var(--md-sys-color-on-surface-variant, #49454F);font-variant-numeric:tabular-nums;min-width:26px;text-align:right">4:35</span>
+            </div>
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:24px">
+              <div style="width:48px;height:48px;border-radius:24px;background:var(--md-sys-color-surface-container-highest, #E6E0E9);display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--md-sys-color-on-surface-variant, #49454F)"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+              <div style="width:64px;height:64px;border-radius:32px;background:var(--md-sys-color-primary, #6750A4);display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:var(--md-sys-color-on-primary, #FFFFFF)"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+              <div style="width:48px;height:48px;border-radius:24px;background:var(--md-sys-color-surface-container-highest, #E6E0E9);display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--md-sys-color-on-surface-variant, #49454F)"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+              <div style="position:absolute;right:0;top:50%;margin-top:-24px;width:48px;height:48px;border-radius:24px;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--md-sys-color-on-surface-variant, #49454F)"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4"></path></svg></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;background:var(--md-sys-color-surface-container-highest, #E6E0E9)">
+              <div style="min-height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">Repeat</div>
+              <div style="min-height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;background:var(--md-sys-color-secondary-container, #E8DEF8);color:var(--md-sys-color-on-secondary-container, #4A4459)">In order</div>
+              <div style="min-height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">Shuffle folder</div>
+              <div style="min-height:40px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">Shuffle all</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:var(--md-sys-color-surface, #FEF7FF)">
+          <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px">
+            <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:20px;background:var(--md-sys-color-secondary-container, #E8DEF8);color:var(--md-sys-color-on-secondary-container, #4A4459);font-size:14px;font-weight:500;min-width:0"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Camellia</span><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;flex:0 0 auto"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+            <div style="flex:1 1 auto"></div>
+            <div style="width:48px;height:48px;border-radius:24px;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--md-sys-color-on-surface-variant, #49454F)"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg></div>
+          </div>
+          <div style="flex:1 1 auto;min-height:0;overflow:auto">
+            <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="9">
+              <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bgL }}"><span style="width:18px;text-align:center;font-size:12px;color:{{ t.numFgL }};font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:var(--md-sys-color-on-surface-variant, #49454F);font-variant-numeric:tabular-nums">{{ t.sub }}</div></div></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  
+
+<div style="position:absolute;left:0;right:0;bottom:0;padding:10px 16px;color:var(--md-sys-color-on-surface, #1D1B20);font-size:11px;line-height:15px;font-family:ui-monospace,monospace;white-space:pre-line;background:var(--md-sys-color-surface-container-high, #ECE6F0)">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:700}}">
+class Component extends DCLogic {
+  state = { rail: null, cell: "latinC", selected: "Camellia", scale: 0.5, frameH: 883 };
+  componentDidMount() {
+    this.fit = () => {
+      const sc = Math.min(1, (window.innerWidth - 40) / 852);
+      this.setState({ scale: sc, frameH: Math.max(760, Math.round((window.innerHeight - 204) / sc)) });
+    };
+    this.fit(); window.addEventListener("resize", this.fit);
+    Promise.all([import("./artists.js"), import("./buckets.js")])
+      .then(([a, b]) => this.setState({ rail: b.railFor(a.ARTISTS) }));
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this.fit); }
+  renderVals() {
+    const s = this.state;
+    const sections = s.rail || [];
+    let active = null;
+    sections.forEach((sec) => sec.cells.forEach((c) => { if (c.key === s.cell) active = c; }));
+    const shown = active ? active.names : [];
+
+    const rail = [];
+    sections.forEach((sec) => sec.cells.forEach((c) => {
+      const on = c.key === s.cell;
+      rail.push({
+        label: c.label,
+        fgL: on ? "var(--md-sys-color-on-secondary-container, #4A4459)" : "var(--md-sys-color-on-surface-variant, #49454F)",
+        bgL: on ? "var(--md-sys-color-secondary-container, #E8DEF8)" : "transparent",
+        pick: () => this.setState({ cell: c.key })
+      });
+    }));
+
+    const titles = [
+      ["Another Xronixle", "4:35", "−1.2"], ["Burning Aquamarine", "5:12", "−0.8"], ["Dokuhebi", "4:01", "−1.4"],
+      ["ENÛMA∇ELIŠ", "9:47", "−0.3"], ["Ghost", "3:22", "−1.1"], ["Hyperflux", "4:44", "−0.9"],
+      ["Idol Corruption", "5:31", "−0.6"], ["KillerToy", "4:12", "−1.0"], ["Nacreous Snowmelt", "6:03", "−0.7"]
+    ];
+
+    return {
+      scale: s.scale, boxW: Math.round(852 * s.scale) + "px", boxH: Math.round(s.frameH * s.scale) + "px", frameH: s.frameH + "px",
+      rail, letter: active ? active.label : "",
+      shown: shown.map((n) => {
+        const sel = n === s.selected;
+        return {
+          name: n, weight: sel ? 500 : 400,
+          fgL: sel ? "var(--md-sys-color-primary, #6750A4)" : "var(--md-sys-color-on-surface, #1D1B20)",
+          ruleL: sel ? "2px solid var(--md-sys-color-primary, #6750A4)" : "2px solid transparent",
+          pick: () => this.setState({ selected: n })
+        };
+      }),
+      tracks: titles.map((t, i) => ({
+        num: i === 0 ? "▶" : String(i + 1),
+        numFgL: i === 0 ? "var(--md-sys-color-primary, #6750A4)" : "var(--md-sys-color-outline, #79747E)",
+        title: t[0], sub: t[1] + " · " + t[2] + " dBTP",
+        bgL: i === 0 ? "var(--md-sys-color-secondary-container, #E8DEF8)" : "transparent"
+      })),
+      caption: "1A · TONAL RAMP, NO OUTLINES — light theme. Window surface-container-lowest, picker -low, tracks surface, transport -container; separation is entirely tonal.\nPROS · purest MD3 — separation by tonal surface is the mechanism M3 actually specifies; calmest screen, fewest marks; nothing extra to maintain.\nCONS · the four steps run #FFF → #F7F2FA → #F3EDF7 → #ECE6F0, within ~4% of each other: on a cheap LCD or at low brightness the panes may not read as separate at all, and the crisp structure the dark design has is lost.\nMY READ · third choice. A light theme can survive looking plain; it cannot survive reading as one flat sheet."
+    };
+  }
+}
+</script>
+</body>
+</html>

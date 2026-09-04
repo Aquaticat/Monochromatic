@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0}a{color:#D0BCFF}a:hover{color:#EADDFF}</style></helmet>
+<div style="background:#000;color:#E6E0E9;font-family:Roboto,system-ui,sans-serif;min-height:100vh;padding:40px 36px 80px">
+  <div style="max-width:1120px;margin:0 auto">
+    <div style="font-size:11.5px;letter-spacing:.16em;color:#8E8894;font-family:ui-monospace,monospace">MUSIC PLAYER · SLINT + JETPACK COMPOSE</div>
+    <div style="font-size:34px;font-weight:700;letter-spacing:-.01em;margin-top:14px">Where the design stands</div>
+    <div style="font-size:15px;color:#CAC4D0;margin-top:12px;max-width:620px;text-wrap:pretty">Everything settled so far, and every thread still open with my current thinking on it. Push on any numbered item.</div>
+
+    <div style="height:44px"></div>
+    <div style="font-size:11.5px;letter-spacing:.14em;color:#8E8894;font-family:ui-monospace,monospace">SETTLED</div>
+    <div style="height:16px"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2px">
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Material 3</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">One identity on Mac, Linux, Windows, Android. Chosen because an unestablished system leaves every state undefined — your argument, and the decisive one.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">True black, one theme</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Surfaces #000 / #0A0A0D / #121216 / #1A1A1F. Outlines carry separation instead of lightness, because near-black tonal steps band on OLED.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">48dp everywhere</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">One density scale. Desktop inherits the Android minimum rather than maintaining two spacing systems.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">No library</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">The filesystem is the truth. One remembered path, restored on launch — session state, not a curated root.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Two-line track rows</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Title above, duration · format · true peak below. No columns, no album art.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Folder picker</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Wrapped plain-text targets in A–Z letter rows, a jump strip, and a drag bubble. Not chips, not one-per-row — ~1000 folders have to stay reachable.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Segmented buttons</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">One outer container, content-width segments, never stretched. Wraps to a grid with flush edges. Reads “Shuffle Camellia”, truncating.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">True peak</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Auto-applied. Full scan on first launch, on-demand under a second before playing an unscanned track. dB values visible in the list.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Scan progress</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Bottom bar, only while running. It squeezes the list's scroll viewport, so nothing above it ever moves.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Nothing on the seam</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Unfolded: halves with the gutter on the crease. Tabletop: the list flows continuously and steps around the crease with a gap.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Panes, not modals</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Picker and Settings replace the track list. One pattern, no modal layer, survives every size and the fold.</div></div>
+      <div style="background:#0A0A0D;padding:16px 18px"><div style="font-size:15px;font-weight:500">Also settled</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">No queue — the folder is the play order. OS titlebar. Flat artist subdirectories. Volume is the only audio control. Resume exactly where you left off, paused.</div></div>
+    </div>
+
+    <div style="height:52px"></div>
+    <div style="font-size:11.5px;letter-spacing:.14em;color:#8E8894;font-family:ui-monospace,monospace">OPEN — MY CURRENT THINKING, ARGUE WITH IT</div>
+    <div style="height:16px"></div>
+
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O1</div>
+        <div><div style="font-size:16px;font-weight:500">Open vs the picker</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">Because you restore into a folder, Open is navigation, not startup. My read: the picker switches folder <em>within</em> the current directory; Open moves to a <em>different</em> directory tree. Both permanent and visible, different jobs, neither redundant. Unresolved: whether Open replaces the remembered path or stacks a second one.</div></div>
+      </div>
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O2</div>
+        <div><div style="font-size:16px;font-weight:500">The left half, unfolded</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">In fold-f the controls half has slack once the deck is laid out. Candidates: leave it quiet, put the folder list there permanently, or let the now-playing block grow into it. I lean toward the folder list, since it's the one thing you interact with most and the crease gives it a natural boundary.</div></div>
+      </div>
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O3</div>
+        <div><div style="font-size:16px;font-weight:500">What Settings contains</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">You want it to exist for future expansion. Today the honest contents are: the filename-to-title rule, resume behaviour, and the scan's CPU policy. That's three rows — a near-empty pane designed to grow, not a settings screen pretending to be full.</div></div>
+      </div>
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O4</div>
+        <div><div style="font-size:16px;font-weight:500">The first hour</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">A brutal full scan on first launch needs a one-time explanation, or it reads as a bug. My instinct: explain it in the empty state before anything is open, not as a dismissible banner over a working player.</div></div>
+      </div>
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O5</div>
+        <div><div style="font-size:16px;font-weight:500">Subfolders inside a folder</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">Artist folders are flat today, but a filesystem doesn't promise that. If one contains an album subdirectory, the current design has nowhere to show it. Cheapest honest answer: show subfolders as rows above the tracks, and let one level of depth exist without inventing a breadcrumb.</div></div>
+      </div>
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O6</div>
+        <div><div style="font-size:16px;font-weight:500">End of folder</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">“In order” ends on the last track. Stop, or roll into the next folder alphabetically? Stopping is predictable; rolling on turns the app into something you leave running. I lean stop, because there's no library to traverse.</div></div>
+      </div>
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O7</div>
+        <div><div style="font-size:16px;font-weight:500">Cover screen, folded shut</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">You said “full player, squeezed”. At ~370dp the deck fits but the segmented control wraps to two rows and the list gets a handful of visible tracks. Worth confirming against a real cover-screen size once you name a device.</div></div>
+      </div>
+      <div style="background:#0A0A0D;padding:18px 20px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px">
+        <div style="font-size:13px;color:#D0BCFF;font-family:ui-monospace,monospace">O8</div>
+        <div><div style="font-size:16px;font-weight:500">Never designed at all</div><div style="font-size:13.5px;color:#CAC4D0;margin-top:7px;text-wrap:pretty">Right-click and long-press menus. A missing or corrupt file. A folder renamed while it's playing. Media keys, MPRIS, the Android notification. The keyboard map. None of these have a design yet, and several will change the library bar.</div></div>
+      </div>
+    </div>
+
+    <div style="height:44px"></div>
+    <div style="font-size:13px;color:#8E8894;font-family:ui-monospace,monospace">Candidates: fold-f (unfolded) · tabletop-c (half-open) · mode-c (segmented control) · picker-d (folder grid) · rows-c (track rows). The settled scan behaviour — non-permanent, squeezing the viewport — isn't built yet; scan-b and scan-d each show only half of it.</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

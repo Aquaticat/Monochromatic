@@ -1,0 +1,12 @@
+/* md.sys.state — state-layer opacities, applied as a scrim of the
+   "on-" colour over the container. Verbatim from _md-sys-state.scss. */
+:root {
+  --md-sys-state-hover-state-layer-opacity: 0.08; /* @kind other */
+  --md-sys-state-focus-state-layer-opacity: 0.1; /* @kind other */
+  --md-sys-state-pressed-state-layer-opacity: 0.1; /* @kind other */
+  --md-sys-state-dragged-state-layer-opacity: 0.16; /* @kind other */
+  --md-sys-state-disabled-state-layer-opacity: 0.38; /* @kind other */
+  --md-sys-state-disabled-container-opacity: 0.12; /* @kind other */
+  --md-sys-state-focus-indicator-thickness: 3px;
+  --md-sys-state-focus-indicator-outer-offset: 2px;
+}

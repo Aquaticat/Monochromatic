@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#000;color:#E6E0E9;font-family:Roboto,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden">
+  <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 8px 0 16px;border-bottom:1px solid #26262E">
+    <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500;min-width:0">
+      <sc-if value="{{ hasParentCrumb }}" hint-placeholder-val="{{ false }}"><span style="color:#CAC4D0;white-space:nowrap">{{ crumbParent }}</span><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#8E8894;flex:0 0 auto"><path d="M8.5 5.5 15 12l-6.5 6.5L7 17l5-5-5-5z"></path></svg></sc-if>
+      <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ chipLabel }}</span><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0;flex:0 0 auto"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg>
+    </div>
+    <span style="font-size:14px;color:#CAC4D0;font-variant-numeric:tabular-nums;white-space:nowrap">{{ countLabel }}</span>
+    <div style="flex:1 1 auto"></div>
+    <div style="width:48px;height:48px;border-radius:24px;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#CAC4D0"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg></div>
+  </div>
+  <div style="flex:1 1 auto;min-height:0;overflow:auto">
+    <sc-if value="{{ showUp }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ goUp }}" style="display:flex;align-items:center;gap:16px;min-height:56px;padding:0 16px;box-sizing:border-box;color:#CAC4D0;cursor:pointer;border-bottom:1px solid #121216"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0;flex:0 0 auto"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"></path></svg><span style="font-size:14px;font-weight:500">{{ upLabel }}</span></div>
+    </sc-if>
+    <sc-if value="{{ showSubs }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;gap:8px;min-height:40px;padding:8px 16px 0;box-sizing:border-box"><span style="font-size:14px;font-weight:500;color:#D0BCFF">Folders</span><span style="font-size:12px;color:#8E8894">{{ subCount }}</span></div>
+      <sc-for list="{{ subs }}" as="f" hint-placeholder-count="2">
+        <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ f.bg }}"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:{{ f.iconFg }};flex:0 0 auto"><path d="{{ f.icon }}"></path></svg><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ f.fg }}">{{ f.name }}</div><div style="font-size:12px;line-height:16px;color:{{ f.subFg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.sub }}</div></div><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#5A5561;flex:0 0 auto"><path d="M8.5 5.5 15 12l-6.5 6.5L7 17l5-5-5-5z"></path></svg></div>
+      </sc-for>
+      <div style="display:flex;align-items:center;gap:8px;min-height:40px;padding:8px 16px 0;box-sizing:border-box;border-top:1px solid #121216"><span style="font-size:14px;font-weight:500;color:#D0BCFF">Tracks</span><span style="font-size:12px;color:#8E8894">{{ trackCount }}</span></div>
+    </sc-if>
+    <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="4">
+      <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bg }}"><span style="width:18px;text-align:center;font-size:12px;color:{{ t.numFg }};font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ t.sub }}</div></div></div>
+    </sc-for>
+  </div>
+  <div style="flex:0 0 auto;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #26262E">
+    <div style="min-width:0">
+      <div style="font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ nowTitle }}</div>
+      <div style="font-size:12px;color:#CAC4D0;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ nowSub }}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">3:58</span>
+      <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:4px"><div style="flex:0 0 92%;height:16px;border-radius:8px 2px 2px 8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#D0BCFF"></div><div style="flex:1 1 auto;height:16px;border-radius:2px 8px 8px 2px;background:#22222A"></div></div>
+      <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ nowDur }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div onClick="{{ prev }}" style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto;cursor:pointer"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+      <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+      <div onClick="{{ next }}" style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto;cursor:pointer"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+      <div style="flex:1 1 auto"></div>
+      <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;background:#4A4458;color:#E8DEF8;border-radius:20px;font-size:14px;font-weight:500;white-space:nowrap"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#E8DEF8"><path d="M9.6 16.6 5 12l1.4-1.4 3.2 3.2 8-8L19 7.2z"></path></svg>In order</div>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:8px 16px;border-top:1px solid #26262E;color:#8E8894;font-size:11px;line-height:15px;font-family:ui-monospace,monospace">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:418,&quot;height&quot;:883},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;deck&quot;,&quot;options&quot;:[&quot;follow&quot;,&quot;deck&quot;,&quot;highlight&quot;],&quot;tsType&quot;:&quot;'follow' | 'deck' | 'highlight'&quot;,&quot;section&quot;:&quot;Behaviour&quot;}}">
+class Component extends DCLogic {
+  state = { pos: 3, manualFolder: null };
+  data = {
+    parent: "Camellia",
+    tracks: [["Another Xronixle", "4:35", "−1.2"], ["Burning Aquamarine", "5:12", "−0.8"], ["Dokuhebi", "4:01", "−1.4"], ["Ghost", "3:22", "−1.1"]],
+    subs: [
+      { name: "Live", tracks: [["Exit This Earth's Atomosphere (live)", "6:12", "−0.4"], ["Ghost (live)", "3:40", "−0.9"], ["Xiao (live)", "5:01", "−0.6"]] },
+      { name: "Remixes", tracks: [["Bass Drop Freaks (Camellia remix)", "4:22", "−0.7"], ["Nacreous Snowmelt (VIP)", "6:30", "−0.5"], ["Tera I/O (Xtrullor remix)", "5:08", "−1.0"]] }
+    ]
+  };
+  order() {
+    const d = this.data, o = [];
+    d.tracks.forEach((t, i) => o.push({ folder: null, i }));
+    d.subs.forEach((s) => s.tracks.forEach((t, i) => o.push({ folder: s.name, i })));
+    return o;
+  }
+  renderVals() {
+    const v = this.props.variant ?? "deck";
+    const d = this.data, order = this.order(), pos = this.state.pos;
+    const cur = order[pos];
+    const playingSub = cur.folder ? d.subs.find((s) => s.name === cur.folder) : null;
+    const track = playingSub ? playingSub.tracks[cur.i] : d.tracks[cur.i];
+    const listOf = playingSub ? playingSub.tracks : d.tracks;
+    // Which folder the list shows
+    let viewFolder = null; // null = parent
+    if (v === "follow") viewFolder = this.state.manualFolder !== null ? this.state.manualFolder : cur.folder;
+    const viewSub = viewFolder ? d.subs.find((s) => s.name === viewFolder) : null;
+    const viewTracks = viewSub ? viewSub.tracks : d.tracks;
+    const inView = (viewFolder || null) === (cur.folder || null);
+    const total = order.length;
+    const subPart = playingSub ? playingSub.name + " · " : "";
+    const captions = {
+      follow: "DESC-A — the list FOLLOWS playback. When In order walks into Live, the list navigates there and the chip becomes a breadcrumb (Camellia › Live). Press next ▶| to step.",
+      deck: "DESC-B — the list STAYS on Camellia. Only the deck's subtitle names the subfolder that is playing. Press next ▶| to step.",
+      highlight: "DESC-C — the list STAYS on Camellia, and the playing subfolder's row takes the playing highlight with the track named beneath it. Press next ▶| to step."
+    };
+    return {
+      hasParentCrumb: !!viewSub, crumbParent: d.parent,
+      chipLabel: viewSub ? viewSub.name : d.parent,
+      countLabel: viewSub ? viewSub.tracks.length + " tracks" : d.tracks.length + " tracks · " + d.subs.length + " folders",
+      showUp: !!viewSub, upLabel: "Up to " + d.parent,
+      goUp: () => this.setState({ manualFolder: "" }),
+      showSubs: !viewSub, subCount: d.subs.length, trackCount: d.tracks.length,
+      subs: d.subs.map((s) => {
+        const playing = playingSub && playingSub.name === s.name && v === "highlight";
+        return {
+          name: s.name, bg: playing ? "#332F3F" : "transparent", fg: "#E6E0E9",
+          icon: playing ? "M7 4v16l13-8z" : "M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+          iconFg: playing ? "#D0BCFF" : "#CAC4D0",
+          sub: playing ? "Playing · " + track[0] : s.tracks.length + " tracks",
+          subFg: playing ? "#D0BCFF" : "#CAC4D0"
+        };
+      }),
+      tracks: viewTracks.map((t, i) => {
+        const p = inView && i === cur.i;
+        return { num: p ? "▶" : String(i + 1), numFg: p ? "#D0BCFF" : "#5A5561", title: t[0], sub: t[1] + " · " + t[2] + " dBTP", bg: p ? "#332F3F" : "transparent" };
+      }),
+      nowTitle: track[0], nowDur: track[1],
+      nowSub: (v === "follow" ? "" : subPart) + (cur.i + 1) + " of " + listOf.length + (v !== "follow" && !playingSub ? "" : "") + " · " + track[2] + " dBTP",
+      next: () => this.setState({ pos: Math.min(pos + 1, total - 1), manualFolder: null }),
+      prev: () => this.setState({ pos: Math.max(pos - 1, 0), manualFolder: null }),
+      caption: captions[v] || captions.follow
+    };
+  }
+}
+</script>
+</body>
+</html>

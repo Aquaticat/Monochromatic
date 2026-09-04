@@ -1,0 +1,50 @@
+[vars]
+validate_question = '''
+const { existsSync, readFileSync } = await import('node:fs');
+const { resolve } = await import('node:path');
+const requiredPaths = [
+  'HANDOFF.md',
+  'review-notes.md',
+  'decisions.md',
+  'open-questions.md',
+  'questions/current.html',
+];
+const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
+if (missingPaths.length > 0) {
+  throw new Error(`Missing required design files: ${missingPaths.join(', ')}`);
+}
+const question = readFileSync(resolve('questions/current.html'), 'utf8');
+const forbiddenFragments = [
+  '<link ',
+  '<script src=',
+  'http://',
+  'https://',
+];
+const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
+if (foundFragments.length > 0) {
+  throw new Error(`Questionnaire is not self-contained: ${foundFragments.join(', ')}`);
+}
+const requiredFragments = [
+  '<form',
+  '<textarea',
+  'name="lightSeparation"',
+  'name="peakEmphasis"',
+  'name="anythingElse"',
+  'Copy answers',
+];
+const absentFragments = requiredFragments.filter((fragment) => !question.includes(fragment));
+if (absentFragments.length > 0) {
+  throw new Error(`Questionnaire is incomplete: ${absentFragments.join(', ')}`);
+}
+console.log('Design questionnaire structure is valid.');
+'''
+
+[tasks.lint]
+description = "Validate the active self-contained design questionnaire"
+shell = "node --input-type=module-typescript -e"
+run = "{{vars.validate_question}}"
+
+[tasks."test:unit"]
+description = "Exercise the design questionnaire's static completion contract"
+shell = "node --input-type=module-typescript -e"
+run = "{{vars.validate_question}}"

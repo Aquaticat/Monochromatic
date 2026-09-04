@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#121212;color:rgba(255,255,255,.87);font-family:Roboto,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column">
+  <div style="flex:0 0 auto;height:56px;background:#1F1B24;display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="font-size:18px;font-weight:500;letter-spacing:.01em">Music Player</div>
+    <div style="flex:1 1 auto"></div>
+    <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,.12)"></div>
+    <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,.12)"></div>
+  </div>
+
+  <div style="flex:0 0 auto;background:#1E1E1E;padding:16px 20px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="display:flex;align-items:center;gap:24px">
+      <div style="flex:1 1 auto;min-width:0">
+        <div style="font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Another Xronixle</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.6);margin-top:3px">Camellia</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <div style="width:48px;height:48px;border-radius:50%;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:rgba(255,255,255,.6)"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+        <div style="width:48px;height:48px;border-radius:50%;background:#BB86FC;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#000"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+        <div style="width:48px;height:48px;border-radius:50%;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:rgba(255,255,255,.6)"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:rgba(255,255,255,.6)"><path d="M4 9v6h4l5 4V5L8 9z"></path></svg>
+        <div style="width:120px;height:4px;border-radius:2px;background:rgba(187,134,252,.24);position:relative">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:82%;border-radius:2px;background:#BB86FC"></div>
+          <div style="position:absolute;left:82%;top:-5px;width:14px;height:14px;border-radius:50%;background:#BB86FC"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-size:12px;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums">0:42</span>
+      <div style="flex:1 1 auto;height:4px;border-radius:2px;background:rgba(187,134,252,.24);position:relative">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:16%;border-radius:2px;background:#BB86FC"></div>
+        <div style="position:absolute;left:16%;top:-5px;width:14px;height:14px;border-radius:50%;background:#BB86FC"></div>
+      </div>
+      <span style="font-size:12px;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums">4:35</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:13px;color:rgba(255,255,255,.6)">When this track ends</span>
+      <div style="display:flex;border:1px solid rgba(255,255,255,.24);border-radius:4px;overflow:hidden">
+        <div style="min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:14px;font-weight:500;letter-spacing:.06em;color:rgba(255,255,255,.7);border-right:1px solid rgba(255,255,255,.24)">REPEAT</div>
+        <div style="min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:14px;font-weight:500;letter-spacing:.06em;background:rgba(187,134,252,.16);color:#BB86FC;border-right:1px solid rgba(255,255,255,.24)">IN ORDER</div>
+        <div style="min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:14px;font-weight:500;letter-spacing:.06em;color:rgba(255,255,255,.7);border-right:1px solid rgba(255,255,255,.24)">SHUFFLE FOLDER</div>
+        <div style="min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:14px;font-weight:500;letter-spacing:.06em;color:rgba(255,255,255,.7)">SHUFFLE ALL</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:0 0 auto;min-height:48px;display:flex;align-items:center;gap:16px;padding:0 20px;background:#1E1E1E;border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="min-height:48px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;letter-spacing:.06em;color:#BB86FC">CAMELLIA<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#BB86FC"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+    <span style="font-size:14px;color:rgba(255,255,255,.6)">16 tracks</span>
+    <div style="flex:1 1 auto"></div>
+    <span style="font-size:13px;color:rgba(255,255,255,.38)">~/Music/flac</span>
+  </div>
+
+  <div style="flex:1 1 auto;min-height:0;overflow:auto">
+    <div style="display:flex;align-items:center;gap:16px;min-height:56px;padding:6px 20px;background:rgba(187,134,252,.12)">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#BB86FC;flex:0 0 auto"><path d="M7 4v16l13-8z"></path></svg>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#BB86FC">Another Xronixle</div><div style="font-size:14px;color:rgba(255,255,255,.6);margin-top:2px">4:35 · FLAC 24/96</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:56px;padding:6px 20px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:rgba(255,255,255,.38)">2</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Burning Aquamarine</div><div style="font-size:14px;color:rgba(255,255,255,.6);margin-top:2px">5:12 · FLAC 16/44.1</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:56px;padding:6px 20px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:rgba(255,255,255,.38)">3</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dokuhebi - Venomous Snake</div><div style="font-size:14px;color:rgba(255,255,255,.6);margin-top:2px">4:01 · FLAC 16/44.1</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:56px;padding:6px 20px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:rgba(255,255,255,.38)">4</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ENÛMA∇ELIŠ ~Camellia Saga~ (from the album -REX-)</div><div style="font-size:14px;color:rgba(255,255,255,.6);margin-top:2px">9:47 · FLAC 24/48</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:56px;padding:6px 20px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:rgba(255,255,255,.38)">5</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Flash Me Back -300k subs on YT-</div><div style="font-size:14px;color:rgba(255,255,255,.6);margin-top:2px">3:28 · FLAC 16/44.1</div></div>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:10px 16px;background:#1E1E1E;color:rgba(255,255,255,.38);font-size:12px;font-family:ui-monospace,monospace">MD2 (2018) — flat dark #121212, elevation by tone, 4px corners, outlined toggle group, single #BB86FC primary.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:700}}"></script>
+</body>
+</html>

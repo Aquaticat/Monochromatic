@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#0A0A0B;color:#E9E9EA;font-family:'Noto Sans',system-ui,sans-serif;height:100vh;display:flex;flex-direction:column">
+  <div style="flex:0 0 auto;height:44px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid #1E1E21">
+    <div style="font-size:14px;font-weight:500;color:#8E8E93">Music Player</div>
+  </div>
+
+  <div style="flex:0 0 auto;padding:16px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid #1E1E21">
+    <div style="display:flex;align-items:center;gap:24px">
+      <div style="flex:1 1 auto;min-width:0">
+        <div style="font-size:17px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Another Xronixle</div>
+        <div style="font-size:13.5px;color:#8E8E93;margin-top:3px">Camellia</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:48px;height:48px;border-radius:8px;background:#17171A;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#B6B6BB"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+        <div style="width:60px;height:48px;border-radius:8px;background:#B3A8F5;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#14112A"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+        <div style="width:48px;height:48px;border-radius:8px;background:#17171A;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#B6B6BB"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg viewBox="0 0 24 24" style="width:19px;height:19px;fill:#8E8E93"><path d="M4 9v6h4l5 4V5L8 9z"></path></svg>
+        <div style="width:120px;height:6px;border-radius:3px;background:#26262B;position:relative">
+          <div style="position:absolute;inset:0 18% 0 0;border-radius:3px;background:#B3A8F5"></div>
+          <div style="position:absolute;left:82%;top:-5px;width:16px;height:16px;border-radius:8px;background:#B3A8F5"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-size:12.5px;color:#8E8E93;font-variant-numeric:tabular-nums">0:42</span>
+      <div style="flex:1 1 auto;height:6px;border-radius:3px;background:#26262B;position:relative">
+        <div style="position:absolute;inset:0 84% 0 0;border-radius:3px;background:#B3A8F5"></div>
+        <div style="position:absolute;left:16%;top:-5px;width:16px;height:16px;border-radius:8px;background:#B3A8F5"></div>
+      </div>
+      <span style="font-size:12.5px;color:#8E8E93;font-variant-numeric:tabular-nums">4:35</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:13.5px;color:#8E8E93">When this track ends</span>
+      <div style="display:flex;gap:4px">
+        <div style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;padding:0 18px;border-radius:8px;background:#17171A;font-size:14px">Repeat</div>
+        <div style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;padding:0 18px;border-radius:8px;background:#B3A8F5;color:#14112A;font-size:14px;font-weight:600">In order</div>
+        <div style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;padding:0 18px;border-radius:8px;background:#17171A;font-size:14px">Shuffle folder</div>
+        <div style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;padding:0 18px;border-radius:8px;background:#17171A;font-size:14px">Shuffle all</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:0 0 auto;min-height:48px;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid #1E1E21">
+    <div style="min-height:36px;display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:8px;background:#17171A;font-size:14px">Camellia<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#8E8E93"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+    <span style="font-size:13px;color:#8E8E93;font-variant-numeric:tabular-nums">16 tracks</span>
+    <div style="flex:1 1 auto"></div>
+    <span style="font-size:12.5px;color:#55555C">~/Music/flac</span>
+  </div>
+
+  <div style="flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 16px;background:#111114;border-bottom:1px solid #1E1E21">
+    <span style="font-size:12.5px;color:#B6B6BB">Analysing true peak</span>
+    <div style="flex:1 1 auto;height:4px;border-radius:2px;background:#26262B;position:relative"><div style="position:absolute;inset:0 69% 0 0;border-radius:2px;background:#B3A8F5"></div></div>
+    <span style="font-size:12.5px;color:#8E8E93;font-variant-numeric:tabular-nums">3,180 / 10,412</span>
+    <span style="min-height:34px;display:flex;align-items:center;padding:0 14px;border-radius:8px;background:#17171A;font-size:12.5px">Pause</span>
+  </div>
+
+  <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:4px 0">
+    <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:6px 16px;background:#1A1727">
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#B3A8F5;flex:0 0 auto"><path d="M7 4v16l13-8z"></path></svg>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#C7BEF8">Another Xronixle</div><div style="font-size:12.5px;color:#8E8E93;margin-top:3px;font-variant-numeric:tabular-nums">4:35 · FLAC 24/96</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:6px 16px">
+      <span style="width:16px;flex:0 0 auto;text-align:center;font-size:12.5px;color:#55555C">2</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Burning Aquamarine</div><div style="font-size:12.5px;color:#8E8E93;margin-top:3px;font-variant-numeric:tabular-nums">5:12 · FLAC 16/44.1</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:6px 16px">
+      <span style="width:16px;flex:0 0 auto;text-align:center;font-size:12.5px;color:#55555C">3</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dokuhebi - Venomous Snake</div><div style="font-size:12.5px;color:#8E8E93;margin-top:3px;font-variant-numeric:tabular-nums">4:01 · FLAC 16/44.1</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:6px 16px">
+      <span style="width:16px;flex:0 0 auto;text-align:center;font-size:12.5px;color:#55555C">4</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ENÛMA∇ELIŠ ~Camellia Saga~ (from the album -REX-)</div><div style="font-size:12.5px;color:#8E8E93;margin-top:3px;font-variant-numeric:tabular-nums">9:47 · FLAC 24/48</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:6px 16px">
+      <span style="width:16px;flex:0 0 auto;text-align:center;font-size:12.5px;color:#55555C">5</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Flash Me Back -300k subs on YT-</div><div style="font-size:12.5px;color:#8E8E93;margin-top:3px;font-variant-numeric:tabular-nums">3:28 · FLAC 16/44.1</div></div>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:10px 16px;color:#55555C;font-size:12px;font-family:ui-monospace,monospace;border-top:1px solid #1E1E21">OWN SYSTEM — your existing purple-on-black, formalised: 8px radii, no borders, tonal fills only, one accent. Native nowhere, quiet everywhere.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:700}}"></script>
+</body>
+</html>

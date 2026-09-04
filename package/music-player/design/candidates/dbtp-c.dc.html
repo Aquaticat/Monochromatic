@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/palette.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/color.css">
+<link rel="stylesheet" href="_ds/material-design-3-design-system-503c3571-4db9-4b54-8695-7f53861f5059/tokens/fonts.css">
+<style>html,body{height:100%;margin:0;overflow:hidden;background:#DED8E0}</style>
+</helmet>
+<div style="--md-sys-color-surface-dim:#DED8E0;--md-sys-color-surface-bright:#FEF7FF;--md-sys-color-surface:#FEF7FF;--md-sys-color-surface-container-lowest:#FFFFFF;--md-sys-color-surface-container-low:#F7F2FA;--md-sys-color-surface-container:#F3EDF7;--md-sys-color-surface-container-high:#ECE6F0;--md-sys-color-surface-container-highest:#E6E0E9;--md-sys-color-surface-variant:#E7E0EC;--md-sys-color-on-surface:#1D1B20;--md-sys-color-on-surface-variant:#49454F;--md-sys-color-outline:#79747E;--md-sys-color-outline-variant:#CAC4D0;--md-sys-color-primary:#6750A4;--md-sys-color-on-primary:#FFFFFF;--md-sys-color-secondary-container:#E8DEF8;--md-sys-color-on-secondary-container:#4A4459;width:100vw;height:100vh;overflow:hidden;box-sizing:border-box;padding:12px 12px 132px;display:flex;align-items:flex-start;justify-content:center;gap:16px;font-family:Roboto,system-ui,sans-serif;background:var(--md-sys-color-surface-dim, #DED8E0)">
+
+  
+
+  
+
+  <div style="display:flex;flex-direction:column;gap:6px;flex:0 0 auto">
+    <div style="display:flex;align-items:baseline;gap:8px;color:var(--md-sys-color-on-surface, #1D1B20)"><span style="font-size:15px;font-weight:500">3c</span><span style="font-size:11px;font-family:ui-monospace,monospace;opacity:.75">dB only on the playing row</span></div>
+    <div style="width:{{ boxW }};height:{{ boxH }};overflow:hidden">
+      <div style="width:434px;height:{{ frameH }};transform:scale({{ scale }});transform-origin:top left;display:flex;flex-direction:column;background:var(--md-sys-color-surface-container-lowest, #FFFFFF);color:var(--md-sys-color-on-surface, #1D1B20);border-radius:12px;overflow:hidden">
+        <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px">
+          <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:20px;background:var(--md-sys-color-secondary-container, #E8DEF8);color:var(--md-sys-color-on-secondary-container, #4A4459);font-size:14px;font-weight:500">Camellia<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+        </div>
+        <div style="flex:1 1 auto;min-height:0;overflow:auto">
+          <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="9">
+            <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bg }}"><span style="width:18px;text-align:center;font-size:12px;color:var(--md-sys-color-outline, #79747E);font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:var(--md-sys-color-on-surface-variant, #49454F);font-variant-numeric:tabular-nums">{{ t.subQuiet }}</div></div></div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div style="position:absolute;left:0;right:0;bottom:0;padding:10px 16px;color:var(--md-sys-color-on-surface, #1D1B20);font-size:11px;line-height:15px;font-family:ui-monospace,monospace;white-space:pre-line;background:var(--md-sys-color-surface-container-high, #ECE6F0)">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1420,&quot;height&quot;:760}}">
+class Component extends DCLogic {
+  state = { scale: 0.7, frameH: 820 };
+  componentDidMount() {
+    this.fit = () => {
+      const sc = Math.min(1, (window.innerWidth - 40) / 434);
+      this.setState({ scale: sc, frameH: Math.max(760, Math.round((window.innerHeight - 204) / sc)) });
+    };
+    this.fit(); window.addEventListener("resize", this.fit);
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this.fit); }
+  renderVals() {
+    const titles = [
+      ["Another Xronixle", "4:35", "−1.2"], ["Burning Aquamarine", "5:12", "−0.8"], ["Dokuhebi", "4:01", "−1.4"],
+      ["ENÛMA∇ELIŠ", "9:47", "−0.3"], ["Ghost", "3:22", "−1.1"], ["Hyperflux", "4:44", "−0.9"],
+      ["Idol Corruption", "5:31", "−0.6"], ["KillerToy", "4:12", "−1.0"], ["Nacreous Snowmelt", "6:03", "−0.7"]
+    ];
+    const s = this.state;
+    return {
+      scale: s.scale, boxW: Math.round(434 * s.scale) + "px", boxH: Math.round(s.frameH * s.scale) + "px", frameH: s.frameH + "px",
+      tracks: titles.map((t, i) => ({
+        num: i === 0 ? "▶" : String(i + 1),
+        title: t[0], dur: t[1], peak: t[2] + " dBTP",
+        sub: t[1] + " · " + t[2] + " dBTP",
+        subQuiet: i === 0 ? t[1] + " · " + t[2] + " dBTP" : t[1],
+        bg: i === 0 ? "var(--md-sys-color-secondary-container, #E8DEF8)" : "transparent"
+      })),
+      caption: "3C · DB ONLY ON THE PLAYING ROW — duration everywhere else.\nPROS · least ink; removes about 90% of the numbers from the screen.\nCONS · you cannot compare peaks across a folder if only one row shows one — and comparison is the whole job.\nMY READ · I would reject this one."
+    };
+  }
+}
+</script>
+</body>
+</html>

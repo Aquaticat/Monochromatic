@@ -321,6 +321,9 @@ An active MediaSession creates system media controls while playback continues ou
 This section is intentionally separate from the implemented behaviour above.
 It records the active product direction,
  not a claim that these features have shipped.
+The exploratory interface system,
+visual candidates,
+and complete decision history live in the [`design`](design) package.
 
 ### Huge local libraries
 
@@ -519,6 +522,8 @@ Mise.
    with its tests and corpus
   evaluation considered together.
 - Keep platform behaviour distinct until the shared-core migration explicitly moves ownership.
+- Change exploratory interface decisions and visual candidates in [`design`](design),
+   then update its handover as the work proceeds.
 
 Use synthetic audio and folder names when creating visual fixtures.
  The capture inventory,

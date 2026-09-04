@@ -1,0 +1,65 @@
+/* Roboto Flex — self-hosted variable font (axes: wght, wdth, opsz, slnt, GRAD + Roboto's
+   internal XOPQ/XTRA/YOPQ/YTAS/YTDE/YTFI/YTLC/YTUC axes). Source: google/fonts (OFL-licensed). */
+@font-face {
+  font-family: "Roboto Flex";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-stretch: 25% 151%;
+  src: url("../assets/fonts/RobotoFlex.ttf") format("truetype-variations");
+  font-display: swap;
+}
+
+/* Material Symbols — M3's icon system. Self-hosted copy of the Google Symbols
+   variable font as shipped by m3.material.io (axes: FILL, wght, GRAD, opsz). */
+@font-face {
+  font-family: "Material Symbols";
+  font-style: normal;
+  font-weight: 300 600;
+  src: url("../assets/fonts/google-symbols.woff2") format("woff2");
+  font-display: block;
+}
+
+/* Google Sans / Google Sans Text — the typefaces the Material Design 3
+   documentation site itself is set in. Proprietary to Google: used here only
+   for the m3-docs-site UI kit recreation. Product UI uses Roboto. */
+@font-face {
+  font-family: "Google Sans";
+  font-style: normal;
+  font-weight: 475;
+  src: url("../assets/fonts/google-sans-475-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Google Sans Text";
+  font-style: normal;
+  font-weight: 400;
+  src: url("../assets/fonts/google-sans-text-400-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Google Sans Text";
+  font-style: normal;
+  font-weight: 500;
+  src: url("../assets/fonts/google-sans-text-500-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Icon glyph base. Ligature names: "search", "home", "add", "more_vert", ... */
+.md-symbol {
+  font-family: "Material Symbols";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  user-select: none;
+}
+.md-symbol[data-filled="true"] { font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; }

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#000;color:#E6E0E9;font-family:Roboto,system-ui,sans-serif;height:100vh;display:flex;overflow:hidden">
+  <div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:16px;padding:18px">
+    <div style="flex:0 0 auto;min-width:0">
+      <div style="font-size:11.5px;letter-spacing:.1em;color:#8E8894">NOW PLAYING</div>
+      <div style="font-size:21px;font-weight:500;margin-top:10px;text-wrap:pretty">Another Xronixle</div>
+      <div style="font-size:13.5px;color:#CAC4D0;margin-top:5px">Camellia</div>
+      <div style="font-size:12.5px;color:#8E8894;margin-top:3px;font-variant-numeric:tabular-nums">FLAC 24/96 · −1.2 dBTP</div>
+    </div>
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:7px">
+      <div style="height:44px;display:flex;align-items:center;gap:5px"><div style="flex:0 0 16%;height:16px;border-radius:8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#EADDFF"></div><div style="flex:1 1 auto;height:16px;border-radius:8px;background:#22222A"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#CAC4D0;font-variant-numeric:tabular-nums"><span>0:42</span><span>4:35</span></div>
+    </div>
+    <div style="flex:0 0 auto;display:flex;align-items:center;gap:10px">
+      <div style="width:56px;height:56px;border-radius:28px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+      <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+      <div style="width:56px;height:56px;border-radius:28px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+      <div style="flex:1 1 auto"></div>
+      <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#CAC4D0;flex:0 0 auto"><path d="M4 9v6h4l5 4V5L8 9z"></path></svg>
+      <div style="width:88px;height:44px;display:flex;align-items:center;gap:5px"><div style="flex:0 0 78%;height:16px;border-radius:8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#EADDFF"></div><div style="flex:1 1 auto;height:16px;border-radius:8px;background:#22222A"></div></div>
+    </div>
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:7px">
+      <div style="font-size:11.5px;letter-spacing:.1em;color:#8E8894">WHEN THIS TRACK ENDS</div>
+      <div style="display:grid;grid-template-columns:auto auto;width:max-content;max-width:100%;border:1px solid #6F6A78;border-radius:20px;overflow:hidden">
+        <div style="min-height:40px;display:flex;align-items:center;justify-content:center;padding:0 18px;font-size:14px;font-weight:500;white-space:nowrap;border-right:1px solid #6F6A78;border-bottom:1px solid #6F6A78">Repeat</div>
+        <div style="min-height:40px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;font-size:14px;font-weight:500;white-space:nowrap;background:#4A4458;color:#EADDFF;border-bottom:1px solid #6F6A78"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#EADDFF"><path d="M9.6 16.6 5 12l1.4-1.4 3.2 3.2 8-8L19 7.2z"></path></svg>In order</div>
+        <div style="min-height:40px;display:flex;align-items:center;justify-content:center;padding:0 18px;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;border-right:1px solid #6F6A78">Shuffle Camellia</div>
+        <div style="min-height:40px;display:flex;align-items:center;justify-content:center;padding:0 18px;font-size:14px;font-weight:500;white-space:nowrap">Shuffle all</div>
+      </div>
+    </div>
+    <div style="flex:1 1 auto"></div>
+    <div style="flex:0 0 auto;display:flex;align-items:center;gap:8px">
+      <div style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 18px;border:1px solid #6F6A78;border-radius:24px;font-size:13.5px;font-weight:500"><svg viewBox="0 0 24 24" style="width:17px;height:17px;fill:#CAC4D0"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Open folder</div>
+      <div style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 18px;border:1px solid #6F6A78;border-radius:24px;font-size:13.5px;font-weight:500"><svg viewBox="0 0 24 24" style="width:17px;height:17px;fill:#CAC4D0"><path d="M4 6h9v2H4zm12 0h4v2h-4zM4 11h4v2H4zm7 0h9v2h-9zM4 16h9v2H4zm12 0h4v2h-4z"></path><path d="M13 4h2v6h-2zM8 9h2v6H8zm5 5h2v6h-2z"></path></svg>Settings</div>
+      <div style="flex:1 1 auto"></div>
+      <span style="font-size:12px;color:#5A5561">~/Music/flac</span>
+    </div>
+  </div>
+
+  <div style="flex:0 0 auto;width:28px;background:#000;border-left:1px solid #1A1A1F;border-right:1px solid #1A1A1F;display:grid;place-items:center">
+    <div style="writing-mode:vertical-rl;font-size:9px;letter-spacing:.24em;color:#2E2B34;font-family:ui-monospace,monospace">SEAM</div>
+  </div>
+
+  <div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;min-height:0">
+    <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid #26262E">
+      <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 14px;border:1px solid #6F6A78;border-radius:20px;font-size:14px;font-weight:500">Camellia<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#CAC4D0"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+      <span style="font-size:13px;color:#CAC4D0;font-variant-numeric:tabular-nums">16 tracks</span>
+      <div style="flex:1 1 auto"></div>
+      <div style="width:40px;height:40px;border-radius:20px;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#CAC4D0"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></div>
+    </div>
+    <div style="flex:1 1 auto;min-height:0;overflow:auto">
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px;background:#332F3F">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#D0BCFF;flex:0 0 auto"><path d="M7 4v16l13-8z"></path></svg>
+        <div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Another Xronixle</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">4:35 · −1.2 dBTP</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px"><span style="width:16px;text-align:center;font-size:12.5px;color:#5A5561">2</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Burning Aquamarine</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">5:12 · −0.8 dBTP</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px"><span style="width:16px;text-align:center;font-size:12.5px;color:#5A5561">3</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dokuhebi - Venomous Snake</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">4:01 · −1.4 dBTP</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px"><span style="width:16px;text-align:center;font-size:12.5px;color:#5A5561">4</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ENÛMA∇ELIŠ ~Camellia Saga~ (from the album -REX-)</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">9:47 · −0.3 dBTP</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px"><span style="width:16px;text-align:center;font-size:12.5px;color:#5A5561">5</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Flash Me Back -300k subs on YT-</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">3:28 · −1.9 dBTP</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px"><span style="width:16px;text-align:center;font-size:12.5px;color:#5A5561">6</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">GHOST (2020 Halloween+++++++++ VIP)</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">4:52 · −0.6 dBTP</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px"><span style="width:16px;text-align:center;font-size:12.5px;color:#5A5561">7</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">GHOST VS. GHOUL Mashup</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">5:30 · −1.1 dBTP</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;min-height:72px;padding:8px 16px"><span style="width:16px;text-align:center;font-size:12.5px;color:#5A5561">8</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Hello (BPM) 2022</div><div style="font-size:12.5px;color:#CAC4D0;margin-top:3px;font-variant-numeric:tabular-nums">3:14 · −0.9 dBTP</div></div></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:830,&quot;height&quot;:714}}"></script>
+</body>
+</html>

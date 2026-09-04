@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music player — revised layout</title>
+<style>
+  :root{
+    --bg:#000;
+    --surface:#141414;
+    --surface-2:#1e1e1e;
+    --line:#282828;
+    --text:#e9e9ea;
+    --dim:#8e8e93;
+    --faint:#55555c;
+    --track:#2e2e34;
+    --accent:#b3a8f5;
+    --accent-ink:#14112a;
+    --accent-soft:#232135;
+    --r:6px;
+    --r-round:999px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#0d0d0f;color:var(--text);
+    font-family:system-ui,"Segoe UI",Roboto,"Noto Sans",sans-serif;font-size:15px}
+  body{padding:24px 20px 60px}
+
+  .harness{max-width:1400px;margin:0 auto 20px}
+  .harness-row{display:flex;flex-wrap:wrap;gap:20px;align-items:center;
+    padding:12px 14px;background:#161618;border:1px solid #26262a;border-radius:var(--r);
+    font-size:13px;color:var(--dim)}
+  .harness-row label{display:flex;align-items:center;gap:8px}
+  .harness-row input[type=range]{width:200px;accent-color:var(--accent)}
+  .harness-row output{color:var(--text);font-variant-numeric:tabular-nums;min-width:56px}
+  .seg-mini{display:flex;border:1px solid #33333a;border-radius:var(--r);overflow:hidden}
+  .seg-mini button{background:none;border:0;color:var(--dim);font:inherit;padding:5px 12px;cursor:pointer}
+  .seg-mini button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+  .guides .deck > *{outline:1px dashed rgba(179,168,245,.45);outline-offset:2px}
+
+  .stage{max-width:1400px;margin:0 auto;display:flex;justify-content:center}
+  .player{width:100%;height:620px;background:var(--bg);border:1px solid var(--line);
+    border-radius:10px;overflow:hidden;display:flex;flex-direction:column;
+    container-type:inline-size}
+
+  .titlebar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 12px;
+    border-bottom:1px solid var(--line);color:var(--dim);font-size:13px}
+  .titlebar .spacer{flex:1 1 auto}
+  .wmglyph{width:14px;height:14px;fill:var(--faint)}
+
+  .deck{flex:0 0 auto;display:grid;gap:10px 24px;padding:14px 16px;
+    grid-template-columns:minmax(0,1fr) minmax(340px,2fr) auto;
+    grid-template-areas:
+      "np transport volume"
+      "np seek      mode";
+    align-items:center}
+  .nowplaying{grid-area:np;align-self:center;min-width:0}
+  .transport{grid-area:transport;justify-self:center;display:flex;align-items:center;gap:10px}
+  .volume{grid-area:volume;justify-self:end;display:flex;align-items:center;gap:8px;color:var(--dim)}
+  .seekrow{grid-area:seek;display:flex;align-items:center;gap:12px;min-width:0}
+  .segmented{grid-area:mode}
+
+  .tbtn{width:34px;height:34px;border-radius:var(--r-round);border:0;background:none;
+    color:var(--dim);display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+  .tbtn:hover{background:var(--surface-2);color:var(--text)}
+  .tbtn.play{width:44px;height:44px;background:var(--accent);color:var(--accent-ink)}
+  .tbtn.play:hover{background:#c3baf8}
+  .tbtn svg{width:18px;height:18px;fill:currentColor}
+  .tbtn.play svg{width:20px;height:20px}
+
+  .np-title{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .np-sub{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--dim);
+    margin-top:2px;min-width:0}
+  .np-sub .stateicon{width:12px;height:12px;fill:var(--accent);flex:0 0 auto}
+  .np-sub .where{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    border:0;background:none;color:inherit;font:inherit;padding:0;
+    cursor:pointer;text-align:left;min-width:0}
+  .np-sub .where:hover{color:var(--text);text-decoration:underline}
+  .player.empty .np-sub{display:none}
+  .player.paused .np-sub .stateicon{fill:var(--dim)}
+
+  .volume svg{width:17px;height:17px;fill:currentColor;flex:0 0 auto}
+  .volume input{width:130px}
+
+  input[type=range].slim{-webkit-appearance:none;appearance:none;background:none;
+    height:16px;margin:0;cursor:pointer}
+  input[type=range].slim::-webkit-slider-runnable-track{height:4px;border-radius:var(--r-round);
+    background:linear-gradient(to right,var(--accent) 0 var(--fill,0%),var(--track) var(--fill,0%) 100%)}
+  input[type=range].slim::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;
+    border-radius:var(--r-round);background:var(--accent);margin-top:-4px}
+  input[type=range].slim::-moz-range-track{height:4px;border-radius:var(--r-round);background:var(--track)}
+  input[type=range].slim::-moz-range-progress{height:4px;border-radius:var(--r-round);background:var(--accent)}
+  input[type=range].slim::-moz-range-thumb{width:12px;height:12px;border:0;
+    border-radius:var(--r-round);background:var(--accent)}
+  input[type=range].slim:disabled{cursor:default}
+  input[type=range].slim:disabled::-webkit-slider-runnable-track{background:#232327}
+  input[type=range].slim:disabled::-webkit-slider-thumb{background:#3a3a40}
+  input[type=range].slim:disabled::-moz-range-progress{background:#232327}
+  input[type=range].slim:disabled::-moz-range-thumb{background:#3a3a40}
+
+  .segmented{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .segmented button{background:none;border:0;border-right:1px solid var(--line);
+    color:var(--dim);font:inherit;font-size:13px;padding:7px 13px;cursor:pointer;white-space:nowrap}
+  .segmented button:last-child{border-right:0}
+  .segmented button:hover{background:var(--surface-2);color:var(--text)}
+  .segmented button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+
+  .seekrow .t{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;
+    flex:0 0 auto;min-width:38px}
+  .seekrow .t.right{text-align:right}
+  .seekrow input{flex:1 1 auto;min-width:0}
+
+  .librarybar{flex:0 0 auto;display:flex;align-items:center;gap:10px;
+    padding:8px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    font-size:13px;position:relative}
+  .folderbtn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);
+    background:none;color:var(--text);font:inherit;font-size:13.5px;
+    padding:6px 10px;border-radius:var(--r);cursor:pointer;max-width:340px}
+  .folderbtn:hover{background:var(--surface-2)}
+  .folderbtn .fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .folderbtn svg{width:15px;height:15px;fill:var(--dim);flex:0 0 auto}
+  .folderbtn .chev{transition:transform .15s}
+  .player.picking .folderbtn{background:var(--surface-2);border-color:#3a3a42}
+  .player.picking .folderbtn .chev{transform:rotate(180deg)}
+  .librarybar .meta{color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .librarybar .spacer{flex:1 1 auto}
+  .librarybar .root{color:var(--faint);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:280px;direction:rtl;text-align:left}
+  .librarybar .root bdi{unicode-bidi:isolate}
+
+  .menuwrap{position:relative;flex:0 0 auto}
+  .menubtn{width:30px;height:30px;border:0;background:none;color:var(--dim);
+    border-radius:var(--r);cursor:pointer;display:grid;place-items:center}
+  .menubtn:hover{background:var(--surface-2);color:var(--text)}
+  .menubtn svg{width:16px;height:16px;fill:currentColor}
+  .menu{display:none;position:absolute;right:0;top:34px;z-index:5;min-width:170px;
+    background:#191919;border:1px solid #303036;border-radius:var(--r);padding:4px}
+  .menu.open{display:block}
+  .menu button{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;
+    color:var(--text);font:inherit;font-size:13.5px;padding:8px 10px;
+    border-radius:4px;cursor:pointer;text-align:left}
+  .menu button:hover{background:var(--surface-2)}
+  .menu button svg{width:15px;height:15px;fill:var(--dim);flex:0 0 auto}
+
+  .body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+
+  .tracklist{flex:1 1 auto;min-height:0;overflow:auto;padding:4px 0}
+  .track{display:flex;align-items:center;gap:12px;padding:8px 14px;cursor:pointer}
+  .track:hover{background:var(--surface)}
+  .track .idx{width:18px;flex:0 0 auto;color:#4d4d54;font-size:12px;
+    font-variant-numeric:tabular-nums;display:grid;place-items:center}
+  .track .idx svg{width:11px;height:11px;fill:var(--accent)}
+  .track .name-t{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;font-size:14px}
+  .track .dur{flex:0 0 auto;color:var(--dim);font-size:12.5px;font-variant-numeric:tabular-nums}
+  .track[aria-current=true]{background:var(--accent-soft)}
+  .track[aria-current=true] .name-t{color:var(--accent)}
+
+  .folderpanel{display:none;flex:1 1 auto;min-height:0;overflow:auto;padding:6px 16px 18px}
+  .player.picking .folderpanel{display:block}
+  .player.picking .tracklist{display:none}
+  .letterrow{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;
+    padding:9px 0;border-bottom:1px solid #1a1a1c}
+  .letterrow:last-child{border-bottom:0}
+  .letter{font-size:12px;color:var(--faint);padding-top:5px}
+  .names{display:flex;flex-wrap:wrap;gap:2px}
+  .name{border:0;background:none;color:var(--text);font:inherit;font-size:13.5px;
+    padding:5px 9px;border-radius:var(--r);cursor:pointer;white-space:nowrap}
+  .name:hover{background:var(--surface-2)}
+  .name[aria-current=true]{background:var(--accent);color:var(--accent-ink)}
+
+  .blank{display:none;flex:1 1 auto;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;color:var(--dim);font-size:13.5px;padding:20px}
+  .bigbtn{display:flex;align-items:center;gap:9px;border:1px solid #3a3a42;background:none;
+    color:var(--text);font:inherit;font-size:14px;padding:10px 16px;
+    border-radius:var(--r);cursor:pointer}
+  .bigbtn:hover{background:var(--surface-2)}
+  .bigbtn svg{width:16px;height:16px;fill:var(--dim)}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#333338;border-radius:var(--r-round);border:3px solid var(--bg)}
+  ::-webkit-scrollbar-thumb:hover{background:#45454c}
+
+  @container (max-width: 999px){
+    .deck{
+      grid-template-columns:minmax(0,1fr) auto;
+      grid-template-areas:
+        "np        np"
+        "transport volume"
+        "seek      seek"
+        "mode      mode";
+      gap:12px}
+    .transport{justify-self:start}
+    .segmented button{flex:1 1 0;text-align:center;padding:8px 4px;font-size:12.5px}
+    .librarybar .root{display:none}
+  }
+  @container (max-width: 560px){
+    .librarybar .meta{display:none}
+    .segmented button{padding:8px 2px;font-size:12px}
+  }
+
+  .player.empty .transport .tbtn{opacity:.3;pointer-events:none}
+  .player.empty .np-title{color:var(--dim)}
+  .player.empty .librarybar{opacity:.45;pointer-events:none}
+  .player.empty .tracklist,.player.empty .folderpanel{display:none}
+  .player.empty .blank{display:flex}
+
+  .notes{max-width:760px;margin:36px auto 0;color:var(--dim);font-size:14px;line-height:1.65}
+  .notes h2{font-size:15px;font-weight:500;color:var(--text);margin:22px 0 10px}
+  .notes h2:first-child{margin-top:0}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+  .notes code{background:#1b1b1e;padding:1px 5px;border-radius:4px;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<div class="harness">
+  <div class="harness-row">
+    <label>Window width
+      <input type="range" id="w" min="360" max="1400" step="10" value="1180">
+      <output id="wout">1180px</output>
+    </label>
+    <div class="seg-mini" role="group" aria-label="Library state">
+      <button id="st-loaded" aria-pressed="true">Folder open</button>
+      <button id="st-empty" aria-pressed="false">Nothing opened</button>
+    </div>
+    <label><input type="checkbox" id="raw"> Raw filenames</label>
+    <label><input type="checkbox" id="guides"> Alignment guides</label>
+  </div>
+</div>
+
+<div class="stage">
+<div class="player" id="player" style="max-width:1180px">
+
+  <div class="titlebar">
+    Music player
+    <span class="spacer"></span>
+    <svg class="wmglyph" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="2"/></svg>
+    <svg class="wmglyph" viewBox="0 0 24 24"><path d="M5 5h14v14H5zm2 2v10h10V7z"/></svg>
+    <svg class="wmglyph" viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg>
+  </div>
+
+  <div class="deck">
+    <div class="nowplaying">
+      <div class="np-title" id="npTitle">Another Xronixle</div>
+      <div class="np-sub" id="npSub">
+        <svg class="stateicon" id="stateIcon" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+        <button class="where" id="npWhere" title="Show the folder that's playing">Camellia</button>
+      </div>
+    </div>
+
+    <div class="transport">
+      <button class="tbtn" aria-label="Previous track">
+        <svg viewBox="0 0 24 24"><path d="M7 6h2v12H7zm3 6 8 6V6z"/></svg>
+      </button>
+      <button class="tbtn play" id="playBtn" aria-label="Pause">
+        <svg viewBox="0 0 24 24"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"/></svg>
+      </button>
+      <button class="tbtn" aria-label="Next track">
+        <svg viewBox="0 0 24 24"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"/></svg>
+      </button>
+    </div>
+
+    <div class="volume">
+      <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4 4 0 0 0-2.2-3.6v7.2A4 4 0 0 0 16.5 12z"/></svg>
+      <input type="range" class="slim" min="0" max="100" value="82" aria-label="Volume">
+    </div>
+
+    <div class="seekrow">
+      <span class="t" id="tNow">0:42</span>
+      <input type="range" class="slim" id="seek" min="0" max="275" value="42" aria-label="Seek">
+      <span class="t right" id="tEnd">4:35</span>
+    </div>
+
+    <div class="segmented" role="group" aria-label="When this track ends">
+      <button aria-pressed="false">Repeat</button>
+      <button aria-pressed="true">In order</button>
+      <button aria-pressed="false">Shuffle folder</button>
+      <button aria-pressed="false">Shuffle all</button>
+    </div>
+  </div>
+
+  <div class="librarybar">
+    <button class="folderbtn" id="folderBtn" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span class="fname" id="folderName">Camellia</span>
+      <svg class="chev" viewBox="0 0 24 24"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"/></svg>
+    </button>
+    <span class="meta" id="folderMeta">16 tracks</span>
+    <span class="spacer"></span>
+    <span class="root"><bdi id="rootPath">~/Music/flac</bdi></span>
+    <div class="menuwrap">
+      <button class="menubtn" id="menuBtn" aria-label="More" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+      </button>
+      <div class="menu" id="menu" role="menu">
+        <button role="menuitem">
+          <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Open folder…
+        </button>
+        <button role="menuitem">
+          <svg viewBox="0 0 24 24"><path d="M4 6h9v2H4zm12 0h4v2h-4zM4 11h4v2H4zm7 0h9v2h-9zM4 16h9v2H4zm12 0h4v2h-4z"/><path d="M13 4h2v6h-2zM8 9h2v6H8zm5 5h2v6h-2z"/></svg>
+          Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="tracklist" id="tracks"></div>
+    <div class="folderpanel" id="panel"></div>
+    <div class="blank">
+      <div>No folder is open.</div>
+      <button class="bigbtn">
+        <svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Open folder
+      </button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="notes">
+  <h2>Deck alignment</h2>
+  <ul>
+    <li>Three columns with shared edges. Prev/play/next sit centred directly above the progress bar in the same column. Volume is right-aligned over the mode control, so both end on the same edge. Now playing occupies the left column across both rows.</li>
+    <li>Tick "alignment guides" to see the column boundaries.</li>
+    <li>The breakpoint moved from 800 to 1000px, because the four-segment mode control needs about 320px and below 1000 there isn't enough left for three columns without crushing the title.</li>
+    <li>Narrow keeps the same discipline: the progress bar's left edge lines up with the transport, its right edge with the volume.</li>
+    <li>No album art. The now-playing block is two text lines: title, then a play/pause glyph and the folder the track came from. The play button toggles, so the glyph and the button always agree.</li>
+  </ul>
+
+  <h2>Folder picker</h2>
+  <ul>
+    <li>Full-width panel rather than a permanent pane. Both the folder grid and the track list get the whole window, and the same interaction works at every width.</li>
+    <li>Open folder and Settings are in the overflow menu on the library bar, next to what they act on, not in the window-manager's title bar.</li>
+  </ul>
+
+  <h2>Titles</h2>
+  <ul>
+    <li>Tick "raw filenames" to compare. The title is the filename minus the longest prefix common to every file in the folder.</li>
+    <li>Splitting on the first <code>" - "</code> would turn <code>Dokuhebi - Venomous Snake</code> into <code>Venomous Snake</code>. Stripping the folder name would also fail: the folder is <code>Camellia</code>, the prefix is <code>かめりあ(Camellia)</code>.</li>
+    <li>Guards: at least two files, the prefix must end at a separator, and every remainder must be non-empty. Tags first; this is the fallback.</li>
+  </ul>
+
+  <h2>Assumptions</h2>
+  <ul>
+    <li>A folder is a subdirectory of whatever you opened, so nothing calls it an artist and the mode reads "Shuffle folder".</li>
+    <li>Durations are invented. Folder and file names come from your screenshots.</li>
+  </ul>
+</div>
+
+<script>
+const FOLDERS = [
+  ["#", ["32ki","3LAU","40mP"]],
+  ["A", ["ABM","ACCAMER","Adele","Ado","Afrojack","Aimer","Aiobahn","Aitsuki Nakuru","Alan Walker","Alessia Cara","Alesso","AREA21","Armin van Buuren","Asami Shimoda","Aventry","Avicii","Avril Lavigne","Axero","Axwell Ingrosso"]],
+  ["B", ["Bassjackers","Bebe Rexha","Beyonce","BEYOND","Blank Dream RPG","Bon Jovi","Boyhood's end OST","Broiler","Brooks","Bruno Mars"]],
+  ["C", ["Calvin Harris","Camellia","Charlie Puth","Charon","Chris Medina","ClariS","Clean Bandit","Coldplay","Cosmo Bosou P","CreepP","CrusherP","Cyberpunk 2077 OST"]],
+  ["D", ["Daft Punk","daniwellP","Dash Berlin","David Guetta","DECO_27","Demi Lovato","Detroit Become Human OST","Dimitri Vegas & Like Mike","Divela","DJ Genki","DJ Noriken","DJ Snake"]]
+];
+
+const CAMELLIA_FILES = [
+  ["かめりあ(Camellia) - Another Xronixle.flac","4:35"],
+  ["かめりあ(Camellia) - Burning Aquamarine.flac","5:12"],
+  ["かめりあ(Camellia) - Dokuhebi - Venomous Snake.flac","4:01"],
+  ["かめりあ(Camellia) - ENÛMA∇ELIŠ ~Camellia Saga~ (from the album -REX-).flac","9:47"],
+  ["かめりあ(Camellia) - Flash Me Back -300k subs on YT-.flac","3:28"],
+  ["かめりあ(Camellia) - GHOST (2020 Halloween+++++++++ VIP).flac","4:52"],
+  ["かめりあ(Camellia) - GHOST VS. GHOUL Mashup.flac","5:30"],
+  ["かめりあ(Camellia) - Hello (BPM) 2022.flac","3:14"],
+  ["かめりあ(Camellia) - Hello (BPM) 2023.flac","3:18"],
+  ["かめりあ(Camellia) - Hello (BPM) 2024.flac","3:22"],
+  ["かめりあ(Camellia) - Hello (BPM) 2025.flac","3:26"],
+  ["かめりあ(Camellia) - Hiasobi - Play-With-Fire (Teto Cover).flac","4:08"],
+  ["かめりあ(Camellia) - Hiasobi - Play-With-Fire.flac","4:08"],
+  ["かめりあ(Camellia) - Nacreous Snowmelt (for THX 70k Twitter Followers).flac","6:15"],
+  ["かめりあ(Camellia) - Operation- Zenithfall.flac","5:44"],
+  ["かめりあ(Camellia) - PURE SILVER.flac","4:19"]
+];
+
+const SEPARATORS = [" - ", " – ", " — ", "_", "-"];
+const ICON_PLAY = '<path d="M8 5.5v13l11-6.5z"></path>';
+const ICON_PAUSE = '<path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path>';
+const GLYPH_PLAY = '<path d="M7 4v16l13-8z"></path>';
+const GLYPH_PAUSE = '<path d="M6 5h4v14H6zm8 0h4v14h-4z"></path>';
+
+function stripExtension(n){ return n.replace(/\.(flac|mp3|ogg|opus|m4a|wav|aac)$/i, ""); }
+
+function commonPrefix(list){
+  if (list.length < 2) return "";
+  let p = list[0];
+  for (let i = 1; i < list.length; i++){
+    let j = 0;
+    while (j < p.length && j < list[i].length && p[j] === list[i][j]) j++;
+    p = p.slice(0, j);
+    if (!p) return "";
+  }
+  return p;
+}
+
+function folderPrefix(names){
+  const p = commonPrefix(names);
+  if (!p) return "";
+  let best = "";
+  SEPARATORS.forEach(function(sep){
+    const at = p.lastIndexOf(sep);
+    if (at > 0){
+      const cand = p.slice(0, at + sep.length);
+      if (cand.length > best.length) best = cand;
+    }
+  });
+  if (!best) return "";
+  const survives = names.every(function(n){ return n.slice(best.length).trim().length > 0; });
+  return survives ? best : "";
+}
+
+function titlesFor(files){
+  const bare = files.map(function(f){ return stripExtension(f[0]); });
+  const pre = folderPrefix(bare);
+  return bare.map(function(n){ return pre ? n.slice(pre.length) : n; });
+}
+
+const player = document.getElementById('player');
+const tracks = document.getElementById('tracks');
+const panel = document.getElementById('panel');
+const menu = document.getElementById('menu');
+const rawBox = document.getElementById('raw');
+
+let currentFolder = 'Camellia';
+let nowPlaying = { folder: 'Camellia', index: 0 };
+let paused = false;
+let empty = false;
+let picking = false;
+let scrollToPlaying = false;
+
+function filesFor(f){ return f === 'Camellia' ? CAMELLIA_FILES : null; }
+
+function drawPanel(){
+  panel.innerHTML = '';
+  FOLDERS.forEach(function(g){
+    const row = document.createElement('div');
+    row.className = 'letterrow';
+    const l = document.createElement('div');
+    l.className = 'letter';
+    l.textContent = g[0];
+    const names = document.createElement('div');
+    names.className = 'names';
+    g[1].forEach(function(f){
+      const b = document.createElement('button');
+      b.className = 'name';
+      b.textContent = f;
+      b.setAttribute('aria-current', f === currentFolder ? 'true' : 'false');
+      b.addEventListener('click', function(){
+        currentFolder = f;
+        picking = false;
+        sync();
+      });
+      names.appendChild(b);
+    });
+    row.appendChild(l);
+    row.appendChild(names);
+    panel.appendChild(row);
+  });
+}
+
+function drawTracks(){
+  const files = filesFor(currentFolder);
+  tracks.innerHTML = '';
+  if (!files){
+    const e = document.createElement('div');
+    e.style.cssText = 'padding:48px 20px;text-align:center;color:var(--dim);font-size:13.5px';
+    e.textContent = 'Only Camellia is populated in this mock.';
+    tracks.appendChild(e);
+    return;
+  }
+  const titles = titlesFor(files);
+  files.forEach(function(f, i){
+    const isNow = !empty && currentFolder === nowPlaying.folder && i === nowPlaying.index;
+    const row = document.createElement('div');
+    row.className = 'track';
+    row.setAttribute('aria-current', isNow ? 'true' : 'false');
+    const idx = document.createElement('div');
+    idx.className = 'idx';
+    idx.innerHTML = isNow
+      ? '<svg viewBox="0 0 24 24">' + (paused ? GLYPH_PAUSE : GLYPH_PLAY) + '</svg>'
+      : String(i + 1);
+    const nm = document.createElement('div');
+    nm.className = 'name-t';
+    nm.textContent = rawBox.checked ? f[0] : titles[i];
+    const du = document.createElement('div');
+    du.className = 'dur';
+    du.textContent = f[1];
+    row.appendChild(idx);
+    row.appendChild(nm);
+    row.appendChild(du);
+    row.addEventListener('click', function(){
+      nowPlaying = { folder: currentFolder, index: i };
+      paused = false;
+      empty = false;
+      sync();
+    });
+    tracks.appendChild(row);
+  });
+  if (scrollToPlaying){
+    scrollToPlaying = false;
+    const cur = tracks.querySelector('.track[aria-current=true]');
+    if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function paint(el){
+  const min = Number(el.min), max = Number(el.max);
+  const pct = max > min ? ((Number(el.value) - min) / (max - min)) * 100 : 0;
+  el.style.setProperty('--fill', pct.toFixed(1) + '%');
+}
+document.querySelectorAll('input[type=range].slim').forEach(function(el){
+  paint(el);
+  el.addEventListener('input', function(){ paint(el); });
+});
+
+function sync(){
+  const files = filesFor(currentFolder);
+  player.classList.toggle('empty', empty);
+  player.classList.toggle('paused', paused);
+  player.classList.toggle('picking', picking && !empty);
+  document.getElementById('folderBtn').setAttribute('aria-expanded', String(picking && !empty));
+  document.getElementById('st-loaded').setAttribute('aria-pressed', String(!empty));
+  document.getElementById('st-empty').setAttribute('aria-pressed', String(empty));
+  document.getElementById('folderName').textContent = empty ? 'No folder' : currentFolder;
+  document.getElementById('folderMeta').textContent =
+    empty ? '' : (files ? files.length + ' tracks' : 'not in this mock');
+  document.getElementById('rootPath').textContent = empty ? '' : '~/Music/flac';
+
+  const npFiles = filesFor(nowPlaying.folder);
+  const npTrack = npFiles ? npFiles[nowPlaying.index] : null;
+  const idle = empty || !npTrack;
+  document.getElementById('npTitle').textContent =
+    idle ? 'Nothing is playing' : titlesFor(npFiles)[nowPlaying.index];
+  document.getElementById('npWhere').textContent = idle ? '' : nowPlaying.folder;
+  document.getElementById('stateIcon').innerHTML = paused ? GLYPH_PAUSE : GLYPH_PLAY;
+  document.getElementById('tNow').textContent = idle ? '--:--' : '0:42';
+  document.getElementById('tEnd').textContent = idle ? '--:--' : npTrack[1];
+
+  const btn = document.getElementById('playBtn');
+  btn.querySelector('svg').innerHTML = paused ? ICON_PLAY : ICON_PAUSE;
+  btn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+
+  const seek = document.getElementById('seek');
+  seek.disabled = idle;
+  seek.value = idle ? 0 : 42;
+  paint(seek);
+
+  drawPanel();
+  drawTracks();
+}
+
+document.getElementById('playBtn').addEventListener('click', function(){ paused = !paused; sync(); });
+document.getElementById('npWhere').addEventListener('click', function(){
+  if (empty) return;
+  currentFolder = nowPlaying.folder;
+  picking = false;
+  scrollToPlaying = true;
+  sync();
+});
+document.getElementById('folderBtn').addEventListener('click', function(){ picking = !picking; sync(); });
+document.getElementById('menuBtn').addEventListener('click', function(e){
+  e.stopPropagation();
+  const open = !menu.classList.contains('open');
+  menu.classList.toggle('open', open);
+  document.getElementById('menuBtn').setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', function(){
+  menu.classList.remove('open');
+  document.getElementById('menuBtn').setAttribute('aria-expanded', 'false');
+});
+rawBox.addEventListener('change', sync);
+document.getElementById('guides').addEventListener('change', function(e){
+  document.body.classList.toggle('guides', e.target.checked);
+});
+
+const wIn = document.getElementById('w');
+const wOut = document.getElementById('wout');
+function report(){
+  const asked = Number(wIn.value);
+  const actual = Math.round(player.getBoundingClientRect().width);
+  wOut.textContent = actual < asked - 1 ? asked + 'px \u2192 ' + actual + 'px' : asked + 'px';
+}
+function applyWidth(){
+  player.style.maxWidth = Number(wIn.value) + 'px';
+  report();
+}
+wIn.addEventListener('input', applyWidth);
+if (window.ResizeObserver) new ResizeObserver(report).observe(player);
+window.addEventListener('resize', report);
+document.getElementById('st-loaded').addEventListener('click', function(){ empty = false; sync(); });
+document.getElementById('st-empty').addEventListener('click', function(){ empty = true; picking = false; sync(); });
+
+applyWidth();
+sync();
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#000;color:#E6E0E9;font-family:Roboto,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden">
+  <div style="flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 16px 1fr">
+    <div style="min-width:0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #26262E">
+        <span style="font-size:14px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ totalLabel }}</span>
+        <div style="flex:1 1 auto"></div>
+        <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Open</div>
+      </div>
+      <div ref="{{ listRef }}" style="flex:1 1 auto;min-height:0;overflow:auto;position:relative;padding-bottom:8px">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+          <div data-letter="{{ g.letter }}" style="display:flex;align-items:baseline;gap:8px;min-height:40px;padding:8px 16px 0;box-sizing:border-box"><span style="font-size:14px;font-weight:500;color:#D0BCFF">{{ g.letter }}</span><span style="font-size:12px;color:#8E8894;font-variant-numeric:tabular-nums">{{ g.count }}</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px 8px;padding:0 8px">
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="6">
+              <div onClick="{{ r.pick }}" style="min-height:48px;display:flex;align-items:center;padding:0 12px;border-radius:8px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:{{ r.bg }};color:{{ r.fg }};font-weight:{{ r.weight }};cursor:pointer">{{ r.name }}</div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:0 0 auto;display:grid;grid-template-columns:repeat(9,1fr);gap:2px;padding:8px 8px 12px;border-top:1px solid #26262E">
+        <sc-for list="{{ letterCells }}" as="l" hint-placeholder-count="27">
+          <div onClick="{{ l.pick }}" style="min-height:48px;display:grid;place-items:center;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;background:{{ l.bg }};color:{{ l.fg }}">{{ l.label }}</div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ deckLeft }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:0 0 auto;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #26262E">
+        <div style="min-width:0">
+          <div style="font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Another Xronixle</div>
+          <div style="font-size:12px;color:#CAC4D0;margin-top:2px;font-variant-numeric:tabular-nums">Camellia · 1 of 16 · −1.2 dBTP</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">0:42</span>
+          <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:4px"><div style="flex:0 0 16%;height:16px;border-radius:8px 2px 2px 8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#D0BCFF"></div><div style="flex:1 1 auto;height:16px;border-radius:2px 8px 8px 2px;background:#22222A"></div></div>
+          <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">4:35</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+          <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+          <div style="flex:1 1 auto;display:flex;align-items:center;gap:8px;min-width:0;padding-left:8px">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0;flex:0 0 auto"><path d="M4 9v6h4l5 4V5L8 9z"></path></svg>
+            <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:4px;min-width:0"><div style="flex:0 0 70%;height:16px;border-radius:8px 2px 2px 8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#D0BCFF"></div><div style="flex:1 1 auto;height:16px;border-radius:2px 8px 8px 2px;background:#22222A"></div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:auto auto;gap:2px;width:max-content;max-width:100%">
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid #938F99;border-radius:28px 8px 8px 8px;font-size:14px;font-weight:500;white-space:nowrap">Repeat</div>
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;background:#4A4458;color:#E8DEF8;border-radius:8px 28px 8px 8px;font-size:14px;font-weight:500;white-space:nowrap"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#E8DEF8"><path d="M9.6 16.6 5 12l1.4-1.4 3.2 3.2 8-8L19 7.2z"></path></svg>In order</div>
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid #938F99;border-radius:8px 8px 8px 28px;font-size:14px;font-weight:500;white-space:nowrap">Shuffle folder</div>
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid #938F99;border-radius:8px 8px 28px 8px;font-size:14px;font-weight:500;white-space:nowrap">Shuffle all</div>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+    <div style="background:#0A0A0D"></div>
+    <div style="min-width:0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #26262E">
+        <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500;min-width:0"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ selected }}</span><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0;flex:0 0 auto"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+        <span style="font-size:14px;color:#CAC4D0;font-variant-numeric:tabular-nums">16 tracks</span>
+        <div style="flex:1 1 auto"></div>
+        <div style="width:48px;height:48px;border-radius:24px;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#CAC4D0"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg></div>
+      </div>
+      <div style="flex:1 1 auto;min-height:0;overflow:auto">
+        <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="8">
+          <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bg }}"><span style="width:18px;text-align:center;font-size:12px;color:{{ t.numFg }};font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ t.sub }}</div></div></div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ deckRight }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:0 0 auto;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #26262E">
+        <div style="min-width:0">
+          <div style="font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Another Xronixle</div>
+          <div style="font-size:12px;color:#CAC4D0;margin-top:2px;font-variant-numeric:tabular-nums">1 of 16 · −1.2 dBTP</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">0:42</span>
+          <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:4px"><div style="flex:0 0 16%;height:16px;border-radius:8px 2px 2px 8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#D0BCFF"></div><div style="flex:1 1 auto;height:16px;border-radius:2px 8px 8px 2px;background:#22222A"></div></div>
+          <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">4:35</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+          <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+          <div style="flex:1 1 auto;display:flex;align-items:center;gap:8px;min-width:0;padding-left:8px">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0;flex:0 0 auto"><path d="M4 9v6h4l5 4V5L8 9z"></path></svg>
+            <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:4px;min-width:0"><div style="flex:0 0 70%;height:16px;border-radius:8px 2px 2px 8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#D0BCFF"></div><div style="flex:1 1 auto;height:16px;border-radius:2px 8px 8px 2px;background:#22222A"></div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:auto auto;gap:2px;width:max-content;max-width:100%">
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid #938F99;border-radius:28px 8px 8px 8px;font-size:14px;font-weight:500;white-space:nowrap">Repeat</div>
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;background:#4A4458;color:#E8DEF8;border-radius:8px 28px 8px 8px;font-size:14px;font-weight:500;white-space:nowrap"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#E8DEF8"><path d="M9.6 16.6 5 12l1.4-1.4 3.2 3.2 8-8L19 7.2z"></path></svg>In order</div>
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid #938F99;border-radius:8px 8px 8px 28px;font-size:14px;font-weight:500;white-space:nowrap">Shuffle folder</div>
+          <div style="min-height:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid #938F99;border-radius:8px 8px 28px 8px;font-size:14px;font-weight:500;white-space:nowrap">Shuffle all</div>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:8px 16px;border-top:1px solid #26262E;color:#8E8894;font-size:12px;font-family:ui-monospace,monospace">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:852,&quot;height&quot;:883},&quot;deckSide&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;left&quot;,&quot;options&quot;:[&quot;right&quot;,&quot;left&quot;],&quot;tsType&quot;:&quot;'right' | 'left'&quot;}}">
+class Component extends DCLogic {
+  state = { groups: [], letters: [], total: 0, selected: "Camellia", letter: "C" };
+  listRef = React.createRef();
+  componentDidMount() {
+    import("./artists.js").then((m) => {
+      this.setState({ groups: m.grouped(), letters: m.LETTERS, total: m.ARTISTS.length }, () => setTimeout(() => this.jump("C", true), 50));
+    });
+  }
+  jump(letter, quiet) {
+    const list = this.listRef.current;
+    if (!list) return;
+    const el = list.querySelector('[data-letter="' + letter + '"]');
+    if (el) list.scrollTop = el.offsetTop - 8;
+    if (!quiet) this.setState({ letter });
+  }
+  renderVals() {
+    const s = this.state;
+    const side = this.props.deckSide ?? "left";
+    const tracks = [
+      ["Another Xronixle", "4:35", "−1.2"], ["Burning Aquamarine", "5:12", "−0.8"], ["Dokuhebi", "4:01", "−1.4"],
+      ["ENÛMA∇ELIŠ", "9:47", "−0.3"], ["Ghost", "3:22", "−1.1"], ["Hyperflux", "4:44", "−0.9"],
+      ["Idol Corruption", "5:31", "−0.6"], ["KillerToy", "4:12", "−1.0"], ["Nacreous Snowmelt", "6:03", "−0.7"],
+      ["Newspapers for Magicians", "4:18", "−1.3"], ["Nightmare Ship", "5:47", "−0.4"], ["Speedstar", "4:29", "−1.6"],
+      ["Tera I/O", "5:10", "−0.5"], ["Upload Complete", "3:58", "−1.2"], ["Xiao", "4:40", "−0.9"], ["Zenith", "5:22", "−1.1"]
+    ];
+    return {
+      listRef: this.listRef,
+      totalLabel: s.total.toLocaleString("en-US") + " folders",
+      selected: s.selected,
+      deckLeft: side === "left",
+      deckRight: side !== "left",
+      caption: side === "left"
+        ? "UNF-C — 852×883dp. Deck under the folders (left half); tracks take the whole right half. " + s.total + " folders, A–Z strip pinned above the deck."
+        : "UNF-B — 852×883dp. Folders + pinned A–Z strip left; tracks + deck right. " + s.total + " folders in two columns of 48dp rows; tap a letter to jump.",
+      groups: s.groups.map((g) => ({
+        letter: g.letter, count: g.count,
+        rows: g.names.map((n) => {
+          const sel = n === s.selected;
+          return { name: n, bg: sel ? "#332F3F" : "transparent", fg: sel ? "#E8DEF8" : "#E6E0E9", weight: sel ? 500 : 400, pick: () => this.setState({ selected: n }) };
+        })
+      })),
+      letterCells: s.letters.map((l) => ({
+        label: l, bg: l === s.letter ? "#4A4458" : "#0A0A0D", fg: l === s.letter ? "#E8DEF8" : "#CAC4D0", pick: () => this.jump(l)
+      })),
+      tracks: tracks.map((t, i) => ({
+        num: i === 0 ? "▶" : String(i + 1), numFg: i === 0 ? "#D0BCFF" : "#5A5561",
+        title: t[0], sub: t[1] + " · " + t[2] + " dBTP", bg: i === 0 ? "#332F3F" : "transparent"
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
