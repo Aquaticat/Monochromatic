@@ -221,8 +221,9 @@ work in Helium. Axe reports zero violations and zero incomplete checks for both 
 page and open zoom dialog. The page remains light under a forced dark host. A
 throwaway-worktree positive control replaced an 852×883 render with a 418×883 file;
 the dimension guard rejected it with the expected diagnostic, while the unchanged
-fixture passed. The form is ready to reopen in the user's Helium profile; no theme
-answer has been recorded.
+fixture passed. The corrected form was reopened through the Helium desktop entry at
+its repository `file://` URL; the existing Helium session accepted the launch and its
+process remains active. No theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
