@@ -629,7 +629,10 @@ change: the light-theme rail-seam divider must be white rather than
 users to customize the display with templating, so the default should stay neutral
 rather than hard-code true-peak emphasis. Record these as decisions D34 and D35,
 apply them to the native prototype, recapture the settled baseline, and do not treat
-the earlier synthetic `1c / 3b` verification output as an answer.
+the earlier synthetic `1c / 3b` verification output as an answer. Custom display
+templating is now a stated product requirement, but its scope, grammar, editor,
+preview, validation, and fallback behavior are not designed; `open-questions.md` 11e
+records that boundary rather than inventing it.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**

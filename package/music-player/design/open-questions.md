@@ -283,3 +283,10 @@ The theme decision only covers the unfolded screen and the track list. Untouched
 light: the cover screen, the error bar, the undo toast, the settings pane, the context
 menu, the first-run prompt and the scan bar. Every one of them currently hard-codes
 dark values.
+
+### 11e. Custom display templating — stated, not designed
+The product will allow users to set a custom display through templating. That is the
+reason D35 keeps the default supporting line neutral. The user's statement does not
+yet settle template scope, available fields, syntax, editing surface, preview,
+validation, fallback behavior, or whether templates apply beyond track rows. Do not
+invent those details or narrow the requirement without a dedicated design round.
