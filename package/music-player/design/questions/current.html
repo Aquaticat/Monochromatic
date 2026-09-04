@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music player design: grilling round 1</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f3edf7;
+  --paper: #fffaff;
+  --paper-strong: #ffffff;
+  --ink: #1d1b20;
+  --ink-muted: #49454f;
+  --line: #cac4d0;
+  --line-strong: #79747e;
+  --primary: #6750a4;
+  --on-primary: #ffffff;
+  --primary-container: #eaddff;
+  --on-primary-container: #21005d;
+  --secondary-container: #e8def8;
+  --on-secondary-container: #4a4459;
+  --surface-dim: #ded8e0;
+  --surface-low: #f7f2fa;
+  --surface: #fef7ff;
+  --surface-high: #ece6f0;
+  --surface-highest: #e6e0e9;
+  --success: #2f6b3a;
+  --success-surface: #d8f3dc;
+  --focus: #005fcc;
+  --shadow: rgba(29, 27, 32, 0.16);
+  --selected-shadow: rgba(103, 80, 164, 0.24);
+  --transparent: transparent;
+  font-family: Roboto, system-ui, sans-serif;
+  background-color: var(--page);
+  color: var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-block-size: 100vh;
+  margin-block: 0;
+  margin-inline: 0;
+  background-color: var(--page);
+}
+
+main {
+  inline-size: min(100%, 108rem);
+  margin-inline: auto;
+  padding-block: 2rem 5rem;
+  padding-inline: clamp(1rem, 3vw, 3rem);
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 2rem;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-block-start: 0;
+}
+
+h1 {
+  max-inline-size: 22ch;
+  margin-block-end: 0.5rem;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  margin-block-end: 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.1;
+}
+
+h3 {
+  margin-block-end: 0;
+  font-size: 1.1rem;
+}
+
+.lede {
+  max-inline-size: 68ch;
+  margin-block-end: 0;
+  color: var(--ink-muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.round-badge,
+.recommended-badge {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 3rem;
+  padding-inline: 1rem;
+  border-radius: 999rem;
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.question {
+  margin-block-end: 2rem;
+  padding-block: clamp(1.25rem, 3vw, 2rem);
+  padding-inline: clamp(1.25rem, 3vw, 2rem);
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 1.75rem;
+  background-color: var(--paper);
+  box-shadow: 0 0.75rem 2rem var(--shadow);
+}
+
+.question-intro {
+  max-inline-size: 78ch;
+  margin-block-end: 1.5rem;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+}
+
+.option {
+  display: flex;
+  min-inline-size: 0;
+  flex-direction: column;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background-color: var(--paper-strong);
+  cursor: pointer;
+}
+
+.option:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0.5rem 1.5rem var(--selected-shadow);
+}
+
+.option:has(input:checked) {
+  border-width: 0.1875rem;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.25rem var(--selected-shadow);
+}
+
+.option:has(input:focus-visible) {
+  outline: 0.1875rem solid var(--focus);
+  outline-offset: 0.1875rem;
+}
+
+.option-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-block-size: 4.5rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  border-block-end-width: 0.0625rem;
+  border-block-end-style: solid;
+  border-block-end-color: var(--line);
+}
+
+.option-heading input {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  margin-block: 0;
+  margin-inline: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.option-title {
+  display: flex;
+  min-inline-size: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.option-code {
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.option-summary {
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+
+.option-visual {
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  background-color: var(--surface-dim);
+}
+
+.assessment {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-block: 1rem 1.25rem;
+  padding-inline: 1.25rem;
+}
+
+.assessment strong {
+  display: block;
+  margin-block-end: 0.3rem;
+  color: var(--ink);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.assessment ul {
+  margin-block: 0;
+  padding-inline-start: 1.2rem;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.assessment li + li {
+  margin-block-start: 0.35rem;
+}
+
+.my-read {
+  margin-block: auto 0;
+  padding-block-start: 0.75rem;
+  border-block-start-width: 0.0625rem;
+  border-block-start-style: solid;
+  border-block-start-color: var(--line);
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.ranking {
+  margin-block: 1.25rem 0;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-radius: 1rem;
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  line-height: 1.5;
+}
+
+.ranking strong {
+  display: block;
+  margin-block-end: 0.25rem;
+}
+
+/* Light-theme separation miniatures. */
+.foldable {
+  aspect-ratio: 852 / 620;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 0.55rem minmax(0, 1fr);
+  gap: 0.55rem;
+  padding-block: 0.55rem;
+  padding-inline: 0.55rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  color: var(--ink);
+}
+
+.foldable[data-separation="tonal"] {
+  background-color: var(--paper-strong);
+}
+
+.foldable[data-separation="outline"] {
+  background-color: var(--surface);
+}
+
+.foldable[data-separation="hybrid"] {
+  background-color: var(--surface-dim);
+}
+
+.seam {
+  border-radius: 999rem;
+  background-color: var(--surface-dim);
+}
+
+.foldable-side {
+  display: flex;
+  min-inline-size: 0;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.picker-mini,
+.transport-mini,
+.tracks-mini {
+  min-inline-size: 0;
+  border-radius: 0.55rem;
+  overflow: hidden;
+}
+
+.picker-mini,
+.tracks-mini {
+  flex: 1 1 auto;
+}
+
+.foldable[data-separation="tonal"] .picker-mini {
+  background-color: var(--surface-low);
+}
+
+.foldable[data-separation="tonal"] .transport-mini {
+  background-color: var(--surface);
+}
+
+.foldable[data-separation="tonal"] .tracks-mini {
+  background-color: var(--surface);
+}
+
+.foldable[data-separation="outline"] .picker-mini,
+.foldable[data-separation="outline"] .transport-mini,
+.foldable[data-separation="outline"] .tracks-mini {
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line);
+  background-color: var(--surface);
+}
+
+.foldable[data-separation="hybrid"] .picker-mini,
+.foldable[data-separation="hybrid"] .tracks-mini {
+  background-color: var(--paper-strong);
+}
+
+.foldable[data-separation="hybrid"] .transport-mini {
+  background-color: var(--surface-low);
+}
+
+.mini-toolbar {
+  block-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding-inline: 0.45rem;
+}
+
+.foldable[data-separation="outline"] .mini-toolbar {
+  border-block-end-width: 0.0625rem;
+  border-block-end-style: solid;
+  border-block-end-color: var(--line);
+}
+
+.mini-chip {
+  min-block-size: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.5rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line-strong);
+  border-radius: 999rem;
+  font-size: 0.48rem;
+  font-weight: 700;
+}
+
+.foldable[data-separation="tonal"] .mini-chip {
+  border-color: var(--transparent);
+  background-color: var(--secondary-container);
+}
+
+.picker-body {
+  display: grid;
+  grid-template-columns: 1.7rem minmax(0, 1fr);
+  min-block-size: 8.5rem;
+}
+
+.rail-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding-block: 0.3rem;
+  color: var(--ink-muted);
+  font-size: 0.42rem;
+  font-weight: 700;
+}
+
+.foldable[data-separation="tonal"] .rail-mini {
+  background-color: var(--surface-high);
+}
+
+.foldable[data-separation="hybrid"] .rail-mini {
+  border-inline-end-width: 0.0625rem;
+  border-inline-end-style: solid;
+  border-inline-end-color: var(--line);
+}
+
+.names-mini {
+  display: flex;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-block: 0.6rem;
+  padding-inline: 0.6rem;
+  font-size: 0.46rem;
+}
+
+.names-mini span {
+  min-block-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.names-mini .active-name {
+  border-block-end-width: 0.125rem;
+  border-block-end-style: solid;
+  border-block-end-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.transport-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+  padding-block: 0.65rem;
+  padding-inline: 0.65rem;
+}
+
+.transport-title {
+  text-align: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+}
+
+.seek-mini {
+  block-size: 0.35rem;
+  border-radius: 999rem;
+  background-color: var(--surface-highest);
+}
+
+.seek-mini::before {
+  content: "";
+  display: block;
+  inline-size: 38%;
+  block-size: 100%;
+  border-radius: 999rem;
+  background-color: var(--primary);
+}
+
+.transport-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.transport-buttons span {
+  inline-size: 1.35rem;
+  block-size: 1.35rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999rem;
+  background-color: var(--surface-high);
+  font-size: 0.5rem;
+}
+
+.transport-buttons .play-mini {
+  inline-size: 1.8rem;
+  block-size: 1.8rem;
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.mode-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line-strong);
+  border-radius: 0.7rem;
+  overflow: hidden;
+  font-size: 0.4rem;
+}
+
+.mode-mini span {
+  min-block-size: 1.15rem;
+  display: grid;
+  place-items: center;
+}
+
+.mode-mini span:nth-child(1),
+.mode-mini span:nth-child(3) {
+  border-inline-end-width: 0.0625rem;
+  border-inline-end-style: solid;
+  border-inline-end-color: var(--line-strong);
+}
+
+.mode-mini span:nth-child(1),
+.mode-mini span:nth-child(2) {
+  border-block-end-width: 0.0625rem;
+  border-block-end-style: solid;
+  border-block-end-color: var(--line-strong);
+}
+
+.mode-mini .mode-active {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font-weight: 700;
+}
+
+.track-mini {
+  min-block-size: 2.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-inline: 0.65rem;
+}
+
+.foldable[data-separation="outline"] .track-mini {
+  border-block-end-width: 0.0625rem;
+  border-block-end-style: solid;
+  border-block-end-color: var(--line);
+}
+
+.track-mini[data-playing] {
+  background-color: var(--secondary-container);
+}
+
+.track-number {
+  inline-size: 0.75rem;
+  color: var(--line-strong);
+  text-align: center;
+  font-size: 0.42rem;
+}
+
+.track-copy {
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+.track-copy b,
+.track-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-copy b {
+  font-size: 0.52rem;
+}
+
+.track-copy small {
+  color: var(--ink-muted);
+  font-size: 0.4rem;
+}
+
+/* True-peak emphasis miniatures. */
+.track-study {
+  min-block-size: 22rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: var(--paper-strong);
+}
+
+.track-study .study-toolbar {
+  min-block-size: 3rem;
+  display: flex;
+  align-items: center;
+  padding-inline: 1rem;
+}
+
+.study-folder {
+  min-block-size: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.9rem;
+  border-radius: 999rem;
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.study-row {
+  min-block-size: 3.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-inline: 1rem;
+}
+
+.study-row[data-playing] {
+  background-color: var(--secondary-container);
+}
+
+.study-number {
+  inline-size: 1rem;
+  color: var(--line-strong);
+  text-align: center;
+  font-size: 0.68rem;
+}
+
+.study-title {
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.study-sub {
+  color: var(--ink-muted);
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
+.track-study[data-emphasis="split"] .peak {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.track-study[data-emphasis="playing-only"] .study-row:not([data-playing]) .separator,
+.track-study[data-emphasis="playing-only"] .study-row:not([data-playing]) .peak {
+  display: none;
+}
+
+.free-text label,
+.output label {
+  display: block;
+  margin-block-end: 0.5rem;
+  font-weight: 700;
+}
+
+textarea {
+  inline-size: 100%;
+  min-block-size: 10rem;
+  resize: vertical;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line-strong);
+  border-radius: 1rem;
+  background-color: var(--paper-strong);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+}
+
+textarea:focus-visible,
+button:focus-visible {
+  outline: 0.1875rem solid var(--focus);
+  outline-offset: 0.1875rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block-start: 1.25rem;
+}
+
+button {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 1.25rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--primary);
+  border-radius: 999rem;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button[data-variant="secondary"] {
+  background-color: var(--transparent);
+  color: var(--primary);
+}
+
+button:hover {
+  box-shadow: 0 0.5rem 1.25rem var(--selected-shadow);
+}
+
+.status {
+  min-block-size: 3rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.output {
+  margin-block-start: 1.25rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-radius: 1rem;
+  background-color: var(--success-surface);
+}
+
+.output[hidden] {
+  display: none;
+}
+
+.output textarea {
+  min-block-size: 7rem;
+}
+
+footer {
+  color: var(--ink-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+@media (max-width: 45rem) {
+  main {
+    padding-block-start: 1rem;
+  }
+
+  .question {
+    border-radius: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .option,
+  button {
+    transition-duration: 150ms;
+    transition-property: border-color, box-shadow, transform;
+    transition-timing-function: ease-out;
+  }
+
+  button:active {
+    transform: translateY(0.0625rem);
+  }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Close the light-theme fork</h1>
+      <p class="lede">
+        The dark theme stays true black. This round decides the light half of “follow the OS.”
+        Choose one answer in each visual study, then use the final field to reject the premise or add what the options missed.
+      </p>
+    </div>
+    <div class="round-badge">Grilling round 1</div>
+  </header>
+
+  <form id="design-form">
+    <section class="question" aria-labelledby="q1-title">
+      <h2 id="q1-title">Q1: What should separate surfaces in light mode?</h2>
+      <p class="question-intro">
+        The unfolded Pixel 9 Pro Fold is shown with the settled picker and transport on the left,
+        a 16dp seam,
+        and tracks on the right.
+        Only the light-surface hierarchy changes.
+      </p>
+
+      <div class="options">
+        <label class="option">
+          <span class="option-heading">
+            <input type="radio" name="lightSeparation" value="1a" required>
+            <span class="option-title">
+              <span class="option-code">1a</span>
+              <strong>Tonal ramp, no outlines</strong>
+              <span class="option-summary">Pure MD3 tonal separation</span>
+            </span>
+          </span>
+          <span class="option-visual">
+            <span class="foldable" data-separation="tonal" aria-label="Light unfolded player using only tonal surfaces">
+              <span class="foldable-side">
+                <span class="picker-mini">
+                  <span class="mini-toolbar"><span class="mini-chip">Open</span></span>
+                  <span class="picker-body">
+                    <span class="rail-mini"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b></span>
+                    <span class="names-mini"><span>Calvin Harris</span><span class="active-name">Camellia</span><span>Caravan Palace</span><span>Charli XCX</span><span>Chvrches</span></span>
+                  </span>
+                </span>
+                <span class="transport-mini">
+                  <span class="transport-title">Another Xronixle</span>
+                  <span class="seek-mini"></span>
+                  <span class="transport-buttons"><span>◀</span><span class="play-mini">Ⅱ</span><span>▶</span></span>
+                  <span class="mode-mini"><span>Repeat</span><span class="mode-active">In order</span><span>Folder</span><span>All</span></span>
+                </span>
+              </span>
+              <span class="seam"></span>
+              <span class="tracks-mini">
+                <span class="mini-toolbar"><span class="mini-chip">Camellia</span></span>
+                <span class="track-mini" data-playing><span class="track-number">▶</span><span class="track-copy"><b>Another Xronixle</b><small>4:35 · −1.2 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">2</span><span class="track-copy"><b>Burning Aquamarine</b><small>5:12 · −0.8 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">3</span><span class="track-copy"><b>Dokuhebi</b><small>4:01 · −1.4 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">4</span><span class="track-copy"><b>ENÛMA∇ELIŠ</b><small>9:47 · −0.3 dBTP</small></span></span>
+              </span>
+            </span>
+          </span>
+          <span class="assessment">
+            <span><strong>Pros</strong></span>
+            <ul>
+              <li>Uses MD3’s intended tonal hierarchy.</li>
+              <li>Looks calm and keeps attention on content.</li>
+              <li>Uses one separation mechanism.</li>
+            </ul>
+            <span><strong>Cons</strong></span>
+            <ul>
+              <li>Picker, transport and track surfaces are close in value.</li>
+              <li>Separation may weaken on poor panels or at low brightness.</li>
+            </ul>
+            <span class="my-read"><strong>My read</strong>Second choice. Quiet and readable, but less immediate than 1c.</span>
+          </span>
+        </label>
+
+        <label class="option">
+          <span class="option-heading">
+            <input type="radio" name="lightSeparation" value="1b" required>
+            <span class="option-title">
+              <span class="option-code">1b</span>
+              <strong>One flat surface with hairlines</strong>
+              <span class="option-summary">Direct translation of dark mode</span>
+            </span>
+          </span>
+          <span class="option-visual">
+            <span class="foldable" data-separation="outline" aria-label="Light unfolded player using outlines on one flat surface">
+              <span class="foldable-side">
+                <span class="picker-mini">
+                  <span class="mini-toolbar"><span class="mini-chip">Open</span></span>
+                  <span class="picker-body">
+                    <span class="rail-mini"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b></span>
+                    <span class="names-mini"><span>Calvin Harris</span><span class="active-name">Camellia</span><span>Caravan Palace</span><span>Charli XCX</span><span>Chvrches</span></span>
+                  </span>
+                </span>
+                <span class="transport-mini">
+                  <span class="transport-title">Another Xronixle</span>
+                  <span class="seek-mini"></span>
+                  <span class="transport-buttons"><span>◀</span><span class="play-mini">Ⅱ</span><span>▶</span></span>
+                  <span class="mode-mini"><span>Repeat</span><span class="mode-active">In order</span><span>Folder</span><span>All</span></span>
+                </span>
+              </span>
+              <span class="seam"></span>
+              <span class="tracks-mini">
+                <span class="mini-toolbar"><span class="mini-chip">Camellia</span></span>
+                <span class="track-mini" data-playing><span class="track-number">▶</span><span class="track-copy"><b>Another Xronixle</b><small>4:35 · −1.2 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">2</span><span class="track-copy"><b>Burning Aquamarine</b><small>5:12 · −0.8 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">3</span><span class="track-copy"><b>Dokuhebi</b><small>4:01 · −1.4 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">4</span><span class="track-copy"><b>ENÛMA∇ELIŠ</b><small>9:47 · −0.3 dBTP</small></span></span>
+              </span>
+            </span>
+          </span>
+          <span class="assessment">
+            <span><strong>Pros</strong></span>
+            <ul>
+              <li>Separation stays explicit across panels and brightness levels.</li>
+              <li>Most directly mirrors dark mode’s structure.</li>
+            </ul>
+            <span><strong>Cons</strong></span>
+            <ul>
+              <li>Borders around panes, controls and rows create grid noise.</li>
+              <li>Light mode feels more administrative than the other treatments.</li>
+            </ul>
+            <span class="my-read"><strong>My read</strong>Third choice. Robust, but it spends too much visual ink.</span>
+          </span>
+        </label>
+
+        <label class="option">
+          <span class="option-heading">
+            <input type="radio" name="lightSeparation" value="1c" required>
+            <span class="option-title">
+              <span class="option-code">1c · recommended</span>
+              <strong>Tonal panes with one rail hairline</strong>
+              <span class="option-summary">Dimmed window, quiet raised panes</span>
+            </span>
+          </span>
+          <span class="option-visual">
+            <span class="foldable" data-separation="hybrid" aria-label="Light unfolded player using tonal panes and one rail hairline">
+              <span class="foldable-side">
+                <span class="picker-mini">
+                  <span class="mini-toolbar"><span class="mini-chip">Open</span></span>
+                  <span class="picker-body">
+                    <span class="rail-mini"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b></span>
+                    <span class="names-mini"><span>Calvin Harris</span><span class="active-name">Camellia</span><span>Caravan Palace</span><span>Charli XCX</span><span>Chvrches</span></span>
+                  </span>
+                </span>
+                <span class="transport-mini">
+                  <span class="transport-title">Another Xronixle</span>
+                  <span class="seek-mini"></span>
+                  <span class="transport-buttons"><span>◀</span><span class="play-mini">Ⅱ</span><span>▶</span></span>
+                  <span class="mode-mini"><span>Repeat</span><span class="mode-active">In order</span><span>Folder</span><span>All</span></span>
+                </span>
+              </span>
+              <span class="seam"></span>
+              <span class="tracks-mini">
+                <span class="mini-toolbar"><span class="mini-chip">Camellia</span></span>
+                <span class="track-mini" data-playing><span class="track-number">▶</span><span class="track-copy"><b>Another Xronixle</b><small>4:35 · −1.2 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">2</span><span class="track-copy"><b>Burning Aquamarine</b><small>5:12 · −0.8 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">3</span><span class="track-copy"><b>Dokuhebi</b><small>4:01 · −1.4 dBTP</small></span></span>
+                <span class="track-mini"><span class="track-number">4</span><span class="track-copy"><b>ENÛMA∇ELIŠ</b><small>9:47 · −0.3 dBTP</small></span></span>
+              </span>
+            </span>
+          </span>
+          <span class="assessment">
+            <span><strong>Pros</strong></span>
+            <ul>
+              <li>Creates the clearest hierarchy with little linework.</li>
+              <li>Keeps the track list quiet while separating picker and transport.</li>
+              <li>Uses a hairline only where the rail needs one.</li>
+            </ul>
+            <span><strong>Cons</strong></span>
+            <ul>
+              <li>Mixes tonal separation with one outline.</li>
+              <li>The dim window gives light mode a heavier surrounding field.</li>
+            </ul>
+            <span class="my-read"><strong>My read</strong>First choice. Best hierarchy for the amount of visual ink used.</span>
+          </span>
+        </label>
+      </div>
+
+      <p class="ranking">
+        <strong>Ranking: 1c &gt; 1a &gt; 1b</strong>
+        1c beats 1a because its pane hierarchy survives at a glance.
+        1a beats 1b because its softer separation avoids turning every row and region into a box.
+      </p>
+    </section>
+
+    <section class="question" aria-labelledby="q2-title">
+      <h2 id="q2-title">Q2: How prominent should true-peak values be in light mode?</h2>
+      <p class="question-intro">
+        The track row stays two lines and keeps duration plus true peak.
+        This choice decides only whether the values share one secondary treatment or whether true peak gets stronger emphasis.
+      </p>
+
+      <div class="options">
+        <label class="option">
+          <span class="option-heading">
+            <input type="radio" name="peakEmphasis" value="3a" required>
+            <span class="option-title">
+              <span class="option-code">3a</span>
+              <strong>One secondary treatment</strong>
+              <span class="option-summary">Duration and true peak share a colour</span>
+            </span>
+          </span>
+          <span class="option-visual">
+            <span class="track-study" data-emphasis="same">
+              <span class="study-toolbar"><span class="study-folder">Camellia⌄</span></span>
+              <span class="study-row" data-playing><span class="study-number">▶</span><span><span class="study-title">Another Xronixle</span><span class="study-sub">4:35 <span class="separator">·</span> <span class="peak">−1.2 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">2</span><span><span class="study-title">Burning Aquamarine</span><span class="study-sub">5:12 <span class="separator">·</span> <span class="peak">−0.8 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">3</span><span><span class="study-title">Dokuhebi</span><span class="study-sub">4:01 <span class="separator">·</span> <span class="peak">−1.4 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">4</span><span><span class="study-title">ENÛMA∇ELIŠ</span><span class="study-sub">9:47 <span class="separator">·</span> <span class="peak">−0.3 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">5</span><span><span class="study-title">Ghost</span><span class="study-sub">3:22 <span class="separator">·</span> <span class="peak">−1.1 dBTP</span></span></span></span>
+            </span>
+          </span>
+          <span class="assessment">
+            <span><strong>Pros</strong></span>
+            <ul>
+              <li>Uses one simple rule in both themes.</li>
+              <li>Keeps supporting text subordinate to track titles.</li>
+              <li>Leaves every true-peak value available.</li>
+            </ul>
+            <span><strong>Cons</strong></span>
+            <ul>
+              <li>Duration and true peak receive equal emphasis despite different jobs.</li>
+              <li>The values recede in the light comparison.</li>
+            </ul>
+            <span class="my-read"><strong>My read</strong>Second choice. Clear enough, but harder to scan.</span>
+          </span>
+        </label>
+
+        <label class="option">
+          <span class="option-heading">
+            <input type="radio" name="peakEmphasis" value="3b" required>
+            <span class="option-title">
+              <span class="option-code">3b · recommended</span>
+              <strong>Stronger true-peak value</strong>
+              <span class="option-summary">Duration quiet, true peak at 500 weight</span>
+            </span>
+          </span>
+          <span class="option-visual">
+            <span class="track-study" data-emphasis="split">
+              <span class="study-toolbar"><span class="study-folder">Camellia⌄</span></span>
+              <span class="study-row" data-playing><span class="study-number">▶</span><span><span class="study-title">Another Xronixle</span><span class="study-sub">4:35 <span class="separator">·</span> <span class="peak">−1.2 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">2</span><span><span class="study-title">Burning Aquamarine</span><span class="study-sub">5:12 <span class="separator">·</span> <span class="peak">−0.8 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">3</span><span><span class="study-title">Dokuhebi</span><span class="study-sub">4:01 <span class="separator">·</span> <span class="peak">−1.4 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">4</span><span><span class="study-title">ENÛMA∇ELIŠ</span><span class="study-sub">9:47 <span class="separator">·</span> <span class="peak">−0.3 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">5</span><span><span class="study-title">Ghost</span><span class="study-sub">3:22 <span class="separator">·</span> <span class="peak">−1.1 dBTP</span></span></span></span>
+            </span>
+          </span>
+          <span class="assessment">
+            <span><strong>Pros</strong></span>
+            <ul>
+              <li>Makes true-peak values easy to scan across the folder.</li>
+              <li>Preserves every value without adding a column.</li>
+              <li>The weight difference is visible without competing with titles.</li>
+            </ul>
+            <span><strong>Cons</strong></span>
+            <ul>
+              <li>Introduces two treatments within one supporting line.</li>
+              <li>Repeated bold values add some visual texture.</li>
+            </ul>
+            <span class="my-read"><strong>My read</strong>First choice. Scannable without structural cost.</span>
+          </span>
+        </label>
+
+        <label class="option">
+          <span class="option-heading">
+            <input type="radio" name="peakEmphasis" value="3c" required>
+            <span class="option-title">
+              <span class="option-code">3c</span>
+              <strong>Value only on playing row</strong>
+              <span class="option-summary">Duration alone on every other row</span>
+            </span>
+          </span>
+          <span class="option-visual">
+            <span class="track-study" data-emphasis="playing-only">
+              <span class="study-toolbar"><span class="study-folder">Camellia⌄</span></span>
+              <span class="study-row" data-playing><span class="study-number">▶</span><span><span class="study-title">Another Xronixle</span><span class="study-sub">4:35 <span class="separator">·</span> <span class="peak">−1.2 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">2</span><span><span class="study-title">Burning Aquamarine</span><span class="study-sub">5:12 <span class="separator">·</span> <span class="peak">−0.8 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">3</span><span><span class="study-title">Dokuhebi</span><span class="study-sub">4:01 <span class="separator">·</span> <span class="peak">−1.4 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">4</span><span><span class="study-title">ENÛMA∇ELIŠ</span><span class="study-sub">9:47 <span class="separator">·</span> <span class="peak">−0.3 dBTP</span></span></span></span>
+              <span class="study-row"><span class="study-number">5</span><span><span class="study-title">Ghost</span><span class="study-sub">3:22 <span class="separator">·</span> <span class="peak">−1.1 dBTP</span></span></span></span>
+            </span>
+          </span>
+          <span class="assessment">
+            <span><strong>Pros</strong></span>
+            <ul>
+              <li>Produces the quietest list.</li>
+              <li>Keeps the current track’s value visible.</li>
+            </ul>
+            <span><strong>Cons</strong></span>
+            <ul>
+              <li>Prevents comparison across tracks.</li>
+              <li>Hides already-computed information from its expected location.</li>
+              <li>Conflicts with the settled two-line row content.</li>
+            </ul>
+            <span class="my-read"><strong>My read</strong>Reject. The visual calm is not worth losing the values.</span>
+          </span>
+        </label>
+      </div>
+
+      <p class="ranking">
+        <strong>Ranking: 3b &gt; 3a &gt; 3c</strong>
+        3b beats 3a because it makes true peak scannable without structural cost.
+        3a beats 3c because retaining all values preserves the settled row contract.
+      </p>
+    </section>
+
+    <section class="question free-text" aria-labelledby="q3-title">
+      <h2 id="q3-title">Q3: Anything else you want settled or changed?</h2>
+      <p class="question-intro">
+        Correct the framing,
+        add a constraint the candidates missed,
+        or explicitly reopen a settled decision if that is intentional.
+        This field is part of the answer even when the offered choices fit.
+      </p>
+      <label for="anything-else">Your correction, constraint or “none”</label>
+      <textarea id="anything-else" name="anythingElse" required placeholder="None, or write what these options missed."></textarea>
+
+      <div class="actions">
+        <button type="submit">Prepare answers</button>
+        <button type="button" data-variant="secondary" id="clear-form">Clear</button>
+        <span class="status" id="status" role="status" aria-live="polite"></span>
+      </div>
+
+      <div class="output" id="output" hidden>
+        <label for="answer-output">Answer to paste back into Pi</label>
+        <textarea id="answer-output" readonly></textarea>
+        <div class="actions">
+          <button type="button" id="copy-answers">Copy answers</button>
+          <button type="button" data-variant="secondary" id="download-answers">Download answers</button>
+        </div>
+      </div>
+    </section>
+  </form>
+
+  <footer>
+    Self-contained questionnaire. No network, external stylesheet, script, font or server is required.
+  </footer>
+</main>
+<script>
+const form = document.querySelector('#design-form');
+const output = document.querySelector('#output');
+const answerOutput = document.querySelector('#answer-output');
+const status = document.querySelector('#status');
+const clearButton = document.querySelector('#clear-form');
+const copyButton = document.querySelector('#copy-answers');
+const downloadButton = document.querySelector('#download-answers');
+
+const buildAnswer = () => {
+  const data = new FormData(form);
+  return [
+    `Q1 ${data.get('lightSeparation')}`,
+    `Q2 ${data.get('peakEmphasis')}`,
+    `Q3 ${data.get('anythingElse').trim()}`,
+  ].join('\n');
+};
+
+const copyText = async (text) => {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  answerOutput.focus();
+  answerOutput.select();
+  const copied = document.execCommand('copy');
+  if (!copied) {
+    throw new Error('Browser copy command was rejected. Select the prepared answer and copy it manually.');
+  }
+};
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!form.reportValidity()) {
+    return;
+  }
+
+  answerOutput.value = buildAnswer();
+  output.hidden = false;
+  status.textContent = 'Answers prepared.';
+  output.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+clearButton.addEventListener('click', () => {
+  form.reset();
+  answerOutput.value = '';
+  output.hidden = true;
+  status.textContent = 'Answers cleared.';
+  document.querySelector('input[name="lightSeparation"]').focus();
+});
+
+copyButton.addEventListener('click', async () => {
+  try {
+    await copyText(answerOutput.value);
+    status.textContent = 'Answers copied. Paste them into Pi.';
+  } catch (error) {
+    status.textContent = error instanceof Error ? error.message : String(error);
+  }
+});
+
+downloadButton.addEventListener('click', () => {
+  const blob = new Blob([`${answerOutput.value}\n`], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'music-player-design-round-1.txt';
+  link.click();
+  URL.revokeObjectURL(url);
+  status.textContent = 'Answers downloaded.';
+});
+</script>
+</body>
+</html>

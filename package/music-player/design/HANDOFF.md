@@ -177,7 +177,10 @@ updated as work proceeds; that is standing rule 10. The immediate next action is
 build, verify and open the self-contained light-theme questionnaire in Helium.
 Imported screenshots and uploads were inspected for visible account, path and status-bar
 identifiers; none were present. Their metadata was stripped before the package import
-was committed.
+was committed. The self-contained grilling form now exists at
+`questions/current.html`; package lint and unit-contract tasks confirm that its answer
+fields are present and that it references no external stylesheet, script, font or
+server. User-boundary rendering and interaction verification are the next action.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
