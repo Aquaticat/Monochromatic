@@ -46,8 +46,9 @@ uses these coordinates at 100%:
 - 852 × 883 CSS px for the active screen content.
 - 27px start, 28px end, and 27px block-axis chassis insets.
 - 454 × 937 CSS px for a crop from the fold centre through the right body edge.
-- 8px of seam-facing screen context, 418px of right-pane content, and 28px of outer
-  chassis in that crop.
+- 426px of physical right-half screen content and 28px of outer chassis in that crop.
+  Under the current expanded layout, the 426px screen half contains 12dp of the centered
+  pane spacer plus the 414dp right pane.
 
 The user supplied eight current product references on 2026-09-04. The straight-on
 `google-pixel-9-pro-fold-1.jpg` reference is 629 × 650px, an outer ratio of 0.9677.
@@ -118,15 +119,46 @@ capture's pixel at the configured camera centre remains the app background even 
 Window Manager reports the cutout. The questionnaire must therefore keep one hardware
 camera overlay in its measured frame while removing any simulated system bars.
 
+## Dynamic-color capture state
+
+The Material-compliance recapture uses Android's live `dynamicLightColorScheme`.
+Immediately before capture, the read-only Pixel 9 Pro Fold AVD reported:
+
+- `settings get secure theme_customization_overlay_packages`: `null`.
+- `cmd uimode night`: `Night mode: no`.
+- System wallpaper: ID 0, SystemUI `ImageWallpaper`, no name, and
+  `isColorExtracted=false`.
+- Fallback wallpaper: ID 1, SystemUI `GradientColorWallpaper`.
+- `com.android.systemui:neutral`, `:accent`, and `:dynamic` overlays: disabled.
+
+This pins the source to the stock AVD light resources rather than a personal wallpaper
+or manually selected palette. Pixel probes from the resulting `light-a/b/c` captures
+resolve the role mapping as follows:
+
+```
+surface                    #FAF8FE
+surface-container-low      #F3F3FA
+surface-container          #EDEDF6
+surface-container-high     #E7E7F1
+surface-container-lowest   #FFFFFF
+surface-dim                #D8D9E4
+primary-container          #B9CBFF
+```
+
+The captures test role use rather than hard-code these values into the Compose source.
+A future capture must first confirm the same AVD theme state or deliberately update the
+record and role-based guards.
+
 ---
 
 ## Layout implications (these are the point)
 
 1. **The inner display is essentially square and slightly taller than wide.** It is
    not a landscape tablet. Every mockup drawn at 924×600 was wrong in structure.
-2. **The hinge is vertical in portrait**, so the inner display splits into two halves
-   of roughly **418dp × 883dp** with a 16dp seam gutter between them. Each half is
-   narrow and tall — closer to a phone column than a pane.
+2. **The hinge is vertical in portrait.** The 852dp expanded layout uses two 414dp
+   panes around Material's required centered 24dp spacer. Each physical screen half is
+   **426dp × 883dp**: 12dp of spacer plus one 414dp pane. Each pane is narrow and tall,
+   closer to a phone column than a landscape tablet pane.
 3. **Nothing interactive may cross the crease** (decisions.md E2). A full-width
    transport row puts the play button on the fold; this is why the deck sits inside
    one half.
@@ -142,7 +174,7 @@ camera overlay in its measured frame while removing any simulated system bars.
 ```
 411 × 923    cover screen (folded)
 852 × 883    inner display (unfolded)
-418 × 883    one half of the inner display
+426 × 883    physical right half of the inner display
 1280 × 800   a reasonable desktop window (not yet specified by the user)
 ```
 

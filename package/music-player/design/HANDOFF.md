@@ -476,7 +476,17 @@ list color figure explicitly enumerates `primary container` followed by
 `on primary container`, confirming that selected pair. Before capture, record the
 emulator's wallpaper-derived theme state; during inspection, measure all segmented
 labels and verify selected-role pixels rather than inferring them from a successful
-build. Native emulator capture and visual inspection are next.
+build. First capture exposed `Shuffle folder` clipping inside the one-row segmented
+control. Prototype commit `12e99097d` changes its visible label to the untruncated
+`Shuffle` while retaining `Shuffle current folder` as its accessibility label; the
+other accessible labels also state their complete behavior. A second build and native
+capture pass succeeded. UI Automator measures every button, letter, folder, track, and
+segment action at 117px, exactly 48dp at 390dpi; the slider target is 107px, about
+44dp high. All four mode labels are present within their segment bounds. Individual
+and contact-sheet inspection confirms real app bars and icons, readable source actions,
+one-row mode selection with checkmark and color, slider time anchors, full-bleed square
+section surfaces, the 24dp centre spacer, and all three complete true-peak treatments.
+Questionnaire integration is in progress.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

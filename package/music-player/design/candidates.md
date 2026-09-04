@@ -55,14 +55,14 @@ which were left as historical style comparisons.
 
 | File | Size | What it shows |
 |---|---|---|
-| **light-a** | 852×fill | Light theme, all-tonal: window surface-container-lowest, picker -low, tracks surface, transport -container. Zero outlines. |
-| **light-b** | 852×fill | Light theme, one flat surface + 1dp outline-variant hairlines — the direct translation of the dark design. |
-| **light-c** | 852×fill | Light theme, ramp for panes on a surface-dim window, hairline only at the rail seam. |
+| **light-a** | 852×fill | Light theme, all-tonal: surface ground and tracks, surface-container-low picker, surface-container transport, surface-container-high rail. No dividers. |
+| **light-b** | 852×fill | Light theme, one surface role plus 1dp outline-variant dividers at pane, rail, and row boundaries. |
+| **light-c** | 852×fill | Light theme, surface-container panes on a surface-dim ground, with one outline-variant rail divider. |
 | **light-abc** | 3-up | All three side by side for comparison. |
 | **dark-a** | 418×fill | REJECTED — MD3's own dark container ramp above #000; the panes read as grey cards floating on black. |
 | **dark-b** | 418×fill | **CHOSEN (D32)** — the project's own ramp measured down from black: #000 / #0A0A0D / #121216 / #1A1A1F / #22222A. |
 | **dark-ab** | 2-up | Both, plus a swatch comparison of the two ramps. |
-| **dbtp-a/b/c** | 434×fill | Secondary text in light: same-as-dark · split line with true-peak at on-surface 500 · dB only on the playing row. **Awaiting a pick — my read is 3b** (open-questions 11b). |
+| **dbtp-a/b/c** | 426×883 | Secondary text in light: one on-surface-variant line · true peak at on-surface 500 · every true peak in the Material trailing-text slot. **Awaiting a pick — my read is 3b** (open-questions 11b). |
 | **light-a/b/c** | 852×fill | **Awaiting a pick — my read is 1c** (open-questions 11a). |
 | **candidates/_ds/** | — | Copied MD3 token sheets (palette, color, fonts, typography, shape, elevation, spacing, state) so candidate files resolve them without `../`. |
 
@@ -71,9 +71,14 @@ All light-side files are presented on a light desk with a light caption bar
 six `.dc.html` files are now historical design records rather than screenshot sources.
 Branch `prototype/music-player-theme-compose` rebuilds the same six keys in native
 Compose and captures them from the unfolded Pixel 9 Pro Fold emulator with Android
-system bars. The checked-in PNGs under `questions/render/` come from prototype commit
-`6e8f248c5` after removal of redundant outer wrappers on both sides and insertion of
-30dp edge-gesture insets inside the still-full-bleed section backgrounds.
+system bars. Prototype commit `12e99097d` rebuilds them against the user-supplied
+Material archive with Android dynamic color, role-mapped surfaces, two 414dp panes and
+a 24dp spacer, baseline Material list items, real app bars, buttons, icons, slider and
+one-row segmented control. It also retains 30dp edge-gesture insets inside full-bleed
+section backgrounds. The visible segmented labels are `Repeat`, `In order`, `Shuffle`,
+and `Shuffle all`; accessibility labels expand each mode's full meaning. Native
+1038 × 2152px right-half captures now include 12dp of pane spacer and the 414dp detail
+pane. Integration into the questionnaire is in progress.
 
 ## ROUND 8 — verdicts in
 
