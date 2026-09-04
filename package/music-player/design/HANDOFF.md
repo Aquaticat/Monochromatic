@@ -193,6 +193,12 @@ the Helium process is active. The user then reported that the nested HTML mockup
 the visible Helium form were not rendering correctly. The prior verification therefore
 did not prove the user-visible nested layouts were complete; diagnosis is in progress
 against Helium 0.15.6.1 (Chromium 151.0.7922.169). No theme answer has been recorded.
+A CDP probe against the real Helium engine at its 1012×676 viewport reproduced and
+measured the defects: both comparisons wrapped to two rows; each foldable used the
+wrong 852:620 ratio instead of 852:883; each clipped seven descendants; and all six
+visuals were hand-redrawn approximations rather than verified candidate renders. This
+rules out a Helium-specific cause. Replace every nested mock with an exact candidate
+render, keep each three-way comparison together, then rerun the same red probe.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
