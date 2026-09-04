@@ -718,14 +718,19 @@ private fun TransportControls() {
 /** Draws one non-wrapping Material single-choice segmented button with four visible options. */
 @Composable
 private fun ModeControl() {
-    val labels = listOf("Repeat", "In order", "Shuffle folder", "Shuffle all")
+    val labels = listOf("Repeat", "In order", "Shuffle", "Shuffle all")
+    val accessibleLabels = listOf("Repeat track", "Play in order", "Shuffle current folder", "Shuffle all folders")
     SingleChoiceSegmentedButtonRow {
         for (index in labels.indices) {
             SegmentedButton(
                 selected = index == 1,
                 onClick = {},
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
-                modifier = Modifier.defaultMinSize(minWidth = 48.dp),
+                modifier = Modifier
+                    .defaultMinSize(minWidth = 48.dp)
+                    .semantics {
+                        contentDescription = accessibleLabels[index]
+                    },
             ) {
                 Text(text = labels[index], maxLines = 1)
             }
