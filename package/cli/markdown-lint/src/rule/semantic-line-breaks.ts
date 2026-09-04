@@ -66,6 +66,54 @@ const DELIMITED_INLINE: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Character a markup tag opens with.
+ */
+const TAG_OPEN = '<';
+
+/**
+ * Character a markup tag closes with.
+ */
+const TAG_CLOSE = '>';
+
+/**
+ * Whether a paragraph is one component or HTML-like tag rather than prose.
+ *
+ * WHY THE `html` SKIP IS NOT ENOUGH. CommonMark recognises raw HTML only when
+ * the tag's attributes are well formed, and a component written with JSX
+ * braces, `<PhotoScroll photos={[ 'a.webp', ]} />`, is not: the parser reads
+ * the whole line as paragraph text. Measured 2026-09-04 on a shipped passage
+ * of the translation-repair corpus, where the rule broke such a line before
+ * its `/>` because the array carried a comma followed by a space. A paragraph
+ * whose entire source opens with `<` and closes with `>` has no prose to
+ * break, whichever grammar failed to claim it; a multi-line element of the
+ * same shape is caught the same way.
+ *
+ * @param paragraph - paragraph under consideration
+ *
+ * @param source - original source the paragraph's offsets index
+ *
+ * @returns whether the paragraph should be left unbroken as markup
+ */
+function isTagLikeParagraph({
+  paragraph,
+  source,
+}: {
+  readonly paragraph: ReadonlyDeep<Parents>;
+  readonly source: string;
+},): boolean {
+  /**
+   * Paragraph source without surrounding whitespace, trailing hard-break
+   * spaces included.
+   */
+  const text = sliceOf({
+    node: paragraph,
+    source,
+  },)
+    .trim();
+  return text.startsWith(TAG_OPEN,) && text.endsWith(TAG_CLOSE,);
+}
+
+/**
  * Parameters for {@link tailThroughDelimiters}.
  */
 type TailThroughDelimitersParams = {
@@ -277,6 +325,12 @@ function checkSemanticLineBreaks({
       return ancestor.type === 'paragraph';
     },);
     if (paragraph === undefined) {
+      continue;
+    }
+    if (isTagLikeParagraph({
+      paragraph,
+      source,
+    },)) {
       continue;
     }
     /**

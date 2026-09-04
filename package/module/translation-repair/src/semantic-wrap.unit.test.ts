@@ -178,5 +178,30 @@ await describe({
         expect(wrapReplacementText({ text: heading, },),).toBe(heading,);
       },
     },),
+
+    it({
+      name: 'KEEPS A PHOTO COMPONENT ON ITS LINE, though its JSX braces make it prose to CommonMark: '
+        + 'the Hangmster page of 2026-09-04 shipped with the closing `/>` broken onto its own line '
+        + 'because the array carried a comma followed by a space, and sixteen source-page elements '
+        + 'at the pinned corpus share that shape',
+      fn: async () => {
+        /**
+         * A one-line element with the comma-and-space shape, trailing hard-break
+         * spaces included, between two prose paragraphs the rule does wrap.
+         */
+        const element = `<PhotoScroll photos={[ '\${path}/photos/sill.webp',]} />  `;
+        const text = `She drew this, and posted it:\n\n${element}\n\nThe cat, as ever, approved.`;
+
+        /**
+         * What the wrapper returned.
+         */
+        const wrapped = wrapReplacementText({ text, },);
+        expect(wrapped.includes(element,),).toBe(true,);
+        expect(wrapped.split('\n',).filter(function isClose(line,): boolean {
+          return line.trim() === '/>';
+        },).length,).toBe(0,);
+        expect(wrapped.startsWith('She drew this,\nand posted it:',),).toBe(true,);
+      },
+    },),
   ],
 },);

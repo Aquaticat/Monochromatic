@@ -106,6 +106,25 @@ await describe({
       },
     },),
     it({
+      name: 'leaves a component tag alone though CommonMark reads its braces as prose',
+      fn: async function componentTag() {
+        // The shape a shipped corpus passage carried on 2026-09-04: JSX braces
+        // make the tag invalid HTML to CommonMark, so it parses as a paragraph,
+        // and the comma before the closing brace is followed by a space.
+        const oneLine = `<PhotoScroll photos={[ '\${path}/photos/sill.webp',]} />  \n`;
+        expect(count(oneLine,),).toBe(0,);
+        expect(fix(oneLine,).source,).toBe(oneLine,);
+        // The multi-line spelling, with several paths on one interior line.
+        const multiLine = `<PhotoScroll photos={[\n`
+          + `    '\${path}/photos/sill.webp', '\${path}/photos/nap.webp',\n`
+          + `]} />\n`;
+        expect(count(multiLine,),).toBe(0,);
+        expect(fix(multiLine,).source,).toBe(multiLine,);
+        // Prose beside a tag is still prose.
+        expect(count('See <b>this, here</b> now.\n',),).toBe(1,);
+      },
+    },),
+    it({
       name: 'skips dots in an abbreviation',
       fn: async function abbreviation() {
         expect(count('this is e.g. important here.\n',),).toBe(0,);
