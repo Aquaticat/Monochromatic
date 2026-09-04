@@ -106,17 +106,20 @@ Replacement scheduler must dispatch dependency-independent nodes concurrently
 up to dated live-measured per-provider and per-model limits.
 Dependency edges still serialize work whose prompt consumes prior output.
 Concurrency and request-rate limits are separate constraints and must be measured separately.
-Production uses 5 Synthetic slots per active model
-and can expose 20 aggregate slots across the four-model roster.
+Production uses 5 Synthetic slots per active model and can expose 20 aggregate slots across the four-model roster.
 A width-10 gpt-oss arm returned 3 HTTP 429 responses,
 so model size does not justify a larger setting.
 Hyper has no local concurrency ceiling;
 a live width-64 arm completed 64 of 64 structured calls.
 Its 1,000 requests-per-hour account limit remains a separate rate budget.
-OpenRouter, the third provider since 2026-09-03, has no local ceiling either:
+OpenRouter,
+the third provider since 2026-09-03,
+has no local ceiling either:
 a width-32 chat-completions arm completed 32 of 32 on two models with no refusal,
 and the provider states no request-rate limit for paid models.
-Routing walks `PROVIDER_ORDER` (Synthetic, Hyper, OpenRouter):
+Routing walks `PROVIDER_ORDER` (Synthetic,
+Hyper,
+OpenRouter):
 the first provider that serves the model and has budget takes the call,
 a saturated provider overflows to the next usable one,
 and a dry provider passes the call down the order.
@@ -151,12 +154,15 @@ or become quality outcome.
 ## Operating a corpus pass
 
 This file describes the design.
-To RUN the pipeline over the corpus, follow
-[the corpus pass runbook](../../../doc/runbook/translation-repair-corpus-pass.md),
-which carries the environment, the launch, what to watch while it runs,
+To RUN the pipeline over the corpus,
+follow [the corpus pass runbook](../../../doc/runbook/translation-repair-corpus-pass.md),
+which carries the environment,
+the launch,
+what to watch while it runs,
 and how to read the output back once it has exited.
 
-Read-back tools, none of which spends quota or calls a model:
+Read-back tools,
+none of which spends quota or calls a model:
 
 -   `verify-published` reads the published tree back against the artifacts that produced it,
     and refuses a run whose pages disagree with what its artifacts promised.
@@ -168,22 +174,27 @@ Read-back tools, none of which spends quota or calls a model:
 -   `spend-report` prices the metered seats against a DATED rate table,
     and counts subscription seats without pricing them.
 -   `ledger-report` says who produced each candidate and how often judges chose it.
-    Its `--model` view prints corpus wording, so it must not be pasted anywhere.
+    Its `--model` view prints corpus wording,
+    so it must not be pasted anywhere.
 
 The runbook carries the exact invocation and the expected output for each,
 including what each one prints when the run recorded nothing for it,
 which is never the same as the run having done nothing.
 
-The pass also prints, beside each settled entry's `TALLY` line,
+The pass also prints,
+beside each settled entry's `TALLY` line,
 `DESTINATIONS <id> source=N page=M dropped=K`:
-how many distinct web addresses the source page links to, how many the published page carries,
+how many distinct web addresses the source page links to,
+how many the published page carries,
 and how many of the source's the page lacks (`#265`).
 A source destination the archive rendered another way is not lacking when the page carries the archive's rendering
 (`doc/decision/translation-repair-rewritten-destination.md`):
 the line then ends with `destinations-archive-rendering`,
 and with `destinations-both-renderings` when the page carries the original's and the archive's for one reference.
-The addresses themselves go to the run log at info, never to stdout.
-A dropped destination from a wording both deciders approved is a finding, not a late publish rewrite.
+The addresses themselves go to the run log at info,
+never to stdout.
+A dropped destination from a wording both deciders approved is a finding,
+not a late publish rewrite.
 The neutral pronoun the sources write as `TA`,
 `Ta` or `ta` renders as singular they:
 the declared-identity pronoun line counts all three spellings (`identity-context.ts`),
@@ -195,7 +206,8 @@ that rule flags one archive (a rewrite keeping `TA`) and 15 sources.
 A different rule protects a source-only passage:
 whole-document coverage must call it absent,
 then page shortfall or a destination missing from target admits translation.
-Any source passage still unfilled fails entry before contest, artifact and publication;
+Any source passage still unfilled fails entry before contest,
+artifact and publication;
 a known gap never becomes settled page.
 This includes a passage admitted for translation when provider outage leaves every translator unheard:
 entry reports error and keeps slice cache for retry.
@@ -226,41 +238,46 @@ const result = await repairTranslation({
   `SyntheticClient` implementation);
   the library performs no IO of its own.
 - `models` names the role roster:
-  critic fan-out, provenance-blind adjudication panel,
-  editors, selection judges, and resolution checkers.
-  A stage that loses voices retries exactly the lost ones until at least
-  half its roster is heard.
+  critic fan-out,
+  provenance-blind adjudication panel,
+  editors,
+  selection judges,
+  and resolution checkers.
+  A stage that loses voices retries exactly the lost ones until at least half its roster is heard.
   An optional `editorRuleAddendum` splices one extra machine-enforced
   rule line into the editor prompt for calibration experiments.
 - No single model decides the repaired text.
   Every editor in `editorModelIds` rewrites the chunk independently,
   each proposal passes the same deterministic apply gate,
   and judges drawn from `judgeModelIds` choose what ships.
-  Selection seats the WHOLE judge roster, producers included,
+  Selection seats the WHOLE judge roster,
+  producers included,
   and counts a judge's ballot for its OWN candidate at half weight;
-  every other ballot it casts carries full weight, including one for
-  another producer's candidate.
-  A winner needs weight 2, so on these rosters no candidate is selected
-  by its own authors alone.
-  `assertJudgeableEditorRoster` still requires two judges with no stake
-  in the set, which is now a policy rather than an arithmetic necessity:
+  every other ballot it casts carries full weight,
+  including one for another producer's candidate.
+  A winner needs weight 2,
+  so on these rosters no candidate is selected by its own authors alone.
+  `assertJudgeableEditorRoster` still requires two judges with no stake in the set,
+  which is now a policy rather than an arithmetic necessity:
   it keeps a whole slate from being ranked only by the models that wrote it.
   `checkerModelIds` should likewise exclude every editor,
   so nothing certifies text it wrote.
 - Judging runs at two granularities.
-  Per envelope, the best fix for each individual issue can win even when
-  the model that wrote it botched the rest of the chunk;
+  Per envelope,
+  the best fix for each individual issue can win even when the model that wrote it botched the rest of the chunk;
   the winners are assembled into a composite candidate.
-  Per chunk, whole candidates compete, including that composite,
+  Per chunk,
+  whole candidates compete,
+  including that composite,
   which is the only level at which coherence across envelopes is visible.
-  The composite has to win on its merits rather than being adopted by
-  construction.
-  When judges decline, the strongest editor patch ships anyway:
-  falling back to the untouched translation would turn a disagreement
-  about wording into a lost repair.
+  The composite has to win on its merits rather than being adopted by construction.
+  When judges decline,
+  the strongest editor patch ships anyway:
+  falling back to the untouched translation would turn a disagreement about wording into a lost repair.
 - The result is never an unqualified "corrected translation":
-  `repairedText` ships with a completion status
-  (`repaired`, `unchanged`, or `blocked-non-translation`),
+  `repairedText` ships with a completion status (`repaired`,
+  `unchanged`,
+  or `blocked-non-translation`),
   every adjudicated issue with its resolution fate,
   and degradation findings.
   When no candidate demonstrably beats the input,
@@ -271,45 +288,49 @@ const result = await repairTranslation({
   because envelopes merge overlapping and touching evidence,
   so one replacement can serve several accepted issues and fix only some;
   each region names every issue it serves.
-  `repairDisposition` says what became of that repair in the returned document
-  (`shipped`, `not-selected`, `withdrawn`, or `no-region`),
+  `repairDisposition` says what became of that repair in the returned document (`shipped`,
+  `not-selected`,
+  `withdrawn`,
+  or `no-region`),
   and is decided after document-level blocking and the naturalness lane,
   neither of which any single slice can see.
   `refined` marks a slice the naturalness lane rewrote afterwards,
   which is where the recorded replacement stops being the returned wording,
   and `finalSliceText` carries that wording exactly there.
-- Translation policy files (register, terminology, tense discipline)
-  are deliberately open;
+- Translation policy files (register,
+  terminology,
+  tense discipline) are deliberately open;
   the system functions without them using conservative defaults.
 
 ## Reading the pictures a document shows
 
-A document that shows a picture carrying text is a document whose translation
-cannot be judged from its text alone.
-The pipeline reads those pictures and puts the reading beside the source and the
-archive, as evidence a later stage may consult.
+A document that shows a picture carrying text is a document whose translation cannot be judged from its text alone.
+The pipeline reads those pictures and puts the reading beside the source and the archive,
+as evidence a later stage may consult.
 Nothing in the reading decides what ships.
 
 ### Deterministic first, and usually last
 
-`tesseract` runs before any model is asked, with `chi_sim+eng`.
+`tesseract` runs before any model is asked,
+with `chi_sim+eng`.
 Under 16 solid characters the picture is recorded as carrying no text,
-no model is asked about it, and no finding calls that a shortfall,
+no model is asked about it,
+and no finding calls that a shortfall,
 because it is the correct answer:
 119 of the 191 pictures in the reference corpus carry no text at all,
 most of them being photographs of people.
 
-It gates rather than votes, which was settled by measurement and is the opposite
-of what it looks like it should be.
-Its trigram overlap against the model readings is 0.019 and 0.023 on one asset
-and 0.096 and 0.111 on another, while those models agree with each other at
-0.643 and 0.785.
+It gates rather than votes,
+which was settled by measurement and is the opposite of what it looks like it should be.
+Its trigram overlap against the model readings is 0.019 and 0.023 on one asset and 0.096 and 0.111 on another,
+while those models agree with each other at 0.643 and 0.785.
 It is not missing the text:
 on the first asset it returns 405 characters against their 390 and 394.
-It reads the same text and gets the GLYPHS wrong, which leaves length intact and
-destroys overlap, so letting it vote would refuse readings that are fine.
-What it is reliable at is PRESENCE, six of six against the models in both
-directions.
+It reads the same text and gets the GLYPHS wrong,
+which leaves length intact and destroys overlap,
+so letting it vote would refuse readings that are fine.
+What it is reliable at is PRESENCE,
+six of six against the models in both directions.
 
 Noise can clear its line:
 a painting's canvas returned 24 characters on `Uekawakuyuurei/IMG_1308.webp`,
@@ -327,50 +348,61 @@ since it carries the model's words about the picture and never the picture's tex
 
 ### Four readers, and a reader asked again
 
-A reading may be used only when a second model, shown the same picture and not
-the first model's answer, agrees with the first at the corroboration threshold.
+A reading may be used only when a second model,
+shown the same picture and not the first model's answer,
+agrees with the first at the corroboration threshold.
 A single reading is refused rather than passed along with a caveat.
 
-The cross-provider vision sub-roster remains four after Synthetic GLM-5.3-Flash
-replaced GLM-5.2.
+The cross-provider vision sub-roster remains four after Synthetic GLM-5.3-Flash replaced GLM-5.2.
 The replacement reads images on Synthetic but has no inherited Charm Hyper route.
 Corroboration still requires independent agreement,
 and a declined reading is still asked again up to four times.
-The retry measurement that follows predates the third reader and must not be
-read as its measured refusal rate.
+The retry measurement that follows predates the third reader and must not be read as its measured refusal rate.
 
-Measured over the whole corpus, 119 reader and picture pairs reached a model,
-109 read on the first ask, and 1 more read only after being asked again.
-Of the 9 that never produced a reading, 6 refused through all four asks, while 2
-exited on the length screen and 1 on an empty reply.
+Measured over the whole corpus,
+119 reader and picture pairs reached a model,
+109 read on the first ask,
+and 1 more read only after being asked again.
+Of the 9 that never produced a reading,
+6 refused through all four asks,
+while 2 exited on the length screen and 1 on an empty reply.
 Neither of those is a refusal and neither is asked again.
-So a decline is usually about the picture, and sometimes about the roll:
+So a decline is usually about the picture,
+and sometimes about the roll:
 on one text-bearing asset asked six times per model,
-`hf:Qwen/Qwen3.6-27B` read it six times of six and
-`hf:moonshotai/Kimi-K3` twice of six, transcribing the same text either way.
-Re-asking costs about 20 extra calls over a corpus pass and recovers the roll
-case when it happens.
+`hf:Qwen/Qwen3.6-27B` read it six times of six and `hf:moonshotai/Kimi-K3` twice of six,
+transcribing the same text either way.
+Re-asking costs about 20 extra calls over a corpus pass and recovers the roll case when it happens.
 
 ### What is sent, and what is not
 
 Pictures are sent as they are.
-No re-encode, no format change, no downscaling, no tiling.
-An earlier byte ceiling was this package's own estimate of what a vision model
-would accept, derived from base64 length against context length, and it was
-wrong in kind:
-a vision model tokenizes a picture by resolution in tiles, not by base64 length.
-Sent unchanged, an asset four times that ceiling comes back read for 2631
-characters.
-A plain 8 MiB ceiling remains, which nothing in the reference corpus approaches.
+No re-encode,
+no format change,
+no downscaling,
+no tiling.
+An earlier byte ceiling was this package's own estimate of what a vision model would accept,
+derived from base64 length against context length,
+and it was wrong in kind:
+a vision model tokenizes a picture by resolution in tiles,
+not by base64 length.
+Sent unchanged,
+an asset four times that ceiling comes back read for 2631 characters.
+A plain 8 MiB ceiling remains,
+which nothing in the reference corpus approaches.
 
-The provider accepts `image/jpeg`, `image/png`, `image/gif`, `image/webp`,
-`image/tiff` and `image/bmp`, and refuses AVIF with an HTTP 400.
+The provider accepts `image/jpeg`,
+`image/png`,
+`image/gif`,
+`image/webp`,
+`image/tiff` and `image/bmp`,
+and refuses AVIF with an HTTP 400.
 
 ### Deployment dependency
 
-`tesseract` must be on the path, with the `chi_sim` and `eng` language data
-installed, or every picture is recorded as unreadable by the deterministic
-reader and every one of them is sent to two models.
+`tesseract` must be on the path,
+with the `chi_sim` and `eng` language data installed,
+or every picture is recorded as unreadable by the deterministic reader and every one of them is sent to two models.
 Decoding needs `dwebp` for webp assets;
 ImageMagick is tried as a fallback and cannot be relied on for that format.
 
@@ -387,27 +419,30 @@ invention and omission,
 and both are wrong.
 Acting on either damages text that is correct where it actually sits.
 
-So the critic, the adjudication panel and the editor are each shown
-the passages on either side of the slice under review,
+So the critic,
+the adjudication panel and the editor are each shown the passages on either side of the slice under review,
 in their original and in the translation as it stands,
 fenced and labelled as context they may not raise claims about or edit.
 
 ### One section each way, and no more
 
 The width is measured rather than chosen.
-Over the reference corpus, 80 of 1260 slices carry a displacement flag,
+Over the reference corpus,
+80 of 1260 slices carry a displacement flag,
 those flags form 51 contiguous runs,
 the longest run anywhere is three,
 and every relocation pair is adjacent.
 One section each way therefore covers every case the corpus contains,
 and a wider window would cost context on every call to reach material that is not there.
 
-A slice with no neighbour, meaning a document of one slice, is shown nothing extra
-and is asked exactly what it was asked before this existed.
+A slice with no neighbour,
+meaning a document of one slice,
+is shown nothing extra and is asked exactly what it was asked before this existed.
 
 ### Removal is allowed only against what the neighbour already carries
 
-The window creates a second way to do harm, and the editor sheet names it.
+The window creates a second way to do harm,
+and the editor sheet names it.
 Removing a repetition that the neighbouring translation already holds is correct.
 Removing anything on the grounds that a neighbour OUGHT to hold it is not,
 because the neighbour may never produce it and the document then loses the passage entirely.
@@ -427,15 +462,25 @@ a slice with no neighbours keys exactly as before and resumes.
 Characters a reader cannot tell from their plain counterpart are folded
 where each lane turns an answer into a candidate (`#264`).
 Corpus pass applies same fold to archive before preparation,
-so incumbent, candidates, spans, artifact and page share visible bytes:
-U+2011 to the hyphen, U+00A0 and U+202F to the space,
-and U+00AD, U+200B, U+2060 and U+FEFF dropped.
+so incumbent,
+candidates,
+spans,
+artifact and page share visible bytes:
+U+2011 to the hyphen,
+U+00A0 and U+202F to the space,
+and U+00AD,
+U+200B,
+U+2060 and U+FEFF dropped.
 The fold runs before any decider judges,
 so the bytes judged are the bytes that ship,
-and each fold is a finding, `invisible-variant-folded (U+2011 x1)`, in the stage's findings.
-Typographic quotes, dashes and the ellipsis pass through:
-measured over every archive page at the pin, 85 of 92 carry typographic quotes
-and the corpus holds 1173 U+2019, so those are the archive's own convention.
+and each fold is a finding,
+`invisible-variant-folded (U+2011 x1)`,
+in the stage's findings.
+Typographic quotes,
+dashes and the ellipsis pass through:
+measured over every archive page at the pin,
+85 of 92 carry typographic quotes and the corpus holds 1173 U+2019,
+so those are the archive's own convention.
 The 2026-08-26 output reading found the case that motivated this,
 a hyphenated word published with a non-breaking hyphen the archive never had.
 
@@ -443,12 +488,15 @@ a hyphenated word published with a non-breaking hyphen the archive never had.
 
 Every per-slice instrument in this package is structurally blind to a passage said twice,
 because each works inside ONE slice and the duplication is inside no single slice.
-Two checks run at assembly, where the whole document is visible.
+Two checks run at assembly,
+where the whole document is visible.
 Neither spends quota:
 both compare strings against the archive the artifact stores.
 
 The archive is what makes this decidable.
-Real writing repeats, in refrains, names and deliberate echoes,
+Real writing repeats,
+in refrains,
+names and deliberate echoes,
 so a standalone "says it twice" rule would fire on all of them.
 Counting against the archive asks the only question worth asking,
 whether the pipeline ADDED a repetition,
@@ -467,39 +515,48 @@ Without that gate the check returns mostly noise.
 did two CONSECUTIVE slices ship the same wording,
 which the archive did not repeat.
 
-It has no content gate, and it must not have one.
+It has no content gate,
+and it must not have one.
 The duplication this package was built to catch carries no word of five letters at all,
 so the document-scale check cannot see it at any setting.
 Adjacency supplies the specificity the content gate supplies at document scale.
 Measured over every settled artifact carrying a delivery ledger,
-it fires once in twenty-two lane readings, and that once is the known damage.
+it fires once in twenty-two lane readings,
+and that once is the known damage.
 
 Both checks run in BOTH lanes.
-Writing a slice from its source rather than editing an incumbent
-does not stop a lane saying the same thing twice.
+Writing a slice from its source rather than editing an incumbent does not stop a lane saying the same thing twice.
 
 Findings carry the slice pair and the measurements and never the wording,
-because a findings list travels into logs and artifacts
-where corpus text does not belong.
+because a findings list travels into logs and artifacts where corpus text does not belong.
 
-Two instruments are the exception, by design, and their standard output is an artifact rather than a summary:
-`coverage-probe` prints its rows as JSON, whose `evidence` is the document's own matched text,
-and `judge-fidelity-probe` prints per-trial judge `reasons`, which are model prose quoting candidates.
-Redirect both to a file under the runs directory and never paste either into a log, a commit, or a chat;
-both also persist their rows through the probe store, so the redirect is a convenience rather than the record.
+Two instruments are the exception,
+by design,
+and their standard output is an artifact rather than a summary:
+`coverage-probe` prints its rows as JSON,
+whose `evidence` is the document's own matched text,
+and `judge-fidelity-probe` prints per-trial judge `reasons`,
+which are model prose quoting candidates.
+Redirect both to a file under the runs directory and never paste either into a log,
+a commit,
+or a chat;
+both also persist their rows through the probe store,
+so the redirect is a convenience rather than the record.
 
 ## The site's grammar is not this one
 
 The corpus repository builds each `page.md` itself:
 its `scripts/build.ts` rewrites `<!--` and `-->` into JSX comment delimiters
-and `scripts/mdx.ts` compiles with `@mdx-js/mdx` under `remark-math` and `rehype-katex`, with no GFM.
+and `scripts/mdx.ts` compiles with `@mdx-js/mdx` under `remark-math` and `rehype-katex`,
+with no GFM.
 This package parses with `remark-mdx` plus `remark-gfm` after masking HTML comments to whitespace.
 Verified with the site's own renderer on 2026-08-26:
 a footnote reference compiles to literal text there and to structure here,
 a `$...$` pair compiles to math there and to prose here.
 Six source pages at the pin carry a math pair.
 `#267` holds the reconciliation question;
-nothing published changes either way, since the text is preserved as written,
+nothing published changes either way,
+since the text is preserved as written,
 but a formula is unprotected structure until the strict grammar knows it.
 
 ## Design commitments
@@ -508,180 +565,216 @@ but a formula is unprotected structure until the strict grammar knows it.
   Every decision is either deterministic code
   or an aggregate over independent model calls from different vendor families.
 - **Issues carry verifiable evidence.**
-  Spans and insertion anchors reference stable node IDs and offsets
-  against a hashed base document;
+  Spans and insertion anchors reference stable node IDs and offsets against a hashed base document;
   claims failing deterministic validation are discarded.
 - **The source is not ground truth.**
   Suspected source transcription errors,
   interpretive ambiguity,
-  and alignment failures are first-class issue states
-  that can block correction and preserve safer translations.
-- **Structure is detected per document, never assumed per class.**
-  Footnote handling activates on detected markers
-  (open convention set: `〔1〕`, `[^1]`, `[1]`);
+  and alignment failures are first-class issue states that can block correction and preserve safer translations.
+- **Structure is detected per document,
+  never assumed per class.**
+  Footnote handling activates on detected markers (open convention set:
+  `〔1〕`,
+  `[^1]`,
+  `[1]`);
   unrecognized conventions become findings for human confirmation,
   not silent misparses.
-- **Refusals are handled reactively, never predicted.**
+- **Refusals are handled reactively,
+  never predicted.**
   Content is never pre-classified for sensitivity;
   refusals reroute across model families and feed a measured scorecard.
 - **Detection and repair are graded by separate instruments.**
-  `formatGradingSheet` asks only whether an accepted issue is a real defect and
-  shows no correction, because seeing one makes an alleged defect look more
-  real and would move that answer.
-  `formatRepairSheet` asks, on its own sheet and after the first is done,
+  `formatGradingSheet` asks only whether an accepted issue is a real defect and shows no correction,
+  because seeing one makes an alleged defect look more real and would move that answer.
+  `formatRepairSheet` asks,
+  on its own sheet and after the first is done,
   whether the returned wording fixes it.
   Keeping them apart is what lets one round's precision be compared with
   another's rather than with a changed instrument.
-  Model and corpus text reaches those sheets fenced
-  (`fenceForMarkdown`), since a replacement is arbitrary text crossing into
+  Model and corpus text reaches those sheets fenced (`fenceForMarkdown`),
+  since a replacement is arbitrary text crossing into
   Markdown grammar and can otherwise invent a heading or a grade box.
-  A sheet is READ before it is handed to anyone, item by item, including the
-  reasoning it shows the grader.
+  A sheet is READ before it is handed to anyone,
+  item by item,
+  including the reasoning it shows the grader.
   A sheet whose generator ran is not a sheet that asks a sensible question:
   the first introduced-defect verification sheet reached the user with all
-  eight of its reviewer claims argued against the pre-edit translation rather
-  than the original, one of them reporting a corrected mistranslation as
-  damage, and nothing in the pipeline could have caught that because every
-  stage had succeeded.
+  eight of its reviewer claims argued against the pre-edit translation rather than the original,
+  one of them reporting a corrected mistranslation as damage,
+  and nothing in the pipeline could have caught that because every stage had succeeded.
 - **A grade is bound to the draw it was written on.**
-  Sheets print no issue ids, deliberately, because a hash is noise a human has
-  to read past, so grades are joined back to machine verdicts BY POSITION.
+  Sheets print no issue ids,
+  deliberately,
+  because a hash is noise a human has to read past,
+  so grades are joined back to machine verdicts BY POSITION.
   Seed and corpus pin cannot carry that join alone:
-  the draw is deterministic in its seed but not in its POOL, and the pool grows
-  with every entry that settles, so one seed at one commit names different
-  items at different times.
-  Two draws can then agree on seed, pin and item count while describing
-  different issues, and a positional join would mislabel every verdict without
-  erroring anywhere.
-  `computeDrawDigest` fingerprints the ordered item identities, both sheets and
-  the manifest carry it from one computation, and `parseSampleManifest`
-  recomputes it rather than trusting the stored string, since a digest never
-  checked against its own contents proves only that two files share characters.
+  the draw is deterministic in its seed but not in its POOL,
+  and the pool grows with every entry that settles,
+  so one seed at one commit names different items at different times.
+  Two draws can then agree on seed,
+  pin and item count while describing different issues,
+  and a positional join would mislabel every verdict without erroring anywhere.
+  `computeDrawDigest` fingerprints the ordered item identities,
+  both sheets and the manifest carry it from one computation,
+  and `parseSampleManifest` recomputes it rather than trusting the stored string,
+  since a digest never checked against its own contents proves only that two files share characters.
   A draw taken before the binding existed is scoreable and says so;
-  a pair where only one side carries a digest is refused, because one draw
-  writes both in the same instant.
+  a pair where only one side carries a digest is refused,
+  because one draw writes both in the same instant.
 - **Text entering a prompt is fenced against its own content.**
-  `selectFence` chooses a delimiter strictly longer than any run inside every
-  string a prompt encloses.
+  `selectFence` chooses a delimiter strictly longer than any run inside every string a prompt encloses.
   A fixed delimiter would let a translation containing a setext heading
-  underline close its own block and have the rest of its text read as
-  instructions.
+  underline close its own block and have the rest of its text read as instructions.
 - **A new measurement records before it decides.**
-  `runIntroducedDefectProbe` asks whether a repair broke something nobody
-  raised, which `regressedKnownIssues` cannot see because it reads verdicts
-  keyed by issues a critic already filed.
-  It ships in shadow mode: the report reaches the outcome and the artifacts,
+  `runIntroducedDefectProbe` asks whether a repair broke something nobody raised,
+  which `regressedKnownIssues` cannot see because it reads verdicts keyed by issues a critic already filed.
+  It ships in shadow mode:
+  the report reaches the outcome and the artifacts,
   and candidate selection does not read it.
   It was built expecting the opposite failure.
-  Every region it inspects contains a defect by construction, that being why
-  the region was edited, so a model asked whether anything is wrong was expected
-  to find something, and gating on an over-eager probe would have discarded
-  correct fixes.
+  Every region it inspects contains a defect by construction,
+  that being why the region was edited,
+  so a model asked whether anything is wrong was expected to find something,
+  and gating on an over-eager probe would have discarded correct fixes.
   Measured on 2026-08-12 over all 857 probed regions of the settled artifacts,
-  the probe was nearly silent instead: 2438 of 2571 prober verdicts found
-  nothing, and the raise rate barely moved with how much text the edit removed.
-  READ THAT AS HISTORY, NOT AS THE PROBE'S BEHAVIOUR.
-  Those verdicts were produced under a question that made the pre-edit
-  TRANSLATION the standard of accuracy, asking whether the replacement
-  introduced a defect the BEFORE text did not have.
-  Read back, every claim it produced argued from that text, and one reported a
-  corrected mistranslation as damage, so the figure measures whether an edit
-  CHANGED anything rather than whether it damaged anything.
-  The question is now anchored on the ORIGINAL, and every probe figure taken
-  before that change is withdrawn.
-  Under the new question, on a twenty-region draw read against the Chinese, the
-  probe flagged three of three damaged regions with one false positive and no
-  misses, which is the first version of this instrument that discriminated at
-  all.
-  That reading is one agent's and one draw's, so it sizes nothing.
-  A second reading on 2026-09-03, every region with a corroborated claim across
-  the four probed landings, found six of ten true (three of them the house
-  tense rule), three false (two misparse 我方才知道 as "our side") and one
-  borderline.
-  Shadow mode stands until a human grades a sample: `#66`.
-  What changed on that reading: the lane contest is shown the corroborated
+  the probe was nearly silent instead:
+  2438 of 2571 prober verdicts found nothing,
+  and the raise rate barely moved with how much text the edit removed.
+  READ THAT AS HISTORY,
+  NOT AS THE PROBE'S BEHAVIOUR.
+  Those verdicts were produced under a question that made the pre-edit TRANSLATION the standard of accuracy,
+  asking whether the replacement introduced a defect the BEFORE text did not have.
+  Read back,
+  every claim it produced argued from that text,
+  and one reported a corrected mistranslation as damage,
+  so the figure measures whether an edit CHANGED anything rather than whether it damaged anything.
+  The question is now anchored on the ORIGINAL,
+  and every probe figure taken before that change is withdrawn.
+  Under the new question,
+  on a twenty-region draw read against the Chinese,
+  the probe flagged three of three damaged regions with one false positive and no misses,
+  which is the first version of this instrument that discriminated at all.
+  That reading is one agent's and one draw's,
+  so it sizes nothing.
+  A second reading on 2026-09-03,
+  every region with a corroborated claim across the four probed landings,
+  found six of ten true (three of them the house tense rule),
+  three false (two misparse 我方才知道 as "our side") and one borderline.
+  Shadow mode stands until a human grades a sample:
+  `#66`.
+  What changed on that reading:
+  the lane contest is shown the corroborated
   claims against the repair candidate as evidence lines after both candidates,
-  with the four-in-ten error rate stated, and its cache key folds them in;
+  with the four-in-ten error rate stated,
+  and its cache key folds them in;
   nothing acts on a claim (`repair-damage-evidence.ts`).
-  The claims come from both probes the lane runs, the accuracy repair's and
-  the naturalness rewrite's, each line naming its edit: a keyword233 draw the
-  same day had the rewrite move a paragraph into the present tense, three
-  probers corroborated it, and the contest was shown nothing while only the
-  accuracy probe was read.
+  The claims come from both probes the lane runs,
+  the accuracy repair's and the naturalness rewrite's,
+  each line naming its edit:
+  a keyword233 draw the same day had the rewrite move a paragraph into the present tense,
+  three probers corroborated it,
+  and the contest was shown nothing while only the accuracy probe was read.
   The contest driver logs how many claims a slice's judges were shown.
 - **A placeholder in the archive is not content the pipeline preserves.**
-  `passArchiveText` (`corpus-run/pass-archive.ts`, run inside
-  `preparePassEntry`) folds invisible variants and then strips any paragraph
-  that is nothing but a stub token (`(To-Do)`, `TODO`, `TBD`, `WIP`, one
-  layer of brackets, any case) outside front matter, HTML comments and code
-  fences, logging `archive: stripped stub marker ... at line N`.
-  Measured against the 92 English pages of the pinned corpus: one such
-  marker, XIEPT2's, which the pipeline had published over a finished
-  translation.
-  HTML comments stay: `entry-notes.ts` reads them as editor comments and a
-  reader never sees them.
-  Decision: `doc/decision/translation-repair-good-result-over-bad-original.md`.
+  `passArchiveText` (`corpus-run/pass-archive.ts`,
+  run inside `preparePassEntry`) folds invisible variants and then strips any paragraph
+  that is nothing but a stub token (`(To-Do)`,
+  `TODO`,
+  `TBD`,
+  `WIP`,
+  one layer of brackets,
+  any case) outside front matter,
+  HTML comments and code fences,
+  logging `archive: stripped stub marker ... at line N`.
+  Measured against the 92 English pages of the pinned corpus:
+  one such marker,
+  XIEPT2's,
+  which the pipeline had published over a finished translation.
+  HTML comments stay:
+  `entry-notes.ts` reads them as editor comments and a reader never sees them.
+  Decision:
+  `doc/decision/translation-repair-good-result-over-bad-original.md`.
 - **Judge seats follow the provider that would serve them.**
-  `readJudgeSeats` reads the router's own dryness view (every provider's
-  meter, holds folded in) before each phase of an entry (lanes, lane contest,
-  consolidation; once per entry until 2026-09-03, when XIEPT2 ran Synthetic
-  dry seven minutes into 219) and asks, per seat, which provider would take
-  its calls: the first in `PROVIDER_ORDER` that serves the model and reads wet
-  (`providerServing`).
-  Where that is Hyper, the judges Hyper serves too slowly for the round window
-  are withheld (`HYPER_SLOW_JUDGES`, Qwen3.8-27B: cut in 30 of 34
-  translate-lane select rounds with Hyper alone, answering 25 of 28 when
-  Synthetic served it), and `HYPER_SLOW_SELECT_JUDGES` (Kimi-K3: cut in 0 of
-  69 select rounds on Synthetic, 43 of 83 and 38 of 101 with Hyper serving
-  most or all of them, almost never in any other judge role) leaves both
-  lanes' slate select seats and the consolidation slate while keeping every
-  other seat.
-  Where that is OpenRouter, `OPENROUTER_WITHHELD` (Kimi-K3, by the owner's
-  cost decision of 2026-09-03: 3 and 15 USD per million tokens, 52 to 61
-  percent of an entry's all-OpenRouter cost) leaves every seat, the translator
-  and picture-reader seats and every roster-wide stage (block pairing, archive
-  review, insertion admission, consolidation writing) included: the first
-  OpenRouter-only pass, keyword233 on 2026-09-03 at 18:15 UTC, bought six
-  translations from it while every judge bench had it out, a quarter of that
-  pass's bill, and the next one bought its first call from the pairing round
-  before any bench was read. Each stage reads its own `JUDGE SEATS` line
-  (`phase=preparation`, `pictures`, `lanes`, `lane contest`, `consolidation`),
-  and
-  `OPENROUTER_CHECKER_SUBSTITUTE` (gemma-4-26b-a4b-it, disinterested and
-  provisional) takes the vacated checker seat so the roster keeps the floor
-  the checker contract holds; both checker assertions run on the derived
-  roster before each phase.
+  `readJudgeSeats` reads the router's own dryness view (every provider's meter,
+  holds folded in) before each phase of an entry (lanes,
+  lane contest,
+  consolidation;
+  once per entry until 2026-09-03,
+  when XIEPT2 ran Synthetic dry seven minutes into 219) and asks,
+  per seat,
+  which provider would take its calls:
+  the first in `PROVIDER_ORDER` that serves the model and reads wet (`providerServing`).
+  Where that is Hyper,
+  the judges Hyper serves too slowly for the round window are withheld (`HYPER_SLOW_JUDGES`,
+  Qwen3.8-27B:
+  cut in 30 of 34 translate-lane select rounds with Hyper alone,
+  answering 25 of 28 when Synthetic served it),
+  and `HYPER_SLOW_SELECT_JUDGES` (Kimi-K3:
+  cut in 0 of 69 select rounds on Synthetic,
+  43 of 83 and 38 of 101 with Hyper serving most or all of them,
+  almost never in any other judge role) leaves both
+  lanes' slate select seats and the consolidation slate while keeping every other seat.
+  Where that is OpenRouter,
+  `OPENROUTER_WITHHELD` (Kimi-K3,
+  by the owner's cost decision of 2026-09-03:
+  3 and 15 USD per million tokens,
+  52 to 61 percent of an entry's all-OpenRouter cost) leaves every seat,
+  the translator and picture-reader seats and every roster-wide stage (block pairing,
+  archive review,
+  insertion admission,
+  consolidation writing) included:
+  the first OpenRouter-only pass,
+  keyword233 on 2026-09-03 at 18:15 UTC,
+  bought six translations from it while every judge bench had it out,
+  a quarter of that pass's bill,
+  and the next one bought its first call from the pairing round before any bench was read.
+  Each stage reads its own `JUDGE SEATS` line (`phase=preparation`,
+  `pictures`,
+  `lanes`,
+  `lane contest`,
+  `consolidation`),
+  and `OPENROUTER_CHECKER_SUBSTITUTE` (gemma-4-26b-a4b-it,
+  disinterested and
+  provisional) takes the vacated checker seat so the roster keeps the floor the checker contract holds;
+  both checker assertions run on the derived roster before each phase.
   An unreadable view seats the full bench.
-  The static benches in `run-config.ts` are the Synthetic-wet ones, seven wide
-  seats and eight late judges; the `JUDGE SEATS` line names every provider's
-  state, every bench size, the translator, reader and roster counts, and every
-  withheld model.
-  Decisions: `doc/decision/translation-repair-provider-aware-judge-seat.md`,
+  The static benches in `run-config.ts` are the Synthetic-wet ones,
+  seven wide seats and eight late judges;
+  the `JUDGE SEATS` line names every provider's state,
+  every bench size,
+  the translator,
+  reader and roster counts,
+  and every withheld model.
+  Decisions:
+  `doc/decision/translation-repair-provider-aware-judge-seat.md`,
   `doc/decision/translation-repair-openrouter-fallback.md`.
-  Shadow mode is a recorded decision rather than an unfinished edge, with the
-  rejected gating designs and the condition that reopens it in
-  `doc/decision/introduced-defect-probe-gating.md`.
+  Shadow mode is a recorded decision rather than an unfinished edge,
+  with the
+  rejected gating designs and the condition that reopens it in `doc/decision/introduced-defect-probe-gating.md`.
   Claims are screened deterministically rather than believed:
-  a quote must be new in the replacement, or gone from it for dropped content,
+  a quote must be new in the replacement,
+  or gone from it for dropped content,
   and `screenNonTranslationVotes` is the precedent for evidence that dismisses
   an impossible claim without having to prove a possible one.
-- **Every stage that changes shipped text is audited, including the last one.**
+- **Every stage that changes shipped text is audited,
+  including the last one.**
   The naturalness lane runs after the accuracy stage and rewrites whole slices,
   so the accuracy probe's verdict describes text the lane may have replaced.
-  `retainsResolvedIssues` guards only the opposite direction, that a rewrite did
-  not undo a confirmed repair, and a rewrite can leave every confirmed repair
-  standing while damaging the wording around them.
+  `retainsResolvedIssues` guards only the opposite direction,
+  that a rewrite did not undo a confirmed repair,
+  and a rewrite can leave every confirmed repair standing while damaging the wording around them.
   An accepted refinement therefore runs the same probe against its own pair,
-  the repaired text against the refined text, recorded as `refinementDefects`
-  and reported apart from the accuracy figures because the two audit different
-  edits against different baselines.
-  Its prompt gets a second framing: telling a prober that an editor was fixing
-  defects, when it was rewriting already-correct text for fluency, invites
-  reading every rephrasing as a failed repair.
-  `probe-sensitivity` checks that framing against injected damage, and its
-  control is the case that matters, since a probe that reads rephrasing as
-  damage would flag every refinement the lane ships and would look identical to
-  a clean run while doing it.
+  the repaired text against the refined text,
+  recorded as `refinementDefects`
+  and reported apart from the accuracy figures because the two audit different edits against different baselines.
+  Its prompt gets a second framing:
+  telling a prober that an editor was fixing defects,
+  when it was rewriting already-correct text for fluency,
+  invites reading every rephrasing as a failed repair.
+  `probe-sensitivity` checks that framing against injected damage,
+  and its control is the case that matters,
+  since a probe that reads rephrasing as
+  damage would flag every refinement the lane ships and would look identical to a clean run while doing it.
 
 ## Configuration
 
@@ -703,28 +796,37 @@ and reading one as an instruction has cost this package a defect before.
 -   `TRANSLATION_REPAIR_EXA_API_KEY`.
     Key for the Exa search endpoint,
     which the pass asks once per work the original names in 《…》 marks for its official English title
-    (the owner's rule of 2026-09-02, `doc/decision/translation-repair-work-titles-established-vocabulary.md`).
+    (the owner's rule of 2026-09-02,
+    `doc/decision/translation-repair-work-titles-established-vocabulary.md`).
     The top results reach every sheet as `web lookup` lines in the identity context,
     beside the `note` and `editor comment` lines carrying both pages' footnotes and editors' comments,
     and the house policy says what each kind licenses.
-    OPTIONAL: unset means one warning per entry naming how many titles went unlooked-up, and nothing else changes.
+    OPTIONAL:
+    unset means one warning per entry naming how many titles went unlooked-up,
+    and nothing else changes.
     Every lookup is cached durably under `TRANSLATION_REPAIR_LOOKUP_CACHE_DIR`,
     else `$XDG_CACHE_HOME/translation-repair/lookup`,
     else `~/.cache/translation-repair/lookup`,
     keyed by the query's digest,
     so a title is bought once across runs and a resumed run keeps its preparation identity.
-    Measured 2026-09-02: about 1.5 s and $0.007 a query; the pinned corpus's 118 spans cost about a dollar once.
+    Measured 2026-09-02:
+    about 1.5 s and $0.007 a query;
+    the pinned corpus's 118 spans cost about a dollar once.
 
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
-    Bearer token for the second provider, Charm Hyper.
-    OPTIONAL AND LOUD: a run starts on whichever provider keys are present,
+    Bearer token for the second provider,
+    Charm Hyper.
+    OPTIONAL AND LOUD:
+    a run starts on whichever provider keys are present,
     an absent provider is marked dry before routing so its seats are unavailable,
     and every key absent is a stated refusal naming the variables (exit 6).
     A calibration once settled clean with half its roster dark (`#235`) because a missing key was silent;
-    it is not silent now, and the seat lines at the end of every command name what was dark.
+    it is not silent now,
+    and the seat lines at the end of every command name what was dark.
     Note the `CHARM` in the middle;
     a name missing it is read by nothing and reported by nothing.
-    The owner will not top this balance up again (2026-09-03), so it serves until it runs dry.
+    The owner will not top this balance up again (2026-09-03),
+    so it serves until it runs dry.
 
 -   `TRANSLATION_REPAIR_OPENROUTER_API_KEY`.
     Bearer token for the third provider,
@@ -772,7 +874,8 @@ gitignored `.env.local.json` at the repository root,
 which `mise run` decrypts into the task's environment.
 A worktree created with `git worktree add` starts without that file;
 copy the encrypted file into the worktree root (it stays encrypted at rest) or launch from the main worktree.
-Either way, launch under `mise run`:
+Either way,
+launch under `mise run`:
 a bare `node dist/...` launch has no key,
 and since `#235` it fails at once with the refusal instead of running half-dark.
 
@@ -788,11 +891,11 @@ Do not read a run with a dark seat as a comparison of the roster.
 
 `qwen3.8-max` was removed from roster and Charm Hyper allowlist on 2026-08-28 at owner's instruction.
 Its metered cost was disproportionate and exceptionally expensive.
-No replacement was selected, so that cull left nine models.
+No replacement was selected,
+so that cull left nine models.
 Dated pricing remains only so historical run artifacts can still be accounted.
 
-Synthetic `hf:zai-org/GLM-5.2` was replaced by
-`hf:zai-org/GLM-5.3-Flash` on 2026-08-29.
+Synthetic `hf:zai-org/GLM-5.2` was replaced by `hf:zai-org/GLM-5.3-Flash` on 2026-08-29.
 The live endpoint confirmed the successor;
 the operational request reported Synthetic's plan to retire the older model.
 Synthetic's live model endpoint reported the replacement as always-on beta,
@@ -903,30 +1006,33 @@ Fresh schema-9 passage validation remains mandatory before this replacement cont
 
 #### Running out of budget is normal, and the two providers run out differently
 
-THEY ARE NOT THE SAME KIND OF LIMIT, and an earlier version of this section had
-Charm Hyper backwards.
+THEY ARE NOT THE SAME KIND OF LIMIT,
+and an earlier version of this section had Charm Hyper backwards.
 
-Charm Hyper is a PREPAID BALANCE, priced per token and per model.
-`GET /v1/credits` returns `balance`, which `parseHyperCredits` reads and the
-`METERS` line prints as `hyperBalance`.
+Charm Hyper is a PREPAID BALANCE,
+priced per token and per model.
+`GET /v1/credits` returns `balance`,
+which `parseHyperCredits` reads and the `METERS` line prints as `hyperBalance`.
 Spending draws it down and it does not refill on a schedule:
 it read `0` continuously across the whole of 2026-08-24,
-before, during and after a pass,
+before,
+during and after a pass,
 and reached `10000` on 2026-08-25 only because credits were bought.
-A reader who hits `hyperBalance=0` and waits is waiting for something that has
-not been observed to happen.
+A reader who hits `hyperBalance=0` and waits is waiting for something that has not been observed to happen.
 
-Synthetic is a SUBSCRIPTION ALLOWANCE, weekly and five-hourly,
+Synthetic is a SUBSCRIPTION ALLOWANCE,
+weekly and five-hourly,
 which the `METERS` line prints as `syntheticWeekly` and `syntheticFiveHour`.
 That one does refill on its own schedule,
-and the account owner can sometimes reset it, but not reliably and not on demand.
+and the account owner can sometimes reset it,
+but not reliably and not on demand.
 
 Plan a pass around both facts rather than around a clean window,
 because a clean window still cannot be arranged.
 
 A provider that is out of budget does not fail a run.
-The budget layer raises `NoProviderForModelError` for each model
-no reachable provider can take, the stage records a lost voice,
+The budget layer raises `NoProviderForModelError` for each model no reachable provider can take,
+the stage records a lost voice,
 and the run continues on whoever answered.
 On 2026-08-24 a pass ran with Charm Hyper dry from its first second:
 the five Hyper-only models were refused,
@@ -934,8 +1040,8 @@ the five Synthetic-served models kept streaming,
 and both meter endpoints kept reading.
 
 TWO CONSEQUENCES FOR READING A RUN.
-A per-entry cost measured while a provider is dry
-is not the cost a two-provider run pays, and should be labelled with the outage.
+A per-entry cost measured while a provider is dry is not the cost a two-provider run pays,
+and should be labelled with the outage.
 Any quality figure measured then rests on whoever was awake,
 so five of ten models contributed nothing to it.
 
@@ -945,26 +1051,27 @@ Three writer seats sit on models only Charm Hyper serves,
 and until 2026-08-24 the argument for them rested on a quality pass
 plus an availability adjustment that was reasoned about rather than measured.
 
-The budget layer already read both meters every sixty seconds
-and already knew dry from wet,
-but said so at `debug` level, which a run does not record.
-It now says so at `info`, as one line per reading:
+The budget layer already read both meters every sixty seconds and already knew dry from wet,
+but said so at `debug` level,
+which a run does not record.
+It now says so at `info`,
+as one line per reading:
 
 ```text
 [info] [2026-08-24T19:22:07.104Z] [translation-repair] [takeReading] METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0
 ```
 
-Three states, not two.
+Three states,
+not two.
 A meter that could not be reached at all reads as `unreadable`,
-which still routes as spendable, because a monitoring failure must not become an outage.
+which still routes as spendable,
+because a monitoring failure must not become an outage.
 It is kept distinct in the record because a duty cycle
-that counted an unreachable endpoint as a working provider
-would report an outage as uptime.
+that counted an unreachable endpoint as a working provider would report an outage as uptime.
 
 The numbers after the states are what those states were decided from,
 and they are there because the verdict alone could not be checked.
-`hyper=dry` is equally what an empty balance
-and a wrong threshold in `budget-routing.ts` look like,
+`hyper=dry` is equally what an empty balance and a wrong threshold in `budget-routing.ts` look like,
 and separating them once took a live call to the provider,
 which no longer exists for a moment already past.
 Each provider's numbers and its verdict come off one read,
@@ -989,16 +1096,17 @@ It spends no quota:
 mise run //package/module/translation-repair:meter-report -- run3.log run4.log
 ```
 
-It reports, per provider,
+It reports,
+per provider,
 how many readings fell in each state,
 the fraction of answering readings that found budget,
 and the longest outage as a range.
 The range matters.
 A reading happens when a run asks to spend,
 so two readings can be a minute apart or a day apart,
-and an outage seen at one and gone by the next
-began and ended somewhere in between.
-An outage with no wet reading before it, or none after it,
+and an outage seen at one and gone by the next began and ended somewhere in between.
+An outage with no wet reading before it,
+or none after it,
 is reported open rather than as a number,
 since it may have started before the record or may still be running.
 
@@ -1020,7 +1128,8 @@ mise run //package/module/translation-repair:budget-sample > sample.log 2>&1
 One reading of both meter endpoints.
 No model is called and no token is produced;
 a live run took 2.4 seconds.
-Capture both streams: the reading is at `info` and an unreadable meter warns at `warn`.
+Capture both streams:
+the reading is at `info` and an unreadable meter warns at `warn`.
 
 Repeat it on a timer to fill the quiet stretches,
 for example `watch --interval 300`,
@@ -1029,7 +1138,10 @@ and point `meter-report` at the collected logs.
 ### Where a run writes
 
 -   `TRANSLATION_REPAIR_RUNS_DIR`.
-    Root for artifacts, the published tree, slice caches, and the attempt map.
+    Root for artifacts,
+    the published tree,
+    slice caches,
+    and the attempt map.
     Defaults to `node_modules/.monochromatic/translation-repair-runs` under the worktree root.
     Point it at a throwaway directory for any run whose output should not join a pool later.
 
@@ -1054,23 +1166,26 @@ and point `meter-report` at the collected logs.
     Overrides the per-entry ceiling,
     a positive number of minutes.
     A value that is not one is REFUSED rather than replaced by the default,
-    including `30m`, which `parseFloat` would have read as 30:
+    including `30m`,
+    which `parseFloat` would have read as 30:
     a ceiling is what stops a runaway entry,
     so an operator who set it must not be left believing a run is bounded some way it is not.
     A run that overrides logs `CAP OVERRIDDEN` above its work.
 
-    THERE IS A FLOOR, and it is one model exchange.
-    A ceiling at or below `RUN_PER_CALL_TIMEOUT_MS`, currently 360_000,
+    THERE IS A FLOOR,
+    and it is one model exchange.
+    A ceiling at or below `RUN_PER_CALL_TIMEOUT_MS`,
+    currently 360_000,
     cuts every attempt before any exchange can return,
-    so nothing caches, every attempt reports no progress,
+    so nothing caches,
+    every attempt reports no progress,
     and the queue drops the entry as stalled after its second try.
     A run in that state logs `CAP TOO TIGHT` naming both numbers.
     It is warned rather than refused,
     because cutting mid-exchange is exactly what a test of the stall path wants.
 
 The cap ends an ATTEMPT rather than an entry.
-An entry the cap cut goes to the back of the queue
-and is attempted again inside the same invocation,
+An entry the cap cut goes to the back of the queue and is attempted again inside the same invocation,
 against the same frozen pipeline digest,
 so an entry too large for one attempt no longer needs a relaunch per attempt.
 
@@ -1083,7 +1198,8 @@ an abort can land before the first persistence,
 and the slices a lane deliberately leaves uncached produce no record however long they took.
 Without the earned rule a stuck entry would spend the whole soft budget.
 
-A re-attempt logs `REATTEMPT <id> queued`, naming what the attempt bought.
+A re-attempt logs `REATTEMPT <id> queued`,
+naming what the attempt bought.
 
 ### Choosing what a run attempts
 
@@ -1094,24 +1210,29 @@ passed after `--`:
     Restricts the invocation to the named entries and bypasses the ordering.
     Run it into a throwaway `TRANSLATION_REPAIR_RUNS_DIR`,
     so a hand-picked entry never joins a pool that later draws treat as natural accumulation.
-    A flag with no value, or one whose value parses to no id at all, is REFUSED:
+    A flag with no value,
+    or one whose value parses to no id at all,
+    is REFUSED:
     a flag that parsed to nothing would run the WHOLE corpus,
     which is the opposite of what was asked and expensive to discover afterwards.
     A restricted run logs `ONLY` and the ids it took.
 
 -   `--plan`.
-    Reads the corpus, builds the pending list, constructs the client,
-    prints `PLAN ok` with the tip, the pipeline digest and the first few pending ids,
+    Reads the corpus,
+    builds the pending list,
+    constructs the client,
+    prints `PLAN ok` with the tip,
+    the pipeline digest and the first few pending ids,
     and returns without calling a model.
-    Use it to check a run's setup, selection and credentials for no quota.
+    Use it to check a run's setup,
+    selection and credentials for no quota.
     Measured at 1.88 seconds with no stream opened.
 
 ### Do not rebuild a worktree while its pass is in flight
 
 Every pass and probe task declares `depends = ["build"]`,
 so invoking one rewrites `dist/final/node` underneath any pass already running from the same worktree.
-A pass computes its pipeline digest once at startup
-and stamps it into every artifact it writes,
+A pass computes its pipeline digest once at startup and stamps it into every artifact it writes,
 so a rebuild that changes output leaves the running pass recording a digest that no longer describes files on disk,
 and leaves its process holding a mixture of old modules and new files.
 
@@ -1147,7 +1268,8 @@ or provenance file is forbidden.
 ### Deciding who fills a seat
 
 Two runners rank models on the job the seat actually does.
-Both spend quota, both write nothing to a corpus,
+Both spend quota,
+both write nothing to a corpus,
 and both take a slice count after `--`.
 
 ```sh
@@ -1157,49 +1279,62 @@ mise run //package/module/translation-repair:editor-calibrate -- 14
 
 `producer-calibrate` ranks WRITERS.
 It drives the translate stage:
-a model writing English from Chinese
-with nothing in front of it but the source.
+a model writing English from Chinese with nothing in front of it but the source.
 
-`editor-calibrate` ranks EDITORS, and reports the refiner standing off the same spend.
+`editor-calibrate` ranks EDITORS,
+and reports the refiner standing off the same spend.
 It keeps four slices in flight and waits 300000 ms on stragglers after quorum,
 both the owner's decisions of 2026-08-26 on the five calibration arms
 (`doc/decision/translation-repair-calibration-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP` and `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` override either for one launch,
-and `1` and `120000` reproduce the pass's own settings: the pass's window moved from 180000 to 120000 on
+and `1` and `120000` reproduce the pass's own settings:
+the pass's window moved from 180000 to 120000 on
 2026-09-03 by the owner's decision on a measured pair (`doc/decision/translation-repair-straggler-grace.md`),
 and its overlap default stays `1` until measured on the pass (`#261`).
 `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` (`request-pace.ts`) sets how many Hyper requests may start
-in any rolling hour, retries and credit reads included; the rest queue in arrival order instead of
-being refused with HTTP 429. The default, 1,000, is the account's limit as the owner stated it and as
-XIEPT2's refusals on 2026-09-03 bear out (612 successes in 43 minutes once the hour's thousand was
-spent, a trickle of about 12 a minute under refusal); a value that is not a positive number leaves the
-default, and the retry ladder separately waits as long as a refusal's "try again in Ns" asks. The
-window starts empty at launch, so a launch within an hour of a heavy run is refused until that run's
-requests leave the window.
-`TRANSLATION_REPAIR_WRITER_GRACE_MS` (`writer-grace-override.ts`) gives the WRITER rounds alone, editor,
-refiner, translate and consolidate, a window of their own for one launch, since a cut writer voice is a
-whole candidate lost while a cut reader voice is one ballot of eight;
-unset, writers follow the round window, and a launch that sets it prints `WRITER GRACE OVERRIDDEN`
+in any rolling hour,
+retries and credit reads included;
+the rest queue in arrival order instead of being refused with HTTP 429.
+The default,
+1,000,
+is the account's limit as the owner stated it and as
+XIEPT2's refusals on 2026-09-03 bear out (612 successes in 43 minutes once the hour's thousand was spent,
+a trickle of about 12 a minute under refusal);
+a value that is not a positive number leaves the default,
+and the retry ladder separately waits as long as a refusal's "try again in Ns" asks.
+The window starts empty at launch,
+so a launch within an hour of a heavy run is refused until that run's requests leave the window.
+`TRANSLATION_REPAIR_WRITER_GRACE_MS` (`writer-grace-override.ts`) gives the WRITER rounds alone,
+editor,
+refiner,
+translate and consolidate,
+a window of their own for one launch,
+since a cut writer voice is a whole candidate lost while a cut reader voice is one ballot of eight;
+unset,
+writers follow the round window,
+and a launch that sets it prints `WRITER GRACE OVERRIDDEN`
 beside the round note in both the pass and this calibration.
 It drives the whole repair lane,
-so the claims an editor works from
-are claims models really raised about that passage rather than fixtures.
+so the claims an editor works from are claims models really raised about that passage rather than fixtures.
 That costs more per slice than the writer calibration,
-because a slice buys critics, a panel, editors, judges and checkers
-instead of one stage.
+because a slice buys critics,
+a panel,
+editors,
+judges and checkers instead of one stage.
 
 Every model writes on every slice in both.
 A narrow slate would compare only the models that happened to be seated,
 so a standing would mean something different for each of them.
-Every model also judges, matching production,
+Every model also judges,
+matching production,
 and each model's ballots on its own work are then discounted,
-because counting self-votes ranks the most self-confident model first
-rather than the best-written one.
+because counting self-votes ranks the most self-confident model first rather than the best-written one.
 
 #### The standing that costs nothing
 
-Every settled artifact's repair chunks already record
-the slate judges were shown, each candidate's producer, and every ballot.
+Every settled artifact's repair chunks already record the slate judges were shown,
+each candidate's producer,
+and every ballot.
 That is what a standing counts,
 so one can be read off work already paid for:
 
@@ -1213,38 +1348,42 @@ Four things bound what it can say.
 It is OBSERVATIONAL.
 Only models that held a seat ever wrote a candidate,
 so it ranks whoever was seated and is silent about everyone else.
-An absent model is unmeasured, not last.
+An absent model is unmeasured,
+not last.
 That is the survivorship the controlled calibrations exist to defeat,
 which is why this corroborates them and never replaces them.
 
 It NEVER POOLS ACROSS PIPELINE DIGESTS,
-because two builds are two configurations
-and a figure summed over both describes neither.
+because two builds are two configurations and a figure summed over both describes neither.
 Each digest is reported alone with its entry count,
 which is the denominator that governs:
 rounds inside one entry are correlated.
 
-It REFUSES AN ARTIFACT FROM AN EARLIER ROSTER, by name.
+It REFUSES AN ARTIFACT FROM AN EARLIER ROSTER,
+by name.
 Model ids are a closed set,
-and reading an id the roster no longer seats as though it were current
-would let a standing mix two rosters silently.
-Those artifacts are counted apart from malformed ones
-and named with the exact path that held the departed id.
+and reading an id the roster no longer seats as though it were current would let a standing mix two rosters silently.
+Those artifacts are counted apart from malformed ones and named with the exact path that held the departed id.
 
 It SEPARATES AN EARLIER SCHEMA FROM A DEFECT.
-A repair result whose `chunks` field is absent entirely
-was settled before the lane recorded rounds at all.
+A repair result whose `chunks` field is absent entirely was settled before the lane recorded rounds at all.
 That record is complete and correct for the build that wrote it;
 it simply cannot answer this question.
-It is counted as `earlierSchema`, not as a parse failure,
+It is counted as `earlierSchema`,
+not as a parse failure,
 because calling it broken would report a healthy archive as a damaged one.
 Chunks present and not an array stays a parse failure.
 
 The report accounts for every artifact it opened,
-across `read`, `earlierRoster`, `earlierSchema` and refusals,
+across `read`,
+`earlierRoster`,
+`earlierSchema` and refusals,
 so a reader can see what fraction of an archive the standing actually rests on.
-On the archives as of 2026-08-24 that is
-41 artifacts: 2 read, 17 from an earlier roster, 22 from an earlier schema, none malformed.
+On the archives as of 2026-08-24 that is 41 artifacts:
+2 read,
+17 from an earlier roster,
+22 from an earlier schema,
+none malformed.
 
 #### Reading a standing honestly
 
@@ -1254,42 +1393,47 @@ The COUNTS beside each share.
 A share with no denominator cannot be told from a share one ballot wide,
 and a lead smaller than its denominator supports is not a lead.
 
-The SLICES that paid in, printed as `from N of M slices`.
+The SLICES that paid in,
+printed as `from N of M slices`.
 Adjudicated is not accepted:
 a slice can buy ten critics and a ten-model panel,
 have its issues rejected at the accept gate,
 and contribute nothing to an editor standing.
-A standing drawn entirely from one slice
-reads identically to one drawn evenly from six without this line.
+A standing drawn entirely from one slice reads identically to one drawn evenly from six without this line.
 
-The models the table DOES NOT DESCRIBE, named at the end.
+The models the table DOES NOT DESCRIBE,
+named at the end.
 A standing carries a row only for a model somebody voted on,
 so every other seated model vanishes,
 and its absence would otherwise read exactly like a model that wrote and lost.
 During a provider outage that is half the roster.
 
 Three different things put a seated model outside the table,
-and the calibrations name them apart
-rather than reporting one absence (`#263`):
+and the calibrations name them apart rather than reporting one absence (`#263`):
 
 -   WROTE AND WAS NEVER VOTED ON.
     Its text reached a slate and no disinterested ballot was cast over it,
     which is what a slice where every producer proposed the same wording does:
     it ships unjudged.
-    That evidence is already paid for, and more slices are what would separate it.
+    That evidence is already paid for,
+    and more slices are what would separate it.
 
 -   ANSWERED AND WAS NEVER SLATED.
     At least one usable answer of its was heard and none became a candidate a judge saw:
-    a rewriter that leaves a paragraph as it stands, or whose rewrite is dropped before judging.
-    Re-running it buys the same again; slices with something to rewrite are what would seat it.
+    a rewriter that leaves a paragraph as it stands,
+    or whose rewrite is dropped before judging.
+    Re-running it buys the same again;
+    slices with something to rewrite are what would seat it.
     Arm A of 2026-08-26 reported such a seat as silent beside a `SEAT` line saying it had answered 31 of 31,
     which is the misreport this state exists to end.
 
 -   ANSWERED NOTHING USABLE.
     No usable answer of its was heard at the seat.
-    A provider out of budget, a refused sheet and a call that timed out
-    all look identical from the report, and the `SEAT` lines and the run log name which.
-    That evidence has not been bought yet, and re-running those seats buys it.
+    A provider out of budget,
+    a refused sheet and a call that timed out all look identical from the report,
+    and the `SEAT` lines and the run log name which.
+    That evidence has not been bought yet,
+    and re-running those seats buys it.
 
 Only a seat that records who answered can tell the last two apart.
 The refiner seat does (`settleRefinedSlice` returns `refinersHeard`);
@@ -1301,16 +1445,16 @@ The silent line carries both denominators,
 as `covers N of M seats`,
 so a table narrowed by an outage cannot read as a full roster comparison.
 
-A standing, a slate or an answer list naming a model the run never seated is REFUSED,
+A standing,
+a slate or an answer list naming a model the run never seated is REFUSED,
 because coverage of one roster cannot be read off another.
 
 #### Editor credit and refiner credit are separate columns
 
-The lane unions them, so the split takes work.
-`collectRefinedAuthors` merges the editors
-with any refiner whose rewrite won,
-so the refined outcome's authorship names both seats in one list
-that cannot be split back apart.
+The lane unions them,
+so the split takes work.
+`collectRefinedAuthors` merges the editors with any refiner whose rewrite won,
+so the refined outcome's authorship names both seats in one list that cannot be split back apart.
 
 The editor column is therefore read off the accuracy lane's own outcome,
 before refinement,
@@ -1318,20 +1462,21 @@ and the refiner column off `settleRefinedSlice`'s `refinedBy`,
 which names the models whose rewrite is actually in the text that shipped.
 `refinedBy` is empty on every path where no rewrite ships,
 including one the recheck rolled back,
-and it is deliberately kept off the cached settlement
-for the reason `asked` is:
+and it is deliberately kept off the cached settlement for the reason `asked` is:
 a slice resumed from disk bought no rewrite.
-`refinersHeard` rides beside it, also uncached:
-the refiners heard with a usable answer, proposal or not,
+`refinersHeard` rides beside it,
+also uncached:
+the refiners heard with a usable answer,
+proposal or not,
 which is what separates a seat that answered from one that never did.
 
 #### The editor calibration diverges from production in one place
 
-Checkers self-certify there, and only there.
+Checkers self-certify there,
+and only there.
 Production forbids a checker from proving its own repair,
 and seating all ten as editors leaves nobody independent to check.
-Rotating editors out instead would reintroduce
-the survivorship the shape exists to avoid.
+Rotating editors out instead would reintroduce the survivorship the shape exists to avoid.
 
 It is safe for that measurement because checking runs after selection:
 the ballots a standing reads are cast before any checker is asked,
@@ -1358,7 +1503,8 @@ and readers refuse to mix generations unless told to.
 
 ### Schema generations, which the drift opt-in does not cover
 
-The pass writes SCHEMA GENERATION 4, and refuses to resume into a directory holding another one.
+The pass writes SCHEMA GENERATION 4,
+and refuses to resume into a directory holding another one.
 That refusal is separate from the build guard above and is not waved past by
 `TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`:
 drift is an opinion about which BUILD filled a pool,
@@ -1368,22 +1514,28 @@ A file of another schema generation cannot answer them at all.
 Three generations record the same two-lane shape and differ only in how four keys are spelled.
 Generation 4 spells all four the current way:
 
--   `changedSliceIndices`, which generation 2 spelled `shippedChunkIndices`.
--   `withdrawnSliceIndices`, which generation 2 spelled `withdrawnChunkIndices`.
--   `sliceCritics`, which generation 2 spelled `chunkCritics`.
--   `sliceIndex`, which generations 2 AND 3 spelled `chunkIndex`.
+-   `changedSliceIndices`,
+    which generation 2 spelled `shippedChunkIndices`.
+-   `withdrawnSliceIndices`,
+    which generation 2 spelled `withdrawnChunkIndices`.
+-   `sliceCritics`,
+    which generation 2 spelled `chunkCritics`.
+-   `sliceIndex`,
+    which generations 2 AND 3 spelled `chunkIndex`.
 
 Generation 3 is therefore a MIXTURE:
-the change-set arrays already carry their current names there, and the index does not.
+the change-set arrays already carry their current names there,
+and the index does not.
 That is why the reader holds a table rather than a flag.
 A reader holding a flag reads every generation 3 artifact's index as ABSENT.
 
-All three generations are READ. The reader takes the spelling from the version the file records,
+All three generations are READ.
+The reader takes the spelling from the version the file records,
 so nothing is ever tried under two spellings,
-and a stamp over another generation's keys is refused rather than read as a file
-missing the keys it names.
+and a stamp over another generation's keys is refused rather than read as a file missing the keys it names.
 
-Meeting the refusal on a resume, the ways forward are the ones the message lists:
+Meeting the refusal on a resume,
+the ways forward are the ones the message lists:
 start a fresh directory with `TRANSLATION_REPAIR_RUNS_DIR`,
 restore the code those entries were settled under and resume there,
 or move the older artifacts to an archive directory and pay for their re-run.
@@ -1393,8 +1545,7 @@ it costs the same re-run and destroys a sound result of the generation that wrot
 ## Status
 
 Milestone one (detection) is complete:
-the seven-critic ensemble reached 0.981 recall on seeded errors
-over the reference corpus,
+the seven-critic ensemble reached 0.981 recall on seeded errors over the reference corpus,
 gated by the seeded-error benchmark harness.
 Read that figure with its date attached.
 It was measured on 2026-07-17 over 54 seeds against a roster of seven models,
@@ -1402,88 +1553,92 @@ and that roster no longer exists:
 the provider has since withdrawn two of them and offered one replacement,
 so six critics run today.
 
-A re-measure on 2026-08-10 detected 24 of 27 planted omissions, a rate of 0.889,
+A re-measure on 2026-08-10 detected 24 of 27 planted omissions,
+a rate of 0.889,
 over nine entries balanced across the three size bands,
 with zero policy declines,
 so all three misses are critics failing to see a seeded omission
 rather than the panel correctly ruling one a source defect.
 
-That figure is NOT the configured roster's recall, and the run says so itself.
+That figure is NOT the configured roster's recall,
+and the run says so itself.
 One model returned schema-invalid output 312 times across five roles during it,
 and the critic stage never once reached its full roster:
-72 chunks ran at five voices of six, eight at three, and one at none at all.
-So 0.889 describes what the pipeline delivered while one of six critics was
-effectively absent.
+72 chunks ran at five voices of six,
+eight at three,
+and one at none at all.
+So 0.889 describes what the pipeline delivered while one of six critics was effectively absent.
 Read it as a measurement of a degraded ensemble,
 which is a real and current operating condition rather than a spoiled run,
 and not as evidence about the roster as configured.
 
 Do not read it against the milestone-one figure as a regression either.
-The two runs differ in roster, entry set, seed count, and several stages,
+The two runs differ in roster,
+entry set,
+seed count,
+and several stages,
 so no delta is attributable to any one of them,
-and 24 of 27 against 53 of 54 is not a statistically established difference
-(two-proportion z of about 1.8).
-All three misses also fall in a single entry, which went 0 for 3 while the other
-eight went 24 for 24,
+and 24 of 27 against 53 of 54 is not a statistically established difference (two-proportion z of about 1.8).
+All three misses also fall in a single entry,
+which went 0 for 3 while the other eight went 24 for 24,
 so the sample is one entry failing rather than a uniform detection rate.
 
 Milestone two (repair) is complete:
-the full loop
-(critics, claim aggregation, adjudication panel, editable envelopes,
-editor through a deterministic apply gate, resolution checkers,
+the full loop (critics,
+claim aggregation,
+adjudication panel,
+editable envelopes,
+editor through a deterministic apply gate,
+resolution checkers,
 lexicographic candidate selection)
-reached a probe-adjusted effective restoration rate of 0.98
-over 100 seeded omissions across 21 budgeted live runs,
-graded by a source-anchored bilingual restoration judge
-(three judge models, conservative lower-median verdict).
-Misses are attributed, never averaged away:
-a derivability probe rules whether each missed seed's information
-was fully derivable from the source at all,
-so embellishment-capped partials and correct refusals of
-underivable content are excused,
+reached a probe-adjusted effective restoration rate of 0.98 over 100 seeded omissions across 21 budgeted live runs,
+graded by a source-anchored bilingual restoration judge (three judge models,
+conservative lower-median verdict).
+Misses are attributed,
+never averaged away:
+a derivability probe rules whether each missed seed's information was fully derivable from the source at all,
+so embellishment-capped partials and correct refusals of underivable content are excused,
 and only genuine editor shortfalls count against the editor.
 The one reproducible shortfall class
-(long omissions restored compressed)
-drove a rule now promoted into the baseline editor prompt:
+(long omissions restored compressed) drove a rule now promoted into the baseline editor prompt:
 enumerate the omitted source sentences clause by clause.
 
 Milestone three (detection precision) is NOT met.
-Its gate is human-graded precision of at least 0.9 over a stratified sample
-of accepted issues.
-Round three was graded on 2026-08-12 and returned
-0.791 strict, 0.810 excluded, and 0.814 lenient
-over 43 gradeable items drawn from a pool of 740 across 18 settled entries.
-All three readings improved on round two's 0.740, 0.787 and 0.800,
+Its gate is human-graded precision of at least 0.9 over a stratified sample of accepted issues.
+Round three was graded on 2026-08-12 and returned 0.791 strict,
+0.810 excluded,
+and 0.814 lenient over 43 gradeable items drawn from a pool of 740 across 18 settled entries.
+All three readings improved on round two's 0.740,
+0.787 and 0.800,
 and none reaches the bar.
 
 Round three also found a defect in the sampling instrument itself.
-Seven of the 50 drawn items repeat a defect already drawn at an earlier
-position, which the grader marked `Duplicate` and the blind pre-grades had
-independently annotated the same way.
-A duplicate is now its own verdict, excluded from every denominator,
+Seven of the 50 drawn items repeat a defect already drawn at an earlier position,
+which the grader marked `Duplicate` and the blind pre-grades had independently annotated the same way.
+A duplicate is now its own verdict,
+excluded from every denominator,
 because the pipeline reporting one defect several times is a different failure
 from reporting a defect that is not there,
 and only the second is what precision measures.
-Counting them as false positives had dragged strict to 0.680 while every other
-reading rose, which described the instrument rather than the detector.
+Counting them as false positives had dragged strict to 0.680 while every other reading rose,
+which described the instrument rather than the detector.
 Read the milestone-two figures above as recall claims only:
 they say the ensemble finds seeded defects,
 not that what it reports is right.
-Nothing here should be taken as evidence that an accepted issue is a real one
-until this gate is measured and passes.
+Nothing here should be taken as evidence that an accepted issue is a real one until this gate is measured and passes.
 
-The REPAIR half is not fit to be measured yet, and that is a finding rather
-than a gap in the schedule.
+The REPAIR half is not fit to be measured yet,
+and that is a finding rather than a gap in the schedule.
 Round three's repair sheet was deliberately left ungraded:
-reading it showed repairs that fix their claim while deleting nearby
-source-supported content, including a contributor credit removed by an edit
-asked only to change a colon,
+reading it showed repairs that fix their claim while deleting nearby source-supported content,
+including a contributor credit removed by an edit asked only to change a colon,
 and 21 of 50 edits replacing a span more than 1.35 times the quoted defect.
-The introduced-defect probe, which exists to catch exactly that, reported no
-finding from any prober on every one of those repairs.
-So a shadow-mode probe reading clean is currently false assurance, not
-evidence, and repair quality claims should be read as unestablished until
-that instrument is fixed.
+The introduced-defect probe,
+which exists to catch exactly that,
+reported no finding from any prober on every one of those repairs.
+So a shadow-mode probe reading clean is currently false assurance,
+not evidence,
+and repair quality claims should be read as unestablished until that instrument is fixed.
 
 Every number above comes from a graded measurement rather than a self-report.
 Where a stage grades itself the figure is named as telemetry and excluded:
@@ -1496,7 +1651,8 @@ The whole-package audit closed on a measured tally and every MAJOR and MINOR it 
 to fail when its fix is removed.
 The production readiness signal was then put to the owner and REJECTED,
 because the published pages had not been read by anyone:
-"Not yet. You didn't even look at its actual output."
+"Not yet.
+You didn't even look at its actual output."
 The pipeline is not production-ready.
 Reading is now gate,
 and one page passing that gate validates only artifact from that run,
@@ -1510,17 +1666,19 @@ while final assembly revives archive.
 One slice reached that path after 9 of 10 contest voices called archive flawed.
 A favourable page does not close mechanism that can recur on next entry.
 
-Fixed-build overlap-4 `Zha_Ke` exposed separate readiness blocker, `#272`.
+Fixed-build overlap-4 `Zha_Ke` exposed separate readiness blocker,
+`#272`.
 Source Markdown carries central letter only as image asset,
 while archive carries English transcription inside unmatched block.
 Artifact and image share pinned corpus commit `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
 Preparation paired four source Markdown blocks,
 one being image placeholder,
-and explicitly reported two target blocks, 3,672 characters, as unclaimed.
+and explicitly reported two target blocks,
+3,672 characters,
+as unclaimed.
 No quality lane processed those blocks as source-aligned content.
 Final page's 3,673-character details block is byte-identical to archive.
-Direct image comparison found source will has seven numbered provisions
-while published transcription has six;
+Direct image comparison found source will has seven numbered provisions while published transcription has six;
 one provision is absent and two others materially change source meaning.
 Those differences concern wishes and responsibility,
 not protected suicide method or drug detail.
@@ -1531,7 +1689,8 @@ even when alignment names unclaimed target blocks.
 Page is not publishable and pipeline cannot be production-ready until that path is handled.
 Static pinned-corpus inventory found 50 source entries with visual references.
 Three have English-only details blocks absent from source Markdown:
-`Chinatsu_Suzuki`, `Zha_Ke` and `shihai4h`.
+`Chinatsu_Suzuki`,
+`Zha_Ke` and `shihai4h`.
 This proves bypass pattern is not entry-unique;
 it does not establish which remaining visual assets contain source text.
 
@@ -1539,9 +1698,11 @@ Same-digest `Zha_Ke` overlap pair at built-in grace confirms performance mechani
 not readiness.
 Both providers were wet throughout both arms.
 Overlap `1` took 129.95 minutes over 4.862 call-hours,
-normalized `0.445`, with 68 voices unheard and 25.27 metered credits.
+normalized `0.445`,
+with 68 voices unheard and 25.27 metered credits.
 Overlap `4` took 36.49 minutes over 2.947 call-hours,
-normalized `0.206`, with 6 voices unheard and 44.55 metered credits.
+normalized `0.206`,
+with 6 voices unheard and 44.55 metered credits.
 Overlap `4` reduced wall time 71.9 percent and normalized wall 53.7 percent;
 metered spend rose 76.3 percent.
 Both pages retained byte-identical blocked details transcript,
@@ -1559,9 +1720,11 @@ translation left slice unfilled,
 and publication guard correctly wrote no artifact or page.
 
 Overlap `1` first attempt took 54.04 minutes over 2.293 call-hours,
-normalized `0.393`, with 15 voices unheard and 13.02 metered credits.
+normalized `0.393`,
+with 15 voices unheard and 13.02 metered credits.
 Overlap `4` first attempt took 31.51 minutes over 2.502 call-hours,
-normalized `0.210`, with 10 voices unheard and 30.92 metered credits.
+normalized `0.210`,
+with 10 voices unheard and 30.92 metered credits.
 Both providers were wet throughout.
 Overlap `4` reduced wall time 41.7 percent and normalized wall 46.6 percent;
 call sum rose 9.1 percent and metered spend rose 137.5 percent.
@@ -1636,11 +1799,16 @@ Candidate validation now preserves source `name` and `info.alias` identity equal
 contest winners that fail publication invariants remain retryable,
 and consolidation standing text must pass same syntax guard before unchanged result becomes resumable.
 Final-page validation applies same source identity relation even when page differs bytewise from archive.
-Since `34e5c7ecd` (2026-09-02, owner's decision in `doc/decision/translation-repair-front-matter-guard.md`) the final guard is structural only:
+Since `34e5c7ecd` (2026-09-02,
+owner's decision in `doc/decision/translation-repair-front-matter-guard.md`) the final guard is structural only:
 the metadata slice sits at slice zero over both sides' front-matter bytes,
 the page parses,
 the identity and attribution rules hold,
-and the page's visible name is not the directory id where the source names the person differently (`directory-id-name`, checked on the assembled page whether or not it equals the archive; since `6d85b619a` a handle that is the name in both languages, as for 8 of the pinned corpus's 92 entries, passes).
+and the page's visible name is not the directory id where the source names the person differently (`directory-id-name`,
+checked on the assembled page whether or not it equals the archive;
+since `6d85b619a` a handle that is the name in both languages,
+as for 8 of the pinned corpus's 92 entries,
+passes).
 Since `6bfe6da56` (2026-09-04,
 two owner decisions after the luxuanwen3 pass lost a full run to its front matter) the identity rule reads containment:
 where the source declares `name` and `info.alias` the same,
@@ -1668,7 +1836,9 @@ and an ineligible standing stops the entry instead of queueing a reattempt of th
 Whether the lanes kept the archive's metadata is not the guard's question:
 Chinese and English metadata always differ,
 so the 2026-08-28 byte comparison fired on every kept incumbent and discarded the Carena0442 pass,
-and the night's reading of which panel chose the keep (`daaf0ffa0`, `6f70a2085`, `1160ebb4c`) was removed with it.
+and the night's reading of which panel chose the keep (`daaf0ffa0`,
+`6f70a2085`,
+`1160ebb4c`) was removed with it.
 
 Fresh `1974ad999` validation then settled all four slices under preparation identity generation 2.
 Artifact generation 5 and its 897-character page matched exactly under `verify-published`;
@@ -1967,8 +2137,7 @@ and it does not make the pipeline production ready.
 
 The reading found four defect classes,
 all four in this package rather than in the corpus.
-The publisher compared the assembled page to the source alone and refused a page its own slice rule had
-accepted.
+The publisher compared the assembled page to the source alone and refused a page its own slice rule had accepted.
 The corpus's neutral pronoun,
 written `TA`,
 `Ta` or `ta`,
@@ -1985,8 +2154,7 @@ Two entries read on one afternoon produced two new classes,
 and the third produced none,
 so the class-per-entry rate is falling but has not reached zero,
 and no run has yet completed consolidation unstarved on the current build.
-Production readiness needs the passes named in
-`doc/planning/translation-repair-readiness-signal.md`,
+Production readiness needs the passes named in `doc/planning/translation-repair-readiness-signal.md`,
 not another green suite.
 
 ### Superseded generation-14 operation history
@@ -2075,8 +2243,7 @@ Too few live seats for stage participation pauses or retries work as operational
 it is not quality rejection.
 
 Ordinary operation permits either provider alone.
-Validation and performance arms requiring both must pass
-`--require-providers synthetic,hyper`.
+Validation and performance arms requiring both must pass `--require-providers synthetic,hyper`.
 Harness verifies both keys and live non-dry meters before any model call,
 then logs `REQUIRED-PROVIDERS synthetic,hyper status=wet`.
 
@@ -2100,8 +2267,7 @@ Neither stopped run is publication or readiness evidence.
 Artifact and log paths,
 fixture method,
 and failed startup non-evidence are recorded in
-`~/temp/agent/pr386-Carena0442-run-provenance-20260829.md` and
-`doc/handover/translation-repair.md`.
+`~/temp/agent/pr386-Carena0442-run-provenance-20260829.md` and `doc/handover/translation-repair.md`.
 
 The stopped runs are not completion-time samples.
 Before another `Carena0442` launch,
@@ -2122,7 +2288,8 @@ Publication gates remain strict.
 
 Audited terminal and bypass findings are integrated as follows:
 
-- Archive-only block repair landed in `ccaad1f53`, with contributor-floor test in `78ab244a2`.
+- Archive-only block repair landed in `ccaad1f53`,
+  with contributor-floor test in `78ab244a2`.
   Preparation now scopes each unclaimed target block to expected aligned source section,
   requires exact anchored source support or deterministically shaped editorial apparatus,
   and lets any revise voice block retention.
@@ -2135,9 +2302,12 @@ Audited terminal and bypass findings are integrated as follows:
   A sibling revision intentionally causes remaining unclaimed blocks to be reviewed again;
   this costs calls but avoids carrying a license across changed parser locations and source context.
   The old `assertArchiveReviewed` terminal and `UnreviewedArchiveError` are removed.
-- Unfilled-passage continuation landed in `ed756993b`, with cycle guard test in `1649c480d`.
+- Unfilled-passage continuation landed in `ed756993b`,
+  with cycle guard test in `1649c480d`.
   Translate version 11 produces from latest exact rejected slate and findings without finite correction count.
-  Insertion placement rechecks latest semantic, destination, and shortfall evidence until admitted,
+  Insertion placement rechecks latest semantic,
+  destination,
+  and shortfall evidence until admitted,
   proven carried elsewhere,
   operationally interrupted,
   or exact task cycle repeats.
@@ -2150,7 +2320,8 @@ Audited terminal and bypass findings are integrated as follows:
   Ordinary repair-lane or archive standing is validated before consolidation eligibility,
   so a contest-endorsed linkless candidate enters version-16 recovery instead of becoming final.
   Final destination comparison runs before any page write and pauses as names-only `INCOMPLETE` invariant.
-- Continuous final-selection recovery landed in `a84bb3a7a`, with role-alias guard in `f858ab538`.
+- Continuous final-selection recovery landed in `a84bb3a7a`,
+  with role-alias guard in `f858ab538`.
   Consolidation version 16 treats every unendorsed or publication-ineligible standing baseline as unfinished.
   It threads prior selection slate,
   anonymized producer and judge roles,
@@ -2208,8 +2379,7 @@ filesystem,
 provider,
 and cancellation failures are operational errors rather than quality verdicts.
 The code-level terminal-quality register is closed.
-Continuous-repair verification is recorded in
-`doc/audit/translation-repair-continuous-repair-invariant.md`.
+Continuous-repair verification is recorded in `doc/audit/translation-repair-continuous-repair-invariant.md`.
 Fresh validation remains gated by Carena completion-path analysis.
 Exact deterministic cycles deliberately pause as `INCOMPLETE` until strategy or evidence changes;
 they never authorize fallback publication.
@@ -2221,13 +2391,14 @@ fix and verify blocker,
 then rerun affected entry before resuming measurement.
 More samples do not compensate for known mechanism.
 
-Remaining corpus arms, hard-case output reading, live calibration checks,
+Remaining corpus arms,
+hard-case output reading,
+live calibration checks,
 site-grammar gaps,
 package reading CLI,
 Hyper catalog drift check,
 and declined-archive seam remain open.
 Read milestone figures as history:
 they were measured under earlier pipeline shapes and none is readiness claim.
-Current evidence and traces are in
-`doc/audit/translation-repair-output-reading-20260826.md`
+Current evidence and traces are in `doc/audit/translation-repair-output-reading-20260826.md`
 and `doc/planning/translation-repair-corpus-overlap-measurement.md`.

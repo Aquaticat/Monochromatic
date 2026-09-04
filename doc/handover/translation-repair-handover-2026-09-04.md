@@ -160,19 +160,25 @@ and each item is a pass and a reading rather than a build.
 5.  Read each page the way the three above were read,
     and record the reading in the planning document and the readiness document.
 
-Two smaller items stay open from earlier days:
-the picture gather's straggler wait wants re-reading now that three-reader pictures exist,
-and the ModelRun seat decision is routed to CoreWeave.
+One smaller item stays open from earlier days:
+the ModelRun seat decision,
+routed to CoreWeave.
+The picture gather's straggler wait was re-read tonight on the three-reader pictures today's runs produced,
+and the reading is in the planning log under "The picture gather's wait":
+the gather waits for every reader with no window,
+which costs a median of 11.6 seconds and cost six minutes once,
+when a reader hung after two readings had already corroborated.
+Whether to cut a straggler there is the owner's call and no dial was added.
 
-One documentation debt is left deliberately.
+The documentation debt this snapshot first recorded is cleared.
 [`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md)
-is a running log written as wrapped prose,
-so `mise run lint:markdown` reports about 1200 `semantic-line-breaks` findings against it,
-550 of them from before 2026-09-04.
-Today's sections match that file's own style rather than the repository rule,
-and every other document changed today was brought back to its own baseline instead.
-Reformatting that log is a sweep of its own,
-worth doing when it is next edited substantively rather than tonight.
+was a running log written as wrapped prose,
+reported by `mise run lint:markdown` at about 1200 `semantic-line-breaks` findings.
+It is now at zero,
+and the sweep is provably content-preserving:
+the sorted word multiset is identical before and after,
+11081 words either way,
+with the same 33 headings.
 
 ## Standing constraints
 

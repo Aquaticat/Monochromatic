@@ -1,12 +1,15 @@
 # Translation repair: OpenRouter as the paid fallback provider
 
-Planning record, 2026-09-03.
-Nothing here is ratified; the owner's answers to the questions at the end decide the seating.
+Planning record,
+2026-09-03.
+Nothing here is ratified;
+the owner's answers to the questions at the end decide the seating.
 Measurements were taken on 2026-09-03 between 15:24 and 15:45 UTC unless dated otherwise.
 
 ## Why now
 
-The owner on 2026-09-03: Charm Hyper ended its bundle subsidization,
+The owner on 2026-09-03:
+Charm Hyper ended its bundle subsidization,
 so there is no reason to recharge Hyper from the usual subscription;
 OpenRouter is preferred for paid per-token work,
 and Synthetic and Hyper are expected to run dry often.
@@ -23,27 +26,38 @@ State of the other two providers at the time of writing:
 
 - Synthetic weekly read `0%` from 13:15:51 UTC on the stub-fix XIEPT2 run (`~/temp/agent/xiept2-stub-20260903.log`).
 - Hyper `GET /v1/credits` read 2497.
-    Runs measured off the `METERS hyperBalance=` line, first to last, cost 724 (XIEPT2 postscript),
-    654 (XIEPT2 stub fix), 654 (Carena0442 rerun of 2026-09-02) and 428 (Toka_ls rerun 2 of 2026-09-02).
+    Runs measured off the `METERS hyperBalance=` line,
+    first to last,
+    cost 724 (XIEPT2 postscript),
+    654 (XIEPT2 stub fix),
+    654 (Carena0442 rerun of 2026-09-02) and 428 (Toka_ls rerun 2 of 2026-09-02).
     That balance buys three to five more entry runs and will not be topped up.
 
 ## What OpenRouter answered
 
 ### Account and meter
 
-- `GET https://openrouter.ai/api/v1/key` with the ordinary key: `limit: null`, `limit_remaining: null`,
-    `usage: 0`, `is_free_tier: false`, `is_management_key: false`.
+- `GET https://openrouter.ai/api/v1/key` with the ordinary key:
+  `limit: null`,
+  `limit_remaining: null`,
+    `usage: 0`,
+    `is_free_tier: false`,
+    `is_management_key: false`.
 - `GET https://openrouter.ai/api/v1/credits` with the same ordinary key answered `200` with
-    `total_credits: 1913` and `total_usage: 1855.383100082`, so the balance is about 57.62 USD,
+    `total_credits: 1913` and `total_usage: 1855.383100082`,
+    so the balance is about 57.62 USD,
     matching the owner's figure.
     The endpoint's own page says a management key is required;
     the live call says otherwise.
     Recorded as a discrepancy rather than resolved;
     the meter will be built on the live behaviour with an unreadable meter counting as spendable,
     which is this package's existing rule (`provider-budget.ts`).
-- Purchase fee per the FAQ: 5.5% with a 0.80 USD minimum by card, 5% by cryptocurrency.
+- Purchase fee per the FAQ:
+  5.5% with a 0.80 USD minimum by card,
+  5% by cryptocurrency.
     Credits may expire one year after purchase.
-- Rate limits page: paid models carry no documented request ceiling beyond DDoS protection;
+- Rate limits page:
+  paid models carry no documented request ceiling beyond DDoS protection;
     `429` arrives as a status or as an in-stream `finish_reason: "error"`,
     `402` when credits are insufficient.
     Free variants (`:free`) are capped at 20 requests per minute and 1,000 per day.
@@ -51,65 +65,143 @@ State of the other two providers at the time of writing:
 ### Transport
 
 - `POST https://openrouter.ai/api/v1/messages` speaks the Anthropic Messages format:
-    `Authorization: Bearer`, streaming SSE in Anthropic event shapes, `tools` and
-    `tool_choice: {type: "tool", name}` forced tool use, OpenRouter model slugs in `model`,
-    a `provider` object in the body, and usage carrying `input_tokens`, `output_tokens` and an optional `cost` in USD.
+    `Authorization: Bearer`,
+    streaming SSE in Anthropic event shapes,
+    `tools` and `tool_choice: {type: "tool", name}` forced tool use,
+    OpenRouter model slugs in `model`,
+    a `provider` object in the body,
+    and usage carrying `input_tokens`,
+    `output_tokens` and an optional `cost` in USD.
     This is the protocol `hyper-client.ts` already speaks,
-    so `buildAnthropicBody`, `extractAnthropicCompletion` and `wireFormat: 'anthropic'` are reusable.
-- The `provider` object supports `order`, `only`, `ignore`, `allow_fallbacks`, `require_parameters`,
-    `data_collection: 'deny'`, `zdr: true`, `sort`, `max_price` and quantization filters.
+    so `buildAnthropicBody`,
+    `extractAnthropicCompletion` and `wireFormat: 'anthropic'` are reusable.
+- The `provider` object supports `order`,
+  `only`,
+  `ignore`,
+  `allow_fallbacks`,
+  `require_parameters`,
+    `data_collection: 'deny'`,
+    `zdr: true`,
+    `sort`,
+    `max_price` and quantization filters.
     The account-level allowed-provider list is a ceiling over request-level `only`;
     account-level ignores merge with request-level ones.
-- Zero data retention: `zdr: true` per request ORs with the account setting.
+- Zero data retention:
+  `zdr: true` per request ORs with the account setting.
     `GET https://openrouter.ai/api/v1/endpoints/zdr` listed 834 ZDR endpoints.
 
 ### Batch
 
 From the batch quickstart:
-`POST https://openrouter.ai/api/beta/batches` with `endpoint`, `model` and inline `requests[]`,
-polled at `GET /api/beta/batches/:id`, results inline on completion,
-text only, the only completion window `24h`,
+`POST https://openrouter.ai/api/beta/batches` with `endpoint`,
+`model` and inline `requests[]`,
+polled at `GET /api/beta/batches/:id`,
+results inline on completion,
+text only,
+the only completion window `24h`,
 priced at "50% of the model's standard per-token pricing".
 
-The `:batch` entries in the public listing, USD per million prompt and completion tokens,
+The `:batch` entries in the public listing,
+USD per million prompt and completion tokens,
 against the realtime entry of the same model:
 
-- `moonshotai/kimi-k3`: batch 3 and 15; realtime 3 and 15.
-- `minimax/minimax-m3`: batch 0.3 and 1.2; realtime 0.3 and 1.2.
-- `deepseek/deepseek-v4-flash-0731`: batch 0.14 and 0.28; realtime 0.065 and 0.18.
-- `z-ai/glm-5.3-flash`: batch 0.15 and 0.5; realtime 0.075 and 0.25.
-- `openai/gpt-oss-120b`: batch 0.15 and 0.6; realtime 0.037 and 0.17.
-- `qwen/qwen3.8-27b` and `z-ai/glm-5.3`: no `:batch` entry.
+- `moonshotai/kimi-k3`:
+  batch 3 and 15;
+  realtime 3 and 15.
+- `minimax/minimax-m3`:
+  batch 0.3 and 1.2;
+  realtime 0.3 and 1.2.
+- `deepseek/deepseek-v4-flash-0731`:
+  batch 0.14 and 0.28;
+  realtime 0.065 and 0.18.
+- `z-ai/glm-5.3-flash`:
+  batch 0.15 and 0.5;
+  realtime 0.075 and 0.25.
+- `openai/gpt-oss-120b`:
+  batch 0.15 and 0.6;
+  realtime 0.037 and 0.17.
+- `qwen/qwen3.8-27b` and `z-ai/glm-5.3`:
+  no `:batch` entry.
 
 Which price the "50% of standard" claim discounts from is not established here;
 the listing's realtime column is the cheapest endpoint,
 and the batch column may discount a single provider's list price.
-What is established: for this roster, the listed batch price is never below the listed realtime price,
+What is established:
+for this roster,
+the listed batch price is never below the listed realtime price,
 and two roster models have no batch entry at all.
 
 The structural fact matters more than the price.
-A corpus pass is a chain of dependent rounds (critics, panel, editors, judges, contest, consolidation),
-about fifty per entry, each waiting on the previous one,
+A corpus pass is a chain of dependent rounds (critics,
+panel,
+editors,
+judges,
+contest,
+consolidation),
+about fifty per entry,
+each waiting on the previous one,
 and every round is built on streaming quorum with straggler and writer grace.
 A batch whose only window is 24 hours cannot carry that chain within rule `FIT` or `FT2`,
-and the guards that keep a stage honest (quorum, grace, abandonment) have no meaning over a batch.
+and the guards that keep a stage honest (quorum,
+grace,
+abandonment) have no meaning over a batch.
 
 ## Roster models on OpenRouter
 
-Spellings, realtime USD per million prompt and completion tokens, total endpoints, ZDR endpoints,
+Spellings,
+realtime USD per million prompt and completion tokens,
+total endpoints,
+ZDR endpoints,
 and whether the owner's allowlist carries the model:
 
-- `moonshotai/kimi-k3`: 3 and 15; 18 endpoints, 16 ZDR; allowlisted.
-- `minimax/minimax-m3`: 0.3 and 1.2; 11 endpoints, 7 ZDR; allowlisted.
-- `deepseek/deepseek-v4-flash-0731`: 0.065 and 0.18; 30 endpoints, 22 ZDR; allowlisted.
-- `deepseek/deepseek-v4-pro-0813`: 0.66 and 1.98; 18 endpoints, 13 ZDR; NOT allowlisted.
-- `qwen/qwen3.8-27b`: 0.425 and 2.55; 12 endpoints, 9 ZDR; allowlisted.
-- `z-ai/glm-5.3`: 1.4 and 4.4; 25 endpoints, 22 ZDR; allowlisted.
-- `z-ai/glm-5.3-flash`: 0.075 and 0.25; 23 endpoints, 19 ZDR; allowlisted.
-- `google/gemma-4-26b-a4b-it`: 0.07 and 0.34; 9 endpoints, 7 ZDR; NOT allowlisted.
-- `openai/gpt-oss-120b`: 0.037 and 0.17; 20 endpoints, 20 ZDR; NOT allowlisted.
+- `moonshotai/kimi-k3`:
+  3 and 15;
+  18 endpoints,
+  16 ZDR;
+  allowlisted.
+- `minimax/minimax-m3`:
+  0.3 and 1.2;
+  11 endpoints,
+  7 ZDR;
+  allowlisted.
+- `deepseek/deepseek-v4-flash-0731`:
+  0.065 and 0.18;
+  30 endpoints,
+  22 ZDR;
+  allowlisted.
+- `deepseek/deepseek-v4-pro-0813`:
+  0.66 and 1.98;
+  18 endpoints,
+  13 ZDR;
+  NOT allowlisted.
+- `qwen/qwen3.8-27b`:
+  0.425 and 2.55;
+  12 endpoints,
+  9 ZDR;
+  allowlisted.
+- `z-ai/glm-5.3`:
+  1.4 and 4.4;
+  25 endpoints,
+  22 ZDR;
+  allowlisted.
+- `z-ai/glm-5.3-flash`:
+  0.075 and 0.25;
+  23 endpoints,
+  19 ZDR;
+  allowlisted.
+- `google/gemma-4-26b-a4b-it`:
+  0.07 and 0.34;
+  9 endpoints,
+  7 ZDR;
+  NOT allowlisted.
+- `openai/gpt-oss-120b`:
+  0.037 and 0.17;
+  20 endpoints,
+  20 ZDR;
+  NOT allowlisted.
 
-Every roster model has at least seven ZDR endpoints, so `zdr: true` removes no model.
+Every roster model has at least seven ZDR endpoints,
+so `zdr: true` removes no model.
 
 Spelling map used by the pricing below and to be carried into the catalog:
 
@@ -125,24 +217,52 @@ Spelling map used by the pricing below and to be carried into the catalog:
 
 ## What an entry would cost bought entirely on OpenRouter
 
-Method: every `SPEND provider=... model=... prompt=N completion=N` line of a completed run,
+Method:
+every `SPEND provider=... model=... prompt=N completion=N` line of a completed run,
 mapped through the spelling map and priced at the realtime rates of the 2026-09-03 listing
 (`~/temp/agent/openrouter-models-20260903.json`).
-Calls whose provider reported zero usage (15 to 42 per run, mostly `glm-5.3` on Hyper) price at zero,
+Calls whose provider reported zero usage (15 to 42 per run,
+mostly `glm-5.3` on Hyper) price at zero,
 so every total is a floor.
-Script: `price-runs-on-openrouter.mjs` in the session scratchpad; it is a measurement aid, not package code.
+Script:
+`price-runs-on-openrouter.mjs` in the session scratchpad;
+it is a measurement aid,
+not package code.
 
-- XIEPT2 postscript (219 minutes, 2197 calls): 14.41 USD, Kimi-K3 8.74 (61%), 5.67 without Kimi.
-- XIEPT2 stub fix (146 minutes, 2024 calls): 12.48 USD, Kimi-K3 7.36 (59%), 5.13 without Kimi.
-- Carena0442 rerun 2026-09-02 (190 minutes, 1938 calls): 13.52 USD, Kimi-K3 7.76 (57%), 5.75 without Kimi.
-- Carena0442 four-entry pass 2026-09-01 (94 minutes, 1749 calls): 11.40 USD, Kimi-K3 5.90 (52%), 5.50 without Kimi.
-- Toka_ls rerun 2 2026-09-02 (100 minutes, 1259 calls): 6.78 USD, Kimi-K3 4.08 (60%), 2.70 without Kimi.
+- XIEPT2 postscript (219 minutes,
+  2197 calls):
+  14.41 USD,
+  Kimi-K3 8.74 (61%),
+  5.67 without Kimi.
+- XIEPT2 stub fix (146 minutes,
+  2024 calls):
+  12.48 USD,
+  Kimi-K3 7.36 (59%),
+  5.13 without Kimi.
+- Carena0442 rerun 2026-09-02 (190 minutes,
+  1938 calls):
+  13.52 USD,
+  Kimi-K3 7.76 (57%),
+  5.75 without Kimi.
+- Carena0442 four-entry pass 2026-09-01 (94 minutes,
+  1749 calls):
+  11.40 USD,
+  Kimi-K3 5.90 (52%),
+  5.50 without Kimi.
+- Toka_ls rerun 2 2026-09-02 (100 minutes,
+  1259 calls):
+  6.78 USD,
+  Kimi-K3 4.08 (60%),
+  2.70 without Kimi.
 
-After Kimi, the next largest lines are Qwen3.8-27B (0.88 to 2.74), minimax-m3 (0.69 to 1.29),
+After Kimi,
+the next largest lines are Qwen3.8-27B (0.88 to 2.74),
+minimax-m3 (0.69 to 1.29),
 GLM-5.3 (0.48 to 1.15) and DeepSeek V4 Pro (0.47 to 1.08).
 The three models absent from the allowlist together cost 0.12 to 1.26 per entry.
 
-Auto top-up arithmetic: the observed cadence is three to four entries a day,
+Auto top-up arithmetic:
+the observed cadence is three to four entries a day,
 so a day bought entirely on OpenRouter is about 50 USD with Kimi-K3 seated and about 20 USD without.
 The fee is a percentage with a 0.80 floor,
 so a top-up above about 15 USD pays the same rate whatever its size;
@@ -151,50 +271,83 @@ A threshold of 20 USD (one XIEPT2-scale entry plus margin) and a top-up of one d
 
 ## Decisions taken here, open to veto
 
-- Routing order: Synthetic while wet, then Hyper while its balance lasts, then OpenRouter.
+- Routing order:
+  Synthetic while wet,
+  then Hyper while its balance lasts,
+  then OpenRouter.
     This is the plain reading of the owner's two messages of 2026-09-03 taken together.
-- Transport: the Anthropic Messages endpoint with forced tool use,
+- Transport:
+  the Anthropic Messages endpoint with forced tool use,
     reusing the Hyper request builder and stream reader with a different URL and auth header.
     `provider.require_parameters: true` so only endpoints supporting `tools` and `tool_choice` are eligible,
     `provider.ignore` for any endpoint that measures badly.
     Conformance is measured twenty times per model before a model is seated on this provider,
     as the Hyper decision did.
-- Meter: `GET /api/v1/credits`, balance as `total_credits - total_usage`;
-    dry at or below zero; unreadable counts as spendable; `402` and `429` are refusal holds.
+- Meter:
+  `GET /api/v1/credits`,
+  balance as `total_credits - total_usage`;
+    dry at or below zero;
+    unreadable counts as spendable;
+    `402` and `429` are refusal holds.
     No management key is needed while the ordinary key answers.
 - Gemini 3.8 Flash joins the roster blocklist on the owner's words ("a wildly misaligned model").
-- `:free` variants are not used: 20 requests per minute and 1,000 per day cannot carry a corpus pass,
-    and their data policy is the provider's, not ours.
+- `:free` variants are not used:
+  20 requests per minute and 1,000 per day cannot carry a corpus pass,
+    and their data policy is the provider's,
+    not ours.
 - Spend lines carry OpenRouter's reported `cost` in USD when present,
     so the price table is a fallback rather than the source.
 
 ## Constraints for the build
 
 - Generalize the router to an ordered provider list rather than a third boolean;
-    `ProviderName`, `BudgetView`, `ModelReach`, `readBudgetsPastHolds`, `secondOpinionFrom`
-    and the all-dry error all encode two providers.
+    `ProviderName`,
+    `BudgetView`,
+    `ModelReach`,
+    `readBudgetsPastHolds`,
+    `secondOpinionFrom` and the all-dry error all encode two providers.
 - Seat withholding in `run-seats.ts` is keyed to `syntheticDry` alone;
-    with OpenRouter serving Qwen3.8-27B and Kimi-K3, re-derive withholding from where each model would be served.
-- Check `anthropic-delta-scan.ts` against OpenRouter's stream: a `[DONE]` sentinel and comment keep-alives
-    must not count as unreadable frames; pin with a case taken off the wire.
+    with OpenRouter serving Qwen3.8-27B and Kimi-K3,
+    re-derive withholding from where each model would be served.
+- Check `anthropic-delta-scan.ts` against OpenRouter's stream:
+  a `[DONE]` sentinel and comment keep-alives must not count as unreadable frames;
+    pin with a case taken off the wire.
 - Verify where usage lands in the OpenRouter stream before trusting `SPEND` lines.
-- `required-providers.ts` accepts `openrouter`; the key is optional and loud like Hyper's.
-- Concurrency and any request-rate ceiling on OpenRouter are unmeasured; run the width probe first.
+- `required-providers.ts` accepts `openrouter`;
+  the key is optional and loud like Hyper's.
+- Concurrency and any request-rate ceiling on OpenRouter are unmeasured;
+  run the width probe first.
 
 ## Questions put to the owner
 
 Asked on 2026-09-03 after this record was written:
 
-1. Batch API: not viable for the pass as designed; use realtime, or redesign for batch.
-2. Kimi-K3 when only OpenRouter would buy it: seat at 3 and 15 USD per million, or withhold it there.
-3. Allowlist: add `openai/gpt-oss-120b`, `google/gemma-4-26b-a4b-it` and `deepseek/deepseek-v4-pro-0813`,
+1. Batch API:
+not viable for the pass as designed;
+use realtime,
+or redesign for batch.
+2. Kimi-K3 when only OpenRouter would buy it:
+seat at 3 and 15 USD per million,
+or withhold it there.
+3. Allowlist:
+add `openai/gpt-oss-120b`,
+`google/gemma-4-26b-a4b-it` and `deepseek/deepseek-v4-pro-0813`,
     or accept an OpenRouter tier without them.
-    (As asked, the option text said this "leaves the editor stage on Qwen alone"; that was wrong,
-    gemma is a translator and Qwen a checker. Corrected in the decision doc.)
-4. Zero data retention: `zdr: true` on every request, or plain routing.
+    (As asked,
+    the option text said this "leaves the editor stage on Qwen alone";
+    that was wrong,
+    gemma is a translator and Qwen a checker.
+    Corrected in the decision doc.)
+4. Zero data retention:
+`zdr: true` on every request,
+or plain routing.
 
-Answers, recorded in `doc/decision/translation-repair-openrouter-fallback.md`: realtime; withhold Kimi-K3 where only
-OpenRouter would buy it; all three added to the allowlist; ZDR on every request.
+Answers,
+recorded in `doc/decision/translation-repair-openrouter-fallback.md`:
+realtime;
+withhold Kimi-K3 where only OpenRouter would buy it;
+all three added to the allowlist;
+ZDR on every request.
 
 ## The `[DONE]` sentinel, fixed before the probe could measure
 
@@ -202,727 +355,1522 @@ The first probe against `/api/v1/messages` answered 200 on every call and confor
 because the gateway appends an `event: data` frame carrying `data: [DONE]` after `message_stop`
 and `extractAnthropicCompletion` refused the body as "anthropic stream event is not JSON",
 while `scanAnthropicDeltas` counted the frame as unreadable.
-Both readers now skip the sentinel (`90dcb8745`), each pinned by a case taken off the wire,
+Both readers now skip the sentinel (`90dcb8745`),
+each pinned by a case taken off the wire,
 and both cases were shown to fail with the skip removed.
 The same capture showed the tool arguments arriving in several `input_json_delta` pieces,
-usage and `cost` on `message_delta`, the serving provider on `message_start.message.provider`,
-and `stop_reason: "end_turn"` on a completed tool call, none of which the reader minded.
+usage and `cost` on `message_delta`,
+the serving provider on `message_start.message.provider`,
+and `stop_reason: "end_turn"` on a completed tool call,
+none of which the reader minded.
 
 ## Probe v2: three transports per model
 
-The owner, mid-session: OpenRouter likely supports OpenAI chat completions better,
+The owner,
+mid-session:
+OpenRouter likely supports OpenAI chat completions better,
 and the Responses API is also supported (and may be the only route to GPT-5.6 Luna).
 `~/temp/agent/openrouter-probe-v2-20260903.mjs` therefore drives each roster model twenty times through
-each of `/api/v1/messages` (Anthropic format, forced tool, the pipeline's own builder and reader),
-`/api/v1/chat/completions` (OpenAI format, `response_format` json_schema, the Synthetic body shape with the schema
+each of `/api/v1/messages` (Anthropic format,
+forced tool,
+the pipeline's own builder and reader),
+`/api/v1/chat/completions` (OpenAI format,
+`response_format` json_schema,
+the Synthetic body shape with the schema
 restated in the system prompt) and `/api/v1/responses` (`text.format` json_schema),
 every request carrying `provider: { zdr: true, require_parameters: true }`,
-four calls in flight per model and transport, and writes one raw stream per model and transport plus a summary to
-`~/temp/agent/openrouter-probe-v2-20260903/`.
-GPT-5.6 Luna rides along as a candidate, not a roster model.
+four calls in flight per model and transport,
+and writes one raw stream per model and transport plus a summary to `~/temp/agent/openrouter-probe-v2-20260903/`.
+GPT-5.6 Luna rides along as a candidate,
+not a roster model.
 
 ### Probe v2 results, 15:49 to 16:05 UTC
 
-Conformant attempts of twenty, median milliseconds, and the endpoints that served, per model and transport
-(chat = chat completions, msg = Messages, resp = Responses):
+Conformant attempts of twenty,
+median milliseconds,
+and the endpoints that served,
+per model and transport (chat = chat completions,
+msg = Messages,
+resp = Responses):
 
-- `moonshotai/kimi-k3`: chat 20, 3819 ms (Fireworks, DeepInfra); resp 20, 4554 ms; msg 20, 30660 ms (DeepInfra).
-- `minimax/minimax-m3`: chat 20, 1367 ms (ModelRun); resp 20, 1584 ms; msg 20, 3461 ms (Venice).
-- `deepseek/deepseek-v4-flash-0731`: chat 20, 7252 ms (Inceptron, Parasail, Makora); resp 20, 5803 ms;
-    msg 9 of 20, 7425 ms (DigitalOcean, Inceptron): eleven answers were not JSON.
-- `deepseek/deepseek-v4-pro-0813`: chat 20, 6332 ms (Parasail); resp 20, 6755 ms; msg 20, 1566 ms (BaseTen).
-- `qwen/qwen3.8-27b`: chat 20, 4856 ms (Parasail); resp 20, 5208 ms; msg 20, 10123 ms (Reka, AkashML).
-- `z-ai/glm-5.3`: chat 20, 1068 ms (Together); resp 20, 1058 ms; msg 20, 1126 ms (Together).
-- `z-ai/glm-5.3-flash`: chat 20, 7117 ms (Together, Modal); resp 20, 7639 ms; msg 20, 6890 ms (Together).
-- `google/gemma-4-26b-a4b-it`: chat 20, 1325 ms (Google, Parasail); resp 20, 1813 ms; msg 20, 1780 ms (Google, NextBit).
-- `openai/gpt-oss-120b`: chat 20, 664 ms (Cerebras); resp 20, 717 ms; msg 20, 721 ms (Cerebras).
-- `openai/gpt-5.6-luna` (candidate): chat 9 of 20 (Azure), resp 11 of 20, msg 0 of 20 with HTTP 404
-    "No endpoints found matching your data policy (Zero data retention)"; the failed chat and Responses
-    attempts answered empty text (`response.failed`). Not viable under zero data retention as measured.
+- `moonshotai/kimi-k3`:
+  chat 20,
+  3819 ms (Fireworks,
+  DeepInfra);
+  resp 20,
+  4554 ms;
+  msg 20,
+  30660 ms (DeepInfra).
+- `minimax/minimax-m3`:
+  chat 20,
+  1367 ms (ModelRun);
+  resp 20,
+  1584 ms;
+  msg 20,
+  3461 ms (Venice).
+- `deepseek/deepseek-v4-flash-0731`:
+  chat 20,
+  7252 ms (Inceptron,
+  Parasail,
+  Makora);
+  resp 20,
+  5803 ms;
+    msg 9 of 20,
+    7425 ms (DigitalOcean,
+    Inceptron):
+    eleven answers were not JSON.
+- `deepseek/deepseek-v4-pro-0813`:
+  chat 20,
+  6332 ms (Parasail);
+  resp 20,
+  6755 ms;
+  msg 20,
+  1566 ms (BaseTen).
+- `qwen/qwen3.8-27b`:
+  chat 20,
+  4856 ms (Parasail);
+  resp 20,
+  5208 ms;
+  msg 20,
+  10123 ms (Reka,
+  AkashML).
+- `z-ai/glm-5.3`:
+  chat 20,
+  1068 ms (Together);
+  resp 20,
+  1058 ms;
+  msg 20,
+  1126 ms (Together).
+- `z-ai/glm-5.3-flash`:
+  chat 20,
+  7117 ms (Together,
+  Modal);
+  resp 20,
+  7639 ms;
+  msg 20,
+  6890 ms (Together).
+- `google/gemma-4-26b-a4b-it`:
+  chat 20,
+  1325 ms (Google,
+  Parasail);
+  resp 20,
+  1813 ms;
+  msg 20,
+  1780 ms (Google,
+  NextBit).
+- `openai/gpt-oss-120b`:
+  chat 20,
+  664 ms (Cerebras);
+  resp 20,
+  717 ms;
+  msg 20,
+  721 ms (Cerebras).
+- `openai/gpt-5.6-luna` (candidate):
+  chat 9 of 20 (Azure),
+  resp 11 of 20,
+  msg 0 of 20 with HTTP 404 "No endpoints found matching your data policy (Zero data retention)";
+    the failed chat and Responses attempts answered empty text (`response.failed`).
+    Not viable under zero data retention as measured.
 
-Every request cost is on the wire: 20 of 20 priced on every conformant row.
-Whole probe: about 0.55 USD.
+Every request cost is on the wire:
+20 of 20 priced on every conformant row.
+Whole probe:
+about 0.55 USD.
 
-THE TRANSPORT IS CHAT COMPLETIONS, as the owner suggested mid-session: it conformed on every roster attempt and
-answered fastest or within noise of fastest on every model, where Messages answered Kimi-K3 eight times slower and
-conformed on 9 of 20 DeepSeek Flash attempts.
-The Responses endpoint conformed too and is not used; one OpenAI-shaped path is one reader to maintain.
+THE TRANSPORT IS CHAT COMPLETIONS,
+as the owner suggested mid-session:
+it conformed on every roster attempt and answered fastest or within noise of fastest on every model,
+where Messages answered Kimi-K3 eight times slower and conformed on 9 of 20 DeepSeek Flash attempts.
+The Responses endpoint conformed too and is not used;
+one OpenAI-shaped path is one reader to maintain.
 
-Qwen3.8-27B's chat median (4856 ms on a short prompt) sits in the band of the other models, unlike its Hyper
-serving, so its withholding rule stays "served by Hyper" and it is seated when OpenRouter would serve it;
+Qwen3.8-27B's chat median (4856 ms on a short prompt) sits in the band of the other models,
+unlike its Hyper serving,
+so its withholding rule stays "served by Hyper" and it is seated when OpenRouter would serve it;
 the live pass below is where that is checked on corpus-sized prompts.
 
-Width: 32 concurrent chat completions per model on `deepseek/deepseek-v4-flash-0731` (32 of 32 conformant,
-median 2852 ms, max 7776 ms; Together, Makora, OpenInference) and `z-ai/glm-5.3-flash` (32 of 32, median 7955 ms,
-max 49581 ms; Together, Modal, Makora), no refusal.
-The client therefore carries no per-model ceiling by default, like Hyper's.
+Width:
+32 concurrent chat completions per model on `deepseek/deepseek-v4-flash-0731` (32 of 32 conformant,
+median 2852 ms,
+max 7776 ms;
+Together,
+Makora,
+OpenInference) and `z-ai/glm-5.3-flash` (32 of 32,
+median 7955 ms,
+max 49581 ms;
+Together,
+Modal,
+Makora),
+no refusal.
+The client therefore carries no per-model ceiling by default,
+like Hyper's.
 
 ## What landed, 2026-09-03
 
-Commits `0aa800ab4` (source) and `433279f3c` (tests and lint), on top of `90dcb8745` (the `[DONE]` skip):
+Commits `0aa800ab4` (source) and `433279f3c` (tests and lint),
+on top of `90dcb8745` (the `[DONE]` skip):
 
-- `provider-name.ts`: `ProviderName` with `openrouter`, `PROVIDER_ORDER`, `ProviderRecord`, `providerRecord`,
-    `otherProviders`, `isProviderName`.
-- `openrouter-catalog.ts`, `openrouter-client.ts`, `openrouter-credits.ts`, `openrouter-cost.ts`: the chat
-    completions client with `provider: { zdr: true, require_parameters: true, ignore: [] }` on every body, the
-    credits meter, and the per-call USD cost read off the final chunk onto the `SPEND` line as `cost=`.
-    gemma's OpenRouter row reports no pictures until a transcription is measured, so the reader roster is unchanged.
-- `budget-routing.ts`: `routeProviderFor` walks `PROVIDER_ORDER` over dryness and saturation records;
-    `providerServing` answers the seat reader's question; `EveryProviderDryError` replaces the two-provider name
-    (old name in the local forbidden-strings appendix).
-- `provider-budget.ts`, `budget-hold-wait.ts`: three meters, `METERS` gains `openrouter=` and `openrouterUsd=`,
-    a wet refuser is held only while some other provider is wet, the all-dry wait is provider-generic.
-- `provider-router.ts` with `provider-router-slots.ts` and `provider-router-reask.ts`: callers keyed by provider,
-    one attempt per provider on refusals, the re-ask on the next wet provider serving the model, slots counted only
-    where a provider states a ceiling.
-- `run-seats.ts`: benches derive from `providerServing`; Hyper-slow rules apply where Hyper would serve;
-    `OPENROUTER_WITHHELD` (Kimi-K3) applies where OpenRouter would; `OPENROUTER_CHECKER_SUBSTITUTE`
-    (gemma) keeps the checker floor, and both checker assertions run per phase; the `JUDGE SEATS` line names every
-    provider's state and every withheld model.
-- `run-config.ts`, `run-client-contract.ts`, `required-providers.ts`, `budget-sample.ts`: the third key, optional and
-    loud; the run client exposes `providerDryness`; `--require-providers` accepts `openrouter`.
-- `spend-read.ts`, `spend-cost.ts`, `meter-sample-read.ts`, `meter-dry-span.ts`, `meter-report.ts`: the cost field
-    and an OpenRouter USD bucket kept apart from hypercredits; older `METERS` lines read with the third state absent.
-- `roster-blocklist.ts`: `google/gemini-3.8-flash` and its `:batch` spelling.
+- `provider-name.ts`:
+  `ProviderName` with `openrouter`,
+  `PROVIDER_ORDER`,
+  `ProviderRecord`,
+  `providerRecord`,
+    `otherProviders`,
+    `isProviderName`.
+- `openrouter-catalog.ts`,
+  `openrouter-client.ts`,
+  `openrouter-credits.ts`,
+  `openrouter-cost.ts`:
+  the chat completions client with `provider: { zdr: true, require_parameters: true, ignore: [] }` on every body,
+    the credits meter,
+    and the per-call USD cost read off the final chunk onto the `SPEND` line as `cost=`.
+    gemma's OpenRouter row reports no pictures until a transcription is measured,
+    so the reader roster is unchanged.
+- `budget-routing.ts`:
+  `routeProviderFor` walks `PROVIDER_ORDER` over dryness and saturation records;
+    `providerServing` answers the seat reader's question;
+    `EveryProviderDryError` replaces the two-provider name (old name in the local forbidden-strings appendix).
+- `provider-budget.ts`,
+  `budget-hold-wait.ts`:
+  three meters,
+  `METERS` gains `openrouter=` and `openrouterUsd=`,
+    a wet refuser is held only while some other provider is wet,
+    the all-dry wait is provider-generic.
+- `provider-router.ts` with `provider-router-slots.ts` and `provider-router-reask.ts`:
+  callers keyed by provider,
+    one attempt per provider on refusals,
+    the re-ask on the next wet provider serving the model,
+    slots counted only where a provider states a ceiling.
+- `run-seats.ts`:
+  benches derive from `providerServing`;
+  Hyper-slow rules apply where Hyper would serve;
+    `OPENROUTER_WITHHELD` (Kimi-K3) applies where OpenRouter would;
+    `OPENROUTER_CHECKER_SUBSTITUTE` (gemma) keeps the checker floor,
+    and both checker assertions run per phase;
+    the `JUDGE SEATS` line names every provider's state and every withheld model.
+- `run-config.ts`,
+  `run-client-contract.ts`,
+  `required-providers.ts`,
+  `budget-sample.ts`:
+  the third key,
+  optional and loud;
+    the run client exposes `providerDryness`;
+    `--require-providers` accepts `openrouter`.
+- `spend-read.ts`,
+  `spend-cost.ts`,
+  `meter-sample-read.ts`,
+  `meter-dry-span.ts`,
+  `meter-report.ts`:
+  the cost field and an OpenRouter USD bucket kept apart from hypercredits;
+    older `METERS` lines read with the third state absent.
+- `roster-blocklist.ts`:
+  `google/gemini-3.8-flash` and its `:batch` spelling.
 
-Guards shown to fail: the OpenRouter fallthrough (routing and router tests) with `openrouter` excluded from the
-usable providers, and the Kimi withholding (seat test) with the check replaced by `true`; both restored and passing.
-915 unit tests pass; oxlint and the type check are clean.
+Guards shown to fail:
+the OpenRouter fallthrough (routing and router tests) with `openrouter` excluded from the usable providers,
+and the Kimi withholding (seat test) with the check replaced by `true`;
+both restored and passing.
+915 unit tests pass;
+oxlint and the type check are clean.
 
 ## The first live pass with OpenRouter in the order, keyword233, 16:38 to 16:54 UTC
 
-Launched from the main repo with the Hyper key unset so the walk went Synthetic, then OpenRouter
-(`~/temp/agent/openrouter-live-20260903.log`, artifacts beside it):
+Launched from the main repo with the Hyper key unset so the walk went Synthetic,
+then OpenRouter (`~/temp/agent/openrouter-live-20260903.log`,
+artifacts beside it):
 
-- `TALLY keyword233 status=SETTLED slices=3 ... ms=957655`, inside the band of the day's earlier keyword233 runs
-    (653 to 1,164 seconds). `verify-published` answered 1 of 1 pages with every promised wording at the implied length.
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=957655`,
+  inside the band of the day's earlier keyword233 runs (653 to 1,164 seconds).
+    `verify-published` answered 1 of 1 pages with every promised wording at the implied length.
     The page reads as the earlier runs' pages did.
-- `METERS synthetic=wet hyper=dry openrouter=wet` throughout; `JUDGE SEATS` at every phase seated the full benches
-    with `withheld=none`, since Synthetic served Kimi-K3 and Qwen3.8-27B.
-- 146 OpenRouter calls at 0.38 USD by the wire's `cost=`, 111 Synthetic calls, no Hyper call, no refusal from either;
-    the meter read 56.94 before and 56.46 after, the probes of the same hour included.
-- **MiniMax M3 came back empty on 16 of 31 OpenRouter calls**: `finish_reason=stop`, no content, some reasoning
-    characters. The per-endpoint probe (`~/temp/agent/openrouter-minimax-endpoints-20260903`, corpus-sized
-    json_schema request, `provider.only` per zero-data-retention endpoint) showed Parasail putting the whole JSON
-    answer in the reasoning channel and closing content empty (0 of 2 conformant, 2 rate-limited), ModelRun
-    answering 4 of 4, and the five other zero-data-retention endpoints refusing `response_format` with `404 No
-    endpoints found that can handle the requested parameters`. Default routing without a preference went to
-    ModelRun on 3 of 4 and Parasail on 1; with `ignore: ['parasail']` it went to ModelRun on 8 of 8, every one
-    conformant. The catalog row now carries `ignoredEndpoints: ['parasail']` and the client sends it as
-    `provider.ignore` (`7d680d7fa`, `3991637a2`); both guards shown to fail with the entry removed, restored and
-    passing. The cost fit on the run's own `SPEND` lines agrees: the answered calls priced as ModelRun, the empty
-    ones lower.
-- Cut streams on OpenRouter, provider of the endpoint unknown because nothing logged it: `deepseek-v4-pro-0813`
-    twice at 76 and 90 seconds with reasoning only, `gemma-4-26b-a4b-it` twice at 66 and 77 seconds with content
-    arriving at under twenty characters a second, `deepseek-v4-flash-0731` once at 209 seconds in consolidation.
-    Medians on OpenRouter: glm-5.3 1.6 s, MiniMax 2.0 s, DeepSeek Flash 3.8 s, gemma 5.3 s, DeepSeek Pro 17.5 s;
-    ninetieth percentiles 2.2, 4.3, 42, 66 and 39 seconds. The endpoint name goes on the `SPEND` line next so the
-    slow tail can be attributed without another probe.
-- Nothing on this pass exercised the all-dry benches (Kimi-K3 withheld, gemma as substitute checker) or
-    Qwen3.8-27B served by OpenRouter; both wait for a Synthetic-dry hour.
+- `METERS synthetic=wet hyper=dry openrouter=wet` throughout;
+  `JUDGE SEATS` at every phase seated the full benches with `withheld=none`,
+    since Synthetic served Kimi-K3 and Qwen3.8-27B.
+- 146 OpenRouter calls at 0.38 USD by the wire's `cost=`,
+  111 Synthetic calls,
+  no Hyper call,
+  no refusal from either;
+    the meter read 56.94 before and 56.46 after,
+    the probes of the same hour included.
+- **MiniMax M3 came back empty on 16 of 31 OpenRouter calls**:
+  `finish_reason=stop`,
+  no content,
+  some reasoning characters.
+    The per-endpoint probe (`~/temp/agent/openrouter-minimax-endpoints-20260903`,
+    corpus-sized json_schema request,
+    `provider.only` per zero-data-retention endpoint) showed Parasail putting the whole JSON
+    answer in the reasoning channel and closing content empty (0 of 2 conformant,
+    2 rate-limited),
+    ModelRun answering 4 of 4,
+    and the five other zero-data-retention endpoints refusing `response_format` with `404 No
+    endpoints found that can handle the requested parameters`.
+    Default routing without a preference went to ModelRun on 3 of 4 and Parasail on 1;
+    with `ignore: ['parasail']` it went to ModelRun on 8 of 8,
+    every one conformant.
+    The catalog row now carries `ignoredEndpoints: ['parasail']` and the client sends it as
+    `provider.ignore` (`7d680d7fa`,
+    `3991637a2`);
+    both guards shown to fail with the entry removed,
+    restored and passing.
+    The cost fit on the run's own `SPEND` lines agrees:
+    the answered calls priced as ModelRun,
+    the empty ones lower.
+- Cut streams on OpenRouter,
+  provider of the endpoint unknown because nothing logged it:
+  `deepseek-v4-pro-0813` twice at 76 and 90 seconds with reasoning only,
+    `gemma-4-26b-a4b-it` twice at 66 and 77 seconds with content arriving at under twenty characters a second,
+    `deepseek-v4-flash-0731` once at 209 seconds in consolidation.
+    Medians on OpenRouter:
+    glm-5.3 1.6 s,
+    MiniMax 2.0 s,
+    DeepSeek Flash 3.8 s,
+    gemma 5.3 s,
+    DeepSeek Pro 17.5 s;
+    ninetieth percentiles 2.2,
+    4.3,
+    42,
+    66 and 39 seconds.
+    The endpoint name goes on the `SPEND` line next so the slow tail can be attributed without another probe.
+- Nothing on this pass exercised the all-dry benches (Kimi-K3 withheld,
+  gemma as substitute checker) or Qwen3.8-27B served by OpenRouter;
+    both wait for a Synthetic-dry hour.
 
 ## The second live pass, keyword233, 17:06 to 17:28 UTC, with Parasail ignored and endpoints named
 
-Launched as the first was (`~/temp/agent/openrouter-live2-20260903.log`, artifacts beside it), after
-`7d680d7fa` (Parasail ignored for MiniMax M3) and `c21437745` (endpoint on every `SPEND` and stream line):
+Launched as the first was (`~/temp/agent/openrouter-live2-20260903.log`,
+artifacts beside it),
+after `7d680d7fa` (Parasail ignored for MiniMax M3) and `c21437745` (endpoint on every `SPEND` and stream line):
 
-- `TALLY keyword233 status=SETTLED slices=3 ... ms=1293410`, above the day's band (653 to 1,164 seconds).
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1293410`,
+  above the day's band (653 to 1,164 seconds).
     The lanes phase took 860 seconds against the first pass's 582;
     lane contest and consolidation each came within a minute of the first pass.
     Two things differed in that phase and this log does not separate their shares:
-    a Synthetic 502/500 burst at 17:13 to 17:14 UTC (15 retry lines, none reaching the fifth attempt,
-    none on the first pass), and 11 abandonments at the 60 second straggler grace against the first pass's 8.
+    a Synthetic 502/500 burst at 17:13 to 17:14 UTC (15 retry lines,
+    none reaching the fifth attempt,
+    none on the first pass),
+    and 11 abandonments at the 60 second straggler grace against the first pass's 8.
     `verify-published` answered 1 of 1 (`wordings=3 silent=0 chars=787=expected missing=0`);
     the page reads as before.
-- **The Parasail ignore held**: 36 of 36 MiniMax calls went to ModelRun and every one completed, mean 2.9 seconds,
+- **The Parasail ignore held**:
+  36 of 36 MiniMax calls went to ModelRun and every one completed,
+  mean 2.9 seconds,
     with one schema-mismatch (an answer whose every string field was `", "`),
     against 16 empty and 6 mismatched on the first pass.
 - 0.4454 USD over 135 OpenRouter calls by the wire's `cost=` (DeepSeek V4 Pro 0.29 USD and two thirds of it,
-    glm-5.3 0.08, MiniMax 0.05, DeepSeek Flash 0.01, gemma 0.01), 117 Synthetic calls, no Hyper call, no refusal,
-    no exhausted retry ladder; the meter read 56.37 before and 55.91 after.
-- **Per-endpoint attribution**, read off `served by` on the stream lines:
-    - DeepSeek V4 Flash: OpenInference finished 2 of 6 (mean 58.8 s when it finished; cut at 67 to 117 s
-        with at most one content character over 6.7k to 14.9k reasoning characters), Parasail 12 of 13 (mean 42.8 s),
-        Inceptron 4 of 5 (mean 29.9 s), Makora 1 of 1, Together 1 of 1 (11.5 s).
+    glm-5.3 0.08,
+    MiniMax 0.05,
+    DeepSeek Flash 0.01,
+    gemma 0.01),
+    117 Synthetic calls,
+    no Hyper call,
+    no refusal,
+    no exhausted retry ladder;
+    the meter read 56.37 before and 55.91 after.
+- **Per-endpoint attribution**,
+  read off `served by` on the stream lines:
+    - DeepSeek V4 Flash:
+      OpenInference finished 2 of 6 (mean 58.8 s when it finished;
+      cut at 67 to 117 s with at most one content character over 6.7k to 14.9k reasoning characters),
+        Parasail 12 of 13 (mean 42.8 s),
+        Inceptron 4 of 5 (mean 29.9 s),
+        Makora 1 of 1,
+        Together 1 of 1 (11.5 s).
         Every cut was the straggler grace ending a stream still in its reasoning channel.
         OpenInference is now in the row's `ignoredEndpoints` (`08dffd481`),
-        the catalog and client guards shown failing with the entry removed, restored and passing.
-    - gemma 4 26B: DeepInfra 9 of 10 (mean 20.3 s, the cut at 83 s), SiliconFlow 19 of 19 (mean 4.2 s).
-        Not ignored: one cut in ten, the seat is a checker off the critical path,
+        the catalog and client guards shown failing with the entry removed,
+        restored and passing.
+    - gemma 4 26B:
+      DeepInfra 9 of 10 (mean 20.3 s,
+      the cut at 83 s),
+      SiliconFlow 19 of 19 (mean 4.2 s).
+        Not ignored:
+        one cut in ten,
+        the seat is a checker off the critical path,
         and with DeepInfra gone SiliconFlow would serve alone,
         so a rate limit there would lose the voice outright,
         since OpenRouter is the last provider in the order.
         Revisit if a later pass shows DeepInfra cutting again.
-    - DeepSeek V4 Pro: Parasail 34 of 35 (mean 21.8 s), one cut at 68 s in the consolidation gate.
-    - glm-5.3: Together 16 of 16 (mean 1.9 s); Modal 1 of 1 at 74 s with 27k reasoning characters and a 10 s
-        first byte. One sample; watch it before acting.
-- **Rejected: re-routing a voice whose transient-retry ladder is exhausted.**
+    - DeepSeek V4 Pro:
+      Parasail 34 of 35 (mean 21.8 s),
+      one cut at 68 s in the consolidation gate.
+    - glm-5.3:
+      Together 16 of 16 (mean 1.9 s);
+      Modal 1 of 1 at 74 s with 27k reasoning characters and a 10 s first byte.
+        One sample;
+        watch it before acting.
+- **Rejected:
+  re-routing a voice whose transient-retry ladder is exhausted.**
     The idea was to treat five failed attempts on 5xx as a refusal and walk to the next provider.
-    Measured before building: the four-entry Carena run of 2026-09-01 had no exhausted ladder,
-    the whole archive holds one voice lost that way (`xiept2-postscript-20260903.log`, HTTP 503),
-    and both OpenRouter passes had none. Not worth a code path.
-- Still not exercised: the all-dry benches and Qwen3.8-27B served by OpenRouter; Synthetic stayed wet.
+    Measured before building:
+    the four-entry Carena run of 2026-09-01 had no exhausted ladder,
+    the whole archive holds one voice lost that way (`xiept2-postscript-20260903.log`,
+    HTTP 503),
+    and both OpenRouter passes had none.
+    Not worth a code path.
+- Still not exercised:
+  the all-dry benches and Qwen3.8-27B served by OpenRouter;
+  Synthetic stayed wet.
 
 ## The third live pass, keyword233, 18:15 to 18:36 UTC, OpenRouter alone
 
 Launched from the worktree at tip `f26c5fb60` with the Synthetic and Hyper keys unset,
-which the run reads as both dry (`~/temp/agent/openrouter-live3-20260903.log`, artifacts beside it):
+which the run reads as both dry (`~/temp/agent/openrouter-live3-20260903.log`,
+artifacts beside it):
 
 - `METERS synthetic=dry hyper=dry openrouter=wet` throughout;
     `JUDGE SEATS` at every phase read `wide=6 select=6 late=7 slate=7 checkers=3 withheld=hf:moonshotai/Kimi-K3`,
     the all-dry bench with gemma as the substitute checker.
-- `TALLY keyword233 status=SETTLED slices=3 ... ms=1247533`; lanes 621 seconds, lane contest 68, consolidation 548.
-    `verify-published` answered 1 of 1 (`chars=805=expected missing=0`); the page reads as before.
-- 0.7590 USD floor over 235 costed OpenRouter calls (two carried no cost), meter 55.89 before and 55.05 after.
-    DeepSeek V4 Pro 0.19 USD, Qwen3.8-27B 0.18, Kimi-K3 0.17 from six calls, glm-5.3 0.10, gpt-oss-120b 0.04,
-    MiniMax 0.04, GLM-5.3-Flash 0.02, DeepSeek Flash 0.01, gemma 0.01.
-    No refusal, no 5xx retry line, no exhausted ladder.
-- **The withhold reached only the judge benches.** Kimi-K3 wrote six translations on OpenRouter
-    (Fireworks 3, Modal 3), a quarter of the pass's bill, while every bench had it out:
-    `judgeSeatsFor` filtered the wide, late, select and checker seats by `seated` and left
-    `translatorModelIds` as the static `RUN_TRANSLATORS`, and `pass-entry.ts` passed the catalog's
-    `RUN_READER_MODELS` to the picture stage unfiltered.
-    Fixed in `8848f070e`: `JudgeSeats` carries `translators` and `readers` filtered the same way,
-    the translate lane takes its writers from there, and the picture stage reads its own seats
-    (`JUDGE SEATS phase=pictures`, `pass-seated-pictures.ts`);
-    the seat guards shown failing with the filters removed, restored and passing,
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1247533`;
+  lanes 621 seconds,
+  lane contest 68,
+  consolidation 548.
+    `verify-published` answered 1 of 1 (`chars=805=expected missing=0`);
+    the page reads as before.
+- 0.7590 USD floor over 235 costed OpenRouter calls (two carried no cost),
+  meter 55.89 before and 55.05 after.
+    DeepSeek V4 Pro 0.19 USD,
+    Qwen3.8-27B 0.18,
+    Kimi-K3 0.17 from six calls,
+    glm-5.3 0.10,
+    gpt-oss-120b 0.04,
+    MiniMax 0.04,
+    GLM-5.3-Flash 0.02,
+    DeepSeek Flash 0.01,
+    gemma 0.01.
+    No refusal,
+    no 5xx retry line,
+    no exhausted ladder.
+- **The withhold reached only the judge benches.**
+  Kimi-K3 wrote six translations on OpenRouter (Fireworks 3,
+    Modal 3),
+    a quarter of the pass's bill,
+    while every bench had it out:
+    `judgeSeatsFor` filtered the wide,
+    late,
+    select and checker seats by `seated` and left `translatorModelIds` as the static `RUN_TRANSLATORS`,
+    and `pass-entry.ts` passed the catalog's `RUN_READER_MODELS` to the picture stage unfiltered.
+    Fixed in `8848f070e`:
+    `JudgeSeats` carries `translators` and `readers` filtered the same way,
+    the translate lane takes its writers from there,
+    and the picture stage reads its own seats (`JUDGE SEATS phase=pictures`,
+    `pass-seated-pictures.ts`);
+    the seat guards shown failing with the filters removed,
+    restored and passing,
     and the entry driver test now counts four meter readings per entry.
-    The fourth pass (19:33 UTC, launched on that fix) then bought Kimi-K3's first call from the block-pairing
-    round six seconds before any bench was read: preparation, insertion admission and the consolidation
-    writers all took the static `RUN_ROSTER`. `68ad11530` adds `roster` to `JudgeSeats`, the whole roster
-    less any withheld model, read for `phase=preparation` before the pairing round, and the other two
-    stages take their own reading's roster; guard shown failing with the filter removed, restored and passing.
+    The fourth pass (19:33 UTC,
+    launched on that fix) then bought Kimi-K3's first call from the block-pairing
+    round six seconds before any bench was read:
+    preparation,
+    insertion admission and the consolidation writers all took the static `RUN_ROSTER`.
+    `68ad11530` adds `roster` to `JudgeSeats`,
+    the whole roster less any withheld model,
+    read for `phase=preparation` before the pairing round,
+    and the other two stages take their own reading's roster;
+    guard shown failing with the filter removed,
+    restored and passing.
     Not yet exercised live past the pairing round;
     the next OpenRouter-only pass must show no `SPEND provider=openrouter model=moonshotai/kimi-k3` line.
-- **The Parasail ignore and the OpenInference ignore both held**: 36 of 36 MiniMax calls to ModelRun, all completed,
-    three schema-mismatches (two consolidation gates, one translate vote); no DeepSeek Flash stream on OpenInference.
-- **Qwen3.8-27B served by OpenRouter conformed**: 31 of 31 completed answers usable, all on Parasail,
-    completed p50 18.3 s, p90 52.8 s, max 147 s,
-    against p50 16.5 s, p90 48.8 s, max 228 s on Synthetic on the second pass.
-    The endpoint is not the slow part; the model reasons long on either provider.
-- **Every cut was a reasoning-only stream on Parasail ending at the 60 second straggler grace**, 14 of them:
+- **The Parasail ignore and the OpenInference ignore both held**:
+  36 of 36 MiniMax calls to ModelRun,
+  all completed,
+    three schema-mismatches (two consolidation gates,
+    one translate vote);
+    no DeepSeek Flash stream on OpenInference.
+- **Qwen3.8-27B served by OpenRouter conformed**:
+  31 of 31 completed answers usable,
+  all on Parasail,
+    completed p50 18.3 s,
+    p90 52.8 s,
+    max 147 s,
+    against p50 16.5 s,
+    p90 48.8 s,
+    max 228 s on Synthetic on the second pass.
+    The endpoint is not the slow part;
+    the model reasons long on either provider.
+- **Every cut was a reasoning-only stream on Parasail ending at the 60 second straggler grace**,
+  14 of them:
     Qwen 7 of 38 asks,
-    DeepSeek Flash 6 of 27 (Parasail 17 of 23 completed, p50 16.4 s, p90 49.5 s; Makora 4 of 4 at 6.9 s),
-    DeepSeek Pro 1 of 37 (Parasail 20 of 21 at 21.3 s; Sail Research 16 of 16 at 1.5 s).
+    DeepSeek Flash 6 of 27 (Parasail 17 of 23 completed,
+    p50 16.4 s,
+    p90 49.5 s;
+    Makora 4 of 4 at 6.9 s),
+    DeepSeek Pro 1 of 37 (Parasail 20 of 21 at 21.3 s;
+    Sail Research 16 of 16 at 1.5 s).
     Cut at 67 to 188 seconds with no content character and 15k to 43k reasoning characters each,
-    across critic, panel, select, lane-contest and consolidation-gate rounds.
-    `run-timing-report`: 47 rounds, 28.7 of 34.7 round-minutes waiting after quorum (82.7 percent),
-    19 voices never heard, against 43 rounds, 62.3 percent and 12 on the second pass.
+    across critic,
+    panel,
+    select,
+    lane-contest and consolidation-gate rounds.
+    `run-timing-report`:
+    47 rounds,
+    28.7 of 34.7 round-minutes waiting after quorum (82.7 percent),
+    19 voices never heard,
+    against 43 rounds,
+    62.3 percent and 12 on the second pass.
     The all-OpenRouter bench reaches quorum sooner (gpt-oss on Cerebras and Groq at 1 to 2 seconds,
-    MiniMax at 2.6, gemma at 4 to 8) and the reasoning seats then have less absolute time before the grace ends.
-    No ignore fits this: Parasail's completed latencies match Synthetic's for the same model,
+    MiniMax at 2.6,
+    gemma at 4 to 8) and the reasoning seats then have less absolute time before the grace ends.
+    No ignore fits this:
+    Parasail's completed latencies match Synthetic's for the same model,
     and Qwen has no other endpoint on this run.
-    The lever is the grace, `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (default 180 s in `stage-round.ts`,
-    set to 60 s on every keyword233 pass of this day), and that is a speed-against-width tradeoff put to the owner.
-- Other endpoints seen, for the record: gemma on DeepInfra 30 of 30 at 8.4 s (the ignore stays rejected),
-    gpt-oss on Nebius 14 at 6.6 s, glm-5.3 on Modal 3 at 40.5 s against Together 15 at 5.2 s,
+    The lever is the grace,
+    `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (default 180 s in `stage-round.ts`,
+    set to 60 s on every keyword233 pass of this day),
+    and that is a speed-against-width tradeoff put to the owner.
+- Other endpoints seen,
+  for the record:
+  gemma on DeepInfra 30 of 30 at 8.4 s (the ignore stays rejected),
+    gpt-oss on Nebius 14 at 6.6 s,
+    glm-5.3 on Modal 3 at 40.5 s against Together 15 at 5.2 s,
     GLM-5.3-Flash on Together 8 at 65.8 s and Makora 1 at 70 s against Venice 2 at 5.2 s and Reka 1 at 1.8 s.
-    GLM-5.3-Flash's slow endpoints cut nothing (14 of 14 usable), so nothing is ignored on one pass's counts.
+    GLM-5.3-Flash's slow endpoints cut nothing (14 of 14 usable),
+    so nothing is ignored on one pass's counts.
 
 ## The fourth live pass, keyword233, 19:33 to 19:55 UTC, OpenRouter alone at a 120 s grace
 
-Launched from the worktree at tip `f4d59bf65` (the translator and reader withhold, before the roster-wide
-one) with `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=120000`, everything else as the third pass
-(`~/temp/agent/openrouter-live4-20260903.log`):
+Launched from the worktree at tip `f4d59bf65` (the translator and reader withhold,
+before the roster-wide one) with `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=120000`,
+everything else as the third pass (`~/temp/agent/openrouter-live4-20260903.log`):
 
-- `TALLY keyword233 status=SETTLED slices=3 ... ms=1321136`; `verify-published` 1 of 1
-    (`chars=773=expected missing=0`); no refusal, no 5xx retry, one schema-mismatch.
-- Cut streams 7 (Qwen3.8-27B 6, gemma 1) against 14 at 60 s; `run-timing-report` 37 rounds,
-    34.6 of 37.7 round-minutes waiting after quorum (91.7 percent), 8 voices never heard against 19.
-- 0.4502 USD; Kimi-K3 bought 3 calls (0.07 USD): one from the block-pairing round and two as consolidation
-    writers, the roster-wide gap `68ad11530` closes. `JUDGE SEATS` read `translators=6 readers=3` at every phase.
-- Put to the owner with the third pass's figures; **decided: 120 s**, now the built-in
-    (`doc/decision/translation-repair-straggler-grace.md`, "Decision 2026-09-03").
-- Decided at the same asking: the recovery round keeps its complaint-appended re-ask
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1321136`;
+  `verify-published` 1 of 1 (`chars=773=expected missing=0`);
+    no refusal,
+    no 5xx retry,
+    one schema-mismatch.
+- Cut streams 7 (Qwen3.8-27B 6,
+  gemma 1) against 14 at 60 s;
+  `run-timing-report` 37 rounds,
+    34.6 of 37.7 round-minutes waiting after quorum (91.7 percent),
+    8 voices never heard against 19.
+- 0.4502 USD;
+  Kimi-K3 bought 3 calls (0.07 USD):
+  one from the block-pairing round and two as consolidation writers,
+    the roster-wide gap `68ad11530` closes.
+    `JUDGE SEATS` read `translators=6 readers=3` at every phase.
+- Put to the owner with the third pass's figures;
+  **decided:
+  120 s**,
+  now the built-in (`doc/decision/translation-repair-straggler-grace.md`,
+    "Decision 2026-09-03").
+- Decided at the same asking:
+  the recovery round keeps its complaint-appended re-ask
     (`doc/decision/translation-repair-recovery-reask.md`) and per-slice semantic wrap stays
     (`doc/decision/translation-repair-page-shape-per-slice-wrap.md`).
 
 ## The fifth live pass, keyword233, 19:58 to 20:21 UTC: the withhold holds through every stage
 
-Launched from the worktree at tip `47a292e2a` (the roster-wide withhold) at the 120 s dial, OpenRouter
-alone (`~/temp/agent/openrouter-live5-20260903.log`):
+Launched from the worktree at tip `47a292e2a` (the roster-wide withhold) at the 120 s dial,
+OpenRouter alone (`~/temp/agent/openrouter-live5-20260903.log`):
 
-- **No Kimi-K3 call at all**: no `SPEND` line and no stream for `moonshotai/kimi-k3` from preparation to
-    consolidation; `JUDGE SEATS` read `roster=8 translators=6 readers=3 withheld=hf:moonshotai/Kimi-K3` at
-    all five readings, `phase=preparation` first. The owner's withhold is now verified at the user boundary.
-- `TALLY keyword233 status=SETTLED slices=3 ... ms=1358549`; `verify-published` 1 of 1
-    (`chars=796=expected missing=0`); no refusal, one 5xx retried and recovered, two schema-mismatches.
-- 10 cut streams (DeepSeek Flash 5, Qwen 3, GLM-5.3-Flash 2), 12 voices never heard, 40 rounds with 92.5
-    percent of round time waiting after quorum; 0.4999 USD; meter 54.45 before, 53.89 after.
-    Against the fourth pass's 7 cuts and 8 never heard at the same window: single runs on this entry spread
-    that wide, and neither pair is a window effect on its own.
-    DeepSeek Flash this time went mostly to Phala (16 of 18 completed) with Parasail 2 of 5; the routing
-    moves between passes, which is one more reason single-pass endpoint counts do not earn an ignore.
-- The sixth pass launched at 20:21 UTC on `e0509047b` with no straggler dial, to run the built-in 120 s window
+- **No Kimi-K3 call at all**:
+  no `SPEND` line and no stream for `moonshotai/kimi-k3` from preparation to consolidation;
+    `JUDGE SEATS` read `roster=8 translators=6 readers=3 withheld=hf:moonshotai/Kimi-K3` at all five readings,
+    `phase=preparation` first.
+    The owner's withhold is now verified at the user boundary.
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1358549`;
+  `verify-published` 1 of 1 (`chars=796=expected missing=0`);
+    no refusal,
+    one 5xx retried and recovered,
+    two schema-mismatches.
+- 10 cut streams (DeepSeek Flash 5,
+  Qwen 3,
+  GLM-5.3-Flash 2),
+  12 voices never heard,
+  40 rounds with 92.5 percent of round time waiting after quorum;
+    0.4999 USD;
+    meter 54.45 before,
+    53.89 after.
+    Against the fourth pass's 7 cuts and 8 never heard at the same window:
+    single runs on this entry spread that wide,
+    and neither pair is a window effect on its own.
+    DeepSeek Flash this time went mostly to Phala (16 of 18 completed) with Parasail 2 of 5;
+    the routing moves between passes,
+    which is one more reason single-pass endpoint counts do not earn an ignore.
+- The sixth pass launched at 20:21 UTC on `e0509047b` with no straggler dial,
+  to run the built-in 120 s window
     and carry the first `recovery round heard N of M` count (`~/temp/agent/openrouter-live6-20260903.log`).
 
 ## The sixth live pass, keyword233, 20:21 to 20:43 UTC: the built-in window, no dial
 
-- No `STRAGGLER GRACE OVERRIDDEN` line; every reader-round abandonment reads `abandoned 120000ms after quorum`
-    (six of them) and the one writer-round abandonment `180000ms`, the writer dial still set at launch.
+- No `STRAGGLER GRACE OVERRIDDEN` line;
+  every reader-round abandonment reads `abandoned 120000ms after quorum`
+    (six of them) and the one writer-round abandonment `180000ms`,
+    the writer dial still set at launch.
     The built-in 120 s is what the pass runs.
-- `TALLY keyword233 status=SETTLED slices=3 ... ms=1312386`; `verify-published` 1 of 1
-    (`chars=806=expected missing=0`); no Kimi-K3 call, no refusal, no schema-mismatch, 7 cut streams,
-    7 voices never heard, 37 rounds with 94.3 percent of round time waiting after quorum; 0.4281 USD;
-    meter 53.89 before, 53.41 after.
-- No recovery round ran, since no answer came back unreadable, so the `recovery round heard N of M` line
-    has no first count yet; the re-ask's yield is read off the earlier passes instead (next bullet).
-- **The complaint-appended re-ask recovers about half**, read off today's first, third and fourth passes by
+- `TALLY keyword233 status=SETTLED slices=3 ... ms=1312386`;
+  `verify-published` 1 of 1 (`chars=806=expected missing=0`);
+    no Kimi-K3 call,
+    no refusal,
+    no schema-mismatch,
+    7 cut streams,
+    7 voices never heard,
+    37 rounds with 94.3 percent of round time waiting after quorum;
+    0.4281 USD;
+    meter 53.89 before,
+    53.41 after.
+- No recovery round ran,
+  since no answer came back unreadable,
+  so the `recovery round heard N of M` line has no first count yet;
+    the re-ask's yield is read off the earlier passes instead (next bullet).
+- **The complaint-appended re-ask recovers about half**,
+  read off today's first,
+  third and fourth passes by
     pairing each `recovery round for N unreadable` line with its stage's next `round: x/N heard` line:
     first pass 2 of 8 parsed rounds heard (the misses were MiniMax on Parasail answering unreadably again,
-    before the ignore), third pass 3 of 3, one round on each of the first and fourth passes with an
-    unparsed stage label. 5 of 11 in all, and no `PROMPT-REUSE source=memory` after any of them: the
-    nudge makes the digest new every time. Issue 473 closed on this measurement.
+    before the ignore),
+    third pass 3 of 3,
+    one round on each of the first and fourth passes with an unparsed stage label.
+    5 of 11 in all,
+    and no `PROMPT-REUSE source=memory` after any of them:
+    the nudge makes the digest new every time.
+    Issue 473 closed on this measurement.
 
 ## The picture passes, 2026-09-04, and the double-quote undercount
 
-Two picture-bearing entries were launched on OpenRouter alone, concurrently with the Toka_ls pronoun
-re-run (Synthetic wet, Hyper unset), at the owner's instruction that OpenRouter has no meaningful rate
-limits: Hangmster at 04:26 UTC (`~/temp/agent/hangmster-pictures-20260904.log`, one picture) and
-BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two of them carrying text).
+Two picture-bearing entries were launched on OpenRouter alone,
+concurrently with the Toka_ls pronoun re-run (Synthetic wet,
+Hyper unset),
+at the owner's instruction that OpenRouter has no meaningful rate limits:
+Hangmster at 04:26 UTC (`~/temp/agent/hangmster-pictures-20260904.log`,
+one picture) and BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`,
+four pictures,
+two of them carrying text).
 
-- **BI4PBV's picture stage took one millisecond and said nothing.** `JUDGE SEATS phase=pictures` at
-    04:29:16.205, `phase=lanes` at 04:29:16.206, and no `gathered N of M pictures` or `reading N pictures`
-    line between them, where Hangmster's log has both. Its `page.md` writes its `PhotoScroll` paths in
-    double quotes, one per line; `photo-reference.ts` read single-quoted strings only, so the slices
-    showed no pictures, and `assertVisualEvidenceComplete`, asking the same reader, found nothing missing.
-    Measured at pin `a41fc607` over the source pages: 192 single-quoted paths across 47 entries, 7
-    double-quoted across 4 (`yulianNyanner`, `MTF_0615`, `Arita`, `BI4PBV`), no third form.
-- **Fixed in `5e013d24b`**: either mark opens a string and only the same mark closes it, so a caption in
-    one mark beside paths in the other, or an apostrophe inside a double-quoted name, cannot split a
-    path. Three new guards (the multi-line double-quoted array, a page mixing both marks, the caption and
-    apostrophe cases) shown to fail with the double mark neutralised: the captioned case then read the
-    apostrophe in the caption as an opening quote and lost the path entirely. Suite 922, lint and types
-    clean.
+- **BI4PBV's picture stage took one millisecond and said nothing.**
+  `JUDGE SEATS phase=pictures` at 04:29:16.205,
+    `phase=lanes` at 04:29:16.206,
+    and no `gathered N of M pictures` or `reading N pictures` line between them,
+    where Hangmster's log has both.
+    Its `page.md` writes its `PhotoScroll` paths in double quotes,
+    one per line;
+    `photo-reference.ts` read single-quoted strings only,
+    so the slices showed no pictures,
+    and `assertVisualEvidenceComplete`,
+    asking the same reader,
+    found nothing missing.
+    Measured at pin `a41fc607` over the source pages:
+    192 single-quoted paths across 47 entries,
+    7 double-quoted across 4 (`yulianNyanner`,
+    `MTF_0615`,
+    `Arita`,
+    `BI4PBV`),
+    no third form.
+- **Fixed in `5e013d24b`**:
+  either mark opens a string and only the same mark closes it,
+  so a caption in one mark beside paths in the other,
+    or an apostrophe inside a double-quoted name,
+    cannot split a path.
+    Three new guards (the multi-line double-quoted array,
+    a page mixing both marks,
+    the caption and apostrophe cases) shown to fail with the double mark neutralised:
+    the captioned case then read the apostrophe in the caption as an opening quote and lost the path entirely.
+    Suite 922,
+    lint and types clean.
 - **BI4PBV relaunched on the fixed build at 04:43:35** (`~/temp/agent/bi4pbv-pictures2-20260904.log`,
-    fresh runs dir): `gathered 4 of 4 pictures`, `reading 4 pictures`, `image0.webp: no text (0
-    characters, under 16)` so no model was asked for it, `image1.webp: read 52 characters without a
-    model` then `minimax-m3 read image1.webp: 251 characters`. The first pass runs on as a no-picture
-    control. Readings, page and the no-Kimi check follow on the tallies.
-- **The displacement screen had the same blind spot** (`corpus-run/markup-slice.ts`): a single-quoted
-    path line counted as structure, a double-quoted one as prose, so the double-quoted block read as
-    0.4 markup against the 0.8 threshold and was not exempted from the relocation reading. Fixed in
-    `4ff42e627`, guard shown to fail neutralised (`expected 0.4 to equal 1`). Scope: `isMarkupOnly` is
-    called only from `corpus-run/displacement-probe.ts`, the offline `mise run displacement-probe`
-    instrument that asks no model and whose output no lane reads, so no live pass was affected; the
-    probe's relocation count for those four entries was the thing at risk. No other rule in the package
-    keys on the single mark (`rg` over `src` for `startsWith('\'')` and quote comparisons: the four
-    remaining hits are typography and refusal readers, not path readers).
-- The undercount was invisible from the run log, which is the lesson worth keeping: a stage that finds
-    nothing to do logs nothing, and the completeness guard shared the parser's blind spot. The seats line
-    is what made it visible, by putting a timestamp on each side of the stage.
-- **The second pass's picture stage, 04:43:52 to 04:49:59**: `image0.webp` and `image2.webp` carried no
-    OCR text (0 and 15 characters, under 16), so no model was asked; `image1.webp` was read by minimax-m3
+    fresh runs dir):
+    `gathered 4 of 4 pictures`,
+    `reading 4 pictures`,
+    `image0.webp: no text (0 characters, under 16)` so no model was asked for it,
+    `image1.webp: read 52 characters without a model` then `minimax-m3 read image1.webp: 251 characters`.
+    The first pass runs on as a no-picture control.
+    Readings,
+    page and the no-Kimi check follow on the tallies.
+- **The displacement screen had the same blind spot** (`corpus-run/markup-slice.ts`):
+  a single-quoted path line counted as structure,
+    a double-quoted one as prose,
+    so the double-quoted block read as
+    0.4 markup against the 0.8 threshold and was not exempted from the relocation reading.
+    Fixed in `4ff42e627`,
+    guard shown to fail neutralised (`expected 0.4 to equal 1`).
+    Scope:
+    `isMarkupOnly` is called only from `corpus-run/displacement-probe.ts`,
+    the offline `mise run displacement-probe` instrument that asks no model and whose output no lane reads,
+    so no live pass was affected;
+    the probe's relocation count for those four entries was the thing at risk.
+    No other rule in the package
+    keys on the single mark (`rg` over `src` for `startsWith('\'')` and quote comparisons:
+    the four remaining hits are typography and refusal readers,
+    not path readers).
+- The undercount was invisible from the run log,
+  which is the lesson worth keeping:
+  a stage that finds nothing to do logs nothing,
+    and the completeness guard shared the parser's blind spot.
+    The seats line is what made it visible,
+    by putting a timestamp on each side of the stage.
+- **The second pass's picture stage,
+  04:43:52 to 04:49:59**:
+  `image0.webp` and `image2.webp` carried no OCR text (0 and 15 characters,
+    under 16),
+    so no model was asked;
+    `image1.webp` was read by minimax-m3
     (251 characters) and Qwen3.8-27B (419) and corroborated by those two at overlap 0.614 after
     GLM-5.3-Flash on Together ran the whole 360 s per-call deadline with 76,412 reasoning characters and
-    no content (`stream z-ai/glm-5.3-flash: cut, elapsed 360004ms ... 3932835 raw chars ... 0 content
-    chars`); `image3.webp` was read by all three within 3 s and corroborated at 0.966. No Kimi-K3 line.
-    The cut stream carries no `cost=`, so the run meter and the spend report undercount it by whatever
-    the provider bills for those reasoning tokens.
+    no content (`stream z-ai/glm-5.3-flash: cut, elapsed 360004ms ... 3932835 raw chars ... 0 content chars`);
+    `image3.webp` was read by all three within 3 s and corroborated at 0.966.
+    No Kimi-K3 line.
+    The cut stream carries no `cost=`,
+    so the run meter and the spend report undercount it by whatever the provider bills for those reasoning tokens.
 - **The picture gather has no straggler grace** (`image-reading-pair.ts` gathers with `allSettled` and
-    waits for every reader or the deadline), so `image1.webp` waited 284 s after its second reading for a
-    reader that never answered. Measured over every run log in `~/temp/agent` (script
-    `~/temp/agent/picture-wait-20260904.mjs`): 1,435 pictures with two or more model readings and a
-    settlement; the wait after the second reading is 0 s at the median and the 90th percentile, 1,419 s
-    in total, and three pictures waited past 120 s (Toka_ls `photo2.webp` 352 s on 2026-09-02 with
-    Kimi-K3 failing at the deadline, today's 284 s, Zha_Ke `letter.webp` 168 s on 2026-08-27). A 120 s
-    grace after corroboration would have saved 444 s across the whole record. Most of that record is
-    two-reader rosters where the wait is zero by construction; the OpenRouter-alone roster seats three
-    readers, so today's two text pictures are the first of the population that matters, one of them bad.
-    Not built: recorded here to be re-read once more three-reader pictures have run.
-- **Hangmster settled at 05:05 UTC** (39 min, 1.79 USD, verify-published 1 of 1, no Kimi-K3 call, one
-    picture with no OCR text so no model reader). Its page restores the `## Introduction` heading the
-    archive English had dropped and retranslates the description; **it also ships the photo element
-    broken across two lines**, `<PhotoScroll photos={[ '${path}/photos/fufu.webp',]}` then `/>  `. The
-    semantic wrapper (`semantic-wrap.ts`, markdown-lint's `semantic-line-breaks` with MDX parsing off)
-    read the line as prose: JSX braces make the tag invalid HTML to CommonMark, and the comma before
-    `]}` is followed by a space. Measured over the pinned source pages: 33 one-line `PhotoScroll`
-    elements, 16 of them across 11 entries with that comma-and-space shape. Fixed in the rule
-    (`66345a092`: a paragraph whose whole source opens with `<` and closes with `>` is left unbroken),
-    guards in both packages shown to fail neutralised. MDX still parses the split element, so the shipped
-    Hangmster page renders; it is not regenerated here, since the pipeline digest changed with the build
+    waits for every reader or the deadline),
+    so `image1.webp` waited 284 s after its second reading for a reader that never answered.
+    Measured over every run log in `~/temp/agent` (script `~/temp/agent/picture-wait-20260904.mjs`):
+    1,435 pictures with two or more model readings and a settlement;
+    the wait after the second reading is 0 s at the median and the 90th percentile,
+    1,419 s in total,
+    and three pictures waited past 120 s (Toka_ls `photo2.webp` 352 s on 2026-09-02 with
+    Kimi-K3 failing at the deadline,
+    today's 284 s,
+    Zha_Ke `letter.webp` 168 s on 2026-08-27).
+    A 120 s grace after corroboration would have saved 444 s across the whole record.
+    Most of that record is two-reader rosters where the wait is zero by construction;
+    the OpenRouter-alone roster seats three readers,
+    so today's two text pictures are the first of the population that matters,
+    one of them bad.
+    Not built:
+    recorded here to be re-read once more three-reader pictures have run.
+- **Hangmster settled at 05:05 UTC** (39 min,
+  1.79 USD,
+  verify-published 1 of 1,
+  no Kimi-K3 call,
+  one picture with no OCR text so no model reader).
+    Its page restores the `## Introduction` heading the archive English had dropped and retranslates the description;
+    **it also ships the photo element broken across two lines**,
+    `<PhotoScroll photos={[ '${path}/photos/fufu.webp',]}` then `/>  `.
+    The semantic wrapper (`semantic-wrap.ts`,
+    markdown-lint's `semantic-line-breaks` with MDX parsing off) read the line as prose:
+    JSX braces make the tag invalid HTML to CommonMark,
+    and the comma before `]}` is followed by a space.
+    Measured over the pinned source pages:
+    33 one-line `PhotoScroll` elements,
+    16 of them across 11 entries with that comma-and-space shape.
+    Fixed in the rule (`66345a092`:
+    a paragraph whose whole source opens with `<` and closes with `>` is left unbroken),
+    guards in both packages shown to fail neutralised.
+    MDX still parses the split element,
+    so the shipped Hangmster page renders;
+    it is not regenerated here,
+    since the pipeline digest changed with the build
     and a regeneration would be a full paid re-run rather than a replay.
-- **The first BI4PBV pass settled at 05:02** (34 min, 1.57 USD, verify-published 1 of 1, no Kimi-K3
-    call) as the no-picture control; its page keeps both photo elements as the source writes them.
+- **The first BI4PBV pass settled at 05:02** (34 min,
+  1.57 USD,
+  verify-published 1 of 1,
+  no Kimi-K3 call) as the no-picture control;
+    its page keeps both photo elements as the source writes them.
 - **The second BI4PBV pass settled at 05:19** (`TALLY BI4PBV status=SETTLED slices=5 ... ms=2142085`,
-    35.7 min, 1.3827 USD, verify-published 1 of 1 at `chars=1077=expected`, no Kimi-K3 line, 19 cut
-    streams, 7 ModelRun retries, no refusal). Both photo elements ship as the source writes them, one
-    multi-line and one single-line. The two blockquotes transcribed from the photos (the "truly lazy"
-    line and the balloon's loss-of-contact line, which the source page carries only as pictures) ship
-    translated; against the control the wording differs in the ordinary run-to-run way (the `BlurBlock`
-    farewell keeps the archive's rendering here where the control rewrote it), and nothing in either page
-    is wrong on its face. The picture path on OpenRouter alone therefore reads: gather, OCR gate, three
-    seated readers with Kimi-K3 withheld, corroboration, and the transcription slices judged and shipped.
+    35.7 min,
+    1.3827 USD,
+    verify-published 1 of 1 at `chars=1077=expected`,
+    no Kimi-K3 line,
+    19 cut streams,
+    7 ModelRun retries,
+    no refusal).
+    Both photo elements ship as the source writes them,
+    one multi-line and one single-line.
+    The two blockquotes transcribed from the photos (the "truly lazy" line and the balloon's loss-of-contact line,
+    which the source page carries only as pictures) ship translated;
+    against the control the wording differs in the ordinary run-to-run way (the `BlurBlock`
+    farewell keeps the archive's rendering here where the control rewrote it),
+    and nothing in either page is wrong on its face.
+    The picture path on OpenRouter alone therefore reads:
+    gather,
+    OCR gate,
+    three seated readers with Kimi-K3 withheld,
+    corroboration,
+    and the transcription slices judged and shipped.
 
 ## ModelRun's timeouts, 2026-09-04, and what the log called them
 
-- **Symptom.** Today's six runs logged 115 `MalformedCompletionError: ... stream ended without its
+- **Symptom.**
+  Today's six runs logged 115 `MalformedCompletionError: ... stream ended without its
     [DONE] terminator; the reply was cut off` retries by 05:00 UTC (Toka_ls 51 of 592 spend lines,
-    Hangmster 29 of 278, the first BI4PBV 26 of 245). The retry ladder reached its fourth attempt 8 times
-    and gave up at least 5 times (a coverage voice, two critic voices and two panel voices lost, all
-    minimax-m3).
-- **Attribution.** The stream line before each retry names the model and endpoint: 114 of 115 were
-    `minimax/minimax-m3` served by `ModelRun`, body 846 characters (7 of them 871), 0 content
-    characters, "completed" after about 10.5 s. ModelRun served 300 MiniMax streams today and 119 of
-    them were that body; Venice served 5, all with content.
-- **Reproduced directly** (`~/temp/agent/modelrun-probe.mjs`, six trivial calls with `provider.only:
-    ['ModelRun']`): the fourth answered HTTP 200 in 10,463 ms with one chunk carrying
-    `error: { code: 504, message: "error code: 504", metadata: { error_type: "timeout" } }` and no
-    `[DONE]`. The gateway had already sent its success status when the upstream timed out, so the
-    failure rides inside the stream.
-- **The listing agreed** (`~/temp/agent/minimax-endpoints-20260904.json`, 05:00 UTC): ModelRun
-    `uptime_last_30m` 54.9, `status` -5, prompt 0.75 and completion 3.0 USD per million, fp4; every other
-    minimax-m3 endpoint read 98 to 100 uptime and status 0 at 0.23 to 0.6 prompt.
-- **Why it cannot simply be ignored.** Re-probed with the 2026-09-03 corpus-sized schema request under
-    zero data retention (`~/temp/agent/openrouter-minimax-endpoints-20260904.log`): ModelRun 4 of 4
-    conformant, 11 to 15 s; DeepInfra and Venice 404 "No endpoints found that can handle the requested
-    parameters"; CoreWeave, the only other zero-data-retention endpoint listing `structured_outputs`, 404
-    "All providers have been ignored", which is the account-level ignore list; default routing without
-    `only` went to Parasail 3 of 4 times with the known empty content channel. Under the ZDR decision,
+    Hangmster 29 of 278,
+    the first BI4PBV 26 of 245).
+    The retry ladder reached its fourth attempt 8 times and gave up at least 5 times (a coverage voice,
+    two critic voices and two panel voices lost,
+    all minimax-m3).
+- **Attribution.**
+  The stream line before each retry names the model and endpoint:
+  114 of 115 were `minimax/minimax-m3` served by `ModelRun`,
+    body 846 characters (7 of them 871),
+    0 content characters,
+    "completed" after about 10.5 s.
+    ModelRun served 300 MiniMax streams today and 119 of them were that body;
+    Venice served 5,
+    all with content.
+- **Reproduced directly** (`~/temp/agent/modelrun-probe.mjs`,
+  six trivial calls with `provider.only:
+    ['ModelRun']`):
+    the fourth answered HTTP 200 in 10,463 ms with one chunk carrying
+    `error: { code: 504, message: "error code: 504", metadata: { error_type: "timeout" } }` and no `[DONE]`.
+    The gateway had already sent its success status when the upstream timed out,
+    so the failure rides inside the stream.
+- **The listing agreed** (`~/temp/agent/minimax-endpoints-20260904.json`,
+  05:00 UTC):
+  ModelRun `uptime_last_30m` 54.9,
+    `status` -5,
+    prompt 0.75 and completion 3.0 USD per million,
+    fp4;
+    every other minimax-m3 endpoint read 98 to 100 uptime and status 0 at 0.23 to 0.6 prompt.
+- **Why it cannot simply be ignored.**
+  Re-probed with the 2026-09-03 corpus-sized schema request under
+    zero data retention (`~/temp/agent/openrouter-minimax-endpoints-20260904.log`):
+    ModelRun 4 of 4 conformant,
+    11 to 15 s;
+    DeepInfra and Venice 404 "No endpoints found that can handle the requested parameters";
+    CoreWeave,
+    the only other zero-data-retention endpoint listing `structured_outputs`,
+    404 "All providers have been ignored",
+    which is the account-level ignore list;
+    default routing without `only` went to Parasail 3 of 4 times with the known empty content channel.
+    Under the ZDR decision,
     ModelRun is MiniMax M3's only endpoint for a schema request.
-- **What landed** (`f17feba12`): `openrouter-stream-error.ts` reads the gateway's error chunk before the
-    terminator check and throws `InStreamProviderError` naming code, kind and endpoint
-    (`stream carried a provider failure instead of a completion: code 504, type timeout, served by
-    ModelRun`); the ladder retries it as it retried the truncation. Guard shown to fail with the check
-    removed. The catalog comment on the minimax row now states the endpoint situation as re-measured.
-- **Open, for the owner** (options in the question put at the end of this session's turn): keep the seat
-    and take the 504 retries (about 10.5 s per failed attempt, roughly 1 to 2 percent of MiniMax calls lost
-    after five attempts at today's rate); withhold `minimax-m3` from OpenRouter-served seats while
-    ModelRun reads degraded, as Kimi-K3 is withheld; or un-ignore CoreWeave at the account level and
-    probe it for conformance, which would give the schema request a second zero-data-retention endpoint.
+- **What landed** (`f17feba12`):
+  `openrouter-stream-error.ts` reads the gateway's error chunk before the
+    terminator check and throws `InStreamProviderError` naming code,
+    kind and endpoint
+    (`stream carried a provider failure instead of a completion: code 504, type timeout, served by ModelRun`);
+    the ladder retries it as it retried the truncation.
+    Guard shown to fail with the check removed.
+    The catalog comment on the minimax row now states the endpoint situation as re-measured.
+- **Open,
+  for the owner** (options in the question put at the end of this session's turn):
+  keep the seat and take the 504 retries (about 10.5 s per failed attempt,
+    roughly 1 to 2 percent of MiniMax calls lost after five attempts at today's rate);
+    withhold `minimax-m3` from OpenRouter-served seats while ModelRun reads degraded,
+    as Kimi-K3 is withheld;
+    or un-ignore CoreWeave at the account level and probe it for conformance,
+    which would give the schema request a second zero-data-retention endpoint.
 
 ## The 429 hold under concurrency, 2026-09-04, 04:54 to 05:18 UTC
 
-Issue 474's fix (`83e8dfa90`: a refusal while the meter reads wet holds the provider out for 30 s rather
-than 300 s, and a both-dry reading waits out the shorter hold once) had unit tests and no live exercise.
+Issue 474's fix (`83e8dfa90`:
+a refusal while the meter reads wet holds the provider out for 30 s rather than 300 s,
+and a both-dry reading waits out the shorter hold once) had unit tests and no live exercise.
 Two keyword233 passes with Synthetic wet and Hyper unset (`~/temp/agent/kw-conc-a-20260904.log`,
-`kw-conc-b-20260904.log`, runs dirs beside them) ran concurrently with the Synthetic-wet Toka_ls pronoun
-re-run and two OpenRouter-alone picture passes: three passes on Synthetic at once, at overlap 4.
+`kw-conc-b-20260904.log`,
+runs dirs beside them) ran concurrently with the Synthetic-wet Toka_ls pronoun
+re-run and two OpenRouter-alone picture passes:
+three passes on Synthetic at once,
+at overlap 4.
 
-- Synthetic answered `HTTP 429` five times, all in arm a, all between 05:04:15 and 05:04:18 UTC, on
-    Qwen3.8-27B calls (the 40-character stream line before each names the model); the retry ladder
-    absorbed them at attempts 1 to 3 and no call reached the fifth failure, so `markRefused` never ran.
-    Arm b and Toka_ls saw none. `syntheticFiveHour` read 2737.8 of 2750 remaining throughout, so these
-    were the concurrency limit, not the allowance.
-- Both arms settled: a in 1,409,536 ms (23.5 min, 0.4202 USD on OpenRouter, 123 Synthetic and 145
-    OpenRouter spend lines, 3 cut streams, 3 voices never heard), b in 1,273,689 ms (21.2 min, 0.3103 USD,
-    119 and 138, 5 cut, 6 never heard); verify-published 1 of 1 each; no `EveryProviderDryError`, no
-    `SPEND CEILING` line.
-- **What this does and does not show.** Three Synthetic-wet passes at overlap 4 provoke the limit only in
-    short bursts the ladder rides out, so the hold's 30 s branch was not reached live; its behaviour rests
-    on `provider-budget.unit.test.ts` and `budget-hold-wait.unit.test.ts`. The 2026-09-02 incident needed
-    two passes at overlap 4 with eight-wide reader rounds AND a Synthetic five-hour meter at 2729 of 2750
-    used; today's meter was almost untouched. Reaching the hold live would take the allowance near its
-    edge, which is not a state to manufacture on purpose.
+- Synthetic answered `HTTP 429` five times,
+  all in arm a,
+  all between 05:04:15 and 05:04:18 UTC,
+  on Qwen3.8-27B calls (the 40-character stream line before each names the model);
+    the retry ladder absorbed them at attempts 1 to 3 and no call reached the fifth failure,
+    so `markRefused` never ran.
+    Arm b and Toka_ls saw none.
+    `syntheticFiveHour` read 2737.8 of 2750 remaining throughout,
+    so these were the concurrency limit,
+    not the allowance.
+- Both arms settled:
+  a in 1,409,536 ms (23.5 min,
+  0.4202 USD on OpenRouter,
+  123 Synthetic and 145 OpenRouter spend lines,
+    3 cut streams,
+    3 voices never heard),
+    b in 1,273,689 ms (21.2 min,
+    0.3103 USD,
+    119 and 138,
+    5 cut,
+    6 never heard);
+    verify-published 1 of 1 each;
+    no `EveryProviderDryError`,
+    no `SPEND CEILING` line.
+- **What this does and does not show.**
+  Three Synthetic-wet passes at overlap 4 provoke the limit only in short bursts the ladder rides out,
+    so the hold's 30 s branch was not reached live;
+    its behaviour rests on `provider-budget.unit.test.ts` and `budget-hold-wait.unit.test.ts`.
+    The 2026-09-02 incident needed
+    two passes at overlap 4 with eight-wide reader rounds AND a Synthetic five-hour meter at 2729 of 2750 used;
+    today's meter was almost untouched.
+    Reaching the hold live would take the allowance near its edge,
+    which is not a state to manufacture on purpose.
 
 ## The two shape passes, 2026-09-04, 05:45 UTC onward, and what they cost
 
 Launched on OpenRouter alone to read the two fixes of the morning on entries that carry their shapes:
-`luxuanwen3` (comma-shaped one-line `PhotoScroll`, one picture) and `MTF_0615` (double-quoted photo paths,
-one picture), logs `~/temp/agent/luxuanwen3-shapes-20260904.log` and `mtf_0615-shapes-20260904.log`.
+`luxuanwen3` (comma-shaped one-line `PhotoScroll`,
+one picture) and `MTF_0615` (double-quoted photo paths,
+one picture),
+logs `~/temp/agent/luxuanwen3-shapes-20260904.log` and `mtf_0615-shapes-20260904.log`.
 
-- **MTF_0615 settled** in 7,555,138 ms (126 min) at 7.3240 USD for a 1,953-character source: 21 slices,
-    verify-published 1 of 1 (`chars=6267=expected`), the single-line photo element intact, its picture
-    read by OCR as textless so no model was asked, no Kimi-K3 call, two guard refusals, 5 in-stream
-    provider failures now named (`code 502, type provider_unavailable, served by Modal` four times,
-    OpenInference once), and **155 cut streams, all straggler-grace abandonments** (130 of them between
-    120 and 180 s): Qwen3.8-27B on Io Net 42, Ionstream 19, Reka 10; DeepSeek Flash on Parasail 41; GLM-5.3
-    on Reka 13 and Modal 12.
-- **luxuanwen3 ended INCOMPLETE** in 3,758,245 ms (63 min) at 2.6143 USD with no page: `entry luxuanwen3
-    front matter is not publishable (invalid-page)`. Its picture read fine (three readers, corroborated at
-    0.934). The cause is in the front matter, next section. 64 cut streams, same endpoints.
-- **The endpoint cut rates, over every run of the day** (completed against cut, by `served by`): Reka cut
-    19 of 40 Qwen, 12 of 41 DeepSeek Flash and 13 of 26 GLM-5.3 streams; Io Net 62 of 153 Qwen; Parasail 96
-    of 464 DeepSeek Flash; Ionstream 30 of 173 Qwen; Modal 21 of 144 GLM-5.3; against Together 0 of 245
-    GLM-5.3, DeepInfra 0 of 732 gemma and 0 of 237 DeepSeek Pro, Cerebras and Groq 0 of 488 gpt-oss,
-    Makora 2 of 99 DeepSeek Flash. The 2026-09-03 ignore of OpenInference for DeepSeek Flash was spelled
-    `openinference`; the gateway's slug (`GET /api/v1/providers`, `~/temp/agent/providers-20260904.json`)
-    is `open-inference`, and OpenInference served 43 streams of that model today: the ignore had never
-    reached the wire.
-- **CoreWeave was never ignored by the owner.** Asked, the owner answered that the "All providers have
-    been ignored" reply looked like an OpenRouter bug, re-saved the account's allowed providers, and the
-    re-probe (`~/temp/agent/openrouter-minimax-endpoints-20260904b.log`) read CoreWeave 4 of 4 conformant
-    on the corpus-sized schema request under zero data retention, 16 to 20 s a call, 0.0024 to 0.0027 USD
-    against ModelRun's 0.0072 to 0.0087; default routing still went to ModelRun 4 of 4.
-- **What landed** (`openrouter-catalog.ts`): `open-inference` spelled as listed; ModelRun ignored for
-    MiniMax M3 (CoreWeave serves); Reka and Parasail ignored for DeepSeek Flash; Reka and Io Net for
-    Qwen3.8-27B; Reka for GLM-5.3. Rule recorded on the rows: an endpoint is ignored when a day's runs cut
-    a quarter or more of at least twenty of its streams, or fail that share in-stream; Modal (15 percent)
-    and Inceptron (3 of 3) stay. A catalog test checks every ignored slug against a snapshot of the
-    provider listing, shown to fail with `openinference` put back.
+- **MTF_0615 settled** in 7,555,138 ms (126 min) at 7.3240 USD for a 1,953-character source:
+  21 slices,
+    verify-published 1 of 1 (`chars=6267=expected`),
+    the single-line photo element intact,
+    its picture read by OCR as textless so no model was asked,
+    no Kimi-K3 call,
+    two guard refusals,
+    5 in-stream provider failures now named (`code 502, type provider_unavailable, served by Modal` four times,
+    OpenInference once),
+    and **155 cut streams,
+    all straggler-grace abandonments** (130 of them between 120 and 180 s):
+    Qwen3.8-27B on Io Net 42,
+    Ionstream 19,
+    Reka 10;
+    DeepSeek Flash on Parasail 41;
+    GLM-5.3 on Reka 13 and Modal 12.
+- **luxuanwen3 ended INCOMPLETE** in 3,758,245 ms (63 min) at 2.6143 USD with no page:
+  `entry luxuanwen3 front matter is not publishable (invalid-page)`.
+    Its picture read fine (three readers,
+    corroborated at 0.934).
+    The cause is in the front matter,
+    next section.
+    64 cut streams,
+    same endpoints.
+- **The endpoint cut rates,
+  over every run of the day** (completed against cut,
+  by `served by`):
+  Reka cut 19 of 40 Qwen,
+    12 of 41 DeepSeek Flash and 13 of 26 GLM-5.3 streams;
+    Io Net 62 of 153 Qwen;
+    Parasail 96 of 464 DeepSeek Flash;
+    Ionstream 30 of 173 Qwen;
+    Modal 21 of 144 GLM-5.3;
+    against Together 0 of 245 GLM-5.3,
+    DeepInfra 0 of 732 gemma and 0 of 237 DeepSeek Pro,
+    Cerebras and Groq 0 of 488 gpt-oss,
+    Makora 2 of 99 DeepSeek Flash.
+    The 2026-09-03 ignore of OpenInference for DeepSeek Flash was spelled `openinference`;
+    the gateway's slug (`GET /api/v1/providers`,
+    `~/temp/agent/providers-20260904.json`) is `open-inference`,
+    and OpenInference served 43 streams of that model today:
+    the ignore had never reached the wire.
+- **CoreWeave was never ignored by the owner.**
+  Asked,
+  the owner answered that the "All providers have been ignored" reply looked like an OpenRouter bug,
+    re-saved the account's allowed providers,
+    and the re-probe (`~/temp/agent/openrouter-minimax-endpoints-20260904b.log`) read CoreWeave 4 of 4 conformant
+    on the corpus-sized schema request under zero data retention,
+    16 to 20 s a call,
+    0.0024 to 0.0027 USD against ModelRun's 0.0072 to 0.0087;
+    default routing still went to ModelRun 4 of 4.
+- **What landed** (`openrouter-catalog.ts`):
+  `open-inference` spelled as listed;
+  ModelRun ignored for MiniMax M3 (CoreWeave serves);
+    Reka and Parasail ignored for DeepSeek Flash;
+    Reka and Io Net for Qwen3.8-27B;
+    Reka for GLM-5.3.
+    Rule recorded on the rows:
+    an endpoint is ignored when a day's runs cut a quarter or more of at least twenty of its streams,
+    or fail that share in-stream;
+    Modal (15 percent) and Inceptron (3 of 3) stay.
+    A catalog test checks every ignored slug against a snapshot of the provider listing,
+    shown to fail with `openinference` put back.
 
 ## luxuanwen3's front matter, and the rule the archive breaks
 
 - `validateFrontMatterTranslation` (`front-matter-translation.ts`) refuses a candidate whose `name` and
-    `info.alias` differ when the ORIGINAL declares them the same; `front-matter-completeness.ts` applies
+    `info.alias` differ when the ORIGINAL declares them the same;
+    `front-matter-completeness.ts` applies
     the same validator to the assembled page (`doc/decision/translation-repair-front-matter-guard.md`,
-    `invalid-page`). luxuanwen3's source has `name: 鲵鲵`, `alias: 鲵鲵`; the archive's page has
-    `name: Nini`, `alias: 鲵鲵, Nini`. Reproduced with the built validator on the run's candidates: the
-    archive-shaped front matter is `invalid` ("must keep name and info.alias as same visible identity"),
+    `invalid-page`).
+    luxuanwen3's source has `name: 鲵鲵`,
+    `alias: 鲵鲵`;
+    the archive's page has `name: Nini`,
+    `alias: 鲵鲵, Nini`.
+    Reproduced with the built validator on the run's candidates:
+    the archive-shaped front matter is `invalid` ("must keep name and info.alias as same visible identity"),
     the two candidates with `alias: Nini` are `valid`.
-- The translate lane's standing text was the archive-shaped front matter; consolidation logged `slice 0:
-    consolidation standing text fails publication eligibility and remains retryable`, the judges endorsed
-    the standing over the slate ("matches the declared translated identity", three ballots), and the single
-    attempt "kept it (slate-endorsed-standing); shipping with the finding recorded" (`consolidate-slice-buy.ts`,
-    single attempt by design after the no-loop proposal). The page guard then refused the entry an hour
-    later. `settleConsolidation` is never told the standing is ineligible.
-- **Measured over the pinned corpus**: 14 of 92 sources declare `name` equal to `alias`; in 7 of them the
-    archive renders the alias differently: MizuharaNagisa ("mizuharanagisa" / "Mizuhara Nagisa, 水原なぎさ,
-    Shui Yuan Zhu"), SevenBird, Weideriche_, gaoyanger ("Gaoyang" / "Gaoyang, Lamb"), interrgned,
-    luxuanwen3, noname ("noname" / "noname, no name, anonymous, ..."). Under the rule as written, none of
-    those seven can ship an archive-shaped front matter; the lanes must drop the extra renderings from the
-    alias.
-- **Decided the same day, both by the owner**: the alias may carry the name among other renderings
-    (`doc/decision/translation-repair-front-matter-guard.md`, addendum), and consolidation withholds a
-    standing the deterministic gate refused from the slate, failing the slice at once when nothing valid
-    ships (`doc/decision/translation-repair-ineligible-standing.md`). Landed in `6bfe6da56`, every guard
-    shown to fail neutralised, suite 924. luxuanwen3 relaunched on that build at 09:24 UTC
-    (`~/temp/agent/luxuanwen3-shapes2-20260904.log`, OpenRouter alone) to read the page.
-- **The routing check** (`~/temp/agent/kw-routing-20260904.log`, keyword233 on OpenRouter alone from 08:59
-    UTC, the ignores of `d55d83082` on the wire): MiniMax M3 served by CoreWeave 30 of 30, Qwen3.8-27B by
-    CoreWeave 32 (4 cut), DeepSeek Flash by Phala and Together, GLM-5.3 by Modal and Together, no call on
-    an ignored endpoint, no in-stream failure, 4 cut streams in the first 25 minutes against MTF_0615's
-    155 over two hours.
-    Settled at 09:25 UTC: `TALLY keyword233 status=SETTLED slices=3 ... ms=1553800` (25.9 min), verify-published
-    1 of 1 at `chars=811=expected`, 0.6134 USD, 5 cut streams, 5 voices never heard, no in-stream failure,
+- The translate lane's standing text was the archive-shaped front matter;
+  consolidation logged `slice 0:
+    consolidation standing text fails publication eligibility and remains retryable`,
+    the judges endorsed the standing over the slate ("matches the declared translated identity",
+    three ballots),
+    and the single attempt "kept it (slate-endorsed-standing);
+    shipping with the finding recorded" (`consolidate-slice-buy.ts`,
+    single attempt by design after the no-loop proposal).
+    The page guard then refused the entry an hour later.
+    `settleConsolidation` is never told the standing is ineligible.
+- **Measured over the pinned corpus**:
+  14 of 92 sources declare `name` equal to `alias`;
+  in 7 of them the archive renders the alias differently:
+    MizuharaNagisa ("mizuharanagisa" / "Mizuhara Nagisa,
+    水原なぎさ,
+    Shui Yuan Zhu"),
+    SevenBird,
+    Weideriche_,
+    gaoyanger ("Gaoyang" / "Gaoyang,
+    Lamb"),
+    interrgned,
+    luxuanwen3,
+    noname ("noname" / "noname,
+    no name,
+    anonymous,
+    ...").
+    Under the rule as written,
+    none of those seven can ship an archive-shaped front matter;
+    the lanes must drop the extra renderings from the alias.
+- **Decided the same day,
+  both by the owner**:
+  the alias may carry the name among other renderings (`doc/decision/translation-repair-front-matter-guard.md`,
+    addendum),
+    and consolidation withholds a standing the deterministic gate refused from the slate,
+    failing the slice at once when nothing valid ships (`doc/decision/translation-repair-ineligible-standing.md`).
+    Landed in `6bfe6da56`,
+    every guard shown to fail neutralised,
+    suite 924.
+    luxuanwen3 relaunched on that build at 09:24 UTC (`~/temp/agent/luxuanwen3-shapes2-20260904.log`,
+    OpenRouter alone) to read the page.
+- **The routing check** (`~/temp/agent/kw-routing-20260904.log`,
+  keyword233 on OpenRouter alone from 08:59 UTC,
+    the ignores of `d55d83082` on the wire):
+    MiniMax M3 served by CoreWeave 30 of 30,
+    Qwen3.8-27B by CoreWeave 32 (4 cut),
+    DeepSeek Flash by Phala and Together,
+    GLM-5.3 by Modal and Together,
+    no call on an ignored endpoint,
+    no in-stream failure,
+    4 cut streams in the first 25 minutes against MTF_0615's 155 over two hours.
+    Settled at 09:25 UTC:
+    `TALLY keyword233 status=SETTLED slices=3 ... ms=1553800` (25.9 min),
+    verify-published 1 of 1 at `chars=811=expected`,
+    0.6134 USD,
+    5 cut streams,
+    5 voices never heard,
+    no in-stream failure,
     no call on an ignored endpoint.
 
 ## The luxuanwen3 re-run, 2026-09-04, 09:22 UTC onward: slice 0 passes, slice 1 stops the entry
 
-Launched on `592562992` (alias containment, withheld standing, endpoint ignores), OpenRouter alone, log
-`~/temp/agent/luxuanwen3-shapes2-20260904.log`, runs dir `~/temp/agent/luxuanwen3-shapes2-20260904`.
+Launched on `592562992` (alias containment,
+withheld standing,
+endpoint ignores),
+OpenRouter alone,
+log `~/temp/agent/luxuanwen3-shapes2-20260904.log`,
+runs dir `~/temp/agent/luxuanwen3-shapes2-20260904`.
 
-- Slice 0, the front matter (56 source characters): both lanes `exit=computed`, no eligibility warning at the
-    lane contest or the consolidation. The archive's `alias: 鲵鲵, Nini` passes the containment rule.
-- Slice 1, the description paragraph (95 source characters): the translate lane's winner "fails publication
-    invariants" at the contest, the standing "fails publication eligibility" at the consolidation, and at
-    09:56:43 UTC, 34 minutes in, `ConsolidationStandingIneligibleError: slice 1 ... (incumbent-only)` stopped
-    the entry. The pass of the morning had run 63 minutes before the page guard refused it.
-- The cause, read from the slice records (`slice-cache/luxuanwen3/translate.*.json`, slice 1 findings): the
-    original links `https://twitter.com/Deaver1229`, the archive's page `https://x.com/Deaver1229`, and
-    `mergeAtoms` in `translate-atom-floor.ts` (commit `3ca134e57`: "protected atoms take the larger demand
-    of the two references") owes the per-key maximum of both, so a candidate carrying either URL is told it
-    lacks the other. The four translators asked to repair were told so in both directions: two restored the
-    original's URL, two kept the page's, and every proposal failed the floor. The standing, the archive's own
-    paragraph, fails the same rule, so the slate had nothing and the terminal was `incumbent-only`.
-- The log could not say this: neither warning named the rule or the findings. Both drivers now print the
-    deterministic findings, and the consolidation warning distinguishes an invalid standing from an unendorsed
-    one.
+- Slice 0,
+  the front matter (56 source characters):
+  both lanes `exit=computed`,
+  no eligibility warning at the lane contest or the consolidation.
+    The archive's `alias: 鲵鲵, Nini` passes the containment rule.
+- Slice 1,
+  the description paragraph (95 source characters):
+  the translate lane's winner "fails publication invariants" at the contest,
+    the standing "fails publication eligibility" at the consolidation,
+    and at 09:56:43 UTC,
+    34 minutes in,
+    `ConsolidationStandingIneligibleError: slice 1 ... (incumbent-only)` stopped the entry.
+    The pass of the morning had run 63 minutes before the page guard refused it.
+- The cause,
+  read from the slice records (`slice-cache/luxuanwen3/translate.*.json`,
+  slice 1 findings):
+  the original links `https://twitter.com/Deaver1229`,
+    the archive's page `https://x.com/Deaver1229`,
+    and `mergeAtoms` in `translate-atom-floor.ts` (commit `3ca134e57`:
+    "protected atoms take the larger demand of the two references") owes the per-key maximum of both,
+    so a candidate carrying either URL is told it lacks the other.
+    The four translators asked to repair were told so in both directions:
+    two restored the original's URL,
+    two kept the page's,
+    and every proposal failed the floor.
+    The standing,
+    the archive's own paragraph,
+    fails the same rule,
+    so the slate had nothing and the terminal was `incumbent-only`.
+- The log could not say this:
+  neither warning named the rule or the findings.
+  Both drivers now print the deterministic findings,
+    and the consolidation warning distinguishes an invalid standing from an unendorsed one.
 
 Census of the pinned corpus (`~/temp/agent/atom-census-20260904.mjs` over `readSliceSkeleton` on whole pages,
-`~/temp/agent/link-census-20260904.mjs` over a plain link scan): of the 70 pages the strict grammar reads whole,
-7 carry a link the archive rewrote, meaning `link-url` diverges in both directions: MizuharaNagisa (`www.`
-added), Rentable_A (trailing slash dropped), SS3B_0016 and shihai4h (Chinese Wikipedia to English Wikipedia),
-aiyysk (`google.cn` to `.com`), homoyamakaze (an archived Twitter capture to `mtf.wiki`), luxuanwen3
-(`twitter.com` to `x.com`). XIEPT2, whose page the whole-page grammar refuses, is the eighth by the plain scan.
-Footnotes diverge in one direction only (5 pages add one, 1 drops one), never both. Under the per-key maximum
-none of the eight can ship: the archive's paragraph is ineligible, and no rendering carries both destinations
-without inventing a link.
+`~/temp/agent/link-census-20260904.mjs` over a plain link scan):
+of the 70 pages the strict grammar reads whole,
+7 carry a link the archive rewrote,
+meaning `link-url` diverges in both directions:
+MizuharaNagisa (`www.` added),
+Rentable_A (trailing slash dropped),
+SS3B_0016 and shihai4h (Chinese Wikipedia to English Wikipedia),
+aiyysk (`google.cn` to `.com`),
+homoyamakaze (an archived Twitter capture to `mtf.wiki`),
+luxuanwen3 (`twitter.com` to `x.com`).
+XIEPT2,
+whose page the whole-page grammar refuses,
+is the eighth by the plain scan.
+Footnotes diverge in one direction only (5 pages add one,
+1 drops one),
+never both.
+Under the per-key maximum none of the eight can ship:
+the archive's paragraph is ineligible,
+and no rendering carries both destinations without inventing a link.
 
-Tally: `TALLY luxuanwen3 status=ERROR ms=2724158` at 10:08 UTC, 587 OpenRouter calls, 2.01 USD by the log's
-`cost=` fields, balance 25.79 USD after. The in-flight consolidation buys for slices 2 to 4 ran on for
-11 minutes after the slice 1 error before the tally; the stop is at the slice, not the process.
+Tally:
+`TALLY luxuanwen3 status=ERROR ms=2724158` at 10:08 UTC,
+587 OpenRouter calls,
+2.01 USD by the log's `cost=` fields,
+balance 25.79 USD after.
+The in-flight consolidation buys for slices 2 to 4 ran on for 11 minutes after the slice 1 error before the tally;
+the stop is at the slice,
+not the process.
 
-What the tally exposed next: `entryErrorOutcome` classed `ConsolidationStandingIneligibleError` as a
-resumable failure, so the pass logged `REATTEMPT luxuanwen3 queued` and started the lanes again at
-10:08:12 UTC against the same deterministic refusal; it was stopped by hand at 10:09 and the error joined
-the stopped list (`ae1d2b55f`, guard shown to fail without it). The log now names both verdicts and their
-findings (`558b46e11`).
+What the tally exposed next:
+`entryErrorOutcome` classed `ConsolidationStandingIneligibleError` as a resumable failure,
+so the pass logged `REATTEMPT luxuanwen3 queued` and started the lanes again at
+10:08:12 UTC against the same deterministic refusal;
+it was stopped by hand at 10:09 and the error joined the stopped list (`ae1d2b55f`,
+guard shown to fail without it).
+The log now names both verdicts and their findings (`558b46e11`).
 
-Question put to the owner: which rendering a candidate owes where the archive rewrote a destination.
+Question put to the owner:
+which rendering a candidate owes where the archive rewrote a destination.
 
-## The luxuanwen3 re-run on the either-rendering build, 2026-09-04, 12:43 UTC onward: every slice passes, the publisher refuses
+## The luxuanwen3 re-run on the either-rendering build, 2026-09-04: every slice passes, the publisher refuses
 
-Launched at 12:43:50 UTC on `82888d43b` (the rendering pools) plus the docs commit, OpenRouter alone, into
-`~/temp/agent/luxuanwen3-shapes3-20260904` (log of the same name). Balance 22.53 USD at the SS3B_0016 launch
-that followed at 13:20.
+Launched at 12:43:50 UTC on `82888d43b` (the rendering pools) plus the docs commit,
+OpenRouter alone,
+into `~/temp/agent/luxuanwen3-shapes3-20260904` (log of the same name).
+Balance 22.53 USD at the SS3B_0016 launch that followed at 13:20.
 
-What the slices did: slice 1, the paragraph whose link the archive moved from `twitter.com` to `x.com`,
-passed the deterministic rule in every lane. The translate lane's winner carried the original's
-`twitter.com` once and `x.com` never; three of its translators matched the incumbent. The contest recorded
-eight ballots across the slices (four `repair`, two `translate`, two `neither`, five to seven usable each).
-Consolidation started at 13:18:47 on all nine slices; slice 1 exited `computed` in 536 s with no verdict
-warning; slices 2 and 6 logged `consolidation standing text lacks contest endorsement and remains
-retryable`, and slice 2's single attempt kept the standing (`slate-declined-standing`) with the finding
-recorded. No `must carry exactly`, no `fails the deterministic publication rule`, no `REATTEMPT`.
+What the slices did:
+slice 1,
+the paragraph whose link the archive moved from `twitter.com` to `x.com`,
+passed the deterministic rule in every lane.
+The translate lane's winner carried the original's `twitter.com` once and `x.com` never;
+three of its translators matched the incumbent.
+The contest recorded eight ballots across the slices (four `repair`,
+two `translate`,
+two `neither`,
+five to seven usable each).
+Consolidation started at 13:18:47 on all nine slices;
+slice 1 exited `computed` in 536 s with no verdict warning;
+slices 2 and 6 logged `consolidation standing text lacks contest endorsement and remains retryable`,
+and slice 2's single attempt kept the standing (`slate-declined-standing`) with the finding recorded.
+No `must carry exactly`,
+no `fails the deterministic publication rule`,
+no `REATTEMPT`.
 
-Tally: `TALLY luxuanwen3 status=INCOMPLETE ms=3365280 aborted=false error=entry luxuanwen3 would drop 1
-source destination(s)` at 13:39:55 UTC, 56 minutes, 765 calls, 4.24 USD by the `cost=` fields, balance
-19.26 USD at the last meter reading. Seats: gpt-oss-120b 120 of 120 usable, minimax-m3 117 of 117, gemma
-126 of 126, deepseek-v4-pro 121 of 122, GLM-5.3-Flash 35 of 39, deepseek-v4-flash 82 of 94 (12 threw, the
-cut-mid-reply shape of the morning), Qwen3.8-27B 107 of 127 (20 threw), glm-5.3 57 of 60.
+Tally:
+`TALLY luxuanwen3 status=INCOMPLETE ms=3365280 aborted=false error=entry luxuanwen3 would drop 1
+source destination(s)` at 13:39:55 UTC,
+56 minutes,
+765 calls,
+4.24 USD by the `cost=` fields,
+balance 19.26 USD at the last meter reading.
+Seats:
+gpt-oss-120b 120 of 120 usable,
+minimax-m3 117 of 117,
+gemma 126 of 126,
+deepseek-v4-pro 121 of 122,
+GLM-5.3-Flash 35 of 39,
+deepseek-v4-flash 82 of 94 (12 threw,
+the cut-mid-reply shape of the morning),
+Qwen3.8-27B 107 of 127 (20 threw),
+glm-5.3 57 of 60.
 
-What refused it: `DroppedDestinationError` in `publish-fixed.ts`, the document-level check, which compared
-the would-ship page's destinations against the source's alone. The page carried the archive's `x.com` where
-the source carries `twitter.com`, which the slice rule had accepted and the publisher counted as one source
-destination dropped. The decision record of the morning had said the publisher was unchanged; that clause
-was the defect, and it is struck. Fixed in `1c9663666` (`corpus-run/destination-renderings.ts`, the same
-pool over the whole page; findings `destinations-archive-rendering` and `destinations-both-renderings` on
-the `DESTINATIONS` line), guards shown to fail with the archive side of the pool neutralised, and
-`8d7b151ef` (lint). Two tests of the morning (`consolidate-ineligible-standing`, `consolidate-standing-verdict`)
-still asserted the maximum rule through a candidate keeping the page's link; the full suite had last run
-before `82888d43b`. Moved to a candidate carrying neither rendering in `e66da50ef`; suite 931 groups, 0 FAIL.
+What refused it:
+`DroppedDestinationError` in `publish-fixed.ts`,
+the document-level check,
+which compared the would-ship page's destinations against the source's alone.
+The page carried the archive's `x.com` where the source carries `twitter.com`,
+which the slice rule had accepted and the publisher counted as one source destination dropped.
+The decision record of the morning had said the publisher was unchanged;
+that clause was the defect,
+and it is struck.
+Fixed in `1c9663666` (`corpus-run/destination-renderings.ts`,
+the same pool over the whole page;
+findings `destinations-archive-rendering` and `destinations-both-renderings` on the `DESTINATIONS` line),
+guards shown to fail with the archive side of the pool neutralised,
+and `8d7b151ef` (lint).
+Two tests of the morning (`consolidate-ineligible-standing`,
+`consolidate-standing-verdict`) still asserted the maximum rule through a candidate keeping the page's link;
+the full suite had last run before `82888d43b`.
+Moved to a candidate carrying neither rendering in `e66da50ef`;
+suite 931 groups,
+0 FAIL.
 
-SS3B_0016 (the Wikipedia shape, 912 source characters) had been launched at 13:20 on the same build; it was
-stopped at 13:51 during its lanes (422 calls, 1.84 USD) because its page could only reach the same refusal,
+SS3B_0016 (the Wikipedia shape,
+912 source characters) had been launched at 13:20 on the same build;
+it was stopped at 13:51 during its lanes (422 calls,
+1.84 USD) because its page could only reach the same refusal,
 and relaunched with luxuanwen3 on `e66da50ef` at 13:51:31 UTC (`~/temp/agent/<id>-shapes4-20260904`),
 balance 18.49 USD.
 
 ## The two runs on the publisher fix, 2026-09-04, 13:51 UTC onward: both ship, and what the reading found
 
-luxuanwen3 and SS3B_0016 ran concurrently on `e66da50ef`, OpenRouter alone, from 13:51:31 UTC, into
-`~/temp/agent/<id>-shapes4-20260904` (logs of the same name). Balance 18.49 USD at launch, 5.41 USD at the
-last meter reading.
+luxuanwen3 and SS3B_0016 ran concurrently on `e66da50ef`,
+OpenRouter alone,
+from 13:51:31 UTC,
+into `~/temp/agent/<id>-shapes4-20260904` (logs of the same name).
+Balance 18.49 USD at launch,
+5.41 USD at the last meter reading.
 
-luxuanwen3: `TALLY luxuanwen3 status=SETTLED slices=9 ... pageChanged=7 pageSilent=0 selection=contested
-ms=3596918` (60 minutes, 764 calls, 4.65 USD by the `cost=` fields), `DESTINATIONS luxuanwen3 source=2 page=2
-dropped=0` with no finding: the page carries the original's `twitter.com` for Deaver1229 and for the
-contributor, so the pool was met from the original's side. verify-published: `wordings=9 silent=0
-chars=2467=expected missing=0`. The front matter's `alias` reads `鲵鲵, Nini`; the `PhotoScroll` line is
-intact; the Camus quotation and its right-aligned attribution are intact. Slice 3 logged `consolidation
-standing text lacks contest endorsement and remains retryable` and shipped on the single attempt. No
-`must carry exactly`, no `fails the deterministic publication rule`, no `REATTEMPT`. Seats: minimax-m3 117
-of 117 usable, gpt-oss-120b 115 of 115, GLM-5.3-Flash 38 of 39, glm-5.3 53 of 61 (8 threw), deepseek-v4-flash
-89 of 93, deepseek-v4-pro 120 of 123, gemma 123 of 124, Qwen3.8-27B 109 of 125 (16 threw). Read in full: the
-page is publishable as it stands. One wrap nit, not a page defect: the per-slice wrap broke `August 4,
-2024` after the date's comma, which Markdown rejoins on render.
+luxuanwen3:
+`TALLY luxuanwen3 status=SETTLED slices=9 ... pageChanged=7 pageSilent=0 selection=contested ms=3596918` (60 minutes,
+764 calls,
+4.65 USD by the `cost=` fields),
+`DESTINATIONS luxuanwen3 source=2 page=2 dropped=0` with no finding:
+the page carries the original's `twitter.com` for Deaver1229 and for the contributor,
+so the pool was met from the original's side.
+verify-published:
+`wordings=9 silent=0 chars=2467=expected missing=0`.
+The front matter's `alias` reads `鲵鲵, Nini`;
+the `PhotoScroll` line is intact;
+the Camus quotation and its right-aligned attribution are intact.
+Slice 3 logged `consolidation
+standing text lacks contest endorsement and remains retryable` and shipped on the single attempt.
+No `must carry exactly`,
+no `fails the deterministic publication rule`,
+no `REATTEMPT`.
+Seats:
+minimax-m3 117 of 117 usable,
+gpt-oss-120b 115 of 115,
+GLM-5.3-Flash 38 of 39,
+glm-5.3 53 of 61 (8 threw),
+deepseek-v4-flash 89 of 93,
+deepseek-v4-pro 120 of 123,
+gemma 123 of 124,
+Qwen3.8-27B 109 of 125 (16 threw).
+Read in full:
+the page is publishable as it stands.
+One wrap nit,
+not a page defect:
+the per-slice wrap broke `August 4,
+2024` after the date's comma,
+which Markdown rejoins on render.
 
-SS3B_0016: `TALLY SS3B_0016 status=SETTLED slices=9 ... pageChanged=8 pageSilent=0 selection=contested
-ms=3365773` (56 minutes, 887 calls, 5.12 USD), `DESTINATIONS SS3B_0016 source=3 page=3 dropped=0
-destinations-archive-rendering`: the page carries the archive's English Wikipedia `Railfan` where the
-source links the Chinese article, and keeps the `mailto:` and GitHub destinations. verify-published:
-`wordings=9 silent=0 chars=2291=expected missing=0`. Slice 2 lacked contest endorsement and shipped on the
-single attempt. Seats: gpt-oss-120b 141 of 141, minimax-m3 132 of 132, gemma 147 of 147, glm-5.3 62 of 69
-(7 threw), deepseek-v4-pro 138 of 140, Qwen3.8-27B 121 of 148 (27 threw), GLM-5.3-Flash 39 of 40,
-deepseek-v4-flash 107 of 111. The page restores what the archive's rewrite had changed (the source's
-"community", not "transgender community"; the source's "the day before Yantian's birthday", not the
-archive's added date and stations) and reads well, with two findings from the reading.
+SS3B_0016:
+`TALLY SS3B_0016 status=SETTLED slices=9 ... pageChanged=8 pageSilent=0 selection=contested ms=3365773` (56 minutes,
+887 calls,
+5.12 USD),
+`DESTINATIONS SS3B_0016 source=3 page=3 dropped=0 destinations-archive-rendering`:
+the page carries the archive's English Wikipedia `Railfan` where the source links the Chinese article,
+and keeps the `mailto:` and GitHub destinations.
+verify-published:
+`wordings=9 silent=0 chars=2291=expected missing=0`.
+Slice 2 lacked contest endorsement and shipped on the single attempt.
+Seats:
+gpt-oss-120b 141 of 141,
+minimax-m3 132 of 132,
+gemma 147 of 147,
+glm-5.3 62 of 69 (7 threw),
+deepseek-v4-pro 138 of 140,
+Qwen3.8-27B 121 of 148 (27 threw),
+GLM-5.3-Flash 39 of 40,
+deepseek-v4-flash 107 of 111.
+The page restores what the archive's rewrite had changed (the source's "community",
+not "transgender community";
+the source's "the day before Yantian's birthday",
+not the archive's added date and stations) and reads well,
+with two findings from the reading.
 
-WHAT THE READING FOUND, ONE DEFECT AND ONE RISK.
+WHAT THE READING FOUND,
+ONE DEFECT AND ONE RISK.
 
-The defect: slice 5 ships `we have temporarily set up a small room for Ta, to give Ta's memorial a little
-warmth`, a bare `Ta` twice, on a page that says "they" and "them" for Yantian everywhere else. The
-translate lane won that slice with three of five contest ballots reasoning that it "keeps the original's
-neutral Ta", and the consolidation gate kept it. The cause is in the pipeline, not the judges: the source
-writes its neutral pronoun as `Ta`, and `countNeutralPronoun` in `identity-context.ts` counts only `TA`, so
-the declared-identity pronoun line said nothing for this page; and the house rule names TA as a pronoun the
-original uses without saying how English renders it. Measured over the pinned corpus: sources write the
-neutral pronoun as `TA` in 2 entries, `Ta` in 7 and `ta` in 8 (every occurrence a pronoun, `TA 们` the
-plural in 6); of the archives of those entries, one (XingZ60, a rewrite) keeps a bare `TA`, and the rest
-render it "they" (Uekawakuyuurei 22 "they" to 0 "she", Hangmster 18 to 0). Fixed in the next commit:
-the counter reads all three spellings, the house rule states the English rendering, and the deterministic
-floor refuses a translation carrying the pronoun untranslated.
+The defect:
+slice 5 ships `we have temporarily set up a small room for Ta, to give Ta's memorial a little warmth`,
+a bare `Ta` twice,
+on a page that says "they" and "them" for Yantian everywhere else.
+The
+translate lane won that slice with three of five contest ballots reasoning that it "keeps the original's neutral Ta",
+and the consolidation gate kept it.
+The cause is in the pipeline,
+not the judges:
+the source writes its neutral pronoun as `Ta`,
+and `countNeutralPronoun` in `identity-context.ts` counts only `TA`,
+so the declared-identity pronoun line said nothing for this page;
+and the house rule names TA as a pronoun the original uses without saying how English renders it.
+Measured over the pinned corpus:
+sources write the neutral pronoun as `TA` in 2 entries,
+`Ta` in 7 and `ta` in 8 (every occurrence a pronoun,
+`TA 们` the plural in 6);
+of the archives of those entries,
+one (XingZ60,
+a rewrite) keeps a bare `TA`,
+and the rest render it "they" (Uekawakuyuurei 22 "they" to 0 "she",
+Hangmster 18 to 0).
+Fixed in the next commit:
+the counter reads all three spellings,
+the house rule states the English rendering,
+and the deterministic floor refuses a translation carrying the pronoun untranslated.
 
-The risk: slice 5 also renders 「那些秋叶」 as `「One Among Us」`. The name is right (the archives of all
-five entries naming 那些秋叶 render it "One Among Us", one as "One Among Us Transgender Support") but the
-gate kept it 4 to 3 over a consolidated candidate reading "Those Autumn Leaves", the judges arguing the
-rendering from the archive alone. The corner brackets around an English name are the source's punctuation
-carried across; 72 sources use them and 3 archives keep any, all in quoted Chinese or a design element.
-FIXED THE SAME AFTERNOON in `d5e4d1ea0`, since both halves are house rules rather than judgement calls:
-the community-vocabulary rule now names 那些秋叶 and its renderings (members, the maintenance group), and the
-punctuation rule says what corner brackets become, quotation marks around a quotation and nothing around a
-name or a term. Guarded by two cases in `house-policy-reaches-the-judges.unit.test.ts`, shown to fail with
-the sentences removed.
+The risk:
+slice 5 also renders 「那些秋叶」 as `「One Among Us」`.
+The name is right (the archives of all five entries naming 那些秋叶 render it "One Among Us",
+one as "One Among Us Transgender Support") but the
+gate kept it 4 to 3 over a consolidated candidate reading "Those Autumn Leaves",
+the judges arguing the rendering from the archive alone.
+The corner brackets around an English name are the source's punctuation carried across;
+72 sources use them and 3 archives keep any,
+all in quoted Chinese or a design element.
+FIXED THE SAME AFTERNOON in `d5e4d1ea0`,
+since both halves are house rules rather than judgement calls:
+the community-vocabulary rule now names 那些秋叶 and its renderings (members,
+the maintenance group),
+and the punctuation rule says what corner brackets become,
+quotation marks around a quotation and nothing around a name or a term.
+Guarded by two cases in `house-policy-reaches-the-judges.unit.test.ts`,
+shown to fail with the sentences removed.
 
-WHAT LANDED FOR THE PRONOUN: `d98e656cb` (counter, house rule, `translate-neutral-pronoun.ts` wired into
-`validateTranslatedSlice`, tests; each guard shown to fail with its rule neutralised), `cd5288fa9` (lint
-shapes), `dd132bc76` (README). Measured over the pinned corpus with the built finding: one archive flagged
-(XingZ60, `TA` 3 times) and 15 sources. The next pass launched at 15:03:34 UTC on `cd5288fa9` (pipeline
-`sha256-tree-v1:946ab54f`), OpenRouter alone: Uekawakuyuurei, whose subject is `ta` throughout (12 `ta`
-and 1 `Ta`, archive 22 "they" to 0 "she"), into `~/temp/agent/Uekawakuyuurei-pronoun-20260904`. Balance
-5.32 USD at launch, which is about one pass.
+WHAT LANDED FOR THE PRONOUN:
+`d98e656cb` (counter,
+house rule,
+`translate-neutral-pronoun.ts` wired into `validateTranslatedSlice`,
+tests;
+each guard shown to fail with its rule neutralised),
+`cd5288fa9` (lint shapes),
+`dd132bc76` (README).
+Measured over the pinned corpus with the built finding:
+one archive flagged (XingZ60,
+`TA` 3 times) and 15 sources.
+The next pass launched at 15:03:34 UTC on `cd5288fa9` (pipeline `sha256-tree-v1:946ab54f`),
+OpenRouter alone:
+Uekawakuyuurei,
+whose subject is `ta` throughout (12 `ta` and 1 `Ta`,
+archive 22 "they" to 0 "she"),
+into `~/temp/agent/Uekawakuyuurei-pronoun-20260904`.
+Balance 5.32 USD at launch,
+which is about one pass.
 
 ## The Uekawakuyuurei run on the pronoun build, 2026-09-04, 15:03 UTC: stopped by its own pictures
 
 `TALLY Uekawakuyuurei status=INCOMPLETE ms=111956 aborted=false error=visual evidence incomplete for 3
-referenced assets` at 15:05 UTC, 33 calls, 0.08 USD. The entry shows eight pictures; five carry nothing
-past the deterministic reader and were never sent. The other three are an oil painting of ships
-(`IMG_1308.webp`, 24 characters of canvas noise from tesseract), an ink drawing of two cats (`img197.webp`,
-18) and an ink drawing of a destroyer whose only text is the hull number (`img370.webp`, 24). Three readers
-each asked four times; every reply either reported that the picture carries no text or transcribed `DE581`,
-and the screen called the first a refusal and the second too short, so all three pictures ended
-`no-reader-available`, transient, and the entry stopped at the completeness gate. Across every run log this
-session, 56 entry-and-picture pairs corroborated and 8 failed, on 5 pictures: these three on both rosters,
-`dogesir_/photo2.webp` on both, `gqt/photo3.webp` at one reader of two.
+referenced assets` at 15:05 UTC,
+33 calls,
+0.08 USD.
+The entry shows eight pictures;
+five carry nothing past the deterministic reader and were never sent.
+The other three are an oil painting of ships (`IMG_1308.webp`,
+24 characters of canvas noise from tesseract),
+an ink drawing of two cats (`img197.webp`,
+18) and an ink drawing of a destroyer whose only text is the hull number (`img370.webp`,
+24).
+Three readers each asked four times;
+every reply either reported that the picture carries no text or transcribed `DE581`,
+and the screen called the first a refusal and the second too short,
+so all three pictures ended `no-reader-available`,
+transient,
+and the entry stopped at the completeness gate.
+Across every run log this session,
+56 entry-and-picture pairs corroborated and 8 failed,
+on 5 pictures:
+these three on both rosters,
+`dogesir_/photo2.webp` on both,
+`gqt/photo3.webp` at one reader of two.
 
-A probe of the three OpenRouter readers over those five pictures (15 calls) put the wording on record: 14
-refused replies name text ("There is no visible text in this image", "I cannot read any text in this image.
-There are no visible words", "I can read the image, but there is no visible text to transcribe"), one declines
-without naming it ("I cannot read the image."), and the destroyer draws `DE581`, `DE581` and `D650`.
+A probe of the three OpenRouter readers over those five pictures (15 calls) put the wording on record:
+14 refused replies name text ("There is no visible text in this image",
+"I cannot read any text in this image.
+There are no visible words",
+"I can read the image,
+but there is no visible text to transcribe"),
+one declines without naming it ("I cannot read the image."),
+and the destroyer draws `DE581`,
+`DE581` and `D650`.
 
-WHAT LANDED: `20ea56cd0` logs the opening of a refused reply; `d6ffc4812` splits absence from inability
-(`refusalReportsAbsence` in `reading-refusal.ts`: names text, no quality or access marker), gives the screen
-three verdicts (usable, short, refused with clause `too-short`, `reads-as-refusal` or `reports-no-text`),
-stops re-asking an absence report, and lets two readers reporting absence or answering short confirm a
-picture textless in `readImagePair` (`no-text` with `confirmedBy`, resumed). Each guard shown to fail with
-its rule neutralised (refusal 2, sense 3, stage 3, pair 5, re-ask 2 failures), then pass. Rule recorded in
-`doc/planning/when-an-image-reading-makes-no-sense.md` (clause six) and the README.
+WHAT LANDED:
+`20ea56cd0` logs the opening of a refused reply;
+`d6ffc4812` splits absence from inability (`refusalReportsAbsence` in `reading-refusal.ts`:
+names text,
+no quality or access marker),
+gives the screen three verdicts (usable,
+short,
+refused with clause `too-short`,
+`reads-as-refusal` or `reports-no-text`),
+stops re-asking an absence report,
+and lets two readers reporting absence or answering short confirm a
+picture textless in `readImagePair` (`no-text` with `confirmedBy`,
+resumed).
+Each guard shown to fail with its rule neutralised (refusal 2,
+sense 3,
+stage 3,
+pair 5,
+re-ask 2 failures),
+then pass.
+Rule recorded in `doc/planning/when-an-image-reading-makes-no-sense.md` (clause six) and the README.
 
-Relaunched at 15:25 UTC on `d6ffc4812` into `~/temp/agent/Uekawakuyuurei-pictures-20260904`, OpenRouter
-alone, to read both today's fixes on one entry: the pronoun rule on a `ta` subject and the textless
-confirmation on three pictures. Balance about 5.3 USD at launch, which is one pass.
+Relaunched at 15:25 UTC on `d6ffc4812` into `~/temp/agent/Uekawakuyuurei-pictures-20260904`,
+OpenRouter alone,
+to read both today's fixes on one entry:
+the pronoun rule on a `ta` subject and the textless confirmation on three pictures.
+Balance about 5.3 USD at launch,
+which is one pass.
 
 ## Uekawakuyuurei on the picture-fix build, 2026-09-04, 15:25 UTC: ships, and the balance runs out under it
 
 `TALLY Uekawakuyuurei status=SETTLED slices=7 ... pageChanged=5 pageSilent=0 selection=contested ms=3190452`
-(53 minutes, 524 calls, 3.84 USD by the `cost=` fields), `DESTINATIONS Uekawakuyuurei source=4 page=4
-dropped=0`; verify-published `wordings=7 silent=0 chars=2774=expected missing=0`. Tip `d6ffc4812`, pipeline
-`sha256-tree-v1:646ad738`.
+(53 minutes,
+524 calls,
+3.84 USD by the `cost=` fields),
+`DESTINATIONS Uekawakuyuurei source=4 page=4 dropped=0`;
+verify-published `wordings=7 silent=0 chars=2774=expected missing=0`.
+Tip `d6ffc4812`,
+pipeline `sha256-tree-v1:646ad738`.
 
-BOTH FIXES READ CLEAN ON THE PAGE. Pictures: `IMG_1308.webp` confirmed textless by 3 of 3 readers on the first
-ask, `img197.webp` by 2 of 3, `img370.webp` by 3 of 3 (all three short readings of the hull number), no re-asks,
-no visual-evidence stop; the `PhotoScroll` and `ChannelBackupButton` lines ship as written. Pronouns: the page
-says they, them or their 21 times for Ying, he or she never, and carries no bare `ta`; the source writes
-`ta` 12 times and `Ta` once. No `untranslated as` finding was raised in any lane, so the house rule alone
-carried it.
+BOTH FIXES READ CLEAN ON THE PAGE.
+Pictures:
+`IMG_1308.webp` confirmed textless by 3 of 3 readers on the first ask,
+`img197.webp` by 2 of 3,
+`img370.webp` by 3 of 3 (all three short readings of the hull number),
+no re-asks,
+no visual-evidence stop;
+the `PhotoScroll` and `ChannelBackupButton` lines ship as written.
+Pronouns:
+the page says they,
+them or their 21 times for Ying,
+he or she never,
+and carries no bare `ta`;
+the source writes `ta` 12 times and `Ta` once.
+No `untranslated as` finding was raised in any lane,
+so the house rule alone carried it.
 
-THE FRONT MATTER went as the guard decision of 2026-09-02 provides. The translate lane rendered
-`name: Hotaru`, `alias: Ah Hotaru, Hotaru-chan, Akigumo`, `location: China`; the archive has no
-`location`, so the shape rule excluded that candidate from the contest (`lane-contest-eligibility-floor`),
-the standing lacked endorsement, and the single consolidation attempt kept the archive's
-`name: uekawakuyuurei`, `alias: Ying (Hotaru), Qiu Yun (Akigumo)`. The contest's log line named the floor
-and not the finding, which task 78 of this session corrects.
+THE FRONT MATTER went as the guard decision of 2026-09-02 provides.
+The translate lane rendered `name: Hotaru`,
+`alias: Ah Hotaru, Hotaru-chan, Akigumo`,
+`location: China`;
+the archive has no `location`,
+so the shape rule excluded that candidate from the contest (`lane-contest-eligibility-floor`),
+the standing lacked endorsement,
+and the single consolidation attempt kept the archive's `name: uekawakuyuurei`,
+`alias: Ying (Hotaru), Qiu Yun (Akigumo)`.
+The contest's log line named the floor and not the finding,
+which task 78 of this session corrects.
 
-THE BALANCE RAN OUT UNDER CONSOLIDATION. The lanes finished at 16:06 with 1.98 USD left; consolidation
-began at 16:11; from 16:15:00 OpenRouter refused calls while the meter still read 1.12 USD (the last reading
-before the refusal), and `EveryProviderDryError` was raised 166 times through the gate and refiner rounds,
-205 voices lost, with the meter reading `openrouter=wet` and falling to 0.36 USD as smaller calls kept
-buying. Every consolidation slice shipped its standing, the lane-contest winner, unpolished. Seats:
-minimax-m3 82 of 117 usable, GLM-5.3-Flash 26 of 50, gemma 93 of 106, glm-5.3 27 of 45, gpt-oss-120b 85 of
-99, deepseek-v4-flash 59 of 83, Qwen3.8-27B 69 of 106, deepseek-v4-pro 84 of 122, the shortfall being the
-refusals. This is the first live exercise of the every-provider-dry path: the run did not hold and did not
-error; it settled on what it had.
+THE BALANCE RAN OUT UNDER CONSOLIDATION.
+The lanes finished at 16:06 with 1.98 USD left;
+consolidation began at 16:11;
+from 16:15:00 OpenRouter refused calls while the meter still read 1.12 USD (the last reading before the refusal),
+and `EveryProviderDryError` was raised 166 times through the gate and refiner rounds,
+205 voices lost,
+with the meter reading `openrouter=wet` and falling to 0.36 USD as smaller calls kept buying.
+Every consolidation slice shipped its standing,
+the lane-contest winner,
+unpolished.
+Seats:
+minimax-m3 82 of 117 usable,
+GLM-5.3-Flash 26 of 50,
+gemma 93 of 106,
+glm-5.3 27 of 45,
+gpt-oss-120b 85 of 99,
+deepseek-v4-flash 59 of 83,
+Qwen3.8-27B 69 of 106,
+deepseek-v4-pro 84 of 122,
+the shortfall being the refusals.
+This is the first live exercise of the every-provider-dry path:
+the run did not hold and did not error;
+it settled on what it had.
 
-THE READING OF THE PAGE: publishable. Two notes, neither a class. The diagnosis carries italics the source
-does not (`*signet ring cell carcinoma of the ascending colon*`); 51 of 92 archives use italics, for work
-titles, so emphasis is not a marker the floor can refuse. The quotation "just an unhealthy-looking boy in
-real life.", carries the archive's own period-inside-quotes shape, which the archive ends with a second
-period. "Here's a selected few" is the archive's wording kept.
+THE READING OF THE PAGE:
+publishable.
+Two notes,
+neither a class.
+The diagnosis carries italics the source does not (`*signet ring cell carcinoma of the ascending colon*`);
+51 of 92 archives use italics,
+for work titles,
+so emphasis is not a marker the floor can refuse.
+The quotation "just an unhealthy-looking boy in real life.",
+carries the archive's own period-inside-quotes shape,
+which the archive ends with a second period.
+"Here's a selected few" is the archive's wording kept.
+
+## The picture gather's wait, re-read on three-reader pictures, 2026-09-04
+
+The open item since 2026-08-29 was to re-read the gather's straggler wait once passes had run pictures
+with three readers rather than two.
+Today's runs did,
+so this is that reading.
+It is a measurement and a recommendation,
+not a change.
+
+THE GATHER HAS NO STRAGGLER WINDOW.
+`readImagePair` calls every reader through one `Promise.allSettled` and waits for all of them,
+bounded only by each call's own timeout.
+`STRAGGLER_GRACE_MS`,
+120 seconds after quorum,
+governs the judging rounds in `stage-round.ts` and never reaches the picture gather.
+
+WHAT THE SPREAD COSTS NORMALLY.
+Over every asset in today's logs that drew two or more reader replies,
+20 of them,
+the gap between the first reply and the last runs a median of 11.6 seconds,
+a ninetieth percentile of 45 seconds,
+and a maximum of 66 seconds.
+The two clean three-reader assets of the picture-fix build spread 9.2 and 38.4 seconds.
+A whole picture stage costs 66 seconds for the eight assets of Uekawakuyuurei and 95 seconds for the three of Toka_ls.
+At those numbers a window would save nothing worth having.
+
+WHAT IT COSTS WHEN A READER HANGS.
+The BI4PBV pass of 04:43 UTC spent 367 seconds on four pictures,
+almost all of it on `image1.webp`:
+two readers answered and corroborated at 0.614 overlap,
+and the gather then waited about six minutes for `hf:zai-org/GLM-5.3-Flash`,
+which ended in `StreamCutShortError` and contributed nothing.
+Corroboration needs two readings,
+so those six minutes bought a verdict that was already settled.
+The apparent 2707-second stage in the luxuanwen3 pass of 09:23 is not a second case:
+that log holds two picture stages,
+a 13-second gather and a resume from cache 45 minutes later.
+
+THE OPTION,
+for the owner rather than for me.
+A straggler cut in the gather,
+once two readings are in hand,
+would bound that case at the cut and change nothing else,
+since the median spread is a tenth of any sensible window.
+It costs the third reading on a slow-but-alive reader,
+which is evidence the corroboration rule does not use.
+Against it:
+the gather is the one stage whose output nothing requires,
+so its wall time is only ever a delay,
+and one six-minute delay per corpus pass may not be worth another dial.
+Recorded as measured;
+no dial added.
 
 ## Build plan, transport-independent layers first
 
-In commit order, each unit tested and committed before the next:
+In commit order,
+each unit tested and committed before the next:
 
-1. `provider-name.ts`: `ProviderName` gains `openrouter`; `PROVIDER_ORDER` states the routing preference
-    (Synthetic, Hyper, OpenRouter); helpers over the record shape.
-2. `openrouter-catalog.ts` and `roster-reach.ts`: slugs, `sharedWith` for all nine, vision flags and output ceilings from
-    the listing; `ModelReach` becomes a record keyed by provider; Gemini 3.8 Flash joins the blocklist.
-3. `budget-routing.ts`: `routeProviderFor` walks `PROVIDER_ORDER` over a dryness record and a saturation record;
-    the two-provider dry error is renamed `EveryProviderDryError` (misleading name, CRN) and the old name goes to the local
-    forbidden-strings appendix; `openRouterIsDry` and its meter fields.
-4. `provider-budget.ts` and `budget-hold-wait.ts`: a third meter, `METERS` gains `openrouter=` and `openrouterUsd=`,
-    a refusal hold moves traffic only while some other provider reads wet, the all-dry wait generalizes.
-5. `provider-router.ts`: callers keyed by provider, a bounded re-route (one attempt per provider), the re-ask asks the
-    next wet provider serving the model; the re-ask path splits into its own file at the line budget.
-6. `required-providers.ts`, `run-config.ts`, `budget-sample.ts`: the third key, optional and loud; the run client exposes
-    the dryness record for the seat reader.
-7. `run-seats.ts`: benches derive from where each model would be served (first provider in order that serves it and
-    reads wet): Hyper-slow rules apply when served by Hyper, Kimi-K3 is withheld from every seat when served by
-    OpenRouter, and `gemma-4-26b-a4b-it` takes the third checker seat there so both checker assertions hold per phase.
+1. `provider-name.ts`:
+`ProviderName` gains `openrouter`;
+`PROVIDER_ORDER` states the routing preference (Synthetic,
+    Hyper,
+    OpenRouter);
+    helpers over the record shape.
+2. `openrouter-catalog.ts` and `roster-reach.ts`:
+slugs,
+`sharedWith` for all nine,
+vision flags and output ceilings from the listing;
+    `ModelReach` becomes a record keyed by provider;
+    Gemini 3.8 Flash joins the blocklist.
+3. `budget-routing.ts`:
+`routeProviderFor` walks `PROVIDER_ORDER` over a dryness record and a saturation record;
+    the two-provider dry error is renamed `EveryProviderDryError` (misleading name,
+    CRN) and the old name goes to the local forbidden-strings appendix;
+    `openRouterIsDry` and its meter fields.
+4. `provider-budget.ts` and `budget-hold-wait.ts`:
+a third meter,
+`METERS` gains `openrouter=` and `openrouterUsd=`,
+    a refusal hold moves traffic only while some other provider reads wet,
+    the all-dry wait generalizes.
+5. `provider-router.ts`:
+callers keyed by provider,
+a bounded re-route (one attempt per provider),
+the re-ask asks the next wet provider serving the model;
+    the re-ask path splits into its own file at the line budget.
+6. `required-providers.ts`,
+`run-config.ts`,
+`budget-sample.ts`:
+the third key,
+optional and loud;
+the run client exposes the dryness record for the seat reader.
+7. `run-seats.ts`:
+benches derive from where each model would be served (first provider in order that serves it and reads wet):
+    Hyper-slow rules apply when served by Hyper,
+    Kimi-K3 is withheld from every seat when served by OpenRouter,
+    and `gemma-4-26b-a4b-it` takes the third checker seat there so both checker assertions hold per phase.
     Whether Qwen3.8-27B's rule is "served by Hyper" or "not served by Synthetic" is decided by its OpenRouter median in
     the probe.
-8. `spend-line.ts`, `spend-read.ts`, `spend-cost.ts`: a `cost=` field in USD from the wire, an OpenRouter bucket in
-    USD kept apart from hypercredits; `meter-sample-read.ts` and `meter-report.ts` accept the third field and its absence
-    in older logs.
-9. `openrouter-client.ts` and its credits parser, on the transport the probe picks.
-10. Live verification, then the decision doc, README and runbook.
+8. `spend-line.ts`,
+`spend-read.ts`,
+`spend-cost.ts`:
+a `cost=` field in USD from the wire,
+an OpenRouter bucket in USD kept apart from hypercredits;
+    `meter-sample-read.ts` and `meter-report.ts` accept the third field and its absence in older logs.
+9. `openrouter-client.ts` and its credits parser,
+on the transport the probe picks.
+10. Live verification,
+then the decision doc,
+README and runbook.
