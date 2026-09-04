@@ -13,6 +13,13 @@
 // it still links everywhere the source did, and `destinations-line.ts` prints
 // the answer's counts beside the tally.
 
+export {
+  ARCHIVE_RENDERING_FINDING,
+  BOTH_RENDERINGS_FINDING,
+  type DestinationRenderingVerdict,
+  judgeDestinationRenderings,
+  sameAddress,
+} from './corpus-run/destination-renderings.ts';
 export { destinationsLine, } from './corpus-run/destinations-line.ts';
 export {
   collectDestinations,

@@ -43,6 +43,11 @@ const ALBUM = 'https://example.org/album';
  */
 const PICTURE = 'https://example.org/tabby.jpg';
 
+/**
+ * How an archive rendered the home address another way.
+ */
+const MOVED = 'https://example.net/tabby';
+
 //endregion Fixtures
 
 await describe({
@@ -200,6 +205,55 @@ await describe({
         },);
 
         expect(check.dropped,).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS the archive rendering of a source destination and names it, REFUSES neither',
+      fn: async () => {
+        /**
+         * Source and archive, the archive linking the same reference elsewhere.
+         */
+        const sides = {
+          sourceText: `她的主页：${HOME}。`,
+          archiveText: `Her page is at ${MOVED}.`,
+        };
+
+        /**
+         * Page keeping the archive's rendering.
+         */
+        const kept = droppedDestinations({
+          ...sides,
+          pageText: `Her page is at ${MOVED}, still.`,
+        },);
+
+        expect(kept.dropped,).toStrictEqual([],);
+        expect(kept.findings,).toStrictEqual(['destinations-archive-rendering',],);
+
+        /**
+         * Page carrying neither rendering.
+         */
+        const lost = droppedDestinations({
+          ...sides,
+          pageText: 'Her page is gone.',
+        },);
+
+        expect(lost.dropped,).toStrictEqual([HOME,],);
+        expect(lost.findings,).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'names a downgraded archive with its side',
+      fn: async () => {
+        const check = droppedDestinations({
+          sourceText: `[主页](${HOME})`,
+          pageText: `[her page](${HOME})`,
+          archiveText: `A tabby <Unclosed who kept ${HOME}`,
+        },);
+
+        expect(check.dropped,).toStrictEqual([],);
+        expect(check.findings,).toStrictEqual(['destinations-mdx-downgraded (archive)',],);
       },
     },),
 

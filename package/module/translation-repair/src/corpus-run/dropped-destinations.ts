@@ -7,6 +7,10 @@ import { maskHtmlComments, } from '../mask-html-comments.ts';
 import { maskInvisibleLines, } from '../mask-invisible-lines.ts';
 import { parseBodyTolerant, } from '../parse-document.ts';
 import type { DeepReadonlyData, } from '../readonly-data.ts';
+import {
+  judgeDestinationRenderings,
+  sameAddress,
+} from './destination-renderings.ts';
 
 //region Dropped destinations
 // WHAT THE SOURCE LINKS TO THAT THE PAGE NO LONGER DOES.
@@ -33,6 +37,12 @@ import type { DeepReadonlyData, } from '../readonly-data.ts';
 // (`scripts/build.ts`, `scripts/mdx.ts` there); `#267` tracks reconciling the
 // two. For destinations the difference does not matter: a link is a link under
 // both, and the bare-run scan catches what either tree would not.
+//
+// THE ARCHIVE'S RENDERING COUNTS. Where the archive rendered a reference
+// another way than the original, the page owes one rendering from either
+// side (`destination-renderings.ts`, the owner's decision of 2026-09-04);
+// a reader that compared the page to the source alone refused the luxuanwen3
+// page every slice had passed. Without an archive the source alone governs.
 //
 // A DROPPED DESTINATION IS STRUCTURED EVIDENCE. Production checks this result
 // before writing and pauses as an invariant if stage-local translation failed
@@ -355,26 +365,6 @@ export function markdownDestinations(
 }
 
 /**
- * Address with a trailing slash shed, so two spellings of one address compare
- * equal.
- *
- * @param url - address as written
- *
- * @returns Address without a trailing slash
- *
- * @example
- * ```ts
- * const same = sameAddress({ url: 'https://example.org/a/', },) === sameAddress({ url: 'https://example.org/a', },);
- * ```
- */
-function sameAddress({ url, }: { readonly url: string; },): string {
-  return url.endsWith('/',) ? url.slice(
-    0,
-    -1,
-  ) : url;
-}
-
-/**
  * Every destination a text carries, from both readers, deduped in first-seen
  * order.
  *
@@ -395,7 +385,7 @@ export function collectDestinations(
     side,
   }: {
     readonly text: string;
-    readonly side: 'source' | 'page';
+    readonly side: 'source' | 'page' | 'archive';
   },
 ): {
   readonly urls: readonly string[];
@@ -444,17 +434,21 @@ export function collectDestinations(
 }
 
 /**
- * Source destinations the published page does not carry.
+ * Source destinations the published page does not carry, an archive's
+ * rendering of one accepted in its place.
  *
  * @param sourceText - whole source page
  *
  * @param pageText - whole published page
  *
+ * @param archiveText - whole archive page before the run, whose renderings the
+ * page may keep; absent when the page is judged against the source alone
+ *
  * @returns Both sides' destinations, the dropped ones, and any finding
  *
  * @example
  * ```ts
- * const check = droppedDestinations({ sourceText, pageText, },);
+ * const check = droppedDestinations({ sourceText, pageText, archiveText, },);
  * if (check.dropped.length > 0) l.warn(`${String(check.dropped.length,)} destinations dropped`,);
  * ```
  */
@@ -462,9 +456,11 @@ export function droppedDestinations(
   {
     sourceText,
     pageText,
+    archiveText,
   }: {
     readonly sourceText: string;
     readonly pageText: string;
+    readonly archiveText?: string;
   },
 ): DestinationCheck {
   /**
@@ -484,25 +480,36 @@ export function droppedDestinations(
   },);
 
   /**
-   * Page addresses, compared with the trailing slash shed.
+   * What the archive carried before the run, nothing when there is none.
    */
-  const carried = new Set(page
-    .urls
-    .map(function key(url,): string {
-      return sameAddress({ url, },);
-    },),);
+  const archive = (archiveText === undefined)
+    ? {
+      urls: [],
+      findings: [],
+    }
+    : collectDestinations({
+      text: archiveText,
+      side: 'archive',
+    },);
+
+  /**
+   * What the page owes and lacks, the archive's renderings counted.
+   */
+  const verdict = judgeDestinationRenderings({
+    source: source.urls,
+    page: page.urls,
+    archive: archive.urls,
+  },);
 
   return {
     source: source.urls,
     page: page.urls,
-    dropped: source
-      .urls
-      .filter(function absentFromPage(url,): boolean {
-        return !carried.has(sameAddress({ url, },),);
-      },),
+    dropped: verdict.dropped,
     findings: [
       ...source.findings,
       ...page.findings,
+      ...archive.findings,
+      ...verdict.findings,
     ],
   };
 }

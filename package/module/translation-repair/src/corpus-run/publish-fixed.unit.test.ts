@@ -113,6 +113,17 @@ const MIDDLE_END = MIDDLE_START + ARCHIVE_MIDDLE.length;
  */
 const DECIDED_MIDDLE = '\nShe slept on the counter beside the till, in the sun.\n';
 
+/**
+ * Closing paragraph of an archive that rendered the source's home link at
+ * another address, the shape the either-rendering rule of 2026-09-04 accepts.
+ */
+const CLOSING_LINKED = '\n## Remembered by\n\nEveryone who came in out of the rain, and [her page](https://example.net/tabby).\n';
+
+/**
+ * Archive whose closing carries that rendering.
+ */
+const ARCHIVE_LINKED = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING_LINKED}`;
+
 //endregion The archive this entry starts from
 
 //region Fixtures
@@ -193,6 +204,34 @@ function documentSlices(): readonly ChunkPair[] {
         startOffset: MIDDLE_END,
         endOffset: ARCHIVE.length,
         text: CLOSING,
+      },
+    },),
+  ];
+}
+
+/**
+ * Builds the slices of the archive whose closing carries the moved link.
+ *
+ * @returns Three pairs covering that archive end to end
+ *
+ * @example
+ * ```ts
+ * const slices = linkedDocumentSlices();
+ * ```
+ */
+function linkedDocumentSlices(): readonly ChunkPair[] {
+  return [
+    ...documentSlices().slice(
+      0,
+      2,
+    ),
+    pairOver({
+      target: {
+        sliceIndex: 2,
+        nodes: [],
+        startOffset: MIDDLE_END,
+        endOffset: ARCHIVE_LINKED.length,
+        text: CLOSING_LINKED,
       },
     },),
   ];
@@ -866,6 +905,31 @@ await describe({
         expect(thrown,).toBeInstanceOf(DroppedDestinationError,);
         expect((thrown as DroppedDestinationError).droppedCount,).toBe(1);
         expect(existsSync(path,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'PUBLISHES a page keeping the archive rendering of a source destination, and names it',
+      fn: async () => {
+        await using tree = await throwawayTree();
+
+        /**
+         * Page whose closing keeps the archive's address for the source's home link.
+         */
+        const published = await publishFixedPage({
+          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+          slices: linkedDocumentSlices(),
+          archiveText: ARCHIVE_LINKED,
+          sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
+          entryId: 'BookshopCat',
+          publishDir: tree.publishDir,
+          l: tagged({ tag: 'publish-test', },),
+        },);
+
+        expect(existsSync(published.path,),).toBe(true,);
+        expect(published.destinations.dropped,).toStrictEqual([],);
+        expect(published.destinations.page,).toStrictEqual(['https://example.net/tabby',],);
+        expect(published.destinations.findings,).toStrictEqual(['destinations-archive-rendering',],);
       },
     },),
 

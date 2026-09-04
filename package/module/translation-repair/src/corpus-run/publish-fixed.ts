@@ -279,11 +279,13 @@ export async function publishFixedPage(
   },);
 
   /**
-   * What would-ship page carries of source destinations.
+   * What would-ship page carries of source destinations, the archive's
+   * rendering of one accepted in its place.
    */
   const destinations = droppedDestinations({
     sourceText,
     pageText,
+    archiveText,
   },);
   assertDestinationsComplete({
     entryId,
