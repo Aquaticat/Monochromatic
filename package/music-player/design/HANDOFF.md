@@ -567,6 +567,11 @@ against a 1500 minimum, and Q2c trailing values measure 4214 dark pixels against
 minimum. Rebase them if the recorded AVD state changes. The `dbtp-*` files were freshly
 captured after `f54fc145d`, but their app pixels below the changing native clock match
 the prior capture because the rail correction affects only the full-screen candidates.
+The isolated Helium browser and emulator are stopped. The final blank questionnaire was
+opened through the Helium desktop entry. KWin reports its exact new
+`Music player design: grilling round 1 - Helium` window at 1080 × 1880 on `DP-2`;
+it is non-minimized and a one-shot activation targeted that window. No theme answer has
+been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
