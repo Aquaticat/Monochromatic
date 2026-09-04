@@ -34,6 +34,7 @@ const requiredPaths = [
   'decisions.md',
   'open-questions.md',
   'device-metrics.md',
+  'material-3-compliance.md',
   'candidates/light-a.dc.html',
   'candidates/light-b.dc.html',
   'candidates/light-c.dc.html',
@@ -54,9 +55,9 @@ const renderDimensions = [
   ['questions/render/light-a.png', 2076, 2152],
   ['questions/render/light-b.png', 2076, 2152],
   ['questions/render/light-c.png', 2076, 2152],
-  ['questions/render/dbtp-a.png', 1019, 2152],
-  ['questions/render/dbtp-b.png', 1019, 2152],
-  ['questions/render/dbtp-c.png', 1019, 2152],
+  ['questions/render/dbtp-a.png', 1038, 2152],
+  ['questions/render/dbtp-b.png', 1038, 2152],
+  ['questions/render/dbtp-c.png', 1038, 2152],
 ];
 for (const [path, expectedWidth, expectedHeight] of renderDimensions) {
   const image = readFileSync(resolve(path));
@@ -86,32 +87,67 @@ const pixelAt = ({ path, x, y }) => execFileSync(
   [resolve(path), '-format', `%[pixel:p{${x},${y}}]`, 'info:'],
   { encoding: 'utf8' },
 );
+const countPixelsMatching = ({ path, crop, predicate }) => {
+  const histogram = execFileSync(
+    'magick',
+    [resolve(path), '-crop', crop, '+repage', '-format', '%c', 'histogram:info:-'],
+    { encoding: 'utf8' },
+  );
+  return histogram.split('\n').reduce((count, line) => {
+    const tupleStart = line.indexOf('(');
+    const tupleEnd = line.indexOf(')', tupleStart);
+    const countEnd = line.indexOf(':');
+    if (tupleStart < 0 || tupleEnd < 0 || countEnd < 0) {
+      return count;
+    }
+    const channels = line
+      .slice(tupleStart + 1, tupleEnd)
+      .split(',')
+      .slice(0, 3)
+      .map((channel) => Number(channel));
+    if (!predicate(channels)) {
+      return count;
+    }
+    return count + Number(line.slice(0, countEnd).trim());
+  }, 0);
+};
+const isBlack = ([red, green, blue]) => red === 0 && green === 0 && blue === 0;
+const isDark = ([red, green, blue]) => red < 128 && green < 128 && blue < 128;
 const fullCaptureEdges = [
   {
     path: 'questions/render/light-a.png',
-    topStart: 'srgba(247,242,250,1)',
-    bottomStart: 'srgba(243,237,247,1)',
-    screenEnd: 'srgba(254,247,255,1)',
-    gap: 'srgba(255,255,255,1)',
+    topStart: 'srgba(243,243,250,1)',
+    bottomStart: 'srgba(237,237,246,1)',
+    screenEnd: 'srgba(250,248,254,1)',
+    gap: 'srgba(250,248,254,1)',
   },
   {
     path: 'questions/render/light-b.png',
-    topStart: 'srgba(254,247,255,1)',
-    bottomStart: 'srgba(254,247,255,1)',
-    screenEnd: 'srgba(254,247,255,1)',
+    topStart: 'srgba(250,248,254,1)',
+    bottomStart: 'srgba(250,248,254,1)',
+    screenEnd: 'srgba(250,248,254,1)',
     gap: null,
   },
   {
     path: 'questions/render/light-c.png',
     topStart: 'srgba(255,255,255,1)',
-    bottomStart: 'srgba(247,242,250,1)',
+    bottomStart: 'srgba(243,243,250,1)',
     screenEnd: 'srgba(255,255,255,1)',
-    gap: 'srgba(222,216,224,1)',
+    gap: 'srgba(216,217,228,1)',
   },
 ];
 for (const { path, topStart, bottomStart, screenEnd, gap } of fullCaptureEdges) {
   const selectedRowPixel = pixelAt({ path, x: 1100, y: 350 });
-  const navigationPixel = pixelAt({ path, x: 1038, y: 2112 });
+  const statusIconPixels = countPixelsMatching({
+    path,
+    crop: '300x88+1700+0',
+    predicate: isBlack,
+  });
+  const navigationHandlePixels = countPixelsMatching({
+    path,
+    crop: '700x78+688+2074',
+    predicate: isDark,
+  });
   const edgePixels = [
     pixelAt({ path, x: 0, y: 0 }),
     pixelAt({ path, x: 0, y: 2151 }),
@@ -119,44 +155,85 @@ for (const { path, topStart, bottomStart, screenEnd, gap } of fullCaptureEdges) 
     pixelAt({ path, x: 2075, y: 2151 }),
   ];
   const expectedEdgePixels = [topStart, bottomStart, screenEnd, screenEnd];
-  if (selectedRowPixel !== 'srgba(232,222,248,1)') {
-    throw new Error(`${path} did not replace the Android launch splash with Compose content.`);
+  if (selectedRowPixel !== 'srgba(185,203,255,1)') {
+    throw new Error(`${path} is missing the pinned dynamic primary-container list selection.`);
   }
-  if (navigationPixel === 'srgba(255,255,255,1)' || navigationPixel === 'srgba(254,247,255,1)') {
+  if (statusIconPixels < 1_500) {
+    throw new Error(`${path} is missing the native Android status icons.`);
+  }
+  if (navigationHandlePixels < 2_000) {
     throw new Error(`${path} is missing the native unfolded gesture handle.`);
   }
   if (edgePixels.some((pixel, index) => pixel !== expectedEdgePixels[index])) {
-    throw new Error(`${path} still double-wraps one or more full-height screen sections.`);
+    throw new Error(`${path} breaks full-bleed Material surface-role mapping at a screen edge.`);
   }
   if (gap !== null) {
     const gapPixels = [
-      pixelAt({ path, x: 500, y: 1297 }),
-      pixelAt({ path, x: 500, y: 1298 }),
-      pixelAt({ path, x: 500, y: 1336 }),
-      pixelAt({ path, x: 500, y: 1337 }),
+      pixelAt({ path, x: 500, y: 1420 }),
+      pixelAt({ path, x: 500, y: 1421 }),
+      pixelAt({ path, x: 500, y: 1459 }),
+      pixelAt({ path, x: 500, y: 1460 }),
     ];
     if (gapPixels[0] === gap || gapPixels[1] !== gap || gapPixels[2] !== gap || gapPixels[3] === gap) {
       throw new Error(`${path} must keep exactly one 39px inter-section gap without outer margins.`);
     }
   }
 }
+const centralSpacerPixels = [
+  pixelAt({ path: 'questions/render/light-c.png', x: 1008, y: 1000 }),
+  pixelAt({ path: 'questions/render/light-c.png', x: 1009, y: 1000 }),
+  pixelAt({ path: 'questions/render/light-c.png', x: 1067, y: 1000 }),
+  pixelAt({ path: 'questions/render/light-c.png', x: 1068, y: 1000 }),
+];
+const surfaceDimPixel = 'srgba(216,217,228,1)';
+if (
+  centralSpacerPixels[0] === surfaceDimPixel
+  || centralSpacerPixels[1] !== surfaceDimPixel
+  || centralSpacerPixels[2] !== surfaceDimPixel
+  || centralSpacerPixels[3] === surfaceDimPixel
+) {
+  throw new Error('questions/render/light-c.png must keep the centered 59px Material expanded-layout spacer.');
+}
 for (const path of renderDimensions.slice(3).map(([entryPath]) => entryPath)) {
-  const statusPixel = pixelAt({ path, x: 830, y: 40 });
+  const statusIconPixels = countPixelsMatching({
+    path,
+    crop: '300x88+700+0',
+    predicate: isBlack,
+  });
+  const navigationHandlePixels = countPixelsMatching({
+    path,
+    crop: '300x78+0+2074',
+    predicate: isDark,
+  });
   const selectedRowPixel = pixelAt({ path, x: 500, y: 350 });
-  const navigationPixel = pixelAt({ path, x: 100, y: 2112 });
-  const bottomEndPixel = pixelAt({ path, x: 1018, y: 2151 });
-  if (statusPixel !== 'srgba(0,0,0,1)') {
+  const spacerPixels = [
+    pixelAt({ path, x: 29, y: 1000 }),
+    pixelAt({ path, x: 30, y: 1000 }),
+  ];
+  const bottomEndPixel = pixelAt({ path, x: 1037, y: 2151 });
+  if (statusIconPixels < 1_500) {
     throw new Error(`${path} is missing the native Android status icons.`);
   }
-  if (selectedRowPixel !== 'srgba(232,222,248,1)') {
-    throw new Error(`${path} did not replace the Android launch splash with Compose content.`);
+  if (selectedRowPixel !== 'srgba(185,203,255,1)') {
+    throw new Error(`${path} is missing the pinned dynamic primary-container list selection.`);
   }
-  if (navigationPixel === 'srgba(255,255,255,1)') {
+  if (navigationHandlePixels < 2_000) {
     throw new Error(`${path} is missing the native unfolded gesture handle crop.`);
   }
-  if (bottomEndPixel !== 'srgba(255,255,255,1)') {
-    throw new Error(`${path} still double-wraps the full-height track surface.`);
+  if (spacerPixels[0] !== surfaceDimPixel || spacerPixels[1] === surfaceDimPixel) {
+    throw new Error(`${path} must retain 30px of the centered Material pane spacer in its physical half crop.`);
   }
+  if (bottomEndPixel !== 'srgba(255,255,255,1)') {
+    throw new Error(`${path} must keep its Material track surface full bleed at the outer edge.`);
+  }
+}
+const trailingValuePixels = countPixelsMatching({
+  path: 'questions/render/dbtp-c.png',
+  crop: '180x1232+820+468',
+  predicate: isDark,
+});
+if (trailingValuePixels < 4_000) {
+  throw new Error('questions/render/dbtp-c.png is missing complete true-peak values in the Material trailing slot.');
 }
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const deviceRasterSelector = '.preview-open img,\n.zoom-image {';
@@ -198,6 +275,10 @@ const forbiddenFragments = [
   'https://',
   'class="foldable"',
   'class="track-study"',
+  'prototype commit 6e8f248c5',
+  'data-preview-width="418"',
+  'data-source-width="1019"',
+  'Value only on playing row',
   '@@IMAGE_',
 ];
 const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
@@ -217,30 +298,32 @@ const requiredFragments = [
   'id="zoom-actual"',
   'data-preview-width="852"',
   'data-preview-height="883"',
-  'data-preview-width="418"',
+  'data-preview-width="426"',
   'data-source-width="2076"',
   'data-source-height="2152"',
-  'data-source-width="1019"',
+  'data-source-width="1038"',
   'class="device-frame"',
   'data-frame-kind="full"',
   'data-frame-kind="right-half"',
   'class="device-screen"',
   'class="device-camera"',
   'Native Compose capture from Pixel 9 Pro Fold emulator',
+  'prototype commit 12e99097d',
+  'official Material 3 components',
+  'dynamic role mappings',
   'Android 17 API 37',
   '--device-body: #262624;',
   'aspect-ratio: 907 / 937;',
   'aspect-ratio: 454 / 937;',
-  'padding-inline-start: 1.7621%',
   'const fullFrameWidth = 907;',
   'const halfFrameWidth = 454;',
   'const frameHeight = 937;',
   'data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
-  'data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
-  'data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
-  'data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half"',
-  'data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half"',
-  'data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half"',
+  'data-preview-title="1b: One flat surface with dividers" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
+  'data-preview-title="1c: Tonal panes with one rail divider" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
+  'data-preview-title="3a: One secondary treatment" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
+  'data-preview-title="3b: Stronger true-peak value" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
+  'data-preview-title="3c: Trailing true-peak column" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
   'grid-template-columns: repeat(3, minmax(0, 1fr))',
   'Copy answers',
 ];

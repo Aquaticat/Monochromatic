@@ -321,7 +321,6 @@ textarea:focus-visible {
   inset-block: 2.8815%;
   inset-inline-start: 0;
   inset-inline-end: 6.1674%;
-  padding-inline-start: 1.7621%;
   border-start-end-radius: 9.86% 4.76%;
   border-end-end-radius: 9.86% 4.76%;
 }
@@ -633,6 +632,8 @@ footer {
       <p class="lede">
         The dark theme stays true black. This round decides the light half of “follow the OS.”
         Every preview places a native Compose capture from the unfolded Pixel 9 Pro Fold emulator inside its measured frame.
+        The candidates use official Material 3 components, dynamic role mappings, type, targets and expanded-layout geometry
+        audited against the supplied 2026-09-03 Google archive.
         Android 17 API 37 supplies the status and gesture-navigation bars.
         Open any preview to inspect the screen content at the cited dimensions.
       </p>
@@ -645,10 +646,11 @@ footer {
       <h2 id="q1-title">Q1: What should separate surfaces in light mode?</h2>
       <p class="question-intro">
         The unfolded Pixel 9 Pro Fold is rendered at 852×883dp with the settled picker and transport on the left,
-        a 16dp seam,
+        Material’s centered 24dp expanded-layout spacer,
         and tracks on the right.
         Picker, transport and track section surfaces meet their screen edges without an extra rounded wrapper.
-        Only the light-surface hierarchy changes.
+        App bars, buttons, lists, icons, slider, type and target geometry stay identical;
+        only the Material surface-role hierarchy and decorative dividers change.
       </p>
 
       <div class="options-scroll" role="group" tabindex="0" aria-label="Q1 visual comparison, scroll horizontally on narrow windows">
@@ -665,7 +667,7 @@ footer {
             <button class="preview-open" type="button" data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
               <span class="device-frame" data-frame-kind="full">
                 <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-a, prototype commit 6e8f248c5" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1a, using tonal surfaces without outlines and Android system bars">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-a, prototype commit 12e99097d" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1a, using tonal surfaces without outlines and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
@@ -692,14 +694,14 @@ footer {
               <input type="radio" name="lightSeparation" value="1b" aria-labelledby="q1-1b-title" required>
               <span class="option-title">
                 <span class="option-code">1b</span>
-                <strong id="q1-1b-title">One flat surface with hairlines</strong>
-                <span class="option-summary">Direct translation of dark mode</span>
+                <strong id="q1-1b-title">One flat surface with dividers</strong>
+                <span class="option-summary">Outline-variant separators on one surface role</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
+            <button class="preview-open" type="button" data-preview-title="1b: One flat surface with dividers" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
               <span class="device-frame" data-frame-kind="full">
                 <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-b, prototype commit 6e8f248c5" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1b, using hairlines on one flat surface and Android system bars">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-b, prototype commit 12e99097d" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1b, using hairlines on one flat surface and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
@@ -713,7 +715,7 @@ footer {
               </ul>
               <div><strong>Cons</strong></div>
               <ul>
-                <li>Borders around panes, controls and rows create grid noise.</li>
+                <li>Dividers at the pane, rail and every row create grid noise.</li>
                 <li>Light mode feels more administrative than the other treatments.</li>
               </ul>
               <p class="my-read"><strong>My read</strong>Third choice. Robust, but it spends too much visual ink.</p>
@@ -725,14 +727,14 @@ footer {
               <input type="radio" name="lightSeparation" value="1c" aria-labelledby="q1-1c-title" required>
               <span class="option-title">
                 <span class="option-code">1c · recommended</span>
-                <strong id="q1-1c-title">Tonal panes with one rail hairline</strong>
-                <span class="option-summary">Dimmed window, quiet raised panes</span>
+                <strong id="q1-1c-title">Tonal panes with one rail divider</strong>
+                <span class="option-summary">Surface-dim ground and raised container roles</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
+            <button class="preview-open" type="button" data-preview-title="1c: Tonal panes with one rail divider" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
               <span class="device-frame" data-frame-kind="full">
                 <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-c, prototype commit 6e8f248c5" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1c, using tonal panes, one rail hairline, and Android system bars">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-c, prototype commit 12e99097d" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1c, using tonal panes, one rail hairline, and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
@@ -743,11 +745,11 @@ footer {
               <ul>
                 <li>Creates the clearest hierarchy with little linework.</li>
                 <li>Keeps the track list quiet while separating picker and transport.</li>
-                <li>Uses a hairline only where the rail needs one.</li>
+                <li>Uses an outline-variant divider only where the rail needs one.</li>
               </ul>
               <div><strong>Cons</strong></div>
               <ul>
-                <li>Mixes tonal separation with one outline.</li>
+                <li>Mixes tonal separation with one decorative divider.</li>
                 <li>The dim window gives light mode a heavier surrounding field.</li>
               </ul>
               <p class="my-read"><strong>My read</strong>First choice. Best hierarchy for the amount of visual ink used.</p>
@@ -759,20 +761,21 @@ footer {
       <p class="ranking">
         <strong>Ranking: 1c &gt; 1a &gt; 1b</strong>
         1c beats 1a because its pane hierarchy survives at a glance.
-        1a beats 1b because its softer separation avoids turning every row and region into a box.
+        1a beats 1b because its softer separation avoids adding a divider to every row and region.
       </p>
     </section>
 
     <section class="question" aria-labelledby="q2-title">
       <h2 id="q2-title">Q2: How prominent should true-peak values be in light mode?</h2>
       <p class="question-intro">
-        Each track-pane detail uses the measured 418×883dp right half of the unfolded display.
+        Each track-pane detail uses the measured 426×883dp physical right half of the unfolded display:
+        12dp of the centered spacer plus the 414dp detail pane.
         Its frame is a crop from the fold center to the outer right edge,
         not a fictitious narrow phone.
-        The row stays two lines and keeps duration plus true peak.
+        Every Material list item keeps duration plus true peak.
         Native Android system bars remain in the crop,
         and the track surface continues to the screen edges without a redundant rounded wrapper.
-        Only emphasis changes.
+        Only supporting-value position and emphasis change.
       </p>
 
       <div class="options-scroll" role="group" tabindex="0" aria-label="Q2 visual comparison, scroll horizontally on narrow windows">
@@ -786,14 +789,14 @@ footer {
                 <span class="option-summary">Duration and true peak share a colour</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
+            <button class="preview-open" type="button" data-preview-title="3a: One secondary treatment" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half">
               <span class="device-frame" data-frame-kind="right-half">
                 <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-a, prototype commit 6e8f248c5" src="@@IMAGE_DBTP_A@@" width="418" height="883" alt="Native Compose right-half capture at 418 by 883dp with duration and true peak in one secondary treatment and Android system bars">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-a, prototype commit 12e99097d" src="@@IMAGE_DBTP_A@@" width="426" height="883" alt="Native Compose physical right-half capture at 426 by 883dp with duration and true peak in one secondary treatment and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Native Compose right half · Android 17 API 37 · 418×883dp · 1019×2152px</span>
+              <span class="preview-label">Native Compose right half · Android 17 API 37 · 426×883dp · 1038×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -820,14 +823,14 @@ footer {
                 <span class="option-summary">Duration quiet, true peak at 500 weight</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
+            <button class="preview-open" type="button" data-preview-title="3b: Stronger true-peak value" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half">
               <span class="device-frame" data-frame-kind="right-half">
                 <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-b, prototype commit 6e8f248c5" src="@@IMAGE_DBTP_B@@" width="418" height="883" alt="Native Compose right-half capture at 418 by 883dp with stronger true-peak values and Android system bars">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-b, prototype commit 12e99097d" src="@@IMAGE_DBTP_B@@" width="426" height="883" alt="Native Compose physical right-half capture at 426 by 883dp with stronger true-peak values and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Native Compose right half · Android 17 API 37 · 418×883dp · 1019×2152px</span>
+              <span class="preview-label">Native Compose right half · Android 17 API 37 · 426×883dp · 1038×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -850,32 +853,32 @@ footer {
               <input type="radio" name="peakEmphasis" value="3c" aria-labelledby="q2-3c-title" required>
               <span class="option-title">
                 <span class="option-code">3c</span>
-                <strong id="q2-3c-title">Value only on playing row</strong>
-                <span class="option-summary">Duration alone on every other row</span>
+                <strong id="q2-3c-title">Trailing true-peak column</strong>
+                <span class="option-summary">Duration supports the title; true peak uses the trailing slot</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
+            <button class="preview-open" type="button" data-preview-title="3c: Trailing true-peak column" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half">
               <span class="device-frame" data-frame-kind="right-half">
                 <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-c, prototype commit 6e8f248c5" src="@@IMAGE_DBTP_C@@" width="418" height="883" alt="Native Compose right-half capture at 418 by 883dp with true peak only on the playing row and Android system bars">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-c, prototype commit 12e99097d" src="@@IMAGE_DBTP_C@@" width="426" height="883" alt="Native Compose physical right-half capture at 426 by 883dp with every true-peak value aligned in the Material list trailing slot and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Native Compose right half · Android 17 API 37 · 418×883dp · 1019×2152px</span>
+              <span class="preview-label">Native Compose right half · Android 17 API 37 · 426×883dp · 1038×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
               <ul>
-                <li>Produces the quietest list.</li>
-                <li>Keeps the current track’s value visible.</li>
+                <li>Makes every true-peak value vertically scannable.</li>
+                <li>Uses the Material list’s intended trailing-text slot.</li>
+                <li>Keeps all computed values available.</li>
               </ul>
               <div><strong>Cons</strong></div>
               <ul>
-                <li>Prevents comparison across tracks.</li>
-                <li>Hides already-computed information from its expected location.</li>
-                <li>Conflicts with the settled two-line row content.</li>
+                <li>Reduces the width available to long track titles.</li>
+                <li>Reads more like the previously rejected table treatment.</li>
               </ul>
-              <p class="my-read"><strong>My read</strong>Reject. The visual calm is not worth losing the values.</p>
+              <p class="my-read"><strong>My read</strong>Third choice. Very scannable, but too table-like for this list.</p>
             </div>
           </article>
         </div>
@@ -884,7 +887,7 @@ footer {
       <p class="ranking">
         <strong>Ranking: 3b &gt; 3a &gt; 3c</strong>
         3b beats 3a because it makes true peak scannable without structural cost.
-        3a beats 3c because retaining all values preserves the settled row contract.
+        3a beats 3c because keeping both values together preserves more width for track titles.
       </p>
     </section>
 
