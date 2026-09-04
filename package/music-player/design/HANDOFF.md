@@ -432,7 +432,15 @@ the complete frame after the left-side correction. The corrected blank form was 
 reopened through the Helium desktop entry. KWin reports its new non-minimized
 `Music player design: grilling round 1 - Helium` window at 1080 × 1880 on `DP-3`;
 a one-shot activation targeted that exact window. It is ready for real theme answers,
-and no theme answer has been recorded yet.
+and no theme answer has been recorded yet. The user then rejected the entire corrected
+set because none of its designs follows all applicable Android, Google, and Material
+Design 3 guidance. They supplied a local SingleFile archive rooted at
+`/var/home/user/Downloads/m3.material.io/` as the required source. Treat this as a
+cross-candidate compliance correction, not another visual-preference fork: audit the
+archive, map the applicable rules to the current Compose implementation, rebuild every
+candidate so each option is guideline-compliant, then recapture, re-embed, re-verify,
+and reopen a blank questionnaire. Do not ask the user to choose among any knowingly
+non-compliant designs.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
