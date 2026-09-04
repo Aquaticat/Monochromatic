@@ -311,7 +311,13 @@ higher-fidelity delivery path: capture the Compose candidates and embed those em
 screenshots in the self-contained HTML questionnaire. The old HTML Design Component
 rasters are no longer the visual source for this round; keep their candidate files as
 history, but point the questionnaire provenance and render pipeline at the Compose
-captures.
+captures. The live emulator is now verified in its unfolded posture: Android 17 API
+37 reports a 2076 × 2152 display at 390dpi, a 36dp status-bar resource and frame, a
+32dp gesture-navigation inset, and the Pixel overlay's 136px top-right cutout bound.
+A 2076 × 2152 Settings capture shows the native large-screen gesture handle and status
+icons. It also proves that `screencap` omits the physical camera hole even while Window
+Manager reports the cutout, so the measured questionnaire frame must retain its camera
+overlay. `device-metrics.md` records the commands, source paths, commit and arithmetic.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

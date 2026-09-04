@@ -62,9 +62,61 @@ questionnaire. They were used only for measurement and side-by-side inspection. 
 CSS frame is opaque vector geometry; each source PNG remains rectangular screen
 content placed inside its opening.
 
+The later `gsmarena_052.jpg` reference shows the unfolded screen with Android system
+UI. It confirms that time and notification icons occupy the left side, connectivity
+and battery icons stop before the top-right inner camera, and the status bar is
+transparent over screen content. It also carries a visible publisher watermark and is
+not embedded.
+
 Source: [Google Pixel phone hardware tech specs][pixel-hardware-specs].
 
 [pixel-hardware-specs]: https://support.google.com/pixelphone/answer/7158570?hl=en
+
+---
+
+## Android system UI geometry
+
+A locally installed Pixel 9 Pro Fold emulator provides the user-boundary check. The
+probe used Android 17, API 37, build `CE2A.260420.019`, at the AVD's unfolded posture.
+`adb shell wm size` reports `2076x2152`; `adb shell wm density` reports `390`, or
+`2.4375` physical pixels per dp.
+
+The emulator's live `WindowInsetsStateController` reports:
+
+- Status-bar frame: `[0,0][2076,88]`, approximately 36dp high.
+- Gesture-navigation frame: `[0,2074][2076,2152]`, exactly 78px or 32dp high.
+- Display-cutout bounding rectangle: `[1940,0][2076,136]`, which requires about 56dp
+  of top safe inset where app controls could otherwise meet the camera.
+
+Live resource lookup confirms `status_bar_height_portrait = 36dp` and
+`navigation_bar_gesture_height = 32dp`. Compose candidates must therefore use native
+`WindowInsets.safeDrawing` rather than hard-coded 36dp and 32dp padding: the combined
+safe inset also accounts for the deeper 136px camera bounding rectangle.
+
+The device overlay independently supplies the target geometry. At LineageOS
+`android_device_google_comet` commit `dbc4a6cc10414e004fdd24641b0182e9eaf2f5c6`,
+`overlay/FrameworkResOverlayVendorComet/res/values-sw820dp/dimens.xml:9-22` sets all
+inner-display status-bar heights to 36dp and rounded-corner content padding to 32dp.
+`overlay/FrameworkResOverlayVendorComet/res/values/config.xml:75-83` defines the inner
+camera as a 79px-diameter circle centred at `(1987.5, 80)` and its safe bounding
+rectangle as the top-right 136 × 136px region.
+
+At 390dpi, that physical camera path is approximately 32.41dp in diameter, centred at
+`(815.38dp, 32.82dp)`. Its edge sits approximately 20.41dp from the right screen edge.
+The questionnaire's hardware overlay uses these values instead of the earlier
+photograph estimate of 28dp.
+
+A live Settings screenshot confirms current Pixel large-screen rendering. Its gesture
+handle has a 536 × 10px solid core, approximately 220 × 4dp, with about 14dp between
+its solid lower edge and the screen edge. This differs from the base SystemUI
+`108 × 4dp` phone handle resource because the unfolded large-screen taskbar owns the
+rendered handle. Do not reproduce either resource manually: emulator screenshots own
+all system-bar pixels.
+
+Android `screencap` does not paint the physical camera hole into its PNG. The Settings
+capture's pixel at the configured camera centre remains the app background even though
+Window Manager reports the cutout. The questionnaire must therefore keep one hardware
+camera overlay in its measured frame while removing any simulated system bars.
 
 ---
 
