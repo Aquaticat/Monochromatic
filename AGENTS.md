@@ -384,6 +384,25 @@ OPI:
 ODM:
  Option examples must demonstrate every concept the question asks the user to compare.
 
+HFM:
+ Visual-design questions:
+ render one self-contained HTML form,
+ verify it,
+ then open it in Helium.
+Include built options,
+ pros/cons,
+ ranking,
+ and final free text.
+
+HUP:
+ Ongoing design sessions:
+ update current handover after each correction,
+ answer,
+ decision,
+ candidate,
+ and verification;
+never wait for session end.
+
 OCG:
  Output cardinality never determines option occurrence grammar.
 Sketch token encoding before asserting repeated,
