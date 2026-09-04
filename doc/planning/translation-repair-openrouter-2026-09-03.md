@@ -582,6 +582,30 @@ BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two
     ModelRun reads degraded, as Kimi-K3 is withheld; or un-ignore CoreWeave at the account level and
     probe it for conformance, which would give the schema request a second zero-data-retention endpoint.
 
+## The 429 hold under concurrency, 2026-09-04, 04:54 to 05:18 UTC
+
+Issue 474's fix (`83e8dfa90`: a refusal while the meter reads wet holds the provider out for 30 s rather
+than 300 s, and a both-dry reading waits out the shorter hold once) had unit tests and no live exercise.
+Two keyword233 passes with Synthetic wet and Hyper unset (`~/temp/agent/kw-conc-a-20260904.log`,
+`kw-conc-b-20260904.log`, runs dirs beside them) ran concurrently with the Synthetic-wet Toka_ls pronoun
+re-run and two OpenRouter-alone picture passes: three passes on Synthetic at once, at overlap 4.
+
+- Synthetic answered `HTTP 429` five times, all in arm a, all between 05:04:15 and 05:04:18 UTC, on
+    Qwen3.8-27B calls (the 40-character stream line before each names the model); the retry ladder
+    absorbed them at attempts 1 to 3 and no call reached the fifth failure, so `markRefused` never ran.
+    Arm b and Toka_ls saw none. `syntheticFiveHour` read 2737.8 of 2750 remaining throughout, so these
+    were the concurrency limit, not the allowance.
+- Both arms settled: a in 1,409,536 ms (23.5 min, 0.4202 USD on OpenRouter, 123 Synthetic and 145
+    OpenRouter spend lines, 3 cut streams, 3 voices never heard), b in 1,273,689 ms (21.2 min, 0.3103 USD,
+    119 and 138, 5 cut, 6 never heard); verify-published 1 of 1 each; no `EveryProviderDryError`, no
+    `SPEND CEILING` line.
+- **What this does and does not show.** Three Synthetic-wet passes at overlap 4 provoke the limit only in
+    short bursts the ladder rides out, so the hold's 30 s branch was not reached live; its behaviour rests
+    on `provider-budget.unit.test.ts` and `budget-hold-wait.unit.test.ts`. The 2026-09-02 incident needed
+    two passes at overlap 4 with eight-wide reader rounds AND a Synthetic five-hour meter at 2729 of 2750
+    used; today's meter was almost untouched. Reaching the hold live would take the allowance near its
+    edge, which is not a state to manufacture on purpose.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
