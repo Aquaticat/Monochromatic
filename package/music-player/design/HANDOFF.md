@@ -704,7 +704,39 @@ Prototype commit `89a9f7033` now provides three native full-device keys while ke
 `divider-c` makes both white. The new form defines those elements in ordinary language,
 asks one radio question, requires all remaining corrections or `None`, and generates an
 explicit paste-back answer. Native capture, integration, verification, and Helium
-opening remain.
+opening remain. All nine prototype captures then completed, including three new
+2076 × 2152px divider alternatives. The clarification trio was copied into the main
+worktree and embedded in the rebuilt form. Pixel probes confirm: D1 has a white rail
+line and tonal center; D2 has an `outlineVariant` rail line and white center; D3 has
+both white. Three independent throwaway positive controls each alter one defining
+pixel and trigger the candidate-specific guard; restored captures pass. Package build,
+lint, and unit contracts pass.
+
+Helium verification at DPR 2 now passes for the proper clarification form. Its first
+viewport states the purpose, a numbered procedure, plain-language definitions of the
+rail line and center spacer, and the exact copy-back path before any option. All three
+native images decode at 2076 × 2152px and remain in one row. D2's modal measures
+907 × 937 CSS px around an 852 × 883px screen at 100%; Zoom in, out, Fit, native pixels,
+reset, scroll, and `Close preview and answer` pass. At 390 × 844, the cards stay on one
+992px row in a 316px independent scroller that traverses 676px while the page stays
+390px wide. Blank validation focuses the divider radio. Every radio path, free text,
+prepare, immediate copy, download, and clear pass with synthetic output
+`Divider center-white / Other corrections: None`, then remain cleared. The original
+smooth scroll made an immediate Copy click miss its moving target; changing it to
+non-animated scrolling fixed the user path and the repeated immediate probe copies the
+exact prepared text. Offline loading has no external URL and all three images decode;
+forced host dark mode leaves the form light.
+
+The closed page has no axe WCAG A/AA violations or incomplete checks. The first modal
+run correctly found `scrollable-region-focusable` on `#zoom-stage` and an
+`aria-prohibited-attr` incomplete after its first label-only repair. Making the region
+focusable and assigning `role="region"` fixes both. The final modal has no violation
+and only six known `bgOverlap` contrast incompletes. Direct computed ratios are
+17.075:1 and 6.441:1; the updated troubleshooting document records this variant.
+Labels, names, alternatives, unique IDs, initial modal focus, and 48px targets pass.
+Browser errors and console output are empty. Close the isolated browser and emulator,
+then open this exact cleared form through normal Helium with the instructional page,
+not a preview modal, visible first.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
