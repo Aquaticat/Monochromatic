@@ -149,7 +149,7 @@
   </div>
 
   <div style="display:flex;flex-direction:column;gap:6px;flex:0 0 auto">
-    <div style="display:flex;align-items:baseline;gap:8px;color:var(--md-sys-color-on-surface, #1D1B20)"><span style="font-size:15px;font-weight:500">1c</span><span style="font-size:11px;font-family:ui-monospace,monospace;opacity:.75">ramp for panes, one hairline at the rail</span></div>
+    <div style="display:flex;align-items:baseline;gap:8px;color:var(--md-sys-color-on-surface, #1D1B20)"><span style="font-size:15px;font-weight:500">1c</span><span style="font-size:11px;font-family:ui-monospace,monospace;opacity:.75">chosen · ramp with one white rail divider</span></div>
     <div style="width:{{ boxW }};height:{{ boxH }};overflow:hidden">
       <div style="width:852px;height:{{ frameH }};transform:scale({{ scale }});transform-origin:top left;display:flex;gap:16px;padding:16px;box-sizing:border-box;background:var(--md-sys-color-surface-dim, #DED8E0);color:var(--md-sys-color-on-surface, #1D1B20)">
         <div style="flex:0 0 402px;display:flex;flex-direction:column;gap:16px;min-width:0">
@@ -158,7 +158,7 @@
               <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:20px;border:1px solid var(--md-sys-color-outline, #79747E);font-size:14px;font-weight:500"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Open</div>
             </div>
             <div style="flex:1 1 auto;min-height:0;display:flex">
-              <div style="flex:0 0 48px;min-height:0;overflow:auto;display:flex;flex-direction:column;border-right:1px solid var(--md-sys-color-outline-variant, #CAC4D0);scrollbar-width:none">
+              <div style="flex:0 0 48px;min-height:0;overflow:auto;display:flex;flex-direction:column;border-right:1px solid #FFFFFF;scrollbar-width:none">
                 <sc-for list="{{ rail }}" as="c" hint-placeholder-count="27">
                   <div onClick="{{ c.pick }}" style="width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;font-size:14px;font-weight:500;cursor:pointer;color:{{ c.fgL }}"><span style="width:32px;height:32px;border-radius:16px;display:grid;place-items:center;background:{{ c.bgL }}">{{ c.label }}</span></div>
                 </sc-for>
@@ -270,7 +270,7 @@ class Component extends DCLogic {
         title: t[0], sub: t[1] + " · " + t[2] + " dBTP",
         bgL: i === 0 ? "var(--md-sys-color-secondary-container, #E8DEF8)" : "transparent"
       })),
-      caption: "LIGHT THEME — three ways to separate surfaces, all built from the bound MD3 light roles (no invented colours). Dark stays TRUE BLACK; this is only the light half of \"follow the OS\". 1a all-tonal, zero outlines · 1b one flat surface + 1dp hairlines, the direct translation of the dark design · 1c ramp on a dimmed window, hairline only at the rail seam. Click the rail and the names."
+      caption: "LIGHT THEME — D34 selects 1c with one explicit override: the rail-seam divider is white. Dark stays TRUE BLACK; this is only the light half of \"follow the OS\". 1a all-tonal, zero outlines · 1b one flat surface + 1dp hairlines · 1c chosen ramp on a dimmed window, white divider only at the rail seam."
     };
   }
 }
