@@ -434,6 +434,11 @@ dp,
 current scale + reset.
 Never upscale a dp-sized bitmap.
 
+BZF:
+ Device visuals stay opaque.
+Rounded screens need solid device backing inside rectangular raster;
+never clip raster to reveal surrounding surface.
+
 HUP:
  Ongoing design sessions:
  update current handover after each correction,

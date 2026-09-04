@@ -120,8 +120,10 @@ project holds itself to.
   exercise its answer controls before opening it for the user. Every device mock must
   use a raster captured at cited physical panel resolution, display at cited dp size
   at 100%, and show physical px, logical dp, current scale and a reset control. Never
-  upscale a dp-sized bitmap. A chat-only round is not a delivered design question
-  (review-notes 5i and standing standard 9).
+  upscale a dp-sized bitmap. Keep the device silhouette opaque: rounded display
+  corners need solid device backing inside the rectangular raster, never clipping
+  that reveals the questionnaire surface. A chat-only round is not a delivered design
+  question (review-notes 5i and standing standard 9).
 - **Update this handover continuously.** Record every correction, answer, decision,
   candidate and verification result when it happens; never wait for the session end
   (review-notes standing standard 10).
@@ -245,9 +247,14 @@ KWin window probe measured the user's visible questionnaire tab on output `DP-2`
 DPR 2, matching the Helium verification profile. At 100%, the full mock uses
 1704×1766 display pixels backed by 2076×2152 source pixels. The new
 `render:candidates` mise task reproduced every raster byte-for-byte through Helium CDP
-and rebuilt the questionnaire, preserving a durable regeneration path. Final
-user-boundary verification of the relabelled form remains before reopening. No theme
-answer has been recorded.
+and rebuilt the questionnaire, preserving a durable regeneration path. Before
+reopening, the user caught another fidelity defect: real devices have no holes that
+reveal what is behind them. The form clips both card and dialog images with CSS border
+radii, and all three half-screen rasters place the questionnaire-like `#DED8E0`
+capture background in their rounded corner pixels. The red probe names both clipping
+selectors and measures those corner pixels as `rgb(221, 215, 223)`. Remove form-level
+raster clipping, render rounded display corners over solid device backing, and verify
+all card and dialog corners. No theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
