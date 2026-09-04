@@ -232,3 +232,21 @@ tracking, and both were in the pipeline's own screens rather than in the corpus.
 again on the fixed build (15:25 UTC) and reads both fixes at once. What would move the belief is unchanged:
 that entry shipped and read clean, then the two passes the earlier sections ask for, which need the
 OpenRouter balance topped up (about 5.3 USD at launch, one pass).
+
+## What Uekawakuyuurei on the picture-fix build showed (2026-09-04, 15:25 UTC)
+
+Shipped in 53 minutes and 3.84 USD, read in `doc/planning/translation-repair-openrouter-2026-09-03.md`
+("Uekawakuyuurei on the picture-fix build"). Both of the day's fixes held on a page: the three pictures
+that had stopped the entry on every roster were confirmed textless on the first ask, and the subject the
+source calls `ta` is they, them and their 21 times with no bare pronoun left. The page is publishable.
+
+WHAT IT FOUND: nothing new in the pipeline's screens. The balance ran out under consolidation, which is not
+a pipeline finding but did show the every-provider-dry path live for the first time: the run settled on
+its lane-contest winners rather than holding or erroring, with the refusals counted per seat.
+
+THE READING: closer, still not ready. Three entries have now shipped and read clean on the day's rules
+(luxuanwen3, SS3B_0016, Uekawakuyuurei), and the last found no new class. What would move the belief is
+the two passes the earlier sections ask for, a double-quoted-paths entry not yet run (yulianNyanner, Arita
+or MTF_0615) and the comma-shaped one-line entry, each read the same way, plus one entry whose
+consolidation runs unstarved end to end on this build. All three wait on the OpenRouter top-up: the balance
+reads 0.36 USD.

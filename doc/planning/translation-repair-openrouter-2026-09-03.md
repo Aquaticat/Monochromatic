@@ -859,6 +859,43 @@ Relaunched at 15:25 UTC on `d6ffc4812` into `~/temp/agent/Uekawakuyuurei-picture
 alone, to read both today's fixes on one entry: the pronoun rule on a `ta` subject and the textless
 confirmation on three pictures. Balance about 5.3 USD at launch, which is one pass.
 
+## Uekawakuyuurei on the picture-fix build, 2026-09-04, 15:25 UTC: ships, and the balance runs out under it
+
+`TALLY Uekawakuyuurei status=SETTLED slices=7 ... pageChanged=5 pageSilent=0 selection=contested ms=3190452`
+(53 minutes, 524 calls, 3.84 USD by the `cost=` fields), `DESTINATIONS Uekawakuyuurei source=4 page=4
+dropped=0`; verify-published `wordings=7 silent=0 chars=2774=expected missing=0`. Tip `d6ffc4812`, pipeline
+`sha256-tree-v1:646ad738`.
+
+BOTH FIXES READ CLEAN ON THE PAGE. Pictures: `IMG_1308.webp` confirmed textless by 3 of 3 readers on the first
+ask, `img197.webp` by 2 of 3, `img370.webp` by 3 of 3 (all three short readings of the hull number), no re-asks,
+no visual-evidence stop; the `PhotoScroll` and `ChannelBackupButton` lines ship as written. Pronouns: the page
+says they, them or their 21 times for Ying, he or she never, and carries no bare `ta`; the source writes
+`ta` 12 times and `Ta` once. No `untranslated as` finding was raised in any lane, so the house rule alone
+carried it.
+
+THE FRONT MATTER went as the guard decision of 2026-09-02 provides. The translate lane rendered
+`name: Hotaru`, `alias: Ah Hotaru, Hotaru-chan, Akigumo`, `location: China`; the archive has no
+`location`, so the shape rule excluded that candidate from the contest (`lane-contest-eligibility-floor`),
+the standing lacked endorsement, and the single consolidation attempt kept the archive's
+`name: uekawakuyuurei`, `alias: Ying (Hotaru), Qiu Yun (Akigumo)`. The contest's log line named the floor
+and not the finding, which task 78 of this session corrects.
+
+THE BALANCE RAN OUT UNDER CONSOLIDATION. The lanes finished at 16:06 with 1.98 USD left; consolidation
+began at 16:11; from 16:15:00 OpenRouter refused calls while the meter still read 1.12 USD (the last reading
+before the refusal), and `EveryProviderDryError` was raised 166 times through the gate and refiner rounds,
+205 voices lost, with the meter reading `openrouter=wet` and falling to 0.36 USD as smaller calls kept
+buying. Every consolidation slice shipped its standing, the lane-contest winner, unpolished. Seats:
+minimax-m3 82 of 117 usable, GLM-5.3-Flash 26 of 50, gemma 93 of 106, glm-5.3 27 of 45, gpt-oss-120b 85 of
+99, deepseek-v4-flash 59 of 83, Qwen3.8-27B 69 of 106, deepseek-v4-pro 84 of 122, the shortfall being the
+refusals. This is the first live exercise of the every-provider-dry path: the run did not hold and did not
+error; it settled on what it had.
+
+THE READING OF THE PAGE: publishable. Two notes, neither a class. The diagnosis carries italics the source
+does not (`*signet ring cell carcinoma of the ascending colon*`); 51 of 92 archives use italics, for work
+titles, so emphasis is not a marker the floor can refuse. The quotation "just an unhealthy-looking boy in
+real life.", carries the archive's own period-inside-quotes shape, which the archive ends with a second
+period. "Here's a selected few" is the archive's wording kept.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
