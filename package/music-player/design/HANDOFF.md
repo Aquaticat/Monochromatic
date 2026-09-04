@@ -736,7 +736,12 @@ and only six known `bgOverlap` contrast incompletes. Direct computed ratios are
 Labels, names, alternatives, unique IDs, initial modal focus, and 48px targets pass.
 Browser errors and console output are empty. Close the isolated browser and emulator,
 then open this exact cleared form through normal Helium with the instructional page,
-not a preview modal, visible first.
+not a preview modal, visible first. The isolated browser and emulator are stopped. The
+cleared form was opened through the Helium desktop entry without a preview hash. KWin
+reports the exact `Music player design: white divider clarification - Helium` window
+as non-minimized at 1080 × 1880 on `HDMI-A-1`, internal ID
+`{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`. Activate that exact window as the final
+operation, then wait for the form answer.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
