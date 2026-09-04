@@ -29,7 +29,8 @@ which were left as historical style comparisons.
 | File | Size | What it shows |
 |---|---|---|
 | **mode-d** | 860×620 | The mode control question settled: connected button group (56px, 2px gaps, pill outer ends, 8px inner corners, selected inner corners 50%) in one row and wrapped to a grid, with the outlined segmented button (40px) shown beneath for comparison. All at real token values. |
-| **o1-a** | 860×380 | Open beside the folder chip, separated by a vertical rule; chip switches folder, Open changes directory. |
+| **light-c** | 852×fill | D34 light baseline: tonal panes on a surface-dim ground, with one white rail-seam divider. |
+| **dbtp-a** | 426×883 | D35 default supporting line: duration and true peak share `onSurfaceVariant`; custom display templating will own optional emphasis. |
 | **sub-a** | 860×600 | A folder containing subfolders: subfolders in a labelled section above the folder’s own tracks, one screen, mixed content. |
 | **ctx-b** | 860×600 | Track context menu, eight items in three groups, headed by the track name, dB value inline, Re-analyse, Move to trash. |
 | **err-b** | 860×520 | Missing file drops out of the list with a dismissible bar explaining it; folder renamed mid-playback changes nothing visible. |
@@ -237,7 +238,9 @@ subfolders (unconfirmed — see open-questions.md #3).
   and explains itself; the folder chip carries its own failure state. Rejected in
   favour of err-b’s cleaner list.
 
-### Other paired alternatives (the other half of a chosen pair)
+### Other paired alternatives and revised choices
+- **o1-a** — originally chosen with Open beside a folder chip; superseded by D4's
+  removal of that chip and placement of Open on the `Folders` app-bar line.
 - **o1-b** — Open in the overflow menu.
 - **sub-b** — drill-in navigation with breadcrumb and Up.
 - **ctx-a** — four-item minimal context menu.
