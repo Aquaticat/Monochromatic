@@ -501,7 +501,12 @@ outer-edge track fill, and Q2c's trailing true-peak values. Fresh throwaway posi
 controls proved each new boundary: removing the selected role, one central-spacer
 pixel, one half-spacer pixel, the trailing-value region, the status-icon region, or one
 inter-section gap pixel produces its specific diagnostic. Restoring the captures
-passes. Full Helium verification remains.
+passes. Full Helium verification remains. During verification, the user added a fresh
+accessibility correction: never communicate state through color alone, and explicitly
+check color contrast. Re-audit every selected, playing, current, checked, and emphasized
+state across all six captures. Add an unmistakable non-color cue wherever one is
+missing, then calculate the resolved dynamic role-pair contrast rather than assuming
+that use of a Material token proves the rendered combination.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
