@@ -142,6 +142,60 @@ and the entry settled.
 Issue 474's hold branch remains unexercised,
 since holding is what did not happen.
 
+## How a pass is launched and read
+
+The launch recipe is not repeated here.
+[`translation-repair-corpus-pass.md`](../runbook/translation-repair-corpus-pass.md)
+carries the exact invocation,
+including `TRANSLATION_REPAIR_RUNS_DIR`,
+the overlap and writer-grace overrides,
+and the `env -u` form that leaves a provider out of a run.
+Every pass today used that form with both Synthetic and Charm Hyper unset,
+so OpenRouter served alone.
+
+READING A PAGE is the gate the owner set on 2026-08-26,
+and it is not the same as the pass reporting `SETTLED`.
+What the three readings of 2026-09-04 did,
+in order:
+
+1.  Run `verify-published` against the run directory.
+    It answers whether the page carries every wording its artifact promised,
+    and nothing about whether those wordings are right.
+2.  Read the shipped page beside the source and the archive,
+    all three open.
+    The page is `<runs dir>/fixed/people/<id>/page.en.md`;
+    the source and the archive are `page.md` and `page.en.md` in the pinned corpus.
+3.  Check what the deterministic rules cover,
+    which is where a defect is cheap to confirm:
+    every link destination,
+    the front matter's shape and its declared name and alias,
+    and any component line such as `PhotoScroll` or `ChannelBackupButton`.
+4.  Read the prose for what no gate sees.
+    That is where all four of today's classes were found:
+    a pronoun left untranslated,
+    a name settled from the archive,
+    punctuation carried across,
+    a picture reported textless and refused.
+5.  Grep the run log for the refusal vocabulary:
+    `fails the deterministic`,
+    `lacks contest endorsement`,
+    `contest winner fails`,
+    `must carry exactly`,
+    `StandingIneligible`,
+    `REATTEMPT`,
+    `would drop`,
+    and `untranslated as`.
+    Read the `TALLY` and `DESTINATIONS` lines,
+    and the `SEAT` lines for how many calls each model threw.
+6.  Sum the `cost=` fields for what the pass spent,
+    and read the last `METERS` line for what is left.
+7.  Write the reading into
+    [`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md)
+    as its own section,
+    and put the belief it supports into
+    [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md).
+    A reading that is not written down did not happen.
+
 ## What to do next
 
 The order is the readiness document's,
