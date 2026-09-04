@@ -617,8 +617,10 @@ violation and the same eight manually resolved contrast incompletes documented i
 `doc/troubleshooting/axe-modal-dialog-contrast.md`. Helium page errors and console
 output are empty. A fresh matching-scale hardware comparison confirms `Open` shares
 the `Folders` line, the letter rail remains edge-flush, and the selected folder uses a
-separate target-width indicator rather than text decoration. The isolated form is
-blank and ready to close; reopen the exact final file in normal Helium next.
+separate target-width indicator rather than text decoration. The isolated browser and
+emulator are stopped. The exact final blank form was reopened through the Helium
+desktop entry. KWin reports its non-minimized 1080 × 1880 window on `DP-2`, and a
+one-shot activation targeted that exact window. No theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
