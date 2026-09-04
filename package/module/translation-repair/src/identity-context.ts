@@ -356,13 +356,16 @@ function isPluralAfter(
     readonly from: number;
   },
 ): boolean {
-  /**
-   * Position of the next non-space character, found by one forward cursor.
-   */
-  let cursor = from;
-  while (text.charAt(cursor,) === ' ')
-    cursor += 1;
-  return text.charAt(cursor,) === PLURAL_SUFFIX;
+  // One forward cursor over the spaces; the first other character decides.
+  for (let cursor = from; cursor < text.length; cursor += 1) {
+    /**
+     * Character under the cursor.
+     */
+    const character = text.charAt(cursor,);
+    if (character !== ' ')
+      return character === PLURAL_SUFFIX;
+  }
+  return false;
 }
 
 /**
@@ -423,7 +426,7 @@ function countNeutralSpelling(
       text,
       from: at + spelling.length,
     },);
-    if (!insideWord && !plural)
+    if ((!insideWord) && (!plural))
       scan.count += 1;
     scan.from = at + spelling.length;
   }

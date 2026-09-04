@@ -35,16 +35,24 @@ const PRONOUN_SPELLINGS = [
 ] as const;
 
 /**
+ * What English makes of the pronoun, told to the model that left it.
+ */
+const RENDERING_RULE: string = 'the ORIGINAL writes its neutral pronoun as TA, Ta or ta, and English renders it as '
+  + 'singular they (they, them, their), with TA 们 as plural they; a Ta left standing in the English is an '
+  + 'untranslated word, not a preserved choice.';
+
+/**
  * What `indexOf` answers when the spelling is not found.
  */
 const NOT_FOUND = -1;
 
 /**
- * First code point of the CJK ranges, above which a character is taken as
- * script rather than as part of a Latin word. A pronoun beside a han character
- * is still a word of its own.
+ * First character of the CJK ranges (U+2E80), at or above which a character
+ * is taken as script rather than as part of a Latin word. A pronoun beside a
+ * han character is still a word of its own. Compared as a string, which orders
+ * one-unit characters by code point.
  */
-const CJK_FLOOR = 0x2E80;
+const CJK_FLOOR = '\u2E80';
 
 /**
  * Marks that may open a word in English prose: quotes and brackets.
@@ -93,7 +101,10 @@ const CLOSING_MARKS = new Set([
  * ```
  */
 function isBlank({ character, }: { readonly character: string; },): boolean {
-  return (character === ' ') || (character === '\t') || (character === '\n') || (character === '\r');
+  return (character === ' ')
+    || (character === '\t')
+    || (character === '\n')
+    || (character === '\r');
 }
 
 /**
@@ -101,7 +112,7 @@ function isBlank({ character, }: { readonly character: string; },): boolean {
  *
  * @param character - one character, empty at either end of the text
  *
- * @returns Whether its code point sits at or above the CJK floor
+ * @returns Whether it sits at or above the CJK floor; empty never does
  *
  * @example
  * ```ts
@@ -110,11 +121,7 @@ function isBlank({ character, }: { readonly character: string; },): boolean {
  * ```
  */
 function isHan({ character, }: { readonly character: string; },): boolean {
-  /**
-   * Code point, or nothing at either end of the text.
-   */
-  const point = character.codePointAt(0,);
-  return (point !== undefined) && (point >= CJK_FLOOR);
+  return (character !== '') && (character >= CJK_FLOOR);
 }
 
 /**
@@ -236,7 +243,10 @@ export function neutralPronounFindings(
    * Each spelling the candidate keeps, with its count.
    */
   const kept = PRONOUN_SPELLINGS
-    .map(function counted(spelling,): { readonly spelling: string; readonly count: number; } {
+    .map(function counted(spelling,): {
+      readonly spelling: string;
+      readonly count: number;
+    } {
       return {
         spelling,
         count: countSpelling({
@@ -259,11 +269,7 @@ export function neutralPronounFindings(
       return `"${entry.spelling}" (${String(entry.count,)} ${(entry.count === 1) ? 'time' : 'times'})`;
     },)
     .join(' and ',);
-  return [
-    `Your translation carries the pronoun untranslated as ${named}: the ORIGINAL writes its neutral pronoun `
-    + 'as TA, Ta or ta, and English renders it as singular they (they, them, their), with TA 们 as plural '
-    + 'they; a Ta left standing in the English is an untranslated word, not a preserved choice.',
-  ];
+  return [`Your translation carries the pronoun untranslated as ${named}: ${RENDERING_RULE}`,];
 }
 
 //endregion Neutral pronoun rendering
