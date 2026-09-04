@@ -432,7 +432,7 @@ private fun FullUnfoldedStudy(palette: CandidatePalette) {
 @Composable
 private fun RightHalfStudy(candidate: String, palette: CandidatePalette) {
     Row(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.width(434.dp).fillMaxSize())
+        Box(modifier = Modifier.width(438.dp).fillMaxSize())
         TrackPane(
             modifier = Modifier.weight(1f),
             candidate = candidate,
@@ -700,7 +700,7 @@ private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
 private fun TransportControls() {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         FilledTonalIconButton(onClick = {}) {
@@ -800,7 +800,8 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
     }
 }
 
-/** Renders one Material two-line list item with accessible action and non-color playing cue. */
+/** Renders one baseline Material two-line list item with accessible action and non-color playing cue. */
+@Suppress("DEPRECATION")
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
@@ -820,8 +821,12 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
         MaterialTheme.colorScheme.onSurfaceVariant
     }
     ListItem(
-        onClick = {},
-        selected = playing,
+        headlineContent = {
+            Text(
+                text = track.title,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        },
         supportingContent = {
             TrackMetadata(
                 track = track,
@@ -867,13 +872,12 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 72.dp),
-    ) {
-        Text(
-            text = track.title,
-            style = MaterialTheme.typography.bodyLarge,
-        )
-    }
+            .heightIn(min = 72.dp)
+            .clickable(role = Role.Button, onClick = {})
+            .semantics {
+                selected = playing
+            },
+    )
     if (palette.rowDividers) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }

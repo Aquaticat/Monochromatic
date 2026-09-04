@@ -227,7 +227,7 @@ for (const candidateName of candidateNames) {
   writeFileSync(fullPath, screenshot);
   const outputPath = join(outputDirectory, `${candidateName}.png`);
   if (candidateName.startsWith("dbtp-")) {
-    execFileSync("magick", [fullPath, "-crop", "1019x2152+1057+0", "+repage", outputPath]);
+    execFileSync("magick", [fullPath, "-crop", "1038x2152+1038+0", "+repage", outputPath]);
   } else {
     writeFileSync(outputPath, readFileSync(fullPath));
   }
@@ -235,7 +235,7 @@ for (const candidateName of candidateNames) {
   const image = readFileSync(outputPath);
   const width = image.readUInt32BE(16);
   const height = image.readUInt32BE(20);
-  const expectedWidth = candidateName.startsWith("dbtp-") ? 1019 : 2076;
+  const expectedWidth = candidateName.startsWith("dbtp-") ? 1038 : 2076;
   if (width !== expectedWidth || height !== 2152) {
     throw new Error(`${candidateName} captured at ${width}×${height}; expected ${expectedWidth}×2152.`);
   }

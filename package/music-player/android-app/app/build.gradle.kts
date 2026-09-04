@@ -67,15 +67,15 @@ dependencies {
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    // What:     `implementation("androidx.compose.material:material-icons-extended")` adds Google's
-    //           extended Material icon vectors to every app build variant.
-    // Why:      The design prototype must render official Material icons instead of Unicode stand-ins.
+    // What:     `debugImplementation("androidx.compose.material:material-icons-extended")` adds Google's
+    //           extended Material icon vectors only to debug builds.
+    // Why:      The debug-only design prototype needs official icons without growing the release app.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // dependencies.add("@material-design-icons/svg");
+    // devDependencies.add("@material-design-icons/svg");
     // ```
-    implementation("androidx.compose.material:material-icons-extended")
+    debugImplementation("androidx.compose.material:material-icons-extended")
     // Explicit alpha is required because the Material standard ButtonGroup API first
     // appears in 1.5.0-alpha27; the 2026.08 stable BOM still resolves Material3 1.4.0.
     // Keep the rest of Compose on the BOM while this one component has no stable release.
