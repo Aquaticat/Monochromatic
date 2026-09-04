@@ -184,9 +184,13 @@ const railEdgePixel = pixelAt({ path: 'questions/render/light-a.png', x: 0, y: 1
 if (railEdgePixel !== 'srgba(231,231,241,1)') {
   throw new Error('questions/render/light-a.png must place the selectable letter rail flush against the device edge.');
 }
+const removedFolderControlPixel = pixelAt({ path: 'questions/render/light-a.png', x: 300, y: 350 });
+if (removedFolderControlPixel !== 'srgba(243,243,250,1)') {
+  throw new Error('questions/render/light-a.png must not restore the redundant left current-folder control.');
+}
 const selectedFolderTabIndicatorPixels = countPixelsMatching({
   path: 'questions/render/light-a.png',
-  crop: '200x4+140+656',
+  crop: '200x4+140+499',
   predicate: isPrimary,
 });
 if (selectedFolderTabIndicatorPixels < 700) {
@@ -194,7 +198,7 @@ if (selectedFolderTabIndicatorPixels < 700) {
 }
 const linkLikeUnderlinePixels = countPixelsMatching({
   path: 'questions/render/light-a.png',
-  crop: '200x5+140+615',
+  crop: '200x5+140+458',
   predicate: isPrimary,
 });
 if (linkLikeUnderlinePixels > 0) {
@@ -370,6 +374,7 @@ const forbiddenFragments = [
   'prototype commit 6e8f248c5',
   'prototype commit 12e99097d',
   'prototype commit f54fc145d',
+  'prototype commit 88374ace0',
   'data-preview-width="418"',
   'data-source-width="1019"',
   'Value only on playing row',
@@ -402,11 +407,12 @@ const requiredFragments = [
   'class="device-screen"',
   'class="device-camera"',
   'Native Compose capture from Pixel 9 Pro Fold emulator',
-  'prototype commit 88374ace0',
+  'prototype commit 8ec92ff7f',
   'official Material 3 components',
   'Every selected state has a non-color cue',
   'separate MD1-style 2dp tab indicator',
   'selectable letter rail is flush with the physical start edge',
+  'Open shares the Folders app-bar line',
   'dynamic role mappings',
   'Android 17 API 37',
   '--device-body: #262624;',
