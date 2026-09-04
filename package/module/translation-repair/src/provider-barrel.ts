@@ -175,6 +175,13 @@ export {
   openRouterEndpointOf,
 } from './openrouter-endpoint.ts';
 export {
+  InStreamProviderError,
+  openRouterStreamErrorOf,
+  requireNoStreamError,
+  STREAM_ERROR_ABSENT,
+  type StreamErrorReading,
+} from './openrouter-stream-error.ts';
+export {
   OPENROUTER_AUTH_HEADER,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,

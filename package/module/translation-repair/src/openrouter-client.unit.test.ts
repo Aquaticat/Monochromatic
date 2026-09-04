@@ -18,6 +18,7 @@ import {
 
 import {
   createOpenRouterClient,
+  InStreamProviderError,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,
   OpenRouterModelNotServedError,
@@ -275,6 +276,49 @@ await describe({
         }
         expect(thrown instanceof OpenRouterModelNotServedError,).toBe(true,);
         expect(exchanges,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'NAMES AN IN-STREAM PROVIDER FAILURE by its code and endpoint when a 200 stream carries '
+        + 'the gateway\'s error chunk and no terminator, rather than calling the reply cut off: on '
+        + '2026-09-04 that misnaming hid one endpoint failing two calls in five',
+      fn: async () => {
+        const { client, } = recordedClient({
+          reply: {
+            status: 200,
+            bodyText: `: OPENROUTER PROCESSING\n\n${
+              chunkOf({
+                delta: {},
+                rest: {
+                  provider: 'ModelRun',
+                  error: {
+                    code: 504,
+                    message: 'error code: 504',
+                    metadata: { error_type: 'timeout', },
+                  },
+                },
+              },)
+            }`,
+          },
+        },);
+        /**
+         * What the failed stream produces once the ladder (limit 0) gives up.
+         */
+        let thrown: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:moonshotai/Kimi-K3',
+            messages: [{ role: 'user', content: 'meow', },],
+            signal: SIGNAL,
+          },);
+        } catch (error) {
+          thrown = error;
+        }
+        expect(thrown instanceof InStreamProviderError,).toBe(true,);
+        expect((thrown as InStreamProviderError).code,).toBe(504,);
+        expect((thrown as InStreamProviderError).endpoint,).toBe('ModelRun',);
+        expect((thrown as InStreamProviderError).message,).toContain('served by ModelRun',);
       },
     },),
 

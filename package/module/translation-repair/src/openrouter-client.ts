@@ -30,6 +30,7 @@ import {
   type OpenRouterCredits,
   parseOpenRouterCredits,
 } from './openrouter-credits.ts';
+import { requireNoStreamError, } from './openrouter-stream-error.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import type { RosterModelId, } from './roster-id.ts';
 import { openRouterIdFor, } from './roster-reach.ts';
@@ -141,9 +142,18 @@ export type OpenRouterClient = ModelCaller & {
 };
 
 /**
- * Refuses a success reply whose server-sent stream stopped before its terminator.
+ * Refuses a success reply whose server-sent stream carried a provider failure
+ * or stopped before its terminator.
+ *
+ * THE FAILURE IS ASKED FIRST. A stream the upstream failed mid-way carries an
+ * `error` chunk and no terminator, so the terminator check alone would name
+ * the framing ("cut off") where the wire named the cause (a code and an
+ * endpoint); `openrouter-stream-error.ts` records the day that misnaming cost.
  *
  * @param attemptReply - one attempt's reply, read before the ladder returns it
+ *
+ * @throws InStreamProviderError - when a success body carries the gateway's
+ * error chunk, which puts the failed call on the retry path under its own name
  *
  * @throws MalformedCompletionError - when a success body stops before
  * `[DONE]`, which is what puts a truncated stream on the retry path
@@ -155,8 +165,10 @@ export type OpenRouterClient = ModelCaller & {
  * ```
  */
 function wholeMessage(attemptReply: TransportReply,): void {
-  if (isSuccessStatus({ status: attemptReply.status, },))
-    requireStreamTerminator({ bodyText: attemptReply.bodyText, },);
+  if (!isSuccessStatus({ status: attemptReply.status, },))
+    return;
+  requireNoStreamError({ bodyText: attemptReply.bodyText, },);
+  requireStreamTerminator({ bodyText: attemptReply.bodyText, },);
 }
 
 /**
