@@ -192,6 +192,14 @@ const selectedFolderTabIndicatorPixels = countPixelsMatching({
 if (selectedFolderTabIndicatorPixels < 700) {
   throw new Error('questions/render/light-a.png must show the 2dp selected-folder tab indicator across the target.');
 }
+const linkLikeUnderlinePixels = countPixelsMatching({
+  path: 'questions/render/light-a.png',
+  crop: '200x5+140+615',
+  predicate: isPrimary,
+});
+if (linkLikeUnderlinePixels > 0) {
+  throw new Error('questions/render/light-a.png must not underline selected folder text like a web link.');
+}
 const centralSpacerPixels = [
   pixelAt({ path: 'questions/render/light-c.png', x: 1008, y: 1000 }),
   pixelAt({ path: 'questions/render/light-c.png', x: 1009, y: 1000 }),
