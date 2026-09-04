@@ -318,6 +318,13 @@ A 2076 × 2152 Settings capture shows the native large-screen gesture handle and
 icons. It also proves that `screencap` omits the physical camera hole even while Window
 Manager reports the cutout, so the measured questionnaire frame must retain its camera
 overlay. `device-metrics.md` records the commands, source paths, commit and arithmetic.
+A debug-only, non-functional Compose prototype now implements all six candidate keys
+in `android-app/app/src/debug/`: `light-a`, `light-b`, `light-c`, `dbtp-a`, `dbtp-b`,
+and `dbtp-c`. It uses native `WindowInsets.safeDrawing` inside an edge-to-edge Android
+window, so app controls clear the reported camera and system-bar insets while the
+screen background continues behind both bars. `mise run
+//package/music-player/android-app:prototype:build` assembles successfully. Install,
+capture and visual comparison remain pending.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
