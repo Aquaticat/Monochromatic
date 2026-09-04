@@ -544,6 +544,15 @@ BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two
     and a regeneration would be a full paid re-run rather than a replay.
 - **The first BI4PBV pass settled at 05:02** (34 min, 1.57 USD, verify-published 1 of 1, no Kimi-K3
     call) as the no-picture control; its page keeps both photo elements as the source writes them.
+- **The second BI4PBV pass settled at 05:19** (`TALLY BI4PBV status=SETTLED slices=5 ... ms=2142085`,
+    35.7 min, 1.3827 USD, verify-published 1 of 1 at `chars=1077=expected`, no Kimi-K3 line, 19 cut
+    streams, 7 ModelRun retries, no refusal). Both photo elements ship as the source writes them, one
+    multi-line and one single-line. The two blockquotes transcribed from the photos (the "truly lazy"
+    line and the balloon's loss-of-contact line, which the source page carries only as pictures) ship
+    translated; against the control the wording differs in the ordinary run-to-run way (the `BlurBlock`
+    farewell keeps the archive's rendering here where the control rewrote it), and nothing in either page
+    is wrong on its face. The picture path on OpenRouter alone therefore reads: gather, OCR gate, three
+    seated readers with Kimi-K3 withheld, corroboration, and the transcription slices judged and shipped.
 
 ## ModelRun's timeouts, 2026-09-04, and what the log called them
 
