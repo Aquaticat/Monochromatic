@@ -233,8 +233,12 @@ The package unit contract now asserts those physical source dimensions and fails
 the existing 852×883 file as intended. The question template exposes source px beside
 logical dp and identifies rendered zoom size as CSS px. Re-render every source at
 physical pixel density, preserve 852×883dp or 418×883dp as the 100% display size, then
-rerun the Helium probe. No theme answer
-has been recorded.
+rerun the Helium probe. All six source candidates have now been rerendered through
+Helium at the panel scale `2076 / 852`: full renders are 2076×2152px and half-screen
+renders are 1019×2152px. Metadata was stripped, the self-contained form was rebuilt,
+and the physical-dimension regression is green. Contact-sheet inspection and
+user-boundary Helium verification remain before reopening. No theme answer has been
+recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
