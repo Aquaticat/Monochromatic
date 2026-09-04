@@ -150,13 +150,17 @@ is used only for **demo annotations**, not for product UI.
 
 ## D. Components and behaviour
 
-### D1. Mode control = OUTLINED SEGMENTED BUTTON (reversed 2026-09-03; candidate desc-f)
+### D1. Mode control = OUTLINED SEGMENTED BUTTON (revised 2026-09-04)
 The user reversed the earlier connected-button-group pick: "the segmented buttons
 should always remain as segmented buttons." Shown both side by side (desc-e connected,
-desc-f outlined), they chose outlined. Spec: 40dp container, 1px outline, hairline
-dividers, corner-full; two equal columns edge to edge when it wraps 2×2 (desc-g). It
-is **never collapsed to a single chip** to save height — all four options always show.
-The connected-group note below is history.
+desc-f outlined), they chose outlined. The 2026-09-04 requirement that every presented
+design follow the supplied Material guidance corrects its geometry: all four options
+occupy one non-wrapping `SingleChoiceSegmentedButtonRow`, never a 2×2 arrangement.
+Use the real Compose component so it supplies the 40dp visual container, 48dp target,
+1dp outline, full outer shape, checkmark, role, and states. All labels remain visible.
+It is **never collapsed to a single chip** to save height. The connected-group note
+below is history. The archive source is `components/segmented-buttons/` under the
+user-supplied `m3.material.io` archive.
 
 ### D1 (superseded). Mode control = connected button group (candidate mode-d)
 Four options: **Repeat / In order / Shuffle folder / Shuffle all**.
@@ -192,13 +196,17 @@ section headers alone (picker-a); a persistent sidebar (picker-c). Note the Andr
 fast-scroller drag-bubble idiom was discussed as a possible addition — a large bubble
 showing the current letter while dragging — but was not settled.
 
-### D4. Open sits beside the folder chip (candidate o1-a)
-Separated from the chip by a vertical rule: **the chip switches folder within the
-current directory; Open changes directory**. Both are one tap, always visible.
+### D4. Open sits beside the current-folder button (revised 2026-09-04)
+The current-folder control switches folders within the open directory; **Open changes
+directory**. Both remain one tap and always visible. The current folder is a filled
+tonal button and Open is an outlined button, both implemented with real Material
+components and official icons. Never style the current-folder control as a lone chip:
+the supplied Material guidance says chips occur as a contextual set and explicitly
+rejects a single chip by itself.
 **Why.** Session restore means Open is a mid-session action, not a startup action, so
-it does not need to dominate — but hiding it costs a tap on a genuinely distinct
-operation.
-**Rejected.** Open in the overflow menu next to Settings (o1-b).
+it does not need to dominate. Hiding it costs a tap on a genuinely distinct operation.
+**Rejected.** Open in the overflow menu next to Settings (o1-b); a lone current-folder
+chip.
 
 ### D5. Subfolders are headers inside one flat list — not a layer (confirmed on desc-d, 2026-09-03)
 A folder containing subfolders shows **one flat list**: its own tracks first, then each
@@ -304,9 +312,13 @@ before touching the picker:**
 
 Settled presentation: **D31**.
 
-### D18. Transport block layout (candidate desc-g; volume row removed by D20)
-Centred on the half's axis: title + subtitle centred; seek is a full-width row; prev/play/next centred with 24dp gaps; mode control
-edge to edge. The left-hugging version (desc-f) was called "un-balanced."
+### D18. Transport block layout (revised 2026-09-04; volume row removed by D20)
+Centred on the half's axis: title and subtitle centred; seek is a full-width Material
+slider row with elapsed and duration anchors; previous, pause, and next are centred
+Material icon buttons with 16dp target spacing. The one-row mode control hugs its
+content instead of stretching edge to edge. The earlier left-hugging version was
+called "un-balanced." The earlier 24dp button gaps and full-width segmented control
+were replaced by the supplied Material component and target-spacing guidance.
 
 ### D14. Cover screen = full player (candidate cover-c), volume kept — as an icon since D20
 Chip + Open on top, track list, deck at the bottom for thumb reach, volume inline,
@@ -323,9 +335,12 @@ borderless text index (unf-e) — see open-questions.md #1.
 ### E1. Target device: Pixel 9 Pro Fold
 See device-metrics.md for real dimensions. The hinge is **vertical** in portrait.
 
-### E2. Nothing interactive crosses the crease
-A **16dp seam gutter** runs down the centre of the unfolded layout. This invalidated
-an earlier design that put the play button directly on the crease.
+### E2. Nothing interactive crosses the crease (revised 2026-09-04)
+A **24dp spacer** runs down the centre of the unfolded 852dp expanded layout. The
+supplied Material breakpoint guidance requires a 24dp spacer between expanded panes.
+The spacer remains visually centred and contains nothing interactive. This invalidated
+an earlier design that put the play button directly on the crease and supersedes the
+older 16dp gutter.
 
 ### E3. Tabletop posture = candidate tabletop-c
 The user’s own proposal, and better than either option offered: the **track list stays

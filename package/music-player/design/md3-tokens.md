@@ -126,10 +126,11 @@ unselected label / icon  on-surface
 disabled opacity         0.38 (text/icon), 0.12 (outline)
 ```
 
-**Important status note:** M3 states that the segmented button is **no longer
-recommended** and directs you to the **connected button group** instead. This project
-chose the connected button group (decisions.md D1) but keeps the segmented version
-(candidates/mode-c) as a fallback, because it is what the user’s reference image shows.
+**Status note:** the supplied 2026-09-03 archive says the segmented button is no
+longer recommended in the Material 3 Expressive update and directs Expressive products
+to the connected button group. This project remains on baseline Material 3 under A2
+and uses the segmented button under D1. Its four segments stay in one row: the same
+archive explicitly prohibits wrapping segments.
 
 ---
 
@@ -150,8 +151,9 @@ pressed inner-corner     corner-extra-small (4px)
 
 Visually: separate buttons with 2px gaps; the outer ends of the group are pills; the
 inner corners are only slightly rounded; the selected button’s inner corners go fully
-round. When the group wraps to two rows, only the four outer corners of the block
-round — the sides stay flush (this is also what the user’s reference image shows).
+round. Button groups move through layouts together in one line and never wrap. Separate button
+groups may stack, but they do not interact vertically. The old two-row description was
+incorrect and is superseded by the supplied archive.
 
 ---
 
@@ -246,11 +248,11 @@ progress indicator stop-indicator-size    4px
 
 ```
 track row                 72px, two-line, body-large title + body-small supporting
-folder row / letter cell  48px minimum (project rule C1, stricter than MD3 in places)
-mode control              connected button group, medium (56px, 2px gaps)
+folder target / letter cell 48px minimum (project rule C1)
+mode control              outlined segmented button, 40px visual / 48px target, one row
 seek + volume sliders     4×44 handle on a 16px track, inactive = #22222A
 play button               64px circle, primary fill, on-primary glyph
 prev / next               48px circles, surface-container-high fill
 buttons and chips         40px visual minimum inside a 48px target row
-outlines                  1px, #6F6A78
+component outlines        1px, `outline`; decorative dividers use `outlineVariant`
 ```

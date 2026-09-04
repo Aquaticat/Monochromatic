@@ -148,8 +148,9 @@ Terms used throughout these docs and in the candidate filenames:
 - **mode control** — the four-way choice for what happens when a track ends:
   Repeat / In order / Shuffle folder / Shuffle all. This single control also defines
   end-of-folder behaviour, so there is no separate "what happens at the end" setting.
-- **folder chip** — the pill in the top bar naming the current folder; tapping it
-  opens the folder picker.
+- **current-folder button** — the filled tonal button naming the current folder;
+  tapping it opens the folder picker. Do not render it as a lone chip: the supplied
+  Material guidance requires chips to appear as a contextual set.
 - **letter rail** — one column of 48dp letter targets, scrolls on its own; tapping a
   letter FILTERS the picker to it. **Generated from the library**, not fixed A–Z: only
   writing systems present get a section (Latin A–Z, Japanese kana rows + 漢, Cyrillic,
@@ -161,13 +162,15 @@ Terms used throughout these docs and in the candidate filenames:
 - **dBTP** — decibels relative to true peak; the measured value shown per track
   (e.g. −1.2 dBTP).
 - **seam / crease** — the fold line on the unfolded foldable display. **Nothing
-  interactive may cross it**; a 16dp gutter runs down the middle.
+  interactive may cross it**; the expanded layout uses the Material-required 24dp
+  spacer down the middle.
 - **cover screen** — the outer display, used when the device is folded (411×923dp).
 - **tabletop posture** — the device half-folded like a laptop; Compose can detect
   this, desktop toolkits cannot.
 - **outlined segmented button** — the mode control's component (D1, reversed from the
-  connected button group on 2026-09-03): one 40dp container, hairline dividers, wraps
-  2×2 with flush edges, all four options always visible.
+  connected button group on 2026-09-03): one non-wrapping Material row with four
+  visible options, 40dp visual containers, 48dp targets, hairline dividers, and a
+  checkmark plus color for selection.
 
 ---
 
@@ -451,7 +454,18 @@ important dividers using `outline` instead of `outlineVariant`; manual typograph
 fixed text heights and unexposed truncation; and a fixed baseline palette instead of
 the settled Android dynamic scheme. The compliance boundary preserves baseline M3,
 the full-bleed section correction, and all compatible product decisions while replacing
-non-compliant construction with real Compose Material 3 components.
+non-compliant construction with real Compose Material 3 components. Prototype branch
+commit `978033ce5` implements the audit: Android dynamic light color with baseline
+fallback; only named Material role mappings; two equal 414dp panes around the required
+24dp expanded spacer; real default-height `TopAppBar`, buttons, icons, icon buttons,
+interactive `ListItem`, `Slider`, and one non-wrapping
+`SingleChoiceSegmentedButtonRow`; elapsed and duration anchors; selected-list
+`primaryContainer` / `onPrimaryContainer` pairing; `outlineVariant` dividers;
+Material typography; flexible list-item heights; official selection semantics; and a
+trailing-text Q2 candidate that keeps every true-peak value instead of suppressing
+most of them. Section backgrounds remain full bleed and actionable content retains the
+measured Android safety insets. The prototype build and Android lint both pass with no
+warnings. Native emulator capture and visual inspection are next.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
