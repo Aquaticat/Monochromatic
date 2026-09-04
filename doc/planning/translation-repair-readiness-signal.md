@@ -194,3 +194,24 @@ THE READING: unchanged, not yet ready. A defect found in the pipeline's own fix 
 same as one found in the corpus. What would move the belief now is unchanged from the previous section:
 luxuanwen3 shipped and read under the rule, SS3B_0016 (the Wikipedia shape) shipped and read, then the two
 passes the earlier section asked for. Both entries are running on `e66da50ef` since 13:51 UTC.
+
+## What the two runs on the publisher fix showed (2026-09-04, 13:51 UTC)
+
+luxuanwen3 and SS3B_0016 on `e66da50ef`, OpenRouter alone, read in
+`doc/planning/translation-repair-openrouter-2026-09-03.md` ("The two runs on the publisher fix"). Both
+settled and both pages verify: luxuanwen3 in 60 minutes and 4.65 USD with the original's link renderings,
+SS3B_0016 in 56 minutes and 5.12 USD with the archive's `Railfan` rendering and the finding that names it.
+The either-rendering rule and its publisher held end to end on the two shapes that had refused before.
+
+WHAT IT FOUND: one defect in the corpus's own conventions the pipeline did not know. The neutral pronoun
+this corpus writes as `Ta` (and `ta`, and `TA`) reached the page untranslated twice on SS3B_0016, endorsed
+by judges who read it as "the original's neutral Ta", because the pronoun counter read only `TA` and the
+house rule never said what English makes of it. Sixteen of the seventeen archives that face it write
+"they". Fixed and guarded with the next commit; it is a class, not an instance, since seven more entries
+write `Ta` or `ta` for their subject.
+
+THE READING: not yet ready, and closer. Two entries shipped and read clean apart from that one class, and
+the class was measurable from the corpus before any run. What would move the belief now: one entry whose
+subject is `Ta` or `ta` throughout (Uekawakuyuurei, 1347 source characters, is the smallest) shipped and
+read under the pronoun fix, then the double-quoted-paths pass and the comma-shaped one-line pass the
+earlier sections ask for. Balance at the last reading is 5.41 USD, which buys one pass on a new build.
