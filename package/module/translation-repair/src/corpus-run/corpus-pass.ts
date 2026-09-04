@@ -51,6 +51,12 @@ import {
 } from './cap-override.ts';
 import { runAttemptQueue, } from './entry-attempt-queue.ts';
 import { countCachedSlices, } from './entry-reattempt.ts';
+import { stopBeforeNextEntry, } from './pass-stop-before-next.ts';
+import {
+  resolveSpendCeilingUsd,
+  SPEND_CEILING_USD,
+  spendCeilingOverrideNote,
+} from './spend-ceiling.ts';
 import { lockRunsDir, } from './runs-lock.ts';
 import { listResumableEntries, } from './slice-cache-store.ts';
 import {
@@ -181,6 +187,12 @@ const SOFT_BUDGET_MS = SOFT_BUDGET_MINUTES * MS_PER_MINUTE;
  */
 const HARD_CAP_MS = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },)
   * MS_PER_MINUTE;
+
+/**
+ * USD this run may spend on the provider that bills in USD before it stops
+ * starting entries, after any environment override (`spend-ceiling.ts`).
+ */
+const RUN_SPEND_CEILING_USD = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
 
 /**
  * Complete zh/en pairs present at the pinned commit; the run target.
@@ -491,6 +503,13 @@ async function runCorpusPass(): Promise<void> {
     );
   }
 
+  /**
+   * The spend allowance, named only when a launch overrode it.
+   */
+  const ceilingNote = spendCeilingOverrideNote({ ceilingUsd: RUN_SPEND_CEILING_USD, },);
+  if (ceilingNote !== '')
+    console.log(ceilingNote,);
+
   // Nor which straggler window, for the same reason: rounds under a longer
   // window hear voices the shipped window cuts, and their artifacts are not
   // comparable with ones settled under it.
@@ -573,15 +592,11 @@ async function runCorpusPass(): Promise<void> {
     },
 
     stopBeforeNext: function stopBeforeNext(): boolean {
-      /**
-       * Wall time elapsed since the loop began.
-       */
-      const elapsed = Date.now() - start;
-
-      if (elapsed < SOFT_BUDGET_MS)
-        return false;
-      console.log(`SOFT budget reached after ${String(elapsed,)}ms; not starting new entries`,);
-      return true;
+      return stopBeforeNextEntry({
+        elapsedMs: Date.now() - start,
+        softBudgetMs: SOFT_BUDGET_MS,
+        ceilingUsd: RUN_SPEND_CEILING_USD,
+      },);
     },
 
     attempt: async function attempt({ entry, },): Promise<EntryOutcome> {

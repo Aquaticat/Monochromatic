@@ -110,13 +110,7 @@ export * from './corpus-entry-barrel.ts';
 export * from './corpus-readiness-barrel.ts';
 export { decidePassInsertionAdmission, } from './corpus-run/pass-insertion-admission.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
-export {
-  capOutlastsOneCall,
-  capTooTightNote,
-  HARD_CAP_VAR,
-  HardCapOverrideError,
-  resolveHardCapMinutes,
-} from './corpus-run/cap-override.ts';
+export * from './corpus-ceiling-barrel.ts';
 export { runAttemptQueue, } from './corpus-run/entry-attempt-queue.ts';
 export {
   countCachedSlices,

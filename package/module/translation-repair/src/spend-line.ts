@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ExtractedCompletion, } from './completion-shape.ts';
 import type { ProviderName, } from './provider-name.ts';
+import { noteRunSpend, } from './run-spend-meter.ts';
 
 //region Spend line
 // WHAT ONE CALL COST, on the one line a reader can total.
@@ -123,6 +124,16 @@ export function reportSpend(
   const cost = (costUsd === undefined)
     ? ''
     : ` cost=${String(costUsd,)}`;
+
+  // THE SAME FIGURE FEEDS THE RUN'S METER, so the ceiling the scheduler asks
+  // (`corpus-run/spend-ceiling.ts`) and the total a reader sums off these
+  // lines can never disagree about what was counted.
+  if (costUsd !== undefined) {
+    noteRunSpend({
+      provider,
+      costUsd,
+    },);
+  }
 
   /**
    * Upstream that served the call, as a trailing field only where a gateway

@@ -197,6 +197,11 @@ export {
   SPEND_MARKER,
 } from './spend-line.ts';
 export {
+  noteRunSpend,
+  resetRunSpend,
+  runSpendUsd,
+} from './run-spend-meter.ts';
+export {
   type AnthropicContentBlock,
   type AnthropicImageSource,
   contentBlocksFor,
