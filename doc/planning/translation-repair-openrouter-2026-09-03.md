@@ -768,6 +768,59 @@ stopped at 13:51 during its lanes (422 calls, 1.84 USD) because its page could o
 and relaunched with luxuanwen3 on `e66da50ef` at 13:51:31 UTC (`~/temp/agent/<id>-shapes4-20260904`),
 balance 18.49 USD.
 
+## The two runs on the publisher fix, 2026-09-04, 13:51 UTC onward: both ship, and what the reading found
+
+luxuanwen3 and SS3B_0016 ran concurrently on `e66da50ef`, OpenRouter alone, from 13:51:31 UTC, into
+`~/temp/agent/<id>-shapes4-20260904` (logs of the same name). Balance 18.49 USD at launch, 5.41 USD at the
+last meter reading.
+
+luxuanwen3: `TALLY luxuanwen3 status=SETTLED slices=9 ... pageChanged=7 pageSilent=0 selection=contested
+ms=3596918` (60 minutes, 764 calls, 4.65 USD by the `cost=` fields), `DESTINATIONS luxuanwen3 source=2 page=2
+dropped=0` with no finding: the page carries the original's `twitter.com` for Deaver1229 and for the
+contributor, so the pool was met from the original's side. verify-published: `wordings=9 silent=0
+chars=2467=expected missing=0`. The front matter's `alias` reads `鲵鲵, Nini`; the `PhotoScroll` line is
+intact; the Camus quotation and its right-aligned attribution are intact. Slice 3 logged `consolidation
+standing text lacks contest endorsement and remains retryable` and shipped on the single attempt. No
+`must carry exactly`, no `fails the deterministic publication rule`, no `REATTEMPT`. Seats: minimax-m3 117
+of 117 usable, gpt-oss-120b 115 of 115, GLM-5.3-Flash 38 of 39, glm-5.3 53 of 61 (8 threw), deepseek-v4-flash
+89 of 93, deepseek-v4-pro 120 of 123, gemma 123 of 124, Qwen3.8-27B 109 of 125 (16 threw). Read in full: the
+page is publishable as it stands. One wrap nit, not a page defect: the per-slice wrap broke `August 4,
+2024` after the date's comma, which Markdown rejoins on render.
+
+SS3B_0016: `TALLY SS3B_0016 status=SETTLED slices=9 ... pageChanged=8 pageSilent=0 selection=contested
+ms=3365773` (56 minutes, 887 calls, 5.12 USD), `DESTINATIONS SS3B_0016 source=3 page=3 dropped=0
+destinations-archive-rendering`: the page carries the archive's English Wikipedia `Railfan` where the
+source links the Chinese article, and keeps the `mailto:` and GitHub destinations. verify-published:
+`wordings=9 silent=0 chars=2291=expected missing=0`. Slice 2 lacked contest endorsement and shipped on the
+single attempt. Seats: gpt-oss-120b 141 of 141, minimax-m3 132 of 132, gemma 147 of 147, glm-5.3 62 of 69
+(7 threw), deepseek-v4-pro 138 of 140, Qwen3.8-27B 121 of 148 (27 threw), GLM-5.3-Flash 39 of 40,
+deepseek-v4-flash 107 of 111. The page restores what the archive's rewrite had changed (the source's
+"community", not "transgender community"; the source's "the day before Yantian's birthday", not the
+archive's added date and stations) and reads well, with two findings from the reading.
+
+WHAT THE READING FOUND, ONE DEFECT AND ONE RISK.
+
+The defect: slice 5 ships `we have temporarily set up a small room for Ta, to give Ta's memorial a little
+warmth`, a bare `Ta` twice, on a page that says "they" and "them" for Yantian everywhere else. The
+translate lane won that slice with three of five contest ballots reasoning that it "keeps the original's
+neutral Ta", and the consolidation gate kept it. The cause is in the pipeline, not the judges: the source
+writes its neutral pronoun as `Ta`, and `countNeutralPronoun` in `identity-context.ts` counts only `TA`, so
+the declared-identity pronoun line said nothing for this page; and the house rule names TA as a pronoun the
+original uses without saying how English renders it. Measured over the pinned corpus: sources write the
+neutral pronoun as `TA` in 2 entries, `Ta` in 7 and `ta` in 8 (every occurrence a pronoun, `TA 们` the
+plural in 6); of the archives of those entries, one (XingZ60, a rewrite) keeps a bare `TA`, and the rest
+render it "they" (Uekawakuyuurei 22 "they" to 0 "she", Hangmster 18 to 0). Fixed in the next commit:
+the counter reads all three spellings, the house rule states the English rendering, and the deterministic
+floor refuses a translation carrying the pronoun untranslated.
+
+The risk: slice 5 also renders 「那些秋叶」 as `「One Among Us」`. The name is right (the archives of all
+five entries naming 那些秋叶 render it "One Among Us", one as "One Among Us Transgender Support") but the
+gate kept it 4 to 3 over a consolidated candidate reading "Those Autumn Leaves", the judges arguing the
+rendering from the archive alone. The corner brackets around an English name are the source's punctuation
+carried across; 72 sources use them and 3 archives keep any, all in quoted Chinese or a design element.
+Recorded, not fixed here: a declared site-name line for the judges is the cheap remedy, and the brackets
+fall under the house rule on punctuation that means nothing in English.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
