@@ -355,8 +355,36 @@ controls prove those new guards: changing a native status-icon pixel yields
 the lower screen-edge pixel yields `questions/render/dbtp-a.png still double-wraps the
 full-height track surface.`; and replacing a selected-row pixel yields
 `questions/render/dbtp-a.png did not replace the Android launch splash with Compose
-content.`. Restoring the untouched fixture passes. Full Helium interaction and visual
-verification remain pending.
+content.`. Restoring the untouched fixture passes. Final Helium verification at DPR 2
+is complete. At 100%, the full dialog frame is 907 × 937 CSS px around an
+852 × 883px screen and a 2076 × 2152px source; the right-half frame is 454 × 937px,
+its opening is approximately 426 × 883px, its image is approximately 418 × 883px, and
+its source is 1019 × 2152px. The camera overlay measures 32.41dp, centred 36.61dp from
+the screen end and 32.81dp from its top, matching the Pixel overlay arithmetic.
+
+All six previews open with the correct title, frame kind and natural raster dimensions.
+Zoom in, Zoom out, Fit, `1:1 display pixels`, 100% reset, stage scrolling and Close
+work; both full and half sources stop at their sharp 1:1 display-pixel limit rather
+than upscaling. At 1280 × 800, both three-option comparisons remain one row and the
+page has no horizontal overflow. At 390 × 844, both remain one row inside independent
+horizontal scrollers with a 316px viewport and 848px content, each traversing 532px,
+while the page itself
+stays 390px wide. The blank-form validation path focuses Q1 and keeps output hidden;
+every radio path selects exactly one item per group. Prepare, copy, download and clear
+all produce and then clear the synthetic `Q1 1c / Q2 3b / Q3 None.` result. The
+browser accepted the clipboard write and a function-boundary probe received the exact
+answer; the downloaded text file matched it byte for byte.
+
+Offline reload leaves all six embedded images complete at the expected natural sizes
+and issues only the local `file://` document request. Forced host dark mode leaves the
+questionnaire's light scheme and surface colours unchanged. Helium reports no page
+console errors. axe-core 4.13.0 reports zero WCAG A/AA violations and zero incomplete
+checks for both the page and open dialog; labels, accessible button names, alternative
+text, unique IDs, visible 48px control minima and initial dialog focus were also
+checked directly. A final 629 × 650 matching-scale comparison against the supplied
+front reference confirms the updated silhouette, bezel, hinge and exact camera
+position. The isolated verification page was cleared and is ready to close; the
+questionnaire has not yet been opened in the user's normal Helium session.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
