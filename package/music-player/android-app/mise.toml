@@ -217,6 +217,7 @@ const candidateNames = [
   "divider-a",
   "divider-b",
   "divider-c",
+  "divider-final",
 ];
 for (const candidateName of candidateNames) {
   execFileSync(

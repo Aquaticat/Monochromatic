@@ -287,7 +287,6 @@ import androidx.compose.ui.graphics.Color
 // import { FontWeight, TextAlign, TextOverflow } from 'compose/ui/text';
 // ```
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 
 // What:     `dp` and `sp` construct density-aware layout and font measurements.
 // Why:      Android converts the cited logical geometry to the emulator's 390dpi panel pixels.
@@ -317,6 +316,7 @@ private data class CandidatePalette(
     val transport: Color,
     val tracks: Color,
     val spacer: Color,
+    val sectionDivider: Color,
     val paneDivider: Boolean,
     val railDivider: Boolean,
     val railDividerColor: Color,
@@ -360,6 +360,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             transport = scheme.surfaceContainerLow,
             tracks = scheme.surfaceContainerLowest,
             spacer = scheme.surfaceDim,
+            sectionDivider = scheme.surfaceDim,
             paneDivider = false,
             railDivider = true,
             railDividerColor = Color.White,
@@ -374,6 +375,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             transport = scheme.surfaceContainerLow,
             tracks = scheme.surfaceContainerLowest,
             spacer = Color.White,
+            sectionDivider = scheme.surfaceDim,
             paneDivider = false,
             railDivider = true,
             railDividerColor = scheme.outlineVariant,
@@ -388,6 +390,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             transport = scheme.surfaceContainerLow,
             tracks = scheme.surfaceContainerLowest,
             spacer = Color.White,
+            sectionDivider = scheme.surfaceDim,
             paneDivider = false,
             railDivider = true,
             railDividerColor = Color.White,
@@ -402,6 +405,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             transport = scheme.surfaceContainer,
             tracks = scheme.surface,
             spacer = scheme.surface,
+            sectionDivider = scheme.surface,
             paneDivider = false,
             railDivider = false,
             railDividerColor = scheme.outlineVariant,
@@ -416,6 +420,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             transport = scheme.surface,
             tracks = scheme.surface,
             spacer = scheme.surface,
+            sectionDivider = scheme.surface,
             paneDivider = true,
             railDivider = true,
             railDividerColor = scheme.outlineVariant,
@@ -428,10 +433,11 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
         rail = scheme.surfaceContainerLowest,
         transport = scheme.surfaceContainerLow,
         tracks = scheme.surfaceContainerLowest,
-        spacer = scheme.surfaceDim,
+        spacer = Color.White,
+        sectionDivider = Color.White,
         paneDivider = false,
         railDivider = true,
-        railDividerColor = Color.White,
+        railDividerColor = scheme.outlineVariant,
         rowDividers = false,
     )
 }
@@ -514,7 +520,7 @@ private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette
             modifier = Modifier.weight(1f),
             palette = palette,
         )
-        Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.window))
+        Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
         TransportBlock(
             modifier = Modifier.fillMaxWidth(),
             palette = palette,
@@ -883,26 +889,11 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
     }
 }
 
-/** Renders one baseline Material two-line list item with accessible action and non-color playing cue. */
+/** Renders one baseline Material two-line list item with an icon-only current-track cue. */
 @Suppress("DEPRECATION")
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
-    val containerColor = if (playing) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        Color.Transparent
-    }
-    val contentColor = if (playing) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    val supportingColor = if (playing) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
     ListItem(
         headlineContent = {
             Text(
@@ -914,33 +905,26 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             TrackMetadata(
                 track = track,
                 candidate = candidate,
-                playing = playing,
             )
         },
         leadingContent = {
-            if (playing) {
-                Icon(
-                    imageVector = Icons.Filled.PlayArrow,
-                    contentDescription = "Playing",
-                )
-            } else {
-                Text(
-                    text = (index + 1).toString(),
-                    modifier = Modifier.width(24.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    textAlign = TextAlign.Center,
-                )
+            Box(
+                modifier = Modifier.size(24.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (playing) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = "Playing",
+                    )
+                }
             }
         },
         trailingContent = if (candidate == "dbtp-c") {
             {
                 Text(
                     text = track.peak,
-                    color = if (playing) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
                 )
             }
@@ -948,10 +932,10 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             null
         },
         colors = ListItemDefaults.colors(
-            containerColor = containerColor,
-            headlineColor = contentColor,
-            leadingIconColor = supportingColor,
-            supportingColor = supportingColor,
+            containerColor = Color.Transparent,
+            headlineColor = MaterialTheme.colorScheme.onSurface,
+            leadingIconColor = MaterialTheme.colorScheme.primary,
+            supportingColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -968,24 +952,23 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
 
 /** Applies three true-peak treatments while preserving every value and valid Material role pairs. */
 @Composable
-private fun TrackMetadata(track: PrototypeTrack, candidate: String, playing: Boolean) {
-    val selectedColor = MaterialTheme.colorScheme.onPrimaryContainer
+private fun TrackMetadata(track: PrototypeTrack, candidate: String) {
     val supportingColor = MaterialTheme.colorScheme.onSurfaceVariant
     if (candidate == "dbtp-b") {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = track.duration,
-                color = if (playing) selectedColor else supportingColor,
+                color = supportingColor,
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(
                 text = "·",
-                color = if (playing) selectedColor else supportingColor,
+                color = supportingColor,
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(
                 text = track.peak,
-                color = if (playing) selectedColor else MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
             )
         }
@@ -997,7 +980,7 @@ private fun TrackMetadata(track: PrototypeTrack, candidate: String, playing: Boo
     }
     Text(
         text = metadata,
-        color = if (playing) selectedColor else supportingColor,
+        color = supportingColor,
         style = MaterialTheme.typography.bodySmall,
     )
 }
