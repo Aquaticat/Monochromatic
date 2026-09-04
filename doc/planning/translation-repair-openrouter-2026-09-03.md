@@ -731,6 +731,43 @@ findings (`558b46e11`).
 
 Question put to the owner: which rendering a candidate owes where the archive rewrote a destination.
 
+## The luxuanwen3 re-run on the either-rendering build, 2026-09-04, 12:43 UTC onward: every slice passes, the publisher refuses
+
+Launched at 12:43:50 UTC on `82888d43b` (the rendering pools) plus the docs commit, OpenRouter alone, into
+`~/temp/agent/luxuanwen3-shapes3-20260904` (log of the same name). Balance 22.53 USD at the SS3B_0016 launch
+that followed at 13:20.
+
+What the slices did: slice 1, the paragraph whose link the archive moved from `twitter.com` to `x.com`,
+passed the deterministic rule in every lane. The translate lane's winner carried the original's
+`twitter.com` once and `x.com` never; three of its translators matched the incumbent. The contest recorded
+eight ballots across the slices (four `repair`, two `translate`, two `neither`, five to seven usable each).
+Consolidation started at 13:18:47 on all nine slices; slice 1 exited `computed` in 536 s with no verdict
+warning; slices 2 and 6 logged `consolidation standing text lacks contest endorsement and remains
+retryable`, and slice 2's single attempt kept the standing (`slate-declined-standing`) with the finding
+recorded. No `must carry exactly`, no `fails the deterministic publication rule`, no `REATTEMPT`.
+
+Tally: `TALLY luxuanwen3 status=INCOMPLETE ms=3365280 aborted=false error=entry luxuanwen3 would drop 1
+source destination(s)` at 13:39:55 UTC, 56 minutes, 765 calls, 4.24 USD by the `cost=` fields, balance
+19.26 USD at the last meter reading. Seats: gpt-oss-120b 120 of 120 usable, minimax-m3 117 of 117, gemma
+126 of 126, deepseek-v4-pro 121 of 122, GLM-5.3-Flash 35 of 39, deepseek-v4-flash 82 of 94 (12 threw, the
+cut-mid-reply shape of the morning), Qwen3.8-27B 107 of 127 (20 threw), glm-5.3 57 of 60.
+
+What refused it: `DroppedDestinationError` in `publish-fixed.ts`, the document-level check, which compared
+the would-ship page's destinations against the source's alone. The page carried the archive's `x.com` where
+the source carries `twitter.com`, which the slice rule had accepted and the publisher counted as one source
+destination dropped. The decision record of the morning had said the publisher was unchanged; that clause
+was the defect, and it is struck. Fixed in `1c9663666` (`corpus-run/destination-renderings.ts`, the same
+pool over the whole page; findings `destinations-archive-rendering` and `destinations-both-renderings` on
+the `DESTINATIONS` line), guards shown to fail with the archive side of the pool neutralised, and
+`8d7b151ef` (lint). Two tests of the morning (`consolidate-ineligible-standing`, `consolidate-standing-verdict`)
+still asserted the maximum rule through a candidate keeping the page's link; the full suite had last run
+before `82888d43b`. Moved to a candidate carrying neither rendering in `e66da50ef`; suite 931 groups, 0 FAIL.
+
+SS3B_0016 (the Wikipedia shape, 912 source characters) had been launched at 13:20 on the same build; it was
+stopped at 13:51 during its lanes (422 calls, 1.84 USD) because its page could only reach the same refusal,
+and relaunched with luxuanwen3 on `e66da50ef` at 13:51:31 UTC (`~/temp/agent/<id>-shapes4-20260904`),
+balance 18.49 USD.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:

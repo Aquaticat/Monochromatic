@@ -178,6 +178,10 @@ The pass also prints, beside each settled entry's `TALLY` line,
 `DESTINATIONS <id> source=N page=M dropped=K`:
 how many distinct web addresses the source page links to, how many the published page carries,
 and how many of the source's the page lacks (`#265`).
+A source destination the archive rendered another way is not lacking when the page carries the archive's rendering
+(`doc/decision/translation-repair-rewritten-destination.md`):
+the line then ends with `destinations-archive-rendering`,
+and with `destinations-both-renderings` when the page carries the original's and the archive's for one reference.
 The addresses themselves go to the run log at info, never to stdout.
 A dropped destination from a wording both deciders approved is a finding, not a late publish rewrite.
 A different rule protects a source-only passage:

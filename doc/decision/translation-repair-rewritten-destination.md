@@ -31,8 +31,6 @@ re-run of that day stopped at its first paragraph.
 
 ## What this is not
 
-- Not a change to what the publisher refuses: `DroppedDestinationError` still compares the would-ship page's
-    destinations against the source's through its own reading.
 - Not an alignment of links by position or label. A page that dropped one source link and added an unrelated
     one reads as a rewrite of that kind, and the dropped link is not demanded there (XIEPT2's profile link);
     the owner accepted that in the option chosen.
@@ -50,3 +48,15 @@ re-run of that day stopped at its first paragraph.
     validator's local atom comparison; guards in `translate-atom-rendering.unit.test.ts` and
     `translate-validate.unit.test.ts` (either destination accepted, neither and both refused), shown to fail
     with the pools neutralised.
+- `corpus-run/destination-renderings.ts` (`judgeDestinationRenderings`), the same rule over the whole
+    would-ship page for the publisher's `DroppedDestinationError` (commit `1c9663666`). The first record of
+    this decision said the publisher was unchanged; the luxuanwen3 re-run of 13:18 UTC the same day showed
+    that reading wrong: every slice passed and the publisher, comparing the page to the source alone, refused
+    the `x.com` page 56 minutes and 4.24 USD in (`~/temp/agent/luxuanwen3-shapes3-20260904.log`). The
+    document pool is the source destinations the archive never carried plus the archive destinations the source
+    never carried; the page owes the larger side from either; a destination both carry as written is owed
+    outright; an archive addition the page lost is not a source destination and is not reported. Findings
+    `destinations-archive-rendering` and `destinations-both-renderings` go on the `DESTINATIONS` line. Guards in
+    `destination-renderings.unit.test.ts`, `dropped-destinations.unit.test.ts` and `publish-fixed.unit.test.ts`
+    (the archive rendering published and named; neither refused; both named), shown to fail with the archive
+    side of the pool neutralised.

@@ -177,3 +177,20 @@ passes should be chosen by census rather than by convenience. What would move th
 destination rule decided and luxuanwen3 shipped under it; one pass over a second entry from the census
 (shihai4h or SS3B_0016, the Wikipedia shape) read the same way; then the two passes the previous section
 asked for.
+
+## What the luxuanwen3 re-run on the either-rendering build showed (2026-09-04, 12:43 UTC)
+
+Run on `82888d43b`, OpenRouter alone, read in `doc/planning/translation-repair-openrouter-2026-09-03.md`
+("The luxuanwen3 re-run on the either-rendering build"). The rule held at every slice: the moved link passed
+in every lane, consolidation settled all nine slices, and nothing was reattempted. The publisher refused the
+page 56 minutes and 4.24 USD in, because its own destination check still read the source alone.
+
+WHAT IT FOUND: not a new class in the corpus but a gap in the fix itself, the kind a reading of the decision
+record should have caught before the run (the record said the publisher was unchanged, and that was the
+defect). Fixed and guarded the same hour (`1c9663666`); the fix also surfaced two tests still asserting the
+old rule, which the full suite had not been run against since the rule landed.
+
+THE READING: unchanged, not yet ready. A defect found in the pipeline's own fix counts against the rate the
+same as one found in the corpus. What would move the belief now is unchanged from the previous section:
+luxuanwen3 shipped and read under the rule, SS3B_0016 (the Wikipedia shape) shipped and read, then the two
+passes the earlier section asked for. Both entries are running on `e66da50ef` since 13:51 UTC.
