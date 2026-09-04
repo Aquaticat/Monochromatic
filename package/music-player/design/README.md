@@ -20,8 +20,9 @@ Read these files in order:
 3. [`decisions.md`](decisions.md)
 4. [`open-questions.md`](open-questions.md)
 5. [`md3-tokens.md`](md3-tokens.md)
-6. [`device-metrics.md`](device-metrics.md)
-7. [`candidates.md`](candidates.md)
+6. [`material-3-compliance.md`](material-3-compliance.md)
+7. [`device-metrics.md`](device-metrics.md)
+8. [`candidates.md`](candidates.md)
 
 ## Current questionnaire
 
