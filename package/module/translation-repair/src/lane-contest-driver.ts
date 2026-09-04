@@ -7,6 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
   applyLaneContestEligibility,
+  describeInadmissibleLanes,
   frontMatterContestEligibility,
   laneContestChoiceVerdict,
 } from './lane-contest-eligibility.ts';
@@ -452,8 +453,29 @@ export async function contestDocumentLanes(
                */
               const findings = choiceVerdict.findings
                 .join(' ',);
+
+              /**
+               * Why each excluded lane was inadmissible, which the floor
+               * finding alone does not say; empty off the metadata slice.
+               */
+              const inadmissible = (syntax === 'front-matter')
+                ? describeInadmissibleLanes({
+                  sourceText,
+                  incumbentText: row.incumbentText,
+                  repairText: row.repairText,
+                  translateText: row.translateText,
+                },)
+                : [];
+
+              /**
+               * Verdict findings and the lanes' reasons as one line.
+               */
+              const reported = [
+                findings,
+                ...inadmissible,
+              ].join(' ',);
               dl.warn(
-                `slice ${String(row.sliceIndex,)}: contest winner fails publication invariants and remains retryable: ${findings}`,
+                `slice ${String(row.sliceIndex,)}: contest winner fails publication invariants and remains retryable: ${reported}`,
               );
             }
             /**

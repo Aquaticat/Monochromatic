@@ -413,4 +413,104 @@ export function laneContestChoiceMayShip(
   return verdict.mayShip;
 }
 
+/**
+ * One lane the front-matter floor can exclude, with the text it offered.
+ */
+type FloorLane = {
+  readonly lane: 'archive' | 'repair' | 'translate';
+  readonly text: string;
+};
+
+/**
+ * Names each lane the front-matter floor excludes and the finding that
+ * excludes it, for the log line that reports the floor.
+ *
+ * WRITTEN FOR THE READING. The Uekawakuyuurei run of 2026-09-04 (16:09 UTC)
+ * logged only `lane-contest-eligibility-floor (inadmissible choices excluded)`
+ * for its metadata slice, and learning that the translate lane had restored a
+ * `location` field the archive dropped, which the shape rule refuses, took
+ * opening the slice cache. The eligibility record itself carries labels only,
+ * and the artifact reader holds it to exact keys, so the findings are derived
+ * again here from the same deterministic rule rather than carried on it.
+ *
+ * @param sourceText - metadata slice as the original writes it
+ *
+ * @param incumbentText - metadata slice as the page carries it, which is also
+ * the archive lane's offer
+ *
+ * @param repairText - repair lane's offer
+ *
+ * @param translateText - translate lane's offer
+ *
+ * @returns One line per excluded lane, naming the lane and its findings; empty
+ * when every lane is admissible
+ *
+ * @example
+ * ```ts
+ * const why = describeInadmissibleLanes({ sourceText, incumbentText, repairText, translateText, },);
+ * ```
+ */
+export function describeInadmissibleLanes(
+  {
+    sourceText,
+    incumbentText,
+    repairText,
+    translateText,
+  }: {
+    readonly sourceText: string;
+    readonly incumbentText: string;
+    readonly repairText: string;
+    readonly translateText: string;
+  },
+): readonly string[] {
+  /**
+   * Every lane with what it offered, in the order the contest names them.
+   */
+  const lanes: readonly FloorLane[] = [
+    {
+      lane: 'archive',
+      text: incumbentText,
+    },
+    {
+      lane: 'repair',
+      text: repairText,
+    },
+    {
+      lane: 'translate',
+      text: translateText,
+    },
+  ];
+  return lanes.flatMap(function excluded(
+    {
+      lane,
+      text,
+    },
+  ): readonly string[] {
+    /**
+     * Deterministic verdict on this lane's offer.
+     */
+    const validation = validateTranslatedSlice({
+      sourceText,
+      candidateText: text,
+      pageText: incumbentText,
+      syntax: 'front-matter',
+    },);
+    if (validation.kind === 'valid')
+      return [];
+    if (validation.kind === 'invalid') {
+      /**
+       * Findings the rule raised.
+       */
+      const { findings, } = validation;
+
+      /**
+       * Findings as one clause.
+       */
+      const why = findings.join(' ',);
+      return [`${lane} inadmissible: ${why}`,];
+    }
+    return [`${lane} inadmissible: no comparison was possible: ${validation.detail}`,];
+  },);
+}
+
 //endregion Lane contest publication eligibility

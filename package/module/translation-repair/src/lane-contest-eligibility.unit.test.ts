@@ -12,6 +12,7 @@ import {
 
 import {
   applyLaneContestEligibility,
+  describeInadmissibleLanes,
   frontMatterContestEligibility,
   LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
   laneContestChoiceMayShip,
@@ -251,6 +252,38 @@ await describe({
       },
     },),
 
+    it({
+      name: 'NAMES EACH EXCLUDED LANE AND ITS FINDING for the log, since the floor finding alone says '
+        + 'nothing about why (Uekawakuyuurei, 2026-09-04: the translate lane restored a location field the '
+        + 'archive had dropped, and the reason lived only in the slice cache)',
+      fn: async () => {
+        /**
+         * Translate offer restoring a field the archive does not carry.
+         */
+        const restored = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Catford\n---\n';
+
+        /**
+         * What the log gets for an archive breaking the identity rule beside
+         * a repair keeping it and a translate reshaping it.
+         */
+        const lines = describeInadmissibleLanes({
+          sourceText: SOURCE,
+          incumbentText: ARCHIVE,
+          repairText: TRANSLATED,
+          translateText: restored,
+        },);
+
+        expect(lines.length,).toBe(2,);
+        expect(lines[0],).toContain('archive inadmissible: Your translation must carry the name',);
+        expect(lines[1],).toContain('translate inadmissible: Your translation changed YAML field names',);
+        expect(describeInadmissibleLanes({
+          sourceText: SOURCE,
+          incumbentText: TRANSLATED,
+          repairText: TRANSLATED,
+          translateText: TRANSLATED,
+        },),).toStrictEqual([],);
+      },
+    },),
     it({
       name: 'NAMES THE FLOOR FINDING when a syntax decline stood for an empty eligible slate',
       fn: async () => {

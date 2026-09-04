@@ -88,6 +88,7 @@ export {
 } from './lane-contest-stage.ts';
 export {
   applyLaneContestEligibility,
+  describeInadmissibleLanes,
   frontMatterContestEligibility,
   type LaneContestEligibility,
   LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
