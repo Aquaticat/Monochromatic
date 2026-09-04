@@ -384,7 +384,11 @@ text, unique IDs, visible 48px control minima and initial dialog focus were also
 checked directly. A final 629 × 650 matching-scale comparison against the supplied
 front reference confirms the updated silhouette, bezel, hinge and exact camera
 position. The isolated verification page was cleared and is ready to close; the
-questionnaire has not yet been opened in the user's normal Helium session.
+questionnaire was then opened through the Helium desktop entry in the user's normal
+session. KWin reports a non-minimized `Music player design: grilling round 1 - Helium`
+window at 1080 × 1880 on output `DP-2`; a one-shot KWin activation targeted that exact
+window. The form is blank and ready for the user's real theme answers. No theme answer
+has been recorded yet.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
