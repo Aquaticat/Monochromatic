@@ -435,9 +435,12 @@ current scale + reset.
 Never upscale a dp-sized bitmap.
 
 BZF:
- Device visuals stay opaque.
-Rounded screens need solid device backing inside rectangular raster;
-never clip raster to reveal surrounding surface.
+ Device visuals use measured target frame:
+ opaque chassis,
+bezels,
+hinge + corners.
+Place screenshot inside screen opening;
+never clip it to reveal page.
 
 HUP:
  Ongoing design sessions:

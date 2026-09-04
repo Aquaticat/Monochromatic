@@ -290,9 +290,10 @@ script, font or server. Render, inspect and exercise the form before opening it.
 device mock must use a raster captured at the cited physical panel resolution,
 display at the cited dp dimensions at 100%, and expose physical px, logical dp,
 current scale and a reset control. Never upscale a dp-sized bitmap. Keep the device
-silhouette opaque: rounded display corners need solid device backing inside the
-rectangular raster, never clipping that reveals the questionnaire surface. Chat may
-report that the round is ready; it never substitutes for the form.
+silhouette realistic and opaque: use a measured target-specific chassis, bezel,
+hinge and corner treatment; place the screenshot inside its screen opening; never
+clip it to reveal the questionnaire surface. Chat may report that the round is ready;
+it never substitutes for the form.
 
 **Handover timing.** The user then instructed: "Update the handover as you go."
 Record every correction, answer, decision, candidate and verification result in
@@ -351,8 +352,9 @@ HANDOFF.md when it happens. Never wait until the session ends.
    raster captured at cited physical panel resolution, display at cited dp dimensions
    at 100%, and show physical px, logical dp, current scale and a reset control. Never
    upscale a dp-sized bitmap. Keep the device silhouette opaque: rounded display
-   corners need solid device backing inside the rectangular raster, never clipping
-   that reveals the questionnaire surface. Chat-only delivery is invalid.
+   corners require a measured target-specific chassis, bezel, hinge and corner
+   treatment. Place the screenshot inside its screen opening; never clip it to reveal
+   the questionnaire surface. Chat-only delivery is invalid.
 10. **Update HANDOFF.md continuously.** Record each correction, answer, decision,
     candidate and verification result when it happens. Never defer updates until the
     end of a session. 

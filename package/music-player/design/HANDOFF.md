@@ -120,10 +120,10 @@ project holds itself to.
   exercise its answer controls before opening it for the user. Every device mock must
   use a raster captured at cited physical panel resolution, display at cited dp size
   at 100%, and show physical px, logical dp, current scale and a reset control. Never
-  upscale a dp-sized bitmap. Keep the device silhouette opaque: rounded display
-  corners need solid device backing inside the rectangular raster, never clipping
-  that reveals the questionnaire surface. A chat-only round is not a delivered design
-  question (review-notes 5i and standing standard 9).
+  upscale a dp-sized bitmap. Use a measured target-specific frame with opaque chassis,
+  bezel, hinge and corner treatment; place the screenshot inside its screen opening;
+  never clip it to reveal the questionnaire surface. A chat-only round is not a
+  delivered design question (review-notes 5i and standing standard 9).
 - **Update this handover continuously.** Record every correction, answer, decision,
   candidate and verification result when it happens; never wait for the session end
   (review-notes standing standard 10).
@@ -255,8 +255,12 @@ capture background in their rounded corner pixels. The red probe names both clip
 selectors and measures those corner pixels as `rgb(221, 215, 223)`. Form-level image
 rounding is now removed. `render:candidates` paints solid black device backing behind
 rounded source frames; all three half-screen top-left pixels are now `rgb(0, 0, 0)`.
-The package contract checks both conditions and is green. Visual card and dialog corner
-verification remains before reopening. No theme answer has been recorded.
+The package contract checks both conditions and is green. The user rejected this black
+corner patch as insufficient and asked why the frame itself is not realistic. Replace
+it with one measured, reusable Pixel 9 Pro Fold frame around every candidate: opaque
+chassis, continuous bezel, correct corners and fold/hinge treatment, with the candidate
+render inside the screen opening. Verify against a current device reference before
+reopening. No theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
