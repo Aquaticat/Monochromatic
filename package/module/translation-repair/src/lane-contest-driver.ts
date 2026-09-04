@@ -8,7 +8,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import {
   applyLaneContestEligibility,
   frontMatterContestEligibility,
-  laneContestChoiceMayShip,
+  laneContestChoiceVerdict,
 } from './lane-contest-eligibility.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import {
@@ -431,9 +431,10 @@ export async function contestDocumentLanes(
             // arrived before the abort must not make the abandoned entry look
             // done or become warm-run evidence.
             /**
-             * Whether selected lane can cross final publication boundary.
+             * Verdict on whether selected lane can cross final publication
+             * boundary, with the findings for the log.
              */
-            const choiceMayShip = laneContestChoiceMayShip({
+            const choiceVerdict = laneContestChoiceVerdict({
               outcome: bought,
               sourceText,
               incumbentText: row.incumbentText,
@@ -441,9 +442,18 @@ export async function contestDocumentLanes(
               translateText: row.translateText,
               ...((syntax === undefined) ? {} : { syntax, }),
             },);
+            /**
+             * Whether selected lane can cross final publication boundary.
+             */
+            const choiceMayShip = choiceVerdict.mayShip;
             if (!choiceMayShip) {
+              /**
+               * Findings joined for the log line.
+               */
+              const findings = choiceVerdict.findings
+                .join(' ',);
               dl.warn(
-                `slice ${String(row.sliceIndex,)}: contest winner fails publication invariants and remains retryable`,
+                `slice ${String(row.sliceIndex,)}: contest winner fails publication invariants and remains retryable: ${findings}`,
               );
             }
             /**

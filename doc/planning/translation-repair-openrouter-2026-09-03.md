@@ -687,6 +687,40 @@ one picture), logs `~/temp/agent/luxuanwen3-shapes-20260904.log` and `mtf_0615-s
     1 of 1 at `chars=811=expected`, 0.6134 USD, 5 cut streams, 5 voices never heard, no in-stream failure,
     no call on an ignored endpoint.
 
+## The luxuanwen3 re-run, 2026-09-04, 09:22 UTC onward: slice 0 passes, slice 1 stops the entry
+
+Launched on `592562992` (alias containment, withheld standing, endpoint ignores), OpenRouter alone, log
+`~/temp/agent/luxuanwen3-shapes2-20260904.log`, runs dir `~/temp/agent/luxuanwen3-shapes2-20260904`.
+
+- Slice 0, the front matter (56 source characters): both lanes `exit=computed`, no eligibility warning at the
+    lane contest or the consolidation. The archive's `alias: 鲵鲵, Nini` passes the containment rule.
+- Slice 1, the description paragraph (95 source characters): the translate lane's winner "fails publication
+    invariants" at the contest, the standing "fails publication eligibility" at the consolidation, and at
+    09:56:43 UTC, 34 minutes in, `ConsolidationStandingIneligibleError: slice 1 ... (incumbent-only)` stopped
+    the entry. The pass of the morning had run 63 minutes before the page guard refused it.
+- The cause, read from the slice records (`slice-cache/luxuanwen3/translate.*.json`, slice 1 findings): the
+    original links `https://twitter.com/Deaver1229`, the archive's page `https://x.com/Deaver1229`, and
+    `mergeAtoms` in `translate-atom-floor.ts` (commit `3ca134e57`: "protected atoms take the larger demand
+    of the two references") owes the per-key maximum of both, so a candidate carrying either URL is told it
+    lacks the other. The four translators asked to repair were told so in both directions: two restored the
+    original's URL, two kept the page's, and every proposal failed the floor. The standing, the archive's own
+    paragraph, fails the same rule, so the slate had nothing and the terminal was `incumbent-only`.
+- The log could not say this: neither warning named the rule or the findings. Both drivers now print the
+    deterministic findings, and the consolidation warning distinguishes an invalid standing from an unendorsed
+    one.
+
+Census of the pinned corpus (`~/temp/agent/atom-census-20260904.mjs` over `readSliceSkeleton` on whole pages,
+`~/temp/agent/link-census-20260904.mjs` over a plain link scan): of the 70 pages the strict grammar reads whole,
+7 carry a link the archive rewrote, meaning `link-url` diverges in both directions: MizuharaNagisa (`www.`
+added), Rentable_A (trailing slash dropped), SS3B_0016 and shihai4h (Chinese Wikipedia to English Wikipedia),
+aiyysk (`google.cn` to `.com`), homoyamakaze (an archived Twitter capture to `mtf.wiki`), luxuanwen3
+(`twitter.com` to `x.com`). XIEPT2, whose page the whole-page grammar refuses, is the eighth by the plain scan.
+Footnotes diverge in one direction only (5 pages add one, 1 drops one), never both. Under the per-key maximum
+none of the eight can ship: the archive's paragraph is ineligible, and no rendering carries both destinations
+without inventing a link.
+
+Question put to the owner: which rendering a candidate owes where the archive rewrote a destination.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:

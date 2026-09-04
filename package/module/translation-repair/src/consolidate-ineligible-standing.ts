@@ -1,5 +1,6 @@
 import type { ConsolidationTerminal, } from './consolidate-settle.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
+import type { SliceValidation, } from './translate-validate.ts';
 
 //region Ineligible standing text
 // A STANDING TEXT THE DETERMINISTIC GATE HAS ALREADY REFUSED may not ship, and
@@ -167,6 +168,37 @@ export function requireShippableTerminal(
     sliceIndex,
     terminal,
   },);
+}
+
+/**
+ * One line saying why the deterministic gate refused a standing text, for
+ * the run log.
+ *
+ * WRITTEN FOR THE READING, not the judges: on 2026-09-04 the luxuanwen3 log
+ * said only that a standing "fails publication eligibility", and learning
+ * that the cause was a link destination the archive had rewritten took
+ * opening the slice records. A refusal the log names is a defect class the
+ * next reading finds in one grep.
+ *
+ * @param validation - deterministic verdict on the standing text
+ *
+ * @returns Findings joined into one line, the reason no comparison was
+ * possible, or a word for a pass
+ *
+ * @example
+ * ```ts
+ * dl.warn(`slice 1: ${describeStandingVerdict({ validation, },)}`,);
+ * ```
+ */
+export function describeStandingVerdict(
+  { validation, }: { readonly validation: SliceValidation; },
+): string {
+  if (validation.kind === 'valid')
+    return 'passes the deterministic publication rule';
+  if (validation.kind === 'invalid')
+    return validation.findings
+      .join(' ',);
+  return `no comparison was possible: ${validation.detail}`;
 }
 
 //endregion Ineligible standing text

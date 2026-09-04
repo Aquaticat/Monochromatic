@@ -244,6 +244,117 @@ export function applyLaneContestEligibility(
 }
 
 /**
+ * Whether a contest choice may ship, and the deterministic findings when not.
+ */
+export type LaneContestChoiceVerdict = {
+  /**
+   * Whether the selected lane passes the publication rules.
+   */
+  readonly mayShip: boolean;
+
+  /**
+   * Findings behind a refusal, empty on a pass.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ * Verdict on whether the selected lane may cross the publication boundary,
+ * with the deterministic findings behind a refusal.
+ *
+ * THE FINDINGS ARE FOR THE RUN LOG: a refusal the log names is a defect
+ * class the next reading finds in one grep, where "fails publication
+ * invariants" alone sent the 2026-09-04 luxuanwen3 reading into the slice
+ * records to learn that a link destination the archive had rewritten was
+ * the cause.
+ *
+ * @param outcome - contest outcome after eligibility filtering
+ *
+ * @param sourceText - original slice
+ *
+ * @param incumbentText - page text being replaced
+ *
+ * @param repairText - repair lane candidate
+ *
+ * @param translateText - translate lane candidate
+ *
+ * @param syntax - explicit syntax role, absent for ordinary prose
+ *
+ * @returns Whether the choice may ship, and why not when it may not
+ *
+ * @example
+ * ```ts
+ * const verdict = laneContestChoiceVerdict({ outcome, sourceText, incumbentText, repairText, translateText, },);
+ * ```
+ */
+export function laneContestChoiceVerdict(
+  {
+    outcome,
+    sourceText,
+    incumbentText,
+    repairText,
+    translateText,
+    syntax,
+  }: {
+    readonly outcome: LaneContestOutcome;
+    readonly sourceText: string;
+    readonly incumbentText: string;
+    readonly repairText: string;
+    readonly translateText: string;
+    readonly syntax?: SliceSyntax;
+  },
+): LaneContestChoiceVerdict {
+  if (outcome.choice === 'neither') {
+    if (syntax === undefined)
+      return {
+        mayShip: true,
+        findings: [],
+      };
+    /**
+     * Findings distinguishing genuine decline from no safe eligible winner.
+     */
+    const { findings, } = outcome;
+    /**
+     * Whether the decline stands for an eligible slate that was empty.
+     */
+    const floored = findings.includes(LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,);
+    return {
+      mayShip: !floored,
+      findings: floored ? [LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,] : [],
+    };
+  }
+  /**
+   * Exact selected lane candidate.
+   */
+  const candidateText = (outcome.choice === 'repair')
+    ? repairText
+    : translateText;
+  /**
+   * Final deterministic eligibility for syntax and ordinary contributor authority.
+   */
+  const validation = validateTranslatedSlice({
+    sourceText,
+    candidateText,
+    pageText: incumbentText,
+    ...((syntax === undefined) ? {} : { syntax, }),
+  },);
+  if (validation.kind === 'valid')
+    return {
+      mayShip: true,
+      findings: [],
+    };
+  if (validation.kind === 'invalid')
+    return {
+      mayShip: false,
+      findings: validation.findings,
+    };
+  return {
+    mayShip: false,
+    findings: [`no comparison was possible: ${validation.detail}`,],
+  };
+}
+
+/**
  * Reports whether contest winner can cross final publication boundary.
  *
  * ORDINARY PROSE KEEPS ROSTER VERDICT only after contributor-authority floor.
@@ -288,31 +399,18 @@ export function laneContestChoiceMayShip(
     readonly syntax?: SliceSyntax;
   },
 ): boolean {
-  if (outcome.choice === 'neither') {
-    if (syntax === undefined)
-      return true;
-    /**
-     * Findings distinguishing genuine decline from no safe eligible winner.
-     */
-    const { findings, } = outcome;
-    return !findings.includes(LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,);
-  }
   /**
-   * Exact selected lane candidate.
+   * Verdict whose findings this boolean form drops.
    */
-  const candidateText = (outcome.choice === 'repair')
-    ? repairText
-    : translateText;
-  /**
-   * Final deterministic eligibility for syntax and ordinary contributor authority.
-   */
-  const validation = validateTranslatedSlice({
+  const verdict = laneContestChoiceVerdict({
+    outcome,
     sourceText,
-    candidateText,
-    pageText: incumbentText,
+    incumbentText,
+    repairText,
+    translateText,
     ...((syntax === undefined) ? {} : { syntax, }),
   },);
-  return validation.kind === 'valid';
+  return verdict.mayShip;
 }
 
 //endregion Lane contest publication eligibility

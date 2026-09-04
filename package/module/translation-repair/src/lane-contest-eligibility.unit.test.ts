@@ -13,7 +13,9 @@ import {
 import {
   applyLaneContestEligibility,
   frontMatterContestEligibility,
+  LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
   laneContestChoiceMayShip,
+  laneContestChoiceVerdict,
   type LaneContestBallot,
   type LaneContestOutcome,
   settleEligibleLaneContestBallots,
@@ -204,6 +206,78 @@ await describe({
           translateText: TRANSLATED,
           syntax: 'front-matter',
         },),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: laneContestChoiceVerdict.name,
+  children: [
+    it({
+      name: 'CARRIES THE FINDINGS behind a refusal, and agrees with the boolean',
+      fn: async () => {
+        /**
+         * Verdict on a front matter winner that retains the directory id.
+         */
+        const verdict = laneContestChoiceVerdict({
+          outcome: outcomeFor({ choice: 'repair', },),
+          sourceText: SOURCE,
+          incumbentText: ARCHIVE,
+          repairText: ARCHIVE,
+          translateText: TRANSLATED,
+          syntax: 'front-matter',
+        },);
+        expect(verdict.mayShip,).toBe(false,);
+        expect(verdict.findings.length > 0,).toBe(true,);
+        expect(verdict.findings.join(' ',),).toContain('name',);
+      },
+    },),
+
+    it({
+      name: 'CARRIES NO FINDINGS on a pass',
+      fn: async () => {
+        expect(laneContestChoiceVerdict({
+          outcome: outcomeFor({ choice: 'translate', },),
+          sourceText: SOURCE,
+          incumbentText: ARCHIVE,
+          repairText: ARCHIVE,
+          translateText: TRANSLATED,
+          syntax: 'front-matter',
+        },),).toEqual({
+          mayShip: true,
+          findings: [],
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE FLOOR FINDING when a syntax decline stood for an empty eligible slate',
+      fn: async () => {
+        expect(laneContestChoiceVerdict({
+          outcome: {
+            ...outcomeFor({ choice: 'neither', },),
+            findings: [LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,],
+          },
+          sourceText: SOURCE,
+          incumbentText: ARCHIVE,
+          repairText: ARCHIVE,
+          translateText: TRANSLATED,
+          syntax: 'front-matter',
+        },),).toEqual({
+          mayShip: false,
+          findings: [LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,],
+        },);
+        expect(laneContestChoiceVerdict({
+          outcome: outcomeFor({ choice: 'neither', },),
+          sourceText: '猫。',
+          incumbentText: 'Cat.',
+          repairText: 'Cat.',
+          translateText: 'A cat.',
+        },),).toEqual({
+          mayShip: true,
+          findings: [],
+        },);
       },
     },),
   ],

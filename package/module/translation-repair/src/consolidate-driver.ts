@@ -11,8 +11,8 @@ import {
 import { persistConsolidationSettlement, } from './consolidate-persistence.ts';
 import type { ConsolidationSettlement, } from './consolidate-settle.ts';
 import { buyConsolidationSlice, } from './consolidate-slice-buy.ts';
+import { readStandingVerdict, } from './consolidate-standing-verdict.ts';
 import {
-  contestStandingMayShip,
   standingTextFor,
 } from './consolidate-standing.ts';
 import {
@@ -29,7 +29,6 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { armSliceCost, } from './slice-cost-log.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import { validateTranslatedSlice, } from './translate-validate.ts';
 import {
   reuseTwinOrBuy,
   type TwinMemo,
@@ -340,32 +339,22 @@ export async function consolidateDocument(
       : undefined;
 
     /**
-     * Syntax verdict for standing text, or ordinary prose admission.
+     * Deterministic eligibility and contest endorsement of the standing text.
      */
-    const standingValidation = validateTranslatedSlice({
+    const {
+      standingValid,
+      standingMayShip,
+    } = readStandingVerdict({
       sourceText,
-      candidateText: standingText,
-      pageText: row.incumbentText,
+      standingText,
+      incumbentText: row.incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
-    },);
-    /**
-     * Whether standing text itself passes syntax-bearing publication rules.
-     */
-    const standingValid = standingValidation.kind === 'valid';
-    /**
-     * Whether this baseline has prior approval and may ship unchanged.
-     */
-    const standingMayShip = contestStandingMayShip({
       choice,
-      verdict: contest.verdict,
-      standingValid,
+      contestVerdict: contest.verdict,
+      sliceIndex: row.sliceIndex,
+      l: dl,
     },);
-    if (!standingMayShip) {
-      dl.warn(
-        `slice ${String(row.sliceIndex,)}: consolidation standing text fails publication eligibility and remains retryable`,
-      );
-    }
 
     /**
      * What the pictures near this slice were read to say, empty where none

@@ -92,6 +92,8 @@ export {
   type LaneContestEligibility,
   LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
   laneContestChoiceMayShip,
+  laneContestChoiceVerdict,
+  type LaneContestChoiceVerdict,
   settleEligibleLaneContestBallots,
 } from './lane-contest-eligibility.ts';
 export {

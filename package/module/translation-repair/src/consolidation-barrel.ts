@@ -84,10 +84,15 @@ export {
 } from './consolidate-standing.ts';
 export {
   ConsolidationStandingIneligibleError,
+  describeStandingVerdict,
   INELIGIBLE_STANDING_WITHHELD_FINDING,
   requireShippableTerminal,
   slateIncumbentFor,
 } from './consolidate-ineligible-standing.ts';
+export {
+  readStandingVerdict,
+  type StandingVerdict,
+} from './consolidate-standing-verdict.ts';
 export {
   CONSOLIDATE_CACHE_VERSION,
   consolidateRunShape,
