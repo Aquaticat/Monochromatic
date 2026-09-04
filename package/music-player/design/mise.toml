@@ -208,6 +208,28 @@ if (deviceRasterRuleStart < 0 || deviceRasterRuleEnd < 0) {
 if (deviceRasterRule.includes('border-radius')) {
   throw new Error(`${deviceRasterSelector} must not round the screen-content raster.`);
 }
+const deviceFrameSelector = '.device-frame {';
+const deviceFrameRuleStart = question.indexOf(deviceFrameSelector);
+const deviceFrameRuleEnd = question.indexOf('\n}', deviceFrameRuleStart);
+const deviceFrameRule = question.slice(deviceFrameRuleStart, deviceFrameRuleEnd);
+const missingFrameProperties = [
+  'overflow: hidden;',
+  'background-color: var(--device-body);',
+].filter((property) => !deviceFrameRule.includes(property));
+if (deviceFrameRuleStart < 0 || deviceFrameRuleEnd < 0 || missingFrameProperties.length > 0) {
+  throw new Error(`Device chassis must be opaque and clip only at its outer silhouette: ${missingFrameProperties.join(', ')}`);
+}
+const deviceScreenSelector = '.device-screen {';
+const deviceScreenRuleStart = question.indexOf(deviceScreenSelector);
+const deviceScreenRuleEnd = question.indexOf('\n}', deviceScreenRuleStart);
+const deviceScreenRule = question.slice(deviceScreenRuleStart, deviceScreenRuleEnd);
+const missingScreenProperties = [
+  'overflow: hidden;',
+  'background-color: var(--device-screen-fill);',
+].filter((property) => !deviceScreenRule.includes(property));
+if (deviceScreenRuleStart < 0 || deviceScreenRuleEnd < 0 || missingScreenProperties.length > 0) {
+  throw new Error(`Screen content must sit inside an opaque screen opening: ${missingScreenProperties.join(', ')}`);
+}
 const forbiddenFragments = [
   '<link ',
   '<script src=',
@@ -243,7 +265,13 @@ const requiredFragments = [
   'data-frame-kind="right-half"',
   'class="device-screen"',
   'class="device-camera"',
+  '--device-body: #262624;',
+  'aspect-ratio: 907 / 937;',
+  'aspect-ratio: 454 / 937;',
   'padding-inline-start: 1.7621%',
+  'const fullFrameWidth = 907;',
+  'const halfFrameWidth = 454;',
+  'const frameHeight = 937;',
   'data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
   'data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
   'data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
