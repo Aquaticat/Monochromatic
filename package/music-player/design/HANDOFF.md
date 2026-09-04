@@ -189,7 +189,10 @@ under a forced dark host. Axe reported zero WCAG A/AA violations; its remaining
 incomplete result is contrast automation unable to resolve overlapping miniature
 content, not a reported failure. The verified form was then opened through the Helium
 desktop entry at its repository `file://` URL; the launch command returned success and
-the Helium process is active. Work now waits for the user's answers from that form.
+the Helium process is active. The user then reported that the nested HTML mockups in
+the visible Helium form were not rendering correctly. The prior verification therefore
+did not prove the user-visible nested layouts were complete; diagnosis is in progress
+against Helium 0.15.6.1 (Chromium 151.0.7922.169). No theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
