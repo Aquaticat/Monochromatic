@@ -395,11 +395,16 @@ screen. Remove those left-side outer card shapes and surrounding screen margins 
 Picker and transport may retain their internal component shapes, but their section
 surfaces must meet the left-half and screen boundaries without a second rounded frame.
 Re-capture, re-embed, re-verify, and reopen the blank questionnaire before asking for
-theme answers. Prototype commit `e51a955f0` removes the left-side rounded surfaces and
+theme answers. Prototype commit `6e8f248c5` removes the left-side rounded surfaces and
 outer inset: picker background now reaches the top and left screen edges, transport
 background reaches the left and bottom screen edges behind the native navigation bar,
 and only the settled 16dp inter-section and centre-seam gaps expose the window surface.
-The corrected prototype assembles successfully; emulator capture remains pending.
+The background stays full bleed while its potential controls begin after the emulator's
+73px, approximately 30dp, left and right back-gesture insets. All six corrected
+candidates assemble, install and capture successfully. Individual inspection confirms
+square section boundaries at every screen edge, one 39px inter-section gap, one 39px
+centre seam, native status and gesture-navigation bars, and no remaining app-level
+rounded wrapper. The corrected captures are copied into `questions/render/`.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
