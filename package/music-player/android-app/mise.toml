@@ -148,6 +148,17 @@ dir = "{{config_root}}"
 depends = ["build:native"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
+[tasks."prototype:build"]
+description = "Assemble the debug-only non-functional Compose design candidates"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
+
+[tasks."prototype:install"]
+description = "Build and install the debug-only Compose design candidates on the connected emulator"
+dir = "{{config_root}}"
+depends = ["prototype:build"]
+run = "./gradlew :app:installDebug --no-daemon --console=plain"
+
 # Build the release APK, install it on every attached device, and launch it on
 # each of them. Gradle's installRelease already fans out across all connected
 # devices, but a bare `adb shell am start` fails with "more than one

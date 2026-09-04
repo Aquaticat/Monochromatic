@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<manifest xmlns:android='http://schemas.android.com/apk/res/android'>
+  <application>
+    <!-- Debug-only, non-functional Compose surface used for Pixel Fold screenshot capture. -->
+    <activity
+      android:name='.DesignCandidateActivity'
+      android:exported='true'
+      android:screenOrientation='portrait'
+      android:theme='@android:style/Theme.Material.Light.NoActionBar'
+    />
+  </application>
+</manifest>
