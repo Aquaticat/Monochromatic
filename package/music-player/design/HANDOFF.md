@@ -787,7 +787,12 @@ contrast incompletes. Direct labels, names, alternatives, IDs, focus, and 48px t
 pass. Browser errors and console output are empty. A matching-scale hardware comparison
 confirms the corrected pane geometry, white spacers, neutral rows, absent ordinals, and
 play-icon current cue. Stop isolated processes and replace the earlier clarification
-page in normal Helium with this cleared correction review.
+page in normal Helium with this cleared correction review. The isolated browser and
+emulator are stopped. The exact updated file was launched through the normal Helium
+desktop entry. KWin reports `Music player design: revised D2 correction review -
+Helium` active and non-minimized at 1080 × 1880 on `HDMI-A-1`, internal ID
+`{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`. Leave it visible and wait for the review
+answer.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
