@@ -764,7 +764,7 @@ dialog::backdrop {
     <div class="dialog-heading">
       <h2 id="zoom-title">Divider preview</h2>
       <p id="zoom-dimensions"></p>
-      <div class="zoom-toolbar" aria-label="Preview zoom controls">
+      <div class="zoom-toolbar" role="group" aria-label="Preview zoom controls">
         <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
         <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
         <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
@@ -774,7 +774,7 @@ dialog::backdrop {
         <button type="button" data-variant="secondary" id="zoom-close">Close preview and answer</button>
       </div>
     </div>
-    <div class="zoom-stage" id="zoom-stage">
+    <div class="zoom-stage" id="zoom-stage" role="region" tabindex="0" aria-label="Scrollable whole-device preview">
       <span class="zoom-device" id="zoom-device">
         <span class="device-screen">
           <img class="zoom-image" id="zoom-image" alt="">

@@ -101,9 +101,27 @@ agent-browser --session music-player-md3 --cdp 9224 eval \
 
 ### Incomplete case
 
-- Open modal dialog: no violations; `color-contrast` is incomplete for eight toolbar
-  text elements with message key `bgOverlap`.
+- The original theme-comparison modal has no violations; `color-contrast` is incomplete
+  for eight toolbar text elements with message key `bgOverlap`.
 - Restricting `axe.run()` to `#preview-dialog` leaves the same eight incomplete nodes.
+- The replacement divider-clarification modal reports the same `bgOverlap` path for
+  six visible nodes. Its toolbar wraps differently, so axe's virtual overlap set is a
+  subset rather than a stable node count.
+
+### Replacement-form accessibility corrections
+
+The first divider-clarification run produced one real axe violation on
+`#zoom-stage`: `scrollable-region-focusable`. Giving the scroll region `tabindex="0"`
+and a named `role="region"` removes it. An intermediate `aria-label` without a role
+produced the separate `aria-prohibited-attr` incomplete diagnostic; adding the region
+role removes that uncertainty too.
+
+After those corrections, the closed page has no violations or incomplete checks. The
+open modal has no violations; only the six `bgOverlap` contrast incompletes remain.
+Direct computed-color checks resolve them to two pairs:
+
+- `#1D1B20` on white: 17.075:1.
+- `#6750A4` and white in either foreground/background direction: 6.441:1.
 
 ## Verified workarounds
 
