@@ -615,6 +615,66 @@ re-run and two OpenRouter-alone picture passes: three passes on Synthetic at onc
     used; today's meter was almost untouched. Reaching the hold live would take the allowance near its
     edge, which is not a state to manufacture on purpose.
 
+## The two shape passes, 2026-09-04, 05:45 UTC onward, and what they cost
+
+Launched on OpenRouter alone to read the two fixes of the morning on entries that carry their shapes:
+`luxuanwen3` (comma-shaped one-line `PhotoScroll`, one picture) and `MTF_0615` (double-quoted photo paths,
+one picture), logs `~/temp/agent/luxuanwen3-shapes-20260904.log` and `mtf_0615-shapes-20260904.log`.
+
+- **MTF_0615 settled** in 7,555,138 ms (126 min) at 7.3240 USD for a 1,953-character source: 21 slices,
+    verify-published 1 of 1 (`chars=6267=expected`), the single-line photo element intact, its picture
+    read by OCR as textless so no model was asked, no Kimi-K3 call, two guard refusals, 5 in-stream
+    provider failures now named (`code 502, type provider_unavailable, served by Modal` four times,
+    OpenInference once), and **155 cut streams, all straggler-grace abandonments** (130 of them between
+    120 and 180 s): Qwen3.8-27B on Io Net 42, Ionstream 19, Reka 10; DeepSeek Flash on Parasail 41; GLM-5.3
+    on Reka 13 and Modal 12.
+- **luxuanwen3 ended INCOMPLETE** in 3,758,245 ms (63 min) at 2.6143 USD with no page: `entry luxuanwen3
+    front matter is not publishable (invalid-page)`. Its picture read fine (three readers, corroborated at
+    0.934). The cause is in the front matter, next section. 64 cut streams, same endpoints.
+- **The endpoint cut rates, over every run of the day** (completed against cut, by `served by`): Reka cut
+    19 of 40 Qwen, 12 of 41 DeepSeek Flash and 13 of 26 GLM-5.3 streams; Io Net 62 of 153 Qwen; Parasail 96
+    of 464 DeepSeek Flash; Ionstream 30 of 173 Qwen; Modal 21 of 144 GLM-5.3; against Together 0 of 245
+    GLM-5.3, DeepInfra 0 of 732 gemma and 0 of 237 DeepSeek Pro, Cerebras and Groq 0 of 488 gpt-oss,
+    Makora 2 of 99 DeepSeek Flash. The 2026-09-03 ignore of OpenInference for DeepSeek Flash was spelled
+    `openinference`; the gateway's slug (`GET /api/v1/providers`, `~/temp/agent/providers-20260904.json`)
+    is `open-inference`, and OpenInference served 43 streams of that model today: the ignore had never
+    reached the wire.
+- **CoreWeave was never ignored by the owner.** Asked, the owner answered that the "All providers have
+    been ignored" reply looked like an OpenRouter bug, re-saved the account's allowed providers, and the
+    re-probe (`~/temp/agent/openrouter-minimax-endpoints-20260904b.log`) read CoreWeave 4 of 4 conformant
+    on the corpus-sized schema request under zero data retention, 16 to 20 s a call, 0.0024 to 0.0027 USD
+    against ModelRun's 0.0072 to 0.0087; default routing still went to ModelRun 4 of 4.
+- **What landed** (`openrouter-catalog.ts`): `open-inference` spelled as listed; ModelRun ignored for
+    MiniMax M3 (CoreWeave serves); Reka and Parasail ignored for DeepSeek Flash; Reka and Io Net for
+    Qwen3.8-27B; Reka for GLM-5.3. Rule recorded on the rows: an endpoint is ignored when a day's runs cut
+    a quarter or more of at least twenty of its streams, or fail that share in-stream; Modal (15 percent)
+    and Inceptron (3 of 3) stay. A catalog test checks every ignored slug against a snapshot of the
+    provider listing, shown to fail with `openinference` put back.
+
+## luxuanwen3's front matter, and the rule the archive breaks
+
+- `validateFrontMatterTranslation` (`front-matter-translation.ts`) refuses a candidate whose `name` and
+    `info.alias` differ when the ORIGINAL declares them the same; `front-matter-completeness.ts` applies
+    the same validator to the assembled page (`doc/decision/translation-repair-front-matter-guard.md`,
+    `invalid-page`). luxuanwen3's source has `name: 鲵鲵`, `alias: 鲵鲵`; the archive's page has
+    `name: Nini`, `alias: 鲵鲵, Nini`. Reproduced with the built validator on the run's candidates: the
+    archive-shaped front matter is `invalid` ("must keep name and info.alias as same visible identity"),
+    the two candidates with `alias: Nini` are `valid`.
+- The translate lane's standing text was the archive-shaped front matter; consolidation logged `slice 0:
+    consolidation standing text fails publication eligibility and remains retryable`, the judges endorsed
+    the standing over the slate ("matches the declared translated identity", three ballots), and the single
+    attempt "kept it (slate-endorsed-standing); shipping with the finding recorded" (`consolidate-slice-buy.ts`,
+    single attempt by design after the no-loop proposal). The page guard then refused the entry an hour
+    later. `settleConsolidation` is never told the standing is ineligible.
+- **Measured over the pinned corpus**: 14 of 92 sources declare `name` equal to `alias`; in 7 of them the
+    archive renders the alias differently: MizuharaNagisa ("mizuharanagisa" / "Mizuhara Nagisa, 水原なぎさ,
+    Shui Yuan Zhu"), SevenBird, Weideriche_, gaoyanger ("Gaoyang" / "Gaoyang, Lamb"), interrgned,
+    luxuanwen3, noname ("noname" / "noname, no name, anonymous, ..."). Under the rule as written, none of
+    those seven can ship an archive-shaped front matter; the lanes must drop the extra renderings from the
+    alias. Whether an alias that carries the name among other renderings is "the same identity" is the
+    owner's call; the question is put at the end of this session's turn with the mechanism question
+    (an ineligible standing that ships into a page the guard will refuse).
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
