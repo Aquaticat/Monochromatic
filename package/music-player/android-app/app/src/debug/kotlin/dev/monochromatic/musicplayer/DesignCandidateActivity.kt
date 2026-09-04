@@ -159,13 +159,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 
 // What:     `CircleShape` and `RoundedCornerShape` are reusable Compose clipping outlines.
 // Why:      Transport buttons, chips, and panes retain their settled MD3 geometry.
@@ -406,7 +409,9 @@ private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette
     ) {
         Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         FolderPicker(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start)),
             palette = palette,
         )
         Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.window))
@@ -541,6 +546,7 @@ private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
     Column(
         modifier = modifier
             .background(color = palette.transport)
+            .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start))
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -640,7 +646,8 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing),
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.End)),
             ) {
                 Row(
             modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
