@@ -851,7 +851,7 @@ const openPreview = (button) => {
 const buildAnswer = () => {
   const data = new FormData(form);
   return [
-    `Continue from ${data.get('reviewResult')}`,
+    `Review result: ${data.get('reviewResult')}`,
     `Other corrections: ${data.get('otherCorrections').trim()}`,
   ].join('\n');
 };
