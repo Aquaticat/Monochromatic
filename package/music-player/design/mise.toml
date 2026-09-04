@@ -31,6 +31,7 @@ const { resolve } = await import('node:path');
 const { pathToFileURL } = await import('node:url');
 const cdpPort = process.env.PI_HELIUM_CDP_PORT ?? '9224';
 const panelScale = 2076 / 852;
+const deviceBackingColor = '#000000';
 const candidates = [
   { name: 'light-a', logicalWidth: 852, frameWidth: 852, pixelWidth: 2076 },
   { name: 'light-b', logicalWidth: 852, frameWidth: 852, pixelWidth: 2076 },
@@ -90,6 +91,7 @@ for (const candidate of candidates) {
       document.body.style.marginBlock = '0';
       document.body.style.marginInline = '0';
       document.body.style.overflow = 'hidden';
+      document.body.style.backgroundColor = '${deviceBackingColor}';
       frame.style.inlineSize = '${candidate.logicalWidth}px';
       frame.style.blockSize = '${logicalHeight}px';
       frame.style.transform = 'none';
@@ -116,6 +118,7 @@ for (const candidate of candidates) {
 validate_question = '''
 const { existsSync, readFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
+const { inflateSync } = await import('node:zlib');
 const requiredPaths = [
   'HANDOFF.md',
   'review-notes.md',
@@ -154,7 +157,45 @@ for (const [path, expectedWidth, expectedHeight] of renderDimensions) {
     throw new Error(`${path} is ${width}×${height}; expected ${expectedWidth}×${expectedHeight}.`);
   }
 }
+const roundedScreenPaths = [
+  'questions/render/dbtp-a.png',
+  'questions/render/dbtp-b.png',
+  'questions/render/dbtp-c.png',
+];
+for (const path of roundedScreenPaths) {
+  const image = readFileSync(resolve(path));
+  if (image[24] !== 8 || image[25] !== 2 || image[28] !== 0) {
+    throw new Error(`${path} must remain an 8-bit, RGB, non-interlaced PNG.`);
+  }
+  const idatChunks = [];
+  let chunkOffset = 8;
+  while (chunkOffset < image.length) {
+    const chunkLength = image.readUInt32BE(chunkOffset);
+    const chunkType = image.subarray(chunkOffset + 4, chunkOffset + 8).toString('ascii');
+    if (chunkType === 'IDAT') {
+      idatChunks.push(image.subarray(chunkOffset + 8, chunkOffset + 8 + chunkLength));
+    }
+    chunkOffset += chunkLength + 12;
+  }
+  const scanlines = inflateSync(Buffer.concat(idatChunks));
+  const topLeftRgb = scanlines.subarray(1, 4).toString('hex');
+  if (topLeftRgb !== '000000') {
+    throw new Error(`${path} exposes ${topLeftRgb} behind its rounded screen; expected opaque black device backing.`);
+  }
+}
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
+const deviceRasterSelectors = ['.preview-open img {', '.zoom-image {'];
+for (const selector of deviceRasterSelectors) {
+  const ruleStart = question.indexOf(selector);
+  const ruleEnd = question.indexOf('\n}', ruleStart);
+  const rule = question.slice(ruleStart, ruleEnd);
+  if (ruleStart < 0 || ruleEnd < 0) {
+    throw new Error(`Missing device raster rule: ${selector}`);
+  }
+  if (rule.includes('border-radius')) {
+    throw new Error(`${selector} clips the device raster and reveals the surrounding surface.`);
+  }
+}
 const forbiddenFragments = [
   '<link ',
   '<script src=',

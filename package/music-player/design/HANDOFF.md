@@ -252,9 +252,11 @@ reopening, the user caught another fidelity defect: real devices have no holes t
 reveal what is behind them. The form clips both card and dialog images with CSS border
 radii, and all three half-screen rasters place the questionnaire-like `#DED8E0`
 capture background in their rounded corner pixels. The red probe names both clipping
-selectors and measures those corner pixels as `rgb(221, 215, 223)`. Remove form-level
-raster clipping, render rounded display corners over solid device backing, and verify
-all card and dialog corners. No theme answer has been recorded.
+selectors and measures those corner pixels as `rgb(221, 215, 223)`. Form-level image
+rounding is now removed. `render:candidates` paints solid black device backing behind
+rounded source frames; all three half-screen top-left pixels are now `rgb(0, 0, 0)`.
+The package contract checks both conditions and is green. Visual card and dialog corner
+verification remains before reopening. No theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
