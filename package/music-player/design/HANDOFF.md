@@ -658,7 +658,11 @@ hardware comparison confirms the white rail seam visually merges into its adjace
 white surfaces while the 24dp center spacer remains the tonal expanded-layout spacer.
 The selected baseline still uses one neutral duration-plus-true-peak line. Stop the
 isolated browser and emulator, then reopen this cleared final artifact in normal
-Helium.
+Helium. That cleanup is complete. The earlier normal questionnaire window was closed
+because it contained the pre-decision artifact. The updated cleared file was reopened
+through the Helium desktop entry, and KWin confirms its exact non-minimized
+1080 × 1880 window on `HDMI-A-1`. A one-shot activation targeted that window. The page
+labels `1c` and `3a` as chosen while leaving all form inputs clear.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
