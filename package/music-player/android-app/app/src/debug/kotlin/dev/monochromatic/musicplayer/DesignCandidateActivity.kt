@@ -81,8 +81,6 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -222,7 +220,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -230,7 +227,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -238,6 +234,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.dynamicLightColorScheme
@@ -483,6 +480,17 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
             title = {
                 Text(text = "Folders")
             },
+            actions = {
+                TextButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Filled.FolderOpen,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                    )
+                    Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                    Text(text = "Open")
+                }
+            },
             modifier = Modifier.windowInsetsPadding(
                 WindowInsets.systemGestures.only(WindowInsetsSides.Start),
             ),
@@ -492,44 +500,6 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
             ),
             windowInsets = WindowInsets(0, 0, 0, 0),
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            FilledTonalButton(
-                onClick = {},
-                modifier = Modifier.semantics {
-                    contentDescription = "Choose folder, Camellia selected"
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Folder,
-                    contentDescription = null,
-                    modifier = Modifier.size(ButtonDefaults.IconSize),
-                )
-                Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                Text(text = "Camellia")
-                Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = null,
-                    modifier = Modifier.size(ButtonDefaults.IconSize),
-                )
-            }
-            OutlinedButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Filled.FolderOpen,
-                    contentDescription = null,
-                    modifier = Modifier.size(ButtonDefaults.IconSize),
-                )
-                Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                Text(text = "Open")
-            }
-        }
         Row(modifier = Modifier.weight(1f)) {
             LetterRail(palette = palette)
             if (palette.railDivider) {
