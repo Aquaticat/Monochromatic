@@ -358,28 +358,23 @@ private fun DesignCandidatePrototype(candidate: String) {
     }
 }
 
-/** Keeps every app control outside combined status, camera-cutout, and navigation insets. */
-@Composable
-private fun SafeUnfoldedRow(content: @Composable RowScope.() -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        content()
-    }
-}
-
-/** Renders both 402dp panes around the settled 16dp seam. */
+/** Renders a 402dp inset left pane and one edge-to-edge right track surface. */
 @Composable
 private fun FullUnfoldedStudy(palette: CandidatePalette) {
-    SafeUnfoldedRow {
-        FolderAndTransportPane(
-            modifier = Modifier.weight(1f),
-            palette = palette,
-        )
+    Row(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .width(418.dp)
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+        ) {
+            FolderAndTransportPane(
+                modifier = Modifier.fillMaxSize(),
+                palette = palette,
+            )
+        }
+        Box(modifier = Modifier.width(16.dp).fillMaxSize())
         TrackPane(
             modifier = Modifier.weight(1f),
             candidate = "dbtp-a",
@@ -388,11 +383,11 @@ private fun FullUnfoldedStudy(palette: CandidatePalette) {
     }
 }
 
-/** Renders only the right pane so its physical right-half crop remains meaningful. */
+/** Renders the right track surface edge to edge for its physical right-half crop. */
 @Composable
 private fun RightHalfStudy(candidate: String, palette: CandidatePalette) {
-    SafeUnfoldedRow {
-        Box(modifier = Modifier.weight(1f))
+    Row(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.width(434.dp).fillMaxSize())
         TrackPane(
             modifier = Modifier.weight(1f),
             candidate = candidate,
@@ -642,18 +637,21 @@ private fun ModeRow(first: String, second: String, selectedSecond: Boolean, pale
     }
 }
 
-/** Builds the right track pane shared by all surface and metadata candidates. */
+/** Builds one edge-to-edge track surface with controls inside native safe insets. */
 @Composable
 private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette) {
-    val shape = RoundedCornerShape(12.dp)
-    var paneModifier = modifier
-        .fillMaxSize()
-        .background(color = palette.tracks, shape = shape)
-    if (palette.paneOutlines) {
-        paneModifier = paneModifier.border(width = 1.dp, color = Color(0xFFCAC4D0), shape = shape)
-    }
-    Column(modifier = paneModifier) {
-        Row(
+    Box(modifier = modifier.fillMaxSize().background(color = palette.tracks)) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            if (palette.paneOutlines) {
+                Box(modifier = Modifier.width(1.dp).fillMaxSize().background(Color(0xFFCAC4D0)))
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
+            ) {
+                Row(
             modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -687,14 +685,16 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
             PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
             PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
         )
-        Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-            for (index in tracks.indices) {
-                TrackRow(
-                    index = index,
-                    track = tracks[index],
-                    candidate = candidate,
-                    palette = palette,
-                )
+                Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                    for (index in tracks.indices) {
+                        TrackRow(
+                            index = index,
+                            track = tracks[index],
+                            candidate = candidate,
+                            palette = palette,
+                        )
+                    }
+                }
             }
         }
     }
