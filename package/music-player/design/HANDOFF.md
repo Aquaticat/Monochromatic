@@ -531,7 +531,33 @@ swipe from x=20px, inside the 73px Back region, scrolls the rail from A-I to I-Q
 closing the activity, so no broad system-gesture exclusion is needed. Fresh standard
 captures show the edge-flush rail and underlined folder selection. They are embedded
 in the rebuilt questionnaire and package checks pass; repeat Helium verification on
-this final capture set before reopening it.
+this final capture set before reopening it. Fresh guard positive controls are complete:
+moving one rail-edge pixel back to picker color triggers the flush-edge diagnostic;
+erasing the underline triggers the non-color-state diagnostic; and substituting the
+low-contrast `#AAAAAA` foreground makes all six `onSurfaceVariant` checks fail. The
+restored package passes build, lint, and unit contracts.
+
+Final Helium verification at DPR 2 is complete on the `f54fc145d` capture set. All six
+previews decode to 2076 × 2152px or 1038 × 2152px. Full frames measure 907 × 937 CSS
+px around 852 × 883px screens; physical-half frames measure 454 × 937px around
+426 × 883px screens. Camera geometry remains 32.41dp. Zoom in, out, Fit, sharp 1:1
+display pixels, reset, stage scrolling, and Close pass. Both comparisons remain one
+row at 1280 × 800; at 390 × 844 each independent 316px scroller traverses its 848px
+row by 532px while the page remains 390px wide. Offline loading retains all six images;
+forced host dark mode leaves the form light. Blank validation, every radio, free text,
+prepare, copy, download, and clear pass with the synthetic `Q1 1c / Q2 3b / Q3 None.`
+result and finish cleared.
+
+Axe-core 4.13.0 reports no WCAG A/AA violations and no incomplete checks on the closed
+page. The modal reports no violations and one `color-contrast` incomplete group for
+eight toolbar nodes because axe cannot resolve a top-layer background; the source trace
+and manual-review procedure are in `doc/troubleshooting/axe-modal-dialog-contrast.md`.
+Resolved computed pairs range from 6.44:1 to 17.07:1 for those nodes. Labels, names,
+alternative text, unique IDs, 48px visible targets, and initial dialog focus pass direct
+checks. Helium page errors and console output are empty. A fresh 629 × 650
+matching-scale crop against the supplied front reference confirms the final frame and
+edge-flush rail. The isolated form is blank and its dialog is closed. Reopen this exact
+file in the normal Helium session before accepting answers.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
