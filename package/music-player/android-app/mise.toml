@@ -159,6 +159,91 @@ dir = "{{config_root}}"
 depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
+[tasks."prototype:capture"]
+description = "Install and capture all six Compose candidates from the unfolded Pixel Fold emulator"
+dir = "{{config_root}}"
+depends = ["prototype:install"]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import("node:child_process");
+const { mkdtempSync, readFileSync, rmSync, writeFileSync } = await import("node:fs");
+const { join, resolve } = await import("node:path");
+const { tmpdir } = await import("node:os");
+const sdk = process.env.ANDROID_HOME;
+if (!sdk) {
+  throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it.");
+}
+const adb = join(sdk, "platform-tools", "adb");
+const serial = process.env.ANDROID_SERIAL ?? "emulator-5560";
+const displayListing = execFileSync(adb, ["-s", serial, "shell", "dumpsys", "SurfaceFlinger", "--display-id"], { encoding: "utf8" });
+const innerDisplayLine = displayListing
+  .split("\n")
+  .find((line) => line.startsWith("Display ") && line.includes("(HWC display 0)"));
+if (!innerDisplayLine) {
+  throw new Error("The emulator did not report its unfolded HWC display 0.");
+}
+const displayIdEnd = innerDisplayLine.indexOf(" ", "Display ".length);
+const displayId = innerDisplayLine.slice("Display ".length, displayIdEnd);
+const outputDirectory = resolve("../design/questions/render");
+const scratchDirectory = mkdtempSync(join(tmpdir(), "music-player-compose-capture-"));
+const candidateNames = ["light-a", "light-b", "light-c", "dbtp-a", "dbtp-b", "dbtp-c"];
+for (const candidateName of candidateNames) {
+  execFileSync(
+    adb,
+    [
+      "-s", serial,
+      "shell", "am", "start", "-W", "-S",
+      "-n", "dev.monochromatic.musicplayer/.DesignCandidateActivity",
+      "--es", "candidate", candidateName,
+    ],
+    { stdio: "inherit" },
+  );
+  let candidateReady = false;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    execFileSync(
+      adb,
+      ["-s", serial, "shell", "uiautomator", "dump", "/sdcard/music-player-candidate.xml"],
+      { stdio: "ignore" },
+    );
+    const hierarchy = execFileSync(
+      adb,
+      ["-s", serial, "exec-out", "cat", "/sdcard/music-player-candidate.xml"],
+      { encoding: "utf8" },
+    );
+    if (hierarchy.includes("Camellia")) {
+      candidateReady = true;
+      break;
+    }
+  }
+  if (!candidateReady) {
+    throw new Error(`${candidateName} never replaced the Android launch splash.`);
+  }
+  const screenshot = execFileSync(
+    adb,
+    ["-s", serial, "exec-out", "screencap", "-p", "-d", displayId],
+    { maxBuffer: 16 * 1024 * 1024 },
+  );
+  const fullPath = join(scratchDirectory, `${candidateName}-full.png`);
+  writeFileSync(fullPath, screenshot);
+  const outputPath = join(outputDirectory, `${candidateName}.png`);
+  if (candidateName.startsWith("dbtp-")) {
+    execFileSync("magick", [fullPath, "-crop", "1019x2152+1057+0", "+repage", outputPath]);
+  } else {
+    writeFileSync(outputPath, readFileSync(fullPath));
+  }
+  execFileSync("mogrify", ["-strip", outputPath]);
+  const image = readFileSync(outputPath);
+  const width = image.readUInt32BE(16);
+  const height = image.readUInt32BE(20);
+  const expectedWidth = candidateName.startsWith("dbtp-") ? 1019 : 2076;
+  if (width !== expectedWidth || height !== 2152) {
+    throw new Error(`${candidateName} captured at ${width}×${height}; expected ${expectedWidth}×2152.`);
+  }
+  console.log(`Captured ${candidateName} from Android display ${displayId} at ${width}×${height}px.`);
+}
+rmSync(scratchDirectory, { recursive: true, force: true });
+'''
+
 # Build the release APK, install it on every attached device, and launch it on
 # each of them. Gradle's installRelease already fans out across all connected
 # devices, but a bare `adb shell am start` fails with "more than one
