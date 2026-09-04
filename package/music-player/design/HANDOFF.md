@@ -815,7 +815,11 @@ None`, then stays cleared. Offline loading decodes the one image without externa
 forced host dark mode remains light. Axe reports no WCAG A/AA violations or incomplete
 checks on either the page or open modal. Labels, alternatives, IDs, focus, and 48px
 targets pass. Browser errors and console output are empty. Replace the stale normal
-Helium page with this current-only file and leave its instructional page visible.
+Helium page with this current-only file and leave its instructional page visible. The
+isolated verifier is stopped. The exact updated file was launched through the normal
+Helium desktop entry. KWin reports `Music player design: current revised D2 - Helium`
+active and non-minimized at 1080 × 1880 on `HDMI-A-1`, internal ID
+`{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`. Leave it visible and wait for its answer.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
