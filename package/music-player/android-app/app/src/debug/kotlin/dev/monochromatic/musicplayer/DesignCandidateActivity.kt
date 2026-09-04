@@ -316,6 +316,7 @@ private data class CandidatePalette(
     val rail: Color,
     val transport: Color,
     val tracks: Color,
+    val spacer: Color,
     val paneDivider: Boolean,
     val railDivider: Boolean,
     val railDividerColor: Color,
@@ -351,6 +352,48 @@ class DesignCandidateActivity : ComponentActivity() {
 
 /** Resolves only documented Material surface roles while keeping component geometry identical. */
 private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette {
+    if (candidate == "divider-a") {
+        return CandidatePalette(
+            window = scheme.surfaceDim,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLowest,
+            transport = scheme.surfaceContainerLow,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = scheme.surfaceDim,
+            paneDivider = false,
+            railDivider = true,
+            railDividerColor = Color.White,
+            rowDividers = false,
+        )
+    }
+    if (candidate == "divider-b") {
+        return CandidatePalette(
+            window = scheme.surfaceDim,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLowest,
+            transport = scheme.surfaceContainerLow,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = Color.White,
+            paneDivider = false,
+            railDivider = true,
+            railDividerColor = scheme.outlineVariant,
+            rowDividers = false,
+        )
+    }
+    if (candidate == "divider-c") {
+        return CandidatePalette(
+            window = scheme.surfaceDim,
+            picker = scheme.surfaceContainerLowest,
+            rail = scheme.surfaceContainerLowest,
+            transport = scheme.surfaceContainerLow,
+            tracks = scheme.surfaceContainerLowest,
+            spacer = Color.White,
+            paneDivider = false,
+            railDivider = true,
+            railDividerColor = Color.White,
+            rowDividers = false,
+        )
+    }
     if (candidate == "light-a") {
         return CandidatePalette(
             window = scheme.surface,
@@ -358,6 +401,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             rail = scheme.surfaceContainerHigh,
             transport = scheme.surfaceContainer,
             tracks = scheme.surface,
+            spacer = scheme.surface,
             paneDivider = false,
             railDivider = false,
             railDividerColor = scheme.outlineVariant,
@@ -371,6 +415,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             rail = scheme.surface,
             transport = scheme.surface,
             tracks = scheme.surface,
+            spacer = scheme.surface,
             paneDivider = true,
             railDivider = true,
             railDividerColor = scheme.outlineVariant,
@@ -383,6 +428,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
         rail = scheme.surfaceContainerLowest,
         transport = scheme.surfaceContainerLow,
         tracks = scheme.surfaceContainerLowest,
+        spacer = scheme.surfaceDim,
         paneDivider = false,
         railDivider = true,
         railDividerColor = Color.White,
@@ -428,7 +474,12 @@ private fun FullUnfoldedStudy(palette: CandidatePalette) {
                 palette = palette,
             )
         }
-        Box(modifier = Modifier.width(24.dp).fillMaxSize())
+        Box(
+            modifier = Modifier
+                .width(24.dp)
+                .fillMaxSize()
+                .background(palette.spacer),
+        )
         TrackPane(
             modifier = Modifier.weight(1f),
             candidate = "dbtp-a",

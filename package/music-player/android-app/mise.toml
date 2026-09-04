@@ -207,7 +207,17 @@ const displayIdEnd = innerDisplayLine.indexOf(" ", "Display ".length);
 const displayId = innerDisplayLine.slice("Display ".length, displayIdEnd);
 const outputDirectory = resolve("../design/questions/render");
 const scratchDirectory = mkdtempSync(join(tmpdir(), "music-player-compose-capture-"));
-const candidateNames = ["light-a", "light-b", "light-c", "dbtp-a", "dbtp-b", "dbtp-c"];
+const candidateNames = [
+  "light-a",
+  "light-b",
+  "light-c",
+  "dbtp-a",
+  "dbtp-b",
+  "dbtp-c",
+  "divider-a",
+  "divider-b",
+  "divider-c",
+];
 for (const candidateName of candidateNames) {
   execFileSync(
     adb,
@@ -248,7 +258,7 @@ for (const candidateName of candidateNames) {
     'text="Camellia"',
     'text="Another Xronixle"',
     'content-desc="Settings"',
-    ...(candidateName.startsWith("light-")
+    ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-")
       ? [
           'text="Folders"',
           'text="Open"',
