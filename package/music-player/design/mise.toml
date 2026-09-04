@@ -188,6 +188,12 @@ const removedFolderControlPixel = pixelAt({ path: 'questions/render/light-a.png'
 if (removedFolderControlPixel !== 'srgba(243,243,250,1)') {
   throw new Error('questions/render/light-a.png must not restore the redundant left current-folder control.');
 }
+const chosenWhiteRailSeamPixels = [115, 117, 119].map((x) =>
+  pixelAt({ path: 'questions/render/light-c.png', x, y: 1000 }),
+);
+if (chosenWhiteRailSeamPixels.some((pixel) => pixel !== 'srgba(255,255,255,1)')) {
+  throw new Error('questions/render/light-c.png must render the chosen rail seam white.');
+}
 const selectedFolderTabIndicatorPixels = countPixelsMatching({
   path: 'questions/render/light-a.png',
   crop: '200x4+140+499',
@@ -375,6 +381,7 @@ const forbiddenFragments = [
   'prototype commit 12e99097d',
   'prototype commit f54fc145d',
   'prototype commit 88374ace0',
+  'prototype commit 8ec92ff7f',
   'data-preview-width="418"',
   'data-source-width="1019"',
   'Value only on playing row',
@@ -407,12 +414,16 @@ const requiredFragments = [
   'class="device-screen"',
   'class="device-camera"',
   'Native Compose capture from Pixel 9 Pro Fold emulator',
-  'prototype commit 8ec92ff7f',
+  'prototype commit 5cff61514',
   'official Material 3 components',
   'Every selected state has a non-color cue',
   'separate MD1-style 2dp tab indicator',
   'selectable letter rail is flush with the physical start edge',
   'Open shares the Folders app-bar line',
+  '1c · chosen',
+  'one white rail divider',
+  '3a · chosen',
+  'Planned display templating',
   'dynamic role mappings',
   'Android 17 API 37',
   '--device-body: #262624;',
@@ -423,7 +434,7 @@ const requiredFragments = [
   'const frameHeight = 937;',
   'data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
   'data-preview-title="1b: One flat surface with dividers" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
-  'data-preview-title="1c: Tonal panes with one rail divider" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
+  'data-preview-title="1c: Tonal panes with one white rail divider" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
   'data-preview-title="3a: One secondary treatment" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
   'data-preview-title="3b: Stronger true-peak value" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
   'data-preview-title="3c: Trailing true-peak column" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
