@@ -86,22 +86,66 @@ const pixelAt = ({ path, x, y }) => execFileSync(
   [resolve(path), '-format', `%[pixel:p{${x},${y}}]`, 'info:'],
   { encoding: 'utf8' },
 );
-for (const path of renderDimensions.slice(0, 3).map(([entryPath]) => entryPath)) {
+const fullCaptureEdges = [
+  {
+    path: 'questions/render/light-a.png',
+    topStart: 'srgba(247,242,250,1)',
+    bottomStart: 'srgba(243,237,247,1)',
+    screenEnd: 'srgba(254,247,255,1)',
+    gap: 'srgba(255,255,255,1)',
+  },
+  {
+    path: 'questions/render/light-b.png',
+    topStart: 'srgba(254,247,255,1)',
+    bottomStart: 'srgba(254,247,255,1)',
+    screenEnd: 'srgba(254,247,255,1)',
+    gap: null,
+  },
+  {
+    path: 'questions/render/light-c.png',
+    topStart: 'srgba(255,255,255,1)',
+    bottomStart: 'srgba(247,242,250,1)',
+    screenEnd: 'srgba(255,255,255,1)',
+    gap: 'srgba(222,216,224,1)',
+  },
+];
+for (const { path, topStart, bottomStart, screenEnd, gap } of fullCaptureEdges) {
   const selectedRowPixel = pixelAt({ path, x: 1100, y: 350 });
   const navigationPixel = pixelAt({ path, x: 1038, y: 2112 });
+  const edgePixels = [
+    pixelAt({ path, x: 0, y: 0 }),
+    pixelAt({ path, x: 0, y: 2151 }),
+    pixelAt({ path, x: 2075, y: 0 }),
+    pixelAt({ path, x: 2075, y: 2151 }),
+  ];
+  const expectedEdgePixels = [topStart, bottomStart, screenEnd, screenEnd];
   if (selectedRowPixel !== 'srgba(232,222,248,1)') {
     throw new Error(`${path} did not replace the Android launch splash with Compose content.`);
   }
   if (navigationPixel === 'srgba(255,255,255,1)' || navigationPixel === 'srgba(254,247,255,1)') {
     throw new Error(`${path} is missing the native unfolded gesture handle.`);
   }
+  if (edgePixels.some((pixel, index) => pixel !== expectedEdgePixels[index])) {
+    throw new Error(`${path} still double-wraps one or more full-height screen sections.`);
+  }
+  if (gap !== null) {
+    const gapPixels = [
+      pixelAt({ path, x: 500, y: 1297 }),
+      pixelAt({ path, x: 500, y: 1298 }),
+      pixelAt({ path, x: 500, y: 1336 }),
+      pixelAt({ path, x: 500, y: 1337 }),
+    ];
+    if (gapPixels[0] === gap || gapPixels[1] !== gap || gapPixels[2] !== gap || gapPixels[3] === gap) {
+      throw new Error(`${path} must keep exactly one 39px inter-section gap without outer margins.`);
+    }
+  }
 }
 for (const path of renderDimensions.slice(3).map(([entryPath]) => entryPath)) {
-  const statusPixel = pixelAt({ path, x: 700, y: 40 });
+  const statusPixel = pixelAt({ path, x: 830, y: 40 });
   const selectedRowPixel = pixelAt({ path, x: 500, y: 350 });
   const navigationPixel = pixelAt({ path, x: 100, y: 2112 });
   const bottomEndPixel = pixelAt({ path, x: 1018, y: 2151 });
-  if (statusPixel !== 'srgba(14,14,14,1)') {
+  if (statusPixel !== 'srgba(0,0,0,1)') {
     throw new Error(`${path} is missing the native Android status icons.`);
   }
   if (selectedRowPixel !== 'srgba(232,222,248,1)') {

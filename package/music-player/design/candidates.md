@@ -72,7 +72,8 @@ six `.dc.html` files are now historical design records rather than screenshot so
 Branch `prototype/music-player-theme-compose` rebuilds the same six keys in native
 Compose and captures them from the unfolded Pixel 9 Pro Fold emulator with Android
 system bars. The checked-in PNGs under `questions/render/` come from prototype commit
-`69607079b` after removal of the redundant full-height track-pane wrapper.
+`6e8f248c5` after removal of redundant outer wrappers on both sides and insertion of
+30dp edge-gesture insets inside the still-full-bleed section backgrounds.
 
 ## ROUND 8 — verdicts in
 
