@@ -506,7 +506,12 @@ accessibility correction: never communicate state through color alone, and expli
 check color contrast. Re-audit every selected, playing, current, checked, and emphasized
 state across all six captures. Add an unmistakable non-color cue wherever one is
 missing, then calculate the resolved dynamic role-pair contrast rather than assuming
-that use of a Material token proves the rendered combination.
+that use of a Material token proves the rendered combination. The user then corrected
+the picker geometry: the letter rail must sit flush against the physical device edge,
+matching Nova Launcher's rail, rather than beginning after the left system-gesture
+inset. Move only the rail to the edge; keep other actionable picker content on its
+Material and system safety rulers. Verify the Android gesture interaction rather than
+assuming a visual move is sufficient.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
