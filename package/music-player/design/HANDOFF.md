@@ -671,7 +671,15 @@ behind its Open preview action. Rule VPH now records that a visual handoff compl
 only when the requested artifact state itself is visible. The questionnaire supports
 `#chosen-baseline`, which opens the selected full-frame modal as the page loads. Verify
 that hash path, replace the form-only normal window with it, and activate its exact
-non-minimized KWin window before asking any next-round question.
+non-minimized KWin window before asking any next-round question. The hash path is now
+verified in isolated Helium at DPR 2: the dialog is open immediately, its title is
+`1c: Tonal panes with one white rail divider`, its image is 2076 × 2152px, initial
+focus is Zoom out, and all form answers remain clear. The form-only normal window was
+closed and the same hash path was launched through the normal Helium desktop entry.
+Its exact replacement KWin window is `{25fcb5c8-6f0f-4554-afb2-a45f1473592c}` at
+1080 × 1880 on `DP-2`. Make activation of that window the final operation so a later
+tool call does not return focus to the agent terminal. Await visible corrections; do
+not ask for next-work ordering yet.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
