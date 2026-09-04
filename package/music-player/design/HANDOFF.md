@@ -238,10 +238,16 @@ Helium at the panel scale `2076 / 852`: full renders are 2076×2152px and half-s
 renders are 1019×2152px. Metadata was stripped, the self-contained form was rebuilt,
 and the physical-dimension regression is green. Both three-up contact sheets were
 inspected and retain the intended candidate differences. The zoom dialog now exposes
-a Native source control and caps enlargement at the source-to-host pixel ratio so it
-cannot voluntarily upscale the raster. User-boundary Helium verification remains
-before reopening. No theme answer has been
-recorded.
+a `1:1 display pixels` control and caps enlargement at the source-to-host pixel ratio
+so it cannot voluntarily upscale the raster. Its labels distinguish logical dp, CSS
+px, host display px and source px; 100% means one dp maps to one CSS px. A read-only
+KWin window probe measured the user's visible questionnaire tab on output `DP-2` at
+DPR 2, matching the Helium verification profile. At 100%, the full mock uses
+1704×1766 display pixels backed by 2076×2152 source pixels. The new
+`render:candidates` mise task reproduced every raster byte-for-byte through Helium CDP
+and rebuilt the questionnaire, preserving a durable regeneration path. Final
+user-boundary verification of the relabelled form remains before reopening. No theme
+answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

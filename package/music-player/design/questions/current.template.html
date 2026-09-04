@@ -785,8 +785,8 @@ footer {
       <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
       <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
       <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
-      <button type="button" data-variant="secondary" id="zoom-native">Native source</button>
-      <button type="button" id="zoom-actual">Reset to actual</button>
+      <button type="button" data-variant="secondary" id="zoom-native">1:1 display pixels</button>
+      <button type="button" id="zoom-actual">Reset: 1dp = 1 CSS px</button>
       <button type="button" data-variant="secondary" id="zoom-close">Close</button>
     </div>
   </div>
@@ -832,8 +832,10 @@ const renderZoom = () => {
   const renderedHeight = Math.round(targetHeight * currentScale);
   zoomImage.style.inlineSize = `${renderedWidth}px`;
   zoomImage.style.blockSize = `${renderedHeight}px`;
-  zoomScale.textContent = `${Math.round(currentScale * 100)}% · ${renderedWidth}×${renderedHeight} CSS px`;
-  zoomDimensions.textContent = `Logical target: ${targetWidth}×${targetHeight}${targetUnit}. Source: ${sourceWidth}×${sourceHeight}px. Actual size is 100%.`;
+  const displayWidth = Math.round(renderedWidth * devicePixelRatio);
+  const displayHeight = Math.round(renderedHeight * devicePixelRatio);
+  zoomScale.textContent = `${Math.round(currentScale * 100)}% · ${renderedWidth}×${renderedHeight} CSS px · ${displayWidth}×${displayHeight} display px`;
+  zoomDimensions.textContent = `Logical target: ${targetWidth}×${targetHeight}${targetUnit}. Source: ${sourceWidth}×${sourceHeight}px. At 100%, 1dp maps to 1 CSS px.`;
 };
 
 const getMaximumSharpScale = () => Math.max(

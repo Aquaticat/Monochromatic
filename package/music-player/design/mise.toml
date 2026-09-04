@@ -24,6 +24,95 @@ writeFileSync(resolve('questions/current.html'), output);
 console.log('Built self-contained design questionnaire.');
 '''
 
+render_candidates = '''
+const { execFileSync } = await import('node:child_process');
+const { readFileSync } = await import('node:fs');
+const { resolve } = await import('node:path');
+const { pathToFileURL } = await import('node:url');
+const cdpPort = process.env.PI_HELIUM_CDP_PORT ?? '9224';
+const panelScale = 2076 / 852;
+const candidates = [
+  { name: 'light-a', logicalWidth: 852, frameWidth: 852, pixelWidth: 2076 },
+  { name: 'light-b', logicalWidth: 852, frameWidth: 852, pixelWidth: 2076 },
+  { name: 'light-c', logicalWidth: 852, frameWidth: 852, pixelWidth: 2076 },
+  { name: 'dbtp-a', logicalWidth: 418, frameWidth: 434, pixelWidth: 1019 },
+  { name: 'dbtp-b', logicalWidth: 418, frameWidth: 434, pixelWidth: 1019 },
+  { name: 'dbtp-c', logicalWidth: 418, frameWidth: 434, pixelWidth: 1019 },
+];
+const logicalHeight = 883;
+const pixelHeight = 2152;
+const runBrowser = (args) => execFileSync(
+  'agent-browser',
+  ['--cdp', cdpPort, ...args],
+  { encoding: 'utf8' },
+);
+runBrowser(['get', 'url']);
+for (const candidate of candidates) {
+  const sourceUrl = pathToFileURL(resolve(`candidates/${candidate.name}.dc.html`)).href;
+  const outputPath = resolve(`questions/render/${candidate.name}.png`);
+  runBrowser([
+    'set',
+    'viewport',
+    String(candidate.logicalWidth),
+    String(logicalHeight),
+    String(panelScale),
+  ]);
+  runBrowser(['open', sourceUrl]);
+  runBrowser(['wait', '--load', 'networkidle']);
+  runBrowser([
+    'wait',
+    '--fn',
+    `document.readyState === 'complete'
+      && [...document.querySelectorAll('div')].some((element) =>
+        element.style.width === '${candidate.frameWidth}px'
+        && element.children.length > 1
+      )
+      && document.body.textContent.includes('Camellia')`,
+  ]);
+  runBrowser([
+    'eval',
+    `(async () => {
+      await document.fonts.ready;
+      const frame = [...document.querySelectorAll('div')].find((element) =>
+        element.style.width === '${candidate.frameWidth}px'
+        && element.children.length > 1
+      );
+      if (!frame) {
+        throw new Error('Candidate frame not found.');
+      }
+      const fontFamily = getComputedStyle(frame).fontFamily;
+      document.body.replaceChildren(frame);
+      document.documentElement.style.inlineSize = '${candidate.logicalWidth}px';
+      document.documentElement.style.blockSize = '${logicalHeight}px';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.inlineSize = '${candidate.logicalWidth}px';
+      document.body.style.blockSize = '${logicalHeight}px';
+      document.body.style.marginBlock = '0';
+      document.body.style.marginInline = '0';
+      document.body.style.overflow = 'hidden';
+      frame.style.inlineSize = '${candidate.logicalWidth}px';
+      frame.style.blockSize = '${logicalHeight}px';
+      frame.style.transform = 'none';
+      frame.style.transformOrigin = '0 0';
+      frame.style.fontFamily = fontFamily;
+      const rect = frame.getBoundingClientRect();
+      if (rect.width !== ${candidate.logicalWidth} || rect.height !== ${logicalHeight}) {
+        throw new Error('Prepared frame is ' + rect.width + '×' + rect.height + '.');
+      }
+    })()`,
+  ]);
+  runBrowser(['screenshot', outputPath]);
+  execFileSync('mogrify', ['-strip', outputPath]);
+  const image = readFileSync(outputPath);
+  const width = image.readUInt32BE(16);
+  const height = image.readUInt32BE(20);
+  if (width !== candidate.pixelWidth || height !== pixelHeight) {
+    throw new Error(`${candidate.name} rendered at ${width}×${height}; expected ${candidate.pixelWidth}×${pixelHeight}.`);
+  }
+  console.log(`Rendered ${candidate.name} at ${width}×${height}px.`);
+}
+'''
+
 validate_question = '''
 const { existsSync, readFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
@@ -96,6 +185,12 @@ const requiredFragments = [
   'data-source-width="2076"',
   'data-source-height="2152"',
   'data-source-width="1019"',
+  'data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152"',
+  'data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152"',
+  'data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152"',
+  'data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152"',
+  'data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152"',
+  'data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152"',
   'grid-template-columns: repeat(3, minmax(0, 1fr))',
   'Copy answers',
 ];
@@ -110,6 +205,11 @@ if (imageCount !== 6 || embeddedImageCount !== 6) {
 }
 console.log('Design questionnaire structure is valid.');
 '''
+
+[tasks."render:candidates"]
+description = "Render candidate rasters through Helium CDP at Pixel 9 Pro Fold panel density"
+shell = "node --input-type=module-typescript -e"
+run = ["{{vars.render_candidates}}", "{{vars.build_question}}"]
 
 [tasks.build]
 description = "Embed exact candidate renders into the self-contained questionnaire"
