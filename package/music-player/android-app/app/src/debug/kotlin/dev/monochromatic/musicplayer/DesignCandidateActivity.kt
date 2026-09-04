@@ -28,6 +28,15 @@ import android.graphics.Color as AndroidColor
 // ```
 import android.os.Bundle
 
+// What:     `Build` exposes the Android platform version running the prototype.
+// Why:      Dynamic Material color is available only on Android 12 and newer.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Build } from 'android/os';
+// ```
+import android.os.Build
+
 // What:     `ComponentActivity` is AndroidX's Compose-capable activity base class.
 // Why:      The emulator needs a real Android window that can host Compose and system bars.
 //
@@ -64,6 +73,23 @@ import androidx.activity.compose.setContent
 // ```
 import androidx.activity.enableEdgeToEdge
 
+// What:     `Icons` and its filled vectors expose Google's official Material icon set.
+// Why:      Buttons and selection cues must use consistent 24dp icons instead of font glyphs.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { icons } from '@material-design-icons/svg';
+// ```
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+
 // What:     `background` paints a Compose layout node with one color.
 // Why:      Candidate A, B, and C differ in their surface hierarchy.
 //
@@ -72,15 +98,6 @@ import androidx.activity.enableEdgeToEdge
 // import { background } from 'compose/foundation';
 // ```
 import androidx.compose.foundation.background
-
-// What:     `border` paints a shape-following outline around a Compose layout node.
-// Why:      Candidate B uses hairlines while candidates A and C use fewer outlines.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { border } from 'compose/foundation';
-// ```
-import androidx.compose.foundation.border
 
 // What:     `rememberScrollState` creates composition-owned scroll position state.
 // Why:      Filtered folder names and the letter rail remain scrollable at device height.
@@ -100,8 +117,20 @@ import androidx.compose.foundation.rememberScrollState
 // ```
 import androidx.compose.foundation.verticalScroll
 
+// What:     `clickable`, `selectable`, and `selectableGroup` add Material input behavior and roles.
+// Why:      Prototype list, folder, and rail targets must expose ripple, focus, and selection semantics.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// element.addEventListener('click', onSelect);
+// element.setAttribute('role', 'radio');
+// ```
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+
 // What:     `Arrangement` names spacing policies for rows and columns.
-// Why:      The prototype keeps the settled 16dp seam and component gaps explicit.
+// Why:      The prototype keeps Material's 24dp expanded spacer and component gaps explicit.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -138,7 +167,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 
 // What:     `Row` is Compose's horizontal layout.
-// Why:      The unfolded screen keeps two 402dp panes around a 16dp seam.
+// Why:      The unfolded screen keeps two 414dp panes around a 24dp centered spacer.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -155,6 +184,7 @@ import androidx.compose.foundation.layout.RowScope
 // import { fillMaxSize, fillMaxWidth, height, padding, size, weight, width } from 'compose/layout';
 // ```
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -170,29 +200,45 @@ import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 
-// What:     `CircleShape` and `RoundedCornerShape` are reusable Compose clipping outlines.
-// Why:      Transport buttons, chips, and panes retain their settled MD3 geometry.
+// What:     `CircleShape` is Compose's reusable circular clipping outline.
+// Why:      The selected letter uses shape as a second state cue alongside color.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { CircleShape, RoundedCornerShape } from 'compose/foundation/shape';
+// const circle = { borderRadius: '50%' };
 // ```
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 
-// What:     Material imports supply the real Android theme, buttons, slider, surfaces, and text renderer.
-// Why:      Screenshots must exercise Compose rather than reproduce these controls in CSS.
+// What:     Material imports supply the real Android theme, app bars, buttons, lists, slider,
+//           segmented control, surfaces, icons, dividers, and text renderer.
+// Why:      Every visible component must inherit Material geometry, color, state, and semantics.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Button, MaterialTheme, Slider, Surface, Text, lightColorScheme } from 'compose/material3';
+// import { AppBar, Button, IconButton, ListItem, SegmentedButton, Slider } from 'material3';
 // ```
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 
 // What:     `Composable` marks functions that emit nodes into a Compose UI tree.
@@ -203,6 +249,7 @@ import androidx.compose.material3.lightColorScheme
 // type Component = () => JSX.Element;
 // ```
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 // What:     `Alignment` names child alignment positions and `Modifier` carries layout operations.
 // Why:      Controls need centered glyphs and explicit placement without imperative coordinates.
@@ -213,6 +260,13 @@ import androidx.compose.runtime.Composable
 // ```
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 
 // What:     Compose `Color` stores packed ARGB color values used by rendered components.
 // Why:      The three candidate surface systems use the verified MD3 light palette.
@@ -232,7 +286,6 @@ import androidx.compose.ui.graphics.Color
 // ```
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 
 // What:     `dp` and `sp` construct density-aware layout and font measurements.
 // Why:      Android converts the cited logical geometry to the emulator's 390dpi panel pixels.
@@ -242,8 +295,8 @@ import androidx.compose.ui.text.style.TextOverflow
 // const dp = (value: number) => value;
 // const sp = (value: number) => value;
 // ```
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 /** Intent key used by screenshot automation to select one static candidate. */
 const val DESIGN_CANDIDATE_EXTRA: String = "candidate"
@@ -251,30 +304,16 @@ const val DESIGN_CANDIDATE_EXTRA: String = "candidate"
 /** Default candidate used when screenshot automation omits its explicit selection. */
 const val DEFAULT_DESIGN_CANDIDATE: String = "light-c"
 
-/** Shared verified light-theme color scheme supplied to real Material components. */
-private val DESIGN_LIGHT_SCHEME = lightColorScheme(
-    primary = Color(0xFF6750A4),
-    onPrimary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFE8DEF8),
-    onSecondaryContainer = Color(0xFF4A4459),
-    surface = Color(0xFFFEF7FF),
-    onSurface = Color(0xFF1D1B20),
-    onSurfaceVariant = Color(0xFF49454F),
-    outline = Color(0xFF79747E),
-    outlineVariant = Color(0xFFCAC4D0),
-)
-
-/** Candidate-specific surface roles and line treatment. */
+/** Candidate-specific Material surface roles and decorative-divider treatment. */
 private data class CandidatePalette(
     val window: Color,
     val picker: Color,
     val rail: Color,
     val transport: Color,
     val tracks: Color,
-    val inactiveTrack: Color,
-    val paneOutlines: Boolean,
-    val railHairline: Boolean,
-    val rowHairlines: Boolean,
+    val paneDivider: Boolean,
+    val railDivider: Boolean,
+    val rowDividers: Boolean,
 )
 
 /** Static row model used only by the non-functional design prototype. */
@@ -304,52 +343,55 @@ class DesignCandidateActivity : ComponentActivity() {
     }
 }
 
-/** Resolves surface roles while keeping all non-theme geometry identical. */
-private fun paletteFor(candidate: String): CandidatePalette {
+/** Resolves only documented Material surface roles while keeping component geometry identical. */
+private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette {
     if (candidate == "light-a") {
         return CandidatePalette(
-            window = Color(0xFFFFFFFF),
-            picker = Color(0xFFF7F2FA),
-            rail = Color(0xFFECE6F0),
-            transport = Color(0xFFF3EDF7),
-            tracks = Color(0xFFFEF7FF),
-            inactiveTrack = Color(0xFFE6E0E9),
-            paneOutlines = false,
-            railHairline = false,
-            rowHairlines = false,
+            window = scheme.surface,
+            picker = scheme.surfaceContainerLow,
+            rail = scheme.surfaceContainerHigh,
+            transport = scheme.surfaceContainer,
+            tracks = scheme.surface,
+            paneDivider = false,
+            railDivider = false,
+            rowDividers = false,
         )
     }
     if (candidate == "light-b") {
         return CandidatePalette(
-            window = Color(0xFFFEF7FF),
-            picker = Color(0xFFFEF7FF),
-            rail = Color(0xFFFEF7FF),
-            transport = Color(0xFFFEF7FF),
-            tracks = Color(0xFFFEF7FF),
-            inactiveTrack = Color(0xFFE7E0EC),
-            paneOutlines = true,
-            railHairline = true,
-            rowHairlines = true,
+            window = scheme.surface,
+            picker = scheme.surface,
+            rail = scheme.surface,
+            transport = scheme.surface,
+            tracks = scheme.surface,
+            paneDivider = true,
+            railDivider = true,
+            rowDividers = true,
         )
     }
     return CandidatePalette(
-        window = Color(0xFFDED8E0),
-        picker = Color(0xFFFFFFFF),
-        rail = Color(0xFFFFFFFF),
-        transport = Color(0xFFF7F2FA),
-        tracks = Color(0xFFFFFFFF),
-        inactiveTrack = Color(0xFFE6E0E9),
-        paneOutlines = false,
-        railHairline = true,
-        rowHairlines = false,
+        window = scheme.surfaceDim,
+        picker = scheme.surfaceContainerLowest,
+        rail = scheme.surfaceContainerLowest,
+        transport = scheme.surfaceContainerLow,
+        tracks = scheme.surfaceContainerLowest,
+        paneDivider = false,
+        railDivider = true,
+        rowDividers = false,
     )
 }
 
 /** Emits a native full-screen Compose candidate behind Android's real system bars. */
 @Composable
 private fun DesignCandidatePrototype(candidate: String) {
-    val palette = paletteFor(candidate = candidate)
-    MaterialTheme(colorScheme = DESIGN_LIGHT_SCHEME) {
+    val context = LocalContext.current
+    val scheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        dynamicLightColorScheme(context)
+    } else {
+        lightColorScheme()
+    }
+    MaterialTheme(colorScheme = scheme) {
+        val palette = paletteFor(candidate = candidate, scheme = MaterialTheme.colorScheme)
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = palette.window,
@@ -363,13 +405,13 @@ private fun DesignCandidatePrototype(candidate: String) {
     }
 }
 
-/** Renders a 402dp inset left pane and one edge-to-edge right track surface. */
+/** Renders two equal 414dp panes around Material's centered 24dp expanded-layout spacer. */
 @Composable
 private fun FullUnfoldedStudy(palette: CandidatePalette) {
     Row(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
-                .width(418.dp)
+                .width(414.dp)
                 .fillMaxSize(),
         ) {
             FolderAndTransportPane(
@@ -377,7 +419,7 @@ private fun FullUnfoldedStudy(palette: CandidatePalette) {
                 palette = palette,
             )
         }
-        Box(modifier = Modifier.width(16.dp).fillMaxSize())
+        Box(modifier = Modifier.width(24.dp).fillMaxSize())
         TrackPane(
             modifier = Modifier.weight(1f),
             candidate = "dbtp-a",
@@ -422,7 +464,8 @@ private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette
     }
 }
 
-/** Shows the adaptive-letter pattern and plain wrapped folder-name targets. */
+/** Shows a Material app bar, source actions, adaptive letter rail, and wrapped folder targets. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
     Column(
@@ -430,37 +473,61 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
             .fillMaxWidth()
             .background(palette.picker),
     ) {
+        TopAppBar(
+            title = {
+                Text(text = "Folders")
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = palette.picker,
+                scrolledContainerColor = palette.picker,
+            ),
+            windowInsets = WindowInsets(0, 0, 0, 0),
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .padding(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.End,
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Button(
+            FilledTonalButton(
                 onClick = {},
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (palette.paneOutlines) Color.Transparent else Color(0xFFE8DEF8),
-                    contentColor = Color(0xFF4A4459),
-                ),
-                modifier = if (palette.paneOutlines) {
-                    Modifier.border(1.dp, Color(0xFF79747E), RoundedCornerShape(20.dp))
-                } else {
-                    Modifier
+                modifier = Modifier.semantics {
+                    contentDescription = "Choose folder, Camellia selected"
                 },
             ) {
-                Text(text = "▰  Open", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Icon(
+                    imageVector = Icons.Filled.Folder,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                Text(text = "Camellia")
+                Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+            }
+            OutlinedButton(onClick = {}) {
+                Icon(
+                    imageVector = Icons.Filled.FolderOpen,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                Text(text = "Open")
             }
         }
         Row(modifier = Modifier.weight(1f)) {
             LetterRail(palette = palette)
-            if (palette.railHairline) {
+            if (palette.railDivider) {
                 Box(
                     modifier = Modifier
                         .width(1.dp)
                         .fillMaxSize()
-                        .background(Color(0xFFCAC4D0)),
+                        .background(MaterialTheme.colorScheme.outlineVariant),
                 )
             }
             FolderNames()
@@ -468,7 +535,7 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
     }
 }
 
-/** Draws one independently scrolling column of writing-system rail targets. */
+/** Draws one independently scrolling single-select column of writing-system targets. */
 @Composable
 private fun LetterRail(palette: CandidatePalette) {
     val letters = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q")
@@ -477,32 +544,48 @@ private fun LetterRail(palette: CandidatePalette) {
             .width(48.dp)
             .fillMaxSize()
             .background(palette.rail)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .selectableGroup(),
     ) {
         for (letter in letters) {
+            val selectedLetter = letter == "C"
             Box(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier
+                    .size(48.dp)
+                    .selectable(
+                        selected = selectedLetter,
+                        onClick = {},
+                        role = Role.RadioButton,
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
-                if (letter == "C") {
+                if (selectedLetter) {
                     Surface(
                         modifier = Modifier.size(32.dp),
                         shape = CircleShape,
-                        color = Color(0xFFE8DEF8),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(text = letter, color = Color(0xFF4A4459), fontSize = 14.sp)
+                            Text(
+                                text = letter,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
                         }
                     }
                 } else {
-                    Text(text = letter, color = Color(0xFF49454F), fontSize = 14.sp)
+                    Text(
+                        text = letter,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
             }
         }
     }
 }
 
-/** Packs filtered folder names as plain 48dp text targets with no chip styling. */
+/** Packs filtered folder names as plain selectable 48dp text targets with no chip styling. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RowScope.FolderNames() {
@@ -516,31 +599,50 @@ private fun RowScope.FolderNames() {
         Text(
             text = "C",
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 2.dp),
-            color = Color(0xFF6750A4),
-            fontSize = 22.sp,
-            lineHeight = 28.sp,
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleLarge,
         )
         FlowRow(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+                .padding(start = 12.dp, end = 16.dp, bottom = 16.dp)
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             for (folder in folders) {
-                Text(
-                    text = folder,
-                    modifier = Modifier.heightIn(min = 48.dp),
-                    color = if (folder == "Camellia") Color(0xFF6750A4) else Color(0xFF1D1B20),
-                    fontSize = 16.sp,
-                    fontWeight = if (folder == "Camellia") FontWeight.Medium else FontWeight.Normal,
-                )
+                val selectedFolder = folder == "Camellia"
+                Box(
+                    modifier = Modifier
+                        .heightIn(min = 48.dp)
+                        .selectable(
+                            selected = selectedFolder,
+                            onClick = {},
+                            role = Role.RadioButton,
+                        )
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = folder,
+                        color = if (selectedFolder) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
+                        style = if (selectedFolder) {
+                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
+                        } else {
+                            MaterialTheme.typography.bodyLarge
+                        },
+                    )
+                }
             }
         }
     }
 }
 
-/** Draws the fixed non-functional transport controls beneath the picker. */
+/** Draws a labeled Material slider, official transport icon buttons, and one-row mode selector. */
 @Composable
 private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
     Column(
@@ -548,142 +650,142 @@ private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
             .background(color = palette.transport)
             .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start))
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Another Xronixle", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-            Text(text = "1 of 16 · −1.2 dBTP", color = Color(0xFF49454F), fontSize = 12.sp)
-        }
-        Slider(
-            value = 0.16f,
-            onValueChange = {},
-            modifier = Modifier.fillMaxWidth().height(44.dp),
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TransportCircle(label = "◀", size = 48, fill = palette.inactiveTrack)
-            Box(modifier = Modifier.width(24.dp))
-            TransportCircle(label = "Ⅱ", size = 64, fill = Color(0xFF6750A4), content = Color(0xFFFFFFFF))
-            Box(modifier = Modifier.width(24.dp))
-            TransportCircle(label = "▶", size = 48, fill = palette.inactiveTrack)
-        }
-        ModeControl(palette = palette)
-    }
-}
-
-/** Draws one circular transport face at a cited dp diameter. */
-@Composable
-private fun TransportCircle(label: String, size: Int, fill: Color, content: Color = Color(0xFF49454F)) {
-    Surface(
-        modifier = Modifier.size(size.dp),
-        shape = CircleShape,
-        color = fill,
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(text = label, color = content, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-/** Draws the settled four-way outlined segmented mode control in two rows. */
-@Composable
-private fun ModeControl(palette: CandidatePalette) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color(0xFF79747E), RoundedCornerShape(20.dp)),
-    ) {
-        ModeRow(first = "Repeat", second = "In order", selectedSecond = true, palette = palette)
-        ModeRow(first = "Shuffle folder", second = "Shuffle all", selectedSecond = false, palette = palette)
-    }
-}
-
-/** Draws one 40dp row of two equal segmented mode faces. */
-@Composable
-private fun ModeRow(first: String, second: String, selectedSecond: Boolean, palette: CandidatePalette) {
-    Row(modifier = Modifier.fillMaxWidth().height(40.dp)) {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxSize()
-                .border(0.5.dp, Color(0xFF79747E)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = first, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-        }
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxSize()
-                .background(if (selectedSecond) Color(0xFFE8DEF8) else Color.Transparent)
-                .border(0.5.dp, Color(0xFF79747E)),
-            contentAlignment = Alignment.Center,
-        ) {
+            Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
             Text(
-                text = second,
-                color = if (selectedSecond) Color(0xFF4A4459) else Color(0xFF1D1B20),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
+                text = "1 of 16 · −1.2 dBTP",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
             )
         }
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val timeStyle = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum")
+                Text(
+                    text = "1:06",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = timeStyle,
+                )
+                Slider(
+                    value = 0.16f,
+                    onValueChange = {},
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics {
+                            contentDescription = "Track position"
+                        },
+                )
+                Text(
+                    text = "4:35",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = timeStyle,
+                )
+            }
+            TransportControls()
+        }
+        ModeControl()
     }
 }
 
-/** Builds one edge-to-edge track surface with controls inside native safe insets. */
+/** Draws three real Material icon buttons with color and size hierarchy for playback. */
+@Composable
+private fun TransportControls() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FilledTonalIconButton(onClick = {}) {
+            Icon(imageVector = Icons.Filled.SkipPrevious, contentDescription = "Previous track")
+        }
+        FilledIconButton(onClick = {}) {
+            Icon(imageVector = Icons.Filled.Pause, contentDescription = "Pause")
+        }
+        FilledTonalIconButton(onClick = {}) {
+            Icon(imageVector = Icons.Filled.SkipNext, contentDescription = "Next track")
+        }
+    }
+}
+
+/** Draws one non-wrapping Material single-choice segmented button with four visible options. */
+@Composable
+private fun ModeControl() {
+    val labels = listOf("Repeat", "In order", "Shuffle folder", "Shuffle all")
+    SingleChoiceSegmentedButtonRow {
+        for (index in labels.indices) {
+            SegmentedButton(
+                selected = index == 1,
+                onClick = {},
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp),
+            ) {
+                Text(text = labels[index], maxLines = 1)
+            }
+        }
+    }
+}
+
+/** Builds one edge-to-edge track surface with a real app bar and list inside native insets. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette) {
     Box(modifier = modifier.fillMaxSize().background(color = palette.tracks)) {
         Row(modifier = Modifier.fillMaxSize()) {
-            if (palette.paneOutlines) {
-                Box(modifier = Modifier.width(1.dp).fillMaxSize().background(Color(0xFFCAC4D0)))
+            if (palette.paneDivider) {
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.outlineVariant),
+                )
             }
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
                     .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.End)),
             ) {
-                Row(
-            modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Button(
-                onClick = {},
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (palette.paneOutlines) Color.Transparent else Color(0xFFE8DEF8),
-                    contentColor = Color(0xFF4A4459),
-                ),
-                modifier = if (palette.paneOutlines) {
-                    Modifier.border(1.dp, Color(0xFF79747E), RoundedCornerShape(20.dp))
-                } else {
-                    Modifier
-                },
-            ) {
-                Text(text = "Camellia  ▾", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-            }
-            Box(modifier = Modifier.weight(1f))
-            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                Text(text = "⋮", color = Color(0xFF49454F), fontSize = 24.sp)
-            }
-        }
-        val tracks = listOf(
-            PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
-            PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
-            PrototypeTrack("Dokuhebi", "4:01", "−1.4 dBTP"),
-            PrototypeTrack("ENÛMA∇ELIŠ", "9:47", "−0.3 dBTP"),
-            PrototypeTrack("Ghost", "3:22", "−1.1 dBTP"),
-            PrototypeTrack("Hyperflux", "4:44", "−0.9 dBTP"),
-            PrototypeTrack("Idol Corruption", "5:31", "−0.6 dBTP"),
-            PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
-            PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
-        )
-                Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
+                TopAppBar(
+                    title = {
+                        Text(text = "Camellia")
+                    },
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = palette.tracks,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
+                    windowInsets = WindowInsets(0, 0, 0, 0),
+                )
+                val tracks = listOf(
+                    PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
+                    PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
+                    PrototypeTrack("Dokuhebi", "4:01", "−1.4 dBTP"),
+                    PrototypeTrack("ENÛMA∇ELIŠ", "9:47", "−0.3 dBTP"),
+                    PrototypeTrack("Ghost", "3:22", "−1.1 dBTP"),
+                    PrototypeTrack("Hyperflux", "4:44", "−0.9 dBTP"),
+                    PrototypeTrack("Idol Corruption", "5:31", "−0.6 dBTP"),
+                    PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
+                    PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
+                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .windowInsetsPadding(WindowInsets.navigationBars),
+                ) {
                     for (index in tracks.indices) {
                         TrackRow(
                             index = index,
@@ -698,72 +800,117 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
     }
 }
 
-/** Renders one settled 72dp two-line row with candidate-specific metadata emphasis. */
+/** Renders one Material two-line list item with accessible action and non-color playing cue. */
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
-    Column(
+    val playing = index == 0
+    val containerColor = if (playing) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        Color.Transparent
+    }
+    val contentColor = if (playing) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    val supportingColor = if (playing) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    ListItem(
+        onClick = {},
+        selected = playing,
+        supportingContent = {
+            TrackMetadata(
+                track = track,
+                candidate = candidate,
+                playing = playing,
+            )
+        },
+        leadingContent = {
+            if (playing) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = "Playing",
+                )
+            } else {
+                Text(
+                    text = (index + 1).toString(),
+                    modifier = Modifier.width(24.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        },
+        trailingContent = if (candidate == "dbtp-c") {
+            {
+                Text(
+                    text = track.peak,
+                    color = if (playing) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
+                )
+            }
+        } else {
+            null
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = containerColor,
+            headlineColor = contentColor,
+            leadingIconColor = supportingColor,
+            supportingColor = supportingColor,
+        ),
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
-            .background(if (index == 0) Color(0xFFE8DEF8) else Color.Transparent),
+            .heightIn(min = 72.dp),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(
-                text = if (index == 0) "▶" else (index + 1).toString(),
-                modifier = Modifier.width(18.dp),
-                color = if (index == 0) Color(0xFF6750A4) else Color(0xFF79747E),
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center,
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = track.title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = 16.sp,
-                    lineHeight = 24.sp,
-                )
-                TrackMetadata(index = index, track = track, candidate = candidate)
-            }
-        }
-        if (palette.rowHairlines) {
-            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFCAC4D0)))
-        }
+        Text(
+            text = track.title,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
+    if (palette.rowDividers) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
-/** Applies the three open true-peak presentation treatments without changing row geometry. */
+/** Applies three true-peak treatments while preserving every value and valid Material role pairs. */
 @Composable
-private fun TrackMetadata(index: Int, track: PrototypeTrack, candidate: String) {
+private fun TrackMetadata(track: PrototypeTrack, candidate: String, playing: Boolean) {
+    val selectedColor = MaterialTheme.colorScheme.onPrimaryContainer
+    val supportingColor = MaterialTheme.colorScheme.onSurfaceVariant
     if (candidate == "dbtp-b") {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(text = track.duration, color = Color(0xFF49454F), fontSize = 12.sp, lineHeight = 16.sp)
-            Text(text = "·", color = Color(0xFF79747E), fontSize = 12.sp, lineHeight = 16.sp)
+            Text(
+                text = track.duration,
+                color = if (playing) selectedColor else supportingColor,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "·",
+                color = if (playing) selectedColor else supportingColor,
+                style = MaterialTheme.typography.bodySmall,
+            )
             Text(
                 text = track.peak,
-                color = Color(0xFF1D1B20),
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
-                fontWeight = FontWeight.Medium,
+                color = if (playing) selectedColor else MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
             )
         }
         return
     }
     var metadata = track.duration + " · " + track.peak
-    if (candidate == "dbtp-c" && index != 0) {
+    if (candidate == "dbtp-c") {
         metadata = track.duration
     }
     Text(
         text = metadata,
-        color = Color(0xFF49454F),
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
+        color = if (playing) selectedColor else supportingColor,
+        style = MaterialTheme.typography.bodySmall,
     )
 }
