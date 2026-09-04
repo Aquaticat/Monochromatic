@@ -522,19 +522,30 @@ Every rebuilt file **pins its scheme inline on its own root** — the host sets
 `data-theme="dark"` on `<html>`, and inheriting that silently inverts a light design
 (review-notes 5g).
 
+### D34. Light uses tonal panes with a white rail divider (candidate light-c, revised)
+Use the `1c` structure: `surfaceDim` window, tonal full-bleed panes, and no pane or row
+outlines. Keep one 1dp divider only at the letter-rail seam, but override that divider
+to white (`#FFFFFF`) rather than `outlineVariant`.
+**Why.** The user selected the tonal treatment and explicitly asked for a white
+divider. It retains the single structural cue without adding the hairlines of `1b`.
+**Rejected.** `1a`, which relies on tone alone; `1b`, which outlines panes and rows;
+`1c` with its original `outlineVariant` rail divider.
+
+### D35. Light supporting text uses one neutral role (candidate dbtp-a)
+Use one `onSurfaceVariant` supporting line for both duration and true peak. Do not give
+the true-peak substring a stronger role or move it to a trailing column by default.
+**Why.** Custom display templating is planned, so users will be able to choose what the
+row displays and emphasizes. The product default should remain neutral rather than
+hard-code true-peak emphasis.
+**Rejected.** `3b`, which strengthens true peak; `3c`, which creates a trailing
+true-peak column.
+
 ---
 
-## Pending at the end of session 4 (2026-09-04)
+## Pending after the theme picks (2026-09-04)
 
-Two theme choices are built and waiting on the user; neither is decided, and the light
-theme must not be extended to other surfaces until the first is answered:
-
-- **Light-theme separation** — light-a / light-b / light-c. My read: 1c (tonal, with
-  one hairline at the rail seam). open-questions 11a.
-- **Secondary text in light** — dbtp-a / dbtp-b / dbtp-c. My read: 3b (true peak at
-  on-surface 500, duration quiet). open-questions 11b.
 - **Order of remaining work** — my recommendation: cover screen, accessibility pass,
-  command bar. open-questions 11c.
+  command bar. `open-questions.md` 11c.
 
 User's instruction closing the session: record the session, update the handover, and
 implement nothing further.

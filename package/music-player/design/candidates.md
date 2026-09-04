@@ -57,13 +57,13 @@ which were left as historical style comparisons.
 |---|---|---|
 | **light-a** | 852×fill | Light theme, all-tonal: surface ground and tracks, surface-container-low picker, surface-container transport, surface-container-high rail. No dividers. |
 | **light-b** | 852×fill | Light theme, one surface role plus 1dp outline-variant dividers at pane, rail, and row boundaries. |
-| **light-c** | 852×fill | Light theme, surface-container panes on a surface-dim ground, with one outline-variant rail divider. |
+| **light-c** | 852×fill | **CHOSEN (D34), revised:** surface-container panes on a surface-dim ground, with one white rail-seam divider. |
 | **light-abc** | 3-up | All three side by side for comparison. |
 | **dark-a** | 418×fill | REJECTED — MD3's own dark container ramp above #000; the panes read as grey cards floating on black. |
 | **dark-b** | 418×fill | **CHOSEN (D32)** — the project's own ramp measured down from black: #000 / #0A0A0D / #121216 / #1A1A1F / #22222A. |
 | **dark-ab** | 2-up | Both, plus a swatch comparison of the two ramps. |
-| **dbtp-a/b/c** | 426×883 | Secondary text in light: one on-surface-variant line · true peak at on-surface 500 · every true peak in the Material trailing-text slot. **Awaiting a pick — my read is 3b** (open-questions 11b). |
-| **light-a/b/c** | 852×fill | **Awaiting a pick — my read is 1c** (open-questions 11a). |
+| **dbtp-a/b/c** | 426×883 | **3a CHOSEN (D35):** one on-surface-variant line, because planned display templating will provide user-selected emphasis. 3b strengthens true peak; 3c moves it to the trailing slot. |
+| **light-a/b/c** | 852×fill | **1c CHOSEN (D34), revised with a white rail-seam divider.** |
 | **candidates/_ds/** | — | Copied MD3 token sheets (palette, color, fonts, typography, shape, elevation, spacing, state) so candidate files resolve them without `../`. |
 
 All light-side files are presented on a light desk with a light caption bar
@@ -86,8 +86,9 @@ state uses primary text, medium weight, and a separate 2dp MD1-style indicator s
 the bottom of the whole target; the text itself is not underlined. At 200% font scale,
 the mode
 control changes from one non-wrapping segmented row to four full-label Material radio
-rows rather than clipping text. The latest captures are integrated into the
-questionnaire.
+rows rather than clipping text. The latest comparison captures are integrated into the questionnaire. The user's
+settled baseline combines `light-c` with a white rail-seam divider and `dbtp-a`; that
+combined result must be recaptured after D34 and D35 are applied.
 
 ## ROUND 8 — verdicts in
 

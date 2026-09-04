@@ -169,7 +169,8 @@ because decision A2 rejects that silent design-system migration.
 Correction: derive the light scheme from Android dynamic color on Android 12 and
 newer, with the baseline light scheme as fallback. Express every candidate difference
 through `ColorScheme` roles. Use only valid paired foreground and container roles.
-Use `outlineVariant` for decorative rail, row, and pane dividers.
+Use `outlineVariant` for decorative rail, row, and pane dividers except the settled
+light-theme rail seam: D34 explicitly overrides that one decorative line to white.
 
 ### Type, spacing, resizing, and writing direction
 
@@ -257,13 +258,16 @@ Every repaired Q1 option must use valid Material surface roles:
   `surfaceContainer`, and `surfaceContainerHigh`.
 - `1b`: flat `surface` regions separated only by decorative
   `outlineVariant` dividers.
-- `1c`: `surfaceDim` ground with `surfaceContainerLowest` content and
-  `surfaceContainerLow` transport.
+- `1c`: `surfaceDim` ground with `surfaceContainerLowest` content,
+  `surfaceContainerLow` transport, and the D34 white rail-seam divider. White is an
+  explicit product override rather than a dynamic `ColorScheme` role; it is decorative
+  and does not carry state or identify an interactive boundary.
 
 Every repaired Q2 option keeps the same compliant list structure, selected-state role
 pair, type roles, icons, and targets. Only the treatment of the true-peak supporting
 value may differ. No option may remove required accessibility information or alter the
-component structure.
+component structure. D35 settles the baseline on `3a`: one `onSurfaceVariant`
+supporting line, leaving custom emphasis to planned display templating.
 
 ## Acceptance boundary
 

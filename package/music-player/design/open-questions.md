@@ -220,9 +220,12 @@ of decisions.md.
 
 ---
 
-## 11. Open after session 4 (2026-09-04) — nothing here is implemented
+## 11. Theme work after session 4 (2026-09-04)
 
-### 11a. Light theme: what separates surfaces — BUILT, AWAITING A PICK
+### 11a. Light theme: what separates surfaces — SETTLED (D34)
+
+**Verdict.** The user chose `1c`, with its lone rail-seam divider changed from
+`outlineVariant` to white. The tonal panes remain otherwise unchanged.
 Candidates `light-a` / `light-b` / `light-c` (and `light-abc`, all three side by side).
 Each prints its own pros, cons and my read in the caption bar.
 
@@ -244,7 +247,12 @@ Each prints its own pros, cons and my read in the caption bar.
   - CONS · two mechanisms instead of one; the surface-dim desk is a heavier look.
   - MY READ · my pick.
 
-### 11b. Secondary text in light — BUILT, AWAITING A PICK
+### 11b. Secondary text in light — SETTLED (D35)
+
+**Verdict.** The user chose `3a`. Duration and true peak use one neutral
+`onSurfaceVariant` line because planned custom display templating will let users
+choose other content and emphasis.
+
 Candidates `dbtp-a` / `dbtp-b` / `dbtp-c` (and `dbtp-abc`).
 
 - **3a — same as dark, on-surface-variant throughout**

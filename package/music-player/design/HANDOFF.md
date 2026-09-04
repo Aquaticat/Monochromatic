@@ -620,10 +620,19 @@ the `Folders` line, the letter rail remains edge-flush, and the selected folder 
 separate target-width indicator rather than text decoration. The isolated browser and
 emulator are stopped. The exact final blank form was reopened through the Helium
 desktop entry. KWin reports its non-minimized 1080 × 1880 window on `DP-2`, and a
-one-shot activation targeted that exact window. No theme answer has been recorded.
+one-shot activation targeted that exact window.
 
-**Phase: theme work. Decisions are nearly all closed; two theme picks and a large
-amount of light-theme drawing remain.**
+The user then settled both theme questions. For Q1 they chose `1c`, with one explicit
+change: the light-theme rail-seam divider must be white rather than
+`outlineVariant`. For Q2 they chose `3a`: duration and true peak use one
+`onSurfaceVariant` supporting line. Their rationale is that the product will allow
+users to customize the display with templating, so the default should stay neutral
+rather than hard-code true-peak emphasis. Record these as decisions D34 and D35,
+apply them to the native prototype, recapture the settled baseline, and do not treat
+the earlier synthetic `1c / 3b` verification output as an answer.
+
+**Phase: theme work. The two theme picks are closed; a large amount of light-theme
+drawing remains.**
 
 **A Material Design 3 design system is now formally bound to the project** at
 `_ds/material-design-3-design-system-…/`. Its token sheets are also copied to
@@ -643,12 +652,13 @@ things a new session must know about it:
 Settled in session 4: dark ramp = the project's own, measured down from black (D32);
 retrofit scope (D33); true black restated as a standing rule (B1, review-notes 6).
 
-**Open and waiting on the user — built, nothing implemented:**
-- **Light theme separation:** `light-a` / `light-b` / `light-c`. My read: 1c.
-- **Secondary text in light:** `dbtp-a` / `dbtp-b` / `dbtp-c`. My read: 3b.
-- **Order of remaining work.** My recommendation: cover screen, then accessibility,
-  then the command bar.
-See open-questions.md #11 for the full pros/cons of each.
+**Theme answers received, pending implementation:**
+- **Light theme separation:** `1c`, but the rail-seam divider is white (D34).
+- **Secondary text in light:** `3a`; custom display templating will let users choose
+  other emphasis, so the default remains neutral (D35).
+
+**Open and waiting on the user:** the order of remaining work. My recommendation is
+cover screen, then accessibility, then the command bar. See `open-questions.md` 11c.
 
 **Biggest unbuilt area is still the light theme**, and it is bigger than the two picks
 above: only the unfolded screen and track list exist in light. The cover screen, error
