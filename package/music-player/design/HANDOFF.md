@@ -204,7 +204,14 @@ render, keep each three-way comparison together, then rerun the same red probe. 
 user added a standing requirement: every device mock in a questionnaire must be
 zoomable to its cited target measurements. For this round, full unfolded candidates
 must expose an 852×883dp view and half-screen detail studies must expose a 418×883dp
-view, with current scale and reset controls visible.
+view, with current scale and reset controls visible. The six replacement renders now
+come from `light-a/b/c` at 852×883 and `dbtp-a/b/c` reflowed to the measured 418×883
+half-screen. They were captured through Helium, stripped of metadata and inspected in
+two three-up contact sheets. `questions/current.template.html` owns the form;
+`mise run //package/music-player/design:build` embeds those six PNGs into the
+self-contained `questions/current.html`. Static lint and unit-contract tasks pass. The
+actual Helium geometry, zoom and answer paths still require re-verification before the
+form is reopened.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

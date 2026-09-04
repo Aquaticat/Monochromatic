@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music player design: grilling round 1</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f3edf7;
+  --paper: #fffaff;
+  --paper-strong: #ffffff;
+  --ink: #1d1b20;
+  --ink-muted: #49454f;
+  --line: #cac4d0;
+  --line-strong: #79747e;
+  --primary: #6750a4;
+  --on-primary: #ffffff;
+  --primary-container: #eaddff;
+  --on-primary-container: #21005d;
+  --secondary-container: #e8def8;
+  --on-secondary-container: #4a4459;
+  --surface-high: #ece6f0;
+  --success: #2f6b3a;
+  --success-surface: #d8f3dc;
+  --focus: #005fcc;
+  --shadow: rgba(29, 27, 32, 0.16);
+  --selected-shadow: rgba(103, 80, 164, 0.24);
+  --scrim: rgba(29, 27, 32, 0.72);
+  --transparent: transparent;
+  font-family: Roboto, system-ui, sans-serif;
+  background-color: var(--page);
+  color: var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-block-size: 100vh;
+  margin-block: 0;
+  margin-inline: 0;
+  background-color: var(--page);
+}
+
+main {
+  inline-size: min(100%, 108rem);
+  margin-inline: auto;
+  padding-block: 2rem 5rem;
+  padding-inline: clamp(1rem, 3vw, 3rem);
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 2rem;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-block-start: 0;
+}
+
+h1 {
+  max-inline-size: 22ch;
+  margin-block-end: 0.5rem;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  margin-block-end: 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.1;
+}
+
+h3 {
+  margin-block-end: 0;
+  font-size: 1.1rem;
+}
+
+.lede,
+.question-intro {
+  max-inline-size: 72ch;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+
+.lede {
+  margin-block-end: 0;
+}
+
+.question-intro {
+  margin-block-end: 1.5rem;
+}
+
+.round-badge {
+  min-block-size: 3rem;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 1rem;
+  border-radius: 999rem;
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.question {
+  margin-block-end: 2rem;
+  padding-block: clamp(1.25rem, 3vw, 2rem);
+  padding-inline: clamp(1.25rem, 3vw, 2rem);
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 1.75rem;
+  background-color: var(--paper);
+  box-shadow: 0 0.75rem 2rem var(--shadow);
+}
+
+.options-scroll {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  padding-block: 0.3rem 0.75rem;
+  scrollbar-gutter: stable;
+}
+
+.options {
+  min-inline-size: 53rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.option {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background-color: var(--paper-strong);
+}
+
+.option:has(input:checked) {
+  border-width: 0.1875rem;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.25rem var(--selected-shadow);
+}
+
+.option-heading {
+  min-block-size: 4.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  border-block-end-width: 0.0625rem;
+  border-block-end-style: solid;
+  border-block-end-color: var(--line);
+  cursor: pointer;
+}
+
+.option-heading:hover {
+  background-color: var(--primary-container);
+}
+
+.option-heading:has(input:focus-visible) {
+  outline: 0.1875rem solid var(--focus);
+  outline-offset: -0.1875rem;
+}
+
+.option-heading input {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  margin-block: 0;
+  margin-inline: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.option-title {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.option-code {
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.option-summary {
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+
+.preview-open {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+  padding-inline: 0.75rem;
+  border-width: 0;
+  border-radius: 0;
+  background-color: var(--surface-high);
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: zoom-in;
+}
+
+.preview-open:hover {
+  background-color: var(--secondary-container);
+}
+
+.preview-open:focus-visible,
+button:focus-visible,
+textarea:focus-visible {
+  outline: 0.1875rem solid var(--focus);
+  outline-offset: -0.1875rem;
+}
+
+.preview-open img {
+  inline-size: 100%;
+  block-size: auto;
+  display: block;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem var(--shadow);
+}
+
+.preview-open span {
+  min-block-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.5rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--primary);
+  border-radius: 999rem;
+  background-color: var(--paper-strong);
+}
+
+.assessment {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-block: 1rem 1.25rem;
+  padding-inline: 1.25rem;
+}
+
+.assessment strong {
+  display: block;
+  margin-block-end: 0.3rem;
+  color: var(--ink);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.assessment ul {
+  margin-block: 0;
+  padding-inline-start: 1.2rem;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.assessment li + li {
+  margin-block-start: 0.35rem;
+}
+
+.my-read {
+  margin-block: auto 0;
+  padding-block-start: 0.75rem;
+  border-block-start-width: 0.0625rem;
+  border-block-start-style: solid;
+  border-block-start-color: var(--line);
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.ranking {
+  margin-block: 1.25rem 0;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-radius: 1rem;
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  line-height: 1.5;
+}
+
+.ranking strong {
+  display: block;
+  margin-block-end: 0.25rem;
+}
+
+.free-text label,
+.output label {
+  display: block;
+  margin-block-end: 0.5rem;
+  font-weight: 700;
+}
+
+textarea {
+  inline-size: 100%;
+  min-block-size: 10rem;
+  resize: vertical;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line-strong);
+  border-radius: 1rem;
+  background-color: var(--paper-strong);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+}
+
+.actions,
+.zoom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.actions {
+  margin-block-start: 1.25rem;
+}
+
+button {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 1.25rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--primary);
+  border-radius: 999rem;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button[data-variant="secondary"] {
+  background-color: var(--transparent);
+  color: var(--primary);
+}
+
+button:hover {
+  box-shadow: 0 0.5rem 1.25rem var(--selected-shadow);
+}
+
+.status {
+  min-block-size: 3rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.output {
+  margin-block-start: 1.25rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-radius: 1rem;
+  background-color: var(--success-surface);
+}
+
+.output[hidden] {
+  display: none;
+}
+
+.output textarea {
+  min-block-size: 7rem;
+}
+
+.preview-dialog {
+  inline-size: calc(100vw - 2rem);
+  max-inline-size: 76rem;
+  block-size: calc(100vh - 2rem);
+  max-block-size: 64rem;
+  padding-block: 0;
+  padding-inline: 0;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background-color: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1.5rem 4rem var(--shadow);
+}
+
+.preview-dialog::backdrop {
+  background-color: var(--scrim);
+}
+
+.preview-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.zoom-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  border-block-end-width: 0.0625rem;
+  border-block-end-style: solid;
+  border-block-end-color: var(--line);
+  background-color: var(--paper-strong);
+}
+
+.zoom-heading {
+  min-inline-size: 12rem;
+}
+
+.zoom-heading p {
+  margin-block: 0.25rem 0;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+
+.zoom-actions button {
+  padding-inline: 1rem;
+}
+
+.zoom-scale {
+  min-inline-size: 8rem;
+  text-align: center;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.zoom-stage {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  background-color: var(--surface-high);
+  scrollbar-gutter: stable both-edges;
+}
+
+.zoom-canvas {
+  min-inline-size: max-content;
+  min-block-size: max-content;
+  display: grid;
+  place-items: start;
+}
+
+.zoom-image {
+  display: block;
+  max-inline-size: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.75rem 2rem var(--shadow);
+}
+
+footer {
+  color: var(--ink-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+@media (max-width: 45rem) {
+  main {
+    padding-block-start: 1rem;
+  }
+
+  .question {
+    border-radius: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .option,
+  button {
+    transition-duration: 150ms;
+    transition-property: border-color, box-shadow, transform;
+    transition-timing-function: ease-out;
+  }
+
+  button:active {
+    transform: translateY(0.0625rem);
+  }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Close the light-theme fork</h1>
+      <p class="lede">
+        The dark theme stays true black. This round decides the light half of “follow the OS.”
+        Every preview is an exact render of its source candidate. Open any preview to inspect it at the cited device dimensions.
+      </p>
+    </div>
+    <div class="round-badge">Grilling round 1</div>
+  </header>
+
+  <form id="design-form">
+    <section class="question" aria-labelledby="q1-title">
+      <h2 id="q1-title">Q1: What should separate surfaces in light mode?</h2>
+      <p class="question-intro">
+        The unfolded Pixel 9 Pro Fold is rendered at 852×883dp with the settled picker and transport on the left,
+        a 16dp seam,
+        and tracks on the right.
+        Only the light-surface hierarchy changes.
+      </p>
+
+      <div class="options-scroll" tabindex="0" aria-label="Q1 visual comparison, scroll horizontally on narrow windows">
+        <div class="options">
+          <article class="option">
+            <label class="option-heading">
+              <input type="radio" name="lightSeparation" value="1a" aria-labelledby="q1-1a-title" required>
+              <span class="option-title">
+                <span class="option-code">1a</span>
+                <strong id="q1-1a-title">Tonal ramp, no outlines</strong>
+                <span class="option-summary">Pure MD3 tonal separation</span>
+              </span>
+            </label>
+            <button class="preview-open" type="button" data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp">
+              <img data-candidate-source="candidates/light-a.dc.html" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1a, using tonal surfaces without outlines">
+              <span>Inspect at 852×883dp</span>
+            </button>
+            <div class="assessment">
+              <div><strong>Pros</strong></div>
+              <ul>
+                <li>Uses MD3’s intended tonal hierarchy.</li>
+                <li>Looks calm and keeps attention on content.</li>
+                <li>Uses one separation mechanism.</li>
+              </ul>
+              <div><strong>Cons</strong></div>
+              <ul>
+                <li>Picker, transport and track surfaces are close in value.</li>
+                <li>Separation may weaken on poor panels or at low brightness.</li>
+              </ul>
+              <p class="my-read"><strong>My read</strong>Second choice. Quiet and readable, but less immediate than 1c.</p>
+            </div>
+          </article>
+
+          <article class="option">
+            <label class="option-heading">
+              <input type="radio" name="lightSeparation" value="1b" aria-labelledby="q1-1b-title" required>
+              <span class="option-title">
+                <span class="option-code">1b</span>
+                <strong id="q1-1b-title">One flat surface with hairlines</strong>
+                <span class="option-summary">Direct translation of dark mode</span>
+              </span>
+            </label>
+            <button class="preview-open" type="button" data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp">
+              <img data-candidate-source="candidates/light-b.dc.html" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1b, using hairlines on one flat surface">
+              <span>Inspect at 852×883dp</span>
+            </button>
+            <div class="assessment">
+              <div><strong>Pros</strong></div>
+              <ul>
+                <li>Separation stays explicit across panels and brightness levels.</li>
+                <li>Most directly mirrors dark mode’s structure.</li>
+              </ul>
+              <div><strong>Cons</strong></div>
+              <ul>
+                <li>Borders around panes, controls and rows create grid noise.</li>
+                <li>Light mode feels more administrative than the other treatments.</li>
+              </ul>
+              <p class="my-read"><strong>My read</strong>Third choice. Robust, but it spends too much visual ink.</p>
+            </div>
+          </article>
+
+          <article class="option">
+            <label class="option-heading">
+              <input type="radio" name="lightSeparation" value="1c" aria-labelledby="q1-1c-title" required>
+              <span class="option-title">
+                <span class="option-code">1c · recommended</span>
+                <strong id="q1-1c-title">Tonal panes with one rail hairline</strong>
+                <span class="option-summary">Dimmed window, quiet raised panes</span>
+              </span>
+            </label>
+            <button class="preview-open" type="button" data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp">
+              <img data-candidate-source="candidates/light-c.dc.html" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1c, using tonal panes and one rail hairline">
+              <span>Inspect at 852×883dp</span>
+            </button>
+            <div class="assessment">
+              <div><strong>Pros</strong></div>
+              <ul>
+                <li>Creates the clearest hierarchy with little linework.</li>
+                <li>Keeps the track list quiet while separating picker and transport.</li>
+                <li>Uses a hairline only where the rail needs one.</li>
+              </ul>
+              <div><strong>Cons</strong></div>
+              <ul>
+                <li>Mixes tonal separation with one outline.</li>
+                <li>The dim window gives light mode a heavier surrounding field.</li>
+              </ul>
+              <p class="my-read"><strong>My read</strong>First choice. Best hierarchy for the amount of visual ink used.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <p class="ranking">
+        <strong>Ranking: 1c &gt; 1a &gt; 1b</strong>
+        1c beats 1a because its pane hierarchy survives at a glance.
+        1a beats 1b because its softer separation avoids turning every row and region into a box.
+      </p>
+    </section>
+
+    <section class="question" aria-labelledby="q2-title">
+      <h2 id="q2-title">Q2: How prominent should true-peak values be in light mode?</h2>
+      <p class="question-intro">
+        Each track-pane detail uses the measured 418×883dp half of the unfolded display.
+        The row stays two lines and keeps duration plus true peak.
+        Only emphasis changes.
+      </p>
+
+      <div class="options-scroll" tabindex="0" aria-label="Q2 visual comparison, scroll horizontally on narrow windows">
+        <div class="options">
+          <article class="option">
+            <label class="option-heading">
+              <input type="radio" name="peakEmphasis" value="3a" aria-labelledby="q2-3a-title" required>
+              <span class="option-title">
+                <span class="option-code">3a</span>
+                <strong id="q2-3a-title">One secondary treatment</strong>
+                <span class="option-summary">Duration and true peak share a colour</span>
+              </span>
+            </label>
+            <button class="preview-open" type="button" data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp">
+              <img data-candidate-source="candidates/dbtp-a.dc.html" src="@@IMAGE_DBTP_A@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with duration and true peak in one secondary treatment">
+              <span>Inspect at 418×883dp</span>
+            </button>
+            <div class="assessment">
+              <div><strong>Pros</strong></div>
+              <ul>
+                <li>Uses one simple rule in both themes.</li>
+                <li>Keeps supporting text subordinate to track titles.</li>
+                <li>Leaves every true-peak value available.</li>
+              </ul>
+              <div><strong>Cons</strong></div>
+              <ul>
+                <li>Duration and true peak receive equal emphasis despite different jobs.</li>
+                <li>The values recede in the light comparison.</li>
+              </ul>
+              <p class="my-read"><strong>My read</strong>Second choice. Clear enough, but harder to scan.</p>
+            </div>
+          </article>
+
+          <article class="option">
+            <label class="option-heading">
+              <input type="radio" name="peakEmphasis" value="3b" aria-labelledby="q2-3b-title" required>
+              <span class="option-title">
+                <span class="option-code">3b · recommended</span>
+                <strong id="q2-3b-title">Stronger true-peak value</strong>
+                <span class="option-summary">Duration quiet, true peak at 500 weight</span>
+              </span>
+            </label>
+            <button class="preview-open" type="button" data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp">
+              <img data-candidate-source="candidates/dbtp-b.dc.html" src="@@IMAGE_DBTP_B@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with stronger true-peak values">
+              <span>Inspect at 418×883dp</span>
+            </button>
+            <div class="assessment">
+              <div><strong>Pros</strong></div>
+              <ul>
+                <li>Makes true-peak values easy to scan across the folder.</li>
+                <li>Preserves every value without adding a column.</li>
+                <li>The weight difference is visible without competing with titles.</li>
+              </ul>
+              <div><strong>Cons</strong></div>
+              <ul>
+                <li>Introduces two treatments within one supporting line.</li>
+                <li>Repeated bold values add some visual texture.</li>
+              </ul>
+              <p class="my-read"><strong>My read</strong>First choice. Scannable without structural cost.</p>
+            </div>
+          </article>
+
+          <article class="option">
+            <label class="option-heading">
+              <input type="radio" name="peakEmphasis" value="3c" aria-labelledby="q2-3c-title" required>
+              <span class="option-title">
+                <span class="option-code">3c</span>
+                <strong id="q2-3c-title">Value only on playing row</strong>
+                <span class="option-summary">Duration alone on every other row</span>
+              </span>
+            </label>
+            <button class="preview-open" type="button" data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp">
+              <img data-candidate-source="candidates/dbtp-c.dc.html" src="@@IMAGE_DBTP_C@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with true peak only on the playing row">
+              <span>Inspect at 418×883dp</span>
+            </button>
+            <div class="assessment">
+              <div><strong>Pros</strong></div>
+              <ul>
+                <li>Produces the quietest list.</li>
+                <li>Keeps the current track’s value visible.</li>
+              </ul>
+              <div><strong>Cons</strong></div>
+              <ul>
+                <li>Prevents comparison across tracks.</li>
+                <li>Hides already-computed information from its expected location.</li>
+                <li>Conflicts with the settled two-line row content.</li>
+              </ul>
+              <p class="my-read"><strong>My read</strong>Reject. The visual calm is not worth losing the values.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <p class="ranking">
+        <strong>Ranking: 3b &gt; 3a &gt; 3c</strong>
+        3b beats 3a because it makes true peak scannable without structural cost.
+        3a beats 3c because retaining all values preserves the settled row contract.
+      </p>
+    </section>
+
+    <section class="question free-text" aria-labelledby="q3-title">
+      <h2 id="q3-title">Q3: Anything else you want settled or changed?</h2>
+      <p class="question-intro">
+        Correct the framing,
+        add a constraint the candidates missed,
+        or explicitly reopen a settled decision if that is intentional.
+      </p>
+      <label for="anything-else">Your correction, constraint or “none”</label>
+      <textarea id="anything-else" name="anythingElse" required placeholder="None, or write what these options missed."></textarea>
+
+      <div class="actions">
+        <button type="submit">Prepare answers</button>
+        <button type="button" data-variant="secondary" id="clear-form">Clear</button>
+        <span class="status" id="status" role="status" aria-live="polite"></span>
+      </div>
+
+      <div class="output" id="output" hidden>
+        <label for="answer-output">Answer to paste back into Pi</label>
+        <textarea id="answer-output" readonly></textarea>
+        <div class="actions">
+          <button type="button" id="copy-answers">Copy answers</button>
+          <button type="button" data-variant="secondary" id="download-answers">Download answers</button>
+        </div>
+      </div>
+    </section>
+  </form>
+
+  <footer>
+    Self-contained questionnaire. No network, external stylesheet, script, font or server is required.
+  </footer>
+</main>
+
+<dialog class="preview-dialog" id="preview-dialog" aria-labelledby="zoom-title">
+  <div class="zoom-toolbar">
+    <div class="zoom-heading">
+      <h3 id="zoom-title">Candidate preview</h3>
+      <p id="zoom-dimensions"></p>
+    </div>
+    <div class="zoom-actions">
+      <button type="button" data-variant="secondary" id="zoom-out" aria-label="Zoom out">−</button>
+      <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
+      <button type="button" data-variant="secondary" id="zoom-in" aria-label="Zoom in">+</button>
+      <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
+      <button type="button" id="zoom-actual">Reset to actual</button>
+      <button type="button" data-variant="secondary" id="zoom-close">Close</button>
+    </div>
+  </div>
+  <div class="zoom-stage" id="zoom-stage">
+    <div class="zoom-canvas">
+      <img class="zoom-image" id="zoom-image" alt="">
+    </div>
+  </div>
+</dialog>
+
+<script>
+const form = document.querySelector('#design-form');
+const output = document.querySelector('#output');
+const answerOutput = document.querySelector('#answer-output');
+const status = document.querySelector('#status');
+const clearButton = document.querySelector('#clear-form');
+const copyButton = document.querySelector('#copy-answers');
+const downloadButton = document.querySelector('#download-answers');
+const previewDialog = document.querySelector('#preview-dialog');
+const zoomTitle = document.querySelector('#zoom-title');
+const zoomDimensions = document.querySelector('#zoom-dimensions');
+const zoomStage = document.querySelector('#zoom-stage');
+const zoomImage = document.querySelector('#zoom-image');
+const zoomScale = document.querySelector('#zoom-scale');
+const zoomOut = document.querySelector('#zoom-out');
+const zoomIn = document.querySelector('#zoom-in');
+const zoomFit = document.querySelector('#zoom-fit');
+const zoomActual = document.querySelector('#zoom-actual');
+const zoomClose = document.querySelector('#zoom-close');
+const minimumScale = 0.25;
+const maximumScale = 2;
+const scaleStep = 0.25;
+let currentScale = 1;
+let targetWidth = 852;
+let targetHeight = 883;
+let targetUnit = 'dp';
+
+const renderZoom = () => {
+  const renderedWidth = Math.round(targetWidth * currentScale);
+  const renderedHeight = Math.round(targetHeight * currentScale);
+  zoomImage.style.inlineSize = `${renderedWidth}px`;
+  zoomImage.style.blockSize = `${renderedHeight}px`;
+  zoomScale.textContent = `${Math.round(currentScale * 100)}% · ${renderedWidth}×${renderedHeight}px`;
+  zoomDimensions.textContent = `Target: ${targetWidth}×${targetHeight}${targetUnit}. Actual size is 100%.`;
+};
+
+const setZoom = (scale) => {
+  currentScale = Math.max(minimumScale, Math.min(maximumScale, scale));
+  renderZoom();
+};
+
+const fitZoom = () => {
+  const inlineRoom = Math.max(1, zoomStage.clientWidth - 32);
+  const blockRoom = Math.max(1, zoomStage.clientHeight - 32);
+  setZoom(Math.min(1, inlineRoom / targetWidth, blockRoom / targetHeight));
+};
+
+const openPreview = (button) => {
+  const image = button.querySelector('img');
+  targetWidth = Number(button.dataset.previewWidth);
+  targetHeight = Number(button.dataset.previewHeight);
+  targetUnit = button.dataset.previewUnit;
+  zoomTitle.textContent = button.dataset.previewTitle;
+  zoomImage.src = image.src;
+  zoomImage.alt = image.alt;
+  previewDialog.showModal();
+  setZoom(1);
+  zoomStage.scrollTo({ top: 0, left: 0 });
+};
+
+const buildAnswer = () => {
+  const data = new FormData(form);
+  return [
+    `Q1 ${data.get('lightSeparation')}`,
+    `Q2 ${data.get('peakEmphasis')}`,
+    `Q3 ${data.get('anythingElse').trim()}`,
+  ].join('\n');
+};
+
+const copyText = async (text) => {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  answerOutput.focus();
+  answerOutput.select();
+  const copied = document.execCommand('copy');
+  if (!copied) {
+    throw new Error('Browser copy command was rejected. Select the prepared answer and copy it manually.');
+  }
+};
+
+document.querySelectorAll('.preview-open').forEach((button) => {
+  button.addEventListener('click', () => openPreview(button));
+});
+
+zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
+zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));
+zoomFit.addEventListener('click', fitZoom);
+zoomActual.addEventListener('click', () => setZoom(1));
+zoomClose.addEventListener('click', () => previewDialog.close());
+previewDialog.addEventListener('click', (event) => {
+  if (event.target === previewDialog) {
+    previewDialog.close();
+  }
+});
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!form.reportValidity()) {
+    return;
+  }
+
+  answerOutput.value = buildAnswer();
+  output.hidden = false;
+  status.textContent = 'Answers prepared.';
+  output.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+clearButton.addEventListener('click', () => {
+  form.reset();
+  answerOutput.value = '';
+  output.hidden = true;
+  status.textContent = 'Answers cleared.';
+  document.querySelector('input[name="lightSeparation"]').focus();
+});
+
+copyButton.addEventListener('click', async () => {
+  try {
+    await copyText(answerOutput.value);
+    status.textContent = 'Answers copied. Paste them into Pi.';
+  } catch (error) {
+    status.textContent = error instanceof Error ? error.message : String(error);
+  }
+});
+
+downloadButton.addEventListener('click', () => {
+  const blob = new Blob([`${answerOutput.value}\n`], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'music-player-design-round-1.txt';
+  link.click();
+  URL.revokeObjectURL(url);
+  status.textContent = 'Answers downloaded.';
+});
+</script>
+</body>
+</html>
