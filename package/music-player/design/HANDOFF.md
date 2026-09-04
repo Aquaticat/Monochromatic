@@ -117,8 +117,10 @@ project holds itself to.
 - **Every design-question round is one self-contained HTML form opened in Helium.**
   Embed its visual candidates, pros, cons, ranked recommendation and free-text field;
   require no external stylesheet, script, font or server. Render it, inspect it and
-  exercise its answer controls before opening it for the user. A chat-only round is
-  not a delivered design question (review-notes 5i and standing standard 9).
+  exercise its answer controls before opening it for the user. Every device mock must
+  zoom to its cited target dimensions and show its current scale plus a reset control.
+  A chat-only round is not a delivered design question (review-notes 5i and standing
+  standard 9).
 - **Update this handover continuously.** Record every correction, answer, decision,
   candidate and verification result when it happens; never wait for the session end
   (review-notes standing standard 10).
@@ -198,7 +200,11 @@ measured the defects: both comparisons wrapped to two rows; each foldable used t
 wrong 852:620 ratio instead of 852:883; each clipped seven descendants; and all six
 visuals were hand-redrawn approximations rather than verified candidate renders. This
 rules out a Helium-specific cause. Replace every nested mock with an exact candidate
-render, keep each three-way comparison together, then rerun the same red probe.
+render, keep each three-way comparison together, then rerun the same red probe. The
+user added a standing requirement: every device mock in a questionnaire must be
+zoomable to its cited target measurements. For this round, full unfolded candidates
+must expose an 852×883dp view and half-screen detail studies must expose a 418×883dp
+view, with current scale and reset controls visible.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
