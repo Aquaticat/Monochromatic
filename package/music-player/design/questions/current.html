@@ -615,6 +615,11 @@ h3 {
   font-size: 0.68rem;
 }
 
+.study-title,
+.study-sub {
+  display: block;
+}
+
 .study-title {
   font-size: 0.9rem;
   line-height: 1.3;
@@ -779,15 +784,15 @@ footer {
       <div class="options">
         <label class="option">
           <span class="option-heading">
-            <input type="radio" name="lightSeparation" value="1a" required>
+            <input type="radio" name="lightSeparation" value="1a" aria-labelledby="q1-1a-title" required>
             <span class="option-title">
               <span class="option-code">1a</span>
-              <strong>Tonal ramp, no outlines</strong>
+              <strong id="q1-1a-title">Tonal ramp, no outlines</strong>
               <span class="option-summary">Pure MD3 tonal separation</span>
             </span>
           </span>
-          <span class="option-visual">
-            <span class="foldable" data-separation="tonal" aria-label="Light unfolded player using only tonal surfaces">
+          <span class="option-visual" aria-hidden="true">
+            <span class="foldable" data-separation="tonal">
               <span class="foldable-side">
                 <span class="picker-mini">
                   <span class="mini-toolbar"><span class="mini-chip">Open</span></span>
@@ -831,15 +836,15 @@ footer {
 
         <label class="option">
           <span class="option-heading">
-            <input type="radio" name="lightSeparation" value="1b" required>
+            <input type="radio" name="lightSeparation" value="1b" aria-labelledby="q1-1b-title" required>
             <span class="option-title">
               <span class="option-code">1b</span>
-              <strong>One flat surface with hairlines</strong>
+              <strong id="q1-1b-title">One flat surface with hairlines</strong>
               <span class="option-summary">Direct translation of dark mode</span>
             </span>
           </span>
-          <span class="option-visual">
-            <span class="foldable" data-separation="outline" aria-label="Light unfolded player using outlines on one flat surface">
+          <span class="option-visual" aria-hidden="true">
+            <span class="foldable" data-separation="outline">
               <span class="foldable-side">
                 <span class="picker-mini">
                   <span class="mini-toolbar"><span class="mini-chip">Open</span></span>
@@ -882,15 +887,15 @@ footer {
 
         <label class="option">
           <span class="option-heading">
-            <input type="radio" name="lightSeparation" value="1c" required>
+            <input type="radio" name="lightSeparation" value="1c" aria-labelledby="q1-1c-title" required>
             <span class="option-title">
               <span class="option-code">1c · recommended</span>
-              <strong>Tonal panes with one rail hairline</strong>
+              <strong id="q1-1c-title">Tonal panes with one rail hairline</strong>
               <span class="option-summary">Dimmed window, quiet raised panes</span>
             </span>
           </span>
-          <span class="option-visual">
-            <span class="foldable" data-separation="hybrid" aria-label="Light unfolded player using tonal panes and one rail hairline">
+          <span class="option-visual" aria-hidden="true">
+            <span class="foldable" data-separation="hybrid">
               <span class="foldable-side">
                 <span class="picker-mini">
                   <span class="mini-toolbar"><span class="mini-chip">Open</span></span>
@@ -950,14 +955,14 @@ footer {
       <div class="options">
         <label class="option">
           <span class="option-heading">
-            <input type="radio" name="peakEmphasis" value="3a" required>
+            <input type="radio" name="peakEmphasis" value="3a" aria-labelledby="q2-3a-title" required>
             <span class="option-title">
               <span class="option-code">3a</span>
-              <strong>One secondary treatment</strong>
+              <strong id="q2-3a-title">One secondary treatment</strong>
               <span class="option-summary">Duration and true peak share a colour</span>
             </span>
           </span>
-          <span class="option-visual">
+          <span class="option-visual" aria-hidden="true">
             <span class="track-study" data-emphasis="same">
               <span class="study-toolbar"><span class="study-folder">Camellia⌄</span></span>
               <span class="study-row" data-playing><span class="study-number">▶</span><span><span class="study-title">Another Xronixle</span><span class="study-sub">4:35 <span class="separator">·</span> <span class="peak">−1.2 dBTP</span></span></span></span>
@@ -985,14 +990,14 @@ footer {
 
         <label class="option">
           <span class="option-heading">
-            <input type="radio" name="peakEmphasis" value="3b" required>
+            <input type="radio" name="peakEmphasis" value="3b" aria-labelledby="q2-3b-title" required>
             <span class="option-title">
               <span class="option-code">3b · recommended</span>
-              <strong>Stronger true-peak value</strong>
+              <strong id="q2-3b-title">Stronger true-peak value</strong>
               <span class="option-summary">Duration quiet, true peak at 500 weight</span>
             </span>
           </span>
-          <span class="option-visual">
+          <span class="option-visual" aria-hidden="true">
             <span class="track-study" data-emphasis="split">
               <span class="study-toolbar"><span class="study-folder">Camellia⌄</span></span>
               <span class="study-row" data-playing><span class="study-number">▶</span><span><span class="study-title">Another Xronixle</span><span class="study-sub">4:35 <span class="separator">·</span> <span class="peak">−1.2 dBTP</span></span></span></span>
@@ -1020,14 +1025,14 @@ footer {
 
         <label class="option">
           <span class="option-heading">
-            <input type="radio" name="peakEmphasis" value="3c" required>
+            <input type="radio" name="peakEmphasis" value="3c" aria-labelledby="q2-3c-title" required>
             <span class="option-title">
               <span class="option-code">3c</span>
-              <strong>Value only on playing row</strong>
+              <strong id="q2-3c-title">Value only on playing row</strong>
               <span class="option-summary">Duration alone on every other row</span>
             </span>
           </span>
-          <span class="option-visual">
+          <span class="option-visual" aria-hidden="true">
             <span class="track-study" data-emphasis="playing-only">
               <span class="study-toolbar"><span class="study-folder">Camellia⌄</span></span>
               <span class="study-row" data-playing><span class="study-number">▶</span><span><span class="study-title">Another Xronixle</span><span class="study-sub">4:35 <span class="separator">·</span> <span class="peak">−1.2 dBTP</span></span></span></span>

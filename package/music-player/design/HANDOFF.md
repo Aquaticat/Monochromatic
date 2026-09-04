@@ -180,7 +180,15 @@ identifiers; none were present. Their metadata was stripped before the package i
 was committed. The self-contained grilling form now exists at
 `questions/current.html`; package lint and unit-contract tasks confirm that its answer
 fields are present and that it references no external stylesheet, script, font or
-server. User-boundary rendering and interaction verification are the next action.
+server. User-boundary verification rendered the form at 1280px and 390px with no
+horizontal overflow or external resource request. A collapsed title/supporting-line
+defect in the true-peak miniatures was fixed and re-rendered. Every radio, validation,
+free-text, prepare, copy, download and clear path was exercised; the prepared and
+downloaded answer matched `Q1 1c / Q2 3b / Q3 None.`. The light page stayed light
+under a forced dark host. Axe reported zero WCAG A/AA violations; its remaining
+incomplete result is contrast automation unable to resolve overlapping miniature
+content, not a reported failure. The next action is to open the verified form in
+Helium.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
