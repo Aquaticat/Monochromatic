@@ -748,7 +748,13 @@ center of the horizontal 16dp strip between the folder picker and transport sect
 not the 1dp rail line. Final D34 therefore combines: `outlineVariant` rail line, white
 24dp vertical center spacer, and white 16dp horizontal picker/transport divider. Apply
 that exact combination, recapture it natively, and show it in an actionable updated
-HTML correction form before moving on.
+HTML correction form before moving on. Before that recapture, the user added two track
+list corrections: remove agent-invented ordinal numbers because they can be confused
+with actual track-number metadata; replace the saturated blue current-row undertone,
+which the user identifies as inaccessible and not MD3. Retain the play icon as the
+non-color current-track cue. Re-check the supplied Material guidance for an appropriate
+baseline current-row treatment, apply both corrections to every new candidate, and
+include them in the next native HTML evidence.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
