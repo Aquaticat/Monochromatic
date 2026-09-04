@@ -322,9 +322,14 @@ A debug-only, non-functional Compose prototype now implements all six candidate 
 in `android-app/app/src/debug/`: `light-a`, `light-b`, `light-c`, `dbtp-a`, `dbtp-b`,
 and `dbtp-c`. It uses native `WindowInsets.safeDrawing` inside an edge-to-edge Android
 window, so app controls clear the reported camera and system-bar insets while the
-screen background continues behind both bars. `mise run
-//package/music-player/android-app:prototype:build` assembles successfully. Install,
-capture and visual comparison remain pending. After the first native Compose captures,
+screen background continues behind both bars. The prototype is preserved on branch
+`prototype/music-player-theme-compose` at commit `69607079b`; its
+`prototype:capture` task builds, installs, waits for Compose to replace the Android
+launch splash, and captures each key at panel resolution. All six variants installed
+and rendered successfully on the unfolded emulator. An initial capture taken directly
+after `am start -W` caught the launch splash, proving that activity launch completion
+is not first-frame evidence; the task now waits until the UI hierarchy contains
+`Camellia` before each screenshot. After the first native Compose captures,
 the user said: “There isn't any reason to double-wrap the UI,” then identified the
 problem in `/var/home/user/Pictures/Screenshots/Screenshot_20260904_153211.png`. The
 annotated screenshot marks the physical screen/window background as wrapper 1 and the
@@ -332,6 +337,12 @@ full-height rounded track-pane card as wrapper 2. Remove wrapper 2: the full-hei
 track surface must fill its allotted right side and continue behind the native status
 and navigation bars. Keep rounded containers only for distinct inner groups such as
 the picker and transport, not around a pane that already occupies the screen edge.
+The Compose prototype now does this for full and right-half candidates. Fresh captures
+were inspected individually: the right track surface reaches the top, right and bottom
+screen edges; the native status icons and large-screen gesture handle remain visible;
+all app controls begin after `WindowInsets.safeDrawing`; and only the local picker and
+transport groups retain rounded containers. The six corrected PNGs have been copied to
+`questions/render/` for questionnaire integration.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
