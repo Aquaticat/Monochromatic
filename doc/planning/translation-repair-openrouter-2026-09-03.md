@@ -683,6 +683,9 @@ one picture), logs `~/temp/agent/luxuanwen3-shapes-20260904.log` and `mtf_0615-s
     CoreWeave 32 (4 cut), DeepSeek Flash by Phala and Together, GLM-5.3 by Modal and Together, no call on
     an ignored endpoint, no in-stream failure, 4 cut streams in the first 25 minutes against MTF_0615's
     155 over two hours.
+    Settled at 09:25 UTC: `TALLY keyword233 status=SETTLED slices=3 ... ms=1553800` (25.9 min), verify-published
+    1 of 1 at `chars=811=expected`, 0.6134 USD, 5 cut streams, 5 voices never heard, no in-stream failure,
+    no call on an ignored endpoint.
 
 ## Build plan, transport-independent layers first
 
