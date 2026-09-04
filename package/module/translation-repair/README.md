@@ -184,12 +184,14 @@ the line then ends with `destinations-archive-rendering`,
 and with `destinations-both-renderings` when the page carries the original's and the archive's for one reference.
 The addresses themselves go to the run log at info, never to stdout.
 A dropped destination from a wording both deciders approved is a finding, not a late publish rewrite.
-The neutral pronoun the sources write as `TA`, `Ta` or `ta` renders as singular they:
+The neutral pronoun the sources write as `TA`,
+`Ta` or `ta` renders as singular they:
 the declared-identity pronoun line counts all three spellings (`identity-context.ts`),
 the house rule says what English makes of it,
 and a translation that leaves it standing fails the deterministic slice rule (`translate-neutral-pronoun.ts`),
 which names the spelling and its count to the model that wrote it.
-Measured over the pinned corpus, that rule flags one archive (a rewrite keeping `TA`) and 15 sources.
+Measured over the pinned corpus,
+that rule flags one archive (a rewrite keeping `TA`) and 15 sources.
 A different rule protects a source-only passage:
 whole-document coverage must call it absent,
 then page shortfall or a destination missing from target admits translation.
@@ -312,12 +314,16 @@ directions.
 Noise can clear its line:
 a painting's canvas returned 24 characters on `Uekawakuyuurei/IMG_1308.webp`,
 so the models were asked and every one reported that the picture carries no text.
-Since 2026-09-04 such a reply is an absence report (`reports-no-text`), not a refusal:
-it is not asked again, and two readers reporting absence, or answering with fewer characters than a transcript
-(the hull number on `img370.webp`), confirm the picture textless past the noise.
+Since 2026-09-04 such a reply is an absence report (`reports-no-text`),
+not a refusal:
+it is not asked again,
+and two readers reporting absence,
+or answering with fewer characters than a transcript (the hull number on `img370.webp`),
+confirm the picture textless past the noise.
 The verdict is recorded with the readers that confirmed it and resumed like the deterministic one;
 a reader that declines to read (`reads-as-refusal`) is still re-asked and still leaves the picture unread.
-The refused reply's opening is logged, since it carries the model's words about the picture and never the picture's text.
+The refused reply's opening is logged,
+since it carries the model's words about the picture and never the picture's text.
 
 ### Four readers, and a reader asked again
 
@@ -721,31 +727,48 @@ and reading one as an instruction has cost this package a defect before.
     The owner will not top this balance up again (2026-09-03), so it serves until it runs dry.
 
 -   `TRANSLATION_REPAIR_OPENROUTER_API_KEY`.
-    Bearer token for the third provider, OpenRouter, the paid per-token fallback the owner chose on
+    Bearer token for the third provider,
+    OpenRouter,
+    the paid per-token fallback the owner chose on
     2026-09-03 (`doc/decision/translation-repair-openrouter-fallback.md`).
     OPTIONAL AND LOUD like the second.
     Every request carries `provider: { zdr: true, require_parameters: true, ignore: [...] }`,
     so only zero-data-retention endpoints that support `response_format` may serve a passage,
     and the catalog row's `ignoredEndpoints` keeps a measured-broken upstream off the wire
-    (Parasail for MiniMax M3 since 2026-09-03: it answered into the reasoning channel and left content empty;
-    ModelRun for MiniMax M3 since 2026-09-04: it timed out 119 of 300 streams in-stream, and CoreWeave
-    answers the same schema request 4 of 4; OpenInference, Parasail and Reka for DeepSeek V4 Flash, Reka and
-    Io Net for Qwen3.8-27B, and Reka for GLM-5.3 since 2026-09-04, each cutting a quarter or more of at
-    least twenty streams at the straggler grace in a day's runs).
-    Slugs are the ones `GET /api/v1/providers` lists, not display names lower-cased: `open-inference`, not
-    `openinference`, which is how the 2026-09-03 ignore stayed off the wire for a day.
-    Credits are read from `GET /api/v1/credits` (purchased less used, in USD) and printed on the `METERS`
-    line as `openrouterUsd=`; every call's cost is read off the final stream chunk onto its `SPEND` line as
-    `cost=`, so a run's OpenRouter bill is summed from the wire rather than from a price table.
+    (Parasail for MiniMax M3 since 2026-09-03:
+    it answered into the reasoning channel and left content empty;
+    ModelRun for MiniMax M3 since 2026-09-04:
+    it timed out 119 of 300 streams in-stream,
+    and CoreWeave answers the same schema request 4 of 4;
+    OpenInference,
+    Parasail and Reka for DeepSeek V4 Flash,
+    Reka and Io Net for Qwen3.8-27B,
+    and Reka for GLM-5.3 since 2026-09-04,
+    each cutting a quarter or more of at least twenty streams at the straggler grace in a day's runs).
+    Slugs are the ones `GET /api/v1/providers` lists,
+    not display names lower-cased:
+    `open-inference`,
+    not `openinference`,
+    which is how the 2026-09-03 ignore stayed off the wire for a day.
+    Credits are read from `GET /api/v1/credits` (purchased less used,
+    in USD) and printed on the `METERS` line as `openrouterUsd=`;
+    every call's cost is read off the final stream chunk onto its `SPEND` line as `cost=`,
+    so a run's OpenRouter bill is summed from the wire rather than from a price table.
     The upstream that served each call is read off the same chunks:
     `endpoint=` on the `SPEND` line (percent-encoded) and `served by "..."` on the stream progress line,
-    cut streams included, so a slow or broken upstream is named by a grep of the run log.
+    cut streams included,
+    so a slow or broken upstream is named by a grep of the run log.
     An upstream that fails after the gateway has answered 200 writes one chunk carrying an `error` object
-    and closes without `[DONE]`; the client reads that chunk first and retries under
-    `InStreamProviderError`, whose message names the code, the gateway's error type and the endpoint
-    (`openrouter-stream-error.ts`; ModelRun's 504 timeouts on MiniMax M3, 2026-09-04, were the case).
+    and closes without `[DONE]`;
+    the client reads that chunk first and retries under `InStreamProviderError`,
+    whose message names the code,
+    the gateway's error type and the endpoint (`openrouter-stream-error.ts`;
+    ModelRun's 504 timeouts on MiniMax M3,
+    2026-09-04,
+    were the case).
 
-Every key lives in the sops-encrypted, gitignored `.env.local.json` at the repository root,
+Every key lives in the sops-encrypted,
+gitignored `.env.local.json` at the repository root,
 which `mise run` decrypts into the task's environment.
 A worktree created with `git worktree add` starts without that file;
 copy the encrypted file into the worktree root (it stays encrypted at rest) or launch from the main worktree.
@@ -979,7 +1002,8 @@ An outage with no wet reading before it, or none after it,
 is reported open rather than as a number,
 since it may have started before the record or may still be running.
 
-Every figure is availability WHEN WE WERE ASKING, not availability.
+Every figure is availability WHEN WE WERE ASKING,
+not availability.
 That is the quantity that prices a seat,
 and it is not the same thing.
 
@@ -1012,16 +1036,23 @@ and point `meter-report` at the collected logs.
 ### Bounding one run
 
 -   `TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD`.
-    Overrides the per-run spend ceiling, a non-negative number of USD, built in at 20
-    (`doc/decision/translation-repair-run-spend-ceiling.md`, the owner's decision of 2026-09-04).
+    Overrides the per-run spend ceiling,
+    a non-negative number of USD,
+    built in at 20 (`doc/decision/translation-repair-run-spend-ceiling.md`,
+    the owner's decision of 2026-09-04).
     Every OpenRouter call's reported `cost=` feeds a process-wide meter as its `SPEND` line is written,
     and before each entry the scheduler stops starting new ones once the run's OpenRouter spend is at or
-    past the ceiling, printing `SPEND CEILING reached`; entries already running finish.
-    Unset and blank are the built-in; an unreadable or negative value is REFUSED at launch for the same
-    reason the entry ceiling's is; zero is allowed and means start nothing, which is how the guard is
-    shown to fire on a live run at no cost. A run that overrides logs `SPEND CEILING OVERRIDDEN`.
+    past the ceiling,
+    printing `SPEND CEILING reached`;
+    entries already running finish.
+    Unset and blank are the built-in;
+    an unreadable or negative value is REFUSED at launch for the same reason the entry ceiling's is;
+    zero is allowed and means start nothing,
+    which is how the guard is shown to fire on a live run at no cost.
+    A run that overrides logs `SPEND CEILING OVERRIDDEN`.
 -   `TRANSLATION_REPAIR_HARD_CAP_MINUTES`.
-    Overrides the per-entry ceiling, a positive number of minutes.
+    Overrides the per-entry ceiling,
+    a positive number of minutes.
     A value that is not one is REFUSED rather than replaced by the default,
     including `30m`, which `parseFloat` would have read as 30:
     a ceiling is what stops a runaway entry,
@@ -1610,12 +1641,30 @@ the metadata slice sits at slice zero over both sides' front-matter bytes,
 the page parses,
 the identity and attribution rules hold,
 and the page's visible name is not the directory id where the source names the person differently (`directory-id-name`, checked on the assembled page whether or not it equals the archive; since `6d85b619a` a handle that is the name in both languages, as for 8 of the pinned corpus's 92 entries, passes).
-Since `6bfe6da56` (2026-09-04, two owner decisions after the luxuanwen3 pass lost a full run to its front matter) the identity rule reads containment:
-where the source declares `name` and `info.alias` the same, the translated name must appear among the comma-separated renderings of the translated alias, which may carry the original script beside it (7 of the 14 such archives at the pinned corpus do),
-and consolidation withholds a standing text the deterministic gate refused from its slate, failing the slice under `ConsolidationStandingIneligibleError` when nothing valid ships rather than letting the page guard refuse the entry after the run has been paid for (`doc/decision/translation-repair-ineligible-standing.md`).
-Since `82888d43b` (2026-09-04, owner's decision after the re-run stopped at its first paragraph) a reference the archive rendered another way is owed once, not twice:
-per atom kind, the atoms only the original carries and the atoms only the page carries form one pool and a candidate owes the larger side's count from it, drawn from either side (luxuanwen3 links `x.com` where its original links `twitter.com`; 8 of the 93 entries carry such a rewrite), while a one-way divergence stays an addition or a drop owed as before (`doc/decision/translation-repair-rewritten-destination.md`).
-The run log names which verdict refused a standing (`fails the deterministic publication rule`, with the findings, or `lacks contest endorsement`) and a contest winner's findings (`558b46e11`), and an ineligible standing stops the entry instead of queueing a reattempt of the same refusal (`ae1d2b55f`).
+Since `6bfe6da56` (2026-09-04,
+two owner decisions after the luxuanwen3 pass lost a full run to its front matter) the identity rule reads containment:
+where the source declares `name` and `info.alias` the same,
+the translated name must appear among the comma-separated renderings of the translated alias,
+which may carry the original script beside it (7 of the 14 such archives at the pinned corpus do),
+and consolidation withholds a standing text the deterministic gate refused from its slate,
+failing the slice under `ConsolidationStandingIneligibleError` when nothing valid ships
+rather than letting the page guard refuse the entry after the run has been paid for
+(`doc/decision/translation-repair-ineligible-standing.md`).
+Since `82888d43b` (2026-09-04,
+owner's decision after the re-run stopped at its first paragraph)
+a reference the archive rendered another way is owed once,
+not twice:
+per atom kind,
+the atoms only the original carries and the atoms only the page carries form one pool
+and a candidate owes the larger side's count from it,
+drawn from either side (luxuanwen3 links `x.com` where its original links `twitter.com`;
+8 of the 93 entries carry such a rewrite),
+while a one-way divergence stays an addition or a drop owed as before
+(`doc/decision/translation-repair-rewritten-destination.md`).
+The run log names which verdict refused a standing (`fails the deterministic publication rule`,
+with the findings,
+or `lacks contest endorsement`) and a contest winner's findings (`558b46e11`),
+and an ineligible standing stops the entry instead of queueing a reattempt of the same refusal (`ae1d2b55f`).
 Whether the lanes kept the archive's metadata is not the guard's question:
 Chinese and English metadata always differ,
 so the 2026-08-28 byte comparison fired on every kept incumbent and discarded the Carena0442 pass,
@@ -1904,6 +1953,41 @@ Schema-9 reader accepts any count of complete digest-bound transitions and still
 First acceptance uses defect-discovery responsibility;
 confirmation uses prior-acceptance challenge responsibility rather than repeated prompt.
 No further validation may reuse generation-12 consolidation cache.
+
+Status on 2026-09-04.
+Three entries were run on OpenRouter alone and read line by line:
+`luxuanwen3` (60 minutes,
+4.65 USD),
+`SS3B_0016` (56 minutes,
+5.12 USD) and `Uekawakuyuurei` (53 minutes,
+3.84 USD).
+All three verify mechanically and all three pages are publishable.
+That is the first time any page passed the reading gate the owner set on 2026-08-26,
+and it does not make the pipeline production ready.
+
+The reading found four defect classes,
+all four in this package rather than in the corpus.
+The publisher compared the assembled page to the source alone and refused a page its own slice rule had
+accepted.
+The corpus's neutral pronoun,
+written `TA`,
+`Ta` or `ta`,
+reached a page untranslated because the
+counter read one spelling of three and the house rule never said what English makes of it.
+A picture whose canvas noise clears the deterministic presence gate was reported textless by every model,
+each report was screened as a refusal,
+and three entries were unshippable on any roster for it.
+The site's own name was settled by a gate arguing from the archive rather than from a rule.
+Each is fixed with a guard shown to fail with its rule neutralised.
+
+Read that rate as the finding.
+Two entries read on one afternoon produced two new classes,
+and the third produced none,
+so the class-per-entry rate is falling but has not reached zero,
+and no run has yet completed consolidation unstarved on the current build.
+Production readiness needs the passes named in
+`doc/planning/translation-repair-readiness-signal.md`,
+not another green suite.
 
 ### Superseded generation-14 operation history
 

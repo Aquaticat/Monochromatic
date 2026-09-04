@@ -1,6 +1,29 @@
 # Translation repair session handover
 
-## Current handover, 2026-09-01
+## Current handover, 2026-09-04
+
+The current session snapshot is
+[`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md).
+Read it first:
+it carries the repository tip,
+what landed on 2026-09-04,
+the four defect classes the readings found,
+the three pages that shipped,
+the exhausted OpenRouter balance,
+and the next passes in order.
+
+The work in progress is the LEGACY slice pipeline under the owner's direction decision of 2026-09-01
+and the OpenRouter order of 2026-09-03,
+not the finite redesign.
+Corpus runs,
+model calls,
+and implementation on that pipeline ARE authorized;
+the redesign-scope prohibitions in the 2026-09-01 section below remain in force,
+and the readiness judgement lives in
+[`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md).
+The pipeline is not production ready.
+
+## Superseded handover, 2026-09-01
 
 ### Start here
 
@@ -169,6 +192,12 @@ Do not reconstruct partial JSON or hidden reasoning.
 
 ### What remains authorized
 
+The paragraph below was written on 2026-09-01 and states the redesign scope's standing prohibitions,
+which hold.
+Its account of legacy work is superseded by the 2026-09-04 snapshot:
+the OpenRouter fallback landed on 2026-09-03,
+and three entries have since been run and read.
+
 Inside the redesign scope,
 only documentation and evidence-preservation work remains authorized:
 keep the timestamped report and this handover synchronized,
@@ -197,6 +226,7 @@ See
 
 ## Historical snapshots
 
+- [2026-09-04 OpenRouter production session](translation-repair-handover-2026-09-04.md)
 - [2026-08-29 pipeline and stopped-run snapshot](translation-repair-handover-2026-08-29.md)
 - [2026-08-25 to 2026-08-27 provider and production snapshots](translation-repair-handover-2026-08-25-to-27.md)
 - [2026-08-26 session close and open register](translation-repair-handover-2026-08-26-close.md)

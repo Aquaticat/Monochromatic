@@ -127,36 +127,57 @@ so none of those 31 loses a protection it has today.
 
 The presence gate of clause one is drawn at 16 solid characters from `tesseract`,
 and a painting's canvas can clear it as noise.
-`Uekawakuyuurei/IMG_1308.webp`, an oil painting of ships at sea, returned 24 characters;
-`img197.webp`, an ink drawing of two cats, 18;
-`img370.webp`, an ink drawing of a destroyer whose only text is the hull number, 24.
+`Uekawakuyuurei/IMG_1308.webp`,
+an oil painting of ships at sea,
+returned 24 characters;
+`img197.webp`,
+an ink drawing of two cats,
+returned 18;
+`img370.webp`,
+an ink drawing of a destroyer whose only text is the hull number,
+returned 24.
 Every model asked about them answered truthfully:
 "There is no visible text in this image",
-"I cannot read any text in this image. There are no visible words",
-and for the destroyer, `DE581`.
+"I cannot read any text in this image.",
+"There are no visible words",
+and for the destroyer,
+`DE581`.
 Clause two screened the first two as refusals and clause one the third as too short,
 each reader was asked four times to be told the same thing,
 the pair ended `no-reader-available` and transient,
-and the entry stopped at the visual-evidence gate on every run, on both rosters.
+and the entry stopped at the visual-evidence gate on every run,
+on both rosters.
 `dogesir_/photo2.webp` and `gqt/photo3.webp` ended the same way.
 
-A probe over those five pictures on 2026-09-04 found 14 of 15 refused replies naming text
-("no visible text", "no words", "no legible characters") and one declining without naming it
-("I cannot read the image.").
+A probe over those five pictures on 2026-09-04 found 14 of 15 refused replies naming text,
+"no visible text",
+"no words",
+"no legible characters",
+and one declining without naming it,
+"I cannot read the image."
 So the rule now tells the two apart.
 A refusal that names text and says nothing about the picture's quality or the model's access
-is an absence report, clause `reports-no-text`;
-it describes the picture, so it is not asked again.
-A refusal that declines, or names text it could not make out, stays `reads-as-refusal` and is re-asked as before.
+is an absence report,
+clause `reports-no-text`;
+it describes the picture,
+so it is not asked again.
+A refusal that declines,
+or names text it could not make out,
+stays `reads-as-refusal` and is re-asked as before.
 A reply under 16 characters that negates nothing is a short reading rather than an apology.
 
-Two readers reporting absence, or answering short, or one of each,
+Two readers reporting absence,
+or answering short,
+or one of each,
 confirm what the deterministic reader could not:
 the picture is textless past its noise.
 The pair records `no-text` with the readers that confirmed it,
 the verdict is resumed on later runs like the deterministic one,
-and nothing travels to the sheets from it, exactly as before.
-One absence report beside a decline, or beside a full reading, is still nothing corroborated.
+and nothing travels to the sheets from it,
+exactly as before.
+One absence report beside a decline,
+or beside a full reading,
+is still nothing corroborated.
 
 ## What this rule does NOT do
 

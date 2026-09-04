@@ -818,8 +818,11 @@ five entries naming 那些秋叶 render it "One Among Us", one as "One Among Us 
 gate kept it 4 to 3 over a consolidated candidate reading "Those Autumn Leaves", the judges arguing the
 rendering from the archive alone. The corner brackets around an English name are the source's punctuation
 carried across; 72 sources use them and 3 archives keep any, all in quoted Chinese or a design element.
-Recorded, not fixed here: a declared site-name line for the judges is the cheap remedy, and the brackets
-fall under the house rule on punctuation that means nothing in English.
+FIXED THE SAME AFTERNOON in `d5e4d1ea0`, since both halves are house rules rather than judgement calls:
+the community-vocabulary rule now names 那些秋叶 and its renderings (members, the maintenance group), and the
+punctuation rule says what corner brackets become, quotation marks around a quotation and nothing around a
+name or a term. Guarded by two cases in `house-policy-reaches-the-judges.unit.test.ts`, shown to fail with
+the sentences removed.
 
 WHAT LANDED FOR THE PRONOUN: `d98e656cb` (counter, house rule, `translate-neutral-pronoun.ts` wired into
 `validateTranslatedSlice`, tests; each guard shown to fail with its rule neutralised), `cd5288fa9` (lint
