@@ -189,7 +189,56 @@ Use `outlineVariant` for decorative rail, row, and pane dividers.
 Correction: use `MaterialTheme.typography` roles, logical start/end insets, flexible
 minimum heights, vertical scrolling, and Material components whose RTL, focus, and
 state behavior is built in. Retain fixed left-to-right direction only for media time
-and transport controls, where the archive explicitly requires it.
+and transport controls, where the archive explicitly requires it. At a system font
+scale of 1.5 or greater, replace the non-wrapping segmented mode control with four
+full-label Material radio rows. A 200% emulator capture confirms that no mode label is
+truncated and the transport remains vertically reachable.
+
+### State cues and contrast
+
+The user's 2026-09-04 correction forbids color-only state communication. The repaired
+prototype uses these redundant cues:
+
+- Current track: `primaryContainer` fill plus leading Material play icon.
+- Selected playback mode: selected fill plus checkmark. At enlarged type, the radio
+  indicator supplies the non-color selected shape.
+- Selected letter: secondary-container color plus circular container shape.
+- Selected folder: primary color plus medium weight plus underline.
+- Slider value: active color plus handle position and track length.
+- Q2b emphasis is not a state, but it still uses both foreground role and weight.
+
+The captured AVD resolves the relevant dynamic light roles through Android resources.
+WCAG calculations against those resolved values produce these limiting ratios:
+
+- `onSurfaceVariant` on `surfaceDim`: 4.532:1, the lowest text pair used.
+- `primary` on `surfaceContainerLow`: 5.794:1.
+- `onPrimaryContainer` on `primaryContainer`: 6.059:1.
+- `onSecondaryContainer` on `secondaryContainer`: 6.124:1.
+- `outline` on `surfaceContainerLow`: 3.868:1, the lowest important non-text
+  boundary pair used.
+- `primary` slider track on `surfaceContainer`: 5.500:1.
+
+All rendered text pairs meet 4.5:1. Important non-text boundaries meet 3:1.
+Decorative `outlineVariant` dividers do not communicate state or target boundaries.
+The package validator recalculates every `onSurface` and `onSurfaceVariant` pairing
+across all six surface roles plus the actual accent, container, outline, and slider
+pairs.
+
+### Edge-flush letter rail
+
+The user requires the rail to match Nova Launcher's edge placement. The rail's 48dp
+selectable bounds now begin at x=0; app-bar, source-action, and transport controls keep
+the measured start inset. Android's current gesture-navigation guidance says an app
+may selectively exclude an edge region only when an app gesture conflicts with Back:
+https://developer.android.com/develop/ui/views/touch-and-input/gestures/gesturenav.
+The Compose API can exclude a layout rectangle with `Modifier.systemGestureExclusion`:
+https://developer.android.com/reference/kotlin/androidx/compose/foundation/systemGestureExclusion.modifier.
+
+No exclusion is applied here. An emulator swipe from x=20px, inside the reported 73px
+back region, scrolled the rail from A-I to I-Q while the activity remained visible.
+This proves the vertical rail gesture works without taking the whole rail away from
+predictive Back. UI Automator reports each rail target at `[0,...][117,...]`, exactly
+48dp wide and flush with the physical edge.
 
 ## Candidate boundary
 

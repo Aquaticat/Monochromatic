@@ -160,8 +160,10 @@ Use the real Compose component so it supplies the 40dp visual container, 48dp ta
 1dp outline, full outer shape, checkmark, role, and states. Visible labels are
 `Repeat`, `In order`, `Shuffle`, and `Shuffle all`; `Shuffle` means the current folder
 and carries the complete accessibility label `Shuffle current folder`. All labels
-remain visible.
-It is **never collapsed to a single chip** to save height. The connected-group note
+remain visible at the default font scale. At a system font scale of 1.5 or greater,
+the same choices reflow to four full-label Material radio rows because segmented
+buttons cannot wrap and 200% text must not truncate. It is **never collapsed to a
+single chip** to save height. The connected-group note
 below is history. The archive source is `components/segmented-buttons/` under the
 user-supplied `m3.material.io` archive.
 
