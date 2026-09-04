@@ -428,8 +428,11 @@ the form is cleared. axe-core 4.13.0 again reports zero WCAG A/AA violations and
 incomplete checks on both page and dialog; direct label, accessible-name, alt, unique-ID
 and visible-target checks pass. Helium page errors and console output are empty. A fresh
 629 × 650 crop-based side-by-side comparison with the supplied front reference confirms
-the complete frame after the left-side correction. Reopen the blank form in the normal
-Helium session before collecting theme answers.
+the complete frame after the left-side correction. The corrected blank form was then
+reopened through the Helium desktop entry. KWin reports its new non-minimized
+`Music player design: grilling round 1 - Helium` window at 1080 × 1880 on `DP-3`;
+a one-shot activation targeted that exact window. It is ready for real theme answers,
+and no theme answer has been recorded yet.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
