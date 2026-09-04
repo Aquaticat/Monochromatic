@@ -222,10 +222,13 @@ of decisions.md.
 
 ## 11. Theme work after session 4 (2026-09-04)
 
-### 11a. Light theme: what separates surfaces — SETTLED (D34)
+### 11a. Light theme structure — 1c SETTLED; white-divider target OPEN (D34)
 
-**Verdict.** The user chose `1c`, with its lone rail-seam divider changed from
-`outlineVariant` to white. The tonal panes remain otherwise unchanged.
+**Verdict.** The user chose `1c` and required "the divider" to be white. The initial
+implementation interpreted that as the 1dp line between the letter rail and folder
+names; the user did not accept the unexplained result. An updated HTML round now shows
+three native alternatives: white rail line, white 24dp center spacer, or both. The
+choice remains open until that form is answered.
 Candidates `light-a` / `light-b` / `light-c` (and `light-abc`, all three side by side).
 Each prints its own pros, cons and my read in the caption bar.
 

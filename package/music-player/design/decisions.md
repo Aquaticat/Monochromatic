@@ -522,14 +522,15 @@ Every rebuilt file **pins its scheme inline on its own root** — the host sets
 `data-theme="dark"` on `<html>`, and inheriting that silently inverts a light design
 (review-notes 5g).
 
-### D34. Light uses tonal panes with a white rail divider (candidate light-c, revised)
-Use the `1c` structure: `surfaceDim` window, tonal full-bleed panes, and no pane or row
-outlines. Keep one 1dp divider only at the letter-rail seam, but override that divider
-to white (`#FFFFFF`) rather than `outlineVariant`.
-**Why.** The user selected the tonal treatment and explicitly asked for a white
-divider. It retains the single structural cue without adding the hairlines of `1b`.
-**Rejected.** `1a`, which relies on tone alone; `1b`, which outlines panes and rows;
-`1c` with its original `outlineVariant` rail divider.
+### D34. Light uses the 1c tonal structure; white-divider target is pending
+The `1c` structure is settled: `surfaceDim` window, tonal full-bleed panes, and no pane
+or row outlines. The user also required "the divider" to be white, but the presented
+screen contains two plausible referents: the 1dp line between the letter rail and
+folder names, and the visible 24dp center spacer between panes. The first attempted
+implementation changed the 1dp rail line; it became invisible against adjacent white
+surfaces. That interpretation was not accepted. The updated HTML clarification round
+must settle rail line, center spacer, or both before D34 names the white element.
+**Rejected.** `1a`, which relies on tone alone; `1b`, which outlines panes and rows.
 
 ### D35. Light supporting text uses one neutral role (candidate dbtp-a)
 Use one `onSurfaceVariant` supporting line for both duration and true peak. Do not give

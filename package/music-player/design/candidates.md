@@ -29,7 +29,7 @@ which were left as historical style comparisons.
 | File | Size | What it shows |
 |---|---|---|
 | **mode-d** | 860×620 | The mode control question settled: connected button group (56px, 2px gaps, pill outer ends, 8px inner corners, selected inner corners 50%) in one row and wrapped to a grid, with the outlined segmented button (40px) shown beneath for comparison. All at real token values. |
-| **light-c** | 852×fill | D34 light baseline: tonal panes on a surface-dim ground, with one white rail-seam divider. |
+| **light-c** | 852×fill | D34 structure chosen: tonal panes on a surface-dim ground. Which visible divider becomes white remains in clarification. |
 | **dbtp-a** | 426×883 | D35 default supporting line: duration and true peak share `onSurfaceVariant`; custom display templating will own optional emphasis. |
 | **sub-a** | 860×600 | A folder containing subfolders: subfolders in a labelled section above the folder’s own tracks, one screen, mixed content. |
 | **ctx-b** | 860×600 | Track context menu, eight items in three groups, headed by the track name, dB value inline, Re-analyse, Move to trash. |
@@ -58,13 +58,13 @@ which were left as historical style comparisons.
 |---|---|---|
 | **light-a** | 852×fill | Light theme, all-tonal: surface ground and tracks, surface-container-low picker, surface-container transport, surface-container-high rail. No dividers. |
 | **light-b** | 852×fill | Light theme, one surface role plus 1dp outline-variant dividers at pane, rail, and row boundaries. |
-| **light-c** | 852×fill | **CHOSEN (D34), revised:** surface-container panes on a surface-dim ground, with one white rail-seam divider. |
+| **light-c** | 852×fill | **STRUCTURE CHOSEN (D34):** surface-container panes on a surface-dim ground; white-divider target still awaiting clarification. |
 | **light-abc** | 3-up | All three side by side for comparison. |
 | **dark-a** | 418×fill | REJECTED — MD3's own dark container ramp above #000; the panes read as grey cards floating on black. |
 | **dark-b** | 418×fill | **CHOSEN (D32)** — the project's own ramp measured down from black: #000 / #0A0A0D / #121216 / #1A1A1F / #22222A. |
 | **dark-ab** | 2-up | Both, plus a swatch comparison of the two ramps. |
 | **dbtp-a/b/c** | 426×883 | **3a CHOSEN (D35):** one on-surface-variant line, because planned display templating will provide user-selected emphasis. 3b strengthens true peak; 3c moves it to the trailing slot. |
-| **light-a/b/c** | 852×fill | **1c CHOSEN (D34), revised with a white rail-seam divider.** |
+| **light-a/b/c** | 852×fill | **1c STRUCTURE CHOSEN (D34); white-divider target remains open.** |
 | **candidates/_ds/** | — | Copied MD3 token sheets (palette, color, fonts, typography, shape, elevation, spacing, state) so candidate files resolve them without `../`. |
 
 All light-side files are presented on a light desk with a light caption bar
@@ -88,8 +88,9 @@ the bottom of the whole target; the text itself is not underlined. At 200% font 
 the mode
 control changes from one non-wrapping segmented row to four full-label Material radio
 rows rather than clipping text. The latest comparison captures are integrated into the questionnaire. The user's
-settled baseline combines `light-c` with a white rail-seam divider and `dbtp-a`; that
-combined result must be recaptured after D34 and D35 are applied.
+settled baseline combines the `light-c` tonal structure with `dbtp-a`. The updated
+divider clarification round determines whether the rail line, center spacer, or both
+become white before the baseline is final.
 
 ## ROUND 8 — verdicts in
 
