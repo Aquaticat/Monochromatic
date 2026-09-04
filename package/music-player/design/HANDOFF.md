@@ -634,6 +634,32 @@ templating is now a stated product requirement, but its scope, grammar, editor,
 preview, validation, and fallback behavior are not designed; `open-questions.md` 11e
 records that boundary rather than inventing it.
 
+Prototype commit `5cff61514` applies D34 literally: `light-c`'s only 1dp rail-seam
+line is `Color.White`; the other candidates retain their comparison colors. D35 needed
+no source change because the full `light-c` study already composes `dbtp-a`. Six fresh
+captures completed under the pinned dynamic palette and are embedded with the new
+provenance. At the selected seam, x=115, 117, and 119 at y=1000 all resolve to white;
+the white line therefore visually merges with the white rail and picker surfaces,
+which is the literal rendered result of the user's correction. A throwaway positive
+control painting x=117 back to the old outline color triggers `must render the chosen
+rail seam white`; restoring the capture passes. Build, lint, and unit contracts pass.
+Final Helium verification at DPR 2 passes. All six images decode to their cited source
+sizes and all six dialog frames retain exact logical and body geometry. Zoom in, out,
+Fit, native display pixels, reset, and Close pass. At 390 × 844, each comparison stays
+on one 848px row inside its independently traversable 316px scroller; the page stays
+390px wide. Blank validation, all radio paths, the real `1c / 3a` answer, copy,
+download, and clear pass, then remain cleared. Offline loading has no external URL and
+all six candidate images decode; forced dark host media leaves the questionnaire
+light. Axe reports no WCAG A/AA violation or incomplete result on the closed page. The
+open dialog reports no violation and the same eight manually resolved top-layer
+contrast incompletes. Direct labels, names, alternatives, IDs, focus, and target-size
+checks pass. Browser errors and console output are empty. The fresh matching-scale
+hardware comparison confirms the white rail seam visually merges into its adjacent
+white surfaces while the 24dp center spacer remains the tonal expanded-layout spacer.
+The selected baseline still uses one neutral duration-plus-true-peak line. Stop the
+isolated browser and emulator, then reopen this cleared final artifact in normal
+Helium.
+
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
 
