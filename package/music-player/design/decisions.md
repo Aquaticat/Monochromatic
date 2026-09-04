@@ -157,7 +157,10 @@ desc-f outlined), they chose outlined. The 2026-09-04 requirement that every pre
 design follow the supplied Material guidance corrects its geometry: all four options
 occupy one non-wrapping `SingleChoiceSegmentedButtonRow`, never a 2×2 arrangement.
 Use the real Compose component so it supplies the 40dp visual container, 48dp target,
-1dp outline, full outer shape, checkmark, role, and states. All labels remain visible.
+1dp outline, full outer shape, checkmark, role, and states. Visible labels are
+`Repeat`, `In order`, `Shuffle`, and `Shuffle all`; `Shuffle` means the current folder
+and carries the complete accessibility label `Shuffle current folder`. All labels
+remain visible.
 It is **never collapsed to a single chip** to save height. The connected-group note
 below is history. The archive source is `components/segmented-buttons/` under the
 user-supplied `m3.material.io` archive.

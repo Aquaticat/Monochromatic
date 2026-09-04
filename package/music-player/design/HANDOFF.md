@@ -486,7 +486,22 @@ segment action at 117px, exactly 48dp at 390dpi; the slider target is 107px, abo
 and contact-sheet inspection confirms real app bars and icons, readable source actions,
 one-row mode selection with checkmark and color, slider time anchors, full-bleed square
 section surfaces, the 24dp centre spacer, and all three complete true-peak treatments.
-Questionnaire integration is in progress.
+The recapture task now rejects non-stock theme customization or a dark host, and it
+requires every app bar, source action, transport action, mode label, and complete
+accessibility label in the UI hierarchy before taking a screenshot. A repeated capture
+changed only the native clock region; comparison below the 136px top system area found
+zero changed pixels in all six images. The first captured set is integrated into the
+rebuilt self-contained questionnaire. Package build, lint, and unit contracts pass.
+
+The validator now checks 2076 × 2152px full sources and 1038 × 2152px physical-half
+sources, opacity, region-based native status and navigation evidence, the pinned dynamic
+role colors, selected `primaryContainer`, every full-bleed edge role, the exact 39px
+inter-section gap, the exact centered 59px pane spacer, the 30px half-spacer crop,
+outer-edge track fill, and Q2c's trailing true-peak values. Fresh throwaway positive
+controls proved each new boundary: removing the selected role, one central-spacer
+pixel, one half-spacer pixel, the trailing-value region, the status-icon region, or one
+inter-section gap pixel produces its specific diagnostic. Restoring the captures
+passes. Full Helium verification remains.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
