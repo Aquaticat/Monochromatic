@@ -785,6 +785,7 @@ footer {
       <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
       <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
       <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
+      <button type="button" data-variant="secondary" id="zoom-native">Native source</button>
       <button type="button" id="zoom-actual">Reset to actual</button>
       <button type="button" data-variant="secondary" id="zoom-close">Close</button>
     </div>
@@ -813,10 +814,11 @@ const zoomScale = document.querySelector('#zoom-scale');
 const zoomOut = document.querySelector('#zoom-out');
 const zoomIn = document.querySelector('#zoom-in');
 const zoomFit = document.querySelector('#zoom-fit');
+const zoomNative = document.querySelector('#zoom-native');
 const zoomActual = document.querySelector('#zoom-actual');
 const zoomClose = document.querySelector('#zoom-close');
 const minimumScale = 0.25;
-const maximumScale = 2;
+const maximumScaleLimit = 3;
 const scaleStep = 0.25;
 let currentScale = 1;
 let targetWidth = 852;
@@ -834,8 +836,17 @@ const renderZoom = () => {
   zoomDimensions.textContent = `Logical target: ${targetWidth}×${targetHeight}${targetUnit}. Source: ${sourceWidth}×${sourceHeight}px. Actual size is 100%.`;
 };
 
+const getMaximumSharpScale = () => Math.max(
+  1,
+  Math.min(
+    maximumScaleLimit,
+    sourceWidth / targetWidth / devicePixelRatio,
+    sourceHeight / targetHeight / devicePixelRatio,
+  ),
+);
+
 const setZoom = (scale) => {
-  currentScale = Math.max(minimumScale, Math.min(maximumScale, scale));
+  currentScale = Math.max(minimumScale, Math.min(getMaximumSharpScale(), scale));
   renderZoom();
 };
 
@@ -890,6 +901,7 @@ document.querySelectorAll('.preview-open').forEach((button) => {
 zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
 zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));
 zoomFit.addEventListener('click', fitZoom);
+zoomNative.addEventListener('click', () => setZoom(getMaximumSharpScale()));
 zoomActual.addEventListener('click', () => setZoom(1));
 zoomClose.addEventListener('click', () => previewDialog.close());
 previewDialog.addEventListener('click', (event) => {

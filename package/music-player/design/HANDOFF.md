@@ -236,8 +236,11 @@ physical pixel density, preserve 852×883dp or 418×883dp as the 100% display si
 rerun the Helium probe. All six source candidates have now been rerendered through
 Helium at the panel scale `2076 / 852`: full renders are 2076×2152px and half-screen
 renders are 1019×2152px. Metadata was stripped, the self-contained form was rebuilt,
-and the physical-dimension regression is green. Contact-sheet inspection and
-user-boundary Helium verification remain before reopening. No theme answer has been
+and the physical-dimension regression is green. Both three-up contact sheets were
+inspected and retain the intended candidate differences. The zoom dialog now exposes
+a Native source control and caps enlargement at the source-to-host pixel ratio so it
+cannot voluntarily upscale the raster. User-boundary Helium verification remains
+before reopening. No theme answer has been
 recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
