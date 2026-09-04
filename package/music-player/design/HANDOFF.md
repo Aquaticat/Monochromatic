@@ -209,9 +209,17 @@ come from `light-a/b/c` at 852×883 and `dbtp-a/b/c` reflowed to the measured 41
 half-screen. They were captured through Helium, stripped of metadata and inspected in
 two three-up contact sheets. `questions/current.template.html` owns the form;
 `mise run //package/music-player/design:build` embeds those six PNGs into the
-self-contained `questions/current.html`. Static lint and unit-contract tasks pass. The
-actual Helium geometry, zoom and answer paths still require re-verification before the
-form is reopened.
+self-contained `questions/current.html`. Static lint and unit-contract tasks pass.
+Re-verification in actual Helium at 1012×676 made the original red probe green: both
+three-way comparisons stay on one row; all source images retain their exact 852×883 or
+418×883 dimensions and aspect ratios; no nested mock markup, page overflow, or external
+resource remains. At 390×844 both comparisons stay one row inside explicit horizontal
+scrollers. All six preview buttons open; actual zoom measures exactly 852×883 or
+418×883; Zoom in, Zoom out, Fit, Reset to actual, scrolling and Close work. Form
+validation, every radio, free text, answer preparation, copy, download and clear also
+work in Helium. Axe reports zero violations and zero incomplete checks for both the
+page and open zoom dialog. The page remains light under a forced dark host. The form
+is ready to reopen in the user's Helium profile; no theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

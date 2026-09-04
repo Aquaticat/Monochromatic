@@ -45,6 +45,26 @@ const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
   throw new Error(`Missing required design files: ${missingPaths.join(', ')}`);
 }
+const renderDimensions = [
+  ['questions/render/light-a.png', 852, 883],
+  ['questions/render/light-b.png', 852, 883],
+  ['questions/render/light-c.png', 852, 883],
+  ['questions/render/dbtp-a.png', 418, 883],
+  ['questions/render/dbtp-b.png', 418, 883],
+  ['questions/render/dbtp-c.png', 418, 883],
+];
+for (const [path, expectedWidth, expectedHeight] of renderDimensions) {
+  const image = readFileSync(resolve(path));
+  const pngSignature = '89504e470d0a1a0a';
+  if (image.subarray(0, 8).toString('hex') !== pngSignature) {
+    throw new Error(`${path} is not a PNG.`);
+  }
+  const width = image.readUInt32BE(16);
+  const height = image.readUInt32BE(20);
+  if (width !== expectedWidth || height !== expectedHeight) {
+    throw new Error(`${path} is ${width}×${height}; expected ${expectedWidth}×${expectedHeight}.`);
+  }
+}
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const forbiddenFragments = [
   '<link ',

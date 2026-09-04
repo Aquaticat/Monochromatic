@@ -539,7 +539,7 @@ footer {
         Only the light-surface hierarchy changes.
       </p>
 
-      <div class="options-scroll" tabindex="0" aria-label="Q1 visual comparison, scroll horizontally on narrow windows">
+      <div class="options-scroll" role="group" tabindex="0" aria-label="Q1 visual comparison, scroll horizontally on narrow windows">
         <div class="options">
           <article class="option">
             <label class="option-heading">
@@ -644,7 +644,7 @@ footer {
         Only emphasis changes.
       </p>
 
-      <div class="options-scroll" tabindex="0" aria-label="Q2 visual comparison, scroll horizontally on narrow windows">
+      <div class="options-scroll" role="group" tabindex="0" aria-label="Q2 visual comparison, scroll horizontally on narrow windows">
         <div class="options">
           <article class="option">
             <label class="option-heading">
@@ -781,15 +781,15 @@ footer {
       <p id="zoom-dimensions"></p>
     </div>
     <div class="zoom-actions">
-      <button type="button" data-variant="secondary" id="zoom-out" aria-label="Zoom out">−</button>
+      <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
       <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
-      <button type="button" data-variant="secondary" id="zoom-in" aria-label="Zoom in">+</button>
+      <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
       <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
       <button type="button" id="zoom-actual">Reset to actual</button>
       <button type="button" data-variant="secondary" id="zoom-close">Close</button>
     </div>
   </div>
-  <div class="zoom-stage" id="zoom-stage">
+  <div class="zoom-stage" id="zoom-stage" role="region" tabindex="0" aria-label="Zoomed candidate image; scroll to inspect the complete device render">
     <div class="zoom-canvas">
       <img class="zoom-image" id="zoom-image" alt="">
     </div>
