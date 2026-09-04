@@ -511,6 +511,25 @@ BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two
 - The undercount was invisible from the run log, which is the lesson worth keeping: a stage that finds
     nothing to do logs nothing, and the completeness guard shared the parser's blind spot. The seats line
     is what made it visible, by putting a timestamp on each side of the stage.
+- **The second pass's picture stage, 04:43:52 to 04:49:59**: `image0.webp` and `image2.webp` carried no
+    OCR text (0 and 15 characters, under 16), so no model was asked; `image1.webp` was read by minimax-m3
+    (251 characters) and Qwen3.8-27B (419) and corroborated by those two at overlap 0.614 after
+    GLM-5.3-Flash on Together ran the whole 360 s per-call deadline with 76,412 reasoning characters and
+    no content (`stream z-ai/glm-5.3-flash: cut, elapsed 360004ms ... 3932835 raw chars ... 0 content
+    chars`); `image3.webp` was read by all three within 3 s and corroborated at 0.966. No Kimi-K3 line.
+    The cut stream carries no `cost=`, so the run meter and the spend report undercount it by whatever
+    the provider bills for those reasoning tokens.
+- **The picture gather has no straggler grace** (`image-reading-pair.ts` gathers with `allSettled` and
+    waits for every reader or the deadline), so `image1.webp` waited 284 s after its second reading for a
+    reader that never answered. Measured over every run log in `~/temp/agent` (script
+    `~/temp/agent/picture-wait-20260904.mjs`): 1,435 pictures with two or more model readings and a
+    settlement; the wait after the second reading is 0 s at the median and the 90th percentile, 1,419 s
+    in total, and three pictures waited past 120 s (Toka_ls `photo2.webp` 352 s on 2026-09-02 with
+    Kimi-K3 failing at the deadline, today's 284 s, Zha_Ke `letter.webp` 168 s on 2026-08-27). A 120 s
+    grace after corroboration would have saved 444 s across the whole record. Most of that record is
+    two-reader rosters where the wait is zero by construction; the OpenRouter-alone roster seats three
+    readers, so today's two text pictures are the first of the population that matters, one of them bad.
+    Not built: recorded here to be re-read once more three-reader pictures have run.
 
 ## Build plan, transport-independent layers first
 
