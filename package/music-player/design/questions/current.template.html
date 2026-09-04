@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: revised D2 correction review</title>
+<title>Music player design: current revised D2</title>
 <style>
 :root {
   color-scheme: light;
@@ -170,10 +170,11 @@ legend {
 }
 
 .options {
-  min-inline-size: 43rem;
+  inline-size: min(100%, 56rem);
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+  margin-inline: auto;
 }
 
 .option {
@@ -391,10 +392,52 @@ textarea:focus-visible {
   line-height: 1.55;
 }
 
+.review-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.75rem;
+  margin-block-end: 1.5rem;
+}
+
+.review-choice {
+  min-block-size: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+  padding-inline: 0.75rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-line);
+  border-radius: 0.75rem;
+  background-color: var(--color-paper-strong);
+  cursor: pointer;
+}
+
+.review-choice:has(input:focus-visible) {
+  outline-width: 0.1875rem;
+  outline-style: solid;
+  outline-color: var(--color-focus);
+  outline-offset: -0.1875rem;
+}
+
+.review-choice input {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  margin-block: 0;
+  margin-inline: 0;
+  accent-color: var(--color-primary);
+}
+
 .response label {
   display: block;
   margin-block-end: 0.5rem;
   font-weight: 700;
+}
+
+.response .review-choice {
+  display: flex;
+  margin-block-end: 0;
 }
 
 textarea {
@@ -581,13 +624,12 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Review the corrected D2 result</h1>
+      <h1>Review the current design</h1>
       <p class="lede">
-        The revised version applies your marked white horizontal divider and your track-list corrections.
-        Compare it directly with the D2 version you annotated.
+        This page shows only the active revised D2 design. Rejected and superseded versions are not shown.
       </p>
     </div>
-    <span class="round-badge">Correction review · before and after</span>
+    <span class="round-badge">Current design · correction review</span>
   </header>
 
   <section class="instructions" aria-labelledby="instructions-title">
@@ -600,14 +642,11 @@ dialog::backdrop {
     </ol>
     <div class="definition-list">
       <p class="definition">
-        <strong>Before:</strong> the D2 image you annotated, with the horizontal strip still gray, generated ordinals, and blue current-row fill.
-      </p>
-      <p class="definition">
-        <strong>Revised:</strong> white vertical and horizontal pane spacers, a visible gray rail line, neutral track rows, and no generated ordinals.
+        <strong>Current design:</strong> white vertical and horizontal pane spacers, a visible gray rail line, neutral track rows, and no generated ordinals.
       </p>
     </div>
     <p class="response-help">
-      Open either image for measured 100% zoom. Select the version to continue from, list every remaining correction or “None,”
+      Open the image for measured 100% zoom. Say whether this current design can continue, list every remaining correction or “None,”
       then choose Prepare answers and Copy answers to paste the result into Pi.
     </p>
   </section>
@@ -615,56 +654,22 @@ dialog::backdrop {
   <form id="design-form">
     <section class="question" aria-labelledby="divider-title">
       <fieldset>
-        <legend><h2 id="divider-title">Which D2 version should we continue from?</h2></legend>
+        <legend><h2 id="divider-title">Current revised D2</h2></legend>
         <p class="question-intro">
-          Both are native Jetpack Compose captures from the same Pixel 9 Pro Fold emulator and dynamic light palette.
-          Each source is 2076×2152px and represents the whole 852×883dp unfolded display.
+          This is a native Jetpack Compose capture from the measured Pixel 9 Pro Fold emulator and dynamic light palette.
+          The source is 2076×2152px and represents the whole 852×883dp unfolded display.
         </p>
 
-        <div class="options-scroll" role="group" tabindex="0" aria-label="D2 before-and-after comparison, scroll horizontally on narrow windows">
+        <div class="options-scroll">
           <div class="options">
             <article class="option">
-              <label class="option-heading">
-                <input type="radio" name="reviewResult" value="d2-before" aria-labelledby="d2-before-title" required>
+              <div class="option-heading">
                 <span class="option-title">
-                  <span class="option-code">D2 · before your marked correction</span>
-                  <strong id="d2-before-title">Annotated starting point</strong>
-                  <span class="option-summary">White center spacer; marked horizontal divider still gray</span>
-                </span>
-              </label>
-              <button class="preview-open" type="button" data-preview-title="D2 before correction" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-                <span class="device-frame">
-                  <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-b capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_B@@" width="852" height="883" alt="D2 before correction, with a gray horizontal divider, generated track numbers, and saturated blue current-track fill">
-                    <span class="device-camera" aria-hidden="true"></span>
-                  </span>
-                </span>
-                <span class="preview-label">Open D2 before correction</span>
-              </button>
-              <div class="assessment">
-                <div><strong>Pros</strong></div>
-                <ul>
-                  <li>Preserves the exact image that received your annotation.</li>
-                  <li>Makes every requested correction easy to compare.</li>
-                </ul>
-                <div><strong>Cons</strong></div>
-                <ul>
-                  <li>The marked horizontal divider is still gray.</li>
-                  <li>Generated ordinals and the saturated current-row fill remain.</li>
-                </ul>
-                <p><strong>My read:</strong> second choice. It is evidence for comparison, not the requested result.</p>
-              </div>
-            </article>
-
-            <article class="option">
-              <label class="option-heading">
-                <input type="radio" name="reviewResult" value="d2-revised" aria-labelledby="d2-revised-title" required>
-                <span class="option-title">
-                  <span class="option-code">D2 revised · recommended</span>
-                  <strong id="d2-revised-title">All requested corrections applied</strong>
+                  <span class="option-code">Active design</span>
+                  <strong>Revised D2</strong>
                   <span class="option-summary">White center and marked horizontal spacers; neutral unnumbered track rows</span>
                 </span>
-              </label>
+              </div>
               <button class="preview-open" type="button" data-preview-title="D2 revised: all requested corrections" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
                 <span class="device-frame">
                   <span class="device-screen">
@@ -686,7 +691,7 @@ dialog::backdrop {
                   <li>The current track is intentionally quieter without a filled row.</li>
                   <li>White spacers make adjacent white surfaces read as continuous.</li>
                 </ul>
-                <p><strong>My read:</strong> first choice. It is the only version that implements every current instruction.</p>
+                <p><strong>Recommendation:</strong> continue from this design if no other visible correction remains.</p>
               </div>
             </article>
 
@@ -694,8 +699,8 @@ dialog::backdrop {
         </div>
 
         <p class="ranking">
-          <strong>Ranking: revised D2 &gt; previous D2.</strong>
-          Revised D2 wins because it alone implements the marked white divider, removes invented numbers,
+          <strong>Current candidate: revised D2.</strong>
+          It is the sole active design because it implements the marked white divider, removes invented numbers,
           and removes the rejected saturated current-row fill.
         </p>
       </fieldset>
@@ -704,9 +709,20 @@ dialog::backdrop {
     <section class="response" aria-labelledby="corrections-title">
       <h2 id="corrections-title">Can we continue from revised D2?</h2>
       <p class="question-intro">
-        List every correction you can see. Refer to visible labels or locations in ordinary language.
-        You do not need to use “baseline,” “full-frame,” component names, or design-system terminology.
+        Choose Continue only if the current design is right. Otherwise choose Needs another correction and describe every issue
+        using visible labels or locations in ordinary language.
       </p>
+      <fieldset class="review-choices">
+        <legend>Review result</legend>
+        <label class="review-choice">
+          <input type="radio" name="reviewResult" value="continue" required>
+          <span>Continue with the current design</span>
+        </label>
+        <label class="review-choice">
+          <input type="radio" name="reviewResult" value="needs-correction" required>
+          <span>Needs another correction</span>
+        </label>
+      </fieldset>
       <label for="other-corrections">Every remaining correction, or “None”</label>
       <textarea id="other-corrections" name="otherCorrections" required placeholder="For example: The gray strip between the left and right panes should be white. The …"></textarea>
       <div class="actions">
