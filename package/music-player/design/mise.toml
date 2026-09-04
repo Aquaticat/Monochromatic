@@ -165,6 +165,7 @@ const forbiddenFragments = [
   'd2-before',
   'before your marked correction',
   'Annotated starting point',
+  'Rejected and superseded versions',
   'prototype commit 89a9f7033',
 ];
 const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
@@ -178,7 +179,7 @@ const requiredFragments = [
   '<dialog',
   'What changed',
   'Current design:',
-  'Rejected and superseded versions are not shown.',
+  'active revised D2 design',
   'name="reviewResult"',
   'name="otherCorrections"',
   'value="continue"',
