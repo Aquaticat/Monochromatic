@@ -143,12 +143,13 @@ handle supplied by the current Material component.
   `foundations/writing/text-truncation/index.html`.
 
 Correction: use selectable Material surfaces with proper roles for folder and letter
-choices, use the baseline `ListItem` with a clickable Material action boundary, pair a
-Material play icon with the selected container, pair `primaryContainer` with
-`onPrimaryContainer`, and use a 72dp minimum rather than a fixed height so enlarged or
-long text can grow instead of being lost. The baseline `ListItem` overload is deprecated
-only in favor of the Expressive list. A scoped compiler suppression is required here
-because decision A2 rejects that silent design-system migration.
+choices, use the baseline `ListItem` with a clickable Material action boundary, and use
+a 72dp minimum rather than a fixed height so enlarged or long text can grow instead of
+being lost. The archive maps `primaryContainer` / `onPrimaryContainer` to a selected
+list item, but D36 distinguishes current playback from user selection: all tracks keep
+standard list colors and only the current track gains a leading play icon plus semantic
+state. The baseline `ListItem` overload is deprecated only in favor of the Expressive
+list. A scoped compiler suppression is required because A2 rejects that migration.
 
 ### Color roles
 
@@ -202,7 +203,8 @@ truncated and the transport remains vertically reachable.
 The user's 2026-09-04 correction forbids color-only state communication. The repaired
 prototype uses these redundant cues:
 
-- Current track: `primaryContainer` fill plus leading Material play icon.
+- Current track: leading Material play icon plus semantic selected state, without a
+  custom row fill.
 - Selected playback mode: selected fill plus checkmark. At enlarged type, the radio
   indicator supplies the non-color selected shape.
 - Selected letter: secondary-container color plus circular container shape.
@@ -223,7 +225,6 @@ WCAG calculations against those resolved values produce these limiting ratios:
 
 - `onSurfaceVariant` on `surfaceDim`: 4.532:1, the lowest text pair used.
 - `primary` on `surfaceContainerLow`: 5.794:1.
-- `onPrimaryContainer` on `primaryContainer`: 6.059:1.
 - `onSecondaryContainer` on `secondaryContainer`: 6.124:1.
 - `outline` on `surfaceContainerLow`: 3.868:1, the lowest important non-text
   boundary pair used.

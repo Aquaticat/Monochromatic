@@ -543,6 +543,17 @@ hard-code true-peak emphasis.
 **Rejected.** `3b`, which strengthens true peak; `3c`, which creates a trailing
 true-peak column.
 
+### D36. Track rows have no invented ordinals or saturated current-row fill
+Do not prefix tracks with interface-generated numbers; they can be confused with real
+track-number metadata. Reserve a 24dp leading slot and show the Material play icon only
+for the current track. Keep every row on the standard list surface with `onSurface`
+titles and `onSurfaceVariant` supporting text. Expose the current state semantically.
+**Why.** The user rejected agent-invented numbering and the saturated blue current-row
+undertone on accuracy, accessibility, and Material grounds. The play icon remains the
+non-color state cue without recoloring the row.
+**Rejected.** Sequential UI ordinals; `primaryContainer` current-row fill; a color-only
+current-track treatment.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

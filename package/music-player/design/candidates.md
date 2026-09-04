@@ -66,7 +66,9 @@ neutral metadata treatment. They differ only in the two plausible separator colo
 
 **Verdict:** D2, plus the 16dp horizontal picker/transport divider marked in
 `Screenshot_20260904_191909.png` must also be white. D34 is final: gray rail line,
-white vertical center spacer, and white horizontal section divider.
+white vertical center spacer, and white horizontal section divider. The final native
+recapture must also apply D36: no invented track ordinals, no saturated current-row
+fill, and a leading play icon as the current-track cue.
 
 ## ROUND 9 — theme work (all built on the bound MD3 bundle)
 
