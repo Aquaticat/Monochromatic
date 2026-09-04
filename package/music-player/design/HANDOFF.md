@@ -692,7 +692,12 @@ Answer in plain language and ask only the real unresolved clarification: whether
 `divider` meant the 1dp line between the letter rail and folder names, or the visible
 24dp center spacer between panes. The implementation currently changes the former to
 white, where it visually merges into adjacent white surfaces. Do not reopen anything
-until the user's meaning and remaining corrections are known.
+until the user's meaning and remaining corrections are known. The user rejected a
+chat-only clarification and explicitly required the proper updated `.html` form.
+Build one self-contained Helium questionnaire that defines every visible element,
+shows native full-device alternatives for the plausible divider readings, includes
+pros, cons, ranked recommendation, answer controls, and free corrections, and states
+exactly how to respond. Do not ask again in chat or reopen the prior theme-pick form.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
