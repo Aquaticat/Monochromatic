@@ -324,7 +324,14 @@ and `dbtp-c`. It uses native `WindowInsets.safeDrawing` inside an edge-to-edge A
 window, so app controls clear the reported camera and system-bar insets while the
 screen background continues behind both bars. `mise run
 //package/music-player/android-app:prototype:build` assembles successfully. Install,
-capture and visual comparison remain pending.
+capture and visual comparison remain pending. After the first native Compose captures,
+the user said: “There isn't any reason to double-wrap the UI,” then identified the
+problem in `/var/home/user/Pictures/Screenshots/Screenshot_20260904_153211.png`. The
+annotated screenshot marks the physical screen/window background as wrapper 1 and the
+full-height rounded track-pane card as wrapper 2. Remove wrapper 2: the full-height
+track surface must fill its allotted right side and continue behind the native status
+and navigation bars. Keep rounded containers only for distinct inner groups such as
+the picker and transport, not around a pane that already occupies the screen edge.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
