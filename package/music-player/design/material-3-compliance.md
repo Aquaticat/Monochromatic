@@ -142,10 +142,12 @@ handle supplied by the current Material component.
   `foundations/writing/text-truncation/index.html`.
 
 Correction: use selectable Material surfaces with proper roles for folder and letter
-choices, use a clickable list row with a Material play icon plus container change for
-the current track, pair `primaryContainer` with `onPrimaryContainer`, and use a 72dp
-minimum rather than a fixed height so enlarged or long text can grow instead of being
-lost.
+choices, use the baseline `ListItem` with a clickable Material action boundary, pair a
+Material play icon with the selected container, pair `primaryContainer` with
+`onPrimaryContainer`, and use a 72dp minimum rather than a fixed height so enlarged or
+long text can grow instead of being lost. The baseline `ListItem` overload is deprecated
+only in favor of the Expressive list. A scoped compiler suppression is required here
+because decision A2 rejects that silent design-system migration.
 
 ### Color roles
 
@@ -210,9 +212,12 @@ component structure.
 Before reopening the questionnaire:
 
 - Build the debug prototype through its `mise` task.
+- Record the emulator's wallpaper-derived theme settings before using Android dynamic
+  color, so another capture can reproduce the resolved role palette.
 - Install and capture all six candidates from the unfolded Pixel 9 Pro Fold emulator.
 - Confirm native system bars, exact source dimensions, opacity, full-bleed pane
-  backgrounds, a centered 24dp spacer, default-height app bars, Material icons, one-row
+  backgrounds, a centered 24dp spacer, a 426dp physical right-half crop containing
+  12dp of spacer and the 414dp detail pane, default-height app bars, Material icons, one-row
   segmented control, 48dp targets, and valid selected-state role pairs.
 - Inspect all captures at panel resolution and in the measured questionnaire frame.
 - Rebuild the self-contained form and rerun package lint and unit contracts.

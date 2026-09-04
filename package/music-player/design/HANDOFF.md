@@ -465,7 +465,18 @@ Material typography; flexible list-item heights; official selection semantics; a
 trailing-text Q2 candidate that keeps every true-peak value instead of suppressing
 most of them. Section backgrounds remain full bleed and actionable content retains the
 measured Android safety insets. The prototype build and Android lint both pass with no
-warnings. Native emulator capture and visual inspection are next.
+warnings. Independent review caught and corrected three pre-capture issues. The new
+interactive `ListItem` overload was an accidental Expressive component, so latest
+prototype commit `1eb5643e1` restores the baseline `ListItem` and scopes its deprecation
+suppression to the A2 baseline decision. Material icons are debug-only rather than
+inflating release builds. Transport targets now use the archived 8dp spacing guidance.
+The right-half study is also corrected to the physical 426dp half: 12dp of the centred
+spacer plus the 414dp detail pane, captured at 1038 × 2152px. The archive's baseline
+list color figure explicitly enumerates `primary container` followed by
+`on primary container`, confirming that selected pair. Before capture, record the
+emulator's wallpaper-derived theme state; during inspection, measure all segmented
+labels and verify selected-role pixels rather than inferring them from a successful
+build. Native emulator capture and visual inspection are next.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

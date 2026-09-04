@@ -315,7 +315,7 @@ Settled presentation: **D31**.
 ### D18. Transport block layout (revised 2026-09-04; volume row removed by D20)
 Centred on the half's axis: title and subtitle centred; seek is a full-width Material
 slider row with elapsed and duration anchors; previous, pause, and next are centred
-Material icon buttons with 16dp target spacing. The one-row mode control hugs its
+Material icon buttons with the recommended 8dp target spacing. The one-row mode control hugs its
 content instead of stretching edge to edge. The earlier left-hugging version was
 called "un-balanced." The earlier 24dp button gaps and full-width segmented control
 were replaced by the supplied Material component and target-spacing guidance.
