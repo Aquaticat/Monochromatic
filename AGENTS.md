@@ -445,6 +445,11 @@ VHI:
  and exact response path in the visible artifact.
 Never make unexplained internal labels the user's task.
 
+RVC:
+ Post-decision visual review shows the active design only.
+Keep rejected evidence in durable docs;
+compare discarded candidates only when user explicitly asks.
+
 OCG:
  Output cardinality never determines option occurrence grammar.
 Sketch token encoding before asserting repeated,
