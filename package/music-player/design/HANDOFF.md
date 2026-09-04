@@ -681,6 +681,19 @@ Its exact replacement KWin window is `{25fcb5c8-6f0f-4554-afb2-a45f1473592c}` at
 tool call does not return focus to the agent terminal. Await visible corrections; do
 not ask for next-work ordering yet.
 
+That handoff still failed. The user saw an unexplained image and reasonably asked what
+`baseline` and `full-frame` meant, what action was expected, and how to continue. Those
+were agent-internal terms, not instructions. Here, `baseline` meant the combined
+working design after applying `1c` and `3a`; `full-frame` meant the whole unfolded
+Pixel 9 Pro Fold image rather than Q2's right-half crop. The intended task was to
+inspect that combined design and report remaining visual errors, but neither the modal
+nor the response told the user that. The confusing normal Helium window was closed.
+Answer in plain language and ask only the real unresolved clarification: whether
+`divider` meant the 1dp line between the letter rail and folder names, or the visible
+24dp center spacer between panes. The implementation currently changes the former to
+white, where it visually merges into adjacent white surfaces. Do not reopen anything
+until the user's meaning and remaining corrections are known.
+
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
 

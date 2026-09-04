@@ -438,6 +438,13 @@ VPH:
 Open exact candidate or modal;
 verify its active non-minimized window on current output.
 
+VHI:
+ Visual handoffs state purpose,
+ changed details,
+ what to inspect,
+ and exact response path in the visible artifact.
+Never make unexplained internal labels the user's task.
+
 OCG:
  Output cardinality never determines option occurrence grammar.
 Sketch token encoding before asserting repeated,
