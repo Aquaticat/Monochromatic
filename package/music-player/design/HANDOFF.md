@@ -349,8 +349,14 @@ camera overlay now follows the overlay-derived 32.41dp cutout rather than the ea
 `render:candidates` can no longer overwrite native captures with historical HTML
 mocks. Package build, lint and unit-contract tasks pass. The contract checks capture
 dimensions, opacity, native status and navigation pixels, rendered Compose content,
-and the absence of the redundant right-pane wrapper. Full Helium interaction and
-visual verification remain pending.
+and the absence of the redundant right-pane wrapper. Three throwaway positive
+controls prove those new guards: changing a native status-icon pixel yields
+`questions/render/dbtp-a.png is missing the native Android status icons.`; changing
+the lower screen-edge pixel yields `questions/render/dbtp-a.png still double-wraps the
+full-height track surface.`; and replacing a selected-row pixel yields
+`questions/render/dbtp-a.png did not replace the Android launch splash with Compose
+content.`. Restoring the untouched fixture passes. Full Helium interaction and visual
+verification remain pending.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
