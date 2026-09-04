@@ -557,7 +557,16 @@ alternative text, unique IDs, 48px visible targets, and initial dialog focus pas
 checks. Helium page errors and console output are empty. A fresh 629 × 650
 matching-scale crop against the supplied front reference confirms the final frame and
 edge-flush rail. The isolated form is blank and its dialog is closed. Reopen this exact
-file in the normal Helium session before accepting answers.
+file in the normal Helium session before accepting answers. One verification delta is
+unexplained: an earlier axe run on the older form reported no dialog incomplete checks,
+while the final form's otherwise identical 19 passing dialog checks include eight
+contrast incompletes. The current source trace and direct computed-color measurements
+are the evidence to trust; do not silently reconcile the older result. Two raster
+guards deliberately stay tied to the pinned AVD: status icons measure 2063 black pixels
+against a 1500 minimum, and Q2c trailing values measure 4214 dark pixels against a 4000
+minimum. Rebase them if the recorded AVD state changes. The `dbtp-*` files were freshly
+captured after `f54fc145d`, but their app pixels below the changing native clock match
+the prior capture because the rail correction affects only the full-screen candidates.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
