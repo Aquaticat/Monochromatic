@@ -113,6 +113,7 @@ const countPixelsMatching = ({ path, crop, predicate }) => {
 };
 const isBlack = ([red, green, blue]) => red === 0 && green === 0 && blue === 0;
 const isDark = ([red, green, blue]) => red < 128 && green < 128 && blue < 128;
+const isPrimary = ([red, green, blue]) => red === 76 && green === 94 && blue === 139;
 const fullCaptureEdges = [
   {
     path: 'questions/render/light-a.png',
@@ -179,6 +180,18 @@ for (const { path, topStart, bottomStart, screenEnd, gap } of fullCaptureEdges) 
     }
   }
 }
+const railEdgePixel = pixelAt({ path: 'questions/render/light-a.png', x: 0, y: 1000 });
+if (railEdgePixel !== 'srgba(231,231,241,1)') {
+  throw new Error('questions/render/light-a.png must place the selectable letter rail flush against the device edge.');
+}
+const selectedFolderUnderlinePixels = countPixelsMatching({
+  path: 'questions/render/light-a.png',
+  crop: '200x4+140+615',
+  predicate: isPrimary,
+});
+if (selectedFolderUnderlinePixels < 150) {
+  throw new Error('questions/render/light-a.png must show selected folder state with a non-color underline cue.');
+}
 const centralSpacerPixels = [
   pixelAt({ path: 'questions/render/light-c.png', x: 1008, y: 1000 }),
   pixelAt({ path: 'questions/render/light-c.png', x: 1009, y: 1000 }),
@@ -235,6 +248,77 @@ const trailingValuePixels = countPixelsMatching({
 if (trailingValuePixels < 4_000) {
   throw new Error('questions/render/dbtp-c.png is missing complete true-peak values in the Material trailing slot.');
 }
+const relativeLuminance = (hex) => {
+  const channels = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
+  const linearChannels = channels.map((channel) => {
+    const encoded = channel / 255;
+    if (encoded <= 0.04045) {
+      return encoded / 12.92;
+    }
+    return ((encoded + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * linearChannels[0] + 0.7152 * linearChannels[1] + 0.0722 * linearChannels[2];
+};
+const contrastRatio = ({ foreground, background }) => {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+};
+const pinnedRoles = {
+  primary: '4C5E8B',
+  onPrimary: 'F9F8FF',
+  primaryContainer: 'B9CBFF',
+  onPrimaryContainer: '30436E',
+  secondaryContainer: 'DCE2F9',
+  onSecondaryContainer: '4B5164',
+  surface: 'FAF8FE',
+  surfaceContainerLow: 'F3F3FA',
+  surfaceContainer: 'EDEDF6',
+  surfaceContainerHigh: 'E7E7F1',
+  surfaceContainerLowest: 'FFFFFF',
+  surfaceDim: 'D8D9E4',
+  onSurface: '30323A',
+  onSurfaceVariant: '5D5F68',
+  outline: '787A84',
+};
+const surfaceRoleNames = [
+  'surface',
+  'surfaceContainerLow',
+  'surfaceContainer',
+  'surfaceContainerHigh',
+  'surfaceContainerLowest',
+  'surfaceDim',
+];
+const textContrastChecks = [
+  ...surfaceRoleNames.flatMap((backgroundRole) => [
+    { foregroundRole: 'onSurface', backgroundRole, minimum: 4.5 },
+    { foregroundRole: 'onSurfaceVariant', backgroundRole, minimum: 4.5 },
+  ]),
+  { foregroundRole: 'primary', backgroundRole: 'surface', minimum: 4.5 },
+  { foregroundRole: 'primary', backgroundRole: 'surfaceContainerLow', minimum: 4.5 },
+  { foregroundRole: 'primary', backgroundRole: 'surfaceContainerLowest', minimum: 4.5 },
+  { foregroundRole: 'onPrimary', backgroundRole: 'primary', minimum: 4.5 },
+  { foregroundRole: 'onPrimaryContainer', backgroundRole: 'primaryContainer', minimum: 4.5 },
+  { foregroundRole: 'onSecondaryContainer', backgroundRole: 'secondaryContainer', minimum: 4.5 },
+];
+const nonTextContrastChecks = [
+  { foregroundRole: 'outline', backgroundRole: 'surface', minimum: 3 },
+  { foregroundRole: 'outline', backgroundRole: 'surfaceContainerLow', minimum: 3 },
+  { foregroundRole: 'outline', backgroundRole: 'surfaceContainerLowest', minimum: 3 },
+  { foregroundRole: 'primary', backgroundRole: 'surfaceContainer', minimum: 3 },
+];
+const contrastFailures = [...textContrastChecks, ...nonTextContrastChecks].filter((check) => {
+  const ratio = contrastRatio({
+    foreground: pinnedRoles[check.foregroundRole],
+    background: pinnedRoles[check.backgroundRole],
+  });
+  return ratio < check.minimum;
+});
+if (contrastFailures.length > 0) {
+  throw new Error(`Pinned dynamic role pairs fail contrast: ${JSON.stringify(contrastFailures)}.`);
+}
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const deviceRasterSelector = '.preview-open img,\n.zoom-image {';
 const deviceRasterRuleStart = question.indexOf(deviceRasterSelector);
@@ -276,6 +360,7 @@ const forbiddenFragments = [
   'class="foldable"',
   'class="track-study"',
   'prototype commit 6e8f248c5',
+  'prototype commit 12e99097d',
   'data-preview-width="418"',
   'data-source-width="1019"',
   'Value only on playing row',
@@ -308,8 +393,10 @@ const requiredFragments = [
   'class="device-screen"',
   'class="device-camera"',
   'Native Compose capture from Pixel 9 Pro Fold emulator',
-  'prototype commit 12e99097d',
+  'prototype commit f54fc145d',
   'official Material 3 components',
+  'Every selected state has a non-color cue',
+  'selectable letter rail is flush with the physical start edge',
   'dynamic role mappings',
   'Android 17 API 37',
   '--device-body: #262624;',
