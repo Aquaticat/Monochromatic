@@ -11,6 +11,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ConsolidationStandingIneligibleError,
   ContributorCompletenessError,
   DroppedDestinationError,
   entryErrorOutcome,
@@ -27,6 +28,7 @@ await describe({
   name: entryErrorOutcome.name,
   children: [
     ...([
+      new ConsolidationStandingIneligibleError({ sliceIndex: 1, terminal: 'incumbent-only', }),
       new ContributorCompletenessError({ entryId: 'Cat', droppedCount: 1, }),
       new DroppedDestinationError({ entryId: 'Cat', droppedCount: 1, }),
       new FrontMatterCompletenessError({ entryId: 'Cat', reason: 'missing-slice', }),

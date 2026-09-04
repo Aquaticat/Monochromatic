@@ -1,3 +1,4 @@
+import { ConsolidationStandingIneligibleError, } from '../consolidate-ineligible-standing.ts';
 import { NaturalnessCompletenessError, } from '../naturalness-completeness-error.ts';
 import { ContributorCompletenessError, } from './contributor-completeness.ts';
 import { DroppedDestinationError, } from './destination-completeness.ts';
@@ -49,7 +50,8 @@ export function entryErrorOutcome(
   /**
    * Whether error names stage-local incomplete or invariant work.
    */
-  const stopped = (error instanceof ContributorCompletenessError)
+  const stopped = (error instanceof ConsolidationStandingIneligibleError)
+    || (error instanceof ContributorCompletenessError)
     || (error instanceof DroppedDestinationError)
     || (error instanceof FrontMatterCompletenessError)
     || (error instanceof NaturalnessRepairInterruptedError)
