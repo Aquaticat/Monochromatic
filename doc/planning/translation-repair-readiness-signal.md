@@ -123,3 +123,35 @@ sweep is planned or budgeted. The 2026-09-03 OpenRouter budget arithmetic that p
 (`doc/planning/translation-repair-openrouter-2026-09-03.md`) is an upper bound on what the corpus would
 cost if it were ever run, not a plan. The readiness signal is put when a reading of the artifacts would
 let the sweep launch, whether or not it does.
+
+## What the 2026-09-04 pages showed
+
+Six passes settled and verified 1 of 1 each (`doc/planning/translation-repair-openrouter-2026-09-03.md`,
+sections dated 2026-09-04): Toka_ls on Synthetic plus OpenRouter (81 min, 3.56 USD); Hangmster, BI4PBV
+twice and two keyword233 arms, about 8.6 USD in all. The R3 order runs end to end on OpenRouter alone,
+the Kimi-K3 withhold held through every stage including the picture readers, the spend ceiling fired live at
+zero, and the Toka_ls re-read (`doc/planning/translation-repair-toka-ls-reading-2026-09-02.md`, "Re-read on
+a published page") finds every 2026-09-02 finding fixed or consistent with a decision since.
+
+WHAT THE SAME READING FOUND THAT NO GATE HAD: three defects, each fixed the same day with a guard shown to
+fail neutralised, and each a shape the corpus carries beyond the entry that showed it.
+
+- The photo reference reader took single-quoted paths only; four source pages double-quote theirs. The
+    first BI4PBV pass read no pictures and logged nothing about it (`5e013d24b`, `4ff42e627`).
+- The semantic wrapper split a one-line `PhotoScroll` element before its `/>` on the shipped Hangmster
+    page; sixteen source-page elements across eleven entries share the comma-and-space shape
+    (`66345a092`, in markdown-lint).
+- OpenRouter's ModelRun endpoint timed out one MiniMax M3 call in five and the client called each a cut-off
+    reply; at least five voices were lost after the ladder's five attempts (`f17feba12` names the failure;
+    the seat question is the owner's, since ModelRun is the model's only zero-data-retention endpoint for
+    a schema request).
+
+THE READING I PUT ON THAT, as the owner asked for a belief rather than a gate: not yet ready for a launch
+over the whole corpus. Not because any pass failed, but because three of six passes over four entries each
+surfaced a defect class the earlier readings had not, and the corpus's variety (four entries with one
+quoting, eleven with another spelling, fifty with pictures) has been sampled at two picture-bearing entries.
+The rate of new findings per pass is what has to fall before the belief is honest. What would make it fall:
+one pass each over an entry with double-quoted paths that the fix has not yet run on (`yulianNyanner`,
+`Arita` or `MTF_0615`) and one with the comma-shaped one-line element, both read the same way; the ModelRun
+seat decided; and the picture gather's straggler wait re-read once those passes have run three-reader
+pictures. Each of those is a pass and a reading, not a build.

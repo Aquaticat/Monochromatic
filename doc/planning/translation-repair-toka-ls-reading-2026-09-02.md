@@ -103,3 +103,34 @@ no slice index, so they are read in aggregate). Consolidation reached slices 0 a
 The reading is of a run that never published. The same reading on a published page and its artifact,
 with the reader script `~/temp/agent/read-artifact-20260902.mjs`, is what a readiness claim needs; the
 findings here (pronoun, title, heading, whitespace) are what to look for in it.
+
+## Re-read on a published page, 2026-09-04
+
+Run: `~/temp/agent/toka-pronoun-20260904.log`, runs dir beside it, launched 04:21 UTC on `002773b38`
+(the judge policy carrying the subjectless-sentence pronoun paragraph, `ed8cc2522`), Synthetic wet, Hyper
+unset, OpenRouter wet, overlap 4, writer grace 180 s, concurrent with five other passes. `TALLY Toka_ls
+status=SETTLED slices=16 ... ms=4865008` (81.1 min), verify-published 1 of 1 at `chars=4645/expected
+4642+separators missing=0`, 3.5645 USD on OpenRouter, 217 Kimi-K3 calls on Synthetic, 24 cut streams, 44
+voices never heard, no 429, one guard refusal.
+
+- **Slice 9, the pronoun: fixed.** The page reads "Occasionally, / inspiration strikes, / and after
+    weighing her words from every angle, / she leaves behind lines of neat, / regulated meter." The page
+    uses she or her 36 times and no he; its one "they" is the generic "everyone can do well no matter
+    where they are" inside the farewell letter. A ballot on that slice (04:38:33, gpt-oss-120b) chose the
+    winner for "the required third-person pronoun". The rule the judges applied on 2026-09-02 (subjectless
+    source, supply a neutral pronoun) is gone from the ballots.
+- **Slice 10, the work title: complies with the 2026-09-02 decision.** “Wonderful Drifting” (or “Life of
+    Aiden”): the allusion 「Aiden 的奇幻漂流」 keeps the official title it plays on, and 《奇妙漂流》, the
+    group's own work with no official English title, is translated and used the same way in the
+    contributor credit line. The archive had put "Life of Aiden" on the primary title instead.
+- **Slice 12, the heading:** 绝笔 is now "## Final Words" where the archive had "The final chapter"; an
+    idiom this time, in title case beside "## Description".
+- **Whitespace:** no trailing-space line, no blank `> ` quote line, no U+FEFF anywhere on the page. The
+    byte churn of 2026-09-02 is gone.
+- **Slice 13:** `translate-refused-declared-name (slice 13: archive text carries "Toka Sakyo" and the
+    replacement does not; keeping the archive text)`: the declared-name guard kept the archive's farewell
+    letter slice, which 2026-09-02 had seen improved. A guard doing what it is for, at the price of that
+    improvement.
+
+Every finding the 2026-09-02 reading listed for a reader to look for is either fixed on this page or
+consistent with a decision taken since.
