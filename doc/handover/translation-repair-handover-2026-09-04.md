@@ -160,9 +160,10 @@ and each item is a pass and a reading rather than a build.
 5.  Read each page the way the three above were read,
     and record the reading in the planning document and the readiness document.
 
-One smaller item stays open from earlier days:
-the ModelRun seat decision,
-routed to CoreWeave.
+No smaller item stays open from earlier days.
+The ModelRun seat is settled in the catalog:
+`modelrun` and `parasail` are ignored for MiniMax M3 since `d55d83082`,
+so CoreWeave serves it alone under zero data retention.
 The picture gather's straggler wait was re-read tonight on the three-reader pictures today's runs produced,
 and the reading is in the planning log under "The picture gather's wait":
 the gather waits for every reader with no window,

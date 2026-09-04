@@ -276,7 +276,11 @@ one pass each over an entry with double-quoted paths that the fix has not yet ru
 `yulianNyanner` or `Arita` or `MTF_0615`,
 and one with the comma-shaped one-line element,
 both read the same way;
-the ModelRun seat decided;
+the ModelRun seat decided,
+which it now is:
+the catalog ignores `modelrun` and `parasail` for MiniMax M3 since `d55d83082`,
+and CoreWeave serves it alone under zero data retention,
+4 of 4 conformant at a third of ModelRun's price;
 and the picture gather's straggler wait re-read once those passes have run three-reader pictures.
 That re-read is done,
 recorded in the planning log under "The picture gather's wait":
