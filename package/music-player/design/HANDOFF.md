@@ -763,7 +763,31 @@ keeps every row on standard `onSurface` / `onSurfaceVariant` colors, reserves th
 24dp leading slot for alignment, and draws the play icon only on the current track.
 It also implements final D34: visible `outlineVariant` rail line, white vertical center
 spacer, and white horizontal picker/transport divider. Native recapture and an updated
-before/after HTML review remain.
+before/after HTML review remain. Ten native captures completed under the pinned state.
+The new `divider-final` image is 2076 × 2152px and resolves the rail line to
+`outlineVariant`, both requested pane spacers to white, and the former selected-row
+sample to white. Its noncurrent leading column has zero dark ordinal pixels while the
+current-track leading region retains 416 exact-primary play-icon pixels. The updated
+self-contained HTML compares the exact annotated D2 before-state against revised D2,
+lists all four changes, asks which version to continue from, and requires every further
+correction or `None`. Four throwaway positive controls independently prove the before
+reference, white marked divider, ordinal removal, and play-icon guards. Restored build,
+lint, and unit contracts pass. Helium verification at DPR 2 now passes. The opening viewport explains all four
+changes and the exact answer path before the before/after comparison. Both native
+images decode at 2076 × 2152px. Revised D2 opens in a 907 × 937 CSS px frame around an
+852 × 883px screen at 100%; all zoom, Fit, native-pixel, reset, scroll, and close paths
+pass. At 390 × 844 the two cards remain on one 688px row in a 316px scroller that
+traverses 372px while the page stays 390px wide. Blank validation focuses the review
+radio. Both radio paths, free text, prepare, immediate copy, download, and clear pass
+with synthetic `Continue from d2-revised / Other corrections: None`, then remain
+cleared. Offline loading has no external URL and both images decode; forced host dark
+mode leaves the form light. The closed page has no axe violation or incomplete result.
+The modal has no violations and the familiar eight manually resolved `bgOverlap`
+contrast incompletes. Direct labels, names, alternatives, IDs, focus, and 48px targets
+pass. Browser errors and console output are empty. A matching-scale hardware comparison
+confirms the corrected pane geometry, white spacers, neutral rows, absent ordinals, and
+play-icon current cue. Stop isolated processes and replace the earlier clarification
+page in normal Helium with this cleared correction review.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
