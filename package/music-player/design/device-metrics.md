@@ -30,6 +30,42 @@ The density buckets are inferred from the panel ppi in the usual Android way; if
 need exactness, read `Configuration.densityDpi` on the device. The **shape** is what
 matters for layout and it is not in doubt.
 
+## Questionnaire frame geometry
+
+Google's current hardware specification confirms an 8-inch inner display at
+2076 × 2152px and an unfolded body measuring 150.2 × 155.2mm in width-first order.
+The questionnaire frame uses those figures rather than treating the active display as
+the outside of the phone.
+
+Distributing the 203.2mm display diagonal by the panel's pixel aspect gives an active
+area of approximately 141.08 × 146.24mm. Applying the body-to-active-area ratios to
+the 852 × 883dp design surface gives 907.09 × 937.08. The reusable frame therefore
+uses these coordinates at 100%:
+
+- 907 × 937 CSS px for the complete unfolded body.
+- 852 × 883 CSS px for the active screen content.
+- 27px start, 28px end, and 27px block-axis chassis insets.
+- 454 × 937 CSS px for a crop from the fold centre through the right body edge.
+- 8px of seam-facing screen context, 418px of right-pane content, and 28px of outer
+  chassis in that crop.
+
+The user supplied eight current product references on 2026-09-04. The straight-on
+`google-pixel-9-pro-fold-1.jpg` reference is 629 × 650px, an outer ratio of 0.9677.
+Google's 150.2 × 155.2mm body is 0.9678. Measurements from that reference set the
+current approximately 72dp outer corner, 42dp screen corner, 28dp inner-camera cutout,
+and 44dp hinge cap. The other supplied views confirm that the inner camera is at the
+top-right, the centre fold has hinge hardware only at the outer edges, and a right-half
+study has no independent rounded left chassis.
+
+The JPEG references carry a visible publisher watermark and are not embedded in the
+questionnaire. They were used only for measurement and side-by-side inspection. The
+CSS frame is opaque vector geometry; each source PNG remains rectangular screen
+content placed inside its opening.
+
+Source: [Google Pixel phone hardware tech specs][pixel-hardware-specs].
+
+[pixel-hardware-specs]: https://support.google.com/pixelphone/answer/7158570?hl=en
+
 ---
 
 ## Layout implications (these are the point)

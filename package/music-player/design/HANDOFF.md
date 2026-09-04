@@ -256,11 +256,37 @@ selectors and measures those corner pixels as `rgb(221, 215, 223)`. Form-level i
 rounding is now removed. `render:candidates` paints solid black device backing behind
 rounded source frames; all three half-screen top-left pixels are now `rgb(0, 0, 0)`.
 The package contract checks both conditions and is green. The user rejected this black
-corner patch as insufficient and asked why the frame itself is not realistic. Replace
-it with one measured, reusable Pixel 9 Pro Fold frame around every candidate: opaque
-chassis, continuous bezel, correct corners and fold/hinge treatment, with the candidate
-render inside the screen opening. Verify against a current device reference before
-reopening. No theme answer has been recorded.
+corner patch as insufficient and asked why the frame itself is not realistic. They
+then supplied eight current Pixel 9 Pro Fold reference images in `~/Downloads`: four
+JPEG views and four 2000 × 2000 WebP views. All eight were inspected together; the
+straight-on unfolded JPEG was also inspected at source size. The images contain no
+personal account, path, notification or status-bar data. The JPEGs do carry a visible
+publisher watermark, so none of the references is embedded in the questionnaire.
+Google's current hardware specification confirms the body and display dimensions;
+`device-metrics.md` records the measurement and arithmetic.
+
+The replacement frame is now implemented around all six candidates. At 100%, the
+full frame is 907 × 937 CSS px around an exact 852 × 883dp screen opening. The Q2
+frame is a 454 × 937 crop from the physical fold centre through the right outer edge;
+it has a straight fold-side edge, 8dp of seam-facing display context, the exact
+418 × 883dp candidate, and the real right chassis rather than four fake phone corners.
+Both forms use an opaque graphite chassis, continuous black bezel, measured screen and
+outer corner radii, top and bottom hinge caps, and a top-right 28dp inner-camera cutout.
+The Q1 headers now reserve 56dp at the right so their menu buttons do not sit under the
+camera. Candidate PNGs are rectangular screen content again; the frame owns all
+physical clipping and never reveals the questionnaire surface inside the device.
+
+All six candidates were regenerated through Helium at 2076 × 2152px or 1019 × 2152px,
+then embedded into the form. Package unit checks pass. At DPR 2, Helium measures the
+full dialog frame at 907 × 937 CSS px with an 852 × 883 screen and the right-half frame
+at 454 × 937 with an approximately 418.02 × 883.02 candidate area. The scale labels
+report 1704 × 1766 and 836 × 1766 display pixels respectively. A matching-scale
+side-by-side inspection against the supplied 629 × 650 front reference confirmed the
+silhouette, bezel, corner, camera and hinge placement. Three throwaway positive
+controls also passed: the validator rejected a transparent chassis, CSS rounding on
+the source raster, and the old half-screen inset. The remaining action is to rerun the
+complete form, accessibility, mobile-scroller and offline checks, then reopen the
+questionnaire in the user's normal Helium session. No theme answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
