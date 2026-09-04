@@ -31,7 +31,6 @@ const { resolve } = await import('node:path');
 const { pathToFileURL } = await import('node:url');
 const cdpPort = process.env.PI_HELIUM_CDP_PORT ?? '9224';
 const panelScale = 2076 / 852;
-const deviceBackingColor = '#000000';
 const candidates = [
   { name: 'light-a', logicalWidth: 852, frameWidth: 852, pixelWidth: 2076 },
   { name: 'light-b', logicalWidth: 852, frameWidth: 852, pixelWidth: 2076 },
@@ -81,7 +80,9 @@ for (const candidate of candidates) {
       if (!frame) {
         throw new Error('Candidate frame not found.');
       }
-      const fontFamily = getComputedStyle(frame).fontFamily;
+      const frameStyle = getComputedStyle(frame);
+      const fontFamily = frameStyle.fontFamily;
+      const backgroundColor = frameStyle.backgroundColor;
       document.body.replaceChildren(frame);
       document.documentElement.style.inlineSize = '${candidate.logicalWidth}px';
       document.documentElement.style.blockSize = '${logicalHeight}px';
@@ -91,9 +92,10 @@ for (const candidate of candidates) {
       document.body.style.marginBlock = '0';
       document.body.style.marginInline = '0';
       document.body.style.overflow = 'hidden';
-      document.body.style.backgroundColor = '${deviceBackingColor}';
+      document.body.style.backgroundColor = backgroundColor;
       frame.style.inlineSize = '${candidate.logicalWidth}px';
       frame.style.blockSize = '${logicalHeight}px';
+      frame.style.borderRadius = '0';
       frame.style.transform = 'none';
       frame.style.transformOrigin = '0 0';
       frame.style.fontFamily = fontFamily;
@@ -124,6 +126,9 @@ const requiredPaths = [
   'review-notes.md',
   'decisions.md',
   'open-questions.md',
+  'candidates/light-a.dc.html',
+  'candidates/light-b.dc.html',
+  'candidates/light-c.dc.html',
   'questions/current.template.html',
   'questions/current.html',
   'questions/render/light-a.png',
@@ -136,6 +141,15 @@ const requiredPaths = [
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
   throw new Error(`Missing required design files: ${missingPaths.join(', ')}`);
+}
+const cameraSafePadding = 'padding:0 56px 0 16px';
+const unsafeLightCandidates = [
+  'candidates/light-a.dc.html',
+  'candidates/light-b.dc.html',
+  'candidates/light-c.dc.html',
+].filter((path) => !readFileSync(resolve(path), 'utf8').includes(cameraSafePadding));
+if (unsafeLightCandidates.length > 0) {
+  throw new Error(`Inner-camera safe inset is missing from: ${unsafeLightCandidates.join(', ')}`);
 }
 const renderDimensions = [
   ['questions/render/light-a.png', 2076, 2152],
@@ -157,12 +171,12 @@ for (const [path, expectedWidth, expectedHeight] of renderDimensions) {
     throw new Error(`${path} is ${width}×${height}; expected ${expectedWidth}×${expectedHeight}.`);
   }
 }
-const roundedScreenPaths = [
+const rectangularScreenPaths = [
   'questions/render/dbtp-a.png',
   'questions/render/dbtp-b.png',
   'questions/render/dbtp-c.png',
 ];
-for (const path of roundedScreenPaths) {
+for (const path of rectangularScreenPaths) {
   const image = readFileSync(resolve(path));
   if (image[24] !== 8 || image[25] !== 2 || image[28] !== 0) {
     throw new Error(`${path} must remain an 8-bit, RGB, non-interlaced PNG.`);
@@ -179,22 +193,20 @@ for (const path of roundedScreenPaths) {
   }
   const scanlines = inflateSync(Buffer.concat(idatChunks));
   const topLeftRgb = scanlines.subarray(1, 4).toString('hex');
-  if (topLeftRgb !== '000000') {
-    throw new Error(`${path} exposes ${topLeftRgb} behind its rounded screen; expected opaque black device backing.`);
+  if (topLeftRgb !== 'ffffff') {
+    throw new Error(`${path} starts with ${topLeftRgb}; expected rectangular screen content at the raster edge.`);
   }
 }
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
-const deviceRasterSelectors = ['.preview-open img {', '.zoom-image {'];
-for (const selector of deviceRasterSelectors) {
-  const ruleStart = question.indexOf(selector);
-  const ruleEnd = question.indexOf('\n}', ruleStart);
-  const rule = question.slice(ruleStart, ruleEnd);
-  if (ruleStart < 0 || ruleEnd < 0) {
-    throw new Error(`Missing device raster rule: ${selector}`);
-  }
-  if (rule.includes('border-radius')) {
-    throw new Error(`${selector} clips the device raster and reveals the surrounding surface.`);
-  }
+const deviceRasterSelector = '.preview-open img,\n.zoom-image {';
+const deviceRasterRuleStart = question.indexOf(deviceRasterSelector);
+const deviceRasterRuleEnd = question.indexOf('\n}', deviceRasterRuleStart);
+const deviceRasterRule = question.slice(deviceRasterRuleStart, deviceRasterRuleEnd);
+if (deviceRasterRuleStart < 0 || deviceRasterRuleEnd < 0) {
+  throw new Error(`Missing device raster rule: ${deviceRasterSelector}`);
+}
+if (deviceRasterRule.includes('border-radius')) {
+  throw new Error(`${deviceRasterSelector} must not round the screen-content raster.`);
 }
 const forbiddenFragments = [
   '<link ',
@@ -226,12 +238,18 @@ const requiredFragments = [
   'data-source-width="2076"',
   'data-source-height="2152"',
   'data-source-width="1019"',
-  'data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152"',
-  'data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152"',
-  'data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152"',
-  'data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152"',
-  'data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152"',
-  'data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152"',
+  'class="device-frame"',
+  'data-frame-kind="full"',
+  'data-frame-kind="right-half"',
+  'class="device-screen"',
+  'class="device-camera"',
+  'padding-inline-start: 1.7621%',
+  'data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
+  'data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
+  'data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
+  'data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half"',
+  'data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half"',
+  'data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half"',
   'grid-template-columns: repeat(3, minmax(0, 1fr))',
   'Copy answers',
 ];
@@ -241,8 +259,14 @@ if (absentFragments.length > 0) {
 }
 const imageCount = question.split('data-candidate-source=').length - 1;
 const embeddedImageCount = question.split('data:image/png;base64,').length - 1;
+const cardFrameCount = question.split('class="device-frame"').length - 1;
+const screenOpeningCount = question.split('class="device-screen"').length - 1;
+const cameraCount = question.split('class="device-camera"').length - 1;
 if (imageCount !== 6 || embeddedImageCount !== 6) {
   throw new Error(`Expected six sourced and embedded candidate renders, found ${imageCount} sources and ${embeddedImageCount} images.`);
+}
+if (cardFrameCount !== 6 || screenOpeningCount !== 7 || cameraCount !== 7) {
+  throw new Error(`Expected six card frames plus one dialog frame, found ${cardFrameCount} card frames, ${screenOpeningCount} screens and ${cameraCount} cameras.`);
 }
 console.log('Design questionnaire structure is valid.');
 '''

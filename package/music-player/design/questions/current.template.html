@@ -27,6 +27,13 @@
   --shadow: rgba(29, 27, 32, 0.16);
   --selected-shadow: rgba(103, 80, 164, 0.24);
   --scrim: rgba(29, 27, 32, 0.72);
+  --device-body: #262624;
+  --device-body-mid: #494946;
+  --device-rim: #8b8a84;
+  --device-bezel: #111111;
+  --device-lens: #263542;
+  --device-screen-fill: #ffffff;
+  --device-hinge: #5e5d58;
   --transparent: transparent;
   font-family: Roboto, system-ui, sans-serif;
   background-color: var(--page);
@@ -238,14 +245,120 @@ textarea:focus-visible {
   outline-offset: -0.1875rem;
 }
 
-.preview-open img {
-  inline-size: 100%;
-  block-size: auto;
+.device-frame {
+  position: relative;
   display: block;
-  box-shadow: 0 0.25rem 0.75rem var(--shadow);
+  flex: 0 0 auto;
+  overflow: hidden;
+  background-color: var(--device-body);
+  background-image: linear-gradient(135deg, var(--device-rim), var(--device-body-mid) 12%, var(--device-body) 48%, var(--device-body-mid) 88%, var(--device-rim));
+  box-shadow: inset 0 0 0 0.125rem var(--device-rim), 0 0.35rem 0.9rem var(--shadow);
 }
 
-.preview-open span {
+.device-frame[data-frame-kind="full"] {
+  inline-size: 100%;
+  aspect-ratio: 907 / 937;
+  border-radius: 7.94% / 7.68%;
+}
+
+.device-frame[data-frame-kind="right-half"] {
+  inline-size: 100%;
+  aspect-ratio: 454 / 937;
+  border-start-end-radius: 15.86% 7.68%;
+  border-end-end-radius: 15.86% 7.68%;
+}
+
+.device-frame::before,
+.device-frame::after {
+  position: absolute;
+  z-index: 3;
+  inline-size: 4.85%;
+  block-size: 0.75%;
+  content: "";
+  background-color: var(--device-hinge);
+  box-shadow: inset 0 0 0 0.0625rem var(--device-rim);
+}
+
+.device-frame::before {
+  inset-block-start: 0;
+  border-end-start-radius: 0.25rem;
+  border-end-end-radius: 0.25rem;
+}
+
+.device-frame::after {
+  inset-block-end: 0;
+  border-start-start-radius: 0.25rem;
+  border-start-end-radius: 0.25rem;
+}
+
+.device-frame[data-frame-kind="full"]::before,
+.device-frame[data-frame-kind="full"]::after {
+  inset-inline-start: 47.575%;
+}
+
+.device-frame[data-frame-kind="right-half"]::before,
+.device-frame[data-frame-kind="right-half"]::after {
+  inset-inline-start: 0;
+}
+
+.device-screen {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  overflow: hidden;
+  background-color: var(--device-screen-fill);
+  box-shadow: 0 0 0 0.125rem var(--device-bezel);
+}
+
+.device-frame[data-frame-kind="full"] .device-screen {
+  inset-block: 2.8815%;
+  inset-inline-start: 2.9779%;
+  inset-inline-end: 3.0871%;
+  border-radius: 4.93% / 4.76%;
+}
+
+.device-frame[data-frame-kind="right-half"] .device-screen {
+  inset-block: 2.8815%;
+  inset-inline-start: 0;
+  inset-inline-end: 6.1674%;
+  padding-inline-start: 1.7621%;
+  border-start-end-radius: 9.86% 4.76%;
+  border-end-end-radius: 9.86% 4.76%;
+}
+
+.preview-open img,
+.zoom-image {
+  min-inline-size: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+}
+
+.device-camera {
+  position: absolute;
+  z-index: 2;
+  aspect-ratio: 1;
+  border-width: 0.1875rem;
+  border-style: solid;
+  border-color: var(--device-bezel);
+  border-radius: 50%;
+  background-color: var(--device-lens);
+  box-shadow: inset 0 0 0 0.1875rem var(--device-body);
+}
+
+.device-frame[data-frame-kind="full"] .device-camera {
+  inset-block-start: 1.9253%;
+  inset-inline-end: 2.8169%;
+  inline-size: 3.2864%;
+}
+
+.device-frame[data-frame-kind="right-half"] .device-camera {
+  inset-block-start: 1.9253%;
+  inset-inline-end: 5.6338%;
+  inline-size: 6.5728%;
+}
+
+.preview-label {
   min-block-size: 3rem;
   display: flex;
   align-items: center;
@@ -478,10 +591,8 @@ button:hover {
   place-items: start;
 }
 
-.zoom-image {
-  display: block;
+.zoom-device {
   max-inline-size: none;
-  box-shadow: 0 0.75rem 2rem var(--shadow);
 }
 
 footer {
@@ -521,7 +632,8 @@ footer {
       <h1>Close the light-theme fork</h1>
       <p class="lede">
         The dark theme stays true black. This round decides the light half of “follow the OS.”
-        Every preview is an exact render of its source candidate. Open any preview to inspect it at the cited device dimensions.
+        Every preview places an exact candidate render inside a measured Pixel 9 Pro Fold frame.
+        Open any preview to inspect the screen content at the cited dimensions.
       </p>
     </div>
     <div class="round-badge">Grilling round 1</div>
@@ -548,9 +660,14 @@ footer {
                 <span class="option-summary">Pure MD3 tonal separation</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152">
-              <img data-candidate-source="candidates/light-a.dc.html" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1a, using tonal surfaces without outlines">
-              <span>Inspect 852×883dp · 2076×2152px source</span>
+            <button class="preview-open" type="button" data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
+              <span class="device-frame" data-frame-kind="full">
+                <span class="device-screen">
+                  <img data-candidate-source="candidates/light-a.dc.html" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1a, using tonal surfaces without outlines">
+                  <span class="device-camera" aria-hidden="true"></span>
+                </span>
+              </span>
+              <span class="preview-label">Inspect 852×883dp · 2076×2152px source</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -577,9 +694,14 @@ footer {
                 <span class="option-summary">Direct translation of dark mode</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152">
-              <img data-candidate-source="candidates/light-b.dc.html" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1b, using hairlines on one flat surface">
-              <span>Inspect 852×883dp · 2076×2152px source</span>
+            <button class="preview-open" type="button" data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
+              <span class="device-frame" data-frame-kind="full">
+                <span class="device-screen">
+                  <img data-candidate-source="candidates/light-b.dc.html" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1b, using hairlines on one flat surface">
+                  <span class="device-camera" aria-hidden="true"></span>
+                </span>
+              </span>
+              <span class="preview-label">Inspect 852×883dp · 2076×2152px source</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -605,9 +727,14 @@ footer {
                 <span class="option-summary">Dimmed window, quiet raised panes</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152">
-              <img data-candidate-source="candidates/light-c.dc.html" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1c, using tonal panes and one rail hairline">
-              <span>Inspect 852×883dp · 2076×2152px source</span>
+            <button class="preview-open" type="button" data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
+              <span class="device-frame" data-frame-kind="full">
+                <span class="device-screen">
+                  <img data-candidate-source="candidates/light-c.dc.html" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1c, using tonal panes and one rail hairline">
+                  <span class="device-camera" aria-hidden="true"></span>
+                </span>
+              </span>
+              <span class="preview-label">Inspect 852×883dp · 2076×2152px source</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -637,7 +764,9 @@ footer {
     <section class="question" aria-labelledby="q2-title">
       <h2 id="q2-title">Q2: How prominent should true-peak values be in light mode?</h2>
       <p class="question-intro">
-        Each track-pane detail uses the measured 418×883dp half of the unfolded display.
+        Each track-pane detail uses the measured 418×883dp right half of the unfolded display.
+        Its frame is a crop from the fold center to the outer right edge,
+        not a fictitious narrow phone.
         The row stays two lines and keeps duration plus true peak.
         Only emphasis changes.
       </p>
@@ -653,9 +782,14 @@ footer {
                 <span class="option-summary">Duration and true peak share a colour</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152">
-              <img data-candidate-source="candidates/dbtp-a.dc.html" src="@@IMAGE_DBTP_A@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with duration and true peak in one secondary treatment">
-              <span>Inspect 418×883dp · 1019×2152px source</span>
+            <button class="preview-open" type="button" data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
+              <span class="device-frame" data-frame-kind="right-half">
+                <span class="device-screen">
+                  <img data-candidate-source="candidates/dbtp-a.dc.html" src="@@IMAGE_DBTP_A@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with duration and true peak in one secondary treatment">
+                  <span class="device-camera" aria-hidden="true"></span>
+                </span>
+              </span>
+              <span class="preview-label">Inspect right half · 418×883dp · 1019×2152px source</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -682,9 +816,14 @@ footer {
                 <span class="option-summary">Duration quiet, true peak at 500 weight</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152">
-              <img data-candidate-source="candidates/dbtp-b.dc.html" src="@@IMAGE_DBTP_B@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with stronger true-peak values">
-              <span>Inspect 418×883dp · 1019×2152px source</span>
+            <button class="preview-open" type="button" data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
+              <span class="device-frame" data-frame-kind="right-half">
+                <span class="device-screen">
+                  <img data-candidate-source="candidates/dbtp-b.dc.html" src="@@IMAGE_DBTP_B@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with stronger true-peak values">
+                  <span class="device-camera" aria-hidden="true"></span>
+                </span>
+              </span>
+              <span class="preview-label">Inspect right half · 418×883dp · 1019×2152px source</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -711,9 +850,14 @@ footer {
                 <span class="option-summary">Duration alone on every other row</span>
               </span>
             </label>
-            <button class="preview-open" type="button" data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152">
-              <img data-candidate-source="candidates/dbtp-c.dc.html" src="@@IMAGE_DBTP_C@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with true peak only on the playing row">
-              <span>Inspect 418×883dp · 1019×2152px source</span>
+            <button class="preview-open" type="button" data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
+              <span class="device-frame" data-frame-kind="right-half">
+                <span class="device-screen">
+                  <img data-candidate-source="candidates/dbtp-c.dc.html" src="@@IMAGE_DBTP_C@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with true peak only on the playing row">
+                  <span class="device-camera" aria-hidden="true"></span>
+                </span>
+              </span>
+              <span class="preview-label">Inspect right half · 418×883dp · 1019×2152px source</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -790,7 +934,12 @@ footer {
   </div>
   <div class="zoom-stage" id="zoom-stage" role="region" tabindex="0" aria-label="Zoomed candidate image; scroll to inspect the complete device render">
     <div class="zoom-canvas">
-      <img class="zoom-image" id="zoom-image" alt="">
+      <div class="device-frame zoom-device" id="zoom-device" data-frame-kind="full">
+        <div class="device-screen">
+          <img class="zoom-image" id="zoom-image" alt="">
+          <span class="device-camera" aria-hidden="true"></span>
+        </div>
+      </div>
     </div>
   </div>
 </dialog>
@@ -807,6 +956,7 @@ const previewDialog = document.querySelector('#preview-dialog');
 const zoomTitle = document.querySelector('#zoom-title');
 const zoomDimensions = document.querySelector('#zoom-dimensions');
 const zoomStage = document.querySelector('#zoom-stage');
+const zoomDevice = document.querySelector('#zoom-device');
 const zoomImage = document.querySelector('#zoom-image');
 const zoomScale = document.querySelector('#zoom-scale');
 const zoomOut = document.querySelector('#zoom-out');
@@ -818,22 +968,34 @@ const zoomClose = document.querySelector('#zoom-close');
 const minimumScale = 0.25;
 const maximumScaleLimit = 3;
 const scaleStep = 0.25;
+const fullFrameWidth = 907;
+const halfFrameWidth = 454;
+const frameHeight = 937;
 let currentScale = 1;
 let targetWidth = 852;
 let targetHeight = 883;
 let targetUnit = 'dp';
 let sourceWidth = 2076;
 let sourceHeight = 2152;
+let frameKind = 'full';
+
+const getFrameWidth = () => frameKind === 'full' ? fullFrameWidth : halfFrameWidth;
 
 const renderZoom = () => {
   const renderedWidth = Math.round(targetWidth * currentScale);
   const renderedHeight = Math.round(targetHeight * currentScale);
-  zoomImage.style.inlineSize = `${renderedWidth}px`;
-  zoomImage.style.blockSize = `${renderedHeight}px`;
+  const renderedFrameWidth = getFrameWidth() * currentScale;
+  const renderedFrameHeight = frameHeight * currentScale;
+  zoomDevice.dataset.frameKind = frameKind;
+  zoomDevice.style.inlineSize = `${renderedFrameWidth}px`;
+  zoomDevice.style.blockSize = `${renderedFrameHeight}px`;
   const displayWidth = Math.round(renderedWidth * devicePixelRatio);
   const displayHeight = Math.round(renderedHeight * devicePixelRatio);
+  const frameDescription = frameKind === 'full'
+    ? 'Full unfolded Pixel 9 Pro Fold frame'
+    : 'Right-half crop of unfolded Pixel 9 Pro Fold frame';
   zoomScale.textContent = `${Math.round(currentScale * 100)}% · ${renderedWidth}×${renderedHeight} CSS px · ${displayWidth}×${displayHeight} display px`;
-  zoomDimensions.textContent = `Logical target: ${targetWidth}×${targetHeight}${targetUnit}. Source: ${sourceWidth}×${sourceHeight}px. At 100%, 1dp maps to 1 CSS px.`;
+  zoomDimensions.textContent = `${frameDescription}. Screen study: ${targetWidth}×${targetHeight}${targetUnit}. Source: ${sourceWidth}×${sourceHeight}px. At 100%, 1dp maps to 1 CSS px; body reference is 150.2×155.2mm unfolded.`;
 };
 
 const getMaximumSharpScale = () => Math.max(
@@ -853,7 +1015,7 @@ const setZoom = (scale) => {
 const fitZoom = () => {
   const inlineRoom = Math.max(1, zoomStage.clientWidth - 32);
   const blockRoom = Math.max(1, zoomStage.clientHeight - 32);
-  setZoom(Math.min(1, inlineRoom / targetWidth, blockRoom / targetHeight));
+  setZoom(Math.min(1, inlineRoom / getFrameWidth(), blockRoom / frameHeight));
 };
 
 const openPreview = (button) => {
@@ -863,6 +1025,7 @@ const openPreview = (button) => {
   targetUnit = button.dataset.previewUnit;
   sourceWidth = Number(button.dataset.sourceWidth);
   sourceHeight = Number(button.dataset.sourceHeight);
+  frameKind = button.dataset.frameKind;
   zoomTitle.textContent = button.dataset.previewTitle;
   zoomImage.src = image.src;
   zoomImage.alt = image.alt;
