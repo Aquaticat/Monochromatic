@@ -67,7 +67,12 @@ which were left as historical style comparisons.
 | **candidates/_ds/** | — | Copied MD3 token sheets (palette, color, fonts, typography, shape, elevation, spacing, state) so candidate files resolve them without `../`. |
 
 All light-side files are presented on a light desk with a light caption bar
-(review-notes 5g); the dark pair keeps a dark one.
+(review-notes 5g); the dark pair keeps a dark one. For the active questionnaire, the
+six `.dc.html` files are now historical design records rather than screenshot sources.
+Branch `prototype/music-player-theme-compose` rebuilds the same six keys in native
+Compose and captures them from the unfolded Pixel 9 Pro Fold emulator with Android
+system bars. The checked-in PNGs under `questions/render/` come from prototype commit
+`69607079b` after removal of the redundant full-height track-pane wrapper.
 
 ## ROUND 8 — verdicts in
 

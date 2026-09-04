@@ -347,15 +347,15 @@ textarea:focus-visible {
 }
 
 .device-frame[data-frame-kind="full"] .device-camera {
-  inset-block-start: 1.9253%;
-  inset-inline-end: 2.8169%;
-  inline-size: 3.2864%;
+  inset-block-start: 1.8817%;
+  inset-inline-end: 2.3956%;
+  inline-size: 3.8040%;
 }
 
 .device-frame[data-frame-kind="right-half"] .device-camera {
-  inset-block-start: 1.9253%;
-  inset-inline-end: 5.6338%;
-  inline-size: 6.5728%;
+  inset-block-start: 1.8817%;
+  inset-inline-end: 4.7911%;
+  inline-size: 7.6080%;
 }
 
 .preview-label {
@@ -632,7 +632,8 @@ footer {
       <h1>Close the light-theme fork</h1>
       <p class="lede">
         The dark theme stays true black. This round decides the light half of “follow the OS.”
-        Every preview places an exact candidate render inside a measured Pixel 9 Pro Fold frame.
+        Every preview places a native Compose capture from the unfolded Pixel 9 Pro Fold emulator inside its measured frame.
+        Android 17 API 37 supplies the status and gesture-navigation bars.
         Open any preview to inspect the screen content at the cited dimensions.
       </p>
     </div>
@@ -646,6 +647,7 @@ footer {
         The unfolded Pixel 9 Pro Fold is rendered at 852×883dp with the settled picker and transport on the left,
         a 16dp seam,
         and tracks on the right.
+        The full-height track surface reaches the screen edges rather than sitting inside a second rounded wrapper.
         Only the light-surface hierarchy changes.
       </p>
 
@@ -663,11 +665,11 @@ footer {
             <button class="preview-open" type="button" data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
               <span class="device-frame" data-frame-kind="full">
                 <span class="device-screen">
-                  <img data-candidate-source="candidates/light-a.dc.html" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1a, using tonal surfaces without outlines">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-a, prototype commit 69607079b" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1a, using tonal surfaces without outlines and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Inspect 852×883dp · 2076×2152px source</span>
+              <span class="preview-label">Native Compose · Android 17 API 37 · 852×883dp · 2076×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -697,11 +699,11 @@ footer {
             <button class="preview-open" type="button" data-preview-title="1b: One flat surface with hairlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
               <span class="device-frame" data-frame-kind="full">
                 <span class="device-screen">
-                  <img data-candidate-source="candidates/light-b.dc.html" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1b, using hairlines on one flat surface">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-b, prototype commit 69607079b" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1b, using hairlines on one flat surface and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Inspect 852×883dp · 2076×2152px source</span>
+              <span class="preview-label">Native Compose · Android 17 API 37 · 852×883dp · 2076×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -730,11 +732,11 @@ footer {
             <button class="preview-open" type="button" data-preview-title="1c: Tonal panes with one rail hairline" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
               <span class="device-frame" data-frame-kind="full">
                 <span class="device-screen">
-                  <img data-candidate-source="candidates/light-c.dc.html" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Exact 852 by 883dp render of light candidate 1c, using tonal panes and one rail hairline">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-c, prototype commit 69607079b" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1c, using tonal panes, one rail hairline, and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Inspect 852×883dp · 2076×2152px source</span>
+              <span class="preview-label">Native Compose · Android 17 API 37 · 852×883dp · 2076×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -768,6 +770,8 @@ footer {
         Its frame is a crop from the fold center to the outer right edge,
         not a fictitious narrow phone.
         The row stays two lines and keeps duration plus true peak.
+        Native Android system bars remain in the crop,
+        and the track surface continues to the screen edges without a redundant rounded wrapper.
         Only emphasis changes.
       </p>
 
@@ -785,11 +789,11 @@ footer {
             <button class="preview-open" type="button" data-preview-title="3a: One secondary treatment" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
               <span class="device-frame" data-frame-kind="right-half">
                 <span class="device-screen">
-                  <img data-candidate-source="candidates/dbtp-a.dc.html" src="@@IMAGE_DBTP_A@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with duration and true peak in one secondary treatment">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-a, prototype commit 69607079b" src="@@IMAGE_DBTP_A@@" width="418" height="883" alt="Native Compose right-half capture at 418 by 883dp with duration and true peak in one secondary treatment and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Inspect right half · 418×883dp · 1019×2152px source</span>
+              <span class="preview-label">Native Compose right half · Android 17 API 37 · 418×883dp · 1019×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -819,11 +823,11 @@ footer {
             <button class="preview-open" type="button" data-preview-title="3b: Stronger true-peak value" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
               <span class="device-frame" data-frame-kind="right-half">
                 <span class="device-screen">
-                  <img data-candidate-source="candidates/dbtp-b.dc.html" src="@@IMAGE_DBTP_B@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with stronger true-peak values">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-b, prototype commit 69607079b" src="@@IMAGE_DBTP_B@@" width="418" height="883" alt="Native Compose right-half capture at 418 by 883dp with stronger true-peak values and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Inspect right half · 418×883dp · 1019×2152px source</span>
+              <span class="preview-label">Native Compose right half · Android 17 API 37 · 418×883dp · 1019×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -853,11 +857,11 @@ footer {
             <button class="preview-open" type="button" data-preview-title="3c: Value only on playing row" data-preview-width="418" data-preview-height="883" data-preview-unit="dp" data-source-width="1019" data-source-height="2152" data-frame-kind="right-half">
               <span class="device-frame" data-frame-kind="right-half">
                 <span class="device-screen">
-                  <img data-candidate-source="candidates/dbtp-c.dc.html" src="@@IMAGE_DBTP_C@@" width="418" height="883" alt="Exact 418 by 883dp track-pane render with true peak only on the playing row">
+                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-c, prototype commit 69607079b" src="@@IMAGE_DBTP_C@@" width="418" height="883" alt="Native Compose right-half capture at 418 by 883dp with true peak only on the playing row and Android system bars">
                   <span class="device-camera" aria-hidden="true"></span>
                 </span>
               </span>
-              <span class="preview-label">Inspect right half · 418×883dp · 1019×2152px source</span>
+              <span class="preview-label">Native Compose right half · Android 17 API 37 · 418×883dp · 1019×2152px</span>
             </button>
             <div class="assessment">
               <div><strong>Pros</strong></div>
@@ -912,7 +916,8 @@ footer {
   </form>
 
   <footer>
-    Self-contained questionnaire. No network, external stylesheet, script, font or server is required.
+    Self-contained questionnaire. Visuals are native Compose captures from the unfolded Pixel 9 Pro Fold emulator.
+    No network, external stylesheet, script, font or server is required.
   </footer>
 </main>
 
