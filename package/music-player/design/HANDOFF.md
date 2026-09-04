@@ -229,8 +229,11 @@ blurry and correctly noted that the Pixel 9 Pro Fold is not a low-resolution dev
 The prior capture conflated dp with source pixels: full candidates are only 852×883px
 instead of the panel's 2076×2152px; half-screen studies are only 418×883px instead of
 approximately 1019×2152px. A repeated PNG-header probe reproduces all six failures.
-Re-render every source at physical pixel density, preserve 852×883dp or 418×883dp as
-the 100% display size, expose both units, then rerun the Helium probe. No theme answer
+The package unit contract now asserts those physical source dimensions and fails on
+the existing 852×883 file as intended. The question template exposes source px beside
+logical dp and identifies rendered zoom size as CSS px. Re-render every source at
+physical pixel density, preserve 852×883dp or 418×883dp as the 100% display size, then
+rerun the Helium probe. No theme answer
 has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
