@@ -184,13 +184,13 @@ const railEdgePixel = pixelAt({ path: 'questions/render/light-a.png', x: 0, y: 1
 if (railEdgePixel !== 'srgba(231,231,241,1)') {
   throw new Error('questions/render/light-a.png must place the selectable letter rail flush against the device edge.');
 }
-const selectedFolderUnderlinePixels = countPixelsMatching({
+const selectedFolderTabIndicatorPixels = countPixelsMatching({
   path: 'questions/render/light-a.png',
-  crop: '200x4+140+615',
+  crop: '200x4+140+656',
   predicate: isPrimary,
 });
-if (selectedFolderUnderlinePixels < 150) {
-  throw new Error('questions/render/light-a.png must show selected folder state with a non-color underline cue.');
+if (selectedFolderTabIndicatorPixels < 700) {
+  throw new Error('questions/render/light-a.png must show the 2dp selected-folder tab indicator across the target.');
 }
 const centralSpacerPixels = [
   pixelAt({ path: 'questions/render/light-c.png', x: 1008, y: 1000 }),
@@ -361,6 +361,7 @@ const forbiddenFragments = [
   'class="track-study"',
   'prototype commit 6e8f248c5',
   'prototype commit 12e99097d',
+  'prototype commit f54fc145d',
   'data-preview-width="418"',
   'data-source-width="1019"',
   'Value only on playing row',
@@ -393,9 +394,10 @@ const requiredFragments = [
   'class="device-screen"',
   'class="device-camera"',
   'Native Compose capture from Pixel 9 Pro Fold emulator',
-  'prototype commit f54fc145d',
+  'prototype commit 88374ace0',
   'official Material 3 components',
   'Every selected state has a non-color cue',
+  'separate MD1-style 2dp tab indicator',
   'selectable letter rail is flush with the physical start edge',
   'dynamic role mappings',
   'Android 17 API 37',
