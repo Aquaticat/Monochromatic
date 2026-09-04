@@ -410,7 +410,26 @@ throwaway positive controls prove the left-side guards: changing the top-left pi
 pixel to the window colour yields `questions/render/light-c.png still double-wraps one
 or more full-height screen sections.`; extending the window-coloured inter-section gap
 by one pixel yields `questions/render/light-c.png must keep exactly one 39px
-inter-section gap without outer margins.`. The restored fixture passes.
+inter-section gap without outer margins.`. The restored fixture passes. Post-correction
+Helium verification at DPR 2 is complete. Full-dialog screenshots at the top and bottom
+of the 907 × 937px device show picker and transport meeting the left screen edge,
+picker meeting the top, transport continuing behind the gesture-navigation area to the
+bottom, and no rounded section wrapper on either side. The 39px inter-section gap and
+39px centre seam remain deliberate separators rather than outer frames.
+
+All six previews decode to the expected 2076 × 2152px or 1019 × 2152px source before
+measurement. Full and half frame, screen, image and 32.41dp camera geometry are
+unchanged and exact at 100%. Zoom in/out, Fit, sharp 1:1 display pixels, reset, stage
+scrolling and Close pass again. Desktop and mobile one-row comparisons, page overflow,
+independent mobile scrollers, offline loading, forced-light presentation, every radio,
+blank validation, free text, prepare, copy, download and clear pass again. The copy and
+download paths both receive `Q1 1c / Q2 3b / Q3 None.` in the synthetic probe, then
+the form is cleared. axe-core 4.13.0 again reports zero WCAG A/AA violations and zero
+incomplete checks on both page and dialog; direct label, accessible-name, alt, unique-ID
+and visible-target checks pass. Helium page errors and console output are empty. A fresh
+629 × 650 crop-based side-by-side comparison with the supplied front reference confirms
+the complete frame after the left-side correction. Reopen the blank form in the normal
+Helium session before collecting theme answers.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
