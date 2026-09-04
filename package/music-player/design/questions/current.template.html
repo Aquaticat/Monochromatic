@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: white divider clarification</title>
+<title>Music player design: revised D2 correction review</title>
 <style>
 :root {
   color-scheme: light;
@@ -170,9 +170,9 @@ legend {
 }
 
 .options {
-  min-inline-size: 62rem;
+  min-inline-size: 43rem;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -581,165 +581,133 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Which divider should be white?</h1>
+      <h1>Review the corrected D2 result</h1>
       <p class="lede">
-        You chose the 1c tonal layout and the 3a neutral duration-plus-true-peak line.
-        This follow-up asks only which visible separator you meant by “the divider.”
+        The revised version applies your marked white horizontal divider and your track-list corrections.
+        Compare it directly with the D2 version you annotated.
       </p>
     </div>
-    <span class="round-badge">Correction round · one decision</span>
+    <span class="round-badge">Correction review · before and after</span>
   </header>
 
   <section class="instructions" aria-labelledby="instructions-title">
-    <h2 id="instructions-title">What to do</h2>
+    <h2 id="instructions-title">What changed</h2>
     <ol>
-      <li>Compare the three whole-device images. Open any image for measured 100% zoom.</li>
-      <li>Select which separator or separators should be white.</li>
-      <li>Write every other remaining correction, or write “None.”</li>
-      <li>Choose Prepare answers, then Copy answers, and paste the result into Pi.</li>
+      <li>The 24dp vertical center spacer remains white, as selected in D2.</li>
+      <li>The 16dp horizontal strip you marked between the folder picker and transport is now white.</li>
+      <li>Interface-generated track numbers are removed.</li>
+      <li>The saturated blue current-track row fill is removed; the play icon alone marks the current track.</li>
     </ol>
     <div class="definition-list">
       <p class="definition">
-        <strong>Rail line:</strong> the thin 1dp vertical line between the A–Z letter column and the folder names.
+        <strong>Before:</strong> the D2 image you annotated, with the horizontal strip still gray, generated ordinals, and blue current-row fill.
       </p>
       <p class="definition">
-        <strong>Center spacer:</strong> the wide 24dp vertical strip between the left controls pane and the right track pane.
+        <strong>Revised:</strong> white vertical and horizontal pane spacers, a visible gray rail line, neutral track rows, and no generated ordinals.
       </p>
     </div>
     <p class="response-help">
-      Every option keeps 1c’s tonal surfaces, 3a’s single neutral metadata treatment,
-      the white app surfaces, the 24dp non-interactive center space, and all previously settled controls.
-      Only the colors of the rail line and center spacer differ.
+      Open either image for measured 100% zoom. Select the version to continue from, list every remaining correction or “None,”
+      then choose Prepare answers and Copy answers to paste the result into Pi.
     </p>
   </section>
 
   <form id="design-form">
     <section class="question" aria-labelledby="divider-title">
       <fieldset>
-        <legend><h2 id="divider-title">Choose the white separator treatment</h2></legend>
+        <legend><h2 id="divider-title">Which D2 version should we continue from?</h2></legend>
         <p class="question-intro">
-          These are native Jetpack Compose captures from the same Pixel 9 Pro Fold emulator and dynamic light palette.
+          Both are native Jetpack Compose captures from the same Pixel 9 Pro Fold emulator and dynamic light palette.
           Each source is 2076×2152px and represents the whole 852×883dp unfolded display.
         </p>
 
-        <div class="options-scroll" role="group" tabindex="0" aria-label="Divider treatments, scroll horizontally on narrow windows">
+        <div class="options-scroll" role="group" tabindex="0" aria-label="D2 before-and-after comparison, scroll horizontally on narrow windows">
           <div class="options">
             <article class="option">
               <label class="option-heading">
-                <input type="radio" name="dividerTreatment" value="rail-white" aria-labelledby="rail-white-title" required>
+                <input type="radio" name="reviewResult" value="d2-before" aria-labelledby="d2-before-title" required>
                 <span class="option-title">
-                  <span class="option-code">D1 · current attempt</span>
-                  <strong id="rail-white-title">White rail line</strong>
-                  <span class="option-summary">Thin rail line white; center spacer stays tonal gray</span>
+                  <span class="option-code">D2 · before your marked correction</span>
+                  <strong id="d2-before-title">Annotated starting point</strong>
+                  <span class="option-summary">White center spacer; marked horizontal divider still gray</span>
                 </span>
               </label>
-              <button class="preview-open" type="button" data-preview-title="D1: White rail line" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+              <button class="preview-open" type="button" data-preview-title="D2 before correction" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
                 <span class="device-frame">
                   <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-a capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_A@@" width="852" height="883" alt="Whole unfolded device with the thin rail line white and the wide center spacer tonal gray">
+                    <img data-candidate-source="Native Compose divider-b capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_B@@" width="852" height="883" alt="D2 before correction, with a gray horizontal divider, generated track numbers, and saturated blue current-track fill">
                     <span class="device-camera" aria-hidden="true"></span>
                   </span>
                 </span>
-                <span class="preview-label">Open D1 at measured size</span>
+                <span class="preview-label">Open D2 before correction</span>
               </button>
               <div class="assessment">
                 <div><strong>Pros</strong></div>
                 <ul>
-                  <li>Matches the divider named in the original 1c option.</li>
-                  <li>Keeps the tonal center spacing visible.</li>
+                  <li>Preserves the exact image that received your annotation.</li>
+                  <li>Makes every requested correction easy to compare.</li>
                 </ul>
                 <div><strong>Cons</strong></div>
                 <ul>
-                  <li>The white line disappears against the adjacent white surfaces.</li>
-                  <li>The prominent center strip remains gray.</li>
+                  <li>The marked horizontal divider is still gray.</li>
+                  <li>Generated ordinals and the saturated current-row fill remain.</li>
                 </ul>
-                <p><strong>My read:</strong> third choice. It likely changes the less visible element.</p>
+                <p><strong>My read:</strong> second choice. It is evidence for comparison, not the requested result.</p>
               </div>
             </article>
 
             <article class="option">
               <label class="option-heading">
-                <input type="radio" name="dividerTreatment" value="center-white" aria-labelledby="center-white-title" required>
+                <input type="radio" name="reviewResult" value="d2-revised" aria-labelledby="d2-revised-title" required>
                 <span class="option-title">
-                  <span class="option-code">D2 · recommended</span>
-                  <strong id="center-white-title">White center spacer</strong>
-                  <span class="option-summary">Thin rail line stays gray; wide center strip becomes white</span>
+                  <span class="option-code">D2 revised · recommended</span>
+                  <strong id="d2-revised-title">All requested corrections applied</strong>
+                  <span class="option-summary">White center and marked horizontal spacers; neutral unnumbered track rows</span>
                 </span>
               </label>
-              <button class="preview-open" type="button" data-preview-title="D2: White center spacer" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+              <button class="preview-open" type="button" data-preview-title="D2 revised: all requested corrections" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
                 <span class="device-frame">
                   <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-b capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_B@@" width="852" height="883" alt="Whole unfolded device with the thin rail line tonal gray and the wide center spacer white">
+                    <img data-candidate-source="Native Compose divider-final capture, prototype commit 49d6568ed" src="@@IMAGE_DIVIDER_FINAL@@" width="852" height="883" alt="Revised D2 with white vertical and horizontal pane spacers, neutral unnumbered track rows, and a play icon on the current track">
                     <span class="device-camera" aria-hidden="true"></span>
                   </span>
                 </span>
-                <span class="preview-label">Open D2 at measured size</span>
+                <span class="preview-label">Open revised D2 at measured size</span>
               </button>
               <div class="assessment">
                 <div><strong>Pros</strong></div>
                 <ul>
-                  <li>Changes the visually prominent separator between the two panes.</li>
-                  <li>Retains a visible boundary between the letter rail and folder names.</li>
+                  <li>Implements the white center and marked horizontal divider.</li>
+                  <li>Removes invented ordinals and saturated row highlighting.</li>
+                  <li>Retains the play icon and semantic current-track state.</li>
                 </ul>
                 <div><strong>Cons</strong></div>
                 <ul>
-                  <li>The center element is technically spacing rather than a 1dp line.</li>
-                  <li>White makes the two white pane surfaces read as more continuous.</li>
+                  <li>The current track is intentionally quieter without a filled row.</li>
+                  <li>White spacers make adjacent white surfaces read as continuous.</li>
                 </ul>
-                <p><strong>My read:</strong> first choice. It best matches the separator a viewer is likely to call “the divider.”</p>
+                <p><strong>My read:</strong> first choice. It is the only version that implements every current instruction.</p>
               </div>
             </article>
 
-            <article class="option">
-              <label class="option-heading">
-                <input type="radio" name="dividerTreatment" value="both-white" aria-labelledby="both-white-title" required>
-                <span class="option-title">
-                  <span class="option-code">D3</span>
-                  <strong id="both-white-title">Both white</strong>
-                  <span class="option-summary">Rail line and center spacer both become white</span>
-                </span>
-              </label>
-              <button class="preview-open" type="button" data-preview-title="D3: Both separators white" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-                <span class="device-frame">
-                  <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-c capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_C@@" width="852" height="883" alt="Whole unfolded device with both the thin rail line and the wide center spacer white">
-                    <span class="device-camera" aria-hidden="true"></span>
-                  </span>
-                </span>
-                <span class="preview-label">Open D3 at measured size</span>
-              </button>
-              <div class="assessment">
-                <div><strong>Pros</strong></div>
-                <ul>
-                  <li>Covers both possible meanings without another distinction.</li>
-                  <li>Removes gray separator color from both vertical boundaries.</li>
-                </ul>
-                <div><strong>Cons</strong></div>
-                <ul>
-                  <li>Neither boundary remains visibly drawn.</li>
-                  <li>Separation relies entirely on spacing and content alignment.</li>
-                </ul>
-                <p><strong>My read:</strong> second choice. It honors both readings but gives up the useful rail boundary.</p>
-              </div>
-            </article>
           </div>
         </div>
 
         <p class="ranking">
-          <strong>Ranking: D2 &gt; D3 &gt; D1.</strong>
-          D2 beats D3 because it changes the prominent center separator while retaining the useful thin rail boundary.
-          D3 beats D1 because it includes the center change that the rejected first interpretation omitted.
+          <strong>Ranking: revised D2 &gt; previous D2.</strong>
+          Revised D2 wins because it alone implements the marked white divider, removes invented numbers,
+          and removes the rejected saturated current-row fill.
         </p>
       </fieldset>
     </section>
 
     <section class="response" aria-labelledby="corrections-title">
-      <h2 id="corrections-title">What else is still wrong?</h2>
+      <h2 id="corrections-title">Can we continue from revised D2?</h2>
       <p class="question-intro">
         List every correction you can see. Refer to visible labels or locations in ordinary language.
         You do not need to use “baseline,” “full-frame,” component names, or design-system terminology.
       </p>
-      <label for="other-corrections">Other corrections, or “None”</label>
+      <label for="other-corrections">Every remaining correction, or “None”</label>
       <textarea id="other-corrections" name="otherCorrections" required placeholder="For example: The gray strip between the left and right panes should be white. The …"></textarea>
       <div class="actions">
         <button type="submit">Prepare answers</button>
@@ -867,7 +835,7 @@ const openPreview = (button) => {
 const buildAnswer = () => {
   const data = new FormData(form);
   return [
-    `Divider ${data.get('dividerTreatment')}`,
+    `Continue from ${data.get('reviewResult')}`,
     `Other corrections: ${data.get('otherCorrections').trim()}`,
   ].join('\n');
 };
@@ -917,7 +885,7 @@ clearButton.addEventListener('click', () => {
   answerOutput.value = '';
   output.hidden = true;
   status.textContent = 'Answers cleared.';
-  document.querySelector('input[name="dividerTreatment"]').focus();
+  document.querySelector('input[name="reviewResult"]').focus();
 });
 
 copyButton.addEventListener('click', async () => {

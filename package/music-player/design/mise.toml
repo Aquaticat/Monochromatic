@@ -3,9 +3,8 @@ build_question = '''
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
-  IMAGE_DIVIDER_A: 'questions/render/divider-a.png',
   IMAGE_DIVIDER_B: 'questions/render/divider-b.png',
-  IMAGE_DIVIDER_C: 'questions/render/divider-c.png',
+  IMAGE_DIVIDER_FINAL: 'questions/render/divider-final.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
 for (const [name, path] of Object.entries(renderPaths)) {
@@ -18,7 +17,7 @@ for (const [name, path] of Object.entries(renderPaths)) {
   output = output.replace(marker, dataUri);
 }
 writeFileSync(resolve('questions/current.html'), output);
-console.log('Built self-contained divider clarification questionnaire.');
+console.log('Built self-contained D2 correction review.');
 '''
 
 validate_question = '''
@@ -33,18 +32,16 @@ const requiredPaths = [
   'material-3-compliance.md',
   'questions/current.template.html',
   'questions/current.html',
-  'questions/render/divider-a.png',
   'questions/render/divider-b.png',
-  'questions/render/divider-c.png',
+  'questions/render/divider-final.png',
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
-  throw new Error(`Missing required divider-round files: ${missingPaths.join(', ')}`);
+  throw new Error(`Missing required D2 review files: ${missingPaths.join(', ')}`);
 }
 const renderPaths = [
-  'questions/render/divider-a.png',
   'questions/render/divider-b.png',
-  'questions/render/divider-c.png',
+  'questions/render/divider-final.png',
 ];
 for (const path of renderPaths) {
   const image = readFileSync(resolve(path));
@@ -99,7 +96,6 @@ const isBlack = ([red, green, blue]) => red === 0 && green === 0 && blue === 0;
 const isDark = ([red, green, blue]) => red < 128 && green < 128 && blue < 128;
 const isPrimary = ([red, green, blue]) => red === 76 && green === 94 && blue === 139;
 for (const path of renderPaths) {
-  const selectedRowPixel = pixelAt({ path, x: 1100, y: 350 });
   const statusIconPixels = countPixelsMatching({
     path,
     crop: '300x88+1700+0',
@@ -110,9 +106,6 @@ for (const path of renderPaths) {
     crop: '700x78+688+2074',
     predicate: isDark,
   });
-  if (selectedRowPixel !== 'srgba(185,203,255,1)') {
-    throw new Error(`${path} must keep the dynamic selected-track role pair.`);
-  }
   if (statusIconPixels < 1_500) {
     throw new Error(`${path} is missing native Android status icons.`);
   }
@@ -139,20 +132,45 @@ for (const path of renderPaths) {
 const white = 'srgba(255,255,255,1)';
 const surfaceDim = 'srgba(216,217,228,1)';
 const outlineVariant = 'srgba(176,177,188,1)';
-const railSeamA = pixelAt({ path: 'questions/render/divider-a.png', x: 117, y: 1000 });
-const railSeamB = pixelAt({ path: 'questions/render/divider-b.png', x: 117, y: 1000 });
-const railSeamC = pixelAt({ path: 'questions/render/divider-c.png', x: 117, y: 1000 });
-const centerA = pixelAt({ path: 'questions/render/divider-a.png', x: 1038, y: 1000 });
-const centerB = pixelAt({ path: 'questions/render/divider-b.png', x: 1038, y: 1000 });
-const centerC = pixelAt({ path: 'questions/render/divider-c.png', x: 1038, y: 1000 });
-if (railSeamA !== white || centerA !== surfaceDim) {
-  throw new Error('divider-a must show a white rail line with the tonal center spacer unchanged.');
+const beforeRail = pixelAt({ path: 'questions/render/divider-b.png', x: 117, y: 1000 });
+const beforeCenter = pixelAt({ path: 'questions/render/divider-b.png', x: 1038, y: 1000 });
+const beforeHorizontal = pixelAt({ path: 'questions/render/divider-b.png', x: 500, y: 1430 });
+const beforeSelectedRow = pixelAt({ path: 'questions/render/divider-b.png', x: 1100, y: 350 });
+const finalRail = pixelAt({ path: 'questions/render/divider-final.png', x: 117, y: 1000 });
+const finalCenter = pixelAt({ path: 'questions/render/divider-final.png', x: 1038, y: 1000 });
+const finalHorizontal = pixelAt({ path: 'questions/render/divider-final.png', x: 500, y: 1430 });
+const finalSelectedRow = pixelAt({ path: 'questions/render/divider-final.png', x: 1100, y: 350 });
+if (
+  beforeRail !== outlineVariant
+  || beforeCenter !== white
+  || beforeHorizontal !== surfaceDim
+  || beforeSelectedRow !== 'srgba(185,203,255,1)'
+) {
+  throw new Error('divider-b must preserve the exact annotated D2 before-state.');
 }
-if (railSeamB !== outlineVariant || centerB !== white) {
-  throw new Error('divider-b must show the outline-variant rail line with a white center spacer.');
+if (finalRail !== outlineVariant || finalCenter !== white || finalHorizontal !== white || finalSelectedRow !== white) {
+  throw new Error('divider-final must apply the gray rail, white pane spacers, and neutral current row.');
 }
-if (railSeamC !== white || centerC !== white) {
-  throw new Error('divider-c must show both the rail line and center spacer in white.');
+const beforeOrdinalPixels = countPixelsMatching({
+  path: 'questions/render/divider-b.png',
+  crop: '100x1200+1068+500',
+  predicate: isDark,
+});
+const finalOrdinalPixels = countPixelsMatching({
+  path: 'questions/render/divider-final.png',
+  crop: '100x1200+1068+500',
+  predicate: isDark,
+});
+const finalCurrentTrackIconPixels = countPixelsMatching({
+  path: 'questions/render/divider-final.png',
+  crop: '112x170+1068+300',
+  predicate: isPrimary,
+});
+if (beforeOrdinalPixels < 500 || finalOrdinalPixels !== 0) {
+  throw new Error('divider-final must remove interface-generated track ordinals shown in divider-b.');
+}
+if (finalCurrentTrackIconPixels < 300) {
+  throw new Error('divider-final must retain the Material play icon as the non-color current-track cue.');
 }
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
 const forbiddenFragments = [
@@ -168,25 +186,25 @@ const forbiddenFragments = [
 ];
 const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
 if (foundFragments.length > 0) {
-  throw new Error(`Divider form contains stale or external content: ${foundFragments.join(', ')}`);
+  throw new Error(`D2 review contains stale or external content: ${foundFragments.join(', ')}`);
 }
 const requiredFragments = [
   '<form',
   '<fieldset>',
   '<textarea',
   '<dialog',
-  'What to do',
-  'Rail line:',
-  'Center spacer:',
-  'name="dividerTreatment"',
+  'What changed',
+  'Before:',
+  'Revised:',
+  'name="reviewResult"',
   'name="otherCorrections"',
-  'value="rail-white"',
-  'value="center-white"',
-  'value="both-white"',
-  'Ranking: D2 &gt; D3 &gt; D1.',
-  'Other corrections, or “None”',
+  'value="d2-before"',
+  'value="d2-revised"',
+  'Ranking: revised D2 &gt; previous D2.',
+  'Every remaining correction, or “None”',
   'Copy answers',
   'prototype commit 89a9f7033',
+  'prototype commit 49d6568ed',
   'data-preview-width="852"',
   'data-preview-height="883"',
   'data-source-width="2076"',
@@ -199,34 +217,34 @@ const requiredFragments = [
 ];
 const absentFragments = requiredFragments.filter((fragment) => !question.includes(fragment));
 if (absentFragments.length > 0) {
-  throw new Error(`Divider form is incomplete: ${absentFragments.join(', ')}`);
+  throw new Error(`D2 review is incomplete: ${absentFragments.join(', ')}`);
 }
 const imageCount = question.split('data-candidate-source=').length - 1;
 const embeddedImageCount = question.split('data:image/png;base64,').length - 1;
 const frameCount = question.split('class="device-frame"').length - 1;
 const screenCount = question.split('class="device-screen"').length - 1;
 const cameraCount = question.split('class="device-camera"').length - 1;
-const radioCount = question.split('type="radio" name="dividerTreatment"').length - 1;
-if (imageCount !== 3 || embeddedImageCount !== 3) {
-  throw new Error(`Expected three sourced and embedded renders, found ${imageCount} sources and ${embeddedImageCount} images.`);
+const radioCount = question.split('type="radio" name="reviewResult"').length - 1;
+if (imageCount !== 2 || embeddedImageCount !== 2) {
+  throw new Error(`Expected two sourced and embedded renders, found ${imageCount} sources and ${embeddedImageCount} images.`);
 }
-if (frameCount !== 3 || screenCount !== 4 || cameraCount !== 4 || radioCount !== 3) {
-  throw new Error(`Expected three cards plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, ${cameraCount} cameras, and ${radioCount} radios.`);
+if (frameCount !== 2 || screenCount !== 3 || cameraCount !== 3 || radioCount !== 2) {
+  throw new Error(`Expected two cards plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, ${cameraCount} cameras, and ${radioCount} radios.`);
 }
-console.log('Divider clarification questionnaire structure is valid.');
+console.log('D2 correction review structure is valid.');
 '''
 
 [tasks.build]
-description = "Embed native divider alternatives into the self-contained clarification form"
+description = "Embed native D2 before-and-after renders into the self-contained review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active divider clarification questionnaire"
+description = "Validate the active D2 correction review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the divider clarification form's static completion contract"
+description = "Exercise the D2 correction review's static completion contract"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
