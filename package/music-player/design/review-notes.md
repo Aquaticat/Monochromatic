@@ -292,7 +292,9 @@ display at the cited dp dimensions at 100%, and expose physical px, logical dp,
 current scale and a reset control. Never upscale a dp-sized bitmap. Keep the device
 silhouette realistic and opaque: use a measured target-specific chassis, bezel,
 hinge and corner treatment; place the screenshot inside its screen opening; never
-clip it to reveal the questionnaire surface. Chat may report that the round is ready;
+clip it to reveal the questionnaire surface. Android mocks always include the target's
+status bar and navigation bar; keep app controls out of cutouts and system insets.
+Chat may report that the round is ready;
 it never substitutes for the form.
 
 **Handover timing.** The user then instructed: "Update the handover as you go."

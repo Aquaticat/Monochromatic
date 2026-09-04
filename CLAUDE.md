@@ -442,6 +442,11 @@ hinge + corners.
 Place screenshot inside screen opening;
 never clip it to reveal page.
 
+ANB:
+ Android device mocks show status + navigation bars with current target geometry.
+Keep app controls out of cutouts and system insets;
+screen dimensions include these bars.
+
 HUP:
  Ongoing design sessions:
  update current handover after each correction,

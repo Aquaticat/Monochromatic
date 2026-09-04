@@ -284,9 +284,12 @@ report 1704 × 1766 and 836 × 1766 display pixels respectively. A matching-scal
 side-by-side inspection against the supplied 629 × 650 front reference confirmed the
 silhouette, bezel, corner, camera and hinge placement. Three throwaway positive
 controls also passed: the validator rejected a transparent chassis, CSS rounding on
-the source raster, and the old half-screen inset. The remaining action is to rerun the
-complete form, accessibility, mobile-scroller and offline checks, then reopen the
-questionnaire in the user's normal Helium session. No theme answer has been recorded.
+the source raster, and the old half-screen inset. Before that verification finished, the user added: “Please do not forget the Android
+bars.” The present candidate rasters do not yet show either system bar, so they are not
+ready to reopen. Add measured Pixel/Android status and gesture-navigation bars inside
+the 852 × 883dp screen coordinate system, keep the app UI and camera cutout out of each
+other's safe areas, rerender all six candidates, and repeat verification. No theme
+answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
