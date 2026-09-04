@@ -246,7 +246,8 @@ await describe({
 
         it({
           name: 'PICKS THE DOMINANT FORM and breaks a tie towards 她, then 他, then TA, counting TA '
-            + 'case-sensitively so a romanised handle does not count',
+            + 'in every spelling the sources use (TA in 2 entries, Ta in 7, ta in 8 of the pinned '
+            + 'corpus; the SS3B_0016 page of 2026-09-04 shipped a bare Ta the counter had not seen)',
           fn: async () => {
             expect(sourcePronounLines({ text: '他来了。他走了。她笑了。', },),)
               .toEqual(['- pronoun: ORIGINAL refers to this person as "他" (2 times)',],);
@@ -254,6 +255,19 @@ await describe({
               .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
             expect(sourcePronounLines({ text: 'TA来了。TA走了。alias: catalog', },),)
               .toEqual(['- pronoun: ORIGINAL refers to this person as "TA" (2 times)',],);
+            expect(sourcePronounLines({ text: 'Ta 来了。ta 走了。TA 笑了。她说。', },),)
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "TA" (3 times)',],);
+          },
+        },),
+
+        it({
+          name: 'LEAVES THE PLURAL OUT: TA 们, with or without the space, is "they" for several '
+            + 'people and not the subject\'s pronoun, so a page about a woman that mentions '
+            + 'them once still reads 她',
+          fn: async () => {
+            expect(sourcePronounLines({ text: '她来了。Ta 们走了。TA们笑了。', },),)
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
+            expect(sourcePronounLines({ text: 'Ta 们走了。', },),).toEqual([],);
           },
         },),
 

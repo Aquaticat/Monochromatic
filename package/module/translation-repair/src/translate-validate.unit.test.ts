@@ -59,6 +59,29 @@ In the morning it dozes on the windowsill[^1].
     },),
 
     it({
+      name: 'REPORTS the neutral pronoun left untranslated, naming the spelling and its count, and stays '
+        + 'quiet on the same letters inside a word or a handle (SS3B_0016 slice 5, 2026-09-04: "a small '
+        + 'room for Ta" shipped on a page that says they everywhere else)',
+      fn: async () => {
+        const verdict = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: `## A Day in the Cat's Life
+
+In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
+
+[^1]: The windowsill faces east.`,
+        },);
+
+        expect(verdict.kind,).toBe('invalid',);
+        if (verdict.kind !== 'invalid')
+          throw new Error('expected invalid',);
+        expect(verdict.findings.length,).toBe(1,);
+        expect(verdict.findings[0],).toContain('untranslated as "Ta" (2 times)',);
+        expect(verdict.findings[0],).toContain('singular they',);
+      },
+    },),
+
+    it({
       name: 'REPORTS a backslash before a quotation mark as a JSON escape leaked into the text, and stays '
         + 'quiet where the original or the page carries the sequence itself: the Carena0442 page of '
         + '2026-09-02 shipped `so-called \\"common sense.\\"` through every guard',

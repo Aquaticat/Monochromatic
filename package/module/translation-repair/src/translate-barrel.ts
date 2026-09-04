@@ -254,6 +254,7 @@ export {
   atomFindings,
   renderingPoolsOf,
 } from './translate-atom-rendering.ts';
+export { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 export { wrapTranslateRecords, } from './translate-wrap.ts';
 
 //endregion Translate barrel

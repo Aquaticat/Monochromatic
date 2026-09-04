@@ -5,6 +5,7 @@ import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
 import { atomFindings, } from './translate-atom-rendering.ts';
+import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 import {
   type BlockShape,
   readSliceSkeleton,
@@ -437,6 +438,7 @@ export function validateTranslatedSlice(
       candidate: actual.atoms,
       referenceName: atomSource,
     },),
+    ...neutralPronounFindings({ candidateText, },),
   ];
   if (findings.length === 0)
     return {

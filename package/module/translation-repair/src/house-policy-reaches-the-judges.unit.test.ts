@@ -108,6 +108,16 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge what English makes of the neutral pronoun TA, Ta or ta (SS3B_0016 slice 5, '
+        + 'read 2026-09-04: three of five contest ballots kept a bare "Ta" as "the original\'s neutral '
+        + 'Ta" on a page that says they everywhere else)',
+      fn: async () => {
+        expect(system.includes('spelled TA, Ta or ta',),).toBe(true,);
+        expect(system.includes('English renders it as singular they',),).toBe(true,);
+        expect(system.includes('an untranslated word, not a preserved choice',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'KEEPS the criteria ahead of the policy in the sheet',
       fn: async () => {
         // The criteria decide; the policy qualifies them. A block arriving

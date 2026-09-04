@@ -215,9 +215,8 @@ function renderField(
  * Third-person singular pronouns a Chinese original can use for its subject,
  * in the order a tie is broken.
  *
- * `TA` IS THE NEUTRAL FORM this corpus writes for a person who did not specify;
- * it is counted case-sensitively because `ta` inside a romanised handle is not
- * a pronoun.
+ * `TA` IS THE NEUTRAL FORM this corpus writes for a person who did not specify,
+ * in any casing; the word boundary keeps `ta` inside a romanised handle out.
  */
 const SOURCE_PRONOUNS = [
   '她',
@@ -313,28 +312,87 @@ function countHanPronoun(
 const NOT_FOUND = -1;
 
 /**
- * Counts how often `TA` stands as a word of its own, not inside a Latin word.
+ * Spellings the sources give the neutral pronoun.
+ *
+ * ALL THREE CASINGS ARE THE PRONOUN. Measured over the pinned corpus on
+ * 2026-09-04, after the SS3B_0016 page shipped a bare "Ta" the counter had not
+ * seen: sources write `TA` in 2 entries, `Ta` in 7 and `ta` in 8, every
+ * occurrence the pronoun. The word boundary, not the casing, keeps DATA,
+ * STATION and a romanised handle out of the count.
+ */
+const NEUTRAL_SPELLINGS = [
+  'TA',
+  'Ta',
+  'ta',
+] as const;
+
+/**
+ * Character that makes the neutral pronoun plural: `TA 们` is "they" for
+ * several people, not the subject's own pronoun, and six sources write it.
+ */
+const PLURAL_SUFFIX = '们';
+
+/**
+ * Whether an occurrence is followed, spaces aside, by the plural suffix.
+ *
+ * @param text - original document
+ *
+ * @param from - position just after the occurrence
+ *
+ * @returns Whether 们 is the next non-space character
+ *
+ * @example
+ * ```ts
+ * isPluralAfter({ text: 'TA 们来了', from: 2, },);
+ * // => true
+ * ```
+ */
+function isPluralAfter(
+  {
+    text,
+    from,
+  }: {
+    readonly text: string;
+    readonly from: number;
+  },
+): boolean {
+  /**
+   * Position of the next non-space character, found by one forward cursor.
+   */
+  let cursor = from;
+  while (text.charAt(cursor,) === ' ')
+    cursor += 1;
+  return text.charAt(cursor,) === PLURAL_SUFFIX;
+}
+
+/**
+ * Counts how often one spelling of the neutral pronoun stands as a word of
+ * its own, singular.
  *
  * ONE LINEAR PASS over the text with the string API: each occurrence is found
  * from the previous one and its neighbours are read once.
  *
  * @param text - original document
  *
- * @returns Occurrences bounded by non-letters
+ * @param spelling - fixed form to count
+ *
+ * @returns Occurrences bounded by non-letters and not made plural
  *
  * @example
  * ```ts
- * countNeutralPronoun({ text: 'TA来了。DATA', },);
+ * countNeutralSpelling({ text: 'TA来了。DATA', spelling: 'TA', },);
  * // => 1
  * ```
  */
-function countNeutralPronoun(
-  { text, }: { readonly text: string; },
+function countNeutralSpelling(
+  {
+    text,
+    spelling,
+  }: {
+    readonly text: string;
+    readonly spelling: string;
+  },
 ): number {
-  /**
-   * The form counted.
-   */
-  const form = 'TA';
   /**
    * Occurrences and the position to search from, advanced together.
    */
@@ -344,12 +402,12 @@ function countNeutralPronoun(
   };
   for (
     let at = text.indexOf(
-      form,
+      spelling,
       scan.from,
     );
     at !== NOT_FOUND;
     at = text.indexOf(
-      form,
+      spelling,
       scan.from,
     )
   ) {
@@ -357,12 +415,50 @@ function countNeutralPronoun(
      * Whether letters sit either side, which makes this a longer word.
      */
     const insideWord = isLatinLetter({ character: text.charAt(at - 1,), },)
-      || isLatinLetter({ character: text.charAt(at + form.length,), },);
-    if (!insideWord)
+      || isLatinLetter({ character: text.charAt(at + spelling.length,), },);
+    /**
+     * Whether the occurrence is the plural, which is not the subject's pronoun.
+     */
+    const plural = isPluralAfter({
+      text,
+      from: at + spelling.length,
+    },);
+    if (!insideWord && !plural)
       scan.count += 1;
-    scan.from = at + form.length;
+    scan.from = at + spelling.length;
   }
   return scan.count;
+}
+
+/**
+ * Counts how often the neutral pronoun stands as a word of its own, in any of
+ * its spellings.
+ *
+ * @param text - original document
+ *
+ * @returns Occurrences across TA, Ta and ta
+ *
+ * @example
+ * ```ts
+ * countNeutralPronoun({ text: 'TA来了。Ta 走了。DATA', },);
+ * // => 2
+ * ```
+ */
+function countNeutralPronoun(
+  { text, }: { readonly text: string; },
+): number {
+  return NEUTRAL_SPELLINGS.reduce(
+    function summed(
+      total,
+      spelling,
+    ): number {
+      return total + countNeutralSpelling({
+        text,
+        spelling,
+      },);
+    },
+    0,
+  );
 }
 
 /**
