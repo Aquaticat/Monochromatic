@@ -719,6 +719,16 @@ Footnotes diverge in one direction only (5 pages add one, 1 drops one), never bo
 none of the eight can ship: the archive's paragraph is ineligible, and no rendering carries both destinations
 without inventing a link.
 
+Tally: `TALLY luxuanwen3 status=ERROR ms=2724158` at 10:08 UTC, 587 OpenRouter calls, 2.01 USD by the log's
+`cost=` fields, balance 25.79 USD after. The in-flight consolidation buys for slices 2 to 4 ran on for
+11 minutes after the slice 1 error before the tally; the stop is at the slice, not the process.
+
+What the tally exposed next: `entryErrorOutcome` classed `ConsolidationStandingIneligibleError` as a
+resumable failure, so the pass logged `REATTEMPT luxuanwen3 queued` and started the lanes again at
+10:08:12 UTC against the same deterministic refusal; it was stopped by hand at 10:09 and the error joined
+the stopped list (`ae1d2b55f`, guard shown to fail without it). The log now names both verdicts and their
+findings (`558b46e11`).
+
 Question put to the owner: which rendering a candidate owes where the archive rewrote a destination.
 
 ## Build plan, transport-independent layers first

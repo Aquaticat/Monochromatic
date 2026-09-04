@@ -155,3 +155,25 @@ one pass each over an entry with double-quoted paths that the fix has not yet ru
 `Arita` or `MTF_0615`) and one with the comma-shaped one-line element, both read the same way; the ModelRun
 seat decided; and the picture gather's straggler wait re-read once those passes have run three-reader
 pictures. Each of those is a pass and a reading, not a build.
+
+## What the luxuanwen3 re-run of 2026-09-04 showed
+
+Run on the containment and withheld-standing build (`592562992`), OpenRouter alone, read in
+`doc/planning/translation-repair-openrouter-2026-09-03.md` ("The luxuanwen3 re-run, 2026-09-04"). Two of
+the morning's fixes held: the archive-shaped front matter passed every gate, and the withheld-standing rule
+stopped the entry at the first slice nothing valid could fill, 34 minutes and 2.01 USD in, where the pass
+before had run 63 minutes to the page guard.
+
+WHAT IT FOUND: a fourth defect class of the day, and the first one the corpus carries in eight entries
+that no pass had touched. Where the archive rewrote a link destination (`twitter.com` to `x.com` here,
+Chinese Wikipedia to English Wikipedia in two others), the deterministic floor owes both URLs, so the
+archive's own paragraph is ineligible and no candidate can pass. Behind it, a scheduler defect: the
+deterministic refusal was classed resumable and the pass reattempted the entry at once. Both are recorded
+there; the destination rule is the owner's decision (asked 2026-09-04) and the reattempt is fixed.
+
+THE READING: unchanged, not yet ready, and the reason is sharper. The rate of new classes per pass has not
+fallen: this pass found one in a shape the census can enumerate (8 of 93 entries), which means the next
+passes should be chosen by census rather than by convenience. What would move the belief now: the
+destination rule decided and luxuanwen3 shipped under it; one pass over a second entry from the census
+(shihai4h or SS3B_0016, the Wikipedia shape) read the same way; then the two passes the previous section
+asked for.
