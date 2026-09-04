@@ -388,7 +388,14 @@ questionnaire was then opened through the Helium desktop entry in the user's nor
 session. KWin reports a non-minimized `Music player design: grilling round 1 - Helium`
 window at 1080 × 1880 on output `DP-2`; a one-shot KWin activation targeted that exact
 window. The form is blank and ready for the user's real theme answers. No theme answer
-has been recorded yet.
+has been recorded yet. The user then reported that the double-wrap defect remains on
+the left side. The prior correction was too narrow: keeping rounded picker and
+transport containers still places app-level wrappers inside the already bounded device
+screen. Remove those left-side outer card shapes and surrounding screen margins too.
+Picker and transport may retain their internal component shapes, but their section
+surfaces must meet the left-half and screen boundaries without a second rounded frame.
+Re-capture, re-embed, re-verify, and reopen the blank questionnaire before asking for
+theme answers.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
