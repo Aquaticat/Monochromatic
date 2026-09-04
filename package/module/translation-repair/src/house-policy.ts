@@ -83,6 +83,8 @@ const FORCED_DIFFERENCES =
  */
 const JUDGE_POLICY_TAIL = `Hold it against a candidate only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports. WHERE THE FORCED CHOICE IS TENSE, THE ORIGINAL SUPPORTS NEITHER READING AND THE ENGLISH IS THE AUTHORITY INSTEAD: the tense the rest of the passage holds, and the tense the text being replaced had already chosen. Name that instead of the ORIGINAL, and a candidate that disagrees with itself inside one sentence is wrong with no further evidence needed.
 
+WHERE THE FORCED CHOICE IS A PRONOUN FOR A SUBJECT THE ORIGINAL LEAVES UNSTATED, AN UNSTATED SUBJECT IS NOT A NEUTRAL PRONOUN. A subjectless sentence about the person takes the pronoun the page uses for them, so a candidate supplying that pronoun has invented nothing, and a candidate putting a neutral pronoun there on a page that uses her or his pronoun has made the WRONG choice. Only where the WHOLE ORIGINAL uses a neutral pronoun or avoids pronouns for the person is the neutral rendering the right one.
+
 WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. A candidate vaguer than the ORIGINAL because reader protection asks for it has left nothing out, and a candidate naming what it points at rather than where it sits on the page is obeying a rule rather than departing from the text.`;
 
 /**

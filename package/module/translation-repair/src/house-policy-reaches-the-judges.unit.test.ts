@@ -98,6 +98,16 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge that an unstated subject is not a neutral pronoun (Toka_ls slice 9, read '
+        + '2026-09-02: eight of eight ballots chose "they" for a subjectless sentence on a page that says '
+        + 'she, and the contest called the gendered pronoun an invention)',
+      fn: async () => {
+        expect(system.includes('AN UNSTATED SUBJECT IS NOT A NEUTRAL PRONOUN',),).toBe(true,);
+        expect(system.includes('has invented nothing',),).toBe(true,);
+        expect(system.includes('a neutral pronoun there on a page that uses her or his pronoun has made the WRONG choice',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'KEEPS the criteria ahead of the policy in the sheet',
       fn: async () => {
         // The criteria decide; the policy qualifies them. A block arriving
