@@ -457,9 +457,7 @@ private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette
     ) {
         Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         FolderPicker(
-            modifier = Modifier
-                .weight(1f)
-                .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start)),
+            modifier = Modifier.weight(1f),
             palette = palette,
         )
         Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.window))
@@ -483,6 +481,9 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
             title = {
                 Text(text = "Folders")
             },
+            modifier = Modifier.windowInsetsPadding(
+                WindowInsets.systemGestures.only(WindowInsetsSides.Start),
+            ),
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = palette.picker,
                 scrolledContainerColor = palette.picker,
@@ -492,6 +493,7 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start))
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
