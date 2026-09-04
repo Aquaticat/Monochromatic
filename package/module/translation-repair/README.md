@@ -1590,6 +1590,9 @@ the metadata slice sits at slice zero over both sides' front-matter bytes,
 the page parses,
 the identity and attribution rules hold,
 and the page's visible name is not the directory id where the source names the person differently (`directory-id-name`, checked on the assembled page whether or not it equals the archive; since `6d85b619a` a handle that is the name in both languages, as for 8 of the pinned corpus's 92 entries, passes).
+Since `6bfe6da56` (2026-09-04, two owner decisions after the luxuanwen3 pass lost a full run to its front matter) the identity rule reads containment:
+where the source declares `name` and `info.alias` the same, the translated name must appear among the comma-separated renderings of the translated alias, which may carry the original script beside it (7 of the 14 such archives at the pinned corpus do),
+and consolidation withholds a standing text the deterministic gate refused from its slate, failing the slice under `ConsolidationStandingIneligibleError` when nothing valid ships rather than letting the page guard refuse the entry after the run has been paid for (`doc/decision/translation-repair-ineligible-standing.md`).
 Whether the lanes kept the archive's metadata is not the guard's question:
 Chinese and English metadata always differ,
 so the 2026-08-28 byte comparison fired on every kept incumbent and discarded the Carena0442 pass,
