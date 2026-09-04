@@ -287,9 +287,10 @@ you then open in Helium."
 Helium. Embed every visual candidate, option assessment, ranked recommendation and
 answer control in the file. End with free text. Require no external stylesheet,
 script, font or server. Render, inspect and exercise the form before opening it. Every
-device mock must zoom to its cited target dimensions and expose its current scale plus
-a reset control. Chat may report that the round is ready; it never substitutes for the
-form.
+device mock must use a raster captured at the cited physical panel resolution,
+display at the cited dp dimensions at 100%, and expose physical px, logical dp,
+current scale and a reset control. Never upscale a dp-sized bitmap. Chat may report
+that the round is ready; it never substitutes for the form.
 
 **Handover timing.** The user then instructed: "Update the handover as you go."
 Record every correction, answer, decision, candidate and verification result in
@@ -344,9 +345,10 @@ HANDOFF.md when it happens. Never wait until the session ends.
 9. **Every design-question round is one self-contained HTML form opened in Helium.**
    Embed the built visual options, pros, cons, ranked recommendation, answer controls
    and final free-text field. Require no external stylesheet, script, font or server.
-   Render, inspect and exercise it before opening it. Every device mock must zoom to
-   its cited target dimensions and show its current scale plus a reset control.
-   Chat-only delivery is invalid.
+   Render, inspect and exercise it before opening it. Every device mock must use a
+   raster captured at cited physical panel resolution, display at cited dp dimensions
+   at 100%, and show physical px, logical dp, current scale and a reset control. Never
+   upscale a dp-sized bitmap. Chat-only delivery is invalid.
 10. **Update HANDOFF.md continuously.** Record each correction, answer, decision,
     candidate and verification result when it happens. Never defer updates until the
     end of a session. 

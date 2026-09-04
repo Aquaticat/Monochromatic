@@ -426,9 +426,13 @@ Include built options,
  and final free text.
 
 ZDV:
- Device mockups in question forms:
- make each zoomable to cited target dimensions;
-show current scale + reset control.
+ Device mockups:
+ capture at cited physical px;
+display 100% at cited dp;
+show px,
+dp,
+current scale + reset.
+Never upscale a dp-sized bitmap.
 
 HUP:
  Ongoing design sessions:

@@ -118,9 +118,10 @@ project holds itself to.
   Embed its visual candidates, pros, cons, ranked recommendation and free-text field;
   require no external stylesheet, script, font or server. Render it, inspect it and
   exercise its answer controls before opening it for the user. Every device mock must
-  zoom to its cited target dimensions and show its current scale plus a reset control.
-  A chat-only round is not a delivered design question (review-notes 5i and standing
-  standard 9).
+  use a raster captured at cited physical panel resolution, display at cited dp size
+  at 100%, and show physical px, logical dp, current scale and a reset control. Never
+  upscale a dp-sized bitmap. A chat-only round is not a delivered design question
+  (review-notes 5i and standing standard 9).
 - **Update this handover continuously.** Record every correction, answer, decision,
   candidate and verification result when it happens; never wait for the session end
   (review-notes standing standard 10).
@@ -223,7 +224,14 @@ throwaway-worktree positive control replaced an 852×883 render with a 418×883 
 the dimension guard rejected it with the expected diagnostic, while the unchanged
 fixture passed. The corrected form was reopened through the Helium desktop entry at
 its repository `file://` URL; the existing Helium session accepted the launch and its
-process remains active. No theme answer has been recorded.
+process remains active. The user then reported that the reopened candidates look
+blurry and correctly noted that the Pixel 9 Pro Fold is not a low-resolution device.
+The prior capture conflated dp with source pixels: full candidates are only 852×883px
+instead of the panel's 2076×2152px; half-screen studies are only 418×883px instead of
+approximately 1019×2152px. A repeated PNG-header probe reproduces all six failures.
+Re-render every source at physical pixel density, preserve 852×883dp or 418×883dp as
+the 100% display size, expose both units, then rerun the Helium probe. No theme answer
+has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
