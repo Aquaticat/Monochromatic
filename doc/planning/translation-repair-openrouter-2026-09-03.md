@@ -474,6 +474,35 @@ alone (`~/temp/agent/openrouter-live5-20260903.log`):
     unparsed stage label. 5 of 11 in all, and no `PROMPT-REUSE source=memory` after any of them: the
     nudge makes the digest new every time. Issue 473 closed on this measurement.
 
+## The picture passes, 2026-09-04, and the double-quote undercount
+
+Two picture-bearing entries were launched on OpenRouter alone, concurrently with the Toka_ls pronoun
+re-run (Synthetic wet, Hyper unset), at the owner's instruction that OpenRouter has no meaningful rate
+limits: Hangmster at 04:26 UTC (`~/temp/agent/hangmster-pictures-20260904.log`, one picture) and
+BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two of them carrying text).
+
+- **BI4PBV's picture stage took one millisecond and said nothing.** `JUDGE SEATS phase=pictures` at
+    04:29:16.205, `phase=lanes` at 04:29:16.206, and no `gathered N of M pictures` or `reading N pictures`
+    line between them, where Hangmster's log has both. Its `page.md` writes its `PhotoScroll` paths in
+    double quotes, one per line; `photo-reference.ts` read single-quoted strings only, so the slices
+    showed no pictures, and `assertVisualEvidenceComplete`, asking the same reader, found nothing missing.
+    Measured at pin `a41fc607` over the source pages: 192 single-quoted paths across 47 entries, 7
+    double-quoted across 4 (`yulianNyanner`, `MTF_0615`, `Arita`, `BI4PBV`), no third form.
+- **Fixed in `5e013d24b`**: either mark opens a string and only the same mark closes it, so a caption in
+    one mark beside paths in the other, or an apostrophe inside a double-quoted name, cannot split a
+    path. Three new guards (the multi-line double-quoted array, a page mixing both marks, the caption and
+    apostrophe cases) shown to fail with the double mark neutralised: the captioned case then read the
+    apostrophe in the caption as an opening quote and lost the path entirely. Suite 922, lint and types
+    clean.
+- **BI4PBV relaunched on the fixed build at 04:43:35** (`~/temp/agent/bi4pbv-pictures2-20260904.log`,
+    fresh runs dir): `gathered 4 of 4 pictures`, `reading 4 pictures`, `image0.webp: no text (0
+    characters, under 16)` so no model was asked for it, `image1.webp: read 52 characters without a
+    model` then `minimax-m3 read image1.webp: 251 characters`. The first pass runs on as a no-picture
+    control. Readings, page and the no-Kimi check follow on the tallies.
+- The undercount was invisible from the run log, which is the lesson worth keeping: a stage that finds
+    nothing to do logs nothing, and the completeness guard shared the parser's blind spot. The seats line
+    is what made it visible, by putting a timestamp on each side of the stage.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
