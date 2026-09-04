@@ -187,8 +187,9 @@ free-text, prepare, copy, download and clear path was exercised; the prepared an
 downloaded answer matched `Q1 1c / Q2 3b / Q3 None.`. The light page stayed light
 under a forced dark host. Axe reported zero WCAG A/AA violations; its remaining
 incomplete result is contrast automation unable to resolve overlapping miniature
-content, not a reported failure. The next action is to open the verified form in
-Helium.
+content, not a reported failure. The verified form was then opened through the Helium
+desktop entry at its repository `file://` URL; the launch command returned success and
+the Helium process is active. Work now waits for the user's answers from that form.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
