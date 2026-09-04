@@ -289,7 +289,24 @@ bars.” The present candidate rasters do not yet show either system bar, so the
 ready to reopen. Add measured Pixel/Android status and gesture-navigation bars inside
 the 852 × 883dp screen coordinate system, keep the app UI and camera cutout out of each
 other's safe areas, rerender all six candidates, and repeat verification. No theme
-answer has been recorded.
+answer has been recorded. The user then supplied
+`/var/home/user/Downloads/gsmarena_052.jpg`, a 1024 × 682 JPEG showing the unfolded
+inner display head-on enough to verify the system UI. It visibly confirms a left-side
+time and notification group, right-side connectivity and battery icons immediately
+before the top-right camera, and edge-to-edge content behind that transparent status
+area. It is a measurement reference only and carries a visible GSMArena watermark, so
+do not embed it. Authoritative Pixel overlays and AOSP resources, not perspective in
+the photograph, remain the source for implementation dimensions. The user also has
+a working Pixel 9 Pro Fold emulator installed on this system. Exercise that emulator
+before implementation and use live screenshots, `wm` metrics, display cutout data and
+window-inset probes to validate the overlay-derived system-bar geometry; its unusual
+launch path is an environment detail to measure rather than a reason to skip it. The
+user then corrected the verification strategy: build the non-functional candidate UI
+in Jetpack Compose, install it on the Pixel 9 Pro Fold emulator, and compare the
+result there. Do not treat CSS drawings with simulated bars as sufficient. Use native
+Compose edge-to-edge layout and live Android window insets, capture each visual option
+from the emulator at the panel's 2076 × 2152px resolution, and use those captures in
+the questionnaire only after side-by-side inspection.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

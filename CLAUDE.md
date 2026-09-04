@@ -447,6 +447,12 @@ ANB:
 Keep app controls out of cutouts and system insets;
 screen dimensions include these bars.
 
+AVP:
+ Android screen comparisons:
+build a nonfunctional Compose prototype,
+install on target emulator,
+and capture each candidate at panel px before HTML presentation.
+
 HUP:
  Ongoing design sessions:
  update current handover after each correction,
