@@ -306,7 +306,12 @@ in Jetpack Compose, install it on the Pixel 9 Pro Fold emulator, and compare the
 result there. Do not treat CSS drawings with simulated bars as sufficient. Use native
 Compose edge-to-edge layout and live Android window insets, capture each visual option
 from the emulator at the panel's 2076 × 2152px resolution, and use those captures in
-the questionnaire only after side-by-side inspection.
+the questionnaire only after side-by-side inspection. The user explicitly chose the
+higher-fidelity delivery path: capture the Compose candidates and embed those emulator
+screenshots in the self-contained HTML questionnaire. The old HTML Design Component
+rasters are no longer the visual source for this round; keep their candidate files as
+history, but point the questionnaire provenance and render pipeline at the Compose
+captures.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
