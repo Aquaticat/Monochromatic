@@ -50,6 +50,12 @@ export const READING_INSTRUCTION: string = 'Transcribe every word visible in thi
   + 'add any commentary. If you cannot read the image, say so plainly and say nothing else.';
 
 /**
+ * How much of a refused reply the log keeps: enough for the sentence that
+ * refused, which the screen measured at 27 and 41 characters.
+ */
+const REFUSED_OPENING_CHARS = 160;
+
+/**
  * Substantively distinct visual reading responsibilities in retry order.
  */
 export const IMAGE_READING_PERSPECTIVES = [
@@ -285,9 +291,29 @@ export async function readImageAsset(
    */
   const verdict = readingMakesSense({ reading: reply.text, },);
   if (verdict.kind === 'refused') {
-    rl.warn(
-      `${modelId} read ${assetName} but the reading was refused: ${verdict.clause}`,
+    // THE OPENING IS LOGGED because a refused reply carries the model's words
+    // about the picture, never the picture's own text, and the Uekawakuyuurei
+    // run of 2026-09-04 (15:03 UTC) could not tell from "reads-as-refusal"
+    // alone whether three readers had declined to read or had reported that
+    // a painting carries no text.
+    /**
+     * Reply without its surrounding whitespace.
+     */
+    const trimmed = reply.text.trim();
+
+    /**
+     * Opening of the reply.
+     */
+    const sliced = trimmed.slice(
+      0,
+      REFUSED_OPENING_CHARS,
     );
+
+    /**
+     * Opening quoted for the log.
+     */
+    const opening = JSON.stringify(sliced,);
+    rl.warn(`${modelId} read ${assetName} but the reading was refused: ${verdict.clause}; it opened ${opening}`,);
     return {
       kind: 'unavailable',
       reason: verdict.clause,
