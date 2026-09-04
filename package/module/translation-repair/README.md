@@ -1593,6 +1593,9 @@ and the page's visible name is not the directory id where the source names the p
 Since `6bfe6da56` (2026-09-04, two owner decisions after the luxuanwen3 pass lost a full run to its front matter) the identity rule reads containment:
 where the source declares `name` and `info.alias` the same, the translated name must appear among the comma-separated renderings of the translated alias, which may carry the original script beside it (7 of the 14 such archives at the pinned corpus do),
 and consolidation withholds a standing text the deterministic gate refused from its slate, failing the slice under `ConsolidationStandingIneligibleError` when nothing valid ships rather than letting the page guard refuse the entry after the run has been paid for (`doc/decision/translation-repair-ineligible-standing.md`).
+Since `82888d43b` (2026-09-04, owner's decision after the re-run stopped at its first paragraph) a reference the archive rendered another way is owed once, not twice:
+per atom kind, the atoms only the original carries and the atoms only the page carries form one pool and a candidate owes the larger side's count from it, drawn from either side (luxuanwen3 links `x.com` where its original links `twitter.com`; 8 of the 93 entries carry such a rewrite), while a one-way divergence stays an addition or a drop owed as before (`doc/decision/translation-repair-rewritten-destination.md`).
+The run log names which verdict refused a standing (`fails the deterministic publication rule`, with the findings, or `lacks contest endorsement`) and a contest winner's findings (`558b46e11`), and an ineligible standing stops the entry instead of queueing a reattempt of the same refusal (`ae1d2b55f`).
 Whether the lanes kept the archive's metadata is not the guard's question:
 Chinese and English metadata always differ,
 so the 2026-08-28 byte comparison fired on every kept incumbent and discarded the Carena0442 pass,
