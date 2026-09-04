@@ -404,7 +404,13 @@ The background stays full bleed while its potential controls begin after the emu
 candidates assemble, install and capture successfully. Individual inspection confirms
 square section boundaries at every screen edge, one 39px inter-section gap, one 39px
 centre seam, native status and gesture-navigation bars, and no remaining app-level
-rounded wrapper. The corrected captures are copied into `questions/render/`.
+rounded wrapper. The corrected captures are copied into `questions/render/`, embedded
+into the rebuilt form, and accepted by package lint and unit checks. Two fresh
+throwaway positive controls prove the left-side guards: changing the top-left picker
+pixel to the window colour yields `questions/render/light-c.png still double-wraps one
+or more full-height screen sections.`; extending the window-coloured inter-section gap
+by one pixel yields `questions/render/light-c.png must keep exactly one 39px
+inter-section gap without outer margins.`. The restored fixture passes.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
