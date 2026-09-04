@@ -157,10 +157,18 @@ export function judgeDestinationRenderings(
   },
 ): DestinationRenderingVerdict {
   /**
-   * Keys of what each side carries.
+   * Keys of what the archive carries.
    */
   const archiveKeys = addressKeys({ urls: archive, },);
+
+  /**
+   * Keys of what the source carries.
+   */
   const sourceKeys = addressKeys({ urls: source, },);
+
+  /**
+   * Keys of what the page carries.
+   */
   const pageKeys = addressKeys({ urls: page, },);
 
   /**
@@ -199,16 +207,21 @@ export function judgeDestinationRenderings(
   );
 
   /**
-   * How many of the pool the page carries.
+   * Pool entries the page carries.
    */
-  const drawn = addressesWhere({
+  const carriedFromPool = addressesWhere({
     urls: [
       ...rewritten,
       ...replacements,
     ],
     keys: pageKeys,
     present: true,
-  },).length;
+  },);
+
+  /**
+   * How many of the pool the page carries.
+   */
+  const drawn = carriedFromPool.length;
 
   /**
    * Shared destinations the page lacks: dropped whatever the pool says.
