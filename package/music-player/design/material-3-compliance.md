@@ -71,9 +71,10 @@ Material component.
   action. Leading icons must communicate the action:
   `components/buttons/guidelines/index.html`.
 
-Correction: use real `FilledTonalButton` and `OutlinedButton` components for current
-folder and `Open`, with official Material icons. Keep them together as the settled
-folder-source action group and expose at least 48dp targets.
+Correction: remove the redundant current-folder button. Use the right-pane app-bar
+title and selected plain-text target for current-folder identity. Place a real Material
+`TextButton` with the official folder-open icon on the left `Folders` app-bar line.
+It remains visible with a 48dp target and consumes no separate source-action row.
 
 ### Iconography and icon buttons
 

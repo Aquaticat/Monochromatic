@@ -201,17 +201,16 @@ section headers alone (picker-a); a persistent sidebar (picker-c). Note the Andr
 fast-scroller drag-bubble idiom was discussed as a possible addition — a large bubble
 showing the current letter while dragging — but was not settled.
 
-### D4. Open sits beside the current-folder button (revised 2026-09-04)
-The current-folder control switches folders within the open directory; **Open changes
-directory**. Both remain one tap and always visible. The current folder is a filled
-tonal button and Open is an outlined button, both implemented with real Material
-components and official icons. Never style the current-folder control as a lone chip:
-the supplied Material guidance says chips occur as a contextual set and explicitly
-rejects a single chip by itself.
-**Why.** Session restore means Open is a mid-session action, not a startup action, so
-it does not need to dominate. Hiding it costs a tap on a genuinely distinct operation.
+### D4. Open shares the Folders app-bar line (revised 2026-09-04)
+`Open` changes the directory. It is a visible Material text-button action with the
+folder-open icon on the left pane's `Folders` app bar. There is no separate
+current-folder control on the left. The right-pane `Camellia` app-bar title and the
+selected folder target already communicate current-folder identity.
+**Why.** Session restore makes Open a mid-session action, so it does not need a
+separate high-emphasis row. Removing the duplicate current-folder control gives the
+picker more vertical space while Open remains one tap away.
 **Rejected.** Open in the overflow menu next to Settings (o1-b); a lone current-folder
-chip.
+chip; a second `Camellia` button above the picker.
 
 ### D5. Subfolders are headers inside one flat list — not a layer (confirmed on desc-d, 2026-09-03)
 A folder containing subfolders shows **one flat list**: its own tracks first, then each

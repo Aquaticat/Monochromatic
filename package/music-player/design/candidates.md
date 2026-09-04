@@ -71,11 +71,13 @@ All light-side files are presented on a light desk with a light caption bar
 six `.dc.html` files are now historical design records rather than screenshot sources.
 Branch `prototype/music-player-theme-compose` rebuilds the same six keys in native
 Compose and captures them from the unfolded Pixel 9 Pro Fold emulator with Android
-system bars. Prototype commit `88374ace0` rebuilds them against the user-supplied
+system bars. Prototype commit `8ec92ff7f` rebuilds them against the user-supplied
 Material archive with Android dynamic color, role-mapped surfaces, two 414dp panes and
 a 24dp spacer, baseline Material list items, real app bars, buttons, icons, slider and
 one-row segmented control. It also retains 30dp edge-gesture insets inside full-bleed
-section backgrounds. The visible segmented labels are `Repeat`, `In order`, `Shuffle`,
+section backgrounds. The left app bar now places `Open` beside `Folders` and removes
+the redundant current-folder control; the right `Camellia` title supplies current
+folder identity. The visible segmented labels are `Repeat`, `In order`, `Shuffle`,
 and `Shuffle all`; accessibility labels expand each mode's full meaning. Native
 1038 × 2152px right-half captures now include 12dp of pane spacer and the 414dp detail
 pane. The letter rail begins at the physical start edge, while the app bar, source

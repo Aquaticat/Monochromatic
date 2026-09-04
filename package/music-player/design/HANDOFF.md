@@ -148,9 +148,9 @@ Terms used throughout these docs and in the candidate filenames:
 - **mode control** — the four-way choice for what happens when a track ends:
   Repeat / In order / Shuffle folder / Shuffle all. This single control also defines
   end-of-folder behaviour, so there is no separate "what happens at the end" setting.
-- **current-folder button** — the filled tonal button naming the current folder;
-  tapping it opens the folder picker. Do not render it as a lone chip: the supplied
-  Material guidance requires chips to appear as a contextual set.
+- **current-folder identity** — the right-pane app-bar title and selected plain-text
+  target name the active folder. There is no separate left-pane current-folder button.
+  `Open` shares the left `Folders` app-bar line and changes the directory.
 - **letter rail** — one column of 48dp letter targets, scrolls on its own; tapping a
   letter FILTERS the picker to it. **Generated from the library**, not fixed A–Z: only
   writing systems present get a section (Latin A–Z, Japanese kana rows + 漢, Cyrillic,
