@@ -229,6 +229,6 @@ pictures in 3 entries), that made three entries unshippable on any roster. Fixed
 
 THE READING: not yet ready. Two classes found in one afternoon by two entries is the rate the belief is
 tracking, and both were in the pipeline's own screens rather than in the corpus. Uekawakuyuurei is running
-again on the fixed build (15:31 UTC) and reads both fixes at once. What would move the belief is unchanged:
+again on the fixed build (15:25 UTC) and reads both fixes at once. What would move the belief is unchanged:
 that entry shipped and read clean, then the two passes the earlier sections ask for, which need the
 OpenRouter balance topped up (about 5.3 USD at launch, one pass).

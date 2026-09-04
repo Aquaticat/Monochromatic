@@ -855,7 +855,7 @@ picture textless in `readImagePair` (`no-text` with `confirmedBy`, resumed). Eac
 its rule neutralised (refusal 2, sense 3, stage 3, pair 5, re-ask 2 failures), then pass. Rule recorded in
 `doc/planning/when-an-image-reading-makes-no-sense.md` (clause six) and the README.
 
-Relaunched at 15:31 UTC on `d6ffc4812` into `~/temp/agent/Uekawakuyuurei-pictures-20260904`, OpenRouter
+Relaunched at 15:25 UTC on `d6ffc4812` into `~/temp/agent/Uekawakuyuurei-pictures-20260904`, OpenRouter
 alone, to read both today's fixes on one entry: the pronoun rule on a `ta` subject and the textless
 confirmation on three pictures. Balance about 5.3 USD at launch, which is one pass.
 
