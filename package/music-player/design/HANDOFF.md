@@ -342,7 +342,15 @@ were inspected individually: the right track surface reaches the top, right and 
 screen edges; the native status icons and large-screen gesture handle remain visible;
 all app controls begin after `WindowInsets.safeDrawing`; and only the local picker and
 transport groups retain rounded containers. The six corrected PNGs have been copied to
-`questions/render/` for questionnaire integration.
+`questions/render/` for questionnaire integration. The questionnaire now embeds those
+six native captures and names their Compose/emulator provenance in each image. Its
+camera overlay now follows the overlay-derived 32.41dp cutout rather than the earlier
+28dp photograph estimate. The retired Helium-to-PNG renderer is removed, so
+`render:candidates` can no longer overwrite native captures with historical HTML
+mocks. Package build, lint and unit-contract tasks pass. The contract checks capture
+dimensions, opacity, native status and navigation pixels, rendered Compose content,
+and the absence of the redundant right-pane wrapper. Full Helium interaction and
+visual verification remain pending.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
