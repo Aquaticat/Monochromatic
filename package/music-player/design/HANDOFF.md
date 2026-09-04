@@ -395,7 +395,11 @@ screen. Remove those left-side outer card shapes and surrounding screen margins 
 Picker and transport may retain their internal component shapes, but their section
 surfaces must meet the left-half and screen boundaries without a second rounded frame.
 Re-capture, re-embed, re-verify, and reopen the blank questionnaire before asking for
-theme answers.
+theme answers. Prototype commit `e51a955f0` removes the left-side rounded surfaces and
+outer inset: picker background now reaches the top and left screen edges, transport
+background reaches the left and bottom screen edges behind the native navigation bar,
+and only the settled 16dp inter-section and centre-seam gaps expose the window surface.
+The corrected prototype assembles successfully; emulator capture remains pending.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
