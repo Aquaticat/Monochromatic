@@ -664,6 +664,15 @@ through the Helium desktop entry, and KWin confirms its exact non-minimized
 1080 × 1880 window on `HDMI-A-1`. A one-shot activation targeted that window. The page
 labels `1c` and `3a` as chosen while leaving all form inputs clear.
 
+The user correctly reported that they still did not see "the updated baseline." Retract
+the preceding delivery claim: activating the questionnaire window exposed the form,
+not the requested selected baseline state. The exact `1c` full-frame preview remained
+behind its Open preview action. Rule VPH now records that a visual handoff completes
+only when the requested artifact state itself is visible. The questionnaire supports
+`#chosen-baseline`, which opens the selected full-frame modal as the page loads. Verify
+that hash path, replace the form-only normal window with it, and activate its exact
+non-minimized KWin window before asking any next-round question.
+
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
 

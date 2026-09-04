@@ -424,6 +424,7 @@ const requiredFragments = [
   'one white rail divider',
   '3a · chosen',
   'Planned display templating',
+  "const chosenBaselineHash = '#chosen-baseline';",
   'dynamic role mappings',
   'Android 17 API 37',
   '--device-body: #262624;',

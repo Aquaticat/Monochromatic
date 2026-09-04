@@ -1123,6 +1123,13 @@ downloadButton.addEventListener('click', () => {
   URL.revokeObjectURL(url);
   status.textContent = 'Answers downloaded.';
 });
+
+const chosenBaselineHash = '#chosen-baseline';
+if (window.location.hash === chosenBaselineHash) {
+  const chosenBaselineInput = document.querySelector('input[name="lightSeparation"][value="1c"]');
+  const chosenBaselineButton = chosenBaselineInput.closest('.option').querySelector('.preview-open');
+  openPreview(chosenBaselineButton);
+}
 </script>
 </body>
 </html>
