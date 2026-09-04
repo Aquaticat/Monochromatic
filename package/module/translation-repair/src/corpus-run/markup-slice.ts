@@ -53,6 +53,16 @@ function isStructuralLine(
    */
   const trimmed = line.trim();
 
+  /**
+   * Whether the line is one quoted path inside a props array. EITHER QUOTE
+   * MARK: four source pages at pin `a41fc607` quote their photo paths with
+   * double marks, and this screen, like the photo reference reader until
+   * 2026-09-04, knew only the single one, so a double-quoted photo block
+   * read as three parts prose to two parts markup.
+   */
+  const quotedPath = (trimmed.startsWith('\'',) || trimmed.startsWith('"',))
+    && trimmed.includes('/',);
+
   return trimmed.startsWith('<',)
     || trimmed.startsWith('/>',)
     || trimmed.startsWith('}',)
@@ -60,7 +70,7 @@ function isStructuralLine(
     || trimmed.startsWith('![',)
     || trimmed.startsWith('```',)
     || trimmed.startsWith('|',)
-    || (trimmed.startsWith('\'',) && trimmed.includes('/',));
+    || quotedPath;
 }
 
 /**

@@ -37,6 +37,17 @@ const PHOTO_BLOCK = `<PhotoScroll photos={[
 ]}/>`;
 
 /**
+ * The same component as four source pages at pin `a41fc607` write it, with
+ * double-quoted paths. The photo reference reader missed this spelling until
+ * 2026-09-04, and so did this screen.
+ */
+const DOUBLE_QUOTED_PHOTO_BLOCK = `<PhotoScroll photos={[
+    "\${path}/photos/tabby1.webp",
+    "\${path}/photos/tabby2.webp",
+    "\${path}/photos/tabby3.webp"
+]} />`;
+
+/**
  * Ordinary prose, which must never read as markup.
  */
 const PROSE = `毛毛跳上窗台，看着外面的雨。
@@ -78,6 +89,16 @@ await describe({
         + 'one whatever the translator did',
       fn: async () => {
         expect(isMarkupOnly({ sourceText: PHOTO_BLOCK, },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'RECOGNISES THE DOUBLE-QUOTED SPELLING OF THE SAME COMPONENT, which four source pages '
+        + 'write: a screen that knew one quote mark read three of these five lines as prose and '
+        + 'left the block open to being named a relocation candidate',
+      fn: async () => {
+        expect(markupFraction({ sourceText: DOUBLE_QUOTED_PHOTO_BLOCK, },),).toBe(1,);
+        expect(isMarkupOnly({ sourceText: DOUBLE_QUOTED_PHOTO_BLOCK, },),).toBe(true,);
       },
     },),
 
