@@ -98,6 +98,7 @@ import androidx.compose.material.icons.filled.SkipPrevious
 // import { background } from 'compose/foundation';
 // ```
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 
 // What:     `rememberScrollState` creates composition-owned scroll position state.
 // Why:      Filtered folder names and the letter rail remain scrollable at device height.
@@ -188,7 +189,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -278,6 +278,8 @@ import androidx.compose.ui.semantics.semantics
 // ```ts
 // import { Color } from 'compose/ui/graphics';
 // ```
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 
 // What:     `FontWeight`, `TextAlign`, and `TextOverflow` configure native text rendering.
@@ -620,19 +622,16 @@ private fun RowScope.FolderNames() {
         ) {
             for (folder in folders) {
                 val selectedFolder = folder == "Camellia"
-                Column(
+                Box(
                     modifier = Modifier
-                        .width(IntrinsicSize.Min)
                         .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .selectable(
                             selected = selectedFolder,
                             onClick = {},
                             role = Role.RadioButton,
                         ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceBetween,
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Box(modifier = Modifier.height(2.dp))
                     Text(
                         text = folder,
                         modifier = Modifier.padding(horizontal = 4.dp),
@@ -647,18 +646,17 @@ private fun RowScope.FolderNames() {
                             MaterialTheme.typography.bodyLarge
                         },
                     )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(2.dp)
-                            .background(
-                                if (selectedFolder) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    Color.Transparent
-                                },
-                            ),
-                    )
+                    if (selectedFolder) {
+                        val indicatorColor = MaterialTheme.colorScheme.primary
+                        Canvas(modifier = Modifier.matchParentSize()) {
+                            val indicatorHeight = 2.dp.toPx()
+                            drawRect(
+                                color = indicatorColor,
+                                topLeft = Offset(0f, size.height - indicatorHeight),
+                                size = Size(size.width, indicatorHeight),
+                            )
+                        }
+                    }
                 }
             }
         }
