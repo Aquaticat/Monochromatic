@@ -218,8 +218,11 @@ scrollers. All six preview buttons open; actual zoom measures exactly 852×883 o
 418×883; Zoom in, Zoom out, Fit, Reset to actual, scrolling and Close work. Form
 validation, every radio, free text, answer preparation, copy, download and clear also
 work in Helium. Axe reports zero violations and zero incomplete checks for both the
-page and open zoom dialog. The page remains light under a forced dark host. The form
-is ready to reopen in the user's Helium profile; no theme answer has been recorded.
+page and open zoom dialog. The page remains light under a forced dark host. A
+throwaway-worktree positive control replaced an 852×883 render with a 418×883 file;
+the dimension guard rejected it with the expected diagnostic, while the unchanged
+fixture passed. The form is ready to reopen in the user's Helium profile; no theme
+answer has been recorded.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
