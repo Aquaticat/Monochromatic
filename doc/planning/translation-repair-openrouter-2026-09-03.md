@@ -530,6 +530,20 @@ BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two
     two-reader rosters where the wait is zero by construction; the OpenRouter-alone roster seats three
     readers, so today's two text pictures are the first of the population that matters, one of them bad.
     Not built: recorded here to be re-read once more three-reader pictures have run.
+- **Hangmster settled at 05:05 UTC** (39 min, 1.79 USD, verify-published 1 of 1, no Kimi-K3 call, one
+    picture with no OCR text so no model reader). Its page restores the `## Introduction` heading the
+    archive English had dropped and retranslates the description; **it also ships the photo element
+    broken across two lines**, `<PhotoScroll photos={[ '${path}/photos/fufu.webp',]}` then `/>  `. The
+    semantic wrapper (`semantic-wrap.ts`, markdown-lint's `semantic-line-breaks` with MDX parsing off)
+    read the line as prose: JSX braces make the tag invalid HTML to CommonMark, and the comma before
+    `]}` is followed by a space. Measured over the pinned source pages: 33 one-line `PhotoScroll`
+    elements, 16 of them across 11 entries with that comma-and-space shape. Fixed in the rule
+    (`66345a092`: a paragraph whose whole source opens with `<` and closes with `>` is left unbroken),
+    guards in both packages shown to fail neutralised. MDX still parses the split element, so the shipped
+    Hangmster page renders; it is not regenerated here, since the pipeline digest changed with the build
+    and a regeneration would be a full paid re-run rather than a replay.
+- **The first BI4PBV pass settled at 05:02** (34 min, 1.57 USD, verify-published 1 of 1, no Kimi-K3
+    call) as the no-picture control; its page keeps both photo elements as the source writes them.
 
 ## ModelRun's timeouts, 2026-09-04, and what the log called them
 
