@@ -3,41 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: grilling round 1</title>
+<title>Music player design: white divider clarification</title>
 <style>
 :root {
   color-scheme: light;
-  --page: #f3edf7;
-  --paper: #fffaff;
-  --paper-strong: #ffffff;
-  --ink: #1d1b20;
-  --ink-muted: #49454f;
-  --line: #cac4d0;
-  --line-strong: #79747e;
-  --primary: #6750a4;
-  --on-primary: #ffffff;
-  --primary-container: #eaddff;
-  --on-primary-container: #21005d;
-  --secondary-container: #e8def8;
-  --on-secondary-container: #4a4459;
-  --surface-high: #ece6f0;
-  --success: #2f6b3a;
-  --success-surface: #d8f3dc;
-  --focus: #005fcc;
-  --shadow: rgba(29, 27, 32, 0.16);
-  --selected-shadow: rgba(103, 80, 164, 0.24);
-  --scrim: rgba(29, 27, 32, 0.72);
-  --device-body: #262624;
-  --device-body-mid: #494946;
-  --device-rim: #8b8a84;
-  --device-bezel: #111111;
-  --device-lens: #263542;
-  --device-screen-fill: #ffffff;
-  --device-hinge: #5e5d58;
-  --transparent: transparent;
+  --color-page: #f3edf7;
+  --color-paper: #fffaff;
+  --color-paper-strong: #ffffff;
+  --color-ink: #1d1b20;
+  --color-ink-muted: #49454f;
+  --color-line: #cac4d0;
+  --color-primary: #6750a4;
+  --color-primary-container: #eaddff;
+  --color-on-primary-container: #21005d;
+  --color-secondary-container: #e8def8;
+  --color-on-secondary-container: #4a4459;
+  --color-surface-high: #ece6f0;
+  --color-focus: #005fcc;
+  --color-shadow: rgba(29, 27, 32, 0.16);
+  --color-scrim: rgba(29, 27, 32, 0.72);
+  --color-device: #262624;
+  --color-device-rim: #8b8a84;
+  --color-bezel: #111111;
+  --color-lens: #263542;
+  --color-hinge: #5e5d58;
   font-family: Roboto, system-ui, sans-serif;
-  background-color: var(--page);
-  color: var(--ink);
+  background-color: var(--color-page);
+  color: var(--color-ink);
 }
 
 * {
@@ -48,7 +40,7 @@ body {
   min-block-size: 100vh;
   margin-block: 0;
   margin-inline: 0;
-  background-color: var(--page);
+  background-color: var(--color-page);
 }
 
 main {
@@ -75,8 +67,8 @@ p {
 }
 
 h1 {
-  max-inline-size: 22ch;
-  margin-block-end: 0.5rem;
+  max-inline-size: 20ch;
+  margin-block-end: 0.75rem;
   font-size: clamp(2rem, 5vw, 4rem);
   line-height: 1;
   letter-spacing: -0.04em;
@@ -94,18 +86,17 @@ h3 {
 }
 
 .lede,
-.question-intro {
-  max-inline-size: 72ch;
-  color: var(--ink-muted);
+.question-intro,
+.definition,
+.response-help {
+  max-inline-size: 76ch;
+  color: var(--color-ink-muted);
   line-height: 1.55;
 }
 
-.lede {
-  margin-block-end: 0;
-}
-
+.lede,
 .question-intro {
-  margin-block-end: 1.5rem;
+  margin-block-end: 0;
 }
 
 .round-badge {
@@ -114,33 +105,72 @@ h3 {
   align-items: center;
   padding-inline: 1rem;
   border-radius: 999rem;
-  background-color: var(--secondary-container);
-  color: var(--on-secondary-container);
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
   font-size: 0.875rem;
   font-weight: 700;
 }
 
-.question {
+.instructions,
+.question,
+.response {
   margin-block-end: 2rem;
   padding-block: clamp(1.25rem, 3vw, 2rem);
   padding-inline: clamp(1.25rem, 3vw, 2rem);
   border-width: 0.0625rem;
   border-style: solid;
-  border-color: var(--line);
+  border-color: var(--color-line);
   border-radius: 1.75rem;
-  background-color: var(--paper);
-  box-shadow: 0 0.75rem 2rem var(--shadow);
+  background-color: var(--color-paper);
+  box-shadow: 0 0.75rem 2rem var(--color-shadow);
+}
+
+.instructions ol {
+  max-inline-size: 72ch;
+  padding-inline-start: 1.5rem;
+  line-height: 1.55;
+}
+
+.definition-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.definition {
+  margin-block-end: 0;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-inline-start-width: 0.25rem;
+  border-inline-start-style: solid;
+  border-inline-start-color: var(--color-primary);
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+fieldset {
+  min-inline-size: 0;
+  margin-block: 0;
+  margin-inline: 0;
+  padding-block: 0;
+  padding-inline: 0;
+  border-width: 0;
+}
+
+legend {
+  padding-inline: 0;
 }
 
 .options-scroll {
   max-inline-size: 100%;
   overflow-x: auto;
-  padding-block: 0.3rem 0.75rem;
+  padding-block: 0.5rem 0.75rem;
   scrollbar-gutter: stable;
 }
 
 .options {
-  min-inline-size: 53rem;
+  min-inline-size: 62rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
@@ -150,39 +180,44 @@ h3 {
   min-inline-size: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   border-width: 0.0625rem;
   border-style: solid;
-  border-color: var(--line);
+  border-color: var(--color-line);
   border-radius: 1.25rem;
-  overflow: hidden;
-  background-color: var(--paper-strong);
+  background-color: var(--color-paper-strong);
 }
 
 .option:has(input:checked) {
   border-width: 0.1875rem;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 0.25rem var(--selected-shadow);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem var(--color-shadow);
 }
 
 .option-heading {
-  min-block-size: 4.75rem;
+  min-block-size: 5.5rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding-block: 0.5rem;
+  padding-block: 0.75rem;
   padding-inline: 0.75rem;
   border-block-end-width: 0.0625rem;
   border-block-end-style: solid;
-  border-block-end-color: var(--line);
+  border-block-end-color: var(--color-line);
   cursor: pointer;
 }
 
 .option-heading:hover {
-  background-color: var(--primary-container);
+  background-color: var(--color-primary-container);
 }
 
-.option-heading:has(input:focus-visible) {
-  outline: 0.1875rem solid var(--focus);
+.option-heading:has(input:focus-visible),
+.preview-open:focus-visible,
+button:focus-visible,
+textarea:focus-visible {
+  outline-width: 0.1875rem;
+  outline-style: solid;
+  outline-color: var(--color-focus);
   outline-offset: -0.1875rem;
 }
 
@@ -191,7 +226,7 @@ h3 {
   min-block-size: 3rem;
   margin-block: 0;
   margin-inline: 0;
-  accent-color: var(--primary);
+  accent-color: var(--color-primary);
   cursor: pointer;
 }
 
@@ -203,7 +238,7 @@ h3 {
 }
 
 .option-code {
-  color: var(--primary);
+  color: var(--color-primary);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -211,7 +246,7 @@ h3 {
 }
 
 .option-summary {
-  color: var(--ink-muted);
+  color: var(--color-ink-muted);
   font-size: 0.875rem;
 }
 
@@ -226,8 +261,8 @@ h3 {
   padding-inline: 0.75rem;
   border-width: 0;
   border-radius: 0;
-  background-color: var(--surface-high);
-  color: var(--primary);
+  background-color: var(--color-surface-high);
+  color: var(--color-primary);
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 700;
@@ -235,94 +270,53 @@ h3 {
 }
 
 .preview-open:hover {
-  background-color: var(--secondary-container);
-}
-
-.preview-open:focus-visible,
-button:focus-visible,
-textarea:focus-visible {
-  outline: 0.1875rem solid var(--focus);
-  outline-offset: -0.1875rem;
+  background-color: var(--color-secondary-container);
 }
 
 .device-frame {
   position: relative;
   display: block;
   flex: 0 0 auto;
-  overflow: hidden;
-  background-color: var(--device-body);
-  background-image: linear-gradient(135deg, var(--device-rim), var(--device-body-mid) 12%, var(--device-body) 48%, var(--device-body-mid) 88%, var(--device-rim));
-  box-shadow: inset 0 0 0 0.125rem var(--device-rim), 0 0.35rem 0.9rem var(--shadow);
-}
-
-.device-frame[data-frame-kind="full"] {
   inline-size: 100%;
   aspect-ratio: 907 / 937;
+  overflow: hidden;
   border-radius: 7.94% / 7.68%;
-}
-
-.device-frame[data-frame-kind="right-half"] {
-  inline-size: 100%;
-  aspect-ratio: 454 / 937;
-  border-start-end-radius: 15.86% 7.68%;
-  border-end-end-radius: 15.86% 7.68%;
+  background-color: var(--color-device);
+  box-shadow: inset 0 0 0 0.125rem var(--color-device-rim), 0 0.35rem 0.9rem var(--color-shadow);
 }
 
 .device-frame::before,
 .device-frame::after {
   position: absolute;
   z-index: 3;
+  inset-inline-start: 47.575%;
   inline-size: 4.85%;
   block-size: 0.75%;
   content: "";
-  background-color: var(--device-hinge);
-  box-shadow: inset 0 0 0 0.0625rem var(--device-rim);
+  border-radius: 0.25rem;
+  background-color: var(--color-hinge);
+  box-shadow: inset 0 0 0 0.0625rem var(--color-device-rim);
 }
 
 .device-frame::before {
   inset-block-start: 0;
-  border-end-start-radius: 0.25rem;
-  border-end-end-radius: 0.25rem;
 }
 
 .device-frame::after {
   inset-block-end: 0;
-  border-start-start-radius: 0.25rem;
-  border-start-end-radius: 0.25rem;
-}
-
-.device-frame[data-frame-kind="full"]::before,
-.device-frame[data-frame-kind="full"]::after {
-  inset-inline-start: 47.575%;
-}
-
-.device-frame[data-frame-kind="right-half"]::before,
-.device-frame[data-frame-kind="right-half"]::after {
-  inset-inline-start: 0;
 }
 
 .device-screen {
   position: absolute;
   z-index: 1;
-  display: flex;
-  overflow: hidden;
-  background-color: var(--device-screen-fill);
-  box-shadow: 0 0 0 0.125rem var(--device-bezel);
-}
-
-.device-frame[data-frame-kind="full"] .device-screen {
   inset-block: 2.8815%;
   inset-inline-start: 2.9779%;
   inset-inline-end: 3.0871%;
+  display: flex;
+  overflow: hidden;
   border-radius: 4.93% / 4.76%;
-}
-
-.device-frame[data-frame-kind="right-half"] .device-screen {
-  inset-block: 2.8815%;
-  inset-inline-start: 0;
-  inset-inline-end: 6.1674%;
-  border-start-end-radius: 9.86% 4.76%;
-  border-end-end-radius: 9.86% 4.76%;
+  background-color: var(--color-paper-strong);
+  box-shadow: 0 0 0 0.125rem var(--color-bezel);
 }
 
 .preview-open img,
@@ -336,25 +330,16 @@ textarea:focus-visible {
 .device-camera {
   position: absolute;
   z-index: 2;
+  inset-block-start: 1.8817%;
+  inset-inline-end: 2.3956%;
+  inline-size: 3.804%;
   aspect-ratio: 1;
   border-width: 0.1875rem;
   border-style: solid;
-  border-color: var(--device-bezel);
+  border-color: var(--color-bezel);
   border-radius: 50%;
-  background-color: var(--device-lens);
-  box-shadow: inset 0 0 0 0.1875rem var(--device-body);
-}
-
-.device-frame[data-frame-kind="full"] .device-camera {
-  inset-block-start: 1.8817%;
-  inset-inline-end: 2.3956%;
-  inline-size: 3.8040%;
-}
-
-.device-frame[data-frame-kind="right-half"] .device-camera {
-  inset-block-start: 1.8817%;
-  inset-inline-end: 4.7911%;
-  inline-size: 7.6080%;
+  background-color: var(--color-lens);
+  box-shadow: inset 0 0 0 0.1875rem var(--color-device);
 }
 
 .preview-label {
@@ -365,9 +350,9 @@ textarea:focus-visible {
   padding-inline: 0.5rem;
   border-width: 0.0625rem;
   border-style: solid;
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   border-radius: 999rem;
-  background-color: var(--paper-strong);
+  background-color: var(--color-paper-strong);
 }
 
 .assessment {
@@ -379,55 +364,34 @@ textarea:focus-visible {
   padding-inline: 1.25rem;
 }
 
-.assessment strong {
-  display: block;
-  margin-block-end: 0.3rem;
-  color: var(--ink);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.assessment strong,
+.ranking strong {
+  color: var(--color-primary);
 }
 
 .assessment ul {
   margin-block: 0;
-  padding-inline-start: 1.2rem;
-  color: var(--ink-muted);
-  font-size: 0.9rem;
+  padding-inline-start: 1.25rem;
+  color: var(--color-ink-muted);
   line-height: 1.45;
 }
 
-.assessment li + li {
-  margin-block-start: 0.35rem;
-}
-
-.my-read {
-  margin-block: auto 0;
-  padding-block-start: 0.75rem;
-  border-block-start-width: 0.0625rem;
-  border-block-start-style: solid;
-  border-block-start-color: var(--line);
-  color: var(--ink-muted);
-  font-size: 0.9rem;
+.assessment p {
+  margin-block-end: 0;
   line-height: 1.45;
 }
 
 .ranking {
-  margin-block: 1.25rem 0;
+  margin-block: 1.5rem 0;
   padding-block: 1rem;
   padding-inline: 1rem;
   border-radius: 1rem;
-  background-color: var(--primary-container);
-  color: var(--on-primary-container);
-  line-height: 1.5;
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  line-height: 1.55;
 }
 
-.ranking strong {
-  display: block;
-  margin-block-end: 0.25rem;
-}
-
-.free-text label,
-.output label {
+.response label {
   display: block;
   margin-block-end: 0.5rem;
   font-weight: 700;
@@ -437,70 +401,58 @@ textarea {
   inline-size: 100%;
   min-block-size: 10rem;
   resize: vertical;
-  padding-block: 1rem;
-  padding-inline: 1rem;
+  padding-block: 0.875rem;
+  padding-inline: 0.875rem;
   border-width: 0.0625rem;
   border-style: solid;
-  border-color: var(--line-strong);
-  border-radius: 1rem;
-  background-color: var(--paper-strong);
-  color: var(--ink);
-  font-family: inherit;
-  font-size: inherit;
+  border-color: var(--color-line);
+  border-radius: 0.75rem;
+  background-color: var(--color-paper-strong);
+  color: var(--color-ink);
+  font: inherit;
   line-height: 1.5;
 }
 
 .actions,
-.zoom-actions {
+.output-actions,
+.zoom-toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 0.75rem;
 }
 
 .actions {
-  margin-block-start: 1.25rem;
+  margin-block-start: 1rem;
 }
 
 button {
   min-inline-size: 3rem;
   min-block-size: 3rem;
-  padding-inline: 1.25rem;
+  padding-block: 0.65rem;
+  padding-inline: 1rem;
   border-width: 0.0625rem;
   border-style: solid;
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   border-radius: 999rem;
-  background-color: var(--primary);
-  color: var(--on-primary);
-  font-family: inherit;
-  font-size: inherit;
+  background-color: var(--color-primary);
+  color: var(--color-paper-strong);
+  font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
 
 button[data-variant="secondary"] {
-  background-color: var(--transparent);
-  color: var(--primary);
-}
-
-button:hover {
-  box-shadow: 0 0.5rem 1.25rem var(--selected-shadow);
-}
-
-.status {
-  min-block-size: 3rem;
-  display: inline-flex;
-  align-items: center;
-  color: var(--success);
-  font-weight: 700;
+  background-color: var(--color-paper-strong);
+  color: var(--color-primary);
 }
 
 .output {
-  margin-block-start: 1.25rem;
+  margin-block-start: 1.5rem;
   padding-block: 1rem;
   padding-inline: 1rem;
   border-radius: 1rem;
-  background-color: var(--success-surface);
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
 }
 
 .output[hidden] {
@@ -509,67 +461,66 @@ button:hover {
 
 .output textarea {
   min-block-size: 7rem;
+  margin-block-end: 0.75rem;
 }
 
-.preview-dialog {
-  inline-size: calc(100vw - 2rem);
-  max-inline-size: 76rem;
-  block-size: calc(100vh - 2rem);
-  max-block-size: 64rem;
+.status {
+  min-block-size: 1.5rem;
+  margin-block: 0.75rem 0;
+  color: var(--color-ink-muted);
+}
+
+dialog {
+  inline-size: calc(100% - 2rem);
+  max-inline-size: 100rem;
+  block-size: calc(100% - 2rem);
+  max-block-size: 72rem;
   padding-block: 0;
   padding-inline: 0;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--line);
-  border-radius: 1.25rem;
   overflow: hidden;
-  background-color: var(--paper);
-  color: var(--ink);
-  box-shadow: 0 1.5rem 4rem var(--shadow);
+  border-width: 0;
+  border-radius: 1.5rem;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  box-shadow: 0 1.5rem 4rem var(--color-shadow);
 }
 
-.preview-dialog::backdrop {
-  background-color: var(--scrim);
+dialog::backdrop {
+  background-color: var(--color-scrim);
 }
 
-.preview-dialog[open] {
+.dialog-layout {
+  block-size: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.zoom-toolbar {
-  flex: 0 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding-block: 0.75rem;
-  padding-inline: 1rem;
+.dialog-heading {
+  padding-block: 1rem;
+  padding-inline: 1.25rem;
   border-block-end-width: 0.0625rem;
   border-block-end-style: solid;
-  border-block-end-color: var(--line);
-  background-color: var(--paper-strong);
+  border-block-end-color: var(--color-line);
+  background-color: var(--color-paper-strong);
 }
 
-.zoom-heading {
-  min-inline-size: 12rem;
+.dialog-heading h2 {
+  margin-block-end: 0.25rem;
+  font-size: 1.5rem;
 }
 
-.zoom-heading p {
-  margin-block: 0.25rem 0;
-  color: var(--ink-muted);
-  font-size: 0.875rem;
+.dialog-heading p {
+  margin-block-end: 0.75rem;
+  color: var(--color-ink-muted);
+  line-height: 1.4;
 }
 
-.zoom-actions button {
-  padding-inline: 1rem;
+.zoom-toolbar {
+  align-items: center;
 }
 
 .zoom-scale {
-  min-inline-size: 8rem;
-  text-align: center;
-  color: var(--ink-muted);
+  min-inline-size: 18rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -579,48 +530,50 @@ button:hover {
   overflow: auto;
   padding-block: 1rem;
   padding-inline: 1rem;
-  background-color: var(--surface-high);
-  scrollbar-gutter: stable both-edges;
-}
-
-.zoom-canvas {
-  min-inline-size: max-content;
-  min-block-size: max-content;
-  display: grid;
-  place-items: start;
+  background-color: var(--color-surface-high);
 }
 
 .zoom-device {
-  max-inline-size: none;
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 7.94% / 7.68%;
+  background-color: var(--color-device);
+  box-shadow: inset 0 0 0 0.125rem var(--color-device-rim), 0 0.35rem 0.9rem var(--color-shadow);
 }
 
-footer {
-  color: var(--ink-muted);
-  text-align: center;
-  line-height: 1.5;
+.zoom-device::before,
+.zoom-device::after {
+  position: absolute;
+  z-index: 3;
+  inset-inline-start: 47.575%;
+  inline-size: 4.85%;
+  block-size: 0.75%;
+  content: "";
+  border-radius: 0.25rem;
+  background-color: var(--color-hinge);
+  box-shadow: inset 0 0 0 0.0625rem var(--color-device-rim);
 }
 
-@media (max-width: 45rem) {
-  main {
-    padding-block-start: 1rem;
-  }
-
-  .question {
-    border-radius: 1.25rem;
-  }
+.zoom-device::before {
+  inset-block-start: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .option,
-  button {
-    transition-duration: 150ms;
-    transition-property: border-color, box-shadow, transform;
-    transition-timing-function: ease-out;
-  }
+.zoom-device::after {
+  inset-block-end: 0;
+}
 
-  button:active {
-    transform: translateY(0.0625rem);
-  }
+.zoom-device .device-screen {
+  inset-block: 2.8815%;
+  inset-inline-start: 2.9779%;
+  inset-inline-end: 3.0871%;
+}
+
+.zoom-device .device-camera {
+  inset-block-start: 1.8817%;
+  inset-inline-end: 2.3956%;
+  inline-size: 3.804%;
 }
 </style>
 </head>
@@ -628,329 +581,206 @@ footer {
 <main>
   <header>
     <div>
-      <h1>Close the light-theme fork</h1>
+      <h1>Which divider should be white?</h1>
       <p class="lede">
-        The dark theme stays true black. This round decides the light half of “follow the OS.”
-        Every preview places a native Compose capture from the unfolded Pixel 9 Pro Fold emulator inside its measured frame.
-        The candidates use official Material 3 components, dynamic role mappings, type, targets and expanded-layout geometry
-        audited against the supplied 2026-09-03 Google archive.
-        Every selected state has a non-color cue, including a separate MD1-style 2dp tab indicator beneath the whole selected folder target rather than underlined link-like text.
-        The resolved dynamic color pairs pass their required contrast ratios.
-        Android 17 API 37 supplies the status and gesture-navigation bars.
-        Open any preview to inspect the screen content at the cited dimensions.
+        You chose the 1c tonal layout and the 3a neutral duration-plus-true-peak line.
+        This follow-up asks only which visible separator you meant by “the divider.”
       </p>
     </div>
-    <div class="round-badge">Grilling round 1</div>
+    <span class="round-badge">Correction round · one decision</span>
   </header>
 
+  <section class="instructions" aria-labelledby="instructions-title">
+    <h2 id="instructions-title">What to do</h2>
+    <ol>
+      <li>Compare the three whole-device images. Open any image for measured 100% zoom.</li>
+      <li>Select which separator or separators should be white.</li>
+      <li>Write every other remaining correction, or write “None.”</li>
+      <li>Choose Prepare answers, then Copy answers, and paste the result into Pi.</li>
+    </ol>
+    <div class="definition-list">
+      <p class="definition">
+        <strong>Rail line:</strong> the thin 1dp vertical line between the A–Z letter column and the folder names.
+      </p>
+      <p class="definition">
+        <strong>Center spacer:</strong> the wide 24dp vertical strip between the left controls pane and the right track pane.
+      </p>
+    </div>
+    <p class="response-help">
+      Every option keeps 1c’s tonal surfaces, 3a’s single neutral metadata treatment,
+      the white app surfaces, the 24dp non-interactive center space, and all previously settled controls.
+      Only the colors of the rail line and center spacer differ.
+    </p>
+  </section>
+
   <form id="design-form">
-    <section class="question" aria-labelledby="q1-title">
-      <h2 id="q1-title">Q1: What should separate surfaces in light mode?</h2>
-      <p class="question-intro">
-        The unfolded Pixel 9 Pro Fold is rendered at 852×883dp with the settled picker and transport on the left,
-        Material’s centered 24dp expanded-layout spacer,
-        and tracks on the right.
-        Picker, transport and track section surfaces meet their screen edges without an extra rounded wrapper.
-        The selectable letter rail is flush with the physical start edge; Open shares the Folders app-bar line; other controls respect system safety insets.
-        App bars, buttons, lists, icons, slider, type and target geometry stay identical;
-        only the Material surface-role hierarchy and decorative dividers change.
-      </p>
+    <section class="question" aria-labelledby="divider-title">
+      <fieldset>
+        <legend><h2 id="divider-title">Choose the white separator treatment</h2></legend>
+        <p class="question-intro">
+          These are native Jetpack Compose captures from the same Pixel 9 Pro Fold emulator and dynamic light palette.
+          Each source is 2076×2152px and represents the whole 852×883dp unfolded display.
+        </p>
 
-      <div class="options-scroll" role="group" tabindex="0" aria-label="Q1 visual comparison, scroll horizontally on narrow windows">
-        <div class="options">
-          <article class="option">
-            <label class="option-heading">
-              <input type="radio" name="lightSeparation" value="1a" aria-labelledby="q1-1a-title" required>
-              <span class="option-title">
-                <span class="option-code">1a</span>
-                <strong id="q1-1a-title">Tonal ramp, no outlines</strong>
-                <span class="option-summary">Pure MD3 tonal separation</span>
-              </span>
-            </label>
-            <button class="preview-open" type="button" data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
-              <span class="device-frame" data-frame-kind="full">
-                <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-a, prototype commit 5cff61514" src="@@IMAGE_LIGHT_A@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1a, using tonal surfaces without outlines and Android system bars">
-                  <span class="device-camera" aria-hidden="true"></span>
+        <div class="options-scroll" role="group" tabindex="0" aria-label="Divider treatments, scroll horizontally on narrow windows">
+          <div class="options">
+            <article class="option">
+              <label class="option-heading">
+                <input type="radio" name="dividerTreatment" value="rail-white" aria-labelledby="rail-white-title" required>
+                <span class="option-title">
+                  <span class="option-code">D1 · current attempt</span>
+                  <strong id="rail-white-title">White rail line</strong>
+                  <span class="option-summary">Thin rail line white; center spacer stays tonal gray</span>
                 </span>
-              </span>
-              <span class="preview-label">Native Compose · Android 17 API 37 · 852×883dp · 2076×2152px</span>
-            </button>
-            <div class="assessment">
-              <div><strong>Pros</strong></div>
-              <ul>
-                <li>Uses MD3’s intended tonal hierarchy.</li>
-                <li>Looks calm and keeps attention on content.</li>
-                <li>Uses one separation mechanism.</li>
-              </ul>
-              <div><strong>Cons</strong></div>
-              <ul>
-                <li>Picker, transport and track surfaces are close in value.</li>
-                <li>Separation may weaken on poor panels or at low brightness.</li>
-              </ul>
-              <p class="my-read"><strong>My read</strong>Second choice. Quiet and readable, but less immediate than 1c.</p>
-            </div>
-          </article>
+              </label>
+              <button class="preview-open" type="button" data-preview-title="D1: White rail line" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+                <span class="device-frame">
+                  <span class="device-screen">
+                    <img data-candidate-source="Native Compose divider-a capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_A@@" width="852" height="883" alt="Whole unfolded device with the thin rail line white and the wide center spacer tonal gray">
+                    <span class="device-camera" aria-hidden="true"></span>
+                  </span>
+                </span>
+                <span class="preview-label">Open D1 at measured size</span>
+              </button>
+              <div class="assessment">
+                <div><strong>Pros</strong></div>
+                <ul>
+                  <li>Matches the divider named in the original 1c option.</li>
+                  <li>Keeps the tonal center spacing visible.</li>
+                </ul>
+                <div><strong>Cons</strong></div>
+                <ul>
+                  <li>The white line disappears against the adjacent white surfaces.</li>
+                  <li>The prominent center strip remains gray.</li>
+                </ul>
+                <p><strong>My read:</strong> third choice. It likely changes the less visible element.</p>
+              </div>
+            </article>
 
-          <article class="option">
-            <label class="option-heading">
-              <input type="radio" name="lightSeparation" value="1b" aria-labelledby="q1-1b-title" required>
-              <span class="option-title">
-                <span class="option-code">1b</span>
-                <strong id="q1-1b-title">One flat surface with dividers</strong>
-                <span class="option-summary">Outline-variant separators on one surface role</span>
-              </span>
-            </label>
-            <button class="preview-open" type="button" data-preview-title="1b: One flat surface with dividers" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
-              <span class="device-frame" data-frame-kind="full">
-                <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-b, prototype commit 5cff61514" src="@@IMAGE_LIGHT_B@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of light candidate 1b, using hairlines on one flat surface and Android system bars">
-                  <span class="device-camera" aria-hidden="true"></span>
+            <article class="option">
+              <label class="option-heading">
+                <input type="radio" name="dividerTreatment" value="center-white" aria-labelledby="center-white-title" required>
+                <span class="option-title">
+                  <span class="option-code">D2 · recommended</span>
+                  <strong id="center-white-title">White center spacer</strong>
+                  <span class="option-summary">Thin rail line stays gray; wide center strip becomes white</span>
                 </span>
-              </span>
-              <span class="preview-label">Native Compose · Android 17 API 37 · 852×883dp · 2076×2152px</span>
-            </button>
-            <div class="assessment">
-              <div><strong>Pros</strong></div>
-              <ul>
-                <li>Separation stays explicit across panels and brightness levels.</li>
-                <li>Most directly mirrors dark mode’s structure.</li>
-              </ul>
-              <div><strong>Cons</strong></div>
-              <ul>
-                <li>Dividers at the pane, rail and every row create grid noise.</li>
-                <li>Light mode feels more administrative than the other treatments.</li>
-              </ul>
-              <p class="my-read"><strong>My read</strong>Third choice. Robust, but it spends too much visual ink.</p>
-            </div>
-          </article>
+              </label>
+              <button class="preview-open" type="button" data-preview-title="D2: White center spacer" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+                <span class="device-frame">
+                  <span class="device-screen">
+                    <img data-candidate-source="Native Compose divider-b capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_B@@" width="852" height="883" alt="Whole unfolded device with the thin rail line tonal gray and the wide center spacer white">
+                    <span class="device-camera" aria-hidden="true"></span>
+                  </span>
+                </span>
+                <span class="preview-label">Open D2 at measured size</span>
+              </button>
+              <div class="assessment">
+                <div><strong>Pros</strong></div>
+                <ul>
+                  <li>Changes the visually prominent separator between the two panes.</li>
+                  <li>Retains a visible boundary between the letter rail and folder names.</li>
+                </ul>
+                <div><strong>Cons</strong></div>
+                <ul>
+                  <li>The center element is technically spacing rather than a 1dp line.</li>
+                  <li>White makes the two white pane surfaces read as more continuous.</li>
+                </ul>
+                <p><strong>My read:</strong> first choice. It best matches the separator a viewer is likely to call “the divider.”</p>
+              </div>
+            </article>
 
-          <article class="option">
-            <label class="option-heading">
-              <input type="radio" name="lightSeparation" value="1c" aria-labelledby="q1-1c-title" required>
-              <span class="option-title">
-                <span class="option-code">1c · chosen</span>
-                <strong id="q1-1c-title">Tonal panes with one white rail divider</strong>
-                <span class="option-summary">Surface-dim ground and raised container roles</span>
-              </span>
-            </label>
-            <button class="preview-open" type="button" data-preview-title="1c: Tonal panes with one white rail divider" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full">
-              <span class="device-frame" data-frame-kind="full">
-                <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: light-c, prototype commit 5cff61514" src="@@IMAGE_LIGHT_C@@" width="852" height="883" alt="Native Compose capture at 852 by 883dp of chosen light candidate 1c, using tonal panes, one white rail seam, and Android system bars">
-                  <span class="device-camera" aria-hidden="true"></span>
+            <article class="option">
+              <label class="option-heading">
+                <input type="radio" name="dividerTreatment" value="both-white" aria-labelledby="both-white-title" required>
+                <span class="option-title">
+                  <span class="option-code">D3</span>
+                  <strong id="both-white-title">Both white</strong>
+                  <span class="option-summary">Rail line and center spacer both become white</span>
                 </span>
-              </span>
-              <span class="preview-label">Native Compose · Android 17 API 37 · 852×883dp · 2076×2152px</span>
-            </button>
-            <div class="assessment">
-              <div><strong>Pros</strong></div>
-              <ul>
-                <li>Creates the clearest hierarchy with little linework.</li>
-                <li>Keeps the track list quiet while separating picker and transport.</li>
-                <li>Uses the requested white divider only at the rail seam.</li>
-              </ul>
-              <div><strong>Cons</strong></div>
-              <ul>
-                <li>Mixes tonal separation with one decorative divider.</li>
-                <li>The dim window gives light mode a heavier surrounding field.</li>
-              </ul>
-              <p class="my-read"><strong>Decision</strong>Chosen with the rail-seam divider changed to white.</p>
-            </div>
-          </article>
+              </label>
+              <button class="preview-open" type="button" data-preview-title="D3: Both separators white" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+                <span class="device-frame">
+                  <span class="device-screen">
+                    <img data-candidate-source="Native Compose divider-c capture, prototype commit 89a9f7033" src="@@IMAGE_DIVIDER_C@@" width="852" height="883" alt="Whole unfolded device with both the thin rail line and the wide center spacer white">
+                    <span class="device-camera" aria-hidden="true"></span>
+                  </span>
+                </span>
+                <span class="preview-label">Open D3 at measured size</span>
+              </button>
+              <div class="assessment">
+                <div><strong>Pros</strong></div>
+                <ul>
+                  <li>Covers both possible meanings without another distinction.</li>
+                  <li>Removes gray separator color from both vertical boundaries.</li>
+                </ul>
+                <div><strong>Cons</strong></div>
+                <ul>
+                  <li>Neither boundary remains visibly drawn.</li>
+                  <li>Separation relies entirely on spacing and content alignment.</li>
+                </ul>
+                <p><strong>My read:</strong> second choice. It honors both readings but gives up the useful rail boundary.</p>
+              </div>
+            </article>
+          </div>
         </div>
-      </div>
 
-      <p class="ranking">
-        <strong>Ranking: 1c &gt; 1a &gt; 1b</strong>
-        1c beats 1a because its pane hierarchy survives at a glance.
-        1a beats 1b because its softer separation avoids adding a divider to every row and region.
-      </p>
+        <p class="ranking">
+          <strong>Ranking: D2 &gt; D3 &gt; D1.</strong>
+          D2 beats D3 because it changes the prominent center separator while retaining the useful thin rail boundary.
+          D3 beats D1 because it includes the center change that the rejected first interpretation omitted.
+        </p>
+      </fieldset>
     </section>
 
-    <section class="question" aria-labelledby="q2-title">
-      <h2 id="q2-title">Q2: How prominent should true-peak values be in light mode?</h2>
+    <section class="response" aria-labelledby="corrections-title">
+      <h2 id="corrections-title">What else is still wrong?</h2>
       <p class="question-intro">
-        Each track-pane detail uses the measured 426×883dp physical right half of the unfolded display:
-        12dp of the centered spacer plus the 414dp detail pane.
-        Its frame is a crop from the fold center to the outer right edge,
-        not a fictitious narrow phone.
-        Every Material list item keeps duration plus true peak.
-        Native Android system bars remain in the crop,
-        and the track surface continues to the screen edges without a redundant rounded wrapper.
-        Only supporting-value position and emphasis change.
+        List every correction you can see. Refer to visible labels or locations in ordinary language.
+        You do not need to use “baseline,” “full-frame,” component names, or design-system terminology.
       </p>
-
-      <div class="options-scroll" role="group" tabindex="0" aria-label="Q2 visual comparison, scroll horizontally on narrow windows">
-        <div class="options">
-          <article class="option">
-            <label class="option-heading">
-              <input type="radio" name="peakEmphasis" value="3a" aria-labelledby="q2-3a-title" required>
-              <span class="option-title">
-                <span class="option-code">3a · chosen</span>
-                <strong id="q2-3a-title">One secondary treatment</strong>
-                <span class="option-summary">Duration and true peak share a colour</span>
-              </span>
-            </label>
-            <button class="preview-open" type="button" data-preview-title="3a: One secondary treatment" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half">
-              <span class="device-frame" data-frame-kind="right-half">
-                <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-a, prototype commit 5cff61514" src="@@IMAGE_DBTP_A@@" width="426" height="883" alt="Native Compose physical right-half capture at 426 by 883dp with duration and true peak in one secondary treatment and Android system bars">
-                  <span class="device-camera" aria-hidden="true"></span>
-                </span>
-              </span>
-              <span class="preview-label">Native Compose right half · Android 17 API 37 · 426×883dp · 1038×2152px</span>
-            </button>
-            <div class="assessment">
-              <div><strong>Pros</strong></div>
-              <ul>
-                <li>Uses one simple rule in both themes.</li>
-                <li>Keeps supporting text subordinate to track titles.</li>
-                <li>Leaves every true-peak value available.</li>
-              </ul>
-              <div><strong>Cons</strong></div>
-              <ul>
-                <li>Duration and true peak receive equal emphasis despite different jobs.</li>
-                <li>The values recede in the light comparison.</li>
-              </ul>
-              <p class="my-read"><strong>Decision</strong>Chosen. Planned display templating lets users opt into stronger emphasis without hard-coding it into the default.</p>
-            </div>
-          </article>
-
-          <article class="option">
-            <label class="option-heading">
-              <input type="radio" name="peakEmphasis" value="3b" aria-labelledby="q2-3b-title" required>
-              <span class="option-title">
-                <span class="option-code">3b · original recommendation</span>
-                <strong id="q2-3b-title">Stronger true-peak value</strong>
-                <span class="option-summary">Duration quiet, true peak at 500 weight</span>
-              </span>
-            </label>
-            <button class="preview-open" type="button" data-preview-title="3b: Stronger true-peak value" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half">
-              <span class="device-frame" data-frame-kind="right-half">
-                <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-b, prototype commit 5cff61514" src="@@IMAGE_DBTP_B@@" width="426" height="883" alt="Native Compose physical right-half capture at 426 by 883dp with stronger true-peak values and Android system bars">
-                  <span class="device-camera" aria-hidden="true"></span>
-                </span>
-              </span>
-              <span class="preview-label">Native Compose right half · Android 17 API 37 · 426×883dp · 1038×2152px</span>
-            </button>
-            <div class="assessment">
-              <div><strong>Pros</strong></div>
-              <ul>
-                <li>Makes true-peak values easy to scan across the folder.</li>
-                <li>Preserves every value without adding a column.</li>
-                <li>The weight difference is visible without competing with titles.</li>
-              </ul>
-              <div><strong>Cons</strong></div>
-              <ul>
-                <li>Introduces two treatments within one supporting line.</li>
-                <li>Repeated bold values add some visual texture.</li>
-              </ul>
-              <p class="my-read"><strong>My read</strong>First choice. Scannable without structural cost.</p>
-            </div>
-          </article>
-
-          <article class="option">
-            <label class="option-heading">
-              <input type="radio" name="peakEmphasis" value="3c" aria-labelledby="q2-3c-title" required>
-              <span class="option-title">
-                <span class="option-code">3c</span>
-                <strong id="q2-3c-title">Trailing true-peak column</strong>
-                <span class="option-summary">Duration supports the title; true peak uses the trailing slot</span>
-              </span>
-            </label>
-            <button class="preview-open" type="button" data-preview-title="3c: Trailing true-peak column" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half">
-              <span class="device-frame" data-frame-kind="right-half">
-                <span class="device-screen">
-                  <img data-candidate-source="Native Compose capture from Pixel 9 Pro Fold emulator: dbtp-c, prototype commit 5cff61514" src="@@IMAGE_DBTP_C@@" width="426" height="883" alt="Native Compose physical right-half capture at 426 by 883dp with every true-peak value aligned in the Material list trailing slot and Android system bars">
-                  <span class="device-camera" aria-hidden="true"></span>
-                </span>
-              </span>
-              <span class="preview-label">Native Compose right half · Android 17 API 37 · 426×883dp · 1038×2152px</span>
-            </button>
-            <div class="assessment">
-              <div><strong>Pros</strong></div>
-              <ul>
-                <li>Makes every true-peak value vertically scannable.</li>
-                <li>Uses the Material list’s intended trailing-text slot.</li>
-                <li>Keeps all computed values available.</li>
-              </ul>
-              <div><strong>Cons</strong></div>
-              <ul>
-                <li>Reduces the width available to long track titles.</li>
-                <li>Reads more like the previously rejected table treatment.</li>
-              </ul>
-              <p class="my-read"><strong>My read</strong>Third choice. Very scannable, but too table-like for this list.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-
-      <p class="ranking">
-        <strong>Ranking: 3b &gt; 3a &gt; 3c</strong>
-        3b beats 3a because it makes true peak scannable without structural cost.
-        3a beats 3c because keeping both values together preserves more width for track titles.
-      </p>
-    </section>
-
-    <section class="question free-text" aria-labelledby="q3-title">
-      <h2 id="q3-title">Q3: Anything else you want settled or changed?</h2>
-      <p class="question-intro">
-        Correct the framing,
-        add a constraint the candidates missed,
-        or explicitly reopen a settled decision if that is intentional.
-      </p>
-      <label for="anything-else">Your correction, constraint or “none”</label>
-      <textarea id="anything-else" name="anythingElse" required placeholder="None, or write what these options missed."></textarea>
-
+      <label for="other-corrections">Other corrections, or “None”</label>
+      <textarea id="other-corrections" name="otherCorrections" required placeholder="For example: The gray strip between the left and right panes should be white. The …"></textarea>
       <div class="actions">
         <button type="submit">Prepare answers</button>
         <button type="button" data-variant="secondary" id="clear-form">Clear</button>
-        <span class="status" id="status" role="status" aria-live="polite"></span>
       </div>
 
       <div class="output" id="output" hidden>
-        <label for="answer-output">Answer to paste back into Pi</label>
+        <label for="answer-output">Answer to paste into Pi</label>
         <textarea id="answer-output" readonly></textarea>
-        <div class="actions">
+        <div class="output-actions">
           <button type="button" id="copy-answers">Copy answers</button>
           <button type="button" data-variant="secondary" id="download-answers">Download answers</button>
         </div>
       </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
     </section>
   </form>
-
-  <footer>
-    Self-contained questionnaire. Visuals are native Compose captures from the unfolded Pixel 9 Pro Fold emulator.
-    No network, external stylesheet, script, font or server is required.
-  </footer>
 </main>
 
-<dialog class="preview-dialog" id="preview-dialog" aria-labelledby="zoom-title">
-  <div class="zoom-toolbar">
-    <div class="zoom-heading">
-      <h3 id="zoom-title">Candidate preview</h3>
+<dialog id="preview-dialog" aria-labelledby="zoom-title">
+  <div class="dialog-layout">
+    <div class="dialog-heading">
+      <h2 id="zoom-title">Divider preview</h2>
       <p id="zoom-dimensions"></p>
+      <div class="zoom-toolbar" aria-label="Preview zoom controls">
+        <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
+        <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
+        <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
+        <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
+        <button type="button" data-variant="secondary" id="zoom-native">1:1 display pixels</button>
+        <button type="button" id="zoom-actual">Reset: 1dp = 1 CSS px</button>
+        <button type="button" data-variant="secondary" id="zoom-close">Close preview and answer</button>
+      </div>
     </div>
-    <div class="zoom-actions">
-      <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
-      <span class="zoom-scale" id="zoom-scale" aria-live="polite"></span>
-      <button type="button" data-variant="secondary" id="zoom-in">Zoom in</button>
-      <button type="button" data-variant="secondary" id="zoom-fit">Fit</button>
-      <button type="button" data-variant="secondary" id="zoom-native">1:1 display pixels</button>
-      <button type="button" id="zoom-actual">Reset: 1dp = 1 CSS px</button>
-      <button type="button" data-variant="secondary" id="zoom-close">Close</button>
-    </div>
-  </div>
-  <div class="zoom-stage" id="zoom-stage" role="region" tabindex="0" aria-label="Zoomed candidate image; scroll to inspect the complete device render">
-    <div class="zoom-canvas">
-      <div class="device-frame zoom-device" id="zoom-device" data-frame-kind="full">
-        <div class="device-screen">
+    <div class="zoom-stage" id="zoom-stage">
+      <span class="zoom-device" id="zoom-device">
+        <span class="device-screen">
           <img class="zoom-image" id="zoom-image" alt="">
           <span class="device-camera" aria-hidden="true"></span>
-        </div>
-      </div>
+        </span>
+      </span>
     </div>
   </div>
 </dialog>
@@ -959,16 +789,16 @@ footer {
 const form = document.querySelector('#design-form');
 const output = document.querySelector('#output');
 const answerOutput = document.querySelector('#answer-output');
-const status = document.querySelector('#status');
 const clearButton = document.querySelector('#clear-form');
 const copyButton = document.querySelector('#copy-answers');
 const downloadButton = document.querySelector('#download-answers');
+const status = document.querySelector('#status');
 const previewDialog = document.querySelector('#preview-dialog');
+const zoomDevice = document.querySelector('#zoom-device');
+const zoomStage = document.querySelector('#zoom-stage');
+const zoomImage = document.querySelector('#zoom-image');
 const zoomTitle = document.querySelector('#zoom-title');
 const zoomDimensions = document.querySelector('#zoom-dimensions');
-const zoomStage = document.querySelector('#zoom-stage');
-const zoomDevice = document.querySelector('#zoom-device');
-const zoomImage = document.querySelector('#zoom-image');
 const zoomScale = document.querySelector('#zoom-scale');
 const zoomOut = document.querySelector('#zoom-out');
 const zoomIn = document.querySelector('#zoom-in');
@@ -976,37 +806,28 @@ const zoomFit = document.querySelector('#zoom-fit');
 const zoomNative = document.querySelector('#zoom-native');
 const zoomActual = document.querySelector('#zoom-actual');
 const zoomClose = document.querySelector('#zoom-close');
-const minimumScale = 0.25;
-const maximumScaleLimit = 3;
-const scaleStep = 0.25;
 const fullFrameWidth = 907;
-const halfFrameWidth = 454;
 const frameHeight = 937;
+const scaleStep = 0.25;
+const minimumScale = 0.25;
+const maximumScaleLimit = 4;
 let currentScale = 1;
 let targetWidth = 852;
 let targetHeight = 883;
-let targetUnit = 'dp';
 let sourceWidth = 2076;
 let sourceHeight = 2152;
-let frameKind = 'full';
-
-const getFrameWidth = () => frameKind === 'full' ? fullFrameWidth : halfFrameWidth;
 
 const renderZoom = () => {
   const renderedWidth = Math.round(targetWidth * currentScale);
   const renderedHeight = Math.round(targetHeight * currentScale);
-  const renderedFrameWidth = getFrameWidth() * currentScale;
+  const renderedFrameWidth = fullFrameWidth * currentScale;
   const renderedFrameHeight = frameHeight * currentScale;
-  zoomDevice.dataset.frameKind = frameKind;
   zoomDevice.style.inlineSize = `${renderedFrameWidth}px`;
   zoomDevice.style.blockSize = `${renderedFrameHeight}px`;
   const displayWidth = Math.round(renderedWidth * devicePixelRatio);
   const displayHeight = Math.round(renderedHeight * devicePixelRatio);
-  const frameDescription = frameKind === 'full'
-    ? 'Full unfolded Pixel 9 Pro Fold frame'
-    : 'Right-half crop of unfolded Pixel 9 Pro Fold frame';
   zoomScale.textContent = `${Math.round(currentScale * 100)}% · ${renderedWidth}×${renderedHeight} CSS px · ${displayWidth}×${displayHeight} display px`;
-  zoomDimensions.textContent = `${frameDescription}. Screen study: ${targetWidth}×${targetHeight}${targetUnit}. Source: ${sourceWidth}×${sourceHeight}px. At 100%, 1dp maps to 1 CSS px; body reference is 150.2×155.2mm unfolded.`;
+  zoomDimensions.textContent = `Whole unfolded Pixel 9 Pro Fold. Screen: ${targetWidth}×${targetHeight}dp. Source: ${sourceWidth}×${sourceHeight}px. At 100%, 1dp maps to 1 CSS px.`;
 };
 
 const getMaximumSharpScale = () => Math.max(
@@ -1026,17 +847,15 @@ const setZoom = (scale) => {
 const fitZoom = () => {
   const inlineRoom = Math.max(1, zoomStage.clientWidth - 32);
   const blockRoom = Math.max(1, zoomStage.clientHeight - 32);
-  setZoom(Math.min(1, inlineRoom / getFrameWidth(), blockRoom / frameHeight));
+  setZoom(Math.min(1, inlineRoom / fullFrameWidth, blockRoom / frameHeight));
 };
 
 const openPreview = (button) => {
   const image = button.querySelector('img');
   targetWidth = Number(button.dataset.previewWidth);
   targetHeight = Number(button.dataset.previewHeight);
-  targetUnit = button.dataset.previewUnit;
   sourceWidth = Number(button.dataset.sourceWidth);
   sourceHeight = Number(button.dataset.sourceHeight);
-  frameKind = button.dataset.frameKind;
   zoomTitle.textContent = button.dataset.previewTitle;
   zoomImage.src = image.src;
   zoomImage.alt = image.alt;
@@ -1048,9 +867,8 @@ const openPreview = (button) => {
 const buildAnswer = () => {
   const data = new FormData(form);
   return [
-    `Q1 ${data.get('lightSeparation')}`,
-    `Q2 ${data.get('peakEmphasis')}`,
-    `Q3 ${data.get('anythingElse').trim()}`,
+    `Divider ${data.get('dividerTreatment')}`,
+    `Other corrections: ${data.get('otherCorrections').trim()}`,
   ].join('\n');
 };
 
@@ -1059,7 +877,6 @@ const copyText = async (text) => {
     await navigator.clipboard.writeText(text);
     return;
   }
-
   answerOutput.focus();
   answerOutput.select();
   const copied = document.execCommand('copy');
@@ -1089,10 +906,9 @@ form.addEventListener('submit', (event) => {
   if (!form.reportValidity()) {
     return;
   }
-
   answerOutput.value = buildAnswer();
   output.hidden = false;
-  status.textContent = 'Answers prepared.';
+  status.textContent = 'Answers prepared. Choose Copy answers, then paste them into Pi.';
   output.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
@@ -1101,7 +917,7 @@ clearButton.addEventListener('click', () => {
   answerOutput.value = '';
   output.hidden = true;
   status.textContent = 'Answers cleared.';
-  document.querySelector('input[name="lightSeparation"]').focus();
+  document.querySelector('input[name="dividerTreatment"]').focus();
 });
 
 copyButton.addEventListener('click', async () => {
@@ -1118,18 +934,11 @@ downloadButton.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'music-player-design-round-1.txt';
+  link.download = 'music-player-divider-clarification.txt';
   link.click();
   URL.revokeObjectURL(url);
   status.textContent = 'Answers downloaded.';
 });
-
-const chosenBaselineHash = '#chosen-baseline';
-if (window.location.hash === chosenBaselineHash) {
-  const chosenBaselineInput = document.querySelector('input[name="lightSeparation"][value="1c"]');
-  const chosenBaselineButton = chosenBaselineInput.closest('.option').querySelector('.preview-open');
-  openPreview(chosenBaselineButton);
-}
 </script>
 </body>
 </html>

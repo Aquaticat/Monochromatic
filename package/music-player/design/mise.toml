@@ -3,12 +3,9 @@ build_question = '''
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
-  IMAGE_LIGHT_A: 'questions/render/light-a.png',
-  IMAGE_LIGHT_B: 'questions/render/light-b.png',
-  IMAGE_LIGHT_C: 'questions/render/light-c.png',
-  IMAGE_DBTP_A: 'questions/render/dbtp-a.png',
-  IMAGE_DBTP_B: 'questions/render/dbtp-b.png',
-  IMAGE_DBTP_C: 'questions/render/dbtp-c.png',
+  IMAGE_DIVIDER_A: 'questions/render/divider-a.png',
+  IMAGE_DIVIDER_B: 'questions/render/divider-b.png',
+  IMAGE_DIVIDER_C: 'questions/render/divider-c.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
 for (const [name, path] of Object.entries(renderPaths)) {
@@ -21,7 +18,7 @@ for (const [name, path] of Object.entries(renderPaths)) {
   output = output.replace(marker, dataUri);
 }
 writeFileSync(resolve('questions/current.html'), output);
-console.log('Built self-contained design questionnaire.');
+console.log('Built self-contained divider clarification questionnaire.');
 '''
 
 validate_question = '''
@@ -30,36 +27,26 @@ const { existsSync, readFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const requiredPaths = [
   'HANDOFF.md',
-  'review-notes.md',
   'decisions.md',
   'open-questions.md',
   'device-metrics.md',
   'material-3-compliance.md',
-  'candidates/light-a.dc.html',
-  'candidates/light-b.dc.html',
-  'candidates/light-c.dc.html',
   'questions/current.template.html',
   'questions/current.html',
-  'questions/render/light-a.png',
-  'questions/render/light-b.png',
-  'questions/render/light-c.png',
-  'questions/render/dbtp-a.png',
-  'questions/render/dbtp-b.png',
-  'questions/render/dbtp-c.png',
+  'questions/render/divider-a.png',
+  'questions/render/divider-b.png',
+  'questions/render/divider-c.png',
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
-  throw new Error(`Missing required design files: ${missingPaths.join(', ')}`);
+  throw new Error(`Missing required divider-round files: ${missingPaths.join(', ')}`);
 }
-const renderDimensions = [
-  ['questions/render/light-a.png', 2076, 2152],
-  ['questions/render/light-b.png', 2076, 2152],
-  ['questions/render/light-c.png', 2076, 2152],
-  ['questions/render/dbtp-a.png', 1038, 2152],
-  ['questions/render/dbtp-b.png', 1038, 2152],
-  ['questions/render/dbtp-c.png', 1038, 2152],
+const renderPaths = [
+  'questions/render/divider-a.png',
+  'questions/render/divider-b.png',
+  'questions/render/divider-c.png',
 ];
-for (const [path, expectedWidth, expectedHeight] of renderDimensions) {
+for (const path of renderPaths) {
   const image = readFileSync(resolve(path));
   const pngSignature = '89504e470d0a1a0a';
   if (image.subarray(0, 8).toString('hex') !== pngSignature) {
@@ -67,19 +54,16 @@ for (const [path, expectedWidth, expectedHeight] of renderDimensions) {
   }
   const width = image.readUInt32BE(16);
   const height = image.readUInt32BE(20);
-  if (width !== expectedWidth || height !== expectedHeight) {
-    throw new Error(`${path} is ${width}×${height}; expected ${expectedWidth}×${expectedHeight}.`);
+  if (width !== 2076 || height !== 2152) {
+    throw new Error(`${path} is ${width}×${height}; expected 2076×2152.`);
   }
-}
-const screenCapturePaths = renderDimensions.map(([path]) => path);
-for (const path of screenCapturePaths) {
   const opaque = execFileSync(
     'magick',
     [resolve(path), '-format', '%[opaque]', 'info:'],
     { encoding: 'utf8' },
   );
   if (opaque !== 'True') {
-    throw new Error(`${path} must remain an opaque emulator screen capture.`);
+    throw new Error(`${path} must remain an opaque native emulator capture.`);
   }
 }
 const pixelAt = ({ path, x, y }) => execFileSync(
@@ -114,30 +98,7 @@ const countPixelsMatching = ({ path, crop, predicate }) => {
 const isBlack = ([red, green, blue]) => red === 0 && green === 0 && blue === 0;
 const isDark = ([red, green, blue]) => red < 128 && green < 128 && blue < 128;
 const isPrimary = ([red, green, blue]) => red === 76 && green === 94 && blue === 139;
-const fullCaptureEdges = [
-  {
-    path: 'questions/render/light-a.png',
-    topStart: 'srgba(243,243,250,1)',
-    bottomStart: 'srgba(237,237,246,1)',
-    screenEnd: 'srgba(250,248,254,1)',
-    gap: 'srgba(250,248,254,1)',
-  },
-  {
-    path: 'questions/render/light-b.png',
-    topStart: 'srgba(250,248,254,1)',
-    bottomStart: 'srgba(250,248,254,1)',
-    screenEnd: 'srgba(250,248,254,1)',
-    gap: null,
-  },
-  {
-    path: 'questions/render/light-c.png',
-    topStart: 'srgba(255,255,255,1)',
-    bottomStart: 'srgba(243,243,250,1)',
-    screenEnd: 'srgba(255,255,255,1)',
-    gap: 'srgba(216,217,228,1)',
-  },
-];
-for (const { path, topStart, bottomStart, screenEnd, gap } of fullCaptureEdges) {
+for (const path of renderPaths) {
   const selectedRowPixel = pixelAt({ path, x: 1100, y: 350 });
   const statusIconPixels = countPixelsMatching({
     path,
@@ -149,328 +110,123 @@ for (const { path, topStart, bottomStart, screenEnd, gap } of fullCaptureEdges) 
     crop: '700x78+688+2074',
     predicate: isDark,
   });
-  const edgePixels = [
-    pixelAt({ path, x: 0, y: 0 }),
-    pixelAt({ path, x: 0, y: 2151 }),
-    pixelAt({ path, x: 2075, y: 0 }),
-    pixelAt({ path, x: 2075, y: 2151 }),
-  ];
-  const expectedEdgePixels = [topStart, bottomStart, screenEnd, screenEnd];
   if (selectedRowPixel !== 'srgba(185,203,255,1)') {
-    throw new Error(`${path} is missing the pinned dynamic primary-container list selection.`);
+    throw new Error(`${path} must keep the dynamic selected-track role pair.`);
   }
   if (statusIconPixels < 1_500) {
-    throw new Error(`${path} is missing the native Android status icons.`);
+    throw new Error(`${path} is missing native Android status icons.`);
   }
   if (navigationHandlePixels < 2_000) {
-    throw new Error(`${path} is missing the native unfolded gesture handle.`);
+    throw new Error(`${path} is missing the native unfolded navigation handle.`);
   }
-  if (edgePixels.some((pixel, index) => pixel !== expectedEdgePixels[index])) {
-    throw new Error(`${path} breaks full-bleed Material surface-role mapping at a screen edge.`);
-  }
-  if (gap !== null) {
-    const gapPixels = [
-      pixelAt({ path, x: 500, y: 1420 }),
-      pixelAt({ path, x: 500, y: 1421 }),
-      pixelAt({ path, x: 500, y: 1459 }),
-      pixelAt({ path, x: 500, y: 1460 }),
-    ];
-    if (gapPixels[0] === gap || gapPixels[1] !== gap || gapPixels[2] !== gap || gapPixels[3] === gap) {
-      throw new Error(`${path} must keep exactly one 39px inter-section gap without outer margins.`);
-    }
-  }
-}
-const railEdgePixel = pixelAt({ path: 'questions/render/light-a.png', x: 0, y: 1000 });
-if (railEdgePixel !== 'srgba(231,231,241,1)') {
-  throw new Error('questions/render/light-a.png must place the selectable letter rail flush against the device edge.');
-}
-const removedFolderControlPixel = pixelAt({ path: 'questions/render/light-a.png', x: 300, y: 350 });
-if (removedFolderControlPixel !== 'srgba(243,243,250,1)') {
-  throw new Error('questions/render/light-a.png must not restore the redundant left current-folder control.');
-}
-const chosenWhiteRailSeamPixels = [115, 117, 119].map((x) =>
-  pixelAt({ path: 'questions/render/light-c.png', x, y: 1000 }),
-);
-if (chosenWhiteRailSeamPixels.some((pixel) => pixel !== 'srgba(255,255,255,1)')) {
-  throw new Error('questions/render/light-c.png must render the chosen rail seam white.');
-}
-const selectedFolderTabIndicatorPixels = countPixelsMatching({
-  path: 'questions/render/light-a.png',
-  crop: '200x4+140+499',
-  predicate: isPrimary,
-});
-if (selectedFolderTabIndicatorPixels < 700) {
-  throw new Error('questions/render/light-a.png must show the 2dp selected-folder tab indicator across the target.');
-}
-const linkLikeUnderlinePixels = countPixelsMatching({
-  path: 'questions/render/light-a.png',
-  crop: '200x5+140+458',
-  predicate: isPrimary,
-});
-if (linkLikeUnderlinePixels > 0) {
-  throw new Error('questions/render/light-a.png must not underline selected folder text like a web link.');
-}
-const centralSpacerPixels = [
-  pixelAt({ path: 'questions/render/light-c.png', x: 1008, y: 1000 }),
-  pixelAt({ path: 'questions/render/light-c.png', x: 1009, y: 1000 }),
-  pixelAt({ path: 'questions/render/light-c.png', x: 1067, y: 1000 }),
-  pixelAt({ path: 'questions/render/light-c.png', x: 1068, y: 1000 }),
-];
-const surfaceDimPixel = 'srgba(216,217,228,1)';
-if (
-  centralSpacerPixels[0] === surfaceDimPixel
-  || centralSpacerPixels[1] !== surfaceDimPixel
-  || centralSpacerPixels[2] !== surfaceDimPixel
-  || centralSpacerPixels[3] === surfaceDimPixel
-) {
-  throw new Error('questions/render/light-c.png must keep the centered 59px Material expanded-layout spacer.');
-}
-for (const path of renderDimensions.slice(3).map(([entryPath]) => entryPath)) {
-  const statusIconPixels = countPixelsMatching({
+  const selectedFolderIndicatorPixels = countPixelsMatching({
     path,
-    crop: '300x88+700+0',
-    predicate: isBlack,
+    crop: '200x4+140+499',
+    predicate: isPrimary,
   });
-  const navigationHandlePixels = countPixelsMatching({
+  if (selectedFolderIndicatorPixels < 700) {
+    throw new Error(`${path} must retain the selected folder's separate 2dp target-width indicator.`);
+  }
+  const linkLikeUnderlinePixels = countPixelsMatching({
     path,
-    crop: '300x78+0+2074',
-    predicate: isDark,
+    crop: '200x5+140+458',
+    predicate: isPrimary,
   });
-  const selectedRowPixel = pixelAt({ path, x: 500, y: 350 });
-  const spacerPixels = [
-    pixelAt({ path, x: 29, y: 1000 }),
-    pixelAt({ path, x: 30, y: 1000 }),
-  ];
-  const bottomEndPixel = pixelAt({ path, x: 1037, y: 2151 });
-  if (statusIconPixels < 1_500) {
-    throw new Error(`${path} is missing the native Android status icons.`);
-  }
-  if (selectedRowPixel !== 'srgba(185,203,255,1)') {
-    throw new Error(`${path} is missing the pinned dynamic primary-container list selection.`);
-  }
-  if (navigationHandlePixels < 2_000) {
-    throw new Error(`${path} is missing the native unfolded gesture handle crop.`);
-  }
-  if (spacerPixels[0] !== surfaceDimPixel || spacerPixels[1] === surfaceDimPixel) {
-    throw new Error(`${path} must retain 30px of the centered Material pane spacer in its physical half crop.`);
-  }
-  if (bottomEndPixel !== 'srgba(255,255,255,1)') {
-    throw new Error(`${path} must keep its Material track surface full bleed at the outer edge.`);
+  if (linkLikeUnderlinePixels > 0) {
+    throw new Error(`${path} must not underline selected folder text like a web link.`);
   }
 }
-const trailingValuePixels = countPixelsMatching({
-  path: 'questions/render/dbtp-c.png',
-  crop: '180x1232+820+468',
-  predicate: isDark,
-});
-if (trailingValuePixels < 4_000) {
-  throw new Error('questions/render/dbtp-c.png is missing complete true-peak values in the Material trailing slot.');
+const white = 'srgba(255,255,255,1)';
+const surfaceDim = 'srgba(216,217,228,1)';
+const outlineVariant = 'srgba(176,177,188,1)';
+const railSeamA = pixelAt({ path: 'questions/render/divider-a.png', x: 117, y: 1000 });
+const railSeamB = pixelAt({ path: 'questions/render/divider-b.png', x: 117, y: 1000 });
+const railSeamC = pixelAt({ path: 'questions/render/divider-c.png', x: 117, y: 1000 });
+const centerA = pixelAt({ path: 'questions/render/divider-a.png', x: 1038, y: 1000 });
+const centerB = pixelAt({ path: 'questions/render/divider-b.png', x: 1038, y: 1000 });
+const centerC = pixelAt({ path: 'questions/render/divider-c.png', x: 1038, y: 1000 });
+if (railSeamA !== white || centerA !== surfaceDim) {
+  throw new Error('divider-a must show a white rail line with the tonal center spacer unchanged.');
 }
-const relativeLuminance = (hex) => {
-  const channels = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
-  const linearChannels = channels.map((channel) => {
-    const encoded = channel / 255;
-    if (encoded <= 0.04045) {
-      return encoded / 12.92;
-    }
-    return ((encoded + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * linearChannels[0] + 0.7152 * linearChannels[1] + 0.0722 * linearChannels[2];
-};
-const contrastRatio = ({ foreground, background }) => {
-  const foregroundLuminance = relativeLuminance(foreground);
-  const backgroundLuminance = relativeLuminance(background);
-  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
-  const darker = Math.min(foregroundLuminance, backgroundLuminance);
-  return (lighter + 0.05) / (darker + 0.05);
-};
-const pinnedRoles = {
-  primary: '4C5E8B',
-  onPrimary: 'F9F8FF',
-  primaryContainer: 'B9CBFF',
-  onPrimaryContainer: '30436E',
-  secondaryContainer: 'DCE2F9',
-  onSecondaryContainer: '4B5164',
-  surface: 'FAF8FE',
-  surfaceContainerLow: 'F3F3FA',
-  surfaceContainer: 'EDEDF6',
-  surfaceContainerHigh: 'E7E7F1',
-  surfaceContainerLowest: 'FFFFFF',
-  surfaceDim: 'D8D9E4',
-  onSurface: '30323A',
-  onSurfaceVariant: '5D5F68',
-  outline: '787A84',
-};
-const surfaceRoleNames = [
-  'surface',
-  'surfaceContainerLow',
-  'surfaceContainer',
-  'surfaceContainerHigh',
-  'surfaceContainerLowest',
-  'surfaceDim',
-];
-const textContrastChecks = [
-  ...surfaceRoleNames.flatMap((backgroundRole) => [
-    { foregroundRole: 'onSurface', backgroundRole, minimum: 4.5 },
-    { foregroundRole: 'onSurfaceVariant', backgroundRole, minimum: 4.5 },
-  ]),
-  { foregroundRole: 'primary', backgroundRole: 'surface', minimum: 4.5 },
-  { foregroundRole: 'primary', backgroundRole: 'surfaceContainerLow', minimum: 4.5 },
-  { foregroundRole: 'primary', backgroundRole: 'surfaceContainerLowest', minimum: 4.5 },
-  { foregroundRole: 'onPrimary', backgroundRole: 'primary', minimum: 4.5 },
-  { foregroundRole: 'onPrimaryContainer', backgroundRole: 'primaryContainer', minimum: 4.5 },
-  { foregroundRole: 'onSecondaryContainer', backgroundRole: 'secondaryContainer', minimum: 4.5 },
-];
-const nonTextContrastChecks = [
-  { foregroundRole: 'outline', backgroundRole: 'surface', minimum: 3 },
-  { foregroundRole: 'outline', backgroundRole: 'surfaceContainerLow', minimum: 3 },
-  { foregroundRole: 'outline', backgroundRole: 'surfaceContainerLowest', minimum: 3 },
-  { foregroundRole: 'primary', backgroundRole: 'surfaceContainer', minimum: 3 },
-];
-const contrastFailures = [...textContrastChecks, ...nonTextContrastChecks].filter((check) => {
-  const ratio = contrastRatio({
-    foreground: pinnedRoles[check.foregroundRole],
-    background: pinnedRoles[check.backgroundRole],
-  });
-  return ratio < check.minimum;
-});
-if (contrastFailures.length > 0) {
-  throw new Error(`Pinned dynamic role pairs fail contrast: ${JSON.stringify(contrastFailures)}.`);
+if (railSeamB !== outlineVariant || centerB !== white) {
+  throw new Error('divider-b must show the outline-variant rail line with a white center spacer.');
+}
+if (railSeamC !== white || centerC !== white) {
+  throw new Error('divider-c must show both the rail line and center spacer in white.');
 }
 const question = readFileSync(resolve('questions/current.html'), 'utf8');
-const deviceRasterSelector = '.preview-open img,\n.zoom-image {';
-const deviceRasterRuleStart = question.indexOf(deviceRasterSelector);
-const deviceRasterRuleEnd = question.indexOf('\n}', deviceRasterRuleStart);
-const deviceRasterRule = question.slice(deviceRasterRuleStart, deviceRasterRuleEnd);
-if (deviceRasterRuleStart < 0 || deviceRasterRuleEnd < 0) {
-  throw new Error(`Missing device raster rule: ${deviceRasterSelector}`);
-}
-if (deviceRasterRule.includes('border-radius')) {
-  throw new Error(`${deviceRasterSelector} must not round the screen-content raster.`);
-}
-const deviceFrameSelector = '.device-frame {';
-const deviceFrameRuleStart = question.indexOf(deviceFrameSelector);
-const deviceFrameRuleEnd = question.indexOf('\n}', deviceFrameRuleStart);
-const deviceFrameRule = question.slice(deviceFrameRuleStart, deviceFrameRuleEnd);
-const missingFrameProperties = [
-  'overflow: hidden;',
-  'background-color: var(--device-body);',
-].filter((property) => !deviceFrameRule.includes(property));
-if (deviceFrameRuleStart < 0 || deviceFrameRuleEnd < 0 || missingFrameProperties.length > 0) {
-  throw new Error(`Device chassis must be opaque and clip only at its outer silhouette: ${missingFrameProperties.join(', ')}`);
-}
-const deviceScreenSelector = '.device-screen {';
-const deviceScreenRuleStart = question.indexOf(deviceScreenSelector);
-const deviceScreenRuleEnd = question.indexOf('\n}', deviceScreenRuleStart);
-const deviceScreenRule = question.slice(deviceScreenRuleStart, deviceScreenRuleEnd);
-const missingScreenProperties = [
-  'overflow: hidden;',
-  'background-color: var(--device-screen-fill);',
-].filter((property) => !deviceScreenRule.includes(property));
-if (deviceScreenRuleStart < 0 || deviceScreenRuleEnd < 0 || missingScreenProperties.length > 0) {
-  throw new Error(`Screen content must sit inside an opaque screen opening: ${missingScreenProperties.join(', ')}`);
-}
 const forbiddenFragments = [
   '<link ',
   '<script src=',
   'http://',
   'https://',
-  'class="foldable"',
-  'class="track-study"',
-  'prototype commit 6e8f248c5',
-  'prototype commit 12e99097d',
-  'prototype commit f54fc145d',
-  'prototype commit 88374ace0',
-  'prototype commit 8ec92ff7f',
-  'data-preview-width="418"',
-  'data-source-width="1019"',
-  'Value only on playing row',
   '@@IMAGE_',
+  '#chosen-baseline',
+  'Q1 1c',
+  'Q2 3a',
+  'what is your definition',
 ];
 const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
 if (foundFragments.length > 0) {
-  throw new Error(`Questionnaire violates its self-contained render contract: ${foundFragments.join(', ')}`);
+  throw new Error(`Divider form contains stale or external content: ${foundFragments.join(', ')}`);
 }
 const requiredFragments = [
   '<form',
+  '<fieldset>',
   '<textarea',
   '<dialog',
-  'name="lightSeparation"',
-  'name="peakEmphasis"',
-  'name="anythingElse"',
-  'id="zoom-scale"',
-  'id="zoom-fit"',
-  'id="zoom-native"',
-  'id="zoom-actual"',
+  'What to do',
+  'Rail line:',
+  'Center spacer:',
+  'name="dividerTreatment"',
+  'name="otherCorrections"',
+  'value="rail-white"',
+  'value="center-white"',
+  'value="both-white"',
+  'Ranking: D2 &gt; D3 &gt; D1.',
+  'Other corrections, or “None”',
+  'Copy answers',
+  'prototype commit 89a9f7033',
   'data-preview-width="852"',
   'data-preview-height="883"',
-  'data-preview-width="426"',
   'data-source-width="2076"',
   'data-source-height="2152"',
-  'data-source-width="1038"',
-  'class="device-frame"',
-  'data-frame-kind="full"',
-  'data-frame-kind="right-half"',
-  'class="device-screen"',
-  'class="device-camera"',
-  'Native Compose capture from Pixel 9 Pro Fold emulator',
-  'prototype commit 5cff61514',
-  'official Material 3 components',
-  'Every selected state has a non-color cue',
-  'separate MD1-style 2dp tab indicator',
-  'selectable letter rail is flush with the physical start edge',
-  'Open shares the Folders app-bar line',
-  '1c · chosen',
-  'one white rail divider',
-  '3a · chosen',
-  'Planned display templating',
-  "const chosenBaselineHash = '#chosen-baseline';",
-  'dynamic role mappings',
-  'Android 17 API 37',
-  '--device-body: #262624;',
   'aspect-ratio: 907 / 937;',
-  'aspect-ratio: 454 / 937;',
   'const fullFrameWidth = 907;',
-  'const halfFrameWidth = 454;',
   'const frameHeight = 937;',
-  'data-preview-title="1a: Tonal ramp, no outlines" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
-  'data-preview-title="1b: One flat surface with dividers" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
-  'data-preview-title="1c: Tonal panes with one white rail divider" data-preview-width="852" data-preview-height="883" data-preview-unit="dp" data-source-width="2076" data-source-height="2152" data-frame-kind="full"',
-  'data-preview-title="3a: One secondary treatment" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
-  'data-preview-title="3b: Stronger true-peak value" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
-  'data-preview-title="3c: Trailing true-peak column" data-preview-width="426" data-preview-height="883" data-preview-unit="dp" data-source-width="1038" data-source-height="2152" data-frame-kind="right-half"',
-  'grid-template-columns: repeat(3, minmax(0, 1fr))',
-  'Copy answers',
+  '--color-device: #262624;',
+  'Close preview and answer',
 ];
 const absentFragments = requiredFragments.filter((fragment) => !question.includes(fragment));
 if (absentFragments.length > 0) {
-  throw new Error(`Questionnaire is incomplete: ${absentFragments.join(', ')}`);
+  throw new Error(`Divider form is incomplete: ${absentFragments.join(', ')}`);
 }
 const imageCount = question.split('data-candidate-source=').length - 1;
 const embeddedImageCount = question.split('data:image/png;base64,').length - 1;
-const cardFrameCount = question.split('class="device-frame"').length - 1;
-const screenOpeningCount = question.split('class="device-screen"').length - 1;
+const frameCount = question.split('class="device-frame"').length - 1;
+const screenCount = question.split('class="device-screen"').length - 1;
 const cameraCount = question.split('class="device-camera"').length - 1;
-if (imageCount !== 6 || embeddedImageCount !== 6) {
-  throw new Error(`Expected six sourced and embedded candidate renders, found ${imageCount} sources and ${embeddedImageCount} images.`);
+const radioCount = question.split('type="radio" name="dividerTreatment"').length - 1;
+if (imageCount !== 3 || embeddedImageCount !== 3) {
+  throw new Error(`Expected three sourced and embedded renders, found ${imageCount} sources and ${embeddedImageCount} images.`);
 }
-if (cardFrameCount !== 6 || screenOpeningCount !== 7 || cameraCount !== 7) {
-  throw new Error(`Expected six card frames plus one dialog frame, found ${cardFrameCount} card frames, ${screenOpeningCount} screens and ${cameraCount} cameras.`);
+if (frameCount !== 3 || screenCount !== 4 || cameraCount !== 4 || radioCount !== 3) {
+  throw new Error(`Expected three cards plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, ${cameraCount} cameras, and ${radioCount} radios.`);
 }
-console.log('Design questionnaire structure is valid.');
+console.log('Divider clarification questionnaire structure is valid.');
 '''
 
 [tasks.build]
-description = "Embed exact candidate renders into the self-contained questionnaire"
+description = "Embed native divider alternatives into the self-contained clarification form"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active self-contained design questionnaire"
+description = "Validate the active divider clarification questionnaire"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the design questionnaire's static completion contract"
+description = "Exercise the divider clarification form's static completion contract"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
