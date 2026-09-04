@@ -571,7 +571,12 @@ The isolated Helium browser and emulator are stopped. The final blank questionna
 opened through the Helium desktop entry. KWin reports its exact new
 `Music player design: grilling round 1 - Helium` window at 1080 × 1880 on `DP-2`;
 it is non-minimized and a one-shot activation targeted that window. No theme answer has
-been recorded.
+been recorded. The user then rejected the selected `Camellia` text underline because
+underlined text communicates a web link. Their requested replacement is an MD1-style
+tab treatment on that folder target, not a change to the edge-flush letter rail. Use a
+separate tab indicator belonging to the whole 48dp target rather than decorating the
+label glyphs; keep color plus the spatial indicator as redundant selected-state cues.
+Recapture and reopen before accepting answers.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
