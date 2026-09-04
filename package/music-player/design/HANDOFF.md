@@ -797,7 +797,25 @@ show it again merely as before-state evidence. The active HTML must show only th
 current revised D2 design. Keep rejected captures in durable records and regression
 guards, not in the user-facing review. Replace the comparison with one current-design
 preview plus clear `Continue` / `Needs another correction` controls and free text, then
-verify and reopen it.
+verify and reopen it. Rule RVC now makes that boundary durable. The active template and
+validator have been rebuilt around only `divider-final`; the discarded capture remains
+in repository evidence but cannot be embedded because the validator rejects its key,
+label, and prototype provenance. The page presents one current native design, its pros
+and tradeoffs, a current-candidate recommendation, `Continue` / `Needs another
+correction` controls, and required free text. Build, lint, and unit contracts pass;
+Helium verification now passes for the current-only review at DPR 2. The opening page
+contains one current card, one 2076 × 2152px native image, no discarded-image text or
+provenance, and `Continue` / `Needs another correction` answer controls. Its measured
+modal remains 907 × 937 CSS px around an 852 × 883px screen at 100%; Fit and the full
+zoom/control path pass. At 390 × 844 the single card is 316px wide and the page remains
+390px wide with no horizontal page overflow. Blank validation focuses the review
+radio. Both answer paths, free text, prepare, immediate copy, download, and clear pass;
+the corrected synthetic output is `Review result: continue / Other corrections:
+None`, then stays cleared. Offline loading decodes the one image without external URLs;
+forced host dark mode remains light. Axe reports no WCAG A/AA violations or incomplete
+checks on either the page or open modal. Labels, alternatives, IDs, focus, and 48px
+targets pass. Browser errors and console output are empty. Replace the stale normal
+Helium page with this current-only file and leave its instructional page visible.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
