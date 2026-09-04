@@ -185,10 +185,17 @@ const nightMode = execFileSync(
   ["-s", serial, "shell", "cmd", "uimode", "night"],
   { encoding: "utf8" },
 ).trim();
-if (themeCustomization !== "null" || nightMode !== "Night mode: no") {
-  throw new Error(`Capture requires stock AVD light theme; got customization=${themeCustomization}, ${nightMode}.`);
+const fontScale = execFileSync(
+  adb,
+  ["-s", serial, "shell", "settings", "get", "system", "font_scale"],
+  { encoding: "utf8" },
+).trim();
+if (themeCustomization !== "null" || nightMode !== "Night mode: no" || fontScale !== "1.0") {
+  throw new Error(
+    `Capture requires stock AVD light theme at 1.0 font scale; got customization=${themeCustomization}, ${nightMode}, fontScale=${fontScale}.`,
+  );
 }
-console.log(`Pinned dynamic-color state: customization=${themeCustomization}, ${nightMode}.`);
+console.log(`Pinned capture state: customization=${themeCustomization}, ${nightMode}, fontScale=${fontScale}.`);
 const displayListing = execFileSync(adb, ["-s", serial, "shell", "dumpsys", "SurfaceFlinger", "--display-id"], { encoding: "utf8" });
 const innerDisplayLine = displayListing
   .split("\n")

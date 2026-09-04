@@ -230,6 +230,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -261,6 +262,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -286,6 +288,7 @@ import androidx.compose.ui.graphics.Color
 // ```
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 
 // What:     `dp` and `sp` construct density-aware layout and font measurements.
 // Why:      Android converts the cited logical geometry to the emulator's 390dpi panel pixels.
@@ -303,6 +306,9 @@ const val DESIGN_CANDIDATE_EXTRA: String = "candidate"
 
 /** Default candidate used when screenshot automation omits its explicit selection. */
 const val DEFAULT_DESIGN_CANDIDATE: String = "light-c"
+
+/** Font-scale threshold where one-row segments change to a reflowing Material radio group. */
+const val LARGE_TEXT_MODE_THRESHOLD: Float = 1.5f
 
 /** Candidate-specific Material surface roles and decorative-divider treatment. */
 private data class CandidatePalette(
@@ -635,6 +641,7 @@ private fun RowScope.FolderNames() {
                         } else {
                             MaterialTheme.typography.bodyLarge
                         },
+                        textDecoration = if (selectedFolder) TextDecoration.Underline else null,
                     )
                 }
             }
@@ -647,7 +654,9 @@ private fun RowScope.FolderNames() {
 private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
     Column(
         modifier = modifier
+            .heightIn(max = 440.dp)
             .background(color = palette.transport)
+            .verticalScroll(rememberScrollState())
             .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Start))
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(horizontal = 16.dp, vertical = 16.dp),
@@ -715,11 +724,15 @@ private fun TransportControls() {
     }
 }
 
-/** Draws one non-wrapping Material single-choice segmented button with four visible options. */
+/** Draws one non-wrapping segmented control or a reflowing radio group for enlarged text. */
 @Composable
 private fun ModeControl() {
     val labels = listOf("Repeat", "In order", "Shuffle", "Shuffle all")
     val accessibleLabels = listOf("Repeat track", "Play in order", "Shuffle current folder", "Shuffle all folders")
+    if (LocalDensity.current.fontScale >= LARGE_TEXT_MODE_THRESHOLD) {
+        LargeTextModeControl(labels = accessibleLabels)
+        return
+    }
     SingleChoiceSegmentedButtonRow {
         for (index in labels.indices) {
             SegmentedButton(
@@ -733,6 +746,32 @@ private fun ModeControl() {
                     },
             ) {
                 Text(text = labels[index], maxLines = 1)
+            }
+        }
+    }
+}
+
+/** Reflows playback modes into full-label Material radio rows when system text is enlarged. */
+@Composable
+private fun LargeTextModeControl(labels: List<String>) {
+    Column(modifier = Modifier.fillMaxWidth().selectableGroup()) {
+        for (index in labels.indices) {
+            val selectedMode = index == 1
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .selectable(
+                        selected = selectedMode,
+                        onClick = {},
+                        role = Role.RadioButton,
+                    )
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                RadioButton(selected = selectedMode, onClick = null)
+                Text(text = labels[index], style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
