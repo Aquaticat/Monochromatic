@@ -110,3 +110,16 @@ WHAT COMES BEFORE ANY RE-SIGNAL, in order: arm D read; whole suite and the guard
 landings; the fresh pass at production defaults over ten entries (`XingZ60` second); each page read twice and
 traced; a spot re-read on the fixed build if the reading finds publishability blockers; then this document
 gains a section that says what the pages showed, and `#219` is put again.
+
+## The owner's words on the goal, 2026-09-04
+
+Asked when a supervised sweep over all 92 entries should launch, the owner answered:
+
+> We never ever need a all 92 entries launch. If you believe it's ready for all 92 entries launch after
+> reading the artifacts, that means we had reached the goal of making it production ready.
+
+So the deliverable is the pipeline's readiness, judged by reading its artifacts and pages, and no 92-entry
+sweep is planned or budgeted. The 2026-09-03 OpenRouter budget arithmetic that priced such a sweep
+(`doc/planning/translation-repair-openrouter-2026-09-03.md`) is an upper bound on what the corpus would
+cost if it were ever run, not a plan. The readiness signal is put when a reading of the artifacts would
+let the sweep launch, whether or not it does.
