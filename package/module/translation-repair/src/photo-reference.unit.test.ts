@@ -12,6 +12,11 @@
  * kind of quiet undercount that makes a later measurement wrong rather than
  * absent.
  *
+ * The double-quote cases are the same lesson learnt again. Four source pages at
+ * pin `a41fc607` quote their paths with double marks, seven paths in all, and a
+ * reader that took single marks only sent one of them (BI4PBV, 2026-09-04)
+ * through its picture stage with nothing to read and nothing to say about it.
+ *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
@@ -98,6 +103,77 @@ await describe({
 
         expect(photoReferences({ text, },).length,).toBe(1,);
         expect(photoReferences({ text, },)[0]?.assetName,).toBe('tabby.webp',);
+      },
+    },),
+
+    it({
+      name: 'READS DOUBLE-QUOTED PATHS IN THE MULTI-LINE ARRAY FORM four source pages write, in '
+        + 'order, since a reader that knew one quote mark sent one of those pages through its '
+        + 'picture stage with nothing to read',
+      fn: async () => {
+        /**
+         * The double-quoted, one-path-per-line spelling, as those pages lay it out.
+         */
+        const text = `<PhotoScroll photos={[\n`
+          + `    "${ENTRY}/photos/tabby.webp",\n`
+          + `    "${ENTRY}/photos/mittens.webp",\n`
+          + `    "${ENTRY}/photos/sill.webp"\n`
+          + `]} />`;
+
+        expect(photoReferences({ text, },)
+          .map(function toName(reference,): string {
+            return reference.assetName;
+          },),).toEqual([
+          'tabby.webp',
+          'mittens.webp',
+          'sill.webp',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'READS A DOUBLE-QUOTED ELEMENT AND A SINGLE-QUOTED ONE in the same passage, since a '
+        + 'page may mix the two spellings across its sections',
+      fn: async () => {
+        /**
+         * One element of each spelling.
+         */
+        const text = `<PhotoScroll photos={["${ENTRY}/photos/one.webp"]} />\n\n`
+          + `She also drew this.\n\n${elementOf({ assets: [`${ENTRY}/photos/two.webp`,], },)}`;
+
+        expect(photoReferences({ text, },)
+          .map(function toName(reference,): string {
+            return reference.assetName;
+          },),).toEqual([
+          'one.webp',
+          'two.webp',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'CLOSES A STRING WITH THE MARK THAT OPENED IT, so a caption in one mark beside paths '
+        + 'in the other, or an apostrophe inside a double-quoted name, never splits a path in two',
+      fn: async () => {
+        /**
+         * A double-quoted caption beside single-quoted paths.
+         */
+        const captioned = `<PhotoScroll caption="Her cats' drawings" photos={[ '${ENTRY}/photos/one.webp' ]} />`;
+
+        expect(photoReferences({ text: captioned, },)
+          .map(function toName(reference,): string {
+            return reference.assetName;
+          },),).toEqual(['one.webp',],);
+
+        /**
+         * A double-quoted path carrying an apostrophe.
+         */
+        const apostrophe = `<PhotoScroll photos={["${ENTRY}/photos/tabby's-sill.webp"]} />`;
+
+        expect(photoReferences({ text: apostrophe, },)
+          .map(function toName(reference,): string {
+            return reference.assetName;
+          },),).toEqual(['tabby\'s-sill.webp',],);
       },
     },),
 

@@ -13,6 +13,15 @@
 // references and no `<img>` elements, so this reader deliberately understands
 // one construct rather than markdown's whole image vocabulary.
 //
+// TWO QUOTE MARKS, MEASURED LATER. At pin `a41fc607` the source pages write 199
+// asset paths: 192 in single quotes across 47 entries and 7 in double quotes
+// across 4 (`yulianNyanner`, `MTF_0615`, `Arita`, `BI4PBV`), and nothing in any
+// third form. Until 2026-09-04 this reader took single-quoted strings only, and
+// the first OpenRouter-alone BI4PBV pass (04:28 UTC) went through its picture
+// stage in one millisecond: four pictures referenced, none gathered, none read,
+// and no line saying so, because `assertVisualEvidenceComplete` asks this same
+// reader what the slices show. An undercount here is the quiet kind.
+//
 // THE PLACEHOLDER IS THE ENTRY. Every reference is written `${path}/photos/…`,
 // where `${path}` stands for the entry's own directory. One reference in the
 // corpus writes `${path} /photos/…` with a stray space, so the prefix is matched
@@ -20,7 +29,8 @@
 // that one asset would report an entry as having fewer images than it shows.
 //
 // NO REGEX, per `RG1`: the rule is "inside a PhotoScroll element, take every
-// single-quoted string", which a scan states directly and in one pass.
+// quoted string, closed by the mark that opened it", which a scan states
+// directly and in one pass.
 
 /**
  * Element that names images in this corpus.
@@ -33,9 +43,103 @@ const ELEMENT_OPEN = '<PhotoScroll';
 const ELEMENT_CLOSE = '/>';
 
 /**
- * Quote the corpus writes asset paths in.
+ * Quote marks the corpus writes asset paths in: most pages the first, four
+ * source pages the second.
  */
-const QUOTE = '\'';
+const QUOTE_MARKS = [
+  '\'',
+  '"',
+] as const;
+
+/**
+ * One of the marks a page may quote a path with.
+ */
+type QuoteMark = (typeof QUOTE_MARKS)[number];
+
+/**
+ * Where the next quoted string opens, or that none opens before the limit.
+ *
+ * A NAMED OUTCOME rather than a nullish union, which this repository does not
+ * model absence with.
+ *
+ * @example
+ * ```ts
+ * const opening: QuoteOpening = { kind: 'opened', quote: '"', at: 12, };
+ * ```
+ */
+type QuoteOpening = {
+  readonly kind: 'opened';
+
+  /**
+   * Mark that opened it, which alone may close it.
+   */
+  readonly quote: QuoteMark;
+
+  /**
+   * Offset of that mark.
+   */
+  readonly at: number;
+} | {
+  readonly kind: 'none';
+};
+
+/**
+ * Finds the nearest opening quote of either mark before a limit.
+ *
+ * EITHER MARK, NEAREST FIRST: a caption in double quotes beside paths in
+ * single quotes, or the reverse, must be read string by string in page order,
+ * or the caption's closing mark would be taken for a path's opening one.
+ *
+ * @param text - passage to read
+ *
+ * @param from - offset to search from
+ *
+ * @param limit - offset the element's attributes end at, exclusive
+ *
+ * @returns Nearest opening mark and which mark it is, or that none precedes
+ * the limit
+ *
+ * @example
+ * ```ts
+ * const opening = nextQuoteOpening({ text, from: 0, limit: text.length, },);
+ * ```
+ */
+function nextQuoteOpening(
+  {
+    text,
+    from,
+    limit,
+  }: {
+    readonly text: string;
+    readonly from: number;
+    readonly limit: number;
+  },
+): QuoteOpening {
+  return QUOTE_MARKS.reduce(
+    function nearer(
+      best: QuoteOpening,
+      quote: QuoteMark,
+    ): QuoteOpening {
+      /**
+       * Where this mark next occurs, if before the limit.
+       */
+      const at = text.indexOf(
+        quote,
+        from,
+      );
+      if ((at === (-1)) || (at >= limit))
+        return best;
+      if ((best.kind === 'opened') && (best.at <= at))
+        return best;
+      return {
+        kind: 'opened',
+        quote,
+        at,
+      };
+    },
+    { kind: 'none', },
+  );
+}
 
 /**
  * Directory every asset sits in, under the entry's own directory.
@@ -114,27 +218,29 @@ function quotedWithin(
 
   while (at.offset < limit) {
     /**
-     * Opening quote of the next string.
+     * Opening quote of the next string, of either mark.
      */
-    const opened = text.indexOf(
-      QUOTE,
-      at.offset,
-    );
-    if ((opened === (-1)) || (opened >= limit))
+    const opening = nextQuoteOpening({
+      text,
+      from: at.offset,
+      limit,
+    },);
+    if (opening.kind === 'none')
       break;
 
     /**
-     * Its closing quote.
+     * Its closing quote: the same mark, so the other mark inside a path is
+     * part of the path.
      */
     const closed = text.indexOf(
-      QUOTE,
-      opened + 1,
+      opening.quote,
+      opening.at + 1,
     );
     if ((closed === (-1)) || (closed >= limit))
       break;
 
     quoted.push(text.slice(
-      opened + 1,
+      opening.at + 1,
       closed,
     ),);
     at.offset = closed + 1;
