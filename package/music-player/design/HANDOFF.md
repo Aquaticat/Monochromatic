@@ -741,7 +741,14 @@ cleared form was opened through the Helium desktop entry without a preview hash.
 reports the exact `Music player design: white divider clarification - Helium` window
 as non-minimized at 1080 × 1880 on `HDMI-A-1`, internal ID
 `{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`. Activate that exact window as the final
-operation, then wait for the form answer.
+operation, then wait for the form answer. The user answered with
+`/var/home/user/Pictures/Screenshots/Screenshot_20260904_191909.png`: choose D2, and
+make the divider marked with red callout `1` white. The mark is unambiguous at the
+center of the horizontal 16dp strip between the folder picker and transport section,
+not the 1dp rail line. Final D34 therefore combines: `outlineVariant` rail line, white
+24dp vertical center spacer, and white 16dp horizontal picker/transport divider. Apply
+that exact combination, recapture it natively, and show it in an actionable updated
+HTML correction form before moving on.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**

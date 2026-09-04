@@ -29,7 +29,7 @@ which were left as historical style comparisons.
 | File | Size | What it shows |
 |---|---|---|
 | **mode-d** | 860×620 | The mode control question settled: connected button group (56px, 2px gaps, pill outer ends, 8px inner corners, selected inner corners 50%) in one row and wrapped to a grid, with the outlined segmented button (40px) shown beneath for comparison. All at real token values. |
-| **light-c** | 852×fill | D34 structure chosen: tonal panes on a surface-dim ground. Which visible divider becomes white remains in clarification. |
+| **light-c** | 852×fill | D34 final light baseline: tonal panes, `outlineVariant` rail line, white 24dp center spacer, and white 16dp picker/transport divider. |
 | **dbtp-a** | 426×883 | D35 default supporting line: duration and true peak share `onSurfaceVariant`; custom display templating will own optional emphasis. |
 | **sub-a** | 860×600 | A folder containing subfolders: subfolders in a labelled section above the folder’s own tracks, one screen, mixed content. |
 | **ctx-b** | 860×600 | Track context menu, eight items in three groups, headed by the track name, dB value inline, Re-analyse, Move to trash. |
@@ -64,8 +64,9 @@ neutral metadata treatment. They differ only in the two plausible separator colo
 - **divider-c:** rail line and center spacer both white. This covers both readings but
   leaves neither boundary visibly drawn.
 
-These are clarification options, not decisions. The updated HTML form must receive the
-user's answer before D34 becomes final.
+**Verdict:** D2, plus the 16dp horizontal picker/transport divider marked in
+`Screenshot_20260904_191909.png` must also be white. D34 is final: gray rail line,
+white vertical center spacer, and white horizontal section divider.
 
 ## ROUND 9 — theme work (all built on the bound MD3 bundle)
 
@@ -73,13 +74,13 @@ user's answer before D34 becomes final.
 |---|---|---|
 | **light-a** | 852×fill | Light theme, all-tonal: surface ground and tracks, surface-container-low picker, surface-container transport, surface-container-high rail. No dividers. |
 | **light-b** | 852×fill | Light theme, one surface role plus 1dp outline-variant dividers at pane, rail, and row boundaries. |
-| **light-c** | 852×fill | **STRUCTURE CHOSEN (D34):** surface-container panes on a surface-dim ground; white-divider target still awaiting clarification. |
+| **light-c** | 852×fill | **CHOSEN (D34), final:** surface-container panes, visible `outlineVariant` rail line, white vertical center spacer, and white horizontal picker/transport divider. |
 | **light-abc** | 3-up | All three side by side for comparison. |
 | **dark-a** | 418×fill | REJECTED — MD3's own dark container ramp above #000; the panes read as grey cards floating on black. |
 | **dark-b** | 418×fill | **CHOSEN (D32)** — the project's own ramp measured down from black: #000 / #0A0A0D / #121216 / #1A1A1F / #22222A. |
 | **dark-ab** | 2-up | Both, plus a swatch comparison of the two ramps. |
 | **dbtp-a/b/c** | 426×883 | **3a CHOSEN (D35):** one on-surface-variant line, because planned display templating will provide user-selected emphasis. 3b strengthens true peak; 3c moves it to the trailing slot. |
-| **light-a/b/c** | 852×fill | **1c STRUCTURE CHOSEN (D34); white-divider target remains open.** |
+| **light-a/b/c** | 852×fill | **1c CHOSEN (D34); final separator treatment is gray rail line plus white vertical and horizontal pane spacers.** |
 | **candidates/_ds/** | — | Copied MD3 token sheets (palette, color, fonts, typography, shape, elevation, spacing, state) so candidate files resolve them without `../`. |
 
 All light-side files are presented on a light desk with a light caption bar
@@ -103,9 +104,9 @@ the bottom of the whole target; the text itself is not underlined. At 200% font 
 the mode
 control changes from one non-wrapping segmented row to four full-label Material radio
 rows rather than clipping text. The latest comparison captures are integrated into the questionnaire. The user's
-settled baseline combines the `light-c` tonal structure with `dbtp-a`. The updated
-divider clarification round determines whether the rail line, center spacer, or both
-become white before the baseline is final.
+settled baseline combines the `light-c` tonal structure with `dbtp-a`. D34 makes the
+vertical center spacer and horizontal picker/transport divider white while retaining
+the visible dynamic rail line.
 
 ## ROUND 8 — verdicts in
 

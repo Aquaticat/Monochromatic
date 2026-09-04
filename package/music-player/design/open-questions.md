@@ -222,13 +222,12 @@ of decisions.md.
 
 ## 11. Theme work after session 4 (2026-09-04)
 
-### 11a. Light theme structure — 1c SETTLED; white-divider target OPEN (D34)
+### 11a. Light theme separation — SETTLED (D34)
 
-**Verdict.** The user chose `1c` and required "the divider" to be white. The initial
-implementation interpreted that as the 1dp line between the letter rail and folder
-names; the user did not accept the unexplained result. An updated HTML round now shows
-three native alternatives: white rail line, white 24dp center spacer, or both. The
-choice remains open until that form is answered.
+**Verdict.** The user chose `1c`, then clarification option D2. Keep the 1dp letter-rail
+line in `outlineVariant`; make the 24dp vertical center spacer white. In the annotated
+screenshot `Screenshot_20260904_191909.png`, the user also marked the 16dp horizontal
+strip between the folder picker and transport, so that divider is white too.
 Candidates `light-a` / `light-b` / `light-c` (and `light-abc`, all three side by side).
 Each prints its own pros, cons and my read in the caption bar.
 

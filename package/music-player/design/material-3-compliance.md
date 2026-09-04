@@ -170,9 +170,8 @@ Correction: derive the light scheme from Android dynamic color on Android 12 and
 newer, with the baseline light scheme as fallback. Express every candidate difference
 through `ColorScheme` roles. Use only valid paired foreground and container roles.
 Use `outlineVariant` for decorative rail, row, and pane dividers unless an explicit
-product override wins. D34 settles the `1c` structure but still needs the updated HTML
-round to identify whether its white override targets the rail line, center spacer, or
-both.
+product override wins. D34 keeps `outlineVariant` on the 1dp rail boundary and makes
+the 24dp center spacer plus 16dp picker/transport divider white.
 
 ### Type, spacing, resizing, and writing direction
 
@@ -261,10 +260,10 @@ Every repaired Q1 option must use valid Material surface roles:
 - `1b`: flat `surface` regions separated only by decorative
   `outlineVariant` dividers.
 - `1c`: `surfaceDim` ground with `surfaceContainerLowest` content and
-  `surfaceContainerLow` transport. D34 requires one still-unidentified divider element
-  to become white. White is an explicit product override rather than a dynamic
-  `ColorScheme` role; the clarification candidates apply it only to decorative layout
-  separation, never state or an interactive boundary.
+  `surfaceContainerLow` transport. D34 overrides the 24dp center spacer and 16dp
+  picker/transport divider to white while retaining the dynamic `outlineVariant` rail
+  line. White is an explicit product override rather than a `ColorScheme` role; both
+  white regions are decorative layout separation, never state or interactive bounds.
 
 Every repaired Q2 option keeps the same compliant list structure, selected-state role
 pair, type roles, icons, and targets. Only the treatment of the true-peak supporting
