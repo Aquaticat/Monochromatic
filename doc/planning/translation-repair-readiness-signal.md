@@ -215,3 +215,20 @@ the class was measurable from the corpus before any run. What would move the bel
 subject is `Ta` or `ta` throughout (Uekawakuyuurei, 1347 source characters, is the smallest) shipped and
 read under the pronoun fix, then the double-quoted-paths pass and the comma-shaped one-line pass the
 earlier sections ask for. Balance at the last reading is 5.41 USD, which buys one pass on a new build.
+
+## What the Uekawakuyuurei attempt on the pronoun build showed (2026-09-04, 15:03 UTC)
+
+The entry never reached its text: its own pictures stopped it in two minutes, as they had on every
+earlier roster (read in `doc/planning/translation-repair-openrouter-2026-09-03.md`, "The Uekawakuyuurei run
+on the pronoun build"). A painting whose canvas clears the OCR presence gate as noise is read by three
+models that truthfully report no text, and the screen took every such report for a refusal.
+
+WHAT IT FOUND: a class, measurable from the logs already on disk (8 of 64 entry-and-picture pairs, on 5
+pictures in 3 entries), that made three entries unshippable on any roster. Fixed and guarded in
+`d6ffc4812`; the rule is clause six of the reading-sense document.
+
+THE READING: not yet ready. Two classes found in one afternoon by two entries is the rate the belief is
+tracking, and both were in the pipeline's own screens rather than in the corpus. Uekawakuyuurei is running
+again on the fixed build (15:31 UTC) and reads both fixes at once. What would move the belief is unchanged:
+that entry shipped and read clean, then the two passes the earlier sections ask for, which need the
+OpenRouter balance topped up (about 5.3 USD at launch, one pass).

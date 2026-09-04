@@ -309,6 +309,16 @@ destroys overlap, so letting it vote would refuse readings that are fine.
 What it is reliable at is PRESENCE, six of six against the models in both
 directions.
 
+Noise can clear its line:
+a painting's canvas returned 24 characters on `Uekawakuyuurei/IMG_1308.webp`,
+so the models were asked and every one reported that the picture carries no text.
+Since 2026-09-04 such a reply is an absence report (`reports-no-text`), not a refusal:
+it is not asked again, and two readers reporting absence, or answering with fewer characters than a transcript
+(the hull number on `img370.webp`), confirm the picture textless past the noise.
+The verdict is recorded with the readers that confirmed it and resumed like the deterministic one;
+a reader that declines to read (`reads-as-refusal`) is still re-asked and still leaves the picture unread.
+The refused reply's opening is logged, since it carries the model's words about the picture and never the picture's text.
+
 ### Four readers, and a reader asked again
 
 A reading may be used only when a second model, shown the same picture and not

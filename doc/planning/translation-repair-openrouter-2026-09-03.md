@@ -829,6 +829,36 @@ shapes), `dd132bc76` (README). Measured over the pinned corpus with the built fi
 and 1 `Ta`, archive 22 "they" to 0 "she"), into `~/temp/agent/Uekawakuyuurei-pronoun-20260904`. Balance
 5.32 USD at launch, which is about one pass.
 
+## The Uekawakuyuurei run on the pronoun build, 2026-09-04, 15:03 UTC: stopped by its own pictures
+
+`TALLY Uekawakuyuurei status=INCOMPLETE ms=111956 aborted=false error=visual evidence incomplete for 3
+referenced assets` at 15:05 UTC, 33 calls, 0.08 USD. The entry shows eight pictures; five carry nothing
+past the deterministic reader and were never sent. The other three are an oil painting of ships
+(`IMG_1308.webp`, 24 characters of canvas noise from tesseract), an ink drawing of two cats (`img197.webp`,
+18) and an ink drawing of a destroyer whose only text is the hull number (`img370.webp`, 24). Three readers
+each asked four times; every reply either reported that the picture carries no text or transcribed `DE581`,
+and the screen called the first a refusal and the second too short, so all three pictures ended
+`no-reader-available`, transient, and the entry stopped at the completeness gate. Across every run log this
+session, 56 entry-and-picture pairs corroborated and 8 failed, on 5 pictures: these three on both rosters,
+`dogesir_/photo2.webp` on both, `gqt/photo3.webp` at one reader of two.
+
+A probe of the three OpenRouter readers over those five pictures (15 calls) put the wording on record: 14
+refused replies name text ("There is no visible text in this image", "I cannot read any text in this image.
+There are no visible words", "I can read the image, but there is no visible text to transcribe"), one declines
+without naming it ("I cannot read the image."), and the destroyer draws `DE581`, `DE581` and `D650`.
+
+WHAT LANDED: `20ea56cd0` logs the opening of a refused reply; `d6ffc4812` splits absence from inability
+(`refusalReportsAbsence` in `reading-refusal.ts`: names text, no quality or access marker), gives the screen
+three verdicts (usable, short, refused with clause `too-short`, `reads-as-refusal` or `reports-no-text`),
+stops re-asking an absence report, and lets two readers reporting absence or answering short confirm a
+picture textless in `readImagePair` (`no-text` with `confirmedBy`, resumed). Each guard shown to fail with
+its rule neutralised (refusal 2, sense 3, stage 3, pair 5, re-ask 2 failures), then pass. Rule recorded in
+`doc/planning/when-an-image-reading-makes-no-sense.md` (clause six) and the README.
+
+Relaunched at 15:31 UTC on `d6ffc4812` into `~/temp/agent/Uekawakuyuurei-pictures-20260904`, OpenRouter
+alone, to read both today's fixes on one entry: the pronoun rule on a `ta` subject and the textless
+confirmation on three pictures. Balance about 5.3 USD at launch, which is one pass.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
