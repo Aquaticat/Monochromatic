@@ -149,8 +149,11 @@ export type OpenRouterModelInfo = {
    * Provider slugs measured as serving this model badly, sent as
    * `provider.ignore`; the owner warned on 2026-09-03 that "some providers
    * might serve some models in a horribly broken way", and this is where a
-   * measured one is kept off the wire. Slugs are the lower-case names
-   * OpenRouter's `provider.only` and `provider.ignore` accept.
+   * measured one is kept off the wire. Slugs are what `GET /api/v1/providers`
+   * lists, NOT the display name lower-cased: `OpenInference` is
+   * `open-inference`, and the day it was spelled without the hyphen the
+   * ignore silently did nothing (2026-09-04, 43 streams served). The catalog
+   * test checks every slug here against a snapshot of that listing.
    */
   readonly ignoredEndpoints: readonly string[];
 };
@@ -183,31 +186,32 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
   // conformant there against 4 of 4 on ModelRun, and on the first
   // all-OpenRouter keyword233 pass 16 of 31 MiniMax calls came back empty.
   //
-  // MODELRUN SERVES ALONE, AND NOT BY THIS PACKAGE'S CHOICE. Re-probed
-  // 2026-09-04 (`~/temp/agent/openrouter-minimax-endpoints-20260904`) with
-  // the same request: ModelRun 4 of 4 conformant; DeepInfra and Venice answer
-  // 404 "No endpoints found that can handle the requested parameters";
-  // CoreWeave, the only other zero-data-retention endpoint listing
-  // `structured_outputs`, answers 404 "All providers have been ignored",
-  // which is the account-level ignore list and not this one; default routing
-  // without `only` went to Parasail 3 of 4 times. So an ignore of ModelRun
-  // here would leave MiniMax M3 no endpoint for a schema request under zero
-  // data retention.
-  //
-  // MODELRUN TIMES OUT ONE CALL IN FIVE, OR WORSE. The same day it served
+  // MODELRUN TIMES OUT ONE CALL IN FIVE, OR WORSE. On 2026-09-04 it served
   // 300 MiniMax streams across six runs and 119 came back as one 846-character
   // chunk carrying `error.code=504`, `error_type=timeout`, no content and no
-  // `[DONE]`, each after about 10.5 s; the listing read `uptime_last_30m`
-  // 54.9 and `status` -5 for it at 05:00 UTC, at 2.5 times the price of the
-  // next endpoint. `openrouter-stream-error.ts` names those failures now;
-  // whether the seat is withheld while the endpoint stays degraded is the
-  // owner's call, recorded in the 2026-09-03 OpenRouter planning document.
+  // `[DONE]`, each after about 10.5 s (`openrouter-stream-error.ts` names
+  // those failures now); the listing read `uptime_last_30m` 54.9 and `status`
+  // -5 for it at 05:00 UTC, at 2.5 times the price of the next endpoint.
+  //
+  // COREWEAVE TAKES ITS PLACE, MEASURED. The first probe of the day answered
+  // 404 "All providers have been ignored" for CoreWeave; the owner had never
+  // ignored it, re-saved the account's allowed providers, and the re-probe
+  // (`~/temp/agent/openrouter-minimax-endpoints-20260904b.log`) read 4 of 4
+  // conformant on the corpus-sized schema request under zero data retention,
+  // 16 to 20 s a call at a third of ModelRun's price, uptime 100. DeepInfra
+  // and Venice answer 404 "No endpoints found that can handle the requested
+  // parameters" to that request, so with Parasail and ModelRun ignored,
+  // CoreWeave serves alone; default routing without `only` still went to
+  // ModelRun 4 of 4 times, which is why the ignore is needed at all.
   'minimax/minimax-m3': {
     id: 'minimax/minimax-m3',
     sharedWith: 'minimax-m3',
     readsImages: true,
     maxOutputLength: 512_000,
-    ignoredEndpoints: ['parasail',],
+    ignoredEndpoints: [
+      'parasail',
+      'modelrun',
+    ],
   },
   // OPENINFERENCE LOSES THE VOICE TO THE STRAGGLER GRACE. Every cut this
   // model took on the second all-OpenRouter keyword233 pass of 2026-09-03
@@ -217,12 +221,26 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
   // with at most 1 content char over 6.7k to 14.9k reasoning chars) against
   // Parasail's 12 of 13 (mean 42.8 s) and Inceptron's 4 of 5 (mean 29.9 s).
   // The model reasons long on every endpoint; this one is the slowest at it.
+  //
+  // THAT IGNORE NEVER REACHED THE WIRE until 2026-09-04: it was spelled
+  // `openinference`, and the gateway's slug (`GET /api/v1/providers`) is
+  // `open-inference`, so OpenInference served 43 of the day's streams for this
+  // model before the spelling was measured. Parasail and Reka join it on the
+  // day's cut rates over every run (`~/temp/agent/*-20260904.log`): Parasail
+  // 96 of 464 streams cut at the straggler grace, Reka 12 of 41, against
+  // Makora 2 of 99 and Together 0 of 10. Rule applied here and below: an
+  // endpoint is ignored when a day's runs cut a quarter or more of at least
+  // twenty of its streams, or fail that share of them in-stream.
   'deepseek/deepseek-v4-flash-0731': {
     id: 'deepseek/deepseek-v4-flash-0731',
     sharedWith: 'deepseek-v4-flash-0731',
     readsImages: false,
     maxOutputLength: 943_718,
-    ignoredEndpoints: ['openinference',],
+    ignoredEndpoints: [
+      'open-inference',
+      'parasail',
+      'reka',
+    ],
   },
   'deepseek/deepseek-v4-pro-0813': {
     id: 'deepseek/deepseek-v4-pro-0813',
@@ -231,19 +249,28 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
     maxOutputLength: 384_000,
     ignoredEndpoints: [],
   },
+  // REKA AND IO NET CUT NEAR HALF OF THIS MODEL'S STREAMS on 2026-09-04: Reka
+  // 19 of 40, Io Net 62 of 153, against Phala 9 of 137 and Ionstream 30 of
+  // 173. The MTF_0615 pass that day lost 71 Qwen voices to those two alone.
   'qwen/qwen3.8-27b': {
     id: 'qwen/qwen3.8-27b',
     sharedWith: 'hf:Qwen/Qwen3.8-27B',
     readsImages: true,
     maxOutputLength: 131_072,
-    ignoredEndpoints: [],
+    ignoredEndpoints: [
+      'reka',
+      'io-net',
+    ],
   },
+  // REKA CUT HALF OF THIS MODEL'S STREAMS TOO on 2026-09-04, 13 of 26, against
+  // Together 0 of 245. Modal's 21 of 144 and Inceptron's 3 of 3 sit under the
+  // rule's share or its count and stay.
   'z-ai/glm-5.3': {
     id: 'z-ai/glm-5.3',
     sharedWith: 'glm-5.3',
     readsImages: false,
     maxOutputLength: 262_144,
-    ignoredEndpoints: [],
+    ignoredEndpoints: ['reka',],
   },
   'z-ai/glm-5.3-flash': {
     id: 'z-ai/glm-5.3-flash',

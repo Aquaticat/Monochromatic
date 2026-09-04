@@ -708,7 +708,12 @@ and reading one as an instruction has cost this package a defect before.
     so only zero-data-retention endpoints that support `response_format` may serve a passage,
     and the catalog row's `ignoredEndpoints` keeps a measured-broken upstream off the wire
     (Parasail for MiniMax M3 since 2026-09-03: it answered into the reasoning channel and left content empty;
-    OpenInference for DeepSeek V4 Flash since the same day: it finished 2 of 6 streams inside the straggler grace).
+    ModelRun for MiniMax M3 since 2026-09-04: it timed out 119 of 300 streams in-stream, and CoreWeave
+    answers the same schema request 4 of 4; OpenInference, Parasail and Reka for DeepSeek V4 Flash, Reka and
+    Io Net for Qwen3.8-27B, and Reka for GLM-5.3 since 2026-09-04, each cutting a quarter or more of at
+    least twenty streams at the straggler grace in a day's runs).
+    Slugs are the ones `GET /api/v1/providers` lists, not display names lower-cased: `open-inference`, not
+    `openinference`, which is how the 2026-09-03 ignore stayed off the wire for a day.
     Credits are read from `GET /api/v1/credits` (purchased less used, in USD) and printed on the `METERS`
     line as `openrouterUsd=`; every call's cost is read off the final stream chunk onto its `SPEND` line as
     `cost=`, so a run's OpenRouter bill is summed from the wire rather than from a price table.

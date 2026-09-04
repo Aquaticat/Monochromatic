@@ -190,7 +190,11 @@ await describe({
           provider: {
             zdr: true,
             require_parameters: true,
-            ignore: ['openinference',],
+            ignore: [
+              'open-inference',
+              'parasail',
+              'reka',
+            ],
           },
           response_format: {
             type: 'json_schema',
@@ -212,8 +216,9 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS MiniMax M3 off Parasail on the wire: the body\'s provider.ignore carries the '
-        + 'catalog row\'s slug, so the endpoint that answers into the reasoning channel is never routed to',
+      name: 'KEEPS MiniMax M3 off Parasail and ModelRun on the wire: the body\'s provider.ignore '
+        + 'carries the catalog row\'s slugs, so the endpoint that answers into the reasoning channel and '
+        + 'the one that times out in-stream are never routed to',
       fn: async () => {
         const { client, exchanges, } = recordedClient({},);
         await client.chatText({
@@ -236,7 +241,10 @@ await describe({
           provider: {
             zdr: true,
             require_parameters: true,
-            ignore: ['parasail',],
+            ignore: [
+              'parasail',
+              'modelrun',
+            ],
           },
         },);
       },

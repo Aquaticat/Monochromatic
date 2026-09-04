@@ -63,21 +63,33 @@ await describe({
     },),
 
     it({
-      name: 'IGNORES one measured endpoint on two rows: Parasail for MiniMax M3, which answered a '
-        + 'corpus-sized schema call with the JSON in the reasoning channel and nothing in content, and '
-        + 'OpenInference for DeepSeek V4 Flash, which finished 2 of 6 streams inside the straggler grace '
-        + '(both 2026-09-03), while every other row ignores no endpoint',
+      name: 'IGNORES the measured endpoints and no others: Parasail and ModelRun for MiniMax M3, '
+        + 'OpenInference, Parasail and Reka for DeepSeek V4 Flash, Reka and Io Net for Qwen3.8-27B, Reka '
+        + 'for GLM-5.3 (2026-09-03 and 2026-09-04 measurements beside each row), while every other row '
+        + 'ignores no endpoint',
       fn: async () => {
-        expect(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,).toEqual(['parasail',],);
-        expect(OPENROUTER_MODELS['deepseek/deepseek-v4-flash-0731'].ignoredEndpoints,).toEqual([
-          'openinference',
+        expect(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,).toEqual([
+          'parasail',
+          'modelrun',
         ],);
+        expect(OPENROUTER_MODELS['deepseek/deepseek-v4-flash-0731'].ignoredEndpoints,).toEqual([
+          'open-inference',
+          'parasail',
+          'reka',
+        ],);
+        expect(OPENROUTER_MODELS['qwen/qwen3.8-27b'].ignoredEndpoints,).toEqual([
+          'reka',
+          'io-net',
+        ],);
+        expect(OPENROUTER_MODELS['z-ai/glm-5.3'].ignoredEndpoints,).toEqual(['reka',],);
         /**
          * Rows with a measured endpoint on them.
          */
         const measured: ReadonlySet<string> = new Set([
           'minimax/minimax-m3',
           'deepseek/deepseek-v4-flash-0731',
+          'qwen/qwen3.8-27b',
+          'z-ai/glm-5.3',
         ],);
         /**
          * Rows other than the two with a measured endpoint.
@@ -89,6 +101,40 @@ await describe({
           },);
         for (const info of others)
           expect(info.ignoredEndpoints,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'SPELLS EVERY IGNORED SLUG AS THE GATEWAY LISTS IT, since a slug the gateway does not '
+        + 'know is ignored silently: `openinference` kept OpenInference on the wire for a day because '
+        + 'the listing spells it `open-inference`',
+      fn: async () => {
+        /**
+         * Provider slugs from `GET https://openrouter.ai/api/v1/providers`, read
+         * 2026-09-04 (`~/temp/agent/providers-20260904.json`), for every
+         * upstream a run log of that day named for a roster model. Extend it
+         * from the same listing when a new slug is ignored.
+         */
+        const listed: ReadonlySet<string> = new Set([
+          'akashml',
+          'coreweave',
+          'deepinfra',
+          'io-net',
+          'ionstream',
+          'makora',
+          'modal',
+          'modelrun',
+          'open-inference',
+          'parasail',
+          'phala',
+          'reka',
+          'together',
+          'venice',
+        ],);
+        for (const info of Object.values(OPENROUTER_MODELS,)) {
+          for (const slug of info.ignoredEndpoints)
+            expect(listed.has(slug,),).toBe(true,);
+        }
       },
     },),
   ],
@@ -108,10 +154,13 @@ await describe({
         expect(minimax,).toEqual({
           zdr: true,
           require_parameters: true,
-          ignore: ['parasail',],
+          ignore: [
+            'parasail',
+            'modelrun',
+          ],
         },);
         expect(minimax.ignore,).not.toBe(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,);
-        expect(openRouterProviderPreferencesFor({ servedId: 'z-ai/glm-5.3', },),).toEqual({
+        expect(openRouterProviderPreferencesFor({ servedId: 'openai/gpt-oss-120b', },),).toEqual({
           zdr: true,
           require_parameters: true,
           ignore: [],
