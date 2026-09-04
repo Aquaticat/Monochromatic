@@ -318,6 +318,7 @@ private data class CandidatePalette(
     val tracks: Color,
     val paneDivider: Boolean,
     val railDivider: Boolean,
+    val railDividerColor: Color,
     val rowDividers: Boolean,
 )
 
@@ -359,6 +360,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             tracks = scheme.surface,
             paneDivider = false,
             railDivider = false,
+            railDividerColor = scheme.outlineVariant,
             rowDividers = false,
         )
     }
@@ -371,6 +373,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
             tracks = scheme.surface,
             paneDivider = true,
             railDivider = true,
+            railDividerColor = scheme.outlineVariant,
             rowDividers = true,
         )
     }
@@ -382,6 +385,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
         tracks = scheme.surfaceContainerLowest,
         paneDivider = false,
         railDivider = true,
+        railDividerColor = Color.White,
         rowDividers = false,
     )
 }
@@ -507,7 +511,7 @@ private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
                     modifier = Modifier
                         .width(1.dp)
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.outlineVariant),
+                        .background(palette.railDividerColor),
                 )
             }
             FolderNames()
