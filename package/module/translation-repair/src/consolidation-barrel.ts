@@ -83,6 +83,12 @@ export {
   standingTextFor,
 } from './consolidate-standing.ts';
 export {
+  ConsolidationStandingIneligibleError,
+  INELIGIBLE_STANDING_WITHHELD_FINDING,
+  requireShippableTerminal,
+  slateIncumbentFor,
+} from './consolidate-ineligible-standing.ts';
+export {
   CONSOLIDATE_CACHE_VERSION,
   consolidateRunShape,
   consolidateSliceKey,

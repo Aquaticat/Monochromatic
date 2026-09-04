@@ -157,7 +157,7 @@ export const TRANSLATE_FRONT_MATTER_CRITERIA: readonly string[] = [
   'Valid syntax: candidate is one complete YAML front matter block with nothing outside it.',
   'Exact structure: field names, nesting, container lengths, scalar kinds, comments, and fence lines are preserved.',
   'Source authority: human-language field values faithfully render ORIGINAL metadata; existing metadata is evidence only.',
-  'Visible identity: name field identifies source person and is never substituted with entry directory id. When ORIGINAL name and info.alias are the same identity, translated name and info.alias must also be the same identity; a different archive name is invalid.',
+  'Visible identity: name field identifies source person and is never substituted with entry directory id. When ORIGINAL name and info.alias are the same identity, the translated name must appear among the comma-separated renderings in translated info.alias, which may also carry the original script and other renderings; a name absent from its alias is invalid.',
   'Comment authority: in info.location comments, keep established target contributor spelling after `, by ` where source and archive spell that contributor differently.',
   'Natural English: localized prose values read idiomatically without changing metadata facts.',
 ];

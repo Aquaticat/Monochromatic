@@ -13,9 +13,56 @@ import type { SliceValidation, } from './translate-validate.ts';
 export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete YAML front matter. A candidate is '
   + 'flawed if it breaks YAML fences, field names, nesting, container lengths, or scalar kinds. ORIGINAL metadata '
   + 'values are source facts. The visible name field must identify the source person and must not be replaced by an '
-  + 'entry directory id. When ORIGINAL name and info.alias are the same identity, translated name and info.alias must '
-  + 'also be the same identity; a candidate retaining a different archive name is invalid. In info.location comments, '
-  + 'keep established target contributor spelling after `, by ` where source and archive spell that contributor differently.';
+  + 'entry directory id. When ORIGINAL name and info.alias are the same identity, the translated name must appear '
+  + 'among the comma-separated renderings in translated info.alias (the alias may carry the original script and '
+  + 'other renderings beside it); a candidate whose name appears nowhere in its alias is invalid. In info.location '
+  + 'comments, keep established target contributor spelling after `, by ` where source and archive spell that '
+  + 'contributor differently.';
+
+/**
+ * Separator an alias list is written with in this corpus.
+ *
+ * MEASURED 2026-09-04 over the pinned archives: 70 alias values carry a
+ * comma, one a slash, none a Chinese comma or an enumeration mark.
+ */
+const ALIAS_SEPARATOR = ',';
+
+/**
+ * Whether an alias carries the name among its renderings.
+ *
+ * THE OWNER'S DECISION OF 2026-09-04: where the ORIGINAL declares name and
+ * alias the same, the translated alias may carry the name beside other
+ * renderings ("鲵鲵, Nini" for the name "Nini"), because seven of the fourteen
+ * such archives at the pinned corpus already do, and equality would have forced
+ * every one of them to drop the original-script alias it publishes. Equality
+ * refused the luxuanwen3 page of that day after a full run.
+ *
+ * @param alias - alias value as the candidate writes it
+ *
+ * @param name - visible name the alias must carry
+ *
+ * @returns Whether some comma-separated rendering equals the name exactly
+ *
+ * @example
+ * ```ts
+ * const carried = aliasCarriesName({ alias: '鲵鲵, Nini', name: 'Nini', },);
+ * ```
+ */
+function aliasCarriesName(
+  {
+    alias,
+    name,
+  }: {
+    readonly alias: string;
+    readonly name: string;
+  },
+): boolean {
+  return alias
+    .split(ALIAS_SEPARATOR,)
+    .some(function isName(rendering,): boolean {
+      return rendering.trim() === name.trim();
+    },);
+}
 
 /**
  * Visible identity read from standard fields, or another metadata schema.
@@ -244,11 +291,15 @@ export function validateFrontMatterTranslation(
     const candidateIdentity = visibleIdentityOf({ value: candidateData, },);
     if ((sourceIdentity.kind === 'present')
       && (sourceIdentity.name === sourceIdentity.alias)
-      && ((candidateIdentity.kind !== 'present') || (candidateIdentity.name !== candidateIdentity.alias))) {
+      && ((candidateIdentity.kind !== 'present')
+        || (!aliasCarriesName({
+          alias: candidateIdentity.alias,
+          name: candidateIdentity.name,
+        },)))) {
       return {
         kind: 'invalid',
         findings: [
-          'Your translation must keep name and info.alias as same visible identity because ORIGINAL declares them as same identity.',
+          'Your translation must carry the name among the comma-separated renderings in info.alias because ORIGINAL declares name and info.alias as the same identity.',
         ],
       };
     }

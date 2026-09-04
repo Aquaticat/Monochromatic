@@ -30,8 +30,10 @@ import {
   buildTranslateCandidates,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  ConsolidationStandingIneligibleError,
   createSyntheticClient,
   describeSlate,
+  INELIGIBLE_STANDING_WITHHELD_FINDING,
   type ProposalValidity,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   rotateCandidates,
@@ -199,14 +201,26 @@ function validityOf(
  * ```
  */
 function positionOfText(
-  { texts, wanted, }: { readonly texts: readonly string[]; readonly wanted: string; },
+  {
+    texts,
+    wanted,
+    incumbentText = STANDING,
+  }: {
+    readonly texts: readonly string[];
+    readonly wanted: string;
+
+    /**
+     * What the slate offers to keep; empty when the standing is withheld.
+     */
+    readonly incumbentText?: string;
+  },
 ): number {
   const built = buildTranslateCandidates({
     voices: texts.map(function toVoice(translation, at,) {
       return voiceOf({ modelId: ROSTER[at] ?? ROSTER[0], translation, },);
     },),
     translatorModelIds: ROSTER,
-    incumbentText: STANDING,
+    incumbentText,
   },);
 
   const entries = describeSlate({
@@ -444,6 +458,7 @@ async function settleWith(
     gateReply = gateBallot({ choice: 'standing', },),
     producedFindings = [],
     lineStructured = false,
+    standingEligible = true,
   }: {
     readonly voices: readonly {
       readonly modelId: FixtureModelId;
@@ -460,6 +475,12 @@ async function settleWith(
      * what the judges of this round are asked.
      */
     readonly lineStructured?: boolean;
+
+    /**
+     * Whether the standing text passed the deterministic gate; false withholds
+     * it from the slate.
+     */
+    readonly standingEligible?: boolean;
   },
 ) {
   /**
@@ -491,6 +512,7 @@ async function settleWith(
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS * 8,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
     lineStructured,
+    standingEligible,
     l,
   },);
 
@@ -806,6 +828,117 @@ await describe({
         expect(settled.text,).toBe(STANDING,);
         expect(settled.demoted,).toBe(false,);
         expect(served.gate,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'WITHHOLDS AN INELIGIBLE STANDING FROM THE SLATE AND SHIPS THE PROPOSAL BOTH ROUNDS BACKED, '
+        + 'recording the withholding: the owner\'s decision of 2026-09-04 after luxuanwen3 shipped an '
+        + 'archive front matter the gate had refused and lost the entry at assembly',
+      fn: async () => {
+        const { settled, served, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              texts: [FRESH,],
+              wanted: FRESH,
+              incumbentText: '',
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+          standingEligible: false,
+        },);
+
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
+        expect(settled.findings.includes(INELIGIBLE_STANDING_WITHHELD_FINDING,),).toBe(true,);
+        expect(served.judge,).toBeGreaterThan(0,);
+        expect(served.gate,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'FAILS THE SLICE AT ONCE when the standing is ineligible and the gate keeps it, naming the '
+        + 'slice and the terminal, rather than shipping wording the page guard will refuse after the '
+        + 'rest of the run has been paid for',
+      fn: async () => {
+        /**
+         * What the settlement threw.
+         */
+        let thrown: unknown;
+        try {
+          await settleWith({
+            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+            validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+            judgeReply: judgeBallot({
+              best: positionOfText({
+                texts: [FRESH,],
+                wanted: FRESH,
+                incumbentText: '',
+              },),
+            },),
+            gateReply: gateBallot({ choice: 'standing', },),
+            standingEligible: false,
+          },);
+        } catch (error) {
+          thrown = error;
+        }
+        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
+        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('gate-kept-standing',);
+      },
+    },),
+
+    it({
+      name: 'FAILS THE SLICE AT ONCE when the standing is ineligible and every judge declines the slate, '
+        + 'under the ineligible standing\'s own name with the judges\' refusal as the cause, rather than '
+        + 'as a passage the archive never carried',
+      fn: async () => {
+        /**
+         * What the settlement threw.
+         */
+        let thrown: unknown;
+        try {
+          await settleWith({
+            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+            validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+            judgeReply: judgeBallot({ best: 0, },),
+            standingEligible: false,
+          },);
+        } catch (error) {
+          thrown = error;
+        }
+        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
+        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('slate-declined-standing',);
+        expect(Error.isError((thrown as ConsolidationStandingIneligibleError).cause,),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'FAILS THE SLICE AT ONCE when the standing is ineligible and no proposal survived the floor, '
+        + 'before any judge is bought',
+      fn: async () => {
+        /**
+         * What the settlement threw.
+         */
+        let thrown: unknown;
+        /**
+         * Calls served before the throw.
+         */
+        let judged = 0;
+        try {
+          const { served, } = await settleWith({
+            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+            validity: [validityOf({ modelId: ROSTER[0], valid: false, },),],
+            standingEligible: false,
+          },);
+          judged = served.judge;
+        } catch (error) {
+          thrown = error;
+        }
+        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
+        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('incumbent-only',);
+        expect(judged,).toBe(0,);
       },
     },),
 

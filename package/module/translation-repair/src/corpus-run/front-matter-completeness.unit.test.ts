@@ -314,6 +314,38 @@ await describe({
     },),
 
     it({
+      name: 'ACCEPTS A PAGE WHOSE ALIAS CARRIES THE NAME AMONG OTHER RENDERINGS where the source\'s '
+        + 'name and alias agree, the owner\'s decision of 2026-09-04: seven archives at the pinned corpus '
+        + 'publish the original script beside the romanisation, and equality refused one of them after a '
+        + 'full run',
+      fn: async () => {
+        // A throw here fails the test on its own.
+        assertFrontMatterComplete({
+          entryId: 'EntryId',
+          sourceText: SOURCE_TEXT,
+          archiveText: TARGET_TEXT,
+          pageText: '---\nname: Maomao\ninfo:\n  alias: 猫猫, Maomao\n---\n\nBody.\n',
+          slices: [sliceResult.slice,],
+        },);
+        /**
+         * What the guard threw for an alias that names the person by something
+         * else entirely.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: SOURCE_TEXT,
+            archiveText: TARGET_TEXT,
+            pageText: '---\nname: Maomao\ninfo:\n  alias: 猫猫, Kitty\n---\n\nBody.\n',
+            slices: [sliceResult.slice,],
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('invalid-page',);
+      },
+    },),
+
+    it({
       name: 'REFUSES SOURCE-SCRIPT COMMENT ATTRIBUTION replacing established target form',
       fn: async () => {
         /**

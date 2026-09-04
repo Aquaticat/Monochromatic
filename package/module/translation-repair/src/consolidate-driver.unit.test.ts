@@ -41,6 +41,7 @@ import {
   consolidateRunShape,
   consolidateSliceKey,
   type ConsolidationSettlement,
+  ConsolidationStandingIneligibleError,
   type ConsolidationTerminal,
   consolidationWorthResuming,
   createSyntheticClient,
@@ -874,7 +875,10 @@ await describe({
       },
     },),
     it({
-      name: 'RECOVERS repair-lane standing that drops source destination before final publisher',
+      name: 'FAILS THE SLICE AT ONCE when the repair-lane standing dropped a source destination and '
+        + 'the gate kept it: the publisher refuses such an entry (DroppedDestinationError), so shipping '
+        + 'the standing would only defer the refusal past the rest of the paid run, which is what the '
+        + 'owner ruled out on 2026-09-04',
       fn: async () => {
         const destination = 'https://example.test/cat-record';
         const sourceText = `[猫猫的记录](${destination})。`;
@@ -894,18 +898,24 @@ await describe({
             translate: [],
           },
         } as unknown as ProjectedLanes;
-        const { slices, } = await driveWith({
-          client,
-          modelIds: RECOVERY_ROSTER,
-          projected,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
-        },);
-
-        // The single attempt kept the standing at the gate; the dropped
-        // destination stays a publisher-reported finding rather than buying
-        // recovery rounds here.
-        expect(slices[0]?.terminal,).toBe('gate-kept-standing');
-        expect(recoveryText.length,).toBeGreaterThan(0,);
+        /**
+         * What the drive threw for a standing the gate refused and the slate
+         * could not replace.
+         */
+        let thrown: unknown;
+        try {
+          await driveWith({
+            client,
+            modelIds: RECOVERY_ROSTER,
+            projected,
+            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
+          },);
+        } catch (error) {
+          thrown = error;
+        }
+        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
+        expect((thrown as ConsolidationStandingIneligibleError).sliceIndex,).toBe(0,);
+        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('gate-kept-standing',);
       },
     },),
     it({

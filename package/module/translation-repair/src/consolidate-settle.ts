@@ -6,25 +6,32 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
-import {
-  type ConsolidateGateOutcome,
-  gateConsolidatedSlice,
-} from './consolidate-gate-stage.ts';
+import type { ConsolidateGateOutcome, } from './consolidate-gate-stage.ts';
+import { gateAndShip, } from './consolidate-settle-gate.ts';
 import {
   floorConsolidateSlate,
   type ProposalValidity,
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
+import {
+  type ProposalVerdict,
+  settlementContextOf,
+  verdictsOf,
+} from './consolidate-settle-context.ts';
+import {
+  ConsolidationStandingIneligibleError,
+  INELIGIBLE_STANDING_WITHHELD_FINDING,
+  requireShippableTerminal,
+  slateIncumbentFor,
+} from './consolidate-ineligible-standing.ts';
+import { TranslateAbsenceError, } from './translate-absence.ts';
 import { applyFinalPolish, } from './consolidation-polish-apply.ts';
 import type {
   ConsolidationPolish,
   ConsolidationPolishConfig,
 } from './consolidation-polish.ts';
 import type { SliceValidation, } from './translate-validate.ts';
-import {
-  wrapConsolidation,
-  wrapConsolidationProposals,
-} from './consolidate-wrap.ts';
+import { wrapConsolidationProposals, } from './consolidate-wrap.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { buildTranslateCandidates, } from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
@@ -114,36 +121,7 @@ const SLATE_TERMINALS: Record<TranslateDecision, ConsolidationTerminal> = {
   'no-candidate-backed': 'slate-declined-standing',
 };
 
-/**
- * One voice's structural verdict WITHOUT its text, which is what a record of
- * this stage may carry.
- *
- * The proposals themselves are corpus renderings and do not belong in a
- * settlement a run writes out. Who was refused and why does: run 8 carried 7
- * invalid candidates across slices that all shipped normally, and nothing
- * downstream could see them.
- *
- * @example
- * ```ts
- * const verdict: ProposalVerdict = { modelId: 'hf:cat/Cat-A', kind: 'valid', findings: [], };
- * ```
- */
-export type ProposalVerdict = {
-  /**
-   * Voice that wrote the proposal.
-   */
-  readonly modelId: string;
-
-  /**
-   * What the structural guard made of it.
-   */
-  readonly kind: SliceValidation['kind'];
-
-  /**
-   * Why it was refused, empty when it was not.
-   */
-  readonly findings: readonly string[];
-};
+export type { ProposalVerdict, } from './consolidate-settle-context.ts';
 
 /**
  * The slice this stage is deciding about, in the archive's terms.
@@ -310,6 +288,10 @@ export type ConsolidationSettlement = {
  *
  * @param standingMayShip - whether unchanged baseline has prior endorsement
  *
+ * @param standingEligible - whether the standing text passed the deterministic
+ * publication gate; when it did not, it is withheld from the slate and a
+ * settlement that would keep it throws instead of shipping it
+ *
  * @param signal - cancellation for the whole settlement
  *
  * @param perCallTimeoutMs - bound on any single exchange
@@ -339,6 +321,7 @@ export async function settleConsolidation(
     sliceIndex = 0,
     polishConfig,
     standingMayShip = true,
+    standingEligible = true,
     signal,
     perCallTimeoutMs,
     l,
@@ -355,6 +338,7 @@ export async function settleConsolidation(
     readonly sliceIndex?: number;
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly standingMayShip?: boolean;
+    readonly standingEligible?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -369,39 +353,13 @@ export async function settleConsolidation(
   },);
 
   /**
-   * Identity as the two rounds take it, spread rather than passed as
-   * `undefined` so an absent identity is absent rather than declared empty.
+   * Identity and evidence as the two rounds take them
+   * (`consolidate-settle-context.ts`).
    */
-  const identity = (subject.identityContext === undefined)
-    ? {}
-    : { identityContext: subject.identityContext, };
-
-  /**
-   * Words about this passage that are not the passage: what its pictures were
-   * read to say and what stands either side of it.
-   *
-   * SPREAD PER FIELD RATHER THAN PASSED WHOLE, on the same terms as the
-   * identity above it. An absent picture and an empty picture are the same
-   * state and must render as no heading at all, since a heading promising
-   * readings and carrying none reads as a picture nobody could make sense of.
-   *
-   * ONE VALUE FEEDS THE SHEET AND THE KEY, which is `#107`'s lesson stated in
-   * `translate-document.ts` as well: a key that did not name the evidence would
-   * let a narrow run's answer be resumed for a wide one, and nothing anywhere
-   * would report the two as different questions.
-   */
-  const evidence = {
-    ...(((subject.pictureContext === undefined) || (subject.pictureContext === ''))
-      ? {}
-      : { pictureContext: subject.pictureContext, }),
-    ...(((subject.neighbouringSourceText === undefined) || (subject.neighbouringSourceText === ''))
-      ? {}
-      : { neighbouringSourceText: subject.neighbouringSourceText, }),
-    ...(((subject.neighbouringIncumbentText === undefined)
-        || (subject.neighbouringIncumbentText === ''))
-      ? {}
-      : { neighbouringIncumbentText: subject.neighbouringIncumbentText, }),
-  };
+  const {
+    identity,
+    evidence,
+  } = settlementContextOf({ subject, },);
 
   /**
    * What the structural guard leaves of the slate.
@@ -414,20 +372,7 @@ export async function settleConsolidation(
   /**
    * Every voice's verdict without its text, which is what a run may record.
    */
-  const verdicts: readonly ProposalVerdict[] = validity.map(
-    function toVerdict(
-      {
-        modelId,
-        validation,
-      }: ProposalValidity,
-    ): ProposalVerdict {
-      return {
-        modelId,
-        kind: validation.kind,
-        findings: (validation.kind === 'invalid') ? validation.findings : [],
-      };
-    },
-  );
+  const verdicts = verdictsOf({ validity, },);
 
   // NO STANDING TEXT IS CHECKED FIRST, and the order is the whole point.
   // A slice with nothing to consolidate against and a slate of refusals is
@@ -456,6 +401,11 @@ export async function settleConsolidation(
   // The gate's question is which rendering is more faithful, and that has no
   // meaning when the only proposals are structurally not the page.
   if (floor.kind === 'incumbent-only') {
+    requireShippableTerminal({
+      standingEligible,
+      terminal: 'incumbent-only',
+      sliceIndex,
+    },);
     return await applyFinalPolish({
       client,
       settlement: {
@@ -512,68 +462,107 @@ export async function settleConsolidation(
   },);
 
   /**
-   * Distinct proposals the judges will see, incumbent among them.
+   * What the slate offers to keep: the standing text, or nothing when the
+   * deterministic gate refused it (`consolidate-ineligible-standing.ts`).
+   */
+  const incumbent = slateIncumbentFor({
+    standingEligible,
+    standingText,
+  },);
+  if (!standingEligible)
+    sl.warn(`slice ${String(sliceIndex,)}: ${INELIGIBLE_STANDING_WITHHELD_FINDING}`,);
+
+  /**
+   * Distinct proposals the judges will see, incumbent among them when it may
+   * ship.
    */
   const built = buildTranslateCandidates({
     voices: shippableVoices,
     translatorModelIds: roster,
-    incumbentText: standingText,
+    incumbentText: incumbent.incumbentText,
   },);
 
   /**
    * What the slate judges settled.
+   *
+   * A DECLINE WITH THE STANDING WITHHELD IS NAMED AS WHAT IT IS. The judge
+   * reports an absent incumbent as a passage the archive never carried; here
+   * the passage exists and failed the gate, so that error is re-raised under
+   * the ineligible standing's own name with the judge's refusal as its cause.
    */
-  const decided = await judgeTranslateSlate({
-    client,
-    produced: {
-      candidates: built.candidates,
+  const decided = await (async function judged(): Promise<TranslateStageResult> {
+    try {
+      return await judgeTranslateSlate({
+        client,
+        produced: {
+          candidates: built.candidates,
 
-      // SURVIVORS RATHER THAN VOICES HEARD, because this number exists to tell
-      // the judges how thin the slate they are deciding over is, and a refused
-      // proposal is not on it. A census reading this for transport health would
-      // misread a refusal as a lost voice; `verdicts` is what separates them.
-      heardTranslators: survivingVoices.length,
+          // SURVIVORS RATHER THAN VOICES HEARD, because this number exists to
+          // tell the judges how thin the slate they are deciding over is, and
+          // a refused proposal is not on it. A census reading this for
+          // transport health would misread a refusal as a lost voice;
+          // `verdicts` is what separates them.
+          heardTranslators: survivingVoices.length,
 
-      findings: [
-        ...producedFindings,
-        ...built.findings,
-      ],
-    },
-    judgeModelIds,
-    sourceText: subject.sourceText,
-    incumbentText: standingText,
+          findings: [
+            ...producedFindings,
+            ...(standingEligible ? [] : [INELIGIBLE_STANDING_WITHHELD_FINDING,]),
+            ...built.findings,
+          ],
+        },
+        judgeModelIds,
+        sourceText: subject.sourceText,
+        incumbentText: incumbent.incumbentText,
 
-    // TRUE BY THE GUARD ABOVE RATHER THAN BY ASSUMPTION, and spelled as a
-    // literal because there is nothing here to read it from. What the judges
-    // fall back on at this stage is `standingText`, not the archive's own
-    // wording, and the `standingText === ''` exit about ninety lines up returns
-    // `no-standing-text` before any judge is bought. So a slate reaching this
-    // call always has a text to keep. Threading the slice`s own
-    // `incumbentKind` here would say something different and wrong: an anchor
-    // whose lanes both produced wording has a standing text to fall back on
-    // even though the archive holds none.
-    incumbentKind: 'present',
-    ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
-    ...identity,
-    // WHAT THE PRODUCERS WERE SHOWN, forwarded rather than recomputed. `#176`
-    // put the pictures in front of the producers and left the judges blind,
-    // which is worse than both being blind: a producer that used a picture
-    // correctly then looked to its judge like one inventing detail.
-    ...evidence,
-    // THE SAME FLAG THE PRODUCERS WERE GIVEN, which this function has held
-    // since it was written and passed to nobody. `#176` gave it to the
-    // consolidation producers; leaving the judges out of it would have the
-    // judges mark down exactly the unmerging the producers were told to do.
-    lineStructured,
-    signal,
-    perCallTimeoutMs,
-    l: sl,
-  },);
+        // PRESENT WHENEVER THE STANDING MAY SHIP, ABSENT WHEN THE GATE REFUSED
+        // IT. What the judges fall back on at this stage is `standingText`,
+        // not the archive's own wording, and the `standingText === ''` exit
+        // above returns `no-standing-text` before any judge is bought; so a
+        // slate reaching this call has a text to keep unless that text is
+        // ineligible, in which case there is nothing to keep and a decline
+        // ends the slice. Threading the slice's own `incumbentKind` here would
+        // say something different and wrong: an anchor whose lanes both
+        // produced wording has a standing text to fall back on even though
+        // the archive holds none.
+        incumbentKind: incumbent.incumbentKind,
+        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        ...identity,
+        // WHAT THE PRODUCERS WERE SHOWN, forwarded rather than recomputed.
+        // `#176` put the pictures in front of the producers and left the
+        // judges blind, which is worse than both being blind: a producer that
+        // used a picture correctly then looked to its judge like one
+        // inventing detail.
+        ...evidence,
+        // THE SAME FLAG THE PRODUCERS WERE GIVEN, which this function has held
+        // since it was written and passed to nobody. `#176` gave it to the
+        // consolidation producers; leaving the judges out of it would have the
+        // judges mark down exactly the unmerging the producers were told to do.
+        lineStructured,
+        signal,
+        perCallTimeoutMs,
+        l: sl,
+      },);
+    }
+    catch (error) {
+      if ((standingEligible) || (!(error instanceof TranslateAbsenceError)))
+        throw error;
+      throw new ConsolidationStandingIneligibleError({
+        sliceIndex,
+        terminal: SLATE_TERMINALS[error.reason],
+        cause: error,
+      },);
+    }
+  })();
 
   // THE JUDGES CHOOSING THE INCUMBENT ENDS IT. There is no consolidation to
   // gate, and asking the gate anyway would buy ballots about the text that is
   // already in place.
   if (decided.origin !== 'fresh') {
+    requireShippableTerminal({
+      standingEligible,
+      terminal: SLATE_TERMINALS[decided.decision],
+      sliceIndex,
+    },);
     return await applyFinalPolish({
       client,
       settlement: {
@@ -597,68 +586,21 @@ export async function settleConsolidation(
     },);
   }
 
-  /**
-   * What the gate made of the consolidation that won the slate.
-   */
-  const gate = await gateConsolidatedSlice({
+  // GATE WHAT WON, WRAP WHAT SHIPS (`consolidate-settle-gate.ts`).
+  return await gateAndShip({
     client,
-    modelIds: judgeModelIds,
-    subject: {
-      sourceText: subject.sourceText,
-      incumbentText: subject.incumbentText,
-      consolidatedText: decided.text,
-      standingText,
-      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
-      ...identity,
-    },
-    signal,
-    exchangeTimeoutMs: perCallTimeoutMs,
-    l: sl,
-  },);
-
-  /**
-   * What ships once the semantic wrap has been applied and demotion re-derived.
-   */
-  const wrapped = wrapConsolidation({
-    outcome: gate,
-    consolidatedText: decided.text,
+    judgeModelIds,
+    subject,
+    decided,
     standingText,
     lineStructured,
-    l: sl,
-  },);
-
-  /**
-   * Which of the three ways this slice could keep its standing text it took,
-   * kept apart because they answer different questions about the roster.
-   */
-  const terminal: ConsolidationTerminal = (wrapped.ships === 'consolidated')
-    ? 'consolidated'
-    : (wrapped.demoted ? 'wrap-erased-difference' : 'gate-kept-standing');
-
-  return await applyFinalPolish({
-    client,
-    settlement: {
-      terminal,
-      text: wrapped.text,
-      floor,
-      verdicts,
-      decided,
-      gate,
-      rewrapped: wrapped.rewrapped,
-      demoted: wrapped.demoted,
-
-      // The judged round already carries the produce half's findings, so
-      // adding them again here would report one voice loss twice.
-      findings: [
-        ...decided.findings,
-        ...gate.findings,
-      ],
-    },
-    subject,
-    lineStructured,
+    floor,
+    verdicts,
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
-    eligible: (terminal === 'consolidated') || standingMayShip,
+    standingMayShip,
+    standingEligible,
+    identity,
     signal,
     perCallTimeoutMs,
     l: sl,

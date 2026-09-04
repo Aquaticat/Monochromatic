@@ -29,6 +29,7 @@ type ConsolidationBuyInput = {
   readonly sliceIndex: number;
   readonly polishConfig?: ConsolidationPolishConfig;
   readonly standingMayShip?: boolean;
+  readonly standingEligible?: boolean;
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -59,6 +60,9 @@ type ConsolidationBuyInput = {
  * @param polishConfig - final body polish roles and guard facts
  *
  * @param standingMayShip - whether unchanged baseline has prior endorsement
+ *
+ * @param standingEligible - whether the baseline passed the deterministic
+ * publication gate; a baseline that did not is withheld from the slate
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -98,6 +102,7 @@ async function buyConsolidationAttempt(
     sliceIndex,
     polishConfig,
     standingMayShip = true,
+    standingEligible = true,
     signal,
     perCallTimeoutMs,
     l,
@@ -122,6 +127,7 @@ async function buyConsolidationAttempt(
       sliceIndex,
       ...((polishConfig === undefined) ? {} : { polishConfig, }),
       standingMayShip,
+      standingEligible,
       signal,
       perCallTimeoutMs,
       l,
@@ -162,6 +168,7 @@ async function buyConsolidationAttempt(
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
     standingMayShip,
+    standingEligible,
     signal,
     perCallTimeoutMs,
     l,
