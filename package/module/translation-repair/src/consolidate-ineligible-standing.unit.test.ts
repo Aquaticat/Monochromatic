@@ -70,15 +70,15 @@ await describe({
     },),
 
     it({
-      name: 'RENDERS A LIVE VERDICT on a candidate that swapped a link destination',
+      name: 'RENDERS A LIVE VERDICT on a candidate that carries neither rendering of a link',
       fn: async () => {
         /**
-         * Verdict on a rendering that carries the page's link where the
-         * original carries another.
+         * Verdict on a rendering that dropped the link where the original
+         * carries one destination and the page another.
          */
         const validation = validateTranslatedSlice({
           sourceText: '她的头像由[画师](https://twitter.com/cat)绘制。',
-          candidateText: 'Her avatar was drawn by [the artist](https://x.com/cat).',
+          candidateText: 'Her avatar was drawn by the artist.',
           pageText: 'Her avatar was drawn by [the artist](https://x.com/cat).',
         },);
         /**
@@ -86,7 +86,7 @@ await describe({
          */
         const line = describeStandingVerdict({ validation, },);
         expect(validation.kind,).toBe('invalid',);
-        expect(line,).toContain('carries link-url https://twitter.com/cat and your translation does not',);
+        expect(line,).toContain('must carry exactly 1 of these, taken from either side; it carries 0',);
       },
     },),
   ],

@@ -41,6 +41,12 @@ const PAGE_REWRITTEN = 'Her avatar was drawn by [the artist](https://x.com/cat).
 const PAGE_KEPT = 'Her avatar was drawn by [the artist](https://twitter.com/cat).';
 
 /**
+ * Rendering that carries neither destination, invalid under the
+ * either-rendering rule of 2026-09-04 as under the rule before it.
+ */
+const LINK_DROPPED = 'Her avatar was drawn by the artist.';
+
+/**
  * Logger whose warnings are kept for the assertions, the rest forwarded.
  *
  * @returns Logger and the warnings it received
@@ -82,7 +88,7 @@ await describe({
         const { l, warnings, } = capturing();
         expect(readStandingVerdict({
           sourceText: SOURCE,
-          standingText: PAGE_REWRITTEN,
+          standingText: LINK_DROPPED,
           incumbentText: PAGE_REWRITTEN,
           lineStructured: false,
           choice: 'translate',
@@ -98,7 +104,7 @@ await describe({
         },);
         expect(warnings.length,).toBe(1,);
         expect(warnings[0],).toContain('slice 1: consolidation standing text fails the deterministic publication rule',);
-        expect(warnings[0],).toContain('link-url https://twitter.com/cat and your translation does not',);
+        expect(warnings[0],).toContain('must carry exactly 1 of these, taken from either side; it carries 0',);
       },
     },),
 
