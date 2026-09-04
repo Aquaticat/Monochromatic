@@ -671,9 +671,18 @@ one picture), logs `~/temp/agent/luxuanwen3-shapes-20260904.log` and `mtf_0615-s
     Shui Yuan Zhu"), SevenBird, Weideriche_, gaoyanger ("Gaoyang" / "Gaoyang, Lamb"), interrgned,
     luxuanwen3, noname ("noname" / "noname, no name, anonymous, ..."). Under the rule as written, none of
     those seven can ship an archive-shaped front matter; the lanes must drop the extra renderings from the
-    alias. Whether an alias that carries the name among other renderings is "the same identity" is the
-    owner's call; the question is put at the end of this session's turn with the mechanism question
-    (an ineligible standing that ships into a page the guard will refuse).
+    alias.
+- **Decided the same day, both by the owner**: the alias may carry the name among other renderings
+    (`doc/decision/translation-repair-front-matter-guard.md`, addendum), and consolidation withholds a
+    standing the deterministic gate refused from the slate, failing the slice at once when nothing valid
+    ships (`doc/decision/translation-repair-ineligible-standing.md`). Landed in `6bfe6da56`, every guard
+    shown to fail neutralised, suite 924. luxuanwen3 relaunched on that build at 09:24 UTC
+    (`~/temp/agent/luxuanwen3-shapes2-20260904.log`, OpenRouter alone) to read the page.
+- **The routing check** (`~/temp/agent/kw-routing-20260904.log`, keyword233 on OpenRouter alone from 08:59
+    UTC, the ignores of `d55d83082` on the wire): MiniMax M3 served by CoreWeave 30 of 30, Qwen3.8-27B by
+    CoreWeave 32 (4 cut), DeepSeek Flash by Phala and Together, GLM-5.3 by Modal and Together, no call on
+    an ignored endpoint, no in-stream failure, 4 cut streams in the first 25 minutes against MTF_0615's
+    155 over two hours.
 
 ## Build plan, transport-independent layers first
 
