@@ -754,7 +754,16 @@ with actual track-number metadata; replace the saturated blue current-row undert
 which the user identifies as inaccessible and not MD3. Retain the play icon as the
 non-color current-track cue. Re-check the supplied Material guidance for an appropriate
 baseline current-row treatment, apply both corrections to every new candidate, and
-include them in the next native HTML evidence.
+include them in the next native HTML evidence. The supplied list specification says
+baseline items use standard colors and reserves the selection mapping for selected
+list items; current playback is not a user list selection. Its accessibility page
+explicitly accepts a leading icon as the non-color state cue. Prototype commit
+`49d6568ed` therefore removes generated ordinals, removes the custom current-row fill,
+keeps every row on standard `onSurface` / `onSurfaceVariant` colors, reserves the
+24dp leading slot for alignment, and draws the play icon only on the current track.
+It also implements final D34: visible `outlineVariant` rail line, white vertical center
+spacer, and white horizontal picker/transport divider. Native recapture and an updated
+before/after HTML review remain.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
