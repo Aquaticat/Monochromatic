@@ -175,6 +175,20 @@ if (!sdk) {
 }
 const adb = join(sdk, "platform-tools", "adb");
 const serial = process.env.ANDROID_SERIAL ?? "emulator-5560";
+const themeCustomization = execFileSync(
+  adb,
+  ["-s", serial, "shell", "settings", "get", "secure", "theme_customization_overlay_packages"],
+  { encoding: "utf8" },
+).trim();
+const nightMode = execFileSync(
+  adb,
+  ["-s", serial, "shell", "cmd", "uimode", "night"],
+  { encoding: "utf8" },
+).trim();
+if (themeCustomization !== "null" || nightMode !== "Night mode: no") {
+  throw new Error(`Capture requires stock AVD light theme; got customization=${themeCustomization}, ${nightMode}.`);
+}
+console.log(`Pinned dynamic-color state: customization=${themeCustomization}, ${nightMode}.`);
 const displayListing = execFileSync(adb, ["-s", serial, "shell", "dumpsys", "SurfaceFlinger", "--display-id"], { encoding: "utf8" });
 const innerDisplayLine = displayListing
   .split("\n")
@@ -217,6 +231,38 @@ for (const candidateName of candidateNames) {
   }
   if (!candidateReady) {
     throw new Error(`${candidateName} never replaced the Android launch splash.`);
+  }
+  const hierarchy = execFileSync(
+    adb,
+    ["-s", serial, "exec-out", "cat", "/sdcard/music-player-candidate.xml"],
+    { encoding: "utf8" },
+  );
+  const requiredHierarchyMarkers = [
+    'text="Camellia"',
+    'text="Another Xronixle"',
+    'content-desc="Settings"',
+    ...(candidateName.startsWith("light-")
+      ? [
+          'text="Folders"',
+          'text="Open"',
+          'content-desc="Track position"',
+          'content-desc="Previous track"',
+          'content-desc="Pause"',
+          'content-desc="Next track"',
+          'content-desc="Repeat track"',
+          'content-desc="Play in order"',
+          'content-desc="Shuffle current folder"',
+          'content-desc="Shuffle all folders"',
+          'text="Repeat"',
+          'text="In order"',
+          'text="Shuffle"',
+          'text="Shuffle all"',
+        ]
+      : []),
+  ];
+  const missingHierarchyMarkers = requiredHierarchyMarkers.filter((marker) => !hierarchy.includes(marker));
+  if (missingHierarchyMarkers.length > 0) {
+    throw new Error(`${candidateName} is missing Material controls: ${missingHierarchyMarkers.join(", ")}.`);
   }
   const screenshot = execFileSync(
     adb,
