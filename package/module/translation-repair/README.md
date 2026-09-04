@@ -184,6 +184,12 @@ the line then ends with `destinations-archive-rendering`,
 and with `destinations-both-renderings` when the page carries the original's and the archive's for one reference.
 The addresses themselves go to the run log at info, never to stdout.
 A dropped destination from a wording both deciders approved is a finding, not a late publish rewrite.
+The neutral pronoun the sources write as `TA`, `Ta` or `ta` renders as singular they:
+the declared-identity pronoun line counts all three spellings (`identity-context.ts`),
+the house rule says what English makes of it,
+and a translation that leaves it standing fails the deterministic slice rule (`translate-neutral-pronoun.ts`),
+which names the spelling and its count to the model that wrote it.
+Measured over the pinned corpus, that rule flags one archive (a rewrite keeping `TA`) and 15 sources.
 A different rule protects a source-only passage:
 whole-document coverage must call it absent,
 then page shortfall or a destination missing from target admits translation.
