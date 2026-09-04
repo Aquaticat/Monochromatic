@@ -214,4 +214,126 @@ export function readsAsRefusal({ reading, }: { readonly reading: string; },): bo
     },);
 }
 
+/**
+ * Words naming text itself, which an absence report negates: "no visible
+ * text", "no words", "nothing written", "no legible characters".
+ *
+ * MEASURED ON THE PROBE OF 2026-09-04 over the five pictures every run log had
+ * ended `unavailable`: 14 of 15 refused replies named text this way, and the
+ * one that did not ("I cannot read the image.") was the reply of a model told
+ * to say so plainly when it cannot read.
+ */
+const TEXT_WORDS: readonly string[] = [
+  'text',
+  'word',
+  'words',
+  'writing',
+  'written',
+  'character',
+  'characters',
+  'lettering',
+  'inscription',
+  'inscriptions',
+  'signature',
+  'signatures',
+  'label',
+  'labels',
+  'caption',
+  'captions',
+  'legible',
+];
+
+/**
+ * Phrases about the picture's quality or the model's access to it, lowercased,
+ * any of which makes a refusal an inability rather than an absence report:
+ * text the model could not make out is text, not nothing.
+ */
+const INABILITY_MARKERS: readonly string[] = [
+  'unclear',
+  'blurry',
+  'blurred',
+  'resolution',
+  'make out',
+  'process',
+  'access',
+  'load',
+  'corrupt',
+  'distorted',
+  'quality',
+  'illegible',
+  'unreadable',
+  'too small',
+  'too dark',
+  'obscured',
+  'cut off',
+  'cropped',
+];
+
+/**
+ * Whether a reading negates anything at all.
+ *
+ * @param reading - what model returned for image
+ *
+ * @returns Whether any negation word stands as a word of its own in it
+ *
+ * @example
+ * ```ts
+ * const negated = negatesSomething({ reading: 'I can't.', },);
+ * ```
+ */
+export function negatesSomething({ reading, }: { readonly reading: string; },): boolean {
+  /**
+   * Every Latin word it holds, lowercased.
+   */
+  const words = latinWords({ text: reading, },);
+  return NEGATION_WORDS.some(function negates(word,): boolean {
+    return words.includes(word,);
+  },);
+}
+
+/**
+ * Whether a refusal reports that the picture carries no text, as opposed to
+ * declining to read it.
+ *
+ * ASKED OF A REFUSAL ONLY. This does not decide whether a reply is a refusal;
+ * `readsAsRefusal` and the phrase list do. It decides which kind: an absence
+ * report names text and says nothing about the picture's quality or the
+ * model's access to it, and an inability does the reverse, or names neither.
+ * The two are answers to different questions, and the pair stage treats them
+ * differently: two absence reports confirm a textless picture, while an
+ * inability is asked again and, if it holds, leaves the picture unread.
+ *
+ * @param reading - refused reply, whitespace and all
+ *
+ * @returns Whether it reports absence rather than inability
+ *
+ * @example
+ * ```ts
+ * const absent = refusalReportsAbsence({ reading: 'There is no visible text in this image.', },);
+ * ```
+ */
+export function refusalReportsAbsence({ reading, }: { readonly reading: string; },): boolean {
+  /**
+   * Reply without its surrounding whitespace.
+   */
+  const trimmed = reading.trim();
+
+  /**
+   * Reply lowercased, where the markers are matched as phrases.
+   */
+  const lowered = trimmed.toLowerCase();
+  if (INABILITY_MARKERS.some(function marks(marker,): boolean {
+    return lowered.includes(marker,);
+  },))
+    return false;
+
+  /**
+   * Every Latin word it holds, lowercased.
+   */
+  const words = latinWords({ text: lowered, },);
+  return TEXT_WORDS.some(function namesText(word,): boolean {
+    return words.includes(word,);
+  },);
+}
+
 //endregion Reading refusal

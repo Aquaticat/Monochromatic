@@ -404,6 +404,148 @@ await describe({
     },),
 
     it({
+      name: 'CONFIRMS A TEXTLESS PICTURE FROM TWO ABSENCE REPORTS where the deterministic reader found '
+        + 'noise (Uekawakuyuurei IMG_1308, 2026-09-04: a painting of ships, 24 characters of canvas from '
+        + 'tesseract, every reader on both rosters saying it carries no text, and the entry stopped at the '
+        + 'completeness gate on every run), and RESUMES it',
+      fn: async () => {
+        const { client, asked, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': 'There is no visible text in this image. It is a painting of ships at sea.',
+            'hf:Qwen/Qwen3.8-27B': 'I cannot read any text in this image. There are no visible words.',
+          },
+        },);
+
+        /**
+         * What the roster made of a picture the deterministic reader called text.
+         */
+        const paired = await readImagePair({
+          client,
+          readOcr: found,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'ships.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(asked.length,).toBe(2,);
+        expect(paired.kind,).toBe('no-text',);
+        if (paired.kind !== 'no-text')
+          throw new Error('no-text by construction',);
+        expect(paired.characters,).toBe(11,);
+        expect(paired.confirmedBy,).toStrictEqual(READERS,);
+        expect(isResumableReading({ reading: paired, },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'CONFIRMS A TEXTLESS PICTURE FROM TWO SHORT READINGS, which is what a drawing with a hull '
+        + 'number on it produces (Uekawakuyuurei img370: DE581, DE581 and D650 from the three readers)',
+      fn: async () => {
+        const { client, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': 'DE581',
+            'hf:Qwen/Qwen3.8-27B': 'D650',
+          },
+        },);
+
+        /**
+         * What the roster made of a picture carrying a few characters.
+         */
+        const paired = await readImagePair({
+          client,
+          readOcr: found,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'destroyer.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(paired.kind,).toBe('no-text',);
+        if (paired.kind !== 'no-text')
+          throw new Error('no-text by construction',);
+        expect(paired.confirmedBy,).toStrictEqual(READERS,);
+      },
+    },),
+
+    it({
+      name: 'STAYS UNAVAILABLE AND TRANSIENT with one absence report beside a decline, since one reader '
+        + 'saying nothing is there and one declining to look is not two witnesses to anything',
+      fn: async () => {
+        const { client, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': 'There is no visible text in this image.',
+            'hf:Qwen/Qwen3.8-27B': 'I cannot read the image.',
+          },
+        },);
+
+        /**
+         * What the roster made of a picture one reader would not look at.
+         */
+        const paired = await readImagePair({
+          client,
+          readOcr: found,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'ships.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(paired.kind,).toBe('unavailable',);
+        if (paired.kind !== 'unavailable')
+          throw new Error('unavailable by construction',);
+        expect(paired.reason,).toBe('no-reader-available',);
+        expect(paired.transient,).toBe(true,);
+        expect(paired.perReader,).toStrictEqual([
+          'hf:moonshotai/Kimi-K3: reports-no-text',
+          'hf:Qwen/Qwen3.8-27B: reads-as-refusal',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'KEEPS ONE READING BESIDE ONE SHORT ONE UNCORROBORATED, naming the short one, since a reader '
+        + 'that read a passage and one that read five characters did not read the same thing',
+      fn: async () => {
+        const { client, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': READING,
+            'hf:Qwen/Qwen3.8-27B': 'DE581',
+          },
+        },);
+
+        /**
+         * What the roster made of a picture the readers saw differently.
+         */
+        const paired = await readImagePair({
+          client,
+          readOcr: found,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'noticeboard.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(paired.kind,).toBe('unavailable',);
+        if (paired.kind !== 'unavailable')
+          throw new Error('unavailable by construction',);
+        expect(paired.reason,).toBe('one-reader-only',);
+        expect(paired.perReader,).toStrictEqual([
+          '',
+          'hf:Qwen/Qwen3.8-27B: short reading of 5 characters',
+        ],);
+      },
+    },),
+
+    it({
       name: 'REFUSES A ROSTER OF ONE, since a sole reader has nothing to be corroborated by '
         + 'however well it reads',
       fn: async () => {

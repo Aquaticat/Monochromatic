@@ -4,7 +4,10 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
-import type { OcrReading, } from './image-ocr.ts';
+import {
+  type OcrReading,
+  solidCharacters,
+} from './image-ocr.ts';
 import { readPastRefusal, } from './image-reading-past-refusal.ts';
 import {
   type ImageReading,
@@ -60,6 +63,19 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // the world. Every picture can now be offered to both readers, and the only
 // ones that go uncorroborated are the ones the readers themselves cannot agree
 // on.
+//
+// A PICTURE THE READERS AGREE CARRIES NOTHING IS A VERDICT, not a shortfall,
+// since 2026-09-04. The deterministic reader gates on presence at 16
+// characters, and a painting's canvas texture can clear that line as noise:
+// `Uekawakuyuurei/IMG_1308.webp` returned 24 characters from tesseract and
+// every model asked about it said, truthfully, that it carries no text. Those
+// replies were screened as refusals, the pair ended `no-reader-available` and
+// transient, the verdict was read again on every run, and the entry stopped at
+// the completeness gate each time, on both rosters. Two readers reporting
+// absence, or answering with fewer characters than a transcript (the hull
+// number on `img370.webp`), now confirm what the deterministic reader could
+// not: the picture is textless past its noise. Nothing travels to the sheets
+// from such a verdict, exactly as from the deterministic one.
 
 /**
  * Decimal places an agreement figure is logged to.
@@ -156,9 +172,16 @@ export type PairedReading = {
 
   /**
    * How much the deterministic reader did return, so a clean nothing is
-   * distinguishable from a few characters below the line.
+   * distinguishable from a few characters below the line, and a confirmed
+   * textless picture from its noise above it.
    */
   readonly characters: number;
+
+  /**
+   * Readers that confirmed it, when the deterministic reader found enough to
+   * ask them; absent when no model was asked.
+   */
+  readonly confirmedBy?: readonly RosterModelId[];
 } | {
   /**
    * No reading may be used, for a reason a finding can name.
@@ -452,7 +475,40 @@ export async function readImagePair(
     },);
 
   /**
-   * Why each reader produced nothing, empty for one that did.
+   * Readers that answered there is little or nothing to read: an absence
+   * report, or a reply shorter than a transcript that refused nothing.
+   */
+  const littleText: readonly RosterModelId[] = outcomes.flatMap(function reportsLittle(
+    {
+      modelId,
+      reading,
+    },
+  ): readonly RosterModelId[] {
+    if (reading.kind === 'short')
+      return [modelId,];
+    if ((reading.kind === 'unavailable') && (reading.reason === 'reports-no-text'))
+      return [modelId,];
+    return [];
+  },);
+  if ((readings.length < 2) && (littleText.length >= 2)) {
+    /**
+     * What the deterministic reader had found, which the readers now overrule.
+     */
+    const characters = (ocr.kind === 'read') ? solidCharacters({ text: ocr.text, },) : 0;
+    rl.info(
+      `${assetName}: ${String(littleText.length,)} of ${String(readerModelIds.length,)} readers report little or `
+        + `no text (${littleText.join(', ',)}), so the picture is confirmed textless past the deterministic `
+        + `reader's ${String(characters,)} characters`,
+    );
+    return {
+      kind: 'no-text',
+      characters,
+      confirmedBy: littleText,
+    };
+  }
+
+  /**
+   * Why each reader produced nothing usable, empty for one that did.
    */
   const perReader: readonly string[] = outcomes.map(function reason(
     {
@@ -460,9 +516,16 @@ export async function readImagePair(
       reading,
     },
   ): string {
-    return (reading.kind === 'unavailable')
-      ? `${modelId}: ${reading.reason}`
-      : '';
+    if (reading.kind === 'unavailable')
+      return `${modelId}: ${reading.reason}`;
+    if (reading.kind === 'short') {
+      /**
+       * The few characters it read.
+       */
+      const { text, } = reading;
+      return `${modelId}: short reading of ${String(text.length,)} characters`;
+    }
+    return '';
   },);
 
   if (readings.length < 2) {

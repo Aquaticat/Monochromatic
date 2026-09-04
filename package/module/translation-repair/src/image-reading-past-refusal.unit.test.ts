@@ -52,7 +52,13 @@ const TEXT_ONLY: RosterModelId = 'hf:openai/gpt-oss-120b';
  * What a reader returns when it declines, worded the way both real readers
  * word it.
  */
-const REFUSAL = 'There is no text visible in this image.';
+const REFUSAL = 'I cannot read the image.';
+
+/**
+ * Reply reporting that the picture carries no text, which is about the picture
+ * rather than the roll and so is never asked again.
+ */
+const ABSENCE = 'There is no text visible in this image.';
 
 /**
  * What a reader returns when it reads.
@@ -252,6 +258,35 @@ await describe({
 
         expect(reading.kind,).toBe('unavailable',);
         expect(asks.length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'ASKS ONCE FOR AN ABSENCE REPORT, since a reader saying the picture carries no text is '
+        + 'describing the picture (Uekawakuyuurei, 2026-09-04: three readers asked four times each about '
+        + 'a painting of ships, twelve calls to be told the same true thing)',
+      fn: async () => {
+        const { client, asks, } = sequencedClient({ replies: [ABSENCE, READING,], },);
+
+        /**
+         * Outcome for a reader that reported absence, with a reading queued
+         * behind it that must never be fetched.
+         */
+        const reading = await readPastRefusal({
+          client,
+          modelId: READER,
+          bytes: pictureBytes(),
+          assetName: 'ships.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(asks.length,).toBe(1,);
+        expect(reading.kind,).toBe('unavailable',);
+        if (reading.kind !== 'unavailable')
+          throw new Error('unavailable by construction',);
+        expect(reading.reason,).toBe('reports-no-text',);
       },
     },),
 

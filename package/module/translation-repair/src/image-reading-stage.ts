@@ -117,6 +117,18 @@ export type ImageReading = {
    */
   readonly text: string;
 } | {
+  /**
+   * The model answered with fewer characters than a transcript and refused
+   * nothing. Never usable on its own; the pair stage counts two of them as
+   * confirmation that the picture carries too little to read.
+   */
+  readonly kind: 'short';
+
+  /**
+   * The few characters it read, kept for the record.
+   */
+  readonly text: string;
+} | {
   readonly kind: 'unavailable';
 
   /**
@@ -129,6 +141,7 @@ export type ImageReading = {
     | 'too-large-for-transport'
     | 'too-short'
     | 'reads-as-refusal'
+    | 'reports-no-text'
     | 'empty-reply'
     | 'reader-failed';
 };
@@ -136,10 +149,11 @@ export type ImageReading = {
 /**
  * Reasons that describe the provider's evening rather than the picture.
  *
- * A reader that threw, answered nothing, answered too little or refused may
+ * A reader that threw, answered nothing, answered too little or declined may
  * read the same picture tomorrow; a model that does not read images, a media
- * type nobody names, and a file too large to send will not change. The split
- * decides what a pair verdict built on the reason is allowed to remember.
+ * type nobody names, a file too large to send, and a reader reporting that the
+ * picture carries no text will not change. The split decides what a pair
+ * verdict built on the reason is allowed to remember.
  */
 const TRANSIENT_READING_REASONS: ReadonlySet<string> = new Set([
   'too-short',
@@ -287,20 +301,25 @@ export async function readImageAsset(
   }
 
   /**
+   * Reply text, taken off the exchange once.
+   */
+  const { text, } = reply;
+
+  /**
+   * Reply without its surrounding whitespace.
+   */
+  const trimmed = text.trim();
+
+  /**
    * Whether the reading may be used at all.
    */
-  const verdict = readingMakesSense({ reading: reply.text, },);
+  const verdict = readingMakesSense({ reading: text, },);
   if (verdict.kind === 'refused') {
     // THE OPENING IS LOGGED because a refused reply carries the model's words
     // about the picture, never the picture's own text, and the Uekawakuyuurei
     // run of 2026-09-04 (15:03 UTC) could not tell from "reads-as-refusal"
     // alone whether three readers had declined to read or had reported that
     // a painting carries no text.
-    /**
-     * Reply without its surrounding whitespace.
-     */
-    const trimmed = reply.text.trim();
-
     /**
      * Opening of the reply.
      */
@@ -317,6 +336,13 @@ export async function readImageAsset(
     return {
       kind: 'unavailable',
       reason: verdict.clause,
+    };
+  }
+  if (verdict.kind === 'short') {
+    rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} characters, fewer than a transcript`,);
+    return {
+      kind: 'short',
+      text: trimmed,
     };
   }
 

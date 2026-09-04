@@ -45,18 +45,50 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A READING TOO SHORT TO BE A TRANSCRIPT, since an image nobody could read '
-        + 'comes back as an apology or as nothing and both are shorter than any transcript',
+      name: 'CALLS A READING UNDER THE TRANSCRIPT LINE SHORT when it refuses nothing, which is what a '
+        + 'picture carrying a hull number produces (Uekawakuyuurei img370, DE581 from every reader on '
+        + '2026-09-04), and REFUSES one that negates or is empty, since an apology fragment is not a '
+        + 'reading of anything',
       fn: async () => {
+        expect(readingMakesSense({ reading: 'DE581', },).kind,).toBe('short',);
+        expect(readingMakesSense({ reading: '   a cat   ', },).kind,).toBe('short',);
+        expect(readingMakesSense({ reading: '   ', },).kind,).toBe('refused',);
+
+        // An apology the phrase list knows is a refusal before its length is
+        // looked at; one it does not know, negating, is too short to be anything.
+        expect(readingMakesSense({ reading: 'I can\'t.', },).kind,).toBe('refused',);
+
         /**
-         * What the rule decided.
+         * What the rule decided about an apology fragment the list does not know.
          */
-        const verdict = readingMakesSense({ reading: '   a cat   ', },);
+        const verdict = readingMakesSense({ reading: 'None.', },);
 
         expect(verdict.kind,).toBe('refused',);
         if (verdict.kind !== 'refused')
           throw new Error('refused by construction',);
         expect(verdict.clause,).toBe('too-short',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES AN ABSENCE REPORT UNDER ITS OWN CLAUSE, however short, so the pair stage can count '
+        + 'two of them as a textless picture rather than as two readers who declined (Uekawakuyuurei '
+        + 'IMG_1308, 2026-09-04: a painting whose canvas passed the OCR gate as 24 characters of noise)',
+      fn: async () => {
+        for (const reading of [
+          'No text.',
+          'There is no visible text in this image. It is a painting of ships at sea, and I cannot discern any '
+          + 'words, names, signatures, dates, or inscriptions.',
+        ]) {
+          /**
+           * Verdict on an absence report.
+           */
+          const verdict = readingMakesSense({ reading, },);
+          expect(verdict.kind,).toBe('refused',);
+          if (verdict.kind !== 'refused')
+            throw new Error('refused by construction',);
+          expect(verdict.clause,).toBe('reports-no-text',);
+        }
       },
     },),
 

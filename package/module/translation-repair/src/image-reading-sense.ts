@@ -31,7 +31,11 @@
 // names, handles and numbers. What survives here is per-reading and needs no
 // second text.
 
-import { readsAsRefusal, } from './reading-refusal.ts';
+import {
+  negatesSomething,
+  readsAsRefusal,
+  refusalReportsAbsence,
+} from './reading-refusal.ts';
 
 /**
  * Shortest reading worth having, in characters after trimming.
@@ -118,25 +122,39 @@ function isDigit({ character, }: { readonly character: string; },): boolean {
 export type ReadingVerdict = {
   readonly kind: 'usable';
 } | {
+  /**
+   * The model answered with fewer characters than a transcript and refused
+   * nothing: a hull number, a date, a signature. Not usable on its own, and
+   * two of them confirm that the picture carries too little to read.
+   */
+  readonly kind: 'short';
+} | {
   readonly kind: 'refused';
 
   /**
    * Which clause of the stated rule refused it, for a finding a reader can act
-   * on rather than a bare rejection.
+   * on rather than a bare rejection. `reports-no-text` is a refusal that says
+   * the picture carries no text; `reads-as-refusal` is one that declines to
+   * read it.
    */
-  readonly clause: 'too-short' | 'reads-as-refusal';
+  readonly clause: 'too-short' | 'reads-as-refusal' | 'reports-no-text';
 };
 
 /**
  * Whether what a model returned for a picture is a reading at all.
  *
- * PER-READING AND NOTHING MORE. Both clauses look only at the text in hand, so
- * this can screen a reading before any second one exists, which is what lets the
- * pair stage discard a refusal without paying for its partner.
+ * PER-READING AND NOTHING MORE. Every clause looks only at the text in hand, so
+ * this can screen a reading before any second one exists, which is what lets
+ * the pair stage discard a refusal without paying for its partner.
+ *
+ * REFUSAL BEFORE LENGTH. A refusal is screened first however short it is, so
+ * "No text." is an absence report and not a short reading, and a short reply
+ * that negates nothing ("DE581") is a short reading rather than an apology.
  *
  * @param reading - what model returned for image
  *
- * @returns Whether reading may be used, and which clause refused it
+ * @returns Whether reading may be used, whether it is a short reading two
+ * readers can confirm a textless picture with, or which clause refused it
  *
  * @example
  * ```ts
@@ -150,12 +168,6 @@ export function readingMakesSense(
    * Reading without its surrounding whitespace.
    */
   const trimmed = reading.trim();
-  if (trimmed.length < MIN_READING_CHARS) {
-    return {
-      kind: 'refused',
-      clause: 'too-short',
-    };
-  }
 
   /**
    * Opening of the reading, lowercased, where a refusal announces itself.
@@ -165,24 +177,32 @@ export function readingMakesSense(
     REFUSAL_WINDOW_CHARS,
   )
     .toLowerCase();
-  if (REFUSAL_PHRASES.some(function announced(phrase,): boolean {
+
+  /**
+   * Whether the phrase list or the shape test calls this a refusal.
+   */
+  const refused = REFUSAL_PHRASES.some(function announced(phrase,): boolean {
     return opening.includes(phrase,);
-  },)) {
+  },) || readsAsRefusal({ reading: trimmed, },);
+  if (refused) {
     return {
       kind: 'refused',
-      clause: 'reads-as-refusal',
+      clause: refusalReportsAbsence({ reading: trimmed, },) ? 'reports-no-text' : 'reads-as-refusal',
     };
   }
 
-  // The shape test, which the phrase list above cannot subsume: a refusal worded
-  // in a way nobody wrote down still negates, still names the picture, and is
-  // still a sentence rather than a passage. Placed second because the phrase
-  // list reaches long apologies this one deliberately does not.
-  if (readsAsRefusal({ reading: trimmed, },)) {
-    return {
-      kind: 'refused',
-      clause: 'reads-as-refusal',
-    };
+  if (trimmed.length < MIN_READING_CHARS) {
+    // A short reply that negates something is an apology fragment ("I can't.",
+    // "None."), which says nothing about the picture; one that negates nothing
+    // is what a picture with a hull number or a date on it produces. Nothing at
+    // all is neither.
+    if ((trimmed.length === 0) || negatesSomething({ reading: trimmed, },)) {
+      return {
+        kind: 'refused',
+        clause: 'too-short',
+      };
+    }
+    return { kind: 'short', };
   }
 
   return { kind: 'usable', };

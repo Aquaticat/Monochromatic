@@ -190,7 +190,9 @@ export {
 } from './image-reading-sense.ts';
 export {
   latinWords,
+  negatesSomething,
   readsAsRefusal,
+  refusalReportsAbsence,
 } from './reading-refusal.ts';
 export {
   type OcrReading,

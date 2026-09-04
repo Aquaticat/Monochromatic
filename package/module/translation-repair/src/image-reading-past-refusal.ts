@@ -53,6 +53,14 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // error that produced the wrong projection in the first place, and the cost of
 // the fourth ask is a handful of calls per corpus.
 //
+// AN ABSENCE REPORT IS NOT A REFUSAL, since 2026-09-04. The Uekawakuyuurei
+// run of that day asked three readers four times each about a painting of
+// ships, and every answer said the painting carries no text: twelve calls to
+// be told the same true thing, then an entry stopped for want of a reading. A
+// reply that reports absence (`reports-no-text`) is about the picture and is
+// returned at once; only a reply that declines to read (`reads-as-refusal`)
+// is asked again.
+//
 // SCOPED TO REFUSAL ALONE, deliberately. A model that does not read images, a
 // picture too large to send, an empty reply, and a reading that fails the screen
 // for some other clause are all properties of the input or the roster: asking

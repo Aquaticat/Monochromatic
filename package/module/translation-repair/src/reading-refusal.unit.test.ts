@@ -27,8 +27,10 @@ import {
 
 import {
   latinWords,
+  negatesSomething,
   readingMakesSense,
   readsAsRefusal,
+  refusalReportsAbsence,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -175,19 +177,94 @@ await describe({
   name: `${readingMakesSense.name} shape clause`,
   children: [
     it({
-      name: 'REPORTS A SHAPE REFUSAL UNDER THE SAME CLAUSE AS A PHRASE REFUSAL, so a finding reads '
-        + 'the same however the reader worded its decline and nobody has to learn two names for '
-        + 'one outcome',
+      name: 'NAMES THE CLAUSE BY WHAT THE REPLY SAYS, NOT BY WHICH TEST CAUGHT IT: the reply that '
+        + 'slipped the phrase list in production and one the list catches are both absence reports, '
+        + 'and a decline caught either way is a refusal',
       fn: async () => {
         /**
          * Verdict on the reply that slipped the phrase list in production.
          */
-        const verdict = readingMakesSense({ reading: QWEN_REFUSAL, },);
-
-        expect(verdict.kind,).toBe('refused',);
-        if (verdict.kind !== 'refused')
+        const shape = readingMakesSense({ reading: QWEN_REFUSAL, },);
+        expect(shape.kind,).toBe('refused',);
+        if (shape.kind !== 'refused')
           throw new Error('refused by construction',);
-        expect(verdict.clause,).toBe('reads-as-refusal',);
+        expect(shape.clause,).toBe('reports-no-text',);
+
+        /**
+         * Verdict on a reply the phrase list catches.
+         */
+        const phrase = readingMakesSense({ reading: 'No text is visible here.', },);
+        expect(phrase.kind,).toBe('refused',);
+        if (phrase.kind !== 'refused')
+          throw new Error('refused by construction',);
+        expect(phrase.clause,).toBe('reports-no-text',);
+
+        /**
+         * Verdict on a decline, the one reply of fifteen on the probe of
+         * 2026-09-04 that named no text.
+         */
+        const decline = readingMakesSense({ reading: 'I cannot read the image.', },);
+        expect(decline.kind,).toBe('refused',);
+        if (decline.kind !== 'refused')
+          throw new Error('refused by construction',);
+        expect(decline.clause,).toBe('reads-as-refusal',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: refusalReportsAbsence.name,
+  children: [
+    it({
+      name: 'REPORTS ABSENCE for every wording the probe of 2026-09-04 recorded that names text: the '
+        + 'three readers on Uekawakuyuurei\'s painting, drawing and photograph and on dogesir_\'s and '
+        + 'gqt\'s photographs, 14 replies of 15',
+      fn: async () => {
+        for (const reading of [
+          'There is no visible text in this image. It is a painting of ships at sea, and I cannot discern any '
+          + 'words, names, signatures, dates, or inscriptions.',
+          'I cannot read any text in this image. There are no visible words, names, dates, numbers, or '
+          + 'addresses.',
+          'There is no text visible in this image.',
+          'No text is visible in this image. It contains only two pen-and-ink drawings of fluffy cats.',
+          'I cannot see any words, text, names, handles, dates, numbers, or addresses in this image.',
+          'There is no text visible in this image to transcribe.',
+          'I can read the image, but there is no visible text to transcribe.',
+          'No legible text is visible.',
+        ]) {
+          expect(refusalReportsAbsence({ reading, },),).toBe(true,);
+        }
+      },
+    },),
+    it({
+      name: 'REPORTS INABILITY for a decline that names no text, and for one that names text it could '
+        + 'not make out, since text a model cannot read is text',
+      fn: async () => {
+        for (const reading of [
+          'I cannot read the image.',
+          'I am unable to see the image.',
+          'I cannot make out the text in this image; the resolution is too low.',
+          'The text is too blurry to read.',
+          'Unable to process the image.',
+        ]) {
+          expect(refusalReportsAbsence({ reading, },),).toBe(false,);
+        }
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: negatesSomething.name,
+  children: [
+    it({
+      name: 'FINDS A NEGATION WORD standing on its own, and none inside another word or in a hull number',
+      fn: async () => {
+        expect(negatesSomething({ reading: 'I can\'t.', },),).toBe(true,);
+        expect(negatesSomething({ reading: 'None.', },),).toBe(true,);
+        expect(negatesSomething({ reading: 'DE581', },),).toBe(false,);
+        expect(negatesSomething({ reading: 'A note: knot.', },),).toBe(false,);
       },
     },),
   ],

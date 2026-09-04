@@ -347,8 +347,9 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A READING TOO SHORT TO BE A TRANSCRIPTION, which is what a picture carrying no '
-        + 'words produces and what a truncated exchange leaves behind',
+      name: 'RETURNS A SHORT READING for a reply under the transcript line that refuses nothing, which is '
+        + 'what a picture carrying a few characters produces; never usable alone, and the pair stage '
+        + 'counts two of them as a textless picture',
       fn: async () => {
         const { client, } = replyingClient({ text: '喵。', },);
 
@@ -365,10 +366,37 @@ await describe({
           l,
         },);
 
+        expect(reading.kind,).toBe('short',);
+        if (reading.kind !== 'short')
+          throw new Error('short by construction',);
+        expect(reading.text,).toBe('喵。',);
+      },
+    },),
+
+    it({
+      name: 'NAMES AN ABSENCE REPORT SEPARATELY FROM A DECLINE, since a reader saying the picture carries '
+        + 'no text is describing the picture and is not asked again (Uekawakuyuurei, 2026-09-04: twelve '
+        + 'asks about a painting of ships)',
+      fn: async () => {
+        const { client, } = replyingClient({ text: 'There is no text visible in this image.', },);
+
+        /**
+         * Attempt whose reply reports that the picture carries nothing.
+         */
+        const reading = await readImageAsset({
+          client,
+          modelId: READER,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'mittens.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
         expect(reading.kind,).toBe('unavailable',);
         if (reading.kind !== 'unavailable')
           throw new Error('unavailable by construction',);
-        expect(reading.reason,).toBe('too-short',);
+        expect(reading.reason,).toBe('reports-no-text',);
       },
     },),
 
