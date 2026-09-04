@@ -596,7 +596,11 @@ contracts pass. Two throwaway positive controls prove the revised state boundary
 erasing the target-width indicator yields `must show the 2dp selected-folder tab
 indicator across the target`; adding a glyph-width line at the former underline
 position yields `must not underline selected folder text like a web link`. The restored
-capture passes. Final Helium verification is next.
+capture passes. Final Helium verification is next. Before verification finished, the
+user removed another redundancy: delete the left-pane `Camellia` control and place
+`Open` on the same app-bar line as `Folders`. The right-pane `Camellia` title remains
+the current-folder identity. Do not retain an empty source-action row; give its
+vertical space back to the folder picker, then recapture and restart verification.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
