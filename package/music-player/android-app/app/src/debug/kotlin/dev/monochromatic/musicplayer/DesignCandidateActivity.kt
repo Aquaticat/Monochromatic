@@ -188,6 +188,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -288,7 +289,6 @@ import androidx.compose.ui.graphics.Color
 // ```
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 
 // What:     `dp` and `sp` construct density-aware layout and font measurements.
 // Why:      Android converts the cited logical geometry to the emulator's 390dpi panel pixels.
@@ -620,19 +620,22 @@ private fun RowScope.FolderNames() {
         ) {
             for (folder in folders) {
                 val selectedFolder = folder == "Camellia"
-                Box(
+                Column(
                     modifier = Modifier
-                        .heightIn(min = 48.dp)
+                        .width(IntrinsicSize.Min)
+                        .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .selectable(
                             selected = selectedFolder,
                             onClick = {},
                             role = Role.RadioButton,
-                        )
-                        .padding(horizontal = 4.dp),
-                    contentAlignment = Alignment.Center,
+                        ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween,
                 ) {
+                    Box(modifier = Modifier.height(2.dp))
                     Text(
                         text = folder,
+                        modifier = Modifier.padding(horizontal = 4.dp),
                         color = if (selectedFolder) {
                             MaterialTheme.colorScheme.primary
                         } else {
@@ -643,7 +646,18 @@ private fun RowScope.FolderNames() {
                         } else {
                             MaterialTheme.typography.bodyLarge
                         },
-                        textDecoration = if (selectedFolder) TextDecoration.Underline else null,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(2.dp)
+                            .background(
+                                if (selectedFolder) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    Color.Transparent
+                                },
+                            ),
                     )
                 }
             }
