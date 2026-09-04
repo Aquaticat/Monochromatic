@@ -475,9 +475,11 @@ break, but neither is drawn, and neither gets special-cased UI for now.
 ### D31. Picker names = plain text, several per line — CHOSEN (candidate pk-g, 2026-09-03)
 Chosen over pk-h (14px with middot separators, 2.0 screens): the 16px/24dp-gap version
 reads as a set of targets rather than as running text, and the density gain was not
-worth it. Selection marking confirmed as built: **primary colour + 2dp underline**,
-never a filled pill. Extent accepted explicitly — "2–2.5 screens per letter is not
-absurd" — which finally closes the scroll-length constraint that ran through six
+worth it. Selection marking uses **primary colour + a 2dp MD1-style indicator at the
+bottom edge of the whole 48dp target**, never underlined label text and never a filled
+pill. The indicator is spatial state chrome, not link decoration. The accepted extent
+is "2 to 2.5 screens per letter is not absurd", which finally closes the scroll-length
+constraint that ran through six
 rejected candidates.
 The presentation that satisfies every constraint in D17 at once:
 ```
@@ -485,7 +487,8 @@ The presentation that satisfies every constraint in D17 at once:
 several names per line, natural width    wrapping flex row, column-gap 24dp, row-gap 0
 48dp minimum height per name             C1 target rule, met without a pill
 nothing truncated                        names take the width they need
-selected: #D0BCFF + 500 + 2dp underline  never a filled pill
+selected: primary + 500 + 2dp target-width indicator
+          never text underline or filled pill
 ```
 This is the unf-f/g/h/i layout with the chip styling removed — the layout was never the
 problem. **Measured** extent at 418dp (not estimated — review-notes #1): names pack

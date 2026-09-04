@@ -576,7 +576,22 @@ underlined text communicates a web link. Their requested replacement is an MD1-s
 tab treatment on that folder target, not a change to the edge-flush letter rail. Use a
 separate tab indicator belonging to the whole 48dp target rather than decorating the
 label glyphs; keep color plus the spatial indicator as redundant selected-state cues.
-Recapture and reopen before accepting answers.
+Recapture and reopen before accepting answers. Google's archived MD1 tab specification
+confirms a 48dp target, accent-colored active text, and a separate 2dp accent indicator
+at the target bottom: `https://m1.material.io/components/tabs.html`. Apply that visual
+state treatment without changing folder-target radio semantics or turning the wrapped
+folder choices into semantic top-level tabs.
+
+The first implementation at prototype commit `764718845` used intrinsic-width columns.
+Its native capture visibly broke D31: long labels wrapped into narrow multi-line columns
+and the several-natural-width-names-per-line flow disappeared. It was rejected before
+questionnaire integration. Prototype commit `88374ace0` instead keeps the existing
+natural-width `Box` target and draws the 2dp indicator on a match-parent Canvas, which
+does not participate in measurement. The corrected capture restores the original flow,
+keeps `Camellia` itself free of text decoration, and draws a separate 182 × 4px
+indicator across its 182 × 117px selectable target, approximately 75 × 48dp at 390dpi.
+All six native captures completed under the pinned state. Questionnaire integration and
+final verification are next.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**

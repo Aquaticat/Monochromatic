@@ -203,9 +203,17 @@ prototype uses these redundant cues:
 - Selected playback mode: selected fill plus checkmark. At enlarged type, the radio
   indicator supplies the non-color selected shape.
 - Selected letter: secondary-container color plus circular container shape.
-- Selected folder: primary color plus medium weight plus underline.
+- Selected folder: primary color plus medium weight plus a 2dp indicator spanning the
+  bottom edge of the whole target. The label itself is never underlined.
 - Slider value: active color plus handle position and track length.
 - Q2b emphasis is not a state, but it still uses both foreground role and weight.
+
+The folder treatment borrows MD1 tab state chrome without assigning tab semantics to
+the wrapped folder targets. Google's archived MD1 tab specification defines a 48dp
+height, 12dp horizontal text padding, active accent-colored text, and a separate 2dp
+accent indicator: https://m1.material.io/components/tabs.html. D31 retains 48dp
+natural-width folder targets and uses the separate 2dp target-width indicator so the
+label cannot be mistaken for a web link.
 
 The captured AVD resolves the relevant dynamic light roles through Android resources.
 WCAG calculations against those resolved values produce these limiting ratios:
