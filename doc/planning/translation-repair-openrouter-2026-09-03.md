@@ -499,6 +499,12 @@ BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two
     characters, under 16)` so no model was asked for it, `image1.webp: read 52 characters without a
     model` then `minimax-m3 read image1.webp: 251 characters`. The first pass runs on as a no-picture
     control. Readings, page and the no-Kimi check follow on the tallies.
+- **The displacement screen had the same blind spot** (`corpus-run/markup-slice.ts`): a single-quoted
+    path line counted as structure, a double-quoted one as prose, so the double-quoted block read as
+    0.4 markup against the 0.8 threshold and could be named a relocation candidate. Fixed in
+    `4ff42e627`, guard shown to fail neutralised (`expected 0.4 to equal 1`). No other rule in the
+    package keys on the single mark (`rg` over `src` for `startsWith('\'')` and quote comparisons:
+    the four remaining hits are typography and refusal readers, not path readers).
 - The undercount was invisible from the run log, which is the lesson worth keeping: a stage that finds
     nothing to do logs nothing, and the completeness guard shared the parser's blind spot. The seats line
     is what made it visible, by putting a timestamp on each side of the stage.
