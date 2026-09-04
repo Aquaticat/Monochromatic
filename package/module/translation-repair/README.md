@@ -715,6 +715,10 @@ and reading one as an instruction has cost this package a defect before.
     The upstream that served each call is read off the same chunks:
     `endpoint=` on the `SPEND` line (percent-encoded) and `served by "..."` on the stream progress line,
     cut streams included, so a slow or broken upstream is named by a grep of the run log.
+    An upstream that fails after the gateway has answered 200 writes one chunk carrying an `error` object
+    and closes without `[DONE]`; the client reads that chunk first and retries under
+    `InStreamProviderError`, whose message names the code, the gateway's error type and the endpoint
+    (`openrouter-stream-error.ts`; ModelRun's 504 timeouts on MiniMax M3, 2026-09-04, were the case).
 
 Every key lives in the sops-encrypted, gitignored `.env.local.json` at the repository root,
 which `mise run` decrypts into the task's environment.

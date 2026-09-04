@@ -627,11 +627,26 @@ and a run made from that checkout recorded none of what they read either.
     rg ': cut, .*served by' "${RUNDIR}.log" | rg --only-matching 'stream \S+:.*served by "[^"]+"'
     ```
 
+    An upstream that fails after the gateway has already answered 200 shows up as a retry line naming
+    the failure, not as a truncation:
+
+    ```text
+    transport failure: InStreamProviderError: stream carried a provider failure instead of a completion: code 504, type timeout, served by ModelRun
+    ```
+
+    Count those by endpoint the same way. Logs written before 2026-09-04 carry the same event as
+    `MalformedCompletionError: ... stream ended without its [DONE] terminator; the reply was cut off`,
+    attributable only through the stream progress line just before it (a body of a few hundred raw
+    characters with `0 content chars`, "completed" after about ten seconds).
+
     An upstream measured broken goes into that model's `ignoredEndpoints` in `openrouter-catalog.ts`
     with the measurement beside it, as Parasail did for MiniMax M3 and OpenInference for DeepSeek V4 Flash
     on 2026-09-03. Before ignoring, count what would be left:
     an ignore that leaves one endpoint serving turns that endpoint's rate limit into a lost voice,
-    since OpenRouter is the last provider in the order.
+    since OpenRouter is the last provider in the order. Under zero data retention with a schema request
+    the listing's `supported_parameters` decides who is left, not the endpoint count: MiniMax M3 has one
+    such endpoint (ModelRun) once Parasail is ignored and CoreWeave sits on the account-level ignore list
+    (measured 2026-09-04, `~/temp/agent/openrouter-minimax-endpoints-20260904.log`).
 
 6.  Read who produced what, and what the judges said about it.
 
