@@ -158,11 +158,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.WindowInsets
 
 // What:     `CircleShape` and `RoundedCornerShape` are reusable Compose clipping outlines.
@@ -365,9 +367,7 @@ private fun FullUnfoldedStudy(palette: CandidatePalette) {
         Box(
             modifier = Modifier
                 .width(418.dp)
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+                .fillMaxSize(),
         ) {
             FolderAndTransportPane(
                 modifier = Modifier.fillMaxSize(),
@@ -400,34 +400,30 @@ private fun RightHalfStudy(candidate: String, palette: CandidatePalette) {
 @Composable
 private fun FolderAndTransportPane(modifier: Modifier, palette: CandidatePalette) {
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .background(palette.picker),
     ) {
+        Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         FolderPicker(
             modifier = Modifier.weight(1f),
             palette = palette,
         )
-        TransportBlock(palette = palette)
+        Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.window))
+        TransportBlock(
+            modifier = Modifier.fillMaxWidth(),
+            palette = palette,
+        )
     }
-}
-
-/** Adds an optional candidate-B pane outline without changing measurements. */
-private fun Modifier.candidatePane(palette: CandidatePalette, shape: RoundedCornerShape): Modifier {
-    var result = background(color = palette.picker, shape = shape)
-    if (palette.paneOutlines) {
-        result = result.border(width = 1.dp, color = Color(0xFFCAC4D0), shape = shape)
-    }
-    return result
 }
 
 /** Shows the adaptive-letter pattern and plain wrapped folder-name targets. */
 @Composable
 private fun FolderPicker(modifier: Modifier, palette: CandidatePalette) {
-    val paneShape = RoundedCornerShape(12.dp)
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .candidatePane(palette = palette, shape = paneShape),
+            .background(palette.picker),
     ) {
         Row(
             modifier = Modifier
@@ -541,17 +537,12 @@ private fun RowScope.FolderNames() {
 
 /** Draws the fixed non-functional transport controls beneath the picker. */
 @Composable
-private fun TransportBlock(palette: CandidatePalette) {
-    val shape = RoundedCornerShape(12.dp)
-    var modifier = Modifier
-        .fillMaxWidth()
-        .background(color = palette.transport, shape = shape)
-        .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 16.dp)
-    if (palette.paneOutlines) {
-        modifier = modifier.border(width = 1.dp, color = Color(0xFFCAC4D0), shape = shape)
-    }
+private fun TransportBlock(modifier: Modifier, palette: CandidatePalette) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .background(color = palette.transport)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
