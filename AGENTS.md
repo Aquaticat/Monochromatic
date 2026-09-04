@@ -394,6 +394,11 @@ Include built options,
  ranking,
  and final free text.
 
+ZDV:
+ Device mockups in question forms:
+ make each zoomable to cited target dimensions;
+show current scale + reset control.
+
 HUP:
  Ongoing design sessions:
  update current handover after each correction,
