@@ -352,6 +352,14 @@ Each is the exact string the log carries.
 -   `ONLY`, only when the invocation was restricted.
     Seeing it on a run you meant to be unrestricted means the pass is doing less than you asked.
 
+-   `SPEND CEILING OVERRIDDEN`, only when `TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD` was set.
+    It names the USD this run may spend on OpenRouter before it stops starting entries; the built-in is 20.
+
+-   `SPEND CEILING reached`, when the run has spent that allowance.
+    The pass starts no further entry and the entries already running finish;
+    `DONE processed=` then reads short of `pending=` for money rather than for time.
+    Raise the ceiling for a deliberately larger run.
+
 -   `CAP OVERRIDDEN`, only when `TRANSLATION_REPAIR_HARD_CAP_MINUTES` was set.
     It names the per-entry ceiling actually in force.
 

@@ -982,6 +982,15 @@ and point `meter-report` at the collected logs.
 
 ### Bounding one run
 
+-   `TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD`.
+    Overrides the per-run spend ceiling, a non-negative number of USD, built in at 20
+    (`doc/decision/translation-repair-run-spend-ceiling.md`, the owner's decision of 2026-09-04).
+    Every OpenRouter call's reported `cost=` feeds a process-wide meter as its `SPEND` line is written,
+    and before each entry the scheduler stops starting new ones once the run's OpenRouter spend is at or
+    past the ceiling, printing `SPEND CEILING reached`; entries already running finish.
+    Unset and blank are the built-in; an unreadable or negative value is REFUSED at launch for the same
+    reason the entry ceiling's is; zero is allowed and means start nothing, which is how the guard is
+    shown to fire on a live run at no cost. A run that overrides logs `SPEND CEILING OVERRIDDEN`.
 -   `TRANSLATION_REPAIR_HARD_CAP_MINUTES`.
     Overrides the per-entry ceiling, a positive number of minutes.
     A value that is not one is REFUSED rather than replaced by the default,
