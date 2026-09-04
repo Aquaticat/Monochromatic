@@ -182,8 +182,26 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
   // retention (`~/temp/agent/openrouter-minimax-endpoints-20260903`): 0 of 2
   // conformant there against 4 of 4 on ModelRun, and on the first
   // all-OpenRouter keyword233 pass 16 of 31 MiniMax calls came back empty.
-  // Of the seven zero-data-retention endpoints only ModelRun and Parasail
-  // accept `response_format`, so with Parasail ignored ModelRun serves alone.
+  //
+  // MODELRUN SERVES ALONE, AND NOT BY THIS PACKAGE'S CHOICE. Re-probed
+  // 2026-09-04 (`~/temp/agent/openrouter-minimax-endpoints-20260904`) with
+  // the same request: ModelRun 4 of 4 conformant; DeepInfra and Venice answer
+  // 404 "No endpoints found that can handle the requested parameters";
+  // CoreWeave, the only other zero-data-retention endpoint listing
+  // `structured_outputs`, answers 404 "All providers have been ignored",
+  // which is the account-level ignore list and not this one; default routing
+  // without `only` went to Parasail 3 of 4 times. So an ignore of ModelRun
+  // here would leave MiniMax M3 no endpoint for a schema request under zero
+  // data retention.
+  //
+  // MODELRUN TIMES OUT ONE CALL IN FIVE, OR WORSE. The same day it served
+  // 300 MiniMax streams across six runs and 119 came back as one 846-character
+  // chunk carrying `error.code=504`, `error_type=timeout`, no content and no
+  // `[DONE]`, each after about 10.5 s; the listing read `uptime_last_30m`
+  // 54.9 and `status` -5 for it at 05:00 UTC, at 2.5 times the price of the
+  // next endpoint. `openrouter-stream-error.ts` names those failures now;
+  // whether the seat is withheld while the endpoint stays degraded is the
+  // owner's call, recorded in the 2026-09-03 OpenRouter planning document.
   'minimax/minimax-m3': {
     id: 'minimax/minimax-m3',
     sharedWith: 'minimax-m3',

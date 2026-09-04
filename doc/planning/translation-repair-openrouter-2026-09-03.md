@@ -531,6 +531,43 @@ BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`, four pictures, two
     readers, so today's two text pictures are the first of the population that matters, one of them bad.
     Not built: recorded here to be re-read once more three-reader pictures have run.
 
+## ModelRun's timeouts, 2026-09-04, and what the log called them
+
+- **Symptom.** Today's six runs logged 115 `MalformedCompletionError: ... stream ended without its
+    [DONE] terminator; the reply was cut off` retries by 05:00 UTC (Toka_ls 51 of 592 spend lines,
+    Hangmster 29 of 278, the first BI4PBV 26 of 245). The retry ladder reached its fourth attempt 8 times
+    and gave up at least 5 times (a coverage voice, two critic voices and two panel voices lost, all
+    minimax-m3).
+- **Attribution.** The stream line before each retry names the model and endpoint: 114 of 115 were
+    `minimax/minimax-m3` served by `ModelRun`, body 846 characters (7 of them 871), 0 content
+    characters, "completed" after about 10.5 s. ModelRun served 300 MiniMax streams today and 119 of
+    them were that body; Venice served 5, all with content.
+- **Reproduced directly** (`~/temp/agent/modelrun-probe.mjs`, six trivial calls with `provider.only:
+    ['ModelRun']`): the fourth answered HTTP 200 in 10,463 ms with one chunk carrying
+    `error: { code: 504, message: "error code: 504", metadata: { error_type: "timeout" } }` and no
+    `[DONE]`. The gateway had already sent its success status when the upstream timed out, so the
+    failure rides inside the stream.
+- **The listing agreed** (`~/temp/agent/minimax-endpoints-20260904.json`, 05:00 UTC): ModelRun
+    `uptime_last_30m` 54.9, `status` -5, prompt 0.75 and completion 3.0 USD per million, fp4; every other
+    minimax-m3 endpoint read 98 to 100 uptime and status 0 at 0.23 to 0.6 prompt.
+- **Why it cannot simply be ignored.** Re-probed with the 2026-09-03 corpus-sized schema request under
+    zero data retention (`~/temp/agent/openrouter-minimax-endpoints-20260904.log`): ModelRun 4 of 4
+    conformant, 11 to 15 s; DeepInfra and Venice 404 "No endpoints found that can handle the requested
+    parameters"; CoreWeave, the only other zero-data-retention endpoint listing `structured_outputs`, 404
+    "All providers have been ignored", which is the account-level ignore list; default routing without
+    `only` went to Parasail 3 of 4 times with the known empty content channel. Under the ZDR decision,
+    ModelRun is MiniMax M3's only endpoint for a schema request.
+- **What landed** (`f17feba12`): `openrouter-stream-error.ts` reads the gateway's error chunk before the
+    terminator check and throws `InStreamProviderError` naming code, kind and endpoint
+    (`stream carried a provider failure instead of a completion: code 504, type timeout, served by
+    ModelRun`); the ladder retries it as it retried the truncation. Guard shown to fail with the check
+    removed. The catalog comment on the minimax row now states the endpoint situation as re-measured.
+- **Open, for the owner** (options in the question put at the end of this session's turn): keep the seat
+    and take the 504 retries (about 10.5 s per failed attempt, roughly 1 to 2 percent of MiniMax calls lost
+    after five attempts at today's rate); withhold `minimax-m3` from OpenRouter-served seats while
+    ModelRun reads degraded, as Kimi-K3 is withheld; or un-ignore CoreWeave at the account level and
+    probe it for conformance, which would give the schema request a second zero-data-retention endpoint.
+
 ## Build plan, transport-independent layers first
 
 In commit order, each unit tested and committed before the next:
