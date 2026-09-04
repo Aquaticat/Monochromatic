@@ -440,7 +440,18 @@ cross-candidate compliance correction, not another visual-preference fork: audit
 archive, map the applicable rules to the current Compose implementation, rebuild every
 candidate so each option is guideline-compliant, then recapture, re-embed, re-verify,
 and reopen a blank questionnaire. Do not ask the user to choose among any knowingly
-non-compliant designs.
+non-compliant designs. The archive audit is complete in
+`material-3-compliance.md`. It identifies concrete cross-candidate failures: 16dp
+instead of the expanded-layout 24dp pane spacer; no real app bars or page titles;
+hand-built 56dp top rows; a single chip-like folder trigger; Unicode stand-ins instead
+of Material icons; passive surfaces instead of icon buttons and selectable list items;
+a two-row segmented control despite the explicit no-wrap rule; an unlabeled slider
+without elapsed and duration anchors; mismatched selected-container color roles;
+important dividers using `outline` instead of `outlineVariant`; manual typography;
+fixed text heights and unexposed truncation; and a fixed baseline palette instead of
+the settled Android dynamic scheme. The compliance boundary preserves baseline M3,
+the full-bleed section correction, and all compatible product decisions while replacing
+non-compliant construction with real Compose Material 3 components.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
