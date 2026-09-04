@@ -590,8 +590,13 @@ natural-width `Box` target and draws the 2dp indicator on a match-parent Canvas,
 does not participate in measurement. The corrected capture restores the original flow,
 keeps `Camellia` itself free of text decoration, and draws a separate 182 × 4px
 indicator across its 182 × 117px selectable target, approximately 75 × 48dp at 390dpi.
-All six native captures completed under the pinned state. Questionnaire integration and
-final verification are next.
+All six native captures completed under the pinned state. They are embedded in the
+rebuilt questionnaire with provenance `88374ace0`; package build, lint, and unit
+contracts pass. Two throwaway positive controls prove the revised state boundary:
+erasing the target-width indicator yields `must show the 2dp selected-folder tab
+indicator across the target`; adding a glyph-width line at the former underline
+position yields `must not underline selected folder text like a web link`. The restored
+capture passes. Final Helium verification is next.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
