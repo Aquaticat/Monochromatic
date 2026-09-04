@@ -4,10 +4,7 @@ import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
-import {
-  describeAtom,
-  mergeAtoms,
-} from './translate-atom-floor.ts';
+import { atomFindings, } from './translate-atom-rendering.ts';
 import {
   type BlockShape,
   readSliceSkeleton,
@@ -110,93 +107,6 @@ function describeBlocks({ blocks, }: { readonly blocks: readonly BlockShape[]; }
     return 'nothing';
   return blocks.map(describeBlock,)
     .join(', ',);
-}
-
-/**
- * Findings for atoms one side carries and the other does not.
- *
- * Compared as a MULTISET rather than in order, because a translation reorders
- * clauses legitimately and a link moving within a sentence is not damage. What
- * is damage is a reference that stopped existing or one that appeared from
- * nowhere, and both survive reordering.
- *
- * @param source - atoms the original carries
- *
- * @param candidate - atoms the candidate carries
- *
- * @param referenceName - what the findings call the side being matched
- *
- * @returns One finding per missing or invented atom
- *
- * @example
- * ```ts
- * const findings = compareAtoms({ source, candidate, referenceName, },);
- * ```
- */
-function compareAtoms(
-  {
-    source,
-    candidate,
-    referenceName,
-  }: {
-    readonly source: readonly ProtectedAtom[];
-    readonly candidate: readonly ProtectedAtom[];
-    readonly referenceName: string;
-  },
-): readonly string[] {
-  /**
-   * How many times the candidate carries each atom.
-   */
-  const remaining = new Map<string, number>();
-  for (const atom of candidate) {
-    /**
-     * Key identifying this atom exactly.
-     */
-    const key = describeAtom(atom,);
-    remaining.set(
-      key,
-      (remaining.get(key,) ?? 0) + 1,
-    );
-  }
-
-  /**
-   * Atoms the original has that the candidate did not carry through.
-   */
-  const missing: string[] = [];
-  for (const atom of source) {
-    /**
-     * Key identifying this atom exactly.
-     */
-    const key = describeAtom(atom,);
-
-    /**
-     * Copies still unaccounted for on the candidate side.
-     */
-    const left = remaining.get(key,) ?? 0;
-    if (left === 0) {
-      missing.push(
-        `The ${referenceName} carries ${key} and your translation does not.`,
-      );
-      continue;
-    }
-    remaining.set(
-      key,
-      left - 1,
-    );
-  }
-
-  return [
-    ...missing,
-    ...[...remaining.entries(),]
-      .filter(function isSurplus([, count,],): boolean {
-        return count > 0;
-      },)
-      .map(function toFinding([key, count,],): string {
-        return `Your translation carries ${key}${
-          count === 1 ? '' : ` ${String(count,)} times`
-        } and the ${referenceName} does not.`;
-      },),
-  ];
 }
 
 /**
@@ -521,11 +431,9 @@ export function validateTranslatedSlice(
       sourceText,
       candidateText,
     },),
-    ...compareAtoms({
-      source: mergeAtoms({
-        page: page.atoms,
-        source: expected.atoms,
-      },),
+    ...atomFindings({
+      page: page.atoms,
+      source: expected.atoms,
       candidate: actual.atoms,
       referenceName: atomSource,
     },),

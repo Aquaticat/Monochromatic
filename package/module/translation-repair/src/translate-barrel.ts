@@ -249,6 +249,11 @@ export {
   splitTargetOnlyRun,
   type TargetOnlySplit,
 } from './target-only-run.ts';
+export {
+  type AtomRenderingPool,
+  atomFindings,
+  renderingPoolsOf,
+} from './translate-atom-rendering.ts';
 export { wrapTranslateRecords, } from './translate-wrap.ts';
 
 //endregion Translate barrel

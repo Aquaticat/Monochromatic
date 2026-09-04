@@ -170,6 +170,56 @@ In the morning it dozes on the windowsill.
     },),
 
     it({
+      name: 'ACCEPTS EITHER DESTINATION where the page rewrote the original\'s link, '
+        + 'and REFUSES neither or both: the luxuanwen3 archive links x.com where the '
+        + 'original links twitter.com, and owing a candidate both left nothing that could ship',
+      fn: async () => {
+        /**
+         * Original linking one destination.
+         */
+        const sourceText = '她的头像由[画师](https://twitter.com/cat)绘制。';
+        /**
+         * Page that rewrote the destination.
+         */
+        const pageText = 'Her avatar was drawn by [the artist](https://x.com/cat).';
+        expect(validateTranslatedSlice({
+          sourceText,
+          pageText,
+          candidateText: 'Her avatar was drawn by [the artist](https://x.com/cat).',
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText,
+          pageText,
+          candidateText: 'Her avatar was drawn by [the artist](https://twitter.com/cat).',
+        },).kind,).toBe('valid',);
+        /**
+         * Verdict over a candidate carrying no link at all.
+         */
+        const neither = validateTranslatedSlice({
+          sourceText,
+          pageText,
+          candidateText: 'Her avatar was drawn by the artist.',
+        },);
+        expect(neither.kind,).toBe('invalid',);
+        expect(
+          (neither.kind === 'invalid') ? neither.findings.join('\n',) : '',
+        ).toContain('must carry exactly 1 of these, taken from either side; it carries 0',);
+        /**
+         * Verdict over a candidate carrying both renderings.
+         */
+        const both = validateTranslatedSlice({
+          sourceText,
+          pageText,
+          candidateText: 'Her avatar was drawn by [the artist](https://x.com/cat) ([Twitter](https://twitter.com/cat)).',
+        },);
+        expect(both.kind,).toBe('invalid',);
+        expect(
+          (both.kind === 'invalid') ? both.findings.join('\n',) : '',
+        ).toContain('it carries 2',);
+      },
+    },),
+
+    it({
       name: 'answers UNKNOWN rather than invalid when the ORIGINAL cannot be '
         + 'parsed, since that says nothing about the candidate and charging it '
         + 'to the model would send a good translation back for a fault in the '
