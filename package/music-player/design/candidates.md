@@ -52,6 +52,21 @@ which were left as historical style comparisons.
 - **Light studies sit on a light desk**, dark studies on a dark one, and frames fill
   the viewport height rather than floating in dead space.
 
+## ROUND 10 — white-divider clarification
+
+Three native full-device captures keep the chosen `1c` tonal structure and `3a`
+neutral metadata treatment. They differ only in the two plausible separator colors:
+
+- **divider-a:** white 1dp line between the letter rail and folder names; tonal-gray
+  24dp center spacer. This is the unaccepted first interpretation.
+- **divider-b:** `outlineVariant` rail line; white center spacer. Recommended because
+  it changes the prominent vertical separator while retaining a visible rail boundary.
+- **divider-c:** rail line and center spacer both white. This covers both readings but
+  leaves neither boundary visibly drawn.
+
+These are clarification options, not decisions. The updated HTML form must receive the
+user's answer before D34 becomes final.
+
 ## ROUND 9 — theme work (all built on the bound MD3 bundle)
 
 | File | Size | What it shows |

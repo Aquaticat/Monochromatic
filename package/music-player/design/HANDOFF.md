@@ -698,6 +698,13 @@ Build one self-contained Helium questionnaire that defines every visible element
 shows native full-device alternatives for the plausible divider readings, includes
 pros, cons, ranked recommendation, answer controls, and free corrections, and states
 exactly how to respond. Do not ask again in chat or reopen the prior theme-pick form.
+Prototype commit `89a9f7033` now provides three native full-device keys while keeping
+`1c` surfaces and `3a` metadata fixed: `divider-a` makes the 1dp rail line white,
+`divider-b` makes the 24dp center spacer white while retaining the gray rail line, and
+`divider-c` makes both white. The new form defines those elements in ordinary language,
+asks one radio question, requires all remaining corrections or `None`, and generates an
+explicit paste-back answer. Native capture, integration, verification, and Helium
+opening remain.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
