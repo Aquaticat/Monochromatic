@@ -51,3 +51,24 @@ is in `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md`; the night
   where the source has a name of its own (the #269 shape) stay refused until a lane renders the name.
 - `FrontMatterCompletenessError` carries no decision detail any more; its message names the entry and the
   structural reason only.
+
+## Addendum 2026-09-04: the identity rule reads containment, not equality
+
+Decided by the owner ("Alias may carry the name among other renderings"), asked with three options after
+the luxuanwen3 pass of 2026-09-04 ended `INCOMPLETE` on `invalid-page`: its source declares `name: 鲵鲵`,
+`alias: 鲵鲵`, and the archive's own front matter has `name: Nini`, `alias: 鲵鲵, Nini`, which the equality
+rule refused. Measured over the pinned corpus: 14 of 92 sources declare name equal to alias, and in 7 of
+them the archive renders the alias with more than the name (MizuharaNagisa, SevenBird, Weideriche_,
+gaoyanger "Gaoyang, Lamb", interrgned, luxuanwen3, noname "noname, no name, anonymous, ..."). Under
+equality none of the seven could ship an archive-shaped front matter.
+
+The rule now: where the ORIGINAL declares name and alias the same identity, the translated name must appear
+among the comma-separated renderings of the translated alias (`aliasCarriesName` in
+`front-matter-translation.ts`; the archives separate alias lists with a comma in 70 cases and a slash in one,
+never a Chinese comma). A name absent from its alias is still refused. The judges' decision rule, the
+translators' front matter rule and the selection criteria say the same. Guard: the
+`front-matter-completeness` test accepting `alias: 猫猫, Maomao` for `name: Maomao` and refusing
+`alias: 猫猫, Kitty`, shown to fail with equality put back.
+
+Options rejected: strict equality (forces the seven archives to drop the original-script alias they
+publish); dropping the identity rule (name and alias could diverge freely).
