@@ -601,6 +601,24 @@ user removed another redundancy: delete the left-pane `Camellia` control and pla
 `Open` on the same app-bar line as `Folders`. The right-pane `Camellia` title remains
 the current-folder identity. Do not retain an empty source-action row; give its
 vertical space back to the folder picker, then recapture and restart verification.
+Prototype commit `8ec92ff7f` does so with one Material `TextButton` action in the
+`TopAppBar`. UI Automator measures its action boundary at 203 × 117px, about 83 × 48dp.
+The old row is gone, the selected target and 2dp indicator move upward intact, and the
+picker shows more names. All six recaptures completed and are embedded. A throwaway
+positive control painting the old button's former interior triggers `must not restore
+the redundant left current-folder control`; restoring it passes.
+
+Final Helium verification at DPR 2 passes again. All source and frame dimensions,
+camera geometry, zoom controls, desktop and mobile one-row comparisons, independent
+scrollers, blank validation, every radio, prepare, copy, download, clear, offline
+loading, forced-light rendering, and direct accessibility checks remain green. The
+closed page has no axe WCAG A/AA violation or incomplete result. The open dialog has no
+violation and the same eight manually resolved contrast incompletes documented in
+`doc/troubleshooting/axe-modal-dialog-contrast.md`. Helium page errors and console
+output are empty. A fresh matching-scale hardware comparison confirms `Open` shares
+the `Folders` line, the letter rail remains edge-flush, and the selected folder uses a
+separate target-width indicator rather than text decoration. The isolated form is
+blank and ready to close; reopen the exact final file in normal Helium next.
 
 **Phase: theme work. Decisions are nearly all closed; two theme picks and a large
 amount of light-theme drawing remain.**
