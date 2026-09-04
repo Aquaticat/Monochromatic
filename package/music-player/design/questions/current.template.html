@@ -909,7 +909,7 @@ form.addEventListener('submit', (event) => {
   answerOutput.value = buildAnswer();
   output.hidden = false;
   status.textContent = 'Answers prepared. Choose Copy answers, then paste them into Pi.';
-  output.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  output.scrollIntoView({ behavior: 'auto', block: 'center' });
 });
 
 clearButton.addEventListener('click', () => {
