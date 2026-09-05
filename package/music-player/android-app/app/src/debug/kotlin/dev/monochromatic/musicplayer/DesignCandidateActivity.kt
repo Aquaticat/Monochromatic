@@ -270,8 +270,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -1070,12 +1072,12 @@ private fun DockedCommandBar(scope: String) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)),
-        contentAlignment = Alignment.TopCenter,
+        contentAlignment = Alignment.TopEnd,
     ) {
         Surface(
             modifier = Modifier
-                .padding(top = 60.dp)
-                .width(720.dp)
+                .padding(top = 60.dp, end = 12.dp)
+                .width(390.dp)
                 .height(580.dp),
             shape = RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -1125,20 +1127,48 @@ private fun PaneCommandBar(scope: String) {
  */
 @Composable
 private fun FullScreenCommandBar(scope: String) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
+    Row(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            modifier = Modifier.width(414.dp).fillMaxSize(),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(horizontal = 12.dp),
+            ) {
+                CommandSearchInput(scope = scope)
+                if (scope == "scoped") {
+                    ScopeFilterRow()
+                }
+                Text(
+                    text = "Results appear in the other pane",
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
         Box(
             modifier = Modifier
+                .width(24.dp)
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing),
-            contentAlignment = Alignment.TopCenter,
+                .background(Color.White),
+        )
+        Surface(
+            modifier = Modifier.weight(1f).fillMaxSize(),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
         ) {
-            CommandSearchPanel(
-                scope = scope,
-                modifier = Modifier.width(720.dp).fillMaxSize().padding(horizontal = 12.dp),
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp),
+            ) {
+                SearchResultContent(scope = scope)
+            }
         }
     }
 }
@@ -1176,7 +1206,7 @@ private fun CommandSearchPanel(scope: String, modifier: Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CommandSearchInput(scope: String) {
-    val query = if (scope == "commands") "play" else "cam"
+    val query = if (scope == "commands") "" else "cam"
     val hint = if (scope == "commands") "Run a command" else "Search folders, tracks, and commands"
     SearchBar(
         query = query,
@@ -1207,16 +1237,18 @@ private fun CommandSearchInput(scope: String) {
  * function ScopeFilterRow(): JSX.Element {}
  * ```
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ScopeFilterRow() {
     val scopes = listOf("All", "Folders", "Tracks", "Commands")
-    Row(
+    FlowRow(
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         for (index in scopes.indices) {
             FilterChip(
-                selected = index == 0,
+                selected = index == 2,
                 onClick = {},
                 label = {
                     Text(text = scopes[index])
@@ -1239,8 +1271,9 @@ private fun ScopeFilterRow() {
 @Composable
 private fun SearchResultContent(scope: String) {
     if (scope == "commands") {
+        SearchResultStatus(text = "5 recent commands")
         ResultSection(
-            title = "COMMANDS",
+            title = "RECENT COMMANDS",
             results = listOf(
                 PrototypeSearchResult("Pause playback", "Playback", "command", "Space"),
                 PrototypeSearchResult("Play in order", "Playback mode", "command", ""),
@@ -1251,6 +1284,18 @@ private fun SearchResultContent(scope: String) {
         )
         return
     }
+    if (scope == "scoped") {
+        SearchResultStatus(text = "2 track results")
+        ResultSection(
+            title = "TRACKS",
+            results = listOf(
+                PrototypeSearchResult("Another Xronixle", "Camellia · 4:35 · −1.2 dBTP", "track", ""),
+                PrototypeSearchResult("Crystallized", "Camellia · 5:40 · −0.7 dBTP", "track", ""),
+            ),
+        )
+        return
+    }
+    SearchResultStatus(text = "6 results in 3 groups")
     ResultSection(
         title = "FOLDERS",
         results = listOf(
@@ -1271,6 +1316,29 @@ private fun SearchResultContent(scope: String) {
             PrototypeSearchResult("Open Camellia in file manager", "Folder action", "command", ""),
             PrototypeSearchResult("Play Camellia", "Folder action", "command", "Enter"),
         ),
+    )
+}
+
+/**
+ * What:     `SearchResultStatus` renders result count as visible and politely announced status.
+ * Why:      Search updates need both sighted feedback and a screen-reader notification.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SearchResultStatus({ text }: { text: string }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun SearchResultStatus(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+            .semantics {
+                liveRegion = LiveRegionMode.Polite
+            },
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodyMedium,
     )
 }
 
