@@ -346,9 +346,18 @@ Settled decisions determine one answer:
 Ask only while two paths hinge on non-measurable preference or authority.
 
 QVE:
- Visual review asks what should change at a named visible scope.
-Never ask vague permission;
-provide direct `Nothing else` and `Changes needed` paths.
+ Visual review starts from the accepted design,
+then names consequential concerns the user did not raise.
+Explore them with built variants;
+never substitute a vague approval question.
+
+QVM:
+ Design matrix includes pros,
+cons,
+analysis,
+full ranking,
+recommended additions.
+End with separable questions whose answers select among visible new variants.
 
 QCS:
  A quality-over-cost guideline makes cost a non-constraint.

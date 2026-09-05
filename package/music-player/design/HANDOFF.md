@@ -844,7 +844,17 @@ empty. The isolated verifier is stopped. The corrected file was launched through
 normal Helium desktop entry. KWin reports `Music player design: current screen review -
 Helium` active and non-minimized at 1080 × 1880 on `DP-2`, internal ID
 `{eae6ad9d-37d6-4ff1-bc7d-07e6422ae946}`. The stale permission-question window was
-closed. Leave this current question visible and wait for its answer.
+closed. The user rejected both the question and the claim that the agent already knew
+how to ask a good designer question. Retract that claim. Repeated approval forms are
+evidence that it did not know or apply the required method. The required method is a
+designer-led presentation: begin with the accepted design, identify consequential
+issues the user did not explicitly raise, build a nine-prototype matrix exploring those
+issues without resurrecting discarded candidates, provide pros, cons, analysis, a full
+ranking, recommendations, and worthwhile additions, then ask separable questions that
+select among visible new variants. Do not leave the current binary review visible as the
+next deliverable. First inspect the active design and open frontier, choose two useful
+three-state dimensions, build nine native Compose variants from the accepted state,
+then replace the HTML with the verified matrix questionnaire.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
