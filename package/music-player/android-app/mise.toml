@@ -251,7 +251,8 @@ for (const candidateName of candidateNames) {
       ["-s", serial, "exec-out", "cat", "/sdcard/music-player-candidate.xml"],
       { encoding: "utf8" },
     );
-    if (hierarchy.includes("Camellia")) {
+    const readinessMarker = candidateName.startsWith("command-") ? "Close command bar" : "Camellia";
+    if (hierarchy.includes(readinessMarker)) {
       candidateReady = true;
       break;
     }
@@ -264,17 +265,23 @@ for (const candidateName of candidateNames) {
     ["-s", serial, "exec-out", "cat", "/sdcard/music-player-candidate.xml"],
     { encoding: "utf8" },
   );
+  const commandHierarchyMarkers = candidateName.startsWith("command-c-")
+    ? ['text="5 recent commands"', 'text="RECENT COMMANDS"']
+    : candidateName.startsWith("command-s-")
+      ? ['text="2 track results"', 'text="Tracks"', 'text="TRACKS"']
+      : ['text="6 results in 3 groups"', 'text="FOLDERS"', 'text="TRACKS"', 'text="COMMANDS"'];
   const requiredHierarchyMarkers = [
-    'text="Camellia"',
-    'text="Another Xronixle"',
-    'content-desc="Settings"',
     ...(candidateName.startsWith("command-")
       ? [
           'content-desc="Close command bar"',
           'content-desc="Clear query"',
-          'text="COMMANDS"',
+          ...commandHierarchyMarkers,
         ]
-      : []),
+      : [
+          'text="Camellia"',
+          'text="Another Xronixle"',
+          'content-desc="Settings"',
+        ]),
     ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-")
       ? [
           'text="Folders"',
