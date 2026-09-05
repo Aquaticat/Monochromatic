@@ -1082,3 +1082,18 @@ three-state treatment dimensions within that screen, and build nine native Compo
 refinements. Preserve every settled decision and every correction. Do not reopen a
 discarded candidate, introduce a new feature, or infer scope from an example of
 method.
+
+The first current-screen issue to explore is not a new feature: the accepted capture
+omits the volume control required by settled decision D20. D20 fixes the component as
+a 48dp icon button opening an anchored vertical Material slider popover, but it does
+not settle the button's exact position or how much explicit level information the
+popover shows. Build a 3 × 3 matrix on the accepted screen. Rows vary placement:
+trailing in the centered now-playing header, at the trailing edge of the playback
+control row, or in a dedicated row below the mode control. Columns vary popover
+content: slider only, slider plus `72%`, or slider plus `72%` and a Mute action. Keep
+the accepted layout, white spacers, rail line, folder selection, neutral unnumbered
+track rows, play cue, 24dp fold spacer, baseline Material components, Android bars,
+and dynamic palette unchanged. Recommend playback-row trailing plus percentage unless
+the native captures show a balance or clipping problem. Point out, without expanding
+scope, that keyboard focus/hover overlap and long-content states still deserve later
+state-sheet review of this same screen.
