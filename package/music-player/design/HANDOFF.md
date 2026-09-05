@@ -854,7 +854,23 @@ ranking, recommendations, and worthwhile additions, then ask separable questions
 select among visible new variants. Do not leave the current binary review visible as the
 next deliverable. First inspect the active design and open frontier, choose two useful
 three-state dimensions, build nine native Compose variants from the accepted state,
-then replace the HTML with the verified matrix questionnaire.
+then replace the HTML with the verified matrix questionnaire. The next matrix will
+address the already-settled-but-undesigned command bar (D21), not reopen any current
+screen decision. It crosses two unresolved dimensions: scope model (`Commands only`,
+`Unified folders + tracks + commands`, `Explicit scope controls`) and expanded-layout
+presentation (`Docked overlay`, `Right-pane takeover`, `Full-screen`). This yields nine
+native Compose prototypes, all over the accepted current screen. Material's archived
+search guidance says results use lists, expanded windows favor docked focused search,
+compact windows favor full-screen search, and category labels or filter chips can add
+context. Current JetBrains Search Everywhere documentation provides the unified plus
+scope-tab precedent; current VS Code documentation provides the commands-only palette
+precedent. The matrix must make the product-specific tradeoff visible: one global
+entry point versus stronger category control versus a narrower command-only tool, and
+preserved screen context versus result capacity. Recommend `Unified × Docked` unless
+the built evidence overturns it. Also surface additions worth carrying regardless of
+winner: folder context on track matches, shortcuts on command results, recent items
+before typing, announced result counts, arrows/Enter keyboard navigation, and adaptive
+full-screen presentation on compact windows.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
