@@ -691,7 +691,6 @@ dialog::backdrop {
                   <li>The current track is intentionally quieter without a filled row.</li>
                   <li>White spacers make adjacent white surfaces read as continuous.</li>
                 </ul>
-                <p><strong>Recommendation:</strong> keep these corrected spacers and track-state cues unless another visible issue remains.</p>
               </div>
             </article>
 
@@ -709,18 +708,18 @@ dialog::backdrop {
     <section class="response" aria-labelledby="corrections-title">
       <h2 id="corrections-title">What should change in this screen?</h2>
       <p class="question-intro">
-        Inspect the white pane spacers, gray letter-rail line, folder area, track rows, current-track play icon, and transport area.
+        Inspect the pane spacers, letter rail, folder area, track rows, current-track indicator, and transport area.
         Choose the answer that matches what you can see.
       </p>
       <fieldset class="review-choices">
         <legend>Review result</legend>
         <label class="review-choice">
-          <input type="radio" name="reviewResult" value="nothing-else" required>
-          <span>Nothing else in this screen</span>
+          <input type="radio" name="reviewResult" value="changes-needed" required>
+          <span>Changes needed in this screen</span>
         </label>
         <label class="review-choice">
-          <input type="radio" name="reviewResult" value="changes-needed" required>
-          <span>Changes needed</span>
+          <input type="radio" name="reviewResult" value="nothing-else" required>
+          <span>Nothing else in this screen</span>
         </label>
       </fieldset>
       <label for="other-corrections">If changes are needed, describe each one</label>
@@ -854,6 +853,10 @@ const openPreview = (button) => {
 const updateCorrectionRequirement = () => {
   const selectedResult = document.querySelector('input[name="reviewResult"]:checked')?.value;
   correctionInput.required = selectedResult === 'changes-needed';
+  if (selectedResult === 'nothing-else' && correctionInput.value.length > 0) {
+    correctionInput.value = '';
+    status.textContent = 'Correction details cleared because Nothing else was selected.';
+  }
 };
 
 const buildAnswer = () => {

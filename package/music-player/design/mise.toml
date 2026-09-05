@@ -169,6 +169,7 @@ const forbiddenFragments = [
   'revised D2',
   'Can we continue',
   'Continue with the current design',
+  '<strong>Recommendation:</strong>',
   'prototype commit 89a9f7033',
 ];
 const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
@@ -189,7 +190,7 @@ const requiredFragments = [
   'value="nothing-else"',
   'value="changes-needed"',
   'Nothing else in this screen',
-  'Changes needed',
+  'Changes needed in this screen',
   'This field is required only when you choose Changes needed.',
   'Review scope: the current screen.',
   'Copy answers',
