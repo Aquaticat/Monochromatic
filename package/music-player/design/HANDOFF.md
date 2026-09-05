@@ -840,7 +840,11 @@ Build, lint, and unit checks pass. Isolated Helium at DPR 2 confirms the exact h
 neutral scope prompt, ordered labels, conditional validity/focus, both generated-answer
 paths, visible contradictory-text clearing, and the 2076 × 2152px current image. Axe has
 no WCAG A/AA violations or incomplete checks; browser errors and console output are
-empty. Replace the normal Helium page and leave this corrected question visible.
+empty. The isolated verifier is stopped. The corrected file was launched through the
+normal Helium desktop entry. KWin reports `Music player design: current screen review -
+Helium` active and non-minimized at 1080 × 1880 on `DP-2`, internal ID
+`{eae6ad9d-37d6-4ff1-bc7d-07e6422ae946}`. The stale permission-question window was
+closed. Leave this current question visible and wait for its answer.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
