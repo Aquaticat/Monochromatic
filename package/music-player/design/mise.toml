@@ -117,6 +117,36 @@ const countPixelsMatching = ({ path, crop, predicate }) => {
     return count + Number(line.slice(0, countEnd).trim());
   }, 0);
 };
+const getPopoverBounds = (path) => {
+  const components = execFileSync(
+    'magick',
+    [
+      resolve(path),
+      '-alpha', 'off',
+      '-fill', 'black', '+opaque', '#E7E7F1',
+      '-fill', 'white', '-opaque', '#E7E7F1',
+      '-define', 'connected-components:verbose=true',
+      '-connected-components', '4', 'null:',
+    ],
+    { encoding: 'utf8' },
+  );
+  const surfaceLine = components
+    .split('\n')
+    .find((line) => line.trimStart().startsWith('1:') && line.includes('srgb(255,255,255)'));
+  if (!surfaceLine) {
+    throw new Error(`${path} is missing its connected volume-popover surface.`);
+  }
+  const geometry = surfaceLine.trim().split(' ')[1];
+  const sizeSeparator = geometry.indexOf('x');
+  const firstOffset = geometry.indexOf('+');
+  const secondOffset = geometry.indexOf('+', firstOffset + 1);
+  return {
+    width: Number(geometry.slice(0, sizeSeparator)),
+    height: Number(geometry.slice(sizeSeparator + 1, firstOffset)),
+    x: Number(geometry.slice(firstOffset + 1, secondOffset)),
+    y: Number(geometry.slice(secondOffset + 1)),
+  };
+};
 const isBlack = ([red, green, blue]) => red === 0 && green === 0 && blue === 0;
 const isDark = ([red, green, blue]) => red < 128 && green < 128 && blue < 128;
 const isPrimary = ([red, green, blue]) => red === 76 && green === 94 && blue === 139;
@@ -158,15 +188,30 @@ if (linkLikeUnderlinePixels > 0) {
 for (const path of volumePaths) {
   const foldColors = Number(execFileSync(
     'magick',
-    [resolve(path), '-crop', '40x1700+1018+200', '+repage', '-format', '%k', 'info:'],
+    [resolve(path), '-crop', '59x1700+1009+200', '+repage', '-format', '%k', 'info:'],
     { encoding: 'utf8' },
   ));
-  if (foldColors !== 1) {
-    throw new Error(`${path} does not keep the protected center spacer visually uniform.`);
+  const centerPixel = pixelAt({ path, x: 1038, y: 1000 });
+  if (foldColors !== 1 || centerPixel !== 'srgba(255,255,255,1)') {
+    throw new Error(`${path} does not keep the full protected center spacer uniformly white.`);
   }
   const currentRow = pixelAt({ path, x: 1100, y: 350 });
   if (currentRow !== 'srgba(255,255,255,1)') {
     throw new Error(`${path} must retain neutral current-track row color.`);
+  }
+  const popoverBounds = getPopoverBounds(path);
+  const rowStartY = path.includes('volume-h-') ? 806 : path.includes('volume-c-') ? 1_098 : 1_166;
+  const contentOffsetY = path.endsWith('-p.png') ? 117 : path.endsWith('-s.png') ? 166 : 0;
+  const expectedY = rowStartY + contentOffsetY;
+  const expectedHeight = path.endsWith('-p.png') ? 538 : path.endsWith('-s.png') ? 489 : 655;
+  if (
+    popoverBounds.x !== 678
+    || popoverBounds.y !== expectedY
+    || popoverBounds.width !== 273
+    || popoverBounds.height !== expectedHeight
+    || popoverBounds.x + popoverBounds.width > 1_009
+  ) {
+    throw new Error(`${path} does not keep its assigned volume trigger row and fold-safe popover geometry.`);
   }
   const popoverSurfacePixels = countPixelsMatching({
     path,

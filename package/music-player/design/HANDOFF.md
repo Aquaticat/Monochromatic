@@ -1112,11 +1112,17 @@ column-specific text instead. The first successful contact sheet then exposed a 
 E2 violation: the 112dp popover crossed the center spacer. Commit `38b089e24` shifts
 all popovers 72dp toward the pane interior. The second successful 2076 × 2152px
 capture set shows every popup wholly inside the left pane and all volume triggers
-visible at their assigned row. Full-resolution and 3 × 3 contact-sheet inspection
-confirm all settled current-screen pixels remain: white spacers, gray rail line,
-folder indicator, neutral unnumbered tracks, play cue, mode control, app bars, and
-native system UI. The dedicated-row treatment fits at default text but leaves less
-room for text growth.
+visible at their assigned row. Post-fix full-resolution inspection of recommended cell
+2B and a 3 × 3 contact sheet confirm all settled current-screen pixels remain: white
+spacers, gray rail line, folder indicator, neutral unnumbered tracks, play cue, mode
+control, app bars, and native system UI. The package now extracts each connected popup
+surface and asserts its exact 273px width, column-specific height, x=678 fold-safe
+position, and row-specific y position. It also checks the complete 59px center spacer
+from x=1009 through x=1067 is one color and samples its center as white. The
+dedicated-row treatment fits at default text but leaves less room for text growth.
+The prototype rotates a standard Material slider because the pinned artifact has no
+`VerticalSlider` class. This is a placement and content approximation, not a production
+implementation decision.
 
 The current HTML template now shows the accepted design first, names the omitted D20
 control and five other in-screen considerations, presents nine native current-screen
@@ -1124,6 +1130,24 @@ refinements with per-cell pros, cons, analysis, and rank, gives a full adjacent-
 ranking plus primary and fallback recommendations, proposes complementary volume
 behaviors, and asks separate placement, popover-content, behavior, and free-correction
 questions. The package validator requires ten opaque 2076 × 2152px images, native
-system UI, uniform center spacer, neutral current row, distinct cells, the assigned
-slider/percentage/Mute popover content, and the resolved dynamic-palette contrast
-pairs. Build, lint, and unit contracts pass. Helium verification remains.
+system UI, full white center spacer, neutral current row, distinct cells, exact row
+placement, assigned slider/percentage/Mute content, and resolved dynamic-palette
+contrast pairs. Build, lint, and unit contracts pass.
+
+Final isolated Helium verification at DPR 2 passes. The page opens blank with ten
+2076 × 2152px native images: the accepted foundation and nine current-screen volume
+cells. No command-bar text, control, capture, or provenance remains. All ten previews
+open with correct titles and dimensions inside the measured 907 × 937 CSS px frame
+around an 852 × 883px screen. Zoom out, in, Fit, sharp 1:1 display pixels, 100% reset,
+scrolling, and Close pass. At 1280 × 800 each matrix row fits in one 1137px row with
+three 368.4px cards. At 390 × 844 each independent 316px scroller contains one 1088px
+row of three 352px cards and traverses 772px while the page stays 390px wide. Blank
+validation focuses Q1. All nine placement-plus-content combinations report their exact
+cell and rank. The recommended choices report `2B` and rank 1. Every radio, behavior
+checkbox, free text, prepare, immediate copy, download, and clear path passes. Offline
+reload decodes all ten images with no external URL; forced host dark mode stays light.
+Axe reports no WCAG A/AA violations or incomplete checks on the page or modal. Labels,
+names, alternatives, unique IDs, initial focus, and 48px targets pass; browser errors
+and console output are empty. Positive controls reject both unauthorized command-bar
+content and a slider-only image substituted for a percentage cell. Clear and close
+the isolated page, stop the emulator, then open the exact file in normal Helium.

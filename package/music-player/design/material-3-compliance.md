@@ -264,7 +264,9 @@ Every matrix cell keeps these common requirements:
   exposes `Volume, 72 percent` as its action label.
 - A `surfaceContainerHigh` anchored menu surface contains a real Material slider
   rotated into the settled vertical orientation. Slider semantics expose `Volume
-  level, 72 percent`.
+  level, 72 percent`. The pinned Material 3 artifact has no `VerticalSlider` class;
+  rotation is a static-prototype approximation for placement and content review, not
+  the production implementation decision.
 - The popover stays wholly inside the left 414dp pane. No trigger, slider, percentage,
   or Mute target crosses the 24dp center spacer.
 - The percentage variants add `onSurface` text. Mute variants add a Material
