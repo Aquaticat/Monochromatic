@@ -1148,6 +1148,16 @@ checkbox, free text, prepare, immediate copy, download, and clear path passes. O
 reload decodes all ten images with no external URL; forced host dark mode stays light.
 Axe reports no WCAG A/AA violations or incomplete checks on the page or modal. Labels,
 names, alternatives, unique IDs, initial focus, and 48px targets pass; browser errors
-and console output are empty. Positive controls reject both unauthorized command-bar
-content and a slider-only image substituted for a percentage cell. Clear and close
-the isolated page, stop the emulator, then open the exact file in normal Helium.
+and console output are empty. Positive controls reject unauthorized command-bar
+content, a slider-only image substituted for a percentage cell, one altered pixel at
+the left edge of the 59px center spacer, and a playback-row popup substituted for a
+header-row popup. The isolated page was cleared and closed; its Helium process and the
+emulator are stopped. Temporary volume captures were removed from the prototype
+worktree after their committed main-worktree copies passed.
+
+The exact cleared questionnaire was launched through the normal Helium desktop entry.
+KWin reports `Music player design: current-screen volume matrix - Helium` active and
+non-minimized at 1080 × 1880 on `HDMI-A-1`, internal ID
+`{e3931e5f-3567-4ce2-bf9b-40273e192217}`. Prototype upstream is `38b089e24`; the main
+upstream must be checked after this final handover commit. Leave the matrix visible and
+wait for the user's answers. Do not advance to another surface or feature.
