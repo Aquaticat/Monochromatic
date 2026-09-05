@@ -160,7 +160,7 @@ depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
 [tasks."prototype:capture"]
-description = "Install and capture all six Compose candidates from the unfolded Pixel Fold emulator"
+description = "Install and capture native Compose candidates from the unfolded Pixel Fold emulator"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 shell = "node --input-type=module-typescript -e"
@@ -218,6 +218,15 @@ const candidateNames = [
   "divider-b",
   "divider-c",
   "divider-final",
+  "volume-h-s",
+  "volume-h-p",
+  "volume-h-m",
+  "volume-c-s",
+  "volume-c-p",
+  "volume-c-m",
+  "volume-r-s",
+  "volume-r-p",
+  "volume-r-m",
 ];
 for (const candidateName of candidateNames) {
   execFileSync(
@@ -242,7 +251,8 @@ for (const candidateName of candidateNames) {
       ["-s", serial, "exec-out", "cat", "/sdcard/music-player-candidate.xml"],
       { encoding: "utf8" },
     );
-    if (hierarchy.includes("Camellia")) {
+    const readinessMarker = candidateName.startsWith("volume-") ? "Volume level, 72 percent" : "Camellia";
+    if (hierarchy.includes(readinessMarker)) {
       candidateReady = true;
       break;
     }
@@ -256,9 +266,18 @@ for (const candidateName of candidateNames) {
     { encoding: "utf8" },
   );
   const requiredHierarchyMarkers = [
-    'text="Camellia"',
-    'text="Another Xronixle"',
-    'content-desc="Settings"',
+    ...(candidateName.startsWith("volume-")
+      ? [
+          'content-desc="Volume, 72 percent"',
+          'content-desc="Volume level, 72 percent"',
+          ...(candidateName.endsWith("-p") || candidateName.endsWith("-m") ? ['text="72%"'] : []),
+          ...(candidateName.endsWith("-m") ? ['text="Mute"'] : []),
+        ]
+      : [
+          'text="Camellia"',
+          'text="Another Xronixle"',
+          'content-desc="Settings"',
+        ]),
     ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-")
       ? [
           'text="Folders"',
