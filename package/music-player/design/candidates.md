@@ -52,6 +52,31 @@ which were left as historical style comparisons.
 - **Light studies sit on a light desk**, dark studies on a dark one, and frames fill
   the viewport height rather than floating in dead space.
 
+## Round 11: current-screen volume matrix awaiting verdict
+
+The accepted current screen omitted D20's required volume icon and vertical popover.
+Nine native Compose captures keep the accepted layout and cross two unresolved details.
+Rows place the trigger in the now-playing header (`volume-h-*`), at the playback row's
+trailing edge (`volume-c-*`), or in a dedicated row below playback mode (`volume-r-*`).
+Columns show slider only (`*-s`), slider plus percentage (`*-p`), or slider plus
+percentage and Mute (`*-m`). All sources are 2076 × 2152px captures from prototype
+commit `38b089e24`.
+
+- `volume-h-s`: 1A, header plus slider only, rank 6.
+- `volume-h-p`: 1B, header plus percentage, rank 3.
+- `volume-h-m`: 1C, header plus percentage and Mute, rank 4.
+- `volume-c-s`: 2A, playback row plus slider only, rank 5.
+- `volume-c-p`: 2B, playback row plus percentage, rank 1 and recommended.
+- `volume-c-m`: 2C, playback row plus percentage and Mute, rank 2.
+- `volume-r-s`: 3A, dedicated row plus slider only, rank 9.
+- `volume-r-p`: 3B, dedicated row plus percentage, rank 7.
+- `volume-r-m`: 3C, dedicated row plus percentage and Mute, rank 8.
+
+The answer controls keep trigger placement, popover content, and complementary behavior
+as separate decisions. Every popup stays inside the left pane and off the 24dp center
+spacer. The matrix introduces no new feature; it completes settled D20 on the current
+screen.
+
 ## ROUND 10 — white-divider clarification
 
 Three native full-device captures keep the chosen `1c` tonal structure and `3a`

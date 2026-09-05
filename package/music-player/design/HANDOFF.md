@@ -1083,6 +1083,11 @@ refinements. Preserve every settled decision and every correction. Do not reopen
 discarded candidate, introduce a new feature, or infer scope from an example of
 method.
 
+The unauthorized command-bar work is now fully removed from the main and prototype
+branches through corrective commits. The package-local scope lesson lives in
+`review-notes.md` standing standard 11; the user explicitly requested removal of the
+too-narrow QSC rule from root `AGENTS.md`, and generated `CLAUDE.md` was synchronized.
+
 The first current-screen issue to explore is not a new feature: the accepted capture
 omits the volume control required by settled decision D20. D20 fixes the component as
 a 48dp icon button opening an anchored vertical Material slider popover, but it does
@@ -1097,3 +1102,28 @@ and dynamic palette unchanged. Recommend playback-row trailing plus percentage u
 the native captures show a balance or clipping problem. Point out, without expanding
 scope, that keyboard focus/hover overlap and long-content states still deserve later
 state-sheet review of this same screen.
+
+Prototype commit `38b089e24` implements the nine volume cells with real Material icon
+buttons, menu surfaces, sliders, percentages, and Mute text buttons. Prototype build
+and Android lint pass without warnings. The first hierarchy capture correctly failed
+because an open popup excludes its underlying anchor from UI Automator's active-window
+view; the corrected capture contract validates the popup's volume semantics and
+column-specific text instead. The first successful contact sheet then exposed a real
+E2 violation: the 112dp popover crossed the center spacer. Commit `38b089e24` shifts
+all popovers 72dp toward the pane interior. The second successful 2076 × 2152px
+capture set shows every popup wholly inside the left pane and all volume triggers
+visible at their assigned row. Full-resolution and 3 × 3 contact-sheet inspection
+confirm all settled current-screen pixels remain: white spacers, gray rail line,
+folder indicator, neutral unnumbered tracks, play cue, mode control, app bars, and
+native system UI. The dedicated-row treatment fits at default text but leaves less
+room for text growth.
+
+The current HTML template now shows the accepted design first, names the omitted D20
+control and five other in-screen considerations, presents nine native current-screen
+refinements with per-cell pros, cons, analysis, and rank, gives a full adjacent-reason
+ranking plus primary and fallback recommendations, proposes complementary volume
+behaviors, and asks separate placement, popover-content, behavior, and free-correction
+questions. The package validator requires ten opaque 2076 × 2152px images, native
+system UI, uniform center spacer, neutral current row, distinct cells, the assigned
+slider/percentage/Mute popover content, and the resolved dynamic-palette contrast
+pairs. Build, lint, and unit contracts pass. Helium verification remains.

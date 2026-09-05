@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: current screen review</title>
+<title>Music player design: current-screen volume matrix</title>
 <style>
 :root {
   color-scheme: light;
@@ -170,11 +170,33 @@ legend {
 }
 
 .options {
-  inline-size: min(100%, 56rem);
+  min-inline-size: 68rem;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.accepted-options {
+  min-inline-size: 0;
+  inline-size: min(100%, 56rem);
+  grid-template-columns: minmax(0, 1fr);
   margin-inline: auto;
+}
+
+.matrix-row {
+  margin-block-end: 2rem;
+}
+
+.matrix-row:last-child {
+  margin-block-end: 0;
+}
+
+.matrix-axis {
+  margin-block-end: 0.5rem;
+  color: var(--color-primary);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .option {
@@ -205,11 +227,6 @@ legend {
   border-block-end-width: 0.0625rem;
   border-block-end-style: solid;
   border-block-end-color: var(--color-line);
-  cursor: pointer;
-}
-
-.option-heading:hover {
-  background-color: var(--color-primary-container);
 }
 
 .option-heading:has(input:focus-visible),
@@ -390,6 +407,25 @@ textarea:focus-visible {
   background-color: var(--color-secondary-container);
   color: var(--color-on-secondary-container);
   line-height: 1.55;
+}
+
+.recommendation-list,
+.ranking-list {
+  max-inline-size: 90ch;
+  line-height: 1.55;
+}
+
+.ranking-list li,
+.recommendation-list li {
+  margin-block-end: 0.65rem;
+}
+
+.decision-block {
+  margin-block-end: 1.75rem;
+}
+
+.decision-block[hidden] {
+  display: none;
 }
 
 .review-choices {
@@ -624,107 +660,206 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Review the current screen</h1>
+      <h1>Complete the current design</h1>
       <p class="lede">
-        Inspect the active music-player screen and identify any remaining visible changes.
+        Here is the design as you liked it. I found one required control missing from this current screen, explored its unresolved details in nine native prototypes, and ranked them.
       </p>
     </div>
-    <span class="round-badge">Current design · correction review</span>
+    <span class="round-badge">Designer review · 3 × 3 prototype matrix</span>
   </header>
 
-  <section class="instructions" aria-labelledby="instructions-title">
-    <h2 id="instructions-title">What changed</h2>
+  <section class="instructions" aria-labelledby="accepted-title">
+    <h2 id="accepted-title">The design you liked</h2>
+    <p class="question-intro">
+      This remains the foundation. The white 24dp center spacer, white 16dp picker and transport divider, gray letter-rail line, unnumbered neutral track rows, and play-icon current-track cue are unchanged.
+    </p>
+    <div class="options-scroll">
+      <div class="options accepted-options">
+        <article class="option">
+          <div class="option-heading">
+            <span class="option-title">
+              <span class="option-code">Accepted foundation</span>
+              <strong>Current unfolded screen</strong>
+              <span class="option-summary">Every settled correction remains the foundation for the matrix</span>
+            </span>
+          </div>
+          <button class="preview-open" type="button" data-preview-title="Accepted current music-player screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+            <span class="device-frame">
+              <span class="device-screen">
+                <img data-candidate-source="Accepted native Compose capture, prototype commit 49d6568ed" src="@@IMAGE_BASELINE@@" width="852" height="883" alt="Accepted unfolded music-player screen with white pane spacers, gray letter rail, neutral track rows, and play-icon current-track cue">
+                <span class="device-camera" aria-hidden="true"></span>
+              </span>
+            </span>
+            <span class="preview-label">Open the accepted design at measured size</span>
+          </button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="instructions" aria-labelledby="considerations-title">
+    <h2 id="considerations-title">What still deserves design work</h2>
     <ol>
-      <li>The 24dp vertical center spacer remains white, as selected for this layout.</li>
-      <li>The 16dp horizontal strip you marked between the folder picker and transport is now white.</li>
-      <li>Interface-generated track numbers are removed.</li>
-      <li>The saturated blue current-track row fill is removed; the play icon alone marks the current track.</li>
+      <li><strong>Missing required control:</strong> settled decision D20 requires a volume icon and vertical popover, but the accepted capture contains neither.</li>
+      <li><strong>Button placement:</strong> the icon can preserve or disturb the centered now-playing title and playback controls depending on where it joins the transport block.</li>
+      <li><strong>Level precision:</strong> slider position communicates relative level, while an optional percentage makes the exact value visible.</li>
+      <li><strong>Mute access:</strong> a named Mute action is discoverable, but makes the popover taller and may duplicate icon-button behavior.</li>
+      <li><strong>Occlusion:</strong> the anchored popover should cover as little folder content as possible while keeping its trigger visible.</li>
+      <li><strong>Later state sheet:</strong> keyboard focus, hover, long labels, and simultaneous playing-plus-focus states still deserve a separate review of this same screen.</li>
     </ol>
     <div class="definition-list">
-      <p class="definition">
-        <strong>Current design:</strong> white vertical and horizontal pane spacers, a visible gray rail line, neutral track rows, and no generated ordinals.
-      </p>
+      <p class="definition"><strong>Matrix rows:</strong> volume button in the now-playing header; at the playback-control row's trailing edge; in a dedicated row below playback mode.</p>
+      <p class="definition"><strong>Matrix columns:</strong> vertical slider only; slider plus 72%; slider plus 72% and Mute.</p>
     </div>
     <p class="response-help">
-      Open the image for measured 100% zoom. Say whether this current design can continue, list every remaining correction or “None,”
-      then choose Prepare answers and Copy answers to paste the result into Pi.
+      Each source is a 2076×2152px native Jetpack Compose capture of the whole 852×883dp unfolded Pixel 9 Pro Fold display. Each opens the required volume popover so placement and content are directly comparable. After the matrix, answer the independent placement, popover-content, and addition questions.
     </p>
   </section>
 
   <form id="design-form">
-    <section class="question" aria-labelledby="divider-title">
-      <fieldset>
-        <legend><h2 id="divider-title">Current screen</h2></legend>
-        <p class="question-intro">
-          This is a native Jetpack Compose capture from the measured Pixel 9 Pro Fold emulator and dynamic light palette.
-          The source is 2076×2152px and represents the whole 852×883dp unfolded display.
-        </p>
+    <section class="question" aria-labelledby="matrix-title">
+      <h2 id="matrix-title">Nine refinements of the current screen</h2>
+      <p class="question-intro">
+        Every prototype keeps the accepted screen and opens the missing D20 volume control. Rows change only the icon's position. Columns change only the popover readout. The slider remains vertical, anchored, built from Material components, and wholly inside the left pane in every cell.
+      </p>
 
-        <div class="options-scroll">
+      <section class="matrix-row" aria-labelledby="header-row-title">
+        <p class="matrix-axis">Row 1 · icon in the now-playing header</p>
+        <h3 id="header-row-title">Keep the playback buttons perfectly symmetrical</h3>
+        <p class="question-intro">The volume icon sits at the header's trailing edge while the title remains centered.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Header-position volume prototypes, scroll horizontally on narrow windows">
           <div class="options">
             <article class="option">
-              <div class="option-heading">
-                <span class="option-title">
-                  <span class="option-code">Active design</span>
-                  <strong>Current music-player screen</strong>
-                  <span class="option-summary">White center and marked horizontal spacers; neutral unnumbered track rows</span>
-                </span>
-              </div>
-              <button class="preview-open" type="button" data-preview-title="Current music-player screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-                <span class="device-frame">
-                  <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-final capture, prototype commit 49d6568ed" src="@@IMAGE_DIVIDER_FINAL@@" width="852" height="883" alt="Current music-player screen with white vertical and horizontal pane spacers, neutral unnumbered track rows, and a play icon on the current track">
-                    <span class="device-camera" aria-hidden="true"></span>
-                  </span>
-                </span>
-                <span class="preview-label">Open the current screen at measured size</span>
-              </button>
-              <div class="assessment">
-                <div><strong>Pros</strong></div>
-                <ul>
-                  <li>Implements the white center and marked horizontal divider.</li>
-                  <li>Removes invented ordinals and saturated row highlighting.</li>
-                  <li>Retains the play icon and semantic current-track state.</li>
-                </ul>
-                <div><strong>Cons</strong></div>
-                <ul>
-                  <li>The current track is intentionally quieter without a filled row.</li>
-                  <li>White spacers make adjacent white surfaces read as continuous.</li>
-                </ul>
-              </div>
+              <div class="option-heading"><span class="option-title"><span class="option-code">1A · rank 6</span><strong>Header · slider only</strong><span class="option-summary">Quietest popover at the title row's trailing edge</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1A: Header volume, slider only" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-h-s capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_H_S@@" width="852" height="883" alt="Current screen with volume button in the now-playing header and an open slider-only popover"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Preserves perfect symmetry around the play button.</li><li>Keeps playback controls visually quiet.</li></ul><div><strong>Cons</strong></div><ul><li>Can imply volume belongs to the current track title.</li><li>Slider position gives no exact numeric level.</li></ul><p><strong>My analysis:</strong> clean, but semantically separated from playback control.</p></div>
             </article>
-
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">1B · rank 3</span><strong>Header · percentage</strong><span class="option-summary">Header trigger with a precise 72% readout</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1B: Header volume with percentage" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-h-p capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_H_P@@" width="852" height="883" alt="Current screen with volume button in the now-playing header and an open popover showing slider and 72 percent"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Adds exact feedback without enlarging the closed transport.</li><li>Preserves playback-button symmetry.</li></ul><div><strong>Cons</strong></div><ul><li>Still separates volume from the other playback controls.</li><li>The extra number may be unnecessary for casual adjustment.</li></ul><p><strong>My analysis:</strong> best header placement and a strong fallback.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">1C · rank 4</span><strong>Header · percentage + Mute</strong><span class="option-summary">Full readout and named mute action</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1C: Header volume with percentage and Mute" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-h-m capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_H_M@@" width="852" height="883" alt="Current screen with header volume button and an open popover showing slider, 72 percent, and Mute"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Makes both level and mute action explicit.</li><li>Leaves the centered playback row untouched.</li></ul><div><strong>Cons</strong></div><ul><li>Tallest popover covers more folder content.</li><li>Mute may duplicate pressing the volume icon.</li></ul><p><strong>My analysis:</strong> complete, but more than the common adjustment needs.</p></div>
+            </article>
           </div>
         </div>
+      </section>
 
-        <p class="ranking">
-          <strong>Review scope: the current screen.</strong>
-          This is the sole active design because it implements the marked white divider, removes invented numbers,
-          and removes the rejected saturated current-row fill.
-        </p>
-      </fieldset>
+      <section class="matrix-row" aria-labelledby="controls-row-title">
+        <p class="matrix-axis">Row 2 · icon beside playback controls</p>
+        <h3 id="controls-row-title">Keep volume with the actions it affects</h3>
+        <p class="question-intro">Previous, pause, and next remain centered; volume occupies the playback row's trailing edge.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Playback-row volume prototypes, scroll horizontally on narrow windows">
+          <div class="options">
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2A · rank 5</span><strong>Playback row · slider only</strong><span class="option-summary">Semantically grouped with minimal popup content</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2A: Playback-row volume, slider only" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-c-s capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_C_S@@" width="852" height="883" alt="Current screen with volume button at the playback row's trailing edge and an open slider-only popover"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Places volume beside related playback actions.</li><li>Keeps the popover visually minimal.</li></ul><div><strong>Cons</strong></div><ul><li>Adds visual weight to one side of the row.</li><li>Slider position gives no exact number.</li></ul><p><strong>My analysis:</strong> correct location, incomplete readout.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2B · rank 1 · recommended</span><strong>Playback row · percentage</strong><span class="option-summary">Related controls together with precise feedback</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2B: Playback-row volume with percentage" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-c-p capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_C_P@@" width="852" height="883" alt="Current screen with playback-row volume button and an open popover showing slider and 72 percent"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Best semantic grouping of trigger and playback actions.</li><li>Percentage adds exact, non-color feedback.</li></ul><div><strong>Cons</strong></div><ul><li>The trailing icon makes the row less visually pure.</li><li>Precise percentage may matter less on touch devices with hardware keys.</li></ul><p><strong>My analysis:</strong> best balance of meaning, precision, and compactness.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2C · rank 2</span><strong>Playback row · percentage + Mute</strong><span class="option-summary">Full popover beside the related actions</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2C: Playback-row volume with percentage and Mute" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-c-m capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_C_M@@" width="852" height="883" alt="Current screen with playback-row volume button and an open popover showing slider, 72 percent, and Mute"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Most complete control at the most meaningful location.</li><li>Named Mute action is immediately discoverable.</li></ul><div><strong>Cons</strong></div><ul><li>Taller popup obscures more nearby content.</li><li>Mute may duplicate icon-button behavior.</li></ul><p><strong>My analysis:</strong> strong second choice; remove Mute unless testing proves it earns the space.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="dedicated-row-title">
+        <p class="matrix-axis">Row 3 · icon in a dedicated row</p>
+        <h3 id="dedicated-row-title">Give volume its own space below playback mode</h3>
+        <p class="question-intro">The existing title, seek, playback, and mode rows remain untouched, but the transport becomes taller.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Dedicated-row volume prototypes, scroll horizontally on narrow windows">
+          <div class="options">
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3A · rank 9</span><strong>Dedicated row · slider only</strong><span class="option-summary">Extra transport row with minimal popover</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3A: Dedicated-row volume, slider only" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-r-s capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_R_S@@" width="852" height="883" alt="Current screen with volume button in a dedicated row below playback mode and an open slider-only popover"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Changes none of the accepted rows.</li><li>Gives the trigger a stable, isolated location.</li></ul><div><strong>Cons</strong></div><ul><li>Consumes another 48dp row in the transport.</li><li>Provides no exact level despite the added space.</li></ul><p><strong>My analysis:</strong> pays the largest closed-state cost for the least popup information.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3B · rank 7</span><strong>Dedicated row · percentage</strong><span class="option-summary">Isolated trigger with precise readout</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3B: Dedicated-row volume with percentage" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-r-p capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_R_P@@" width="852" height="883" alt="Current screen with a dedicated-row volume button and an open popover showing slider and 72 percent"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Very discoverable trigger and precise level.</li><li>Leaves every accepted row internally unchanged.</li></ul><div><strong>Cons</strong></div><ul><li>Makes the transport taller and more likely to scroll.</li><li>Visually overstates volume relative to playback.</li></ul><p><strong>My analysis:</strong> usable, but the closed-state height is too expensive.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3C · rank 8</span><strong>Dedicated row · percentage + Mute</strong><span class="option-summary">Largest closed and open volume treatment</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3C: Dedicated-row volume with percentage and Mute" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose volume-r-m capture, prototype commit 38b089e24" src="@@IMAGE_VOLUME_R_M@@" width="852" height="883" alt="Current screen with dedicated-row volume button and an open popover showing slider, 72 percent, and Mute"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Most explicit and discoverable volume treatment.</li><li>Separates the complete volume tool from other controls.</li></ul><div><strong>Cons</strong></div><ul><li>Consumes the most closed-state and open-state space.</li><li>Leaves less vertical room when text grows or the transport reflows.</li></ul><p><strong>My analysis:</strong> more complete than 3A, but still disproportionate.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
     </section>
 
-    <section class="response" aria-labelledby="corrections-title">
-      <h2 id="corrections-title">What should change in this screen?</h2>
-      <p class="question-intro">
-        Inspect the pane spacers, letter rail, folder area, track rows, current-track indicator, and transport area.
-        Choose the answer that matches what you can see.
-      </p>
-      <fieldset class="review-choices">
-        <legend>Review result</legend>
-        <label class="review-choice">
-          <input type="radio" name="reviewResult" value="changes-needed" required>
-          <span>Changes needed in this screen</span>
-        </label>
-        <label class="review-choice">
-          <input type="radio" name="reviewResult" value="nothing-else" required>
-          <span>Nothing else in this screen</span>
-        </label>
+    <section class="question" aria-labelledby="recommendation-title">
+      <h2 id="recommendation-title">My recommendation and full ranking</h2>
+      <p class="ranking"><strong>Recommend 2B: volume at the playback row's trailing edge with a percentage.</strong> It keeps volume beside playback, preserves the centered previous, pause, and next group, and adds precise feedback without the taller Mute action. Use 1B if visual symmetry matters more than semantic grouping.</p>
+      <ol class="ranking-list">
+        <li><strong>2B · Playback row, percentage.</strong> Best balance of meaning, precision, and compactness.</li>
+        <li><strong>2C · Playback row, percentage + Mute.</strong> Below 2B because the named action makes the popover taller and may duplicate the icon.</li>
+        <li><strong>1B · Header, percentage.</strong> Below 2C because it separates volume from related playback actions.</li>
+        <li><strong>1C · Header, percentage + Mute.</strong> Below 1B because the extra action adds occlusion without fixing that separation.</li>
+        <li><strong>2A · Playback row, slider only.</strong> Below 1C because correct placement does not compensate for losing exact feedback.</li>
+        <li><strong>1A · Header, slider only.</strong> Below 2A because it loses both semantic proximity and numeric feedback.</li>
+        <li><strong>3B · Dedicated row, percentage.</strong> Below 1A because another permanent row costs more than the precise readout gains.</li>
+        <li><strong>3C · Dedicated row, percentage + Mute.</strong> Below 3B because it combines the extra row with the tallest popup.</li>
+        <li><strong>3A · Dedicated row, slider only.</strong> Below 3C because it pays the extra-row cost without either explicit addition.</li>
+      </ol>
+      <h3>Worth adding to the selected volume treatment</h3>
+      <ul class="recommendation-list">
+        <li>Announce the current percentage whenever keyboard, wheel, touch, or hardware-key input changes it.</li>
+        <li>Let arrows and the pointer wheel adjust the slider while the popover has focus.</li>
+        <li>Show a desktop tooltip naming Volume before the popover opens.</li>
+        <li>Restore the last nonzero level when leaving a muted state.</li>
+        <li>Keep the popover open while consecutive hardware-key changes arrive, then dismiss it without moving layout.</li>
+      </ul>
+    </section>
+
+    <section class="response" aria-labelledby="questions-title">
+      <h2 id="questions-title">Your decisions</h2>
+      <p class="question-intro">Placement and popover content are separate decisions. Choose one of each, select any complementary behavior, then add anything the prototypes missed.</p>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q1. Where should the volume button sit?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="radio" name="placementDecision" value="header" required><span>Now-playing header</span></label>
+          <label class="review-choice"><input type="radio" name="placementDecision" value="controls" required><span>Playback row's trailing edge (Recommended)</span></label>
+          <label class="review-choice"><input type="radio" name="placementDecision" value="dedicated" required><span>Dedicated row below playback mode</span></label>
+        </div>
       </fieldset>
-      <label for="other-corrections">If changes are needed, describe each one</label>
-      <textarea id="other-corrections" name="otherCorrections" aria-describedby="correction-help" placeholder="Name the visible area, what is wrong, and what it should look like."></textarea>
-      <p class="response-help" id="correction-help">This field is required only when you choose Changes needed.</p>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q2. What should the open popover show?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="radio" name="contentDecision" value="slider" required><span>Vertical slider only</span></label>
+          <label class="review-choice"><input type="radio" name="contentDecision" value="percentage" required><span>Slider plus percentage (Recommended)</span></label>
+          <label class="review-choice"><input type="radio" name="contentDecision" value="mute" required><span>Slider, percentage, and Mute</span></label>
+        </div>
+      </fieldset>
+      <p class="ranking" id="combination-status" role="status" aria-live="polite" hidden></p>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q3. Which complementary behaviors should be included?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="checkbox" name="additions" value="announce"><span>Announce level changes from every input method</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="keyboard-wheel"><span>Arrow-key and pointer-wheel adjustment</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="tooltip"><span>Desktop Volume tooltip</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="restore"><span>Restore the last nonzero level after mute</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="hardware-keys"><span>Keep the popover visible during consecutive hardware-key changes</span></label>
+        </div>
+      </fieldset>
+
+      <label for="other-corrections">Other combinations, corrections, or additions, or “None”</label>
+      <textarea id="other-corrections" name="otherCorrections" required placeholder="Name a prototype code and visible area, describe another combination, or add an idea the matrix missed."></textarea>
+      <p class="response-help">Select Q1 and Q2. Q3 accepts any number of complementary behaviors. Then choose Prepare answers and Copy answers to paste the result into Pi.</p>
       <div class="actions">
         <button type="submit">Prepare answers</button>
         <button type="button" data-variant="secondary" id="clear-form">Clear</button>
@@ -746,7 +881,7 @@ dialog::backdrop {
 <dialog id="preview-dialog" aria-labelledby="zoom-title">
   <div class="dialog-layout">
     <div class="dialog-heading">
-      <h2 id="zoom-title">Divider preview</h2>
+      <h2 id="zoom-title">Prototype preview</h2>
       <p id="zoom-dimensions"></p>
       <div class="zoom-toolbar" role="group" aria-label="Preview zoom controls">
         <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
@@ -776,8 +911,9 @@ const answerOutput = document.querySelector('#answer-output');
 const clearButton = document.querySelector('#clear-form');
 const copyButton = document.querySelector('#copy-answers');
 const downloadButton = document.querySelector('#download-answers');
-const correctionInput = document.querySelector('#other-corrections');
-const reviewInputs = document.querySelectorAll('input[name="reviewResult"]');
+const placementInputs = document.querySelectorAll('input[name="placementDecision"]');
+const contentInputs = document.querySelectorAll('input[name="contentDecision"]');
+const combinationStatus = document.querySelector('#combination-status');
 const status = document.querySelector('#status');
 const previewDialog = document.querySelector('#preview-dialog');
 const zoomDevice = document.querySelector('#zoom-device');
@@ -850,23 +986,59 @@ const openPreview = (button) => {
   zoomStage.scrollTo({ top: 0, left: 0 });
 };
 
-const updateCorrectionRequirement = () => {
-  const selectedResult = document.querySelector('input[name="reviewResult"]:checked')?.value;
-  correctionInput.required = selectedResult === 'changes-needed';
-  if (selectedResult === 'nothing-else' && correctionInput.value.length > 0) {
-    correctionInput.value = '';
-    status.textContent = 'Correction details cleared because Nothing else was selected.';
+const getCombination = () => {
+  const placement = document.querySelector('input[name="placementDecision"]:checked')?.value;
+  const content = document.querySelector('input[name="contentDecision"]:checked')?.value;
+  if (!placement || !content) {
+    return null;
+  }
+  const row = placement === 'header' ? '1' : placement === 'controls' ? '2' : '3';
+  const column = content === 'slider' ? 'A' : content === 'percentage' ? 'B' : 'C';
+  const code = `${row}${column}`;
+  const ranks = { '1A': 6, '1B': 3, '1C': 4, '2A': 5, '2B': 1, '2C': 2, '3A': 9, '3B': 7, '3C': 8 };
+  const names = {
+    '1A': 'Header · slider only',
+    '1B': 'Header · percentage',
+    '1C': 'Header · percentage + Mute',
+    '2A': 'Playback row · slider only',
+    '2B': 'Playback row · percentage',
+    '2C': 'Playback row · percentage + Mute',
+    '3A': 'Dedicated row · slider only',
+    '3B': 'Dedicated row · percentage',
+    '3C': 'Dedicated row · percentage + Mute',
+  };
+  return { code, rank: ranks[code], name: names[code] };
+};
+
+const updateCombinationStatus = () => {
+  const combination = getCombination();
+  combinationStatus.hidden = combination === null;
+  if (combination !== null) {
+    combinationStatus.textContent = `Current combination: ${combination.code} · ${combination.name} · rank ${combination.rank} of 9.`;
   }
 };
 
 const buildAnswer = () => {
   const data = new FormData(form);
-  if (data.get('reviewResult') === 'nothing-else') {
-    return 'Current screen: Nothing else';
-  }
+  const placementLabels = {
+    header: 'Now-playing header',
+    controls: "Playback row's trailing edge",
+    dedicated: 'Dedicated row below playback mode',
+  };
+  const contentLabels = {
+    slider: 'Vertical slider only',
+    percentage: 'Slider plus percentage',
+    mute: 'Slider, percentage, and Mute',
+  };
+  const additions = [...document.querySelectorAll('input[name="additions"]:checked')]
+    .map((input) => input.labels[0].innerText.trim());
+  const combination = getCombination();
   return [
-    'Current screen: Changes needed',
-    `Changes: ${data.get('otherCorrections').trim()}`,
+    `Combination: ${combination.code} (${combination.name}, rank ${combination.rank} of 9)`,
+    `Q1. Volume button: ${placementLabels[data.get('placementDecision')]}`,
+    `Q2. Popover: ${contentLabels[data.get('contentDecision')]}`,
+    `Q3. Behaviors: ${additions.length > 0 ? additions.join('; ') : 'None selected'}`,
+    `Other corrections or additions: ${data.get('otherCorrections').trim()}`,
   ].join('\n');
 };
 
@@ -886,7 +1058,8 @@ const copyText = async (text) => {
 document.querySelectorAll('.preview-open').forEach((button) => {
   button.addEventListener('click', () => openPreview(button));
 });
-reviewInputs.forEach((input) => input.addEventListener('change', updateCorrectionRequirement));
+placementInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
+contentInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
 
 zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
 zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));
@@ -913,11 +1086,11 @@ form.addEventListener('submit', (event) => {
 
 clearButton.addEventListener('click', () => {
   form.reset();
-  updateCorrectionRequirement();
+  updateCombinationStatus();
   answerOutput.value = '';
   output.hidden = true;
   status.textContent = 'Answers cleared.';
-  document.querySelector('input[name="reviewResult"]').focus();
+  document.querySelector('input[name="placementDecision"]').focus();
 });
 
 copyButton.addEventListener('click', async () => {
@@ -934,7 +1107,7 @@ downloadButton.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'music-player-current-screen-review.txt';
+  link.download = 'music-player-current-screen-volume-matrix.txt';
   link.click();
   URL.revokeObjectURL(url);
   status.textContent = 'Answers downloaded.';
