@@ -826,7 +826,21 @@ clear answer control should perform. Replace it with one observable, current-scr
 question: `What should change in this screen?`, with `Nothing else` and `Changes
 needed` paths. Name the inspection scope, require correction details only for `Changes
 needed`, remove D2 terminology from the user-facing page, verify both paths, and reopen
-the corrected form before continuing the project.
+the corrected form before continuing the project. Rule QVE now captures this question
+standard. The page now asks only `What should change in this screen?`, scopes inspection
+to named visible regions without stating their expected values, and offers `Changes
+needed in this screen` / `Nothing else in this screen`. Correction details become
+required only for the changes path. Choosing nothing after entering text visibly clears
+that contradictory text instead of silently dropping it. A second-model question review
+caught and removed residual value priming plus a single-candidate recommendation that
+biased acceptance. The validator rejects the old permission question, internal D2 label,
+and single-candidate recommendation; a post-commit positive mutation failed with
+`Current-design review contains stale or external content: revised D2, Can we continue`.
+Build, lint, and unit checks pass. Isolated Helium at DPR 2 confirms the exact heading,
+neutral scope prompt, ordered labels, conditional validity/focus, both generated-answer
+paths, visible contradictory-text clearing, and the 2076 × 2152px current image. Axe has
+no WCAG A/AA violations or incomplete checks; browser errors and console output are
+empty. Replace the normal Helium page and leave this corrected question visible.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
