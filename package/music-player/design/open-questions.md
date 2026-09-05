@@ -126,11 +126,8 @@ Open: whether the desktop bar should fade too, and whether the letter rail gets 
 - **Volume icon + vertical popover** — SETTLED (D20). Built into unf-i; the cover
   screen and the keyboard map's ↑/↓ still need updating to match.
 - **Command bar** — SETTLED as a configurable global hotkey, off by default (D21).
-  The surface now has a nine-prototype matrix awaiting verdict. It crosses commands
-  only / unified automatic groups / unified explicit scope controls with docked
-  right-pane overlay / right-pane takeover / fold-safe split full-screen. The form
-  asks content, category control, and placement separately. See command-bar matrix in
-  `candidates.md` and prototype commit `2aba2fb1d`.
+  The surface itself has never been designed: what it searches (folders? tracks?
+  commands?), and what it does once search exists (D25) are both unbuilt.
 - **Picker names not as a wall of chips** — unanswered; candidates pk-a / pk-b / pk-c
   are built and awaiting a verdict against the current chips.
 

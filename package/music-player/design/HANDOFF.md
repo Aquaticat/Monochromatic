@@ -844,109 +844,7 @@ empty. The isolated verifier is stopped. The corrected file was launched through
 normal Helium desktop entry. KWin reports `Music player design: current screen review -
 Helium` active and non-minimized at 1080 × 1880 on `DP-2`, internal ID
 `{eae6ad9d-37d6-4ff1-bc7d-07e6422ae946}`. The stale permission-question window was
-closed. The user rejected both the question and the claim that the agent already knew
-how to ask a good designer question. Retract that claim. Repeated approval forms are
-evidence that it did not know or apply the required method. The required method is a
-designer-led presentation: begin with the accepted design, identify consequential
-issues the user did not explicitly raise, build a nine-prototype matrix exploring those
-issues without resurrecting discarded candidates, provide pros, cons, analysis, a full
-ranking, recommendations, and worthwhile additions, then ask separable questions that
-select among visible new variants. Do not leave the current binary review visible as the
-next deliverable. First inspect the active design and open frontier, choose two useful
-three-state dimensions, build nine native Compose variants from the accepted state,
-then replace the HTML with the verified matrix questionnaire. The next matrix will
-address the already-settled-but-undesigned command bar (D21), not reopen any current
-screen decision. It crosses two unresolved dimensions: scope model (`Commands only`,
-`Unified with automatic groups`, `Unified with explicit scope controls`) and
-expanded-layout presentation (`Docked overlay within one pane`, `Right-pane takeover`,
-`Split full-screen`). This yields nine native Compose prototypes from the accepted
-current screen. The scope rows answer two separable decisions: whether library search
-joins commands, then whether merged results need manual filters. Material's archived
-search guidance says results use lists, expanded windows favor docked focused search,
-compact windows favor full-screen search, and category labels or filter chips can add
-context. Current JetBrains Search Everywhere documentation provides the unified plus
-scope-tab precedent; current VS Code documentation provides the commands-only palette
-precedent. Independent review caught that a 720dp centered docked surface would put
-interactive rows across the fold, violating E2; dock it wholly within the right pane
-instead. Split full-screen must likewise keep input and result targets on opposite
-414dp panes around the untouched 24dp spacer. Commands-only shows empty-query recent
-commands; unified shows grouped results; explicit scope selects Tracks and displays
-only track results so its behavior is visible. Show a result-count status in every
-variant. Pre-capture ranking: `Unified automatic × Right pane` > `Unified automatic ×
-Docked` > `Explicit controls × Right pane` > `Explicit controls × Docked` > `Unified
-automatic × Split full-screen` > `Commands only × Right pane` > `Explicit controls ×
-Split full-screen` > `Commands only × Docked` > `Commands only × Split full-screen`.
-The adjacent reasons are, in order: more result room; less interaction; more room for
-filters; category recovery; lower disruption; broader utility; preserved context; and
-lower disruption. Also surface additions worth carrying regardless of winner: folder
-context on track matches, shortcuts on command results, recent items before typing,
-announced result counts, arrows/Enter keyboard navigation, and adaptive conventional
-full-screen presentation on compact windows. Prototype commit `2aba2fb1d` implements and capture-validates all
-nine cells with real baseline Material `SearchBar`, `FilterChip`, and `ListItem`
-components. Prototype build and Android lint pass when run sequentially. A first
-capture attempt correctly failed because its hierarchy contract still expected
-underlying `Settings` and an exact `COMMANDS` heading; the corrected contract uses
-scope-specific focused-search markers. The second emulator run captured all nine at
-2076 × 2152px. A 3 × 3 contact sheet and full-resolution checks confirm: every docked
-surface stays inside the right pane; every right-pane surface starts beyond the center
-spacer; every split full-screen surface preserves two 414dp panes around a clear 24dp
-spacer; command-only shows five recent commands; automatic unified shows six results
-in three groups; explicit scope visibly selects Tracks and shows two track results;
-filter labels fit; track matches include folder, duration, and true peak; system bars
-remain native. The current HTML template now presents the accepted design, named new
-concerns, all nine prototypes with per-cell pros, cons, analysis, and rank, a full
-adjacent-reason ranking, a primary and fallback recommendation, complementary addition
-ideas, separable decision controls, and free corrections. Package raster guards verify
-all ten 2076 × 2152px sources, opacity, native system UI, a uniform protected fold
-region, visible search content, unique matrix cells, and the accepted design's settled
-state. Build, lint, and unit contracts pass. Final independent review caught three
-presentation gaps before handoff: the decision controls did not echo their composed
-matrix cell, recommended choices were not marked at the controls, and the dormant zoom
-title still said `Divider preview`. The form now shows a live cell code plus rank once
-its applicable dimension answers are complete, includes that cell in copied output,
-marks the three recommended dimension choices, and uses generic prototype-preview
-language. The pinned search-role contrast pairs range from 5.178:1 to 12.781:1; the
-selected filter pair is 6.124:1, and the package validator recalculates them.
-
-Final isolated Helium verification at DPR 2 passes. The page opens blank with ten
-2076 × 2152px native images: the accepted foundation and nine matrix cells. All ten
-previews open with their correct title and natural dimensions inside a measured 907 ×
-937 CSS px frame around an 852 × 883px screen. Zoom out, in, Fit, sharp 1:1 display
-pixels, 100% reset, scrolling, and Close pass. At 1280 × 800 each three-card row fits
-on one 1137px row with three 368.4px cards. At 390 × 844 each independent 316px
-scroller contains one 1088px row of three 352px cards and traverses 772px while the
-page remains 390px wide; the accepted card does not scroll. Blank validation focuses
-Q1. Commands-only hides and un-requires Q2; library scope reveals and requires it.
-Every scope, category, placement, addition, free-text, prepare, immediate copy,
-download, clear, and cross-scope reset path passes. The recommended choices produce
-`Combination: 2B (Unified · right pane, rank 1 of 9)`; commands-only plus split
-full-screen visibly reports `1C` and rank 9 before submission. Offline reload decodes
-all ten images with no external URL; forced host dark mode remains light. Axe reports
-no WCAG A/AA violations or incomplete checks on the page or modal. Direct labels,
-names, alternatives, unique IDs, focus, and 48px targets pass; browser errors and
-console output are empty. Post-commit positive controls prove both the stale approval
-question rejection and the uniform center-spacer raster guard. Stop the isolated
-browser and emulator, open this exact cleared file through normal Helium, activate it,
-and wait for the user's matrix answers. Cleanup is complete: the isolated Helium and
-emulator processes are stopped, emulator hierarchy output is removed, and temporary
-command-matrix captures were removed from the prototype worktree after their committed
-main-worktree copies were verified. The pre-existing modified light captures and
-untracked divider captures in the prototype worktree remain untouched. The exact
-cleared questionnaire was launched through the normal Helium desktop entry. KWin
-reports `Music player design: command-bar matrix - Helium` active and non-minimized at
-1080 × 1880 on `DP-2`, internal ID
-`{758fe458-cf5d-4621-af7b-827e9e7530ce}`. Main upstream is `3b96c34e3`; prototype
-upstream is `2aba2fb1d`. Leave the matrix visible and wait for its answers; do not
-advance beyond the command bar without them. This interpretation was unauthorized and
-wrong. The user meant the CURRENT accepted design: a designer-led review should keep
-that screen in scope, point out further considerations within it, and build the matrix
-as refinements of that screen. They did not approve moving into the command bar or any
-new feature. Close the command-bar page immediately. Remove the command-bar prototype,
-captures, questionnaire, compliance section, inventory entry, and frontier claims by
-corrective commits; keep only the general QVE/QVM question-design lesson. Then inspect
-the accepted current screen for unresolved in-screen treatments and build the next
-matrix without introducing a new feature or resurrecting discarded designs. Do not
-claim implied authorization from the teaching example again.
+closed. Leave this current question visible and wait for its answer.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
@@ -1162,3 +1060,25 @@ candidates/           ~45 exploratory Design Components
 candidates/artists.js ~1,000 generated artist folder names (USE THIS)
 uploads/              the user’s own mockup, screenshots and reference images
 ```
+
+## 8. Current correction: designer-led review stays on the current screen
+
+The user rejected the binary question `Can we continue from revised D2?`. A good
+question here is a designer-led presentation: show the accepted current design, point
+out consequential current-screen details the user did not explicitly raise, build a
+nine-prototype matrix exploring those details, give pros, cons, analysis, a full
+ranking, recommendations, and worthwhile additions, then ask separable questions.
+
+The agent first misread that teaching example as permission to advance into the
+command bar. That was unauthorized. The user explicitly meant the CURRENT design and
+did not approve a new feature. The command-bar page was closed immediately. Its
+prototype code, captures, questionnaire, compliance notes, inventory entry, and open
+question claims are being removed through corrective commits. Keep the general
+question-design lesson, but keep the next round strictly inside the accepted unfolded
+screen.
+
+The next action is to inspect the accepted screen itself, identify two consequential
+three-state treatment dimensions within that screen, and build nine native Compose
+refinements. Preserve every settled decision and every correction. Do not reopen a
+discarded candidate, introduce a new feature, or infer scope from an example of
+method.

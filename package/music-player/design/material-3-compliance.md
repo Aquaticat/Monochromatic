@@ -252,69 +252,6 @@ This proves the vertical rail gesture works without taking the whole rail away f
 predictive Back. UI Automator reports each rail target at `[0,...][117,...]`, exactly
 48dp wide and flush with the physical edge.
 
-## Command-bar matrix boundary
-
-The command-bar study uses the archived baseline search guidance in
-`components/search/overview/index.html`, `components/search/guidelines/index.html`,
-`components/search/specs/index.html`, and `components/search/accessibility/index.html`.
-The product remains on baseline Material 3 under A2, so it uses the divided search
-style rather than the contained Expressive style.
-
-The nine prototypes obey these common constraints:
-
-- Focused search uses a real Material `SearchBar`, a leading Back action, a trailing
-  Clear action, an `outlineVariant` divider, and Material list results.
-- Result rows expose folders, tracks, and commands through both category labels and
-  leading icons. Track results retain folder context because duplicate titles are
-  plausible across a large filesystem library.
-- Search status remains visible and uses a polite accessibility live region so result
-  changes are announced. Arrow keys move through results and Enter activates one in
-  the eventual implementation, matching the archive's keyboard guidance.
-- Explicit scope uses Material filter chips with a 48dp minimum target. The prototype
-  selects Tracks and removes other categories so filtering is observable rather than
-  merely decorative.
-- The commands-only empty-query state shows recent commands before typing. Command
-  rows show known shortcuts where one exists.
-- No interactive search surface crosses the fold. A docked overlay remains wholly
-  inside the right pane. Right-pane takeover starts after the 24dp spacer. Split
-  full-screen places input controls in the left 414dp pane and result controls in the
-  right 414dp pane while preserving the white 24dp center spacer.
-- The compact adaptation is conventional full-screen focused search. The split
-  full-screen prototype applies only to the measured unfolded display.
-
-The archive says search is suitable for products with many managed items; result and
-suggestion content uses lists by default; category labels and filter chips can add
-context; docked focused search suits medium and expanded windows; and full-screen
-focused search is the compact default. It specifies a 56dp search field and a docked
-result surface between 240dp and two-thirds of screen height, up to 720dp wide. The
-foldable's hard no-crossing rule narrows that generic 720dp maximum to one 414dp pane.
-
-Two current external precedents inform information architecture, not Material styling:
-
-- JetBrains Search Everywhere searches files and actions from one entry point and
-  provides scope tabs:
-  `https://www.jetbrains.com/help/idea/searching-everywhere.html`.
-- Visual Studio Code keeps the command palette as a commands-only surface and exposes
-  separate Quick Open navigation:
-  `https://code.visualstudio.com/docs/editing/getting-started/tips-and-tricks`.
-
-These precedents support both ends of the scope question; neither decides the music
-player's product tradeoff.
-
-The pinned AVD dynamic palette resolves every new search text pair above AA:
-
-- `onSurface` on `surfaceContainerHigh`: 10.407:1.
-- `onSurfaceVariant` on `surfaceContainerHigh`: 5.178:1.
-- `onSurface` on `surfaceContainerLow`: 11.571:1.
-- `onSurfaceVariant` on `surfaceContainerLow`: 5.757:1.
-- `onSurface` on `surfaceContainerLowest`: 12.781:1.
-- `onSurfaceVariant` on `surfaceContainerLowest`: 6.359:1.
-- `onSecondaryContainer` on `secondaryContainer` for selected filter text: 6.124:1.
-
-The package validator recalculates these role pairs. The scrimmed accepted screen is
-inert context while the docked surface is open; its dimmed content is not an active
-control or the source of the search result information.
-
 ## Candidate boundary
 
 Every repaired Q1 option must use valid Material surface roles:

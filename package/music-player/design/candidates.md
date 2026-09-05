@@ -52,32 +52,6 @@ which were left as historical style comparisons.
 - **Light studies sit on a light desk**, dark studies on a dark one, and frames fill
   the viewport height rather than floating in dead space.
 
-## Round 11: command-bar matrix awaiting verdict
-
-Nine native Compose captures preserve the accepted unfolded screen and cross two
-unsettled dimensions. Scope rows are commands only (`command-c-*`), unified folders,
-tracks, and commands with automatic groups (`command-u-*`), and unified results with
-explicit scope controls (`command-s-*`). Presentation columns are a docked right-pane
-overlay (`*-d`), right-pane takeover (`*-p`), and fold-safe split full-screen (`*-f`).
-All sources are 2076 × 2152px captures from prototype commit `2aba2fb1d`.
-
-- `command-c-d`: 1A, commands only plus docked overlay, rank 8.
-- `command-c-p`: 1B, commands only plus right pane, rank 6.
-- `command-c-f`: 1C, commands only plus split full-screen, rank 9.
-- `command-u-d`: 2A, unified automatic groups plus docked overlay, rank 2.
-- `command-u-p`: 2B, unified automatic groups plus right pane, rank 1 and recommended.
-- `command-u-f`: 2C, unified automatic groups plus split full-screen, rank 5.
-- `command-s-d`: 3A, explicit scope plus docked overlay, rank 4.
-- `command-s-p`: 3B, explicit scope plus right pane, rank 3.
-- `command-s-f`: 3C, explicit scope plus split full-screen, rank 7.
-
-The matrix is deliberately not a nine-way product question. Its answer controls split
-content, optional category control, and placement into separate decisions. Every
-candidate keeps interactive content out of the protected center spacer. Commands-only
-shows recents before typing. Unified results show folder context on track matches.
-Explicit scope selects Tracks so the filter's effect is visible. Every variant includes
-a visible and politely announced result count.
-
 ## ROUND 10 — white-divider clarification
 
 Three native full-device captures keep the chosen `1c` tonal structure and `3a`

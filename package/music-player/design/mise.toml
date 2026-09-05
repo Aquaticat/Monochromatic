@@ -3,16 +3,7 @@ build_question = '''
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { resolve } = await import('node:path');
 const renderPaths = {
-  IMAGE_BASELINE: 'questions/render/divider-final.png',
-  IMAGE_COMMAND_C_D: 'questions/render/command-c-d.png',
-  IMAGE_COMMAND_C_P: 'questions/render/command-c-p.png',
-  IMAGE_COMMAND_C_F: 'questions/render/command-c-f.png',
-  IMAGE_COMMAND_U_D: 'questions/render/command-u-d.png',
-  IMAGE_COMMAND_U_P: 'questions/render/command-u-p.png',
-  IMAGE_COMMAND_U_F: 'questions/render/command-u-f.png',
-  IMAGE_COMMAND_S_D: 'questions/render/command-s-d.png',
-  IMAGE_COMMAND_S_P: 'questions/render/command-s-p.png',
-  IMAGE_COMMAND_S_F: 'questions/render/command-s-f.png',
+  IMAGE_DIVIDER_FINAL: 'questions/render/divider-final.png',
 };
 let output = readFileSync(resolve('questions/current.template.html'), 'utf8');
 for (const [name, path] of Object.entries(renderPaths)) {
@@ -25,7 +16,7 @@ for (const [name, path] of Object.entries(renderPaths)) {
   output = output.replace(marker, dataUri);
 }
 writeFileSync(resolve('questions/current.html'), output);
-console.log('Built self-contained command-bar matrix.');
+console.log('Built self-contained current-design review.');
 '''
 
 validate_question = '''
@@ -41,33 +32,14 @@ const requiredPaths = [
   'questions/current.template.html',
   'questions/current.html',
   'questions/render/divider-final.png',
-  'questions/render/command-c-d.png',
-  'questions/render/command-c-p.png',
-  'questions/render/command-c-f.png',
-  'questions/render/command-u-d.png',
-  'questions/render/command-u-p.png',
-  'questions/render/command-u-f.png',
-  'questions/render/command-s-d.png',
-  'questions/render/command-s-p.png',
-  'questions/render/command-s-f.png',
 ];
 const missingPaths = requiredPaths.filter((path) => !existsSync(resolve(path)));
 if (missingPaths.length > 0) {
-  throw new Error(`Missing required command-bar matrix files: ${missingPaths.join(', ')}`);
+  throw new Error(`Missing required current-design review files: ${missingPaths.join(', ')}`);
 }
-const baselinePath = 'questions/render/divider-final.png';
-const commandPaths = [
-  'questions/render/command-c-d.png',
-  'questions/render/command-c-p.png',
-  'questions/render/command-c-f.png',
-  'questions/render/command-u-d.png',
-  'questions/render/command-u-p.png',
-  'questions/render/command-u-f.png',
-  'questions/render/command-s-d.png',
-  'questions/render/command-s-p.png',
-  'questions/render/command-s-f.png',
+const renderPaths = [
+  'questions/render/divider-final.png',
 ];
-const renderPaths = [baselinePath, ...commandPaths];
 for (const path of renderPaths) {
   const image = readFileSync(resolve(path));
   const pngSignature = '89504e470d0a1a0a';
@@ -137,87 +109,22 @@ for (const path of renderPaths) {
   if (navigationHandlePixels < 2_000) {
     throw new Error(`${path} is missing the native unfolded navigation handle.`);
   }
-}
-const selectedFolderIndicatorPixels = countPixelsMatching({
-  path: baselinePath,
-  crop: '200x4+140+499',
-  predicate: isPrimary,
-});
-if (selectedFolderIndicatorPixels < 700) {
-  throw new Error(`${baselinePath} must retain the selected folder's separate 2dp target-width indicator.`);
-}
-const linkLikeUnderlinePixels = countPixelsMatching({
-  path: baselinePath,
-  crop: '200x5+140+458',
-  predicate: isPrimary,
-});
-if (linkLikeUnderlinePixels > 0) {
-  throw new Error(`${baselinePath} must not underline selected folder text like a web link.`);
-}
-for (const path of commandPaths) {
-  const foldColors = Number(execFileSync(
-    'magick',
-    [resolve(path), '-crop', '40x1700+1018+200', '+repage', '-format', '%k', 'info:'],
-    { encoding: 'utf8' },
-  ));
-  if (foldColors !== 1) {
-    throw new Error(`${path} does not keep the protected center spacer visually uniform.`);
-  }
-  const searchPixels = countPixelsMatching({
+  const selectedFolderIndicatorPixels = countPixelsMatching({
     path,
-    crop: '1000x500+1000+100',
-    predicate: isDark,
+    crop: '200x4+140+499',
+    predicate: isPrimary,
   });
-  if (searchPixels < 2_000) {
-    throw new Error(`${path} is missing the focused Material search surface.`);
+  if (selectedFolderIndicatorPixels < 700) {
+    throw new Error(`${path} must retain the selected folder's separate 2dp target-width indicator.`);
   }
-}
-const commandFingerprints = commandPaths.map((path) => readFileSync(resolve(path)).toString('base64'));
-if (new Set(commandFingerprints).size !== commandPaths.length) {
-  throw new Error('Every command-bar matrix cell must use a distinct native capture.');
-}
-const relativeLuminance = (hex) => {
-  const channels = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
-  const linearChannels = channels.map((channel) => {
-    const encoded = channel / 255;
-    if (encoded <= 0.04045) {
-      return encoded / 12.92;
-    }
-    return ((encoded + 0.055) / 1.055) ** 2.4;
+  const linkLikeUnderlinePixels = countPixelsMatching({
+    path,
+    crop: '200x5+140+458',
+    predicate: isPrimary,
   });
-  return 0.2126 * linearChannels[0] + 0.7152 * linearChannels[1] + 0.0722 * linearChannels[2];
-};
-const contrastRatio = ({ foreground, background }) => {
-  const foregroundLuminance = relativeLuminance(foreground);
-  const backgroundLuminance = relativeLuminance(background);
-  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
-  const darker = Math.min(foregroundLuminance, backgroundLuminance);
-  return (lighter + 0.05) / (darker + 0.05);
-};
-const pinnedRoles = {
-  onSurface: '30323A',
-  onSurfaceVariant: '5D5F68',
-  surfaceContainerLow: 'F3F3FA',
-  surfaceContainerHigh: 'E7E7F1',
-  surfaceContainerLowest: 'FFFFFF',
-  secondaryContainer: 'DCE2F9',
-  onSecondaryContainer: '4B5164',
-};
-const commandContrastChecks = [
-  { foreground: 'onSurface', background: 'surfaceContainerLow' },
-  { foreground: 'onSurfaceVariant', background: 'surfaceContainerLow' },
-  { foreground: 'onSurface', background: 'surfaceContainerHigh' },
-  { foreground: 'onSurfaceVariant', background: 'surfaceContainerHigh' },
-  { foreground: 'onSurface', background: 'surfaceContainerLowest' },
-  { foreground: 'onSurfaceVariant', background: 'surfaceContainerLowest' },
-  { foreground: 'onSecondaryContainer', background: 'secondaryContainer' },
-];
-const commandContrastFailures = commandContrastChecks.filter(({ foreground, background }) => contrastRatio({
-  foreground: pinnedRoles[foreground],
-  background: pinnedRoles[background],
-}) < 4.5);
-if (commandContrastFailures.length > 0) {
-  throw new Error(`Command-bar dynamic role pairs fail text contrast: ${JSON.stringify(commandContrastFailures)}.`);
+  if (linkLikeUnderlinePixels > 0) {
+    throw new Error(`${path} must not underline selected folder text like a web link.`);
+  }
 }
 const white = 'srgba(255,255,255,1)';
 const outlineVariant = 'srgba(176,177,188,1)';
@@ -259,57 +166,35 @@ const forbiddenFragments = [
   'before your marked correction',
   'Annotated starting point',
   'Rejected and superseded versions',
+  'revised D2',
   'Can we continue',
   'Continue with the current design',
-  'name="reviewResult"',
-  'value="nothing-else"',
-  'value="changes-needed"',
+  '<strong>Recommendation:</strong>',
   'prototype commit 89a9f7033',
 ];
 const foundFragments = forbiddenFragments.filter((fragment) => question.includes(fragment));
 if (foundFragments.length > 0) {
-  throw new Error(`Command-bar matrix contains stale or external content: ${foundFragments.join(', ')}`);
+  throw new Error(`Current-design review contains stale or external content: ${foundFragments.join(', ')}`);
 }
 const requiredFragments = [
   '<form',
-  '<fieldset',
+  '<fieldset>',
   '<textarea',
   '<dialog',
-  'The design you liked',
-  'What still deserves design work',
-  'Nine command-bar prototypes',
-  'Row 1 · commands only',
-  'Row 2 · unified, automatic groups',
-  'Row 3 · unified, explicit scope controls',
-  '1A · rank 8',
-  '1B · rank 6',
-  '1C · rank 9',
-  '2A · rank 2',
-  '2B · rank 1 · recommended',
-  '2C · rank 5',
-  '3A · rank 4',
-  '3B · rank 3',
-  '3C · rank 7',
-  'My recommendation and full ranking',
-  'Worth adding regardless of the winning prototype',
-  'name="scopeDecision"',
-  'name="categoryDecision"',
-  'name="placementDecision"',
-  'name="additions"',
+  'What changed',
+  'Current design:',
+  'active music-player screen',
+  'What should change in this screen?',
+  'name="reviewResult"',
   'name="otherCorrections"',
-  'Q1. What should the global surface contain?',
-  'Q2. If library results are included, how should categories work?',
-  'Q3. Where should the surface appear on the unfolded screen?',
-  'Q4. Which complementary additions should be included?',
-  'Folders, tracks, and commands (Recommended)',
-  'Automatic groups only (Recommended)',
-  'Replace the right pane (Recommended)',
-  'Current combination:',
-  'rank ${combination.rank} of 9',
-  'Other combinations, corrections, or additions, or “None”',
+  'value="nothing-else"',
+  'value="changes-needed"',
+  'Nothing else in this screen',
+  'Changes needed in this screen',
+  'This field is required only when you choose Changes needed.',
+  'Review scope: the current screen.',
   'Copy answers',
   'prototype commit 49d6568ed',
-  'prototype commit 2aba2fb1d',
   'data-preview-width="852"',
   'data-preview-height="883"',
   'data-source-width="2076"',
@@ -318,44 +203,38 @@ const requiredFragments = [
   'const fullFrameWidth = 907;',
   'const frameHeight = 937;',
   '--color-device: #262624;',
-  'Prototype preview',
   'Close preview and answer',
 ];
 const absentFragments = requiredFragments.filter((fragment) => !question.includes(fragment));
 if (absentFragments.length > 0) {
-  throw new Error(`Command-bar matrix is incomplete: ${absentFragments.join(', ')}`);
+  throw new Error(`Current-design review is incomplete: ${absentFragments.join(', ')}`);
 }
 const imageCount = question.split('data-candidate-source=').length - 1;
 const embeddedImageCount = question.split('data:image/png;base64,').length - 1;
 const frameCount = question.split('class="device-frame"').length - 1;
 const screenCount = question.split('class="device-screen"').length - 1;
 const cameraCount = question.split('class="device-camera"').length - 1;
-const radioCount = question.split('type="radio"').length - 1;
-const checkboxCount = question.split('type="checkbox"').length - 1;
-const matrixScrollerCount = question.split('class="options-scroll" role="region"').length - 1;
-if (imageCount !== 10 || embeddedImageCount !== 10) {
-  throw new Error(`Expected ten sourced and embedded renders, found ${imageCount} sources and ${embeddedImageCount} images.`);
+const radioCount = question.split('type="radio" name="reviewResult"').length - 1;
+if (imageCount !== 1 || embeddedImageCount !== 1) {
+  throw new Error(`Expected one sourced and embedded render, found ${imageCount} sources and ${embeddedImageCount} images.`);
 }
-if (frameCount !== 10 || screenCount !== 11 || cameraCount !== 11) {
-  throw new Error(`Expected ten cards plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, and ${cameraCount} cameras.`);
+if (frameCount !== 1 || screenCount !== 2 || cameraCount !== 2 || radioCount !== 2) {
+  throw new Error(`Expected one card plus one dialog frame; found ${frameCount} frames, ${screenCount} screens, ${cameraCount} cameras, and ${radioCount} radios.`);
 }
-if (radioCount !== 7 || checkboxCount !== 6 || matrixScrollerCount !== 3) {
-  throw new Error(`Expected seven radios, six addition checkboxes, and three matrix scrollers; found ${radioCount}, ${checkboxCount}, and ${matrixScrollerCount}.`);
-}
-console.log('Command-bar matrix structure is valid.');
+console.log('Current-design review structure is valid.');
 '''
 
 [tasks.build]
-description = "Embed the accepted design and nine native command-bar prototypes"
+description = "Embed the native current design into the self-contained review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.build_question}}"
 
 [tasks.lint]
-description = "Validate the active command-bar matrix questionnaire"
+description = "Validate the active current-design review"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."test:unit"]
-description = "Exercise the command-bar matrix's static completion contract"
+description = "Exercise the current-design review's static completion contract"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
