@@ -857,19 +857,30 @@ three-state dimensions, build nine native Compose variants from the accepted sta
 then replace the HTML with the verified matrix questionnaire. The next matrix will
 address the already-settled-but-undesigned command bar (D21), not reopen any current
 screen decision. It crosses two unresolved dimensions: scope model (`Commands only`,
-`Unified folders + tracks + commands`, `Explicit scope controls`) and expanded-layout
-presentation (`Docked overlay`, `Right-pane takeover`, `Full-screen`). This yields nine
-native Compose prototypes, all over the accepted current screen. Material's archived
+`Unified with automatic groups`, `Unified with explicit scope controls`) and
+expanded-layout presentation (`Docked overlay within one pane`, `Right-pane takeover`,
+`Split full-screen`). This yields nine native Compose prototypes from the accepted
+current screen. The scope rows answer two separable decisions: whether library search
+joins commands, then whether merged results need manual filters. Material's archived
 search guidance says results use lists, expanded windows favor docked focused search,
 compact windows favor full-screen search, and category labels or filter chips can add
 context. Current JetBrains Search Everywhere documentation provides the unified plus
 scope-tab precedent; current VS Code documentation provides the commands-only palette
-precedent. The matrix must make the product-specific tradeoff visible: one global
-entry point versus stronger category control versus a narrower command-only tool, and
-preserved screen context versus result capacity. Recommend `Unified × Docked` unless
-the built evidence overturns it. Also surface additions worth carrying regardless of
-winner: folder context on track matches, shortcuts on command results, recent items
-before typing, announced result counts, arrows/Enter keyboard navigation, and adaptive
+precedent. Independent review caught that a 720dp centered docked surface would put
+interactive rows across the fold, violating E2; dock it wholly within the right pane
+instead. Split full-screen must likewise keep input and result targets on opposite
+414dp panes around the untouched 24dp spacer. Commands-only shows empty-query recent
+commands; unified shows grouped results; explicit scope selects Tracks and displays
+only track results so its behavior is visible. Show a result-count status in every
+variant. Pre-capture ranking: `Unified automatic × Right pane` > `Unified automatic ×
+Docked` > `Explicit controls × Right pane` > `Explicit controls × Docked` > `Unified
+automatic × Split full-screen` > `Commands only × Right pane` > `Explicit controls ×
+Split full-screen` > `Commands only × Docked` > `Commands only × Split full-screen`.
+The adjacent reasons are, in order: more result room; less interaction; more room for
+filters; category recovery; lower disruption; broader utility; preserved context; and
+lower disruption. Also surface additions worth carrying regardless of winner: folder
+context on track matches, shortcuts on command results, recent items before typing,
+announced result counts, arrows/Enter keyboard navigation, and adaptive conventional
 full-screen presentation on compact windows.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
