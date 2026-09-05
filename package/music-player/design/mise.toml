@@ -161,7 +161,7 @@ for (const path of commandPaths) {
     { encoding: 'utf8' },
   ));
   if (foldColors !== 1) {
-    throw new Error(`${path} places visible content across the protected center spacer.`);
+    throw new Error(`${path} does not keep the protected center spacer visually uniform.`);
   }
   const searchPixels = countPixelsMatching({
     path,
@@ -175,6 +175,49 @@ for (const path of commandPaths) {
 const commandFingerprints = commandPaths.map((path) => readFileSync(resolve(path)).toString('base64'));
 if (new Set(commandFingerprints).size !== commandPaths.length) {
   throw new Error('Every command-bar matrix cell must use a distinct native capture.');
+}
+const relativeLuminance = (hex) => {
+  const channels = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
+  const linearChannels = channels.map((channel) => {
+    const encoded = channel / 255;
+    if (encoded <= 0.04045) {
+      return encoded / 12.92;
+    }
+    return ((encoded + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * linearChannels[0] + 0.7152 * linearChannels[1] + 0.0722 * linearChannels[2];
+};
+const contrastRatio = ({ foreground, background }) => {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+};
+const pinnedRoles = {
+  onSurface: '30323A',
+  onSurfaceVariant: '5D5F68',
+  surfaceContainerLow: 'F3F3FA',
+  surfaceContainerHigh: 'E7E7F1',
+  surfaceContainerLowest: 'FFFFFF',
+  secondaryContainer: 'DCE2F9',
+  onSecondaryContainer: '4B5164',
+};
+const commandContrastChecks = [
+  { foreground: 'onSurface', background: 'surfaceContainerLow' },
+  { foreground: 'onSurfaceVariant', background: 'surfaceContainerLow' },
+  { foreground: 'onSurface', background: 'surfaceContainerHigh' },
+  { foreground: 'onSurfaceVariant', background: 'surfaceContainerHigh' },
+  { foreground: 'onSurface', background: 'surfaceContainerLowest' },
+  { foreground: 'onSurfaceVariant', background: 'surfaceContainerLowest' },
+  { foreground: 'onSecondaryContainer', background: 'secondaryContainer' },
+];
+const commandContrastFailures = commandContrastChecks.filter(({ foreground, background }) => contrastRatio({
+  foreground: pinnedRoles[foreground],
+  background: pinnedRoles[background],
+}) < 4.5);
+if (commandContrastFailures.length > 0) {
+  throw new Error(`Command-bar dynamic role pairs fail text contrast: ${JSON.stringify(commandContrastFailures)}.`);
 }
 const white = 'srgba(255,255,255,1)';
 const outlineVariant = 'srgba(176,177,188,1)';
@@ -258,6 +301,11 @@ const requiredFragments = [
   'Q2. If library results are included, how should categories work?',
   'Q3. Where should the surface appear on the unfolded screen?',
   'Q4. Which complementary additions should be included?',
+  'Folders, tracks, and commands (Recommended)',
+  'Automatic groups only (Recommended)',
+  'Replace the right pane (Recommended)',
+  'Current combination:',
+  'rank ${combination.rank} of 9',
   'Other combinations, corrections, or additions, or “None”',
   'Copy answers',
   'prototype commit 49d6568ed',
@@ -270,6 +318,7 @@ const requiredFragments = [
   'const fullFrameWidth = 907;',
   'const frameHeight = 937;',
   '--color-device: #262624;',
+  'Prototype preview',
   'Close preview and answer',
 ];
 const absentFragments = requiredFragments.filter((fragment) => !question.includes(fragment));

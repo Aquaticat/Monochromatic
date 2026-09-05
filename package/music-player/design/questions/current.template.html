@@ -832,14 +832,14 @@ dialog::backdrop {
         <legend><h3>Q1. What should the global surface contain?</h3></legend>
         <div class="review-choices">
           <label class="review-choice"><input type="radio" name="scopeDecision" value="commands-only" required><span>Commands only</span></label>
-          <label class="review-choice"><input type="radio" name="scopeDecision" value="library-and-commands" required><span>Folders, tracks, and commands</span></label>
+          <label class="review-choice"><input type="radio" name="scopeDecision" value="library-and-commands" required><span>Folders, tracks, and commands (Recommended)</span></label>
         </div>
       </fieldset>
 
       <fieldset class="decision-block" id="category-question" hidden>
         <legend><h3>Q2. If library results are included, how should categories work?</h3></legend>
         <div class="review-choices">
-          <label class="review-choice"><input type="radio" name="categoryDecision" value="automatic-groups"><span>Automatic groups only</span></label>
+          <label class="review-choice"><input type="radio" name="categoryDecision" value="automatic-groups"><span>Automatic groups only (Recommended)</span></label>
           <label class="review-choice"><input type="radio" name="categoryDecision" value="explicit-controls"><span>Add visible scope controls</span></label>
         </div>
       </fieldset>
@@ -848,10 +848,11 @@ dialog::backdrop {
         <legend><h3>Q3. Where should the surface appear on the unfolded screen?</h3></legend>
         <div class="review-choices">
           <label class="review-choice"><input type="radio" name="placementDecision" value="docked" required><span>Docked overlay inside the right pane</span></label>
-          <label class="review-choice"><input type="radio" name="placementDecision" value="right-pane" required><span>Replace the right pane</span></label>
+          <label class="review-choice"><input type="radio" name="placementDecision" value="right-pane" required><span>Replace the right pane (Recommended)</span></label>
           <label class="review-choice"><input type="radio" name="placementDecision" value="split-full-screen" required><span>Split full-screen</span></label>
         </div>
       </fieldset>
+      <p class="ranking" id="combination-status" role="status" aria-live="polite" hidden></p>
 
       <fieldset class="decision-block">
         <legend><h3>Q4. Which complementary additions should be included?</h3></legend>
@@ -889,7 +890,7 @@ dialog::backdrop {
 <dialog id="preview-dialog" aria-labelledby="zoom-title">
   <div class="dialog-layout">
     <div class="dialog-heading">
-      <h2 id="zoom-title">Divider preview</h2>
+      <h2 id="zoom-title">Prototype preview</h2>
       <p id="zoom-dimensions"></p>
       <div class="zoom-toolbar" role="group" aria-label="Preview zoom controls">
         <button type="button" data-variant="secondary" id="zoom-out">Zoom out</button>
@@ -922,6 +923,8 @@ const downloadButton = document.querySelector('#download-answers');
 const scopeInputs = document.querySelectorAll('input[name="scopeDecision"]');
 const categoryQuestion = document.querySelector('#category-question');
 const categoryInputs = document.querySelectorAll('input[name="categoryDecision"]');
+const placementInputs = document.querySelectorAll('input[name="placementDecision"]');
+const combinationStatus = document.querySelector('#combination-status');
 const status = document.querySelector('#status');
 const previewDialog = document.querySelector('#preview-dialog');
 const zoomDevice = document.querySelector('#zoom-device');
@@ -994,6 +997,39 @@ const openPreview = (button) => {
   zoomStage.scrollTo({ top: 0, left: 0 });
 };
 
+const getCombination = () => {
+  const scope = document.querySelector('input[name="scopeDecision"]:checked')?.value;
+  const category = document.querySelector('input[name="categoryDecision"]:checked')?.value;
+  const placement = document.querySelector('input[name="placementDecision"]:checked')?.value;
+  if (!scope || !placement || (scope === 'library-and-commands' && !category)) {
+    return null;
+  }
+  const row = scope === 'commands-only' ? '1' : category === 'explicit-controls' ? '3' : '2';
+  const column = placement === 'docked' ? 'A' : placement === 'right-pane' ? 'B' : 'C';
+  const code = `${row}${column}`;
+  const ranks = { '1A': 8, '1B': 6, '1C': 9, '2A': 2, '2B': 1, '2C': 5, '3A': 4, '3B': 3, '3C': 7 };
+  const names = {
+    '1A': 'Commands only · docked',
+    '1B': 'Commands only · right pane',
+    '1C': 'Commands only · split full-screen',
+    '2A': 'Unified · docked',
+    '2B': 'Unified · right pane',
+    '2C': 'Unified · split full-screen',
+    '3A': 'Explicit scope · docked',
+    '3B': 'Explicit scope · right pane',
+    '3C': 'Explicit scope · split full-screen',
+  };
+  return { code, rank: ranks[code], name: names[code] };
+};
+
+const updateCombinationStatus = () => {
+  const combination = getCombination();
+  combinationStatus.hidden = combination === null;
+  if (combination !== null) {
+    combinationStatus.textContent = `Current combination: ${combination.code} · ${combination.name} · rank ${combination.rank} of 9.`;
+  }
+};
+
 const updateCategoryQuestion = () => {
   const includesLibrary = document.querySelector('input[name="scopeDecision"]:checked')?.value === 'library-and-commands';
   categoryQuestion.hidden = !includesLibrary;
@@ -1003,6 +1039,7 @@ const updateCategoryQuestion = () => {
       input.checked = false;
     }
   });
+  updateCombinationStatus();
 };
 
 const buildAnswer = () => {
@@ -1022,7 +1059,9 @@ const buildAnswer = () => {
   };
   const additions = [...document.querySelectorAll('input[name="additions"]:checked')]
     .map((input) => input.labels[0].innerText.trim());
+  const combination = getCombination();
   return [
+    `Combination: ${combination.code} (${combination.name}, rank ${combination.rank} of 9)`,
     `Q1. Global surface: ${scopeLabels[data.get('scopeDecision')]}`,
     `Q2. Categories: ${data.get('scopeDecision') === 'commands-only' ? 'Not applicable' : categoryLabels[data.get('categoryDecision')]}`,
     `Q3. Placement: ${placementLabels[data.get('placementDecision')]}`,
@@ -1048,6 +1087,8 @@ document.querySelectorAll('.preview-open').forEach((button) => {
   button.addEventListener('click', () => openPreview(button));
 });
 scopeInputs.forEach((input) => input.addEventListener('change', updateCategoryQuestion));
+categoryInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
+placementInputs.forEach((input) => input.addEventListener('change', updateCombinationStatus));
 
 zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
 zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));

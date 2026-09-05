@@ -301,6 +301,20 @@ Two current external precedents inform information architecture, not Material st
 These precedents support both ends of the scope question; neither decides the music
 player's product tradeoff.
 
+The pinned AVD dynamic palette resolves every new search text pair above AA:
+
+- `onSurface` on `surfaceContainerHigh`: 10.407:1.
+- `onSurfaceVariant` on `surfaceContainerHigh`: 5.178:1.
+- `onSurface` on `surfaceContainerLow`: 11.571:1.
+- `onSurfaceVariant` on `surfaceContainerLow`: 5.757:1.
+- `onSurface` on `surfaceContainerLowest`: 12.781:1.
+- `onSurfaceVariant` on `surfaceContainerLowest`: 6.359:1.
+- `onSecondaryContainer` on `secondaryContainer` for selected filter text: 6.124:1.
+
+The package validator recalculates these role pairs. The scrimmed accepted screen is
+inert context while the docked surface is open; its dimmed content is not an active
+control or the source of the search result information.
+
 ## Candidate boundary
 
 Every repaired Q1 option must use valid Material surface roles:
