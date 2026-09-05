@@ -376,6 +376,11 @@ Settled decisions determine one answer:
  adopt + record it unasked.
 Ask only while two paths hinge on non-measurable preference or authority.
 
+QVE:
+ Visual review asks what should change at a named visible scope.
+Never ask vague permission;
+provide direct `Nothing else` and `Changes needed` paths.
+
 QCS:
  A quality-over-cost guideline makes cost a non-constraint.
 Options differing only in price aren't user questions:

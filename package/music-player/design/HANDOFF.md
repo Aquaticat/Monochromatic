@@ -819,7 +819,14 @@ Helium page with this current-only file and leave its instructional page visible
 isolated verifier is stopped. The exact updated file was launched through the normal
 Helium desktop entry. KWin reports `Music player design: current revised D2 - Helium`
 active and non-minimized at 1080 × 1880 on `HDMI-A-1`, internal ID
-`{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`. Leave it visible and wait for its answer.
+`{a5f30058-687c-4d2a-940a-e9db0e6a0c30}`. Leave it visible and wait for its answer. The user rejected the question `Can we
+continue from revised D2?` as poor question design. It asks vague permission, uses an
+internal candidate label, biases toward approval, and makes `None` perform work that a
+clear answer control should perform. Replace it with one observable, current-screen
+question: `What should change in this screen?`, with `Nothing else` and `Changes
+needed` paths. Name the inspection scope, require correction details only for `Changes
+needed`, remove D2 terminology from the user-facing page, verify both paths, and reopen
+the corrected form before continuing the project.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
