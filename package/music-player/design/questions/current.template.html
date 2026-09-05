@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: current revised D2</title>
+<title>Music player design: current screen review</title>
 <style>
 :root {
   color-scheme: light;
@@ -624,9 +624,9 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Review the current design</h1>
+      <h1>Review the current screen</h1>
       <p class="lede">
-        This page shows the active revised D2 design and asks whether any correction remains.
+        Inspect the active music-player screen and identify any remaining visible changes.
       </p>
     </div>
     <span class="round-badge">Current design · correction review</span>
@@ -635,7 +635,7 @@ dialog::backdrop {
   <section class="instructions" aria-labelledby="instructions-title">
     <h2 id="instructions-title">What changed</h2>
     <ol>
-      <li>The 24dp vertical center spacer remains white, as selected in D2.</li>
+      <li>The 24dp vertical center spacer remains white, as selected for this layout.</li>
       <li>The 16dp horizontal strip you marked between the folder picker and transport is now white.</li>
       <li>Interface-generated track numbers are removed.</li>
       <li>The saturated blue current-track row fill is removed; the play icon alone marks the current track.</li>
@@ -654,7 +654,7 @@ dialog::backdrop {
   <form id="design-form">
     <section class="question" aria-labelledby="divider-title">
       <fieldset>
-        <legend><h2 id="divider-title">Current revised D2</h2></legend>
+        <legend><h2 id="divider-title">Current screen</h2></legend>
         <p class="question-intro">
           This is a native Jetpack Compose capture from the measured Pixel 9 Pro Fold emulator and dynamic light palette.
           The source is 2076×2152px and represents the whole 852×883dp unfolded display.
@@ -666,18 +666,18 @@ dialog::backdrop {
               <div class="option-heading">
                 <span class="option-title">
                   <span class="option-code">Active design</span>
-                  <strong>Revised D2</strong>
+                  <strong>Current music-player screen</strong>
                   <span class="option-summary">White center and marked horizontal spacers; neutral unnumbered track rows</span>
                 </span>
               </div>
-              <button class="preview-open" type="button" data-preview-title="D2 revised: all requested corrections" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+              <button class="preview-open" type="button" data-preview-title="Current music-player screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
                 <span class="device-frame">
                   <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-final capture, prototype commit 49d6568ed" src="@@IMAGE_DIVIDER_FINAL@@" width="852" height="883" alt="Revised D2 with white vertical and horizontal pane spacers, neutral unnumbered track rows, and a play icon on the current track">
+                    <img data-candidate-source="Native Compose divider-final capture, prototype commit 49d6568ed" src="@@IMAGE_DIVIDER_FINAL@@" width="852" height="883" alt="Current music-player screen with white vertical and horizontal pane spacers, neutral unnumbered track rows, and a play icon on the current track">
                     <span class="device-camera" aria-hidden="true"></span>
                   </span>
                 </span>
-                <span class="preview-label">Open revised D2 at measured size</span>
+                <span class="preview-label">Open the current screen at measured size</span>
               </button>
               <div class="assessment">
                 <div><strong>Pros</strong></div>
@@ -691,7 +691,7 @@ dialog::backdrop {
                   <li>The current track is intentionally quieter without a filled row.</li>
                   <li>White spacers make adjacent white surfaces read as continuous.</li>
                 </ul>
-                <p><strong>Recommendation:</strong> continue from this design if no other visible correction remains.</p>
+                <p><strong>Recommendation:</strong> keep these corrected spacers and track-state cues unless another visible issue remains.</p>
               </div>
             </article>
 
@@ -699,32 +699,33 @@ dialog::backdrop {
         </div>
 
         <p class="ranking">
-          <strong>Current candidate: revised D2.</strong>
-          It is the sole active design because it implements the marked white divider, removes invented numbers,
+          <strong>Review scope: the current screen.</strong>
+          This is the sole active design because it implements the marked white divider, removes invented numbers,
           and removes the rejected saturated current-row fill.
         </p>
       </fieldset>
     </section>
 
     <section class="response" aria-labelledby="corrections-title">
-      <h2 id="corrections-title">Can we continue from revised D2?</h2>
+      <h2 id="corrections-title">What should change in this screen?</h2>
       <p class="question-intro">
-        Choose Continue only if the current design is right. Otherwise choose Needs another correction and describe every issue
-        using visible labels or locations in ordinary language.
+        Inspect the white pane spacers, gray letter-rail line, folder area, track rows, current-track play icon, and transport area.
+        Choose the answer that matches what you can see.
       </p>
       <fieldset class="review-choices">
         <legend>Review result</legend>
         <label class="review-choice">
-          <input type="radio" name="reviewResult" value="continue" required>
-          <span>Continue with the current design</span>
+          <input type="radio" name="reviewResult" value="nothing-else" required>
+          <span>Nothing else in this screen</span>
         </label>
         <label class="review-choice">
-          <input type="radio" name="reviewResult" value="needs-correction" required>
-          <span>Needs another correction</span>
+          <input type="radio" name="reviewResult" value="changes-needed" required>
+          <span>Changes needed</span>
         </label>
       </fieldset>
-      <label for="other-corrections">Every remaining correction, or “None”</label>
-      <textarea id="other-corrections" name="otherCorrections" required placeholder="For example: The gray strip between the left and right panes should be white. The …"></textarea>
+      <label for="other-corrections">If changes are needed, describe each one</label>
+      <textarea id="other-corrections" name="otherCorrections" aria-describedby="correction-help" placeholder="Name the visible area, what is wrong, and what it should look like."></textarea>
+      <p class="response-help" id="correction-help">This field is required only when you choose Changes needed.</p>
       <div class="actions">
         <button type="submit">Prepare answers</button>
         <button type="button" data-variant="secondary" id="clear-form">Clear</button>
@@ -776,6 +777,8 @@ const answerOutput = document.querySelector('#answer-output');
 const clearButton = document.querySelector('#clear-form');
 const copyButton = document.querySelector('#copy-answers');
 const downloadButton = document.querySelector('#download-answers');
+const correctionInput = document.querySelector('#other-corrections');
+const reviewInputs = document.querySelectorAll('input[name="reviewResult"]');
 const status = document.querySelector('#status');
 const previewDialog = document.querySelector('#preview-dialog');
 const zoomDevice = document.querySelector('#zoom-device');
@@ -848,11 +851,19 @@ const openPreview = (button) => {
   zoomStage.scrollTo({ top: 0, left: 0 });
 };
 
+const updateCorrectionRequirement = () => {
+  const selectedResult = document.querySelector('input[name="reviewResult"]:checked')?.value;
+  correctionInput.required = selectedResult === 'changes-needed';
+};
+
 const buildAnswer = () => {
   const data = new FormData(form);
+  if (data.get('reviewResult') === 'nothing-else') {
+    return 'Current screen: Nothing else';
+  }
   return [
-    `Review result: ${data.get('reviewResult')}`,
-    `Other corrections: ${data.get('otherCorrections').trim()}`,
+    'Current screen: Changes needed',
+    `Changes: ${data.get('otherCorrections').trim()}`,
   ].join('\n');
 };
 
@@ -872,6 +883,7 @@ const copyText = async (text) => {
 document.querySelectorAll('.preview-open').forEach((button) => {
   button.addEventListener('click', () => openPreview(button));
 });
+reviewInputs.forEach((input) => input.addEventListener('change', updateCorrectionRequirement));
 
 zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
 zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));
@@ -898,6 +910,7 @@ form.addEventListener('submit', (event) => {
 
 clearButton.addEventListener('click', () => {
   form.reset();
+  updateCorrectionRequirement();
   answerOutput.value = '';
   output.hidden = true;
   status.textContent = 'Answers cleared.';
@@ -918,7 +931,7 @@ downloadButton.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'music-player-divider-clarification.txt';
+  link.download = 'music-player-current-screen-review.txt';
   link.click();
   URL.revokeObjectURL(url);
   status.textContent = 'Answers downloaded.';
