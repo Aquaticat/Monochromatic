@@ -881,7 +881,25 @@ filters; category recovery; lower disruption; broader utility; preserved context
 lower disruption. Also surface additions worth carrying regardless of winner: folder
 context on track matches, shortcuts on command results, recent items before typing,
 announced result counts, arrows/Enter keyboard navigation, and adaptive conventional
-full-screen presentation on compact windows.
+full-screen presentation on compact windows. Prototype commit `2aba2fb1d` implements and capture-validates all
+nine cells with real baseline Material `SearchBar`, `FilterChip`, and `ListItem`
+components. Prototype build and Android lint pass when run sequentially. A first
+capture attempt correctly failed because its hierarchy contract still expected
+underlying `Settings` and an exact `COMMANDS` heading; the corrected contract uses
+scope-specific focused-search markers. The second emulator run captured all nine at
+2076 × 2152px. A 3 × 3 contact sheet and full-resolution checks confirm: every docked
+surface stays inside the right pane; every right-pane surface starts beyond the center
+spacer; every split full-screen surface preserves two 414dp panes around a clear 24dp
+spacer; command-only shows five recent commands; automatic unified shows six results
+in three groups; explicit scope visibly selects Tracks and shows two track results;
+filter labels fit; track matches include folder, duration, and true peak; system bars
+remain native. The current HTML template now presents the accepted design, named new
+concerns, all nine prototypes with per-cell pros, cons, analysis, and rank, a full
+adjacent-reason ranking, a primary and fallback recommendation, complementary addition
+ideas, separable decision controls, and free corrections. Package raster guards verify
+all ten 2076 × 2152px sources, opacity, native system UI, a uniform protected fold
+region, visible search content, unique matrix cells, and the accepted design's settled
+state. Build, lint, and unit contracts pass. Helium verification remains.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**

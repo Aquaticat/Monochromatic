@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: current screen review</title>
+<title>Music player design: command-bar matrix</title>
 <style>
 :root {
   color-scheme: light;
@@ -170,11 +170,33 @@ legend {
 }
 
 .options {
-  inline-size: min(100%, 56rem);
+  min-inline-size: 68rem;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.accepted-options {
+  min-inline-size: 0;
+  inline-size: min(100%, 56rem);
+  grid-template-columns: minmax(0, 1fr);
   margin-inline: auto;
+}
+
+.matrix-row {
+  margin-block-end: 2rem;
+}
+
+.matrix-row:last-child {
+  margin-block-end: 0;
+}
+
+.matrix-axis {
+  margin-block-end: 0.5rem;
+  color: var(--color-primary);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .option {
@@ -205,11 +227,6 @@ legend {
   border-block-end-width: 0.0625rem;
   border-block-end-style: solid;
   border-block-end-color: var(--color-line);
-  cursor: pointer;
-}
-
-.option-heading:hover {
-  background-color: var(--color-primary-container);
 }
 
 .option-heading:has(input:focus-visible),
@@ -390,6 +407,25 @@ textarea:focus-visible {
   background-color: var(--color-secondary-container);
   color: var(--color-on-secondary-container);
   line-height: 1.55;
+}
+
+.recommendation-list,
+.ranking-list {
+  max-inline-size: 90ch;
+  line-height: 1.55;
+}
+
+.ranking-list li,
+.recommendation-list li {
+  margin-block-end: 0.65rem;
+}
+
+.decision-block {
+  margin-block-end: 1.75rem;
+}
+
+.decision-block[hidden] {
+  display: none;
 }
 
 .review-choices {
@@ -624,107 +660,214 @@ dialog::backdrop {
 <main>
   <header>
     <div>
-      <h1>Review the current screen</h1>
+      <h1>Choose how the command bar works</h1>
       <p class="lede">
-        Inspect the active music-player screen and identify any remaining visible changes.
+        Here is the music-player design with your corrections preserved. I found several decisions the accepted screen does not answer, built nine native prototypes, and ranked them.
       </p>
     </div>
-    <span class="round-badge">Current design · correction review</span>
+    <span class="round-badge">Designer review · 3 × 3 prototype matrix</span>
   </header>
 
-  <section class="instructions" aria-labelledby="instructions-title">
-    <h2 id="instructions-title">What changed</h2>
+  <section class="instructions" aria-labelledby="accepted-title">
+    <h2 id="accepted-title">The design you liked</h2>
+    <p class="question-intro">
+      This remains the foundation. The white 24dp center spacer, white 16dp picker and transport divider, gray letter-rail line, unnumbered neutral track rows, and play-icon current-track cue are unchanged.
+    </p>
+    <div class="options-scroll">
+      <div class="options accepted-options">
+        <article class="option">
+          <div class="option-heading">
+            <span class="option-title">
+              <span class="option-code">Accepted foundation</span>
+              <strong>Current unfolded screen</strong>
+              <span class="option-summary">Every settled correction is preserved in all nine prototypes</span>
+            </span>
+          </div>
+          <button class="preview-open" type="button" data-preview-title="Accepted current music-player screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+            <span class="device-frame">
+              <span class="device-screen">
+                <img data-candidate-source="Accepted native Compose capture, prototype commit 49d6568ed" src="@@IMAGE_BASELINE@@" width="852" height="883" alt="Accepted unfolded music-player screen with white pane spacers, gray letter rail, neutral track rows, and play-icon current-track cue">
+                <span class="device-camera" aria-hidden="true"></span>
+              </span>
+            </span>
+            <span class="preview-label">Open the accepted design at measured size</span>
+          </button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="instructions" aria-labelledby="considerations-title">
+    <h2 id="considerations-title">What still deserves design work</h2>
     <ol>
-      <li>The 24dp vertical center spacer remains white, as selected for this layout.</li>
-      <li>The 16dp horizontal strip you marked between the folder picker and transport is now white.</li>
-      <li>Interface-generated track numbers are removed.</li>
-      <li>The saturated blue current-track row fill is removed; the play icon alone marks the current track.</li>
+      <li><strong>Scope:</strong> a global hotkey is settled, but it is not decided whether the surface runs commands only or also finds folders and tracks.</li>
+      <li><strong>Category control:</strong> merged results can organize themselves into groups or expose explicit Folders, Tracks, and Commands controls.</li>
+      <li><strong>Fold placement:</strong> generic 720dp docked search would cross the fold, so every viable prototype keeps interactive controls outside the 24dp center spacer.</li>
+      <li><strong>Ambiguous track names:</strong> a track match needs its folder name, duration, and true-peak context at selection time.</li>
+      <li><strong>Before typing:</strong> a blank command surface needs useful recent actions rather than an empty panel.</li>
+      <li><strong>Input and accessibility:</strong> results need a visible and announced count, arrow-key navigation, Enter activation, and visible shortcuts where they exist.</li>
     </ol>
     <div class="definition-list">
-      <p class="definition">
-        <strong>Current design:</strong> white vertical and horizontal pane spacers, a visible gray rail line, neutral track rows, and no generated ordinals.
-      </p>
+      <p class="definition"><strong>Matrix rows:</strong> commands only; unified search with automatic groups; unified search with explicit scope controls.</p>
+      <p class="definition"><strong>Matrix columns:</strong> docked overlay inside the right pane; full right-pane takeover; split full-screen with the fold kept clear.</p>
     </div>
     <p class="response-help">
-      Open the image for measured 100% zoom. Say whether this current design can continue, list every remaining correction or “None,”
-      then choose Prepare answers and Copy answers to paste the result into Pi.
+      Each source is a 2076×2152px native Jetpack Compose capture of the whole 852×883dp unfolded Pixel 9 Pro Fold display. Open any prototype for measured zoom. After the matrix, answer the independent scope, category-control, placement, and addition questions.
     </p>
   </section>
 
   <form id="design-form">
-    <section class="question" aria-labelledby="divider-title">
-      <fieldset>
-        <legend><h2 id="divider-title">Current screen</h2></legend>
-        <p class="question-intro">
-          This is a native Jetpack Compose capture from the measured Pixel 9 Pro Fold emulator and dynamic light palette.
-          The source is 2076×2152px and represents the whole 852×883dp unfolded display.
-        </p>
+    <section class="question" aria-labelledby="matrix-title">
+      <h2 id="matrix-title">Nine command-bar prototypes</h2>
+      <p class="question-intro">
+        Every prototype keeps baseline Material 3, real Android system bars, dynamic light color, the accepted screen, and the fold-safe 24dp center spacer. The prototypes differ only along the named row and column dimensions.
+      </p>
 
-        <div class="options-scroll">
+      <section class="matrix-row" aria-labelledby="commands-row-title">
+        <p class="matrix-axis">Row 1 · commands only</p>
+        <h3 id="commands-row-title">A focused launcher that does not search the library</h3>
+        <p class="question-intro">The empty query shows recent commands and known shortcuts. Ctrl+F would still need a separate future search surface.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Commands-only prototypes, scroll horizontally on narrow windows">
           <div class="options">
             <article class="option">
-              <div class="option-heading">
-                <span class="option-title">
-                  <span class="option-code">Active design</span>
-                  <strong>Current music-player screen</strong>
-                  <span class="option-summary">White center and marked horizontal spacers; neutral unnumbered track rows</span>
-                </span>
-              </div>
-              <button class="preview-open" type="button" data-preview-title="Current music-player screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
-                <span class="device-frame">
-                  <span class="device-screen">
-                    <img data-candidate-source="Native Compose divider-final capture, prototype commit 49d6568ed" src="@@IMAGE_DIVIDER_FINAL@@" width="852" height="883" alt="Current music-player screen with white vertical and horizontal pane spacers, neutral unnumbered track rows, and a play icon on the current track">
-                    <span class="device-camera" aria-hidden="true"></span>
-                  </span>
-                </span>
-                <span class="preview-label">Open the current screen at measured size</span>
-              </button>
-              <div class="assessment">
-                <div><strong>Pros</strong></div>
-                <ul>
-                  <li>Implements the white center and marked horizontal divider.</li>
-                  <li>Removes invented ordinals and saturated row highlighting.</li>
-                  <li>Retains the play icon and semantic current-track state.</li>
-                </ul>
-                <div><strong>Cons</strong></div>
-                <ul>
-                  <li>The current track is intentionally quieter without a filled row.</li>
-                  <li>White spacers make adjacent white surfaces read as continuous.</li>
-                </ul>
-              </div>
+              <div class="option-heading"><span class="option-title"><span class="option-code">1A · rank 8</span><strong>Commands only · docked</strong><span class="option-summary">Short overlay contained inside the right pane</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1A: Commands only, docked overlay" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-c-d capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_C_D@@" width="852" height="883" alt="Commands-only command bar in a docked overlay contained within the right pane"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Smallest interruption of the accepted screen.</li><li>Recent commands make the blank state useful.</li></ul><div><strong>Cons</strong></div><ul><li>Leaves library search as a separate surface.</li><li>Short result area limits command discovery.</li></ul><p><strong>My analysis:</strong> familiar, but too narrow for a global entry point.</p></div>
             </article>
-
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">1B · rank 6</span><strong>Commands only · right pane</strong><span class="option-summary">Commands replace the track pane at full height</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1B: Commands only, right-pane takeover" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-c-p capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_C_P@@" width="852" height="883" alt="Commands-only command bar replacing the right track pane while the folder pane remains visible"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Shows more commands and shortcuts without crossing the fold.</li><li>Keeps the folder pane visible as context.</li></ul><div><strong>Cons</strong></div><ul><li>Displaces the current track list.</li><li>A commands-only tool does not fully earn the space.</li></ul><p><strong>My analysis:</strong> strongest commands-only layout, but still duplicates future search.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">1C · rank 9</span><strong>Commands only · split full-screen</strong><span class="option-summary">Input and results consume both panes</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="1C: Commands only, split full-screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-c-f capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_C_F@@" width="852" height="883" alt="Commands-only command bar using both unfolded panes while leaving the center spacer clear"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 1C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Maximum command capacity and shortcut visibility.</li><li>Input and results remain off the fold.</li></ul><div><strong>Cons</strong></div><ul><li>Largest interruption for the narrowest scope.</li><li>Uses the second pane without enough information to justify it.</li></ul><p><strong>My analysis:</strong> the space cost is disproportionate.</p></div>
+            </article>
           </div>
         </div>
+      </section>
 
-        <p class="ranking">
-          <strong>Review scope: the current screen.</strong>
-          This is the sole active design because it implements the marked white divider, removes invented numbers,
-          and removes the rejected saturated current-row fill.
-        </p>
-      </fieldset>
+      <section class="matrix-row" aria-labelledby="unified-row-title">
+        <p class="matrix-axis">Row 2 · unified, automatic groups</p>
+        <h3 id="unified-row-title">One query for folders, tracks, and commands</h3>
+        <p class="question-intro">Results organize themselves under visible category labels. No filter selection is required.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Unified automatic-group prototypes, scroll horizontally on narrow windows">
+          <div class="options">
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2A · rank 2</span><strong>Unified · docked</strong><span class="option-summary">Grouped global results in a short right-pane overlay</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2A: Unified automatic groups, docked overlay" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-u-d capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_U_D@@" width="852" height="883" alt="Unified folder, track, and command results grouped in a docked right-pane overlay"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>One low-friction query reaches the whole product.</li><li>The temporary overlay preserves visible screen context.</li></ul><div><strong>Cons</strong></div><ul><li>Only part of the grouped result set fits.</li><li>The scrim temporarily quiets the whole screen.</li></ul><p><strong>My analysis:</strong> best fallback when preserving the track pane matters more than result room.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2B · rank 1 · recommended</span><strong>Unified · right pane</strong><span class="option-summary">Grouped global results replace the track pane</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2B: Unified automatic groups, right-pane takeover" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-u-p capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_U_P@@" width="852" height="883" alt="Unified folder, track, and command results replacing the right pane while the folder pane remains visible"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Combines one-query speed with full-height result capacity.</li><li>Keeps folder context visible and all targets off the fold.</li></ul><div><strong>Cons</strong></div><ul><li>Temporarily replaces the current track list.</li><li>Cross-category ranking quality becomes product-critical.</li></ul><p><strong>My analysis:</strong> the strongest balance for a large local library.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">2C · rank 5</span><strong>Unified · split full-screen</strong><span class="option-summary">Query left, grouped results right</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="2C: Unified automatic groups, split full-screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-u-f capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_U_F@@" width="852" height="883" alt="Unified search using the left pane for query and the right pane for grouped results with a clear center spacer"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 2C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Provides the clearest separation of query and results.</li><li>Has room for deep searches and large result sets.</li></ul><div><strong>Cons</strong></div><ul><li>Replaces both accepted panes.</li><li>Feels heavy for quick navigation or one command.</li></ul><p><strong>My analysis:</strong> useful for a dedicated search destination, excessive for every invocation.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="matrix-row" aria-labelledby="scoped-row-title">
+        <p class="matrix-axis">Row 3 · unified, explicit scope controls</p>
+        <h3 id="scoped-row-title">One query plus visible All, Folders, Tracks, and Commands filters</h3>
+        <p class="question-intro">Tracks is selected in each prototype so the filter's effect is visible: only track results remain.</p>
+        <div class="options-scroll" role="region" tabindex="0" aria-label="Explicit-scope prototypes, scroll horizontally on narrow windows">
+          <div class="options">
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3A · rank 4</span><strong>Explicit scope · docked</strong><span class="option-summary">Filters and narrowed results in a short overlay</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3A: Explicit scope controls, docked overlay" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-s-d capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_S_D@@" width="852" height="883" alt="Track-scoped search with filter chips and track-only results in a docked right-pane overlay"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3A at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Provides an explicit recovery path when mixed results disappoint.</li><li>Preserves the underlying folder and track context.</li></ul><div><strong>Cons</strong></div><ul><li>Filters consume scarce height in the short overlay.</li><li>Adds interaction before many searches need it.</li></ul><p><strong>My analysis:</strong> capable, but compressed.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3B · rank 3</span><strong>Explicit scope · right pane</strong><span class="option-summary">Filters and narrowed results at full pane height</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3B: Explicit scope controls, right-pane takeover" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-s-p capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_S_P@@" width="852" height="883" alt="Track-scoped search with filter chips replacing the right pane and preserving the folder pane"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3B at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Combines category recovery with enough result height.</li><li>Keeps the folder pane visible for orientation.</li></ul><div><strong>Cons</strong></div><ul><li>Has more controls and state than automatic groups.</li><li>Temporarily replaces the current track list.</li></ul><p><strong>My analysis:</strong> the best explicit-control option, second-best scope strategy.</p></div>
+            </article>
+            <article class="option">
+              <div class="option-heading"><span class="option-title"><span class="option-code">3C · rank 7</span><strong>Explicit scope · split full-screen</strong><span class="option-summary">Query and filters left, narrowed results right</span></span></div>
+              <button class="preview-open" type="button" data-preview-title="3C: Explicit scope controls, split full-screen" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152"><span class="device-frame"><span class="device-screen"><img data-candidate-source="Native Compose command-s-f capture, prototype commit 2aba2fb1d" src="@@IMAGE_COMMAND_S_F@@" width="852" height="883" alt="Track-scoped search using the left pane for query and filters and the right pane for track-only results"><span class="device-camera" aria-hidden="true"></span></span></span><span class="preview-label">Open 3C at measured size</span></button>
+              <div class="assessment"><div><strong>Pros</strong></div><ul><li>Offers maximum space for both filters and results.</li><li>Keeps every interactive target away from the fold.</li></ul><div><strong>Cons</strong></div><ul><li>Most complex and most disruptive combination.</li><li>Uses both panes even after narrowing to one result type.</li></ul><p><strong>My analysis:</strong> powerful but disproportionate for routine use.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
     </section>
 
-    <section class="response" aria-labelledby="corrections-title">
-      <h2 id="corrections-title">What should change in this screen?</h2>
-      <p class="question-intro">
-        Inspect the pane spacers, letter rail, folder area, track rows, current-track indicator, and transport area.
-        Choose the answer that matches what you can see.
-      </p>
-      <fieldset class="review-choices">
-        <legend>Review result</legend>
-        <label class="review-choice">
-          <input type="radio" name="reviewResult" value="changes-needed" required>
-          <span>Changes needed in this screen</span>
-        </label>
-        <label class="review-choice">
-          <input type="radio" name="reviewResult" value="nothing-else" required>
-          <span>Nothing else in this screen</span>
-        </label>
+    <section class="question" aria-labelledby="recommendation-title">
+      <h2 id="recommendation-title">My recommendation and full ranking</h2>
+      <p class="ranking"><strong>Recommend 2B: Unified with automatic groups in the right pane.</strong> It gives one fast entry point enough vertical room for a large library, keeps the folder pane visible, and never places a target on the fold. Use 2A when preserving the track pane is more important than showing more results.</p>
+      <ol class="ranking-list">
+        <li><strong>2B · Unified, right pane.</strong> Best balance of scope, capacity, context, and fold safety.</li>
+        <li><strong>2A · Unified, docked.</strong> Below 2B because preserving the track list costs result height.</li>
+        <li><strong>3B · Explicit scope, right pane.</strong> Below 2A because most queries should not require category interaction.</li>
+        <li><strong>3A · Explicit scope, docked.</strong> Below 3B because filters take space from an already short result surface.</li>
+        <li><strong>2C · Unified, split full-screen.</strong> Below 3A because taking both panes is too disruptive for routine invocation.</li>
+        <li><strong>1B · Commands only, right pane.</strong> Below 2C because it leaves library navigation in a second search system.</li>
+        <li><strong>3C · Explicit scope, split full-screen.</strong> Below 1B because it combines maximum interruption with maximum control state.</li>
+        <li><strong>1A · Commands only, docked.</strong> Below 3C because its narrow scope and short result area both limit discovery.</li>
+        <li><strong>1C · Commands only, split full-screen.</strong> Below 1A because the largest takeover serves the least content.</li>
+      </ol>
+      <h3>Worth adding regardless of the winning prototype</h3>
+      <ul class="recommendation-list">
+        <li>Show folder name, duration, and true peak on every track result.</li>
+        <li>Show keyboard shortcuts on command results and support arrows plus Enter.</li>
+        <li>Show recent commands or destinations before typing.</li>
+        <li>Show and announce the result count whenever results update.</li>
+        <li>Highlight the matching substring without changing the selected-row state.</li>
+        <li>Adapt to conventional full-screen focused search on the compact cover screen.</li>
+      </ul>
+    </section>
+
+    <section class="response" aria-labelledby="questions-title">
+      <h2 id="questions-title">Your decisions</h2>
+      <p class="question-intro">These questions separate content, category control, placement, and additions. Choose each applicable answer, then add anything the prototypes missed.</p>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q1. What should the global surface contain?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="radio" name="scopeDecision" value="commands-only" required><span>Commands only</span></label>
+          <label class="review-choice"><input type="radio" name="scopeDecision" value="library-and-commands" required><span>Folders, tracks, and commands</span></label>
+        </div>
       </fieldset>
-      <label for="other-corrections">If changes are needed, describe each one</label>
-      <textarea id="other-corrections" name="otherCorrections" aria-describedby="correction-help" placeholder="Name the visible area, what is wrong, and what it should look like."></textarea>
-      <p class="response-help" id="correction-help">This field is required only when you choose Changes needed.</p>
+
+      <fieldset class="decision-block" id="category-question" hidden>
+        <legend><h3>Q2. If library results are included, how should categories work?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="radio" name="categoryDecision" value="automatic-groups"><span>Automatic groups only</span></label>
+          <label class="review-choice"><input type="radio" name="categoryDecision" value="explicit-controls"><span>Add visible scope controls</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q3. Where should the surface appear on the unfolded screen?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="radio" name="placementDecision" value="docked" required><span>Docked overlay inside the right pane</span></label>
+          <label class="review-choice"><input type="radio" name="placementDecision" value="right-pane" required><span>Replace the right pane</span></label>
+          <label class="review-choice"><input type="radio" name="placementDecision" value="split-full-screen" required><span>Split full-screen</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="decision-block">
+        <legend><h3>Q4. Which complementary additions should be included?</h3></legend>
+        <div class="review-choices">
+          <label class="review-choice"><input type="checkbox" name="additions" value="track-context"><span>Folder, duration, and true peak on track results</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="keyboard"><span>Shortcuts, arrow navigation, and Enter activation</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="recents"><span>Recent items before typing</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="result-count"><span>Visible and announced result count</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="match-highlight"><span>Matching-substring highlight</span></label>
+          <label class="review-choice"><input type="checkbox" name="additions" value="compact-adaptation"><span>Compact full-screen adaptation</span></label>
+        </div>
+      </fieldset>
+
+      <label for="other-corrections">Other combinations, corrections, or additions, or “None”</label>
+      <textarea id="other-corrections" name="otherCorrections" required placeholder="Name a prototype code and visible area, describe another combination, or add an idea the matrix missed."></textarea>
+      <p class="response-help">Select Q1 and Q3. Q2 appears only when library results are included. Q4 accepts any number of complementary additions. Then choose Prepare answers and Copy answers to paste the result into Pi.</p>
       <div class="actions">
         <button type="submit">Prepare answers</button>
         <button type="button" data-variant="secondary" id="clear-form">Clear</button>
@@ -776,8 +919,9 @@ const answerOutput = document.querySelector('#answer-output');
 const clearButton = document.querySelector('#clear-form');
 const copyButton = document.querySelector('#copy-answers');
 const downloadButton = document.querySelector('#download-answers');
-const correctionInput = document.querySelector('#other-corrections');
-const reviewInputs = document.querySelectorAll('input[name="reviewResult"]');
+const scopeInputs = document.querySelectorAll('input[name="scopeDecision"]');
+const categoryQuestion = document.querySelector('#category-question');
+const categoryInputs = document.querySelectorAll('input[name="categoryDecision"]');
 const status = document.querySelector('#status');
 const previewDialog = document.querySelector('#preview-dialog');
 const zoomDevice = document.querySelector('#zoom-device');
@@ -850,23 +994,40 @@ const openPreview = (button) => {
   zoomStage.scrollTo({ top: 0, left: 0 });
 };
 
-const updateCorrectionRequirement = () => {
-  const selectedResult = document.querySelector('input[name="reviewResult"]:checked')?.value;
-  correctionInput.required = selectedResult === 'changes-needed';
-  if (selectedResult === 'nothing-else' && correctionInput.value.length > 0) {
-    correctionInput.value = '';
-    status.textContent = 'Correction details cleared because Nothing else was selected.';
-  }
+const updateCategoryQuestion = () => {
+  const includesLibrary = document.querySelector('input[name="scopeDecision"]:checked')?.value === 'library-and-commands';
+  categoryQuestion.hidden = !includesLibrary;
+  categoryInputs.forEach((input) => {
+    input.required = includesLibrary;
+    if (!includesLibrary) {
+      input.checked = false;
+    }
+  });
 };
 
 const buildAnswer = () => {
   const data = new FormData(form);
-  if (data.get('reviewResult') === 'nothing-else') {
-    return 'Current screen: Nothing else';
-  }
+  const scopeLabels = {
+    'commands-only': 'Commands only',
+    'library-and-commands': 'Folders, tracks, and commands',
+  };
+  const categoryLabels = {
+    'automatic-groups': 'Automatic groups only',
+    'explicit-controls': 'Add visible scope controls',
+  };
+  const placementLabels = {
+    docked: 'Docked overlay inside the right pane',
+    'right-pane': 'Replace the right pane',
+    'split-full-screen': 'Split full-screen',
+  };
+  const additions = [...document.querySelectorAll('input[name="additions"]:checked')]
+    .map((input) => input.labels[0].innerText.trim());
   return [
-    'Current screen: Changes needed',
-    `Changes: ${data.get('otherCorrections').trim()}`,
+    `Q1. Global surface: ${scopeLabels[data.get('scopeDecision')]}`,
+    `Q2. Categories: ${data.get('scopeDecision') === 'commands-only' ? 'Not applicable' : categoryLabels[data.get('categoryDecision')]}`,
+    `Q3. Placement: ${placementLabels[data.get('placementDecision')]}`,
+    `Q4. Additions: ${additions.length > 0 ? additions.join('; ') : 'None selected'}`,
+    `Other corrections or additions: ${data.get('otherCorrections').trim()}`,
   ].join('\n');
 };
 
@@ -886,7 +1047,7 @@ const copyText = async (text) => {
 document.querySelectorAll('.preview-open').forEach((button) => {
   button.addEventListener('click', () => openPreview(button));
 });
-reviewInputs.forEach((input) => input.addEventListener('change', updateCorrectionRequirement));
+scopeInputs.forEach((input) => input.addEventListener('change', updateCategoryQuestion));
 
 zoomOut.addEventListener('click', () => setZoom(currentScale - scaleStep));
 zoomIn.addEventListener('click', () => setZoom(currentScale + scaleStep));
@@ -913,11 +1074,11 @@ form.addEventListener('submit', (event) => {
 
 clearButton.addEventListener('click', () => {
   form.reset();
-  updateCorrectionRequirement();
+  updateCategoryQuestion();
   answerOutput.value = '';
   output.hidden = true;
   status.textContent = 'Answers cleared.';
-  document.querySelector('input[name="reviewResult"]').focus();
+  document.querySelector('input[name="scopeDecision"]').focus();
 });
 
 copyButton.addEventListener('click', async () => {
@@ -934,7 +1095,7 @@ downloadButton.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'music-player-current-screen-review.txt';
+  link.download = 'music-player-command-bar-matrix.txt';
   link.click();
   URL.revokeObjectURL(url);
   status.textContent = 'Answers downloaded.';
