@@ -927,7 +927,17 @@ names, alternatives, unique IDs, focus, and 48px targets pass; browser errors an
 console output are empty. Post-commit positive controls prove both the stale approval
 question rejection and the uniform center-spacer raster guard. Stop the isolated
 browser and emulator, open this exact cleared file through normal Helium, activate it,
-and wait for the user's matrix answers.
+and wait for the user's matrix answers. Cleanup is complete: the isolated Helium and
+emulator processes are stopped, emulator hierarchy output is removed, and temporary
+command-matrix captures were removed from the prototype worktree after their committed
+main-worktree copies were verified. The pre-existing modified light captures and
+untracked divider captures in the prototype worktree remain untouched. The exact
+cleared questionnaire was launched through the normal Helium desktop entry. KWin
+reports `Music player design: command-bar matrix - Helium` active and non-minimized at
+1080 × 1880 on `DP-2`, internal ID
+`{758fe458-cf5d-4621-af7b-827e9e7530ce}`. Main upstream is `3b96c34e3`; prototype
+upstream is `2aba2fb1d`. Leave the matrix visible and wait for its answers; do not
+advance beyond the command bar without them.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
