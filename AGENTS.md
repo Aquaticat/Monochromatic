@@ -359,6 +359,12 @@ full ranking,
 recommended additions.
 End with separable questions whose answers select among visible new variants.
 
+QSC:
+ A teaching example defines method,
+not scope authorization.
+Keep matrices within user's current subject;
+new features require explicit approval even when listed as open work.
+
 QCS:
  A quality-over-cost guideline makes cost a non-constraint.
 Options differing only in price aren't user questions:

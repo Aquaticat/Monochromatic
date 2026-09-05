@@ -937,7 +937,16 @@ reports `Music player design: command-bar matrix - Helium` active and non-minimi
 1080 × 1880 on `DP-2`, internal ID
 `{758fe458-cf5d-4621-af7b-827e9e7530ce}`. Main upstream is `3b96c34e3`; prototype
 upstream is `2aba2fb1d`. Leave the matrix visible and wait for its answers; do not
-advance beyond the command bar without them.
+advance beyond the command bar without them. This interpretation was unauthorized and
+wrong. The user meant the CURRENT accepted design: a designer-led review should keep
+that screen in scope, point out further considerations within it, and build the matrix
+as refinements of that screen. They did not approve moving into the command bar or any
+new feature. Close the command-bar page immediately. Remove the command-bar prototype,
+captures, questionnaire, compliance section, inventory entry, and frontier claims by
+corrective commits; keep only the general QVE/QVM question-design lesson. Then inspect
+the accepted current screen for unresolved in-screen treatments and build the next
+matrix without introducing a new feature or resurrecting discarded designs. Do not
+claim implied authorization from the teaching example again.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
