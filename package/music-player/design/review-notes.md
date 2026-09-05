@@ -359,4 +359,7 @@ HANDOFF.md when it happens. Never wait until the session ends.
    the questionnaire surface. Chat-only delivery is invalid.
 10. **Update HANDOFF.md continuously.** Record each correction, answer, decision,
     candidate and verification result when it happens. Never defer updates until the
-    end of a session. 
+    end of a session.
+11. **A teaching example changes the presentation method, not the design scope.** Keep
+    the round on the current subject named by the user. Moving to a new feature needs
+    explicit approval, even when that feature already appears in the open-work list.
