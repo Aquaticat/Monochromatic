@@ -817,7 +817,7 @@ private fun VolumeControl(candidate: String, modifier: Modifier = Modifier) {
         DropdownMenu(
             expanded = true,
             onDismissRequest = {},
-            offset = DpOffset(0.dp, (-8).dp),
+            offset = DpOffset((-72).dp, (-8).dp),
             modifier = Modifier.width(112.dp),
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             shadowElevation = 6.dp,
