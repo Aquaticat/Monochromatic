@@ -1139,6 +1139,7 @@ private fun FullScreenCommandBar(scope: String) {
                     .padding(horizontal = 12.dp),
             ) {
                 CommandSearchInput(scope = scope)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 if (scope == "scoped") {
                     ScopeFilterRow()
                 }
@@ -1186,6 +1187,7 @@ private fun FullScreenCommandBar(scope: String) {
 private fun CommandSearchPanel(scope: String, modifier: Modifier) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         CommandSearchInput(scope = scope)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         if (scope == "scoped") {
             ScopeFilterRow()
         }
