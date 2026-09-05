@@ -81,9 +81,14 @@ import androidx.activity.enableEdgeToEdge
 // import { icons } from '@material-design-icons/svg';
 // ```
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -207,6 +212,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 // const circle = { borderRadius: '50%' };
 // ```
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 // What:     Material imports supply the real Android theme, app bars, buttons, lists, slider,
 //           segmented control, surfaces, icons, dividers, and text renderer.
@@ -221,6 +227,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -228,6 +235,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -457,7 +465,12 @@ private fun DesignCandidatePrototype(candidate: String) {
             modifier = Modifier.fillMaxSize(),
             color = palette.window,
         ) {
-            if (candidate.startsWith("dbtp-")) {
+            if (candidate.startsWith("command-")) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    FullUnfoldedStudy(palette = palette)
+                    CommandBarMatrixSurface(candidate = candidate)
+                }
+            } else if (candidate.startsWith("dbtp-")) {
                 RightHalfStudy(candidate = candidate, palette = palette)
             } else {
                 FullUnfoldedStudy(palette = palette)
@@ -982,5 +995,353 @@ private fun TrackMetadata(track: PrototypeTrack, candidate: String) {
         text = metadata,
         color = supportingColor,
         style = MaterialTheme.typography.bodySmall,
+    )
+}
+
+/**
+ * What:     `PrototypeSearchResult` is a Kotlin record used by the command-bar matrix.
+ * Why:      Each static result needs one typed bundle so layout code does not pass parallel values.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * type PrototypeSearchResult = {
+ *   title: string;
+ *   supporting: string;
+ *   kind: 'folder' | 'track' | 'command';
+ *   shortcut: string;
+ * };
+ * ```
+ */
+private data class PrototypeSearchResult(
+    val title: String,
+    val supporting: String,
+    val kind: String,
+    val shortcut: String,
+)
+
+/**
+ * What:     `CommandBarMatrixSurface` draws one overlay selected by matrix candidate key.
+ * Why:      Nine screenshots must vary scope and placement without changing accepted app chrome.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function CommandBarMatrixSurface({ candidate }: { candidate: string }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun CommandBarMatrixSurface(candidate: String) {
+    val scope = if (candidate.startsWith("command-c-")) {
+        "commands"
+    } else if (candidate.startsWith("command-s-")) {
+        "scoped"
+    } else {
+        "unified"
+    }
+    val presentation = if (candidate.endsWith("-p")) {
+        "pane"
+    } else if (candidate.endsWith("-f")) {
+        "full"
+    } else {
+        "docked"
+    }
+    if (presentation == "pane") {
+        PaneCommandBar(scope = scope)
+        return
+    }
+    if (presentation == "full") {
+        FullScreenCommandBar(scope = scope)
+        return
+    }
+    DockedCommandBar(scope = scope)
+}
+
+/**
+ * What:     `DockedCommandBar` places a 720dp search surface over a scrim.
+ * Why:      Material recommends docked focused search for expanded windows while preserving context.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function DockedCommandBar({ scope }: { scope: string }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun DockedCommandBar(scope: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Surface(
+            modifier = Modifier
+                .padding(top = 60.dp)
+                .width(720.dp)
+                .height(580.dp),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shadowElevation = 6.dp,
+        ) {
+            CommandSearchPanel(scope = scope, modifier = Modifier.fillMaxSize().padding(12.dp))
+        }
+    }
+}
+
+/**
+ * What:     `PaneCommandBar` replaces only the accepted layout's right 414dp pane.
+ * Why:      This variant tests persistent folder context against reduced result width.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function PaneCommandBar({ scope }: { scope: string }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun PaneCommandBar(scope: String) {
+    Row(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.width(438.dp).fillMaxSize())
+        Surface(
+            modifier = Modifier.weight(1f).fillMaxSize(),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+        ) {
+            CommandSearchPanel(
+                scope = scope,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(horizontal = 12.dp),
+            )
+        }
+    }
+}
+
+/**
+ * What:     `FullScreenCommandBar` replaces the visual workspace with focused search.
+ * Why:      This variant tests maximum result capacity and compact-screen parity.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function FullScreenCommandBar({ scope }: { scope: string }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun FullScreenCommandBar(scope: String) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            CommandSearchPanel(
+                scope = scope,
+                modifier = Modifier.width(720.dp).fillMaxSize().padding(horizontal = 12.dp),
+            )
+        }
+    }
+}
+
+/**
+ * What:     `CommandSearchPanel` combines a real baseline Material search bar with result lists.
+ * Why:      Every placement option must compare the same query, filters, and result semantics.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function CommandSearchPanel(props: { scope: string; className: string }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun CommandSearchPanel(scope: String, modifier: Modifier) {
+    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        CommandSearchInput(scope = scope)
+        if (scope == "scoped") {
+            ScopeFilterRow()
+        }
+        SearchResultContent(scope = scope)
+    }
+}
+
+/**
+ * What:     `CommandSearchInput` renders Material's baseline 56dp search component in a static state.
+ * Why:      The matrix should assess information architecture, not hand-drawn field geometry.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function CommandSearchInput({ scope }: { scope: string }): JSX.Element {}
+ * ```
+ */
+@Suppress("DEPRECATION")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CommandSearchInput(scope: String) {
+    val query = if (scope == "commands") "play" else "cam"
+    val hint = if (scope == "commands") "Run a command" else "Search folders, tracks, and commands"
+    SearchBar(
+        query = query,
+        onQueryChange = {},
+        onSearch = {},
+        active = false,
+        onActiveChange = {},
+        modifier = Modifier.fillMaxWidth(),
+        placeholder = {
+            Text(text = hint)
+        },
+        leadingIcon = {
+            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Close command bar")
+        },
+        trailingIcon = {
+            Icon(imageVector = Icons.Filled.Close, contentDescription = "Clear query")
+        },
+        windowInsets = WindowInsets(0, 0, 0, 0),
+    ) {}
+}
+
+/**
+ * What:     `ScopeFilterRow` shows explicit All, Folders, Tracks, and Commands choices.
+ * Why:      The scoped matrix row must make category control visible before result selection.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function ScopeFilterRow(): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun ScopeFilterRow() {
+    val scopes = listOf("All", "Folders", "Tracks", "Commands")
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        for (index in scopes.indices) {
+            FilterChip(
+                selected = index == 0,
+                onClick = {},
+                label = {
+                    Text(text = scopes[index])
+                },
+                modifier = Modifier.heightIn(min = 48.dp),
+            )
+        }
+    }
+}
+
+/**
+ * What:     `SearchResultContent` supplies representative commands or grouped library matches.
+ * Why:      Users need to judge scope from concrete duplicate-name and command results.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SearchResultContent({ scope }: { scope: string }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun SearchResultContent(scope: String) {
+    if (scope == "commands") {
+        ResultSection(
+            title = "COMMANDS",
+            results = listOf(
+                PrototypeSearchResult("Pause playback", "Playback", "command", "Space"),
+                PrototypeSearchResult("Play in order", "Playback mode", "command", ""),
+                PrototypeSearchResult("Jump to playing track", "Navigation", "command", "Ctrl+L"),
+                PrototypeSearchResult("Open folder", "Library", "command", "Ctrl+O"),
+                PrototypeSearchResult("Settings", "Application", "command", "Ctrl+,"),
+            ),
+        )
+        return
+    }
+    ResultSection(
+        title = "FOLDERS",
+        results = listOf(
+            PrototypeSearchResult("Camellia", "Folder · 16 tracks", "folder", ""),
+            PrototypeSearchResult("Camille Saint-Saëns", "Folder · 43 tracks", "folder", ""),
+        ),
+    )
+    ResultSection(
+        title = "TRACKS",
+        results = listOf(
+            PrototypeSearchResult("Another Xronixle", "Camellia · 4:35 · −1.2 dBTP", "track", ""),
+            PrototypeSearchResult("Crystallized", "Camellia · 5:40 · −0.7 dBTP", "track", ""),
+        ),
+    )
+    ResultSection(
+        title = "COMMANDS",
+        results = listOf(
+            PrototypeSearchResult("Open Camellia in file manager", "Folder action", "command", ""),
+            PrototypeSearchResult("Play Camellia", "Folder action", "command", "Enter"),
+        ),
+    )
+}
+
+/**
+ * What:     `ResultSection` emits a category label followed by baseline Material list rows.
+ * Why:      Group labels disambiguate folders, tracks, and actions without relying on icon color.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function ResultSection(props: { title: string; results: readonly Result[] }): JSX.Element {}
+ * ```
+ */
+@Composable
+private fun ResultSection(title: String, results: List<PrototypeSearchResult>) {
+    Text(
+        text = title,
+        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelMedium,
+    )
+    for (result in results) {
+        SearchResultRow(result = result)
+    }
+}
+
+/**
+ * What:     `SearchResultRow` maps one result record to an actionable two-line list item.
+ * Why:      Folder context and keyboard shortcuts must remain visible at selection time.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SearchResultRow({ result }: { result: PrototypeSearchResult }): JSX.Element {}
+ * ```
+ */
+@Suppress("DEPRECATION")
+@Composable
+private fun SearchResultRow(result: PrototypeSearchResult) {
+    val resultIcon = if (result.kind == "folder") {
+        Icons.Filled.Folder
+    } else if (result.kind == "track") {
+        Icons.Filled.MusicNote
+    } else if (result.title.startsWith("Play") || result.title.startsWith("Pause")) {
+        Icons.Filled.PlayArrow
+    } else {
+        Icons.Filled.Search
+    }
+    ListItem(
+        headlineContent = {
+            Text(text = result.title)
+        },
+        supportingContent = {
+            Text(text = result.supporting)
+        },
+        leadingContent = {
+            Icon(imageVector = resultIcon, contentDescription = result.kind)
+        },
+        trailingContent = if (result.shortcut.isNotEmpty()) {
+            {
+                Text(
+                    text = result.shortcut,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
+        } else {
+            null
+        },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 72.dp)
+            .clickable(role = Role.Button, onClick = {}),
     )
 }

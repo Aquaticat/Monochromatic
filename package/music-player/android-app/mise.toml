@@ -160,7 +160,7 @@ depends = ["prototype:build"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
 [tasks."prototype:capture"]
-description = "Install and capture all six Compose candidates from the unfolded Pixel Fold emulator"
+description = "Install and capture native Compose design candidates from the unfolded Pixel Fold emulator"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 shell = "node --input-type=module-typescript -e"
@@ -218,6 +218,15 @@ const candidateNames = [
   "divider-b",
   "divider-c",
   "divider-final",
+  "command-c-d",
+  "command-c-p",
+  "command-c-f",
+  "command-u-d",
+  "command-u-p",
+  "command-u-f",
+  "command-s-d",
+  "command-s-p",
+  "command-s-f",
 ];
 for (const candidateName of candidateNames) {
   execFileSync(
@@ -259,6 +268,13 @@ for (const candidateName of candidateNames) {
     'text="Camellia"',
     'text="Another Xronixle"',
     'content-desc="Settings"',
+    ...(candidateName.startsWith("command-")
+      ? [
+          'content-desc="Close command bar"',
+          'content-desc="Clear query"',
+          'text="COMMANDS"',
+        ]
+      : []),
     ...(candidateName.startsWith("light-") || candidateName.startsWith("divider-")
       ? [
           'text="Folders"',
