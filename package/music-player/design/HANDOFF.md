@@ -899,7 +899,35 @@ adjacent-reason ranking, a primary and fallback recommendation, complementary ad
 ideas, separable decision controls, and free corrections. Package raster guards verify
 all ten 2076 × 2152px sources, opacity, native system UI, a uniform protected fold
 region, visible search content, unique matrix cells, and the accepted design's settled
-state. Build, lint, and unit contracts pass. Helium verification remains.
+state. Build, lint, and unit contracts pass. Final independent review caught three
+presentation gaps before handoff: the decision controls did not echo their composed
+matrix cell, recommended choices were not marked at the controls, and the dormant zoom
+title still said `Divider preview`. The form now shows a live cell code plus rank once
+its applicable dimension answers are complete, includes that cell in copied output,
+marks the three recommended dimension choices, and uses generic prototype-preview
+language. The pinned search-role contrast pairs range from 5.178:1 to 12.781:1; the
+selected filter pair is 6.124:1, and the package validator recalculates them.
+
+Final isolated Helium verification at DPR 2 passes. The page opens blank with ten
+2076 × 2152px native images: the accepted foundation and nine matrix cells. All ten
+previews open with their correct title and natural dimensions inside a measured 907 ×
+937 CSS px frame around an 852 × 883px screen. Zoom out, in, Fit, sharp 1:1 display
+pixels, 100% reset, scrolling, and Close pass. At 1280 × 800 each three-card row fits
+on one 1137px row with three 368.4px cards. At 390 × 844 each independent 316px
+scroller contains one 1088px row of three 352px cards and traverses 772px while the
+page remains 390px wide; the accepted card does not scroll. Blank validation focuses
+Q1. Commands-only hides and un-requires Q2; library scope reveals and requires it.
+Every scope, category, placement, addition, free-text, prepare, immediate copy,
+download, clear, and cross-scope reset path passes. The recommended choices produce
+`Combination: 2B (Unified · right pane, rank 1 of 9)`; commands-only plus split
+full-screen visibly reports `1C` and rank 9 before submission. Offline reload decodes
+all ten images with no external URL; forced host dark mode remains light. Axe reports
+no WCAG A/AA violations or incomplete checks on the page or modal. Direct labels,
+names, alternatives, unique IDs, focus, and 48px targets pass; browser errors and
+console output are empty. Post-commit positive controls prove both the stale approval
+question rejection and the uniform center-spacer raster guard. Stop the isolated
+browser and emulator, open this exact cleared file through normal Helium, activate it,
+and wait for the user's matrix answers.
 
 **Phase: theme work. The two theme picks are closed; a large amount of light-theme
 drawing remains.**
