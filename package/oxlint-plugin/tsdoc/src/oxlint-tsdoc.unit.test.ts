@@ -28,8 +28,8 @@ const FIXTURES = fixtureSourceRoot({
 },);
 
 /**
- * Fixture-specific oxlint config with all tsdoc rules enabled and no ignorePatterns
- * that would skip test-fixture or invalid paths.
+ Fixture-specific oxlint config with all tsdoc rules enabled and no ignorePatterns
+ that would skip test-fixture or invalid paths.
  */
 const FIXTURE_CONFIG = fixtureConfigPath({
   fixturePackageName: 'oxlint-tsdoc',
@@ -40,11 +40,11 @@ const FIXTURE_CONFIG = fixtureConfigPath({
 const MULTILINE_BLOCKS_MESSAGE = 'TSDoc comments must use multiline format.';
 
 /**
- * Runs oxlint with the project config against a fixture path and returns parsed diagnostics.
- *
- * @param fixturePath - path relative to fixture root, or absolute temp fixture path
- *
- * @returns array of diagnostics from tsdoc rules only
+ Runs oxlint with the project config against a fixture path and returns parsed diagnostics.
+ 
+ @param fixturePath - path relative to fixture root, or absolute temp fixture path
+ 
+ @returns array of diagnostics from tsdoc rules only
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
   /** Resolved lint target; temp fixtures already arrive as absolute paths. */
@@ -62,14 +62,14 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
 }
 
 /**
- * Runs oxlint --fix once against a fixture file.
- *
- * @param filePath - absolute path to fixture copy to mutate
- *
- * @example
- * ```ts
- * await runOxlintFix(filePath);
- * ```
+ Runs oxlint --fix once against a fixture file.
+ 
+ @param filePath - absolute path to fixture copy to mutate
+ 
+ @example
+ ```ts
+ await runOxlintFix(filePath);
+ ```
  */
 async function runOxlintFix(filePath: string,): Promise<void> {
   await spawn(
@@ -85,11 +85,11 @@ async function runOxlintFix(filePath: string,): Promise<void> {
 }
 
 /**
- * Extracts unique rule codes from a set of diagnostics.
- *
- * @param diagnostics - array of oxlint diagnostics
- *
- * @returns sorted array of unique `tsdoc(rule-name)` codes
+ Extracts unique rule codes from a set of diagnostics.
+ 
+ @param diagnostics - array of oxlint diagnostics
+ 
+ @returns sorted array of unique `tsdoc(rule-name)` codes
  */
 //endregion Helpers
 
@@ -210,7 +210,7 @@ await describe({
       name: 'autofix',
       children: [
         it({
-          name: '--fix expands single-line TSDoc blocks',
+          name: '--fix expands single-line TSDoc blocks to star-less bodies',
           fn: async () => {
             const fixableSrc = resolve(
               FIXTURES,
@@ -226,15 +226,15 @@ await describe({
             await runOxlintFix(fixableCopy.filePath,);
 
             const fixedContent = readFileSync(fixableCopy.filePath, 'utf8',);
-            expect(fixedContent,).toContain('/**\n * Description only.\n */',);
-            expect(fixedContent,).toContain('/**\n * @returns value\n */',);
+            expect(fixedContent,).toContain('/**\n Description only.\n */',);
+            expect(fixedContent,).toContain('/**\n @returns value\n */',);
             expect(fixedContent,).toContain(
-              '  /**\n   * Inner description.\n   */\n  const value = true;',
+              '  /**\n   Inner description.\n   */\n  const value = true;',
             );
             expect(fixedContent,).toContain(
-              'type PropertyFixture = {\n  /**\n   * Property description.\n   */\n  readonly value: string;\n};',
+              'type PropertyFixture = {\n  /**\n   Property description.\n   */\n  readonly value: string;\n};',
             );
-            expect(fixedContent,).toContain('/**\n *\n */\nconst emptyDoc = true;',);
+            expect(fixedContent,).toContain('/**\n \n */\nconst emptyDoc = true;',);
 
             const diagnostics = await lint(fixableCopy.filePath,);
             expect(diagnostics,).toEqual([],);
