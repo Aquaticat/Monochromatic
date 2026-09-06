@@ -2074,9 +2074,20 @@ no model asked.
     0 `FAIL` on the fixed one,
     the publisher,
     critic and preparation suites 0 as well;
-    oxlint 0 and 0 after `7a01c9048`,
+    oxlint 0 and 0 after `147c417b6`,
     types clean.
-    The relaunch follows the floor's own fail-first proof.
+    The floor's own fail-first proof:
+    refusal inverted,
+    5 `FAIL`;
+    restored,
+    0.
+- **`yulianNyanner` relaunched at 22:06:22 UTC** on `147c417b6`,
+  pipeline `30cd442b`,
+    plain invocation,
+    fresh runs dir `~/temp/agent/yuliannyanner4-20260906`,
+    log beside it.
+    The reading follows,
+    with the five headings first.
 
 ## Build plan, transport-independent layers first
 
