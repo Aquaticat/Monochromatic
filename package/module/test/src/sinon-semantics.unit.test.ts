@@ -125,6 +125,18 @@ await describe({
       },
     },),
     it({
+      name: 'a context-selected constructor spy preserves new invocation and prototype identity',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        const target = { Constructor: Date, };
+        const spy = sinon.spy(target, 'Constructor',);
+        const instance = new target.Constructor(0,);
+        expect(instance,).toBeInstanceOf(Date,);
+        expect(instance.getTime(),).toBe(0,);
+        expect(spy.calledWithNew(),).toBe(true,);
+        expect(spy.callCount,).toBe(1,);
+      },
+    },),
+    it({
       name: 'whole-object stubs cannot use deferred descriptor methods after completion',
       fn: async (): Promise<void> => {
         /** Ordinary whole-object stubbing still returns the same target object. */
