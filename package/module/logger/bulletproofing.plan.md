@@ -79,9 +79,10 @@ Nothing here blocks a publish;
      See `DECISIONS.md`,
      "Open problem:
       import-time sink discovery".
-2.   Deferred discovery for callers that never log.
-     Still the reason `package/ssg/aquati.cat/src/build/compress.ts` defers its import on worker threads;
-     separate from item 1 and unscheduled.
+2.   Deferred discovery for callers that never log:
+     resolved on 2026-09-06 by the lazy default logger (issue #493);
+     importing the package runs no discovery,
+     so `package/ssg/aquati.cat/src/build/compress.ts` no longer needs its deferred import.
 
 ## Grill record: file sink platform split (2026-09-06)
 

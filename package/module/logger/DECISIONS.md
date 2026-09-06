@@ -603,3 +603,45 @@ Accepted consequences:
    the owner decided they get a node build with a `node` condition,
    as `kv-store` and `pipe` already have.
 - A types gate for subpaths (`attw --pack .`) in the release workflow is deferred to a separate change.
+
+## Default logger is built on first use, and no readiness promise is exported (2026-09-06)
+
+Issue #493:
+ a Cloudflare Worker that imported `tagged` printed four `logger internal error` warnings per isolate start
+and then threw `No logging backends available` on the first default-logger call.
+`logger.ts` called `createLogger` at module evaluation,
+ every verify ran under `withTimeout`,
+ and Workers forbid `setTimeout` in global scope,
+ so every sink failed verification before any handler ran.
+
+The singleton is now a memo filled by the first log or flush call;
+ the default sink list is a factory called at that moment;
+ `package.json` declares `sideEffects: false`.
+Importing the root entry or `tagged` therefore runs no discovery,
+ no timers,
+ no I/O,
+ and no storage probes,
+ and the first call inside a handler verifies the sinks where the runtime allows it.
+A unit test imports the built root entry while `setTimeout` throws,
+ asserts no breadcrumb,
+ then logs inside a "handler" and sees the record land.
+
+The `initPromise` root export is removed rather than made lazy.
+Eight workspace files awaited it at module top level;
+ the owner ruled those call sites wrong:
+ `flush()` awaits readiness internally,
+ and a readiness promise consumers await before logging is the configure step this logger exists to avoid.
+`createLogger` keeps returning its instance's `initPromise` for callers that own the instance,
+ such as the Worker that awaits it through `ctx.waitUntil`.
+
+Consequences:
+
+- The dynamic-import complaint recorded under "Open problem:
+   import-time sink discovery" loses its last leg:
+   a consumer that never logs now pays nothing at import,
+   so deferring the import with `await import(...)` has no reason left.
+- Rejected:
+   a lazily triggered thenable `initPromise` that builds the logger on `then`.
+   It would have kept the eight wrong call sites working,
+   which is the opposite of the point,
+   and would have changed the export's type from `Promise` to a thenable.

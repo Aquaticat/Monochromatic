@@ -1,11 +1,13 @@
 # module-logger
 
 Zero-config multi-sink logger with tagged composition.
-Works immediately at import:
- auto-discovers available backends for the current runtime,
+Works immediately with no setup call:
+ the first log or flush call builds the default logger and auto-discovers available backends for the current runtime,
 and records emitted while async backend verification is still pending replay to those
 backends as soon as they verify.
- Consumers do not await `initPromise` before logging.
+Importing the package runs no discovery,
+ no timers,
+ and no I/O.
 
 ## Usage
 
@@ -56,6 +58,17 @@ Node 24 or newer (the build calls `Error.isError`),
  plus current browsers,
  Deno,
  and Bun for the sinks whose `verify` finds a backend there.
+### Global-scope-restricted runtimes
+
+Cloudflare Workers (and any runtime that forbids timers,
+ I/O,
+ and random values in global scope) can import the root entry and `tagged` freely:
+nothing is built at import,
+ so no sink probe and no timer runs in global scope.
+The first log or flush call inside a handler builds the default logger and verifies its sinks there.
+A Worker that wants a logger scoped to one request can still build its own with `createLogger` over `sinks.createConsoleSink()`
+and hand `flush()` to `ctx.waitUntil`.
+
 The published package exposes the built artifact only.
 The `/ts` source subpath used inside this workspace is stripped at publish time,
  because Node refuses `.ts` files under `node_modules`.
@@ -262,8 +275,10 @@ File,
 
 ## Error handling
 
-- `initPromise` resolves after eager verification and startup replay;
-   consumers do not await it before logging
+- The default logger is built by the first log or flush call,
+   never at import;
+   there is no readiness promise to await,
+   because `flush()` awaits verification and startup replay internally
 - `logger.flush()` awaits startup verification,
    pending sink writes,
    and sink-owned flush hooks,
