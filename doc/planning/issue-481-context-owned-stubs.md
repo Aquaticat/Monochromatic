@@ -202,6 +202,11 @@ Run package tests and lint before closing #481.
 
 - `089d4c953` records the context-first request and investigation scope.
 - `7102e4800` preserves the disposable experiment patch.
+- `c806da484` records the recommendation and source-traced troubleshooting note.
+- Final combined prototype tests and package `lint:types` passed in the disposable worktree.
+- Scoped Markdown lint passed using the worktree's base-version linter against these exact documentation paths.
+  The main-worktree linter could not start because concurrent edits left `run.ts` importing missing `isMdxPath`.
+  Those unrelated files were not changed by this investigation.
 - Main-worktree changes are documentation only.
   The GitHub issue was not edited or closed.
 - No user acceptance of an implementation design has occurred.
