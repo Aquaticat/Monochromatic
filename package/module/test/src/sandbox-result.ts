@@ -126,31 +126,53 @@ export function guardFakeMutators({
  @param target - input object supplied to `ctx.sinon.mock`
  
  @param owner - capability owner
+
+ @param restoring - runner-owned restoration authority
  
  @returns guarded controller, or the unmodified result for standalone expectations
  
  @example
  ```ts
- return guardMockController({ value, target, owner });
+ return guardMockController({ value, target, owner, restoring });
  ```
  */
 export function guardMockController({
   value,
   target,
   owner,
+  restoring,
 }: {
   readonly value: unknown;
   readonly target: unknown;
   readonly owner: SandboxOwner;
+  readonly restoring: () => boolean;
 },): unknown {
   if ((!isSandboxTarget(value,)) || (!isSandboxTarget(target,)))
     return value;
+  /** Mock verification itself calls restore on the raw controller. */
+  const generation = { restored: false, };
+  /** Capture the real controller restorer before exposing it to callers. */
+  const restore: unknown = Reflect.get(value, 'restore',);
+  if (typeof restore === 'function') {
+    Reflect.set(value, 'restore', new Proxy(restore, {
+      apply(method: typeof restore, receiver: unknown, args: unknown[],): unknown {
+        if (generation.restored || (owner.phase === 'completed' && !restoring()))
+          return undefined;
+        /** A failed restoration remains eligible for subsequent cleanup. */
+        const result: unknown = Reflect.apply(method, receiver, args,);
+        generation.restored = true;
+        return result;
+      },
+    }),);
+  }
   return guardSandboxCapability({
     target: value,
     owner,
     operation: 'ctx.sinon.mock()',
     invoke(invocation: SandboxInvocation,): unknown {
       if (invocation.operation === 'ctx.sinon.mock().expects') {
+        if (generation.restored)
+          throw new SandboxOwnershipError('Sinon mock.expects belongs to a restored controller. Create a new mock controller instead.',);
         /**
          Invalid property arguments remain Sinon's own validation responsibility.
          */

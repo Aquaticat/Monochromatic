@@ -346,7 +346,10 @@ This is a logger runtime probe,
 not a Sinon or async-context failure.
 `package/module/logger/src/sink/web-storage-runtime.ts` now checks `versions` optionally.
 Both the module-test browser consumer and a dedicated local-storage browser regression exercise that input.
-Their post-change verification is pending.
+The combined post-change run passed all nine selected cases across Chromium,
+Firefox,
+and WebKit in process `proc_a844`.
+A direct browser error-formatting assertion was subsequently added and still needs its next browser run.
 
 ### Intentional Node emitter fixture
 
@@ -361,6 +364,33 @@ not Node's `node:events`.
 There is no configurable constructor or call-site allowlist to try.
 A single justified `unicorn/prefer-event-target` suppression therefore stays on this test declaration;
 no package-wide lint setting is loosened.
+
+### Intentional source and artifact interoperability
+
+`package/module/test/src/sinon-copies.unit.test.ts` imports both built entry points
+and the public `/ts` entry point in one process.
+The source import is not a substitute for artifact verification:
+this test specifically proves shared ownership between independently loaded implementations.
+Replacing the source import with another built import would remove that case.
+
+`package/oxlint-plugin/test-import/src/require-eventual-artifact.ts` exposes only `fixturePatterns`.
+`package/oxlint-plugin/test-import/src/import-classification.ts` classifies a package's own `/ts` imports
+before any relative fixture-pattern handling.
+No available fixture configuration can allow this bare source specifier.
+The test therefore uses a single explained suppression on that import,
+not a global rule change or a re-export that hides its source origin.
+
+### Manual mock restoration generation
+
+The production fixture in `sinon-injection.unit.test.ts` demonstrated that an already verified mock controller
+could restore a newly installed contextual stub in the same still-running attempt.
+The rebuilt failure was `expected 'original' to equal 'new generation'` in process `proc_2ed7`.
+
+Sinon 22.1.0's `src/sinon/mock.js` restores by reading the target's current property and invoking its `restore`.
+It does not restrict that lookup to the controller's original replacement.
+The adapter now retires the controller on successful restoration,
+including restoration called internally by `verify`.
+New `expects` calls require a fresh controller after that point.
 
 [event-target-rule]: https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/rules/unicorn/prefer_event_target.rs
 [issue]: https://github.com/Aquaticat/Monochromatic/issues/481

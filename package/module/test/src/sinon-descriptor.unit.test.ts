@@ -22,7 +22,7 @@ async function capturedFailure(descriptor: PromiseLike<unknown>,): Promise<Error
   }
   /** Expected failures are reported as Errors by the public harness. */
   const [failure,] = failures;
-  if (!(failure instanceof Error))
+  if (!(Error.isError(failure,)))
     throw new Error('Nested conflict fixture unexpectedly succeeded',);
   return failure;
 }
@@ -36,7 +36,9 @@ await describe({
         const target = { method: (): string => 'original', other: (): string => 'other', };
         const other = Object.getOwnPropertyDescriptor(target, 'other',);
         const fake = sinon.stub(target, 'method',).returns('owned',);
-        expect(() => { target.method = () => 'assigned'; },).toThrow('Assignment',);
+        expect(() => {
+          target.method = () => 'assigned';
+        },).toThrow('Assignment',);
         expect(() => sinon.stub(target,),).toThrow('context-owned',);
         expect(() => sinon.spy(target,),).toThrow('context-owned',);
         expect(() => sinon.replace(target, 'method', () => 'replacement',),).toThrow('context-owned',);
@@ -100,7 +102,11 @@ await describe({
         const target = { method: (): string => 'original', };
         const external = createSandbox();
         const foreign = (): string => 'external';
-        using cleanup = { [Symbol.dispose](): void { external.restore(); }, };
+        using cleanup = {
+          [Symbol.dispose](): void {
+            external.restore();
+          },
+        };
         await capturedFailure(it({ name: 'direct replacement conflict', fn: async ({ sinon, }: TestContext,): Promise<void> => {
           sinon.stub(target, 'method',);
           external.stub(target, 'method',).value(foreign,);

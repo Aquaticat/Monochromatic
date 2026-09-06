@@ -17,8 +17,8 @@ for (const processShim of [false, true,]) {
     const result: unknown = await page.evaluate(async ({ url, shim, },): Promise<unknown> => {
       /** Validate the dynamic browser export before invoking it across the page boundary. */
       const fixture: unknown = await import(url);
-      if (typeof fixture !== 'object' || fixture === null || !('runBrowserSandboxProbe' in fixture)
-        || typeof fixture.runBrowserSandboxProbe !== 'function')
+      if (((typeof fixture) !== 'object') || (fixture === null) || (!('runBrowserSandboxProbe' in fixture))
+        || ((typeof fixture.runBrowserSandboxProbe) !== 'function'))
         throw new Error('Browser fixture did not export runBrowserSandboxProbe',);
       return await Reflect.apply(fixture.runBrowserSandboxProbe, fixture, [{ processShim: shim, },],) as unknown;
     }, { url: '/dist/module-test/client/sinon-browser-fixture.js', shim: processShim, },);

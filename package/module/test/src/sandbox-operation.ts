@@ -273,6 +273,7 @@ export function dispatchSandboxOperation({
       value: result,
       target,
       owner: policy.owner,
+      restoring: policy.restoring,
     },);
   return result;
 }

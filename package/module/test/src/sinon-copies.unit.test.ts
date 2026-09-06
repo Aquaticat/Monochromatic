@@ -2,6 +2,7 @@
 import { AsyncResource, } from 'node:async_hooks';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { describe, expect, it, type TestContext, } from '@monochromatic-dev/module-test';
+// oxlint-disable-next-line test-import/require-eventual-artifact -- Intentional source/artifact interoperability; rationale in doc/troubleshooting/sinon-context-owned-stubs.md.
 import { it as sourceIt, } from '@monochromatic-dev/module-test/ts';
 import { it as neutralIt, } from '../dist/final/neutral/index.mjs';
 
@@ -16,11 +17,14 @@ using resourceCleanup = {
 
 await describe({
   name: 'shared harness copies',
-  children: [
-    ...[{ label: 'source', run: sourceIt, }, { label: 'neutral', run: neutralIt, },].flatMap(({ label, run: otherIt, },) => ([0, 1,] as const).map(firstFinisher => it({
+  children: [{ label: 'source', run: sourceIt, }, { label: 'neutral', run: neutralIt, },].flatMap(({ label, run: otherIt, },) => ([0, 1,] as const).map(firstFinisher => it({
       name: `${label} and Node mixed writers restore with owner ${String(firstFinisher,)} finishing first`,
       fn: async (): Promise<void> => {
-        const target = { method(input: string,): string { return `original:${input}`; }, };
+        const target = {
+          method(input: string,): string {
+            return `original:${input}`;
+          },
+        };
         const original = Object.getOwnPropertyDescriptor(target, 'method',);
         const ready = [Promise.withResolvers<void>(), Promise.withResolvers<void>(),];
         const finished = [Promise.withResolvers<void>(), Promise.withResolvers<void>(),];
@@ -29,12 +33,20 @@ await describe({
           const signal = ready[index];
           const completion = finished[index];
           const first = finished[firstFinisher];
-          if (signal === undefined || completion === undefined || first === undefined)
+          if ((signal === undefined) || (completion === undefined) || (first === undefined))
             throw new Error('Missing deterministic owner barrier',);
-          using completed = { [Symbol.dispose](): void { completion.resolve(); }, };
+          using completed = {
+            [Symbol.dispose](): void {
+              completion.resolve();
+            },
+          };
           await run({ name: `copy owner ${String(index,)}`, fn: async ({ sinon, }: TestContext,): Promise<void> => {
-            using readyOnFailure = { [Symbol.dispose](): void { signal.resolve(); }, };
-            /** The source owner spies while the bundled owner stubs the same original function. */
+            using readyOnFailure = {
+              [Symbol.dispose](): void {
+                signal.resolve();
+              },
+            };
+            /** The companion entry spies while the Node bundle stubs the same original function. */
             const fake = index === 0 ? sinon.stub(target, 'method',).returns('bundled',) : sinon.spy(target, 'method',);
             signal.resolve();
             await Promise.all(ready.map(entry => entry.promise),);
@@ -59,5 +71,4 @@ await describe({
         expect(Object.getOwnPropertyDescriptor(target, 'method',),).toEqual(original,);
       },
     },)),),
-  ],
 },);

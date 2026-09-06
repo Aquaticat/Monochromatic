@@ -53,10 +53,13 @@ import {
    string when unavailable
  */
 async function resolveWorkspacePrefix(): Promise<string> {
-  if (typeof process === 'undefined' || typeof process.versions?.node !== 'string')
+  if (((typeof process) === 'undefined') || ((typeof process.versions
+    ?.node) !== 'string'))
     return '';
   try {
-    /** Workspace filesystem discovery belongs only to the Node diagnostic path. */
+    /**
+     Workspace filesystem discovery belongs only to the Node diagnostic path.
+     */
     const { findMiseMonorepoRootCached, } = await import('@monochromatic-dev/module-fs-path/ts');
     /**
      Captured root so the trailing slash can be appended exactly once before returning.
