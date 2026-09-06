@@ -257,6 +257,100 @@ function messages({ recording, }: { readonly recording: RecordingSink; },): stri
     },);
 }
 
+/**
+ * Recording sink whose first write parks on a promise the test settles, so a
+ * `flush()` can abandon that write at the deadline and the test can then
+ * settle it late, after the logger has stopped tracking it.
+ */
+type ParkedWriteSink = RecordingSink & {
+  readonly settleParked: PromiseWithResolvers<void>;
+};
+
+/**
+ * Builds a verified sink whose first write waits on `settleParked` and whose
+ * later writes record immediately.
+ *
+ * @returns Sink, its record array, and the resolvers for the parked write.
+ */
+function parkedFirstWriteSink(): ParkedWriteSink {
+  /**
+   * Records this sink has received, in arrival order.
+   */
+  const records: LogRecord[] = [];
+  /**
+   * Resolvers the test uses to settle the parked write.
+   */
+  const settleParked = Promise.withResolvers<void>();
+  /**
+   * Whether the parked write has been handed out; only the first write parks.
+   */
+  const handedOut = { parked: false, };
+
+  /**
+   * Parks the first write on `settleParked`, records every later one.
+   *
+   * @param record - Record handed to the sink.
+   */
+  async function write(record: LogRecord,): Promise<void> {
+    if (!handedOut.parked) {
+      handedOut.parked = true;
+      await settleParked.promise;
+    }
+    records.push(record,);
+  }
+
+  return {
+    records,
+    settleParked,
+    sink: {
+      verify: function verifyAvailable(): Promise<boolean> {
+        return Promise.resolve(true,);
+      },
+      write,
+    },
+  };
+}
+
+/**
+ * Unhandled-rejection reasons observed while the capture is alive, plus the
+ * disposer that detaches the listener.
+ */
+type UnhandledCapture = {
+  readonly reasons: readonly unknown[];
+  readonly [Symbol.dispose]: () => void;
+};
+
+/**
+ * Listens for `unhandledRejection` on the process until disposed. A listener
+ * also stops Node from treating the rejection as fatal, so the assertion on
+ * `reasons` is what enforces the property.
+ *
+ * @returns Capture whose `reasons` grows with every unhandled rejection.
+ */
+function captureUnhandledRejections(): UnhandledCapture {
+  /**
+   * Reasons observed so far.
+   */
+  const reasons: unknown[] = [];
+
+  /**
+   * Listener appended to the process.
+   *
+   * @param reason - Rejection reason Node reports.
+   */
+  function record(reason: unknown,): void {
+    reasons.push(reason,);
+  }
+
+  process.on('unhandledRejection', record,);
+  return {
+    reasons,
+    [Symbol.dispose]: function detach(): void {
+      process.off('unhandledRejection', record,);
+    },
+  };
+}
+
 await describe({
   name: 'createLogger orchestration',
   children: [
@@ -936,6 +1030,102 @@ await describe({
                 'early',
                 'late',
               ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'abandoned writes',
+      children: [
+        it({
+          name: 'a write rejecting after the deadline abandoned it is reported once, never left unhandled, and does not retire the sink',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            const warn = sinon.stub(
+              console,
+              'warn',
+            );
+            using unhandled = captureUnhandledRejections();
+            const parked = parkedFirstWriteSink();
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              flushDeadlineMs: SHORT_DEADLINE_MS,
+              sinks: [parked.sink,],
+            },);
+            await initPromise;
+            logger.info('parked',);
+            await logger.flush();
+            expect(deadlineBreadcrumbs({ warn, },),)
+              .toBe(1,);
+
+            parked.settleParked.reject(new Error('late failure',),);
+            await wait(1,);
+            logger.info('after',);
+
+            const elapsed = await timeFlush({ flush: logger.flush, },);
+            expect(elapsed,)
+              .toBeLessThan(FAST_FLUSH_MS,);
+            expect(messages({ recording: parked, },),)
+              .toEqual(['after',],);
+            expect(unhandled.reasons,)
+              .toHaveLength(0,);
+            expect(
+              breadcrumbMessages({
+                warn,
+                needle: 'sink write promise rejected while being tracked',
+              },),
+            )
+              .toHaveLength(1,);
+            expect(deadlineBreadcrumbs({ warn, },),)
+              .toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'a write resolving after the deadline abandoned it still lands and the sink keeps working',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            const warn = sinon.stub(
+              console,
+              'warn',
+            );
+            using unhandled = captureUnhandledRejections();
+            const parked = parkedFirstWriteSink();
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              flushDeadlineMs: SHORT_DEADLINE_MS,
+              sinks: [parked.sink,],
+            },);
+            await initPromise;
+            logger.info('parked',);
+            await logger.flush();
+
+            parked.settleParked.resolve();
+            await wait(1,);
+            logger.info('after',);
+            await logger.flush();
+
+            expect(messages({ recording: parked, },),)
+              .toEqual([
+                'parked',
+                'after',
+              ],);
+            expect(unhandled.reasons,)
+              .toHaveLength(0,);
+            expect(
+              breadcrumbMessages({
+                warn,
+                needle: 'sink write promise rejected',
+              },),
+            )
+              .toHaveLength(0,);
+            expect(deadlineBreadcrumbs({ warn, },),)
+              .toBe(1,);
           },
         },),
       ],
