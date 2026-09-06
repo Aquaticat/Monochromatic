@@ -461,12 +461,12 @@ export const requireAsteriskPrefix: CreateOnceRule = {
    ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
-    /**
-     Explicit prefix mode selected by consumer configuration.
-     */
-    const mode = configuredMode(context,);
     return {
       Program(): void {
+        /**
+         Explicit prefix mode read after Oxlint installs current file's options.
+         */
+        const mode = configuredMode(context,);
         context.sourceCode
           .getAllComments()
           .filter(isTsdocBlock,)
