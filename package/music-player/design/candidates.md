@@ -134,7 +134,9 @@ the bottom of the whole target; the text itself is not underlined. At 200% font 
 the mode control becomes one purely vertical segmented stack with four connected
 full-label segments. It retains segmented outlines, selected fill, checkmark, and
 single-select semantics without horizontal scrolling. The corrected native evidence is
-`questions/render/refine-large-text-segmented.png` from prototype commit `67d5f9720`.
+`questions/render/refine-large-text-segmented.png` from prototype commit `bf6830f4f`.
+The transport was scrolled vertically for that capture, placing the full control above
+the system navigation inset.
 The user's
 settled baseline combines the `light-c` tonal structure with `dbtp-a`. D34 makes the
 vertical center spacer and horizontal picker/transport divider white while retaining

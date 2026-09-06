@@ -308,3 +308,8 @@ The separable choices are:
 No absent control or future feature is part of this round. The command bar, cover
 screen, notification, custom display templating, and every other unbuilt item remain
 outside the active form.
+
+Production accessibility verification must confirm the large-text vertical segmented
+stack is announced as one mutually exclusive group. The pinned Compose artifact has no
+vertical segmented wrapper, so the debug prototype composes row-scoped segment elements
+vertically and cannot settle assistive-technology grouping by raster inspection.

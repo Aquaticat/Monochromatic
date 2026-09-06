@@ -227,11 +227,11 @@ const largeFoldColors = Number(execFileSync(
 const largeModeBounds = largestConnectedBounds({
   path: largeTextPath,
   color: '#787A84',
-  crop: '1009x652+0+1500',
+  crop: '1009x752+0+1400',
 });
 const largeSelectedPixels = countPixelsMatching({
   path: largeTextPath,
-  crop: '900x160+55+1730',
+  crop: '900x220+55+1600',
   predicate: isTonalContainer,
 });
 if (
@@ -240,7 +240,7 @@ if (
   || largeFoldColors !== 1
   || pixelAt({ path: largeTextPath, x: 1038, y: 1000 }) !== white
   || largeModeBounds.x !== 73
-  || largeModeBounds.y !== 120
+  || largeModeBounds.y !== 117
   || largeModeBounds.width !== 863
   || largeModeBounds.height !== 518
   || largeSelectedPixels < 100_000
@@ -366,7 +366,10 @@ const requiredFragments = [
   'No feature, control, or product section is added.',
   'The segmented mode control is identical in every cell.',
   'Purely vertical segmented mode control',
-  'no radio-row substitution and no horizontal scroll',
+  'Transport scrolled vertically to show four connected full-label segments above the navigation inset',
+  'the segmented control itself never scrolls horizontally',
+  'the pinned Compose library has no vertical group wrapper',
+  'production must verify assistive technology announces one mutually exclusive group',
   'The settled segmented mode control remains horizontal at default text and purely vertical at large text.',
   'name="spacingDecision"',
   'name="buttonDecision"',
@@ -377,7 +380,7 @@ const requiredFragments = [
   'Anything else you want settled or changed, or “None”',
   'prototype commit 49d6568ed',
   'prototype commit 2b2ac2e88',
-  'prototype commit 67d5f9720',
+  'prototype commit bf6830f4f',
   'data-preview-width="852"',
   'data-preview-height="883"',
   'data-source-width="2076"',

@@ -84,10 +84,11 @@ javap -classpath ~/.gradle/caches/9.5.1/transforms/5482783770c2ea5cd3ac7fbc2b7c0
 
 ### Consumer-side prototype
 
-Prototype commit `67d5f9720` builds and Android lint passes. At 200% text, the native
-capture is 2076 × 2152px and shows four connected full-label vertical segments. The
-outer segmented outline spans x=73 through x=935 and y=1620 through y=2137. UI
-Automator exposes all labels and a checked mode.
+Prototype commit `bf6830f4f` builds and Android lint passes. At 200% text, the native
+capture is 2076 × 2152px and shows four connected full-label vertical segments. After
+the transport scrolls vertically, the outer segmented outline spans x=73 through x=935
+and y=1517 through y=2034, leaving 39 physical pixels before the navigation inset at
+y=2074. UI Automator exposes all labels and a checked mode.
 
 ## Verified workaround
 

@@ -514,7 +514,7 @@ Material and system safety rulers. Verify the Android gesture interaction rather
 assuming a visual move is sufficient. The accessibility re-audit found one real
 failure: at 200% system font scale, all four one-row mode labels clipped. Prototype
 commit `d1545e525` initially switched to full-label radio rows, but the user later
-rejected that component substitution. Current prototype commit `67d5f9720` uses one
+rejected that component substitution. Current prototype commit `bf6830f4f` uses one
 purely vertical segmented control at font scale 1.5 or greater and keeps the transport
 vertically scrollable within a 440dp maximum. A 200% emulator capture shows `Repeat
 track`, `Play in order`, `Shuffle current folder`, and `Shuffle all folders` completely.
@@ -1170,18 +1170,21 @@ not substitute plain radio rows. The default one-row segmented control remains
 unchanged. Recapture the 200% state and show the corrected evidence in the active form.
 
 Prototype commit `67d5f9720` implements the vertical state from real Material
-`SegmentedButton` elements. Four one-item row hosts sit in an outer selectable column;
+`SegmentedButton` elements; `bf6830f4f` moves navigation insets outside the transport
+scroller. Four one-item row hosts sit in an outer selectable column;
 position-specific shapes and a negative 1dp gap produce one connected outline. Android
 build and lint pass. The pinned Material artifact has no public vertical segmented-row
 wrapper, so the implementation boundary and production semantics tradeoff are recorded
 in `doc/troubleshooting/compose-material3-vertical-segmented-buttons.md`.
 
 The 200% native capture is
-`questions/render/refine-large-text-segmented.png`. Full-resolution inspection shows
-four full-width connected segments from x=73 through x=935 and y=1620 through y=2137.
-`Play in order` retains the selected container and checkmark; all four full labels are
-visible. UI Automator exposes each label and a checked selected mode. No horizontal
-scroll exists. The active questionnaire now presents this settled correction directly
+`questions/render/refine-large-text-segmented.png`. Full-resolution inspection after a
+vertical deck scroll shows four full-width connected segments from x=73 through x=935
+and y=1517 through y=2034. The navigation inset begins at y=2074, leaving 39 physical
+pixels between the control and the system zone. `Play in order` retains the selected
+container and checkmark; all four full labels are visible. UI Automator exposes each
+label and a checked selected mode. No horizontal scroll exists. The active questionnaire
+now presents this settled correction directly
 after the accepted before-state, before the default-text 3 × 3 matrix. Its validator
 requires the 863 × 518px connected outline and selected-container pixels. A positive
 control substituting the rejected radio-row capture fails with `is missing its
@@ -1224,7 +1227,7 @@ its pre-existing capture changes. The exact cleared questionnaire is open throug
 normal Helium desktop entry. KWin reports `Music player design: existing-screen
 refinement matrix - Helium` active and non-minimized at 1080 × 1880 on `HDMI-A-1`,
 internal ID `{63ccc0f8-3470-4305-a7fd-11e71988cbc1}`. Prototype HEAD and upstream are
-`67d5f9720`. Check main HEAD against upstream after this final handover commit, leave
+`bf6830f4f`. Check main HEAD against upstream after this final handover commit, leave
 the form visible, and wait. The vertical segmented large-text correction is settled;
 the form asks only the separable spacing and Previous/Next icon-button treatment
 questions.

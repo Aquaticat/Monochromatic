@@ -697,19 +697,19 @@ dialog::backdrop {
             <span class="option-title">
               <span class="option-code">Settled correction · 200% text</span>
               <strong>Purely vertical segmented mode control</strong>
-              <span class="option-summary">Four connected full-label segments; no radio-row substitution and no horizontal scroll</span>
+              <span class="option-summary">Transport scrolled vertically to show four connected full-label segments above the navigation inset</span>
             </span>
           </div>
-          <button class="preview-open" type="button" data-preview-title="Settled vertical segmented mode control at 200% text" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
+          <button class="preview-open" type="button" data-preview-title="Settled vertical segmented mode control at 200% text, scrolled into its safe position" data-preview-width="852" data-preview-height="883" data-source-width="2076" data-source-height="2152">
             <span class="device-frame">
               <span class="device-screen">
-                <img data-candidate-source="Native Compose large-text segmented capture, prototype commit 67d5f9720" src="@@IMAGE_LARGE_TEXT_SEGMENTED@@" width="852" height="883" alt="Unfolded music-player screen at 200 percent text with four connected full-label mode segments stacked vertically">
+                <img data-candidate-source="Native Compose large-text segmented capture, prototype commit bf6830f4f" src="@@IMAGE_LARGE_TEXT_SEGMENTED@@" width="852" height="883" alt="Unfolded music-player screen at 200 percent text, vertically scrolled to show four connected full-label mode segments clear of the navigation bar">
                 <span class="device-camera" aria-hidden="true"></span>
               </span>
             </span>
             <span class="preview-label">Open the corrected 200% state at measured size</span>
           </button>
-          <div class="assessment"><p><strong>Settled correction:</strong> the selected segment keeps its fill and checkmark; all four options remain one outlined segmented control with radio semantics.</p></div>
+          <div class="assessment"><p><strong>Settled correction:</strong> the selected segment keeps its fill and checkmark; all four options remain one outlined segmented control with radio semantics. The deck scrolls vertically so the complete control clears the system navigation inset; the segmented control itself never scrolls horizontally.</p><p><strong>Prototype boundary:</strong> the pinned Compose library has no vertical group wrapper. This native study composes real segmented-button elements into the vertical stack; production must verify assistive technology announces one mutually exclusive group.</p></div>
         </article>
       </div>
     </div>
