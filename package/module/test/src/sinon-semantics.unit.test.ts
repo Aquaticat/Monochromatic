@@ -125,6 +125,24 @@ await describe({
       },
     },),
     it({
+      name: 'deferred contextual getters preserve receiver and setter conversion rejects before mutation',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        const target = { label: 'receiver', method: (): string => 'original', };
+        const fake = sinon.stub(target, 'method',);
+        fake.get(function ownedGetter(this: typeof target,): string {
+          return this.label;
+        },);
+        expect(Reflect.get(target, 'method',),).toBe('receiver',);
+        await it({ name: 'reader outside private getter', fn: async (): Promise<void> => {
+          expect(target.method(),).toBe('original',);
+        }, },);
+        fake.value(() => 'private value',);
+        expect(target.method(),).toBe('private value',);
+        expect(() => fake.set(() => {},),).toThrow('context-owned data-method',);
+        expect(target.method(),).toBe('private value',);
+      },
+    },),
+    it({
       name: 'a context-selected constructor spy preserves new invocation and prototype identity',
       fn: async ({ sinon, }: TestContext,): Promise<void> => {
         const target = { Constructor: Date, };
