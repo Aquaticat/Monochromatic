@@ -9,7 +9,7 @@ producing true black backgrounds across all UI panels,
  and editor areas.
 Warnings retain their yellow underline but lose the olive background fill.
 
-![Islands Black theme](screenshot/islands-black.png)
+![Islands Black theme](https://monochromatic-lfs.an1298.workers.dev/06d9081f0b8d7fdfeda6cf4332717973ef315a91752e69660745db8668d45e00/package/intellij-plugin/islands-black/screenshot/islands-black.png)
 
 ## Installation
 

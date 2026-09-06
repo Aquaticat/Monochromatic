@@ -200,85 +200,85 @@ Wide desktop playback shows the source actions,
  selected-page rows,
  and progress.
 
-![Wide desktop playback with a selected track](asset/readme/desktop-wide-playing.png)
+![Wide desktop playback with a selected track](https://monochromatic-lfs.an1298.workers.dev/48ac7c80011f3c45b0016809397deda51071a3cc685e827c794a957fb1f1a011/package/music-player/asset/readme/desktop-wide-playing.png)
 
 Wide layout keeps the page grid and selected-page rows in independent scroll containers.
 
-![Wide desktop with independently scrolled page and track panes](asset/readme/desktop-wide-independent-scroll.png)
+![Wide desktop with independently scrolled page and track panes](https://monochromatic-lfs.an1298.workers.dev/a09159a93a7063913f5086bcb9ad40086258bb91ac2425c4ef0a8bfe314387a0/package/music-player/asset/readme/desktop-wide-independent-scroll.png)
 
 A synthetic stress fixture shows a visible 128-folder page grid.
  Its first folder has 200 hard-linked FLAC rows,
 which demonstrates navigation density rather than a performance limit.
 
-![Wide desktop with a 128-folder page grid](asset/readme/desktop-stress-pages.png)
+![Wide desktop with a 128-folder page grid](https://monochromatic-lfs.an1298.workers.dev/4b31cde0f5762d7b64dd5a0a79b9357332dc107526216d67d2e3e97193d31e07/package/music-player/asset/readme/desktop-stress-pages.png)
 
 An empty source root has an explicit empty-library state.
 
-![Wide desktop empty-library state](asset/readme/desktop-wide-empty.png)
+![Wide desktop empty-library state](https://monochromatic-lfs.an1298.workers.dev/9ac3fe3a3658ee7cf0323f71952ea228a568c0ec0bb8f1180fb48c066d6ff839/package/music-player/asset/readme/desktop-wide-empty.png)
 
 The desktop app follows dark appearance.
 
-![Wide desktop in dark appearance](asset/readme/desktop-wide-dark.png)
+![Wide desktop in dark appearance](https://monochromatic-lfs.an1298.workers.dev/cec6903022c52e359370eff76d6ed8e35b07265a46e1fa6d1789952dbb164b75/package/music-player/asset/readme/desktop-wide-dark.png)
 
 Narrow windows fold page controls behind a disclosure while retaining the selected page.
 
-![Narrow desktop with collapsed page controls](asset/readme/desktop-narrow-collapsed.png)
+![Narrow desktop with collapsed page controls](https://monochromatic-lfs.an1298.workers.dev/4d09a0f8749cf7371995d308e1d424a4ee05159b9d22210ab274ed0e8b19b088/package/music-player/asset/readme/desktop-narrow-collapsed.png)
 
-![Narrow desktop with revealed page controls](asset/readme/desktop-narrow-revealed.png)
+![Narrow desktop with revealed page controls](https://monochromatic-lfs.an1298.workers.dev/fa11384bbbed9490f61a96f2a2db82241f6259cafd75902c585c48f9a5085345/package/music-player/asset/readme/desktop-narrow-revealed.png)
 
 The completion control exposes repeat,
  in-order,
  shuffle-page,
  and shuffle-all states.
 
-![Desktop completion-mode states](asset/readme/desktop-playback-modes.png)
+![Desktop completion-mode states](https://monochromatic-lfs.an1298.workers.dev/8c9716da78ef250139ea3d0677a2ce706d60d5ec988bbeac2bdc5366ee70615a/package/music-player/asset/readme/desktop-playback-modes.png)
 
 The volume control includes a muted state.
 
-![Desktop muted playback](asset/readme/desktop-muted.png)
+![Desktop muted playback](https://monochromatic-lfs.an1298.workers.dev/774f00e8466a0d8ae906ccb112c28fad6279b9783e8b6ba67f4d5356d65a33fc/package/music-player/asset/readme/desktop-muted.png)
 
 All available page-control treatments are represented in the current desktop build.
 
-![Desktop page-control treatments: radio, MD1 tabs, rounded buttons, segmented buttons, Chromium tabs, and LED segmented buttons](asset/readme/desktop-page-controls.png)
+![Desktop page-control treatments: radio, MD1 tabs, rounded buttons, segmented buttons, Chromium tabs, and LED segmented buttons](https://monochromatic-lfs.an1298.workers.dev/b30276f611471ec7ef7923b5d1603e2c2d53ad072580fe0c450f2becd5eb4560/package/music-player/asset/readme/desktop-page-controls.png)
 
 Settings switches the page-control treatment and returns to the library without changing its source.
 
-![Desktop page-control settings](asset/readme/desktop-settings.png)
+![Desktop page-control settings](https://monochromatic-lfs.an1298.workers.dev/5b9409882b7070884fdca267f556b1a3dc18495188954ade7318be15def0a1b6/package/music-player/asset/readme/desktop-settings.png)
 
 ### Android library and navigation
 
 Audio access is requested before an Android library is read.
 
-![Android audio-permission gate](asset/readme/android-permission-gate.png)
+![Android audio-permission gate](https://monochromatic-lfs.an1298.workers.dev/82e6c54cc54a877b12626682a1005d28e9c1dd489c3588de87fdb9bfecff60a2/package/music-player/asset/readme/android-permission-gate.png)
 
 The Android library can be empty or populated.
 
-![Android empty and populated library states](asset/readme/android-library-states.png)
+![Android empty and populated library states](https://monochromatic-lfs.an1298.workers.dev/f506877a60f9fe5122a1a59041795cd06148e77bb0b11cfc77c6a9e605906826/package/music-player/asset/readme/android-library-states.png)
 
 The unfolded empty-library state keeps the same explicit no-tracks outcome.
 
-![Android unfolded empty-library state](asset/readme/android-empty-library.png)
+![Android unfolded empty-library state](https://monochromatic-lfs.an1298.workers.dev/5e2abe73428351f5c71fc017454a496540382f0dcd2803e730c3ed67437d92b0/package/music-player/asset/readme/android-empty-library.png)
 
 The folded cover display is the ordinary Android layout in this gallery.
 A selected paused track remains visible in the selected page.
 
-![Android cover display with a paused selected track](asset/readme/android-cover-paused.png)
+![Android cover display with a paused selected track](https://monochromatic-lfs.an1298.workers.dev/5d59036488ded1737b0cdc8a19bb174a8e636630c3d1718cbbb53f0e5f227fdf/package/music-player/asset/readme/android-cover-paused.png)
 
 The selected-page disclosure expands page controls on the cover display.
 
-![Android cover display with expanded page controls](asset/readme/android-cover-expanded.png)
+![Android cover display with expanded page controls](https://monochromatic-lfs.an1298.workers.dev/22d8dab524bd58a0366878e75735999550858b3e62193ec80d08a80dd57c13c3/package/music-player/asset/readme/android-cover-expanded.png)
 
 Selecting another page changes the visible track list while retaining the player controls.
 
-![Android cover display after page navigation](asset/readme/android-cover-navigation.png)
+![Android cover display after page navigation](https://monochromatic-lfs.an1298.workers.dev/5df986e23d4ec1a86d0920b81dbe41c852aae02b187428382f68eb53ee186075/package/music-player/asset/readme/android-cover-navigation.png)
 
 The Android app follows dark appearance during playback.
 
-![Android cover display in dark appearance while playing](asset/readme/android-cover-dark-playing.png)
+![Android cover display in dark appearance while playing](https://monochromatic-lfs.an1298.workers.dev/27849522855e6a1c64c1d138abfa693489caf836aa1774bf197bc2dd4737b092/package/music-player/asset/readme/android-cover-dark-playing.png)
 
 Settings exposes the available page-control treatments.
 
-![Android page-control settings](asset/readme/android-settings.png)
+![Android page-control settings](https://monochromatic-lfs.an1298.workers.dev/29aa2f5077d03e376a1855031ddb05ffa6e61fbf03d24b9bfdec0311e5dae160/package/music-player/asset/readme/android-settings.png)
 
 All six Android page-control rendering paths are covered below,
  in this order:
@@ -290,7 +290,7 @@ All six Android page-control rendering paths are covered below,
  Chromium-like tabs,
  and LED segmented buttons.
 
-![Android page-control treatments](asset/readme/android-page-controls.png)
+![Android page-control treatments](https://monochromatic-lfs.an1298.workers.dev/c983616ba7da9f85c3813f2ef031e01241249fe77df48bb13650023d6459911b/package/music-player/asset/readme/android-page-controls.png)
 
 ### Android foldable postures
 
@@ -302,19 +302,19 @@ The current application is responsive to available orientation and size rather t
  so its
 unfolded and tabletop application layouts are presently the same.
 
-![Android cover, unfolded, and tabletop posture comparison](asset/readme/android-fold-postures.png)
+![Android cover, unfolded, and tabletop posture comparison](https://monochromatic-lfs.an1298.workers.dev/a61338642b74e5238edacc2a8d15c1556052a830dfbb4b881ded46e229c64f9a/package/music-player/asset/readme/android-fold-postures.png)
 
-![Android unfolded populated library](asset/readme/android-unfolded-library.png)
+![Android unfolded populated library](https://monochromatic-lfs.an1298.workers.dev/e9768639fe84068949b370b71ab9bf35dd010dc85ded22241d85594cf7e57657/package/music-player/asset/readme/android-unfolded-library.png)
 
-![Android tabletop populated library](asset/readme/android-tabletop-library.png)
+![Android tabletop populated library](https://monochromatic-lfs.an1298.workers.dev/e9768639fe84068949b370b71ab9bf35dd010dc85ded22241d85594cf7e57657/package/music-player/asset/readme/android-tabletop-library.png)
 
 ### Android media controls
 
 An active MediaSession creates system media controls while playback continues outside the activity.
 
-![Android notification media card](asset/readme/android-notification.png)
+![Android notification media card](https://monochromatic-lfs.an1298.workers.dev/94e797ca9361688439cc69cf8f9a17a01babb320cc8e7809eef963897c340931/package/music-player/asset/readme/android-notification.png)
 
-![Android lock-screen media card](asset/readme/android-lockscreen.png)
+![Android lock-screen media card](https://monochromatic-lfs.an1298.workers.dev/45172d2941a5c2fb49e59af512b040b9d8920e6c55f0e634880a830899dd8988/package/music-player/asset/readme/android-lockscreen.png)
 
 ## Design direction
 
