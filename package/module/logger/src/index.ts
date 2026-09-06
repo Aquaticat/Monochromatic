@@ -4,10 +4,7 @@ export {
   DEFAULT_VERIFY_TIMEOUT_MS,
   STARTUP_BUFFER_CAP,
 } from './create-logger.ts';
-export {
-  initPromise,
-  logger,
-} from './logger.ts';
+export { logger, } from './logger.ts';
 export * as sinks from './sink/index.ts';
 export { tagged, } from './tagged.ts';
 

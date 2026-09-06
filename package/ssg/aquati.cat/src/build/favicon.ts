@@ -10,7 +10,6 @@ import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
-  initPromise,
   logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
@@ -201,7 +200,6 @@ export async function ensureFavicons(
 
 //region Standalone execution: allows running via `mise run generate:favicons`
 if (import.meta.main) {
-  await initPromise;
   await ensureFavicons({ l: logger, },);
 }
 //endregion

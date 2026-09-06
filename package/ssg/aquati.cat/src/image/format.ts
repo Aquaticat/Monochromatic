@@ -18,7 +18,6 @@ import {
 import readdir from 'tiny-readdir-glob';
 
 import {
-  initPromise,
   logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
@@ -26,8 +25,6 @@ import {
 import { maybeConvert, } from './convert.ts';
 
  // module boundary marker
-
-await initPromise;
 
 /**
  Tagged logger for the image format conversion subsystem.

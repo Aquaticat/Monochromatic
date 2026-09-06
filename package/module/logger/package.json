@@ -3,6 +3,7 @@
   "name": "@monochromatic-dev/module-logger",
   "description": "Zero-config multi-sink logger with tagged composition. Auto-discovers console, sessionStorage, and localStorage backends at import time, plus the file backend under Node and IndexedDB in browsers, with no dynamic imports in either build.",
   "type": "module",
+  "sideEffects": false,
   "module": "dist/final/neutral/index.mjs",
   "exports": {
     ".": {

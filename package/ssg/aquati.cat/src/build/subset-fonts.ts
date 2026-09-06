@@ -30,7 +30,6 @@ import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
 import {
-  initPromise,
   logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
@@ -48,8 +47,6 @@ import {
 import { ICON_CODEPOINTS, } from '../lib/icon/codepoints.ts';
 
  // module boundary marker
-
-await initPromise;
 
 /**
  Tagged logger for the subset-fonts pipeline.

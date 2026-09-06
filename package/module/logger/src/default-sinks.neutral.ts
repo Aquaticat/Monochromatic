@@ -6,10 +6,14 @@ import { createSessionStorageSink, } from './sink/session-storage.ts';
 import type { Sink, } from './types.ts';
 
 /**
- Default sink backends the platform-neutral artifact attempts, in priority
- order. Chosen at bundle time: `package.json` maps `#default-sinks` to this
- module under the `default` condition, so every non-Node resolution
+ Builds the default sink backends the platform-neutral artifact attempts, in
+ priority order. Chosen at bundle time: `package.json` maps `#default-sinks`
+ to this module under the `default` condition, so every non-Node resolution
  (browsers, Deno, Bun, workers) inlines this list without a runtime
+ platform probe. Called on the default logger's first use, never at import,
+ so a runtime that forbids timers and I/O in global scope (Cloudflare
+ Workers, issue #493) constructs and verifies its sinks inside the handler
+ that logs first. Each runtime keeps only the sinks whose `verify` confirms
  platform probe. Each runtime keeps only the sinks whose `verify` confirms
  its backend: {@link createConsoleSink} everywhere,
  {@link createIndexedDbSink} in browsers, {@link createSessionStorageSink}
@@ -25,10 +29,19 @@ import type { Sink, } from './types.ts';
  instead. The OPFS sink is exported from `./browser` but not a default:
  its stream stages writes until a close that a crash never performs, so
  IndexedDB holds the persistent-browser slot; see `DECISIONS.md`.
+
+ @returns Fresh default sinks in priority order.
+
+ @example
+ ```ts
+ const { logger } = createLogger({ sinks: createDefaultSinks() });
+ ```
  */
-export const defaultSinks: readonly Sink[] = [
-  createConsoleSink(),
-  createIndexedDbSink(),
-  createSessionStorageSink(),
-  createLocalStorageSink(),
-];
+export function createDefaultSinks(): readonly Sink[] {
+  return [
+    createConsoleSink(),
+    createIndexedDbSink(),
+    createSessionStorageSink(),
+    createLocalStorageSink(),
+  ];
+}

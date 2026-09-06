@@ -6,10 +6,12 @@ import { createSessionStorageSink, } from './sink/session-storage.ts';
 import type { Sink, } from './types.ts';
 
 /**
- Default sink backends the Node artifact attempts, in priority order.
- Chosen at bundle time: `package.json` maps `#default-sinks` to this module
- under the `node` condition, so `logger.ts` inlines this list without a
- runtime platform probe. Each runtime keeps only the sinks whose `verify`
+ Builds the default sink backends the Node artifact attempts, in priority
+ order. Chosen at bundle time: `package.json` maps `#default-sinks` to this
+ module under the `node` condition, so `logger.ts` inlines this list without
+ a runtime platform probe. Called on the default logger's first use, never
+ at import, so no sink is constructed in global scope (issue #493). Each
+ runtime keeps only the sinks whose `verify`
  confirms its backend: {@link createConsoleSink} everywhere,
  {@link createSessionStorageSink} wherever web storage round-trips (Node
  22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
@@ -23,10 +25,19 @@ import type { Sink, } from './types.ts';
  because Node exposes neither `indexedDB` nor `navigator.storage`; they
  ship through the `./browser` subpath instead, keeping their probes and
  code out of this artifact.
+
+ @returns Fresh default sinks in priority order.
+
+ @example
+ ```ts
+ const { logger } = createLogger({ sinks: createDefaultSinks() });
+ ```
  */
-export const defaultSinks: readonly Sink[] = [
-  createConsoleSink(),
-  createSessionStorageSink(),
-  createLocalStorageSink(),
-  createFileSink(),
-];
+export function createDefaultSinks(): readonly Sink[] {
+  return [
+    createConsoleSink(),
+    createSessionStorageSink(),
+    createLocalStorageSink(),
+    createFileSink(),
+  ];
+}

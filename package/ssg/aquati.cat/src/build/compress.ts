@@ -106,11 +106,9 @@ if (isMainThread) {
    else branch) never pay its import-time sink auto-discovery.
    */
   const {
-    initPromise,
     logger,
     tagged,
   } = await import('@monochromatic-dev/module-logger');
-  await initPromise;
   /**
    Tagged logger for the compression stage.
    */

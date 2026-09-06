@@ -6,12 +6,9 @@
  */
 import type { Database, } from '@tursodatabase/database';
 import {
-  initPromise,
   logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
-
-await initPromise;
 
 /**
  Tagged logger for the migration runner.

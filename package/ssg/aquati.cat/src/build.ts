@@ -16,7 +16,6 @@ import type { ReadonlyDeep, } from 'type-fest';
 import { relative, } from 'node:path';
 
 import {
-  initPromise,
   logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
@@ -51,8 +50,6 @@ import { renderMdx, } from './lib/markdown.ts';
 // File justification: 120 lines: linear pipeline script; splitting the
 // orchestration across multiple files would scatter the build sequence.
  // module boundary marker
-
-await initPromise;
 
 /**
  Tagged logger for the build pipeline.
