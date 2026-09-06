@@ -3,9 +3,10 @@
 ## Status
 
 Campaign in progress.
-The Node orchestration layer and the Node sink boundary layer landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz`.
-The coverage-reachability gate,
- the CI workflow,
+The Node orchestration layer,
+ the Node sink boundary layer,
+ and the coverage-reachability gate landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz`.
+The CI workflow,
  the toml-edit sidecar migration,
  and the Playwright browser layer follow in that order.
 Plan,
@@ -220,6 +221,56 @@ the test harness's own logger,
 saw its verify timer fire before the filesystem answered and wrote a breadcrumb.
 Each run now yields once through `setImmediate` (`yieldToEventLoop` in `src/sink-boundary-harness.ts`).
 
+## Landed: coverage-reachability gate
+
+The campaign measures its own reach with the deterministic V8 line-coverage gate toml-edit established
+(`doc/decision/toml-edit-fuzzing.md`,
+ "Coverage gate"),
+ copied into the sidecar as
+`src/coverage-v8.ts`,
+ `src/coverage-aggregate.ts`,
+ and `src/coverage-report.ts`
+and pointed at the runtime package's `src` through the `/ts` subpath it resolves.
+The driver (`src/coverage-driver.ts` and the `src/coverage-*.ts` scenario modules) imports the runtime source the same way
+and replays fixed inputs through every orchestration branch (scripted fake sinks with the identity gate)
+and every Node-reachable sink branch:
+the console sink under silent,
+ verbose,
+ and browser-window modes and under hosts whose `env`,
+ `argv`,
+ or `stderr` throw;
+the file sink with a present,
+ absent,
+ blocked,
+ and vanished log directory;
+the sessionStorage and localStorage sinks over Node's real backends and over quota-limited,
+ flaky,
+ and refusing stand-ins;
+the record buffer's every trigger including page-lifecycle events fired through a page stand-in;
+the key,
+ quota,
+ and quota-error helpers under staged Deno and Bun markers.
+The `fuzz:coverage` task runs the driver under `--localstorage-file` so the localStorage sink elects instead of taking the flagless short-circuit;
+`--write` refreezes `coverage-baseline.json`.
+
+First baseline,
+ 2026-09-06:
+ 3376 of 3623 code lines across the 27 runtime source files.
+Every Node-reachable file sits between 97 and 100 percent;
+the remaining lines there are unreachable under Node by construction
+(the console verify guard for a missing `console`,
+ the browser and unknown runtime branches,
+ a timer without `unref`)
+or internal invariants (a missing sink entry,
+ a second `initialize` call).
+The browser-only IndexedDB,
+ OPFS,
+ and IndexedDB utility files sit at 47 to 69 percent and wait for the Playwright layer.
+The driver's adequacy was checked against the uncovered-line list,
+ not assumed:
+each scenario added after the first freeze targeted a named uncovered line,
+and one apparent gap (the store's oldest-first sort) turned out to need two prior-run entries before the comparator runs at all.
+
 ## Superseded decisions
 
 The June record fixed several contracts at design time;
@@ -259,10 +310,6 @@ Each is recorded in `package/module/logger/DECISIONS.md`.
 
 ## Pending deliverables
 
-- Coverage-reachability gate in the sidecar:
-  a fixed-seed driver importing the runtime package's `/ts` source,
-  a committed `coverage-baseline.json`,
-   and a `fuzz:coverage` task mirroring `jsonc-edit.fuzz`.
 - `.github/workflows/logger-fuzz.yml` mirroring `toml-edit-fuzz.yml`:
   build,
    `lint:types`,

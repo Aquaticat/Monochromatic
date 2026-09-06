@@ -50,6 +50,15 @@ Plan and grill record:
    a throwaway package directory for the file sink,
    readers that reparse what the JSONL sinks persisted,
    and an independent reference for the console sink's output.
+- `src/coverage-driver.ts` and the other `src/coverage-*.ts` modules:
+   the fixed-input reachability driver over the runtime package's `/ts` source,
+   its stand-ins for storage,
+   page lifecycle,
+   and hostile hosts,
+   and the V8 line-coverage projector and baseline gate copied from toml-edit.
+- `coverage-baseline.json`:
+   covered code lines per runtime source file;
+   the gate fails on any per-file decrease.
 - `src/*.property.unit.test.ts`:
    the properties;
    every one imports the built runtime artifact through the package name,
@@ -63,4 +72,7 @@ mise run //package/module/logger.fuzz:test:unit
 
 # Time-budgeted campaign (rebuilds module-logger first)
 mise run //package/module/logger.fuzz:fuzz --budget 60000
+
+# Coverage-reachability gate; --write refreezes the baseline
+mise run //package/module/logger.fuzz:fuzz:coverage
 ```
