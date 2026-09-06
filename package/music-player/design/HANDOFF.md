@@ -1157,3 +1157,14 @@ in the introduction and Q2. Add a raster fingerprint guard proving the complete
 segmented control is pixel-identical across all nine refinements. D1, its labels,
 selected state, outline, dimensions, position, and large-text radio-row adaptation stay
 unchanged and are not questions.
+
+The user supplied
+`/var/home/user/Pictures/Screenshots/Screenshot_20260905_222143.png`, circling the four
+radio rows in the 200% capture, and clarified: `These should be segmented buttons.` An
+initial response wrongly proposed keeping one horizontal segmented row inside a
+horizontal scroller. The user corrected that too: segmented buttons can be purely
+vertical. Implement one single-select vertical segmented control at large text: four
+connected full-label segments stacked top to bottom, with segmented outlines,
+selection fill, checkmark, and radio semantics. Do not use horizontal scrolling and do
+not substitute plain radio rows. The default one-row segmented control remains
+unchanged. Recapture the 200% state and show the corrected evidence in the active form.

@@ -314,6 +314,17 @@ boundary. Measure and critique its visible composition first. Candidates may mov
 resize, align, or restyle only elements already visible there. A previously documented
 but absent control is a new feature and requires explicit approval.
 
+## 5k. Text scaling replaced a settled component
+
+**What happened.** The segmented playback-mode control was settled, but the 200% text
+adaptation silently replaced it with four plain radio rows. The user circled those rows
+and corrected them twice: they must remain segmented buttons, and the large-text
+control can be purely vertical.
+
+**The rule.** Accessibility adaptation preserves settled component identity. Reflow the
+same control when space changes. For this mode selector, default text uses one horizontal
+segmented row; large text uses one vertical segmented stack with full labels.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field. No exceptions.** Not "usually",
@@ -378,3 +389,6 @@ but absent control is a new feature and requires explicit approval.
     candidates. Move, resize, align, or restyle only elements visible in that
     screenshot. A teaching example changes presentation method, not scope. A documented
     but absent control is a new feature and requires explicit approval.
+12. **Accessibility adaptation preserves settled component identity.** Reflow the same
+    control when space changes. This mode selector is one horizontal segmented row at
+    default text and one vertical full-label segmented stack at large text.

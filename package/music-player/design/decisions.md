@@ -161,10 +161,11 @@ Use the real Compose component so it supplies the 40dp visual container, 48dp ta
 `Repeat`, `In order`, `Shuffle`, and `Shuffle all`; `Shuffle` means the current folder
 and carries the complete accessibility label `Shuffle current folder`. All labels
 remain visible at the default font scale. At a system font scale of 1.5 or greater,
-the same choices reflow to four full-label Material radio rows because segmented
-buttons cannot wrap and 200% text must not truncate. It is **never collapsed to a
-single chip** to save height. The connected-group note
-below is history. The archive source is `components/segmented-buttons/` under the
+the same choices become one purely vertical segmented control: four connected,
+full-label segments stacked top to bottom. Retain the segmented outline, selected fill,
+checkmark, and single-select radio semantics. Never substitute plain radio rows, add
+horizontal scrolling, or collapse the control to a single chip. The connected-group
+note below is history. The archive source is `components/segmented-buttons/` under the
 user-supplied `m3.material.io` archive.
 
 ### D1 (superseded). Mode control = connected button group (candidate mode-d)
