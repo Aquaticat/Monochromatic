@@ -183,6 +183,14 @@ export const styleRules: DummyRuleMap = {
   'import/no-named-export': 'off',
   'import/no-namespace': 'off',
 
+  //region stylistic: comment layout
+  // TSDoc body lines omit canonical `* ` prefixes while retaining one-space block indentation.
+  'stylistic/require-asterisk-prefix': [
+    'warn',
+    'never',
+  ],
+  //endregion stylistic: comment layout
+
   //region stylistic: one-item-per-line enforcement
   'stylistic/param-per-line': 'warn',
   'stylistic/argument-per-line': 'warn',
