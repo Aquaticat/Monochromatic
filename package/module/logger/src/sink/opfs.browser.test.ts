@@ -7,18 +7,18 @@ import {
 
 declare global {
   // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
-  var moduleLogger: typeof import('@monochromatic-dev/module-logger');
+  var moduleLoggerBrowser: typeof import('@monochromatic-dev/module-logger/browser');
 }
 
 test.describe('OPFS sink', () => {
   test.beforeEach(async ({ page, },) => {
     await page.goto('/',);
-    await page.waitForFunction(() => globalThis.moduleLogger !== undefined);
+    await page.waitForFunction(() => globalThis.moduleLoggerBrowser !== undefined);
   },);
 
   test('createOpfsSink exposes a callable verify', async ({ page, },) => {
     const typeofVerify = await page.evaluate(() => {
-      const { createOpfsSink, } = globalThis.moduleLogger.sinks;
+      const { createOpfsSink, } = globalThis.moduleLoggerBrowser;
       return typeof createOpfsSink().verify;
     },);
     expect(typeofVerify,).toBe('function',);
@@ -26,7 +26,7 @@ test.describe('OPFS sink', () => {
 
   test('verify resolves a boolean', async ({ page, },) => {
     const resultType = await page.evaluate(async () => {
-      const { createOpfsSink, } = globalThis.moduleLogger.sinks;
+      const { createOpfsSink, } = globalThis.moduleLoggerBrowser;
       const resolved = await createOpfsSink().verify();
       return typeof resolved;
     },);
@@ -35,7 +35,7 @@ test.describe('OPFS sink', () => {
 
   test('verify detects OPFS availability', async ({ page, },) => {
     const result = await page.evaluate(async () => {
-      const { createOpfsSink, } = globalThis.moduleLogger.sinks;
+      const { createOpfsSink, } = globalThis.moduleLoggerBrowser;
       return createOpfsSink().verify();
     },);
     expect(result,).toBe(true,);
@@ -43,7 +43,7 @@ test.describe('OPFS sink', () => {
 
   test('sink write method exists', async ({ page, },) => {
     const typeofSink = await page.evaluate(() => {
-      const { createOpfsSink, } = globalThis.moduleLogger.sinks;
+      const { createOpfsSink, } = globalThis.moduleLoggerBrowser;
       return typeof createOpfsSink().write;
     },);
     expect(typeofSink,).toBe('function',);
@@ -51,7 +51,7 @@ test.describe('OPFS sink', () => {
 
   test('a verified sink writes records across levels and message shapes', async ({ page, },) => {
     const allSucceeded = await page.evaluate(async () => {
-      const { createOpfsSink, } = globalThis.moduleLogger.sinks;
+      const { createOpfsSink, } = globalThis.moduleLoggerBrowser;
       const sink = createOpfsSink();
       await sink.verify();
       const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;

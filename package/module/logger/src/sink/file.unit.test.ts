@@ -9,19 +9,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { LogRecord, } from '@monochromatic-dev/module-logger';
 import {
-  sinks,
-  type LogRecord,
-} from '@monochromatic-dev/module-logger';
-
-/**
- Sink factories under test, read from the built artifact's `sinks` namespace.
- */
-const {
+  _findNodeModulesUp as findNodeModulesUp,
+  _NO_NODE_MODULES_FOUND as NO_NODE_MODULES_FOUND,
   createFileSink,
-  findNodeModulesUp,
-  NO_NODE_MODULES_FOUND,
-} = sinks;
+} from '@monochromatic-dev/module-logger/node';
 
 /**
  Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
@@ -168,9 +161,9 @@ await describe({
     it({
       name: 'write before verify resolves without touching the filesystem',
       fn: async () => {
-        // Verification resolves the log path and caches `appendFile`; without
-        // it both stay unset, so write takes the unset-guard early return,
-        // resolving as a silent no-op rather than throwing or writing.
+        // Verification resolves the log path; without it the path stays
+        // unset, so write takes the unset-guard early return, resolving as a
+        // silent no-op rather than throwing or writing.
         const sink = createFileSink();
         await expect(
           sink.write(record({ message: 'before verify', },),),

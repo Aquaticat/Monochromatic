@@ -1,42 +1,15 @@
-import { createLogger, } from './create-logger.ts';
-import { createConsoleSink, } from './sink/console.ts';
-import { createFileSink, } from './sink/file.ts';
-import { createIndexedDbSink, } from './sink/indexed-db.ts';
-import { createLocalStorageSink, } from './sink/local-storage.ts';
-import { createSessionStorageSink, } from './sink/session-storage.ts';
-import type {
-  Logger,
-  Sink,
-} from './types.ts';
+import { defaultSinks, } from '#default-sinks';
 
-/**
- Default sink backends to attempt, in priority order. Each runtime keeps
- only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
- everywhere, {@link createIndexedDbSink} in browsers,
- {@link createSessionStorageSink} wherever web storage round-trips (browsers,
- Node 22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
- round-trips (browsers, Deno, Node launched with `--localstorage-file`),
- {@link createFileSink} under Node. The noop sink is intentionally absent:
- the console sink verifies wherever `console` and `queueMicrotask` exist,
- so the default logger has a backend in every supported runtime, and a
- custom `createLogger` whose sinks all fail verification surfaces the
- "No logging backends available" error instead of silently discarding.
- The OPFS sink is exported
- but no longer a default: its stream stages writes until a close that a
- crash never performs, so IndexedDB holds the persistent-browser slot; see
- `DECISIONS.md`.
- */
-const defaultSinks: readonly Sink[] = [
-  createConsoleSink(),
-  createIndexedDbSink(),
-  createSessionStorageSink(),
-  createLocalStorageSink(),
-  createFileSink(),
-];
+import { createLogger, } from './create-logger.ts';
+
+import type { Logger, } from './types.ts';
 
 /**
  Default multi-sink logger plus its eager readiness promise, built by
- applying {@link createLogger} to {@link defaultSinks}.
+ applying {@link createLogger} to the platform-selected `defaultSinks`
+ (`default-sinks.node.ts` under the `node` condition,
+ `default-sinks.neutral.ts` otherwise; see the `imports` map in
+ `package.json`).
  */
 const {
   initPromise: defaultInitPromise,

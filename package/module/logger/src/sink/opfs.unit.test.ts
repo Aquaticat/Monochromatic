@@ -3,23 +3,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  sinks,
-} from '@monochromatic-dev/module-logger';
-
-/**
- Sink factories under test, read from the built artifact's `sinks` namespace.
- */
-const {
-  createOpfsSink,
-} = sinks;
+import { createOpfsSink, } from '@monochromatic-dev/module-logger/browser';
 
 // Node/Bun has no `navigator.storage`, so this file exercises the
 // unavailable-backend fallback that the browser test (which runs where OPFS
 // exists) never reaches: `getDirectory` throws and is caught, and drained
 // batches hit the unset-stream guard. The available path lives in
 // `opfs.browser.test.ts`; the shared buffering policy is covered in
-// `record-buffer.unit.test.ts`.
+// `record-buffer.unit.test.ts`. The factory is reached through the
+// `./browser` subpath because the root entry no longer exports it.
 await describe({
   name: 'OPFS sink (node fallback)',
   children: [

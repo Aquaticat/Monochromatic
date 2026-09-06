@@ -1,12 +1,21 @@
-import type { stat as Stat, } from 'node:fs/promises';
-import type {
-  dirname as Dirname,
-  join as Join,
+import {
+  appendFile,
+  mkdir,
+  readFile,
+  stat,
+} from 'node:fs/promises';
+import {
+  dirname,
+  join,
 } from 'node:path';
 
 import { reportLoggerInternalError, } from '../error-format.ts';
 
 import type { Sink, } from '../types.ts';
+
+//region Ancestor search
+// Locates the project the process belongs to so log files land beside its
+// `node_modules` rather than at whatever stray cwd launched the script.
 
 /**
  Sentinel returned by {@link findNodeModulesUp} when no ancestor directory
@@ -34,13 +43,13 @@ export const NO_NODE_MODULES_FOUND: unique symbol = Symbol('logger:no-node-modul
  would create `node_modules/.monochromatic/` inside those trees, polluting
  shipped artifacts.
  
- Exported primarily so `index.unit.test.ts` can exercise both the hit
- and miss paths directly with an injected `stat`.
+ Exported through the `./node` subpath primarily so `file.unit.test.ts`
+ can exercise both the hit and miss paths directly with an injected `stat`.
  
  @param cwd - starting directory for the upward search
  
- @param stat - `node:fs/promises` stat (injected so the dynamic
- import stays in one place)
+ @param stat - `node:fs/promises` stat, injected so tests drive hit,
+ miss, and fault paths deterministically without touching a real tree
  
  @param dirname - `node:path` dirname
  
@@ -59,22 +68,22 @@ export const NO_NODE_MODULES_FOUND: unique symbol = Symbol('logger:no-node-modul
 export async function findNodeModulesUp(
   {
     cwd,
-    stat,
-    dirname,
-    join,
+    stat: statPath,
+    dirname: parentOf,
+    join: joinPath,
     reportError = reportLoggerInternalError,
   }: {
     readonly cwd: string;
-    readonly stat: typeof Stat;
-    readonly dirname: typeof Dirname;
-    readonly join: typeof Join;
+    readonly stat: typeof stat;
+    readonly dirname: typeof dirname;
+    readonly join: typeof join;
     readonly reportError?: typeof reportLoggerInternalError;
   },
 ): Promise<string | typeof NO_NODE_MODULES_FOUND> {
   /**
    Directory being tested in this iteration; either resolves to a node_modules or triggers the walk to the parent.
    */
-  const candidate = join(
+  const candidate = joinPath(
     cwd,
     'node_modules',
   );
@@ -82,7 +91,7 @@ export async function findNodeModulesUp(
     /**
      Stat result for `candidate`; only directories count as a hit, guarding against a sibling file also named `node_modules`.
      */
-    const entry = await stat(candidate,);
+    const entry = await statPath(candidate,);
     if (entry.isDirectory())
       return candidate;
   }
@@ -100,26 +109,33 @@ export async function findNodeModulesUp(
   /**
    Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk.
    */
-  const parent = dirname(cwd,);
+  const parent = parentOf(cwd,);
   if (parent === cwd)
     return NO_NODE_MODULES_FOUND;
   return await findNodeModulesUp({
     cwd: parent,
-    stat,
-    dirname,
-    join,
+    stat: statPath,
+    dirname: parentOf,
+    join: joinPath,
     reportError,
   },);
 }
+//endregion Ancestor search
+
+//region File sink
+// Append-only JSONL sink. Imports `node:fs/promises` statically: this module
+// is reachable only from the Node artifact (the `./node` subpath and the
+// `#default-sinks` `node` condition), so the `node` export condition already
+// asserts a Node runtime and no `process.versions.node` probe is needed.
 
 /**
  Builds a file sink that appends JSONL records to the nearest ancestor
  `node_modules/.monochromatic/{timestamp}.log.jsonl` (resolved once during
- verification). The resolved path, the cached `appendFile`, and the
- verification memo live in this instance's closure (no module-global state),
- so independent loggers and tests never share a log file or need a reset
- hook. No `flush` hook: each `write` awaits `appendFile` directly, so there
- is no buffered state to drain.
+ verification). The resolved path and the verification memo live in this
+ instance's closure (no module-global state), so independent loggers and
+ tests never share a log file or need a reset hook. No `flush` hook: each
+ `write` awaits `appendFile` directly, so there is no buffered state to
+ drain.
  
  @returns Sink backed by `node:fs/promises`.
  
@@ -132,60 +148,32 @@ export async function findNodeModulesUp(
  */
 export function createFileSink(): Sink {
   /**
-   Instance-local file-sink resources. `appendFile` and `filePath` are
-   populated during verification and read by `write`; `verifyPromise`
-   memoizes concurrent verification so a caller arriving mid-flight shares
-   the same async work rather than starting a second probe.
+   Instance-local file-sink resources. `filePath` is populated during
+   verification and read by `write`; `verifyPromise` memoizes concurrent
+   verification so a caller arriving mid-flight shares the same async work
+   rather than starting a second probe.
    */
   const state: {
-    // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
-    appendFile?: typeof import('node:fs/promises').appendFile;
     filePath?: string;
     verifyPromise?: Promise<boolean>;
   } = {};
 
   /**
    Actual verification work, invoked exactly once via the memoized
-   `verifyPromise`. Resolves the log path and caches `appendFile`, marking
-   the sink unavailable when the upward search yields
-   {@link NO_NODE_MODULES_FOUND}. The logger owns the resulting
-   availability, so no flag is kept here.
+   `verifyPromise`. Resolves the log path, marking the sink unavailable
+   when the upward search yields {@link NO_NODE_MODULES_FOUND}. The logger
+   owns the resulting availability, so no flag is kept here.
    
    @returns Whether file system logging is available.
    */
   async function runVerify(): Promise<boolean> {
-    // Guard: skip dynamic import entirely outside Node.js to avoid
-    // browser console errors from attempting to fetch node: URLs.
-    if ((globalThis.process
-      === undefined)
-      || (globalThis.process
-        .versions
-        ?.node
-        === undefined))
-      return false;
-
     try {
-      // Dynamic import for Node.js modules: cache appendFile for use in write.
-      /**
-       Dynamically imported `node:fs/promises`; held in this scope so its members are reused without re-importing.
-       */
-      const fs = await import('node:fs/promises');
-      /**
-       Path utilities dynamically imported alongside `fs`; needed by the upward search for the closest node_modules.
-       */
-      const {
-        dirname,
-        join,
-      } = await import('node:path');
-
-      state.appendFile = fs.appendFile;
-
       /**
        Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
        */
       const nodeModulesDir = await findNodeModulesUp({
         cwd: process.cwd(),
-        stat: fs.stat,
+        stat,
         dirname,
         join,
       },);
@@ -204,7 +192,7 @@ export function createFileSink(): Sink {
         nodeModulesDir,
         '.monochromatic',
       );
-      await fs.mkdir(
+      await mkdir(
         LOG_DIR,
         { recursive: true, },
       );
@@ -217,25 +205,29 @@ export function createFileSink(): Sink {
         ':',
         '-',
       );
-      state.filePath = join(
+      /**
+       Log file chosen for this sink instance; kept in a local so the probe below reads a narrowed `string`.
+       */
+      const filePath = join(
         LOG_DIR,
         `${timestamp}.log.jsonl`,
       );
+      state.filePath = filePath;
 
       // Verify by writing and reading test data.
       /**
        Probe record written and read back to confirm the chosen file path round-trips.
        */
       const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
-      await state.appendFile(
-        state.filePath,
+      await appendFile(
+        filePath,
         testData,
       );
       /**
        Probe contents read back; matching the literal `"test":true` proves the append + read path works end-to-end.
        */
-      const content = await fs.readFile(
-        state.filePath,
+      const content = await readFile(
+        filePath,
         'utf8',
       );
       return content.includes('"test":true',);
@@ -272,13 +264,16 @@ export function createFileSink(): Sink {
    @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
   async function write(record: object,): Promise<void> {
-    // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath/appendFile are optional (unset before verification); checking presence
-    if ((!state.filePath) || (!state.appendFile))
+    /**
+     Log file resolved by verification; unset before (or after a failed) verify, in which case the record is dropped silently.
+     */
+    const { filePath, } = state;
+    if (filePath === undefined)
       return;
 
     try {
-      await state.appendFile(
-        state.filePath,
+      await appendFile(
+        filePath,
         `${JSON.stringify(record,)}\n`,
       );
     }
@@ -295,3 +290,4 @@ export function createFileSink(): Sink {
     write,
   };
 }
+//endregion File sink

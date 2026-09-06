@@ -3,16 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  sinks,
-} from '@monochromatic-dev/module-logger';
-
-/**
- Sink factories under test, read from the built artifact's `sinks` namespace.
- */
-const {
-  createIndexedDbSink,
-} = sinks;
+import { createIndexedDbSink, } from '@monochromatic-dev/module-logger/browser';
 
 // Node, Deno, and Bun expose no `indexedDB` (probed on Node 26, Deno 2.9,
 // Bun 1.3), so this file exercises the unavailable-backend fallback that the
@@ -20,7 +11,8 @@ const {
 // short-circuits on the missing global, and drained batches hit the
 // unset-connection guard. The available path lives in
 // `indexed-db.browser.test.ts`; the shared buffering policy is covered in
-// `record-buffer.unit.test.ts`.
+// `record-buffer.unit.test.ts`. The factory is reached through the
+// `./browser` subpath because the root entry no longer exports it.
 await describe({
   name: 'IndexedDB sink (node fallback)',
   children: [
