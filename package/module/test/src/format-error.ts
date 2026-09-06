@@ -23,8 +23,6 @@
  @module
  */
 
-import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
-
 import {
   type AssertionSite,
   readAssertionSites,
@@ -38,13 +36,14 @@ import {
 
 /**
  Resolves the monorepo root directory (with trailing slash) by
- calling {@link findMiseMonorepoRootCached} from
+ calling `findMiseMonorepoRootCached` from
  `@monochromatic-dev/module-fs-path`. The shared cached variant
  memoises the result process-wide, so no local cache is needed.
  Falls back to `process.cwd()` when the cached variant rejects
- (no `mise.toml` with `[monorepo]` found, browser without
- filesystem, etc.), and to the empty string when `process.cwd()`
- is also unavailable.
+ (no `mise.toml` with `[monorepo]` found), and to the empty string
+ outside Node or when `process.cwd()` is unavailable.
+ The filesystem dependency stays behind the Node runtime check
+ so neutral browser consumers can import this module.
  
  Imports from module-fs-path create a workspace cycle (module-test
  is in module-fs-path's devDependencies); accepted because the
@@ -54,7 +53,11 @@ import {
    string when unavailable
  */
 async function resolveWorkspacePrefix(): Promise<string> {
+  if (typeof process === 'undefined' || typeof process.versions?.node !== 'string')
+    return '';
   try {
+    /** Workspace filesystem discovery belongs only to the Node diagnostic path. */
+    const { findMiseMonorepoRootCached, } = await import('@monochromatic-dev/module-fs-path/ts');
     /**
      Captured root so the trailing slash can be appended exactly once before returning.
      */

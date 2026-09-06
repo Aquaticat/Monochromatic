@@ -96,7 +96,23 @@ Prototype evidence:
   fix the typed clock fixture using a checked runtime `uninstall`,
   explicitly retain `call`/`apply`/`bind` factories past completion,
   and document the intentional Node emitter lint exception.
-  These changes still need commit and verification.
+  These changes landed in `53013f383`.
+  Full rebuilt package tests and `lint:types` passed in `proc_095e`.
+  Its scoped formatter left only fixture callback typing findings,
+  subsequently fixed in `cd8a87964`.
+- `cd8a87964` adds the browser fixture,
+  root Playwright discovery/static-asset routing,
+  and package `test:browser` with a disposable 2 GiB/2 CPU container.
+  Root config ownership was checked in `file-enforcer.config.ts`:
+  the Playwright configuration is not generated.
+- Actual Chromium,
+  Firefox,
+  and WebKit runs in `proc_ed16` all rejected importing the consumer bundle.
+  Firefox identified `node:fs/promises`.
+  The rebuilt neutral `sandbox-owner` chunk has leading static `node:fs/promises` and `node:path` imports.
+  `format-error.ts` statically imports the module-fs-path barrel;
+  its workspace lookup is now being moved behind Node detection and a dynamic import.
+  Do not claim browser compatibility until the actual browser tests pass.
 
 ### Independent review triage
 
