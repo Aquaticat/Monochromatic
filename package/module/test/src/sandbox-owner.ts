@@ -1,30 +1,54 @@
-/** Attempt identities and runtime capabilities for test-owned mocking. @module */
+/**
+ Attempt identities and runtime capabilities for test-owned mocking. @module
+ */
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { SandboxOwnershipError, } from './sandbox-error.ts';
 
-/** Identity is the object itself, never the reusable test name or descriptor. */
+/**
+ Identity is the object itself, never the reusable test name or descriptor.
+ */
 export type SandboxOwner = {
-  /** Test name used only for diagnostics. */
+  /**
+   Test name used only for diagnostics.
+   */
   readonly name: string;
-  /** Already hierarchy-tagged test logger. */
+  /**
+   Already hierarchy-tagged test logger.
+   */
   readonly l: Logger;
-  /** Completion is irreversible, including when a timed-out body keeps running. */
+  /**
+   Completion is irreversible, including when a timed-out body keeps running.
+   */
   phase: 'running' | 'completed';
 };
 
-/** Runtime adapter; ordinary runtimes do not claim async-context isolation. */
+/**
+ Runtime adapter; ordinary runtimes do not claim async-context isolation.
+ */
 export type SandboxRuntime = {
-  /** Whether this runtime can select property values by async execution context. */
+  /**
+   Whether this runtime can select property values by async execution context.
+   */
   readonly contextual: boolean;
-  /** Current attempt, if any; callers must also inspect its phase. */
+  /**
+   Current attempt, if any; callers must also inspect its phase.
+   */
   readonly current: () => SandboxOwner | undefined;
-  /** Excludes proxy targets whose traps cannot be rolled back by the harness. */
+  /**
+   Excludes proxy targets whose traps cannot be rolled back by the harness.
+   */
   readonly isProxy: (target: object,) => boolean;
-  /** Executes a body without replacing its promise or error contract. */
+  /**
+   Executes a body without replacing its promise or error contract.
+   */
   readonly run: (options: {
-    /** Fresh attempt identity. */
+    /**
+     Fresh attempt identity.
+     */
     readonly owner: SandboxOwner;
-    /** Body including its timeout boundary. */
+    /**
+     Body including its timeout boundary.
+     */
     readonly body: () => Promise<void>;
   },) => Promise<void>;
 };
@@ -33,14 +57,20 @@ export type SandboxRuntime = {
  Rejects retained sandbox factories before they can install new target state.
 
  @param owner - attempt whose context supplied the factory
+ 
  @param operation - user-facing call name
+ 
  @throws SandboxOwnershipError when the attempt has already settled
+ 
  @example
  ```ts
  requireRunningOwner({ owner, operation: 'ctx.sinon.stub', });
  ```
  */
-export function requireRunningOwner({ owner, operation, }: {
+export function requireRunningOwner({
+  owner,
+  operation,
+}: {
   readonly owner: SandboxOwner;
   readonly operation: string;
 },): void {

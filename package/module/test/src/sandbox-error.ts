@@ -1,4 +1,6 @@
-/** Errors at the test-owned mocking seam. @module */
+/**
+ Errors at the test-owned mocking seam. @module
+ */
 
 /**
  Signals an operation that cannot preserve sandbox ownership.
@@ -9,7 +11,9 @@
  ```
  */
 export class SandboxOwnershipError extends Error {
-  /** Distinguishes harness ownership diagnostics from ordinary Sinon errors. */
+  /**
+   Distinguishes harness ownership diagnostics from ordinary Sinon errors.
+   */
   override readonly name = 'SandboxOwnershipError';
 }
 
@@ -22,6 +26,8 @@ export class SandboxOwnershipError extends Error {
  ```
  */
 export class SandboxCleanupError extends AggregateError {
-  /** Distinguishes aggregated ownership cleanup from an ordinary assertion failure. */
+  /**
+   Distinguishes aggregated ownership cleanup from an ordinary assertion failure.
+   */
   override readonly name = 'SandboxCleanupError';
 }

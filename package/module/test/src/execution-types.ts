@@ -14,7 +14,9 @@ export type ExecutionKind = 'test' | 'suite';
  Metadata describes the awaited body without exposing a mutable verdict.
  */
 export type ObservedExecution = {
-  /** Current test-body attempt; absent for suites and legacy descriptor-only contexts. */
+  /**
+   Current test-body attempt; absent for suites and legacy descriptor-only contexts.
+   */
   readonly sandboxOwner?: SandboxOwner;
   /**
    Body category used by diagnostic guidance.
