@@ -1,0 +1,130 @@
+/** Supported method semantics and explicit ordinary-Sinon fallback behavior. @module */
+import { EventEmitter, } from 'node:events';
+import { describe, expect, it, type TestContext, } from '@monochromatic-dev/module-test';
+
+await describe({
+  name: 'context mock semantics',
+  children: [
+    ...(['call', 'apply', 'bind',] as const).map(mode => it({
+      name: `factory ${mode} preserves context routing and lifetime guards`,
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        /** Standard Function helpers must invoke the guarded factory, not its raw target. */
+        const target = { method: (): string => 'original', };
+        const fake: unknown = mode === 'call'
+          ? Reflect.apply(sinon.stub.call, sinon.stub, [sinon, target, 'method',],)
+          : mode === 'apply'
+            ? Reflect.apply(sinon.stub.apply, sinon.stub, [sinon, [target, 'method',],],)
+            : Reflect.apply(sinon.stub.bind(sinon,), undefined, [target, 'method',],);
+        expect(target.method(),).toBeUndefined();
+        expect(fake,).toHaveBeenCalledTimes(1,);
+        await it({ name: 'reader without a replacement', fn: async (): Promise<void> => {
+          expect(target.method(),).toBe('original',);
+        }, },);
+      },
+    },)),
+    it({
+      name: 'symbols, matching, call sequences, call-through, and async behavior remain Sinon-owned',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        /** A symbol is a distinct property even when another key has the same description. */
+        const key = Symbol('method under test',);
+        const other = Symbol('method under test',);
+        const target = {
+          prefix: 'receiver',
+          [key](input: string,): string {
+            return `${this.prefix}:${input}`;
+          },
+          [other](): string {
+            return 'unrelated';
+          },
+        };
+        const fake = sinon.stub(target, key,).callThrough();
+        fake.withArgs('matched',).returns('match',);
+        expect(target[key]('matched',),).toBe('match',);
+        expect(target[key]('original',),).toBe('receiver:original',);
+        fake.resetBehavior();
+        fake.onFirstCall().returns('first',);
+        fake.resetHistory();
+        expect(target[key]('sequence',),).toBe('first',);
+        fake.callsFake((input: string,): string => `custom:${input}`);
+        expect(target[key]('custom',),).toBe('custom:custom',);
+        expect(target[other](),).toBe('unrelated',);
+        fake.resolves('resolved',);
+        expect(await target[key]('promise',),).toBe('resolved',);
+      },
+    },),
+    it({
+      name: 'inherited, nonconfigurable, and proxy targets preserve ordinary Sinon behavior',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        /** Inherited methods are deliberately outside the new own-property contract. */
+        const prototype = { method: (): string => 'inherited', };
+        const inherited = { method: (): string => 'own', };
+        Object.setPrototypeOf(inherited, prototype,);
+        Reflect.deleteProperty(inherited, 'method',);
+        sinon.stub(inherited, 'method',).returns('ordinary',);
+        expect(inherited.method(),).toBe('ordinary',);
+        sinon.restore();
+        expect(Object.hasOwn(inherited, 'method',),).toBe(false,);
+        /** Writable but nonconfigurable methods can still be replaced by ordinary Sinon. */
+        const fixed = { method: (): string => 'fixed', };
+        Object.defineProperty(fixed, 'method', { configurable: false, },);
+        sinon.stub(fixed, 'method',).returns('ordinary fixed',);
+        expect(fixed.method(),).toBe('ordinary fixed',);
+        sinon.restore();
+        expect(fixed.method(),).toBe('fixed',);
+        /** Proxy targets are not virtualized because their descriptor traps have their own effects. */
+        const proxy = new Proxy({ method: (): string => 'proxy', }, {},);
+        sinon.stub(proxy, 'method',).returns('ordinary proxy',);
+        expect(proxy.method(),).toBe('ordinary proxy',);
+        sinon.restore();
+        expect(proxy.method(),).toBe('proxy',);
+      },
+    },),
+    it({
+      name: 'captured fake references retain identity but unbound event callbacks read the emitting context',
+      fn: async (): Promise<void> => {
+        /** Event registration and emission deliberately belong to different attempts. */
+        const emitter = new EventEmitter();
+        const target = { method: (): string => 'original', };
+        const ready = Promise.withResolvers<() => string>();
+        const emitted = Promise.withResolvers<void>();
+        await describe({ name: 'event contexts', children: [
+          it({ name: 'registering owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
+            sinon.stub(target, 'method',).returns('registered',);
+            emitter.once('event', () => {
+              expect(target.method(),).toBe('emitted',);
+            },);
+            ready.resolve(target.method,);
+            await emitted.promise;
+          }, },),
+          it({ name: 'emitting owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
+            const captured = await ready.promise;
+            using release = {
+              [Symbol.dispose](): void {
+                emitted.resolve();
+              },
+            };
+            sinon.stub(target, 'method',).returns('emitted',);
+            expect(captured(),).toBe('registered',);
+            emitter.emit('event',);
+          }, },),
+        ], },);
+      },
+    },),
+    it({
+      name: 'whole-object stubs cannot use deferred descriptor methods after completion',
+      fn: async (): Promise<void> => {
+        /** Ordinary whole-object stubbing still returns the same target object. */
+        const target = { method: (): string => 'original', };
+        const late: (() => unknown)[] = [];
+        await it({ name: 'whole-object owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
+          const stubbed = sinon.stub(target,);
+          expect(stubbed,).toBe(target,);
+          late.push(() => stubbed.method.value(() => 'late',));
+        }, },);
+        for (const mutate of late)
+          expect(mutate,).toThrow('completed',);
+        expect(target.method(),).toBe('original',);
+      },
+    },),
+  ],
+},);

@@ -6,6 +6,7 @@ import {
   type SandboxInvocation,
 } from './sandbox-guard.ts';
 import { createMethodReplacement, } from './sandbox-lease.ts';
+import { guardCollectionFakes, guardTimerController, } from './sandbox-collection.ts';
 import type {
   SandboxOwner,
   SandboxRuntime,
@@ -198,7 +199,11 @@ export function dispatchSandboxOperation({
       return replacement.fake;
     }
   }
-  if (invocation.operation === 'ctx.sinon.restore') {
+  if (invocation.operation === `ctx.sinon.${String(Symbol.asyncDispose,)}`) {
+    policy.restore();
+    return Promise.resolve();
+  }
+  if (invocation.operation === 'ctx.sinon.restore' || invocation.operation === `ctx.sinon.${String(Symbol.dispose,)}`) {
     policy.restore();
     return undefined;
   }
@@ -236,6 +241,10 @@ export function dispatchSandboxOperation({
       ...((typeof key) === 'symbol') && (key === SINON_VALIDATES_PROPERTY) ? {} : { key, },
     },);
   }
+  if (methodFactory || invocation.operation === 'ctx.sinon.createStubInstance')
+    guardCollectionFakes({ value: result, owner: policy.owner, restoring: policy.restoring, },);
+  if (invocation.operation === 'ctx.sinon.useFakeTimers')
+    guardTimerController({ value: result, owner: policy.owner, restoring: policy.restoring, },);
   if (invocation.operation === 'ctx.sinon.mock')
     return guardMockController({
       value: result,

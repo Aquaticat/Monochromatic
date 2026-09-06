@@ -130,7 +130,7 @@ export function guardSandboxCapability<Target extends object,>({
       if (existing?.original === value)
         return existing.guarded;
       /**
-       The owning object's method receives that object, not this facade proxy.
+       Object methods receive their owning object. Function call/apply/bind retain the guarded callable receiver.
        */
       const guarded = guardSandboxCapability({
         target: value,
@@ -139,7 +139,7 @@ export function guardSandboxCapability<Target extends object,>({
         invoke(invocation: SandboxInvocation,): unknown {
           return invoke({
             ...invocation,
-            receiver: invocation.receiver === receiver ? object : invocation.receiver,
+            receiver: invocation.receiver === receiver && typeof object !== 'function' ? object : invocation.receiver,
           },);
         },
       },);
