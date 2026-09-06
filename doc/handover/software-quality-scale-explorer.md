@@ -20,14 +20,14 @@ Do not repeat those questions or turn this into a universal product-ranking rese
 
 ## Work items and completion criteria
 
-- Algorithm: establish the remaining decision rules through grilling;
-  implement explainable custom ratings consistent with approved reasoning;
-  verify contradictory inputs, incomplete assessments, and endpoint conditions.
-- UX: establish the custom-rating workflow;
-  build and present concrete variants when asking visual-design questions;
-  verify the chosen flow in a browser and preserve approved catalogue content.
-- Delivery: retain the original as evidence;
-  deliver the revised standalone HTML and record verification and output location.
+- [x] Algorithm: resolved delegated decisions;
+  implemented explicit ordinal comparisons with endpoint obligations;
+  verified contradictory inputs, incomplete assessments, and endpoint conditions.
+- [x] UX: implemented and browser-verified the custom-rating workflow,
+  reference browsing, responsive layout, reset, and export;
+  preserved approved catalogue content.
+- [x] Delivery: retained the original;
+  delivered the revised standalone HTML in Downloads and opened it in Helium.
 
 ## Source evidence
 
@@ -145,6 +145,9 @@ The modal had zero violations and one unresolved automated contrast finding;
 the browser bridge agent checked the actual rendered paragraph separately.
 Its dark-theme foreground/background contrast was 13.455:1,
 with an opaque background and no element visually covering the paragraph.
+Its light-theme contrast was 14.421:1,
+also with an opaque background and the paragraph first in the hit-test stack.
+Both modal screenshots were inspected without clipping or overlap.
 
 ## Design frontier
 
@@ -163,9 +166,20 @@ every missing-ten condition,
 model purity,
 and delivered-copy/catalogue equality.
 
-The browser bridge agent has opened the Downloads copy in Helium.
-Next action: record its final light-theme modal check and active-window verification,
-then hand the finished file to the user.
+The Downloads copy is open in Helium 0.16.5.1,
+with Rate new visible, empty assessment inputs/comparisons,
+every gate unknown, modal closed, and scroll at the top.
+KWin confirmed activation with `active=true`, `minimized=false`,
+and output `DP-3` matching the current output.
+The final screenshot is `~/temp/agent/quality-helium-final.png`.
+Later browser `document.hasFocus()` returned false;
+the handoff evidence establishes activation at its measured moment,
+not sustained keyboard focus.
+The user-facing Helium session `quality-helium` remains available on CDP port 44673,
+window PID 2333943.
+Disposable `quality-explorer` and `quality-export` verification browsers were closed.
+
+No implementation or verification work remains.
 
 ## Changes and commits
 
@@ -175,3 +189,4 @@ then hand the finished file to the user.
 - `84eabfc63`: stale-state protections, accessibility, and responsive result handling.
 - `db9cbf49d`: compact mobile navigation and recorded verification.
 - `1ce57f623`: verified export controls and isolated-timeout record.
+- `e594284a8`: final model and delivery checks.
