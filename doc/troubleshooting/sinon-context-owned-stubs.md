@@ -4,7 +4,10 @@ Investigation for [Monochromatic issue #481][issue],
 verified on 2026-09-06.
 The proposed production direction is in
 [`issue-481-context-owned-stubs.md`](../planning/issue-481-context-owned-stubs.md).
-Only documentation and the disposable experiment patch were committed to the main worktree.
+The initial investigation committed documentation and the disposable experiment patch only.
+Implementation is now authorized and underway.
+Current acceptance state is recorded in
+[`issue-481-context-owned-stubs.md`](../handover/issue-481-context-owned-stubs.md).
 
 ## Symptom
 
@@ -21,6 +24,9 @@ a concurrent test without a stub observed the first test's fake instead of the o
 Suppressing the double-wrap error would not fix that reader contamination.
 
 ## Root cause
+
+Repository excerpts in this section describe the pre-implementation baseline,
+not the current implementation.
 
 ### Injected context owns cleanup, not the target object
 
@@ -306,6 +312,38 @@ Broader issue search for `"already wrapped"` found #2622;
 broader PR search for `parallel` found #2715.
 Both matching threads were read in full.
 
+## Production boundary checks in progress
+
+Built-artifact boundary tests exposed an integration error in our fake-timer guard:
+Sinon 22.1.0's bundled `clock.uninstall` calls `clock.setTickMode({ mode: 'manual' })`.
+Closing the owner before cleanup correctly blocked new work,
+but initially blocked this required shutdown call too.
+The guard now allows runner restoration to stop automatic ticking,
+not restart it.
+A rebuilt full package test run passed after that correction.
+Package lint still reported fixture typing and style findings;
+those are being corrected before acceptance is complete.
+
+The whole-object fixture initially reread the restored target instead of retaining its fake.
+The corrected fixture captures the fake before completion,
+then exercises its deferred `value` method.
+The built test passes with completion rejection and the original target unchanged.
+
+### Intentional Node emitter fixture
+
+`package/module/test/src/sinon-semantics.unit.test.ts` intentionally constructs Node's `EventEmitter`.
+Replacing it with `EventTarget` would test a different callback API,
+not the named Node boundary in the acceptance plan.
+
+The [Oxlint rule source][event-target-rule] defines `PreferEventTarget` without configuration fields
+or a `from_configuration` implementation.
+Its only package exceptions are hardcoded for `@angular/core` and `eventemitter3`,
+not Node's `node:events`.
+There is no configurable constructor or call-site allowlist to try.
+A single justified `unicorn/prefer-event-target` suppression therefore stays on this test declaration;
+no package-wide lint setting is loosened.
+
+[event-target-rule]: https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/rules/unicorn/prefer_event_target.rs
 [issue]: https://github.com/Aquaticat/Monochromatic/issues/481
 [duplicate]: https://github.com/sinonjs/sinon/issues/2622
 [call-id]: https://github.com/sinonjs/sinon/pull/2715

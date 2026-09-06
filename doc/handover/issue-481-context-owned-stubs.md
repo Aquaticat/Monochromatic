@@ -80,6 +80,55 @@ Prototype evidence:
   and `lint:oxlint` passed in process `proc_608a`.
   Oxlint reported zero warnings and zero errors on 53 files.
 
+## Boundary verification update
+
+- Commit `ec991f4ad` added cleanup,
+  clock,
+  and ordinary-operation tests plus deferred collection/timer guards.
+- `a0a38e675` fixed clock cleanup:
+  installed Sinon invokes `clock.setTickMode({ mode: 'manual' })` from `uninstall`.
+  Cleanup now permits stopping automation while still rejecting a new tick mode after completion.
+- Full package tests and `lint:types` passed in `proc_a6be` after rebuilding.
+  Scoped autofix failed on fixture typing and style findings,
+  not runtime assertions.
+  Its formatter changes remain task-owned.
+- Current edits add manual-restoration generation retirement for ordinary fakes and clocks,
+  fix the typed clock fixture using a checked runtime `uninstall`,
+  explicitly retain `call`/`apply`/`bind` factories past completion,
+  and document the intentional Node emitter lint exception.
+  These changes still need commit and verification.
+
+### Independent review triage
+
+Advisor identified stale manual clock generations and ordinary fake restoration as worthwhile checks;
+those now have implementation changes and tests pending verification.
+It also raised independent raw cleanup failure,
+installation rollback,
+reflective factory extraction,
+mock generations,
+and mixed-artifact/browser/descriptor coverage.
+These remain review items,
+not verified defects.
+
+Do not blindly apply every proposed restriction:
+
+- `guardMockController` already proxies controller calls through invocation-time completion checks.
+  The review's claim that completed controller restoration is unguarded does not match that source.
+  Manual restoration generations still deserve a dedicated test.
+- The accepted rule binds factory authority to the supplied context and property values to the reader's context.
+  It does not require rejecting an explicitly borrowed still-running context.
+  Captured fake references deliberately preserve identity across readers.
+- Fake timers retain ordinary shared-state semantics;
+  this change does not promise that all old local clock operations become inert.
+- This is not a security sandbox against arbitrary JavaScript reflection,
+  direct target mutation,
+  or direct Sinon imports.
+  Investigate practical factory extraction without claiming a complete reflective membrane.
+- Sinon's raw `sandbox.restore` itself invokes `fakeRestorers` before its fake collection
+  and stops when a restorer throws.
+  Distinguish baseline Sinon failure behavior from regressions introduced by the adapter.
+  Contextual leases already restore independently before raw restoration.
+
 ## Work still required
 
 Core implementation task #4 is complete.
@@ -93,9 +142,8 @@ Do not mark complete or close #481 yet.
   raw accessor/value fakes,
   repeated and stale restoration,
   and cleanup failures combined with body failures.
-- Audit returned whole-object/createStubInstance fakes and fake-timer controllers.
-  Current result guarding handles function results only;
-  controllers capable of later target mutation may need additional guards.
+- Extend returned whole-object/createStubInstance and fake-timer controller coverage.
+  `sandbox-collection.ts` now guards collection fake mutators and clock restoration/tick-mode changes.
   Avoid claiming every local fake history/behavior operation becomes inert.
 - Cover mixed stub/spy owners,
   symbols,

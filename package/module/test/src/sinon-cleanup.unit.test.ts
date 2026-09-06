@@ -63,15 +63,17 @@ await describe({
             /** Mocking installs the method when expects is called, not at controller creation. */
             const mock = sinon.mock(target,);
             /** Saved factory namespaces must enforce completion at invocation. */
-            const returns = sinon.fake.returns;
+            const returns: unknown = Reflect.get(sinon.fake, 'returns',);
+            if (typeof returns !== 'function')
+              throw new Error('Sinon fake namespace did not provide returns',);
             /** A saved plain method must carry the same guard as a property lookup. */
-            const spy = sinon.spy;
+            const {spy} = sinon;
             late.push(
               () => stub.value('late',),
               () => stub.get(() => 'late',),
               () => stub.set(() => {},),
               () => mock.expects('method',),
-              () => returns('late',),
+              () => Reflect.apply(returns, undefined, ['late',],),
               () => spy(target, 'method',),
             );
           },
@@ -95,6 +97,20 @@ await describe({
         expect(second.callCount,).toBe(1,);
         sinon.restore();
         expect(target.method(),).toBe('original',);
+      },
+    },),
+    it({
+      name: 'manual ordinary data restoration retires the old fake before restubbing',
+      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+        const target = { value: 'original', };
+        const first = sinon.stub(target, 'value',).value('first',);
+        first.restore();
+        sinon.stub(target, 'value',).value('second',);
+        first.restore();
+        expect(target.value,).toBe('second',);
+        expect(() => first.value('late',),).toThrow('restored',);
+        sinon.restore();
+        expect(target.value,).toBe('original',);
       },
     },),
     it({
@@ -124,7 +140,7 @@ await describe({
         /** The outer runner preserves the aggregate as the test's cause. */
         const [failure,] = failures;
         expect(failure,).toBeInstanceOf(Error,);
-        if (!(failure instanceof Error) || !(failure.cause instanceof AggregateError))
+        if ((!(Error.isError(failure,))) || (!(failure.cause instanceof AggregateError)))
           throw new Error('Expected body and cleanup aggregate',);
         expect(failure.cause.errors.length,).toBe(2,);
         expect(target.first(),).toBe('first',);

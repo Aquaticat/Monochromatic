@@ -7,27 +7,40 @@ await describe({
   children: [
     ...(['call', 'apply', 'bind',] as const).map(mode => it({
       name: `factory ${mode} preserves context routing and lifetime guards`,
-      fn: async ({ sinon, }: TestContext,): Promise<void> => {
+      fn: async (): Promise<void> => {
         /** Standard Function helpers must invoke the guarded factory, not its raw target. */
         const target = { method: (): string => 'original', };
-        const fake: unknown = mode === 'call'
-          ? Reflect.apply(sinon.stub.call, sinon.stub, [sinon, target, 'method',],)
-          : mode === 'apply'
-            ? Reflect.apply(sinon.stub.apply, sinon.stub, [sinon, [target, 'method',],],)
-            : Reflect.apply(sinon.stub.bind(sinon,), undefined, [target, 'method',],);
-        expect(target.method(),).toBeUndefined();
-        expect(fake,).toHaveBeenCalledTimes(1,);
-        await it({ name: 'reader without a replacement', fn: async (): Promise<void> => {
-          expect(target.method(),).toBe('original',);
+        const late: (() => unknown)[] = [];
+        await it({ name: 'factory owner', fn: async ({ sinon, }: TestContext,): Promise<void> => {
+          /** Read the actual callable namespace member with an explicit invocation receiver. */
+          const helper: unknown = Reflect.get(sinon.stub, mode,);
+          if (typeof helper !== 'function')
+            throw new Error(`Missing function helper ${mode}`,);
+          const args = mode === 'call' ? [sinon, target, 'method',]
+            : mode === 'apply' ? [sinon, [target, 'method',],] : [sinon,];
+          const result: unknown = Reflect.apply(helper, sinon.stub, args,);
+          if (mode === 'bind' && typeof result === 'function') {
+            Reflect.apply(result, undefined, [target, 'method',],);
+            late.push(() => Reflect.apply(result, undefined, [target, 'method',],),);
+          }
+          else
+            late.push(() => Reflect.apply(helper, sinon.stub, args,),);
+          expect(target.method(),).toBeUndefined();
+          await it({ name: 'reader without a replacement', fn: async (): Promise<void> => {
+            expect(target.method(),).toBe('original',);
+          }, },);
         }, },);
+        for (const invoke of late)
+          expect(invoke,).toThrow('completed',);
+        expect(target.method(),).toBe('original',);
       },
     },)),
     it({
       name: 'symbols, matching, call sequences, call-through, and async behavior remain Sinon-owned',
       fn: async ({ sinon, }: TestContext,): Promise<void> => {
         /** A symbol is a distinct property even when another key has the same description. */
-        const key = Symbol('method under test',);
-        const other = Symbol('method under test',);
+        const key = Symbol('method key reused by Sinon isolation fixture',);
+        const other = Symbol('method key reused by Sinon isolation fixture',);
         const target = {
           prefix: 'receiver',
           [key](input: string,): string {
@@ -83,6 +96,7 @@ await describe({
       name: 'captured fake references retain identity but unbound event callbacks read the emitting context',
       fn: async (): Promise<void> => {
         /** Event registration and emission deliberately belong to different attempts. */
+        // oxlint-disable-next-line unicorn/prefer-event-target -- Proves Node EventEmitter read-context semantics; rationale in doc/troubleshooting/sinon-context-owned-stubs.md.
         const emitter = new EventEmitter();
         const target = { method: (): string => 'original', };
         const ready = Promise.withResolvers<() => string>();

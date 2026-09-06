@@ -139,7 +139,7 @@ export function guardSandboxCapability<Target extends object,>({
         invoke(invocation: SandboxInvocation,): unknown {
           return invoke({
             ...invocation,
-            receiver: invocation.receiver === receiver && typeof object !== 'function' ? object : invocation.receiver,
+            receiver: (invocation.receiver === receiver) && ((typeof object) !== 'function') ? object : invocation.receiver,
           },);
         },
       },);

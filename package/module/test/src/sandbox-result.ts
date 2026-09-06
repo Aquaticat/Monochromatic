@@ -1,6 +1,7 @@
 /**
  Guard returned capabilities that can later reinstall target state. @module
  */
+import { SandboxOwnershipError, } from './sandbox-error.ts';
 import {
   guardSandboxCapability,
   invokeSandboxMethod,
@@ -51,6 +52,8 @@ export function guardFakeMutators({
 },): void {
   if (!isSandboxTarget(value,))
     return;
+  /** A restored generation cannot regain descriptor-changing authority. */
+  const generation = { restored: false, };
   for (const operation of [
     'get',
     'set',
@@ -78,7 +81,7 @@ export function guardFakeMutators({
         args: unknown[],
       ): unknown {
         if (operation === 'restore') {
-          if ((owner.phase === 'completed') && (!restoring()))
+          if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
             return undefined;
         }
         else {
@@ -86,6 +89,8 @@ export function guardFakeMutators({
             owner,
             operation: `Sinon fake.${operation}`,
           },);
+          if (generation.restored)
+            throw new SandboxOwnershipError(`Sinon fake.${operation} belongs to a restored replacement. Create a new fake instead.`,);
           if ((target !== undefined) && (key !== undefined))
             requireUnownedProperty({
               target,
@@ -93,11 +98,11 @@ export function guardFakeMutators({
               operation: `Sinon fake.${operation}`,
             },);
         }
-        return Reflect.apply(
-          original,
-          receiver,
-          args,
-        );
+        /** Mark restoration only after success so failed cleanup remains reportable. */
+        const result: unknown = Reflect.apply(original, receiver, args,);
+        if (operation === 'restore')
+          generation.restored = true;
+        return result;
       },
     }
       ),
