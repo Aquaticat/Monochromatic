@@ -29,7 +29,15 @@ extends = "lint"
 extends = "lint:oxlint"
 
 [tasks."format:oxlint"]
-extends = "format:oxlint"
+description = "Auto-fix this package or explicit package-relative paths"
+usage = 'arg "[args]" var=#true help="Package-relative files to auto-fix; omitted means the package"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.parse_usage_args}}
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...parseUsageArgs(process.env.usage_args ?? '')])
+"""
 
 [tasks."lint:types"]
 extends = "lint:types"
