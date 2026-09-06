@@ -187,7 +187,7 @@ function archiveConventionOf(
    * Archive English in whichever shape this source carries it.
    */
   const { archiveText, } = preparation;
-  if (typeof archiveText === 'string')
+  if ((typeof archiveText) === 'string')
     return archiveText;
   if (archiveText.kind === 'stored')
     return archiveText.text;
