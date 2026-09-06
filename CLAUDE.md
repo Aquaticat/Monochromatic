@@ -733,6 +733,16 @@ NXR:
 Inspect processes + logs;
  rerun via process tool or bounded execution.
 
+1CB:
+ One step per Bash call;
+ never chain steps with `&&`,
+ `;`,
+ or loops:
+ uninspectable for user and auto mode.
+Multi-step work:
+ write a scratch `.ts` (`node:child_process`),
+ run that file.
+
 RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
