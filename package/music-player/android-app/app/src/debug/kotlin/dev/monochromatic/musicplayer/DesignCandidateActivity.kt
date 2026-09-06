@@ -96,6 +96,7 @@ import androidx.compose.material.icons.filled.SkipPrevious
 // import { background } from 'compose/foundation';
 // ```
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.Canvas
 
 // What:     `rememberScrollState` creates composition-owned scroll position state.
@@ -1037,26 +1038,33 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
 @Composable
 private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
     val playing = index == 0
-    val currentTrackCue = if (candidate.contains("cue-weight-")) {
-        "weight"
-    } else if (candidate.contains("cue-color-")) {
-        "color"
-    } else if (candidate.contains("cue-badge-")) {
-        "badge"
+    val currentTrackCue = if (candidate.contains("cue-label-")) {
+        "label"
+    } else if (candidate.contains("cue-accent-")) {
+        "accent"
+    } else if (candidate.contains("cue-outline-")) {
+        "outline"
     } else {
         "icon"
     }
-    val currentHeadlineStyle = if (playing && currentTrackCue == "weight") {
+    val currentHeadlineStyle = if (playing && currentTrackCue != "icon") {
         MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-    } else if (playing && currentTrackCue != "icon") {
-        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
     } else {
         MaterialTheme.typography.bodyLarge
     }
-    val currentHeadlineColor = if (playing && currentTrackCue == "color") {
+    val currentHeadlineColor = if (playing && currentTrackCue == "accent") {
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onSurface
+    }
+    val currentRowOutline = if (playing && currentTrackCue == "outline") {
+        Modifier.border(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primary,
+            shape = RoundedCornerShape(20.dp),
+        )
+    } else {
+        Modifier
     }
     ListItem(
         headlineContent = {
@@ -1067,36 +1075,40 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
             )
         },
         supportingContent = {
-            TrackMetadata(
-                track = track,
-                candidate = candidate,
-            )
-        },
-        leadingContent = {
-            Box(
-                modifier = Modifier.size(24.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (playing && currentTrackCue == "badge") {
-                    Surface(
-                        modifier = Modifier.size(24.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Filled.PlayArrow,
-                                contentDescription = "Playing",
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }
-                    }
-                } else if (playing) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = "Playing",
+            if (playing && currentTrackCue == "label") {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = "Playing",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                     )
+                    Text(
+                        text = "· ${track.duration} · ${track.peak}",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            } else {
+                TrackMetadata(
+                    track = track,
+                    candidate = candidate,
+                )
+            }
+        },
+        leadingContent = if (candidate.startsWith("cue-")) {
+            null
+        } else {
+            {
+                Box(
+                    modifier = Modifier.size(24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (playing) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = "Playing",
+                        )
+                    }
                 }
             }
         },
@@ -1120,6 +1132,7 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 72.dp)
+            .then(currentRowOutline)
             .clickable(role = Role.Button, onClick = {})
             .semantics {
                 selected = playing
